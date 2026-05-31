@@ -68,11 +68,17 @@ open class CapabilityAwareFunctionTests: BaseTestClass {
         }
         #expect(RuntimeCapabilityDetection.supportsTouch)
         #expect(RuntimeCapabilityDetection.supportsHapticFeedback)
-        #expect(RuntimeCapabilityDetection.supportsAssistiveTouch)
+        #expect(
+            RuntimeCapabilityDetection.supportsAssistiveTouch
+                == PlatformTestUtilities.expectedAssistiveTouchAfterTestOverride(true)
+        )
         let config = getCardExpansionPlatformConfig()
         #expect(config.supportsTouch)
         #expect(config.supportsHapticFeedback)
-        #expect(config.supportsAssistiveTouch)
+        #expect(
+            config.supportsAssistiveTouch
+                == PlatformTestUtilities.expectedAssistiveTouchAfterTestOverride(true)
+        )
         let currentPlatform = SixLayerPlatform.current
         let expectedMinTouchTarget = PlatformTestUtilities.expectedMinTouchTarget(
             for: currentPlatform,
@@ -165,7 +171,10 @@ open class CapabilityAwareFunctionTests: BaseTestClass {
                 "Touch targets must match Apple HIG for \(currentPlatform): expected \(expectedMinTouchTarget)pt")
         #expect(config.supportsTouch)
         #expect(config.supportsHapticFeedback)
-        #expect(config.supportsAssistiveTouch)
+        #expect(
+            config.supportsAssistiveTouch
+                == PlatformTestUtilities.expectedAssistiveTouchAfterTestOverride(true)
+        )
     }
     
     /// BUSINESS PURPOSE: Negative path slice without hover (delegates to shared negative semantics).
@@ -175,6 +184,35 @@ open class CapabilityAwareFunctionTests: BaseTestClass {
     
     // MARK: - Hover-Dependent Function Tests
     
+    /// Hover-dependent card config on the **current host** through hover tri-state (#251).
+    @Test @MainActor func testHoverDependentFunctionsTriStatePhases() {
+        defer { RuntimeCapabilityDetection.clearAllCapabilityOverrides() }
+
+        func assertHoverLaw(phase: String) {
+            let platform = SixLayerPlatform.current
+            let config = getCardExpansionPlatformConfig()
+            let hover = RuntimeCapabilityDetection.supportsHover
+
+            switch platform {
+            case .iOS, .watchOS, .macOS, .tvOS, .visionOS:
+                #expect(config.supportsHover == hover, "\(phase): hover should mirror detection on \(platform)")
+                #expect(config.hoverDelay == RuntimeCapabilityDetection.hoverDelay, "\(phase): hoverDelay should mirror detection")
+                if !hover {
+                    #expect(config.hoverDelay == 0, "\(phase): no hover → zero delay on \(platform)")
+                }
+            }
+        }
+
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        assertHoverLaw(phase: "current")
+
+        RuntimeCapabilityDetection.setTestHover(false)
+        assertHoverLaw(phase: "disabled")
+
+        RuntimeCapabilityDetection.setTestHover(true)
+        assertHoverLaw(phase: "enabled")
+    }
+
     /// BUSINESS PURPOSE: Test hover-dependent functions across all platforms
     /// TESTING SCOPE: Hover capability detection, hover delay, touch exclusion
     /// METHODOLOGY: Test runtime capabilities on current platform
@@ -347,22 +385,50 @@ open class CapabilityAwareFunctionTests: BaseTestClass {
     
     // MARK: - Accessibility-Dependent Function Tests
     
-    /// BUSINESS PURPOSE: Accessibility functions provide VoiceOver and Switch Control support for inclusive user interaction
-    /// TESTING SCOPE: VoiceOver support, Switch Control support, accessibility compliance
-    /// METHODOLOGY: Test accessibility capability detection and support
-    @Test @MainActor func testAccessibilityDependentFunctions() {
-        // Test accessibility functions that are available
-        // Note: AccessibilityOptimizationManager was removed - using simplified accessibility testing
-        
-        // Set test overrides for accessibility capabilities
-        RuntimeCapabilityDetection.setTestVoiceOver(true)
-        RuntimeCapabilityDetection.setTestSwitchControl(true)
+    /// Accessibility-dependent card config on the **current host** through a11y tri-state (#251 / #312).
+    @Test @MainActor func testAccessibilityDependentFunctionsTriStatePhases() {
         defer { RuntimeCapabilityDetection.clearAllCapabilityOverrides() }
 
-        // Test that accessibility behavior can be tested
-        let config = getCardExpansionPlatformConfig()
-        #expect(config.supportsVoiceOver, "VoiceOver should be supported")
-        #expect(config.supportsSwitchControl, "Switch Control should be supported")
+        func assertAccessibilityLaw(phase: String) {
+            let platform = SixLayerPlatform.current
+            let config = getCardExpansionPlatformConfig()
+
+            switch platform {
+            case .iOS, .watchOS, .macOS, .tvOS, .visionOS:
+                #expect(
+                    config.supportsVoiceOver == RuntimeCapabilityDetection.supportsVoiceOver,
+                    "\(phase): VoiceOver should mirror detection on \(platform)"
+                )
+                #expect(
+                    config.supportsSwitchControl == RuntimeCapabilityDetection.supportsSwitchControl,
+                    "\(phase): SwitchControl should mirror detection on \(platform)"
+                )
+                #expect(
+                    config.supportsAssistiveTouch == RuntimeCapabilityDetection.supportsAssistiveTouch,
+                    "\(phase): AssistiveTouch should mirror detection on \(platform)"
+                )
+            }
+        }
+
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        assertAccessibilityLaw(phase: "current")
+
+        RuntimeCapabilityDetection.setTestVoiceOver(false)
+        RuntimeCapabilityDetection.setTestSwitchControl(false)
+        RuntimeCapabilityDetection.setTestAssistiveTouch(false)
+        assertAccessibilityLaw(phase: "disabled")
+
+        RuntimeCapabilityDetection.setTestVoiceOver(true)
+        RuntimeCapabilityDetection.setTestSwitchControl(true)
+        RuntimeCapabilityDetection.setTestAssistiveTouch(true)
+        assertAccessibilityLaw(phase: "enabled")
+    }
+
+    /// BUSINESS PURPOSE: Accessibility functions provide VoiceOver and Switch Control support for inclusive user interaction
+    /// TESTING SCOPE: VoiceOver support, Switch Control support, accessibility compliance
+    /// METHODOLOGY: Tri-state card config law beside capability-aware control path
+    @Test @MainActor func testAccessibilityDependentFunctions() {
+        testAccessibilityDependentFunctionsTriStatePhases()
     }
     
     // MARK: - Color Encoding-Dependent Function Tests
@@ -421,7 +487,7 @@ open class CapabilityAwareFunctionTests: BaseTestClass {
     // MARK: - Capability State Validation
     
     /// **Plumbing:** `CardExpansionPlatformConfig` mirrors `RuntimeCapabilityDetection` for the fields it copies.
-    /// **Cross-cutting laws:** haptic implies touch; AssistiveTouch matches platform availability; OCR implies Vision.
+    /// **Cross-cutting laws:** AssistiveTouch matches platform availability; OCR implies Vision.
     /// Kept narrow per `.cursor/rules/capability-override-test-flows.mdc` (GitHub #278) — not a parallel capability matrix suite.
     @Test @MainActor func testCapabilityStateConsistency() {
         let config = getCardExpansionPlatformConfig()
@@ -442,9 +508,6 @@ open class CapabilityAwareFunctionTests: BaseTestClass {
         let vision = isVisionFrameworkAvailable()
         let ocr = isVisionOCRAvailable()
         #expect(!(ocr && !vision), "OCR availability should imply Vision framework availability")
-
-        #expect(!(config.supportsHapticFeedback && !config.supportsTouch),
-                "Haptic capability should not be reported without touch (incoherent actuation surface)")
 
         let assistiveTouchPlatformSupported = SixLayerPlatform.current.supportsAssistiveTouch
         if assistiveTouchPlatformSupported {

@@ -24,7 +24,7 @@ import Testing
 import SwiftUI
 @testable import SixLayerFramework
 
-@Suite("HIG Compliance - Hover Support")
+@Suite("HIG Compliance - Hover Support", DefaultRuntimeCapabilityIsolationTrait())
 /// NOTE: Not marked @MainActor on class to allow parallel execution
 open class HIGComplianceHoverTests: BaseTestClass {
     
@@ -111,37 +111,72 @@ open class HIGComplianceHoverTests: BaseTestClass {
         }
     }
     
+    // MARK: - Tri-state hover capability (#251)
+
+    /// Button + `.automaticCompliance()` on the **current host** through hover tri-state.
+    @Test @MainActor func testButtonHoverComplianceTriStatePhases() async {
+        initializeTestConfig()
+        defer { RuntimeCapabilityDetection.clearAllCapabilityOverrides() }
+
+        runWithTaskLocalConfig {
+            let button = Button("Hover Tri-State Button") { }
+                .automaticCompliance()
+
+            @MainActor func assertHoverComplianceLaw(phase: String) {
+                let platform = SixLayerPlatform.current
+                let effectiveHover = RuntimeCapabilityDetection.supportsHover
+                let passed = testComponentComplianceSinglePlatform(
+                    button,
+                    expectedPattern: "SixLayer.*ui",
+                    platform: platform,
+                    componentName: "ButtonHover-\(phase)-\(platform)"
+                )
+
+                switch platform {
+                case .iOS:
+                    #expect(passed, "\(phase) on iOS: compliant button (hover=\(effectiveHover))")
+                case .macOS, .visionOS:
+                    #expect(passed, "\(phase) on \(platform): compliant button on hover-capable host (hover=\(effectiveHover))")
+                case .watchOS, .tvOS:
+                    #expect(passed, "\(phase) on \(platform): compliant button without hover (hover=\(effectiveHover))")
+                    #expect(!effectiveHover, "\(phase) on \(platform): host should not report hover")
+                }
+            }
+
+            RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+            assertHoverComplianceLaw(phase: "current")
+
+            RuntimeCapabilityDetection.setTestHover(false)
+            assertHoverComplianceLaw(phase: "disabled")
+
+            RuntimeCapabilityDetection.setTestHover(true)
+            assertHoverComplianceLaw(phase: "enabled")
+        }
+    }
+
     // MARK: - Cross-Platform Tests
     
     @Test @MainActor func testHoverSupportOnHoverCapablePlatforms() async {
-            initializeTestConfig()
+        initializeTestConfig()
+        defer { RuntimeCapabilityDetection.clearAllCapabilityOverrides() }
+
         runWithTaskLocalConfig {
-            // GIVEN: A button with automatic compliance
+            let platform = SixLayerPlatform.current
+            guard platform == .macOS || platform == .visionOS else { return }
+
             let button = Button("Hover Test Button") { }
                 .automaticCompliance()
-            
-            // WHEN: View is created on hover-capable platforms (macOS, visionOS, iPad)
-            // THEN: Hover support should work appropriately
-            // RED PHASE: This will fail until hover support is implemented
-            
-            // Test on platforms that support hover
-            let hoverPlatforms: [SixLayerPlatform] = [.macOS, .visionOS]
-            
-            for platform in hoverPlatforms {
-                let supportsHover = RuntimeCapabilityDetection.supportsHover
-                
-                if supportsHover {
-                    let passed = testComponentComplianceSinglePlatform(
-                        button,
-                        expectedPattern: "SixLayer.*ui",
-                        platform: platform,
-                        componentName: "ButtonWithHover-\(platform)"
-                    )
-                    #expect(passed, "Hover support should work on \(platform)")
-                }
-                
-                RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-            }
+
+            let supportsHover = RuntimeCapabilityDetection.supportsHover
+            #expect(supportsHover, "\(platform) host should report hover support")
+
+            let passed = testComponentComplianceSinglePlatform(
+                button,
+                expectedPattern: "SixLayer.*ui",
+                platform: platform,
+                componentName: "ButtonWithHover-\(platform)"
+            )
+            #expect(passed, "Hover support should work on \(platform)")
         }
     }
 }

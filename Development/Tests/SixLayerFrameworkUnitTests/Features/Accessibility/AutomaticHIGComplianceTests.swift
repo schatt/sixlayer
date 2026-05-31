@@ -33,7 +33,7 @@ struct AutomaticHIGComplianceTestItem: Identifiable {
  * without requiring manual modifier application.
  */
 /// NOTE: Serialized to avoid UI conflicts with hostRootPlatformView (prevents Xcode hangs)
-@Suite(.serialized)
+@Suite(.serialized, DefaultRuntimeCapabilityIsolationTrait())
 open class AutomaticHIGComplianceTests: BaseTestClass {
     
     // MARK: - Test Data Setup
@@ -156,6 +156,42 @@ open class AutomaticHIGComplianceTests: BaseTestClass {
         _ = numericView  // Used in hosting test above
     }
     
+    /// Layer 1 collection compliance on the **current host** through a11y tri-state (#251).
+    @Test @MainActor func testAutomaticHIGComplianceTriStatePhases() async {
+        initializeTestConfig()
+        defer { RuntimeCapabilityDetection.clearAllCapabilityOverrides() }
+
+        func assertCollectionCompliance(phase: String) {
+            let view = platformPresentItemCollection_L1(
+                items: [TestPatterns.TestItem(id: "1", title: "Test Item 1")],
+                hints: PresentationHints()
+            )
+            _ = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
+            assertHIGComplianceReportBounded(view)
+
+            let config = getCardExpansionPlatformConfig()
+            switch SixLayerPlatform.current {
+            case .iOS, .watchOS, .macOS, .tvOS, .visionOS:
+                #expect(config.supportsVoiceOver == RuntimeCapabilityDetection.supportsVoiceOver, "\(phase): VoiceOver should mirror detection")
+                #expect(config.supportsSwitchControl == RuntimeCapabilityDetection.supportsSwitchControl, "\(phase): SwitchControl should mirror detection")
+                #expect(config.supportsAssistiveTouch == RuntimeCapabilityDetection.supportsAssistiveTouch, "\(phase): AssistiveTouch should mirror detection")
+            }
+        }
+
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        assertCollectionCompliance(phase: "current")
+
+        RuntimeCapabilityDetection.setTestVoiceOver(false)
+        RuntimeCapabilityDetection.setTestSwitchControl(false)
+        RuntimeCapabilityDetection.setTestAssistiveTouch(false)
+        assertCollectionCompliance(phase: "disabled")
+
+        RuntimeCapabilityDetection.setTestVoiceOver(true)
+        RuntimeCapabilityDetection.setTestSwitchControl(true)
+        RuntimeCapabilityDetection.setTestAssistiveTouch(true)
+        assertCollectionCompliance(phase: "enabled")
+    }
+
     /// BUSINESS PURPOSE: Automatic HIG compliance should work with different accessibility capabilities
     /// TESTING SCOPE: Tests automatic compliance with various accessibility features enabled/disabled
     /// METHODOLOGY: Tests automatic compliance with different combinations of accessibility capabilities

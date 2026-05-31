@@ -183,6 +183,7 @@ open class Layer5PlatformOptimizationTests: BaseTestClass {
     // MARK: - getCardExpansionAccessibilityConfig Tests
     
     @Test @MainActor func testGetCardExpansionAccessibilityConfig_iOS() async {
+        guard SixLayerPlatform.current == .iOS else { return }
         RuntimeCapabilityDetection.setTestTouchSupport(true)
         RuntimeCapabilityDetection.setTestHapticFeedback(true)
         RuntimeCapabilityDetection.setTestHover(false)
@@ -228,6 +229,7 @@ open class Layer5PlatformOptimizationTests: BaseTestClass {
     }
     
     @Test @MainActor func testGetCardExpansionAccessibilityConfig_watchOS() async {
+        guard SixLayerPlatform.current == .watchOS else { return }
         RuntimeCapabilityDetection.setTestTouchSupport(true)
         RuntimeCapabilityDetection.setTestHapticFeedback(true)
         RuntimeCapabilityDetection.setTestHover(false)

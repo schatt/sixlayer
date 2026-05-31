@@ -71,7 +71,7 @@ Optional narrow regression for Layer 5 config wiring: `Development/Tests/Shared/
 5. **Shared code (optional, small):** under `Development/Tests/Shared/TestHelpers/` you may put **helpers** (e.g. “run these three phases with defer cleanup”) or **one** duplicated `switch` + assertion block **only** when several controls truly share it. The **tests** still live with the control; shared files hold **deduplication**, not the **ownership** of “does `Foo` behave correctly?”
 
 - **Scope:** all controls that vary with capability.
-- **Tracking:** [GitHub #251](https://github.com/schatt/sixlayer/issues/251) (milestone **v7.6.2**).
+- **Tracking:** [GitHub #251](https://github.com/schatt/sixlayer/issues/251) (closed; integrated on **`next`** for **v7.9.0**).
 
 ### 2) TDD plumbing — **secondary**; overrides and DTOs return the right thing
 

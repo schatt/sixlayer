@@ -38,7 +38,7 @@ import SwiftUI
 @testable import SixLayerFramework
 
 /// NOTE: Serialized to avoid UI conflicts with hostRootPlatformView (prevents Xcode hangs)
-@Suite(.serialized)
+@Suite(.serialized, DefaultRuntimeCapabilityIsolationTrait())
 open class PlatformColorsTests: BaseTestClass {
     
     // BaseTestClass handles setup automatically - no init() needed
@@ -747,54 +747,47 @@ open class PlatformColorsTests: BaseTestClass {
         #endif
     }
     
-    /// Test that platform colors adapt when high contrast mode is enabled
-    /// This verifies the adaptive behavior by mocking high contrast mode
+    /// Platform color views on the **current host** through high-contrast tri-state (#251).
     @Test @MainActor func testPlatformColorsAdaptToHighContrastMode() {
-        // Given: Mock high contrast mode enabled
-        RuntimeCapabilityDetection.setTestHighContrast(true)
-        defer {
-            RuntimeCapabilityDetection.setTestHighContrast(nil)
+        defer { RuntimeCapabilityDetection.clearAllCapabilityOverrides() }
+
+        func assertPlatformColorHierarchy(phase: String) {
+            let primaryLabel = Color.platformPrimaryLabel
+            let secondaryLabel = Color.platformSecondaryLabel
+            let backgroundColor = Color.platformBackground
+
+            let testView = VStack {
+                Text("Primary Label")
+                    .foregroundColor(primaryLabel)
+                Text("Secondary Label")
+                    .foregroundColor(secondaryLabel)
+                Rectangle()
+                    .fill(backgroundColor)
+            }
+
+            _ = hostRootPlatformView(testView.enableGlobalAutomaticCompliance())
+
+            switch SixLayerPlatform.current {
+            case .iOS, .macOS, .watchOS, .tvOS, .visionOS:
+                #expect(primaryLabel != Color.clear, "\(phase): primary label should be valid on \(SixLayerPlatform.current)")
+                #expect(secondaryLabel != Color.clear, "\(phase): secondary label should be valid on \(SixLayerPlatform.current)")
+                #expect(backgroundColor != Color.clear, "\(phase): background should be valid on \(SixLayerPlatform.current)")
+                #expect(primaryLabel != secondaryLabel, "\(phase): primary and secondary should differ")
+                #expect(primaryLabel != backgroundColor, "\(phase): primary label and background should contrast")
+                #expect(secondaryLabel != backgroundColor, "\(phase): secondary label and background should contrast")
+            }
         }
-        
-        // Verify high contrast is detected as enabled
-        #expect(RuntimeCapabilityDetection.isHighContrastEnabled == true, "High contrast should be enabled via mock")
-        
-        // When: Colors are used in views with high contrast enabled
-        let primaryLabel = Color.platformPrimaryLabel
-        let secondaryLabel = Color.platformSecondaryLabel
-        let backgroundColor = Color.platformBackground
-        
-        let testView = VStack {
-            Text("Primary Label")
-                .foregroundColor(primaryLabel)
-            Text("Secondary Label")
-                .foregroundColor(secondaryLabel)
-            Rectangle()
-                .fill(backgroundColor)
-        }
-        
-        // Then: View should render successfully
-        // In high contrast mode, the system automatically adjusts these semantic colors
-        // to provide better contrast ratios
-        _ = hostRootPlatformView(testView.enableGlobalAutomaticCompliance())
-        
-        // Verify colors are valid semantic colors
-        #expect(primaryLabel != Color.clear, "Primary label should be valid")
-        #expect(secondaryLabel != Color.clear, "Secondary label should be valid")
-        #expect(backgroundColor != Color.clear, "Background should be valid")
-        
-        // Colors should maintain hierarchy (all different)
-        #expect(primaryLabel != secondaryLabel, "Primary and secondary should differ")
-        #expect(primaryLabel != backgroundColor, "Primary label and background should contrast")
-        #expect(secondaryLabel != backgroundColor, "Secondary label and background should contrast")
-        
-        // Test with high contrast disabled
+
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        assertPlatformColorHierarchy(phase: "current")
+
         RuntimeCapabilityDetection.setTestHighContrast(false)
-        #expect(RuntimeCapabilityDetection.isHighContrastEnabled == false, "High contrast should be disabled via mock")
-        
-        // Colors should still be valid when high contrast is disabled
-        #expect(primaryLabel != Color.clear, "Primary label should be valid without high contrast")
-        #expect(backgroundColor != Color.clear, "Background should be valid without high contrast")
+        #expect(!RuntimeCapabilityDetection.isHighContrastEnabled, "disabled phase: high contrast override should read false")
+        assertPlatformColorHierarchy(phase: "disabled")
+
+        RuntimeCapabilityDetection.setTestHighContrast(true)
+        #expect(RuntimeCapabilityDetection.isHighContrastEnabled, "enabled phase: high contrast override should read true")
+        assertPlatformColorHierarchy(phase: "enabled")
     }
     
     /// Test that platform colors provide different contrast in high contrast vs normal mode

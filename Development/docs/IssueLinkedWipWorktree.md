@@ -16,6 +16,8 @@ cd /path/to/sixlayer-wip-<ISSUE>
 - Use a path **outside** the main repo tree (sibling directory is fine).
 - **Branch name** should include the issue number (e.g. `wip/280-agent-wip-worktree-checklist`).
 
+**Temp checkout, durable remote:** worktree directories are ephemeral (multi-machine, wiped on reset). Commit and push on the `wip/` branch after every edit; do not rely on local-only state in the worktree path.
+
 ## Day-to-day on the `wip/` checkout
 
 ```bash

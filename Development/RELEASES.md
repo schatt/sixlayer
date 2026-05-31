@@ -1,12 +1,21 @@
 # 🚀 Six-Layer Framework Release History
 
-## 📍 **Current Release: v7.8.9** 🎯
+## 📍 **Current Release: v7.9.0** 🎯
 
-**Release Date**: May 28, 2026
-**Status**: Patch release (prep on `b7/b7.8.9`)
-**Previous Release**: v7.8.8 - Patch release
-**Note**: Reduce Motion for animation APIs (#298) and Increase Contrast readable secondary foreground (#299).
+**Release Date**: May 31, 2026
+**Status**: Minor release (prep on `b7/b7.9.0`)
+**Previous Release**: v7.8.9 - Patch release
+**Note**: HIG automatic compliance (#302–#303), intelligent card viewport/layout (#306–#309), capability override test hygiene (#251, #311–#313), Sendable policy (#310), Epic #233 stabilization.
 **Next Release**: TBD
+
+---
+
+## 🎯 **v7.9.0 - HIG compliance, card viewport, capability test hygiene** (May 31, 2026)
+
+### **What's in v7.9.0:**
+- Minor release (#169, #233–#242, #248, #251, #254–#255, #259–#260, #271, #276, #280, #290–#304, #306–#312). See [RELEASE_v7.9.0.md](RELEASE_v7.9.0.md) for details.
+
+**See [RELEASE_v7.9.0.md](RELEASE_v7.9.0.md) for complete release notes.**
 
 ---
 
