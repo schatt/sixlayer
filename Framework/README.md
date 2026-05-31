@@ -1,6 +1,6 @@
 # SixLayer Framework
 
-[![Version](https://img.shields.io/badge/version-v7.8.9-blue.svg)](https://github.com/schatt/sixlayer/releases/tag/v7.8.9)
+[![Version](https://img.shields.io/badge/version-v7.9.0-blue.svg)](https://github.com/schatt/sixlayer/releases/tag/v7.9.0)
 [![Platform](https://img.shields.io/badge/platform-iOS%2016%2B%20%7C%20macOS%2013%2B-lightgrey.svg)](https://github.com/schatt/6layer)
 [![Swift](https://img.shields.io/badge/Swift-5.9+-orange.svg)](https://swift.org)
 
@@ -39,6 +39,12 @@ Layer 1: Semantic Intent → Layer 2: Layout Decision → Layer 3: Strategy Sele
 - **Extensible**: Easy to extend with custom layers and strategies
 - **Comprehensively Tested**: 800+ tests with platform-aware testing and mandatory TDD implementation
 - **DRY Architecture**: Define hints once in files, use everywhere automatically
+
+## 🆕 What's New in v7.9.0
+
+### Minor release
+
+HIG automatic compliance: minimum typography floors (#302) and system zoom (#303). Intelligent card viewport/layout: host hints, navigation chrome subtraction, content-aware height floor (#306–#309). Capability override test hygiene: tri-state on controls (#251), platform-aware precursors (#311), macOS card touch harness (#313). Sendable policy (#310). See [RELEASE_v7.9.0.md](../Development/RELEASE_v7.9.0.md).
 
 ## 🆕 What's New in v7.8.9
 
