@@ -13,6 +13,15 @@ alwaysApply: true
 - **Worktree:** **Strongly prefer** a **dedicated `git worktree`** for the `wip/` checkout when the change is non-trivial or other agents use `next` — same rationale as the closure flow below (isolation + audit trail).
 - **Integration:** After review, merge `wip/` → `next` (or the project’s integration branch), then follow **retention / rename** (`wip/` → `done/`) when using the workflow below.
 
+## Worktree hygiene — commit and push (**MANDATORY**)
+
+Dedicated issue worktrees are **temporary local checkouts** — used across machines and **wiped on machine reset**. They are **not** durable storage; **git remotes are**.
+
+- **After every edit** in a worktree: commit per [commit-after-every-edit.mdc](mdc:.cursor/rules/commit-after-every-edit.mdc) (one commit per file, with `project.yml` + XcodeGen exception).
+- **Before ending a turn or pausing work:** working tree **clean** and **`wip/` branch pushed** (`git push all`) — same bar as [git-push-practices.mdc](mdc:.cursor/rules/git-push-practices.mdc). **Done = pushed** applies inside worktrees too.
+- **Do not** leave uncommitted changes or unpushed commits in a temp worktree expecting to “pick up later on this machine.”
+- **Before `git worktree remove`:** confirm the branch is pushed and any merge/rename closure steps are complete (see **Worklist closure** below).
+
 ## Comment posting — MANDATORY
 
 - **Always** use `gh issue comment <N> --body-file <path>` (or a heredoc with a quoted delimiter). **Never** use inline `--body "..."` — shells interpret backticks/`$` inside double quotes.
