@@ -680,6 +680,7 @@ public struct RuntimeCapabilityDetection {
                 guard platformShipsVisionFramework, isFrameworkAvailable else { return false }
                 return forced
             }
+            guard isFrameworkAvailable else { return false }
             return detectVisionFrameworkAvailability()
         }
 
@@ -689,6 +690,7 @@ public struct RuntimeCapabilityDetection {
                 guard platformShipsVisionFramework, isFrameworkAvailable else { return false }
                 return forced
             }
+            guard isFrameworkAvailable else { return false }
             return detectSupportsImageAnalyzer()
         }
 
@@ -698,6 +700,7 @@ public struct RuntimeCapabilityDetection {
                 guard platformShipsVisionFramework, isFrameworkAvailable else { return false }
                 return forced
             }
+            guard isFrameworkAvailable else { return false }
             return detectSupportsDocumentCamera()
         }
 
