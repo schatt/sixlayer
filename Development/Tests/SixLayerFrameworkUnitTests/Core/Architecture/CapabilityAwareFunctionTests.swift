@@ -175,6 +175,35 @@ open class CapabilityAwareFunctionTests: BaseTestClass {
     
     // MARK: - Hover-Dependent Function Tests
     
+    /// Hover-dependent card config on the **current host** through hover tri-state (#251).
+    @Test @MainActor func testHoverDependentFunctionsTriStatePhases() {
+        defer { RuntimeCapabilityDetection.clearAllCapabilityOverrides() }
+
+        func assertHoverLaw(phase: String) {
+            let platform = SixLayerPlatform.current
+            let config = getCardExpansionPlatformConfig()
+            let hover = RuntimeCapabilityDetection.supportsHover
+
+            switch platform {
+            case .iOS, .watchOS, .macOS, .tvOS, .visionOS:
+                #expect(config.supportsHover == hover, "\(phase): hover should mirror detection on \(platform)")
+                #expect(config.hoverDelay == RuntimeCapabilityDetection.hoverDelay, "\(phase): hoverDelay should mirror detection")
+                if !hover {
+                    #expect(config.hoverDelay == 0, "\(phase): no hover → zero delay on \(platform)")
+                }
+            }
+        }
+
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        assertHoverLaw(phase: "current")
+
+        RuntimeCapabilityDetection.setTestHover(false)
+        assertHoverLaw(phase: "disabled")
+
+        RuntimeCapabilityDetection.setTestHover(true)
+        assertHoverLaw(phase: "enabled")
+    }
+
     /// BUSINESS PURPOSE: Test hover-dependent functions across all platforms
     /// TESTING SCOPE: Hover capability detection, hover delay, touch exclusion
     /// METHODOLOGY: Test runtime capabilities on current platform

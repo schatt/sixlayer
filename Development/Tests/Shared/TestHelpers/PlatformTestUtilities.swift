@@ -2,8 +2,9 @@
 //  PlatformTestUtilities.swift
 //  SixLayerFrameworkTests
 //
-//  BUSINESS PURPOSE:
-//  Platform-specific test utilities for getting platform configurations and capabilities
+//  Shared HIG expectation helpers for capability-sensitive tests (GitHub #251 section C).
+//  **Control tests** own tri-state phases; this enum supplies per-platform law only —
+//  see `.cursor/rules/capability-override-test-flows.mdc`.
 //
 
 import CoreGraphics

@@ -13139,33 +13139,6 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     }
 }
 
-    @Test @MainActor func testAccessibilityFeatures_UsingRuntimeDetection() {
-        // Test accessibility features using capability overrides
-        
-        // Test tvOS accessibility features (VoiceOver and Switch Control supported, AssistiveTouch not)
-        RuntimeCapabilityDetection.setTestTouchSupport(false)
-        RuntimeCapabilityDetection.setTestHapticFeedback(false)
-        RuntimeCapabilityDetection.setTestHover(false)
-        RuntimeCapabilityDetection.setTestVoiceOver(true)
-        RuntimeCapabilityDetection.setTestSwitchControl(true)
-        RuntimeCapabilityDetection.setTestAssistiveTouch(false)
-        #expect(RuntimeCapabilityDetection.supportsVoiceOver, "tvOS should support VoiceOver")
-        #expect(!RuntimeCapabilityDetection.supportsAssistiveTouch, "tvOS should not support AssistiveTouch")
-        
-        // Test iOS accessibility features (VoiceOver and Switch Control supported, AssistiveTouch supported)
-        RuntimeCapabilityDetection.setTestTouchSupport(true)
-        RuntimeCapabilityDetection.setTestHapticFeedback(true)
-        RuntimeCapabilityDetection.setTestHover(false)
-        RuntimeCapabilityDetection.setTestVoiceOver(true)
-        RuntimeCapabilityDetection.setTestSwitchControl(true)
-        RuntimeCapabilityDetection.setTestAssistiveTouch(true)
-        #expect(RuntimeCapabilityDetection.supportsVoiceOver, "iOS should support VoiceOver")
-        #expect(RuntimeCapabilityDetection.supportsAssistiveTouch, "iOS should support AssistiveTouch")
-        
-        // Clean up
-        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-}
-
     @Test @MainActor func testHandlesMissingAccessibilityPreferences() {
         // Given: Platform configuration
         let config = getCardExpansionPlatformConfig()
@@ -13178,54 +13151,6 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #expect(config.minTouchTarget >= 0, "Touch target size should be non-negative")
         #expect(config.hoverDelay >= 0, "Hover delay should be non-negative")
         #expect(performanceConfig.maxAnimationDuration >= 0, "Animation duration should be non-negative")
-}
-
-    @Test @MainActor func testAllAccessibilityFeaturesDisabled() {
-        // Given: No accessibility features enabled (simulated using tvOS)
-        RuntimeCapabilityDetection.setTestTouchSupport(false)
-        RuntimeCapabilityDetection.setTestHapticFeedback(false)
-        RuntimeCapabilityDetection.setTestHover(false)
-        RuntimeCapabilityDetection.setTestVoiceOver(true)
-        RuntimeCapabilityDetection.setTestSwitchControl(true)
-        RuntimeCapabilityDetection.setTestAssistiveTouch(false)
-        
-        // When: Check accessibility state
-        let supportsVoiceOver = RuntimeCapabilityDetection.supportsVoiceOver
-        let supportsAssistiveTouch = RuntimeCapabilityDetection.supportsAssistiveTouch
-        let supportsSwitchControl = RuntimeCapabilityDetection.supportsSwitchControl
-        
-        // Then: Test actual business logic
-        // tvOS supports VoiceOver and Switch Control, but not AssistiveTouch
-        #expect(supportsVoiceOver, "VoiceOver should be enabled on tvOS")
-        #expect(!supportsAssistiveTouch, "AssistiveTouch should be disabled on tvOS")
-        #expect(supportsSwitchControl, "Switch Control should be enabled on tvOS")
-        
-        // Clean up
-        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-}
-
-    @Test @MainActor func testAllAccessibilityFeaturesEnabled() {
-        // Given: All accessibility features enabled (simulated using iOS)
-        RuntimeCapabilityDetection.setTestTouchSupport(true)
-        RuntimeCapabilityDetection.setTestHapticFeedback(true)
-        RuntimeCapabilityDetection.setTestHover(false)
-        RuntimeCapabilityDetection.setTestVoiceOver(true)
-        RuntimeCapabilityDetection.setTestSwitchControl(true)
-        RuntimeCapabilityDetection.setTestAssistiveTouch(true)
-        
-        // When: Check accessibility state
-        let supportsVoiceOver = RuntimeCapabilityDetection.supportsVoiceOver
-        let supportsAssistiveTouch = RuntimeCapabilityDetection.supportsAssistiveTouch
-        let supportsSwitchControl = RuntimeCapabilityDetection.supportsSwitchControl
-        
-        // Then: Test actual business logic
-        // iOS supports VoiceOver, Switch Control, and AssistiveTouch
-        #expect(supportsVoiceOver, "VoiceOver should be enabled on iOS")
-        #expect(supportsAssistiveTouch, "AssistiveTouch should be enabled on iOS")
-        #expect(supportsSwitchControl, "Switch Control should be enabled on iOS")
-        
-        // Clean up
-        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
 }
 
     @Test @MainActor func testExactAccessibilityIdentifierModifierGeneratesAccessibilityIdentifiers() async {
@@ -14689,40 +14614,27 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 
     @Test @MainActor func testHoverSupportOnHoverCapablePlatforms() async {
         self.initializeTestConfig()
-            self.runWithTaskLocalConfig {
-        // GIVEN: A button with automatic compliance
-        let button = Button("Hover Test Button") { }
-            .automaticCompliance(named: "ButtonWithHover")
-        
-        // WHEN: View is created on hover-capable platforms (macOS, visionOS, iPad)
-        // THEN: Hover support should work appropriately
-        // RED PHASE: This will fail until hover support is implemented
-        
-        // Test on platforms that support hover
-        let hoverPlatforms: [SixLayerPlatform] = [.macOS, .visionOS]
-        
-        for platform in hoverPlatforms {
-            let supportsHover = RuntimeCapabilityDetection.supportsHover
-            
-            if supportsHover {
-                #if canImport(ViewInspector)
-                let passed = testComponentComplianceSinglePlatform(
-                    button,
-                    expectedPattern: "SixLayer.*ui",
-                    platform: platform,
-                    componentName: "ButtonWithHover-\(platform)"
-                )
-        #expect(passed, "Hover support should work on \(platform)") 
-                #else
-                // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-                // The modifier IS present in the code, but ViewInspector can't detect it on macOS
-                #endif
-            }
-            
-            RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        defer { RuntimeCapabilityDetection.clearAllCapabilityOverrides() }
+        self.runWithTaskLocalConfig {
+            let platform = SixLayerPlatform.current
+            guard platform == .macOS || platform == .visionOS else { return }
+
+            let button = Button("Hover Test Button") { }
+                .automaticCompliance(named: "ButtonWithHover")
+
+            #expect(RuntimeCapabilityDetection.supportsHover, "\(platform) host should report hover support")
+
+            #if canImport(ViewInspector)
+            let passed = testComponentComplianceSinglePlatform(
+                button,
+                expectedPattern: "SixLayer.*ui",
+                platform: platform,
+                componentName: "ButtonWithHover-\(platform)"
+            )
+            #expect(passed, "Hover support should work on \(platform)")
+            #endif
         }
     }
-}
 
     @Test @MainActor func testAnimationRespectsReducedMotion() async {
         self.initializeTestConfig()
@@ -16323,25 +16235,14 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 
     @Test @MainActor func testButtonRespectsRuntimeTouchTargetDetection() async {
         self.initializeTestConfig()
-            self.runWithTaskLocalConfig {
-        // GIVEN: A button with automatic compliance
-        let button = Button("Test Button") { }
-            .automaticCompliance(named: "Button")
-        
-        // WHEN: View is created on a platform that requires touch targets
-        // THEN: Button should have minimum touch target size based on RuntimeCapabilityDetection
-        
-        // Test all platforms and verify behavior matches runtime detection
-        let platforms: [SixLayerPlatform] = [.iOS, .watchOS, .macOS, .tvOS, .visionOS]
-        
-        for platform in platforms {
-            // Set test platform to get correct runtime detection values
-            
-            // Get the expected minimum touch target from runtime detection
+        defer { RuntimeCapabilityDetection.clearAllCapabilityOverrides() }
+        self.runWithTaskLocalConfig {
+            let platform = SixLayerPlatform.current
+            let button = Button("Test Button") { }
+                .automaticCompliance(named: "Button")
             let expectedMinTouchTarget = RuntimeCapabilityDetection.minTouchTarget
             let requiresTouchTarget = expectedMinTouchTarget > 0
-            
-            // RED PHASE: This will fail until touch target sizing is implemented
+
             #if canImport(ViewInspector)
             let passed = testComponentComplianceSinglePlatform(
                 button,
@@ -16349,40 +16250,26 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
                 platform: platform,
                 componentName: "Button-\(platform)"
             )
-            
             if requiresTouchTarget {
-                #expect(passed, "Button should have minimum \(expectedMinTouchTarget)pt touch target on \(platform) (runtime detection: minTouchTarget=\(expectedMinTouchTarget))")
+                #expect(passed, "Button should have minimum \(expectedMinTouchTarget)pt touch target on \(platform)")
             } else {
-                #expect(passed, "Button should have HIG compliance on \(platform) (runtime detection: minTouchTarget=\(expectedMinTouchTarget), no touch target required)")
+                #expect(passed, "Button should have HIG compliance on \(platform) (minTouchTarget=\(expectedMinTouchTarget))")
             }
-            #else
-            // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-            // The modifier IS present in the code, but ViewInspector can't detect it on macOS
             #endif
-            
-            // Clean up
-            RuntimeCapabilityDetection.clearAllCapabilityOverrides()
         }
     }
-}
 
     @Test @MainActor func testLinkRespectsRuntimeTouchTargetDetection() async {
         self.initializeTestConfig()
-            self.runWithTaskLocalConfig {
-        // GIVEN: A link with automatic compliance
-        let link = Link("Test Link", destination: URL(string: "https://example.com")!)
-            .automaticCompliance(named: "Link")
-        
-        // WHEN: View is created
-        // THEN: Link should respect runtime touch target detection
-        
-        // Test platforms that require touch targets
-        let touchPlatforms: [SixLayerPlatform] = [.iOS, .watchOS]
-        
-        for platform in touchPlatforms {
+        defer { RuntimeCapabilityDetection.clearAllCapabilityOverrides() }
+        self.runWithTaskLocalConfig {
+            let platform = SixLayerPlatform.current
+            guard platform == .iOS || platform == .watchOS else { return }
+
+            let link = Link("Test Link", destination: URL(string: "https://example.com")!)
+                .automaticCompliance(named: "Link")
             let expectedMinTouchTarget = RuntimeCapabilityDetection.minTouchTarget
-            
-            // RED PHASE: This will fail until touch target sizing is implemented
+
             #if canImport(ViewInspector)
             let passed = testComponentComplianceSinglePlatform(
                 link,
@@ -16390,35 +16277,23 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
                 platform: platform,
                 componentName: "Link-\(platform)"
             )
-            #expect(passed, "Link should have minimum \(expectedMinTouchTarget)pt touch target on \(platform) (runtime detection: minTouchTarget=\(expectedMinTouchTarget))")
-            #else
-            // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-            // The modifier IS present in the code, but ViewInspector can't detect it on macOS
+            #expect(passed, "Link should have minimum \(expectedMinTouchTarget)pt touch target on \(platform)")
             #endif
-            
-            RuntimeCapabilityDetection.clearAllCapabilityOverrides()
         }
     }
-}
 
     @Test @MainActor func testInteractiveViewRespectsRuntimeTouchTargetDetection() async {
         self.initializeTestConfig()
-            self.runWithTaskLocalConfig {
-        // GIVEN: An interactive view (tappable) with automatic compliance
-        let interactiveView = Text("Tap Me")
-            .onTapGesture { }
-            .automaticCompliance(named: "InteractiveView")
-        
-        // WHEN: View is created
-        // THEN: Interactive view should respect runtime touch target detection
-        
-        // Test platforms that require touch targets
-        let touchPlatforms: [SixLayerPlatform] = [.iOS, .watchOS]
-        
-        for platform in touchPlatforms {
+        defer { RuntimeCapabilityDetection.clearAllCapabilityOverrides() }
+        self.runWithTaskLocalConfig {
+            let platform = SixLayerPlatform.current
+            guard platform == .iOS || platform == .watchOS else { return }
+
+            let interactiveView = Text("Tap Me")
+                .onTapGesture { }
+                .automaticCompliance(named: "InteractiveView")
             let expectedMinTouchTarget = RuntimeCapabilityDetection.minTouchTarget
-            
-            // RED PHASE: This will fail until touch target sizing is implemented
+
             #if canImport(ViewInspector)
             let passed = testComponentComplianceSinglePlatform(
                 interactiveView,
@@ -16426,16 +16301,10 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
                 platform: platform,
                 componentName: "InteractiveView-\(platform)"
             )
-            #expect(passed, "Interactive view should have minimum \(expectedMinTouchTarget)pt touch target on \(platform) (runtime detection: minTouchTarget=\(expectedMinTouchTarget))")
-            #else
-            // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-            // The modifier IS present in the code, but ViewInspector can't detect it on macOS
+            #expect(passed, "Interactive view should have minimum \(expectedMinTouchTarget)pt touch target on \(platform)")
             #endif
-            
-            RuntimeCapabilityDetection.clearAllCapabilityOverrides()
         }
     }
-}
 
     @Test @MainActor func testNonTouchPlatformsDoNotRequireTouchTargets() async {
         self.initializeTestConfig()

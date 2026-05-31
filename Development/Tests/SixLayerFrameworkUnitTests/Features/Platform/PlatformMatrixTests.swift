@@ -346,54 +346,54 @@ open class PlatformMatrixTests: BaseTestClass {
     
     // MARK: - Comprehensive Platform Feature Matrix
     
-    @Test @MainActor func testComprehensivePlatformFeatureMatrix() {
-        // Set platform-appropriate capabilities to ensure constraints are satisfied
-        let platform = SixLayerPlatform.current
-        if platform == .macOS {
-            RuntimeCapabilityDetection.setTestTouchSupport(false)
-            RuntimeCapabilityDetection.setTestHapticFeedback(false)
-            RuntimeCapabilityDetection.setTestHover(true)
-            RuntimeCapabilityDetection.setTestAssistiveTouch(false)
-        } else if platform == .iOS || platform == .watchOS {
-            RuntimeCapabilityDetection.setTestTouchSupport(true)
-            RuntimeCapabilityDetection.setTestHapticFeedback(true)
-            RuntimeCapabilityDetection.setTestHover(false)
-            RuntimeCapabilityDetection.setTestAssistiveTouch(true)
+    @Test @MainActor func testComprehensivePlatformFeatureMatrixTriStatePhases() {
+        defer { RuntimeCapabilityDetection.clearAllCapabilityOverrides() }
+
+        func assertFeatureMatrix(phase: String) {
+            let platform = SixLayerPlatform.current
+            let deviceType = DeviceType.current
+            let platformConfig = getCardExpansionPlatformConfig()
+            let performanceConfig = getCardExpansionPerformanceConfig()
+
+            let featureMatrix = PlatformFeatureMatrix(
+                platform: platform,
+                deviceType: deviceType,
+                deviceContext: DeviceContext.current,
+                supportsTouch: platformConfig.supportsTouch,
+                supportsHover: platformConfig.supportsHover,
+                supportsHapticFeedback: platformConfig.supportsHapticFeedback,
+                supportsVoiceOver: platformConfig.supportsVoiceOver,
+                supportsSwitchControl: platformConfig.supportsSwitchControl,
+                supportsAssistiveTouch: platformConfig.supportsAssistiveTouch,
+                supportsCarPlay: CarPlayCapabilityDetection.supportsCarPlay,
+                isCarPlayActive: CarPlayCapabilityDetection.isCarPlayActive,
+                minTouchTarget: platformConfig.minTouchTarget,
+                maxAnimationDuration: performanceConfig.maxAnimationDuration,
+                supportsVision: isVisionFrameworkAvailable(),
+                supportsOCR: isVisionOCRAvailable()
+            )
+
+            switch platform {
+            case .iOS, .watchOS, .macOS, .tvOS, .visionOS:
+                #expect(featureMatrix.isInternallyConsistent(), "\(phase): matrix should be consistent on \(platform)")
+                #expect(featureMatrix.satisfiesPlatformConstraints(), "\(phase): matrix should satisfy constraints on \(platform)")
+            }
         }
-        defer {
-            RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-        }
-        
-        let deviceType = DeviceType.current
-        let platformConfig = getCardExpansionPlatformConfig()
-        let performanceConfig = getCardExpansionPerformanceConfig()
-        
-        // Create a comprehensive feature matrix
-        let featureMatrix = PlatformFeatureMatrix(
-            platform: platform,
-            deviceType: deviceType,
-            deviceContext: DeviceContext.current,
-            supportsTouch: platformConfig.supportsTouch,
-            supportsHover: platformConfig.supportsHover,
-            supportsHapticFeedback: platformConfig.supportsHapticFeedback,
-            supportsVoiceOver: platformConfig.supportsVoiceOver,
-            supportsSwitchControl: platformConfig.supportsSwitchControl,
-            supportsAssistiveTouch: platformConfig.supportsAssistiveTouch,
-            supportsCarPlay: CarPlayCapabilityDetection.supportsCarPlay,
-            isCarPlayActive: CarPlayCapabilityDetection.isCarPlayActive,
-            minTouchTarget: platformConfig.minTouchTarget,
-            maxAnimationDuration: performanceConfig.maxAnimationDuration,
-            supportsVision: isVisionFrameworkAvailable(),
-            supportsOCR: isVisionOCRAvailable()
-        )
-        
-        // Verify feature matrix is internally consistent
-        #expect(featureMatrix.isInternallyConsistent(), 
-                     "Feature matrix should be internally consistent")
-        
-        // Verify platform-specific constraints
-        #expect(featureMatrix.satisfiesPlatformConstraints(), 
-                     "Feature matrix should satisfy platform constraints")
+
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        assertFeatureMatrix(phase: "current")
+
+        RuntimeCapabilityDetection.setTestTouchSupport(false)
+        RuntimeCapabilityDetection.setTestHapticFeedback(false)
+        RuntimeCapabilityDetection.setTestHover(false)
+        RuntimeCapabilityDetection.setTestAssistiveTouch(false)
+        assertFeatureMatrix(phase: "disabled")
+
+        RuntimeCapabilityDetection.setTestTouchSupport(true)
+        RuntimeCapabilityDetection.setTestHapticFeedback(true)
+        RuntimeCapabilityDetection.setTestHover(true)
+        RuntimeCapabilityDetection.setTestAssistiveTouch(true)
+        assertFeatureMatrix(phase: "enabled")
     }
 }
 

@@ -14,11 +14,11 @@ import SwiftUI
 /// - When building/running on iOS Simulator, only iOS code paths are compiled and executed
 /// 
 /// To fully test both platforms, run tests on both destinations:
-/// - `swift test` on macOS → tests macOS callbacks
-/// - `swift test` on iOS Simulator → tests iOS callbacks
-/// 
-/// Platform mocking via `RuntimeCapabilityDetection.setTestPlatform()` affects runtime capability detection
-/// but cannot overcome compile-time platform availability restrictions for UIKit vs AppKit types.
+/// - macOS unit tests → macOS callbacks
+/// - iOS Simulator unit tests → iOS callbacks
+///
+/// Compile-time `#if os(...)` gates UIKit vs AppKit; thread-local capability overrides
+/// cannot substitute for those platform-specific types.
 /// NOTE: Not marked @MainActor on class to allow parallel execution
 open class PhotoCallbackFunctionalTests: BaseTestClass {
     

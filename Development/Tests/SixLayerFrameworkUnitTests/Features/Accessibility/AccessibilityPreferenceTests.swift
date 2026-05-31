@@ -57,31 +57,15 @@ open class AccessibilityPreferenceTests: BaseTestClass {
     
     /// Tests that getCardExpansionAccessibilityConfig returns different configurations for different platforms
     @Test @MainActor func testCardExpansionAccessibilityConfig_PlatformSpecificBehavior() {
-        // Given: Different platform contexts
-        let platforms: [SixLayerPlatform] = [SixLayerPlatform.iOS, SixLayerPlatform.macOS, SixLayerPlatform.watchOS, SixLayerPlatform.tvOS, SixLayerPlatform.visionOS]
-        
-        // When: Get accessibility configuration for each platform
-        var configurations: [SixLayerPlatform: CardExpansionAccessibilityConfig] = [:]
-        for platform in platforms {
-            // Note: We can't actually change Platform.current in tests, so we test the current platform
-            // and verify it returns a valid configuration
-            let config = getCardExpansionAccessibilityConfig()
-            configurations[platform] = config
-        }
-        
-        // Then: Test actual business logic
-        // Each platform should return a valid configuration
-        for (platform, config) in configurations {
-            // config is non-optional (we just set it above), so it exists if we reach here
-            
-            // Test that the configuration has valid values
-            #expect(config.supportsVoiceOver == true || config.supportsVoiceOver == false, 
-                         "\(platform) VoiceOver support should be determinable")
-            #expect(config.supportsSwitchControl == true || config.supportsSwitchControl == false, 
-                         "\(platform) Switch Control support should be determinable")
-            #expect(config.supportsAssistiveTouch == true || config.supportsAssistiveTouch == false, 
-                         "\(platform) AssistiveTouch support should be determinable")
-        }
+        let platform = SixLayerPlatform.current
+        let config = getCardExpansionAccessibilityConfig()
+
+        #expect(config.supportsVoiceOver == true || config.supportsVoiceOver == false,
+                     "\(platform) VoiceOver support should be determinable")
+        #expect(config.supportsSwitchControl == true || config.supportsSwitchControl == false,
+                     "\(platform) Switch Control support should be determinable")
+        #expect(config.supportsAssistiveTouch == true || config.supportsAssistiveTouch == false,
+                     "\(platform) AssistiveTouch support should be determinable")
     }
     
     /// Tests that getCardExpansionPlatformConfig returns platform-specific capabilities
@@ -182,39 +166,54 @@ open class AccessibilityPreferenceTests: BaseTestClass {
         }
     }
     
-    // MARK: - Cross-Platform Testing Using Mocking
-    
-    /// Tests accessibility features using RuntimeCapabilityDetection
-    @Test @MainActor func testAccessibilityFeatures_UsingRuntimeDetection() {
-        // Test accessibility features using capability overrides
-        
-        // Test tvOS accessibility features (VoiceOver and Switch Control supported, AssistiveTouch not)
+    // MARK: - Tri-state card expansion config (#251)
+
+    /// Card expansion platform config on the **current host** through touch/hover/a11y tri-state.
+    @Test @MainActor func testCardExpansionPlatformConfigTriStatePhases() {
+        defer { RuntimeCapabilityDetection.clearAllCapabilityOverrides() }
+
+        func assertPlatformConfigLaw(phase: String) {
+            let platform = SixLayerPlatform.current
+            let config = getCardExpansionPlatformConfig()
+            let effectiveTouch = RuntimeCapabilityDetection.supportsTouch
+            let expectedMin = PlatformTestUtilities.expectedMinTouchTarget(
+                for: platform,
+                touchDetected: effectiveTouch
+            )
+
+            switch platform {
+            case .iOS, .watchOS, .macOS, .tvOS, .visionOS:
+                #expect(config.supportsTouch == effectiveTouch, "\(phase): touch should mirror detection")
+                #expect(config.supportsHover == RuntimeCapabilityDetection.supportsHover, "\(phase): hover should mirror detection")
+                #expect(config.supportsHapticFeedback == RuntimeCapabilityDetection.supportsHapticFeedback, "\(phase): haptic should mirror detection")
+                #expect(config.minTouchTarget == expectedMin, "\(phase): minTouchTarget should match HIG on \(platform)")
+                #expect(config.hoverDelay == RuntimeCapabilityDetection.hoverDelay, "\(phase): hoverDelay should mirror detection")
+                if !RuntimeCapabilityDetection.supportsHover {
+                    #expect(config.hoverDelay == 0, "\(phase): no hover → zero delay")
+                }
+            }
+        }
+
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        assertPlatformConfigLaw(phase: "current")
+
         RuntimeCapabilityDetection.setTestTouchSupport(false)
         RuntimeCapabilityDetection.setTestHapticFeedback(false)
         RuntimeCapabilityDetection.setTestHover(false)
         RuntimeCapabilityDetection.setTestVoiceOver(true)
         RuntimeCapabilityDetection.setTestSwitchControl(true)
         RuntimeCapabilityDetection.setTestAssistiveTouch(false)
-        #expect(RuntimeCapabilityDetection.supportsVoiceOver, "tvOS should support VoiceOver")
-        #expect(!RuntimeCapabilityDetection.supportsAssistiveTouch, "tvOS should not support AssistiveTouch")
-        
-        // Test iOS accessibility features (VoiceOver and Switch Control supported, AssistiveTouch supported)
+        assertPlatformConfigLaw(phase: "disabled")
+
         RuntimeCapabilityDetection.setTestTouchSupport(true)
         RuntimeCapabilityDetection.setTestHapticFeedback(true)
-        RuntimeCapabilityDetection.setTestHover(false)
+        RuntimeCapabilityDetection.setTestHover(true)
         RuntimeCapabilityDetection.setTestVoiceOver(true)
         RuntimeCapabilityDetection.setTestSwitchControl(true)
         RuntimeCapabilityDetection.setTestAssistiveTouch(true)
-        #expect(RuntimeCapabilityDetection.supportsVoiceOver, "iOS should support VoiceOver")
-        #expect(RuntimeCapabilityDetection.supportsAssistiveTouch, "iOS should support AssistiveTouch")
-        
-        // Clean up
-        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        assertPlatformConfigLaw(phase: "enabled")
     }
-    
-    
-    /// Tests accessibility behavior for a specific simulated platform
-    
+
     // MARK: - Edge Cases and Error Handling
     
     /// Tests that the framework handles missing accessibility preferences gracefully
@@ -240,54 +239,36 @@ open class AccessibilityPreferenceTests: BaseTestClass {
         #expect(performanceConfig.maxAnimationDuration >= 0, "Animation duration should be non-negative")
     }
     
-    /// Tests that the framework works correctly when all accessibility features are disabled
-    @Test @MainActor func testAllAccessibilityFeaturesDisabled() {
-        // Given: No accessibility features enabled (simulated using tvOS)
+    /// Accessibility config mirrors overrides on the **current host** (disabled phase).
+    @Test @MainActor func testAccessibilityOverridesDisabledPhase() {
+        defer { RuntimeCapabilityDetection.clearAllCapabilityOverrides() }
+
         RuntimeCapabilityDetection.setTestTouchSupport(false)
         RuntimeCapabilityDetection.setTestHapticFeedback(false)
         RuntimeCapabilityDetection.setTestHover(false)
         RuntimeCapabilityDetection.setTestVoiceOver(true)
         RuntimeCapabilityDetection.setTestSwitchControl(true)
         RuntimeCapabilityDetection.setTestAssistiveTouch(false)
-        
-        // When: Check accessibility state
-        let supportsVoiceOver = RuntimeCapabilityDetection.supportsVoiceOver
-        let supportsAssistiveTouch = RuntimeCapabilityDetection.supportsAssistiveTouch
-        let supportsSwitchControl = RuntimeCapabilityDetection.supportsSwitchControl
-        
-        // Then: Test actual business logic
-        // tvOS supports VoiceOver and Switch Control, but not AssistiveTouch
-        #expect(supportsVoiceOver, "VoiceOver should be enabled on tvOS")
-        #expect(!supportsAssistiveTouch, "AssistiveTouch should be disabled on tvOS")
-        #expect(supportsSwitchControl, "Switch Control should be enabled on tvOS")
-        
-        // Clean up
-        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+
+        #expect(RuntimeCapabilityDetection.supportsVoiceOver)
+        #expect(RuntimeCapabilityDetection.supportsSwitchControl)
+        #expect(!RuntimeCapabilityDetection.supportsAssistiveTouch)
     }
     
-    /// Tests that the framework works correctly when all accessibility features are enabled
-    @Test @MainActor func testAllAccessibilityFeaturesEnabled() {
-        // Given: All accessibility features enabled (simulated using iOS)
+    /// Accessibility config mirrors overrides on the **current host** (enabled phase).
+    @Test @MainActor func testAccessibilityOverridesEnabledPhase() {
+        defer { RuntimeCapabilityDetection.clearAllCapabilityOverrides() }
+
         RuntimeCapabilityDetection.setTestTouchSupport(true)
         RuntimeCapabilityDetection.setTestHapticFeedback(true)
         RuntimeCapabilityDetection.setTestHover(false)
         RuntimeCapabilityDetection.setTestVoiceOver(true)
         RuntimeCapabilityDetection.setTestSwitchControl(true)
         RuntimeCapabilityDetection.setTestAssistiveTouch(true)
-        
-        // When: Check accessibility state
-        let supportsVoiceOver = RuntimeCapabilityDetection.supportsVoiceOver
-        let supportsAssistiveTouch = RuntimeCapabilityDetection.supportsAssistiveTouch
-        let supportsSwitchControl = RuntimeCapabilityDetection.supportsSwitchControl
-        
-        // Then: Test actual business logic
-        // iOS supports VoiceOver, Switch Control, and AssistiveTouch
-        #expect(supportsVoiceOver, "VoiceOver should be enabled on iOS")
-        #expect(supportsAssistiveTouch, "AssistiveTouch should be enabled on iOS")
-        #expect(supportsSwitchControl, "Switch Control should be enabled on iOS")
-        
-        // Clean up
-        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+
+        #expect(RuntimeCapabilityDetection.supportsVoiceOver)
+        #expect(RuntimeCapabilityDetection.supportsAssistiveTouch)
+        #expect(RuntimeCapabilityDetection.supportsSwitchControl)
     }
     
     // MARK: - Performance Tests
