@@ -290,6 +290,49 @@ open class IntelligentCardExpansionLayer6Tests: BaseTestClass {
         
         #expect(config.hoverDelay >= 0, "Should have non-negative hover delay")
     }
+
+    /// Layer 6 card config on the **current host** through touch + hover tri-state (#251).
+    @Test @MainActor func testCardExpansionPlatformConfig_TriStatePhases() {
+        defer { RuntimeCapabilityDetection.clearAllCapabilityOverrides() }
+
+        func assertCardConfigConsumerLaw(phase: String) {
+            let platform = SixLayerPlatform.current
+            let effectiveTouch = RuntimeCapabilityDetection.supportsTouch
+            let effectiveHover = RuntimeCapabilityDetection.supportsHover
+            let config = getCardExpansionPlatformConfig()
+            let expectedMinTouchTarget = PlatformTestUtilities.expectedMinTouchTarget(
+                for: platform,
+                touchDetected: effectiveTouch
+            )
+
+            switch platform {
+            case .iOS, .watchOS, .macOS, .tvOS, .visionOS:
+                #expect(
+                    config.minTouchTarget == expectedMinTouchTarget,
+                    "\(phase) on \(platform): minTouchTarget should match HIG (touch=\(effectiveTouch))"
+                )
+                #expect(
+                    config.supportsHover == effectiveHover,
+                    "\(phase) on \(platform): supportsHover should mirror detection"
+                )
+                #expect(config.hoverDelay >= 0, "\(phase): hover delay should be non-negative")
+                if !effectiveHover {
+                    #expect(config.hoverDelay == 0, "\(phase): no hover → zero hover delay")
+                }
+            }
+        }
+
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        assertCardConfigConsumerLaw(phase: "current")
+
+        RuntimeCapabilityDetection.setTestTouchSupport(false)
+        RuntimeCapabilityDetection.setTestHover(false)
+        assertCardConfigConsumerLaw(phase: "disabled")
+
+        RuntimeCapabilityDetection.setTestTouchSupport(true)
+        RuntimeCapabilityDetection.setTestHover(true)
+        assertCardConfigConsumerLaw(phase: "enabled")
+    }
     
     @Test @MainActor func testCardExpansionPerformanceConfig_Creation() {
         // Given: Performance configuration
