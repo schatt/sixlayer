@@ -216,29 +216,18 @@ struct HintsGeneratorTests {
         let result = loader.loadHintsResult(for: uniqueModelName)
         
         // Verify sections are preserved
-        #expect(result.sections.count == 1)
+        #expect(result.sectionLayouts.count == 1)
         
-        let section = result.sections[0]
-        #expect(section.id == "basic-info")
-        #expect(section.title == "Basic Information")
-        #expect(section.description == "Your account details")
-        #expect(section.layoutStyle == .vertical)
-        #expect(section.isCollapsible == true)
-        #expect(section.isCollapsed == false)
-        
-        // Fields are stored in metadata as _fieldIds until matched with actual DynamicFormField instances
-        // Verify field IDs are preserved in metadata
-        guard let fieldIdsString = section.metadata?["_fieldIds"] else {
-            Issue.record("Section should have _fieldIds in metadata")
-            return
-        }
-        let fieldIds = fieldIdsString.split(separator: ",").map { String($0).trimmingCharacters(in: .whitespaces) }
-        #expect(fieldIds.count == 2)
-        #expect(fieldIds[0] == "username")
-        #expect(fieldIds[1] == "email")
-        
-        // Note: section.fields will be empty until SectionBuilder.buildSections() is called
-        // with actual DynamicFormField instances to match against
+        let layout = result.sectionLayouts[0]
+        #expect(layout.id == "basic-info")
+        #expect(layout.title == "Basic Information")
+        #expect(layout.description == "Your account details")
+        #expect(layout.layoutStyle == .vertical)
+        #expect(layout.isCollapsible == true)
+        #expect(layout.isCollapsed == false)
+        #expect(layout.fieldIds.count == 2)
+        #expect(layout.fieldIds[0] == "username")
+        #expect(layout.fieldIds[1] == "email")
     }
     
     /// BUSINESS PURPOSE: Validate that hints files without sections can still be loaded
@@ -293,7 +282,7 @@ struct HintsGeneratorTests {
         #expect(result.fieldHints["age"] != nil)
         
         // Sections should be empty (generator would add default, but loader doesn't)
-        #expect(result.sections.isEmpty)
+        #expect(result.sectionLayouts.isEmpty)
     }
     
     /// BUSINESS PURPOSE: Validate that generator preserves section properties including collapsible settings
@@ -344,9 +333,9 @@ struct HintsGeneratorTests {
         let result = loader.loadHintsResult(for: uniqueModelName)
         
         // Verify both sections are preserved with all properties
-        #expect(result.sections.count == 2)
+        #expect(result.sectionLayouts.count == 2)
         
-        let accountSection = result.sections.first { $0.id == "account" }
+        let accountSection = result.sectionLayouts.first { $0.id == "account" }
         #expect(accountSection != nil)
         #expect(accountSection?.title == "Account")
         #expect(accountSection?.description == "Account information")
@@ -354,7 +343,7 @@ struct HintsGeneratorTests {
         #expect(accountSection?.isCollapsible == true)
         #expect(accountSection?.isCollapsed == true)
         
-        let profileSection = result.sections.first { $0.id == "profile" }
+        let profileSection = result.sectionLayouts.first { $0.id == "profile" }
         #expect(profileSection != nil)
         #expect(profileSection?.title == "Profile")
         #expect(profileSection?.description == nil)

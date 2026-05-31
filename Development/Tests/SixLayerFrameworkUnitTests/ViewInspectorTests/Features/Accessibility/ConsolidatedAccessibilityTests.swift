@@ -60,18 +60,6 @@ fileprivate struct CardTestItem: Identifiable {
     let title: String
 }
 
-/// Platform simulation test utilities
-public enum PlatformSimulationTestUtilities {
-    // Test the real framework platform types directly
-    public static let testPlatforms: [SixLayerPlatform] = [
-        .iOS,
-        .macOS,
-        .watchOS,
-        .tvOS,
-        .visionOS
-    ]
-}
-
 #if canImport(UIKit)
 import UIKit
 #elseif canImport(AppKit)
@@ -2172,29 +2160,16 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testCardExpansionAccessibilityConfig_PlatformSpecificBehavior() {
         self.initializeTestConfig()
-        // Given: Different platform contexts
-        let platforms: [SixLayerPlatform] = [SixLayerPlatform.iOS, SixLayerPlatform.macOS, SixLayerPlatform.watchOS, SixLayerPlatform.tvOS, SixLayerPlatform.visionOS]
-        
-        // When: Get accessibility configuration for each platform
-        var configurations: [SixLayerPlatform: CardExpansionAccessibilityConfig] = [:]
-        for platform in platforms {
-            // Note: We can't actually change Platform.current in tests, so we test the current platform
-            // and verify it returns a valid configuration
-            let config = getCardExpansionAccessibilityConfig()
-            configurations[platform] = config
-        }
-        
-        // Then: Test actual business logic
-        // Each platform should return a valid configuration
-        for (platform, config) in configurations {
-            // Test that the configuration has valid values
-            #expect(config.supportsVoiceOver == true || config.supportsVoiceOver == false,
-                   "\(platform) VoiceOver support should be determinable")
-            #expect(config.supportsSwitchControl == true || config.supportsSwitchControl == false,
-                   "\(platform) Switch Control support should be determinable")
-            #expect(config.supportsAssistiveTouch == true || config.supportsAssistiveTouch == false,
-                   "\(platform) AssistiveTouch support should be determinable")
-        }
+        // Canonical host-guard: tri-state override law lives in AccessibilityStateSimulationTests.
+        let platform = SixLayerPlatform.current
+        let config = getCardExpansionAccessibilityConfig()
+
+        #expect(config.supportsVoiceOver == true || config.supportsVoiceOver == false,
+               "\(platform) VoiceOver support should be determinable")
+        #expect(config.supportsSwitchControl == true || config.supportsSwitchControl == false,
+               "\(platform) Switch Control support should be determinable")
+        #expect(config.supportsAssistiveTouch == true || config.supportsAssistiveTouch == false,
+               "\(platform) AssistiveTouch support should be determinable")
     }
     
     // MARK: - Service & Manager Tests
@@ -2912,29 +2887,6 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #expect(levels.contains(.enhanced))
         #expect(levels.contains(.standard))
         #expect(levels.contains(.minimal))
-    }
-    
-    @Test @MainActor func testAccessibilityOptimizationManagerIntegration() async {
-        self.initializeTestConfig()
-        RuntimeCapabilityDetection.setTestVoiceOver(true)
-        RuntimeCapabilityDetection.setTestSwitchControl(true)
-        RuntimeCapabilityDetection.setTestAssistiveTouch(true)
-        
-        let enabledConfig = getCardExpansionPlatformConfig()
-        
-        #expect(enabledConfig.supportsVoiceOver, "VoiceOver should be supported when enabled")
-        #expect(enabledConfig.supportsSwitchControl, "Switch Control should be supported when enabled")
-        #expect(enabledConfig.supportsAssistiveTouch, "AssistiveTouch should be supported when enabled")
-        
-        RuntimeCapabilityDetection.setTestVoiceOver(false)
-        RuntimeCapabilityDetection.setTestSwitchControl(false)
-        RuntimeCapabilityDetection.setTestAssistiveTouch(false)
-        
-        let disabledConfig = getCardExpansionPlatformConfig()
-        
-        #expect(!disabledConfig.supportsVoiceOver, "VoiceOver should be disabled when disabled")
-        #expect(!disabledConfig.supportsSwitchControl, "Switch Control should be disabled when disabled")
-        #expect(!disabledConfig.supportsAssistiveTouch, "AssistiveTouch should be disabled when disabled")
     }
     
     // Additional Eye Tracking Tests from EyeTrackingTests.swift
@@ -9511,22 +9463,23 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     // MARK: - Assistive Touch Tests (continued)
     
     @Test @MainActor func testAssistiveTouchIntegrationSupport() async {
+        defer { RuntimeCapabilityDetection.clearAllCapabilityOverrides() }
+
         RuntimeCapabilityDetection.setTestAssistiveTouch(true)
         #expect(RuntimeCapabilityDetection.supportsAssistiveTouch, "AssistiveTouch should be enabled")
 
         RuntimeCapabilityDetection.setTestAssistiveTouch(false)
         #expect(!RuntimeCapabilityDetection.supportsAssistiveTouch, "AssistiveTouch should be disabled")
 
-        // Given: Current platform
         let currentPlatform = SixLayerPlatform.current
         let config = AssistiveTouchConfig(enableIntegration: true)
         let manager = AssistiveTouchManager(config: config)
         #expect(manager.supportsIntegration(), "Integration should be supported on \(currentPlatform)")
-
-        RuntimeCapabilityDetection.setTestAssistiveTouch(false)
     }
     
     @Test @MainActor func testAssistiveTouchMenuSupport() async {
+        defer { RuntimeCapabilityDetection.clearAllCapabilityOverrides() }
+
         RuntimeCapabilityDetection.setTestAssistiveTouch(true)
 
         let config = AssistiveTouchConfig(enableMenuSupport: true)
@@ -9537,15 +9490,14 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #expect(menuResult.success)
         #expect(menuResult.menuElement != nil)
 
-        // Given: Current platform
         let currentPlatform = SixLayerPlatform.current
         let platformResult = manager.manageMenu(for: .toggle)
         #expect(platformResult.success, "Menu should work on \(currentPlatform)")
-
-        RuntimeCapabilityDetection.setTestAssistiveTouch(false)
     }
     
     @Test @MainActor func testAssistiveTouchGestureRecognition() async {
+        defer { RuntimeCapabilityDetection.clearAllCapabilityOverrides() }
+
         RuntimeCapabilityDetection.setTestAssistiveTouch(true)
 
         let config = AssistiveTouchConfig(enableGestureRecognition: true)
@@ -9563,8 +9515,6 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             let testResult = manager.processGesture(testGesture)
             #expect(testResult.success, "Gesture \(gestureType) should be processed")
         }
-
-        RuntimeCapabilityDetection.setTestAssistiveTouch(false)
     }
     
     // MARK: - HIG Compliance Light Dark Mode Tests (continued)
@@ -12758,34 +12708,6 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 
         // MARK: - Additional Tests (batch 3)
 
-    @Test @MainActor func testAutomaticAccessibilityIntegration() async {
-        self.initializeTestConfig()
-        // Test with accessibility features enabled
-        RuntimeCapabilityDetection.setTestVoiceOver(true)
-        RuntimeCapabilityDetection.setTestSwitchControl(true)
-        RuntimeCapabilityDetection.setTestAssistiveTouch(true)
-        
-        let enabledConfig = getCardExpansionPlatformConfig()
-        
-        // When: Automatic accessibility is applied through platform configuration
-        // Then: Should have proper accessibility support
-        #expect(enabledConfig.supportsVoiceOver, "VoiceOver should be supported when enabled")
-        #expect(enabledConfig.supportsSwitchControl, "Switch Control should be supported when enabled")
-        #expect(enabledConfig.supportsAssistiveTouch, "AssistiveTouch should be supported when enabled")
-        
-        // Test with accessibility features disabled
-        RuntimeCapabilityDetection.setTestVoiceOver(false)
-        RuntimeCapabilityDetection.setTestSwitchControl(false)
-        RuntimeCapabilityDetection.setTestAssistiveTouch(false)
-        
-        let disabledConfig = getCardExpansionPlatformConfig()
-        
-        // Then: Should reflect disabled state
-        #expect(!disabledConfig.supportsVoiceOver, "VoiceOver should be disabled when disabled")
-        #expect(!disabledConfig.supportsSwitchControl, "Switch Control should be disabled when disabled")
-        #expect(!disabledConfig.supportsAssistiveTouch, "AssistiveTouch should be disabled when disabled")
-}
-
     @Test @MainActor func testPlatformSpecificComplianceBehavior() async {
         self.initializeTestConfig()
         RuntimeCapabilityDetection.clearAllCapabilityOverrides()
@@ -13310,25 +13232,18 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 
     @Test @MainActor func testPlatformPresentItemCollection_L1_AutomaticVoiceOverSupport() async {
         self.initializeTestConfig()
-        // Given: VoiceOver enabled
+        defer { RuntimeCapabilityDetection.clearAllCapabilityOverrides() }
+
         RuntimeCapabilityDetection.setTestVoiceOver(true)
         
-        // When: Creating view using Layer 1 function
         _ = platformPresentItemCollection_L1(
         items: [TestPatterns.TestItem(id: "1", title: "Test Item 1")],
         hints: PresentationHints()
         )
         
-        // Then: View should automatically have VoiceOver support
-        #expect(Bool(true), "Layer 1 function should create a valid view")  // view is non-optional
+        #expect(Bool(true), "Layer 1 function should create a valid view")
         #expect(RuntimeCapabilityDetection.supportsVoiceOver, "VoiceOver should be enabled")
-        
-        // Verify that automatic accessibility features are applied
-        // The view should automatically adapt to VoiceOver being enabled
         #expect(Bool(true), "Automatic VoiceOver support should be applied")
-        
-        // Reset for next test
-        RuntimeCapabilityDetection.setTestVoiceOver(false)
 }
 
     @Test @MainActor func testPlatformPresentItemCollection_L1_AutomaticPlatformPatterns() async {
@@ -13824,67 +13739,49 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         // MARK: - Additional Tests (batch 4)
 
     @Test @MainActor func testPlatformSpecificAccessibilityConfiguration() {
-        // Given: Platform-specific configuration with accessibility overrides
+        defer { RuntimeCapabilityDetection.clearAllCapabilityOverrides() }
+
+        // Canonical tri-state: AccessibilityStateSimulationTests.testCardExpansionAccessibilityConfigTriStatePhases
         let platform = SixLayerPlatform.current
-        
-        // Set accessibility capability overrides based on platform
-        RuntimeCapabilityDetection.setTestVoiceOver(true)
-        RuntimeCapabilityDetection.setTestSwitchControl(true)
-        if platform == .iOS || platform == .macOS {
-        RuntimeCapabilityDetection.setTestAssistiveTouch(platform == .iOS)
-    } else {
-        RuntimeCapabilityDetection.setTestAssistiveTouch(false)
-    }
-        
         let config = getCardExpansionAccessibilityConfig()
-        
-        // Then: Test business logic for platform-specific behavior
+
         switch platform {
         case .iOS, .macOS:
-        // iOS and macOS should support comprehensive accessibility
-        #expect(config.supportsVoiceOver, "iOS/macOS should support VoiceOver")
-        #expect(config.supportsSwitchControl, "iOS/macOS should support Switch Control")
-        if platform == .iOS {
-            #expect(config.supportsAssistiveTouch, "iOS should support AssistiveTouch")
-        } else {
-            #expect(!config.supportsAssistiveTouch, "macOS should not support AssistiveTouch")
-        }
-        #expect(config.supportsReduceMotion, "iOS/macOS should support reduced motion")
-        #expect(config.supportsHighContrast, "iOS/macOS should support high contrast")
-        #expect(config.supportsDynamicType, "iOS/macOS should support dynamic type")
-        #expect(config.focusManagement, "iOS/macOS should support focus management")
-        
+            #expect(config.supportsReduceMotion, "iOS/macOS should support reduced motion")
+            #expect(config.supportsHighContrast, "iOS/macOS should support high contrast")
+            #expect(config.supportsDynamicType, "iOS/macOS should support dynamic type")
+            #expect(config.focusManagement, "iOS/macOS should support focus management")
+            if platform == .iOS {
+                #expect(config.supportsAssistiveTouch == RuntimeCapabilityDetection.supportsAssistiveTouch,
+                        "iOS AssistiveTouch should mirror runtime detection")
+            } else {
+                #expect(!RuntimeCapabilityDetection.supportsAssistiveTouch,
+                        "macOS should not report native AssistiveTouch")
+                #expect(!config.supportsAssistiveTouch, "macOS config should not advertise AssistiveTouch")
+            }
+
         case .watchOS:
-        // watchOS should have simplified accessibility support
-        #expect(config.supportsVoiceOver, "watchOS should support VoiceOver")
-        #expect(config.supportsSwitchControl, "watchOS should support Switch Control")
-        #expect(config.supportsAssistiveTouch, "watchOS should support AssistiveTouch")
-        #expect(config.supportsReduceMotion, "watchOS should support reduced motion")
-        #expect(config.supportsHighContrast, "watchOS should support high contrast")
-        #expect(config.supportsDynamicType, "watchOS should support dynamic type")
-        #expect(config.focusManagement, "watchOS should support focus management")
-        
+            #expect(config.supportsReduceMotion, "watchOS should support reduced motion")
+            #expect(config.supportsHighContrast, "watchOS should support high contrast")
+            #expect(config.supportsDynamicType, "watchOS should support dynamic type")
+            #expect(config.focusManagement, "watchOS should support focus management")
+
         case .tvOS:
-        // tvOS should support focus-based navigation
-        #expect(config.supportsVoiceOver, "tvOS should support VoiceOver")
-        #expect(config.supportsSwitchControl, "tvOS should support Switch Control")
-        #expect(config.supportsAssistiveTouch, "tvOS should support AssistiveTouch")
-        #expect(config.supportsReduceMotion, "tvOS should support reduced motion")
-        #expect(config.supportsHighContrast, "tvOS should support high contrast")
-        #expect(config.supportsDynamicType, "tvOS should support dynamic type")
-        #expect(config.focusManagement, "tvOS should support focus management")
-        
+            #expect(config.supportsReduceMotion, "tvOS should support reduced motion")
+            #expect(config.supportsHighContrast, "tvOS should support high contrast")
+            #expect(config.supportsDynamicType, "tvOS should support dynamic type")
+            #expect(config.focusManagement, "tvOS should support focus management")
+
         case .visionOS:
-        // visionOS should support spatial accessibility
-        #expect(config.supportsVoiceOver, "visionOS should support VoiceOver")
-        #expect(config.supportsSwitchControl, "visionOS should support Switch Control")
-        #expect(config.supportsAssistiveTouch, "visionOS should support AssistiveTouch")
-        #expect(config.supportsReduceMotion, "visionOS should support reduced motion")
-        #expect(config.supportsHighContrast, "visionOS should support high contrast")
-        #expect(config.supportsDynamicType, "visionOS should support dynamic type")
-        #expect(config.focusManagement, "visionOS should support focus management")
+            #expect(config.supportsReduceMotion, "visionOS should support reduced motion")
+            #expect(config.supportsHighContrast, "visionOS should support high contrast")
+            #expect(config.supportsDynamicType, "visionOS should support dynamic type")
+            #expect(config.focusManagement, "visionOS should support focus management")
+        }
+
+        #expect(config.announcementDelay >= 0.0, "Announcement delay should be non-negative")
+        #expect(config.announcementDelay <= 10.0, "Announcement delay should be reasonable")
     }
-}
 
     @Test @MainActor func testAccessibilityConfigurationParameterValidation() {
         // Given: Configuration with various parameter combinations
@@ -13955,28 +13852,6 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #expect(zeroDelayConfig.supportsHighContrast, "Should use default high contrast setting")
         #expect(zeroDelayConfig.supportsDynamicType, "Should use default dynamic type setting")
         #expect(zeroDelayConfig.focusManagement, "Should use default focus management setting")
-}
-
-    @Test @MainActor func testAccessibilityConfigurationCrossPlatformConsistency() {
-        // Given: Configuration from different platforms with accessibility overrides
-        RuntimeCapabilityDetection.setTestVoiceOver(true)
-        RuntimeCapabilityDetection.setTestSwitchControl(true)
-        RuntimeCapabilityDetection.setTestAssistiveTouch(true)
-        let config = getCardExpansionAccessibilityConfig()
-        
-        // Then: Test business logic for cross-platform consistency
-        // All platforms should support basic accessibility features (when enabled)
-        #expect(config.supportsVoiceOver, "All platforms should support VoiceOver")
-        #expect(config.supportsSwitchControl, "All platforms should support Switch Control")
-        #expect(config.supportsAssistiveTouch, "All platforms should support AssistiveTouch when enabled")
-        #expect(config.supportsReduceMotion, "All platforms should support reduced motion")
-        #expect(config.supportsHighContrast, "All platforms should support high contrast")
-        #expect(config.supportsDynamicType, "All platforms should support dynamic type")
-        #expect(config.focusManagement, "All platforms should support focus management")
-        
-        // Test business logic: Announcement delay should be reasonable
-        #expect(config.announcementDelay >= 0.0, "Announcement delay should be non-negative")
-        #expect(config.announcementDelay <= 10.0, "Announcement delay should be reasonable")
 }
 
     @Test @MainActor func testAccessibilityConfigurationPerformance() {
@@ -15324,27 +15199,14 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testCrossPlatformAccessibilityConsistency() {
-        // Given: Different platform configurations
-        let simulatedPlatforms = PlatformSimulationTestUtilities.testPlatforms
-        
-        // When: Check accessibility features for each platform
-        for _ in simulatedPlatforms {
-        // Set the test platform before getting the config
         defer { RuntimeCapabilityDetection.clearAllCapabilityOverrides() }
-        
-        // Get platform capabilities using the framework's capability detection
-        let config = getCardExpansionPlatformConfig()
-        
-        // Apple HIG per platform (Issue #237): iOS/watchOS 44, tvOS/visionOS
-        // 60 (focus / gaze+pinch floors, not conditional on touch), macOS
-        // conditional. Prior (iOS|watchOS ? 44 : 0) formula miscategorized
-        // tvOS and visionOS.
+
         let currentPlatform = SixLayerPlatform.current
+        let config = getCardExpansionPlatformConfig()
         let expectedMinTouchTarget = PlatformTestUtilities.expectedMinTouchTarget(for: currentPlatform)
         #expect(config.minTouchTarget == expectedMinTouchTarget,
                 "Apple HIG: \(currentPlatform) expected \(expectedMinTouchTarget)pt")
     }
-}
 
     @Test func testVoiceControlGestureType() {
         let types = VoiceControlGestureType.allCases
@@ -15531,46 +15393,39 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 
     @Test @MainActor func testDemonstrateAutomaticComplianceWithAccessibilityStates() async {
         self.initializeTestConfig()
-        // Setup test data
+        defer { RuntimeCapabilityDetection.clearAllCapabilityOverrides() }
+
         let testItems = [
         TestPatterns.TestDataItem(title: "Test Item 1", subtitle: "Subtitle 1"),
         TestPatterns.TestDataItem(title: "Test Item 2", subtitle: "Subtitle 2")
         ]
         let testHints = PresentationHints()
         
-        // Test with VoiceOver enabled
         RuntimeCapabilityDetection.setTestVoiceOver(true)
         _ = platformPresentItemCollection_L1(
         items: testItems,
         hints: testHints
         )
-        #expect(Bool(true), "View should work with VoiceOver enabled")  // voiceOverView is non-optional
+        #expect(Bool(true), "View should work with VoiceOver enabled")
         #expect(RuntimeCapabilityDetection.supportsVoiceOver, "VoiceOver should be enabled")
         
-        // Test with Switch Control enabled
         RuntimeCapabilityDetection.setTestVoiceOver(false)
         RuntimeCapabilityDetection.setTestSwitchControl(true)
         _ = platformPresentItemCollection_L1(
         items: testItems,
         hints: testHints
         )
-        #expect(Bool(true), "View should work with Switch Control enabled")  // switchControlView is non-optional
+        #expect(Bool(true), "View should work with Switch Control enabled")
         #expect(RuntimeCapabilityDetection.supportsSwitchControl, "Switch Control should be enabled")
         
-        // Test with AssistiveTouch enabled
         RuntimeCapabilityDetection.setTestSwitchControl(false)
         RuntimeCapabilityDetection.setTestAssistiveTouch(true)
         _ = platformPresentItemCollection_L1(
         items: testItems,
         hints: testHints
         )
-        #expect(Bool(true), "View should work with AssistiveTouch enabled")  // assistiveTouchView is non-optional
+        #expect(Bool(true), "View should work with AssistiveTouch enabled")
         #expect(RuntimeCapabilityDetection.supportsAssistiveTouch, "AssistiveTouch should be enabled")
-        
-        // Reset for next test
-        RuntimeCapabilityDetection.setTestVoiceOver(false)
-        RuntimeCapabilityDetection.setTestSwitchControl(false)
-        RuntimeCapabilityDetection.setTestAssistiveTouch(false)
 }
 
     @Test @MainActor func testDemonstrateAutomaticComplianceAcrossPlatforms() async {
@@ -15624,7 +15479,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testAutomaticHIGCompliance_WithVariousAccessibilityCapabilities() async {
-        // Test with VoiceOver enabled
+        defer { RuntimeCapabilityDetection.clearAllCapabilityOverrides() }
+
         RuntimeCapabilityDetection.setTestVoiceOver(true)
         RuntimeCapabilityDetection.setTestSwitchControl(false)
         RuntimeCapabilityDetection.setTestAssistiveTouch(false)
@@ -15633,11 +15489,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         items: [TestPatterns.TestItem(id: "1", title: "Test Item 1")],
         hints: PresentationHints()
         )
-        // Test that VoiceOver-enabled view can be hosted
         _ = hostRootPlatformView(viewWithVoiceOver.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "VoiceOver view should be hostable")  // voiceOverHostingView is non-optional
+        #expect(Bool(true), "VoiceOver view should be hostable")
 
-        // Test with Switch Control enabled
         RuntimeCapabilityDetection.setTestVoiceOver(false)
         RuntimeCapabilityDetection.setTestSwitchControl(true)
         RuntimeCapabilityDetection.setTestAssistiveTouch(false)
@@ -15646,12 +15500,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         items: [TestPatterns.TestItem(id: "1", title: "Test Item 1")],
         hints: PresentationHints()
         )
-
-        // Test that Switch Control-enabled view can be hosted
         _ = hostRootPlatformView(viewWithSwitchControl.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "Switch Control view should be hostable")  // switchControlHostingView is non-optional
+        #expect(Bool(true), "Switch Control view should be hostable")
 
-        // Test with AssistiveTouch enabled
         RuntimeCapabilityDetection.setTestVoiceOver(false)
         RuntimeCapabilityDetection.setTestSwitchControl(false)
         RuntimeCapabilityDetection.setTestAssistiveTouch(true)
@@ -15660,12 +15511,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         items: [TestPatterns.TestItem(id: "1", title: "Test Item 1")],
         hints: PresentationHints()
         )
-
-        // Test that AssistiveTouch-enabled view can be hosted
         _ = hostRootPlatformView(viewWithAssistiveTouch.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "AssistiveTouch view should be hostable")  // assistiveTouchHostingView is non-optional
+        #expect(Bool(true), "AssistiveTouch view should be hostable")
 
-        // Test with all accessibility features enabled
         RuntimeCapabilityDetection.setTestVoiceOver(true)
         RuntimeCapabilityDetection.setTestSwitchControl(true)
         RuntimeCapabilityDetection.setTestAssistiveTouch(true)
@@ -15674,22 +15522,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         items: [TestPatterns.TestItem(id: "1", title: "Test Item 1")],
         hints: PresentationHints()
         )
-
-        // Test that all-accessibility view can be hosted
         _ = hostRootPlatformView(viewWithAllAccessibility.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "All accessibility view should be hostable")  // allAccessibilityHostingView is non-optional
-
-        // Verify that all views are created successfully and can be hosted
-        // This tests that the HIG compliance modifiers adapt to different accessibility capabilities
-        #expect(Bool(true), "VoiceOver view should be created")  // viewWithVoiceOver is non-optional
-        #expect(Bool(true), "Switch Control view should be created")  // viewWithSwitchControl is non-optional
-        #expect(Bool(true), "AssistiveTouch view should be created")  // viewWithAssistiveTouch is non-optional
-        #expect(Bool(true), "All accessibility view should be created")  // viewWithAllAccessibility is non-optional
-
-        // Reset for next test
-        RuntimeCapabilityDetection.setTestVoiceOver(false)
-        RuntimeCapabilityDetection.setTestSwitchControl(false)
-        RuntimeCapabilityDetection.setTestAssistiveTouch(false)
+        #expect(Bool(true), "All accessibility view should be hostable")
 }
 
     @Test @MainActor func testCrossPlatformTestingGeneratesAccessibilityIdentifiers() async {
@@ -16308,26 +16142,14 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 
     @Test @MainActor func testNonTouchPlatformsDoNotRequireTouchTargets() async {
         self.initializeTestConfig()
-            self.runWithTaskLocalConfig {
-        // GIVEN: A button with automatic compliance
-        let button = Button("Test Button") { }
-            .automaticCompliance(named: "Button")
-        
-        // WHEN: View is created on platforms that don't require touch targets
-        // THEN: Touch target sizing should not be applied (but other HIG compliance should be)
-        
-        // Test platforms that don't require touch targets
-        let nonTouchPlatforms: [SixLayerPlatform] = [.macOS, .tvOS, .visionOS]
-        
-        for platform in nonTouchPlatforms {
-            // NOTE: RuntimeCapabilityDetection.minTouchTarget is based on the actual
-            // compile-time platform (here: iOS simulator), not the value in `platform`.
-            // For non-touch-first platforms, we rely on the HIG touch target modifier
-            // to use a minSize of 0 when `platform` is non-touch, regardless of
-            // RuntimeCapabilityDetection.minTouchTarget.
-            let expectedMinTouchTarget = RuntimeCapabilityDetection.minTouchTarget
-            #expect(expectedMinTouchTarget >= 0, "Touch target size should be non-negative")
-            
+        defer { RuntimeCapabilityDetection.clearAllCapabilityOverrides() }
+        self.runWithTaskLocalConfig {
+            let platform = SixLayerPlatform.current
+            guard platform == .macOS || platform == .tvOS || platform == .visionOS else { return }
+
+            let button = Button("Test Button") { }
+                .automaticCompliance(named: "Button")
+
             #if canImport(ViewInspector)
             let passed = testComponentComplianceSinglePlatform(
                 button,
@@ -16336,14 +16158,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
                 componentName: "Button-\(platform)"
             )
             #expect(passed, "Button should have HIG compliance on \(platform) without enforcing iOS-style touch targets")
-            #else
-            // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
             #endif
-            
-            RuntimeCapabilityDetection.clearAllCapabilityOverrides()
         }
     }
-}
 
     @Test @MainActor func testImageProcessorGeneratesAccessibilityIdentifiersOnIOS() {
         self.initializeTestConfig()

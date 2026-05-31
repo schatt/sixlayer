@@ -48,7 +48,8 @@ public func determineIntelligentCardLayout_L2(
     screenWidth: CGFloat,
     deviceType: DeviceType,
     contentComplexity: ContentComplexity,
-    viewportHeight: CGFloat? = nil
+    viewportHeight: CGFloat? = nil,
+    viewportHints: CardViewportHints? = nil
 ) -> IntelligentCardLayoutDecision {
     
     // Base calculations
@@ -82,7 +83,8 @@ public func determineIntelligentCardLayout_L2(
         spacing: spacing,
         layoutPadding: layoutPadding,
         deviceType: deviceType,
-        viewportHeight: viewportHeight
+        viewportHeight: viewportHeight,
+        viewportHints: viewportHints
     )
     
     // Determine expansion behavior
@@ -200,8 +202,8 @@ private func calculateOptimalSpacing(deviceType: DeviceType, contentComplexity: 
     }
 }
 
-/// Caps card height on **phone** when a finite viewport height is supplied and the grid has at most two rows,
-/// so small collections can fit without scrolling (see GitHub #249).
+/// Caps card height when a finite viewport height is supplied so collections can fit without scrolling.
+/// Legacy phone behavior (#249) applies when `viewportHints` is nil; hosts override via `preferFitInViewport` and `maxCardHeight` (#306).
 private func cardHeightRespectingViewport(
     intrinsicHeight: CGFloat,
     contentCount: Int,
@@ -209,20 +211,36 @@ private func cardHeightRespectingViewport(
     spacing: CGFloat,
     layoutPadding: CGFloat,
     deviceType: DeviceType,
-    viewportHeight: CGFloat?
+    viewportHeight: CGFloat?,
+    viewportHints: CardViewportHints?
 ) -> CGFloat {
-    guard deviceType == .phone else { return intrinsicHeight }
-    guard let viewport = viewportHeight, viewport.isFinite, viewport > 0 else { return intrinsicHeight }
-    let columnCount = max(columns, 1)
-    let rows = max(1, Int(ceil(Double(contentCount) / Double(columnCount))))
-    guard rows <= PhoneCardViewportHeightClamp.maxRows else { return intrinsicHeight }
-    let interRowSpacing = CGFloat(max(0, rows - 1)) * spacing
-    let verticalChrome = layoutPadding * 2 + interRowSpacing
-    let heightBudget = viewport - verticalChrome
-    guard heightBudget.isFinite, heightBudget > 0 else { return intrinsicHeight }
-    let maxHeightPerRow = heightBudget / CGFloat(rows)
-    guard maxHeightPerRow.isFinite, maxHeightPerRow > 0 else { return intrinsicHeight }
-    return min(intrinsicHeight, maxHeightPerRow)
+    var height = intrinsicHeight
+    let fitInViewport: Bool = {
+        if let hints = viewportHints { return hints.preferFitInViewport }
+        return deviceType == .phone
+    }()
+
+    if fitInViewport, let viewport = viewportHeight, viewport.isFinite, viewport > 0 {
+        let columnCount = max(columns, 1)
+        let rows = max(1, Int(ceil(Double(contentCount) / Double(columnCount))))
+        let enforceLegacyRowCap = viewportHints == nil
+        if !enforceLegacyRowCap || rows <= PhoneCardViewportHeightClamp.maxRows {
+            let interRowSpacing = CGFloat(max(0, rows - 1)) * spacing
+            let verticalChrome = layoutPadding * 2 + interRowSpacing
+            let heightBudget = viewport - verticalChrome
+            if heightBudget.isFinite, heightBudget > 0 {
+                let maxHeightPerRow = heightBudget / CGFloat(rows)
+                if maxHeightPerRow.isFinite, maxHeightPerRow > 0 {
+                    height = min(intrinsicHeight, maxHeightPerRow)
+                }
+            }
+        }
+    }
+
+    if let cap = viewportHints?.maxCardHeight, cap.isFinite, cap > 0 {
+        height = min(height, cap)
+    }
+    return height
 }
 
 /// Calculate optimal card height
