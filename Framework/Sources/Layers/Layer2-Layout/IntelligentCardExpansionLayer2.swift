@@ -71,15 +71,23 @@ public func determineIntelligentCardLayout_L2(
     // Calculate spacing and card dimensions
     let spacing = calculateOptimalSpacing(deviceType: deviceType, contentComplexity: contentComplexity)
     let cardWidth = max(minCardWidth, min(maxCardWidth, (availableWidth - spacing * CGFloat(columns - 1)) / CGFloat(columns)))
-    let intrinsicHeight = calculateOptimalHeight(
+    let defaultIntrinsicHeight = calculateOptimalHeight(
         cardWidth: cardWidth,
         contentComplexity: contentComplexity,
         contentCount: contentCount,
         deviceType: deviceType,
-        preferredContentSizeCategory: preferredContentSizeCategory
+        preferredContentSizeCategory: nil
     )
-    let cardHeight = cardHeightRespectingViewport(
-        intrinsicHeight: intrinsicHeight,
+    let contentSize = preferredContentSizeCategory ?? .large
+    let contentIntrinsicHeight = calculateOptimalHeight(
+        cardWidth: cardWidth,
+        contentComplexity: contentComplexity,
+        contentCount: contentCount,
+        deviceType: deviceType,
+        preferredContentSizeCategory: contentSize
+    )
+    let defaultClampedHeight = cardHeightRespectingViewport(
+        intrinsicHeight: defaultIntrinsicHeight,
         contentCount: contentCount,
         columns: columns,
         spacing: spacing,
@@ -88,6 +96,24 @@ public func determineIntelligentCardLayout_L2(
         viewportHeight: viewportHeight,
         viewportHints: viewportHints
     )
+    let contentClampedHeight = cardHeightRespectingViewport(
+        intrinsicHeight: contentIntrinsicHeight,
+        contentCount: contentCount,
+        columns: columns,
+        spacing: spacing,
+        layoutPadding: layoutPadding,
+        deviceType: deviceType,
+        viewportHeight: viewportHeight,
+        viewportHints: viewportHints
+    )
+    let cardHeight: CGFloat = {
+        let viewportLimited = contentClampedHeight < contentIntrinsicHeight - 0.5
+            || defaultClampedHeight < defaultIntrinsicHeight - 0.5
+        if viewportLimited {
+            return defaultClampedHeight
+        }
+        return contentClampedHeight
+    }()
     
     // Determine expansion behavior
     let expansionScale = calculateExpansionScale(deviceType: deviceType, contentComplexity: contentComplexity)
