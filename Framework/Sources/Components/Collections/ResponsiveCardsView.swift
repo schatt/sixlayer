@@ -7,6 +7,13 @@ import SwiftUI
 public struct ResponsiveCardsView: View {
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @Environment(\.verticalSizeClass) private var verticalSizeClass
+
+    /// Optional host viewport hints (navigation chrome, etc.) for L2 layout budget (GitHub #308).
+    private let viewportHints: CardViewportHints?
+
+    public init(viewportHints: CardViewportHints? = nil) {
+        self.viewportHints = viewportHints
+    }
     
     // Sample card data
     private let cards = [
@@ -70,17 +77,15 @@ public struct ResponsiveCardsView: View {
     @ViewBuilder
     private func responsiveCardGrid(for cards: [ResponsiveCardData], in geometry: GeometryProxy) -> some View {
         let screenWidth = geometry.size.width
-        let viewportHeight = PlatformFrameHelpers.finiteViewportHeight(for: geometry.size.height)
-        
-        // Layer 2: Layout Decision Engine - Use existing platform function
-        let layoutDecision = determineOptimalCardLayout_L2(
+        let layoutDecision = Self.optimalLayoutDecision(
             contentCount: cards.count,
             screenWidth: screenWidth,
-            deviceType: SixLayerPlatform.deviceType,
+            geometryHeight: geometry.size.height,
             contentComplexity: .moderate,
-            viewportHeight: viewportHeight
+            viewportHints: viewportHints
         )
         
+        // Layer 2: Layout Decision Engine - Use existing platform function
         // Layer 3: Strategy Selection - Use existing platform function
         let strategy = selectCardLayoutStrategy_L3(
             contentCount: cards.count,
@@ -488,6 +493,28 @@ public struct ResponsiveCardData: Identifiable {
 // MARK: - Hybrid Layout Testing
 
 extension ResponsiveCardsView {
+    /// Resolves effective viewport and returns optimal card layout (GitHub #308 / #250).
+    @MainActor
+    public static func optimalLayoutDecision(
+        contentCount: Int,
+        screenWidth: CGFloat,
+        geometryHeight: CGFloat,
+        contentComplexity: ContentComplexity = .moderate,
+        viewportHints: CardViewportHints? = nil
+    ) -> CardLayoutDecision {
+        let viewportHeight = PlatformFrameHelpers.effectiveCardCollectionViewportHeight(
+            geometryHeight: geometryHeight,
+            viewportHints: viewportHints
+        )
+        return determineOptimalCardLayout_L2(
+            contentCount: contentCount,
+            screenWidth: screenWidth,
+            deviceType: SixLayerPlatform.deviceType,
+            contentComplexity: contentComplexity,
+            viewportHeight: viewportHeight
+        )
+    }
+
     /// Test function to verify hybrid layout behavior
     /// This can be used in tests to verify the adaptive/fixed grid decision logic
     static func testHybridLayoutDecision(cards: [ResponsiveCardData], layout: CardLayoutDecision) -> String {
