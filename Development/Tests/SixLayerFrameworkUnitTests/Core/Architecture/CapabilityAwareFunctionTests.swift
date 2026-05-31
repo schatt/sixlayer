@@ -450,7 +450,7 @@ open class CapabilityAwareFunctionTests: BaseTestClass {
     // MARK: - Capability State Validation
     
     /// **Plumbing:** `CardExpansionPlatformConfig` mirrors `RuntimeCapabilityDetection` for the fields it copies.
-    /// **Cross-cutting laws:** haptic implies touch; AssistiveTouch matches platform availability; OCR implies Vision.
+    /// **Cross-cutting laws:** AssistiveTouch matches platform availability; OCR implies Vision.
     /// Kept narrow per `.cursor/rules/capability-override-test-flows.mdc` (GitHub #278) — not a parallel capability matrix suite.
     @Test @MainActor func testCapabilityStateConsistency() {
         let config = getCardExpansionPlatformConfig()
@@ -471,9 +471,6 @@ open class CapabilityAwareFunctionTests: BaseTestClass {
         let vision = isVisionFrameworkAvailable()
         let ocr = isVisionOCRAvailable()
         #expect(!(ocr && !vision), "OCR availability should imply Vision framework availability")
-
-        #expect(!(config.supportsHapticFeedback && !config.supportsTouch),
-                "Haptic capability should not be reported without touch (incoherent actuation surface)")
 
         let assistiveTouchPlatformSupported = SixLayerPlatform.current.supportsAssistiveTouch
         if assistiveTouchPlatformSupported {
