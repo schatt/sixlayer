@@ -39,7 +39,7 @@ import SwiftUI
 /// TDD Tests for Runtime Capability Detection
 /// These tests define the expected behavior and will initially fail
 /// NOTE: Not marked @MainActor on class to allow parallel execution
-@Suite("Runtime Capability Detection", DefaultRuntimeCapabilityIsolationTrait())
+@Suite("Runtime Capability Detection", .serialized, DefaultRuntimeCapabilityIsolationTrait())
 open class RuntimeCapabilityDetectionTDDTests: BaseTestClass {
     
     // MARK: - Testing Mode Detection Tests
@@ -696,6 +696,7 @@ open class RuntimeCapabilityDetectionTDDTests: BaseTestClass {
         UserDefaults.standard.set(true, forKey: key)
         defer { UserDefaults.standard.removeObject(forKey: key) }
 
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
         let config = getCardExpansionPlatformConfig()
         #expect(!config.supportsTouch)
         #expect(config.minTouchTarget == 0.0)
