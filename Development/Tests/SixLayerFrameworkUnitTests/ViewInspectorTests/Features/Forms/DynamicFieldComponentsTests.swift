@@ -44,6 +44,20 @@ open class DynamicFieldComponentsTests: BaseTestClass {
     }
 
     @MainActor
+    private func expectCharacterCounterText<F: View & ViewInspector.Inspectable>(
+        in fieldView: F,
+        maxLength: Int,
+        message: String
+    ) {
+        let allTexts = findAllInFieldHierarchy(fieldView, ViewInspector.ViewType.Text.self)
+        let hasCounter = allTexts.contains { text in
+            let textContent = (try? text.string()) ?? ""
+            return textContent.contains("/") && textContent.contains(String(maxLength))
+        }
+        #expect(hasCounter, message)
+    }
+
+    @MainActor
     private func withFieldHierarchy<F: View & ViewInspector.Inspectable>(
         _ fieldView: F,
         _ perform: (ViewInspector.InspectableView<ViewInspector.ViewType.View<F>>) -> Void
