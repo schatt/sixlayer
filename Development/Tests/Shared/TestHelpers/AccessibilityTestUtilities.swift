@@ -1204,6 +1204,10 @@ public enum AccessibilityTestUtilities {
         if let _ = try? inspected.find(ViewInspector.ViewType.Toggle.self) {
             return ("Toggle", nil)
         }
+        if let text = try? inspected.find(ViewInspector.ViewType.Text.self) {
+            let label = (try? text.string()).flatMap { $0.isEmpty ? nil : $0 }
+            return ("Text", label)
+        }
         return nil
     }
 
