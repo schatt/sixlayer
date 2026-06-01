@@ -2293,7 +2293,6 @@
 		B7FAB095F852026B6E0AE51A /* ThemedViewModifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90C2AC65C118270C10625059 /* ThemedViewModifiers.swift */; };
 		B800E5F115D096453BF41F26 /* IntelligentDetailViewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED3AAD938E3FE81CC5BB4138 /* IntelligentDetailViewTests.swift */; };
 		B8122D873BC7ECE881EF6DB6 /* BarcodeOverlayConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CFE1F200F268A072CF6C215 /* BarcodeOverlayConfiguration.swift */; };
-		B854CDE1EB7A3603CD7C54DB /* ViewInspector in Frameworks */ = {isa = PBXBuildFile; productRef = 6DD26346D68D9A61D7EA69E4 /* ViewInspector */; };
 		B8550D9AB65D6E9AE85CA1FC /* ExtensibleHintsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD6705B90D42EF1DD053880B /* ExtensibleHintsTests.swift */; };
 		B86FF9214895755AE0BB4016 /* PlatformImageImplicitConversionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA400B7F9623E60BEC7DDAEE /* PlatformImageImplicitConversionTests.swift */; };
 		B89C33A871246A0B7323535B /* ButtonStyleCompatibilityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71FE29EF7F698FACABDA09D4 /* ButtonStyleCompatibilityTests.swift */; };
@@ -4460,7 +4459,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				8B724910515FA0CBB342E0D5 /* SixLayerFramework.framework in Frameworks */,
-				B854CDE1EB7A3603CD7C54DB /* ViewInspector in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -6335,7 +6333,7 @@
 			path = API;
 			sourceTree = "<group>";
 		};
-		"TEMP_377E47E9-C511-44DC-8302-D0F02AF52F7D" /* Utilities */ = {
+		"TEMP_4E89BB8A-C96E-4077-A6C0-F205DE4C56BA" /* Utilities */ = {
 			isa = PBXGroup;
 			children = (
 			);
@@ -6424,7 +6422,6 @@
 			);
 			name = SixLayerFrameworkUnitTests_tvOS;
 			packageProductDependencies = (
-				6DD26346D68D9A61D7EA69E4 /* ViewInspector */,
 			);
 			productName = SixLayerFrameworkUnitTests_tvOS;
 			productReference = CBBD7BBE5800CC25115CD4B8 /* SixLayerFrameworkUnitTests_tvOS.xctest */;
@@ -12302,11 +12299,6 @@
 			productName = ViewInspector;
 		};
 		4A26F9C43D96254A7F775F04 /* ViewInspector */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 12F9FBE68F97E78F15D3EBF5 /* XCRemoteSwiftPackageReference "ViewInspector" */;
-			productName = ViewInspector;
-		};
-		6DD26346D68D9A61D7EA69E4 /* ViewInspector */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 12F9FBE68F97E78F15D3EBF5 /* XCRemoteSwiftPackageReference "ViewInspector" */;
 			productName = ViewInspector;

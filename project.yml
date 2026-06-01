@@ -255,8 +255,6 @@ targets:
       ENABLE_TESTING_SEARCH_PATHS: YES
     dependencies:
       - target: SixLayerFramework_tvOS
-      - package: ViewInspector
-        product: ViewInspector
 
   # Unit tests - watchOS
   SixLayerFrameworkUnitTests_watchOS:
