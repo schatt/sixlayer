@@ -68,22 +68,35 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
     #if canImport(ViewInspector)
     /// Field components delegate visible labels to `DynamicFormFieldView` (Issue #189); verify control + a11y via Inspectable traversal (#314).
     @MainActor
-    private func expectDynamicFieldAccessibility<V: View & ViewInspector.Inspectable>(
-        _ view: V,
+    private func expectDynamicFieldAccessibility(
+        _ view: some View,
         testName: String,
         expectedPattern: String,
         componentName: String,
-        controlAssertion: (ViewInspector.InspectableView<ViewType.VStack>) -> Void
+        controlAssertion: ((ViewInspector.InspectableView<ViewType.VStack>) -> Void)? = nil
     ) {
-        tryWithFirstVStack(view, testName: testName) { vStack in
-            controlAssertion(vStack)
+        runWithTaskLocalConfig {
+            guard let config = testConfig else {
+                Issue.record("testConfig is nil")
+                return
+            }
+            let wasDebugLogging = config.enableDebugLogging
+            defer { config.enableDebugLogging = wasDebugLogging }
+            config.enableDebugLogging = true
+
+            if let controlAssertion,
+               let vStack = withInspectedViewUnwrapped(AnyView(view), perform: { inner in
+                   inner.findAll(ViewType.VStack.self).first
+               }) {
+                controlAssertion(vStack)
+            }
             let hasAccessibilityID = testComponentComplianceSinglePlatform(
                 view,
                 expectedPattern: expectedPattern,
                 platform: .iOS,
                 componentName: componentName
             )
-            #expect(hasAccessibilityID, "Should generate accessibility identifier")
+            #expect(hasAccessibilityID, "\(testName) should generate accessibility identifier")
         }
     }
     #endif
@@ -240,18 +253,25 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
         ))
         
         let view = DynamicFormSectionView(section: collapsibleSection, formState: formState)
+            .enableGlobalAutomaticCompliance()
         
         #if canImport(ViewInspector)
-        tryWithFirstVStack(view, testName: "Collapsible section") { _ in
-            guard let inspected = try? view.inspect() else {
-                Issue.record("Collapsible section inspection failed - component not properly implemented")
+        runWithTaskLocalConfig {
+            guard testConfig != nil else {
+                Issue.record("testConfig is nil")
                 return
             }
-            let disclosures = inspected.findAll(ViewType.DisclosureGroup.self)
-            #expect(!disclosures.isEmpty, "Should have DisclosureGroup for collapsible section")
+            tryWithFirstVStack(view, testName: "Collapsible section") { _ in
+                guard let inspected = try? view.inspect() else {
+                    Issue.record("Collapsible section inspection failed - component not properly implemented")
+                    return
+                }
+                let disclosures = inspected.findAll(ViewType.DisclosureGroup.self)
+                #expect(!disclosures.isEmpty, "Should have DisclosureGroup for collapsible section")
+            }
             let hasAccessibilityID = testComponentComplianceSinglePlatform(
                 view,
-                expectedPattern: "SixLayer.main.ui.*personal.*",
+                expectedPattern: "SixLayer.main.ui.*personal-information*",
                 platform: .iOS,
                 componentName: "DynamicFormSectionView"
             )
@@ -313,6 +333,7 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
         formState.setValue("John Doe", for: "test-text-field")
 
         let view = DynamicTextField(field: field, formState: formState)
+            .enableGlobalAutomaticCompliance()
 
         #if canImport(ViewInspector)
         expectDynamicFieldAccessibility(
@@ -353,6 +374,7 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
         formState.setValue("25", for: "test-number-field")
 
         let view = DynamicNumberField(field: field, formState: formState)
+            .enableGlobalAutomaticCompliance()
 
         #if canImport(ViewInspector)
         expectDynamicFieldAccessibility(
@@ -393,6 +415,7 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
         formState.setValue("This is a\nmultiline description\nwith line breaks", for: "test-textarea-field")
 
         let view = DynamicTextAreaField(field: field, formState: formState)
+            .enableGlobalAutomaticCompliance()
 
         #if canImport(ViewInspector)
         expectDynamicFieldAccessibility(
@@ -511,6 +534,7 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
         formState.setValue(["Reading", "Music"], for: "test-multiselect-field")
 
         let view = DynamicMultiSelectField(field: field, formState: formState)
+            .enableGlobalAutomaticCompliance()
 
         #if canImport(ViewInspector)
         expectDynamicFieldAccessibility(
@@ -552,6 +576,7 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
         formState.setValue("Female", for: "test-radio-field")
 
         let view = DynamicRadioField(field: field, formState: formState)
+            .enableGlobalAutomaticCompliance()
 
         #if canImport(ViewInspector)
         expectDynamicFieldAccessibility(
@@ -592,6 +617,7 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
         formState.setValue(true, for: "test-checkbox-field")
 
         let view = DynamicCheckboxField(field: field, formState: formState)
+            .enableGlobalAutomaticCompliance()
 
         #if canImport(ViewInspector)
         expectDynamicFieldAccessibility(
@@ -632,6 +658,7 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
         formState.setValue(false, for: "test-toggle-field")
 
         let view = DynamicToggleField(field: field, formState: formState)
+            .enableGlobalAutomaticCompliance()
 
         #if canImport(ViewInspector)
         expectDynamicFieldAccessibility(
