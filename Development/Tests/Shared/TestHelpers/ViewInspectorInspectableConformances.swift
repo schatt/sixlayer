@@ -56,6 +56,10 @@ extension DynamicGaugeField: ViewInspector.Inspectable {}
 
 extension DynamicSelectField: ViewInspector.Inspectable {}
 
+// MARK: - Field container shell (Issue #178 / #314)
+
+extension DynamicFormFieldStandardContainer: ViewInspector.Inspectable where Content: ViewInspector.Inspectable {}
+
 // MARK: - Layer 5 platform components (so firstVStackInHierarchy(inspected) works)
 
 extension PlatformRecognitionLayer5: ViewInspector.Inspectable {}
