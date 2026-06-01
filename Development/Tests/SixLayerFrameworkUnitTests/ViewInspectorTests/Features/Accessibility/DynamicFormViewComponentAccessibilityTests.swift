@@ -64,6 +64,29 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
             defaultValue: "test"
         )
     }
+
+    #if canImport(ViewInspector)
+    /// Field components delegate visible labels to `DynamicFormFieldView` (Issue #189); verify control + a11y via Inspectable traversal (#314).
+    @MainActor
+    private func expectDynamicFieldAccessibility<V: View & ViewInspector.Inspectable>(
+        _ view: V,
+        testName: String,
+        expectedPattern: String,
+        componentName: String,
+        controlAssertion: (ViewInspector.InspectableView<ViewType.VStack>) -> Void
+    ) {
+        tryWithFirstVStack(view, testName: testName) { vStack in
+            controlAssertion(vStack)
+            let hasAccessibilityID = testComponentComplianceSinglePlatform(
+                view,
+                expectedPattern: expectedPattern,
+                platform: .iOS,
+                componentName: componentName
+            )
+            #expect(hasAccessibilityID, "Should generate accessibility identifier")
+        }
+    }
+    #endif
     
     /// Tests that a field component renders the expected UI control and binds correctly to form state
     @MainActor
@@ -218,30 +241,21 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
         
         let view = DynamicFormSectionView(section: collapsibleSection, formState: formState)
         
-        // Should have DisclosureGroup with accessibility labels
         #if canImport(ViewInspector)
-        verifyViewContainsAtLeastOneVStack(view, testName: "Collapsible section")
-        if let inspected = try? AnyView(view).inspect() {
-            do {
-                let vStacks = (try? inspected.findAll(ViewType.VStack.self)) ?? []
-                if let vStack = vStacks.first {
-                    let children = vStack.findAll(ViewInspector.ViewType.AnyView.self)
-                    #expect(children.count >= 1, "Should have DisclosureGroup for collapsible section")
-
-                    // Verify section has accessibility identifier
-                    let hasAccessibilityID = testComponentComplianceSinglePlatform(
-                        view,
-                        expectedPattern: "SixLayer.main.ui.*DynamicFormSectionView.*",
-                        platform: .iOS,
-                        componentName: "DynamicFormSectionView"
-                    )
-                    #expect(hasAccessibilityID, "Collapsible section should generate accessibility identifier")
-                }
-            } catch {
-                Issue.record("Collapsible section inspection error: \(error)")
+        tryWithFirstVStack(view, testName: "Collapsible section") { _ in
+            guard let inspected = try? view.inspect() else {
+                Issue.record("Collapsible section inspection failed - component not properly implemented")
+                return
             }
-        } else {
-            Issue.record("Collapsible section inspection failed - component not properly implemented")
+            let disclosures = inspected.findAll(ViewType.DisclosureGroup.self)
+            #expect(!disclosures.isEmpty, "Should have DisclosureGroup for collapsible section")
+            let hasAccessibilityID = testComponentComplianceSinglePlatform(
+                view,
+                expectedPattern: "SixLayer.main.ui.*DynamicFormSectionView.*",
+                platform: .iOS,
+                componentName: "DynamicFormSectionView"
+            )
+            #expect(hasAccessibilityID, "Collapsible section should generate accessibility identifier")
         }
         #else
         // ViewInspector not available on macOS - test passes by verifying view creation
@@ -300,59 +314,17 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
 
         let view = DynamicTextField(field: field, formState: formState)
 
-        // Should render proper UI structure
         #if canImport(ViewInspector)
-        verifyViewContainsAtLeastOneVStack(view, testName: "DynamicTextField")
-        if let inspected = try? AnyView(view).inspect() {
-            do {
-                let vStacks = (try? inspected.findAll(ViewType.VStack.self)) ?? []
-                if let vStack = vStacks.first {
-                    let children = vStack.findAll(ViewInspector.ViewType.AnyView.self)
-                    #expect(children.count >= 2, "Should have label and TextField")
-
-                    // Look for text content anywhere in the VStack
-                    let textElements = vStack.findAll(ViewType.Text.self)
-                    let hasExpectedLabel = textElements.contains { text in
-                        if let textContent = try? text.string() {
-                            return textContent == "Full Name"
-                        }
-                        return false
-                    }
-                    #expect(hasExpectedLabel, "Should contain label text 'Full Name'")
-
-                    // Look for TextField anywhere in the VStack
-                    let textFields = vStack.findAll(ViewType.TextField.self)
-                    #expect(!textFields.isEmpty, "Should contain at least one TextField")
-                }
-            // Note: ViewInspector doesn't provide direct access to TextField placeholder text
-            // We verify the TextField exists and has proper binding instead
-
-            // Should have accessibility identifier
-            // TODO: ViewInspector Detection Issue - VERIFIED: DynamicTextField DOES have .automaticCompliance(named: "DynamicTextField") 
-            // modifier applied in Framework/Sources/Components/Forms/DynamicFieldComponents.swift:131.
-            // The test needs to be updated to handle ViewInspector's inability to detect these modifiers reliably.
-            #if canImport(ViewInspector)
-            let hasAccessibilityID = testComponentComplianceSinglePlatform(
-                view,
-                expectedPattern: "SixLayer.main.ui.*DynamicTextField.*",
-                platform: .iOS,
-                componentName: "DynamicTextField"
-            )
- #expect(hasAccessibilityID, "Should generate accessibility identifier ")
-        #else
-            // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-            // The modifier IS present in the code, but ViewInspector can't detect it on macOS
-            #endif
-
-                // Form state should be properly bound
-                let fieldValue: String? = formState.getValue(for: "test-text-field")
-                #expect(fieldValue == "John Doe", "Form state should contain initial value")
-            } catch {
-                Issue.record("DynamicTextField inspection error: \(error)")
-            }
-        } else {
-            Issue.record("DynamicTextField inspection failed - component not properly implemented")
+        expectDynamicFieldAccessibility(
+            view,
+            testName: "DynamicTextField",
+            expectedPattern: "SixLayer.main.ui.*DynamicTextField.*",
+            componentName: "DynamicTextField"
+        ) { vStack in
+            #expect(!vStack.findAll(ViewType.TextField.self).isEmpty, "Should contain at least one TextField")
         }
+        let fieldValue: String? = formState.getValue(for: "test-text-field")
+        #expect(fieldValue == "John Doe", "Form state should contain initial value")
         #else
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
         #endif
@@ -382,65 +354,17 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
 
         let view = DynamicNumberField(field: field, formState: formState)
 
-        // Should render proper numeric input UI
         #if canImport(ViewInspector)
-        verifyViewContainsAtLeastOneVStack(view, testName: "DynamicNumberField")
-        if let inspected = try? AnyView(view).inspect() {
-            do {
-                let vStacks = (try? inspected.findAll(ViewType.VStack.self)) ?? []
-                if let vStack = vStacks.first {
-                    let children = vStack.findAll(ViewInspector.ViewType.AnyView.self)
-                    #expect(children.count >= 2, "Should have label and TextField")
-
-                    // Look for text content anywhere in the VStack
-                    let textElements = vStack.findAll(ViewType.Text.self)
-                    let hasExpectedLabel = textElements.contains { text in
-                        if let textContent = try? text.string() {
-                            return textContent == "Age"
-                        }
-                        return false
-                    }
-                    #expect(hasExpectedLabel, "Should contain label text 'Age'")
-
-                    // Look for TextField anywhere in the VStack
-                    let textFields = vStack.findAll(ViewType.TextField.self)
-                    #expect(!textFields.isEmpty, "Should contain at least one TextField")
-                }
-                // Note: ViewInspector doesn't provide direct access to TextField placeholder text
-                // We verify the TextField exists and check keyboard type instead
-
-                #if os(iOS)
-                // Should have decimalPad keyboard type for numeric input
-                // Note: ViewInspector may not support keyboardType() directly
-                // This is a placeholder for when that API is available
-                #endif
-
-                // Should have accessibility identifier
-                // TODO: ViewInspector Detection Issue - VERIFIED: DynamicNumberField DOES have .automaticCompliance(named: "DynamicNumberField") 
-                // modifier applied in Framework/Sources/Components/Forms/DynamicFieldComponents.swift:293.
-                // The test needs to be updated to handle ViewInspector's inability to detect these modifiers reliably.
-                #if canImport(ViewInspector)
-                let hasAccessibilityID = testComponentComplianceSinglePlatform(
-                    view,
-                    expectedPattern: "SixLayer.main.ui.*DynamicNumberField.*",
-                    platform: .iOS,
-                    componentName: "DynamicNumberField"
-                )
- #expect(hasAccessibilityID, "Should generate accessibility identifier ")
-        #else
-                // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-                // The modifier IS present in the code, but ViewInspector can't detect it on macOS
-                #endif
-
-                // Form state should contain the numeric value
-                let numberValue: String? = formState.getValue(for: "test-number-field")
-                #expect(numberValue == "25", "Form state should contain numeric value")
-            } catch {
-                Issue.record("DynamicNumberField inspection error: \(error)")
-            }
-        } else {
-            Issue.record("DynamicNumberField inspection failed - component not properly implemented")
+        expectDynamicFieldAccessibility(
+            view,
+            testName: "DynamicNumberField",
+            expectedPattern: "SixLayer.main.ui.*DynamicNumberField.*",
+            componentName: "DynamicNumberField"
+        ) { vStack in
+            #expect(!vStack.findAll(ViewType.TextField.self).isEmpty, "Should contain at least one TextField")
         }
+        let numberValue: String? = formState.getValue(for: "test-number-field")
+        #expect(numberValue == "25", "Form state should contain numeric value")
         #else
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
         #endif
@@ -470,52 +394,19 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
 
         let view = DynamicTextAreaField(field: field, formState: formState)
 
-        // Should render proper multiline text input UI
         #if canImport(ViewInspector)
-        verifyViewContainsAtLeastOneVStack(view, testName: "DynamicTextAreaField")
-        if let inspected = try? AnyView(view).inspect() {
-            do {
-                let vStacks = (try? inspected.findAll(ViewType.VStack.self)) ?? []
-                if let vStack = vStacks.first {
-                    #expect(vStack.count >= 2, "Should have label and TextEditor")
-
-                    // Look for text content anywhere in the VStack
-                    let textElements = vStack.findAll(ViewType.Text.self)
-                    let hasExpectedLabel = textElements.contains { text in
-                        if let textContent = try? text.string() {
-                            return textContent == "Description"
-                        }
-                        return false
-                    }
-                    #expect(hasExpectedLabel, "Should contain label text 'Description'")
-                }
-
-                // Should have accessibility identifier
-                // TODO: ViewInspector Detection Issue - VERIFIED: DynamicTextAreaField DOES have .automaticCompliance(named: "DynamicTextAreaField") 
-                // modifier applied in Framework/Sources/Components/Forms/DynamicFieldComponents.swift:1114.
-                // The test needs to be updated to handle ViewInspector's inability to detect these modifiers reliably.
-                #if canImport(ViewInspector)
-                let hasAccessibilityID = testComponentComplianceSinglePlatform(
-                    view,
-                    expectedPattern: "SixLayer.main.ui.*DynamicTextAreaField.*",
-                    platform: .iOS,
-                    componentName: "DynamicTextAreaField"
-                )
- #expect(hasAccessibilityID, "Should generate accessibility identifier ")
-        #else
-                // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-                // The modifier IS present in the code, but ViewInspector can't detect it on macOS
-                #endif
-
-                // Form state should contain the multiline text
-                let storedValue: String? = formState.getValue(for: "test-textarea-field")
-                #expect(storedValue == "This is a\nmultiline description\nwith line breaks", "Form state should contain multiline text")
-            } catch {
-                Issue.record("DynamicTextAreaField inspection error: \(error)")
-            }
-        } else {
-            Issue.record("DynamicTextAreaField inspection failed - component not properly implemented")
+        expectDynamicFieldAccessibility(
+            view,
+            testName: "DynamicTextAreaField",
+            expectedPattern: "SixLayer.main.ui.*DynamicTextAreaField.*",
+            componentName: "DynamicTextAreaField"
+        ) { vStack in
+            let hasTextEditor = !vStack.findAll(ViewType.TextEditor.self).isEmpty
+            let hasMultilineTextField = !vStack.findAll(ViewType.TextField.self).isEmpty
+            #expect(hasTextEditor || hasMultilineTextField, "Should contain TextEditor or multiline TextField")
         }
+        let storedValue: String? = formState.getValue(for: "test-textarea-field")
+        #expect(storedValue == "This is a\nmultiline description\nwith line breaks", "Form state should contain multiline text")
         #else
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
         #endif
@@ -621,53 +512,17 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
 
         let view = DynamicMultiSelectField(field: field, formState: formState)
 
-        // Should render proper multiple selection UI
         #if canImport(ViewInspector)
-        verifyViewContainsAtLeastOneVStack(view, testName: "DynamicMultiSelectField")
-        if let inspected = try? AnyView(view).inspect() {
-            do {
-                let vStacks = (try? inspected.findAll(ViewType.VStack.self)) ?? []
-                if let vStack = vStacks.first {
-                let children = vStack.findAll(ViewInspector.ViewType.AnyView.self)
-                #expect(children.count >= 2, "Should have label and selection controls")
-
-                // Look for text content anywhere in the VStack
-                let textElements = vStack.findAll(ViewType.Text.self)
-                let hasExpectedLabel = textElements.contains { text in
-                    if let textContent = try? text.string() {
-                        return textContent == "Interests"
-                    }
-                    return false
-                }
-                #expect(hasExpectedLabel, "Should contain label text 'Interests'")
-
-                // Should have accessibility identifier
-                // TODO: ViewInspector Detection Issue - VERIFIED: DynamicMultiSelectField DOES have .automaticCompliance(named: "DynamicMultiSelectField") 
-                // modifier applied in Framework/Sources/Components/Forms/DynamicFieldComponents.swift:467.
-                // The test needs to be updated to handle ViewInspector's inability to detect these modifiers reliably.
-                #if canImport(ViewInspector)
-                let hasAccessibilityID = testComponentComplianceSinglePlatform(
-                    view,
-                    expectedPattern: "SixLayer.main.ui.*DynamicMultiSelectField.*",
-                    platform: .iOS,
-                    componentName: "DynamicMultiSelectField"
-                )
- #expect(hasAccessibilityID, "Should generate accessibility identifier ")
-        #else
-                // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-                // The modifier IS present in the code, but ViewInspector can't detect it on macOS
-                #endif
-
-                    // Form state should contain the selected values array
-                    let storedValue: [String]? = formState.getValue(for: "test-multiselect-field")
-                    #expect(storedValue == ["Reading", "Music"], "Form state should contain selected values array")
-                }
-            } catch {
-                Issue.record("DynamicMultiSelectField inspection error: \(error)")
-            }
-        } else {
-            Issue.record("DynamicMultiSelectField inspection failed - component not properly implemented")
+        expectDynamicFieldAccessibility(
+            view,
+            testName: "DynamicMultiSelectField",
+            expectedPattern: "SixLayer.main.ui.*DynamicMultiSelectField.*",
+            componentName: "DynamicMultiSelectField"
+        ) { vStack in
+            #expect(!vStack.findAll(ViewType.Toggle.self).isEmpty, "Should contain selection Toggle controls")
         }
+        let storedValue: [String]? = formState.getValue(for: "test-multiselect-field")
+        #expect(storedValue == ["Reading", "Music"], "Form state should contain selected values array")
         #else
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
         #endif
@@ -698,53 +553,17 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
 
         let view = DynamicRadioField(field: field, formState: formState)
 
-        // Should render proper radio button group UI
         #if canImport(ViewInspector)
-        verifyViewContainsAtLeastOneVStack(view, testName: "DynamicRadioField")
-        if let inspected = try? AnyView(view).inspect() {
-            do {
-                let vStacks = (try? inspected.findAll(ViewType.VStack.self)) ?? []
-                if let vStack = vStacks.first {
-                let children = vStack.findAll(ViewInspector.ViewType.AnyView.self)
-                #expect(children.count >= 2, "Should have label and radio controls")
-
-                // Look for text content anywhere in the VStack
-                let textElements = vStack.findAll(ViewType.Text.self)
-                let hasExpectedLabel = textElements.contains { text in
-                    if let textContent = try? text.string() {
-                        return textContent == "Gender"
-                    }
-                    return false
-                }
-                #expect(hasExpectedLabel, "Should contain label text 'Gender'")
-
-                // Should have accessibility identifier
-                // TODO: ViewInspector Detection Issue - VERIFIED: DynamicRadioField DOES have .automaticCompliance(named: "DynamicRadioField") 
-                // modifier applied in Framework/Sources/Components/Forms/DynamicFieldComponents.swift:527.
-                // The test needs to be updated to handle ViewInspector's inability to detect these modifiers reliably.
-                #if canImport(ViewInspector)
-                let hasAccessibilityID = testComponentComplianceSinglePlatform(
-                    view,
-                    expectedPattern: "SixLayer.main.ui.*DynamicRadioField.*",
-                    platform: .iOS,
-                    componentName: "DynamicRadioField"
-                )
-                    #expect(hasAccessibilityID, "Should generate accessibility identifier ")
-                #else
-                    // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-                    // The modifier IS present in the code, but ViewInspector can't detect it on macOS
-                    #endif
-                }
-
-                // Form state should contain the selected value
-                let radioValue: String? = formState.getValue(for: "test-radio-field")
-                #expect(radioValue == "Female", "Form state should contain selected radio value")
-            } catch {
-                Issue.record("DynamicRadioField inspection error: \(error)")
-            }
-        } else {
-            Issue.record("DynamicRadioField inspection failed - component not properly implemented")
+        expectDynamicFieldAccessibility(
+            view,
+            testName: "DynamicRadioField",
+            expectedPattern: "SixLayer.main.ui.*DynamicRadioField.*",
+            componentName: "DynamicRadioField"
+        ) { vStack in
+            #expect(!vStack.findAll(ViewType.Picker.self).isEmpty, "Should contain radio-style Picker")
         }
+        let radioValue: String? = formState.getValue(for: "test-radio-field")
+        #expect(radioValue == "Female", "Form state should contain selected radio value")
         #else
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
         #endif
@@ -774,53 +593,17 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
 
         let view = DynamicCheckboxField(field: field, formState: formState)
 
-        // Should render proper toggle/checkbox UI
         #if canImport(ViewInspector)
-        verifyViewContainsAtLeastOneVStack(view, testName: "DynamicCheckboxField")
-        if let inspected = try? AnyView(view).inspect() {
-            do {
-                let vStacks = (try? inspected.findAll(ViewType.VStack.self)) ?? []
-                if let vStack = vStacks.first {
-                let children = vStack.findAll(ViewInspector.ViewType.AnyView.self)
-                #expect(children.count >= 2, "Should have label and Toggle")
-
-                // Look for text content anywhere in the VStack
-                let textElements = vStack.findAll(ViewType.Text.self)
-                let hasExpectedLabel = textElements.contains { text in
-                    if let textContent = try? text.string() {
-                        return textContent == "Subscribe to Newsletter"
-                    }
-                    return false
-                }
-                #expect(hasExpectedLabel, "Should contain label text 'Subscribe to Newsletter'")
-
-                // Should have accessibility identifier
-                // TODO: ViewInspector Detection Issue - VERIFIED: DynamicCheckboxField DOES have .automaticCompliance(named: "DynamicCheckboxField") 
-                // modifier applied in Framework/Sources/Components/Forms/DynamicFieldComponents.swift:575.
-                // The test needs to be updated to handle ViewInspector's inability to detect these modifiers reliably.
-                #if canImport(ViewInspector)
-                let hasAccessibilityID = testComponentComplianceSinglePlatform(
-                    view,
-                    expectedPattern: "SixLayer.main.ui.*DynamicCheckboxField.*",
-                    platform: .iOS,
-                    componentName: "DynamicCheckboxField"
-                )
-                    #expect(hasAccessibilityID, "Should generate accessibility identifier ")
-                #else
-                    // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-                    // The modifier IS present in the code, but ViewInspector can't detect it on macOS
-                    #endif
-                }
-
-                // Form state should contain the boolean value
-                let checkboxValue: Bool? = formState.getValue(for: "test-checkbox-field")
-                #expect(checkboxValue == true, "Form state should contain boolean checkbox value")
-            } catch {
-                Issue.record("DynamicCheckboxField inspection error: \(error)")
-            }
-        } else {
-            Issue.record("DynamicCheckboxField inspection failed - component not properly implemented")
+        expectDynamicFieldAccessibility(
+            view,
+            testName: "DynamicCheckboxField",
+            expectedPattern: "SixLayer.main.ui.*DynamicCheckboxField.*",
+            componentName: "DynamicCheckboxField"
+        ) { vStack in
+            #expect(!vStack.findAll(ViewType.Toggle.self).isEmpty, "Should contain Toggle control")
         }
+        let checkboxValue: Bool? = formState.getValue(for: "test-checkbox-field")
+        #expect(checkboxValue == true, "Form state should contain boolean checkbox value")
         #else
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
         #endif
@@ -850,53 +633,17 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
 
         let view = DynamicToggleField(field: field, formState: formState)
 
-        // Should render proper toggle UI
         #if canImport(ViewInspector)
-        verifyViewContainsAtLeastOneVStack(view, testName: "DynamicToggleField")
-        if let inspected = try? AnyView(view).inspect() {
-            do {
-                let vStacks = (try? inspected.findAll(ViewType.VStack.self)) ?? []
-                if let vStack = vStacks.first {
-                let children = vStack.findAll(ViewInspector.ViewType.AnyView.self)
-                #expect(children.count >= 2, "Should have label and Toggle")
-
-                // Look for text content anywhere in the VStack
-                let textElements = vStack.findAll(ViewType.Text.self)
-                let hasExpectedLabel = textElements.contains { text in
-                    if let textContent = try? text.string() {
-                        return textContent == "Enable Feature"
-                    }
-                    return false
-                }
-                #expect(hasExpectedLabel, "Should contain label text 'Enable Feature'")
-
-                // Should have accessibility identifier
-                // TODO: ViewInspector Detection Issue - VERIFIED: DynamicToggleField DOES have .automaticCompliance(named: "DynamicToggleField") 
-                // modifier applied in Framework/Sources/Components/Forms/DynamicFieldComponents.swift:1070.
-                // The test needs to be updated to handle ViewInspector's inability to detect these modifiers reliably.
-                #if canImport(ViewInspector)
-                let hasAccessibilityID = testComponentComplianceSinglePlatform(
-                    view,
-                    expectedPattern: "SixLayer.main.ui.*DynamicToggleField.*",
-                    platform: .iOS,
-                    componentName: "DynamicToggleField"
-                )
-                    #expect(hasAccessibilityID, "Should generate accessibility identifier ")
-                #else
-                    // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-                    // The modifier IS present in the code, but ViewInspector can't detect it on macOS
-                    #endif
-                }
-
-                // Form state should contain the boolean value
-                let toggleValue: Bool? = formState.getValue(for: "test-toggle-field")
-                #expect(toggleValue == false, "Form state should contain boolean toggle value")
-            } catch {
-                Issue.record("DynamicToggleField inspection error: \(error)")
-            }
-        } else {
-            Issue.record("DynamicToggleField inspection failed - component not properly implemented")
+        expectDynamicFieldAccessibility(
+            view,
+            testName: "DynamicToggleField",
+            expectedPattern: "SixLayer.main.ui.*DynamicToggleField.*",
+            componentName: "DynamicToggleField"
+        ) { vStack in
+            #expect(!vStack.findAll(ViewType.Toggle.self).isEmpty, "Should contain Toggle control")
         }
+        let toggleValue: Bool? = formState.getValue(for: "test-toggle-field")
+        #expect(toggleValue == false, "Form state should contain boolean toggle value")
         #else
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
         #endif
