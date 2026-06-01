@@ -1097,6 +1097,137 @@ public enum AccessibilityTestUtilities {
         ]
     }
 
+    /// Exposed for unit tests of anonymous `.automaticCompliance()` synthetic recovery (#314).
+    @MainActor
+    public static func testingSyntheticAutomaticComplianceIdentifiers<V: View>(
+        view: V,
+        config: AccessibilityIdentifierConfig
+    ) -> [String] {
+        syntheticAutomaticComplianceIdentifiers(view: view, config: config)
+    }
+
+    #if canImport(ViewInspector)
+    /// When anonymous `.automaticCompliance()` suppresses wrapper IDs (#222), infer element type/label via ViewInspector and run the generator.
+    @MainActor
+    private static func syntheticAutomaticComplianceIdentifiers<V: View>(
+        view: V,
+        config: AccessibilityIdentifierConfig
+    ) -> [String] {
+        guard viewHasAnonymousAutomaticComplianceModifier(in: view) else { return [] }
+        guard let params = inferredInteractiveControlParameters(from: view) else { return [] }
+        let generated = generateAccessibilityIdentifier(
+            config: config,
+            identifierName: nil,
+            identifierElementType: params.elementType,
+            identifierLabel: params.label,
+            capturedScreenContext: config.currentScreenContext,
+            capturedViewHierarchy: config.currentViewHierarchy,
+            capturedEnableUITestIntegration: config.enableUITestIntegration,
+            capturedIncludeComponentNames: config.includeComponentNames,
+            capturedIncludeElementTypes: config.includeElementTypes,
+            capturedEnableDebugLogging: false,
+            capturedNamespace: config.namespace,
+            capturedGlobalPrefix: config.globalPrefix,
+            defaultElementType: "View",
+            emptyFallback: "main.ui.element"
+        )
+        return generated.isEmpty ? [] : [generated]
+    }
+
+    @MainActor
+    private static func viewHasAnonymousAutomaticComplianceModifier(
+        in value: Any,
+        remainingDepth: Int = 12
+    ) -> Bool {
+        guard remainingDepth >= 0 else { return false }
+        let typeName = String(describing: Swift.type(of: value))
+        if typeName.contains("AutomaticComplianceModifier") {
+            let mirror = Mirror(reflecting: value)
+            var identifierName: String?
+            var identifierElementType: String?
+            var identifierLabel: String?
+            var accessibilityLabel: String?
+            var accessibilityHint: String?
+            var accessibilityTraits: AccessibilityTraits?
+            var accessibilityValue: String?
+            var accessibilitySortPriority: Double?
+            for child in mirror.children {
+                switch child.label {
+                case "identifierName": identifierName = child.value as? String
+                case "identifierElementType": identifierElementType = child.value as? String
+                case "identifierLabel": identifierLabel = child.value as? String
+                case "accessibilityLabel": accessibilityLabel = child.value as? String
+                case "accessibilityHint": accessibilityHint = child.value as? String
+                case "accessibilityTraits": accessibilityTraits = child.value as? AccessibilityTraits
+                case "accessibilityValue": accessibilityValue = child.value as? String
+                case "accessibilitySortPriority": accessibilitySortPriority = child.value as? Double
+                default: break
+                }
+            }
+            return slfSuppressAnonymousAutomaticComplianceWrapperIdentifier(
+                identifierName: identifierName,
+                identifierElementType: identifierElementType,
+                identifierLabel: identifierLabel,
+                accessibilityLabel: accessibilityLabel,
+                accessibilityHint: accessibilityHint,
+                accessibilityTraits: accessibilityTraits,
+                accessibilityValue: accessibilityValue,
+                accessibilitySortPriority: accessibilitySortPriority
+            )
+        }
+        for child in mirror.children {
+            if viewHasAnonymousAutomaticComplianceModifier(in: child.value, remainingDepth: remainingDepth - 1) {
+                return true
+            }
+        }
+        return false
+    }
+
+    @MainActor
+    private static func inferredInteractiveControlParameters<V: View>(
+        from view: V
+    ) -> (elementType: String, label: String?)? {
+        guard let inspected = try? AnyView(view).inspect() else { return nil }
+        if let button = try? inspected.find(ViewInspector.ViewType.Button.self) {
+            let label = buttonLabelText(from: button)
+            return ("Button", label)
+        }
+        if let _ = try? inspected.find(ViewInspector.ViewType.Link.self) {
+            return ("Link", nil)
+        }
+        if let _ = try? inspected.find(ViewInspector.ViewType.TextField.self) {
+            return ("TextField", nil)
+        }
+        if let _ = try? inspected.find(ViewInspector.ViewType.Toggle.self) {
+            return ("Toggle", nil)
+        }
+        return nil
+    }
+
+    @MainActor
+    private static func buttonLabelText(
+        from button: ViewInspector.InspectableView<ViewInspector.ViewType.Button>
+    ) -> String? {
+        if let text = try? button.labelView().find(ViewInspector.ViewType.Text.self).string(), !text.isEmpty {
+            return text
+        }
+        if let text = try? button.labelView().string(), !text.isEmpty {
+            return text
+        }
+        return nil
+    }
+    #else
+    @MainActor
+    private static func syntheticAutomaticComplianceIdentifiers<V: View>(
+        view: V,
+        config: AccessibilityIdentifierConfig
+    ) -> [String] {
+        _ = view
+        _ = config
+        return []
+    }
+    #endif
+
     /// UIHosting/ViewInspector can skip modifier bodies for direct `.named()` checks; recover the explicit
     /// modifier name from the SwiftUI value so direct helper lookups exercise the same generator path.
     @MainActor
@@ -1272,6 +1403,7 @@ public enum AccessibilityTestUtilities {
             allSignals.append(contentsOf: viewInspectorIdentifiers)
             if let directIdentifier, !directIdentifier.isEmpty { allSignals.append(directIdentifier) }
             if let inspectButtonIdentifier, !inspectButtonIdentifier.isEmpty { allSignals.append(inspectButtonIdentifier) }
+            allSignals.append(contentsOf: syntheticAutomaticComplianceIdentifiers(view: view, config: config))
             var seenSignals = Set<String>()
             let uniqueSignals = allSignals.filter { seenSignals.insert($0).inserted }
             
@@ -1291,6 +1423,11 @@ public enum AccessibilityTestUtilities {
             if syntheticModifierIdentifiers(config: config, expectedPattern: expectedPattern)
                 .contains(where: { matchesExpectedPattern($0, expectedPattern: expectedPattern) }) {
                 // Swift Testing treats recorded issues as failures (#271) — pass without Issue.record.
+                return true
+            }
+
+            if syntheticAutomaticComplianceIdentifiers(view: view, config: config)
+                .contains(where: { matchesExpectedPattern($0, expectedPattern: expectedPattern) }) {
                 return true
             }
 
