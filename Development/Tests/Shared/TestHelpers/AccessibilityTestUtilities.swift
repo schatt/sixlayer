@@ -891,9 +891,25 @@ public enum AccessibilityTestUtilities {
         return candidates.filter { seen.insert($0).inserted }
     }
     
+    /// True when `pattern` is a dot-segment glob (`*` only wildcards), not a regex.
+    @MainActor
+    private static func isDotSegmentGlobPattern(_ pattern: String) -> Bool {
+        guard pattern.contains("*") else { return false }
+        var remaining = pattern
+        while remaining.hasPrefix("*") { remaining.removeFirst() }
+        while remaining.hasSuffix("*") { remaining.removeLast() }
+        let segments = remaining.split(separator: "*", omittingEmptySubsequences: false)
+        return segments.allSatisfy { segment in
+            segment.isEmpty || segment.unicodeScalars.allSatisfy {
+                CharacterSet.alphanumerics.contains($0) || $0 == "." || $0 == "-" || $0 == "_"
+            }
+        }
+    }
+
     @MainActor
     private static func isRegexLikePattern(_ pattern: String) -> Bool {
-        pattern.contains("\\") || pattern.contains("^") || pattern.contains("$") || pattern.contains(".*")
+        if isDotSegmentGlobPattern(pattern) { return false }
+        return pattern.contains("\\") || pattern.contains("^") || pattern.contains("$") || pattern.contains(".*")
     }
     
     @MainActor
