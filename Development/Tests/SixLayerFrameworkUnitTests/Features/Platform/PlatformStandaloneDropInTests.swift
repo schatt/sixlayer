@@ -2,10 +2,6 @@ import Testing
 import SwiftUI
 @testable import SixLayerFramework
 
-#if canImport(ViewInspector)
-import ViewInspector
-#endif
-
 /// Tests for standalone drop-in replacement functions
 /// These functions provide SwiftUI API-compatible alternatives with automatic accessibility compliance
 @Suite("Platform Standalone Drop-In Functions")
@@ -295,55 +291,39 @@ struct PlatformStandaloneDropInTests {
     /// `platformFormContainer` must host a `Form` on every platform (no nested `Form` in app code).
     @Test @MainActor
     func testPlatformFormContainer_OwnsForm() {
-        #if canImport(ViewInspector)
         let view = EmptyView().platformFormContainer {
             Text("FormOwnedMarker")
         }
-        let hasForm = withInspectedView(AnyView(view)) { inspected in
-            inspected.findAll(ViewType.Form.self).isEmpty ? nil : true
-        }
-        #expect(hasForm == true, "platformFormContainer should wrap content in Form")
-        #else
-        #expect(Bool(true))
-        #endif
+        #expect(
+            PlatformContainerStructureAssertions.containsForm(view),
+            "platformFormContainer should wrap content in Form"
+        )
     }
 
     // MARK: - platformSectionContainer vs platformGroupedInsetContainer (Issue #220)
 
     @Test @MainActor
     func testPlatformSectionContainerNoHeader_UsesSectionInsidePlatformFormContainer() {
-        #if canImport(ViewInspector)
         let view = EmptyView().platformFormContainer {
             platformSectionContainer {
                 Text("SectionRowMarker220")
             }
         }
-        let hasSection = withInspectedView(AnyView(view)) { inspected in
-            inspected.findAll(ViewType.Section.self).isEmpty ? nil : true
-        }
-        #expect(hasSection == true, "no-header platformSectionContainer should use Section inside platformFormContainer")
-        #else
-        #expect(Bool(true))
-        #endif
+        #expect(
+            PlatformContainerStructureAssertions.containsSection(view),
+            "no-header platformSectionContainer should use Section inside platformFormContainer"
+        )
     }
 
     @Test @MainActor
     func testPlatformGroupedInsetContainer_IsVStackInsetNotSection() {
-        #if canImport(ViewInspector)
         let view = EmptyView().platformGroupedInsetContainer {
             Text("InsetMarker220")
         }
-        let sectionFound = withInspectedView(AnyView(view)) { inspected in
-            inspected.findAll(ViewType.Section.self).isEmpty ? nil : true
-        }
-        #expect(sectionFound != true, "platformGroupedInsetContainer must not use Section")
-        let hasVStack = withInspectedView(AnyView(view)) { inspected in
-            inspected.findAll(ViewType.VStack.self).isEmpty ? nil : true
-        }
-        #expect(hasVStack == true, "platformGroupedInsetContainer should use VStack for inset grouping")
-        #else
-        #expect(Bool(true))
-        #endif
+        #expect(
+            PlatformContainerStructureAssertions.containsVStackWithoutSection(view),
+            "platformGroupedInsetContainer should use VStack for inset grouping without Section"
+        )
     }
     
     // MARK: - Label Parameter Tests (Issue #155)
