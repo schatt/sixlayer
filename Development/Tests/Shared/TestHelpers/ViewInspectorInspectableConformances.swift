@@ -60,6 +60,8 @@ extension DynamicSelectField: ViewInspector.Inspectable {}
 
 extension DynamicFormFieldStandardContainer: ViewInspector.Inspectable {}
 
+extension CharacterCounterView: ViewInspector.Inspectable {}
+
 // MARK: - Layer 5 platform components (so firstVStackInHierarchy(inspected) works)
 
 extension PlatformRecognitionLayer5: ViewInspector.Inspectable {}
