@@ -1198,6 +1198,9 @@ public enum AccessibilityTestUtilities {
         if let _ = try? inspected.find(ViewInspector.ViewType.TextField.self) {
             return ("TextField", nil)
         }
+        if let _ = try? inspected.find(ViewInspector.ViewType.SecureField.self) {
+            return ("SecureField", nil)
+        }
         if let _ = try? inspected.find(ViewInspector.ViewType.Toggle.self) {
             return ("Toggle", nil)
         }
