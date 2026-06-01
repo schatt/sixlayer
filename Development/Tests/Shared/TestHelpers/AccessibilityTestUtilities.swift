@@ -210,8 +210,8 @@ public func getAccessibilityLabelForTest<V: View>(view: V, hostedRoot: Any? = ni
             return label
         }
     }
-    if let explicitLabel = explicitAccessibilityLabelFromAutomaticComplianceModifier(in: view) {
-        return explicitLabel
+    if let rawLabel = explicitAccessibilityLabelFromAutomaticComplianceModifier(in: view) {
+        return localizeAccessibilityLabel(rawLabel, context: nil, elementType: nil)
     }
     #endif
     guard let root = hostedRoot else { return nil }
