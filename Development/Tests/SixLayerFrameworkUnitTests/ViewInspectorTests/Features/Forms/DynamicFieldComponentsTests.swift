@@ -24,6 +24,26 @@ open class DynamicFieldComponentsTests: BaseTestClass {
 
     #if canImport(ViewInspector)
     @MainActor
+    private func findAllInFieldHierarchy<F: View & ViewInspector.Inspectable, T: ViewInspector.KnownViewType>(
+        _ fieldView: F,
+        _ viewType: T.Type
+    ) -> [ViewInspector.InspectableView<T>] {
+        if let inspected = try? fieldView.inspect() {
+            let found = inspected.findAll(viewType)
+            if !found.isEmpty { return found }
+        }
+        if let vStack = try? firstVStackInView(fieldView) {
+            let found = vStack.findAll(viewType)
+            if !found.isEmpty { return found }
+        }
+        if let inner = withInspectedViewUnwrapped(AnyView(fieldView), perform: { inner in inner }) {
+            let found = inner.findAll(viewType)
+            if !found.isEmpty { return found }
+        }
+        return []
+    }
+
+    @MainActor
     private func withFieldHierarchy<F: View & ViewInspector.Inspectable>(
         _ fieldView: F,
         _ perform: (ViewInspector.InspectableView<ViewInspector.ViewType.View<F>>) -> Void
@@ -749,9 +769,9 @@ open class DynamicFieldComponentsTests: BaseTestClass {
 
         // Should render multi-line text editor
         #if canImport(ViewInspector)
-        if !withFieldHierarchy(fieldView, { inspected in
-            let hasTextArea = !inspected.findAll(ViewInspector.ViewType.TextEditor.self).isEmpty
-                || !inspected.findAll(ViewInspector.ViewType.TextField.self).isEmpty
+        if !withFieldHierarchy(fieldView, { _ in
+            let hasTextArea = !findAllInFieldHierarchy(fieldView, ViewInspector.ViewType.TextEditor.self).isEmpty
+                || !findAllInFieldHierarchy(fieldView, ViewInspector.ViewType.TextField.self).isEmpty
             #expect(hasTextArea, "Should provide multi-line text editor")
         }) {
             Issue.record("DynamicTextAreaField interface not found")
@@ -1180,9 +1200,9 @@ open class DynamicFieldComponentsTests: BaseTestClass {
         let view = fieldView.enableGlobalAutomaticCompliance()
 
         #if canImport(ViewInspector)
-        withFieldHierarchy(fieldView) { inspected in
-            let links = inspected.findAll(ViewInspector.ViewType.Link.self)
-            let textFields = inspected.findAll(ViewInspector.ViewType.TextField.self)
+        withFieldHierarchy(fieldView) { _ in
+            let links = findAllInFieldHierarchy(fieldView, ViewInspector.ViewType.Link.self)
+            let textFields = findAllInFieldHierarchy(fieldView, ViewInspector.ViewType.TextField.self)
             #expect(!links.isEmpty, "Read-only URL field with valid URL should use Link component")
             #expect(textFields.isEmpty, "Read-only URL field should not use TextField")
             if let firstLink = links.first {
@@ -1220,9 +1240,9 @@ open class DynamicFieldComponentsTests: BaseTestClass {
         _ = fieldView.enableGlobalAutomaticCompliance()
 
         #if canImport(ViewInspector)
-        withFieldHierarchy(fieldView) { inspected in
-            let links = inspected.findAll(ViewInspector.ViewType.Link.self)
-            let allTexts = inspected.findAll(ViewInspector.ViewType.Text.self)
+        withFieldHierarchy(fieldView) { _ in
+            let links = findAllInFieldHierarchy(fieldView, ViewInspector.ViewType.Link.self)
+            let allTexts = findAllInFieldHierarchy(fieldView, ViewInspector.ViewType.Text.self)
             #expect(links.isEmpty, "Invalid URL should not use Link component")
             #expect(!allTexts.isEmpty, "Invalid URL should use Text component")
             let allTextStrings = allTexts.compactMap { try? $0.string() }
@@ -1258,9 +1278,9 @@ open class DynamicFieldComponentsTests: BaseTestClass {
         _ = fieldView.enableGlobalAutomaticCompliance()
 
         #if canImport(ViewInspector)
-        withFieldHierarchy(fieldView) { inspected in
-            let textFields = inspected.findAll(ViewInspector.ViewType.TextField.self)
-            let allTexts = inspected.findAll(ViewInspector.ViewType.Text.self)
+        withFieldHierarchy(fieldView) { _ in
+            let textFields = findAllInFieldHierarchy(fieldView, ViewInspector.ViewType.TextField.self)
+            let allTexts = findAllInFieldHierarchy(fieldView, ViewInspector.ViewType.Text.self)
             let hasURLLikeText = allTexts.contains { text in
                 if let textContent = try? text.string() {
                     return textContent.contains("https://") || textContent.contains("http://")
@@ -1299,9 +1319,9 @@ open class DynamicFieldComponentsTests: BaseTestClass {
         _ = fieldView.enableGlobalAutomaticCompliance()
 
         #if canImport(ViewInspector)
-        withFieldHierarchy(fieldView) { inspected in
-            let links = inspected.findAll(ViewInspector.ViewType.Link.self)
-            let textFields = inspected.findAll(ViewInspector.ViewType.TextField.self)
+        withFieldHierarchy(fieldView) { _ in
+            let links = findAllInFieldHierarchy(fieldView, ViewInspector.ViewType.Link.self)
+            let textFields = findAllInFieldHierarchy(fieldView, ViewInspector.ViewType.TextField.self)
             #expect(!links.isEmpty, "Display-only URL field should use Link component")
             #expect(textFields.isEmpty, "Display-only URL field should not use TextField")
             if let firstLink = links.first {
@@ -1338,8 +1358,8 @@ open class DynamicFieldComponentsTests: BaseTestClass {
         _ = fieldView.enableGlobalAutomaticCompliance()
 
         #if canImport(ViewInspector)
-        withFieldHierarchy(fieldView) { inspected in
-            let texts = inspected.findAll(ViewInspector.ViewType.Text.self)
+        withFieldHierarchy(fieldView) { _ in
+            let texts = findAllInFieldHierarchy(fieldView, ViewInspector.ViewType.Text.self)
             let allTexts = texts.compactMap { try? $0.string() }
             let hasPlaceholder = allTexts.contains { $0 == "—" || $0.trimmingCharacters(in: .whitespaces) == "—" }
             #expect(hasPlaceholder, "Empty read-only URL should show placeholder (—)")
@@ -1408,8 +1428,8 @@ open class DynamicFieldComponentsTests: BaseTestClass {
         _ = fieldView.enableGlobalAutomaticCompliance()
 
         #if canImport(ViewInspector)
-        withFieldHierarchy(fieldView) { inspected in
-            let allTexts = inspected.findAll(ViewInspector.ViewType.Text.self)
+        withFieldHierarchy(fieldView) { _ in
+            let allTexts = findAllInFieldHierarchy(fieldView, ViewInspector.ViewType.Text.self)
             let hasCounter = allTexts.contains { text in
                 let textContent = (try? text.string()) ?? ""
                 return textContent.contains("/") && textContent.contains("100")
@@ -1917,8 +1937,8 @@ open class DynamicFieldComponentsTests: BaseTestClass {
         #if os(iOS)
         if #available(iOS 16.0, *) {
             #if canImport(ViewInspector)
-            withFieldHierarchy(fieldView) { inspected in
-                let textFields = inspected.findAll(ViewInspector.ViewType.TextField.self)
+            withFieldHierarchy(fieldView) { _ in
+                let textFields = findAllInFieldHierarchy(fieldView, ViewInspector.ViewType.TextField.self)
                 #expect(!textFields.isEmpty, "Should use TextField for multi-line on iOS 16+")
             }
             #else
