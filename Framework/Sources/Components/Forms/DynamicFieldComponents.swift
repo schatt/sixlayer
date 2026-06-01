@@ -276,7 +276,7 @@ extension DynamicFormField {
 // MARK: - Field container shell (Issue #194)
 
 @MainActor
-private struct DynamicFormFieldStandardContainer<Content: View>: View {
+struct DynamicFormFieldStandardContainer<Content: View>: View {
     let field: DynamicFormField
     let componentName: String
     private let content: () -> Content
