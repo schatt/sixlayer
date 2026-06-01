@@ -93,6 +93,7 @@ public class PlatformResourceLayer5 {
                 }
             }
         }
+        .automaticCompliance(named: "PlatformResourceLayer5Image")
     }
     
     // MARK: - Loading Components
