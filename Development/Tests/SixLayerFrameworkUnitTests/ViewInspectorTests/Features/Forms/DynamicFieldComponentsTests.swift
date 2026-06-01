@@ -54,7 +54,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             let textContent = (try? text.string()) ?? ""
             return textContent.contains("/") && textContent.contains(String(maxLength))
         }
-        #expect(hasCounter, message)
+        #expect(hasCounter, "\(message)")
     }
 
     @MainActor
