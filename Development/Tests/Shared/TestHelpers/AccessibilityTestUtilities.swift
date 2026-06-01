@@ -173,6 +173,12 @@ public func getAccessibilityIdentifierForTest<V: View>(view: V, hostedRoot: Any?
         if let id = try? inspected.accessibilityIdentifier(), !id.isEmpty { return id }
         if let button = try? inspected.button(), let id = try? button.accessibilityIdentifier(), !id.isEmpty { return id }
     }
+    if let cfg = AccessibilityIdentifierConfig.currentTaskLocalConfig {
+        if let id = AccessibilityTestUtilities.testingSyntheticAutomaticComplianceIdentifiers(view: view, config: cfg)
+            .first(where: { !$0.isEmpty }) {
+            return id
+        }
+    }
     #endif
     guard let root = hostedRoot else { return nil }
     return firstAccessibilityIdentifier(inHosted: root)
@@ -204,12 +210,38 @@ public func getAccessibilityLabelForTest<V: View>(view: V, hostedRoot: Any? = ni
             return label
         }
     }
+    if let explicitLabel = explicitAccessibilityLabelFromAutomaticComplianceModifier(in: view) {
+        return explicitLabel
+    }
     #endif
     guard let root = hostedRoot else { return nil }
     return firstAccessibilityLabel(inHosted: root)
 }
 
 #if canImport(ViewInspector)
+/// Read `accessibilityLabel` parameter from an `AutomaticComplianceModifier` when ViewInspector cannot see the applied label.
+@MainActor
+private func explicitAccessibilityLabelFromAutomaticComplianceModifier(
+    in value: Any,
+    remainingDepth: Int = 12
+) -> String? {
+    guard remainingDepth >= 0 else { return nil }
+    let typeName = String(describing: Swift.type(of: value))
+    if typeName.contains("AutomaticComplianceModifier") {
+        let mirror = Mirror(reflecting: value)
+        for child in mirror.children where child.label == "accessibilityLabel" {
+            if let label = child.value as? String, !label.isEmpty { return label }
+        }
+    }
+    let mirror = Mirror(reflecting: value)
+    for child in mirror.children {
+        if let label = explicitAccessibilityLabelFromAutomaticComplianceModifier(in: child.value, remainingDepth: remainingDepth - 1) {
+            return label
+        }
+    }
+    return nil
+}
+
 /// Deep ViewInspector walk for first non-empty accessibility label (modifier often on ClassifiedView nodes).
 @MainActor
 private func firstAccessibilityLabelInInspectedRecursive(
