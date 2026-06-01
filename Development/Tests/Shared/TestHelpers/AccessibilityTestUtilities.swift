@@ -157,8 +157,7 @@ public func getAccessibilityIdentifierForTest<V: View>(view: V, hostedRoot: Any?
     // Generator debug log (isolated test configs enable debug logging): UIKit may not mirror IDs in unit-test hosting.
     if let cfg = AccessibilityIdentifierConfig.currentTaskLocalConfig {
         let fromLog = AccessibilityTestUtilities.parsedIdentifiersFromConfigDebugLog(config: cfg)
-        // Prefer single-segment ids (exactNamed, short names) over long automaticCompliance shells.
-        if let id = fromLog.reversed().first(where: { !$0.isEmpty && $0.split(separator: ".").count == 1 }) {
+        if let id = fromLog.reversed().first(where: { !$0.isEmpty && $0.contains(".main.ui.") }) {
             return id
         }
         if let id = fromLog.reversed().first(where: { !$0.isEmpty }) {
@@ -201,20 +200,47 @@ public func getAccessibilityLabelForTest<V: View>(view: V, hostedRoot: Any? = ni
         return label
     }
     if let inspected = try? AnyView(view).inspect() {
-        if let inner = try? inspected.anyView(),
-           let labelView = try? inner.accessibilityLabel(),
-           let labelText = try? labelView.string(), !labelText.isEmpty {
-            return labelText
-        }
-        if let labelView = try? inspected.accessibilityLabel(),
-           let labelText = try? labelView.string(), !labelText.isEmpty {
-            return labelText
+        if let label = firstAccessibilityLabelInInspectedRecursive(inspected) {
+            return label
         }
     }
     #endif
     guard let root = hostedRoot else { return nil }
     return firstAccessibilityLabel(inHosted: root)
 }
+
+#if canImport(ViewInspector)
+/// Deep ViewInspector walk for first non-empty accessibility label (modifier often on ClassifiedView nodes).
+@MainActor
+private func firstAccessibilityLabelInInspectedRecursive(
+    _ inspected: ViewInspector.InspectableView<ViewInspector.ViewType.ClassifiedView>
+) -> String? {
+    func labelFrom(_ node: ViewInspector.InspectableView<ViewInspector.ViewType.ClassifiedView>) -> String? {
+        if let labelView = try? node.accessibilityLabel(),
+           let labelText = try? labelView.string(), !labelText.isEmpty {
+            return labelText
+        }
+        return nil
+    }
+    if let label = labelFrom(inspected) { return label }
+    if let inner = try? inspected.anyView(), let label = labelFrom(inner) { return label }
+    for node in inspected.findAll(ViewInspector.ViewType.ClassifiedView.self, where: { _ in true }) {
+        if let label = labelFrom(node) { return label }
+    }
+    for button in inspected.findAll(ViewInspector.ViewType.Button.self) {
+        if let labelView = try? button.labelView().find(ViewInspector.ViewType.Text.self),
+           let labelText = try? labelView.string(), !labelText.isEmpty {
+            return labelText
+        }
+    }
+    for text in inspected.findAll(ViewInspector.ViewType.Text.self) {
+        if let labelText = try? text.string(), !labelText.isEmpty {
+            return labelText
+        }
+    }
+    return nil
+}
+#endif
 
 #if canImport(UIKit) && !os(watchOS)
 /// Upper bound for `accessibilityElementCount` before enumerating via `accessibilityElementAtIndex:`.
