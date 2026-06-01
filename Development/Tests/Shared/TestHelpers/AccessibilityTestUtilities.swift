@@ -875,6 +875,21 @@ public enum AccessibilityTestUtilities {
         var seen = Set<String>()
         return candidates.filter { seen.insert($0).inserted }
     }
+
+    /// Legacy Layer 4/5/6 globs use `*.main.ui.element.*` while generators emit `SixLayer.main.ui.<Component>.View`.
+    @MainActor
+    private static func normalizedPatternCandidates(_ pattern: String) -> [String] {
+        guard !pattern.isEmpty else { return [] }
+        var candidates = normalizedIdentifierCandidates(pattern)
+        if pattern.contains(".main.ui.element.") {
+            candidates.append(pattern.replacingOccurrences(of: ".main.ui.element.", with: ".main.ui."))
+        }
+        if pattern.contains(".main.element.") {
+            candidates.append(pattern.replacingOccurrences(of: ".main.element.", with: ".main."))
+        }
+        var seen = Set<String>()
+        return candidates.filter { seen.insert($0).inserted }
+    }
     
     @MainActor
     private static func isRegexLikePattern(_ pattern: String) -> Bool {
@@ -998,7 +1013,7 @@ public enum AccessibilityTestUtilities {
     private static func matchesExpectedPattern(_ identifier: String, expectedPattern: String) -> Bool {
         guard !expectedPattern.isEmpty else { return false }
         let idCandidates = normalizedIdentifierCandidates(identifier)
-        let patternCandidates = normalizedIdentifierCandidates(expectedPattern)
+        let patternCandidates = normalizedPatternCandidates(expectedPattern)
         
         for id in idCandidates {
             for pattern in patternCandidates {
