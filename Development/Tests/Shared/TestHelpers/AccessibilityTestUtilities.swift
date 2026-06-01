@@ -1141,8 +1141,8 @@ public enum AccessibilityTestUtilities {
     ) -> Bool {
         guard remainingDepth >= 0 else { return false }
         let typeName = String(describing: Swift.type(of: value))
+        let mirror = Mirror(reflecting: value)
         if typeName.contains("AutomaticComplianceModifier") {
-            let mirror = Mirror(reflecting: value)
             var identifierName: String?
             var identifierElementType: String?
             var identifierLabel: String?
@@ -1209,9 +1209,6 @@ public enum AccessibilityTestUtilities {
         from button: ViewInspector.InspectableView<ViewInspector.ViewType.Button>
     ) -> String? {
         if let text = try? button.labelView().find(ViewInspector.ViewType.Text.self).string(), !text.isEmpty {
-            return text
-        }
-        if let text = try? button.labelView().string(), !text.isEmpty {
             return text
         }
         return nil
