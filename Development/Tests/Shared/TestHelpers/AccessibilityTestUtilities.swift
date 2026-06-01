@@ -202,6 +202,10 @@ public func getAccessibilityLabelForTest<V: View & ViewInspector.Inspectable>(vi
 @MainActor
 public func getAccessibilityLabelForTest<V: View>(view: V, hostedRoot: Any? = nil) -> String? {
     #if canImport(ViewInspector)
+    // Modifier parameter is authoritative when ViewInspector/hosting omit the label (common in unit tests).
+    if let rawLabel = explicitAccessibilityLabelFromAutomaticComplianceModifier(in: view) {
+        return localizeAccessibilityLabel(rawLabel, context: nil, elementType: nil)
+    }
     if let root = hostedRoot, let label = firstAccessibilityLabel(inHosted: root), !label.isEmpty {
         return label
     }
@@ -209,9 +213,6 @@ public func getAccessibilityLabelForTest<V: View>(view: V, hostedRoot: Any? = ni
         if let label = firstAccessibilityLabelInInspectedRecursive(inspected) {
             return label
         }
-    }
-    if let rawLabel = explicitAccessibilityLabelFromAutomaticComplianceModifier(in: view) {
-        return localizeAccessibilityLabel(rawLabel, context: nil, elementType: nil)
     }
     #endif
     guard let root = hostedRoot else { return nil }
