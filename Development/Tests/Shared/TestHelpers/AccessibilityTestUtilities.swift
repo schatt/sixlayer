@@ -223,7 +223,12 @@ private func firstAccessibilityLabelInInspectedRecursive(
         return nil
     }
     if let label = labelFrom(inspected) { return label }
-    if let inner = try? inspected.anyView(), let label = labelFrom(inner) { return label }
+    if let inner = try? inspected.anyView() {
+        if let labelView = try? inner.accessibilityLabel(),
+           let labelText = try? labelView.string(), !labelText.isEmpty {
+            return labelText
+        }
+    }
     for node in inspected.findAll(ViewInspector.ViewType.ClassifiedView.self, where: { _ in true }) {
         if let label = labelFrom(node) { return label }
     }
