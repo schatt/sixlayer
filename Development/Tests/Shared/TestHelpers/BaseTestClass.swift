@@ -337,13 +337,7 @@ open class BaseTestClass {
     /// Verify VStack presence via direct inspection when the view type is Inspectable (Issue 178 / #242).
     @MainActor
     open func verifyViewContainsAtLeastOneVStack<V: View & ViewInspector.Inspectable>(_ view: V, testName: String) {
-        guard let vStacks = withInspectedView(view, perform: { inspected in
-            inspected.findAll(ViewInspector.ViewType.VStack.self)
-        }) else {
-            Issue.record("View inspection failed for \(testName): could not obtain inspected view")
-            return
-        }
-        guard !vStacks.isEmpty else {
+        guard (try? firstVStackInView(view)) != nil else {
             Issue.record("View inspection returned no VStack for \(testName) (ViewInspector cannot traverse hierarchy)")
             return
         }
@@ -353,13 +347,15 @@ open class BaseTestClass {
     /// Records an issue and returns when inspection fails or no VStack is found (traversal limitation).
     @MainActor
     open func verifyViewContainsAtLeastOneVStack(_ view: some View, testName: String) {
-        guard let vStacks = withInspectedView(AnyView(view), perform: { inspected in
-            inspected.findAll(ViewInspector.ViewType.VStack.self)
-        }) else {
-            Issue.record("View inspection failed for \(testName): could not obtain inspected view")
+        if let vStack = withInspectedViewUnwrapped(AnyView(view), perform: { inner in
+            inner.findAll(ViewInspector.ViewType.VStack.self).first
+        }) {
+            _ = vStack
             return
         }
-        guard !vStacks.isEmpty else {
+        guard let vStacks = withInspectedView(AnyView(view), perform: { inspected in
+            inspected.findAll(ViewInspector.ViewType.VStack.self)
+        }), !vStacks.isEmpty else {
             Issue.record("View inspection returned no VStack for \(testName) (ViewInspector cannot traverse hierarchy)")
             return
         }
