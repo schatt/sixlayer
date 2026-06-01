@@ -9,7 +9,7 @@
 import SwiftUI
 @testable import SixLayerFramework
 
-#if canImport(ViewInspector)
+#if canImport(ViewInspector) && !os(visionOS)
 import ViewInspector
 #endif
 
@@ -25,7 +25,7 @@ public enum PlatformContainerStructureAssertions {
     /// Returns whether `view` hosts a SwiftUI `Form` (directly or via `platformFormContainer`).
     @MainActor
     public static func containsForm<V: View>(_ view: V) -> Bool {
-        #if canImport(ViewInspector)
+        #if canImport(ViewInspector) && !os(visionOS)
         if let found = withInspectedView(AnyView(view), perform: { inspected in
             inspected.findAll(ViewType.Form.self).isEmpty ? nil : true
         }) {
@@ -42,7 +42,7 @@ public enum PlatformContainerStructureAssertions {
     /// Returns whether `view` contains a SwiftUI `Section`.
     @MainActor
     public static func containsSection<V: View>(_ view: V) -> Bool {
-        #if canImport(ViewInspector)
+        #if canImport(ViewInspector) && !os(visionOS)
         if let found = withInspectedView(AnyView(view), perform: { inspected in
             inspected.findAll(ViewType.Section.self).isEmpty ? nil : true
         }) {
@@ -59,7 +59,7 @@ public enum PlatformContainerStructureAssertions {
     /// Returns whether `view` contains a SwiftUI `VStack` and no `Section`.
     @MainActor
     public static func containsVStackWithoutSection<V: View>(_ view: V) -> Bool {
-        #if canImport(ViewInspector)
+        #if canImport(ViewInspector) && !os(visionOS)
         if let result = withInspectedView(AnyView(view), perform: { inspected -> Bool? in
             let hasSection = !inspected.findAll(ViewType.Section.self).isEmpty
             let hasVStack = !inspected.findAll(ViewType.VStack.self).isEmpty
