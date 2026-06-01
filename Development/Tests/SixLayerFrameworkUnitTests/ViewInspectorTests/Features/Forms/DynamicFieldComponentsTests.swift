@@ -24,11 +24,14 @@ open class DynamicFieldComponentsTests: BaseTestClass {
 
     #if canImport(ViewInspector)
     @MainActor
-    private func withFieldHierarchy<R>(
+    private func withFieldHierarchy(
         _ view: some View,
-        _ perform: (ViewInspector.InspectableView<ViewType.AnyView>) -> R?
-    ) -> R? {
-        withInspectedViewUnwrapped(view, perform: perform)
+        _ perform: (ViewInspector.InspectableView<ViewType.AnyView>) -> Void
+    ) -> Bool {
+        withInspectedViewUnwrapped(view, perform: { inner in
+            perform(inner)
+            return true
+        }) != nil
     }
 
     @MainActor
@@ -733,12 +736,11 @@ open class DynamicFieldComponentsTests: BaseTestClass {
 
         // Should render multi-line text editor
         #if canImport(ViewInspector)
-        if withFieldHierarchy(view, { inner in
+        if !withFieldHierarchy(view, { inner in
             let hasTextArea = !inner.findAll(ViewInspector.ViewType.TextEditor.self).isEmpty
                 || !inner.findAll(ViewInspector.ViewType.TextField.self).isEmpty
             #expect(hasTextArea, "Should provide multi-line text editor")
-            return true
-        }) == nil {
+        }) {
             Issue.record("DynamicTextAreaField interface not found")
         }
         assertFieldGeneratesAccessibilityIdentifier(view, componentName: "DynamicTextAreaField", fieldId: field.id)
@@ -1171,11 +1173,10 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             #expect(!links.isEmpty, "Read-only URL field with valid URL should use Link component")
             #expect(textFields.isEmpty, "Read-only URL field should not use TextField")
             if let firstLink = links.first {
-                let linkText = try? firstLink.string()
-                #expect(linkText?.contains("https://example.com") == true || linkText?.contains("example.com") == true,
-                       "Link should display the URL text")
+                let linkTexts = firstLink.findAll(ViewInspector.ViewType.Text.self).compactMap { try? $0.string() }
+                let hasURLText = linkTexts.contains { $0.contains("example.com") }
+                #expect(hasURLText, "Link should display the URL text")
             }
-            return true
         }
         #else
         // ViewInspector not available on this platform - verify behavior conceptually
@@ -1214,7 +1215,6 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             let allTextStrings = allTexts.compactMap { try? $0.string() }
             let hasInvalidURL = allTextStrings.contains { $0.contains("not a valid url") }
             #expect(hasInvalidURL, "Text should display the invalid URL value")
-            return true
         }
         #else
         // ViewInspector not available - verify conceptually
@@ -1256,7 +1256,6 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             }
             #expect(!textFields.isEmpty, "Editable URL field should use TextField component")
             #expect(!hasURLLikeText, "Editable URL field should not use Link component")
-            return true
         }
         #else
         // ViewInspector not available - verify conceptually
@@ -1293,11 +1292,10 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             #expect(!links.isEmpty, "Display-only URL field should use Link component")
             #expect(textFields.isEmpty, "Display-only URL field should not use TextField")
             if let firstLink = links.first {
-                let linkText = try? firstLink.string()
-                #expect(linkText?.contains("https://apple.com") == true || linkText?.contains("apple.com") == true,
-                       "Link should display the URL text")
+                let linkTexts = firstLink.findAll(ViewInspector.ViewType.Text.self).compactMap { try? $0.string() }
+                let hasURLText = linkTexts.contains { $0.contains("apple.com") }
+                #expect(hasURLText, "Link should display the URL text")
             }
-            return true
         }
         #else
         // ViewInspector not available - verify metadata
@@ -1332,7 +1330,6 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             let allTexts = texts.compactMap { try? $0.string() }
             let hasPlaceholder = allTexts.contains { $0 == "—" || $0.trimmingCharacters(in: .whitespaces) == "—" }
             #expect(hasPlaceholder, "Empty read-only URL should show placeholder (—)")
-            return true
         }
         #else
         // ViewInspector not available - verify conceptually
@@ -1405,7 +1402,6 @@ open class DynamicFieldComponentsTests: BaseTestClass {
                 return textContent.contains("/") && textContent.contains("100")
             }
             #expect(hasCounter, "Should display character counter in autocomplete field")
-            return true
         }
         #else
         // ViewInspector not available on this platform - this is expected, not a failure
@@ -1911,7 +1907,6 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             withFieldHierarchy(view) { inner in
                 let textFields = inner.findAll(ViewInspector.ViewType.TextField.self)
                 #expect(!textFields.isEmpty, "Should use TextField for multi-line on iOS 16+")
-                return true
             }
             #else
             // ViewInspector not available - verify conceptually
