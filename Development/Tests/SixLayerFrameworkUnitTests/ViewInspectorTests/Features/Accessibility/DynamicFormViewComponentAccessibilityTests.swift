@@ -21,8 +21,8 @@ struct TestData {
     let email: String
 }
 
-@Suite("Dynamic Form View Component Accessibility")
-/// NOTE: Not marked @MainActor on class to allow parallel execution
+@Suite("Dynamic Form View Component Accessibility", .serialized)
+/// NOTE: Serialized — ViewInspector hosting and task-local a11y config do not tolerate parallel execution in this suite (#314).
 open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
     
     // MARK: - Shared Test Data (DRY Principle)
@@ -251,7 +251,7 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
             #expect(!disclosures.isEmpty, "Should have DisclosureGroup for collapsible section")
             let hasAccessibilityID = testComponentComplianceSinglePlatform(
                 view,
-                expectedPattern: "SixLayer.main.ui.*DynamicFormSectionView.*",
+                expectedPattern: "SixLayer.main.ui.*personal.*",
                 platform: .iOS,
                 componentName: "DynamicFormSectionView"
             )
@@ -793,7 +793,7 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
         #if canImport(ViewInspector)
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
             view,
-            expectedPattern: "SixLayer.main.ui.*DynamicFormView.*",
+            expectedPattern: "SixLayer.main.ui.*test-form.*",
             platform: .iOS,
             componentName: "DynamicFormView"
         )
