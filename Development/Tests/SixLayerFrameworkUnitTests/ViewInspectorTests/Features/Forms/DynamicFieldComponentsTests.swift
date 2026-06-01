@@ -63,7 +63,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
                 "SixLayer.main.ui.*\(segment)*"
             ]))
             let matched = patterns.contains { pattern in
-                testComponentComplianceSinglePlatform(
+                AccessibilityTestUtilities.testComponentComplianceSinglePlatform(
                     view,
                     expectedPattern: pattern,
                     platform: .iOS,
@@ -1928,7 +1928,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
         } else {
             // iOS < 16: Should fall back to TextEditor
             #if canImport(ViewInspector)
-            withInspectedView(view) { inspected in
+            withInspectedView(fieldView) { inspected in
                 // Should use TextEditor as fallback
                 let textEditors = inspected.findAll(ViewInspector.ViewType.TextEditor.self)
                 #expect(!textEditors.isEmpty, "Should use TextEditor as fallback on iOS < 16")
