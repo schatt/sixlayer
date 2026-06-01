@@ -810,21 +810,16 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             validationRules: ["maxLength": "100"]
         )
 
-        let view = DynamicTextField(field: field, formState: formState)
-            .enableGlobalAutomaticCompliance()
+        let fieldView = DynamicTextField(field: field, formState: formState)
+        _ = fieldView.enableGlobalAutomaticCompliance()
 
         // Should show character counter
         #if canImport(ViewInspector)
-        withInspectedView(view) { inspected in
-            let allTexts = inspected.findAll(ViewInspector.ViewType.Text.self)
-            if !allTexts.isEmpty {
-                let hasCounter = allTexts.contains { text in
-                    let textContent = (try? text.string()) ?? ""
-                    return textContent.contains("/") && textContent.contains("100")
-                }
-                #expect(hasCounter, "Should display character counter with max length")
-            }
-        }
+        expectCharacterCounterText(
+            in: fieldView,
+            maxLength: 100,
+            message: "Should display character counter with max length"
+        )
         #else
         // ViewInspector not available on this platform - this is expected, not a failure
         #endif
@@ -880,21 +875,17 @@ open class DynamicFieldComponentsTests: BaseTestClass {
         let longText = String(repeating: "a", count: 85)
         formState.setValue(longText, for: "text-with-limit")
 
-        let view = DynamicTextField(field: field, formState: formState)
-            .enableGlobalAutomaticCompliance()
+        let fieldView = DynamicTextField(field: field, formState: formState)
+        _ = fieldView.enableGlobalAutomaticCompliance()
 
         // Counter should be visible and show warning color
         #if canImport(ViewInspector)
-        withInspectedView(view) { inspected in
-            let allTexts = inspected.findAll(ViewInspector.ViewType.Text.self)
-            if !allTexts.isEmpty {
-                let hasCounter = allTexts.contains { text in
-                    let textContent = (try? text.string()) ?? ""
-                    return textContent.contains("85") && textContent.contains("100")
-                }
-                #expect(hasCounter, "Should show updated counter when approaching limit")
-            }
+        let allTexts = findAllInFieldHierarchy(fieldView, ViewInspector.ViewType.Text.self)
+        let hasCounter = allTexts.contains { text in
+            let textContent = (try? text.string()) ?? ""
+            return textContent.contains("85") && textContent.contains("100")
         }
+        #expect(hasCounter, "Should show updated counter when approaching limit")
         #else
         // ViewInspector not available on this platform - this is expected, not a failure
         #endif
@@ -953,21 +944,16 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             validationRules: ["maxLength": "500"]
         )
 
-        let view = DynamicTextAreaField(field: field, formState: formState)
-            .enableGlobalAutomaticCompliance()
+        let fieldView = DynamicTextAreaField(field: field, formState: formState)
+        _ = fieldView.enableGlobalAutomaticCompliance()
 
         // Should show character counter
         #if canImport(ViewInspector)
-        withInspectedView(view) { inspected in
-            let allTexts = inspected.findAll(ViewInspector.ViewType.Text.self)
-            if !allTexts.isEmpty {
-                let hasCounter = allTexts.contains { text in
-                    let textContent = (try? text.string()) ?? ""
-                    return textContent.contains("/") && textContent.contains("500")
-                }
-                #expect(hasCounter, "Should display character counter in text area")
-            }
-        }
+        expectCharacterCounterText(
+            in: fieldView,
+            maxLength: 500,
+            message: "Should display character counter in text area"
+        )
         #else
         // ViewInspector not available on this platform - this is expected, not a failure
         #endif
@@ -1045,21 +1031,16 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             validationRules: ["maxLength": "500"]
         )
 
-        let view = DynamicRichTextField(field: field, formState: formState)
-            .enableGlobalAutomaticCompliance()
+        let fieldView = DynamicRichTextField(field: field, formState: formState)
+        _ = fieldView.enableGlobalAutomaticCompliance()
 
         // Should show character counter
         #if canImport(ViewInspector)
-        withInspectedView(view) { inspected in
-            let allTexts = inspected.findAll(ViewInspector.ViewType.Text.self)
-            if !allTexts.isEmpty {
-                let hasCounter = allTexts.contains { text in
-                    let textContent = (try? text.string()) ?? ""
-                    return textContent.contains("/") && textContent.contains("500")
-                }
-                #expect(hasCounter, "Should display character counter in rich text field")
-            }
-        }
+        expectCharacterCounterText(
+            in: fieldView,
+            maxLength: 500,
+            message: "Should display character counter in rich text field"
+        )
         #else
         // ViewInspector not available on this platform - this is expected, not a failure
         #endif
@@ -1084,20 +1065,15 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             validationRules: ["maxLength": "255"]
         )
 
-        let view = DynamicEmailField(field: field, formState: formState)
-            .enableGlobalAutomaticCompliance()
+        let fieldView = DynamicEmailField(field: field, formState: formState)
+        _ = fieldView.enableGlobalAutomaticCompliance()
 
         #if canImport(ViewInspector)
-        withInspectedView(view) { inspected in
-            let allTexts = inspected.findAll(ViewInspector.ViewType.Text.self)
-            if !allTexts.isEmpty {
-                let hasCounter = allTexts.contains { text in
-                    let textContent = (try? text.string()) ?? ""
-                    return textContent.contains("/") && textContent.contains("255")
-                }
-                #expect(hasCounter, "Should display character counter in email field")
-            }
-        }
+        expectCharacterCounterText(
+            in: fieldView,
+            maxLength: 255,
+            message: "Should display character counter in email field"
+        )
         #else
         // ViewInspector not available on this platform - this is expected, not a failure
         #endif
@@ -1120,20 +1096,15 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             validationRules: ["maxLength": "20"]
         )
 
-        let view = DynamicPhoneField(field: field, formState: formState)
-            .enableGlobalAutomaticCompliance()
+        let fieldView = DynamicPhoneField(field: field, formState: formState)
+        _ = fieldView.enableGlobalAutomaticCompliance()
 
         #if canImport(ViewInspector)
-        withInspectedView(view) { inspected in
-            let allTexts = inspected.findAll(ViewInspector.ViewType.Text.self)
-            if !allTexts.isEmpty {
-                let hasCounter = allTexts.contains { text in
-                    let textContent = (try? text.string()) ?? ""
-                    return textContent.contains("/") && textContent.contains("20")
-                }
-                #expect(hasCounter, "Should display character counter in phone field")
-            }
-        }
+        expectCharacterCounterText(
+            in: fieldView,
+            maxLength: 20,
+            message: "Should display character counter in phone field"
+        )
         #else
         // ViewInspector not available on this platform - this is expected, not a failure
         #endif
@@ -1156,20 +1127,15 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             validationRules: ["maxLength": "2048"]
         )
 
-        let view = DynamicURLField(field: field, formState: formState)
-            .enableGlobalAutomaticCompliance()
+        let fieldView = DynamicURLField(field: field, formState: formState)
+        _ = fieldView.enableGlobalAutomaticCompliance()
 
         #if canImport(ViewInspector)
-        withInspectedView(view) { inspected in
-            let allTexts = inspected.findAll(ViewInspector.ViewType.Text.self)
-            if !allTexts.isEmpty {
-                let hasCounter = allTexts.contains { text in
-                    let textContent = (try? text.string()) ?? ""
-                    return textContent.contains("/") && textContent.contains("2048")
-                }
-                #expect(hasCounter, "Should display character counter in URL field")
-            }
-        }
+        expectCharacterCounterText(
+            in: fieldView,
+            maxLength: 2048,
+            message: "Should display character counter in URL field"
+        )
         #else
         // ViewInspector not available on this platform - this is expected, not a failure
         #endif
@@ -1388,20 +1354,15 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             validationRules: ["maxLength": "128"]
         )
 
-        let view = DynamicPasswordField(field: field, formState: formState)
-            .enableGlobalAutomaticCompliance()
+        let fieldView = DynamicPasswordField(field: field, formState: formState)
+        _ = fieldView.enableGlobalAutomaticCompliance()
 
         #if canImport(ViewInspector)
-        withInspectedView(view) { inspected in
-            let allTexts = inspected.findAll(ViewInspector.ViewType.Text.self)
-            if !allTexts.isEmpty {
-                let hasCounter = allTexts.contains { text in
-                    let textContent = (try? text.string()) ?? ""
-                    return textContent.contains("/") && textContent.contains("128")
-                }
-                #expect(hasCounter, "Should display character counter in password field")
-            }
-        }
+        expectCharacterCounterText(
+            in: fieldView,
+            maxLength: 128,
+            message: "Should display character counter in password field"
+        )
         #else
         // ViewInspector not available on this platform - this is expected, not a failure
         #endif
@@ -1428,14 +1389,11 @@ open class DynamicFieldComponentsTests: BaseTestClass {
         _ = fieldView.enableGlobalAutomaticCompliance()
 
         #if canImport(ViewInspector)
-        withFieldHierarchy(fieldView) { _ in
-            let allTexts = findAllInFieldHierarchy(fieldView, ViewInspector.ViewType.Text.self)
-            let hasCounter = allTexts.contains { text in
-                let textContent = (try? text.string()) ?? ""
-                return textContent.contains("/") && textContent.contains("100")
-            }
-            #expect(hasCounter, "Should display character counter in autocomplete field")
-        }
+        expectCharacterCounterText(
+            in: fieldView,
+            maxLength: 100,
+            message: "Should display character counter in autocomplete field"
+        )
         #else
         // ViewInspector not available on this platform - this is expected, not a failure
         #endif
@@ -2090,21 +2048,16 @@ open class DynamicFieldComponentsTests: BaseTestClass {
 
         formState.setValue("Some multi-line text\nwith multiple lines", for: "multiline-text")
 
-        let view = DynamicTextField(field: field, formState: formState)
-            .enableGlobalAutomaticCompliance()
+        let fieldView = DynamicTextField(field: field, formState: formState)
+        _ = fieldView.enableGlobalAutomaticCompliance()
 
         // Should show character counter
         #if canImport(ViewInspector)
-        withInspectedView(view) { inspected in
-            let allTexts = inspected.findAll(ViewInspector.ViewType.Text.self)
-            if !allTexts.isEmpty {
-                let hasCounter = allTexts.contains { text in
-                    let textContent = (try? text.string()) ?? ""
-                    return textContent.contains("/") && textContent.contains("200")
-                }
-                #expect(hasCounter, "Should display character counter for multi-line TextField")
-            }
-        }
+        expectCharacterCounterText(
+            in: fieldView,
+            maxLength: 200,
+            message: "Should display character counter for multi-line TextField"
+        )
         #else
         // ViewInspector not available - verify conceptually
         let currentValue = formState.getValue(for: "multiline-text") as? String ?? ""
