@@ -58,7 +58,7 @@ extension DynamicSelectField: ViewInspector.Inspectable {}
 
 // MARK: - Field container shell (Issue #178 / #314)
 
-extension DynamicFormFieldStandardContainer: ViewInspector.Inspectable where Content: ViewInspector.Inspectable {}
+extension DynamicFormFieldStandardContainer: ViewInspector.Inspectable {}
 
 // MARK: - Layer 5 platform components (so firstVStackInHierarchy(inspected) works)
 
