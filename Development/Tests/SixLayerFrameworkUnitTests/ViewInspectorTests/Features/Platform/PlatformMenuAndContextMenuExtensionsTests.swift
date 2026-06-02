@@ -80,7 +80,7 @@ open class PlatformMenuAndContextMenuExtensionsTests: BaseTestClass {
 
     @Test @MainActor func testPlatformMenuTitleOverloadNamedCompliance() async {
         assertLayoutChromeDualPath(anchorName: "PlatformMenuTitle", context: "platformMenu(title:)") {
-            Text("Ignored label on macOS Menu title variant")
+            Text("Trailing label ignored when title overload supplies menu label")
                 .platformMenu(title: "Actions") {
                     Button("Do thing", action: {})
                 }
