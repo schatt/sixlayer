@@ -1,6 +1,8 @@
 import SwiftUI
 
-/// When to show ``View/platformNavigationSheetButton(action:sidebarVisibility:)`` in app chrome (issue #323).
+// MARK: - Navigation sheet toolbar visibility (issue #323)
+
+/// When to show ``View/platformNavigationSheetButton(action:sidebarVisibility:visibility:columnVisibility:systemImage:accessibilityIdentifier:)`` in app chrome (issue #323).
 public enum PlatformNavigationSheetButtonVisibilityPolicy: Sendable, Equatable {
     /// Legacy behavior: always include the control in the layout.
     case always
