@@ -18,47 +18,32 @@ import AppKit
 @Suite(.serialized)
 struct DynamicFontResolverTests {
 
-    #if os(iOS) || os(macOS)
-    private func bodyPointSize(resolver: DynamicFontResolver, contentSize: SixLayerContentSizeCategory?) -> CGFloat {
-        #if os(iOS)
-        return resolver.uiFont(for: .body, contentSize: contentSize).pointSize
-        #elseif os(macOS)
-        return resolver.nsFont(for: .body, contentSize: contentSize).pointSize
-        #endif
-    }
-    #endif
-
     @Test func testBodyFont_scalesBetweenLargeAndAccessibilityExtraLarge() {
         #if os(iOS) || os(macOS)
-        let resolver = DynamicFontResolver()
-        let largeSize = bodyPointSize(resolver: resolver, contentSize: .large)
-        let accessibilitySize = bodyPointSize(resolver: resolver, contentSize: .accessibilityExtraLarge)
-        #expect(accessibilitySize > largeSize, "Body at accessibilityExtraLarge should be larger than at large")
+        PlatformTypographyTestAssertions.assertBodyPointSizeScalesUpToAccessibilityExtraLarge()
         #else
-        let resolver = DynamicFontResolver()
-        _ = resolver.font(for: .body, contentSize: .accessibilityExtraLarge)
-        #expect(Bool(true), "Non-iOS/macOS platforms return platform reference fonts")
+        PlatformTypographyTestAssertions.assertAltPlatformDynamicTypeContract()
         #endif
     }
 
     @Test func testExplicitContentSizeOverrideDiffersFromLarge() {
         #if os(iOS) || os(macOS)
         let resolver = DynamicFontResolver(defaultContentSize: .large)
-        let atDefault = bodyPointSize(resolver: resolver, contentSize: nil)
-        let atAX = bodyPointSize(resolver: resolver, contentSize: .accessibilityExtraLarge)
+        #if os(iOS)
+        let atDefault = resolver.uiFont(for: .body, contentSize: nil).pointSize
+        let atAX = resolver.uiFont(for: .body, contentSize: .accessibilityExtraLarge).pointSize
+        #elseif os(macOS)
+        let atDefault = resolver.nsFont(for: .body, contentSize: nil).pointSize
+        let atAX = resolver.nsFont(for: .body, contentSize: .accessibilityExtraLarge).pointSize
+        #endif
         #expect(atAX > atDefault, "Explicit accessibilityExtraLarge override should increase body size")
         #else
-        #expect(Bool(true))
+        PlatformTypographyTestAssertions.assertAccessibilityScaleFactorExceedsLarge()
         #endif
     }
 
     @Test func testAllTextStylesReturnUsableFonts() {
-        let resolver = DynamicFontResolver()
-        for style in SixLayerTextStyle.allCases {
-            let font = resolver.font(for: style, contentSize: .large)
-            _ = Text("Sample").font(font)
-            #expect(Bool(true), "Font for \(style) should be usable in SwiftUI")
-        }
+        PlatformTypographyTestAssertions.assertAllTextStylesResolveUsableFonts()
     }
 
     #if os(iOS)
@@ -79,9 +64,11 @@ struct DynamicFontResolverTests {
         #expect(accessibility.body == resolver.font(for: .body, contentSize: .accessibilityExtraLarge))
         #expect(large.body != accessibility.body, "HIG body token should scale with content size")
         #else
-        let system = HIGTypographySystem(for: .iOS, contentSize: .large)
+        let system = HIGTypographySystem(for: SixLayerPlatform.current, contentSize: .large)
         _ = system.body
-        #expect(Bool(true))
+        PlatformTypographyTestAssertions.assertPolicyFloorsArePositive(
+            for: PlatformTypographyTestAssertions.policyForCurrentPlatform()
+        )
         #endif
     }
 }
