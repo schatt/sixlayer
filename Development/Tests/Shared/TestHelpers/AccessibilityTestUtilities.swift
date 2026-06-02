@@ -1171,14 +1171,110 @@ public enum AccessibilityTestUtilities {
     }
 
     #if canImport(ViewInspector)
-    /// When anonymous `.automaticCompliance()` suppresses wrapper IDs (#222), infer element type/label via ViewInspector and run the generator.
+    private struct AutomaticComplianceModifierSnapshot {
+        var identifierName: String?
+        var identifierElementType: String?
+        var identifierLabel: String?
+        var accessibilityLabel: String?
+        var accessibilityHint: String?
+        var accessibilityTraits: AccessibilityTraits?
+        var accessibilityValue: String?
+        var accessibilitySortPriority: Double?
+    }
+
+    @MainActor
+    private static func collectAutomaticComplianceModifierSnapshots(
+        in value: Any,
+        remainingDepth: Int = 12,
+        into results: inout [AutomaticComplianceModifierSnapshot]
+    ) {
+        guard remainingDepth >= 0 else { return }
+        let typeName = String(describing: Swift.type(of: value))
+        let mirror = Mirror(reflecting: value)
+        if typeName.contains("AutomaticComplianceModifier") {
+            var snapshot = AutomaticComplianceModifierSnapshot()
+            for child in mirror.children {
+                switch child.label {
+                case "identifierName": snapshot.identifierName = child.value as? String
+                case "identifierElementType": snapshot.identifierElementType = child.value as? String
+                case "identifierLabel": snapshot.identifierLabel = child.value as? String
+                case "accessibilityLabel": snapshot.accessibilityLabel = child.value as? String
+                case "accessibilityHint": snapshot.accessibilityHint = child.value as? String
+                case "accessibilityTraits": snapshot.accessibilityTraits = child.value as? AccessibilityTraits
+                case "accessibilityValue": snapshot.accessibilityValue = child.value as? String
+                case "accessibilitySortPriority": snapshot.accessibilitySortPriority = child.value as? Double
+                default: break
+                }
+            }
+            results.append(snapshot)
+        }
+        for child in mirror.children {
+            collectAutomaticComplianceModifierSnapshots(
+                in: child.value,
+                remainingDepth: remainingDepth - 1,
+                into: &results
+            )
+        }
+    }
+
+    @MainActor
+    private static func generatedIdentifier(
+        for snapshot: AutomaticComplianceModifierSnapshot,
+        config: AccessibilityIdentifierConfig
+    ) -> String? {
+        let generated = generateAccessibilityIdentifier(
+            config: config,
+            identifierName: snapshot.identifierName,
+            identifierElementType: snapshot.identifierElementType,
+            identifierLabel: snapshot.identifierLabel,
+            capturedScreenContext: config.currentScreenContext,
+            capturedViewHierarchy: config.currentViewHierarchy,
+            capturedEnableUITestIntegration: config.enableUITestIntegration,
+            capturedIncludeComponentNames: config.includeComponentNames,
+            capturedIncludeElementTypes: config.includeElementTypes,
+            capturedEnableDebugLogging: false,
+            capturedNamespace: config.namespace,
+            capturedGlobalPrefix: config.globalPrefix,
+            defaultElementType: "View",
+            emptyFallback: "main.ui.element"
+        )
+        return generated.isEmpty ? nil : generated
+    }
+
+    /// Recover IDs from `.automaticCompliance(identifierName:)` / field compliance when hosting skips modifier bodies (#314).
     @MainActor
     private static func syntheticAutomaticComplianceIdentifiers<V: View>(
         view: V,
         config: AccessibilityIdentifierConfig
     ) -> [String] {
-        guard viewHasAnonymousAutomaticComplianceModifier(in: view) else { return [] }
-        guard let params = inferredInteractiveControlParameters(from: view) else { return [] }
+        var snapshots: [AutomaticComplianceModifierSnapshot] = []
+        collectAutomaticComplianceModifierSnapshots(in: view, into: &snapshots)
+
+        var identifiers: [String] = []
+        var seen = Set<String>()
+        for snapshot in snapshots {
+            if let name = snapshot.identifierName?.trimmingCharacters(in: .whitespacesAndNewlines),
+               !name.isEmpty,
+               let generated = generatedIdentifier(for: snapshot, config: config),
+               seen.insert(generated).inserted {
+                identifiers.append(generated)
+            }
+        }
+
+        let hasAnonymous = snapshots.contains {
+            slfSuppressAnonymousAutomaticComplianceWrapperIdentifier(
+                identifierName: $0.identifierName,
+                identifierElementType: $0.identifierElementType,
+                identifierLabel: $0.identifierLabel,
+                accessibilityLabel: $0.accessibilityLabel,
+                accessibilityHint: $0.accessibilityHint,
+                accessibilityTraits: $0.accessibilityTraits,
+                accessibilityValue: $0.accessibilityValue,
+                accessibilitySortPriority: $0.accessibilitySortPriority
+            )
+        }
+        guard hasAnonymous, identifiers.isEmpty else { return identifiers }
+        guard let params = inferredInteractiveControlParameters(from: view) else { return identifiers }
         let generated = generateAccessibilityIdentifier(
             config: config,
             identifierName: nil,
@@ -1195,7 +1291,10 @@ public enum AccessibilityTestUtilities {
             defaultElementType: "View",
             emptyFallback: "main.ui.element"
         )
-        return generated.isEmpty ? [] : [generated]
+        if !generated.isEmpty, seen.insert(generated).inserted {
+            identifiers.append(generated)
+        }
+        return identifiers
     }
 
     @MainActor
@@ -1203,48 +1302,20 @@ public enum AccessibilityTestUtilities {
         in value: Any,
         remainingDepth: Int = 12
     ) -> Bool {
-        guard remainingDepth >= 0 else { return false }
-        let typeName = String(describing: Swift.type(of: value))
-        let mirror = Mirror(reflecting: value)
-        if typeName.contains("AutomaticComplianceModifier") {
-            var identifierName: String?
-            var identifierElementType: String?
-            var identifierLabel: String?
-            var accessibilityLabel: String?
-            var accessibilityHint: String?
-            var accessibilityTraits: AccessibilityTraits?
-            var accessibilityValue: String?
-            var accessibilitySortPriority: Double?
-            for child in mirror.children {
-                switch child.label {
-                case "identifierName": identifierName = child.value as? String
-                case "identifierElementType": identifierElementType = child.value as? String
-                case "identifierLabel": identifierLabel = child.value as? String
-                case "accessibilityLabel": accessibilityLabel = child.value as? String
-                case "accessibilityHint": accessibilityHint = child.value as? String
-                case "accessibilityTraits": accessibilityTraits = child.value as? AccessibilityTraits
-                case "accessibilityValue": accessibilityValue = child.value as? String
-                case "accessibilitySortPriority": accessibilitySortPriority = child.value as? Double
-                default: break
-                }
-            }
-            return slfSuppressAnonymousAutomaticComplianceWrapperIdentifier(
-                identifierName: identifierName,
-                identifierElementType: identifierElementType,
-                identifierLabel: identifierLabel,
-                accessibilityLabel: accessibilityLabel,
-                accessibilityHint: accessibilityHint,
-                accessibilityTraits: accessibilityTraits,
-                accessibilityValue: accessibilityValue,
-                accessibilitySortPriority: accessibilitySortPriority
+        var snapshots: [AutomaticComplianceModifierSnapshot] = []
+        collectAutomaticComplianceModifierSnapshots(in: value, remainingDepth: remainingDepth, into: &snapshots)
+        return snapshots.contains {
+            slfSuppressAnonymousAutomaticComplianceWrapperIdentifier(
+                identifierName: $0.identifierName,
+                identifierElementType: $0.identifierElementType,
+                identifierLabel: $0.identifierLabel,
+                accessibilityLabel: $0.accessibilityLabel,
+                accessibilityHint: $0.accessibilityHint,
+                accessibilityTraits: $0.accessibilityTraits,
+                accessibilityValue: $0.accessibilityValue,
+                accessibilitySortPriority: $0.accessibilitySortPriority
             )
         }
-        for child in mirror.children {
-            if viewHasAnonymousAutomaticComplianceModifier(in: child.value, remainingDepth: remainingDepth - 1) {
-                return true
-            }
-        }
-        return false
     }
 
     @MainActor
