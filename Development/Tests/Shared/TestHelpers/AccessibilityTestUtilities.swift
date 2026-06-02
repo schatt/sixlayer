@@ -1150,7 +1150,6 @@ public enum AccessibilityTestUtilities {
 
     /// UIHosting often skips `NamedModifier` / `ExactNamedModifier` bodies; use modifier algorithms as fallback.
     @MainActor
-    @MainActor
     private static func collectNamedAutomaticComplianceComponentNames(
         in value: Any,
         remainingDepth: Int = 12,
