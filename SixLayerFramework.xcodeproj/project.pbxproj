@@ -1503,7 +1503,6 @@
 		760BEF28D23E8F6D3D34CF53 /* PlatformHapticFeedbackExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 338F46850FB1DD0AFEC57806 /* PlatformHapticFeedbackExtensionsTests.swift */; };
 		76191CE0B94C7BBD5C97FF7F /* IntelligentCardExpansionComprehensiveTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F370DFBCC1AB86D88105C77 /* IntelligentCardExpansionComprehensiveTests.swift */; };
 		76340E5A3CFB4E30C0B10333 /* PresentationProfilesCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 951351CCDB9482231BDD67BE /* PresentationProfilesCatalog.swift */; };
-		763EE6837E60207E420330BC /* ViewInspector in Frameworks */ = {isa = PBXBuildFile; productRef = C9E4C9C72500B6D970597984 /* ViewInspector */; };
 		763FF05ED185DD3BB6E1F68F /* PlatformManagedSettingsFlowLogic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81AE3C41DE9DA88FC64BFBF5 /* PlatformManagedSettingsFlowLogic.swift */; };
 		764A81346435B6C51D4F4592 /* OCROverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73AF32072717F16C7863A085 /* OCROverlayView.swift */; };
 		764AC4AF2677AB469463945D /* DesignSystemUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3DEE5874BE33CEC62AAB606 /* DesignSystemUITests.swift */; };
@@ -2199,7 +2198,6 @@
 		B035633947C4FE8408A942D2 /* ControlTestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 744E808A66DF1FF304D7DBD1 /* ControlTestView.swift */; };
 		B060791BA26FEA7915EBF3DA /* PlatformImageAPISignatureTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F557D7E2FE2549899354753 /* PlatformImageAPISignatureTests.swift */; };
 		B06BFA94B27701C0E3933267 /* PlatformAdvancedContainersAccessibilityUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF82A5D408C5D4B696012AB7 /* PlatformAdvancedContainersAccessibilityUITests.swift */; };
-		B09E5101E64F199A675DF1DC /* ViewInspector in Frameworks */ = {isa = PBXBuildFile; productRef = 908086C58B863E4068DB0FE4 /* ViewInspector */; };
 		B0DB5096BB505257D225743C /* SixLayerFramework.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 27FFFF642D6993C525230D91 /* SixLayerFramework.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		B0E0BD097AB93656CEB98063 /* PlatformScalableSystemFontTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 358A1BA800EC174677CA7CA3 /* PlatformScalableSystemFontTests.swift */; };
 		B0EDC441A23ECCEDB46487AF /* PlatformListExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD0E259E3E0C3D534E4E569C /* PlatformListExtensions.swift */; };
@@ -4356,7 +4354,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				DD689622DB84A8B935B19AD6 /* SixLayerFramework.framework in Frameworks */,
-				763EE6837E60207E420330BC /* ViewInspector in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4426,7 +4423,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				1B235D86B27544C896C99380 /* SixLayerFramework.framework in Frameworks */,
-				B09E5101E64F199A675DF1DC /* ViewInspector in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -6333,7 +6329,7 @@
 			path = API;
 			sourceTree = "<group>";
 		};
-		"TEMP_99D4D42C-CC4C-4335-BC0E-94E7295A47CB" /* Utilities */ = {
+		"TEMP_D5FB8E80-B264-449E-A2E3-70812E2F362A" /* Utilities */ = {
 			isa = PBXGroup;
 			children = (
 			);
@@ -6508,7 +6504,6 @@
 			);
 			name = SixLayerFrameworkUnitTests_watchOS;
 			packageProductDependencies = (
-				C9E4C9C72500B6D970597984 /* ViewInspector */,
 			);
 			productName = SixLayerFrameworkUnitTests_watchOS;
 			productReference = 16BE181E512673A040D39517 /* SixLayerFrameworkUnitTests_watchOS.xctest */;
@@ -6689,7 +6684,6 @@
 			);
 			name = SixLayerFrameworkExternalIntegrationTests_watchOS;
 			packageProductDependencies = (
-				908086C58B863E4068DB0FE4 /* ViewInspector */,
 			);
 			productName = SixLayerFrameworkExternalIntegrationTests_watchOS;
 			productReference = 5C154BBAB3AC65FB02AC1D1A /* SixLayerFrameworkExternalIntegrationTests_watchOS.xctest */;
@@ -12303,22 +12297,12 @@
 			package = 12F9FBE68F97E78F15D3EBF5 /* XCRemoteSwiftPackageReference "ViewInspector" */;
 			productName = ViewInspector;
 		};
-		908086C58B863E4068DB0FE4 /* ViewInspector */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 12F9FBE68F97E78F15D3EBF5 /* XCRemoteSwiftPackageReference "ViewInspector" */;
-			productName = ViewInspector;
-		};
 		9AD953BF15595E218BBB715C /* ViewInspector */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 12F9FBE68F97E78F15D3EBF5 /* XCRemoteSwiftPackageReference "ViewInspector" */;
 			productName = ViewInspector;
 		};
 		C2E51C153E3E84BD2F0FEC40 /* ViewInspector */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 12F9FBE68F97E78F15D3EBF5 /* XCRemoteSwiftPackageReference "ViewInspector" */;
-			productName = ViewInspector;
-		};
-		C9E4C9C72500B6D970597984 /* ViewInspector */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 12F9FBE68F97E78F15D3EBF5 /* XCRemoteSwiftPackageReference "ViewInspector" */;
 			productName = ViewInspector;

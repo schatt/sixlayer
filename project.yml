@@ -232,7 +232,7 @@ targets:
       - package: ViewInspector
         product: ViewInspector
 
-  # Unit tests - tvOS
+  # Unit tests - tvOS (ViewInspector N/A — iOS/macOS ViewInspector schemes only; #219, #233)
   SixLayerFrameworkUnitTests_tvOS:
     type: bundle.unit-test
     platform: tvOS
@@ -256,7 +256,7 @@ targets:
     dependencies:
       - target: SixLayerFramework_tvOS
 
-  # Unit tests - watchOS
+  # Unit tests - watchOS (ViewInspector N/A — iOS/macOS ViewInspector schemes only; #219, #233)
   SixLayerFrameworkUnitTests_watchOS:
     type: bundle.unit-test
     platform: watchOS
@@ -280,10 +280,8 @@ targets:
       ENABLE_TESTING_SEARCH_PATHS: YES
     dependencies:
       - target: SixLayerFramework_watchOS
-      - package: ViewInspector
-        product: ViewInspector
 
-  # Unit tests - visionOS
+  # Unit tests - visionOS (ViewInspector N/A — iOS/macOS ViewInspector schemes only; #219, #233)
   SixLayerFrameworkUnitTests_visionOS:
     type: bundle.unit-test
     platform: visionOS
@@ -503,7 +501,7 @@ targets:
       - package: ViewInspector
         product: ViewInspector
 
-  # External integration tests - tvOS
+  # External integration tests - tvOS (ViewInspector N/A; #219)
   SixLayerFrameworkExternalIntegrationTests_tvOS:
     type: bundle.unit-test
     platform: tvOS
@@ -522,7 +520,7 @@ targets:
     dependencies:
       - target: SixLayerFramework_tvOS
 
-  # External integration tests - watchOS
+  # External integration tests - watchOS (ViewInspector N/A; #219)
   SixLayerFrameworkExternalIntegrationTests_watchOS:
     type: bundle.unit-test
     platform: watchOS
@@ -540,10 +538,8 @@ targets:
       ENABLE_TESTING_SEARCH_PATHS: YES
     dependencies:
       - target: SixLayerFramework_watchOS
-      - package: ViewInspector
-        product: ViewInspector
 
-  # External integration tests - visionOS
+  # External integration tests - visionOS (ViewInspector N/A; #219)
   SixLayerFrameworkExternalIntegrationTests_visionOS:
     type: bundle.unit-test
     platform: visionOS
