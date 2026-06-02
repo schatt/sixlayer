@@ -629,7 +629,10 @@ public extension View {
             NavigationSplitView(columnVisibility: columnVisibility) {
                 sidebar()
             } detail: {
-                detail()
+                layer4DetailWithOptionalRevealChrome(
+                    columnVisibility: columnVisibility,
+                    detail: detail
+                )
             }
         } else {
             NavigationSplitView {
@@ -640,13 +643,27 @@ public extension View {
         }
     }
 
+    /// Detail column wrapper: split-edge reveal chrome when ``columnVisibility`` is provided (#324).
+    @ViewBuilder
+    private func layer4DetailWithOptionalRevealChrome<DetailContent: View>(
+        columnVisibility: Binding<NavigationSplitViewVisibility>?,
+        @ViewBuilder detail: () -> DetailContent
+    ) -> some View {
+        detail()
+            .platformSidebarSplitRevealChrome(columnVisibility: columnVisibility)
+    }
+
     // MARK: - Layer 4 nested split shell (app + settings)
 
     @ViewBuilder
     private func layer4ResolverDetailOnly<DetailContent: View>(
+        columnVisibility: Binding<NavigationSplitViewVisibility>?,
         @ViewBuilder detail: () -> DetailContent
     ) -> some View {
-        detail()
+        layer4DetailWithOptionalRevealChrome(
+            columnVisibility: columnVisibility,
+            detail: detail
+        )
     }
 
     private func layer4OuterSidebarOverlay<Sidebar: View, Detail: View>(
@@ -676,7 +693,7 @@ public extension View {
                 detail: detail
             )
         case .detailOnlyCollapsedInner:
-            layer4ResolverDetailOnly(detail: detail)
+            layer4ResolverDetailOnly(columnVisibility: columnVisibility, detail: detail)
         case .overlayOuterSidebar:
             layer4OuterSidebarOverlay(
                 sidebar: sidebar,
@@ -698,7 +715,7 @@ public extension View {
                 detail()
             }
         case .detailOnlyCollapsedInner:
-            layer4ResolverDetailOnly(detail: detail)
+            layer4ResolverDetailOnly(columnVisibility: nil, detail: detail)
         case .overlayOuterSidebar:
             layer4OuterSidebarOverlay(
                 sidebar: sidebar,
@@ -804,7 +821,9 @@ public extension View {
     /// - **iPhone Landscape (Standard models)**: Detail-only view
     ///
     /// - Parameters:
-    ///   - columnVisibility: Optional binding for NavigationSplitView column visibility
+    ///   - columnVisibility: Optional binding for NavigationSplitView column visibility. When provided,
+    ///     Layer 4 applies ``View/platformSidebarSplitRevealChrome(columnVisibility:)`` on the detail
+    ///     column (edge stripe; iOS leading-edge swipe to reveal). Omit only when the app owns chrome.
     ///   - showingNavigationSheet: Optional binding for sheet presentation (iPhone detail-only mode)
     ///   - strategy: App navigation strategy from Layer 3
     ///   - sidebar: View builder for sidebar content
@@ -844,7 +863,9 @@ public extension View {
     /// Convenience function that automatically determines strategy from device capabilities
     ///
     /// - Parameters:
-    ///   - columnVisibility: Optional binding for NavigationSplitView column visibility
+    ///   - columnVisibility: Optional binding for NavigationSplitView column visibility. When provided,
+    ///     Layer 4 applies ``View/platformSidebarSplitRevealChrome(columnVisibility:)`` on the detail
+    ///     column (edge stripe; iOS leading-edge swipe to reveal). Omit only when the app owns chrome.
     ///   - showingNavigationSheet: Optional binding for sheet presentation (iPhone detail-only mode)
     ///   - sidebar: View builder for sidebar content
     ///   - detail: View builder for detail content
@@ -929,7 +950,7 @@ public extension View {
                 #endif
             }
         case .detailOnlyCollapsedInner:
-            layer4ResolverDetailOnly(detail: detail)
+            layer4ResolverDetailOnly(columnVisibility: columnVisibility, detail: detail)
         case .overlayOuterSidebar:
             layer4OuterSidebarOverlay(
                 sidebar: sidebar,
@@ -1003,7 +1024,7 @@ public extension View {
                 }
             }
         case .detailOnlyCollapsedInner:
-            layer4ResolverDetailOnly(detail: detail)
+            layer4ResolverDetailOnly(columnVisibility: columnVisibility, detail: detail)
         case .overlayOuterSidebar:
             layer4OuterSidebarOverlay(
                 sidebar: sidebar,
