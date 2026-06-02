@@ -25,6 +25,33 @@ struct AccessibilityTestUtilitiesSyntheticComplianceTests {
     }
 
     @Test @MainActor
+    func syntheticIdentifierMatchesPatternForExplicitIdentifierNameCompliance() {
+        let config = TestSetupUtilities.makeIsolatedAccessibilityIdentifierConfig()
+        let field = DynamicFormField(
+            id: "username",
+            contentType: .text,
+            label: "Username",
+            isRequired: true
+        )
+        let formState = DynamicFormState(configuration: DynamicFormConfiguration(
+            id: "test", title: "Test", sections: [], submitButtonText: "Submit"
+        ))
+        let view = DynamicFormFieldView(field: field, formState: formState)
+
+        let ids = AccessibilityTestUtilities.testingSyntheticAutomaticComplianceIdentifiers(
+            view: view,
+            config: config
+        )
+
+        #expect(
+            ids.contains(where: {
+                AccessibilityTestUtilities.identifierMatchesExpectedPattern($0, expectedPattern: "SixLayer.main.ui.*username*")
+            }),
+            "Expected synthetic ID from automaticCompliance(identifierName:) on field row; got: \(ids)"
+        )
+    }
+
+    @Test @MainActor
     func syntheticIdentifierMatchesSixLayerUiGlobForAnonymousButtonCompliance() {
         let config = TestSetupUtilities.makeIsolatedAccessibilityIdentifierConfig()
         let view = Button("Test Button") { }
