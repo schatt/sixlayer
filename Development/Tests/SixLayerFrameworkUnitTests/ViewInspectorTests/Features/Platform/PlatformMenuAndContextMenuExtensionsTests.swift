@@ -2,6 +2,10 @@ import Testing
 import SwiftUI
 @testable import SixLayerFramework
 
+#if canImport(ViewInspector)
+import ViewInspector
+#endif
+
 /// `platformMenu` / `platformContextMenu` extensions (Issue #170). Grouped; keep <=10 tests.
 @Suite("Platform Menu and Context Menu Extensions")
 open class PlatformMenuAndContextMenuExtensionsTests: BaseTestClass {
@@ -98,4 +102,61 @@ open class PlatformMenuAndContextMenuExtensionsTests: BaseTestClass {
         let hosted = Self.hostRootPlatformView(view)
         #expect(hosted != nil)
     }
+
+    /// Issue #321: `platformMenu` must wrap SwiftUI `Menu` on iOS and macOS (not iOS no-op passthrough).
+    @Test @MainActor func testPlatformMenuAllOverloadsExposeMenuItems() async {
+        #if canImport(ViewInspector)
+        assertPlatformMenuExposesItems(
+            context: "platformMenu { }",
+            view: Text("Menu host")
+                .platformMenu {
+                    Button("One", action: {})
+                    Button("Two", action: {})
+                },
+            expectedButtons: ["One", "Two"]
+        )
+        assertPlatformMenuExposesItems(
+            context: "platformMenu(title:)",
+            view: Text("Ignored trailing label")
+                .platformMenu(title: "Actions") {
+                    Button("Do thing", action: {})
+                },
+            expectedButtons: ["Do thing"]
+        )
+        assertPlatformMenuExposesItems(
+            context: "platformMenu(label:)",
+            view: Label("Row", systemImage: "line.3.horizontal")
+                .platformMenu(label: Text("Overflow")) {
+                    Button("A", action: {})
+                    Button("B", action: {})
+                },
+            expectedButtons: ["A", "B"]
+        )
+        #endif
+    }
+
+    #if canImport(ViewInspector)
+    @MainActor
+    private func assertPlatformMenuExposesItems<V: View>(
+        context: String,
+        view: V,
+        expectedButtons: [String]
+    ) {
+        guard let inspected = try? AnyView(view).inspect() else {
+            Issue.record("\(context): ViewInspector should inspect platformMenu view")
+            return
+        }
+        guard let menu = try? inspected.find(ViewType.Menu.self) else {
+            Issue.record("\(context): platformMenu should wrap content in SwiftUI Menu on \(SixLayerPlatform.current)")
+            return
+        }
+        for title in expectedButtons {
+            do {
+                _ = try menu.find(button: title)
+            } catch {
+                Issue.record("\(context): expected tappable menu button '\(title)'")
+            }
+        }
+    }
+    #endif
 }
