@@ -9,12 +9,6 @@ import SwiftUI
 import Testing
 @testable import SixLayerFramework
 
-#if os(iOS)
-import UIKit
-#elseif os(macOS)
-import AppKit
-#endif
-
 @Suite(.serialized)
 struct VisualDesignSystemTypographyTokensTests {
 
@@ -39,22 +33,9 @@ struct VisualDesignSystemTypographyTokensTests {
 
     @Test func testTypographyTokens_differAcrossContentSizes() {
         #if os(iOS) || os(macOS)
-        let largeSettings = AccessibilitySettings(
-            dynamicType: true,
-            preferredContentSize: .large
-        )
-        let accessibilitySettings = AccessibilitySettings(
-            dynamicType: true,
-            preferredContentSize: .accessibilityExtraLarge
-        )
-        let largeTokens = SixLayerDesignSystem.typographyTokens(for: .light, accessibility: largeSettings)
-        let accessibilityTokens = SixLayerDesignSystem.typographyTokens(
-            for: .light,
-            accessibility: accessibilitySettings
-        )
-        #expect(largeTokens.body != accessibilityTokens.body)
+        PlatformTypographyTestAssertions.assertTypographyTokensDifferAcrossContentSizes()
         #else
-        #expect(Bool(true))
+        PlatformTypographyTestAssertions.assertAltPlatformTypographyTokensHonorScaleFactor()
         #endif
     }
 
