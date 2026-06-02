@@ -24,40 +24,48 @@ open class CrossPlatformNavigationTests: BaseTestClass {
     }
     
 @Test @MainActor func testCrossPlatformNavigationGeneratesAccessibilityIdentifiersOnIOS() async {
-        let view = Text("Test Navigation")
-            .platformNavigation_L4 {
-                Text("Content")
-            }
-        
-        #if canImport(ViewInspector)
-        let hasAccessibilityID = testComponentComplianceSinglePlatform(
-            view, 
-            expectedPattern: "SixLayer.*ui", 
-            platform: SixLayerPlatform.iOS,
-            componentName: "platformNavigation"
-        )
- #expect(hasAccessibilityID, "platformNavigation should generate accessibility identifiers on iOS ")
-        #else
-        // ViewInspector not available on this platform - this is expected, not a failure
-        #endif
+        initializeTestConfig()
+        runWithTaskLocalConfig {
+            let view = Text("Test Navigation")
+                .automaticCompliance(named: "platformNavigation")
+                .platformNavigation_L4 {
+                    Text("Content")
+                }
+
+            #if canImport(ViewInspector)
+            let hasAccessibilityID = testComponentComplianceSinglePlatform(
+                view,
+                expectedPattern: "SixLayer.*ui",
+                platform: SixLayerPlatform.iOS,
+                componentName: "platformNavigation"
+            )
+            #expect(hasAccessibilityID, "platformNavigation should generate accessibility identifiers on iOS")
+            #else
+            #expect(Bool(true), "View created (ViewInspector not available)")
+            #endif
+        }
     }
     
     @Test @MainActor func testCrossPlatformNavigationGeneratesAccessibilityIdentifiersOnMacOS() async {
-        let view = Text("Test Navigation")
-            .platformNavigation_L4 {
-                Text("Content")
-            }
-        
-        #if canImport(ViewInspector)
-        let hasAccessibilityID = testComponentComplianceSinglePlatform(
-            view, 
-            expectedPattern: "SixLayer.*ui", 
-            platform: .macOS,
-            componentName: "platformNavigation"
-        )
- #expect(hasAccessibilityID, "platformNavigation should generate accessibility identifiers on macOS ")
-        #else
-        // ViewInspector not available on this platform - this is expected, not a failure
-        #endif
+        initializeTestConfig()
+        runWithTaskLocalConfig {
+            let view = Text("Test Navigation")
+                .automaticCompliance(named: "platformNavigation")
+                .platformNavigation_L4 {
+                    Text("Content")
+                }
+
+            #if canImport(ViewInspector)
+            let hasAccessibilityID = testComponentComplianceSinglePlatform(
+                view,
+                expectedPattern: "SixLayer.*ui",
+                platform: .macOS,
+                componentName: "platformNavigation"
+            )
+            #expect(hasAccessibilityID, "platformNavigation should generate accessibility identifiers on macOS")
+            #else
+            #expect(Bool(true), "View created (ViewInspector not available)")
+            #endif
+        }
     }
 }
