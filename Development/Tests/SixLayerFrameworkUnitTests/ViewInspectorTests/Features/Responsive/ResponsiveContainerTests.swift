@@ -29,6 +29,7 @@ open class ResponsiveContainerTests: BaseTestClass {
             let view = ResponsiveContainer { _, _ in
                 Text("Test Content")
             }
+            .automaticCompliance(named: "ResponsiveContainer")
 
             #if canImport(ViewInspector)
             let hasAccessibilityID = testComponentComplianceSinglePlatform(
@@ -50,6 +51,7 @@ open class ResponsiveContainerTests: BaseTestClass {
             let view = ResponsiveContainer { _, _ in
                 Text("Test Content")
             }
+            .automaticCompliance(named: "ResponsiveContainer")
 
             #if canImport(ViewInspector)
             let hasAccessibilityID = testComponentComplianceSinglePlatform(
