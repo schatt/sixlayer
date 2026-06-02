@@ -15,10 +15,20 @@ public enum PlatformNavigationSheetButtonVisibility {
         deviceType: DeviceType,
         columnVisibility: NavigationSplitViewVisibility?
     ) -> Bool {
-        // Deliberate stub for TDD red (#323).
-        _ = policy
-        _ = deviceType
-        _ = columnVisibility
-        return false
+        switch policy {
+        case .always:
+            return true
+        case .phoneOrDetailOnly:
+            if deviceType == .mac {
+                return true
+            }
+            if deviceType == .phone || deviceType == .car {
+                return true
+            }
+            if columnVisibility == .detailOnly {
+                return true
+            }
+            return false
+        }
     }
 }
