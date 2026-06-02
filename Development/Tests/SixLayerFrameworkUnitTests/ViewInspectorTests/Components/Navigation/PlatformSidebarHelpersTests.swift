@@ -22,7 +22,7 @@ struct PlatformSidebarHelpersTests {
     }
     
     @Test @MainActor func testPlatformSidebarPullIndicatorWhenVisible() {
-        // Test that when isVisible is true, it returns a view (on macOS) or EmptyView (on iOS)
+        // When isVisible is true, returns leading-edge stripe on iOS/macOS (#324)
         let _ = platformSidebarPullIndicator(isVisible: true)
         // Should compile and return a view
         #expect(Bool(true), "Should return a View when visible")
@@ -45,15 +45,13 @@ struct PlatformSidebarHelpersTests {
     }
     
     @Test @MainActor func testPlatformSidebarPullIndicatorPlatformBehavior() {
-        // Test platform-specific behavior
-        #if os(macOS)
-        // On macOS, when visible, should show indicator
+        // iOS and macOS show the stripe when visible; other platforms use EmptyView (#324)
+        #if os(iOS) || os(macOS)
         let _ = platformSidebarPullIndicator(isVisible: true)
-        #expect(Bool(true), "macOS should return indicator view when visible")
+        #expect(Bool(true), "iOS/macOS should return indicator view when visible")
         #else
-        // On iOS, should always return EmptyView
         let _ = platformSidebarPullIndicator(isVisible: true)
-        #expect(Bool(true), "iOS should return EmptyView")
+        #expect(Bool(true), "Non-iOS/macOS hosts return EmptyView for pull indicator")
         #endif
     }
     
