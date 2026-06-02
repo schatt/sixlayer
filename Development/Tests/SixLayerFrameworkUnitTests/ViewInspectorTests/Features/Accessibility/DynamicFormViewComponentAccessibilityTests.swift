@@ -73,7 +73,7 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
         testName: String,
         expectedPattern: String,
         componentName: String,
-        controlAssertion: ((ViewInspector.InspectableView<ViewType.VStack>) -> Void)? = nil
+        controlAssertion: ((ViewInspector.InspectableView<ViewInspector.ViewType.AnyView>) -> Void)? = nil
     ) {
         runWithTaskLocalConfig {
             guard let config = testConfig else {
@@ -84,11 +84,10 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
             defer { config.enableDebugLogging = wasDebugLogging }
             config.enableDebugLogging = true
 
-            if let controlAssertion,
-               let vStack = withInspectedViewUnwrapped(AnyView(view), perform: { inner in
-                   inner.findAll(ViewType.VStack.self).first
-               }) {
-                controlAssertion(vStack)
+            if let controlAssertion {
+                withInspectedViewUnwrapped(AnyView(view)) { inner in
+                    controlAssertion(inner)
+                }
             }
             let hasAccessibilityID = testComponentComplianceSinglePlatform(
                 view,
@@ -341,8 +340,8 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
             testName: "DynamicTextField",
             expectedPattern: "SixLayer.main.ui.*DynamicTextField.*",
             componentName: "DynamicTextField"
-        ) { vStack in
-            #expect(!vStack.findAll(ViewType.TextField.self).isEmpty, "Should contain at least one TextField")
+        ) { inspected in
+            #expect(!inspected.findAll(ViewType.TextField.self).isEmpty, "Should contain at least one TextField")
         }
         let fieldValue: String? = formState.getValue(for: "test-text-field")
         #expect(fieldValue == "John Doe", "Form state should contain initial value")
@@ -382,8 +381,8 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
             testName: "DynamicNumberField",
             expectedPattern: "SixLayer.main.ui.*DynamicNumberField.*",
             componentName: "DynamicNumberField"
-        ) { vStack in
-            #expect(!vStack.findAll(ViewType.TextField.self).isEmpty, "Should contain at least one TextField")
+        ) { inspected in
+            #expect(!inspected.findAll(ViewType.TextField.self).isEmpty, "Should contain at least one TextField")
         }
         let numberValue: String? = formState.getValue(for: "test-number-field")
         #expect(numberValue == "25", "Form state should contain numeric value")
@@ -423,9 +422,9 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
             testName: "DynamicTextAreaField",
             expectedPattern: "SixLayer.main.ui.*DynamicTextAreaField.*",
             componentName: "DynamicTextAreaField"
-        ) { vStack in
-            let hasTextEditor = !vStack.findAll(ViewType.TextEditor.self).isEmpty
-            let hasMultilineTextField = !vStack.findAll(ViewType.TextField.self).isEmpty
+        ) { inspected in
+            let hasTextEditor = !inspected.findAll(ViewType.TextEditor.self).isEmpty
+            let hasMultilineTextField = !inspected.findAll(ViewType.TextField.self).isEmpty
             #expect(hasTextEditor || hasMultilineTextField, "Should contain TextEditor or multiline TextField")
         }
         let storedValue: String? = formState.getValue(for: "test-textarea-field")
@@ -542,8 +541,8 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
             testName: "DynamicMultiSelectField",
             expectedPattern: "SixLayer.main.ui.*DynamicMultiSelectField.*",
             componentName: "DynamicMultiSelectField"
-        ) { vStack in
-            #expect(!vStack.findAll(ViewType.Toggle.self).isEmpty, "Should contain selection Toggle controls")
+        ) { inspected in
+            #expect(!inspected.findAll(ViewType.Toggle.self).isEmpty, "Should contain selection Toggle controls")
         }
         let storedValue: [String]? = formState.getValue(for: "test-multiselect-field")
         #expect(storedValue == ["Reading", "Music"], "Form state should contain selected values array")
@@ -584,8 +583,10 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
             testName: "DynamicRadioField",
             expectedPattern: "SixLayer.main.ui.*DynamicRadioField.*",
             componentName: "DynamicRadioField"
-        ) { vStack in
-            #expect(!vStack.findAll(ViewType.Picker.self).isEmpty, "Should contain radio-style Picker")
+        ) { inspected in
+            let hasPicker = !inspected.findAll(ViewType.Picker.self).isEmpty
+            let hasOptionButtons = inspected.findAll(ViewType.Button.self).count >= options.count
+            #expect(hasPicker || hasOptionButtons, "Should contain radio-style Picker (macOS) or option Buttons (iOS)")
         }
         let radioValue: String? = formState.getValue(for: "test-radio-field")
         #expect(radioValue == "Female", "Form state should contain selected radio value")
@@ -625,8 +626,8 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
             testName: "DynamicCheckboxField",
             expectedPattern: "SixLayer.main.ui.*DynamicCheckboxField.*",
             componentName: "DynamicCheckboxField"
-        ) { vStack in
-            #expect(!vStack.findAll(ViewType.Toggle.self).isEmpty, "Should contain Toggle control")
+        ) { inspected in
+            #expect(!inspected.findAll(ViewType.Toggle.self).isEmpty, "Should contain Toggle control")
         }
         let checkboxValue: Bool? = formState.getValue(for: "test-checkbox-field")
         #expect(checkboxValue == true, "Form state should contain boolean checkbox value")
@@ -666,8 +667,8 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
             testName: "DynamicToggleField",
             expectedPattern: "SixLayer.main.ui.*DynamicToggleField.*",
             componentName: "DynamicToggleField"
-        ) { vStack in
-            #expect(!vStack.findAll(ViewType.Toggle.self).isEmpty, "Should contain Toggle control")
+        ) { inspected in
+            #expect(!inspected.findAll(ViewType.Toggle.self).isEmpty, "Should contain Toggle control")
         }
         let toggleValue: Bool? = formState.getValue(for: "test-toggle-field")
         #expect(toggleValue == false, "Form state should contain boolean toggle value")
