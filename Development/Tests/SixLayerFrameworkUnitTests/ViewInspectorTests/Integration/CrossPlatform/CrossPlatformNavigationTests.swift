@@ -27,10 +27,10 @@ open class CrossPlatformNavigationTests: BaseTestClass {
         initializeTestConfig()
         runWithTaskLocalConfig {
             let view = Text("Test Navigation")
-                .automaticCompliance(named: "platformNavigation")
                 .platformNavigation_L4 {
                     Text("Content")
                 }
+                .automaticCompliance(named: "platformNavigation")
 
             #if canImport(ViewInspector)
             let hasAccessibilityID = testComponentComplianceSinglePlatform(
@@ -50,10 +50,10 @@ open class CrossPlatformNavigationTests: BaseTestClass {
         initializeTestConfig()
         runWithTaskLocalConfig {
             let view = Text("Test Navigation")
-                .automaticCompliance(named: "platformNavigation")
                 .platformNavigation_L4 {
                     Text("Content")
                 }
+                .automaticCompliance(named: "platformNavigation")
 
             #if canImport(ViewInspector)
             let hasAccessibilityID = testComponentComplianceSinglePlatform(
