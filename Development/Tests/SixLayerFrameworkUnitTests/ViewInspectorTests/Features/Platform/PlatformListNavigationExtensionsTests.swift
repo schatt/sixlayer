@@ -102,4 +102,25 @@ open class PlatformListNavigationExtensionsTests: BaseTestClass {
         let view = Text("Host").platformNavigationSheetButton(action: {})
         expectAccessibilityCompliance(view, componentName: "platformNavigationSheetButton")
     }
+
+    @Test @MainActor func testPlatformNavigationSheetButtonPhoneOrDetailOnlyRendersOnMacHost() async {
+        let view = Text("Host").platformNavigationSheetButton(
+            action: {},
+            visibility: .phoneOrDetailOnly,
+            columnVisibility: .constant(.all),
+            accessibilityIdentifier: "Test.ShowNavigationMenuButton"
+        )
+        expectAccessibilityCompliance(view, componentName: "platformNavigationSheetButton")
+    }
+
+    @Test @MainActor func testPlatformAppNavigationSheetToolbarLeadingRenders() async {
+        @State var showingSheet = false
+        let view = Text("Host")
+            .platformAppNavigationSheetToolbarLeading(
+                showingNavigationSheet: $showingSheet,
+                columnVisibility: .constant(.detailOnly),
+                accessibilityIdentifier: "Test.ShowNavigationMenuButton"
+            )
+        expectRenderable(view, context: "platformAppNavigationSheetToolbarLeading")
+    }
 }
