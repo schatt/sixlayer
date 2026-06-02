@@ -24,39 +24,45 @@ open class ResponsiveContainerTests: BaseTestClass {
     }
     
 @Test @MainActor func testResponsiveContainerGeneratesAccessibilityIdentifiersOnIOS() async {
-        let view = ResponsiveContainer { isHorizontal, isVertical in
-            Text("Test Content")
+        initializeTestConfig()
+        runWithTaskLocalConfig {
+            let view = ResponsiveContainer { _, _ in
+                Text("Test Content")
+            }
+
+            #if canImport(ViewInspector)
+            let hasAccessibilityID = testComponentComplianceSinglePlatform(
+                view,
+                expectedPattern: "SixLayer.*ui",
+                platform: .iOS,
+                componentName: "ResponsiveContainer"
+            )
+            #expect(hasAccessibilityID, "ResponsiveContainer should generate accessibility identifiers on iOS")
+            #else
+            #expect(Bool(true), "View created (ViewInspector not available)")
+            #endif
         }
-        
-        #if canImport(ViewInspector)
-        let hasAccessibilityID = testComponentComplianceSinglePlatform(
-            view, 
-            expectedPattern: "SixLayer.*ui", 
-            platform: .iOS,
-            componentName: "ResponsiveContainer"
-        )
- #expect(hasAccessibilityID, "ResponsiveContainer should generate accessibility identifiers on iOS ")
-        #else
-        // ViewInspector not available on this platform - this is expected, not a failure
-        #endif
     }
     
     @Test @MainActor func testResponsiveContainerGeneratesAccessibilityIdentifiersOnMacOS() async {
-        let view = ResponsiveContainer { isHorizontal, isVertical in
-            Text("Test Content")
+        initializeTestConfig()
+        runWithTaskLocalConfig {
+            let view = ResponsiveContainer { _, _ in
+                Text("Test Content")
+            }
+
+            #if canImport(ViewInspector)
+            let hasAccessibilityID = testComponentComplianceSinglePlatform(
+                view,
+                expectedPattern: "SixLayer.*ui",
+                platform: .macOS,
+                componentName: "ResponsiveContainer"
+            )
+            #expect(hasAccessibilityID, "ResponsiveContainer should generate accessibility identifiers on macOS")
+            #else
+            #expect(Bool(true), "View created (ViewInspector not available)")
+            #endif
         }
-        
-        #if canImport(ViewInspector)
-        let hasAccessibilityID = testComponentComplianceSinglePlatform(
-            view, 
-            expectedPattern: "SixLayer.*ui", 
-            platform: .macOS,
-            componentName: "ResponsiveContainer"
-        )
- #expect(hasAccessibilityID, "ResponsiveContainer should generate accessibility identifiers on macOS ")
-        #else
-        // ViewInspector not available on this platform - this is expected, not a failure
-        #endif
     }
 }
 
