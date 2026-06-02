@@ -52,6 +52,44 @@ struct AccessibilityTestUtilitiesSyntheticComplianceTests {
     }
 
     @Test @MainActor
+    func syntheticIdentifierMatchesPatternForNamedAutomaticCompliance() {
+        let config = TestSetupUtilities.makeIsolatedAccessibilityIdentifierConfig()
+        let view = Image(systemName: "photo")
+            .automaticCompliance(named: "Image")
+
+        let ids = AccessibilityTestUtilities.testingSyntheticAutomaticComplianceIdentifiers(
+            view: view,
+            config: config
+        )
+
+        #expect(
+            ids.contains(where: {
+                AccessibilityTestUtilities.identifierMatchesExpectedPattern($0, expectedPattern: "SixLayer.main.ui.*Image*")
+            }),
+            "Expected synthetic ID for automaticCompliance(named:); got: \(ids)"
+        )
+    }
+
+    @Test @MainActor
+    func syntheticIdentifierMatchesSixLayerUiGlobForAnonymousImageCompliance() {
+        let config = TestSetupUtilities.makeIsolatedAccessibilityIdentifierConfig()
+        let view = Image(systemName: "photo")
+            .automaticCompliance()
+
+        let ids = AccessibilityTestUtilities.testingSyntheticAutomaticComplianceIdentifiers(
+            view: view,
+            config: config
+        )
+
+        #expect(
+            ids.contains(where: {
+                AccessibilityTestUtilities.identifierMatchesExpectedPattern($0, expectedPattern: "SixLayer.*ui")
+            }),
+            "Expected synthetic ID for anonymous Image automaticCompliance; got: \(ids)"
+        )
+    }
+
+    @Test @MainActor
     func syntheticIdentifierMatchesSixLayerUiGlobForAnonymousButtonCompliance() {
         let config = TestSetupUtilities.makeIsolatedAccessibilityIdentifierConfig()
         let view = Button("Test Button") { }
