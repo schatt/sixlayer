@@ -19,7 +19,7 @@ import ViewInspector
 /// Inspect a view directly so ViewInspector traverses the real hierarchy.
 /// Call only with views whose type conforms to ViewInspector.Inspectable.
 @MainActor
-public func inspectView<V: View & ViewInspector.Inspectable>(_ view: V) -> ViewInspector.InspectableView<ViewInspector.ViewType.View<V>>? {
+public func inspectView<V: View & ViewInspector.Inspectable>(_ view: V) -> ViewInspector.InspectableView<ViewInspector.ViewType.ClassifiedView>? {
     try? view.inspect()
 }
 
@@ -28,7 +28,7 @@ public func inspectView<V: View & ViewInspector.Inspectable>(_ view: V) -> ViewI
 @MainActor
 public func withInspectedViewThrowing<V: View & ViewInspector.Inspectable, R>(
     _ view: V,
-    perform: (ViewInspector.InspectableView<ViewInspector.ViewType.View<V>>) throws -> R
+    perform: (ViewInspector.InspectableView<ViewInspector.ViewType.ClassifiedView>) throws -> R
 ) throws -> R {
     let inspected = try view.inspect()
     return try perform(inspected)
@@ -39,7 +39,7 @@ public func withInspectedViewThrowing<V: View & ViewInspector.Inspectable, R>(
 @MainActor
 public func withInspectedView<V: View & ViewInspector.Inspectable, R>(
     _ view: V,
-    perform: (ViewInspector.InspectableView<ViewInspector.ViewType.View<V>>) -> R?
+    perform: (ViewInspector.InspectableView<ViewInspector.ViewType.ClassifiedView>) -> R?
 ) -> R? {
     guard let inspected = try? view.inspect() else { return nil }
     return perform(inspected)
