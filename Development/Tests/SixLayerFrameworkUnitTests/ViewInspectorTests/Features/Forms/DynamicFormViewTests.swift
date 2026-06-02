@@ -26,6 +26,30 @@ open class DynamicFormViewTests: BaseTestClass {
     private func cleanupTestEnvironment() async {
         await AccessibilityTestUtilities.cleanupAccessibilityTestEnvironment()
     }
+
+    #if canImport(ViewInspector)
+    /// Production uses `automaticCompliance(identifierName: sanitizeLabelText(title/label))`, not the Swift type name (#314).
+    @MainActor
+    private func expectedSanitizedLabelPattern(_ label: String) -> String {
+        "SixLayer.main.ui.*\(sanitizeLabelText(label))*"
+    }
+
+    @MainActor
+    private func expectFormAccessibilityCompliance<V: View>(
+        _ view: V,
+        expectedPattern: String,
+        componentName: String
+    ) -> Bool {
+        runWithTaskLocalConfig {
+            testComponentComplianceSinglePlatform(
+                view,
+                expectedPattern: expectedPattern,
+                platform: .iOS,
+                componentName: componentName
+            )
+        }
+    }
+    #endif
     
     @Test @MainActor func testDynamicFormViewRendersTitleAndSectionsAndSubmitButton() async {
         initializeTestConfig()
@@ -69,10 +93,9 @@ open class DynamicFormViewTests: BaseTestClass {
         // Should render proper form structure
         #if canImport(ViewInspector)
         tryWithFirstVStack(view, testName: "DynamicFormView title, sections, submit", minChildren: 3) { _ in
-            let hasAccessibilityID = testComponentComplianceSinglePlatform(
+            let hasAccessibilityID = expectFormAccessibilityCompliance(
                 view,
-                expectedPattern: "SixLayer.main.ui.*DynamicFormView.*",
-                platform: .iOS,
+                expectedPattern: expectedSanitizedLabelPattern("User Registration"),
                 componentName: "DynamicFormView"
             )
             #expect(hasAccessibilityID, "Should generate accessibility identifier")
@@ -217,10 +240,9 @@ open class DynamicFormViewTests: BaseTestClass {
             } else {
                 Issue.record("Could not find section title text")
             }
-            let hasAccessibilityID = testComponentComplianceSinglePlatform(
+            let hasAccessibilityID = expectFormAccessibilityCompliance(
                 view,
-                expectedPattern: "SixLayer.main.ui.*DynamicFormSectionView.*",
-                platform: .iOS,
+                expectedPattern: expectedSanitizedLabelPattern("Contact Information"),
                 componentName: "DynamicFormSectionView"
             )
             #expect(hasAccessibilityID, "Should generate accessibility identifier")
@@ -297,10 +319,9 @@ open class DynamicFormViewTests: BaseTestClass {
         // But we can verify the view structure is correct
         #if canImport(ViewInspector)
         tryWithFirstVStack(view, testName: "DynamicFormFieldView field ID for scrolling", minChildren: 2) { _ in
-            let hasAccessibilityID = testComponentComplianceSinglePlatform(
+            let hasAccessibilityID = expectFormAccessibilityCompliance(
                 view,
-                expectedPattern: "SixLayer.main.ui.*DynamicFormFieldView.*",
-                platform: .iOS,
+                expectedPattern: expectedSanitizedLabelPattern("Test Field"),
                 componentName: "DynamicFormFieldView"
             )
             #expect(hasAccessibilityID, "Field should generate accessibility identifier")
@@ -343,10 +364,9 @@ open class DynamicFormViewTests: BaseTestClass {
             } else {
                 Issue.record("Could not find field label text")
             }
-            let hasAccessibilityID = testComponentComplianceSinglePlatform(
+            let hasAccessibilityID = expectFormAccessibilityCompliance(
                 view,
-                expectedPattern: "SixLayer.main.ui.*DynamicFormFieldView.*",
-                platform: .iOS,
+                expectedPattern: expectedSanitizedLabelPattern("Username"),
                 componentName: "DynamicFormFieldView"
             )
             #expect(hasAccessibilityID, "Should generate accessibility identifier")
@@ -474,10 +494,9 @@ open class DynamicFormViewTests: BaseTestClass {
 
         // Should have accessibility label with "required"
         #if canImport(ViewInspector)
-        let hasAccessibilityLabel = testComponentComplianceSinglePlatform(
+        let hasAccessibilityLabel = expectFormAccessibilityCompliance(
             view,
-            expectedPattern: "SixLayer.main.ui.*DynamicFormFieldView.*",
-            platform: .iOS,
+            expectedPattern: expectedSanitizedLabelPattern("Full Name"),
             componentName: "DynamicFormFieldView"
         )
         // Note: ViewInspector may not be able to read accessibility label text directly
@@ -514,10 +533,9 @@ open class DynamicFormViewTests: BaseTestClass {
 
         // Should have accessibility identifier (label modifier is applied)
         #if canImport(ViewInspector)
-        let hasAccessibilityLabel = testComponentComplianceSinglePlatform(
+        let hasAccessibilityLabel = expectFormAccessibilityCompliance(
             view,
-            expectedPattern: "SixLayer.main.ui.*DynamicFormFieldView.*",
-            platform: .iOS,
+            expectedPattern: expectedSanitizedLabelPattern("Phone Number"),
             componentName: "DynamicFormFieldView"
         )
         // Note: ViewInspector may not be able to read accessibility label text directly
@@ -678,10 +696,9 @@ open class DynamicFormViewTests: BaseTestClass {
 
         // Should have proper accessibility identifiers
         #if canImport(ViewInspector)
-        let hasAccessibilityID = testComponentComplianceSinglePlatform(
+        let hasAccessibilityID = expectFormAccessibilityCompliance(
             view,
-            expectedPattern: "SixLayer.main.ui.*DynamicFormFieldView.*",
-            platform: .iOS,
+            expectedPattern: expectedSanitizedLabelPattern("Password"),
             componentName: "DynamicFormFieldView"
         )
         #expect(hasAccessibilityID, "Should generate accessibility identifier")
@@ -762,10 +779,9 @@ open class DynamicFormViewTests: BaseTestClass {
         // Should render proper wizard structure
         #if canImport(ViewInspector)
         tryWithFirstVStack(view, testName: "FormWizardView content and navigation", minChildren: 2) { _ in }
-        let hasAccessibilityID = testComponentComplianceSinglePlatform(
+        let hasAccessibilityID = expectFormAccessibilityCompliance(
             view,
             expectedPattern: "SixLayer.main.ui.*FormWizardView.*",
-            platform: .iOS,
             componentName: "FormWizardView"
         )
         #expect(hasAccessibilityID, "Should generate accessibility identifier")
@@ -806,10 +822,9 @@ open class DynamicFormViewTests: BaseTestClass {
         
         // When: Testing accessibility identifier generation
         #if canImport(ViewInspector)
-        let hasAccessibilityID = testComponentComplianceSinglePlatform(
-            view, 
-            expectedPattern: "SixLayer.*ui.*DynamicFormView.*",
-            platform: SixLayerPlatform.iOS,
+        let hasAccessibilityID = expectFormAccessibilityCompliance(
+            view,
+            expectedPattern: expectedSanitizedLabelPattern("Test Form"),
             componentName: "DynamicFormView"
         )
         #expect(hasAccessibilityID, "DynamicFormView should generate accessibility identifiers with component name on iOS")
@@ -849,19 +864,19 @@ open class DynamicFormViewTests: BaseTestClass {
         )
         
         // When: Testing accessibility identifier generation
-        let hasAccessibilityID = testComponentComplianceSinglePlatform(
-            view, 
-            expectedPattern: "SixLayer.*ui.*DynamicFormView.*",
-            platform: SixLayerPlatform.macOS,
-            componentName: "DynamicFormView"
-        )
+        _ = runWithTaskLocalConfig {
+            testComponentComplianceSinglePlatform(
+                view,
+                expectedPattern: expectedSanitizedLabelPattern("Test Form"),
+                platform: SixLayerPlatform.macOS,
+                componentName: "DynamicFormView"
+            )
+        }
         
         // Then: Should generate accessibility identifiers
-        // VERIFIED: DynamicFormView DOES have .automaticCompliance(named: "DynamicFormView") 
-        // modifier applied in Framework/Sources/Components/Forms/DynamicFormView.swift:76.
+        // VERIFIED: DynamicFormView uses automaticCompliance(identifierName:) from form title.
         // ViewInspector limitation: Cannot reliably detect accessibility identifiers on macOS.
-        // macOS: ViewInspector cannot detect identifiers - test passes by verifying modifier exists in code
-        #expect(Bool(true), "DynamicFormView has .automaticCompliance() modifier (verified in code) - ViewInspector limitation on macOS")
+        #expect(Bool(true), "DynamicFormView has automatic compliance from title (verified in code) - ViewInspector limitation on macOS")
     }
 
     // MARK: - OCR Integration Tests
