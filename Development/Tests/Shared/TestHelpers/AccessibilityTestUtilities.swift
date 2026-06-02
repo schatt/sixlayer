@@ -1150,15 +1150,65 @@ public enum AccessibilityTestUtilities {
 
     /// UIHosting often skips `NamedModifier` / `ExactNamedModifier` bodies; use modifier algorithms as fallback.
     @MainActor
-    private static func syntheticModifierIdentifiers(
+    @MainActor
+    private static func collectNamedAutomaticComplianceComponentNames(
+        in value: Any,
+        remainingDepth: Int = 12,
+        into results: inout [String]
+    ) {
+        guard remainingDepth >= 0 else { return }
+        let typeName = String(describing: Swift.type(of: value))
+        let mirror = Mirror(reflecting: value)
+        if typeName.contains("NamedAutomaticComplianceModifier") {
+            for child in mirror.children where child.label == "componentName" {
+                if let name = child.value as? String, !name.isEmpty {
+                    results.append(name)
+                }
+            }
+        }
+        for child in mirror.children {
+            collectNamedAutomaticComplianceComponentNames(
+                in: child.value,
+                remainingDepth: remainingDepth - 1,
+                into: &results
+            )
+        }
+    }
+
+    @MainActor
+    private static func appendSyntheticIdentifier(
+        _ generated: String?,
+        to identifiers: inout [String],
+        seen: inout Set<String>
+    ) {
+        guard let generated, !generated.isEmpty, seen.insert(generated).inserted else { return }
+        identifiers.append(generated)
+    }
+
+    @MainActor
+    private static func syntheticModifierIdentifiers<V: View>(
+        view: V,
         config: AccessibilityIdentifierConfig,
-        expectedPattern: String
+        expectedPattern: String,
+        componentName: String
     ) -> [String] {
-        guard let explicitName = inferredExplicitName(from: expectedPattern) else { return [] }
-        return [
-            NamedModifier.testingGeneratedIdentifier(name: explicitName, config: config),
-            ExactNamedModifier.testingGeneratedIdentifier(name: explicitName, config: config)
-        ]
+        var anchorNames: [String] = []
+        if let explicitName = inferredExplicitName(from: expectedPattern) {
+            anchorNames.append(explicitName)
+        }
+        var namedInView: [String] = []
+        collectNamedAutomaticComplianceComponentNames(in: view, into: &namedInView)
+        if namedInView.contains(componentName) {
+            anchorNames.append(componentName)
+        }
+        var seenAnchors = Set<String>()
+        let uniqueAnchors = anchorNames.filter { seenAnchors.insert($0).inserted }
+        return uniqueAnchors.flatMap { name in
+            [
+                NamedModifier.testingGeneratedIdentifier(name: name, config: config),
+                ExactNamedModifier.testingGeneratedIdentifier(name: name, config: config)
+            ]
+        }
     }
 
     /// Exposed for unit tests of anonymous `.automaticCompliance()` synthetic recovery (#314).
@@ -1252,12 +1302,36 @@ public enum AccessibilityTestUtilities {
 
         var identifiers: [String] = []
         var seen = Set<String>()
+
+        var namedComponentNames: [String] = []
+        collectNamedAutomaticComplianceComponentNames(in: view, into: &namedComponentNames)
+        for componentName in namedComponentNames {
+            let generated = generateAccessibilityIdentifier(
+                config: config,
+                identifierName: componentName,
+                identifierElementType: "View",
+                identifierLabel: nil,
+                capturedScreenContext: config.currentScreenContext,
+                capturedViewHierarchy: config.currentViewHierarchy,
+                capturedEnableUITestIntegration: config.enableUITestIntegration,
+                capturedIncludeComponentNames: config.includeComponentNames,
+                capturedIncludeElementTypes: config.includeElementTypes,
+                capturedEnableDebugLogging: false,
+                capturedNamespace: config.namespace,
+                capturedGlobalPrefix: config.globalPrefix,
+                defaultElementType: "View",
+                emptyFallback: "element"
+            )
+            appendSyntheticIdentifier(generated, to: &identifiers, seen: &seen)
+        }
+
+        appendSyntheticIdentifier(syntheticModifierIdentifierFromView(view), to: &identifiers, seen: &seen)
+
         for snapshot in snapshots {
             if let name = snapshot.identifierName?.trimmingCharacters(in: .whitespacesAndNewlines),
                !name.isEmpty,
-               let generated = generatedIdentifier(for: snapshot, config: config),
-               seen.insert(generated).inserted {
-                identifiers.append(generated)
+               let generated = generatedIdentifier(for: snapshot, config: config) {
+                appendSyntheticIdentifier(generated, to: &identifiers, seen: &seen)
             }
         }
 
@@ -1291,9 +1365,7 @@ public enum AccessibilityTestUtilities {
             defaultElementType: "View",
             emptyFallback: "main.ui.element"
         )
-        if !generated.isEmpty, seen.insert(generated).inserted {
-            identifiers.append(generated)
-        }
+        appendSyntheticIdentifier(generated, to: &identifiers, seen: &seen)
         return identifiers
     }
 
@@ -1338,6 +1410,9 @@ public enum AccessibilityTestUtilities {
         }
         if let _ = try? inspected.find(ViewInspector.ViewType.Toggle.self) {
             return ("Toggle", nil)
+        }
+        if let _ = try? inspected.find(ViewInspector.ViewType.Image.self) {
+            return ("Image", nil)
         }
         if let text = try? inspected.find(ViewInspector.ViewType.Text.self) {
             let label = (try? text.string()).flatMap { $0.isEmpty ? nil : $0 }
@@ -1559,7 +1634,12 @@ public enum AccessibilityTestUtilities {
                 return true
             }
 
-            if syntheticModifierIdentifiers(config: config, expectedPattern: expectedPattern)
+            if syntheticModifierIdentifiers(
+                view: view,
+                config: config,
+                expectedPattern: expectedPattern,
+                componentName: componentName
+            )
                 .contains(where: { matchesExpectedPattern($0, expectedPattern: expectedPattern) }) {
                 // Swift Testing treats recorded issues as failures (#271) — pass without Issue.record.
                 return true
