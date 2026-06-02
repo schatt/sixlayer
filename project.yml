@@ -46,7 +46,7 @@ settings:
 packages:
   ViewInspector:
     url: https://github.com/nalexn/ViewInspector
-    version: 0.9.0
+    version: 0.10.3
 
 targets:
   # Main framework target - supports both iOS and macOS
