@@ -104,9 +104,9 @@ open class PlatformMenuAndContextMenuExtensionsTests: BaseTestClass {
     }
 
     /// Issue #321: `platformMenu` must wrap SwiftUI `Menu` on iOS and macOS (not iOS no-op passthrough).
-    @Test @MainActor func testPlatformMenuAllOverloadsExposeMenuItems() async {
+    @Test @MainActor func testPlatformMenuAllOverloadsExposeMenuItems() async throws {
         #if canImport(ViewInspector)
-        assertPlatformMenuExposesItems(
+        try assertPlatformMenuExposesItems(
             context: "platformMenu { }",
             view: Text("Menu host")
                 .platformMenu {
@@ -115,15 +115,15 @@ open class PlatformMenuAndContextMenuExtensionsTests: BaseTestClass {
                 },
             expectedButtons: ["One", "Two"]
         )
-        assertPlatformMenuExposesItems(
+        try assertPlatformMenuExposesItems(
             context: "platformMenu(title:)",
-            view: Text("Ignored trailing label")
+            view: Text("Trailing label ignored when title overload supplies menu label")
                 .platformMenu(title: "Actions") {
                     Button("Do thing", action: {})
                 },
             expectedButtons: ["Do thing"]
         )
-        assertPlatformMenuExposesItems(
+        try assertPlatformMenuExposesItems(
             context: "platformMenu(label:)",
             view: Label("Row", systemImage: "line.3.horizontal")
                 .platformMenu(label: Text("Overflow")) {
@@ -141,15 +141,9 @@ open class PlatformMenuAndContextMenuExtensionsTests: BaseTestClass {
         context: String,
         view: V,
         expectedButtons: [String]
-    ) {
-        guard let inspected = try? AnyView(view).inspect() else {
-            Issue.record("\(context): ViewInspector should inspect platformMenu view")
-            return
-        }
-        guard let menu = try? inspected.find(ViewType.Menu.self) else {
-            Issue.record("\(context): platformMenu should wrap content in SwiftUI Menu on \(SixLayerPlatform.current)")
-            return
-        }
+    ) throws {
+        let inspected = try AnyView(view).inspect()
+        let menu = try inspected.find(ViewType.Menu.self)
         for title in expectedButtons {
             do {
                 _ = try menu.find(button: title)
