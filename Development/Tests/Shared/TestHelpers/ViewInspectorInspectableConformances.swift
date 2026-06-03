@@ -79,6 +79,10 @@ extension PlatformWisdomLayer5: ViewInspector.Inspectable {}
 extension PlatformLoggingLayer5: ViewInspector.Inspectable {}
 extension PlatformMaintenanceLayer5: ViewInspector.Inspectable {}
 
+// MARK: - Collection / detail views (direct inspection — Issue 178 / #314)
+
+extension CollectionEmptyStateView: ViewInspector.Inspectable {}
+
 // MARK: - Layer 6 (performance)
 
 extension PlatformPerformanceLayer6: ViewInspector.Inspectable {}
