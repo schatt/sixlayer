@@ -1178,10 +1178,77 @@ public enum AccessibilityTestUtilities {
     private static func appendSyntheticIdentifier(
         _ generated: String?,
         to identifiers: inout [String],
+        seen: inout Set<String>,
+        allowEmpty: Bool = false
+    ) {
+        guard let generated else { return }
+        if !allowEmpty && generated.isEmpty { return }
+        guard seen.insert(generated).inserted else { return }
+        identifiers.append(generated)
+    }
+
+    @MainActor
+    private static func collectExplicitModifierNames(
+        in value: Any,
+        modifierTypeFragment: String,
+        remainingDepth: Int = 12,
+        excludingTypeFragments: [String] = [],
+        into results: inout [String]
+    ) {
+        guard remainingDepth >= 0 else { return }
+        let typeName = String(describing: Swift.type(of: value))
+        let mirror = Mirror(reflecting: value)
+        if excludingTypeFragments.allSatisfy({ !typeName.contains($0) }),
+           typeName.contains(modifierTypeFragment) {
+            for child in mirror.children where child.label == "name" {
+                if let name = child.value as? String {
+                    results.append(name)
+                }
+            }
+        }
+        for child in mirror.children {
+            collectExplicitModifierNames(
+                in: child.value,
+                modifierTypeFragment: modifierTypeFragment,
+                remainingDepth: remainingDepth - 1,
+                excludingTypeFragments: excludingTypeFragments,
+                into: &results
+            )
+        }
+    }
+
+    @MainActor
+    private static func syntheticExplicitModifierIdentifiers<V: View>(
+        view: V,
+        config: AccessibilityIdentifierConfig,
+        identifiers: inout [String],
         seen: inout Set<String>
     ) {
-        guard let generated, !generated.isEmpty, seen.insert(generated).inserted else { return }
-        identifiers.append(generated)
+        var exactNames: [String] = []
+        collectExplicitModifierNames(in: view, modifierTypeFragment: "ExactNamedModifier", into: &exactNames)
+        for name in exactNames {
+            appendSyntheticIdentifier(
+                ExactNamedModifier.testingGeneratedIdentifier(name: name, config: config),
+                to: &identifiers,
+                seen: &seen,
+                allowEmpty: true
+            )
+        }
+
+        var namedNames: [String] = []
+        collectExplicitModifierNames(
+            in: view,
+            modifierTypeFragment: "NamedModifier",
+            excludingTypeFragments: ["NamedAutomaticCompliance", "ExactNamed"],
+            into: &namedNames
+        )
+        for name in namedNames {
+            appendSyntheticIdentifier(
+                NamedModifier.testingGeneratedIdentifier(name: name, config: config),
+                to: &identifiers,
+                seen: &seen
+            )
+        }
     }
 
     @MainActor
@@ -1324,7 +1391,7 @@ public enum AccessibilityTestUtilities {
             appendSyntheticIdentifier(generated, to: &identifiers, seen: &seen)
         }
 
-        appendSyntheticIdentifier(syntheticModifierIdentifierFromView(view), to: &identifiers, seen: &seen)
+        syntheticExplicitModifierIdentifiers(view: view, config: config, identifiers: &identifiers, seen: &seen)
 
         for snapshot in snapshots {
             if let name = snapshot.identifierName?.trimmingCharacters(in: .whitespacesAndNewlines),
@@ -1447,10 +1514,19 @@ public enum AccessibilityTestUtilities {
     private static func syntheticModifierIdentifierFromView<V: View>(_ view: V) -> String? {
         let config = AccessibilityIdentifierConfig.currentTaskLocalConfig
             ?? TestSetupUtilities.makeIsolatedAccessibilityIdentifierConfig()
-        if let exactName = explicitModifierName(in: view, modifierTypeFragment: "ExactNamedModifier") {
+        var exactNames: [String] = []
+        collectExplicitModifierNames(in: view, modifierTypeFragment: "ExactNamedModifier", into: &exactNames)
+        if let exactName = exactNames.first {
             return ExactNamedModifier.testingGeneratedIdentifier(name: exactName, config: config)
         }
-        if let named = explicitModifierName(in: view, modifierTypeFragment: "NamedModifier") {
+        var namedNames: [String] = []
+        collectExplicitModifierNames(
+            in: view,
+            modifierTypeFragment: "NamedModifier",
+            excludingTypeFragments: ["NamedAutomaticCompliance", "ExactNamed"],
+            into: &namedNames
+        )
+        if let named = namedNames.first {
             return NamedModifier.testingGeneratedIdentifier(name: named, config: config)
         }
         return nil
@@ -1614,8 +1690,8 @@ public enum AccessibilityTestUtilities {
             allSignals.append(contentsOf: platformIdentifiers)
             allSignals.append(contentsOf: debugIdentifiers)
             allSignals.append(contentsOf: viewInspectorIdentifiers)
-            if let directIdentifier, !directIdentifier.isEmpty { allSignals.append(directIdentifier) }
-            if let inspectButtonIdentifier, !inspectButtonIdentifier.isEmpty { allSignals.append(inspectButtonIdentifier) }
+            if let directIdentifier { allSignals.append(directIdentifier) }
+            if let inspectButtonIdentifier { allSignals.append(inspectButtonIdentifier) }
             allSignals.append(contentsOf: syntheticAutomaticComplianceIdentifiers(view: view, config: config))
             var seenSignals = Set<String>()
             let uniqueSignals = allSignals.filter { seenSignals.insert($0).inserted }
