@@ -257,6 +257,18 @@ private func findAllInViewHierarchyErased<T: ViewInspector.KnownViewType>(
         merge(root.findAll(viewType, where: { _ in true }))
         if let scroll = try? root.scrollView() {
             merge(scroll.findAll(viewType, where: { _ in true }))
+            if let lazy = try? scroll.lazyVStack() {
+                merge(lazy.findAll(viewType, where: { _ in true }))
+            }
+            if let vStack = try? scroll.vStack() {
+                merge(vStack.findAll(viewType, where: { _ in true }))
+            }
+        }
+        if let lazy = try? root.lazyVStack() {
+            merge(lazy.findAll(viewType, where: { _ in true }))
+        }
+        if let forEach = try? root.forEach() {
+            merge(forEach.findAll(viewType, where: { _ in true }))
         }
     }
 
