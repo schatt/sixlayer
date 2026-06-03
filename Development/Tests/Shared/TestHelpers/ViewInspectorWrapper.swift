@@ -253,25 +253,32 @@ private func findAllInViewHierarchyErased<T: ViewInspector.KnownViewType>(
         results.append(contentsOf: batch)
     }
 
-    func searchAnyViewRoot(_ root: ViewInspector.InspectableView<ViewInspector.ViewType.AnyView>) {
-        merge(root.findAll(viewType))
+    func mergeDeep(_ root: ViewInspector.InspectableView<ViewInspector.ViewType.ClassifiedView>) {
+        merge(root.findAll(viewType, where: { _ in true }))
         if let scroll = try? root.scrollView() {
-            merge(scroll.findAll(viewType))
-        }
-        if let lazy = try? root.lazyVStack() {
-            merge(lazy.findAll(viewType))
-        }
-        if let vStack = try? root.vStack() {
-            merge(vStack.findAll(viewType))
+            merge(scroll.findAll(viewType, where: { _ in true }))
         }
     }
 
-    merge(inspected.findAll(viewType))
+    func searchAnyViewRoot(_ root: ViewInspector.InspectableView<ViewInspector.ViewType.AnyView>) {
+        merge(root.findAll(viewType, where: { _ in true }))
+        if let scroll = try? root.scrollView() {
+            merge(scroll.findAll(viewType, where: { _ in true }))
+        }
+        if let lazy = try? root.lazyVStack() {
+            merge(lazy.findAll(viewType, where: { _ in true }))
+        }
+        if let vStack = try? root.vStack() {
+            merge(vStack.findAll(viewType, where: { _ in true }))
+        }
+    }
+
+    mergeDeep(inspected)
     if let vStack = try? firstVStackInHierarchy(inspected) {
-        merge(vStack.findAll(viewType))
+        merge(vStack.findAll(viewType, where: { _ in true }))
     }
     if let scroll = try? inspected.scrollView() {
-        merge(scroll.findAll(viewType))
+        merge(scroll.findAll(viewType, where: { _ in true }))
     }
 
     var anyRoot: ViewInspector.InspectableView<ViewInspector.ViewType.AnyView>? = try? inspected.anyView()
