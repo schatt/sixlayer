@@ -208,29 +208,76 @@ public func firstVStackInView<V: View & ViewInspector.Inspectable>(
     return try firstVStackInHierarchy(anyInspected, minChildren: minChildren)
 }
 
-/// Collect views of `viewType` after unwrapping AnyView boundaries (Issue 178).
+/// Collect `viewType` matches after unwrapping AnyView boundaries (Issue 178).
+@MainActor
+public func findAllInViewHierarchy<V: View & ViewInspector.Inspectable, T: ViewInspector.KnownViewType>(
+    _ view: V,
+    _ viewType: T.Type
+) -> [ViewInspector.InspectableView<T>] {
+    guard let inspected = try? view.inspect() else {
+        return findAllInViewHierarchyErased(AnyView(view), viewType)
+    }
+    var results = inspected.findAll(viewType)
+    if results.isEmpty, let vStack = try? firstVStackInHierarchy(inspected) {
+        results = vStack.findAll(viewType)
+    }
+    if results.isEmpty, let scroll = try? inspected.scrollView() {
+        results = scroll.findAll(viewType)
+    }
+    if results.isEmpty {
+        results = findAllInViewHierarchyErased(AnyView(view), viewType)
+    }
+    return results
+}
+
+/// Collect `viewType` matches after unwrapping AnyView boundaries (Issue 178).
 @MainActor
 public func findAllInViewHierarchy<T: ViewInspector.KnownViewType>(
     _ view: some View,
     _ viewType: T.Type,
     maxAnyViewUnwrapDepth: Int = 12
 ) -> [ViewInspector.InspectableView<T>] {
-    guard let inspected = try? AnyView(view).inspect() else { return [] }
+    findAllInViewHierarchyErased(AnyView(view), viewType, maxAnyViewUnwrapDepth: maxAnyViewUnwrapDepth)
+}
+
+@MainActor
+private func findAllInViewHierarchyErased<T: ViewInspector.KnownViewType>(
+    _ view: AnyView,
+    _ viewType: T.Type,
+    maxAnyViewUnwrapDepth: Int = 12
+) -> [ViewInspector.InspectableView<T>] {
+    guard let inspected = try? view.inspect() else { return [] }
     var results: [ViewInspector.InspectableView<T>] = []
 
     func merge(_ batch: [ViewInspector.InspectableView<T>]) {
         results.append(contentsOf: batch)
     }
 
+    func searchAnyViewRoot(_ root: ViewInspector.InspectableView<ViewInspector.ViewType.AnyView>) {
+        merge(root.findAll(viewType))
+        if let scroll = try? root.scrollView() {
+            merge(scroll.findAll(viewType))
+        }
+        if let lazy = try? root.lazyVStack() {
+            merge(lazy.findAll(viewType))
+        }
+        if let vStack = try? root.vStack() {
+            merge(vStack.findAll(viewType))
+        }
+    }
+
     merge(inspected.findAll(viewType))
     if let vStack = try? firstVStackInHierarchy(inspected) {
         merge(vStack.findAll(viewType))
+    }
+    if let scroll = try? inspected.scrollView() {
+        merge(scroll.findAll(viewType))
     }
 
     var anyRoot: ViewInspector.InspectableView<ViewInspector.ViewType.AnyView>? = try? inspected.anyView()
     var depth = 0
     while depth < maxAnyViewUnwrapDepth, let root = anyRoot {
-        merge(root.findAll(viewType))
+        searchAnyViewRoot(root)
         anyRoot = try? root.anyView()
         depth += 1
     }
