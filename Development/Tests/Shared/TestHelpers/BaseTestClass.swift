@@ -225,7 +225,11 @@ open class BaseTestClass {
     /// Aggregates Text from root and up to two levels of AnyView unwrap so nested type-erasure still finds content (Issue 178).
     @MainActor
     open func verifyViewContainsText(_ view: some View, expectedText: String, testName: String) {
-        let viewText = findAllInViewHierarchy(view, ViewInspector.ViewType.Text.self)
+        var viewText = findAllInViewHierarchy(view, ViewInspector.ViewType.Text.self)
+        if viewText.isEmpty {
+            _ = TestSetupUtilities.hostRootPlatformView(view, forceLayout: true)
+            viewText = findAllInViewHierarchy(view, ViewInspector.ViewType.Text.self)
+        }
         guard !viewText.isEmpty else {
             Issue.record("View inspection returned no text elements for \(testName) (ViewInspector cannot traverse hierarchy)")
             return
