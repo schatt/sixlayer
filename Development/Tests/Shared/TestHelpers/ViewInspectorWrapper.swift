@@ -208,6 +208,36 @@ public func firstVStackInView<V: View & ViewInspector.Inspectable>(
     return try firstVStackInHierarchy(anyInspected, minChildren: minChildren)
 }
 
+/// Collect views of `viewType` after unwrapping AnyView boundaries (Issue 178).
+@MainActor
+public func findAllInViewHierarchy<T: ViewInspector.KnownViewType>(
+    _ view: some View,
+    _ viewType: T.Type,
+    maxAnyViewUnwrapDepth: Int = 12
+) -> [ViewInspector.InspectableView<T>] {
+    guard let inspected = try? AnyView(view).inspect() else { return [] }
+    var results: [ViewInspector.InspectableView<T>] = []
+
+    func merge(_ batch: [ViewInspector.InspectableView<T>]) {
+        results.append(contentsOf: batch)
+    }
+
+    merge(inspected.findAll(viewType))
+    if let vStack = try? firstVStackInHierarchy(inspected) {
+        merge(vStack.findAll(viewType))
+    }
+
+    var anyRoot: ViewInspector.InspectableView<ViewInspector.ViewType.AnyView>? = try? inspected.anyView()
+    var depth = 0
+    while depth < maxAnyViewUnwrapDepth, let root = anyRoot {
+        merge(root.findAll(viewType))
+        anyRoot = try? root.anyView()
+        depth += 1
+    }
+
+    return results
+}
+
 // MARK: - Inspection from View instances
 // Prefer inspectView(view) over a View extension; ViewInspector’s Inspectable requirement
 // on Self in extension View where Self: KnownViewType caused “Self does not conform to Inspectable”.
