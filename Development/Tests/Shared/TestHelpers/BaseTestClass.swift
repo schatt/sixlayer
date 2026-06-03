@@ -210,11 +210,7 @@ open class BaseTestClass {
     #if canImport(ViewInspector)
     @MainActor
     open func verifyViewContainsText<V: View & ViewInspector.Inspectable>(_ view: V, expectedText: String, testName: String) {
-        guard let inspected = inspectView(view) else {
-            Issue.record("View inspection failed for \(testName): could not obtain inspected view")
-            return
-        }
-        let viewText = inspected.findAll(ViewInspector.ViewType.Text.self)
+        let viewText = findAllInViewHierarchy(view, ViewInspector.ViewType.Text.self)
         guard !viewText.isEmpty else {
             Issue.record("View inspection returned no text elements for \(testName) (ViewInspector cannot traverse hierarchy)")
             return
@@ -229,20 +225,7 @@ open class BaseTestClass {
     /// Aggregates Text from root and up to two levels of AnyView unwrap so nested type-erasure still finds content (Issue 178).
     @MainActor
     open func verifyViewContainsText(_ view: some View, expectedText: String, testName: String) {
-        guard let viewText = withInspectedView(AnyView(view), perform: { inspected in
-            var all: [ViewInspector.InspectableView<ViewInspector.ViewType.Text>] = []
-            all.append(contentsOf: inspected.findAll(ViewInspector.ViewType.Text.self))
-            if let inner = try? inspected.anyView() {
-                all.append(contentsOf: inner.findAll(ViewInspector.ViewType.Text.self))
-                if let inner2 = try? inner.anyView() {
-                    all.append(contentsOf: inner2.findAll(ViewInspector.ViewType.Text.self))
-                }
-            }
-            return all
-        }) else {
-            Issue.record("View inspection failed for \(testName): could not obtain inspected view")
-            return
-        }
+        let viewText = findAllInViewHierarchy(view, ViewInspector.ViewType.Text.self)
         guard !viewText.isEmpty else {
             Issue.record("View inspection returned no text elements for \(testName) (ViewInspector cannot traverse hierarchy)")
             return
@@ -276,20 +259,7 @@ open class BaseTestClass {
     /// Aggregates Image from root and up to two levels of AnyView unwrap so nested type-erasure still finds content (Issue 178).
     @MainActor
     open func verifyViewContainsImage(_ view: some View, testName: String) {
-        guard let viewImages = withInspectedView(AnyView(view), perform: { inspected in
-            var all: [ViewInspector.InspectableView<ViewInspector.ViewType.Image>] = []
-            all.append(contentsOf: inspected.findAll(ViewInspector.ViewType.Image.self))
-            if let inner = try? inspected.anyView() {
-                all.append(contentsOf: inner.findAll(ViewInspector.ViewType.Image.self))
-                if let inner2 = try? inner.anyView() {
-                    all.append(contentsOf: inner2.findAll(ViewInspector.ViewType.Image.self))
-                }
-            }
-            return all
-        }) else {
-            Issue.record("View inspection failed for \(testName): could not obtain inspected view")
-            return
-        }
+        let viewImages = findAllInViewHierarchy(view, ViewInspector.ViewType.Image.self)
         guard !viewImages.isEmpty else {
             Issue.record("View inspection returned no image elements for \(testName) (ViewInspector cannot traverse hierarchy)")
             return
@@ -314,20 +284,7 @@ open class BaseTestClass {
     /// Verify that a view contains at least one text element (non-Inspectable view — type-erased inspection).
     @MainActor
     open func verifyViewContainsAnyText(_ view: some View, testName: String) {
-        guard let viewText = withInspectedView(AnyView(view), perform: { inspected in
-            var all: [ViewInspector.InspectableView<ViewInspector.ViewType.Text>] = []
-            all.append(contentsOf: inspected.findAll(ViewInspector.ViewType.Text.self))
-            if let inner = try? inspected.anyView() {
-                all.append(contentsOf: inner.findAll(ViewInspector.ViewType.Text.self))
-                if let inner2 = try? inner.anyView() {
-                    all.append(contentsOf: inner2.findAll(ViewInspector.ViewType.Text.self))
-                }
-            }
-            return all
-        }) else {
-            Issue.record("View inspection failed for \(testName): could not obtain inspected view")
-            return
-        }
+        let viewText = findAllInViewHierarchy(view, ViewInspector.ViewType.Text.self)
         guard !viewText.isEmpty else {
             Issue.record("View inspection returned no text elements for \(testName) (ViewInspector cannot traverse hierarchy)")
             return
@@ -347,18 +304,14 @@ open class BaseTestClass {
     /// Records an issue and returns when inspection fails or no VStack is found (traversal limitation).
     @MainActor
     open func verifyViewContainsAtLeastOneVStack(_ view: some View, testName: String) {
-        if let vStack = withInspectedViewUnwrapped(AnyView(view), perform: { inner in
-            inner.findAll(ViewInspector.ViewType.VStack.self).first
-        }) {
-            _ = vStack
+        if !findAllInViewHierarchy(view, ViewInspector.ViewType.VStack.self).isEmpty {
             return
         }
-        guard let vStacks = withInspectedView(AnyView(view), perform: { inspected in
-            inspected.findAll(ViewInspector.ViewType.VStack.self)
-        }), !vStacks.isEmpty else {
-            Issue.record("View inspection returned no VStack for \(testName) (ViewInspector cannot traverse hierarchy)")
+        if let inspected = try? AnyView(view).inspect(),
+           (try? firstVStackInHierarchy(inspected)) != nil {
             return
         }
+        Issue.record("View inspection returned no VStack for \(testName) (ViewInspector cannot traverse hierarchy)")
     }
 
     /// Run a closure with the first VStack when the view type is Inspectable (Issue 178 / #242).
