@@ -124,27 +124,18 @@ open class CollectionEmptyStateViewTests: BaseTestClass {
             // Using wrapper - when ViewInspector works on macOS, no changes needed here
             #if canImport(ViewInspector)
             verifyViewContainsAtLeastOneVStack(view, testName: "CollectionEmptyStateView custom message")
-            if let inspected = try? AnyView(view).inspect() {
-                let vStacks = inspected.findAll(ViewType.VStack.self)
-                if let vStack = vStacks.first {
-                    // The message should be in a Text view within the VStack
-                    let texts = vStack.findAll(ViewType.Text.self)
-                    let messageText = texts.first { text in
-                        let string = try? text.string()
-                        return string?.contains("vehicles") ?? false || string?.contains("vehicle") ?? false
-                    }
-                    
-                    if let messageText = messageText {
-                        let actualMessage = try? messageText.string()
-                        // TDD RED: Should FAIL - custom message should be displayed
-                        #expect(actualMessage?.contains(customMessage) ?? false,
-                               "Empty state should display custom message from customPreferences. Expected: '\(customMessage)', Got: '\(actualMessage ?? "nil")'")
-                    } else {
-                        Issue.record("Could not find message text in empty state view")
-                    }
-                }
+            let texts = findAllInViewHierarchy(view, ViewType.Text.self)
+            let messageText = texts.first { text in
+                let string = try? text.string()
+                return string?.contains("vehicles") ?? false || string?.contains("vehicle") ?? false
+            }
+
+            if let messageText = messageText {
+                let actualMessage = try? messageText.string()
+                #expect(actualMessage?.contains(customMessage) ?? false,
+                       "Empty state should display custom message from customPreferences. Expected: '\(customMessage)', Got: '\(actualMessage ?? "nil")'")
             } else {
-                Issue.record("Failed to inspect CollectionEmptyStateView")
+                Issue.record("Could not find message text in empty state view")
             }
             #else
             // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
@@ -236,33 +227,19 @@ open class CollectionEmptyStateViewTests: BaseTestClass {
             // The empty state should show custom message and create button
             #if canImport(ViewInspector)
             verifyViewContainsAtLeastOneVStack(view, testName: "platformPresentItemCollection empty state")
-            if let inspected = try? AnyView(view).inspect() {
-                let emptyStates = inspected.findAll(ViewType.VStack.self)
-                if let emptyState = emptyStates.first {
-                    // Check that custom message is displayed
-                    let texts = emptyState.findAll(ViewType.Text.self)
-                    let hasCustomMessage = texts.contains { text in
-                        let string = try? text.string()
-                        return string?.contains("vehicles") ?? false || string?.contains("vehicle") ?? false
-                    }
-                    
-                    // Check that create button exists (onCreateItem was provided)
-                    let buttons = emptyState.findAll(ViewInspector.ViewType.Button.self)
-                    
-                    // TDD RED: Should FAIL if hints are overridden
-                    #expect(hasCustomMessage, "Custom message should be displayed when hints are not overridden")
-                    #expect(Bool(true), "Create button should be displayed when onCreateItem is provided and hints are not overridden")  // button is non-optional
-                    
-                    // Verify button works
-                    if let button = buttons.first {
-                        try? button.tap()
-                        #expect(onCreateItemCalled, "Create button should call onCreateItem callback")
-                    }
-                } else {
-                    Issue.record("Could not find empty state view")
-                }
-            } else {
-                Issue.record("Failed to inspect platformPresentItemCollection_L1 view")
+            let texts = findAllInViewHierarchy(view, ViewType.Text.self)
+            let hasCustomMessage = texts.contains { text in
+                let string = try? text.string()
+                return string?.contains("vehicles") ?? false || string?.contains("vehicle") ?? false
+            }
+            let buttons = findAllInViewHierarchy(view, ViewInspector.ViewType.Button.self)
+
+            #expect(hasCustomMessage, "Custom message should be displayed when hints are not overridden")
+            #expect(!buttons.isEmpty, "Create button should be displayed when onCreateItem is provided and hints are not overridden")
+
+            if let button = buttons.first {
+                try? button.tap()
+                #expect(onCreateItemCalled, "Create button should call onCreateItem callback")
             }
             #else
             // ViewInspector not available on this platform - this is expected, not a failure
@@ -294,27 +271,20 @@ open class CollectionEmptyStateViewTests: BaseTestClass {
             // Using wrapper - when ViewInspector works on macOS, no changes needed here
             #if canImport(ViewInspector)
             verifyViewContainsAtLeastOneVStack(view, testName: "CollectionEmptyStateView custom over default")
-            if let inspected = try? AnyView(view).inspect() {
-                let vStacks = inspected.findAll(ViewType.VStack.self)
-                if let vStack = vStacks.first {
-                    let texts = vStack.findAll(ViewType.Text.self)
-                    let messageText = texts.first { text in
-                        let string = try? text.string()
-                        return string?.count ?? 0 > 10 // Find the longer message text
-                    }
-                    
-                    if let messageText = messageText {
-                        let actualMessage = try? messageText.string()
-                        // TDD RED: Should FAIL - custom message should override default
-                        #expect(actualMessage?.contains(customMessage) ?? false,
-                               "Custom message should override default context message. Expected: '\(customMessage)', Got: '\(actualMessage ?? "nil")'")
-                        // Should NOT contain the default navigation message
-                        #expect(!(actualMessage?.contains("No navigation items available") ?? false),
-                               "Custom message should not show default navigation message")
-                    }
-                }
+            let texts = findAllInViewHierarchy(view, ViewType.Text.self)
+            let messageText = texts.first { text in
+                let string = try? text.string()
+                return string?.count ?? 0 > 10
+            }
+
+            if let messageText = messageText {
+                let actualMessage = try? messageText.string()
+                #expect(actualMessage?.contains(customMessage) ?? false,
+                       "Custom message should override default context message. Expected: '\(customMessage)', Got: '\(actualMessage ?? "nil")'")
+                #expect(!(actualMessage?.contains("No navigation items available") ?? false),
+                       "Custom message should not show default navigation message")
             } else {
-                Issue.record("Failed to inspect CollectionEmptyStateView")
+                Issue.record("Could not find message text in empty state view")
             }
             #else
             // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
