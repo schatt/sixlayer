@@ -82,6 +82,7 @@ extension PlatformMaintenanceLayer5: ViewInspector.Inspectable {}
 // MARK: - Collection / detail views (direct inspection — Issue 178 / #314)
 
 extension CollectionEmptyStateView: ViewInspector.Inspectable {}
+extension GenericItemCollectionView: ViewInspector.Inspectable where Item: Identifiable {}
 
 // MARK: - Layer 6 (performance)
 
