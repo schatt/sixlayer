@@ -912,7 +912,7 @@ public enum AccessibilityTestUtilities {
 
     @MainActor
     private static func normalizedIdentifierCandidates(_ value: String) -> [String] {
-        guard !value.isEmpty else { return [] }
+        if value.isEmpty { return [""] }
         
         var candidates: [String] = [value]
         
