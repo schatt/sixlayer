@@ -820,11 +820,17 @@ public extension View {
     /// - **iPhone Landscape (Large models)**: NavigationSplitView for Plus/Pro Max models
     /// - **iPhone Landscape (Standard models)**: Detail-only view
     ///
+    /// **Toolbar leading (issue #323):** On the detail (or root) view, use
+    /// ``View/platformAppNavigationSheetToolbarLeading(showingNavigationSheet:columnVisibility:visibility:systemImage:accessibilityIdentifier:)``
+    /// or ``View/platformNavigationSheetButton(action:sidebarVisibility:visibility:columnVisibility:systemImage:accessibilityIdentifier:)``
+    /// with ``PlatformNavigationSheetButtonVisibilityPolicy/phoneOrDetailOnly`` and the same `columnVisibility` /
+    /// `showingNavigationSheet` bindings so iPhone and `.detailOnly` iPad split show the menu without app `#if os(iOS)` visibility logic.
+    ///
     /// - Parameters:
     ///   - columnVisibility: Optional binding for NavigationSplitView column visibility. When provided,
     ///     Layer 4 applies ``View/platformSidebarSplitRevealChrome(columnVisibility:)`` on the detail
     ///     column (edge stripe; iOS leading-edge swipe to reveal). Omit only when the app owns chrome.
-    ///   - showingNavigationSheet: Optional binding for sheet presentation (iPhone detail-only mode)
+    ///   - showingNavigationSheet: Optional binding for sheet presentation (iPhone detail-only mode). Wire the toolbar button `action` to set this `true` when presenting the sidebar sheet.
     ///   - strategy: App navigation strategy from Layer 3
     ///   - sidebar: View builder for sidebar content
     ///   - detail: View builder for detail content
@@ -861,6 +867,10 @@ public extension View {
     
     /// Platform-specific app navigation with automatic strategy detection
     /// Convenience function that automatically determines strategy from device capabilities
+    ///
+    /// **Toolbar leading (issue #323):** See strategy overload — use
+    /// ``View/platformAppNavigationSheetToolbarLeading(showingNavigationSheet:columnVisibility:visibility:systemImage:accessibilityIdentifier:)``
+    /// on detail content with the same bindings passed here.
     ///
     /// - Parameters:
     ///   - columnVisibility: Optional binding for NavigationSplitView column visibility. When provided,
