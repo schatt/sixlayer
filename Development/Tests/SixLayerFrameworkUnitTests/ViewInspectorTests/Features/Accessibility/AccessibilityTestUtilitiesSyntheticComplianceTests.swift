@@ -90,6 +90,55 @@ struct AccessibilityTestUtilitiesSyntheticComplianceTests {
     }
 
     @Test @MainActor
+    func syntheticIdentifierMatchesEmptyExactNamedModifier() {
+        let config = TestSetupUtilities.makeIsolatedAccessibilityIdentifierConfig()
+        let view = Button("Test") { }
+            .exactNamed("")
+
+        let ids = AccessibilityTestUtilities.testingSyntheticAutomaticComplianceIdentifiers(
+            view: view,
+            config: config
+        )
+
+        #expect(
+            ids.contains(where: {
+                AccessibilityTestUtilities.identifierMatchesExpectedPattern($0, expectedPattern: "^$")
+            }),
+            "Expected synthetic empty ID for exactNamed(\"\"); got: \(ids)"
+        )
+    }
+
+    @Test @MainActor
+    func syntheticIdentifierIncludesAllNamedModifiersInNestedView() {
+        let config = TestSetupUtilities.makeIsolatedAccessibilityIdentifierConfig()
+        let view = VStack {
+            Button("Save") { }
+                .exactNamed("SaveButton")
+            Button("Cancel") { }
+                .named("CancelButton")
+        }
+        .named("DialogBox")
+
+        let ids = AccessibilityTestUtilities.testingSyntheticAutomaticComplianceIdentifiers(
+            view: view,
+            config: config
+        )
+
+        #expect(
+            ids.contains(where: {
+                AccessibilityTestUtilities.identifierMatchesExpectedPattern($0, expectedPattern: "SixLayer.*ui")
+            }),
+            "Expected hierarchical synthetic ID for outer .named(\"DialogBox\"); got: \(ids)"
+        )
+        #expect(
+            ids.contains(where: {
+                AccessibilityTestUtilities.identifierMatchesExpectedPattern($0, expectedPattern: "^SaveButton$")
+            }),
+            "Expected exact synthetic ID for inner .exactNamed(\"SaveButton\"); got: \(ids)"
+        )
+    }
+
+    @Test @MainActor
     func syntheticIdentifierMatchesSixLayerUiGlobForAnonymousButtonCompliance() {
         let config = TestSetupUtilities.makeIsolatedAccessibilityIdentifierConfig()
         let view = Button("Test Button") { }
