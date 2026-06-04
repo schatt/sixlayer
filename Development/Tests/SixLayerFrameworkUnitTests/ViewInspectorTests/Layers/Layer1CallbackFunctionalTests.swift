@@ -94,7 +94,7 @@ open class Layer1CallbackFunctionalTests: BaseTestClass {
         
         #if canImport(ViewInspector)
         _ = TestSetupUtilities.hostRootPlatformView(view, forceLayout: true)
-        verifyViewContainsAnyText(view, testName: "Collection items")
+        verifyViewContainsText(view, expectedText: "Item 1", testName: "Collection items")
         _ = callbackInvoked
         _ = selectedItems.count
         #else
