@@ -9,7 +9,7 @@
 
 ## 🎯 Release Summary
 
-v8.0.0 is a **major** release focused on **Layer 4 app navigation chrome**: navigation sheet toolbar leading control with **phone / detailOnly visibility** (#323), **sidebar reveal chrome** for split detail-only layouts (#324), and the **iOS automatic vs explicit detailOnly** visibility fix (#325) that keeps reveal chrome and sheet buttons aligned with measured split presentation (#208). Includes SD150 integration test stabilization, compliance test harness consolidation, and integration-branch agent hook protection (#322).
+v8.0.0 is a **major** release focused on **Layer 4 app navigation chrome**: navigation sheet toolbar leading control with **phone / detailOnly visibility** (#323), **sidebar reveal chrome** for split detail-only layouts (#324), and the **iOS automatic vs explicit detailOnly** visibility fix (#325) that keeps reveal chrome and sheet buttons aligned with measured split presentation (#208). Also ships **`platformMenu` SwiftUI `Menu` on iOS** (#321), superseding the legacy iOS no-op from #62. Includes SD150 integration test stabilization, compliance test harness consolidation, and integration-branch agent hook protection (#322).
 
 ---
 
@@ -35,6 +35,12 @@ v8.0.0 is a **major** release focused on **Layer 4 app navigation chrome**: navi
 - `NavigationSplitViewVisibility.isExplicitDetailOnly` uses `== .detailOnly` plus Mirror `isAutomatic` on iOS, where automatic placement compares equal to detail-only.
 - Shared helper in `NavigationSplitViewVisibility+ExplicitDetailOnly.swift` (DRY across policy, sheet button, L4 sync).
 
+### **`platformMenu` SwiftUI Menu on iOS (#321)**
+
+- All three `platformMenu` overloads (`content`, `label`, `title`) now wrap SwiftUI `Menu` on **iOS and macOS** — replaces the legacy iOS no-op passthrough from #62.
+- Toolbar overflow, action sheets, and anchored menus now behave consistently across platforms.
+- ViewInspector and audit-host coverage for Menu exposure on iOS (Issue #321).
+
 ### **Test and harness stabilization**
 
 - SD150 deep Form scroll and secure-field typing stabilization.
@@ -57,6 +63,7 @@ v8.0.0 is a **major** release focused on **Layer 4 app navigation chrome**: navi
 
 ## 📎 Additional resolved issues (not in v8.0.0 milestone)
 
+- **[Issue #321](https://github.com/schatt/sixlayer/issues/321)** — `platformMenu` SwiftUI `Menu` on iOS (supersedes #62 no-op).
 - **[Issue #322](https://github.com/schatt/sixlayer/issues/322)** — Integration-branch agent hook protection.
 
 ---
@@ -66,6 +73,7 @@ v8.0.0 is a **major** release focused on **Layer 4 app navigation chrome**: navi
 - **Navigation sheet button:** Use `PlatformNavigationSheetButtonVisibilityPolicy.phoneOrDetailOnly` (or custom policy) on `platformNavigationSheetButton`; place toolbar leading items via `platformAppNavigationSheetToolbarLeading` rather than baking visibility into app toolbars manually.
 - **Sidebar reveal:** Pass `columnVisibility` to `platformAppNavigation_L4` to receive automatic split reveal chrome on detail; omit only if the app owns chrome entirely.
 - **iOS split visibility:** Do not rely on `== .detailOnly` alone on iOS — framework uses `isExplicitDetailOnly` internally; apps should pass explicit bindings where policy matters.
+- **`platformMenu` on iOS:** Menus now render via SwiftUI `Menu` (#321). Remove any iOS workarounds that assumed the #62 no-op passthrough; all three overloads participate.
 - **CarManager migration** for `ContentView` toolbar/reveal wiring remains a consumer follow-up (CarManager #216).
 
 ---
