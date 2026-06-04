@@ -309,7 +309,7 @@ private func findAllInViewHierarchyErased<T: ViewInspector.KnownViewType>(
 @MainActor
 public func findButtonInViewHierarchy(
     _ view: some View,
-    labels: String...
+    labels: [String]
 ) -> ViewInspector.InspectableView<ViewInspector.ViewType.Button>? {
     let wanted = Set(labels)
     for button in findAllInViewHierarchy(view, ViewInspector.ViewType.Button.self) {
