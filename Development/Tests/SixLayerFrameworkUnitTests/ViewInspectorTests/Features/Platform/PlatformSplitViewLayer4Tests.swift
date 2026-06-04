@@ -69,7 +69,7 @@ open class PlatformSplitViewLayer4Tests: BaseTestClass {
     @Test @MainActor func testPlatformVerticalSplitL4GeneratesAccessibilityIdentifiers() async {
         initializeTestConfig()
         // Given: A view with vertical split
-        let view = Text("Top")
+        _ = Text("Top")
             .platformVerticalSplit_L4(spacing: 0) {
                 Text("Top Content")
                 Text("Bottom Content")
@@ -96,7 +96,7 @@ open class PlatformSplitViewLayer4Tests: BaseTestClass {
         initializeTestConfig()
         #if os(macOS)
         // Given: A view with vertical split on macOS
-        let view = Text("Top")
+        _ = Text("Top")
             .platformVerticalSplit_L4(spacing: 0) {
                 Text("Top Content")
                 Text("Bottom Content")
@@ -173,7 +173,7 @@ open class PlatformSplitViewLayer4Tests: BaseTestClass {
     
     @Test @MainActor func testPlatformHorizontalSplitL4GeneratesAccessibilityIdentifiers() async {
         // Given: A view with horizontal split
-        let view = Text("Left")
+        _ = Text("Left")
             .platformHorizontalSplit_L4(spacing: 0) {
                 Text("Left Content")
                 Text("Right Content")
@@ -199,7 +199,7 @@ open class PlatformSplitViewLayer4Tests: BaseTestClass {
     @Test @MainActor func testPlatformHorizontalSplitL4UsesHSplitViewOnMacOS() async {
         #if os(macOS)
         // Given: A view with horizontal split on macOS
-        let view = Text("Left")
+        _ = Text("Left")
             .platformHorizontalSplit_L4(spacing: 0) {
                 Text("Left Content")
                 Text("Right Content")
@@ -235,7 +235,7 @@ open class PlatformSplitViewLayer4Tests: BaseTestClass {
     @Test @MainActor func testPlatformVerticalSplitL4SpacingIgnoredOnMacOS() async {
         #if os(macOS)
         // Given: A view with vertical split and spacing on macOS
-        let view = Text("Top")
+        _ = Text("Top")
             .platformVerticalSplit_L4(spacing: 100) {
                 Text("Top Content")
                 Text("Bottom Content")
@@ -252,7 +252,7 @@ open class PlatformSplitViewLayer4Tests: BaseTestClass {
     @Test @MainActor func testPlatformHorizontalSplitL4SpacingIgnoredOnMacOS() async {
         #if os(macOS)
         // Given: A view with horizontal split and spacing on macOS
-        let view = Text("Left")
+        _ = Text("Left")
             .platformHorizontalSplit_L4(spacing: 100) {
                 Text("Left Content")
                 Text("Right Content")
