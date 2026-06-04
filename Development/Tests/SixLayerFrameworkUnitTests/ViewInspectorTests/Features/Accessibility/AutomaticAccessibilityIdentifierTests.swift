@@ -316,7 +316,7 @@ open class AutomaticAccessibilityIdentifierTests: BaseTestClass {
             // We test this by verifying the view does NOT have an automatic identifier
             // The modifier should not generate an identifier when enableAutoIDs is false
             #if canImport(ViewInspector)
-            let hasAutomaticID = !testComponentLacksMatchingIdentifier(
+            let hasAutomaticID = !AccessibilityTestUtilities.testComponentLacksMatchingIdentifier(
                 view,
                 expectedPattern: "*platformPresentContent*",
                 platform: SixLayerPlatform.iOS,
