@@ -492,7 +492,7 @@ open class Layer4FormContainerTests: BaseTestClass {
     
     @Test @MainActor func testPlatformFormContainer_L4_Performance() {
         // Given: Standard strategy
-        let strategy = FormStrategy(
+        _ = FormStrategy(
             containerType: .standard,
             fieldLayout: .standard,
             validation: .deferred
@@ -504,13 +504,13 @@ open class Layer4FormContainerTests: BaseTestClass {
     
     @Test @MainActor func testPlatformFormContainer_L4_PerformanceWithComplexContent() {
         // Given: Complex content
-        let complexContent = platformVStackContainer {
+        _ = platformVStackContainer {
             ForEach(0..<50) { i in
                 TextField("Field \(i)", text: .constant(""))
             }
         }
         
-        let strategy = FormStrategy(
+        _ = FormStrategy(
             containerType: .scrollView,
             fieldLayout: .standard,
             validation: .deferred

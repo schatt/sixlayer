@@ -215,7 +215,7 @@ open class IntelligentDetailViewTests: BaseTestClass {
         var editCalled = false
 
         // Test that the view can be created with edit callback (button enabled by default)
-        let view = IntelligentDetailView.platformDetailView(
+        _ = IntelligentDetailView.platformDetailView(
             for: testData,
             onEdit: { editCalled = true }
         )
@@ -230,7 +230,7 @@ open class IntelligentDetailViewTests: BaseTestClass {
         let testData = TestDataModel(name: "Test Name", value: 42)
 
         // Test that the view can be created with edit button disabled
-        let view = IntelligentDetailView.platformDetailView(
+        _ = IntelligentDetailView.platformDetailView(
             for: testData,
             showEditButton: false,
             onEdit: { /* should not be called */ }

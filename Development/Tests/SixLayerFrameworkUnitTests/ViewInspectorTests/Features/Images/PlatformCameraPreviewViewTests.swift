@@ -60,13 +60,12 @@ open class PlatformCameraPreviewViewTests: BaseTestClass {
     /// METHODOLOGY: Tests component creation with valid session
     @Test @MainActor func testPlatformCameraPreviewView_Creation() async {
         initializeTestConfig()
-        await runWithTaskLocalConfig {
+        runWithTaskLocalConfig {
             // Given: A valid AVCaptureSession
             let session = createTestCaptureSession()
             
             // When: Create PlatformCameraPreviewView
-            let previewView = PlatformCameraPreviewView(session: session)
-            
+            _ = PlatformCameraPreviewView(session: session)
             // Then: View should be created successfully
             // The view should be a valid SwiftUI View
             #expect(Bool(true), "PlatformCameraPreviewView should be creatable")
@@ -78,15 +77,14 @@ open class PlatformCameraPreviewViewTests: BaseTestClass {
     /// METHODOLOGY: Tests component creation with different videoGravity values
     @Test @MainActor func testPlatformCameraPreviewView_VideoGravity() async {
         initializeTestConfig()
-        await runWithTaskLocalConfig {
+        runWithTaskLocalConfig {
             // Given: A valid AVCaptureSession and different videoGravity values
             let session = createTestCaptureSession()
             
             // When: Create PlatformCameraPreviewView with different videoGravity values
-            let previewView1 = PlatformCameraPreviewView(session: session, videoGravity: .resizeAspectFill)
-            let previewView2 = PlatformCameraPreviewView(session: session, videoGravity: .resizeAspect)
-            let previewView3 = PlatformCameraPreviewView(session: session, videoGravity: .resize)
-            
+            _ = PlatformCameraPreviewView(session: session, videoGravity: .resizeAspectFill)
+            _ = PlatformCameraPreviewView(session: session, videoGravity: .resizeAspect)
+            _ = PlatformCameraPreviewView(session: session, videoGravity: .resize)
             // Then: All views should be created successfully
             #expect(Bool(true), "PlatformCameraPreviewView should accept different videoGravity values")
         }
@@ -97,7 +95,7 @@ open class PlatformCameraPreviewViewTests: BaseTestClass {
     /// METHODOLOGY: Tests Layer 4 functionality and modifier application
     @Test @MainActor func testPlatformCameraPreviewView_AppliesAutomaticAccessibilityIdentifiers() async {
         initializeTestConfig()
-        await runWithTaskLocalConfig {
+        runWithTaskLocalConfig {
             guard let config = self.testConfig else {
                 Issue.record("testConfig is nil")
                 return
@@ -132,7 +130,7 @@ open class PlatformCameraPreviewViewTests: BaseTestClass {
     /// METHODOLOGY: Tests platform-specific implementation on iOS
     @Test @MainActor func testPlatformCameraPreviewView_iOSImplementation() async {
         initializeTestConfig()
-        await runWithTaskLocalConfig {
+        runWithTaskLocalConfig {
             #if os(iOS)
             // Given: A valid AVCaptureSession
             let session = createTestCaptureSession()
@@ -163,7 +161,7 @@ open class PlatformCameraPreviewViewTests: BaseTestClass {
     /// METHODOLOGY: Tests platform-specific implementation on macOS
     @Test @MainActor func testPlatformCameraPreviewView_macOSImplementation() async {
         initializeTestConfig()
-        await runWithTaskLocalConfig {
+        runWithTaskLocalConfig {
             #if os(macOS)
             // Given: A valid AVCaptureSession
             let session = createTestCaptureSession()
@@ -196,15 +194,14 @@ open class PlatformCameraPreviewViewTests: BaseTestClass {
     /// METHODOLOGY: Tests that the component can be accessed via Layer 4 API
     @Test @MainActor func testPlatformCameraPreviewView_Layer4Integration() async {
         initializeTestConfig()
-        await runWithTaskLocalConfig {
+        runWithTaskLocalConfig {
             // Given: A valid AVCaptureSession
             let session = createTestCaptureSession()
             
             // When: Create view via Layer 4 function (if it exists)
             // Note: This test will fail initially until we add the function to PlatformPhotoComponentsLayer4
             // For now, we test direct creation
-            let previewView = PlatformCameraPreviewView(session: session)
-            
+            _ = PlatformCameraPreviewView(session: session)
             // Then: View should be created successfully
             #expect(Bool(true), "PlatformCameraPreviewView should work with Layer 4 integration")
         }
@@ -217,13 +214,12 @@ open class PlatformCameraPreviewViewTests: BaseTestClass {
     /// METHODOLOGY: Tests view updates when session changes
     @Test @MainActor func testPlatformCameraPreviewView_SessionUpdates() async {
         initializeTestConfig()
-        await runWithTaskLocalConfig {
+        runWithTaskLocalConfig {
             // Given: A valid AVCaptureSession
             let session = createTestCaptureSession()
             
             // When: Create view and update session
-            let previewView = PlatformCameraPreviewView(session: session)
-            
+            _ = PlatformCameraPreviewView(session: session)
             // Then: View should handle updates (this is a basic smoke test)
             // In a real scenario, we'd test that the preview layer updates when session changes
             #expect(Bool(true), "PlatformCameraPreviewView should handle session updates")

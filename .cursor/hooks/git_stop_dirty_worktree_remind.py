@@ -2,7 +2,12 @@
 import json
 import os
 
-from cursor_git_context import active_git_roots, format_worktree_stop_block
+from cursor_git_context import (
+    active_git_roots,
+    current_branch,
+    format_worktree_stop_block,
+    is_integration_branch,
+)
 
 raw = os.environ.get("HOOK_JSON", "")
 try:
@@ -27,6 +32,8 @@ if not git_roots:
 
 issue_blocks: list[str] = []
 for git_root in git_roots:
+    if is_integration_branch(git_root, current_branch(git_root)):
+        continue
     block = format_worktree_stop_block(git_root)
     if block:
         issue_blocks.append(block)

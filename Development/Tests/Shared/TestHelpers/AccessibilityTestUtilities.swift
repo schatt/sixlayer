@@ -1065,6 +1065,48 @@ public enum AccessibilityTestUtilities {
             ExactNamedModifier.testingGeneratedIdentifier(name: explicitName, config: config)
         ]
     }
+
+    /// UIHosting/ViewInspector can skip modifier bodies for direct `.named()` checks; recover the explicit
+    /// modifier name from the SwiftUI value so direct helper lookups exercise the same generator path.
+    @MainActor
+    private static func syntheticModifierIdentifierFromView<V: View>(_ view: V) -> String? {
+        let config = AccessibilityIdentifierConfig.currentTaskLocalConfig
+            ?? TestSetupUtilities.makeIsolatedAccessibilityIdentifierConfig()
+        if let exactName = explicitModifierName(in: view, modifierTypeFragment: "ExactNamedModifier") {
+            return ExactNamedModifier.testingGeneratedIdentifier(name: exactName, config: config)
+        }
+        if let named = explicitModifierName(in: view, modifierTypeFragment: "NamedModifier") {
+            return NamedModifier.testingGeneratedIdentifier(name: named, config: config)
+        }
+        return nil
+    }
+
+    private static func explicitModifierName(
+        in value: Any,
+        modifierTypeFragment: String,
+        remainingDepth: Int = 8
+    ) -> String? {
+        guard remainingDepth >= 0 else { return nil }
+
+        let typeName = String(describing: Swift.type(of: value))
+        let mirror = Mirror(reflecting: value)
+        if typeName.contains(modifierTypeFragment) {
+            for child in mirror.children where child.label == "name" {
+                return child.value as? String
+            }
+        }
+
+        for child in mirror.children {
+            if let name = explicitModifierName(
+                in: child.value,
+                modifierTypeFragment: modifierTypeFragment,
+                remainingDepth: remainingDepth - 1
+            ) {
+                return name
+            }
+        }
+        return nil
+    }
     
     @MainActor
     private static func parseGeneratedIdentifiers(from debugLog: String) -> [String] {
@@ -1124,6 +1166,7 @@ public enum AccessibilityTestUtilities {
             if let button = try? inspected.button(), let buttonID = try? button.accessibilityIdentifier(), !buttonID.isEmpty { return buttonID }
             let deepIDs = allAccessibilityIdentifiersFromViewInspector(view)
             if let first = deepIDs.first { return first }
+            if let syntheticID = syntheticModifierIdentifierFromView(view), !syntheticID.isEmpty { return syntheticID }
             // If we reach here, ViewInspector couldn't find an identifier. This is
             // treated as an inspection limitation rather than a hard failure; the
             // caller can decide whether to assert or treat it as "cannot verify".
@@ -1252,6 +1295,60 @@ public enum AccessibilityTestUtilities {
         }
     }
 
+    /// Collects identifier signals for diagnostic output when compliance check fails.
+    @MainActor
+    private static func populateComplianceFailureDiagnostic<V: View>(
+        view: V,
+        expectedPattern: String,
+        componentName: String,
+        exposeContentAccessibility: Bool,
+        diagnostic: inout String?
+    ) {
+        #if (canImport(UIKit) && !os(watchOS)) || canImport(AppKit)
+        func runDiagnosticCollection(config: AccessibilityIdentifierConfig) {
+            config.enableDebugLogging = true
+            let hosted = TestSetupUtilities.hostRootPlatformView(
+                view,
+                forceLayout: true,
+                exposeContentAccessibility: exposeContentAccessibility,
+                accessibilityIdentifierConfig: config
+            )
+            var parts: [String] = []
+            if let root = hosted {
+                let platformIds = findAllAccessibilityIdentifiersFromPlatformView(root)
+                let sample = platformIds.prefix(30).joined(separator: ", ")
+                parts.append("Platform identifiers (\(platformIds.count)): \(sample)\(platformIds.count > 30 ? "…" : "")")
+            } else {
+                parts.append("Hosting returned nil (no platform view to collect identifiers from)")
+            }
+            #if canImport(ViewInspector)
+            let viewInspectorIds = allAccessibilityIdentifiersFromViewInspector(view)
+            if viewInspectorIds.isEmpty {
+                parts.append("ViewInspector collected 0 IDs")
+            } else {
+                let sample = viewInspectorIds.prefix(5).joined(separator: ", ")
+                parts.append("ViewInspector collected \(viewInspectorIds.count) IDs: \(sample)\(viewInspectorIds.count > 5 ? "…" : "")")
+            }
+            #endif
+            let debugIds = parseGeneratedIdentifiers(from: config.getDebugLog())
+            if !debugIds.isEmpty {
+                parts.append("Debug identifiers: \(debugIds.prefix(5).joined(separator: ", "))")
+            }
+            parts.append("Expected pattern: \(expectedPattern)")
+            parts.append("Component: \(componentName)")
+            diagnostic = parts.joined(separator: "; ")
+        }
+        if let config = AccessibilityIdentifierConfig.currentTaskLocalConfig {
+            runDiagnosticCollection(config: config)
+        } else {
+            let isolated = TestSetupUtilities.makeIsolatedAccessibilityIdentifierConfig()
+            AccessibilityIdentifierConfig.$taskLocalConfig.withValue(isolated) {
+                runDiagnosticCollection(config: isolated)
+            }
+        }
+        #endif
+    }
+
     /// Overload that populates diagnostic on failure (collected identifiers) for clearer test failures.
     /// - Parameter exposeContentAccessibility: When true (default), root is a container and content a11y tree is exposed.
     ///   When false, root is an accessibility element; use for views where SwiftUI assigns the identifier to the host view (e.g. card components in unit-test hosting).
@@ -1265,76 +1362,25 @@ public enum AccessibilityTestUtilities {
         diagnostic: inout String?,
         exposeContentAccessibility: Bool = true
     ) -> Bool {
-        func identifierMatches(_ id: String) -> Bool {
-            let prefix = expectedPattern.replacingOccurrences(of: ".*", with: "")
-            return id.hasPrefix(prefix) || id.contains(componentName)
-        }
-        #if (canImport(UIKit) && !os(watchOS)) || canImport(AppKit)
-        let config = TestSetupUtilities.makeIsolatedAccessibilityIdentifierConfig()
-        config.enableDebugLogging = true
-        config.clearDebugLog()
-        var passed = false
-        let root: Any? = AccessibilityIdentifierConfig.$taskLocalConfig.withValue(config) {
-            let hosted = TestSetupUtilities.hostRootPlatformView(
-                view,
-                forceLayout: true,
+        let passed = testComponentComplianceSinglePlatform(
+            view,
+            expectedPattern: expectedPattern,
+            platform: platform,
+            componentName: componentName,
+            testHIGCompliance: testHIGCompliance,
+            exposeContentAccessibility: exposeContentAccessibility,
+            recordFailureIssues: false
+        )
+        if !passed {
+            populateComplianceFailureDiagnostic(
+                view: view,
+                expectedPattern: expectedPattern,
+                componentName: componentName,
                 exposeContentAccessibility: exposeContentAccessibility,
-                accessibilityIdentifierConfig: config
+                diagnostic: &diagnostic
             )
-            var platformIds: [String] = []
-            var viewInspectorIds: [String] = []
-            if let root = hosted {
-                platformIds = findAllAccessibilityIdentifiersFromPlatformView(root)
-                if platformIds.contains(where: identifierMatches) { passed = true; return hosted }
-                diagnostic = "Collected identifiers (\(platformIds.count)): \(platformIds.prefix(30).joined(separator: ", "))\(platformIds.count > 30 ? "…" : "")"
-            } else {
-                diagnostic = "Hosting returned nil (no platform view to collect identifiers from)"
-            }
-            #if canImport(ViewInspector)
-            do {
-                let inspected = try AnyView(view).inspect()
-                viewInspectorIds = allAccessibilityIdentifiersInInspectedRecursive(inspected)
-                if viewInspectorIds.contains(where: identifierMatches) { passed = true; return hosted }
-                let viNote = viewInspectorIds.isEmpty
-                    ? "; ViewInspector collected 0 IDs"
-                    : "; ViewInspector collected \(viewInspectorIds.count) IDs: \(viewInspectorIds.prefix(5).joined(separator: ", "))\(viewInspectorIds.count > 5 ? "…" : "")"
-                if let d = diagnostic { diagnostic = d + viNote } else { diagnostic = viNote }
-            } catch {
-                if let d = diagnostic { diagnostic = d + "; ViewInspector inspect() threw: \(error)" } else { diagnostic = "ViewInspector inspect() threw: \(error)" }
-            }
-            #endif
-            // As a last resort, use the accessibility identifier generator's debug log as evidence.
-            // If the generator produced an identifier that matches the expected pattern/component
-            // name, treat this as a pass but record an Issue to mark the result as tooling-limited.
-            if !passed {
-                let log = config.getDebugLog()
-                let generatorIds = log
-                    .split(separator: "\n")
-                    .compactMap { extractIdentifierFromDebugLogLine(String($0)) }
-                if generatorIds.contains(where: identifierMatches) {
-                    passed = true
-                    let genSummary = generatorIds.isEmpty
-                        ? "generator produced matching ID (no IDs collected from platform/ViewInspector)"
-                        : "generator produced IDs: \(generatorIds.prefix(5).joined(separator: ", "))"
-                    let baseMessage = "Generator debug log matched expected accessibility identifier for component '\(componentName)': \(genSummary)"
-                    if let d = diagnostic {
-                        diagnostic = d + "; " + baseMessage
-                    } else {
-                        diagnostic = baseMessage
-                    }
-                    // Mark this as a tooling limitation rather than a real contract failure.
-                    if let message = diagnostic {
-                        Issue.record(NSError(domain: "SixLayer.A11yTestHelper", code: 1, userInfo: [NSLocalizedDescriptionKey: message]))
-                    }
-                    return hosted
-                }
-            }
-            return hosted
         }
-        if passed { return true }
-        _ = root
-        #endif
-        return false
+        return passed
     }
 
     #if canImport(ViewInspector)
@@ -1349,77 +1395,25 @@ public enum AccessibilityTestUtilities {
         diagnostic: inout String?,
         exposeContentAccessibility: Bool = true
     ) -> Bool {
-        func identifierMatches(_ id: String) -> Bool {
-            let prefix = expectedPattern.replacingOccurrences(of: ".*", with: "")
-            return id.hasPrefix(prefix) || id.contains(componentName)
-        }
-        #if (canImport(UIKit) && !os(watchOS)) || canImport(AppKit)
-        let config = TestSetupUtilities.makeIsolatedAccessibilityIdentifierConfig()
-        config.enableDebugLogging = true
-        config.clearDebugLog()
-        var passed = false
-        let root: Any? = AccessibilityIdentifierConfig.$taskLocalConfig.withValue(config) {
-            let hosted = TestSetupUtilities.hostRootPlatformView(
-                view,
-                forceLayout: true,
+        let passed = testComponentComplianceSinglePlatform(
+            view,
+            expectedPattern: expectedPattern,
+            platform: platform,
+            componentName: componentName,
+            testHIGCompliance: testHIGCompliance,
+            exposeContentAccessibility: exposeContentAccessibility,
+            recordFailureIssues: false
+        )
+        if !passed {
+            populateComplianceFailureDiagnostic(
+                view: view,
+                expectedPattern: expectedPattern,
+                componentName: componentName,
                 exposeContentAccessibility: exposeContentAccessibility,
-                accessibilityIdentifierConfig: config
+                diagnostic: &diagnostic
             )
-            var platformIds: [String] = []
-            var viewInspectorIds: [String] = []
-            #if (canImport(UIKit) && !os(watchOS)) || canImport(AppKit)
-            if let root = hosted {
-                platformIds = findAllAccessibilityIdentifiersFromPlatformView(root)
-                if platformIds.contains(where: identifierMatches) { passed = true; return hosted }
-                diagnostic = "Collected identifiers (\(platformIds.count)): \(platformIds.prefix(30).joined(separator: ", "))\(platformIds.count > 30 ? "…" : "")"
-            } else {
-                diagnostic = "Hosting returned nil (no platform view to collect identifiers from)"
-            }
-            #endif
-            #if canImport(ViewInspector)
-            do {
-                let inspected = try view.inspect()
-                viewInspectorIds = allAccessibilityIdentifiersFromTypedInspectable(inspected)
-                if viewInspectorIds.contains(where: identifierMatches) { passed = true; return hosted }
-                let viNote = viewInspectorIds.isEmpty
-                    ? "; ViewInspector (direct) collected 0 IDs"
-                    : "; ViewInspector (direct) collected \(viewInspectorIds.count) IDs: \(viewInspectorIds.prefix(5).joined(separator: ", "))\(viewInspectorIds.count > 5 ? "…" : "")"
-                if let d = diagnostic { diagnostic = d + viNote } else { diagnostic = viNote }
-            } catch {
-                if let d = diagnostic { diagnostic = d + "; ViewInspector inspect() threw: \(error)" } else { diagnostic = "ViewInspector inspect() threw: \(error)" }
-            }
-            #endif
-            // As a last resort, consult the generator debug log.
-            if !passed {
-                let log = config.getDebugLog()
-                let generatorIds = log
-                    .split(separator: "\n")
-                    .compactMap { extractIdentifierFromDebugLogLine(String($0)) }
-                if generatorIds.contains(where: identifierMatches) {
-                    passed = true
-                    let genSummary = generatorIds.isEmpty
-                        ? "generator produced matching ID (no IDs collected from platform/ViewInspector)"
-                        : "generator produced IDs: \(generatorIds.prefix(5).joined(separator: ", "))"
-                    let baseMessage = "Generator debug log matched expected accessibility identifier for component '\(componentName)': \(genSummary)"
-                    if let d = diagnostic {
-                        diagnostic = d + "; " + baseMessage
-                    } else {
-                        diagnostic = baseMessage
-                    }
-                    if let message = diagnostic {
-                        Issue.record(NSError(domain: "SixLayer.A11yTestHelper", code: 1, userInfo: [NSLocalizedDescriptionKey: message]))
-                    }
-                    return hosted
-                }
-            }
-            return hosted
         }
-        if passed { return true }
-        #if (canImport(UIKit) && !os(watchOS)) || canImport(AppKit)
-        _ = root
-        #endif
-        #endif
-        return false
+        return passed
     }
     #endif // canImport(ViewInspector)
 
