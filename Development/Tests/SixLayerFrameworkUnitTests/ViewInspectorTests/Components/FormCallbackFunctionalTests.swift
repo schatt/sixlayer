@@ -14,6 +14,12 @@ open class FormCallbackFunctionalTests: BaseTestClass {
     
     #if canImport(ViewInspector)
     @MainActor
+    private func localizedFormButtonLabels(_ keys: [String]) -> [String] {
+        let i18n = InternationalizationService()
+        return keys.map { i18n.localizedString(for: $0) }
+    }
+
+    @MainActor
     private func tapButtonIfFound(in view: some View, labels: [String]) -> Bool {
         guard let button = findButtonInViewHierarchy(view, labels: labels) else { return false }
         return (try? button.tap()) != nil
@@ -49,12 +55,16 @@ open class FormCallbackFunctionalTests: BaseTestClass {
         // When: Simulating Cancel button tap using ViewInspector
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
         #if canImport(ViewInspector)
-        let buttons = findAllInViewHierarchy(formView, ViewType.Button.self)
-        #expect(!buttons.isEmpty, "Form should have buttons")
-        if tapButtonIfFound(in: formView, labels: ["Cancel"]) {
+        _ = TestSetupUtilities.hostRootPlatformView(formView, forceLayout: true)
+        let cancelLabels = localizedFormButtonLabels(["SixLayerFramework.button.cancel"])
+        let button = findButtonInViewHierarchy(formView, labels: cancelLabels)
+        #expect(button != nil, "Form should expose Cancel button")
+        if let button, (try? button.tap()) == true {
             #expect(callbackInvoked, "Cancel callback should be invoked when Cancel button is tapped")
+        } else if button != nil {
+            Issue.record("Cancel button found but ViewInspector tap did not invoke callback")
         } else {
-            Issue.record("Could not find Cancel button in form or failed to tap it")
+            Issue.record("Could not find Cancel button in form")
         }
         #else
         // ViewInspector not available on macOS - test passes by verifying callback signature
@@ -88,12 +98,19 @@ open class FormCallbackFunctionalTests: BaseTestClass {
         // When: Simulating Update button tap using ViewInspector
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
         #if canImport(ViewInspector)
-        let buttons = findAllInViewHierarchy(formView, ViewType.Button.self)
-        #expect(!buttons.isEmpty, "Form should have buttons")
-        if tapButtonIfFound(in: formView, labels: ["Update", "Create"]) {
+        _ = TestSetupUtilities.hostRootPlatformView(formView, forceLayout: true)
+        let updateLabels = localizedFormButtonLabels([
+            "SixLayerFramework.button.update",
+            "SixLayerFramework.button.create"
+        ])
+        let button = findButtonInViewHierarchy(formView, labels: updateLabels)
+        #expect(button != nil, "Form should expose Update/Create button")
+        if let button, (try? button.tap()) == true {
             #expect(callbackInvoked, "Update callback should be invoked when Update button is tapped")
+        } else if button != nil {
+            Issue.record("Update button found but ViewInspector tap did not invoke callback")
         } else {
-            Issue.record("Could not find Update button in form or failed to tap it")
+            Issue.record("Could not find Update button in form")
         }
         #else
         // ViewInspector not available on macOS - test passes by verifying callback signature
@@ -127,12 +144,16 @@ open class FormCallbackFunctionalTests: BaseTestClass {
         // When: Simulating Submit button tap using ViewInspector
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
         #if canImport(ViewInspector)
-        let buttons = findAllInViewHierarchy(formView, ViewType.Button.self)
-        #expect(!buttons.isEmpty, "Form should have buttons")
-        if tapButtonIfFound(in: formView, labels: ["Submit"]) {
+        _ = TestSetupUtilities.hostRootPlatformView(formView, forceLayout: true)
+        let submitLabels = [configuration.submitButtonText]
+        let button = findButtonInViewHierarchy(formView, labels: submitLabels)
+        #expect(button != nil, "Form should expose Submit button")
+        if let button, (try? button.tap()) == true {
             #expect(callbackInvoked, "Submit callback should be invoked when Submit button is tapped")
+        } else if button != nil {
+            Issue.record("Submit button found but ViewInspector tap did not invoke callback")
         } else {
-            Issue.record("Could not find Submit button in form or failed to tap it")
+            Issue.record("Could not find Submit button in form")
         }
         #else
         // ViewInspector not available on macOS - test passes by verifying callback signature
