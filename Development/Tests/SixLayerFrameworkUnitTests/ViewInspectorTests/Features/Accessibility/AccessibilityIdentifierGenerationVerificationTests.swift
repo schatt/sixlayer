@@ -168,13 +168,13 @@ open class AccessibilityIdentifierGenerationVerificationTests: BaseTestClass {
             // 2. Contains what it needs to contain - The view has the manual accessibility identifier assigned
             // Using wrapper - when ViewInspector works on macOS, no changes needed here
             #if canImport(ViewInspector)
-            if let inspected = try? AnyView(testView).inspect(),
-               let text = inspected.findAll(ViewInspector.ViewType.Text.self).first,
-               let accessibilityIdentifier = try? text.accessibilityIdentifier() {
-                #expect(accessibilityIdentifier == manualID, "Manual identifier should override automatic generation")
-            } else {
-                Issue.record("Failed to inspect accessibility identifier")
-            }
+            let hasManualID = testComponentComplianceSinglePlatform(
+                testView,
+                expectedPattern: manualID,
+                platform: SixLayerPlatform.iOS,
+                componentName: "ManualIdentifierOverrideTest"
+            )
+            #expect(hasManualID, "Manual identifier should override automatic generation")
             #else
             // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
             #endif
@@ -209,15 +209,13 @@ open class AccessibilityIdentifierGenerationVerificationTests: BaseTestClass {
             // 2. Contains what it needs to contain - The view should NOT have an automatic accessibility identifier
             // Using wrapper - when ViewInspector works on macOS, no changes needed here
             #if canImport(ViewInspector)
-            if let inspected1 = try? AnyView(testView1).inspect(),
-               let button1 = try? inspected1.button(),
-               let accessibilityIdentifier1 = try? button1.accessibilityIdentifier() {
-                #expect(accessibilityIdentifier1.isEmpty || !accessibilityIdentifier1.hasPrefix("test"), 
-                             "No automatic identifier should be generated when disabled")
-            } else {
-                // If we can't inspect, that's also acceptable - it means no identifier was set
-                // This is actually a valid test result when automatic IDs are disabled
-            }
+            let lacksAutoWhenDisabled = AccessibilityTestUtilities.testComponentLacksMatchingIdentifier(
+                testView1,
+                expectedPattern: "test.*",
+                platform: SixLayerPlatform.iOS,
+                componentName: "GlobalConfigDisabledTest"
+            )
+            #expect(lacksAutoWhenDisabled, "No automatic identifier should be generated when disabled")
             #else
             // ViewInspector not available, treat as no identifier applied
             #expect(Bool(true), "ViewInspector not available, treating as no ID applied")
@@ -237,13 +235,13 @@ open class AccessibilityIdentifierGenerationVerificationTests: BaseTestClass {
             // 2. Contains what it needs to contain - The view should have an automatic accessibility identifier
             // We must be able to inspect to verify presence; if we can't, we don't know it's there and must fail.
             #if canImport(ViewInspector)
-            do {
-                let accessibilityIdentifier2 = try testView2.inspect().button().accessibilityIdentifier()
-                #expect(!accessibilityIdentifier2.isEmpty, "An identifier should be generated when enabled")
-                #expect(accessibilityIdentifier2.hasPrefix("test."), "Generated ID should start with namespace 'test.'")
-            } catch {
-                Issue.record("Could not verify identifier when enabled: inspection failed. Cannot distinguish 'identifier missing' from ViewInspector limitation.")
-            }
+            let hasAutoWhenEnabled = testComponentComplianceSinglePlatform(
+                testView2,
+                expectedPattern: "test.*Test*",
+                platform: SixLayerPlatform.iOS,
+                componentName: "GlobalConfigEnabledTest"
+            )
+            #expect(hasAutoWhenEnabled, "An identifier should be generated when automatic IDs are enabled")
             #else
             // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
             #endif
