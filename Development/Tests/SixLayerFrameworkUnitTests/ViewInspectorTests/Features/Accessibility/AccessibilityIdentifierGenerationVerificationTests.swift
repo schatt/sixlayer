@@ -198,11 +198,9 @@ open class AccessibilityIdentifierGenerationVerificationTests: BaseTestClass {
             // Test Case 1: When automatic IDs are disabled
             config.enableAutoIDs = false
                 
-            let testView1 = platformPresentContent_L1(
-                content: "Test",
-                hints: PresentationHints()
-            )
-            .automaticCompliance()
+            let testView1 = Text("GlobalConfigDisabledProbe")
+                .padding()
+                .automaticCompliance()
                 
             // 1. View created - The view can be instantiated successfully
             #expect(Bool(true), "View should be created even when automatic IDs are disabled")  // testView1 is non-optional
