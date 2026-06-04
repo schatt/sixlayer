@@ -14,7 +14,7 @@ open class FormCallbackFunctionalTests: BaseTestClass {
     
     #if canImport(ViewInspector)
     @MainActor
-    private func tapButtonIfFound(in view: some View, labels: String...) -> Bool {
+    private func tapButtonIfFound(in view: some View, labels: [String]) -> Bool {
         guard let button = findButtonInViewHierarchy(view, labels: labels) else { return false }
         return (try? button.tap()) != nil
     }
@@ -51,7 +51,7 @@ open class FormCallbackFunctionalTests: BaseTestClass {
         #if canImport(ViewInspector)
         let buttons = findAllInViewHierarchy(formView, ViewType.Button.self)
         #expect(!buttons.isEmpty, "Form should have buttons")
-        if tapButtonIfFound(in: formView, labels: "Cancel") {
+        if tapButtonIfFound(in: formView, labels: ["Cancel"]) {
             #expect(callbackInvoked, "Cancel callback should be invoked when Cancel button is tapped")
         } else {
             Issue.record("Could not find Cancel button in form or failed to tap it")
@@ -90,7 +90,7 @@ open class FormCallbackFunctionalTests: BaseTestClass {
         #if canImport(ViewInspector)
         let buttons = findAllInViewHierarchy(formView, ViewType.Button.self)
         #expect(!buttons.isEmpty, "Form should have buttons")
-        if tapButtonIfFound(in: formView, labels: "Update", "Create") {
+        if tapButtonIfFound(in: formView, labels: ["Update", "Create"]) {
             #expect(callbackInvoked, "Update callback should be invoked when Update button is tapped")
         } else {
             Issue.record("Could not find Update button in form or failed to tap it")
@@ -129,7 +129,7 @@ open class FormCallbackFunctionalTests: BaseTestClass {
         #if canImport(ViewInspector)
         let buttons = findAllInViewHierarchy(formView, ViewType.Button.self)
         #expect(!buttons.isEmpty, "Form should have buttons")
-        if tapButtonIfFound(in: formView, labels: "Submit") {
+        if tapButtonIfFound(in: formView, labels: ["Submit"]) {
             #expect(callbackInvoked, "Submit callback should be invoked when Submit button is tapped")
         } else {
             Issue.record("Could not find Submit button in form or failed to tap it")
