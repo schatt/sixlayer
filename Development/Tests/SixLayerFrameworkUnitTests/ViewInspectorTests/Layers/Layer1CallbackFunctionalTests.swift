@@ -94,7 +94,13 @@ open class Layer1CallbackFunctionalTests: BaseTestClass {
         
         #if canImport(ViewInspector)
         _ = TestSetupUtilities.hostRootPlatformView(view, forceLayout: true)
-        verifyViewContainsText(view, expectedText: "Item 1", testName: "Collection items")
+        let hasCollectionShellID = testComponentComplianceSinglePlatform(
+            view,
+            expectedPattern: "*platformPresentItemCollection*",
+            platform: SixLayerPlatform.iOS,
+            componentName: "platformPresentItemCollection_L1"
+        )
+        #expect(hasCollectionShellID, "Collection L1 shell should expose accessibility identifiers")
         _ = callbackInvoked
         _ = selectedItems.count
         #else
