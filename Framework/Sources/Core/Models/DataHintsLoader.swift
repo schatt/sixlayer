@@ -42,15 +42,56 @@ public struct ItemColorProviderConfig: Sendable {
     }
 }
 
+// MARK: - Hints Section Layout
+
+/// Immutable section layout recipe parsed from a `.hints` file `_sections` entry.
+///
+/// Stored in ``DataHintsResult`` and cross-thread caches. Field IDs are resolved to
+/// live ``DynamicFormField`` instances at form open via ``SectionBuilder`` (`@MainActor`).
+public struct HintsSectionLayout: Sendable, Equatable, Identifiable {
+    public let id: String
+    public let title: String
+    public let description: String?
+    /// Ordered field IDs for this section (matched to runtime fields at form open).
+    public let fieldIds: [String]
+    public let layoutStyle: FieldLayout?
+    public let isCollapsible: Bool
+    public let isCollapsed: Bool
+    /// Optional section metadata from hints (excluding internal `_fieldIds` storage).
+    public let metadata: [String: String]?
+
+    public init(
+        id: String,
+        title: String,
+        description: String? = nil,
+        fieldIds: [String] = [],
+        layoutStyle: FieldLayout? = nil,
+        isCollapsible: Bool = false,
+        isCollapsed: Bool = false,
+        metadata: [String: String]? = nil
+    ) {
+        self.id = id
+        self.title = title
+        self.description = description
+        self.fieldIds = fieldIds
+        self.layoutStyle = layoutStyle
+        self.isCollapsible = isCollapsible
+        self.isCollapsed = isCollapsed
+        self.metadata = metadata
+    }
+}
+
 // MARK: - Data Hints Result
 
-/// Complete result from loading a hints file, including both field hints and layout sections
-// TODO: Make properly Sendable once DynamicFormField is Sendable
-public struct DataHintsResult: @unchecked Sendable {
+/// Complete immutable result from parsing a `.hints` file (field hints + section layout recipes + presentation config).
+///
+/// Safe to cache and pass across concurrency domains. Does not contain live ``DynamicFormField``
+/// instances or closure-based behavior — those are attached at `@MainActor` when a form is presented.
+public struct DataHintsResult: Sendable {
     /// Field-level display hints keyed by field ID
     public let fieldHints: [String: FieldDisplayHints]
-    /// Layout sections parsed from _sections array in hints file
-    public let sections: [DynamicFormSection]
+    /// Section layout recipes parsed from `_sections` in the hints file
+    public let sectionLayouts: [HintsSectionLayout]
     /// Default color for card presentation (parsed from _defaultColor in hints file)
     public let defaultColor: String?
     /// Color mapping by type name (parsed from _colorMapping in hints file)
@@ -82,7 +123,7 @@ public struct DataHintsResult: @unchecked Sendable {
 
     public init(
         fieldHints: [String: FieldDisplayHints] = [:],
-        sections: [DynamicFormSection] = [],
+        sectionLayouts: [HintsSectionLayout] = [],
         defaultColor: String? = nil,
         colorMapping: [String: String]? = nil,
         itemColorProviderConfig: ItemColorProviderConfig? = nil,
@@ -94,7 +135,7 @@ public struct DataHintsResult: @unchecked Sendable {
         ocrGroups: [String: [String]]? = nil
     ) {
         self.fieldHints = fieldHints
-        self.sections = sections
+        self.sectionLayouts = sectionLayouts
         self.defaultColor = defaultColor
         self.colorMapping = colorMapping
         self.itemColorProviderConfig = itemColorProviderConfig
@@ -110,8 +151,7 @@ public struct DataHintsResult: @unchecked Sendable {
 // MARK: - Data Hints Protocol
 
 /// Protocol for loading hints that describe how to present data models
-// TODO: Make Sendable once DataHintsResult is Sendable
-public protocol DataHintsLoader {
+public protocol DataHintsLoader: Sendable {
     /// Load hints for a data model by its name (backward compatibility - returns only field hints)
     func loadHints(for modelName: String) -> [String: FieldDisplayHints]
     
@@ -125,8 +165,7 @@ public protocol DataHintsLoader {
 // MARK: - File-Based Data Hints Loader
 
 /// Loads .hints files from the bundle or filesystem
-// TODO: Add @unchecked Sendable once DataHintsResult is Sendable
-public class FileBasedDataHintsLoader: DataHintsLoader {
+public final class FileBasedDataHintsLoader: DataHintsLoader, @unchecked Sendable {
     private let fileManager: FileManager
     private let bundle: Bundle
     
@@ -211,7 +250,7 @@ public class FileBasedDataHintsLoader: DataHintsLoader {
     
     private func parseHintsResult(from json: [String: Any], locale: Locale = Locale.current) -> DataHintsResult {
         var fieldHints: [String: FieldDisplayHints] = [:]
-        var sections: [DynamicFormSection] = []
+        var sectionLayouts: [HintsSectionLayout] = []
         
         // Get language code for OCR hints lookup (e.g., "en", "es", "fr")
         let languageCode = locale.language.languageCode?.identifier ?? "en"
@@ -375,12 +414,12 @@ public class FileBasedDataHintsLoader: DataHintsLoader {
         
         // Parse _sections if present
         if let sectionsArray = json["_sections"] as? [[String: Any]] {
-            sections = parseSections(from: sectionsArray)
+            sectionLayouts = parseSectionLayouts(from: sectionsArray)
         }
         
         return DataHintsResult(
             fieldHints: fieldHints,
-            sections: sections,
+            sectionLayouts: sectionLayouts,
             defaultColor: defaultColor,
             colorMapping: colorMapping,
             itemColorProviderConfig: itemColorProviderConfig,
@@ -540,11 +579,10 @@ public class FileBasedDataHintsLoader: DataHintsLoader {
         return groups.isEmpty ? nil : groups
     }
     
-    private func parseSections(from sectionsArray: [[String: Any]]) -> [DynamicFormSection] {
-        var sections: [DynamicFormSection] = []
+    private func parseSectionLayouts(from sectionsArray: [[String: Any]]) -> [HintsSectionLayout] {
+        var sectionLayouts: [HintsSectionLayout] = []
         
         for sectionDict in sectionsArray {
-            // Title is required (for accessibility)
             guard let id = sectionDict["id"] as? String,
                   let title = sectionDict["title"] as? String else {
                 print("⚠️ Warning: Skipping section in hints file - missing required 'id' or 'title'")
@@ -555,33 +593,35 @@ public class FileBasedDataHintsLoader: DataHintsLoader {
             let fieldIds = sectionDict["fields"] as? [String] ?? []
             let layoutStyleString = sectionDict["layoutStyle"] as? String
             let layoutStyle = layoutStyleString.flatMap { FieldLayout(rawValue: $0) }
-            
-            // Parse collapsible properties (Issue #74: Support collapsible sections in hints)
             let isCollapsible = sectionDict["isCollapsible"] as? Bool ?? false
             let isCollapsed = sectionDict["isCollapsed"] as? Bool ?? false
             
-            // Store field IDs in metadata so we can match them later when creating form
             var metadata: [String: String] = [:]
-            if !fieldIds.isEmpty {
-                metadata["_fieldIds"] = fieldIds.joined(separator: ",")
+            for (key, value) in sectionDict {
+                guard key != "id", key != "title", key != "description", key != "fields",
+                      key != "layoutStyle", key != "isCollapsible", key != "isCollapsed" else {
+                    continue
+                }
+                if let stringValue = value as? String {
+                    metadata[key] = stringValue
+                }
             }
             
-            // Create section (fields will be populated later when matched with actual form fields)
-            let section = DynamicFormSection(
+            let layout = HintsSectionLayout(
                 id: id,
                 title: title,
                 description: description,
-                fields: [], // Fields will be populated when creating form
+                fieldIds: fieldIds,
+                layoutStyle: layoutStyle,
                 isCollapsible: isCollapsible,
                 isCollapsed: isCollapsed,
-                metadata: metadata.isEmpty ? nil : metadata,
-                layoutStyle: layoutStyle
+                metadata: metadata.isEmpty ? nil : metadata
             )
             
-            sections.append(section)
+            sectionLayouts.append(layout)
         }
         
-        return sections
+        return sectionLayouts
     }
     
     // Legacy method for backward compatibility
@@ -706,7 +746,7 @@ public actor DataHintsRegistry {
         
         // Cache for future use (actor-local cache always, shared cache only before preload)
         // Only cache file-based hints - code-provided hints are handled separately
-        if !result.fieldHints.isEmpty || !result.sections.isEmpty {
+        if !result.fieldHints.isEmpty || !result.sectionLayouts.isEmpty {
             resultCache[modelName] = result
             cache[modelName] = result.fieldHints
             
@@ -769,7 +809,7 @@ public actor DataHintsRegistry {
         if isPreloaded {
             if resultCache[modelName] == nil {
                 let result = loader.loadHintsResult(for: modelName)
-                if !result.fieldHints.isEmpty || !result.sections.isEmpty {
+                if !result.fieldHints.isEmpty || !result.sectionLayouts.isEmpty {
                     resultCache[modelName] = result
                     cache[modelName] = result.fieldHints
                 }
@@ -791,7 +831,7 @@ public actor DataHintsRegistry {
         
         // Load and cache (updates both caches for cross-thread access)
         let result = loader.loadHintsResult(for: modelName)
-        if !result.fieldHints.isEmpty || !result.sections.isEmpty {
+        if !result.fieldHints.isEmpty || !result.sectionLayouts.isEmpty {
             resultCache[modelName] = result
             cache[modelName] = result.fieldHints
             
@@ -837,7 +877,7 @@ public actor DataHintsRegistry {
             // Check if hints file exists before trying to load (faster than trying to load non-existent files)
             if loader.hasHints(for: modelName) {
                 let result = loader.loadHintsResult(for: modelName)
-                if !result.fieldHints.isEmpty || !result.sections.isEmpty {
+                if !result.fieldHints.isEmpty || !result.sectionLayouts.isEmpty {
                     sharedResultCache[modelName] = result
                 }
             }
@@ -860,57 +900,38 @@ public actor DataHintsRegistry {
 
 // MARK: - Section Builder Helper
 
-/// Helper to build DynamicFormSection instances from hints sections, matching fields by ID
-/// REFACTOR: Optimized field mapping and cleaner error handling
+/// Helper to build DynamicFormSection instances from hints section layouts, matching fields by ID
 public enum SectionBuilder {
-    /// Build sections from hints, matching field IDs to actual DynamicFormField instances
+    /// Build runtime sections from cached layout recipes and live field instances.
     /// - Parameters:
-    ///   - hintsSections: Sections parsed from hints file (with field IDs in metadata)
-    ///   - fields: Actual DynamicFormField instances to match
-    /// - Returns: Sections with matched fields, preserving field order from hints
+    ///   - sectionLayouts: Layout recipes from a parsed hints file
+    ///   - fields: Live ``DynamicFormField`` instances to match (may include app closures)
+    /// - Returns: Runtime sections with matched fields, preserving order from hints
     public static func buildSections(
-        from hintsSections: [DynamicFormSection],
+        from sectionLayouts: [HintsSectionLayout],
         matching fields: [DynamicFormField]
     ) -> [DynamicFormSection] {
-        // DRY: Create field map once for O(1) lookups
         let fieldMap = Dictionary(uniqueKeysWithValues: fields.map { ($0.id, $0) })
         
         var builtSections: [DynamicFormSection] = []
         
-        for hintsSection in hintsSections {
-            // Extract field IDs from metadata
-            guard let fieldIdsString = hintsSection.metadata?["_fieldIds"] else {
-                // No fields specified - create empty section
-                builtSections.append(hintsSection)
-                continue
-            }
+        for layout in sectionLayouts {
+            let matchedFields = layout.fieldIds.compactMap { fieldMap[$0] }
+            let missingFields = layout.fieldIds.filter { fieldMap[$0] == nil }
             
-            // Parse and match fields in order specified in hints (DRY)
-            let fieldIds = fieldIdsString
-                .split(separator: ",")
-                .map { String($0).trimmingCharacters(in: .whitespaces) }
-            
-            let matchedFields = fieldIds.compactMap { fieldMap[$0] }
-            let missingFields = fieldIds.filter { fieldMap[$0] == nil }
-            
-            // Warn about missing fields (graceful degradation)
             if !missingFields.isEmpty {
-                print("⚠️ Warning: Section '\(hintsSection.title)' (id: \(hintsSection.id)) references fields that don't exist: \(missingFields.joined(separator: ", ")). These fields will be ignored.")
+                print("⚠️ Warning: Section '\(layout.title)' (id: \(layout.id)) references fields that don't exist: \(missingFields.joined(separator: ", ")). These fields will be ignored.")
             }
-            
-            // Create section with matched fields
-            var updatedMetadata = hintsSection.metadata ?? [:]
-            updatedMetadata.removeValue(forKey: "_fieldIds") // Remove temporary field IDs storage
             
             let builtSection = DynamicFormSection(
-                id: hintsSection.id,
-                title: hintsSection.title,
-                description: hintsSection.description,
+                id: layout.id,
+                title: layout.title,
+                description: layout.description,
                 fields: matchedFields,
-                isCollapsible: hintsSection.isCollapsible,
-                isCollapsed: hintsSection.isCollapsed,
-                metadata: updatedMetadata.isEmpty ? nil : updatedMetadata,
-                layoutStyle: hintsSection.layoutStyle
+                isCollapsible: layout.isCollapsible,
+                isCollapsed: layout.isCollapsed,
+                metadata: layout.metadata,
+                layoutStyle: layout.layoutStyle
             )
             
             builtSections.append(builtSection)

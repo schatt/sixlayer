@@ -67,7 +67,46 @@ open class HIGComplianceFeaturesIssue36Tests: BaseTestClass {
     }
     
     // MARK: - 1. Automatic Touch Target Sizing Tests
-    
+
+    /// Control-first tri-state (#251): interactive button on the **current host**.
+    @Test @MainActor func testAutomaticTouchTargetSizing_TriStatePhases() {
+        initializeTestConfig()
+        defer { RuntimeCapabilityDetection.clearAllCapabilityOverrides() }
+
+        @MainActor func assertButtonTouchTargetLaw(phase: String) {
+            let platform = SixLayerPlatform.current
+            let effectiveTouch = RuntimeCapabilityDetection.supportsTouch
+            let expectedMin = PlatformTestUtilities.expectedMinTouchTarget(
+                for: platform,
+                touchDetected: effectiveTouch
+            )
+            let runtimeMin = RuntimeCapabilityDetection.minTouchTarget
+            let button = createInteractiveButton("Tri-State \(phase)")
+
+            switch platform {
+            case .iOS, .watchOS:
+                #expect(runtimeMin == expectedMin, "\(phase): touch-first HIG floor on \(platform)")
+                #expect(expectedMin >= 44.0, "\(phase): iOS/watchOS floor is at least 44pt")
+            case .macOS:
+                #expect(runtimeMin == expectedMin, "\(phase): macOS floor tracks effective touch")
+            case .tvOS, .visionOS:
+                #expect(runtimeMin == expectedMin, "\(phase): focus/gaze floor on \(platform)")
+                #expect(expectedMin == 60.0, "\(phase): tvOS/visionOS use 60pt floor")
+            }
+
+            verifyViewIsHostable(button, description: "\(phase) button with automatic compliance on \(platform)")
+        }
+
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        assertButtonTouchTargetLaw(phase: "current")
+
+        RuntimeCapabilityDetection.setTestTouchSupport(false)
+        assertButtonTouchTargetLaw(phase: "disabled")
+
+        RuntimeCapabilityDetection.setTestTouchSupport(true)
+        assertButtonTouchTargetLaw(phase: "enabled")
+    }
+
     /**
      * BUSINESS PURPOSE: Interactive components should automatically meet 44pt minimum touch target on iOS
      * TESTING SCOPE: Tests that buttons and other interactive elements have minimum 44pt touch targets

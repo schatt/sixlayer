@@ -223,5 +223,26 @@ open class LocationServiceTests: BaseTestClass {
         let _: CLLocationManagerDelegate = service
         // Delegate is non-optional, so it exists if we reach here
     }
+
+    // MARK: - Test / UI test host skips (no CoreLocation permission prompts)
+
+    /// In-process XCTest is detected by LocationService; authorization must not call CoreLocation or time out.
+    @Test @MainActor func testRequestAuthorizationSkipsRealCoreLocationInTestEnvironment() async throws {
+        let service = LocationService()
+
+        try await service.requestAuthorization()
+
+        #expect(service.isLocationEnabled)
+    }
+
+    /// Stub coordinate matches MapViewExample / CI-safe map-with-location host behavior.
+    @Test @MainActor func testGetCurrentLocationReturnsStubInTestEnvironment() async throws {
+        let service = LocationService()
+
+        let location = try await service.getCurrentLocation()
+
+        #expect(abs(location.coordinate.latitude - LocationService.stubTestCoordinate.latitude) < 0.000_001)
+        #expect(abs(location.coordinate.longitude - LocationService.stubTestCoordinate.longitude) < 0.000_001)
+    }
 }
 

@@ -18,8 +18,8 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
     private nonisolated(unsafe) var app: XCUIApplication!
 
     private static let hostReadyTimeout: TimeInterval = 3.0
-    /// Enough swipes for deep SD150 `Form` rows; still bounded (Refs #261).
-    private static let maxFormScrolls = 12
+    /// Deep SD150 `Form` hosts need more swipes than shallow caps (Refs #261; align with Layer4UITests).
+    private static let maxFormScrolls = 18
 
     nonisolated override func setUpWithError() throws {
         continueAfterFailure = false
@@ -146,7 +146,7 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
             paste.tap()
             return
         }
-        field.typeText(text)
+        app.typeText(text)
     }
 
     /// iOS 26 integration `Form`: blur prior field, refocus secure row, then `typeText` on the leaf (Refs #261).
@@ -177,9 +177,15 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
             paste.tap()
             return
         }
-        field.typeText(text)
+        tapCenter(field)
+        RunLoop.current.run(until: Date().addingTimeInterval(0.25))
+        app.typeText(text)
     }
     #endif
+
+    private func scrollToIntegrationSection() {
+        scrollUntilExists(mirrorElement(identifier: "SD150_Mirror_IN"))
+    }
 
     /// Resolves a secure field by label, `exactNamed`, or generated `SixLayer.main.ui.<sanitized>.SecureField` id (hyphenated).
     private func sd150SecureField(matching fragment: String) -> XCUIElement {
@@ -294,10 +300,9 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
         #if os(iOS) || os(macOS)
         scrollToSectionHeader("SD150 Secure")
         let field = sd150SecureField(matching: "sd150-securefield")
-        scrollUntilExists(field)
+        scrollUntilHittable(field)
         XCTAssertTrue(field.waitForExistence(timeout: 2.5), "Secure field")
-        field.xcuiTapToBecomeFirstResponder()
-        field.typeText("hunter2")
+        sd150FocusAndType(field, "hunter2")
         assertBindingMirrorContains("SD150_Mirror_S", "hunter2")
         #else
         throw XCTSkip("Issue #150 host UI tests require iOS or macOS TestApp")
@@ -374,10 +379,12 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
 
     func test150_platformForm_integrationMultipleControls() throws {
         #if os(iOS) || os(macOS)
-        scrollToSectionHeader("SD150 Integration")
+        scrollToIntegrationSection()
         let name = sd150TextField(matching: "SD150_Integration_Name")
         let pass = sd150SecureField(matching: "sd150-integration-password")
         let toggle = sd150Switch(matching: "sd150-integration-toggle")
+        scrollUntilHittable(name)
+        scrollUntilExists(pass)
         XCTAssertTrue(name.waitForExistence(timeout: 2.5), "Integration name field")
         XCTAssertTrue(pass.waitForExistence(timeout: 2.5), "Integration password field")
         #if os(iOS)

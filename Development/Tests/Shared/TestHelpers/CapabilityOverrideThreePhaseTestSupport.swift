@@ -1,6 +1,7 @@
 //
 //  CapabilityOverrideThreePhaseTestSupport.swift
 //  Optional narrow TDD: Layer 5 config vs thread-local `setTest*`. Primary tri-value tests live on controls.
+//  GitHub #251 section C — tracking: https://github.com/schatt/sixlayer/issues/251
 //
 
 import Testing
@@ -161,7 +162,10 @@ public enum CapabilityOverrideThreePhaseTestSupport {
 
         RuntimeCapabilityDetection.setTestAssistiveTouch(true)
         mirror()
-        #expect(RuntimeCapabilityDetection.supportsAssistiveTouch)
+        #expect(
+            RuntimeCapabilityDetection.supportsAssistiveTouch
+                == PlatformTestUtilities.expectedAssistiveTouchAfterTestOverride(true)
+        )
 
         RuntimeCapabilityDetection.clearAllCapabilityOverrides()
     }

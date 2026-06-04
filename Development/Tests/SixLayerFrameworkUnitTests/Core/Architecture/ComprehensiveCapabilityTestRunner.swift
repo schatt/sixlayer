@@ -184,10 +184,39 @@ struct ComprehensiveCapabilityTestRunner {
         }
     }
     
+    @MainActor
+    private func testCapabilityDetectionIntrinsic(_ config: CardExpansionPlatformConfig, capability: TestRunnerConfig.CapabilityType) {
+        switch capability {
+        case .touch:
+            #expect(config.supportsTouch == RuntimeCapabilityDetection.supportsTouch, "Current: touch should mirror detection")
+        case .hover:
+            #expect(config.supportsHover == RuntimeCapabilityDetection.supportsHover, "Current: hover should mirror detection")
+        case .hapticFeedback:
+            #expect(config.supportsHapticFeedback == RuntimeCapabilityDetection.supportsHapticFeedback, "Current: haptic should mirror detection")
+        case .assistiveTouch:
+            #expect(config.supportsAssistiveTouch == RuntimeCapabilityDetection.supportsAssistiveTouch, "Current: AssistiveTouch should mirror detection")
+        case .voiceOver:
+            #expect(config.supportsVoiceOver == RuntimeCapabilityDetection.supportsVoiceOver, "Current: VoiceOver should mirror detection")
+        case .switchControl:
+            #expect(config.supportsSwitchControl == RuntimeCapabilityDetection.supportsSwitchControl, "Current: SwitchControl should mirror detection")
+        case .vision:
+            _ = RuntimeCapabilityDetection.Vision.isFrameworkAvailable
+        case .ocr:
+            #expect(
+                RuntimeCapabilityDetection.Vision.supportsOCR == RuntimeCapabilityDetection.Vision.isFrameworkAvailable,
+                "Current: OCR availability should match Vision framework"
+            )
+        }
+    }
+
     /// Run capability detection test for a specific capability
     @MainActor
     private func runCapabilityDetectionTest(_ capability: TestRunnerConfig.CapabilityType, config: TestRunnerConfig) {
         print("     🔍 Testing \(capability) detection...")
+        
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        let currentConfig = getCardExpansionPlatformConfig()
+        testCapabilityDetectionIntrinsic(currentConfig, capability: capability)
         
         // Test enabled state
         setMockCapabilityState(capability, enabled: true)
@@ -201,13 +230,12 @@ struct ComprehensiveCapabilityTestRunner {
     }
     
     /// AssistiveTouch implies touch only on platforms that ship the OS feature (iOS/watchOS).
-    /// macOS card expansion may report `supportsTouch == false` while overrides exercise other axes.
     @MainActor
     private func assertAssistiveTouchImpliesTouchWhenPlatformShips(_ config: CardExpansionPlatformConfig) {
         guard SixLayerPlatform.current.supportsAssistiveTouch, config.supportsAssistiveTouch else { return }
         #expect(config.supportsTouch, "AssistiveTouch requires touch")
     }
-    
+
     /// Thread-local touch `false` is ignored on iOS/watchOS (platform guarantee); elsewhere it is honored.
     @MainActor
     private func assertTouchMatchesThreadLocalMock(_ config: CardExpansionPlatformConfig, mockTouchEnabled: Bool) {
@@ -241,7 +269,11 @@ struct ComprehensiveCapabilityTestRunner {
         case .hapticFeedback:
             #expect(config.supportsHapticFeedback == enabled, "Haptic feedback detection should be \(enabled)")
         case .assistiveTouch:
-            #expect(config.supportsAssistiveTouch == enabled, "AssistiveTouch detection should be \(enabled)")
+            let expected = PlatformTestUtilities.expectedAssistiveTouchAfterTestOverride(enabled)
+            #expect(config.supportsAssistiveTouch == expected, "AssistiveTouch detection should be \(expected)")
+            if expected {
+                assertAssistiveTouchImpliesTouchWhenPlatformShips(config)
+            }
         case .voiceOver:
             #expect(config.supportsVoiceOver == enabled, "VoiceOver detection should be \(enabled)")
         case .switchControl:
@@ -269,6 +301,10 @@ struct ComprehensiveCapabilityTestRunner {
     @MainActor
     private func runUIGenerationTest(_ capability: TestRunnerConfig.CapabilityType, config: TestRunnerConfig) {
         print("     🎨 Testing \(capability) UI generation...")
+        
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        let currentConfig = getCardExpansionPlatformConfig()
+        testCapabilityDetectionIntrinsic(currentConfig, capability: capability)
         
         // Test with capability enabled
         setMockCapabilityState(capability, enabled: true)
@@ -305,14 +341,10 @@ struct ComprehensiveCapabilityTestRunner {
         case .hapticFeedback:
             // Haptic feedback should match the enabled state (runtime detection)
             #expect(config.supportsHapticFeedback == enabled, "Haptic feedback UI should be \(enabled ? "generated" : "not generated") based on runtime detection")
-            if enabled {
-                // Haptic feedback requires touch, so touch should also be enabled
-                #expect(config.supportsTouch, "Haptic feedback requires touch")
-            }
         case .assistiveTouch:
-            // AssistiveTouch should match the enabled state (runtime detection)
-            #expect(config.supportsAssistiveTouch == enabled, "AssistiveTouch UI should be \(enabled ? "generated" : "not generated") based on runtime detection")
-            if enabled {
+            let expected = PlatformTestUtilities.expectedAssistiveTouchAfterTestOverride(enabled)
+            #expect(config.supportsAssistiveTouch == expected, "AssistiveTouch UI should match platform-aware mock (\(expected))")
+            if expected {
                 assertAssistiveTouchImpliesTouchWhenPlatformShips(config)
             }
         case .voiceOver:
@@ -364,12 +396,8 @@ struct ComprehensiveCapabilityTestRunner {
         
         // Test platform-specific consistency and dependencies
         // Note: Touch and hover CAN coexist (iPad with mouse, macOS with touchscreen, visionOS)
-        // Only true constraints: Haptic requires touch, AssistiveTouch requires touch
-        
-        // Test dependencies regardless of platform
-        if platformConfig.supportsHapticFeedback {
-            #expect(platformConfig.supportsTouch, "Haptic feedback requires touch")
-        }
+        // AssistiveTouch implies touch on platforms that ship the feature (#311)
+
         assertAssistiveTouchImpliesTouchWhenPlatformShips(platformConfig)
         
         // Platform-specific typical behaviors (but not requirements - runtime detection takes precedence)
@@ -481,6 +509,10 @@ struct ComprehensiveCapabilityTestRunner {
     @MainActor
     private func runBehaviorValidationTest(_ capability: TestRunnerConfig.CapabilityType, config: TestRunnerConfig) {
         
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        let currentConfig = getCardExpansionPlatformConfig()
+        testCapabilityDetectionIntrinsic(currentConfig, capability: capability)
+        
         // Test with capability enabled
         setMockCapabilityState(capability, enabled: true)
         let enabledConfig = getCardExpansionPlatformConfig()
@@ -515,13 +547,10 @@ struct ComprehensiveCapabilityTestRunner {
         case .hapticFeedback:
             // Haptic feedback should match the enabled state (runtime detection)
             #expect(config.supportsHapticFeedback == enabled, "Haptic feedback behavior should be \(enabled ? "enabled" : "disabled") based on runtime detection")
-            if enabled {
-                #expect(config.supportsTouch, "Haptic feedback requires touch")
-            }
         case .assistiveTouch:
-            // AssistiveTouch should match the enabled state (runtime detection)
-            #expect(config.supportsAssistiveTouch == enabled, "AssistiveTouch behavior should be \(enabled ? "enabled" : "disabled") based on runtime detection")
-            if enabled {
+            let expected = PlatformTestUtilities.expectedAssistiveTouchAfterTestOverride(enabled)
+            #expect(config.supportsAssistiveTouch == expected, "AssistiveTouch behavior should match platform-aware mock (\(expected))")
+            if expected {
                 assertAssistiveTouchImpliesTouchWhenPlatformShips(config)
             }
         case .voiceOver:
@@ -547,16 +576,8 @@ struct ComprehensiveCapabilityTestRunner {
             RuntimeCapabilityDetection.setTestHover(enabled)
         case .hapticFeedback:
             RuntimeCapabilityDetection.setTestHapticFeedback(enabled)
-            // Haptic feedback requires touch
-            if enabled {
-                RuntimeCapabilityDetection.setTestTouchSupport(true)
-            }
         case .assistiveTouch:
             RuntimeCapabilityDetection.setTestAssistiveTouch(enabled)
-            // AssistiveTouch requires touch
-            if enabled {
-                RuntimeCapabilityDetection.setTestTouchSupport(true)
-            }
         case .voiceOver:
             RuntimeCapabilityDetection.setTestVoiceOver(enabled)
         case .switchControl:

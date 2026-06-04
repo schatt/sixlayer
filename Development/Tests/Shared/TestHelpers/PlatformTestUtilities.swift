@@ -2,8 +2,9 @@
 //  PlatformTestUtilities.swift
 //  SixLayerFrameworkTests
 //
-//  BUSINESS PURPOSE:
-//  Platform-specific test utilities for getting platform configurations and capabilities
+//  Shared HIG expectation helpers for capability-sensitive tests (GitHub #251 section C).
+//  **Control tests** own tri-state phases; this enum supplies per-platform law only —
+//  see `.cursor/rules/capability-override-test-flows.mdc`.
 //
 
 import CoreGraphics
@@ -60,5 +61,10 @@ public enum PlatformTestUtilities {
         case .macOS:
             return touchDetected ? 44.0 : 0.0
         }
+    }
+
+    /// Expected AssistiveTouch after `setTestAssistiveTouch(_:)` — only true when enabled and the host ships the feature (#311).
+    public static func expectedAssistiveTouchAfterTestOverride(_ enabled: Bool) -> Bool {
+        enabled && SixLayerPlatform.current.supportsAssistiveTouch
     }
 }

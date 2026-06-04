@@ -30,9 +30,8 @@ import Testing
 import SwiftUI
 @testable import SixLayerFramework
 
-/// Comprehensive capability matrix testing
-/// Tests that the framework correctly responds to capability detection results
-/// We trust what RuntimeCapabilityDetection returns from the OS - we test what we DO with those results
+/// Comprehensive capability matrix testing on the **current host**
+@Suite(DefaultRuntimeCapabilityIsolationTrait())
 open class CapabilityMatrixTests: BaseTestClass {
     
     // MARK: - Capability Behavior Test Matrix
@@ -47,33 +46,14 @@ open class CapabilityMatrixTests: BaseTestClass {
         CapabilityBehaviorTest(
             name: "Touch Support Behavior",
             testBehavior: {
-                // Test what the framework DOES when touch is detected
-                // The framework exposes touch gesture support via platform.supportsTouchGestures
-                // which uses RuntimeCapabilityDetection.supportsTouchWithOverride
-                // We verify that the framework property is available and uses runtime detection
                 let platform = SixLayerPlatform.current
-                let _ = platform.supportsTouchGestures // Access the property to verify it works
-                
-                // The framework should use runtime detection (not hardcoded values)
-                // This is verified by the fact that supportsTouchGestures uses RuntimeCapabilityDetection
-                #expect(Bool(true), "Framework uses runtime detection for touch gestures")
-            }
-        ),
-        
-        // Haptic Feedback Capability Behavior
-        CapabilityBehaviorTest(
-            name: "Haptic Feedback Behavior",
-            testBehavior: {
-                // Test what the framework DOES when haptic feedback is detected
-                // The framework should respect what the OS reports
-                // If the OS says haptic feedback is available, the framework should allow haptic operations
-                // If the OS says it's not available, the framework should gracefully handle that
-                // We're testing that the framework responds correctly, not what the OS reports
-                
-                // Note: The actual behavior testing would be in components that use haptic feedback
-                // This test verifies that the detection result is available for framework components to use
-                let _ = RuntimeCapabilityDetection.supportsHapticFeedback // Verify it's accessible
-                #expect(Bool(true), "Haptic feedback detection is available for framework components")
+                let effectiveTouch = RuntimeCapabilityDetection.supportsTouch
+                let expectedMin = PlatformTestUtilities.expectedMinTouchTarget(
+                    for: platform,
+                    touchDetected: effectiveTouch
+                )
+                #expect(platform.supportsTouchGestures == effectiveTouch)
+                #expect(RuntimeCapabilityDetection.minTouchTarget == expectedMin)
             }
         ),
         
@@ -159,20 +139,35 @@ open class CapabilityMatrixTests: BaseTestClass {
         }
     }
     
-    /// Test capability behaviors across different platforms
-    /// Verifies that the framework responds correctly to OS-reported capabilities
-    @Test @MainActor func testCapabilityBehaviorsAcrossPlatforms() {
-        let allPlatforms = SixLayerPlatform.allCases
-        
-        for _ in allPlatforms {
-            // Set the test platform to simulate different OS environments
-            defer { RuntimeCapabilityDetection.clearAllCapabilityOverrides() }
-            
-            // Test behaviors for this platform
-            // The framework should respond correctly to whatever the OS reports
-            for behaviorTest in Self.capabilityBehaviorTests {
-                behaviorTest.testBehavior()
+    /// Secondary plumbing (#251): touch override → minTouchTarget on **current host**.
+    @Test @MainActor func testMinTouchTargetMatrixTriStatePhases() {
+        defer { RuntimeCapabilityDetection.clearAllCapabilityOverrides() }
+
+        func assertMatrixTouchLaw(phase: String) {
+            let platform = SixLayerPlatform.current
+            let effectiveTouch = RuntimeCapabilityDetection.supportsTouch
+            let expectedMin = PlatformTestUtilities.expectedMinTouchTarget(
+                for: platform,
+                touchDetected: effectiveTouch
+            )
+
+            switch platform {
+            case .iOS, .watchOS, .macOS, .tvOS, .visionOS:
+                #expect(
+                    RuntimeCapabilityDetection.minTouchTarget == expectedMin,
+                    "\(phase) on \(platform): matrix minTouchTarget should match HIG"
+                )
+                #expect(platform.supportsTouchGestures == effectiveTouch)
             }
         }
+
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        assertMatrixTouchLaw(phase: "current")
+
+        RuntimeCapabilityDetection.setTestTouchSupport(false)
+        assertMatrixTouchLaw(phase: "disabled")
+
+        RuntimeCapabilityDetection.setTestTouchSupport(true)
+        assertMatrixTouchLaw(phase: "enabled")
     }
 }

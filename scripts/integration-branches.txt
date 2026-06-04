@@ -1,0 +1,5 @@
+# Integration branches: merge targets only — no issue work or agent edits.
+# One branch name per line. Lines starting with # are ignored.
+# If this file is missing or contains no branch names, no branches are treated as integration branches.
+main
+next
