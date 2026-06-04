@@ -210,7 +210,7 @@ open class AccessibilityIdentifierGenerationVerificationTests: BaseTestClass {
             #if canImport(ViewInspector)
             let lacksAutoWhenDisabled = AccessibilityTestUtilities.testComponentLacksMatchingIdentifier(
                 testView1,
-                expectedPattern: "*platformPresentContent*",
+                expectedPattern: "*GlobalConfigDisabledProbe*",
                 platform: SixLayerPlatform.iOS,
                 componentName: "GlobalConfigDisabledTest"
             )
