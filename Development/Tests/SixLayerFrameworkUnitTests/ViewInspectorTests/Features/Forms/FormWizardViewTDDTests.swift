@@ -168,7 +168,7 @@ open class FormWizardViewTDDTests: BaseTestClass {
         #if canImport(ViewInspector)
         var hasNavControl = false
         _ = withInspectedView(AnyView(view)) { inspector in
-            let buttons = (try? inspector.findAll(ViewType.Button.self)) ?? []
+            let buttons = inspector.findAll(ViewType.Button.self)
             for button in buttons {
                 let id = try? button.accessibilityIdentifier()
                 let labelText = (try? button.labelView().find(ViewType.Text.self).string()) ?? ""
@@ -264,7 +264,7 @@ open class FormWizardViewTDDTests: BaseTestClass {
         #if canImport(ViewInspector)
         var stepTexts: [String] = []
         _ = withInspectedView(AnyView(view)) { inspector in
-            let texts = (try? inspector.findAll(ViewInspector.ViewType.Text.self)) ?? []
+            let texts = inspector.findAll(ViewInspector.ViewType.Text.self)
             stepTexts = texts.compactMap { try? $0.string() }
         }
         let showsAnyStep = stepTexts.contains { ["Step 1", "Step 2", "Step 3"].contains($0) }
@@ -294,7 +294,7 @@ open class FormWizardViewTDDTests: BaseTestClass {
         #if canImport(ViewInspector)
         var showsStep1 = false
         _ = withInspectedView(view) { inspector in
-            let texts = (try? inspector.findAll(ViewInspector.ViewType.Text.self)) ?? []
+            let texts = inspector.findAll(ViewInspector.ViewType.Text.self)
             showsStep1 = texts.contains { (try? $0.string()) == "Step 1" }
         }
         #expect(showsStep1, "Wizard without injection should show first step (internal state)")

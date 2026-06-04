@@ -35,7 +35,7 @@ open class PlatformSettingsContainerLayer4Tests: BaseTestClass {
         let detail = Text("Detail")
         
         // When: Creating settings container
-        let container = EmptyView()
+        _ = EmptyView()
             .platformSettingsContainer_L4(
                 sidebar: { sidebar },
                 detail: { detail }
@@ -53,7 +53,7 @@ open class PlatformSettingsContainerLayer4Tests: BaseTestClass {
         let columnVisibility = Binding<NavigationSplitViewVisibility>(get: { .automatic }, set: { _ in })
         
         // When: Creating settings container with column visibility
-        let container = EmptyView()
+        _ = EmptyView()
             .platformSettingsContainer_L4(
                 columnVisibility: columnVisibility,
                 sidebar: { sidebar },
@@ -72,7 +72,7 @@ open class PlatformSettingsContainerLayer4Tests: BaseTestClass {
         let selectedCategory = Binding<AnyHashable?>(get: { nil }, set: { _ in })
         
         // When: Creating settings container with selected category
-        let container = EmptyView()
+        _ = EmptyView()
             .platformSettingsContainer_L4(
                 selectedCategory: selectedCategory,
                 sidebar: { sidebar },
@@ -92,7 +92,7 @@ open class PlatformSettingsContainerLayer4Tests: BaseTestClass {
         let selectedCategory = Binding<AnyHashable?>(get: { nil }, set: { _ in })
         
         // When: Creating settings container with all bindings
-        let container = EmptyView()
+        _ = EmptyView()
             .platformSettingsContainer_L4(
                 columnVisibility: columnVisibility,
                 selectedCategory: selectedCategory,
@@ -115,7 +115,7 @@ open class PlatformSettingsContainerLayer4Tests: BaseTestClass {
         let columnVisibility = Binding<NavigationSplitViewVisibility>(get: { .automatic }, set: { _ in })
         
         // When: Creating settings container
-        let container = EmptyView()
+        _ = EmptyView()
             .platformSettingsContainer_L4(
                 columnVisibility: columnVisibility,
                 sidebar: { sidebar },
@@ -147,7 +147,7 @@ open class PlatformSettingsContainerLayer4Tests: BaseTestClass {
         let selectedCategory = Binding<AnyHashable?>(get: { nil }, set: { _ in })
         
         // When: Creating settings container
-        let container = EmptyView()
+        _ = EmptyView()
             .platformSettingsContainer_L4(
                 selectedCategory: selectedCategory,
                 sidebar: { sidebar },
@@ -178,7 +178,7 @@ open class PlatformSettingsContainerLayer4Tests: BaseTestClass {
         let columnVisibility = Binding<NavigationSplitViewVisibility>(get: { .automatic }, set: { _ in })
         
         // When: Creating settings container
-        let container = EmptyView()
+        _ = EmptyView()
             .platformSettingsContainer_L4(
                 columnVisibility: columnVisibility,
                 sidebar: { sidebar },
@@ -203,7 +203,7 @@ open class PlatformSettingsContainerLayer4Tests: BaseTestClass {
         let selectedCategory = Binding<AnyHashable?>(get: { nil }, set: { _ in })
         
         // When: Creating settings container
-        let container = EmptyView()
+        _ = EmptyView()
             .platformSettingsContainer_L4(
                 selectedCategory: selectedCategory,
                 sidebar: { sidebar },
@@ -234,7 +234,7 @@ open class PlatformSettingsContainerLayer4Tests: BaseTestClass {
         let selectedCategory = Binding<AnyHashable?>(get: { category }, set: { _ in })
         
         // When: Creating settings container
-        let container = EmptyView()
+        _ = EmptyView()
             .platformSettingsContainer_L4(
                 selectedCategory: selectedCategory,
                 sidebar: { sidebar },
@@ -264,7 +264,7 @@ open class PlatformSettingsContainerLayer4Tests: BaseTestClass {
         let detail = Text("Detail")
         
         // When: Creating settings container
-        let container = EmptyView()
+        _ = EmptyView()
             .platformSettingsContainer_L4(
                 sidebar: { sidebar },
                 detail: { detail }

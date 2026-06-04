@@ -536,14 +536,14 @@ public struct AccessibilitySystemState {
     
     public init() {
         #if os(iOS) || os(visionOS) || os(tvOS)
-        self.isVoiceOverRunning = UIAccessibility.isVoiceOverRunning
-        self.isDarkerSystemColorsEnabled = UIAccessibility.isDarkerSystemColorsEnabled
-        self.isReduceTransparencyEnabled = UIAccessibility.isReduceTransparencyEnabled
-        self.isHighContrastEnabled = UIAccessibility.isDarkerSystemColorsEnabled
+        self.isVoiceOverRunning = PlatformUIKitAccessibilityReads.isVoiceOverRunning
+        self.isDarkerSystemColorsEnabled = PlatformUIKitAccessibilityReads.isDarkerSystemColorsEnabled
+        self.isReduceTransparencyEnabled = PlatformUIKitAccessibilityReads.isReduceTransparencyEnabled
+        self.isHighContrastEnabled = PlatformUIKitAccessibilityReads.isDarkerSystemColorsEnabled
         self.isReducedMotionEnabled = PlatformReduceMotionPreference.isReduceMotionEnabled
         self.hasKeyboardSupport = true
         self.hasFullKeyboardAccess = false
-        self.hasSwitchControl = UIAccessibility.isSwitchControlRunning
+        self.hasSwitchControl = PlatformUIKitAccessibilityReads.isSwitchControlRunning
         #elseif os(watchOS)
         // UIAccessibility runtime query APIs are unavailable on watchOS SDK; use conservative defaults.
         self.isVoiceOverRunning = false

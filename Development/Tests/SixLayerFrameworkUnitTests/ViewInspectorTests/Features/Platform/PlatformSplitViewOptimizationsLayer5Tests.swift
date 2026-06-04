@@ -37,7 +37,7 @@ open class PlatformSplitViewOptimizationsLayer5Tests: BaseTestClass {
         // Given: A split view
         let runtimePlatform = RuntimeCapabilityDetection.currentPlatform
         if runtimePlatform == .iOS {
-            let view = Text("Test")
+            _ = Text("Test")
                 .platformVerticalSplit_L4(spacing: 8) {
                     Text("First Pane")
                     Text("Second Pane")
@@ -64,7 +64,7 @@ open class PlatformSplitViewOptimizationsLayer5Tests: BaseTestClass {
         // Given: A split view
         let runtimePlatform = RuntimeCapabilityDetection.currentPlatform
         if runtimePlatform == .macOS {
-            let view = Text("Test")
+            _ = Text("Test")
                 .platformVerticalSplit_L4(spacing: 0) {
                     Text("First Pane")
                     Text("Second Pane")
@@ -80,7 +80,7 @@ open class PlatformSplitViewOptimizationsLayer5Tests: BaseTestClass {
     
     @Test @MainActor func testPlatformSplitViewOptimizationsWorkCrossPlatform() async {
         // Given: A split view with cross-platform optimizations
-        let view = Text("Test")
+        _ = Text("Test")
             .platformVerticalSplit_L4(spacing: 0) {
                 Text("First Pane")
                 Text("Second Pane")
@@ -94,7 +94,7 @@ open class PlatformSplitViewOptimizationsLayer5Tests: BaseTestClass {
     @Test @MainActor func testPlatformSplitViewOptimizationsWithState() async {
         // Given: A split view with state and optimizations
         let state = PlatformSplitViewState()
-        let view = Text("Test")
+        _ = Text("Test")
             .platformVerticalSplit_L4(state: Binding(get: { state }, set: { _ in }), spacing: 0) {
                 Text("First Pane")
                 Text("Second Pane")
@@ -109,7 +109,7 @@ open class PlatformSplitViewOptimizationsLayer5Tests: BaseTestClass {
     
     @Test @MainActor func testPlatformSplitViewOptimizationsImprovePerformance() async {
         // Given: A split view with optimizations
-        let view = Text("Test")
+        _ = Text("Test")
             .platformVerticalSplit_L4(spacing: 0) {
                 Text("First Pane")
                 Text("Second Pane")
@@ -124,7 +124,7 @@ open class PlatformSplitViewOptimizationsLayer5Tests: BaseTestClass {
     
     @Test @MainActor func testPlatformSplitViewOptimizationsIncludeMemoryManagement() async {
         // Given: A split view with optimizations
-        let view = Text("Test")
+        _ = Text("Test")
             .platformVerticalSplit_L4(spacing: 0) {
                 Text("First Pane")
                 Text("Second Pane")

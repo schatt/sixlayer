@@ -78,7 +78,7 @@ open class PlatformSplitViewSizingLayer4Tests: BaseTestClass {
         )
         
         // When: Creating a view with sizing
-        let view = Text("Test")
+        _ = Text("Test")
             .platformVerticalSplit_L4(
                 spacing: 0,
                 sizing: sizing
@@ -99,7 +99,7 @@ open class PlatformSplitViewSizingLayer4Tests: BaseTestClass {
         )
         
         // When: Creating a view with sizing
-        let view = Text("Test")
+        _ = Text("Test")
             .platformHorizontalSplit_L4(
                 spacing: 0,
                 sizing: sizing
@@ -121,7 +121,7 @@ open class PlatformSplitViewSizingLayer4Tests: BaseTestClass {
         )
         
         // When: Creating a view with sizing
-        let view = Text("Test")
+        _ = Text("Test")
             .platformVerticalSplit_L4(
                 spacing: 0,
                 sizing: sizing
@@ -146,7 +146,7 @@ open class PlatformSplitViewSizingLayer4Tests: BaseTestClass {
         )
         
         // When: Creating a view with sizing
-        let view = Text("Test")
+        _ = Text("Test")
             .platformHorizontalSplit_L4(
                 spacing: 0,
                 sizing: sizing
@@ -171,7 +171,7 @@ open class PlatformSplitViewSizingLayer4Tests: BaseTestClass {
         )
         
         // When: Creating a view with container constraints
-        let view = Text("Test")
+        _ = Text("Test")
             .platformVerticalSplit_L4(
                 spacing: 0,
                 sizing: sizing
@@ -226,7 +226,7 @@ open class PlatformSplitViewSizingLayer4Tests: BaseTestClass {
         )
         
         // When: Creating a view with sizing
-        let view = Text("Test")
+        _ = Text("Test")
             .platformVerticalSplit_L4(
                 spacing: 0,
                 sizing: sizing
@@ -251,7 +251,7 @@ open class PlatformSplitViewSizingLayer4Tests: BaseTestClass {
         )
         
         // When: Creating a view with sizing
-        let view = Text("Test")
+        _ = Text("Test")
             .platformVerticalSplit_L4(
                 spacing: 0,
                 sizing: sizing
