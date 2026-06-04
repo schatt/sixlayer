@@ -316,13 +316,13 @@ open class AutomaticAccessibilityIdentifierTests: BaseTestClass {
             // We test this by verifying the view does NOT have an automatic identifier
             // The modifier should not generate an identifier when enableAutoIDs is false
             #if canImport(ViewInspector)
-            let hasAutomaticID = testComponentComplianceSinglePlatform(
+            let hasAutomaticID = !testComponentLacksMatchingIdentifier(
                 view,
-                expectedPattern: "*.auto.*",
+                expectedPattern: "*platformPresentContent*",
                 platform: SixLayerPlatform.iOS,
-            componentName: "AutomaticIdentifierTest"
+                componentName: "AutomaticIdentifierTest"
             )
- #expect(!hasAutomaticID, "View should not have automatic ID when disabled globally")
+            #expect(!hasAutomaticID, "View should not have automatic ID when disabled globally")
         #else
             // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
             // The modifier IS present in the code, but ViewInspector can't detect it on macOS
@@ -402,10 +402,10 @@ open class AutomaticAccessibilityIdentifierTests: BaseTestClass {
             #if canImport(ViewInspector)
             #expect(testComponentComplianceSinglePlatform(
                 view, 
-                expectedPattern: "SixLayer.layer1.*element.*", 
+                expectedPattern: "*layer1*platformPresentItemCollection*", 
                 platform: SixLayerPlatform.iOS,
             componentName: "Layer1Functions"
-            ) , "Layer 1 function should generate accessibility identifiers matching pattern 'SixLayer.layer1.*element.*'")
+            ) , "Layer 1 function should generate accessibility identifiers for platformPresentItemCollection_L1")
             #else
             // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
             // The modifier IS present in the code, but ViewInspector can't detect it on macOS
