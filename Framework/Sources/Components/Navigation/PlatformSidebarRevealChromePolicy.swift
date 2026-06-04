@@ -9,7 +9,7 @@ import SwiftUI
 public enum PlatformSidebarRevealChromePolicy {
     /// Whether the edge affordance should be visible for the given split visibility.
     public static func showsAffordance(for visibility: NavigationSplitViewVisibility) -> Bool {
-        visibility == .detailOnly
+        visibility.isExplicitDetailOnly
     }
 
     /// Visibility to apply after a successful reveal gesture.
