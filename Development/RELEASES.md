@@ -5,7 +5,7 @@
 **Release Date**: June 4, 2026
 **Status**: Major release (prep on `next`)
 **Previous Release**: v7.9.0 - Minor release
-**Note**: App navigation chrome — navigation sheet toolbar visibility (#323), sidebar reveal chrome (#324), iOS automatic vs detailOnly (#325).
+**Note**: App navigation chrome — navigation sheet toolbar visibility (#323), sidebar reveal chrome (#324), iOS automatic vs detailOnly (#325); `platformMenu` SwiftUI Menu on iOS (#321).
 **Next Release**: TBD
 
 ---
@@ -13,7 +13,7 @@
 ## 🎯 **v8.0.0 - App navigation chrome: sheet visibility and sidebar reveal** (June 4, 2026)
 
 ### **What's in v8.0.0:**
-- Major release (#323–#325). See [RELEASE_v8.0.0.md](RELEASE_v8.0.0.md) for details.
+- Major release (#321, #323–#325). See [RELEASE_v8.0.0.md](RELEASE_v8.0.0.md) for details.
 
 **See [RELEASE_v8.0.0.md](RELEASE_v8.0.0.md) for complete release notes.**
 
