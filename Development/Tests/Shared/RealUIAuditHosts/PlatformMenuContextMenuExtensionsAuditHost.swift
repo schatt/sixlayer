@@ -43,10 +43,10 @@ struct PlatformMenuContextMenuExtensionsAuditHost: View {
                     )
                     .accessibilityIdentifier("platform-context-menu-preview-trigger")
 
-                platformText("platformMenu { } (macOS Menu; iOS passthrough)")
+                platformText("platformMenu { } (SwiftUI Menu on iOS + macOS)")
                     .font(.subheadline)
                     .foregroundColor(.secondary)
-                platformText("Tap for menu (macOS)")
+                platformText("Tap for menu")
                     .font(.body)
                     .platformMenu {
                         Button("Menu item one", systemImage: "1.circle", action: {})
@@ -57,7 +57,7 @@ struct PlatformMenuContextMenuExtensionsAuditHost: View {
                 platformText("platformMenu(title:content:)")
                     .font(.subheadline)
                     .foregroundColor(.secondary)
-                Text("Title-menu label uses `Text(title)` on macOS")
+                Text("Title-menu label uses `Text(title)`")
                     .font(.caption2)
                     .foregroundColor(.secondary)
                     .platformMenu(title: "Title menu") {

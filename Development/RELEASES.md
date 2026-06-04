@@ -1,12 +1,21 @@
 # 🚀 Six-Layer Framework Release History
 
-## 📍 **Current Release: v7.9.0** 🎯
+## 📍 **Current Release: v8.0.0** 🎯
 
-**Release Date**: May 31, 2026
-**Status**: Minor release (prep on `b7/b7.9.0`)
-**Previous Release**: v7.8.9 - Patch release
-**Note**: HIG automatic compliance (#302–#303), intelligent card viewport/layout (#306–#309), capability override test hygiene (#251, #311–#313), Sendable policy (#310), Epic #233 stabilization.
+**Release Date**: June 4, 2026
+**Status**: Major release (prep on `next`)
+**Previous Release**: v7.9.0 - Minor release
+**Note**: App navigation chrome — navigation sheet toolbar visibility (#323), sidebar reveal chrome (#324), iOS automatic vs detailOnly (#325).
 **Next Release**: TBD
+
+---
+
+## 🎯 **v8.0.0 - App navigation chrome: sheet visibility and sidebar reveal** (June 4, 2026)
+
+### **What's in v8.0.0:**
+- Major release (#323–#325). See [RELEASE_v8.0.0.md](RELEASE_v8.0.0.md) for details.
+
+**See [RELEASE_v8.0.0.md](RELEASE_v8.0.0.md) for complete release notes.**
 
 ---
 
