@@ -44,7 +44,7 @@ Layer 1: Semantic Intent → Layer 2: Layout Decision → Layer 3: Strategy Sele
 
 ### Major release
 
-App navigation chrome: navigation sheet toolbar leading control with phone / detailOnly visibility (#323); sidebar reveal chrome for split detail-only layouts (#324); iOS automatic vs explicit detailOnly fix (#325). See [RELEASE_v8.0.0.md](../Development/RELEASE_v8.0.0.md).
+App navigation chrome: navigation sheet toolbar leading control with phone / detailOnly visibility (#323); sidebar reveal chrome for split detail-only layouts (#324); iOS automatic vs explicit detailOnly fix (#325). `platformMenu` SwiftUI Menu on iOS (#321). See [RELEASE_v8.0.0.md](../Development/RELEASE_v8.0.0.md).
 
 ## 🆕 What's New in v7.9.0
 
