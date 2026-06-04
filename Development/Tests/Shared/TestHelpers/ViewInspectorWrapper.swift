@@ -304,6 +304,40 @@ private func findAllInViewHierarchyErased<T: ViewInspector.KnownViewType>(
     return results
 }
 
+#if canImport(ViewInspector)
+/// Find a button whose label matches any of the given strings (deep hierarchy walk).
+@MainActor
+public func findButtonInViewHierarchy(
+    _ view: some View,
+    labels: String...
+) -> ViewInspector.InspectableView<ViewInspector.ViewType.Button>? {
+    let wanted = Set(labels)
+    for button in findAllInViewHierarchy(view, ViewInspector.ViewType.Button.self) {
+        for label in buttonLabelStrings(button) where wanted.contains(label) {
+            return button
+        }
+    }
+    return nil
+}
+
+@MainActor
+private func buttonLabelStrings(
+    _ button: ViewInspector.InspectableView<ViewInspector.ViewType.Button>
+) -> [String] {
+    var strings: [String] = []
+    if let labelView = try? button.labelView(),
+       let text = try? labelView.find(ViewInspector.ViewType.Text.self).string() {
+        strings.append(text)
+    }
+    for textView in button.findAll(ViewInspector.ViewType.Text.self) {
+        if let s = try? textView.string(), !s.isEmpty {
+            strings.append(s)
+        }
+    }
+    return strings
+}
+#endif
+
 // MARK: - Inspection from View instances
 // Prefer inspectView(view) over a View extension; ViewInspector’s Inspectable requirement
 // on Self in extension View where Self: KnownViewType caused “Self does not conform to Inspectable”.
