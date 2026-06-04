@@ -19,11 +19,6 @@ open class FormCallbackFunctionalTests: BaseTestClass {
         return keys.map { i18n.localizedString(for: $0) }
     }
 
-    @MainActor
-    private func tapButtonIfFound(in view: some View, labels: [String]) -> Bool {
-        guard let button = findButtonInViewHierarchy(view, labels: labels) else { return false }
-        return (try? button.tap()) != nil
-    }
     #endif
     
     // MARK: - IntelligentFormView Callback Tests
