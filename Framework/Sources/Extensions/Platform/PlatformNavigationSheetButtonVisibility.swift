@@ -27,7 +27,7 @@ public enum PlatformNavigationSheetButtonVisibility {
             if deviceType == .phone || deviceType == .car {
                 return true
             }
-            if columnVisibility == .detailOnly {
+            if columnVisibility?.isExplicitDetailOnly == true {
                 return true
             }
             return false
