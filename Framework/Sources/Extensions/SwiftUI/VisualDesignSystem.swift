@@ -33,12 +33,12 @@ private func isAccessibilityDetectionTestEnvironment() -> Bool {
 private func detectAccessibilitySettings() -> AccessibilitySettings {
     #if os(iOS) || os(visionOS)
     return AccessibilitySettings(
-        voiceOverSupport: UIAccessibility.isVoiceOverRunning,
+        voiceOverSupport: PlatformUIKitAccessibilityReads.isVoiceOverRunning,
         keyboardNavigation: true,
-        highContrastMode: UIAccessibility.isDarkerSystemColorsEnabled,
+        highContrastMode: PlatformUIKitAccessibilityReads.isDarkerSystemColorsEnabled,
         dynamicType: true,
         preferredContentSize: SixLayerContentSizeCategory.fromSystemPreferredContentSize(),
-        reducedMotion: UIAccessibility.isReduceMotionEnabled,
+        reducedMotion: PlatformUIKitAccessibilityReads.isReduceMotionEnabled,
         hapticFeedback: true
     )
     #elseif os(macOS)

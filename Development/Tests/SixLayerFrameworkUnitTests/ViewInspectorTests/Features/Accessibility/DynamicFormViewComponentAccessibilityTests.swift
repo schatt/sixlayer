@@ -222,8 +222,7 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
         #if canImport(ViewInspector)
         verifyViewContainsAtLeastOneVStack(view, testName: "Collapsible section")
         if let inspected = try? AnyView(view).inspect() {
-            do {
-                let vStacks = (try? inspected.findAll(ViewType.VStack.self)) ?? []
+                let vStacks = inspected.findAll(ViewType.VStack.self)
                 if let vStack = vStacks.first {
                     let children = vStack.findAll(ViewInspector.ViewType.AnyView.self)
                     #expect(children.count >= 1, "Should have DisclosureGroup for collapsible section")
@@ -237,9 +236,6 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
                     )
                     #expect(hasAccessibilityID, "Collapsible section should generate accessibility identifier")
                 }
-            } catch {
-                Issue.record("Collapsible section inspection error: \(error)")
-            }
         } else {
             Issue.record("Collapsible section inspection failed - component not properly implemented")
         }
@@ -304,8 +300,7 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
         #if canImport(ViewInspector)
         verifyViewContainsAtLeastOneVStack(view, testName: "DynamicTextField")
         if let inspected = try? AnyView(view).inspect() {
-            do {
-                let vStacks = (try? inspected.findAll(ViewType.VStack.self)) ?? []
+                let vStacks = inspected.findAll(ViewType.VStack.self)
                 if let vStack = vStacks.first {
                     let children = vStack.findAll(ViewInspector.ViewType.AnyView.self)
                     #expect(children.count >= 2, "Should have label and TextField")
@@ -347,9 +342,6 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
                 // Form state should be properly bound
                 let fieldValue: String? = formState.getValue(for: "test-text-field")
                 #expect(fieldValue == "John Doe", "Form state should contain initial value")
-            } catch {
-                Issue.record("DynamicTextField inspection error: \(error)")
-            }
         } else {
             Issue.record("DynamicTextField inspection failed - component not properly implemented")
         }
@@ -386,8 +378,7 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
         #if canImport(ViewInspector)
         verifyViewContainsAtLeastOneVStack(view, testName: "DynamicNumberField")
         if let inspected = try? AnyView(view).inspect() {
-            do {
-                let vStacks = (try? inspected.findAll(ViewType.VStack.self)) ?? []
+                let vStacks = inspected.findAll(ViewType.VStack.self)
                 if let vStack = vStacks.first {
                     let children = vStack.findAll(ViewInspector.ViewType.AnyView.self)
                     #expect(children.count >= 2, "Should have label and TextField")
@@ -435,9 +426,6 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
                 // Form state should contain the numeric value
                 let numberValue: String? = formState.getValue(for: "test-number-field")
                 #expect(numberValue == "25", "Form state should contain numeric value")
-            } catch {
-                Issue.record("DynamicNumberField inspection error: \(error)")
-            }
         } else {
             Issue.record("DynamicNumberField inspection failed - component not properly implemented")
         }
@@ -474,8 +462,7 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
         #if canImport(ViewInspector)
         verifyViewContainsAtLeastOneVStack(view, testName: "DynamicTextAreaField")
         if let inspected = try? AnyView(view).inspect() {
-            do {
-                let vStacks = (try? inspected.findAll(ViewType.VStack.self)) ?? []
+                let vStacks = inspected.findAll(ViewType.VStack.self)
                 if let vStack = vStacks.first {
                     #expect(vStack.count >= 2, "Should have label and TextEditor")
 
@@ -510,9 +497,6 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
                 // Form state should contain the multiline text
                 let storedValue: String? = formState.getValue(for: "test-textarea-field")
                 #expect(storedValue == "This is a\nmultiline description\nwith line breaks", "Form state should contain multiline text")
-            } catch {
-                Issue.record("DynamicTextAreaField inspection error: \(error)")
-            }
         } else {
             Issue.record("DynamicTextAreaField inspection failed - component not properly implemented")
         }
@@ -549,8 +533,7 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
         // Should render proper selection UI
         #if canImport(ViewInspector)
         if let inspected = try? AnyView(view).inspect() {
-            do {
-                let vStacks = (try? inspected.findAll(ViewType.VStack.self)) ?? []
+                let vStacks = inspected.findAll(ViewType.VStack.self)
                 if let vStack = vStacks.first {
                     #expect(vStack.count >= 2, "Should have label and Picker")
 
@@ -585,9 +568,6 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
                 // Form state should contain the selected value
                 let selectValue: String? = formState.getValue(for: "test-select-field")
                 #expect(selectValue == "USA", "Form state should contain selected value")
-            } catch {
-                Issue.record("DynamicSelectField inspection error: \(error)")
-            }
         } else {
             Issue.record("DynamicSelectField inspection failed - component not properly implemented")
         }
@@ -625,8 +605,7 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
         #if canImport(ViewInspector)
         verifyViewContainsAtLeastOneVStack(view, testName: "DynamicMultiSelectField")
         if let inspected = try? AnyView(view).inspect() {
-            do {
-                let vStacks = (try? inspected.findAll(ViewType.VStack.self)) ?? []
+                let vStacks = inspected.findAll(ViewType.VStack.self)
                 if let vStack = vStacks.first {
                 let children = vStack.findAll(ViewInspector.ViewType.AnyView.self)
                 #expect(children.count >= 2, "Should have label and selection controls")
@@ -662,9 +641,6 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
                     let storedValue: [String]? = formState.getValue(for: "test-multiselect-field")
                     #expect(storedValue == ["Reading", "Music"], "Form state should contain selected values array")
                 }
-            } catch {
-                Issue.record("DynamicMultiSelectField inspection error: \(error)")
-            }
         } else {
             Issue.record("DynamicMultiSelectField inspection failed - component not properly implemented")
         }
@@ -702,8 +678,7 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
         #if canImport(ViewInspector)
         verifyViewContainsAtLeastOneVStack(view, testName: "DynamicRadioField")
         if let inspected = try? AnyView(view).inspect() {
-            do {
-                let vStacks = (try? inspected.findAll(ViewType.VStack.self)) ?? []
+                let vStacks = inspected.findAll(ViewType.VStack.self)
                 if let vStack = vStacks.first {
                 let children = vStack.findAll(ViewInspector.ViewType.AnyView.self)
                 #expect(children.count >= 2, "Should have label and radio controls")
@@ -739,9 +714,6 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
                 // Form state should contain the selected value
                 let radioValue: String? = formState.getValue(for: "test-radio-field")
                 #expect(radioValue == "Female", "Form state should contain selected radio value")
-            } catch {
-                Issue.record("DynamicRadioField inspection error: \(error)")
-            }
         } else {
             Issue.record("DynamicRadioField inspection failed - component not properly implemented")
         }
@@ -778,8 +750,7 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
         #if canImport(ViewInspector)
         verifyViewContainsAtLeastOneVStack(view, testName: "DynamicCheckboxField")
         if let inspected = try? AnyView(view).inspect() {
-            do {
-                let vStacks = (try? inspected.findAll(ViewType.VStack.self)) ?? []
+                let vStacks = inspected.findAll(ViewType.VStack.self)
                 if let vStack = vStacks.first {
                 let children = vStack.findAll(ViewInspector.ViewType.AnyView.self)
                 #expect(children.count >= 2, "Should have label and Toggle")
@@ -815,9 +786,6 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
                 // Form state should contain the boolean value
                 let checkboxValue: Bool? = formState.getValue(for: "test-checkbox-field")
                 #expect(checkboxValue == true, "Form state should contain boolean checkbox value")
-            } catch {
-                Issue.record("DynamicCheckboxField inspection error: \(error)")
-            }
         } else {
             Issue.record("DynamicCheckboxField inspection failed - component not properly implemented")
         }
@@ -854,8 +822,7 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
         #if canImport(ViewInspector)
         verifyViewContainsAtLeastOneVStack(view, testName: "DynamicToggleField")
         if let inspected = try? AnyView(view).inspect() {
-            do {
-                let vStacks = (try? inspected.findAll(ViewType.VStack.self)) ?? []
+                let vStacks = inspected.findAll(ViewType.VStack.self)
                 if let vStack = vStacks.first {
                 let children = vStack.findAll(ViewInspector.ViewType.AnyView.self)
                 #expect(children.count >= 2, "Should have label and Toggle")
@@ -891,9 +858,6 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
                 // Form state should contain the boolean value
                 let toggleValue: Bool? = formState.getValue(for: "test-toggle-field")
                 #expect(toggleValue == false, "Form state should contain boolean toggle value")
-            } catch {
-                Issue.record("DynamicToggleField inspection error: \(error)")
-            }
         } else {
             Issue.record("DynamicToggleField inspection failed - component not properly implemented")
         }
@@ -998,7 +962,7 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
         formState.fieldErrors["field1"] = ["Field 1 is required"]
         formState.fieldErrors["field2"] = ["Field 2 is required", "Field 2 must be at least 3 characters"]
         
-        let view = FormValidationSummary(
+        _ = FormValidationSummary(
             formState: formState,
             configuration: configuration
         )
