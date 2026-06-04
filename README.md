@@ -27,7 +27,7 @@ Navigate to the `Framework/` directory and use it as a Swift Package:
 ```swift
 // In your Package.swift
 dependencies: [
-    .package(url: "https://github.com/schatt/sixlayer.git", from: "7.9.0")
+    .package(url: "https://github.com/schatt/sixlayer.git", from: "8.0.0")
 ]
 ```
 
@@ -41,12 +41,12 @@ dependencies: [
 
 The framework is distributed as a Swift Package from the `Framework/` directory. This ensures that only the essential framework code is included when other projects consume it.
 
-## 🆕 Latest Release: v7.9.0
+## 🆕 Latest Release: v8.0.0
 
-### **Minor release**
-🎯 **Minor**: HIG automatic compliance — minimum typography floors (#302) and system zoom (#303); intelligent card viewport/layout (#306–#309); capability override test hygiene — tri-state on controls (#251), precursors (#311), macOS card touch harness (#313); Sendable policy (#310). See [RELEASE_v7.9.0.md](Development/RELEASE_v7.9.0.md).
+### **Major release**
+🎯 **Major**: App navigation chrome — navigation sheet toolbar leading control with phone / detailOnly visibility (#323); sidebar reveal chrome for split detail-only layouts (#324); iOS automatic vs explicit detailOnly fix (#325). See [RELEASE_v8.0.0.md](Development/RELEASE_v8.0.0.md).
 
-### **Previous Release: v7.8.9 - Patch release**
+### **Previous Release: v7.9.0 - Minor release**
 🔧 **Patch**: Dynamic Type typography — `DynamicFontResolver` (#295), design-token scaling (#294), scalable `platformSystem` and `platformDecorativeIconFont` (#296). See [RELEASE_v7.8.8.md](Development/RELEASE_v7.8.8.md).
 
 ### **Previous Release: v7.8.7 - Patch release**
@@ -283,8 +283,8 @@ These guides contain critical information about the Layer 1 Semantic Intent phil
 
 ## 📋 Current Status
 
-**Version**: v7.9.0 (Minor)
-**Phase**: Minor release
+**Version**: v8.0.0 (Major)
+**Phase**: Major release
 **Next**: TBD
 
 ## 🤝 Contributing

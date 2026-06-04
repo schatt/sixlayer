@@ -12,6 +12,11 @@ import Testing
 @Suite("Platform Sidebar Reveal Chrome Policy")
 struct PlatformSidebarRevealChromePolicyTests {
 
+    @Test func isExplicitDetailOnly_distinguishesAutomaticFromDetailOnly() {
+        #expect(!NavigationSplitViewVisibility.automatic.isExplicitDetailOnly)
+        #expect(NavigationSplitViewVisibility.detailOnly.isExplicitDetailOnly)
+    }
+
     @Test func showsAffordance_onlyWhenDetailOnly() {
         #expect(PlatformSidebarRevealChromePolicy.showsAffordance(for: .detailOnly))
         #expect(!PlatformSidebarRevealChromePolicy.showsAffordance(for: .all))
