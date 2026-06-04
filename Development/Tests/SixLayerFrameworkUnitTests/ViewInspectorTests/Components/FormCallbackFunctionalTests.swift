@@ -12,6 +12,14 @@ import ViewInspector
 /// NOTE: Not marked @MainActor on class to allow parallel execution
 open class FormCallbackFunctionalTests: BaseTestClass {
     
+    #if canImport(ViewInspector)
+    @MainActor
+    private func tapButtonIfFound(in view: some View, labels: String...) -> Bool {
+        guard let button = findButtonInViewHierarchy(view, labels: labels) else { return false }
+        return (try? button.tap()) != nil
+    }
+    #endif
+    
     // MARK: - IntelligentFormView Callback Tests
     
     @Test @MainActor func testIntelligentFormViewOnCancelCallbackInvoked() async throws {
@@ -41,37 +49,12 @@ open class FormCallbackFunctionalTests: BaseTestClass {
         // When: Simulating Cancel button tap using ViewInspector
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
         #if canImport(ViewInspector)
-        _ = withInspectedView(formView) { inspector in
-            // Find all buttons in the view
-            let buttons = inspector.findAll(ViewType.Button.self)
-            
-            // Verify button exists
-            #expect(buttons.count > 0, "Form should have buttons")
-            
-            // Find the Cancel button by inspecting its label text
-            for button in buttons {
-                do {
-                    let labelView = try button.labelView()
-                    let labelText = try labelView.find(ViewType.Text.self).string()
-                    
-                    if labelText == "Cancel" {
-                        // Tap the button to invoke its action
-                        try button.tap()
-                        
-                        // Then: Callback should be invoked
-                        #expect(callbackInvoked, "Cancel callback should be invoked when Cancel button is tapped")
-                        break
-                    }
-                } catch {
-                    // Continue searching for the right button
-                    continue
-                }
-            }
-            
-            // If we couldn't find and tap the Cancel button, that's an issue
-            if !callbackInvoked {
-                Issue.record("Could not find Cancel button in form or failed to tap it")
-            }
+        let buttons = findAllInViewHierarchy(formView, ViewType.Button.self)
+        #expect(!buttons.isEmpty, "Form should have buttons")
+        if tapButtonIfFound(in: formView, labels: "Cancel") {
+            #expect(callbackInvoked, "Cancel callback should be invoked when Cancel button is tapped")
+        } else {
+            Issue.record("Could not find Cancel button in form or failed to tap it")
         }
         #else
         // ViewInspector not available on macOS - test passes by verifying callback signature
@@ -105,38 +88,12 @@ open class FormCallbackFunctionalTests: BaseTestClass {
         // When: Simulating Update button tap using ViewInspector
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
         #if canImport(ViewInspector)
-        _ = withInspectedView(formView) { inspector in
-            // Find all buttons in the view
-            let buttons = inspector.findAll(ViewType.Button.self)
-            
-            // Verify button exists
-            #expect(buttons.count > 0, "Form should have buttons")
-            
-            // Find the Update button by inspecting its label text
-            for button in buttons {
-                do {
-                    let labelView = try button.labelView()
-                    let labelText = try labelView.find(ViewType.Text.self).string()
-                    
-                    // Button text could be "Update" or "Create" depending on whether initialData exists
-                    if labelText == "Update" || labelText == "Create" {
-                        // Tap the button to invoke its action
-                        try button.tap()
-                        
-                        // Then: Callback should be invoked
-                        #expect(callbackInvoked, "Update callback should be invoked when Update button is tapped")
-                        break
-                    }
-                } catch {
-                    // Continue searching for the right button
-                    continue
-                }
-            }
-            
-            // If we couldn't find and tap the Update button, that's an issue
-            if !callbackInvoked {
-                Issue.record("Could not find Update button in form or failed to tap it")
-            }
+        let buttons = findAllInViewHierarchy(formView, ViewType.Button.self)
+        #expect(!buttons.isEmpty, "Form should have buttons")
+        if tapButtonIfFound(in: formView, labels: "Update", "Create") {
+            #expect(callbackInvoked, "Update callback should be invoked when Update button is tapped")
+        } else {
+            Issue.record("Could not find Update button in form or failed to tap it")
         }
         #else
         // ViewInspector not available on macOS - test passes by verifying callback signature
@@ -170,37 +127,12 @@ open class FormCallbackFunctionalTests: BaseTestClass {
         // When: Simulating Submit button tap using ViewInspector
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
         #if canImport(ViewInspector)
-        _ = withInspectedView(formView) { inspector in
-            // Find all buttons in the view
-            let buttons = inspector.findAll(ViewType.Button.self)
-            
-            // Verify button exists
-            #expect(buttons.count > 0, "Form should have buttons")
-            
-            // Find the Submit button by inspecting its label text
-            for button in buttons {
-                do {
-                    let labelView = try button.labelView()
-                    let labelText = try labelView.find(ViewType.Text.self).string()
-                    
-                    if labelText == "Submit" {
-                        // Tap the button to invoke its action
-                        try button.tap()
-                        
-                        // Then: Callback should be invoked
-                        #expect(callbackInvoked, "Submit callback should be invoked when Submit button is tapped")
-                        break
-                    }
-                } catch {
-                    // Continue searching for the right button
-                    continue
-                }
-            }
-            
-            // If we couldn't find and tap the Submit button, that's an issue
-            if !callbackInvoked {
-                Issue.record("Could not find Submit button in form or failed to tap it")
-            }
+        let buttons = findAllInViewHierarchy(formView, ViewType.Button.self)
+        #expect(!buttons.isEmpty, "Form should have buttons")
+        if tapButtonIfFound(in: formView, labels: "Submit") {
+            #expect(callbackInvoked, "Submit callback should be invoked when Submit button is tapped")
+        } else {
+            Issue.record("Could not find Submit button in form or failed to tap it")
         }
         #else
         // ViewInspector not available on macOS - test passes by verifying callback signature
