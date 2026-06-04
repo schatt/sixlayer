@@ -742,7 +742,7 @@ open class AutomaticAccessibilityIdentifierTests: BaseTestClass {
                 if !filePath.isEmpty, FileManager.default.fileExists(atPath: filePath) {
                     let filename = URL(fileURLWithPath: filePath).lastPathComponent
                     #expect(filename.hasSuffix(".swift"))
-                    let fileContent = try String(contentsOfFile: filePath)
+                    let fileContent = try String(contentsOfFile: filePath, encoding: .utf8)
                     #expect(!fileContent.isEmpty)
                     // Clean up
                     try FileManager.default.removeItem(atPath: filePath)
@@ -929,23 +929,17 @@ open class AutomaticAccessibilityIdentifierTests: BaseTestClass {
             let view = Text("Test Content")
                 .automaticCompliance(named: "TestComponent")
                 
-            // When: Inspecting the view's accessibility identifier
-            // Using wrapper - when ViewInspector works on macOS, no changes needed here
-            #if canImport(ViewInspector)
-            if let inspected = try? AnyView(view).inspect(),
-               let identifier = try? inspected.accessibilityIdentifier() {
-                // Then: The identifier should include the component name
-                #expect(identifier.contains("TestComponent"), 
-                       "Identifier should contain component name 'TestComponent', got: '\(identifier)'")
-                #expect(identifier.contains("SixLayer"), 
-                       "Identifier should contain namespace 'SixLayer', got: '\(identifier)'")
-                    
-            } else {
-                Issue.record("Failed to inspect view")
-            }
-            #else
-            // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-            #endif
+            // Then: The shared harness should observe the generated identifier through
+            // platform hosting, debug logs, or ViewInspector when direct inspection cannot.
+            #expect(
+                AccessibilityTestUtilities.testComponentComplianceSinglePlatform(
+                    view,
+                    expectedPattern: "SixLayer.*TestComponent",
+                    platform: SixLayerPlatform.current,
+                    componentName: "TestComponent"
+                ),
+                "Identifier should contain namespace 'SixLayer' and component name 'TestComponent'"
+            )
         }
     }
     

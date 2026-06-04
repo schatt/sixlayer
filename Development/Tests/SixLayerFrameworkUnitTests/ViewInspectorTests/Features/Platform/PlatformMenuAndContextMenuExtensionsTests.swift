@@ -2,6 +2,10 @@ import Testing
 import SwiftUI
 @testable import SixLayerFramework
 
+#if canImport(ViewInspector)
+import ViewInspector
+#endif
+
 /// `platformMenu` / `platformContextMenu` extensions (Issue #170). Grouped; keep <=10 tests.
 @Suite("Platform Menu and Context Menu Extensions")
 open class PlatformMenuAndContextMenuExtensionsTests: BaseTestClass {
@@ -76,7 +80,7 @@ open class PlatformMenuAndContextMenuExtensionsTests: BaseTestClass {
 
     @Test @MainActor func testPlatformMenuTitleOverloadNamedCompliance() async {
         assertLayoutChromeDualPath(anchorName: "PlatformMenuTitle", context: "platformMenu(title:)") {
-            Text("Ignored label on macOS Menu title variant")
+            Text("Trailing label ignored when title overload supplies menu label")
                 .platformMenu(title: "Actions") {
                     Button("Do thing", action: {})
                 }
@@ -98,4 +102,55 @@ open class PlatformMenuAndContextMenuExtensionsTests: BaseTestClass {
         let hosted = Self.hostRootPlatformView(view)
         #expect(hosted != nil)
     }
+
+    /// Issue #321: `platformMenu` must wrap SwiftUI `Menu` on iOS and macOS (not iOS no-op passthrough).
+    @Test @MainActor func testPlatformMenuAllOverloadsExposeMenuItems() async throws {
+        #if canImport(ViewInspector)
+        try assertPlatformMenuExposesItems(
+            context: "platformMenu { }",
+            view: Text("Menu host")
+                .platformMenu {
+                    Button("One", action: {})
+                    Button("Two", action: {})
+                },
+            expectedButtons: ["One", "Two"]
+        )
+        try assertPlatformMenuExposesItems(
+            context: "platformMenu(title:)",
+            view: Text("Trailing label ignored when title overload supplies menu label")
+                .platformMenu(title: "Actions") {
+                    Button("Do thing", action: {})
+                },
+            expectedButtons: ["Do thing"]
+        )
+        try assertPlatformMenuExposesItems(
+            context: "platformMenu(label:)",
+            view: Label("Row", systemImage: "line.3.horizontal")
+                .platformMenu(label: Text("Overflow")) {
+                    Button("A", action: {})
+                    Button("B", action: {})
+                },
+            expectedButtons: ["A", "B"]
+        )
+        #endif
+    }
+
+    #if canImport(ViewInspector)
+    @MainActor
+    private func assertPlatformMenuExposesItems<V: View>(
+        context: String,
+        view: V,
+        expectedButtons: [String]
+    ) throws {
+        let inspected = try AnyView(view).inspect()
+        let menu = try inspected.find(ViewType.Menu.self)
+        for title in expectedButtons {
+            do {
+                _ = try menu.find(button: title)
+            } catch {
+                Issue.record("\(context): expected tappable menu button '\(title)'")
+            }
+        }
+    }
+    #endif
 }

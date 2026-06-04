@@ -90,7 +90,7 @@ internal enum Layer4MeasuredSplitPresentationSync {
     }
 
     static func seededPresentation(columnVisibility: Binding<NavigationSplitViewVisibility>?) -> NavigationLayoutCompactPresentation? {
-        seededPresentation(isDetailOnlyColumn: columnVisibility.map { $0.wrappedValue == .detailOnly } ?? false)
+        seededPresentation(isDetailOnlyColumn: columnVisibility.map { $0.wrappedValue.isExplicitDetailOnly } ?? false)
     }
 }
 
@@ -159,7 +159,7 @@ private struct Layer4NestedSplitShellPresentationHost<Sidebar: View, Detail: Vie
 
     private func applyColumnVisibilityToPersistedPresentation(_ visibility: NavigationSplitViewVisibility?) {
         guard let visibility else { return }
-        if visibility == .detailOnly {
+        if visibility.isExplicitDetailOnly {
             persistedPresentation = .detailOnlyCollapsedInner
         } else if persistedPresentation == .detailOnlyCollapsedInner {
             persistedPresentation = nil
@@ -629,7 +629,10 @@ public extension View {
             NavigationSplitView(columnVisibility: columnVisibility) {
                 sidebar()
             } detail: {
-                detail()
+                layer4DetailWithOptionalRevealChrome(
+                    columnVisibility: columnVisibility,
+                    detail: detail
+                )
             }
         } else {
             NavigationSplitView {
@@ -640,13 +643,27 @@ public extension View {
         }
     }
 
+    /// Detail column wrapper: split-edge reveal chrome when ``columnVisibility`` is provided (#324).
+    @ViewBuilder
+    private func layer4DetailWithOptionalRevealChrome<DetailContent: View>(
+        columnVisibility: Binding<NavigationSplitViewVisibility>?,
+        @ViewBuilder detail: () -> DetailContent
+    ) -> some View {
+        detail()
+            .platformSidebarSplitRevealChrome(columnVisibility: columnVisibility)
+    }
+
     // MARK: - Layer 4 nested split shell (app + settings)
 
     @ViewBuilder
     private func layer4ResolverDetailOnly<DetailContent: View>(
+        columnVisibility: Binding<NavigationSplitViewVisibility>?,
         @ViewBuilder detail: () -> DetailContent
     ) -> some View {
-        detail()
+        layer4DetailWithOptionalRevealChrome(
+            columnVisibility: columnVisibility,
+            detail: detail
+        )
     }
 
     private func layer4OuterSidebarOverlay<Sidebar: View, Detail: View>(
@@ -676,7 +693,7 @@ public extension View {
                 detail: detail
             )
         case .detailOnlyCollapsedInner:
-            layer4ResolverDetailOnly(detail: detail)
+            layer4ResolverDetailOnly(columnVisibility: columnVisibility, detail: detail)
         case .overlayOuterSidebar:
             layer4OuterSidebarOverlay(
                 sidebar: sidebar,
@@ -698,7 +715,7 @@ public extension View {
                 detail()
             }
         case .detailOnlyCollapsedInner:
-            layer4ResolverDetailOnly(detail: detail)
+            layer4ResolverDetailOnly(columnVisibility: nil, detail: detail)
         case .overlayOuterSidebar:
             layer4OuterSidebarOverlay(
                 sidebar: sidebar,
@@ -803,9 +820,17 @@ public extension View {
     /// - **iPhone Landscape (Large models)**: NavigationSplitView for Plus/Pro Max models
     /// - **iPhone Landscape (Standard models)**: Detail-only view
     ///
+    /// **Toolbar leading (issue #323):** On the detail (or root) view, use
+    /// ``View/platformAppNavigationSheetToolbarLeading(showingNavigationSheet:columnVisibility:visibility:systemImage:accessibilityIdentifier:)``
+    /// or ``View/platformNavigationSheetButton(action:sidebarVisibility:visibility:columnVisibility:systemImage:accessibilityIdentifier:)``
+    /// with ``PlatformNavigationSheetButtonVisibilityPolicy/phoneOrDetailOnly`` and the same `columnVisibility` /
+    /// `showingNavigationSheet` bindings so iPhone and `.detailOnly` iPad split show the menu without app `#if os(iOS)` visibility logic.
+    ///
     /// - Parameters:
-    ///   - columnVisibility: Optional binding for NavigationSplitView column visibility
-    ///   - showingNavigationSheet: Optional binding for sheet presentation (iPhone detail-only mode)
+    ///   - columnVisibility: Optional binding for NavigationSplitView column visibility. When provided,
+    ///     Layer 4 applies ``View/platformSidebarSplitRevealChrome(columnVisibility:)`` on the detail
+    ///     column (edge stripe; iOS leading-edge swipe to reveal). Omit only when the app owns chrome.
+    ///   - showingNavigationSheet: Optional binding for sheet presentation (iPhone detail-only mode). Wire the toolbar button `action` to set this `true` when presenting the sidebar sheet.
     ///   - strategy: App navigation strategy from Layer 3
     ///   - sidebar: View builder for sidebar content
     ///   - detail: View builder for detail content
@@ -843,8 +868,14 @@ public extension View {
     /// Platform-specific app navigation with automatic strategy detection
     /// Convenience function that automatically determines strategy from device capabilities
     ///
+    /// **Toolbar leading (issue #323):** See strategy overload — use
+    /// ``View/platformAppNavigationSheetToolbarLeading(showingNavigationSheet:columnVisibility:visibility:systemImage:accessibilityIdentifier:)``
+    /// on detail content with the same bindings passed here.
+    ///
     /// - Parameters:
-    ///   - columnVisibility: Optional binding for NavigationSplitView column visibility
+    ///   - columnVisibility: Optional binding for NavigationSplitView column visibility. When provided,
+    ///     Layer 4 applies ``View/platformSidebarSplitRevealChrome(columnVisibility:)`` on the detail
+    ///     column (edge stripe; iOS leading-edge swipe to reveal). Omit only when the app owns chrome.
     ///   - showingNavigationSheet: Optional binding for sheet presentation (iPhone detail-only mode)
     ///   - sidebar: View builder for sidebar content
     ///   - detail: View builder for detail content
@@ -929,7 +960,7 @@ public extension View {
                 #endif
             }
         case .detailOnlyCollapsedInner:
-            layer4ResolverDetailOnly(detail: detail)
+            layer4ResolverDetailOnly(columnVisibility: columnVisibility, detail: detail)
         case .overlayOuterSidebar:
             layer4OuterSidebarOverlay(
                 sidebar: sidebar,
@@ -1003,7 +1034,7 @@ public extension View {
                 }
             }
         case .detailOnlyCollapsedInner:
-            layer4ResolverDetailOnly(detail: detail)
+            layer4ResolverDetailOnly(columnVisibility: columnVisibility, detail: detail)
         case .overlayOuterSidebar:
             layer4OuterSidebarOverlay(
                 sidebar: sidebar,

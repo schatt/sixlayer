@@ -54,7 +54,7 @@ open class PhotoComponentsLayer4Tests: BaseTestClass {
     /// METHODOLOGY: Tests Layer 4 functionality and modifier application
     @Test @MainActor func testPlatformCameraInterface_L4_AppliesAutomaticAccessibilityIdentifiers() async {
             initializeTestConfig()
-        await runWithTaskLocalConfig {
+        runWithTaskLocalConfig {
             // Enable debug logging to see what identifier is generated
             guard let config = self.testConfig else {
                 Issue.record("testConfig is nil")
@@ -64,12 +64,11 @@ open class PhotoComponentsLayer4Tests: BaseTestClass {
             config.enableDebugLogging = true
             
             // Given: Layer 4 function with test data
-            var capturedImage: PlatformImage?
             
             // When: Call Layer 4 function
             let cameraView = PlatformPhotoComponentsLayer4.platformCameraInterface_L4(
                 onImageCaptured: { image in
-                    capturedImage = image
+                    _ = image
                 }
             )
             
@@ -141,15 +140,14 @@ open class PhotoComponentsLayer4Tests: BaseTestClass {
     /// METHODOLOGY: Tests Layer 4 functionality and modifier application
     @Test @MainActor func testPlatformPhotoPicker_L4_AppliesAutomaticAccessibilityIdentifiers() async {
             initializeTestConfig()
-        await runWithTaskLocalConfig {
+        runWithTaskLocalConfig {
             // Given: Layer 4 function with test data
-            var selectedImage: PlatformImage?
             
             // When: Call Layer 4 function
             
             let result = PlatformPhotoComponentsLayer4.platformPhotoPicker_L4(
                 onImageSelected: { image in
-                    selectedImage = image
+                    _ = image
                 }
             )
             
@@ -189,7 +187,7 @@ open class PhotoComponentsLayer4Tests: BaseTestClass {
     /// METHODOLOGY: Tests Layer 4 functionality and modifier application
     @Test @MainActor func testPlatformPhotoDisplay_L4_AppliesAutomaticAccessibilityIdentifiers() async {
             initializeTestConfig()
-        await runWithTaskLocalConfig {
+        runWithTaskLocalConfig {
             // Given: Layer 4 function with test data
             let testImage = PlatformImage()
             let style = PhotoDisplayStyle.thumbnail

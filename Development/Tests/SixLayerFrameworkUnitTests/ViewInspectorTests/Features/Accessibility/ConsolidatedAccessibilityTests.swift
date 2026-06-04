@@ -6982,7 +6982,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
                 if !filePath.isEmpty, FileManager.default.fileExists(atPath: filePath) {
                     let filename = URL(fileURLWithPath: filePath).lastPathComponent
                     #expect(filename.hasSuffix(".swift"))
-                    let fileContent = try String(contentsOfFile: filePath)
+                    let fileContent = try String(contentsOfFile: filePath, encoding: .utf8)
                     #expect(!fileContent.isEmpty)
                     try FileManager.default.removeItem(atPath: filePath)
                 }

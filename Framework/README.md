@@ -1,6 +1,6 @@
 # SixLayer Framework
 
-[![Version](https://img.shields.io/badge/version-v7.9.0-blue.svg)](https://github.com/schatt/sixlayer/releases/tag/v7.9.0)
+[![Version](https://img.shields.io/badge/version-v8.0.0-blue.svg)](https://github.com/schatt/sixlayer/releases/tag/v8.0.0)
 [![Platform](https://img.shields.io/badge/platform-iOS%2016%2B%20%7C%20macOS%2013%2B-lightgrey.svg)](https://github.com/schatt/6layer)
 [![Swift](https://img.shields.io/badge/Swift-5.9+-orange.svg)](https://swift.org)
 
@@ -39,6 +39,12 @@ Layer 1: Semantic Intent → Layer 2: Layout Decision → Layer 3: Strategy Sele
 - **Extensible**: Easy to extend with custom layers and strategies
 - **Comprehensively Tested**: 800+ tests with platform-aware testing and mandatory TDD implementation
 - **DRY Architecture**: Define hints once in files, use everywhere automatically
+
+## 🆕 What's New in v8.0.0
+
+### Major release
+
+App navigation chrome: navigation sheet toolbar leading control with phone / detailOnly visibility (#323); sidebar reveal chrome for split detail-only layouts (#324); iOS automatic vs explicit detailOnly fix (#325). `platformMenu` SwiftUI Menu on iOS (#321). See [RELEASE_v8.0.0.md](../Development/RELEASE_v8.0.0.md).
 
 ## 🆕 What's New in v7.9.0
 

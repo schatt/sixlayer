@@ -1,5 +1,5 @@
 // swift-tools-version: 6.0
-// SixLayerFramework v7.9.0 - Minor: HIG compliance, card viewport, capability test hygiene
+// SixLayerFramework v8.0.0 - Major: App navigation chrome — sheet visibility and sidebar reveal
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
