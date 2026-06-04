@@ -198,9 +198,10 @@ open class AccessibilityIdentifierGenerationVerificationTests: BaseTestClass {
             // Test Case 1: When automatic IDs are disabled
             config.enableAutoIDs = false
                 
-            let testView1 = PlatformInteractionButton(style: .primary, action: {}) {
-                platformPresentContent_L1(content: "Test", hints: PresentationHints())
-            }
+            let testView1 = platformPresentContent_L1(
+                content: "Test",
+                hints: PresentationHints()
+            )
             .automaticCompliance()
                 
             // 1. View created - The view can be instantiated successfully
@@ -211,7 +212,7 @@ open class AccessibilityIdentifierGenerationVerificationTests: BaseTestClass {
             #if canImport(ViewInspector)
             let lacksAutoWhenDisabled = AccessibilityTestUtilities.testComponentLacksMatchingIdentifier(
                 testView1,
-                expectedPattern: "test.*",
+                expectedPattern: "*platformPresentContent*",
                 platform: SixLayerPlatform.iOS,
                 componentName: "GlobalConfigDisabledTest"
             )
