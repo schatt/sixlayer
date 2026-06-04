@@ -67,11 +67,10 @@ open class OCRDisambiguationTDDTests: BaseTestClass {
             requiresUserSelection: true
         )
 
-        var selectedAlternative: OCRDisambiguationSelection? = nil
         let view = OCRDisambiguationView(
             result: result,
             onSelection: { selection in
-                selectedAlternative = selection
+                _ = selection
             }
         )
 

@@ -29,7 +29,7 @@ public enum PlatformReduceMotionPreference: Sendable {
     /// Reads reduce motion from platform accessibility APIs (no SwiftUI environment).
     public static var isReduceMotionEnabledFromSystem: Bool {
         #if os(iOS) || os(visionOS) || os(tvOS)
-        return UIAccessibility.isReduceMotionEnabled
+        return PlatformUIKitAccessibilityReads.isReduceMotionEnabled
         #elseif os(watchOS)
         // UIAccessibility.isReduceMotionEnabled is unavailable on watchOS; SwiftUI views use
         // @Environment(\.accessibilityReduceMotion) via PlatformReduceMotionSubtreeModifier.

@@ -141,9 +141,8 @@ open class Layer1CallbackFunctionalTests: BaseTestClass {
         // Rule 6.2 & 7.4: Functional testing
         
         resetCallbacks()
-        var callbackInvoked = false
         
-        let view = platformPresentItemCollection_L1(
+        _ = platformPresentItemCollection_L1(
             items: sampleItems,
             hints: PresentationHints(
                 dataType: .collection,
@@ -153,7 +152,6 @@ open class Layer1CallbackFunctionalTests: BaseTestClass {
             ),
             onCreateItem: { self.createdItems += 1 },
             onItemSelected: { item in
-                callbackInvoked = true
                 self.selectedItems.append(item)
             },
             onItemDeleted: { item in

@@ -46,13 +46,7 @@ struct PlatformSidebarRevealChromePolicyTests {
     }
 
     @Test func pullIndicatorVisibility_matchesDetailOnlyBinding() {
-        var visibility = NavigationSplitViewVisibility.automatic
-        let binding = Binding(get: { visibility }, set: { visibility = $0 })
-
-        visibility = .detailOnly
-        #expect(PlatformSidebarRevealChromePolicy.pullIndicatorIsVisible(columnVisibility: binding))
-
-        visibility = .all
-        #expect(!PlatformSidebarRevealChromePolicy.pullIndicatorIsVisible(columnVisibility: binding))
+        #expect(PlatformSidebarRevealChromePolicy.pullIndicatorIsVisible(columnVisibility: .constant(.detailOnly)))
+        #expect(!PlatformSidebarRevealChromePolicy.pullIndicatorIsVisible(columnVisibility: .constant(.all)))
     }
 }
