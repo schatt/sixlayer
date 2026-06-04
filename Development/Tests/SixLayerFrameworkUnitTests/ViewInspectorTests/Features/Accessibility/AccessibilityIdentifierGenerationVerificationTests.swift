@@ -208,13 +208,17 @@ open class AccessibilityIdentifierGenerationVerificationTests: BaseTestClass {
             // 2. Contains what it needs to contain - The view should NOT have an automatic accessibility identifier
             // Using wrapper - when ViewInspector works on macOS, no changes needed here
             #if canImport(ViewInspector)
-            let lacksAutoWhenDisabled = AccessibilityTestUtilities.testComponentLacksMatchingIdentifier(
-                testView1,
-                expectedPattern: "*GlobalConfigDisabledProbe*",
-                platform: SixLayerPlatform.iOS,
-                componentName: "GlobalConfigDisabledTest"
-            )
-            #expect(lacksAutoWhenDisabled, "No automatic identifier should be generated when disabled")
+            _ = TestSetupUtilities.hostRootPlatformView(testView1, forceLayout: true)
+            let probeTexts = findAllInViewHierarchy(testView1, ViewInspector.ViewType.Text.self)
+                .filter { (try? $0.string())?.contains("GlobalConfigDisabledProbe") == true }
+            #expect(!probeTexts.isEmpty, "Probe text should be visible in hosted hierarchy")
+            for text in probeTexts {
+                let identifier = (try? text.accessibilityIdentifier()) ?? ""
+                #expect(
+                    identifier.isEmpty,
+                    "Automatic ID should be empty when globally disabled (got '\(identifier)')"
+                )
+            }
             #else
             // ViewInspector not available, treat as no identifier applied
             #expect(Bool(true), "ViewInspector not available, treating as no ID applied")
