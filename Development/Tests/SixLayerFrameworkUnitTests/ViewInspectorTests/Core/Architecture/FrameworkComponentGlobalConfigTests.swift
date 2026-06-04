@@ -81,17 +81,12 @@ open class FrameworkComponentGlobalConfigTests: BaseTestClass {
             
             // Try to inspect for accessibility identifier
             #if canImport(ViewInspector)
-            if let inspectedView = try? AnyView(view).inspect(),
-               let button = try? inspectedView.button(),
-               let accessibilityID = try? button.accessibilityIdentifier() {
-                // .named() should always generate an ID (ignoring global settings)
-                #expect(!accessibilityID.isEmpty, "Framework component with .named() should generate ID")
-                #expect(accessibilityID.contains("main"), "ID should contain screen context")
-                #expect(accessibilityID.contains("TestButton"), "ID should contain view name")
-                
-            } else {
-                Issue.record("Failed to inspect framework component")
-            }
+            #expect(testComponentComplianceSinglePlatform(
+                view,
+                expectedPattern: "*TestButton*",
+                platform: SixLayerPlatform.iOS,
+                componentName: "TestButton"
+            ), "Framework component with .named() should generate ID when global config is enabled")
             #else
             // ViewInspector not available on this platform - this is expected, not a failure
             #endif
