@@ -45,6 +45,16 @@ struct PlatformNavigationSheetButtonVisibilityTests {
         )
     }
 
+    @Test func phoneOrDetailOnly_hidesOnPadWhenAutomaticColumn() {
+        #expect(
+            !PlatformNavigationSheetButtonVisibility.shouldShow(
+                policy: .phoneOrDetailOnly,
+                deviceType: .pad,
+                columnVisibility: .automatic
+            )
+        )
+    }
+
     @Test func phoneOrDetailOnly_hidesOnPadWhenDoubleColumn() {
         #expect(
             !PlatformNavigationSheetButtonVisibility.shouldShow(

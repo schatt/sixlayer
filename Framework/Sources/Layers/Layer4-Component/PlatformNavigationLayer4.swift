@@ -90,7 +90,7 @@ internal enum Layer4MeasuredSplitPresentationSync {
     }
 
     static func seededPresentation(columnVisibility: Binding<NavigationSplitViewVisibility>?) -> NavigationLayoutCompactPresentation? {
-        seededPresentation(isDetailOnlyColumn: columnVisibility.map { $0.wrappedValue == .detailOnly } ?? false)
+        seededPresentation(isDetailOnlyColumn: columnVisibility.map { $0.wrappedValue.isExplicitDetailOnly } ?? false)
     }
 }
 
@@ -159,7 +159,7 @@ private struct Layer4NestedSplitShellPresentationHost<Sidebar: View, Detail: Vie
 
     private func applyColumnVisibilityToPersistedPresentation(_ visibility: NavigationSplitViewVisibility?) {
         guard let visibility else { return }
-        if visibility == .detailOnly {
+        if visibility.isExplicitDetailOnly {
             persistedPresentation = .detailOnlyCollapsedInner
         } else if persistedPresentation == .detailOnlyCollapsedInner {
             persistedPresentation = nil
