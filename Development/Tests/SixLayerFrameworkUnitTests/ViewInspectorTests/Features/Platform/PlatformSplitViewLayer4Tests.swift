@@ -69,7 +69,7 @@ open class PlatformSplitViewLayer4Tests: BaseTestClass {
     @Test @MainActor func testPlatformVerticalSplitL4GeneratesAccessibilityIdentifiers() async {
         initializeTestConfig()
         // Given: A view with vertical split
-        _ = Text("Top")
+        let view = Text("Top")
             .platformVerticalSplit_L4(spacing: 0) {
                 Text("Top Content")
                 Text("Bottom Content")
@@ -173,7 +173,7 @@ open class PlatformSplitViewLayer4Tests: BaseTestClass {
     
     @Test @MainActor func testPlatformHorizontalSplitL4GeneratesAccessibilityIdentifiers() async {
         // Given: A view with horizontal split
-        _ = Text("Left")
+        let view = Text("Left")
             .platformHorizontalSplit_L4(spacing: 0) {
                 Text("Left Content")
                 Text("Right Content")
