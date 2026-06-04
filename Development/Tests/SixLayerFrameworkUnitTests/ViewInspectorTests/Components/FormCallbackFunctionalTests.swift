@@ -54,7 +54,7 @@ open class FormCallbackFunctionalTests: BaseTestClass {
         let cancelLabels = localizedFormButtonLabels(["SixLayerFramework.button.cancel"])
         let button = findButtonInViewHierarchy(formView, labels: cancelLabels)
         #expect(button != nil, "Form should expose Cancel button")
-        if let button, (try? button.tap()) == true {
+        if let button, (try? button.tap()) != nil {
             #expect(callbackInvoked, "Cancel callback should be invoked when Cancel button is tapped")
         } else if button != nil {
             Issue.record("Cancel button found but ViewInspector tap did not invoke callback")
@@ -100,7 +100,7 @@ open class FormCallbackFunctionalTests: BaseTestClass {
         ])
         let button = findButtonInViewHierarchy(formView, labels: updateLabels)
         #expect(button != nil, "Form should expose Update/Create button")
-        if let button, (try? button.tap()) == true {
+        if let button, (try? button.tap()) != nil {
             #expect(callbackInvoked, "Update callback should be invoked when Update button is tapped")
         } else if button != nil {
             Issue.record("Update button found but ViewInspector tap did not invoke callback")
@@ -143,7 +143,7 @@ open class FormCallbackFunctionalTests: BaseTestClass {
         let submitLabels = [configuration.submitButtonText]
         let button = findButtonInViewHierarchy(formView, labels: submitLabels)
         #expect(button != nil, "Form should expose Submit button")
-        if let button, (try? button.tap()) == true {
+        if let button, (try? button.tap()) != nil {
             #expect(callbackInvoked, "Submit callback should be invoked when Submit button is tapped")
         } else if button != nil {
             Issue.record("Submit button found but ViewInspector tap did not invoke callback")
