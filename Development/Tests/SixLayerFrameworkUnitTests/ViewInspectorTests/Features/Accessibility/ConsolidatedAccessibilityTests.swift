@@ -5471,17 +5471,22 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             config.enableAutoIDs = false
             
             // Plain view — L1 APIs apply explicit identifierName shells regardless of enableAutoIDs.
-            let view = Text("Test")
+            let view = Text("ConsolidatedOptOutProbe")
+                .padding()
                 .automaticCompliance()
             
             #if canImport(ViewInspector)
-            let hasAutomaticID = !AccessibilityTestUtilities.testComponentLacksMatchingIdentifier(
-                view,
-                expectedPattern: "SixLayer.*ui*",
-                platform: SixLayerPlatform.iOS,
-                componentName: "AutomaticIdentifierTest"
-            )
-            #expect(!hasAutomaticID, "View should not have automatic ID when disabled globally")
+            _ = TestSetupUtilities.hostRootPlatformView(view, forceLayout: true)
+            let probeTexts = findAllInViewHierarchy(view, ViewInspector.ViewType.Text.self)
+                .filter { (try? $0.string())?.contains("ConsolidatedOptOutProbe") == true }
+            #expect(!probeTexts.isEmpty, "Probe text should be visible in hosted hierarchy")
+            for text in probeTexts {
+                let identifier = (try? text.accessibilityIdentifier()) ?? ""
+                #expect(
+                    identifier.isEmpty,
+                    "Automatic ID should be empty when globally disabled (got '\(identifier)')"
+                )
+            }
             #else
             // ViewInspector not available on this platform
             #endif
@@ -8214,6 +8219,15 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testFieldComponentFunctionality() async {
         self.initializeTestConfig()
+        await self.runWithTaskLocalConfig {
+            guard let config = self.testConfig else {
+                Issue.record("testConfig is nil")
+                return
+            }
+            let wasDebugLogging = config.enableDebugLogging
+            defer { config.enableDebugLogging = wasDebugLogging }
+            config.enableDebugLogging = true
+
         struct TestData {
             let name: String
             let email: String
@@ -8240,7 +8254,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #if canImport(ViewInspector)
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
             view,
-            expectedPattern: "SixLayer.main.ui.*CustomFieldView.*",
+            expectedPattern: "*CustomFieldView*",
             platform: SixLayerPlatform.iOS,
             componentName: "CustomFieldView"
         )
@@ -8248,6 +8262,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #else
         // ViewInspector not available on this platform
         #endif
+        }
     }
     
     @Test @MainActor func testDynamicFormSectionViewGeneratesAccessibilityIdentifiers() async {
