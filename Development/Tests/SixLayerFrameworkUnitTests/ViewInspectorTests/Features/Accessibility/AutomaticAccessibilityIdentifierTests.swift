@@ -784,12 +784,10 @@ open class AutomaticAccessibilityIdentifierTests: BaseTestClass {
             let generator = AccessibilityIdentifierGenerator()
             let _ = generator.generateID(for: "test", role: "button", context: "ui")
                 
-            // Generate UI test code and copy to clipboard
-            config.generateUITestCodeToClipboard()
-                
-            // Verify clipboard contains test code using cross-platform API
-            let clipboardContent = PlatformClipboard.getTextFromClipboard() ?? ""
-            #expect(!clipboardContent.isEmpty, "Clipboard should contain generated UI test content")
+            // Generate UI test code (clipboard may be unavailable in simulator unit tests)
+            let testCode = try config.generateUITestCodeToFile()
+            #expect(!testCode.isEmpty, "UI test export should contain generated accessibility code")
+            #expect(testCode.contains("test"), "UI test export should reference generated identifiers")
         }
     }
     
@@ -894,13 +892,14 @@ open class AutomaticAccessibilityIdentifierTests: BaseTestClass {
             config.namespace = "SixLayer"
             config.mode = .automatic
             config.enableViewHierarchyTracking = true
+            config.enableUITestIntegration = false
                 
             // When: View hierarchy is set
             config.pushViewHierarchy("NavigationView")
             config.pushViewHierarchy("ProfileSection")
             config.setScreenContext("UserProfile")
                 
-            // Then: Generated IDs should use actual context, not hardcoded values
+            // Then: Generated IDs should use tracked screen context and hierarchy (not UITest shortcuts)
             let generator = AccessibilityIdentifierGenerator()
             let id = generator.generateID(
                 for: "test-object",
@@ -908,9 +907,10 @@ open class AutomaticAccessibilityIdentifierTests: BaseTestClass {
                 context: "UserProfile"
             )
                 
-            // The ID should contain the actual context, not hardcoded "ui"
             #expect(id.contains("SixLayer"), "ID should contain namespace")
             #expect(id.contains("UserProfile"), "ID should contain screen context")
+            #expect(id.contains("NavigationView"), "ID should contain view hierarchy")
+            #expect(id.contains("ProfileSection"), "ID should contain nested hierarchy")
             #expect(id.contains("button"), "ID should contain role")
             #expect(id.contains("test-object"), "ID should contain object ID")
                 
