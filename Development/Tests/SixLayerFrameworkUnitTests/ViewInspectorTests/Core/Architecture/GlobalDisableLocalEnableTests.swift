@@ -38,16 +38,15 @@ open class GlobalDisableLocalEnableTDDTests: BaseTestClass {
             )
             .automaticCompliance(identifierName: "FrameworkButton")  // ← Local enable + name so ID is generated
             
-            // 3. Generate ID
-            // VERIFIED: Framework function has .automaticCompliance() modifier applied
+            // 3. Verify local enable on framework content via harness
             #if canImport(ViewInspector)
-            let id = generateIDForView(view)
-            
-            // This should work because framework components handle their own ID generation
-            #expect(!id.isEmpty, "Framework component with local enable should generate ID")
-            #expect(id.contains("TestApp"), "ID should contain namespace")
-            
-            print("🔍 Framework Component Test: Generated ID='\(id)'")
+            let hasLocalEnableID = testComponentComplianceSinglePlatform(
+                view,
+                expectedPattern: "*FrameworkButton*",
+                platform: SixLayerPlatform.iOS,
+                componentName: "FrameworkButton"
+            )
+            #expect(hasLocalEnableID, "Framework component with local enable should generate ID")
             #else
             // ViewInspector not available on this platform - this is expected, not a failure
             #endif
