@@ -64,6 +64,7 @@ open class PlatformPresentContentL1Tests: BaseTestClass {
         
         // 2. Contains what it needs to contain - The view should contain text (currently "Value" per framework behavior)
         #if canImport(ViewInspector)
+        _ = TestSetupUtilities.hostRootPlatformView(view, forceLayout: true)
         // Currently BasicValueView shows "Value" instead of actual string content; test documents that behavior
         self.verifyViewContainsText(view, expectedText: "Value", testName: "String content view (Value label)")
         #else
@@ -90,6 +91,7 @@ open class PlatformPresentContentL1Tests: BaseTestClass {
         
         // 2. Contains what it needs to contain - The view should contain the actual number content
         #if canImport(ViewInspector)
+        _ = TestSetupUtilities.hostRootPlatformView(view, forceLayout: true)
         self.verifyViewContainsText(view, expectedText: "42", testName: "Number content view")
         #else
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
