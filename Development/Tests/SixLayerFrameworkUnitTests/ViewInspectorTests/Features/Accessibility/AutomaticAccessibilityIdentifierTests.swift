@@ -760,9 +760,9 @@ open class AutomaticAccessibilityIdentifierTests: BaseTestClass {
     /// BUSINESS PURPOSE: Clipboard integration should work on macOS
     /// TESTING SCOPE: Tests that UI test code can be copied to clipboard
     /// METHODOLOGY: Unit tests for clipboard functionality
-    @Test @MainActor func testUITestCodeClipboardGeneration() {
+    @Test @MainActor func testUITestCodeClipboardGeneration() throws {
             initializeTestConfig()
-        runWithTaskLocalConfig {
+        try runWithTaskLocalConfig {
             guard let config = testConfig else {
 
                 Issue.record("testConfig is nil")
