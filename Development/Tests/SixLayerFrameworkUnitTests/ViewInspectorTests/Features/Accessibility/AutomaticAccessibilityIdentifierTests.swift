@@ -306,23 +306,23 @@ open class AutomaticAccessibilityIdentifierTests: BaseTestClass {
             config.enableAutoIDs = false
                 
             // When: Creating view with automatic accessibility identifiers modifier
-            let view = platformPresentContent_L1(
-                content: "Test",
-                hints: PresentationHints()
-            )
+            let view = Text("OptOutDisabledProbe")
+                .padding()
                 .automaticCompliance()
                 
-            // Then: No automatic identifier should be generated
-            // We test this by verifying the view does NOT have an automatic identifier
-            // The modifier should not generate an identifier when enableAutoIDs is false
+            // Then: No automatic identifier should be generated on the probe text
             #if canImport(ViewInspector)
-            let hasAutomaticID = !AccessibilityTestUtilities.testComponentLacksMatchingIdentifier(
-                view,
-                expectedPattern: "*platformPresentContent*",
-                platform: SixLayerPlatform.iOS,
-                componentName: "AutomaticIdentifierTest"
-            )
-            #expect(!hasAutomaticID, "View should not have automatic ID when disabled globally")
+            _ = TestSetupUtilities.hostRootPlatformView(view, forceLayout: true)
+            let probeTexts = findAllInViewHierarchy(view, ViewInspector.ViewType.Text.self)
+                .filter { (try? $0.string())?.contains("OptOutDisabledProbe") == true }
+            #expect(!probeTexts.isEmpty, "Probe text should be visible in hosted hierarchy")
+            for text in probeTexts {
+                let identifier = (try? text.accessibilityIdentifier()) ?? ""
+                #expect(
+                    identifier.isEmpty,
+                    "Automatic ID should be empty when globally disabled (got '\(identifier)')"
+                )
+            }
         #else
             // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
             // The modifier IS present in the code, but ViewInspector can't detect it on macOS
