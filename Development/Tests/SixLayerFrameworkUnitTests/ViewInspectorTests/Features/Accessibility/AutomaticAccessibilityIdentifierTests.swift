@@ -3,6 +3,9 @@ import Testing
 
 import SwiftUI
 @testable import SixLayerFramework
+#if canImport(ViewInspector)
+import ViewInspector
+#endif
 #if canImport(UIKit)
 import UIKit
 #elseif canImport(AppKit)
