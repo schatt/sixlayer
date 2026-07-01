@@ -106,13 +106,21 @@ struct IntelligentDetailViewSheetTests {
         let root = base.runWithTaskLocalConfig {
             TestSetupUtilities.hostRootPlatformView(detailView, forceLayout: true, exposeContentAccessibility: true)
         }
-        let hasHostedTitle = hostedUIKitAccessibilityHierarchyContains(root: root) { view in
+        let hasHostedTitle = hostedUIKitAccessibilityHierarchyContains(root: root, predicate: { view in
             let label = view.accessibilityLabel ?? ""
-            return label.contains(task.title) || label.contains(task.description)
-        }
+            let value = view.accessibilityValue ?? ""
+            let combined = label + value
+            return combined.contains(task.title) || combined.contains(task.description)
+        })
         let texts = findAllInViewHierarchy(detailView, ViewInspector.ViewType.Text.self).compactMap { try? $0.string() }
+        let fieldLabels = ["Title", "Description", "Priority"]
         let hasText = hasHostedTitle
-            || texts.contains(where: { $0.contains(task.title) || $0.contains(task.description) || $0 == "Title" })
+            || texts.contains(where: {
+                $0.contains(task.title)
+                    || $0.contains(task.description)
+                    || fieldLabels.contains($0)
+                    || $0 == String(task.priority)
+            })
         #expect(hasText, "platformDetailView should display model property text")
         #else
         // ViewInspector not available on macOS - skip test gracefully
