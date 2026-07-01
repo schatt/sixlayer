@@ -52,7 +52,10 @@ open class PlatformModalSheetNavigationChromeLayer4Tests: BaseTestClass {
         .enableGlobalAutomaticCompliance()
 
         #if os(iOS) && canImport(UIKit)
-        let hosted = hostRootPlatformView(chrome)
+        initializeTestConfig()
+        let hosted = runWithTaskLocalConfig {
+            hostRootPlatformView(chrome, forceLayout: true, exposeContentAccessibility: true)
+        }
         #expect(
             hostedViewHasAccessibilityElementWithLabelAndButtonTrait(root: hosted, expectedLabel: "Apply"),
             "Hosted sheet chrome should expose confirmation control with expected title"
@@ -100,7 +103,10 @@ open class PlatformModalSheetNavigationChromeLayer4Tests: BaseTestClass {
         .enableGlobalAutomaticCompliance()
 
         #if os(iOS) && canImport(UIKit)
-        let hosted = hostRootPlatformView(chrome)
+        initializeTestConfig()
+        let hosted = runWithTaskLocalConfig {
+            hostRootPlatformView(chrome, forceLayout: true, exposeContentAccessibility: true)
+        }
         #expect(hostedViewHasAccessibilityElementWithLabelAndButtonTrait(root: hosted, expectedLabel: "Reset"))
         #expect(hostedViewHasAccessibilityElementWithLabelAndButtonTrait(root: hosted, expectedLabel: "Done"))
         #elseif os(macOS) && canImport(ViewInspector)
