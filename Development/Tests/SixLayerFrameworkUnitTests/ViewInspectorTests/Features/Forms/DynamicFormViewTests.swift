@@ -81,12 +81,24 @@ open class DynamicFormViewTests: BaseTestClass {
     private func expectsBatchOCRButton<V: View>(_ view: V) -> Bool {
         if expectsNamedCompliance(view, named: "BatchOCRButton") { return true }
         return runWithTaskLocalConfig {
-            let hosted = TestSetupUtilities.hostRootPlatformView(view, forceLayout: true)
-            let platformIDs = findAllAccessibilityIdentifiersFromPlatformView(hosted)
-            return platformIDs.contains { $0.localizedCaseInsensitiveContains("batchocr") }
-                || findAllInViewHierarchy(view, ViewInspector.ViewType.Button.self)
-                    .flatMap(buttonLabelStrings)
-                    .contains(where: { $0.localizedCaseInsensitiveContains("scan") })
+            let isolated = TestSetupUtilities.makeIsolatedAccessibilityIdentifierConfig()
+            isolated.enableDebugLogging = true
+            isolated.clearDebugLog()
+            return AccessibilityIdentifierConfig.$taskLocalConfig.withValue(isolated) {
+                _ = TestSetupUtilities.hostRootPlatformView(
+                    view,
+                    forceLayout: true,
+                    accessibilityIdentifierConfig: isolated
+                )
+                let log = isolated.getDebugLog()
+                if log.localizedCaseInsensitiveContains("batchocrbutton") { return true }
+                let hosted = TestSetupUtilities.hostRootPlatformView(view, forceLayout: true)
+                let platformIDs = findAllAccessibilityIdentifiersFromPlatformView(hosted)
+                return platformIDs.contains { $0.localizedCaseInsensitiveContains("batchocr") }
+                    || findAllInViewHierarchy(view, ViewInspector.ViewType.Button.self)
+                        .flatMap(buttonLabelStrings)
+                        .contains(where: { $0.localizedCaseInsensitiveContains("scan") })
+            }
         }
     }
     #endif
