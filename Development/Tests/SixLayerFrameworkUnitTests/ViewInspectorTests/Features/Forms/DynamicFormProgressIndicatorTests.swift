@@ -22,7 +22,7 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
     /// Find progress indicator by structure (VStack containing ProgressView and "Progress" text)
     /// ViewInspector may not be able to find custom struct types directly, so we use structure-based finding
     #if canImport(ViewInspector)
-    private func findProgressIndicator(in inspected: ViewInspector.InspectableView<ViewInspector.ViewType.ClassifiedView>) -> ViewInspector.InspectableView<ViewInspector.ViewType.ClassifiedView>? {
+    private func findProgressIndicator<T: ViewInspector.BaseViewType>(in inspected: ViewInspector.InspectableView<T>) -> ViewInspector.InspectableView<T>? {
         // Strategy: Find a VStack that contains both a ProgressView and "Progress" text
         // This matches the structure of FormProgressIndicator
         
