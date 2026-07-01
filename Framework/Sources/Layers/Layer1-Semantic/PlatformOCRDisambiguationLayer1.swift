@@ -24,8 +24,7 @@ public func platformOCRWithDisambiguation_L1(
         context: context,
         onResult: onResult
     )
-    .environment(\.accessibilityIdentifierName, "platformOCRWithDisambiguation_L1")
-    .automaticCompliance()
+    .automaticCompliance(named: "platformOCRWithDisambiguation_L1")
 }
 
 /// Layer 1 semantic function for OCR with disambiguation and custom configuration
@@ -43,8 +42,7 @@ public func platformOCRWithDisambiguation_L1(
         configuration: configuration,
         onResult: onResult
     )
-    .environment(\.accessibilityIdentifierName, "platformOCRWithDisambiguation_L1")
-    .automaticCompliance()
+    .automaticCompliance(named: "platformOCRWithDisambiguation_L1")
 }
 
 // MARK: - OCR Disambiguation Wrapper
