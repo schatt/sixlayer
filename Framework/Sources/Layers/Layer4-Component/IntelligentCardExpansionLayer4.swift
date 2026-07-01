@@ -204,30 +204,31 @@ public struct ExpandableCardComponent<Item: Identifiable>: View {
         let scale = calculateScale()
         let animation = Animation.easeInOut(duration: strategy.animationDuration)
         
-        platformVStackContainer(alignment: .leading, spacing: 12) {
-            // Card content
-            cardContent
-            
-            // Expanded content (if applicable)
-            if isExpanded && strategy.primaryStrategy == .contentReveal {
-                expandedContent
-            }
-        }
-        .frame(width: layoutDecision.cardWidth, height: layoutDecision.cardHeight)
-        .background(cardBackground)
-        .cornerRadius(12)
-        .shadow(color: .black.opacity(0.1), radius: isExpanded ? 8 : 4, x: 0, y: 2)
-        .scaleEffect(scale)
-        .animation(animation, value: scale)
-        .animation(animation, value: isExpanded)
-        .onTapGesture {
+        Button(action: {
             handleTap()
             onItemSelected?(item)
+        }) {
+            platformVStackContainer(alignment: .leading, spacing: 12) {
+                // Card content
+                cardContent
+                
+                // Expanded content (if applicable)
+                if isExpanded && strategy.primaryStrategy == .contentReveal {
+                    expandedContent
+                }
+            }
+            .frame(width: layoutDecision.cardWidth, height: layoutDecision.cardHeight)
+            .background(cardBackground)
+            .cornerRadius(12)
+            .shadow(color: .black.opacity(0.1), radius: isExpanded ? 8 : 4, x: 0, y: 2)
+            .scaleEffect(scale)
         }
+        .buttonStyle(.plain)
+        .animation(animation, value: scale)
+        .animation(animation, value: isExpanded)
         .platformHoverEffect { isHovering in
             onHover(isHovering)
         }
-        .accessibilityElement(children: .combine)
         .accessibilityLabel(cardTitle)
         .accessibilityAddTraits(isExpanded ? [.isButton, .isSelected] : .isButton)
         .accessibilityHint("Tap to view details")
@@ -455,32 +456,33 @@ public struct CoverFlowCardComponent<Item: Identifiable>: View {
     let onItemEdited: ((Item) -> Void)?
     
     public var body: some View {
-        VStack {
-            Image(systemName: cardIcon)
-                .font(.largeTitle)
-                .foregroundColor(cardColor)
-            
-            Text(cardTitle)
-                .font(.headline)
-                .lineLimit(2)
-                .multilineTextAlignment(.center)
-                .foregroundColor(isPlaceholderTitle ? .blue.opacity(0.6) : .primary)
-            
-            if let subtitle = cardSubtitle {
-                Text(subtitle)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                    .lineLimit(1)
-            }
-        }
-        .frame(width: 200, height: 300)
-        .background(.regularMaterial)
-        .cornerRadius(16)
-        .shadow(radius: 8)
-        .onTapGesture {
+        Button(action: {
             onItemSelected?(item)
+        }) {
+            VStack {
+                Image(systemName: cardIcon)
+                    .font(.largeTitle)
+                    .foregroundColor(cardColor)
+                
+                Text(cardTitle)
+                    .font(.headline)
+                    .lineLimit(2)
+                    .multilineTextAlignment(.center)
+                    .foregroundColor(isPlaceholderTitle ? .blue.opacity(0.6) : .primary)
+                
+                if let subtitle = cardSubtitle {
+                    Text(subtitle)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                        .lineLimit(1)
+                }
+            }
+            .frame(width: 200, height: 300)
+            .background(.regularMaterial)
+            .cornerRadius(16)
+            .shadow(radius: 8)
         }
-        .accessibilityElement(children: .combine)
+        .buttonStyle(.plain)
         .accessibilityLabel(cardTitle)
         .accessibilityAddTraits(.isButton)
         .accessibilityHint("Tap to view details")
@@ -892,16 +894,16 @@ public struct SimpleCardComponent<Item: Identifiable>: View {
         
         // Conditionally apply touch-based modifiers
         if config.supportsTouch {
-            view = AnyView(view.onTapGesture {
-                onItemSelected?(item)
-            })
-            
-            view = AnyView(view.onLongPressGesture {
-                // Long press support
-            })
-            
-            // Apply touch target sizing in addition to layout frame
-            view = AnyView(view.frame(minWidth: config.minTouchTarget, minHeight: config.minTouchTarget))
+            view = AnyView(
+                Button(action: { onItemSelected?(item) }) {
+                    content
+                }
+                .buttonStyle(.plain)
+                .frame(minWidth: config.minTouchTarget, minHeight: config.minTouchTarget)
+                .onLongPressGesture {
+                    // Long press support
+                }
+            )
         }
         
         // Conditionally apply hover-based modifiers
@@ -913,7 +915,6 @@ public struct SimpleCardComponent<Item: Identifiable>: View {
         
         // Conditionally apply accessibility modifiers (Issue #191: single tappable element)
         if config.supportsVoiceOver || config.supportsSwitchControl {
-            view = AnyView(view.accessibilityElement(children: .combine))
             view = AnyView(view.accessibilityLabel(cardTitle))
             view = AnyView(view.accessibilityAddTraits(.isButton))
             view = AnyView(view.accessibilityHint("Tap to view details"))
