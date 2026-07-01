@@ -2237,8 +2237,9 @@ public struct GenericFormView: View {
                 }
             }
         )
-        // Issue #245 / gh-243: caller-defined fields are arbitrary content; name root for harness.
-        .automaticCompliance(named: "GenericFormView")
+        // Issue #245 / gh-243: caller-defined fields are arbitrary content; use identifierName shell.
+        .environment(\.accessibilityIdentifierName, "GenericFormView")
+        .automaticCompliance(identifierName: "GenericFormView")
     }
 }
 
