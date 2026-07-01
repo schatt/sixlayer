@@ -19,39 +19,26 @@ open class ComponentLabelTextAccessibilityTests: BaseTestClass {
     // MARK: - AdaptiveButton Tests
     
     @Test @MainActor func testAdaptiveButtonIncludesLabelText() {
-        setupTestEnvironment()
-        
-        // AdaptiveButton should include "Submit" in identifier
-        let button = AdaptiveUIPatterns.AdaptiveButton("Submit", action: { })
-            .enableGlobalAutomaticCompliance()
-        
-        // Using wrapper - when ViewInspector works on macOS, no changes needed here
-        #if canImport(ViewInspector)
-        if let inspected = try? AnyView(button).inspect() {
-           let buttonID = try? inspected.accessibilityIdentifier()
-            // TODO: ViewInspector Detection Issue - VERIFIED: AdaptiveButton DOES pass label via .environment(\.accessibilityIdentifierLabel, title)
-            // in Framework/Sources/Extensions/Platform/PlatformUIPatterns.swift:408.
-            // The identifier generation includes sanitized label text at Framework/Sources/Extensions/Accessibility/AutomaticAccessibilityIdentifiers.swift:257-259.
-            // The test needs to be updated to handle ViewInspector's inability to detect these identifiers reliably.
-            // This is a ViewInspector limitation, not a missing implementation issue.
-            // TODO: Temporarily passing test - implementation IS correct but ViewInspector can't detect it
-            // Remove this workaround once ViewInspector detection is fixed
-            #expect((buttonID?.contains("submit") ?? false) || (buttonID?.contains("Submit") ?? false), 
-                   "AdaptiveButton identifier should include label text 'Submit' (implementation verified in code)")
+        initializeTestConfig()
+        runWithTaskLocalConfig {
+            setupTestEnvironment()
             
-            print("✅ GREEN: AdaptiveButton ID: '\(buttonID ?? "nil")' - Implementation verified")
-        } else {
-            // TODO: ViewInspector Detection Issue - VERIFIED: AdaptiveButton DOES pass label via .environment(\.accessibilityIdentifierLabel, title)
-            // Implementation is correct, ViewInspector just can't detect it
-            // TODO: Temporarily passing test - implementation IS correct but ViewInspector can't detect it
-            #expect(Bool(true), "AdaptiveButton implementation verified - ViewInspector can't detect (known limitation)")
+            let button = AdaptiveUIPatterns.AdaptiveButton("Submit", action: { })
+                .enableGlobalAutomaticCompliance()
+            
+            #if canImport(ViewInspector)
+            let root = Self.hostRootPlatformView(button, forceLayout: true)
+            let buttonID = getAccessibilityIdentifierForTest(view: button, hostedRoot: root)
+            #expect(
+                (buttonID?.contains("submit") ?? false) || (buttonID?.contains("Submit") ?? false),
+                "AdaptiveButton identifier should include label text 'Submit'"
+            )
+            #else
+            #expect(Bool(true), "AdaptiveButton implementation verified - ViewInspector not available on this platform")
+            #endif
+            
+            cleanupTestEnvironment()
         }
-        #else
-        // ViewInspector not available on this platform (likely macOS) - implementation is verified in code
-        #expect(Bool(true), "AdaptiveButton implementation verified - ViewInspector not available on this platform")
-        #endif
-        
-        cleanupTestEnvironment()
     }
     
     @MainActor @Test func testAdaptiveButtonDifferentLabelsDifferentIdentifiers() {
