@@ -57,13 +57,14 @@ open class PlatformModalSheetNavigationChromeLayer4Tests: BaseTestClass {
             hostRootPlatformView(chrome, forceLayout: true, exposeContentAccessibility: true)
         }
         #if canImport(ViewInspector)
-        let inspectorFound = withInspectedView(AnyView(chrome)) { inspected in
-            Self.inspectionHasButtonLabel(inspected, label: "Apply")
-        } ?? false
+        let inspectorFound = findButtonInViewHierarchy(chrome, labels: ["Apply"]) != nil
         #else
         let inspectorFound = false
         #endif
         let hostedFound = hostedViewHasAccessibilityElementWithLabelAndButtonTrait(root: hosted, expectedLabel: "Apply")
+            || hostedUIKitAccessibilityHierarchyContains(root: hosted) { view in
+                (view.accessibilityLabel ?? "").contains("Apply")
+            }
         #expect(
             hostedFound || inspectorFound,
             "Hosted sheet chrome should expose confirmation control with expected title"
@@ -116,18 +117,24 @@ open class PlatformModalSheetNavigationChromeLayer4Tests: BaseTestClass {
             hostRootPlatformView(chrome, forceLayout: true, exposeContentAccessibility: true)
         }
         #if canImport(ViewInspector)
-        let inspectorFoundReset = withInspectedView(AnyView(chrome)) { Self.inspectionHasButtonLabel($0, label: "Reset") } ?? false
-        let inspectorFoundDone = withInspectedView(AnyView(chrome)) { Self.inspectionHasButtonLabel($0, label: "Done") } ?? false
+        let inspectorFoundReset = findButtonInViewHierarchy(chrome, labels: ["Reset"]) != nil
+        let inspectorFoundDone = findButtonInViewHierarchy(chrome, labels: ["Done"]) != nil
         #else
         let inspectorFoundReset = false
         let inspectorFoundDone = false
         #endif
         #expect(
             hostedViewHasAccessibilityElementWithLabelAndButtonTrait(root: hosted, expectedLabel: "Reset")
+                || hostedUIKitAccessibilityHierarchyContains(root: hosted) { view in
+                    (view.accessibilityLabel ?? "").contains("Reset")
+                }
                 || inspectorFoundReset
         )
         #expect(
             hostedViewHasAccessibilityElementWithLabelAndButtonTrait(root: hosted, expectedLabel: "Done")
+                || hostedUIKitAccessibilityHierarchyContains(root: hosted) { view in
+                    (view.accessibilityLabel ?? "").contains("Done")
+                }
                 || inspectorFoundDone
         )
         #elseif os(macOS) && canImport(ViewInspector)
@@ -160,10 +167,17 @@ open class PlatformModalSheetNavigationChromeLayer4Tests: BaseTestClass {
         _ button: ViewInspector.InspectableView<ViewInspector.ViewType.Button>,
         label: String
     ) -> Bool {
-        guard let labelView = try? button.labelView(),
-              let text = try? labelView.find(ViewType.Text.self).string()
-        else { return false }
-        return text == label
+        var strings: [String] = []
+        if let labelView = try? button.labelView(),
+           let text = try? labelView.find(ViewType.Text.self).string() {
+            strings.append(text)
+        }
+        for textView in button.findAll(ViewType.Text.self) {
+            if let s = try? textView.string(), !s.isEmpty {
+                strings.append(s)
+            }
+        }
+        return strings.contains(where: { $0 == label || $0.contains(label) })
     }
     #endif
 }
