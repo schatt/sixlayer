@@ -62,8 +62,9 @@ struct IntelligentDetailViewSheetTests {
         
         // Verify the view can be inspected with ViewInspector
         #if canImport(ViewInspector)
-        initializeTestConfig()
-        let root = runWithTaskLocalConfig {
+        let base = BaseTestClass()
+        base.initializeTestConfig()
+        let root = base.runWithTaskLocalConfig {
             TestSetupUtilities.hostRootPlatformView(sheetContent, forceLayout: true, exposeContentAccessibility: true)
         }
         let hasHostedTitle = hostedUIKitAccessibilityHierarchyContains(root: root) { view in
@@ -99,8 +100,9 @@ struct IntelligentDetailViewSheetTests {
         )
         
         #if canImport(ViewInspector)
-        initializeTestConfig()
-        let root = runWithTaskLocalConfig {
+        let base = BaseTestClass()
+        base.initializeTestConfig()
+        let root = base.runWithTaskLocalConfig {
             TestSetupUtilities.hostRootPlatformView(detailView, forceLayout: true, exposeContentAccessibility: true)
         }
         let hasHostedTitle = hostedUIKitAccessibilityHierarchyContains(root: root) { view in
