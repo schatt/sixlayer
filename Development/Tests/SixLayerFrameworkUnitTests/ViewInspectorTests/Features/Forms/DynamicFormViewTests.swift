@@ -56,6 +56,11 @@ open class DynamicFormViewTests: BaseTestClass {
     }
 
     @MainActor
+    private func buttonLabelStrings(_ button: ViewInspector.InspectableView<ViewInspector.ViewType.Button>) -> [String] {
+        button.findAll(ViewInspector.ViewType.Text.self).compactMap { try? $0.string() }
+    }
+
+    @MainActor
     private func fieldButtonsInHierarchy(_ view: some View) -> [ViewInspector.InspectableView<ViewInspector.ViewType.Button>] {
         findAllInViewHierarchy(view, ViewInspector.ViewType.Button.self)
     }
@@ -618,7 +623,7 @@ open class DynamicFormViewTests: BaseTestClass {
         // Should render info button with Help accessibility label when description is present.
         #if canImport(ViewInspector)
         let hasHelpButton = fieldButtonsInHierarchy(view).contains(where: { button in
-            (try? button.accessibilityLabel())?.contains("Help for Email") == true
+            buttonLabelStrings(button).contains(where: { $0.contains("Help for Email") })
         })
         #expect(hasHelpButton, "HStack should contain label and info button")
         #else
@@ -653,7 +658,7 @@ open class DynamicFormViewTests: BaseTestClass {
         // Should not render a Help info button when description is nil.
         #if canImport(ViewInspector)
         let helpButtons = fieldButtonsInHierarchy(view).filter { button in
-            (try? button.accessibilityLabel())?.contains("Help for") == true
+            buttonLabelStrings(button).contains(where: { $0.contains("Help for") })
         }
         #expect(helpButtons.isEmpty, "HStack should only have label when no description")
         #else
