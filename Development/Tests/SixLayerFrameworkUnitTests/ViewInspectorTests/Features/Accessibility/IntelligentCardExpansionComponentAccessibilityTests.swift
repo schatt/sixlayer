@@ -9,6 +9,9 @@ import Testing
 //
 
 import SwiftUI
+#if canImport(ViewInspector)
+import ViewInspector
+#endif
 @testable import SixLayerFramework
 
 /// NOTE: Not marked @MainActor on class to allow parallel execution
