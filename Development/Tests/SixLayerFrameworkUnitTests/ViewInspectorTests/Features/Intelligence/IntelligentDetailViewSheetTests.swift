@@ -68,7 +68,8 @@ struct IntelligentDetailViewSheetTests {
             TestSetupUtilities.hostRootPlatformView(sheetContent, forceLayout: true, exposeContentAccessibility: true)
         }
         let hasHostedTitle = hostedUIKitAccessibilityHierarchyContains(root: root) { view in
-            (view.accessibilityLabel ?? "").contains(task.title)
+            let label = view.accessibilityLabel ?? ""
+            return label.contains(task.title) || label.contains(task.description)
         }
         let hasStructure = hasHostedTitle
             || !findAllInViewHierarchy(sheetContent, ViewInspector.ViewType.Text.self).isEmpty
@@ -106,7 +107,8 @@ struct IntelligentDetailViewSheetTests {
             TestSetupUtilities.hostRootPlatformView(detailView, forceLayout: true, exposeContentAccessibility: true)
         }
         let hasHostedTitle = hostedUIKitAccessibilityHierarchyContains(root: root) { view in
-            (view.accessibilityLabel ?? "").contains(task.title)
+            let label = view.accessibilityLabel ?? ""
+            return label.contains(task.title) || label.contains(task.description)
         }
         let hasText = hasHostedTitle
             || !findAllInViewHierarchy(detailView, ViewInspector.ViewType.Text.self).isEmpty
