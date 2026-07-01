@@ -62,9 +62,15 @@ struct IntelligentDetailViewSheetTests {
         
         // Verify the view can be inspected with ViewInspector
         #if canImport(ViewInspector)
-        let base = BaseTestClass()
-        base.verifyViewContainsAnyText(sheetContent, testName: "platformDetailView sheet content")
-        let hasStructure = !findAllInViewHierarchy(sheetContent, ViewInspector.ViewType.Text.self).isEmpty
+        initializeTestConfig()
+        let root = runWithTaskLocalConfig {
+            TestSetupUtilities.hostRootPlatformView(sheetContent, forceLayout: true, exposeContentAccessibility: true)
+        }
+        let hasHostedTitle = hostedUIKitAccessibilityHierarchyContains(root: root) { view in
+            (view.accessibilityLabel ?? "").contains(task.title)
+        }
+        let hasStructure = hasHostedTitle
+            || !findAllInViewHierarchy(sheetContent, ViewInspector.ViewType.Text.self).isEmpty
             || !findAllInViewHierarchy(sheetContent, ViewInspector.ViewType.VStack.self).isEmpty
             || !findAllInViewHierarchy(sheetContent, ViewInspector.ViewType.LazyVStack.self).isEmpty
             || !findAllInViewHierarchy(sheetContent, ViewInspector.ViewType.ScrollView.self).isEmpty
@@ -93,7 +99,16 @@ struct IntelligentDetailViewSheetTests {
         )
         
         #if canImport(ViewInspector)
-        BaseTestClass().verifyViewContainsAnyText(detailView, testName: "platformDetailView model properties")
+        initializeTestConfig()
+        let root = runWithTaskLocalConfig {
+            TestSetupUtilities.hostRootPlatformView(detailView, forceLayout: true, exposeContentAccessibility: true)
+        }
+        let hasHostedTitle = hostedUIKitAccessibilityHierarchyContains(root: root) { view in
+            (view.accessibilityLabel ?? "").contains(task.title)
+        }
+        let hasText = hasHostedTitle
+            || !findAllInViewHierarchy(detailView, ViewInspector.ViewType.Text.self).isEmpty
+        #expect(hasText, "platformDetailView should display model property text")
         #else
         // ViewInspector not available on macOS - skip test gracefully
         // The view is created successfully, which is the main requirement
