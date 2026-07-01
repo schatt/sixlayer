@@ -54,7 +54,7 @@ open class OCRComponentsTDDTests: BaseTestClass {
             )
 
             #if canImport(ViewInspector)
-            expectHostedHierarchyHasContent(view, message: "Should provide overlay interface")
+            expectHostedHierarchyHasContent(view, "Should provide overlay interface")
             let hasAccessibilityID = testComponentComplianceSinglePlatform(
                 view,
                 expectedPattern: "*OCROverlayView*",
@@ -79,7 +79,7 @@ open class OCRComponentsTDDTests: BaseTestClass {
             let view = OCROverlayView(image: testImage, result: testResult)
 
             #if canImport(ViewInspector)
-            expectHostedHierarchyHasContent(view, message: "Should have OCR processing interface")
+            expectHostedHierarchyHasContent(view, "Should have OCR processing interface")
             verifyViewContainsText(view, expectedText: "Sample Text", testName: "OCROverlayView extracted text")
             #endif
         }
@@ -123,7 +123,7 @@ open class OCRComponentsTDDTests: BaseTestClass {
             let view = OCRDisambiguationView(result: result, onSelection: { _ in })
 
             #if canImport(ViewInspector)
-            expectHostedHierarchyHasContent(view, minimumButtons: 3, message: "Should display candidate alternatives")
+            expectHostedHierarchyHasContent(view, minimumButtons: 3, "Should display candidate alternatives")
             let hasAccessibilityID = testComponentComplianceSinglePlatform(
                 view,
                 expectedPattern: "*OCRDisambiguationView*",
@@ -171,7 +171,7 @@ open class OCRComponentsTDDTests: BaseTestClass {
             let view = OCRDisambiguationView(result: result, onSelection: { _ in })
 
             #if canImport(ViewInspector)
-            expectHostedHierarchyHasContent(view, minimumButtons: 3, message: "Should display candidate alternatives")
+            expectHostedHierarchyHasContent(view, minimumButtons: 3, "Should display candidate alternatives")
             #endif
         }
     }
@@ -198,7 +198,7 @@ open class OCRComponentsTDDTests: BaseTestClass {
             let view = OCRDisambiguationView(result: result, onSelection: { _ in })
 
             #if canImport(ViewInspector)
-            expectHostedHierarchyHasContent(view, minimumButtons: 1, message: "Should handle non-disambiguation case")
+            expectHostedHierarchyHasContent(view, minimumButtons: 1, "Should handle non-disambiguation case")
             #endif
         }
     }
