@@ -16,7 +16,7 @@ import ViewInspector
 /// BUSINESS PURPOSE: Ensure IntelligentFormView generates proper accessibility identifiers
 /// TESTING SCOPE: All components in IntelligentFormView.swift
 /// METHODOLOGY: Test each component on both iOS and macOS platforms as required by mandatory testing guidelines
-@Suite("Intelligent Form View")
+@Suite("Intelligent Form View", .serialized)
 /// NOTE: Not marked @MainActor on class to allow parallel execution
 open class IntelligentFormViewTests: BaseTestClass {
     
@@ -75,12 +75,26 @@ open class IntelligentFormViewTests: BaseTestClass {
 
     #if canImport(ViewInspector)
     @MainActor
+    private func updateButtonLabelCandidates() -> [String] {
+        let i18n = InternationalizationService()
+        return [
+            i18n.localizedString(for: "SixLayerFramework.button.update"),
+            i18n.localizedString(for: "SixLayerFramework.button.create"),
+            "Update",
+            "Create"
+        ]
+    }
+
+    @MainActor
     private func updateButton(in view: some View) -> ViewInspector.InspectableView<ViewInspector.ViewType.Button>? {
+        if let match = findButtonInViewHierarchy(AnyView(view), labels: updateButtonLabelCandidates()) {
+            return match
+        }
         let buttons = findAllInViewHierarchy(view, ViewInspector.ViewType.Button.self)
         return buttons.first { button in
             let buttonTexts = button.findAll(ViewInspector.ViewType.Text.self)
             let text = buttonTexts.compactMap { try? $0.string() }.joined(separator: " ")
-            return text.lowercased().contains("update")
+            return text.localizedCaseInsensitiveContains("update") || text.localizedCaseInsensitiveContains("create")
         }
     }
     #endif
@@ -111,9 +125,9 @@ open class IntelligentFormViewTests: BaseTestClass {
             if let updateButton = updateButton(in: view) {
                 try? updateButton.tap()
                 #expect(onSubmitCalled, "Update button should call onSubmit callback when clicked")
-                #expect(Bool(true), "Update button should pass data to onSubmit callback")
+                #expect(submittedData?.name == testData.name, "Update button should pass data to onSubmit callback")
             } else {
-                Issue.record("Could not find Update button in form")
+                #expect(Bool(false), "Could not find Update button in form")
             }
             #else
             // ViewInspector not available on this platform - this is expected, not a failure
@@ -149,7 +163,7 @@ open class IntelligentFormViewTests: BaseTestClass {
                 try? updateButton.tap()
                 #expect(onSubmitCalled, "Update button should call onSubmit even if it's empty")
             } else {
-                Issue.record("Could not find Update button")
+                #expect(Bool(false), "Could not find Update button")
             }
             #else
             // ViewInspector not available on this platform - this is expected, not a failure
