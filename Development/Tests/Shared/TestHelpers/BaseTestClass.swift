@@ -206,7 +206,7 @@ open class BaseTestClass {
         #endif
     }
     
-    /// Verify that a view contains specific text content (Inspectable view — direct hierarchy).
+    /// Verify that a view contains specific text content (concrete view — direct hierarchy).
     #if canImport(ViewInspector)
     @MainActor
     open func verifyViewContainsText<V: View>(_ view: V, expectedText: String, testName: String) {
@@ -225,7 +225,7 @@ open class BaseTestClass {
         #expect(hasExpectedText, "View should contain text '\(expectedText)' for \(testName)")
     }
 
-    /// Verify that a view contains specific text (non-Inspectable view — uses type-erased inspection).
+    /// Verify that a view contains specific text (type-erased AnyView inspection).
     /// Aggregates Text from root and up to two levels of AnyView unwrap so nested type-erasure still finds content (Issue 178).
     @MainActor
     open func verifyViewContainsText(_ view: some View, expectedText: String, testName: String) {
@@ -257,7 +257,7 @@ open class BaseTestClass {
     }
     #endif
 
-    /// Verify that a view contains specific image elements (Inspectable view — direct hierarchy).
+    /// Verify that a view contains specific image elements (concrete view — direct hierarchy).
     #if canImport(ViewInspector)
     @MainActor
     open func verifyViewContainsImage<V: View>(_ view: V, testName: String) {
@@ -272,7 +272,7 @@ open class BaseTestClass {
         }
     }
 
-    /// Verify that a view contains image elements (non-Inspectable view — uses type-erased inspection).
+    /// Verify that a view contains image elements (type-erased AnyView inspection).
     /// Aggregates Image from root and up to two levels of AnyView unwrap so nested type-erasure still finds content (Issue 178).
     @MainActor
     open func verifyViewContainsImage(_ view: some View, testName: String) {
@@ -296,7 +296,7 @@ open class BaseTestClass {
         }
     }
 
-    /// Verify that a view contains at least one text element (Inspectable view).
+    /// Verify that a view contains at least one text element (concrete view — direct hierarchy).
     /// Records issue and returns when inspection returns no Text (traversal limitation).
     @MainActor
     open func verifyViewContainsAnyText<V: View>(_ view: V, testName: String) {
@@ -311,7 +311,7 @@ open class BaseTestClass {
         }
     }
 
-    /// Verify that a view contains at least one text element (non-Inspectable view — type-erased inspection).
+    /// Verify that a view contains at least one text element (type-erased AnyView inspection).
     @MainActor
     open func verifyViewContainsAnyText(_ view: some View, testName: String) {
         guard let viewText = withInspectedView(AnyView(view), perform: { inspected in
@@ -334,7 +334,7 @@ open class BaseTestClass {
         }
     }
 
-    /// Verify VStack presence via direct inspection when the view type is Inspectable (Issue 178 / #242).
+    /// Verify VStack presence via direct typed inspection (Issue 178 / #242).
     @MainActor
     open func verifyViewContainsAtLeastOneVStack<V: View>(_ view: V, testName: String) {
         guard let vStacks = withInspectedView(view, perform: { inspected in
@@ -365,7 +365,7 @@ open class BaseTestClass {
         }
     }
 
-    /// Run a closure with the first VStack when the view type is Inspectable (Issue 178 / #242).
+    /// Run a closure with the first VStack via direct typed inspection (Issue 178 / #242).
     @MainActor
     open func tryWithFirstVStack<V: View>(
         _ view: V,
