@@ -17,14 +17,14 @@ import ViewInspector
 // MARK: - Canonical inspection (DRY) — direct inspection only, no AnyView
 
 /// Inspect a view directly so ViewInspector traverses the real hierarchy.
-/// Call only with views whose type conforms to ViewInspector.Inspectable.
+/// Call with a concrete view type for direct hierarchy inspection.
 @MainActor
 public func inspectView<V: View>(_ view: V) -> ViewInspector.InspectableView<ViewInspector.ViewType.View<V>>? {
     try? view.inspect().view(V.self)
 }
 
 /// Safely inspect a view and run a throwing closure on the inspected hierarchy.
-/// Use only with views whose type conforms to ViewInspector.Inspectable.
+/// Use with a concrete view type for direct hierarchy inspection.
 @MainActor
 public func withInspectedViewThrowing<V: View, R>(
     _ view: V,
@@ -35,7 +35,7 @@ public func withInspectedViewThrowing<V: View, R>(
 }
 
 /// Safely inspect a view and run a closure, returning nil if inspection fails.
-/// Use only with views whose type conforms to ViewInspector.Inspectable.
+/// Use with a concrete view type for direct hierarchy inspection.
 @MainActor
 public func withInspectedView<V: View, R>(
     _ view: V,
@@ -45,9 +45,9 @@ public func withInspectedView<V: View, R>(
     return perform(inspected)
 }
 
-// MARK: - Type-erased opt-in (non-Inspectable view types)
+// MARK: - Type-erased fallbacks (AnyView / opaque some View)
 
-/// Inspect via AnyView when the concrete type does not conform to Inspectable.
+/// Inspect via AnyView when direct typed inspection is impractical.
 /// ViewInspector returns InspectableView<ViewType.ClassifiedView> for AnyView.inspect().
 @MainActor
 public func withInspectedViewThrowing<R>(
@@ -58,7 +58,7 @@ public func withInspectedViewThrowing<R>(
     return try perform(inspected)
 }
 
-/// Run a closure with an inspected AnyView when the concrete type does not conform to Inspectable.
+/// Run a closure with an inspected AnyView when direct typed inspection is impractical.
 @MainActor
 public func withInspectedView<R>(
     _ view: AnyView,
@@ -109,7 +109,7 @@ public func withInspectedViewUnwrapped<R>(
     withInspectedViewUnwrapped(AnyView(view), perform: perform)
 }
 
-/// Convenience: inspect any view via AnyView when the type does not conform to Inspectable.
+/// Convenience: inspect any view via AnyView when direct typed inspection is impractical.
 @MainActor
 public func withInspectedViewThrowing<R>(
     _ view: some View,
@@ -118,7 +118,7 @@ public func withInspectedViewThrowing<R>(
     try withInspectedViewThrowing(AnyView(view), perform: perform)
 }
 
-/// Convenience: inspect any view via AnyView when the type does not conform to Inspectable.
+/// Convenience: inspect any view via AnyView when direct typed inspection is impractical.
 @MainActor
 public func withInspectedView<R>(
     _ view: some View,
@@ -194,7 +194,7 @@ public func firstVStackInHierarchy<V: View>(_ inspected: ViewInspector.Inspectab
     try firstVStackInHierarchy(inspected, minChildren: nil)
 }
 
-/// Resolve a VStack from a view, preferring direct Inspectable inspection then AnyView fallback (#242).
+/// Resolve a VStack from a view, preferring direct typed inspection then AnyView fallback (#242).
 @MainActor
 public func firstVStackInView<V: View>(
     _ view: V,
@@ -209,8 +209,6 @@ public func firstVStackInView<V: View>(
 }
 
 // MARK: - Inspection from View instances
-// Prefer inspectView(view) over a View extension; ViewInspector’s Inspectable requirement
-// on Self in extension View where Self: KnownViewType caused “Self does not conform to Inspectable”.
-// Issue 178.
+// Prefer inspectView(view) over a View extension (Issue 178).
 
 #endif // canImport(ViewInspector)
