@@ -34,7 +34,7 @@ import AppKit
 /// The hang occurs when accessing `hosting.view` - a synchronous UIKit/AppKit call that cannot be timed out.
 /// 
 
-/// Get accessibility identifier: ViewInspector (real hierarchy) when view is Inspectable, else platform fallback only.
+/// Get accessibility identifier: ViewInspector direct inspection when possible, else platform fallback only.
 #if canImport(ViewInspector)
 @MainActor
 public func getAccessibilityIdentifierForTest<V: View>(view: V, hostedRoot: Any? = nil) -> String? {
@@ -123,7 +123,7 @@ private func allAccessibilityIdentifiersInInspectedRecursive(
 }
 
 /// Collect accessibility identifiers from a directly inspected view (no AnyView wrap).
-/// Use when the view type conforms to ViewInspector.Inspectable (Issue 178).
+/// Use with a directly inspected concrete view type (Issue 178).
 @MainActor
 private func allAccessibilityIdentifiersFromTypedInspectable<V: View>(
     _ inspected: ViewInspector.InspectableView<ViewInspector.ViewType.View<V>>
@@ -146,7 +146,7 @@ private func allAccessibilityIdentifiersFromTypedInspectable<V: View>(
 }
 #endif
 
-/// Get accessibility identifier when view is not Inspectable: try platform hierarchy first (IDs applied by SwiftUI), then ViewInspector (Issue 178).
+/// Get accessibility identifier when direct typed inspection is unavailable: try platform hierarchy first (IDs applied by SwiftUI), then ViewInspector (Issue 178).
 @MainActor
 public func getAccessibilityIdentifierForTest<V: View>(view: V, hostedRoot: Any? = nil) -> String? {
     #if canImport(ViewInspector)
@@ -179,7 +179,7 @@ public func getAccessibilityIdentifierForTest<V: View>(view: V, hostedRoot: Any?
     return firstAccessibilityIdentifier(inHosted: root)
 }
 
-/// Get accessibility label: ViewInspector (real hierarchy) when view is Inspectable, else platform fallback only.
+/// Get accessibility label: ViewInspector direct inspection when possible, else platform fallback only.
 #if canImport(ViewInspector)
 @MainActor
 public func getAccessibilityLabelForTest<V: View>(view: V, hostedRoot: Any? = nil) -> String? {
@@ -193,7 +193,7 @@ public func getAccessibilityLabelForTest<V: View>(view: V, hostedRoot: Any? = ni
 }
 #endif
 
-/// Get accessibility label when view is not Inspectable: try platform hierarchy first, then ViewInspector (Issue 178).
+/// Get accessibility label when direct typed inspection is unavailable: try platform hierarchy first, then ViewInspector (Issue 178).
 @MainActor
 public func getAccessibilityLabelForTest<V: View>(view: V, hostedRoot: Any? = nil) -> String? {
     #if canImport(ViewInspector)
@@ -1384,7 +1384,7 @@ public enum AccessibilityTestUtilities {
     }
 
     #if canImport(ViewInspector)
-    /// Same as testComponentComplianceSinglePlatform but for Inspectable views: uses direct view.inspect() (no AnyView — Issue 178).
+    /// Same as testComponentComplianceSinglePlatform but uses direct typed inspection (no AnyView — Issue 178).
     @MainActor
     public static func testComponentComplianceSinglePlatform<V: View>(
         _ view: V,
@@ -1487,7 +1487,7 @@ public func testComponentComplianceSinglePlatform<V: View>(
 }
 
 #if canImport(ViewInspector)
-/// Global alias for Inspectable views: uses direct view.inspect() (no AnyView — Issue 178).
+/// Global alias for direct typed inspection (no AnyView — Issue 178).
 @MainActor
 public func testComponentComplianceSinglePlatform<V: View>(
     _ view: V,
