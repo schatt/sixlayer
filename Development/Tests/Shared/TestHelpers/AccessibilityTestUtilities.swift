@@ -634,12 +634,19 @@ public func dumpAccessibilityTreeForDiagnostics(root: Any?, maxViews: Int = 150)
 @MainActor
 public func hostedViewHasAccessibilityElementWithLabelAndButtonTrait(root: Any?, expectedLabel: String) -> Bool {
     guard let rootView = root as? UIView, !expectedLabel.isEmpty else { return false }
+    func labelMatches(_ label: String?) -> Bool {
+        guard let label, !label.isEmpty else { return false }
+        return label.contains(expectedLabel)
+    }
+    func isButtonLike(_ traits: UIAccessibilityTraits) -> Bool {
+        traits.contains(.button) || traits.contains(.allowsDirectInteraction)
+    }
     func checkElement(_ ax: UIAccessibilityElement) -> Bool {
-        guard let label = ax.accessibilityLabel, label.contains(expectedLabel) else { return false }
-        return ax.accessibilityTraits.contains(.button)
+        guard labelMatches(ax.accessibilityLabel) else { return false }
+        return isButtonLike(ax.accessibilityTraits)
     }
     func checkView(_ view: UIView) -> Bool {
-        if let label = view.accessibilityLabel, label.contains(expectedLabel), view.accessibilityTraits.contains(.button) {
+        if labelMatches(view.accessibilityLabel), isButtonLike(view.accessibilityTraits) {
             return true
         }
         if let elements = view.accessibilityElements {
@@ -653,8 +660,8 @@ public func hostedViewHasAccessibilityElementWithLabelAndButtonTrait(root: Any?,
                 if let el = raw as? UIAccessibilityElement, checkElement(el) {
                     return true
                 }
-                if let v = raw as? UIView, let label = v.accessibilityLabel, label.contains(expectedLabel),
-                   v.accessibilityTraits.contains(.button) {
+                if let v = raw as? UIView, labelMatches(v.accessibilityLabel),
+                   isButtonLike(v.accessibilityTraits) {
                     return true
                 }
             }
