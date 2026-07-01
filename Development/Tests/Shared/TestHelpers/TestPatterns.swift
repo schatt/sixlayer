@@ -185,10 +185,10 @@ public enum TestPatterns {
     }
     
     #if canImport(ViewInspector)
-    /// Verify text (Inspectable view — direct hierarchy).
+    /// Verify text (concrete view — direct hierarchy).
     @available(*, deprecated, message: "Use BaseTestClass.verifyViewContainsText() instead")
     @MainActor
-    public static func verifyViewContainsText<V: View & ViewInspector.Inspectable>(_ view: V, expectedText: String, testName: String) {
+    public static func verifyViewContainsText<V: View>(_ view: V, expectedText: String, testName: String) {
         let temp = BaseTestClass()
         temp.verifyViewContainsText(view, expectedText: expectedText, testName: testName)
     }
@@ -201,10 +201,10 @@ public enum TestPatterns {
         temp.verifyViewContainsText(view, expectedText: expectedText, testName: testName)
     }
 
-    /// Verify image (Inspectable view — direct hierarchy).
+    /// Verify image (concrete view — direct hierarchy).
     @available(*, deprecated, message: "Use BaseTestClass.verifyViewContainsImage() instead")
     @MainActor
-    public static func verifyViewContainsImage<V: View & ViewInspector.Inspectable>(_ view: V, testName: String) {
+    public static func verifyViewContainsImage<V: View>(_ view: V, testName: String) {
         let temp = BaseTestClass()
         temp.verifyViewContainsImage(view, testName: testName)
     }
