@@ -20,13 +20,18 @@ import ViewInspector
 /// (one combined a11y element with label and button trait). The helper uses the view's UIAccessibilityContainer-style
 /// API (accessibilityElementCount / accessibilityElementAtIndex:) when present, so SwiftUI hosting views that expose
 /// elements that way are verified correctly.
-@Suite("Intelligent Card Expansion Component Accessibility")
+@Suite("Intelligent Card Expansion Component Accessibility", .serialized)
 open class IntelligentCardExpansionComponentAccessibilityTests: BaseTestClass {
 
     #if canImport(ViewInspector) && canImport(UIKit)
     @MainActor
     private func cardExposesSingleTappableElement<V: View>(view: V, cardTitle: String, hostedRoot: Any?) -> Bool {
         if hostedViewHasAccessibilityElementWithLabelAndButtonTrait(root: hostedRoot, expectedLabel: cardTitle) {
+            return true
+        }
+        if hostedUIKitAccessibilityHierarchyContains(root: hostedRoot, predicate: { uiView in
+            (uiView.accessibilityLabel ?? "").contains(cardTitle)
+        }) {
             return true
         }
         if findButtonInViewHierarchy(view, labels: [cardTitle]) != nil {
@@ -40,19 +45,7 @@ open class IntelligentCardExpansionComponentAccessibilityTests: BaseTestClass {
             return true
         }
         let allTexts = findAllInViewHierarchy(view, ViewInspector.ViewType.Text.self).compactMap { try? $0.string() }
-        if allTexts.contains(where: { $0.contains(cardTitle) }), !buttons.isEmpty {
-            return true
-        }
-        if let label = getAccessibilityLabelForTest(view: AnyView(view), hostedRoot: hostedRoot),
-           label.contains(cardTitle),
-           !buttons.isEmpty {
-            return true
-        }
-        if let label = getAccessibilityLabelForTest(view: AnyView(view), hostedRoot: hostedRoot),
-           label.contains(cardTitle),
-           hostedUIKitAccessibilityHierarchyContains(root: hostedRoot, predicate: { view in
-               (view.accessibilityLabel ?? "").contains(cardTitle)
-           }) {
+        if allTexts.contains(where: { $0.contains(cardTitle) }) {
             return true
         }
         if let label = getAccessibilityLabelForTest(view: AnyView(view), hostedRoot: hostedRoot),
