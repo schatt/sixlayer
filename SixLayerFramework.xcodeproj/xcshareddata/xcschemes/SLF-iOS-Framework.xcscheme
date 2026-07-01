@@ -63,6 +63,18 @@
                ReferencedContainer = "container:SixLayerFramework.xcodeproj">
             </BuildableReference>
          </TestableReference>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "YES"
+            testExecutionOrdering = "random">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "67C0A160233535E4DB580633"
+               BuildableName = "SixLayerViewInspectorTestKitTests_iOS.xctest"
+               BlueprintName = "SixLayerViewInspectorTestKitTests_iOS"
+               ReferencedContainer = "container:SixLayerFramework.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
       </Testables>
       <CommandLineArguments>
       </CommandLineArguments>

@@ -1,15 +1,12 @@
 //
 //  ViewInspectorWrapper.swift
-//  SixLayerFrameworkTests
+//  SixLayerViewInspectorTestKit
 //
-//  BUSINESS PURPOSE:
-//  Centralized wrapper for ViewInspector APIs to handle cross-platform compatibility
-//  and provide safe, non-throwing access to ViewInspector functionality.
-//  All inspection uses the view directly (no AnyView wrap) so ViewInspector can traverse — Issue 178.
+//  Canonical ViewInspector helpers for SixLayer framework consumers (#327).
+//  Direct inspection only (no AnyView wrap) when the view is Inspectable — Issue #178.
 //
 
 import SwiftUI
-@testable import SixLayerFramework
 
 #if canImport(ViewInspector)
 import ViewInspector
@@ -71,7 +68,7 @@ public func withInspectedView<R>(
     return perform(inspected)
 }
 
-// MARK: - Type-erased with unwrapped content (for .vStack() etc. — Issue 178)
+// MARK: - Type-erased with unwrapped content (for .vStack() etc. — Issue #178)
 
 /// Like withInspectedViewThrowing(AnyView) but passes the unwrapped inner view so .vStack() works.
 @MainActor
@@ -112,7 +109,25 @@ public func withInspectedViewUnwrapped<R>(
     withInspectedViewUnwrapped(AnyView(view), perform: perform)
 }
 
-// MARK: - Hierarchy traversal (Issue 178)
+/// Convenience: inspect any view via AnyView when direct typed inspection is impractical.
+@MainActor
+public func withInspectedViewThrowing<R>(
+    _ view: some View,
+    perform: (ViewInspector.InspectableView<ViewInspector.ViewType.ClassifiedView>) throws -> R
+) throws -> R {
+    try withInspectedViewThrowing(AnyView(view), perform: perform)
+}
+
+/// Convenience: inspect any view via AnyView when direct typed inspection is impractical.
+@MainActor
+public func withInspectedView<R>(
+    _ view: some View,
+    perform: (ViewInspector.InspectableView<ViewInspector.ViewType.ClassifiedView>) -> R?
+) -> R? {
+    withInspectedView(AnyView(view), perform: perform)
+}
+
+// MARK: - Hierarchy traversal (Issue #178)
 
 /// Thrown when no VStack is found in the inspected hierarchy.
 public struct NoVStackInHierarchy: Error {}
@@ -193,7 +208,6 @@ public func firstVStackInView<V: View>(
     return try firstVStackInHierarchy(anyInspected, minChildren: minChildren)
 }
 
-// MARK: - Inspection from View instances
-// Prefer inspectView(view) over a View extension (Issue 178).
+// Prefer inspectView(view) over a View extension (Issue #178).
 
 #endif // canImport(ViewInspector)

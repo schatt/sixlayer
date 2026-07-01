@@ -20,7 +20,15 @@ let package = Package(
         .library(
             name: "SixLayerTestKit",
             targets: ["SixLayerTestKit"]
+        ),
+        // Optional ViewInspector helpers for consumer test targets (#327)
+        .library(
+            name: "SixLayerViewInspectorTestKit",
+            targets: ["SixLayerViewInspectorTestKit"]
         )
+    ],
+    dependencies: [
+        .package(url: "https://github.com/nalexn/ViewInspector", from: "0.10.0"),
     ],
     targets: [
         // Main framework target - organized into logical structure
@@ -55,6 +63,18 @@ let package = Package(
             path: "Framework/TestKit/Sources",
             exclude: [
                 // Documentation files
+                "README.md"
+            ]
+        ),
+
+        // ViewInspector helpers for consumer test targets (#327). Test-only — not for app targets.
+        .target(
+            name: "SixLayerViewInspectorTestKit",
+            dependencies: [
+                .product(name: "ViewInspector", package: "ViewInspector")
+            ],
+            path: "Framework/ViewInspectorTestKit/Sources",
+            exclude: [
                 "README.md"
             ]
         ),
@@ -97,6 +117,16 @@ let package = Package(
                 "SixLayerTestKit"
             ],
             path: "Development/Tests/SixLayerUITestNavigationContractTests"
+        ),
+
+        /// Smoke tests for exported ViewInspector consumer helpers (#327).
+        .testTarget(
+            name: "SixLayerViewInspectorTestKitTests",
+            dependencies: [
+                "SixLayerViewInspectorTestKit",
+                .product(name: "ViewInspector", package: "ViewInspector")
+            ],
+            path: "Framework/ViewInspectorTestKit/Tests"
         ),
 
         /// Pure OCR overlay geometry helpers (#291).
