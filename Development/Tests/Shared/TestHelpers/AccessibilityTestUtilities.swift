@@ -146,38 +146,61 @@ private func allAccessibilityIdentifiersFromTypedInspectable<V: View & ViewInspe
 }
 #endif
 
-/// Get accessibility identifier when view is not Inspectable: try platform hierarchy first (IDs applied by SwiftUI), then ViewInspector (Issue 178).
+#if canImport(ViewInspector)
+@MainActor
+private func uniqueNonEmptyAccessibilityIdentifiers(_ values: [String]) -> [String] {
+    var seen = Set<String>()
+    return values.filter { value in
+        guard !value.isEmpty else { return false }
+        return seen.insert(value).inserted
+    }
+}
+
+/// Prefer the richest identifier when hosting returns a shallow leaf but mirror/debug synthesis has named/label segments (#314).
+@MainActor
+private func preferredAccessibilityIdentifierFromCandidates(_ candidates: [String]) -> String? {
+    let unique = uniqueNonEmptyAccessibilityIdentifiers(candidates)
+    guard !unique.isEmpty else { return nil }
+    return unique.max { lhs, rhs in
+        let lhsDepth = lhs.split(separator: ".").count
+        let rhsDepth = rhs.split(separator: ".").count
+        if lhsDepth != rhsDepth { return lhsDepth < rhsDepth }
+        return lhs.count < rhs.count
+    }
+}
+
+@MainActor
+private func collectAccessibilityIdentifierCandidatesForTest<V: View>(
+    view: V,
+    hostedRoot: Any?
+) -> [String] {
+    var candidates: [String] = []
+    if let root = hostedRoot {
+        candidates.append(contentsOf: findAllAccessibilityIdentifiersFromPlatformView(root))
+    }
+    if let cfg = AccessibilityIdentifierConfig.currentTaskLocalConfig {
+        candidates.append(contentsOf: AccessibilityTestUtilities.parsedIdentifiersFromConfigDebugLog(config: cfg))
+        candidates.append(
+            contentsOf: AccessibilityTestUtilities.testingSyntheticAutomaticComplianceIdentifiers(
+                view: view,
+                config: cfg
+            )
+        )
+    }
+    if let inspected = try? AnyView(view).inspect() {
+        candidates.append(contentsOf: allAccessibilityIdentifiersInInspectedRecursive(inspected))
+    }
+    return candidates
+}
+#endif
+
+/// Get accessibility identifier when view is not Inspectable: merge platform, debug log, synthesis, and ViewInspector candidates (#314).
 @MainActor
 public func getAccessibilityIdentifierForTest<V: View>(view: V, hostedRoot: Any? = nil) -> String? {
     #if canImport(ViewInspector)
-    // Prefer platform hierarchy when available — SwiftUI applies modifiers to hosted views
-    if let root = hostedRoot, let id = firstAccessibilityIdentifier(inHosted: root), !id.isEmpty {
-        return id
-    }
-    // Generator debug log (isolated test configs enable debug logging): UIKit may not mirror IDs in unit-test hosting.
-    if let cfg = AccessibilityIdentifierConfig.currentTaskLocalConfig {
-        let fromLog = AccessibilityTestUtilities.parsedIdentifiersFromConfigDebugLog(config: cfg)
-        if let id = fromLog.reversed().first(where: { !$0.isEmpty && $0.contains(".main.ui.") }) {
-            return id
-        }
-        if let id = fromLog.reversed().first(where: { !$0.isEmpty }) {
-            return id
-        }
-    }
-    if let inspected = try? AnyView(view).inspect() {
-        if let id = firstAccessibilityIdentifierInInspected(inspected) { return id }
-        if let inner = try? inspected.anyView() {
-            if let id = try? inner.accessibilityIdentifier(), !id.isEmpty { return id }
-            if let button = try? inner.button(), let id = try? button.accessibilityIdentifier(), !id.isEmpty { return id }
-        }
-        if let id = try? inspected.accessibilityIdentifier(), !id.isEmpty { return id }
-        if let button = try? inspected.button(), let id = try? button.accessibilityIdentifier(), !id.isEmpty { return id }
-    }
-    if let cfg = AccessibilityIdentifierConfig.currentTaskLocalConfig {
-        if let id = AccessibilityTestUtilities.testingSyntheticAutomaticComplianceIdentifiers(view: view, config: cfg)
-            .first(where: { !$0.isEmpty }) {
-            return id
-        }
+    let candidates = collectAccessibilityIdentifierCandidatesForTest(view: view, hostedRoot: hostedRoot)
+    if let preferred = preferredAccessibilityIdentifierFromCandidates(candidates) {
+        return preferred
     }
     #endif
     guard let root = hostedRoot else { return nil }
@@ -228,11 +251,19 @@ private func explicitAccessibilityLabelFromAutomaticComplianceModifier(
 ) -> String? {
     guard remainingDepth >= 0 else { return nil }
     let typeName = String(describing: Swift.type(of: value))
-    if typeName.contains("AutomaticComplianceModifier") {
+    if typeName.contains("AutomaticComplianceModifier") || typeName.contains("BasicAutomaticComplianceModifier") {
         let mirror = Mirror(reflecting: value)
-        for child in mirror.children where child.label == "accessibilityLabel" {
-            if let label = child.value as? String, !label.isEmpty { return label }
+        var accessibilityLabel: String?
+        var identifierLabel: String?
+        for child in mirror.children {
+            switch child.label {
+            case "accessibilityLabel": accessibilityLabel = child.value as? String
+            case "identifierLabel": identifierLabel = child.value as? String
+            default: break
+            }
         }
+        if let label = accessibilityLabel, !label.isEmpty { return label }
+        if let label = identifierLabel, !label.isEmpty { return label }
     }
     let mirror = Mirror(reflecting: value)
     for child in mirror.children {
