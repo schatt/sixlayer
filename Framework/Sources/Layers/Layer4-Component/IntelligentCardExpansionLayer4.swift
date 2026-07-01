@@ -888,86 +888,75 @@ public struct SimpleCardComponent<Item: Identifiable>: View {
     public var body: some View {
         let config = platformConfig ?? getCardExpansionPlatformConfig()
         
-        let baseView = VStack(spacing: 8) {
-            // Display item icon or fallback
-            Image(systemName: cardIcon)
-                .font(.title2)
-                .foregroundColor(cardColor)
-                .accessibilityHidden(true)
-            
-            // Display item title
-            Text(cardTitle)
-                .font(.headline)
-                .lineLimit(2)
-                .multilineTextAlignment(.center)
-                .foregroundColor(isPlaceholderTitle ? .blue.opacity(0.6) : .primary)
-            
-            // Badge content (if provided)
-            if let badgeContent = badgeContent {
-                badgeContent(item)
+        Button(action: { onItemSelected?(item) }) {
+            VStack(spacing: 8) {
+                Image(systemName: cardIcon)
+                    .font(.title2)
+                    .foregroundColor(cardColor)
+                    .accessibilityHidden(true)
+                
+                Text(cardTitle)
+                    .font(.headline)
+                    .lineLimit(2)
+                    .multilineTextAlignment(.center)
+                    .foregroundColor(isPlaceholderTitle ? .blue.opacity(0.6) : .primary)
+                
+                if let badgeContent = badgeContent {
+                    badgeContent(item)
+                }
+            }
+            .frame(width: layoutDecision.cardWidth, height: layoutDecision.cardHeight)
+            .background(.regularMaterial)
+            .cornerRadius(12)
+            .shadow(radius: 4)
+        }
+        .buttonStyle(.plain)
+        .frame(minWidth: config.minTouchTarget, minHeight: config.minTouchTarget)
+        .platformRowActions_L4(edge: .trailing, allowsFullSwipe: false) {
+            if let onItemEdited = onItemEdited {
+                PlatformRowActionButton(
+                    title: "Edit",
+                    systemImage: "pencil",
+                    action: { onItemEdited(item) }
+                )
+            }
+            if let onItemDeleted = onItemDeleted {
+                PlatformDestructiveRowActionButton(
+                    title: "Delete",
+                    systemImage: "trash",
+                    action: { onItemDeleted(item) }
+                )
             }
         }
-        .frame(width: layoutDecision.cardWidth, height: layoutDecision.cardHeight)
-        .background(.regularMaterial)
-        .cornerRadius(12)
-        .shadow(radius: 4)
-        
-        // Apply modifiers conditionally based on capabilities
-        return buildViewWithCapabilities(baseView, config: config)
+        .modifier(SimpleCardPlatformCapabilityModifier(config: config))
+        .accessibilityLabel(cardTitle)
+        .accessibilityHint("Tap to view details")
+        .automaticCompliance(
+            named: "SimpleCardComponent",
+            identifierLabel: CardDisplayHelper.accessibilityIdentifierLabel(for: item, hints: hints),
+            accessibilityLabel: cardTitle
+        )
     }
-    
-    private func buildViewWithCapabilities<Content: View>(_ content: Content, config: CardExpansionPlatformConfig) -> AnyView {
+}
+
+private struct SimpleCardPlatformCapabilityModifier: ViewModifier {
+    let config: CardExpansionPlatformConfig
+
+    func body(content: Content) -> some View {
         var view = AnyView(content)
-        
-        // Conditionally apply touch-based modifiers
-        if config.supportsTouch {
-            view = AnyView(
-                Button(action: { onItemSelected?(item) }) {
-                    content
-                }
-                .buttonStyle(.plain)
-                .frame(minWidth: config.minTouchTarget, minHeight: config.minTouchTarget)
-                .onLongPressGesture {
-                    // Long press support
-                }
-            )
-        }
-        
-        // Conditionally apply hover-based modifiers
         if config.supportsHover {
-            view = AnyView(view.platformHoverEffect { _ in
-                // Hover support
-            })
+            view = AnyView(view.platformHoverEffect { _ in })
         }
-        
-        // Conditionally apply accessibility modifiers (Issue #191: single tappable element)
-        if config.supportsVoiceOver || config.supportsSwitchControl {
-            view = AnyView(view.accessibilityLabel(cardTitle))
-            view = AnyView(view.accessibilityHint("Tap to view details"))
-        }
-        
-        // Apply keyboard shortcut when touch is not supported
         #if !os(tvOS) && !os(watchOS)
         if !config.supportsTouch {
             view = AnyView(view.keyboardShortcut(" ", modifiers: []))
         }
         #endif
-        
-        // Always apply animation support
-        view = AnyView(view.animation(.easeInOut(duration: 0.3), value: config.supportsTouch))
-        
-        // Always apply automatic accessibility identifiers with component name
-        view = AnyView(view
-            .automaticCompliance(
-                named: "SimpleCardComponent",
-                identifierLabel: CardDisplayHelper.accessibilityIdentifierLabel(for: item, hints: hints),
-                accessibilityLabel: cardTitle
-            ))
-        
-        return view
+        return view.animation(.easeInOut(duration: 0.3), value: config.supportsTouch)
     }
-    
-    // MARK: - Card Displayable Support
+}
+
+extension SimpleCardComponent {
     
     private var cardTitle: String {
         CardDisplayHelper.extractTitle(from: item, hints: hints) ?? "Title"
