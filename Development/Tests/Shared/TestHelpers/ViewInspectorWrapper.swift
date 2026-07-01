@@ -19,14 +19,14 @@ import ViewInspector
 /// Inspect a view directly so ViewInspector traverses the real hierarchy.
 /// Call only with views whose type conforms to ViewInspector.Inspectable.
 @MainActor
-public func inspectView<V: View & ViewInspector.Inspectable>(_ view: V) -> ViewInspector.InspectableView<ViewInspector.ViewType.View<V>>? {
+public func inspectView<V: View>(_ view: V) -> ViewInspector.InspectableView<ViewInspector.ViewType.View<V>>? {
     try? view.inspect().view(V.self)
 }
 
 /// Safely inspect a view and run a throwing closure on the inspected hierarchy.
 /// Use only with views whose type conforms to ViewInspector.Inspectable.
 @MainActor
-public func withInspectedViewThrowing<V: View & ViewInspector.Inspectable, R>(
+public func withInspectedViewThrowing<V: View, R>(
     _ view: V,
     perform: (ViewInspector.InspectableView<ViewInspector.ViewType.View<V>>) throws -> R
 ) throws -> R {
@@ -37,7 +37,7 @@ public func withInspectedViewThrowing<V: View & ViewInspector.Inspectable, R>(
 /// Safely inspect a view and run a closure, returning nil if inspection fails.
 /// Use only with views whose type conforms to ViewInspector.Inspectable.
 @MainActor
-public func withInspectedView<V: View & ViewInspector.Inspectable, R>(
+public func withInspectedView<V: View, R>(
     _ view: V,
     perform: (ViewInspector.InspectableView<ViewInspector.ViewType.View<V>>) -> R?
 ) -> R? {
@@ -176,7 +176,7 @@ public func firstVStackInHierarchy(_ inspected: ViewInspector.InspectableView<Vi
 
 /// When the root is InspectableView<ViewType.View<V>>, get the best VStack in the hierarchy.
 @MainActor
-public func firstVStackInHierarchy<V: View & ViewInspector.Inspectable>(
+public func firstVStackInHierarchy<V: View>(
     _ inspected: ViewInspector.InspectableView<ViewInspector.ViewType.View<V>>,
     minChildren: Int? = nil
 ) throws -> ViewInspector.InspectableView<ViewInspector.ViewType.VStack> {
@@ -190,13 +190,13 @@ public func firstVStackInHierarchy<V: View & ViewInspector.Inspectable>(
 }
 
 @MainActor
-public func firstVStackInHierarchy<V: View & ViewInspector.Inspectable>(_ inspected: ViewInspector.InspectableView<ViewInspector.ViewType.View<V>>) throws -> ViewInspector.InspectableView<ViewInspector.ViewType.VStack> {
+public func firstVStackInHierarchy<V: View>(_ inspected: ViewInspector.InspectableView<ViewInspector.ViewType.View<V>>) throws -> ViewInspector.InspectableView<ViewInspector.ViewType.VStack> {
     try firstVStackInHierarchy(inspected, minChildren: nil)
 }
 
 /// Resolve a VStack from a view, preferring direct Inspectable inspection then AnyView fallback (#242).
 @MainActor
-public func firstVStackInView<V: View & ViewInspector.Inspectable>(
+public func firstVStackInView<V: View>(
     _ view: V,
     minChildren: Int? = nil
 ) throws -> ViewInspector.InspectableView<ViewInspector.ViewType.VStack> {
