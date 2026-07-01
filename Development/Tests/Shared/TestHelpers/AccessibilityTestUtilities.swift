@@ -37,7 +37,7 @@ import AppKit
 /// Get accessibility identifier: ViewInspector (real hierarchy) when view is Inspectable, else platform fallback only.
 #if canImport(ViewInspector)
 @MainActor
-public func getAccessibilityIdentifierForTest<V: View & ViewInspector.Inspectable>(view: V, hostedRoot: Any? = nil) -> String? {
+public func getAccessibilityIdentifierForTest<V: View>(view: V, hostedRoot: Any? = nil) -> String? {
     if let inspected = inspectView(view) {
         if let id = try? inspected.accessibilityIdentifier(), !id.isEmpty { return id }
         if let button = try? inspected.button(), let id = try? button.accessibilityIdentifier(), !id.isEmpty { return id }
@@ -125,7 +125,7 @@ private func allAccessibilityIdentifiersInInspectedRecursive(
 /// Collect accessibility identifiers from a directly inspected view (no AnyView wrap).
 /// Use when the view type conforms to ViewInspector.Inspectable (Issue 178).
 @MainActor
-private func allAccessibilityIdentifiersFromTypedInspectable<V: View & ViewInspector.Inspectable>(
+private func allAccessibilityIdentifiersFromTypedInspectable<V: View>(
     _ inspected: ViewInspector.InspectableView<ViewInspector.ViewType.View<V>>
 ) -> [String] {
     var ids: [String] = []
@@ -182,7 +182,7 @@ public func getAccessibilityIdentifierForTest<V: View>(view: V, hostedRoot: Any?
 /// Get accessibility label: ViewInspector (real hierarchy) when view is Inspectable, else platform fallback only.
 #if canImport(ViewInspector)
 @MainActor
-public func getAccessibilityLabelForTest<V: View & ViewInspector.Inspectable>(view: V, hostedRoot: Any? = nil) -> String? {
+public func getAccessibilityLabelForTest<V: View>(view: V, hostedRoot: Any? = nil) -> String? {
     if let inspected = inspectView(view) {
         if let labelView = try? inspected.accessibilityLabel(), let labelText = try? labelView.string(), !labelText.isEmpty {
             return labelText
@@ -1386,7 +1386,7 @@ public enum AccessibilityTestUtilities {
     #if canImport(ViewInspector)
     /// Same as testComponentComplianceSinglePlatform but for Inspectable views: uses direct view.inspect() (no AnyView — Issue 178).
     @MainActor
-    public static func testComponentComplianceSinglePlatform<V: View & ViewInspector.Inspectable>(
+    public static func testComponentComplianceSinglePlatform<V: View>(
         _ view: V,
         expectedPattern: String,
         platform: SixLayerPlatform,
@@ -1489,7 +1489,7 @@ public func testComponentComplianceSinglePlatform<V: View>(
 #if canImport(ViewInspector)
 /// Global alias for Inspectable views: uses direct view.inspect() (no AnyView — Issue 178).
 @MainActor
-public func testComponentComplianceSinglePlatform<V: View & ViewInspector.Inspectable>(
+public func testComponentComplianceSinglePlatform<V: View>(
     _ view: V,
     expectedPattern: String,
     platform: SixLayerPlatform,
