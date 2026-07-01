@@ -97,7 +97,11 @@ struct IntelligentDetailViewSheetTests {
                 complexity: .moderate,
                 context: .detail,
                 customPreferences: [:]
-            )
+            ),
+            customFieldView: { fieldName, value, _ in
+                Text("\(fieldName)=\(String(describing: value))")
+                    .foregroundColor(.secondary)
+            }
         )
         .frame(minWidth: 400, minHeight: 500)
         
@@ -121,6 +125,7 @@ struct IntelligentDetailViewSheetTests {
                     || $0.contains(task.description)
                     || fieldLabels.contains($0)
                     || $0 == String(task.priority)
+                    || ($0.contains("title=") && $0.contains(task.title))
             })
         #expect(hasText, "platformDetailView should display model property text")
         #else
