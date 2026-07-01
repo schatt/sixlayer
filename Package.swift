@@ -10,9 +10,6 @@ let package = Package(
         .iOS(.v17),
         .macOS(.v15)
     ],
-    dependencies: [
-        .package(url: "https://github.com/nalexn/ViewInspector", from: "0.10.0"),
-    ],
     products: [
         // Main framework product - single library for all platforms
         .library(
@@ -29,6 +26,9 @@ let package = Package(
             name: "SixLayerViewInspectorTestKit",
             targets: ["SixLayerViewInspectorTestKit"]
         )
+    ],
+    dependencies: [
+        .package(url: "https://github.com/nalexn/ViewInspector", from: "0.10.0"),
     ],
     targets: [
         // Main framework target - organized into logical structure
