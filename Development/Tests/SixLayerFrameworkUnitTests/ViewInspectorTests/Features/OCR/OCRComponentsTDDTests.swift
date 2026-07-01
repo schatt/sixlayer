@@ -23,16 +23,14 @@ open class OCRComponentsTDDTests: BaseTestClass {
     private func expectHostedHierarchyHasContent<V: View>(
         _ view: V,
         minimumButtons: Int = 0,
-        message: String
+        _ message: String
     ) {
         _ = TestSetupUtilities.hostRootPlatformView(view, forceLayout: true)
         let buttons = findAllInViewHierarchy(view, ViewInspector.ViewType.Button.self)
         let texts = findAllInViewHierarchy(view, ViewInspector.ViewType.Text.self)
         let vStacks = findAllInViewHierarchy(view, ViewInspector.ViewType.VStack.self)
-        #expect(
-            buttons.count >= minimumButtons || !texts.isEmpty || !vStacks.isEmpty,
-            message
-        )
+        let ok = buttons.count >= minimumButtons || !texts.isEmpty || !vStacks.isEmpty
+        #expect(ok, "\(message)")
     }
     #endif
 
