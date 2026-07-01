@@ -226,6 +226,22 @@ public struct ExpandableCardComponent<Item: Identifiable>: View {
         .buttonStyle(.plain)
         .animation(animation, value: scale)
         .animation(animation, value: isExpanded)
+        .platformRowActions_L4(edge: .trailing, allowsFullSwipe: false) {
+            if let onItemEdited = onItemEdited {
+                PlatformRowActionButton(
+                    title: "Edit",
+                    systemImage: "pencil",
+                    action: { onItemEdited(item) }
+                )
+            }
+            if let onItemDeleted = onItemDeleted {
+                PlatformDestructiveRowActionButton(
+                    title: "Delete",
+                    systemImage: "trash",
+                    action: { onItemDeleted(item) }
+                )
+            }
+        }
         .platformHoverEffect { isHovering in
             onHover(isHovering)
         }
@@ -481,6 +497,22 @@ public struct CoverFlowCardComponent<Item: Identifiable>: View {
             .shadow(radius: 8)
         }
         .buttonStyle(.plain)
+        .platformRowActions_L4(edge: .trailing, allowsFullSwipe: false) {
+            if let onItemEdited = onItemEdited {
+                PlatformRowActionButton(
+                    title: "Edit",
+                    systemImage: "pencil",
+                    action: { onItemEdited(item) }
+                )
+            }
+            if let onItemDeleted = onItemDeleted {
+                PlatformDestructiveRowActionButton(
+                    title: "Delete",
+                    systemImage: "trash",
+                    action: { onItemDeleted(item) }
+                )
+            }
+        }
         .accessibilityLabel(cardTitle)
         .accessibilityHint("Tap to view details")
         .automaticCompliance(
