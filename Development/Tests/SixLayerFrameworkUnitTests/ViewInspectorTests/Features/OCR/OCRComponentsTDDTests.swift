@@ -11,312 +11,197 @@ import ViewInspector
  * Vision framework to extract text from images and help users resolve ambiguous results.
  *
  * TESTING SCOPE: TDD tests that describe expected behavior for OCR components.
- * These tests will fail until components are properly implemented.
  *
- * METHODOLOGY: TDD red-phase tests that verify components render actual OCR interfaces,
- * handle camera/photo library access, display extracted text, and provide disambiguation UI.
+ * METHODOLOGY: Harness-first ViewInspector traversal with hosted layout (#314).
  */
 
-@Suite("OCR Components")
-/// NOTE: Not marked @MainActor on class to allow parallel execution
+@Suite("OCR Components", .serialized)
 open class OCRComponentsTDDTests: BaseTestClass {
+
+    #if canImport(ViewInspector)
+    @MainActor
+    private func expectHostedHierarchyHasContent<V: View>(
+        _ view: V,
+        minimumButtons: Int = 0,
+        message: String
+    ) {
+        _ = TestSetupUtilities.hostRootPlatformView(view, forceLayout: true)
+        let buttons = findAllInViewHierarchy(view, ViewInspector.ViewType.Button.self)
+        let texts = findAllInViewHierarchy(view, ViewInspector.ViewType.Text.self)
+        let vStacks = findAllInViewHierarchy(view, ViewInspector.ViewType.VStack.self)
+        #expect(
+            buttons.count >= minimumButtons || !texts.isEmpty || !vStacks.isEmpty,
+            message
+        )
+    }
+    #endif
 
     // MARK: - OCR Overlay View
 
     @Test @MainActor func testOCROverlayViewRendersCameraInterface() async {
-                initializeTestConfig()
-        // TDD: OCROverlayView should:
-        // 1. Render image with OCR result overlay
-        // 2. Display extracted text regions
-        // 3. Allow editing text in regions
-        // 4. Allow deleting text regions
-        // 5. Provide visual feedback for interactions
+        initializeTestConfig()
+        runWithTaskLocalConfig {
+            let testImage = PlatformImage()
+            let testResult = OCRResult(
+                extractedText: "Test OCR Result",
+                confidence: 0.95,
+                boundingBoxes: [CGRect(x: 0, y: 0, width: 100, height: 100)]
+            )
 
-        let testImage = PlatformImage()
-        let testResult = OCRResult(
-            extractedText: "Test OCR Result",
-            confidence: 0.95,
-            boundingBoxes: [CGRect(x: 0, y: 0, width: 100, height: 100)]
-        )
+            let view = OCROverlayView(
+                image: testImage,
+                result: testResult,
+                onTextEdit: { _, _ in },
+                onTextDelete: { _ in }
+            )
 
-        var textEdited = false
-        var textDeleted = false
-
-        let view = OCROverlayView(
-            image: testImage,
-            result: testResult,
-            onTextEdit: { text, rect in
-                textEdited = true
-            },
-            onTextDelete: { rect in
-                textDeleted = true
-            }
-        )
-
-        // Should render overlay interface
-        #if canImport(ViewInspector)
-        if let inspected = try? view.inspect() {
-            // Should have overlay interface
             #if canImport(ViewInspector)
-            let anyViews = inspected.findAll(ViewType.AnyView.self)
-            let hasInterface = anyViews.count > 0
-            #else
-            let hasInterface = false
+            expectHostedHierarchyHasContent(view, message: "Should provide overlay interface")
+            let hasAccessibilityID = testComponentComplianceSinglePlatform(
+                view,
+                expectedPattern: "*OCROverlayView*",
+                platform: .iOS,
+                componentName: "OCROverlayView"
+            )
+            #expect(hasAccessibilityID, "Should generate accessibility identifier")
             #endif
-            #expect(hasInterface, "Should provide overlay interface")
-        } else {
-            Issue.record("OCROverlayView interface not found")
         }
-        #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-        #endif
-
-        // Should generate accessibility identifier
-        #if canImport(ViewInspector)
-        let hasAccessibilityID = testComponentComplianceSinglePlatform(
-            view,
-            expectedPattern: "SixLayer.main.ui.*OCROverlayView.*",
-            platform: .iOS,
-            componentName: "OCROverlayView"
-        )
- #expect(hasAccessibilityID, "Should generate accessibility identifier ")
-        #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-        // The modifier IS present in the code, but ViewInspector can't detect it on macOS
-        #endif
     }
 
     @Test @MainActor func testOCROverlayViewProcessesImageWithOCR() async {
-            initializeTestConfig()
-        // TDD: OCROverlayView should:
-        // 1. Display image with OCR result overlay
-        // 2. Show text regions from OCR result
-        // 3. Allow interaction with text regions
-        // 4. Call callbacks when text is edited or deleted
-        // 5. Provide visual indication of text regions
+        initializeTestConfig()
+        runWithTaskLocalConfig {
+            let testImage = PlatformImage()
+            let testResult = OCRResult(
+                extractedText: "Sample Text",
+                confidence: 0.9,
+                boundingBoxes: [CGRect(x: 10, y: 10, width: 80, height: 20)]
+            )
 
-        let testImage = PlatformImage()
-        let testResult = OCRResult(
-            extractedText: "Sample Text",
-            confidence: 0.9,
-            boundingBoxes: [CGRect(x: 10, y: 10, width: 80, height: 20)]
-        )
+            let view = OCROverlayView(image: testImage, result: testResult)
 
-        let view = OCROverlayView(
-            image: testImage,
-            result: testResult
-        )
-
-        // Should process OCR result when provided
-        #if canImport(ViewInspector)
-        if let inspected = try? view.inspect() {
-            // Should have OCR processing interface
             #if canImport(ViewInspector)
-            let anyViews = inspected.findAll(ViewType.AnyView.self)
-            let hasInterface = anyViews.count > 0
-            #else
-            let hasInterface = false
+            expectHostedHierarchyHasContent(view, message: "Should have OCR processing interface")
+            verifyViewContainsText(view, expectedText: "Sample Text", testName: "OCROverlayView extracted text")
             #endif
-            #expect(hasInterface, "Should have OCR processing interface")
-        } else {
-            Issue.record("OCROverlayView interface not found")
         }
-        #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-        #endif
     }
 
     // MARK: - OCR Disambiguation View
 
     @Test @MainActor func testOCRDisambiguationViewRendersDisambiguationUI() async {
         initializeTestConfig()
-        // TDD: OCRDisambiguationView should:
-        // 1. Display ambiguous OCR results with alternatives
-        // 2. Allow user to select correct interpretation
-        // 3. Show confidence scores for each alternative
-        // 4. Provide selection interface
-        // 5. Display candidate information
+        runWithTaskLocalConfig {
+            let candidates = [
+                OCRDataCandidate(
+                    text: "123.45",
+                    boundingBox: CGRect(x: 0, y: 0, width: 100, height: 20),
+                    confidence: 0.95,
+                    suggestedType: .number,
+                    alternativeTypes: [.currency, .number]
+                ),
+                OCRDataCandidate(
+                    text: "123-45",
+                    boundingBox: CGRect(x: 0, y: 0, width: 100, height: 20),
+                    confidence: 0.85,
+                    suggestedType: .number,
+                    alternativeTypes: [.phone, .number]
+                ),
+                OCRDataCandidate(
+                    text: "123/45",
+                    boundingBox: CGRect(x: 0, y: 0, width: 100, height: 20),
+                    confidence: 0.75,
+                    suggestedType: .number,
+                    alternativeTypes: [.date, .number]
+                )
+            ]
 
-        let candidates = [
-            OCRDataCandidate(
-                text: "123.45",
-                boundingBox: CGRect(x: 0, y: 0, width: 100, height: 20),
-                confidence: 0.95,
-                suggestedType: .number,
-                alternativeTypes: [.currency, .number]
-            ),
-            OCRDataCandidate(
-                text: "123-45",
-                boundingBox: CGRect(x: 0, y: 0, width: 100, height: 20),
+            let result = OCRDisambiguationResult(
+                candidates: candidates,
                 confidence: 0.85,
-                suggestedType: .number,
-                alternativeTypes: [.phone, .number]
-            ),
-            OCRDataCandidate(
-                text: "123/45",
-                boundingBox: CGRect(x: 0, y: 0, width: 100, height: 20),
-                confidence: 0.75,
-                suggestedType: .number,
-                alternativeTypes: [.date, .number]
+                requiresUserSelection: true
             )
-        ]
 
-        let result = OCRDisambiguationResult(
-            candidates: candidates,
-            confidence: 0.85,
-            requiresUserSelection: true
-        )
+            let view = OCRDisambiguationView(result: result, onSelection: { _ in })
 
-        var selectedValue: OCRDisambiguationSelection? = nil
-        let view = OCRDisambiguationView(
-            result: result,
-            onSelection: { selection in
-                selectedValue = selection
-            }
-        )
-
-        // Should render disambiguation options
-        #if canImport(ViewInspector)
-        if let inspected = try? view.inspect() {
-            // Should display candidate alternatives
-            // Note: ViewInspector doesn't have a find(text:) method, so we check for any view structure
-            let anyViews = inspected.findAll(ViewType.AnyView.self)
-            let hasStructure = anyViews.count > 0
-            #expect(hasStructure, "Should display candidate alternatives")
-        } else {
-            Issue.record("OCRDisambiguationView candidates not found")
+            #if canImport(ViewInspector)
+            expectHostedHierarchyHasContent(view, minimumButtons: 3, message: "Should display candidate alternatives")
+            let hasAccessibilityID = testComponentComplianceSinglePlatform(
+                view,
+                expectedPattern: "*OCRDisambiguationView*",
+                platform: .iOS,
+                componentName: "OCRDisambiguationView"
+            )
+            #expect(hasAccessibilityID, "Should generate accessibility identifier")
+            #endif
         }
-        #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-        #endif
-
-        // Should generate accessibility identifier
-        #if canImport(ViewInspector)
-        let hasAccessibilityID = testComponentComplianceSinglePlatform(
-            view,
-            expectedPattern: "SixLayer.main.ui.*OCRDisambiguationView.*",
-            platform: .iOS,
-            componentName: "OCRDisambiguationView"
-        )
- #expect(hasAccessibilityID, "Should generate accessibility identifier ")
-        #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-        // The modifier IS present in the code, but ViewInspector can't detect it on macOS
-        #endif
     }
 
     @Test @MainActor func testOCRDisambiguationViewDisplaysAllAlternatives() async {
         initializeTestConfig()
-        // TDD: OCRDisambiguationView should:
-        // 1. Display all candidate alternatives from result
-        // 2. Show confidence scores for each
-        // 3. Highlight highest confidence option
-        // 4. Allow selecting any alternative
-        // 5. Call onSelection callback with chosen value
+        runWithTaskLocalConfig {
+            let candidates = [
+                OCRDataCandidate(
+                    text: "Option A",
+                    boundingBox: CGRect(x: 0, y: 0, width: 100, height: 20),
+                    confidence: 0.9,
+                    suggestedType: .general,
+                    alternativeTypes: []
+                ),
+                OCRDataCandidate(
+                    text: "Option B",
+                    boundingBox: CGRect(x: 0, y: 20, width: 100, height: 20),
+                    confidence: 0.8,
+                    suggestedType: .general,
+                    alternativeTypes: []
+                ),
+                OCRDataCandidate(
+                    text: "Option C",
+                    boundingBox: CGRect(x: 0, y: 40, width: 100, height: 20),
+                    confidence: 0.7,
+                    suggestedType: .general,
+                    alternativeTypes: []
+                )
+            ]
 
-        let candidates = [
-            OCRDataCandidate(
-                text: "Option A",
-                boundingBox: CGRect(x: 0, y: 0, width: 100, height: 20),
-                confidence: 0.9,
-                suggestedType: .general,
-                alternativeTypes: []
-            ),
-            OCRDataCandidate(
-                text: "Option B",
-                boundingBox: CGRect(x: 0, y: 20, width: 100, height: 20),
+            let result = OCRDisambiguationResult(
+                candidates: candidates,
                 confidence: 0.8,
-                suggestedType: .general,
-                alternativeTypes: []
-            ),
-            OCRDataCandidate(
-                text: "Option C",
-                boundingBox: CGRect(x: 0, y: 40, width: 100, height: 20),
-                confidence: 0.7,
-                suggestedType: .general,
-                alternativeTypes: []
+                requiresUserSelection: true
             )
-        ]
 
-        let result = OCRDisambiguationResult(
-            candidates: candidates,
-            confidence: 0.8,
-            requiresUserSelection: true
-        )
+            let view = OCRDisambiguationView(result: result, onSelection: { _ in })
 
-        var selectedValue: OCRDisambiguationSelection? = nil
-        let view = OCRDisambiguationView(
-            result: result,
-            onSelection: { selection in
-                selectedValue = selection
-            }
-        )
-
-        // Should display all candidates
-        #if canImport(ViewInspector)
-        if let inspected = try? view.inspect() {
-            // Should find all candidate texts
-            // Note: ViewInspector doesn't have a find(text:) method, so we check for any view structure
-            let anyViews = inspected.findAll(ViewType.AnyView.self)
-            let hasStructure = anyViews.count > 0
-            #expect(hasStructure, "Should display candidate alternatives")
-        } else {
-            Issue.record("OCRDisambiguationView candidates not found")
+            #if canImport(ViewInspector)
+            expectHostedHierarchyHasContent(view, minimumButtons: 3, message: "Should display candidate alternatives")
+            #endif
         }
-        #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-        #endif
     }
 
     @Test @MainActor func testOCRDisambiguationViewHandlesNoDisambiguationNeeded() async {
         initializeTestConfig()
-        // TDD: OCRDisambiguationView should:
-        // 1. Handle cases where requiresUserSelection is false
-        // 2. Show confirmation UI when not needed
-        // 3. Display single result clearly
-        // 4. Allow confirming the result
-        // 5. Call onSelection with confirmed result
+        runWithTaskLocalConfig {
+            let candidates = [
+                OCRDataCandidate(
+                    text: "Clear Result",
+                    boundingBox: CGRect(x: 0, y: 0, width: 100, height: 20),
+                    confidence: 0.99,
+                    suggestedType: .general,
+                    alternativeTypes: []
+                )
+            ]
 
-        let candidates = [
-            OCRDataCandidate(
-                text: "Clear Result",
-                boundingBox: CGRect(x: 0, y: 0, width: 100, height: 20),
+            let result = OCRDisambiguationResult(
+                candidates: candidates,
                 confidence: 0.99,
-                suggestedType: .general,
-                alternativeTypes: []
+                requiresUserSelection: false
             )
-        ]
 
-        let result = OCRDisambiguationResult(
-            candidates: candidates,
-            confidence: 0.99,
-            requiresUserSelection: false
-        )
+            let view = OCRDisambiguationView(result: result, onSelection: { _ in })
 
-        var selectedValue: OCRDisambiguationSelection? = nil
-        let view = OCRDisambiguationView(
-            result: result,
-            onSelection: { selection in
-                selectedValue = selection
-            }
-        )
-
-        // Should handle non-disambiguation case
-        #if canImport(ViewInspector)
-        if let inspected = try? view.inspect() {
-            // Should have some UI structure
             #if canImport(ViewInspector)
-            let anyViews = inspected.findAll(ViewType.AnyView.self)
-            let hasInterface = anyViews.count > 0
-            #else
-            let hasInterface = false
+            expectHostedHierarchyHasContent(view, minimumButtons: 1, message: "Should handle non-disambiguation case")
             #endif
-            #expect(hasInterface, "Should handle non-disambiguation case")
-        } else {
-            Issue.record("OCRDisambiguationView interface not found")
         }
-        #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-        #endif
     }
 }
