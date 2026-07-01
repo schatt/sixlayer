@@ -97,6 +97,44 @@ open class IntelligentFormViewTests: BaseTestClass {
             return text.localizedCaseInsensitiveContains("update") || text.localizedCaseInsensitiveContains("create")
         }
     }
+
+    @MainActor
+    private func tapUpdateButton(in view: some View) {
+        _ = TestSetupUtilities.hostRootPlatformView(view, forceLayout: true)
+        _ = withInspectedView(AnyView(view)) { inspector in
+            let labels = Set(updateButtonLabelCandidates())
+            for button in inspector.findAll(ViewInspector.ViewType.Button.self) {
+                let buttonTexts = buttonLabelStrings(button)
+                guard buttonTexts.contains(where: { labels.contains($0) }) else { continue }
+                try? button.tap()
+                return
+            }
+            for button in inspector.findAll(ViewInspector.ViewType.Button.self) {
+                let buttonTexts = button.findAll(ViewInspector.ViewType.Text.self)
+                let text = buttonTexts.compactMap { try? $0.string() }.joined(separator: " ")
+                guard text.localizedCaseInsensitiveContains("update") || text.localizedCaseInsensitiveContains("create") else {
+                    continue
+                }
+                try? button.tap()
+                return
+            }
+        }
+    }
+
+    @MainActor
+    private func buttonLabelStrings(_ button: ViewInspector.InspectableView<ViewInspector.ViewType.Button>) -> [String] {
+        var strings: [String] = []
+        if let labelView = try? button.labelView(),
+           let text = try? labelView.find(ViewInspector.ViewType.Text.self).string() {
+            strings.append(text)
+        }
+        for textView in button.findAll(ViewInspector.ViewType.Text.self) {
+            if let value = try? textView.string(), !value.isEmpty {
+                strings.append(value)
+            }
+        }
+        return strings
+    }
     #endif
     
     /// TDD RED PHASE: Test that Update button calls onSubmit callback when provided
@@ -122,8 +160,8 @@ open class IntelligentFormViewTests: BaseTestClass {
 
             // Find and tap the Update button
             #if canImport(ViewInspector)
-            if let updateButton = updateButton(in: view) {
-                try? updateButton.tap()
+            if updateButton(in: view) != nil {
+                tapUpdateButton(in: view)
                 #expect(onSubmitCalled, "Update button should call onSubmit callback when clicked")
                 #expect(submittedData?.name == testData.name, "Update button should pass data to onSubmit callback")
             } else {
@@ -159,8 +197,8 @@ open class IntelligentFormViewTests: BaseTestClass {
 
             // Find and tap the Update button
             #if canImport(ViewInspector)
-            if let updateButton = updateButton(in: view) {
-                try? updateButton.tap()
+            if updateButton(in: view) != nil {
+                tapUpdateButton(in: view)
                 #expect(onSubmitCalled, "Update button should call onSubmit even if it's empty")
             } else {
                 #expect(Bool(false), "Could not find Update button")
