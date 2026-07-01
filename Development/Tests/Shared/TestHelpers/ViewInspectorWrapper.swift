@@ -19,7 +19,7 @@ import ViewInspector
 /// Inspect a view directly so ViewInspector traverses the real hierarchy.
 /// Call with a concrete view type for direct hierarchy inspection.
 @MainActor
-public func inspectView<V: View>(_ view: V) -> ViewInspector.InspectableView<ViewInspector.ViewType.View<V>>? {
+public func inspectView<V: View>(_ view: V) -> ViewInspector.InspectableView<ViewInspector.ViewType.View<V>>? where V != AnyView {
     try? view.inspect().view(V.self)
 }
 
@@ -29,7 +29,7 @@ public func inspectView<V: View>(_ view: V) -> ViewInspector.InspectableView<Vie
 public func withInspectedViewThrowing<V: View, R>(
     _ view: V,
     perform: (ViewInspector.InspectableView<ViewInspector.ViewType.View<V>>) throws -> R
-) throws -> R {
+) throws -> R where V != AnyView {
     let inspected = try view.inspect().view(V.self)
     return try perform(inspected)
 }
@@ -40,7 +40,7 @@ public func withInspectedViewThrowing<V: View, R>(
 public func withInspectedView<V: View, R>(
     _ view: V,
     perform: (ViewInspector.InspectableView<ViewInspector.ViewType.View<V>>) -> R?
-) -> R? {
+) -> R? where V != AnyView {
     guard let inspected = try? view.inspect().view(V.self) else { return nil }
     return perform(inspected)
 }
@@ -109,24 +109,6 @@ public func withInspectedViewUnwrapped<R>(
     withInspectedViewUnwrapped(AnyView(view), perform: perform)
 }
 
-/// Convenience: inspect any view via AnyView when direct typed inspection is impractical.
-@MainActor
-public func withInspectedViewThrowing<R>(
-    _ view: some View,
-    perform: (ViewInspector.InspectableView<ViewInspector.ViewType.ClassifiedView>) throws -> R
-) throws -> R {
-    try withInspectedViewThrowing(AnyView(view), perform: perform)
-}
-
-/// Convenience: inspect any view via AnyView when direct typed inspection is impractical.
-@MainActor
-public func withInspectedView<R>(
-    _ view: some View,
-    perform: (ViewInspector.InspectableView<ViewInspector.ViewType.ClassifiedView>) -> R?
-) -> R? {
-    withInspectedView(AnyView(view), perform: perform)
-}
-
 // MARK: - Hierarchy traversal (Issue 178)
 
 /// Thrown when no VStack is found in the inspected hierarchy.
@@ -179,7 +161,7 @@ public func firstVStackInHierarchy(_ inspected: ViewInspector.InspectableView<Vi
 public func firstVStackInHierarchy<V: View>(
     _ inspected: ViewInspector.InspectableView<ViewInspector.ViewType.View<V>>,
     minChildren: Int? = nil
-) throws -> ViewInspector.InspectableView<ViewInspector.ViewType.VStack> {
+) throws -> ViewInspector.InspectableView<ViewInspector.ViewType.VStack> where V != AnyView {
     let list = inspected.findAll(ViewInspector.ViewType.VStack.self)
     guard !list.isEmpty else { throw NoVStackInHierarchy() }
     if let min = minChildren, let match = list.first(where: { $0.count >= min }) {
@@ -190,7 +172,7 @@ public func firstVStackInHierarchy<V: View>(
 }
 
 @MainActor
-public func firstVStackInHierarchy<V: View>(_ inspected: ViewInspector.InspectableView<ViewInspector.ViewType.View<V>>) throws -> ViewInspector.InspectableView<ViewInspector.ViewType.VStack> {
+public func firstVStackInHierarchy<V: View>(_ inspected: ViewInspector.InspectableView<ViewInspector.ViewType.View<V>>) throws -> ViewInspector.InspectableView<ViewInspector.ViewType.VStack> where V != AnyView {
     try firstVStackInHierarchy(inspected, minChildren: nil)
 }
 
@@ -199,7 +181,7 @@ public func firstVStackInHierarchy<V: View>(_ inspected: ViewInspector.Inspectab
 public func firstVStackInView<V: View>(
     _ view: V,
     minChildren: Int? = nil
-) throws -> ViewInspector.InspectableView<ViewInspector.ViewType.VStack> {
+) throws -> ViewInspector.InspectableView<ViewInspector.ViewType.VStack> where V != AnyView {
     if let inspected = try? view.inspect().view(V.self),
        let vStack = try? firstVStackInHierarchy(inspected, minChildren: minChildren) {
         return vStack
