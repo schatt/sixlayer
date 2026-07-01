@@ -1479,6 +1479,7 @@ private struct TypeOnlyFormWrapper<T>: View {
                     }
             }
         }
+        .automaticCompliance(named: "IntelligentFormView")
     }
     
     /// Create a blank entity and populate with defaults from hints
