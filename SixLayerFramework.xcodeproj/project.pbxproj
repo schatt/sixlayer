@@ -1528,6 +1528,7 @@
 		75F075F70AB3FB1A76E8BFEF /* PlatformDataFrameAnalysisL1Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7DE809CC11B55C07BFB419E1 /* PlatformDataFrameAnalysisL1Tests.swift */; };
 		75FCD850440ADF18A05A523E /* OCRVisionMinimumTextHeight288Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7CAAC411497BE4E8075D819 /* OCRVisionMinimumTextHeight288Tests.swift */; };
 		760BEF28D23E8F6D3D34CF53 /* PlatformHapticFeedbackExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 338F46850FB1DD0AFEC57806 /* PlatformHapticFeedbackExtensionsTests.swift */; };
+		7617AAFFFFD741BC955E8856 /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6452493C9E66116FFDA50CE2 /* XCTest.framework */; };
 		76191CE0B94C7BBD5C97FF7F /* IntelligentCardExpansionComprehensiveTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F370DFBCC1AB86D88105C77 /* IntelligentCardExpansionComprehensiveTests.swift */; };
 		76340E5A3CFB4E30C0B10333 /* PresentationProfilesCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 951351CCDB9482231BDD67BE /* PresentationProfilesCatalog.swift */; };
 		763EE6837E60207E420330BC /* ViewInspector in Frameworks */ = {isa = PBXBuildFile; productRef = C9E4C9C72500B6D970597984 /* ViewInspector */; };
@@ -2788,6 +2789,7 @@
 		DB80E68F832AAFCF6E448512 /* L4_CONTRACT_INVENTORY.md in Resources */ = {isa = PBXBuildFile; fileRef = 82D190F72B3FB1C803487155 /* L4_CONTRACT_INVENTORY.md */; };
 		DB96550C245CDBA4D51D4356 /* PlatformTabViewExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = E36CEE58DAF6CB4CAAA9442A /* PlatformTabViewExtensions.swift */; };
 		DBDB776CE5280A39BEFBC2C0 /* PlatformBasicContainersExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A9815B7FDAC7F1D9A93EDF /* PlatformBasicContainersExtensionsTests.swift */; };
+		DC03BA617CE28F8F81A0467C /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6452493C9E66116FFDA50CE2 /* XCTest.framework */; };
 		DC096175DEF0D423F5C7B6C7 /* TestSetupUtilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 656BD40E9672D6CF873A0432 /* TestSetupUtilities.swift */; };
 		DC1C114D6F07DE36FBB06DE4 /* OCRInclusiveDefaults279Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 790FA7A51A0B495ECAFDA6E4 /* OCRInclusiveDefaults279Tests.swift */; };
 		DC3ED9939530A8DA0DFF5675 /* PlatformDragDropExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 835CB976A4DE286CD0525276 /* PlatformDragDropExtensions.swift */; };
@@ -3082,6 +3084,7 @@
 		F46326F936DFED95F319A47A /* FieldHintsLoaderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA9335B8E89893182AF0CF7A /* FieldHintsLoaderTests.swift */; };
 		F48A051A4761FD0324A82AA4 /* TestSetupUtilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 656BD40E9672D6CF873A0432 /* TestSetupUtilities.swift */; };
 		F4AF53D614CE46DD0129DEB7 /* WindowDetectionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95E9384F29FD43936D08084A /* WindowDetectionTests.swift */; };
+		F4BB0D6C675B4EE2EE59C24B /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6452493C9E66116FFDA50CE2 /* XCTest.framework */; };
 		F4C26CEFFD57167CA104EC44 /* PlatformNavigationSheetButtonVisibility.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CBF69DE4F6E55E8CE4353E9 /* PlatformNavigationSheetButtonVisibility.swift */; };
 		F4E19D8F864BCD039854D480 /* CrossComponentIntegrationRenderingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C4590A83D8316ED96D28512 /* CrossComponentIntegrationRenderingTests.swift */; };
 		F5022D03C8FF00AC2143C513 /* IntelligentCardExpansionLayer6Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3779D4F038C58B4CEAC395F2 /* IntelligentCardExpansionLayer6Tests.swift */; };
@@ -4586,6 +4589,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				712E8A7F3884250237F04266 /* ViewInspector in Frameworks */,
+				DC03BA617CE28F8F81A0467C /* XCTest.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4645,6 +4649,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				7FBF8BB183AD583BEE57A604 /* ViewInspector in Frameworks */,
+				F4BB0D6C675B4EE2EE59C24B /* XCTest.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4678,6 +4683,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				74F620780ADC4BF6F02023B8 /* ViewInspector in Frameworks */,
+				7617AAFFFFD741BC955E8856 /* XCTest.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -6586,7 +6592,7 @@
 			path = API;
 			sourceTree = "<group>";
 		};
-		"TEMP_D7DDCC33-D594-4DEC-A398-FCB10B9B756D" /* Utilities */ = {
+		"TEMP_4452E587-EA9B-497E-B588-DBDABBEE33BF" /* Utilities */ = {
 			isa = PBXGroup;
 			children = (
 			);

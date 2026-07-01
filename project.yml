@@ -155,6 +155,7 @@ targets:
     dependencies:
       - package: ViewInspector
         product: ViewInspector
+      - sdk: XCTest.framework
 
   SixLayerViewInspectorTestKit_macOS:
     type: framework
@@ -178,6 +179,7 @@ targets:
     dependencies:
       - package: ViewInspector
         product: ViewInspector
+      - sdk: XCTest.framework
 
   SixLayerViewInspectorTestKit_watchOS:
     type: framework
@@ -200,6 +202,7 @@ targets:
     dependencies:
       - package: ViewInspector
         product: ViewInspector
+      - sdk: XCTest.framework
 
   # Unit tests - iOS
   SixLayerFrameworkUnitTests_iOS:
