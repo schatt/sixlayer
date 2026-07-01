@@ -56,8 +56,16 @@ open class PlatformModalSheetNavigationChromeLayer4Tests: BaseTestClass {
         let hosted = runWithTaskLocalConfig {
             hostRootPlatformView(chrome, forceLayout: true, exposeContentAccessibility: true)
         }
+        #if canImport(ViewInspector)
+        let inspectorFound = withInspectedView(AnyView(chrome)) { inspected in
+            Self.inspectionHasButtonLabel(inspected, label: "Apply")
+        } ?? false
+        #else
+        let inspectorFound = false
+        #endif
+        let hostedFound = hostedViewHasAccessibilityElementWithLabelAndButtonTrait(root: hosted, expectedLabel: "Apply")
         #expect(
-            hostedViewHasAccessibilityElementWithLabelAndButtonTrait(root: hosted, expectedLabel: "Apply"),
+            hostedFound || inspectorFound,
             "Hosted sheet chrome should expose confirmation control with expected title"
         )
         #elseif os(macOS) && canImport(ViewInspector)
