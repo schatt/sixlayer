@@ -55,6 +55,10 @@ open class IntelligentCardExpansionComponentAccessibilityTests: BaseTestClass {
            }) {
             return true
         }
+        if let label = getAccessibilityLabelForTest(view: AnyView(view), hostedRoot: hostedRoot),
+           label.contains(cardTitle) {
+            return true
+        }
         return false
     }
     #endif
