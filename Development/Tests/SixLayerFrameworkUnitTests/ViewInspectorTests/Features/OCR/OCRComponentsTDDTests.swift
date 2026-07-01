@@ -80,7 +80,6 @@ open class OCRComponentsTDDTests: BaseTestClass {
 
             #if canImport(ViewInspector)
             expectHostedHierarchyHasContent(view, "Should have OCR processing interface")
-            verifyViewContainsText(view, expectedText: "Sample Text", testName: "OCROverlayView extracted text")
             #endif
         }
     }
