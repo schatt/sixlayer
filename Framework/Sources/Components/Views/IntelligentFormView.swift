@@ -901,17 +901,29 @@ Text(i18n.localizedString(for: "SixLayerFramework.form.title"))
     }
 
     /// Instance-based action bar so ViewInspector can invoke Button actions (matches DynamicFormView).
-    private struct IntelligentFormActionBar<T>: View {
-        let initialData: T?
-        let onSubmit: (T) -> Void
+    private struct IntelligentFormActionBar: View {
+        let cancelLabel: String
+        let submitLabel: String
         let onCancel: () -> Void
-        let isDraft: Bool
+        let onSubmit: () -> Void
         let floating: Bool
 
         var body: some View {
-            let i18n = InternationalizationService()
-            let actionBar = platformHStackContainer(spacing: 12) {
-                Button(i18n.localizedString(for: "SixLayerFramework.button.cancel")) {
+            Group {
+                if floating {
+                    VStack {
+                        Spacer()
+                        actionBar
+                    }
+                } else {
+                    actionBar
+                }
+            }
+        }
+
+        private var actionBar: some View {
+            platformHStackContainer(spacing: 12) {
+                Button(cancelLabel) {
                     onCancel()
                 }
                 .buttonStyle(.bordered)
@@ -919,8 +931,8 @@ Text(i18n.localizedString(for: "SixLayerFramework.form.title"))
 
                 Spacer()
 
-                Button(initialData != nil ? i18n.localizedString(for: "SixLayerFramework.button.update") : i18n.localizedString(for: "SixLayerFramework.button.create")) {
-                    submit()
+                Button(submitLabel) {
+                    performSubmit()
                 }
                 .buttonStyle(.borderedProminent)
                 .foregroundColor(Color.platformBackground)
@@ -929,24 +941,10 @@ Text(i18n.localizedString(for: "SixLayerFramework.form.title"))
             .background(Color.platformSecondaryBackground)
             .cornerRadius(8)
             .automaticCompliance(named: "DynamicFormActions")
-
-            if floating {
-                VStack {
-                    Spacer()
-                    actionBar
-                }
-            } else {
-                actionBar
-            }
         }
 
-        private func submit() {
-            IntelligentFormView.handleSubmit(
-                initialData: initialData,
-                modelContext: nil,
-                onSubmit: onSubmit,
-                isDraft: isDraft
-            )
+        private func performSubmit() {
+            onSubmit()
         }
     }
     
@@ -959,11 +957,21 @@ Text(i18n.localizedString(for: "SixLayerFramework.form.title"))
         isDraft: Bool = false,
         floating: Bool = true
     ) -> some View {
+        let i18n = InternationalizationService()
         IntelligentFormActionBar(
-            initialData: initialData,
-            onSubmit: onSubmit,
+            cancelLabel: i18n.localizedString(for: "SixLayerFramework.button.cancel"),
+            submitLabel: initialData != nil
+                ? i18n.localizedString(for: "SixLayerFramework.button.update")
+                : i18n.localizedString(for: "SixLayerFramework.button.create"),
             onCancel: onCancel,
-            isDraft: isDraft,
+            onSubmit: {
+                handleSubmit(
+                    initialData: initialData,
+                    modelContext: nil,
+                    onSubmit: onSubmit,
+                    isDraft: isDraft
+                )
+            },
             floating: floating
         )
     }
