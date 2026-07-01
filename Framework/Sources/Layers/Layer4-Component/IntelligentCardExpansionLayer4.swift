@@ -229,13 +229,8 @@ public struct ExpandableCardComponent<Item: Identifiable>: View {
         .platformHoverEffect { isHovering in
             onHover(isHovering)
         }
-        .accessibilityElement(children: .combine)
         .accessibilityLabel(cardTitle)
-        .accessibilityAddTraits(isExpanded ? [.isButton, .isSelected] : .isButton)
         .accessibilityHint("Tap to view details")
-        .accessibilityAction(named: "Activate") {
-            handleTap()
-        }
         .automaticCompliance(
             named: "ExpandableCardComponent",
             identifierLabel: CardDisplayHelper.accessibilityIdentifierLabel(for: item, hints: hints),
@@ -486,13 +481,8 @@ public struct CoverFlowCardComponent<Item: Identifiable>: View {
             .shadow(radius: 8)
         }
         .buttonStyle(.plain)
-        .accessibilityElement(children: .combine)
         .accessibilityLabel(cardTitle)
-        .accessibilityAddTraits(.isButton)
         .accessibilityHint("Tap to view details")
-        .accessibilityAction(named: "Activate") {
-            onItemSelected?(item)
-        }
         .automaticCompliance(
             named: "CoverFlowCardComponent",
             identifierLabel: CardDisplayHelper.accessibilityIdentifierLabel(for: item, hints: hints),
@@ -905,7 +895,6 @@ public struct SimpleCardComponent<Item: Identifiable>: View {
                 }
                 .buttonStyle(.plain)
                 .frame(minWidth: config.minTouchTarget, minHeight: config.minTouchTarget)
-                .accessibilityElement(children: .combine)
                 .onLongPressGesture {
                     // Long press support
                 }
@@ -922,11 +911,7 @@ public struct SimpleCardComponent<Item: Identifiable>: View {
         // Conditionally apply accessibility modifiers (Issue #191: single tappable element)
         if config.supportsVoiceOver || config.supportsSwitchControl {
             view = AnyView(view.accessibilityLabel(cardTitle))
-            view = AnyView(view.accessibilityAddTraits(.isButton))
             view = AnyView(view.accessibilityHint("Tap to view details"))
-            view = AnyView(view.accessibilityAction(named: "Activate") {
-                onItemSelected?(item)
-            })
         }
         
         // Apply keyboard shortcut when touch is not supported
