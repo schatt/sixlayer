@@ -49,6 +49,28 @@ open class DynamicFormViewTests: BaseTestClass {
             )
         }
     }
+
+    @MainActor
+    private func collectStringsFromTexts(_ fieldView: some View) -> [String] {
+        findAllInViewHierarchy(fieldView, ViewInspector.ViewType.Text.self).compactMap { try? $0.string() }
+    }
+
+    @MainActor
+    private func fieldButtonsInHierarchy(_ view: some View) -> [ViewInspector.InspectableView<ViewInspector.ViewType.Button>] {
+        findAllInViewHierarchy(view, ViewInspector.ViewType.Button.self)
+    }
+
+    @MainActor
+    private func expectsNamedCompliance<V: View>(_ view: V, named: String) -> Bool {
+        runWithTaskLocalConfig {
+            testComponentComplianceSinglePlatform(
+                view,
+                expectedPattern: "*\(named)*",
+                platform: .iOS,
+                componentName: named
+            )
+        }
+    }
     #endif
     
     @Test @MainActor func testDynamicFormViewRendersTitleAndSectionsAndSubmitButton() async {
@@ -403,23 +425,11 @@ open class DynamicFormViewTests: BaseTestClass {
 
         let view = DynamicFormFieldView(field: requiredField, formState: formState)
 
-        // Should render HStack with label and asterisk
+        // Label row should include field label and red asterisk (traverse modifiers — not direct HStack child count).
         #if canImport(ViewInspector)
-        tryWithFirstVStack(view, testName: "Required field asterisk", minChildren: 2) { vStack in
-            let hStacks = vStack.findAll(ViewInspector.ViewType.HStack.self)
-            if let hStack = hStacks.first {
-                #expect(hStack.count == 2, "HStack should contain label and asterisk")
-                let texts = hStack.findAll(ViewInspector.ViewType.Text.self)
-                if texts.count >= 1 {
-                    #expect((try? texts[0].string()) == "Email", "Should show field label")
-                }
-                if texts.count >= 2 {
-                    #expect((try? texts[1].string()) == "*", "Should show asterisk for required field")
-                }
-            } else {
-                Issue.record("Could not find HStack with label and asterisk")
-            }
-        }
+        let labelTexts = collectStringsFromTexts(view)
+        #expect(labelTexts.contains("Email"), "Should show field label")
+        #expect(labelTexts.contains("*"), "Should show asterisk for required field")
         #else
         // ViewInspector not available on macOS - test passes by verifying view creation
         #expect(Bool(true), "View should be created successfully")
@@ -449,20 +459,11 @@ open class DynamicFormViewTests: BaseTestClass {
 
         let view = DynamicFormFieldView(field: optionalField, formState: formState)
 
-        // Should render HStack with only label (no asterisk)
+        // Optional fields must not render a required asterisk in the label row.
         #if canImport(ViewInspector)
-        tryWithFirstVStack(view, testName: "Optional field no asterisk", minChildren: 2) { vStack in
-            let hStacks = vStack.findAll(ViewInspector.ViewType.HStack.self)
-            if let hStack = hStacks.first {
-                #expect(hStack.count == 1, "Optional field HStack should only have label (no asterisk)")
-                let texts = hStack.findAll(ViewInspector.ViewType.Text.self)
-                if let labelText = texts.first {
-                    #expect((try? labelText.string()) == "Notes", "Should show field label")
-                }
-            } else {
-                Issue.record("Could not find HStack with label")
-            }
-        }
+        let labelTexts = collectStringsFromTexts(view)
+        #expect(labelTexts.contains("Notes"), "Should show field label")
+        #expect(!labelTexts.contains("*"), "Optional field should not show asterisk")
         #else
         // ViewInspector not available on macOS - test passes by verifying view creation
         #expect(Bool(true), "View should be created successfully")
@@ -614,16 +615,12 @@ open class DynamicFormViewTests: BaseTestClass {
 
         let view = DynamicFormFieldView(field: fieldWithDescription, formState: formState)
 
-        // Should render HStack with label and info button
+        // Should render info button with Help accessibility label when description is present.
         #if canImport(ViewInspector)
-        tryWithFirstVStack(view, testName: "Field with info button", minChildren: 2) { vStack in
-            let hStacks = vStack.findAll(ViewInspector.ViewType.HStack.self)
-            if let hStack = hStacks.first {
-                #expect(hStack.count >= 2, "HStack should contain label and info button")
-            } else {
-                Issue.record("Could not find HStack with label and info button")
-            }
+        let hasHelpButton = fieldButtonsInHierarchy(view).contains { button in
+            (try? button.accessibilityLabel())?.contains("Help for Email") == true
         }
+        #expect(hasHelpButton, "HStack should contain label and info button")
         #else
         // ViewInspector not available on macOS - test passes by verifying view creation
         #expect(Bool(true), "View should be created successfully with info button")
@@ -653,16 +650,12 @@ open class DynamicFormViewTests: BaseTestClass {
 
         let view = DynamicFormFieldView(field: fieldWithoutDescription, formState: formState)
 
-        // Should render HStack with only label (no info button)
+        // Should not render a Help info button when description is nil.
         #if canImport(ViewInspector)
-        tryWithFirstVStack(view, testName: "Field without info button", minChildren: 1) { vStack in
-            let hStacks = vStack.findAll(ViewInspector.ViewType.HStack.self)
-            if let hStack = hStacks.first {
-                #expect(hStack.count == 1, "HStack should only have label when no description")
-            } else {
-                Issue.record("Could not find HStack with label")
-            }
+        let helpButtons = fieldButtonsInHierarchy(view).filter { button in
+            (try? button.accessibilityLabel())?.contains("Help for") == true
         }
+        #expect(helpButtons.isEmpty, "HStack should only have label when no description")
         #else
         // ViewInspector not available on macOS - test passes by verifying view creation
         #expect(Bool(true), "View should be created successfully without info button")
@@ -964,35 +957,13 @@ open class DynamicFormViewTests: BaseTestClass {
         let ocrFieldView = CustomFieldView(field: ocrField, formState: formState)
         let regularFieldView = CustomFieldView(field: regularField, formState: formState)
 
-        // OCR field should show OCR button (will fail until implemented)
+        // OCR-enabled fields expose FieldActionRenderer buttons; regular fields do not.
         #if canImport(ViewInspector)
-        if let inspected = try? AnyView(ocrFieldView).inspect() {
-            // Look for OCR button by finding the HStack that contains both TextField and Button
-            let hStacks = inspected.findAll(ViewInspector.ViewType.HStack.self)
-            if let hStack = hStacks.first {
-                // The HStack should have 2 children: TextField and Button
-                let children = hStack.findAll(ViewInspector.ViewType.AnyView.self)
-                #expect(children.count == 2, "OCR field HStack should contain TextField and OCR button")
-            }
-        } else {
-            Issue.record("OCR button not implemented yet")
-        }
+        #expect(!fieldButtonsInHierarchy(ocrFieldView).isEmpty, "OCR field should show OCR action button(s)")
+        #expect(fieldButtonsInHierarchy(regularFieldView).isEmpty, "Regular field should not show OCR action buttons")
         #else
         // ViewInspector not available on macOS - skip test gracefully
         #expect(Bool(true), "OCR button test skipped (ViewInspector not available on macOS)")
-        #endif
-
-        // Regular field should not show OCR button (no HStack)
-        #if canImport(ViewInspector)
-        if let inspected = try? AnyView(regularFieldView).inspect() {
-            // Regular field should not have HStack (just VStack with label and TextField)
-            let hStacks = inspected.findAll(ViewInspector.ViewType.HStack.self)
-            let hStack = hStacks.first
-            #expect(Bool(false), "Regular field should not have HStack (no OCR button)")  // hStack is non-optional
-        }
-        #else
-        // ViewInspector not available on macOS - skip test gracefully
-        #expect(Bool(true), "Regular field test skipped (ViewInspector not available on macOS)")
         #endif
     }
 
@@ -1230,27 +1201,13 @@ open class DynamicFormViewTests: BaseTestClass {
         let viewWithOCR = DynamicFormView(configuration: configWithOCR, onSubmit: { _ in })
         let viewWithoutOCR = DynamicFormView(configuration: configWithoutOCR, onSubmit: { _ in })
 
-        // OCR form should show batch OCR button
+        // OCR form should show batch OCR button via named automatic compliance.
         #if canImport(ViewInspector)
-        if let inspected = try? AnyView(viewWithOCR).inspect() {
-            // Should find the batch OCR button by finding buttons and checking their accessibility identifiers
-            let buttons = inspected.findAll(ViewInspector.ViewType.Button.self)
-            let hasOCRButton = buttons.contains { button in
-                (try? button.accessibilityIdentifier())?.contains("Scan Document") ?? false
-            }
-            // Batch OCR button check - implementation pending
-        } else {
-            Issue.record("Batch OCR button not found in OCR-enabled form")
-        }
+        let hasBatchOCRButton = expectsNamedCompliance(viewWithOCR, named: "BatchOCRButton")
+        #expect(hasBatchOCRButton, "Form with OCR fields should show batch OCR button")
 
-        // Non-OCR form should not show batch OCR button
-        if let inspected = try? AnyView(viewWithoutOCR).inspect() {
-            let buttons = inspected.findAll(ViewInspector.ViewType.Button.self)
-            let hasOCRButton = buttons.contains { button in
-                (try? button.accessibilityIdentifier())?.contains("Scan Document") ?? false
-            }
-            #expect(!hasOCRButton, "Form without OCR fields should not show batch OCR button")
-        }
+        let hasBatchOCROnRegularForm = expectsNamedCompliance(viewWithoutOCR, named: "BatchOCRButton")
+        #expect(!hasBatchOCROnRegularForm, "Form without OCR fields should not show batch OCR button")
         #else
         // ViewInspector not available on macOS - skip test gracefully
         #expect(Bool(true), "Batch OCR button test skipped (ViewInspector not available on macOS)")
@@ -1337,19 +1294,12 @@ open class DynamicFormViewTests: BaseTestClass {
             modelName: "TestEntity"
         )
 
-        var ocrTriggered = false
         let view = DynamicFormView(configuration: config, onSubmit: { _ in })
 
-        // Test that button exists and can be triggered
-        // Note: Actual OCR triggering requires camera access, so we test the button presence
+        // Test that button exists (camera workflow not exercised in unit tests).
         #if canImport(ViewInspector)
-        if let inspected = try? AnyView(view).inspect() {
-            let buttons = inspected.findAll(ViewInspector.ViewType.Button.self)
-            let hasBatchOCRButton = buttons.contains { button in
-                (try? button.accessibilityIdentifier())?.contains("BatchOCRButton") ?? false
-            }
-            #expect(hasBatchOCRButton, "Should have batch OCR button for OCR-enabled fields")
-        }
+        let hasBatchOCRButton = expectsNamedCompliance(view, named: "BatchOCRButton")
+        #expect(hasBatchOCRButton, "Should have batch OCR button for OCR-enabled fields")
         #else
         // ViewInspector not available - test passes if view is created
         #expect(Bool(true), "Batch OCR button test skipped (ViewInspector not available)")
