@@ -13713,8 +13713,10 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         let cancelButton = AdaptiveUIPatterns.AdaptiveButton("Cancel", action: { })
             .enableGlobalAutomaticCompliance()
         
+        testConfig?.clearDebugLog()
         let submitRoot = self.hostRootPlatformView(submitButton, forceLayout: true)
         let submitID = getAccessibilityIdentifierForTest(view: submitButton, hostedRoot: submitRoot)
+        testConfig?.clearDebugLog()
         let cancelRoot = self.hostRootPlatformView(cancelButton, forceLayout: true)
         let cancelID = getAccessibilityIdentifierForTest(view: cancelButton, hostedRoot: cancelRoot)
         
