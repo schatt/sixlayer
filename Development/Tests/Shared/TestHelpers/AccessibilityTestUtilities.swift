@@ -1336,17 +1336,22 @@ public enum AccessibilityTestUtilities {
 
     /// Explicit `.named()` / `.exactNamed()` anchors from the view value tree (for harness preference #314).
     @MainActor
-    public static func explicitNamedModifierNames<V: View>(in view: V) -> [String] {
+    public static func explicitNamedModifierNames(in value: Any) -> [String] {
         var exactNames: [String] = []
         var namedNames: [String] = []
-        collectExplicitModifierNames(in: view, modifierTypeFragment: "ExactNamedModifier", into: &exactNames)
+        collectExplicitModifierNames(in: value, modifierTypeFragment: "ExactNamedModifier", into: &exactNames)
         collectExplicitModifierNames(
-            in: view,
+            in: value,
             modifierTypeFragment: "NamedModifier",
             excludingTypeFragments: ["NamedAutomaticCompliance", "ExactNamed"],
             into: &namedNames
         )
         return exactNames + namedNames
+    }
+
+    @MainActor
+    public static func explicitNamedModifierNames<V: View>(in view: V) -> [String] {
+        explicitNamedModifierNames(in: view as Any)
     }
 
     @MainActor
