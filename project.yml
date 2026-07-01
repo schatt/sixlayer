@@ -132,6 +132,53 @@ targets:
       - target: SixLayerFramework_macOS
       - sdk: XCTest.framework
 
+  # Optional ViewInspector helpers for consumer test targets (#327).
+  SixLayerViewInspectorTestKit_iOS:
+    type: framework
+    platform: iOS
+    productName: SixLayerViewInspectorTestKit
+    sources:
+      - path: Framework/ViewInspectorTestKit/Sources
+    settings:
+      base:
+        PRODUCT_NAME: SixLayerViewInspectorTestKit
+        PRODUCT_BUNDLE_IDENTIFIER: com.sixlayer.viewinspectortestkit
+        PRODUCT_MODULE_NAME: SixLayerViewInspectorTestKit
+        SWIFT_VERSION: "6.0"
+        GENERATE_INFOPLIST_FILE: YES
+        CODE_SIGN_STYLE: Automatic
+        DEAD_CODE_STRIPPING: YES
+        CLANG_ENABLE_MODULE_VERIFIER: YES
+        CODE_SIGN_IDENTITY: "Apple Development"
+        "CODE_SIGN_IDENTITY[sdk=iphoneos*]": "Apple Development"
+        IPHONEOS_DEPLOYMENT_TARGET: "17.0"
+    dependencies:
+      - package: ViewInspector
+        product: ViewInspector
+
+  SixLayerViewInspectorTestKit_macOS:
+    type: framework
+    platform: macOS
+    productName: SixLayerViewInspectorTestKit
+    sources:
+      - path: Framework/ViewInspectorTestKit/Sources
+    settings:
+      base:
+        PRODUCT_NAME: SixLayerViewInspectorTestKit
+        PRODUCT_BUNDLE_IDENTIFIER: com.sixlayer.viewinspectortestkit
+        PRODUCT_MODULE_NAME: SixLayerViewInspectorTestKit
+        SWIFT_VERSION: "6.0"
+        GENERATE_INFOPLIST_FILE: YES
+        CODE_SIGN_STYLE: Automatic
+        DEAD_CODE_STRIPPING: YES
+        CLANG_ENABLE_MODULE_VERIFIER: YES
+        CODE_SIGN_IDENTITY: "Apple Development"
+        "CODE_SIGN_IDENTITY[sdk=macosx*]": "Apple Development"
+        MACOSX_DEPLOYMENT_TARGET: "15.0"
+    dependencies:
+      - package: ViewInspector
+        product: ViewInspector
+
   # Unit tests - iOS
   SixLayerFrameworkUnitTests_iOS:
     type: bundle.unit-test
