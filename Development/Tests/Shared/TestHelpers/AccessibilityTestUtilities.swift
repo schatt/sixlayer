@@ -158,9 +158,17 @@ private func uniqueNonEmptyAccessibilityIdentifiers(_ values: [String]) -> [Stri
 
 /// Prefer the richest identifier when hosting returns a shallow leaf but mirror/debug synthesis has named/label segments (#314).
 @MainActor
-private func preferredAccessibilityIdentifierFromCandidates(_ candidates: [String]) -> String? {
+private func preferredAccessibilityIdentifierFromCandidates(_ candidates: [String], view: Any? = nil) -> String? {
     let unique = uniqueNonEmptyAccessibilityIdentifiers(candidates)
     guard !unique.isEmpty else { return nil }
+    if let view {
+        let anchors = AccessibilityTestUtilities.explicitNamedModifierNames(in: view)
+        for anchor in anchors.reversed() {
+            if let match = unique.first(where: { $0.localizedCaseInsensitiveContains(anchor) }) {
+                return match
+            }
+        }
+    }
     return unique.max { lhs, rhs in
         let lhsDepth = lhs.split(separator: ".").count
         let rhsDepth = rhs.split(separator: ".").count
@@ -169,28 +177,33 @@ private func preferredAccessibilityIdentifierFromCandidates(_ candidates: [Strin
     }
 }
 
+private struct AccessibilityIdentifierCandidateBuckets {
+    var hosted: [String] = []
+    var inspected: [String] = []
+    var synthesized: [String] = []
+    var debugLog: [String] = []
+}
+
 @MainActor
-private func collectAccessibilityIdentifierCandidatesForTest<V: View>(
+private func collectAccessibilityIdentifierCandidateBucketsForTest<V: View>(
     view: V,
     hostedRoot: Any?
-) -> [String] {
-    var candidates: [String] = []
+) -> AccessibilityIdentifierCandidateBuckets {
+    var buckets = AccessibilityIdentifierCandidateBuckets()
     if let root = hostedRoot {
-        candidates.append(contentsOf: findAllAccessibilityIdentifiersFromPlatformView(root))
-    }
-    if let cfg = AccessibilityIdentifierConfig.currentTaskLocalConfig {
-        candidates.append(contentsOf: AccessibilityTestUtilities.parsedIdentifiersFromConfigDebugLog(config: cfg))
-        candidates.append(
-            contentsOf: AccessibilityTestUtilities.testingSyntheticAutomaticComplianceIdentifiers(
-                view: view,
-                config: cfg
-            )
-        )
+        buckets.hosted = findAllAccessibilityIdentifiersFromPlatformView(root)
     }
     if let inspected = try? AnyView(view).inspect() {
-        candidates.append(contentsOf: allAccessibilityIdentifiersInInspectedRecursive(inspected))
+        buckets.inspected = allAccessibilityIdentifiersInInspectedRecursive(inspected)
     }
-    return candidates
+    if let cfg = AccessibilityIdentifierConfig.currentTaskLocalConfig {
+        buckets.synthesized = AccessibilityTestUtilities.testingSyntheticAutomaticComplianceIdentifiers(
+            view: view,
+            config: cfg
+        )
+        buckets.debugLog = AccessibilityTestUtilities.parsedIdentifiersFromConfigDebugLog(config: cfg)
+    }
+    return buckets
 }
 #endif
 
@@ -198,9 +211,13 @@ private func collectAccessibilityIdentifierCandidatesForTest<V: View>(
 @MainActor
 public func getAccessibilityIdentifierForTest<V: View>(view: V, hostedRoot: Any? = nil) -> String? {
     #if canImport(ViewInspector)
-    let candidates = collectAccessibilityIdentifierCandidatesForTest(view: view, hostedRoot: hostedRoot)
-    if let preferred = preferredAccessibilityIdentifierFromCandidates(candidates) {
+    let buckets = collectAccessibilityIdentifierCandidateBucketsForTest(view: view, hostedRoot: hostedRoot)
+    let scoped = buckets.hosted + buckets.inspected + buckets.synthesized
+    if let preferred = preferredAccessibilityIdentifierFromCandidates(scoped, view: view) {
         return preferred
+    }
+    if let fromLog = preferredAccessibilityIdentifierFromCandidates(buckets.debugLog, view: view) {
+        return fromLog
     }
     #endif
     guard let root = hostedRoot else { return nil }
@@ -1317,6 +1334,43 @@ public enum AccessibilityTestUtilities {
         syntheticAutomaticComplianceIdentifiers(view: view, config: config)
     }
 
+    /// Explicit `.named()` / `.exactNamed()` anchors from the view value tree (for harness preference #314).
+    @MainActor
+    public static func explicitNamedModifierNames<V: View>(in view: V) -> [String] {
+        var exactNames: [String] = []
+        var namedNames: [String] = []
+        collectExplicitModifierNames(in: view, modifierTypeFragment: "ExactNamedModifier", into: &exactNames)
+        collectExplicitModifierNames(
+            in: view,
+            modifierTypeFragment: "NamedModifier",
+            excludingTypeFragments: ["NamedAutomaticCompliance", "ExactNamed"],
+            into: &namedNames
+        )
+        return exactNames + namedNames
+    }
+
+    @MainActor
+    private static func viewHasDisableAutomaticAccessibilityIdentifiersModifier(
+        in value: Any,
+        remainingDepth: Int = 12
+    ) -> Bool {
+        guard remainingDepth >= 0 else { return false }
+        let typeName = String(describing: Swift.type(of: value))
+        if typeName.contains("DisableAutomaticAccessibilityIdentifiersModifier") {
+            return true
+        }
+        let mirror = Mirror(reflecting: value)
+        for child in mirror.children {
+            if viewHasDisableAutomaticAccessibilityIdentifiersModifier(
+                in: child.value,
+                remainingDepth: remainingDepth - 1
+            ) {
+                return true
+            }
+        }
+        return false
+    }
+
     #if canImport(ViewInspector)
     private struct AutomaticComplianceModifierSnapshot {
         var identifierName: String?
@@ -1394,6 +1448,13 @@ public enum AccessibilityTestUtilities {
         view: V,
         config: AccessibilityIdentifierConfig
     ) -> [String] {
+        if viewHasDisableAutomaticAccessibilityIdentifiersModifier(in: view) {
+            var identifiers: [String] = []
+            var seen = Set<String>()
+            syntheticExplicitModifierIdentifiers(view: view, config: config, identifiers: &identifiers, seen: &seen)
+            return identifiers
+        }
+
         var snapshots: [AutomaticComplianceModifierSnapshot] = []
         collectAutomaticComplianceModifierSnapshots(in: view, into: &snapshots)
 
