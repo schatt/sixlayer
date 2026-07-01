@@ -43,12 +43,12 @@ open class IntelligentCardExpansionComponentAccessibilityTests: BaseTestClass {
         if allTexts.contains(where: { $0.contains(cardTitle) }), !buttons.isEmpty {
             return true
         }
-        if let label = getAccessibilityLabelForTest(view: view, hostedRoot: hostedRoot),
+        if let label = getAccessibilityLabelForTest(view: AnyView(view), hostedRoot: hostedRoot),
            label.contains(cardTitle),
            !buttons.isEmpty {
             return true
         }
-        if let label = getAccessibilityLabelForTest(view: view, hostedRoot: hostedRoot),
+        if let label = getAccessibilityLabelForTest(view: AnyView(view), hostedRoot: hostedRoot),
            label.contains(cardTitle),
            hostedUIKitAccessibilityHierarchyContains(root: hostedRoot, predicate: { view in
                (view.accessibilityLabel ?? "").contains(cardTitle)
