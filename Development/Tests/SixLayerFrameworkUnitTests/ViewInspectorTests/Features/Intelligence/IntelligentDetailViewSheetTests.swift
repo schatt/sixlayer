@@ -110,8 +110,9 @@ struct IntelligentDetailViewSheetTests {
             let label = view.accessibilityLabel ?? ""
             return label.contains(task.title) || label.contains(task.description)
         }
+        let texts = findAllInViewHierarchy(detailView, ViewInspector.ViewType.Text.self).compactMap { try? $0.string() }
         let hasText = hasHostedTitle
-            || !findAllInViewHierarchy(detailView, ViewInspector.ViewType.Text.self).isEmpty
+            || texts.contains(where: { $0.contains(task.title) || $0.contains(task.description) || $0 == "Title" })
         #expect(hasText, "platformDetailView should display model property text")
         #else
         // ViewInspector not available on macOS - skip test gracefully
