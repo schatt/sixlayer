@@ -76,15 +76,14 @@ open class IntelligentFormViewComponentAccessibilityTests: BaseTestClass {
             // Then: Should generate accessibility identifiers
             // The view will initially show ProgressView, then switch to form once entity is created
             #if canImport(ViewInspector)
+            _ = TestSetupUtilities.hostRootPlatformView(view, forceLayout: true)
             let hasAccessibilityID = testComponentComplianceSinglePlatform(
                 view,
-                expectedPattern: "SixLayer.main.ui.*IntelligentFormView.*",
+                expectedPattern: "*IntelligentFormView*",
                 platform: SixLayerPlatform.iOS,
                 componentName: "IntelligentFormView"
             )
-            // Note: TypeOnlyFormWrapper may show ProgressView initially, but once entity is created,
-            // it should have the same accessibility structure as regular forms
-            #expect(hasAccessibilityID || Bool(true), "Type-only form should generate accessibility identifiers (may show ProgressView initially)")
+            #expect(hasAccessibilityID, "Type-only form shell should expose IntelligentFormView accessibility identifiers")
             #else
             // ViewInspector not available on macOS - test passes by verifying view creation
             #expect(Bool(true), "View should be created successfully")
