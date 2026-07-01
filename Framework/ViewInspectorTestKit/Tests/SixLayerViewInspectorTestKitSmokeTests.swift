@@ -8,7 +8,7 @@
 import SwiftUI
 import Testing
 import ViewInspector
-@testable import SixLayerViewInspectorTestKit
+import SixLayerViewInspectorTestKit
 
 @Suite("SixLayerViewInspectorTestKit smoke")
 @MainActor
