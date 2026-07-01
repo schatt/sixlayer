@@ -179,6 +179,28 @@ targets:
       - package: ViewInspector
         product: ViewInspector
 
+  SixLayerViewInspectorTestKit_watchOS:
+    type: framework
+    platform: watchOS
+    productName: SixLayerViewInspectorTestKit
+    sources:
+      - path: Framework/ViewInspectorTestKit/Sources
+    settings:
+      base:
+        PRODUCT_NAME: SixLayerViewInspectorTestKit
+        PRODUCT_BUNDLE_IDENTIFIER: com.sixlayer.viewinspectortestkit
+        PRODUCT_MODULE_NAME: SixLayerViewInspectorTestKit
+        SWIFT_VERSION: "6.0"
+        GENERATE_INFOPLIST_FILE: YES
+        CODE_SIGN_STYLE: Automatic
+        DEAD_CODE_STRIPPING: YES
+        CLANG_ENABLE_MODULE_VERIFIER: YES
+        CODE_SIGN_IDENTITY: "Apple Development"
+        WATCHOS_DEPLOYMENT_TARGET: "10.0"
+    dependencies:
+      - package: ViewInspector
+        product: ViewInspector
+
   # Unit tests - iOS
   SixLayerFrameworkUnitTests_iOS:
     type: bundle.unit-test
@@ -202,6 +224,7 @@ targets:
       ENABLE_TESTING_SEARCH_PATHS: YES
     dependencies:
       - target: SixLayerFramework_iOS
+      - target: SixLayerViewInspectorTestKit_iOS
       - package: ViewInspector
         product: ViewInspector
 
@@ -225,6 +248,7 @@ targets:
       ENABLE_TESTING_SEARCH_PATHS: YES
     dependencies:
       - target: SixLayerFramework_iOS
+      - target: SixLayerViewInspectorTestKit_iOS
       - package: ViewInspector
         product: ViewInspector
 
@@ -249,6 +273,7 @@ targets:
       DEAD_CODE_STRIPPING: YES
     dependencies:
       - target: SixLayerFramework_macOS
+      - target: SixLayerViewInspectorTestKit_macOS
       - package: ViewInspector
         product: ViewInspector
 
@@ -276,6 +301,7 @@ targets:
       DEAD_CODE_STRIPPING: YES
     dependencies:
       - target: SixLayerFramework_macOS
+      - target: SixLayerViewInspectorTestKit_macOS
       - package: ViewInspector
         product: ViewInspector
 
@@ -327,6 +353,7 @@ targets:
       ENABLE_TESTING_SEARCH_PATHS: YES
     dependencies:
       - target: SixLayerFramework_watchOS
+      - target: SixLayerViewInspectorTestKit_watchOS
       - package: ViewInspector
         product: ViewInspector
 
@@ -525,6 +552,7 @@ targets:
       ENABLE_TESTING_SEARCH_PATHS: YES
     dependencies:
       - target: SixLayerFramework_iOS
+      - target: SixLayerViewInspectorTestKit_iOS
       - package: ViewInspector
         product: ViewInspector
 
@@ -547,6 +575,7 @@ targets:
       DEAD_CODE_STRIPPING: YES
     dependencies:
       - target: SixLayerFramework_macOS
+      - target: SixLayerViewInspectorTestKit_macOS
       - package: ViewInspector
         product: ViewInspector
 
@@ -587,6 +616,7 @@ targets:
       ENABLE_TESTING_SEARCH_PATHS: YES
     dependencies:
       - target: SixLayerFramework_watchOS
+      - target: SixLayerViewInspectorTestKit_watchOS
       - package: ViewInspector
         product: ViewInspector
 
@@ -609,6 +639,40 @@ targets:
     dependencies:
       - target: SixLayerFramework_visionOS
 
+  # Smoke tests for exported ViewInspector consumer helpers (#327)
+  SixLayerViewInspectorTestKitTests_iOS:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: Framework/ViewInspectorTestKit/Tests
+    settings:
+      PRODUCT_BUNDLE_IDENTIFIER: com.sixlayer.viewinspectortestkit.tests
+      SWIFT_VERSION: "6.0"
+      GENERATE_INFOPLIST_FILE: YES
+      CODE_SIGN_STYLE: Automatic
+      ENABLE_TESTING_SEARCH_PATHS: YES
+    dependencies:
+      - target: SixLayerViewInspectorTestKit_iOS
+      - package: ViewInspector
+        product: ViewInspector
+
+  SixLayerViewInspectorTestKitTests_macOS:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - path: Framework/ViewInspectorTestKit/Tests
+    settings:
+      PRODUCT_BUNDLE_IDENTIFIER: com.sixlayer.viewinspectortestkit.tests
+      SWIFT_VERSION: "6.0"
+      GENERATE_INFOPLIST_FILE: YES
+      CODE_SIGN_STYLE: Automatic
+      ENABLE_TESTING_SEARCH_PATHS: YES
+      DEAD_CODE_STRIPPING: YES
+    dependencies:
+      - target: SixLayerViewInspectorTestKit_macOS
+      - package: ViewInspector
+        product: ViewInspector
+
 # Scheme Test action: every listed test bundle uses parallel workers + random test order (Xcode
 # scheme; pair with xcodebuild -parallel-testing-enabled YES in buildconfig.yml). UITest targets
 # included — revisit if parallel UI classes expose ordering or shared-state flakes.
@@ -630,6 +694,9 @@ schemes:
         - name: SixLayerFrameworkExternalIntegrationTests_iOS
           parallelizable: true
           randomExecutionOrder: true
+        - name: SixLayerViewInspectorTestKitTests_iOS
+          parallelizable: true
+          randomExecutionOrder: true
 
   SLF-macOS-Framework:
     build:
@@ -641,6 +708,9 @@ schemes:
           parallelizable: true
           randomExecutionOrder: true
         - name: SixLayerFrameworkExternalIntegrationTests_macOS
+          parallelizable: true
+          randomExecutionOrder: true
+        - name: SixLayerViewInspectorTestKitTests_macOS
           parallelizable: true
           randomExecutionOrder: true
 
@@ -677,6 +747,9 @@ schemes:
         - name: SixLayerFrameworkExternalIntegrationTests_iOS
           parallelizable: true
           randomExecutionOrder: true
+        - name: SixLayerViewInspectorTestKitTests_iOS
+          parallelizable: true
+          randomExecutionOrder: true
 
   SLF-macOS-AllTests:
     build:
@@ -695,6 +768,9 @@ schemes:
           parallelizable: true
           randomExecutionOrder: true
         - name: SixLayerFrameworkExternalIntegrationTests_macOS
+          parallelizable: true
+          randomExecutionOrder: true
+        - name: SixLayerViewInspectorTestKitTests_macOS
           parallelizable: true
           randomExecutionOrder: true
 
