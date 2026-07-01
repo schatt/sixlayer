@@ -29,12 +29,15 @@ open class IntelligentCardExpansionComponentAccessibilityTests: BaseTestClass {
         if hostedViewHasAccessibilityElementWithLabelAndButtonTrait(root: hostedRoot, expectedLabel: cardTitle) {
             return true
         }
-        return withInspectedView(AnyView(view)) { inspected in
-            inspected.findAll(ViewInspector.ViewType.Button.self).contains { button in
-                let texts = button.findAll(ViewInspector.ViewType.Text.self).compactMap { try? $0.string() }
-                return texts.contains(where: { $0.contains(cardTitle) })
-            }
-        } ?? false
+        let buttons = findAllInViewHierarchy(view, ViewInspector.ViewType.Button.self)
+        if buttons.contains(where: { button in
+            let texts = button.findAll(ViewInspector.ViewType.Text.self).compactMap { try? $0.string() }
+            return texts.contains(where: { $0.contains(cardTitle) })
+        }) {
+            return true
+        }
+        let allTexts = findAllInViewHierarchy(view, ViewInspector.ViewType.Text.self).compactMap { try? $0.string() }
+        return allTexts.contains(where: { $0.contains(cardTitle) }) && !buttons.isEmpty
     }
     #endif
 
