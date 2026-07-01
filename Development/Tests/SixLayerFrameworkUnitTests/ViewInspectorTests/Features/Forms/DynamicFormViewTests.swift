@@ -617,9 +617,9 @@ open class DynamicFormViewTests: BaseTestClass {
 
         // Should render info button with Help accessibility label when description is present.
         #if canImport(ViewInspector)
-        let hasHelpButton = fieldButtonsInHierarchy(view).contains { button in
+        let hasHelpButton = fieldButtonsInHierarchy(view).contains(where: { button in
             (try? button.accessibilityLabel())?.contains("Help for Email") == true
-        }
+        })
         #expect(hasHelpButton, "HStack should contain label and info button")
         #else
         // ViewInspector not available on macOS - test passes by verifying view creation
