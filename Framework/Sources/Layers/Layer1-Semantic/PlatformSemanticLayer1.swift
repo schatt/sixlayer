@@ -4378,8 +4378,8 @@ public struct GenericSettingsView: View {
         .onAppear {
             initializeValues()
         }
-        // Issue #245 / gh-243: named root for direct GenericSettingsView hosting in tests.
-        .automaticCompliance(named: "GenericSettingsView")
+        .environment(\.accessibilityIdentifierName, "GenericSettingsView")
+        .automaticCompliance(identifierName: "GenericSettingsView")
     }
     
     private func initializeValues() {
