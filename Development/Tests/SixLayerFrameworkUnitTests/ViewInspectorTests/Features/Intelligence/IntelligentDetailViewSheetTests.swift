@@ -63,22 +63,12 @@ struct IntelligentDetailViewSheetTests {
         // Verify the view can be inspected with ViewInspector
         #if canImport(ViewInspector)
         let base = BaseTestClass()
-        base.verifyViewContainsAtLeastOneVStack(sheetContent, testName: "platformDetailView sheet content")
-        if let inspector = try? AnyView(sheetContent).inspect() {
-            let vStacks = (try? inspector.findAll(ViewInspector.ViewType.VStack.self)) ?? []
-            if !vStacks.isEmpty {
-                #expect(Bool(true), "platformDetailView should have view structure (proves it's not blank)")
-            } else {
-                let hStacks = (try? inspector.findAll(ViewInspector.ViewType.HStack.self)) ?? []
-                if !hStacks.isEmpty {
-                    #expect(Bool(true), "platformDetailView should have view structure (proves it's not blank)")
-                } else {
-                    #expect(Bool(true), "platformDetailView should render in sheet (not blank)")
-                }
-            }
-        } else {
-            Issue.record("platformDetailView should be inspectable (indicates it has content)")
-        }
+        base.verifyViewContainsAnyText(sheetContent, testName: "platformDetailView sheet content")
+        let hasStructure = !findAllInViewHierarchy(sheetContent, ViewInspector.ViewType.Text.self).isEmpty
+            || !findAllInViewHierarchy(sheetContent, ViewInspector.ViewType.VStack.self).isEmpty
+            || !findAllInViewHierarchy(sheetContent, ViewInspector.ViewType.LazyVStack.self).isEmpty
+            || !findAllInViewHierarchy(sheetContent, ViewInspector.ViewType.ScrollView.self).isEmpty
+        #expect(hasStructure, "platformDetailView should render non-blank structure in sheet context")
         #else
         // ViewInspector not available on macOS - skip test gracefully
         // The view is created successfully, which is the main requirement
