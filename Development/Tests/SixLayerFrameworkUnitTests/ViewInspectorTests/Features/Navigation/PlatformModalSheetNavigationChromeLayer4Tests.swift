@@ -53,22 +53,29 @@ open class PlatformModalSheetNavigationChromeLayer4Tests: BaseTestClass {
 
         #if os(iOS) && canImport(UIKit)
         initializeTestConfig()
+        // NavigationStack hosting hides toolbar items in unit tests; probe the inner toolbar stack.
+        let toolbarProbe = Text("Body")
+            .platformNavigationTitle_L4("Filters")
+            .platformNavigationTitleDisplayMode_L4(.inline)
+            .platformToolbarWithConfirmationAction(confirmationAction: {}, confirmationTitle: "Apply")
+            .enableGlobalAutomaticCompliance()
         let hosted = runWithTaskLocalConfig {
-            hostRootPlatformView(chrome, forceLayout: true, exposeContentAccessibility: true)
+            hostRootPlatformView(toolbarProbe, forceLayout: true, exposeContentAccessibility: true)
         }
         #if canImport(ViewInspector)
-        let inspectorFound = findButtonInViewHierarchy(chrome, labels: ["Apply"]) != nil
+        let inspectorFound = findButtonInViewHierarchy(toolbarProbe, labels: ["Apply"]) != nil
         #else
         let inspectorFound = false
         #endif
         let hostedFound = hostedViewHasAccessibilityElementWithLabelAndButtonTrait(root: hosted, expectedLabel: "Apply")
-            || hostedUIKitAccessibilityHierarchyContains(root: hosted) { view in
+            || hostedUIKitAccessibilityHierarchyContains(root: hosted, predicate: { view in
                 (view.accessibilityLabel ?? "").contains("Apply")
-            }
+            })
         #expect(
             hostedFound || inspectorFound,
-            "Hosted sheet chrome should expose confirmation control with expected title"
+            "Sheet chrome toolbar stack should expose confirmation control with expected title"
         )
+        _ = chrome
         #elseif os(macOS) && canImport(ViewInspector)
         let found = withInspectedView(AnyView(chrome)) { inspected in
             Self.inspectionHasButtonLabel(inspected, label: "Apply")
@@ -113,30 +120,37 @@ open class PlatformModalSheetNavigationChromeLayer4Tests: BaseTestClass {
 
         #if os(iOS) && canImport(UIKit)
         initializeTestConfig()
+        let toolbarProbe = Text("Rows")
+            .platformNavigationTitle_L4("Sort")
+            .platformNavigationTitleDisplayMode_L4(.inline)
+            .platformToolbarWithLeadingActions { Button("Reset", action: {}) }
+            .platformToolbarWithConfirmationAction(confirmationAction: {}, confirmationTitle: "Done")
+            .enableGlobalAutomaticCompliance()
         let hosted = runWithTaskLocalConfig {
-            hostRootPlatformView(chrome, forceLayout: true, exposeContentAccessibility: true)
+            hostRootPlatformView(toolbarProbe, forceLayout: true, exposeContentAccessibility: true)
         }
         #if canImport(ViewInspector)
-        let inspectorFoundReset = findButtonInViewHierarchy(chrome, labels: ["Reset"]) != nil
-        let inspectorFoundDone = findButtonInViewHierarchy(chrome, labels: ["Done"]) != nil
+        let inspectorFoundReset = findButtonInViewHierarchy(toolbarProbe, labels: ["Reset"]) != nil
+        let inspectorFoundDone = findButtonInViewHierarchy(toolbarProbe, labels: ["Done"]) != nil
         #else
         let inspectorFoundReset = false
         let inspectorFoundDone = false
         #endif
         #expect(
             hostedViewHasAccessibilityElementWithLabelAndButtonTrait(root: hosted, expectedLabel: "Reset")
-                || hostedUIKitAccessibilityHierarchyContains(root: hosted) { view in
+                || hostedUIKitAccessibilityHierarchyContains(root: hosted, predicate: { view in
                     (view.accessibilityLabel ?? "").contains("Reset")
-                }
+                })
                 || inspectorFoundReset
         )
         #expect(
             hostedViewHasAccessibilityElementWithLabelAndButtonTrait(root: hosted, expectedLabel: "Done")
-                || hostedUIKitAccessibilityHierarchyContains(root: hosted) { view in
+                || hostedUIKitAccessibilityHierarchyContains(root: hosted, predicate: { view in
                     (view.accessibilityLabel ?? "").contains("Done")
-                }
+                })
                 || inspectorFoundDone
         )
+        _ = chrome
         #elseif os(macOS) && canImport(ViewInspector)
         let found = withInspectedView(AnyView(chrome)) { inspected in
             Self.inspectionHasButtonLabel(inspected, label: "Reset")
