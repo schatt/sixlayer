@@ -229,6 +229,7 @@ public struct ExpandableCardComponent<Item: Identifiable>: View {
         .platformHoverEffect { isHovering in
             onHover(isHovering)
         }
+        .accessibilityElement(children: .combine)
         .accessibilityLabel(cardTitle)
         .accessibilityAddTraits(isExpanded ? [.isButton, .isSelected] : .isButton)
         .accessibilityHint("Tap to view details")
@@ -249,6 +250,7 @@ public struct ExpandableCardComponent<Item: Identifiable>: View {
             Image(systemName: cardIcon)
                 .font(.title2)
                 .foregroundColor(cardColor)
+                .accessibilityHidden(true)
             
             // Title
             Text(cardTitle)
@@ -463,6 +465,7 @@ public struct CoverFlowCardComponent<Item: Identifiable>: View {
                 Image(systemName: cardIcon)
                     .font(.largeTitle)
                     .foregroundColor(cardColor)
+                    .accessibilityHidden(true)
                 
                 Text(cardTitle)
                     .font(.headline)
@@ -483,6 +486,7 @@ public struct CoverFlowCardComponent<Item: Identifiable>: View {
             .shadow(radius: 8)
         }
         .buttonStyle(.plain)
+        .accessibilityElement(children: .combine)
         .accessibilityLabel(cardTitle)
         .accessibilityAddTraits(.isButton)
         .accessibilityHint("Tap to view details")
@@ -867,6 +871,7 @@ public struct SimpleCardComponent<Item: Identifiable>: View {
             Image(systemName: cardIcon)
                 .font(.title2)
                 .foregroundColor(cardColor)
+                .accessibilityHidden(true)
             
             // Display item title
             Text(cardTitle)
@@ -900,6 +905,7 @@ public struct SimpleCardComponent<Item: Identifiable>: View {
                 }
                 .buttonStyle(.plain)
                 .frame(minWidth: config.minTouchTarget, minHeight: config.minTouchTarget)
+                .accessibilityElement(children: .combine)
                 .onLongPressGesture {
                     // Long press support
                 }
