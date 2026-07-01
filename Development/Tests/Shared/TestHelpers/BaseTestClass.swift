@@ -209,7 +209,7 @@ open class BaseTestClass {
     /// Verify that a view contains specific text content (Inspectable view — direct hierarchy).
     #if canImport(ViewInspector)
     @MainActor
-    open func verifyViewContainsText<V: View & ViewInspector.Inspectable>(_ view: V, expectedText: String, testName: String) {
+    open func verifyViewContainsText<V: View>(_ view: V, expectedText: String, testName: String) {
         guard let inspected = inspectView(view) else {
             Issue.record("View inspection failed for \(testName): could not obtain inspected view")
             return
@@ -260,7 +260,7 @@ open class BaseTestClass {
     /// Verify that a view contains specific image elements (Inspectable view — direct hierarchy).
     #if canImport(ViewInspector)
     @MainActor
-    open func verifyViewContainsImage<V: View & ViewInspector.Inspectable>(_ view: V, testName: String) {
+    open func verifyViewContainsImage<V: View>(_ view: V, testName: String) {
         guard let inspected = inspectView(view) else {
             Issue.record("View inspection failed for \(testName): could not obtain inspected view")
             return
@@ -299,7 +299,7 @@ open class BaseTestClass {
     /// Verify that a view contains at least one text element (Inspectable view).
     /// Records issue and returns when inspection returns no Text (traversal limitation).
     @MainActor
-    open func verifyViewContainsAnyText<V: View & ViewInspector.Inspectable>(_ view: V, testName: String) {
+    open func verifyViewContainsAnyText<V: View>(_ view: V, testName: String) {
         guard let inspected = inspectView(view) else {
             Issue.record("View inspection failed for \(testName): could not obtain inspected view")
             return
@@ -336,7 +336,7 @@ open class BaseTestClass {
 
     /// Verify VStack presence via direct inspection when the view type is Inspectable (Issue 178 / #242).
     @MainActor
-    open func verifyViewContainsAtLeastOneVStack<V: View & ViewInspector.Inspectable>(_ view: V, testName: String) {
+    open func verifyViewContainsAtLeastOneVStack<V: View>(_ view: V, testName: String) {
         guard let vStacks = withInspectedView(view, perform: { inspected in
             inspected.findAll(ViewInspector.ViewType.VStack.self)
         }) else {
@@ -367,7 +367,7 @@ open class BaseTestClass {
 
     /// Run a closure with the first VStack when the view type is Inspectable (Issue 178 / #242).
     @MainActor
-    open func tryWithFirstVStack<V: View & ViewInspector.Inspectable>(
+    open func tryWithFirstVStack<V: View>(
         _ view: V,
         testName: String,
         minChildren: Int? = nil,
