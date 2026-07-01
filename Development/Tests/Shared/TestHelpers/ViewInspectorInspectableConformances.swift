@@ -108,4 +108,9 @@ extension macOSExpandableCardView: ViewInspector.Inspectable where Item: Identif
 #endif
 extension visionOSExpandableCardView: ViewInspector.Inspectable where Item: Identifiable {}
 extension PlatformAwareExpandableCardView: ViewInspector.Inspectable where Item: Identifiable {}
+
+// MARK: - OCR views (#314)
+
+extension OCROverlayView: ViewInspector.Inspectable {}
+extension OCRDisambiguationView: ViewInspector.Inspectable {}
 #endif
