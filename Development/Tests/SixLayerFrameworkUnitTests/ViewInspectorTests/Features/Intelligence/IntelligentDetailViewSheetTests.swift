@@ -99,6 +99,7 @@ struct IntelligentDetailViewSheetTests {
                 customPreferences: [:]
             )
         )
+        .frame(minWidth: 400, minHeight: 500)
         
         #if canImport(ViewInspector)
         let base = BaseTestClass()
