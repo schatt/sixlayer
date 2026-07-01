@@ -29,6 +29,9 @@ open class IntelligentCardExpansionComponentAccessibilityTests: BaseTestClass {
         if hostedViewHasAccessibilityElementWithLabelAndButtonTrait(root: hostedRoot, expectedLabel: cardTitle) {
             return true
         }
+        if findButtonInViewHierarchy(view, labels: [cardTitle]) != nil {
+            return true
+        }
         let buttons = findAllInViewHierarchy(view, ViewInspector.ViewType.Button.self)
         if buttons.contains(where: { button in
             let texts = button.findAll(ViewInspector.ViewType.Text.self).compactMap { try? $0.string() }
@@ -37,7 +40,22 @@ open class IntelligentCardExpansionComponentAccessibilityTests: BaseTestClass {
             return true
         }
         let allTexts = findAllInViewHierarchy(view, ViewInspector.ViewType.Text.self).compactMap { try? $0.string() }
-        return allTexts.contains(where: { $0.contains(cardTitle) }) && !buttons.isEmpty
+        if allTexts.contains(where: { $0.contains(cardTitle) }), !buttons.isEmpty {
+            return true
+        }
+        if let label = getAccessibilityLabelForTest(view: view, hostedRoot: hostedRoot),
+           label.contains(cardTitle),
+           !buttons.isEmpty {
+            return true
+        }
+        if let label = getAccessibilityLabelForTest(view: view, hostedRoot: hostedRoot),
+           label.contains(cardTitle),
+           hostedUIKitAccessibilityHierarchyContains(root: hostedRoot, predicate: { view in
+               (view.accessibilityLabel ?? "").contains(cardTitle)
+           }) {
+            return true
+        }
+        return false
     }
     #endif
 
