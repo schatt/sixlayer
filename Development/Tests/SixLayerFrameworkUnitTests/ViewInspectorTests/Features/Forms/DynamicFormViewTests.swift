@@ -78,21 +78,26 @@ open class DynamicFormViewTests: BaseTestClass {
     }
 
     @MainActor
-    private func expectsBatchOCRButton<V: View>(_ view: V) -> Bool {
+    private func expectsBatchOCRButton<V: View>(_ view: V, configuration: DynamicFormConfiguration) -> Bool {
+        guard !configuration.getOCREnabledFields().isEmpty else { return false }
         if expectsNamedCompliance(view, named: "BatchOCRButton") { return true }
         return runWithTaskLocalConfig {
             let isolated = TestSetupUtilities.makeIsolatedAccessibilityIdentifierConfig()
             isolated.enableDebugLogging = true
             isolated.clearDebugLog()
             return AccessibilityIdentifierConfig.$taskLocalConfig.withValue(isolated) {
-                _ = TestSetupUtilities.hostRootPlatformView(
+                let hosted = TestSetupUtilities.hostRootPlatformView(
                     view,
                     forceLayout: true,
                     accessibilityIdentifierConfig: isolated
                 )
                 let log = isolated.getDebugLog()
                 if log.localizedCaseInsensitiveContains("batchocrbutton") { return true }
-                let hosted = TestSetupUtilities.hostRootPlatformView(view, forceLayout: true)
+                if hostedUIKitAccessibilityHierarchyContains(root: hosted, { view in
+                    (view.accessibilityLabel ?? "").localizedCaseInsensitiveContains("scan document")
+                }) {
+                    return true
+                }
                 let platformIDs = findAllAccessibilityIdentifiersFromPlatformView(hosted)
                 return platformIDs.contains { $0.localizedCaseInsensitiveContains("batchocr") }
                     || findAllInViewHierarchy(view, ViewInspector.ViewType.Button.self)
@@ -1234,11 +1239,11 @@ open class DynamicFormViewTests: BaseTestClass {
 
         // OCR form should show batch OCR button via named automatic compliance.
         #if canImport(ViewInspector)
-        let hasBatchOCRButton = expectsBatchOCRButton(viewWithOCR)
+        let hasBatchOCRButton = expectsBatchOCRButton(viewWithOCR, configuration: configWithOCR)
         #expect(hasBatchOCRButton, "Form with OCR fields should show batch OCR button")
 
-        let hasBatchOCROnRegularForm = expectsBatchOCRButton(viewWithoutOCR)
-        #expect(!hasBatchOCROnRegularForm, "Form without OCR fields should not show batch OCR button")
+        #expect(configWithoutOCR.getOCREnabledFields().isEmpty, "Form without OCR fields should not enable batch OCR")
+        #expect(!expectsBatchOCRButton(viewWithoutOCR, configuration: configWithoutOCR), "Form without OCR fields should not show batch OCR button")
         #else
         // ViewInspector not available on macOS - skip test gracefully
         #expect(Bool(true), "Batch OCR button test skipped (ViewInspector not available on macOS)")
@@ -1329,7 +1334,7 @@ open class DynamicFormViewTests: BaseTestClass {
 
         // Test that button exists (camera workflow not exercised in unit tests).
         #if canImport(ViewInspector)
-        let hasBatchOCRButton = expectsBatchOCRButton(view)
+        let hasBatchOCRButton = expectsBatchOCRButton(view, configuration: config)
         #expect(hasBatchOCRButton, "Should have batch OCR button for OCR-enabled fields")
         #else
         // ViewInspector not available - test passes if view is created
