@@ -85,7 +85,7 @@ public func withInspectedViewUnwrapped<R>(
     perform: (ViewInspector.InspectableView<ViewInspector.ViewType.AnyView>) -> R?
 ) -> R? {
     guard let inspected = try? view.inspect(), let inner = try? inspected.anyView() else { return nil }
-    return perform(inspected)
+    return perform(inner)
 }
 
 /// Convenience: inspect any view and pass unwrapped content so .vStack() etc. work.
