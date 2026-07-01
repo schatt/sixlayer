@@ -6369,18 +6369,11 @@
 			path = API;
 			sourceTree = "<group>";
 		};
-		"TEMP_B8C73CEB-FC74-4FFB-A6DC-4EE126AEF5AF" /* Utilities */ = {
+		"TEMP_91CF9759-E278-4A2A-B78C-27C78826D255" /* Utilities */ = {
 			isa = PBXGroup;
 			children = (
 			);
 			path = Utilities;
-			sourceTree = "<group>";
-		};
-		"TEMP_C428A662-ACCE-44EB-A8A8-D549ABCFB3E2" /* Shared */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = Shared;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -12342,8 +12335,8 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/nalexn/ViewInspector";
 			requirement = {
-				kind = exactVersion;
-				version = 0.9.0;
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.10.0;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
