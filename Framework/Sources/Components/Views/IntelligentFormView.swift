@@ -900,54 +900,6 @@ Text(i18n.localizedString(for: "SixLayerFramework.form.title"))
         .padding(.vertical, 4)
     }
 
-    /// Instance-based action bar so ViewInspector can invoke Button actions (matches DynamicFormView).
-    private struct IntelligentFormActionBar: View {
-        let cancelLabel: String
-        let submitLabel: String
-        let onCancel: () -> Void
-        let onSubmit: () -> Void
-        let floating: Bool
-
-        var body: some View {
-            Group {
-                if floating {
-                    VStack {
-                        Spacer()
-                        actionBar
-                    }
-                } else {
-                    actionBar
-                }
-            }
-        }
-
-        private var actionBar: some View {
-            platformHStackContainer(spacing: 12) {
-                Button(cancelLabel) {
-                    onCancel()
-                }
-                .buttonStyle(.bordered)
-                .foregroundColor(Color.platformLabel)
-
-                Spacer()
-
-                Button(submitLabel) {
-                    performSubmit()
-                }
-                .buttonStyle(.borderedProminent)
-                .foregroundColor(Color.platformBackground)
-            }
-            .padding()
-            .background(Color.platformSecondaryBackground)
-            .cornerRadius(8)
-            .automaticCompliance(named: "DynamicFormActions")
-        }
-
-        private func performSubmit() {
-            onSubmit()
-        }
-    }
-    
     /// Generate form action buttons using our platform extensions
     @ViewBuilder
     private static func generateFormActions<T>(
@@ -958,22 +910,37 @@ Text(i18n.localizedString(for: "SixLayerFramework.form.title"))
         floating: Bool = true
     ) -> some View {
         let i18n = InternationalizationService()
-        IntelligentFormActionBar(
-            cancelLabel: i18n.localizedString(for: "SixLayerFramework.button.cancel"),
-            submitLabel: initialData != nil
-                ? i18n.localizedString(for: "SixLayerFramework.button.update")
-                : i18n.localizedString(for: "SixLayerFramework.button.create"),
-            onCancel: onCancel,
-            onSubmit: {
+        let actionBar = platformHStackContainer(spacing: 12) {
+            Button(i18n.localizedString(for: "SixLayerFramework.button.cancel")) { onCancel() }
+                .buttonStyle(.bordered)
+                .foregroundColor(Color.platformLabel)
+
+            Spacer()
+
+            Button(initialData != nil ? i18n.localizedString(for: "SixLayerFramework.button.update") : i18n.localizedString(for: "SixLayerFramework.button.create")) {
                 handleSubmit(
                     initialData: initialData,
                     modelContext: nil,
                     onSubmit: onSubmit,
                     isDraft: isDraft
                 )
-            },
-            floating: floating
-        )
+            }
+            .buttonStyle(.borderedProminent)
+            .foregroundColor(Color.platformBackground)
+        }
+        .padding()
+        .background(Color.platformSecondaryBackground)
+        .cornerRadius(8)
+        .automaticCompliance(named: "DynamicFormActions")
+
+        if floating {
+            VStack {
+                Spacer()
+                actionBar
+            }
+        } else {
+            actionBar
+        }
     }
     
     // MARK: - Helper Functions
