@@ -9,7 +9,7 @@
 import SwiftUI
 
 #if canImport(ViewInspector)
-import ViewInspector
+@testable import ViewInspector
 
 /// Collect `viewType` matches after unwrapping AnyView boundaries (Issue #178 / #314).
 @MainActor
