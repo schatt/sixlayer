@@ -17,9 +17,13 @@ When you change `project.yml` and run XcodeGen (`xcodegen generate` / `-c`): one
 
 Do **not** split `project.yml` and its generated output across separate commits. Do **not** hand-edit `project.pbxproj` or scheme XML — use the `project.yml` flow. See [project-yml-exclusive.mdc](mdc:.cursor/rules/project-yml-exclusive.mdc).
 
-## Exception 2: Xcode-aligned shared schemes (one commit)
+## Exception 2: XcodeGen regen only (one commit)
 
-When the **only** changes are shared `*.xcscheme` files **Xcode** updated (on open/save — not agent edits): one commit with all touched `*.xcscheme` paths. Message: "Align shared Xcode schemes after Xcode save" or similar. Don't hand-edit scheme XML to match.
+When **`project.yml` is unchanged** but generated Xcode project files drifted: run `xcodegen generate -c`, then one commit with all regenerated artifacts (typically `project.pbxproj`). Do **not** `git restore` or leave the drift uncommitted — regen and commit per [project-yml-exclusive.mdc](mdc:.cursor/rules/project-yml-exclusive.mdc).
+
+## Exception 3: Xcode-aligned shared schemes (one commit)
+
+When the **only** changes are shared `*.xcscheme` files **Xcode** updated (on open/save — not agent edits): one commit with all touched `*.xcscheme` paths. Message: "Align shared Xcode schemes after Xcode save" or similar. Don't hand-edit scheme XML to match. If `project.pbxproj` also drifted, use Exception 2 — regen from XcodeGen first.
 
 ## Rationale
 

@@ -110,18 +110,18 @@ open class PlatformPresentContentL1Tests: BaseTestClass {
         
         // Test different number types
         let doubleContent = 42.5
-        let doubleView = platformPresentContent_L1(content: doubleContent, hints: hints)
+        _ = platformPresentContent_L1(content: doubleContent, hints: hints)
         #expect(Bool(true), "Should handle double values")  // doubleView is non-optional
         
         let floatContent: Float = 42.0
-        let floatView = platformPresentContent_L1(content: floatContent, hints: hints)
+        _ = platformPresentContent_L1(content: floatContent, hints: hints)
         #expect(Bool(true), "Should handle float values")  // floatView is non-optional
         
         // Test edge cases
-        let zeroView = platformPresentContent_L1(content: 0, hints: hints)
+        _ = platformPresentContent_L1(content: 0, hints: hints)
         #expect(Bool(true), "Should handle zero values")  // zeroView is non-optional
         
-        let negativeView = platformPresentContent_L1(content: -42, hints: hints)
+        _ = platformPresentContent_L1(content: -42, hints: hints)
         #expect(Bool(true), "Should handle negative values")  // negativeView is non-optional
     }
     
@@ -132,7 +132,7 @@ open class PlatformPresentContentL1Tests: BaseTestClass {
         let hints = createTestHints()
         
         // When
-        let view = platformPresentContent_L1(
+        _ = platformPresentContent_L1(
             content: content,
             hints: hints
         )
@@ -142,18 +142,18 @@ open class PlatformPresentContentL1Tests: BaseTestClass {
         
         // Test different array types
         let stringArray = ["hello", "world", "test"]
-        let stringArrayView = platformPresentContent_L1(content: stringArray, hints: hints)
+        _ = platformPresentContent_L1(content: stringArray, hints: hints)
         #expect(Bool(true), "Should handle string arrays")  // stringArrayView is non-optional
         
         let mixedArray: [Any] = [1, "hello", 3.14, true]
-        let mixedArrayView = platformPresentContent_L1(content: mixedArray, hints: hints)
+        _ = platformPresentContent_L1(content: mixedArray, hints: hints)
         #expect(Bool(true), "Should handle mixed type arrays")  // mixedArrayView is non-optional
         
         // Test edge cases
-        let emptyArrayView = platformPresentContent_L1(content: [] as [Int], hints: hints)
+        _ = platformPresentContent_L1(content: [] as [Int], hints: hints)
         #expect(Bool(true), "Should handle empty arrays")  // emptyArrayView is non-optional
         
-        let singleElementView = platformPresentContent_L1(content: [42], hints: hints)
+        _ = platformPresentContent_L1(content: [42], hints: hints)
         #expect(Bool(true), "Should handle single element arrays")  // singleElementView is non-optional
     }
     
@@ -164,7 +164,7 @@ open class PlatformPresentContentL1Tests: BaseTestClass {
         let hints = createTestHints()
         
         // When
-        let view = platformPresentContent_L1(
+        _ = platformPresentContent_L1(
             content: content,
             hints: hints
         )
@@ -174,18 +174,18 @@ open class PlatformPresentContentL1Tests: BaseTestClass {
         
         // Test different dictionary types
         let stringDict = ["key1": "value1", "key2": "value2"]
-        let stringDictView = platformPresentContent_L1(content: stringDict, hints: hints)
+        _ = platformPresentContent_L1(content: stringDict, hints: hints)
         #expect(Bool(true), "Should handle string dictionaries")  // stringDictView is non-optional
         
         let numberDict = ["count": 42, "price": 99.99]
-        let numberDictView = platformPresentContent_L1(content: numberDict, hints: hints)
+        _ = platformPresentContent_L1(content: numberDict, hints: hints)
         #expect(Bool(true), "Should handle number dictionaries")  // numberDictView is non-optional
         
         // Test edge cases
-        let emptyDictView = platformPresentContent_L1(content: [:] as [String: Any], hints: hints)
+        _ = platformPresentContent_L1(content: [:] as [String: Any], hints: hints)
         #expect(Bool(true), "Should handle empty dictionaries")  // emptyDictView is non-optional
         
-        let singleKeyView = platformPresentContent_L1(content: ["single": "value"], hints: hints)
+        _ = platformPresentContent_L1(content: ["single": "value"], hints: hints)
         #expect(Bool(true), "Should handle single key dictionaries")  // singleKeyView is non-optional
     }
     
@@ -196,7 +196,7 @@ open class PlatformPresentContentL1Tests: BaseTestClass {
         let hints = createTestHints()
         
         // When
-        let view = platformPresentContent_L1(
+        _ = platformPresentContent_L1(
             content: content as Any,
             hints: hints
         )
@@ -219,7 +219,7 @@ open class PlatformPresentContentL1Tests: BaseTestClass {
         )
         
         // When
-        let view = platformPresentContent_L1(
+        _ = platformPresentContent_L1(
             content: content,
             hints: hints
         )
@@ -240,7 +240,7 @@ open class PlatformPresentContentL1Tests: BaseTestClass {
         let hints = createTestHints()
         
         // When
-        let view = platformPresentContent_L1(
+        _ = platformPresentContent_L1(
             content: content,
             hints: hints
         )
@@ -258,7 +258,7 @@ open class PlatformPresentContentL1Tests: BaseTestClass {
         let hints = createTestHints()
         
         // When
-        let view = platformPresentContent_L1(
+        _ = platformPresentContent_L1(
             content: content,
             hints: hints
         )
@@ -274,7 +274,7 @@ open class PlatformPresentContentL1Tests: BaseTestClass {
         let hints = createTestHints()
         
         // When
-        let view = platformPresentContent_L1(
+        _ = platformPresentContent_L1(
             content: content,
             hints: hints
         )
@@ -290,7 +290,7 @@ open class PlatformPresentContentL1Tests: BaseTestClass {
         let hints = createTestHints()
         
         // When
-        let view = platformPresentContent_L1(
+        _ = platformPresentContent_L1(
             content: content,
             hints: hints
         )
@@ -314,7 +314,7 @@ open class PlatformPresentContentL1Tests: BaseTestClass {
             )
             
             // Force SwiftUI to actually render the view by hosting it
-            let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
+            _ = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
             #expect(Bool(true), "Performance test should successfully render the view")  // hostingView is non-optional
         // Performance test removed - performance monitoring was removed from framework
     }

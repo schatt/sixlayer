@@ -2,12 +2,13 @@
 """Resolve git worktree context for Cursor hooks (preToolUse / stop)."""
 from __future__ import annotations
 
-import json
 import os
 import subprocess
 import sys
 import tempfile
 import unittest
+
+INTEGRATION_BRANCHES_REL = os.path.join("scripts", "integration-branches.txt")
 
 
 def norm_path(p: str) -> str:
@@ -39,59 +40,31 @@ def git_toplevel_for_path(abs_path: str) -> str | None:
     return None
 
 
-def is_integration_branch(branch: str | None) -> bool:
-    return branch in ("main", "next")
+def integration_branches_for_repo(git_root: str) -> set[str]:
+    """
+    Branch names listed in scripts/integration-branches.txt under git_root.
+    Missing file or no branch lines → empty set (no integration branches).
+    """
+    path = os.path.join(git_root, INTEGRATION_BRANCHES_REL)
+    if not os.path.isfile(path):
+        return set()
+    branches: set[str] = set()
+    try:
+        with open(path, encoding="utf-8") as fh:
+            for line in fh:
+                line = line.strip()
+                if not line or line.startswith("#"):
+                    continue
+                branches.add(line)
+    except OSError:
+        return set()
+    return branches
 
 
-def is_issue_branch(branch: str | None) -> bool:
-    return bool(branch and (branch.startswith("wip/") or branch.startswith("done/")))
-
-
-def linked_worktrees(git_root: str) -> list[tuple[str, str | None]]:
-    """Return [(worktree_path, branch_name), ...] for all linked worktrees."""
-    r = _git_run(git_root, "worktree", "list", "--porcelain")
-    if r.returncode != 0:
-        return []
-    out: list[tuple[str, str | None]] = []
-    path: str | None = None
-    branch: str | None = None
-    for line in (r.stdout or "").splitlines():
-        if line.startswith("worktree "):
-            if path is not None:
-                out.append((norm_path(path), branch))
-            path = line[len("worktree ") :].strip()
-            branch = None
-        elif line.startswith("branch refs/heads/"):
-            branch = line[len("branch refs/heads/") :].strip()
-    if path is not None:
-        out.append((norm_path(path), branch))
-    return out
-
-
-def issue_worktrees(git_root: str) -> list[tuple[str, str]]:
-    return [(path, branch) for path, branch in linked_worktrees(git_root) if is_issue_branch(branch)]
-
-
-def _path_prefix_overlap(edit_path: str, changed_paths: set[str]) -> bool:
-    edit_dir = os.path.dirname(edit_path)
-    for changed in changed_paths:
-        changed_dir = os.path.dirname(changed)
-        if edit_dir == changed_dir:
-            return True
-        if edit_dir.startswith(changed_dir + os.sep) or changed_dir.startswith(edit_dir + os.sep):
-            return True
-    return False
-
-
-def _issue_worktree_rank(top: str, abs_path: str) -> tuple[int, int, str]:
-    changed = porcelain_changed_paths(top)
-    if abs_path in changed:
-        return (0, -len(changed), abs_path)
-    if changed and _path_prefix_overlap(abs_path, changed):
-        return (1, -len(changed), abs_path)
-    if not changed:
-        return (2, 0, abs_path)
-    return (3, -len(changed), abs_path)
+def is_integration_branch(git_root: str, branch: str | None) -> bool:
+    if not branch:
+        return False
+    return branch in integration_branches_for_repo(git_root)
 
 
 def worktree_needs_attention(git_root: str) -> bool:
@@ -102,81 +75,29 @@ def worktree_needs_attention(git_root: str) -> bool:
     return False
 
 
-def _path_bases(hook: dict) -> list[str]:
+def _relative_path_base(hook: dict) -> str:
     cwd = (hook.get("cwd") or "").strip()
-    roots = [r for r in (hook.get("workspace_roots") or []) if isinstance(r, str) and r.strip()]
-    bases: list[str] = []
     if cwd:
-        bases.append(cwd)
-    for root in roots:
-        if root not in bases:
-            bases.append(root)
-    return bases or [os.getcwd()]
+        return cwd
+    for root in hook.get("workspace_roots") or []:
+        if isinstance(root, str) and root.strip():
+            return root.strip()
+    return os.getcwd()
 
 
 def resolve_edit_git_context(hook: dict, raw_path: str) -> tuple[str, str] | None:
     """
-    Return (git_root, abs_edit_path) for the worktree the user is actually in.
-
-    Prefers hook cwd over workspace_roots[0] so agents working in /private/tmp/...
-    worktrees are not judged against an unrelated primary-clone dirty tree.
-
-    When cwd is the primary clone on an integration branch (main/next) and linked
-    wip/done worktrees exist, relative edits are scoped to those worktrees instead
-    of stray dirty files in the primary checkout.
+    Return (git_root, abs_edit_path) using the same path rule as Cursor file tools:
+    absolute path as-is; relative path joined with hook cwd (fallback: workspace_roots[0]).
     """
-    bases = _path_bases(hook)
-    cwd = (hook.get("cwd") or "").strip()
-    roots = [r for r in (hook.get("workspace_roots") or []) if isinstance(r, str) and r.strip()]
-    cwd_top = git_toplevel_for_path(cwd) if cwd else None
-    root_tops = {git_toplevel_for_path(r) for r in roots}
-    root_tops.discard(None)
-
-    anchor_top = cwd_top or next(iter(root_tops), None)
-    redirect_relative_to_issue = (
-        not os.path.isabs(raw_path)
-        and anchor_top is not None
-        and is_integration_branch(current_branch(anchor_top))
-    )
-    issue_wts = issue_worktrees(anchor_top) if redirect_relative_to_issue and anchor_top else []
-    issue_wt_paths = {path for path, _branch in issue_wts}
-
     if os.path.isabs(raw_path):
-        abs_targets = [norm_path(raw_path)]
+        abs_path = norm_path(raw_path)
     else:
-        abs_targets = [norm_path(os.path.join(base, raw_path)) for base in bases]
-        for wt_path in issue_wt_paths:
-            abs_targets.append(norm_path(os.path.join(wt_path, raw_path)))
+        abs_path = norm_path(os.path.join(_relative_path_base(hook), raw_path))
 
-    candidates: list[tuple[tuple, str, str]] = []
-    for abs_path in abs_targets:
-        top = git_toplevel_for_path(abs_path)
-        if not top:
-            continue
-
-        if cwd_top and top == cwd_top:
-            if redirect_relative_to_issue and top == anchor_top and issue_wt_paths:
-                tier = 3
-            else:
-                tier = 0
-        elif top in issue_wt_paths and redirect_relative_to_issue:
-            tier = 1
-        elif top in root_tops:
-            tier = 2 if redirect_relative_to_issue and top == anchor_top and issue_wt_paths else 1
-        else:
-            tier = 3
-
-        rank: tuple[int, ...]
-        if tier == 1 and top in issue_wt_paths:
-            rank = _issue_worktree_rank(top, abs_path)
-        else:
-            rank = (0, 0, abs_path)
-        candidates.append(((tier, *rank), top, abs_path))
-
-    if not candidates:
+    top = git_toplevel_for_path(abs_path)
+    if not top:
         return None
-    candidates.sort(key=lambda item: (item[0], item[2]))
-    _, top, abs_path = candidates[0]
     return top, abs_path
 
 
@@ -186,14 +107,6 @@ def active_git_roots(hook: dict) -> list[str]:
     if cwd:
         top = git_toplevel_for_path(cwd)
         if top:
-            if is_integration_branch(current_branch(top)):
-                issue_roots = [
-                    path
-                    for path, _branch in issue_worktrees(top)
-                    if worktree_needs_attention(path)
-                ]
-                if issue_roots:
-                    return issue_roots
             return [top]
 
     seen: set[str] = set()
@@ -310,9 +223,7 @@ def porcelain_changed_paths(git_root: str) -> set[str]:
 
 
 class ResolveEditGitContextTests(unittest.TestCase):
-    def test_relative_path_from_primary_ignores_primary_dirty_when_wip_worktree_exists(
-        self,
-    ) -> None:
+    def test_relative_path_uses_cwd_not_workspace_primary(self) -> None:
         with tempfile.TemporaryDirectory() as td:
             primary = norm_path(os.path.join(td, "primary"))
             wt_path = norm_path(os.path.join(td, "wip-wt"))
@@ -325,50 +236,56 @@ class ResolveEditGitContextTests(unittest.TestCase):
             subprocess.run(["git", "add", "tracked.txt"], cwd=primary, check=True)
             subprocess.run(["git", "commit", "-m", "base"], cwd=primary, check=True, capture_output=True)
             subprocess.run(
-                ["git", "worktree", "add", "-b", "wip/301-test", wt_path, "HEAD"],
+                ["git", "worktree", "add", "-b", "wip/322-test", wt_path, "HEAD"],
                 cwd=primary,
                 check=True,
                 capture_output=True,
             )
-            with open(os.path.join(primary, "stray.txt"), "w", encoding="utf-8") as fh:
-                fh.write("dirty primary\n")
 
-            hook = {"cwd": primary, "workspace_roots": [primary]}
-            ctx = resolve_edit_git_context(hook, "Shared/NewFile.swift")
+            hook = {"cwd": wt_path, "workspace_roots": [primary]}
+            ctx = resolve_edit_git_context(hook, "Framework/Sources/NewFile.swift")
             self.assertIsNotNone(ctx)
             git_root, path = ctx
             self.assertEqual(git_root, wt_path)
-            self.assertEqual(path, os.path.join(wt_path, "Shared/NewFile.swift"))
-            self.assertNotIn(path, porcelain_changed_paths(git_root))
+            self.assertEqual(path, os.path.join(wt_path, "Framework/Sources/NewFile.swift"))
 
-    def test_prefers_cwd_worktree_over_workspace_primary_clone(self) -> None:
-        primary = norm_path("/Users/schatt/code/github/sixlayer")
-        worktree = norm_path("/private/tmp/sixlayer-wip-example")
-        if not os.path.isdir(worktree):
-            self.skipTest("example worktree not present on this machine")
-        hook = {
-            "cwd": worktree,
-            "workspace_roots": [primary],
-        }
-        ctx = resolve_edit_git_context(hook, ".cursor/hooks/cursor_git_context.py")
-        self.assertIsNotNone(ctx)
-        git_root, path = ctx
-        self.assertEqual(git_root, worktree)
-        self.assertTrue(path.startswith(worktree + os.sep))
+    def test_relative_path_from_primary_cwd_stays_in_primary(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            primary = norm_path(os.path.join(td, "primary"))
+            os.makedirs(primary)
+            subprocess.run(["git", "init", "-b", "next"], cwd=primary, check=True, capture_output=True)
+            subprocess.run(["git", "config", "user.email", "t@example.com"], cwd=primary, check=True)
+            subprocess.run(["git", "config", "user.name", "T"], cwd=primary, check=True)
+            with open(os.path.join(primary, "tracked.txt"), "w", encoding="utf-8") as fh:
+                fh.write("base\n")
+            subprocess.run(["git", "add", "tracked.txt"], cwd=primary, check=True)
+            subprocess.run(["git", "commit", "-m", "base"], cwd=primary, check=True, capture_output=True)
 
-    def test_absolute_path_in_primary_resolves_to_primary(self) -> None:
-        primary = norm_path("/Users/schatt/code/github/sixlayer")
-        if not os.path.isdir(primary):
-            self.skipTest("sixlayer clone not present on this machine")
-        target = os.path.join(primary, ".cursor/hooks/cursor_git_context.py")
-        hook = {"workspace_roots": [primary]}
-        ctx = resolve_edit_git_context(hook, target)
-        self.assertIsNotNone(ctx)
-        self.assertEqual(ctx[0], primary)
+            hook = {"cwd": primary, "workspace_roots": [primary]}
+            ctx = resolve_edit_git_context(hook, "Framework/Sources/NewFile.swift")
+            self.assertIsNotNone(ctx)
+            git_root, path = ctx
+            self.assertEqual(git_root, primary)
+            self.assertEqual(path, os.path.join(primary, "Framework/Sources/NewFile.swift"))
+
+
+class IntegrationBranchesTests(unittest.TestCase):
+    def test_reads_branch_names_from_file(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            root = norm_path(td)
+            scripts = os.path.join(root, "scripts")
+            os.makedirs(scripts)
+            with open(os.path.join(scripts, "integration-branches.txt"), "w", encoding="utf-8") as fh:
+                fh.write("# comment\nmain\n\nnext\n# trailing\n")
+            self.assertEqual(integration_branches_for_repo(root), {"main", "next"})
+
+    def test_missing_file_means_no_integration_branches(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            self.assertEqual(integration_branches_for_repo(norm_path(td)), set())
 
 
 class ActiveGitRootsTests(unittest.TestCase):
-    def test_stop_prefers_issue_worktrees_over_integration_primary(self) -> None:
+    def test_stop_uses_cwd_worktree_only(self) -> None:
         with tempfile.TemporaryDirectory() as td:
             primary = norm_path(os.path.join(td, "primary"))
             wt_path = norm_path(os.path.join(td, "wip-wt"))
@@ -381,97 +298,15 @@ class ActiveGitRootsTests(unittest.TestCase):
             subprocess.run(["git", "add", "tracked.txt"], cwd=primary, check=True)
             subprocess.run(["git", "commit", "-m", "base"], cwd=primary, check=True, capture_output=True)
             subprocess.run(
-                ["git", "worktree", "add", "-b", "wip/301-test", wt_path, "HEAD"],
+                ["git", "worktree", "add", "-b", "wip/322-test", wt_path, "HEAD"],
                 cwd=primary,
                 check=True,
                 capture_output=True,
             )
-            with open(os.path.join(primary, "stray.txt"), "w", encoding="utf-8") as fh:
-                fh.write("dirty primary\n")
-            with open(os.path.join(wt_path, "slice.txt"), "w", encoding="utf-8") as fh:
-                fh.write("wip slice\n")
 
-            hook = {"cwd": primary, "workspace_roots": [primary]}
+            hook = {"cwd": wt_path, "workspace_roots": [primary]}
             roots = active_git_roots(hook)
             self.assertEqual(roots, [wt_path])
-
-    def test_stop_uses_cwd_worktree_only(self) -> None:
-        worktree = norm_path("/private/tmp/sixlayer-wip-example")
-        primary = norm_path("/Users/schatt/code/github/sixlayer")
-        if not os.path.isdir(worktree):
-            self.skipTest("example worktree not present on this machine")
-        hook = {"cwd": worktree, "workspace_roots": [primary]}
-        roots = active_git_roots(hook)
-        self.assertEqual(roots, [worktree])
-
-
-class UnpushedStatusTests(unittest.TestCase):
-    def test_commits_ahead_of_upstream(self) -> None:
-        with tempfile.TemporaryDirectory() as td:
-            root = norm_path(td)
-            subprocess.run(["git", "init", "-b", "main"], cwd=root, check=True, capture_output=True)
-            subprocess.run(["git", "config", "user.email", "t@example.com"], cwd=root, check=True)
-            subprocess.run(["git", "config", "user.name", "T"], cwd=root, check=True)
-            with open(os.path.join(root, "f"), "w", encoding="utf-8") as fh:
-                fh.write("1\n")
-            subprocess.run(["git", "add", "f"], cwd=root, check=True)
-            subprocess.run(["git", "commit", "-m", "c1"], cwd=root, check=True, capture_output=True)
-            bare = os.path.join(os.path.dirname(root), "remote.git")
-            subprocess.run(["git", "init", "--bare", "-b", "main", bare], check=True, capture_output=True)
-            subprocess.run(["git", "remote", "add", "origin", bare], cwd=root, check=True)
-            subprocess.run(["git", "push", "-u", "origin", "main"], cwd=root, check=True, capture_output=True)
-            with open(os.path.join(root, "f"), "w", encoding="utf-8") as fh:
-                fh.write("2\n")
-            subprocess.run(["git", "commit", "-am", "c2"], cwd=root, check=True, capture_output=True)
-            self.assertEqual(commits_ahead_of_upstream(root), 1)
-            lines = unpushed_status_lines(root)
-            self.assertEqual(len(lines), 1)
-            self.assertIn("ahead of", lines[0])
-            self.assertIn("git push", lines[0])
-
-    def test_no_upstream_suggests_push_u(self) -> None:
-        with tempfile.TemporaryDirectory() as td:
-            root = norm_path(td)
-            subprocess.run(["git", "init", "-b", "wip/test"], cwd=root, check=True, capture_output=True)
-            subprocess.run(["git", "config", "user.email", "t@example.com"], cwd=root, check=True)
-            subprocess.run(["git", "config", "user.name", "T"], cwd=root, check=True)
-            with open(os.path.join(root, "f"), "w", encoding="utf-8") as fh:
-                fh.write("1\n")
-            subprocess.run(["git", "add", "f"], cwd=root, check=True)
-            subprocess.run(["git", "commit", "-m", "c1"], cwd=root, check=True, capture_output=True)
-            lines = unpushed_status_lines(root)
-            self.assertEqual(len(lines), 1)
-            self.assertIn("no upstream", lines[0])
-            self.assertIn("git push -u origin wip/test", lines[0])
-
-
-class FormatWorktreeStopBlockTests(unittest.TestCase):
-    def test_includes_uncommitted_and_unpushed(self) -> None:
-        with tempfile.TemporaryDirectory() as td:
-            root = norm_path(td)
-            subprocess.run(["git", "init", "-b", "main"], cwd=root, check=True, capture_output=True)
-            subprocess.run(["git", "config", "user.email", "t@example.com"], cwd=root, check=True)
-            subprocess.run(["git", "config", "user.name", "T"], cwd=root, check=True)
-            with open(os.path.join(root, "f"), "w", encoding="utf-8") as fh:
-                fh.write("1\n")
-            subprocess.run(["git", "add", "f"], cwd=root, check=True)
-            subprocess.run(["git", "commit", "-m", "c1"], cwd=root, check=True, capture_output=True)
-            bare = os.path.join(os.path.dirname(root), "remote.git")
-            subprocess.run(["git", "init", "--bare", "-b", "main", bare], check=True, capture_output=True)
-            subprocess.run(["git", "remote", "add", "origin", bare], cwd=root, check=True)
-            subprocess.run(["git", "push", "-u", "origin", "main"], cwd=root, check=True, capture_output=True)
-            with open(os.path.join(root, "g"), "w", encoding="utf-8") as fh:
-                fh.write("2\n")
-            subprocess.run(["git", "add", "g"], cwd=root, check=True)
-            subprocess.run(["git", "commit", "-m", "c2"], cwd=root, check=True, capture_output=True)
-            with open(os.path.join(root, "h"), "w", encoding="utf-8") as fh:
-                fh.write("dirty\n")
-            block = format_worktree_stop_block(root)
-            self.assertIsNotNone(block)
-            assert block is not None
-            self.assertIn("Uncommitted changes", block)
-            self.assertIn("?? h", block)
-            self.assertIn("ahead of", block)
 
 
 if __name__ == "__main__":

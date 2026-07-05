@@ -413,10 +413,20 @@ else
 fi
 
 echo "🧪 Running iOS unit tests on Simulator (SLF-iOS-UnitTests)..."
+echo "🧹 Pruning unavailable iOS Simulators..."
+xcrun simctl delete unavailable 2>/dev/null || true
+IOS_SIM_NAME="${SLF_IOS_TEST_SIMULATOR:-iPhone 16 Pro}"
+if ! xcrun simctl list devices available | grep -q "${IOS_SIM_NAME} ("; then
+    IOS_RUNTIME=$(xcrun simctl list runtimes available -j | python3 -c "import json,sys; rs=[r for r in json.load(sys.stdin).get('runtimes',[]) if r.get('isAvailable') and 'iOS' in r.get('name','')]; print(sorted(rs,key=lambda r:r.get('version',''))[-1]['identifier'] if rs else '')")
+    if [ -n "$IOS_RUNTIME" ]; then
+        echo "📱 Creating iOS Simulator: ${IOS_SIM_NAME} (${IOS_RUNTIME})"
+        xcrun simctl create "$IOS_SIM_NAME" com.apple.CoreSimulator.SimDeviceType.iPhone-16-Pro "$IOS_RUNTIME" >/dev/null 2>&1 || true
+    fi
+fi
 if ! xcodebuild test \
     -project SixLayerFramework.xcodeproj \
     -scheme SLF-iOS-UnitTests \
-    -destination "platform=iOS Simulator,name=iPhone 17 Pro Max" \
+    -destination "platform=iOS Simulator,name=${IOS_SIM_NAME}" \
     -resultBundlePath "$IOS_XCRESULT" \
     -quiet; then
     IOS_TESTS_FAILED=1

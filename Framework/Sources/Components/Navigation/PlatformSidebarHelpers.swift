@@ -32,6 +32,25 @@ public extension View {
         return fallbackSidebar(content: content)
         #endif
     }
+
+    /// Optional edge affordance and reveal gesture for split views in **detail-only** visibility (#324).
+    ///
+    /// **Automatic (Layer 4):** ``platformAppNavigation_L4(columnVisibility:…)`` and
+    /// ``platformSettingsContainer_L4(columnVisibility:…)`` apply this on the detail column when a
+    /// ``NavigationSplitViewVisibility`` binding is supplied.
+    ///
+    /// **Manual:** use on custom split/detail layouts that are not wrapped by those L4 helpers but
+    /// still drive ``NavigationSplitView`` via the same binding.
+    @ViewBuilder
+    func platformSidebarSplitRevealChrome(
+        columnVisibility: Binding<NavigationSplitViewVisibility>?
+    ) -> some View {
+        if let columnVisibility {
+            modifier(PlatformSidebarSplitRevealChromeModifier(columnVisibility: columnVisibility))
+        } else {
+            self
+        }
+    }
 }
 
 // MARK: - Platform-Specific Sidebar Components
@@ -106,11 +125,13 @@ private func fallbackSidebar<Content: View>(
 
 // MARK: - Platform Sidebar Pull Indicator
 
-/// Platform-specific sidebar pull indicator
-/// Displays a visual indicator on macOS (where sidebars are resizable) and returns EmptyView on iOS
+/// Platform-specific sidebar pull indicator (#64, extended #324).
 ///
-/// - Parameter isVisible: Whether the indicator should be visible
-/// - Returns: A view with the pull indicator on macOS when visible, EmptyView otherwise
+/// Shows a leading-edge stripe on **iOS and macOS** when ``isVisible`` is true (typically when the
+/// split is detail-only). Other platforms return ``EmptyView``.
+///
+/// Prefer ``View/platformSidebarSplitRevealChrome(columnVisibility:)`` when you have a
+/// ``NavigationSplitViewVisibility`` binding; use this function directly only for custom visibility logic.
 ///
 /// ## Usage Example
 /// ```swift
@@ -122,25 +143,97 @@ private func fallbackSidebar<Content: View>(
 @MainActor
 @ViewBuilder
 public func platformSidebarPullIndicator(isVisible: Bool) -> some View {
-    #if os(macOS)
     if isVisible {
-        HStack {
-            platformHStackContainer(spacing: 2) {
-                ForEach(0..<2, id: \.self) { _ in
-                    Rectangle()
-                        .fill(Color.secondary)
-                        .frame(width: 3, height: 22)
-                        .cornerRadius(1)
-                }
-            }
-            .padding(.leading, 8)
-            Spacer()
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        platformSidebarPullIndicatorStripe()
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+            .allowsHitTesting(false)
+            .accessibilityHidden(true)
     } else {
         EmptyView()
+    }
+}
+
+@MainActor
+@ViewBuilder
+private func platformSidebarPullIndicatorStripe() -> some View {
+    #if os(iOS) || os(macOS)
+    HStack(spacing: 0) {
+        platformHStackContainer(spacing: 2) {
+            ForEach(0..<2, id: \.self) { _ in
+                Rectangle()
+                    .fill(Color.secondary.opacity(0.85))
+                    .frame(width: 3, height: 22)
+                    .cornerRadius(1)
+            }
+        }
+        .padding(.leading, 8)
+        Spacer(minLength: 0)
     }
     #else
     EmptyView()
     #endif
 }
+
+// MARK: - Split reveal chrome modifier (#324)
+
+private struct PlatformSidebarSplitRevealChromeModifier: ViewModifier {
+    @Binding var columnVisibility: NavigationSplitViewVisibility
+
+    init(columnVisibility: Binding<NavigationSplitViewVisibility>) {
+        _columnVisibility = columnVisibility
+    }
+
+    func body(content: Content) -> some View {
+        let showAffordance = PlatformSidebarRevealChromePolicy.showsAffordance(for: columnVisibility)
+        let applyGesture = PlatformSidebarRevealChromePolicy.shouldApplyRevealGesture(for: columnVisibility)
+
+        ZStack(alignment: .leading) {
+            content
+            platformSidebarPullIndicator(isVisible: showAffordance)
+        }
+        .overlay(alignment: .leading) {
+            if applyGesture {
+                PlatformSidebarRevealEdgeGestureOverlay(columnVisibility: $columnVisibility)
+            }
+        }
+    }
+}
+
+#if os(iOS)
+/// Narrow leading-edge swipe target so scroll views in the detail column keep priority.
+private struct PlatformSidebarRevealEdgeGestureOverlay: View {
+    @Binding var columnVisibility: NavigationSplitViewVisibility
+
+    var body: some View {
+        Color.clear
+            .frame(width: 24)
+            .frame(maxHeight: .infinity)
+            .contentShape(Rectangle())
+            .gesture(
+                DragGesture(minimumDistance: 20, coordinateSpace: .local)
+                    .onEnded { value in
+                        guard PlatformSidebarRevealChromePolicy.shouldApplyRevealGesture(
+                            for: columnVisibility
+                        ) else { return }
+                        let horizontal = value.translation.width
+                        let vertical = abs(value.translation.height)
+                        if horizontal > PlatformSidebarRevealChromePolicy.revealSwipeMinimumTranslation,
+                           vertical < PlatformSidebarRevealChromePolicy.revealSwipeMaximumVerticalDrift {
+                            columnVisibility = PlatformSidebarRevealChromePolicy.visibilityAfterReveal()
+                        }
+                    }
+            )
+            .accessibilityLabel("Show sidebar")
+            .accessibilityHint("Swipe right to reveal the navigation sidebar")
+            .accessibilityAddTraits(.isButton)
+    }
+}
+#else
+private struct PlatformSidebarRevealEdgeGestureOverlay: View {
+    @Binding var columnVisibility: NavigationSplitViewVisibility
+
+    var body: some View {
+        EmptyView()
+    }
+}
+#endif

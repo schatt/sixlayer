@@ -24,7 +24,8 @@ alwaysApply: true
 ## Workflow
 
 1. **Declarative change:** edit `project.yml` → `xcodegen generate` → one commit with `project.yml` + all generated artifacts.
-2. **Xcode-only scheme alignment:** commit the updated `*.xcscheme` files as-is; no manual edits. A future `xcodegen generate` may produce verbose XML again — that's fine; opening/saving in Xcode may re-align; either form is consistent with `project.yml` as the declarative source.
+2. **Generated drift (no `project.yml` change):** if `project.pbxproj` or other XcodeGen outputs differ from HEAD (Xcode open, cache refresh, ephemeral UUID churn, etc.), **do not discard or hand-edit**. Run `xcodegen generate -c`, then commit the regenerated artifacts. `project.yml` is still the source of truth; the regen output is canonical.
+3. **Xcode-only scheme alignment:** commit the updated `*.xcscheme` files as-is; no manual edits. A future `xcodegen generate` may produce verbose XML again — that's fine; opening/saving in Xcode may re-align; either form is consistent with `project.yml` as the declarative source.
 
 ## Why
 

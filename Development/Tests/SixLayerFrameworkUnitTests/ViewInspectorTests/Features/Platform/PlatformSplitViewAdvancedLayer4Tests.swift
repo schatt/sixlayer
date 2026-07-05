@@ -120,8 +120,7 @@ open class PlatformSplitViewAdvancedLayer4Tests: BaseTestClass {
     
     @Test @MainActor func testPlatformSplitViewDividerCallbacksConfigurationExists() async {
         // Given: Divider callback configuration should exist
-        var callbackFired = false
-        let onDividerDrag: (Int, CGFloat) -> Void = { _, _ in callbackFired = true }
+        let _: (Int, CGFloat) -> Void = { _, _ in }
         
         // Then: Should be able to configure divider callbacks
         #expect(Bool(true), "Divider callbacks should be configurable")

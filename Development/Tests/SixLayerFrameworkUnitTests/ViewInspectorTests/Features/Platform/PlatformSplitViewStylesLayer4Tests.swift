@@ -54,7 +54,7 @@ open class PlatformSplitViewStylesLayer4Tests: BaseTestClass {
         let style = PlatformSplitViewStyle.balanced
         
         // When: Creating a view with style
-        let view = Text("Test")
+        _ = Text("Test")
             .platformVerticalSplit_L4(
                 spacing: 0,
                 style: style
@@ -72,7 +72,7 @@ open class PlatformSplitViewStylesLayer4Tests: BaseTestClass {
         let style = PlatformSplitViewStyle.prominentDetail
         
         // When: Creating a view with style
-        let view = Text("Test")
+        _ = Text("Test")
             .platformHorizontalSplit_L4(
                 spacing: 0,
                 style: style
@@ -94,7 +94,7 @@ open class PlatformSplitViewStylesLayer4Tests: BaseTestClass {
         )
         
         // When: Creating a view with divider
-        let view = Text("Test")
+        _ = Text("Test")
             .platformVerticalSplit_L4(
                 spacing: 0,
                 divider: divider
@@ -117,7 +117,7 @@ open class PlatformSplitViewStylesLayer4Tests: BaseTestClass {
         )
         
         // When: Creating a view with both
-        let view = Text("Test")
+        _ = Text("Test")
             .platformVerticalSplit_L4(
                 spacing: 0,
                 style: style,
@@ -154,7 +154,7 @@ open class PlatformSplitViewStylesLayer4Tests: BaseTestClass {
         )
         
         // When: Creating a view with appearance
-        let view = Text("Test")
+        _ = Text("Test")
             .platformVerticalSplit_L4(
                 spacing: 0,
                 appearance: appearance
@@ -175,7 +175,7 @@ open class PlatformSplitViewStylesLayer4Tests: BaseTestClass {
         let style = PlatformSplitViewStyle.balanced
         
         // When: Creating a view with style
-        let view = Text("Test")
+        _ = Text("Test")
             .platformVerticalSplit_L4(
                 spacing: 0,
                 style: style
@@ -197,7 +197,7 @@ open class PlatformSplitViewStylesLayer4Tests: BaseTestClass {
         let style = PlatformSplitViewStyle.prominentDetail
         
         // When: Creating a view with style
-        let view = Text("Test")
+        _ = Text("Test")
             .platformVerticalSplit_L4(
                 spacing: 0,
                 style: style

@@ -3,11 +3,14 @@ import SwiftUI
 // MARK: - Platform Menu System Extensions
 
 /// Platform-specific menu system extensions that provide consistent behavior
-/// across iOS and macOS while handling platform differences appropriately
+/// across iOS and macOS using SwiftUI `Menu`.
 public extension View {
 
-    /// Platform menu with menu items
-    /// iOS: No-op (menus not supported); macOS: Uses menu with menu items
+    /// Platform menu with menu items.
+    ///
+    /// Presents a SwiftUI `Menu` on iOS and macOS (toolbar overflow, action sheets, etc.).
+    /// Supersedes the iOS no-op behavior from [#62](https://github.com/schatt/sixlayer/issues/62);
+    /// see [#321](https://github.com/schatt/sixlayer/issues/321).
     ///
     /// - Parameter content: The menu items to display
     /// - Returns: A view with platform-appropriate menu behavior
@@ -24,19 +27,16 @@ public extension View {
     func platformMenu<MenuItems: View>(
         @ViewBuilder content: () -> MenuItems
     ) -> some View {
-        #if os(macOS)
         Menu {
             content()
         } label: {
             self
         }
-        #else
-        self
-        #endif
     }
 
-    /// Platform menu with menu items and label
-    /// iOS: No-op (menus not supported); macOS: Uses menu with menu items and label
+    /// Platform menu with menu items and label.
+    ///
+    /// Presents a SwiftUI `Menu` on iOS and macOS.
     ///
     /// - Parameters:
     ///   - label: The label for the menu
@@ -59,19 +59,16 @@ public extension View {
         label: Label,
         @ViewBuilder content: () -> MenuItems
     ) -> some View {
-        #if os(macOS)
         Menu {
             content()
         } label: {
             label
         }
-        #else
-        self
-        #endif
     }
 
-    /// Platform menu with menu items and title
-    /// iOS: No-op (menus not supported); macOS: Uses menu with menu items and title
+    /// Platform menu with menu items and title.
+    ///
+    /// Presents a SwiftUI `Menu` on iOS and macOS.
     ///
     /// - Parameters:
     ///   - title: The title for the menu
@@ -94,16 +91,11 @@ public extension View {
         title: String,
         @ViewBuilder content: () -> MenuItems
     ) -> some View {
-        #if os(macOS)
         Menu {
             content()
         } label: {
             Text(title)
         }
-        #else
-        self
-        #endif
     }
 }
-
 

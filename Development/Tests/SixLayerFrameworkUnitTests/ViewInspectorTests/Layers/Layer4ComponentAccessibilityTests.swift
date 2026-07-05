@@ -141,9 +141,8 @@ open class Layer4ComponentAccessibilityTests: BaseTestClass {
     @Test @MainActor func testPlatformSheetWithOnDismiss() async {
         initializeTestConfig()
         // Given: Sheet with onDismiss callback
-        var dismissCalled = false
-        let onDismiss = {
-            dismissCalled = true
+                let onDismiss = {
+            ()
         }
         
         // When: Applying platformSheet with onDismiss parameter
@@ -183,9 +182,8 @@ open class Layer4ComponentAccessibilityTests: BaseTestClass {
     @Test @MainActor func testPlatformSheetWithOnDismissAndDetents() async {
         initializeTestConfig()
         // Given: Sheet with both onDismiss and detents
-        var dismissCalled = false
-        let onDismiss = {
-            dismissCalled = true
+                let onDismiss = {
+            ()
         }
         
         // When: Applying platformSheet with both parameters

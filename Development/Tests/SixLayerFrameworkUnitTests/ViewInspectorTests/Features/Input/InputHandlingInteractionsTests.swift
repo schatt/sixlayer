@@ -585,7 +585,7 @@ open class InputHandlingInteractionsTests: BaseTestClass {
             let label = Text("Test Button")
             
             // When
-            let button = PlatformInteractionButton(style: .primary, action: action) {
+            _ = PlatformInteractionButton(style: .primary, action: action) {
                 label
             }
             
@@ -606,7 +606,7 @@ open class InputHandlingInteractionsTests: BaseTestClass {
             
             // When & Then
             for style in styles {
-                let button = PlatformInteractionButton(style: style, action: {}) {
+                _ = PlatformInteractionButton(style: style, action: {}) {
                     Text("Test")
                 }
                 #expect(Bool(true), "button is non-optional")  // button is non-optional

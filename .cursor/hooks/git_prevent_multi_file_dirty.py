@@ -2,7 +2,12 @@
 import json
 import os
 
-from cursor_git_context import porcelain_changed_paths, resolve_edit_git_context
+from cursor_git_context import (
+    current_branch,
+    is_integration_branch,
+    porcelain_changed_paths,
+    resolve_edit_git_context,
+)
 
 raw = os.environ.get("HOOK_JSON", "")
 try:
@@ -37,6 +42,22 @@ if not ctx:
     raise SystemExit(0)
 
 git_root, path = ctx
+branch = current_branch(git_root)
+if is_integration_branch(git_root, branch):
+    msg = (
+        "SixLayer git hook: edits blocked on integration branch "
+        f"`{branch}` in {git_root}. Attempted: {path}. "
+        "Use a git worktree on wip/<issue-slug> (see .cursor/rules/github-issue-workflow.mdc)."
+    )
+    out = {
+        "permission": "deny",
+        "user_message": msg,
+        "agent_message": msg
+        + " Do not bypass this hook. Set SIXLAYER_GIT_HOOK_BYPASS=1 only if intentional.",
+    }
+    print(json.dumps(out))
+    raise SystemExit(0)
+
 changed = porcelain_changed_paths(git_root)
 if not changed or path in changed:
     print('{"permission":"allow"}')

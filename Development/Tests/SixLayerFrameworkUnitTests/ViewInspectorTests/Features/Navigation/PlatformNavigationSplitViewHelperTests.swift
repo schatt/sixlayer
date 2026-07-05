@@ -35,7 +35,6 @@ open class PlatformNavigationSplitViewHelperTests: BaseTestClass {
         
         // Then: Should create a valid view structure
         #if canImport(ViewInspector)
-        do {
             guard let inspected = try? AnyView(view).inspect() else { return }
             
             // On iPad, should use NavigationSplitView (iOS 16+) or NavigationView (iOS 15)
@@ -56,9 +55,6 @@ open class PlatformNavigationSplitViewHelperTests: BaseTestClass {
                 #expect(Bool(true), "macOS should use NavigationSplitView on macOS 13+")
             }
             #endif
-        } catch {
-            Issue.record("Failed to inspect navigation split view structure")
-        }
         #else
         // ViewInspector not available on this platform - this is expected, not a failure
         #endif
@@ -79,7 +75,6 @@ open class PlatformNavigationSplitViewHelperTests: BaseTestClass {
         // Then: Should create a valid view structure
         // On iPhone portrait, should use NavigationStack (iOS 16+) or NavigationView with StackNavigationViewStyle (iOS 15)
         #if canImport(ViewInspector)
-        do {
             guard let inspected = try? AnyView(view).inspect() else { return }
             
             #if os(iOS)
@@ -93,9 +88,6 @@ open class PlatformNavigationSplitViewHelperTests: BaseTestClass {
                 #expect(hasNavigationView || true, "iPhone portrait should use NavigationView on iOS 15")
             }
             #endif
-        } catch {
-            Issue.record("Failed to inspect navigation split view structure")
-        }
         #else
         // ViewInspector not available on this platform - this is expected, not a failure
         #endif
@@ -115,7 +107,6 @@ open class PlatformNavigationSplitViewHelperTests: BaseTestClass {
         
         // Then: Should create a valid view structure
         #if canImport(ViewInspector)
-        do {
             guard let inspected = try? AnyView(view).inspect() else { return }
             
             #if os(macOS)
@@ -130,9 +121,6 @@ open class PlatformNavigationSplitViewHelperTests: BaseTestClass {
                 #expect(hasHStack || true, "macOS should use HStack on macOS 12")
             }
             #endif
-        } catch {
-            Issue.record("Failed to inspect navigation split view structure")
-        }
         #else
         // ViewInspector not available on this platform - this is expected, not a failure
         #endif
@@ -157,7 +145,6 @@ open class PlatformNavigationSplitViewHelperTests: BaseTestClass {
         
         // Then: Should create a valid view structure
         #if canImport(ViewInspector)
-        do {
             guard let inspected = try? AnyView(view).inspect() else { return }
             
             #if os(iOS)
@@ -177,9 +164,6 @@ open class PlatformNavigationSplitViewHelperTests: BaseTestClass {
                 #expect(Bool(true), "macOS should use NavigationSplitView on macOS 13+")
             }
             #endif
-        } catch {
-            Issue.record("Failed to inspect navigation split view structure")
-        }
         #else
         // ViewInspector not available on this platform - this is expected, not a failure
         #endif
@@ -203,7 +187,6 @@ open class PlatformNavigationSplitViewHelperTests: BaseTestClass {
         // Then: Should create a valid view structure
         // On iPhone portrait, should use NavigationStack (iOS 16+) or NavigationView with StackNavigationViewStyle (iOS 15)
         #if canImport(ViewInspector)
-        do {
             guard let inspected = try? AnyView(view).inspect() else { return }
             
             #if os(iOS)
@@ -217,9 +200,6 @@ open class PlatformNavigationSplitViewHelperTests: BaseTestClass {
                 #expect(hasNavigationView || true, "iPhone portrait should use NavigationView on iOS 15")
             }
             #endif
-        } catch {
-            Issue.record("Failed to inspect navigation split view structure")
-        }
         #else
         // ViewInspector not available on this platform - this is expected, not a failure
         #endif
@@ -242,7 +222,6 @@ open class PlatformNavigationSplitViewHelperTests: BaseTestClass {
         
         // Then: Should create a valid view structure
         #if canImport(ViewInspector)
-        do {
             guard let inspected = try? AnyView(view).inspect() else { return }
             
             #if os(macOS)
@@ -257,9 +236,6 @@ open class PlatformNavigationSplitViewHelperTests: BaseTestClass {
                 #expect(hasHStack || true, "macOS should use HStack on macOS 12")
             }
             #endif
-        } catch {
-            Issue.record("Failed to inspect navigation split view structure")
-        }
         #else
         // ViewInspector not available on this platform - this is expected, not a failure
         #endif

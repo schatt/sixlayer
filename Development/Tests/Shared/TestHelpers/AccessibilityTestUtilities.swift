@@ -34,19 +34,7 @@ import AppKit
 /// The hang occurs when accessing `hosting.view` - a synchronous UIKit/AppKit call that cannot be timed out.
 /// 
 
-/// Get accessibility identifier: ViewInspector (real hierarchy) when view is Inspectable, else platform fallback only.
-#if canImport(ViewInspector)
-@MainActor
-public func getAccessibilityIdentifierForTest<V: View & ViewInspector.Inspectable>(view: V, hostedRoot: Any? = nil) -> String? {
-    if let inspected = inspectView(view) {
-        if let id = try? inspected.accessibilityIdentifier(), !id.isEmpty { return id }
-        if let button = try? inspected.button(), let id = try? button.accessibilityIdentifier(), !id.isEmpty { return id }
-    }
-    guard let root = hostedRoot else { return nil }
-    return firstAccessibilityIdentifier(inHosted: root)
-}
-#endif
-
+/// Get accessibility identifier: direct typed inspection when possible, then platform/AnyView fallback.
 #if canImport(ViewInspector)
 /// Recursively find first non-empty accessibility identifier in ViewInspector hierarchy (for iOS when platform returns nil).
 @MainActor
@@ -123,9 +111,9 @@ private func allAccessibilityIdentifiersInInspectedRecursive(
 }
 
 /// Collect accessibility identifiers from a directly inspected view (no AnyView wrap).
-/// Use when the view type conforms to ViewInspector.Inspectable (Issue 178).
+/// Use with a directly inspected concrete view type (Issue 178).
 @MainActor
-private func allAccessibilityIdentifiersFromTypedInspectable<V: View & ViewInspector.Inspectable>(
+private func allAccessibilityIdentifiersFromTypedInspectable<V: View>(
     _ inspected: ViewInspector.InspectableView<ViewInspector.ViewType.View<V>>
 ) -> [String] {
     var ids: [String] = []
@@ -207,10 +195,15 @@ private func collectAccessibilityIdentifierCandidateBucketsForTest<V: View>(
 }
 #endif
 
-/// Get accessibility identifier when view is not Inspectable: merge platform, debug log, synthesis, and ViewInspector candidates (#314).
+/// Merge typed inspection, hosted UIKit, ViewInspector recursion, synthesis, and debug-log candidates (#314 / #178).
 @MainActor
 public func getAccessibilityIdentifierForTest<V: View>(view: V, hostedRoot: Any? = nil) -> String? {
     #if canImport(ViewInspector)
+    if let inspected = inspectView(view) {
+        if let id = try? inspected.accessibilityIdentifier(), !id.isEmpty { return id }
+        if let button = try? inspected.button(), let id = try? button.accessibilityIdentifier(), !id.isEmpty { return id }
+    }
+
     let buckets = collectAccessibilityIdentifierCandidateBucketsForTest(view: view, hostedRoot: hostedRoot)
     let scoped = buckets.hosted + buckets.inspected + buckets.synthesized
     if let preferred = preferredAccessibilityIdentifierFromCandidates(scoped, view: view) {
@@ -219,32 +212,44 @@ public func getAccessibilityIdentifierForTest<V: View>(view: V, hostedRoot: Any?
     if let fromLog = preferredAccessibilityIdentifierFromCandidates(buckets.debugLog, view: view) {
         return fromLog
     }
+
+    if let root = hostedRoot, let id = firstAccessibilityIdentifier(inHosted: root), !id.isEmpty {
+        return id
+    }
+    if let cfg = AccessibilityIdentifierConfig.currentTaskLocalConfig {
+        let fromLog = AccessibilityTestUtilities.parsedIdentifiersFromConfigDebugLog(config: cfg)
+        if let id = fromLog.reversed().first(where: { !$0.isEmpty && $0.split(separator: ".").count == 1 }) {
+            return id
+        }
+        if let id = fromLog.reversed().first(where: { !$0.isEmpty }) {
+            return id
+        }
+    }
+    if let inspected = try? AnyView(view).inspect() {
+        if let id = firstAccessibilityIdentifierInInspected(inspected) { return id }
+        if let inner = try? inspected.anyView() {
+            if let id = try? inner.accessibilityIdentifier(), !id.isEmpty { return id }
+            if let button = try? inner.button(), let id = try? button.accessibilityIdentifier(), !id.isEmpty { return id }
+        }
+        if let id = try? inspected.accessibilityIdentifier(), !id.isEmpty { return id }
+        if let button = try? inspected.button(), let id = try? button.accessibilityIdentifier(), !id.isEmpty { return id }
+    }
     #endif
     guard let root = hostedRoot else { return nil }
     return firstAccessibilityIdentifier(inHosted: root)
 }
 
-/// Get accessibility label: ViewInspector (real hierarchy) when view is Inspectable, else platform fallback only.
-#if canImport(ViewInspector)
+/// Get accessibility label: modifier parameter, typed inspection, hosted hierarchy, then AnyView recursion (#314 / #178).
 @MainActor
-public func getAccessibilityLabelForTest<V: View & ViewInspector.Inspectable>(view: V, hostedRoot: Any? = nil) -> String? {
+public func getAccessibilityLabelForTest<V: View>(view: V, hostedRoot: Any? = nil) -> String? {
+    #if canImport(ViewInspector)
+    if let rawLabel = explicitAccessibilityLabelFromAutomaticComplianceModifier(in: view) {
+        return localizeAccessibilityLabel(rawLabel, context: nil, elementType: nil)
+    }
     if let inspected = inspectView(view) {
         if let labelView = try? inspected.accessibilityLabel(), let labelText = try? labelView.string(), !labelText.isEmpty {
             return labelText
         }
-    }
-    guard let root = hostedRoot else { return nil }
-    return firstAccessibilityLabel(inHosted: root)
-}
-#endif
-
-/// Get accessibility label when view is not Inspectable: try platform hierarchy first, then ViewInspector (Issue 178).
-@MainActor
-public func getAccessibilityLabelForTest<V: View>(view: V, hostedRoot: Any? = nil) -> String? {
-    #if canImport(ViewInspector)
-    // Modifier parameter is authoritative when ViewInspector/hosting omit the label (common in unit tests).
-    if let rawLabel = explicitAccessibilityLabelFromAutomaticComplianceModifier(in: view) {
-        return localizeAccessibilityLabel(rawLabel, context: nil, elementType: nil)
     }
     if let root = hostedRoot, let label = firstAccessibilityLabel(inHosted: root), !label.isEmpty {
         return label
@@ -252,6 +257,15 @@ public func getAccessibilityLabelForTest<V: View>(view: V, hostedRoot: Any? = ni
     if let inspected = try? AnyView(view).inspect() {
         if let label = firstAccessibilityLabelInInspectedRecursive(inspected) {
             return label
+        }
+        if let inner = try? inspected.anyView(),
+           let labelView = try? inner.accessibilityLabel(),
+           let labelText = try? labelView.string(), !labelText.isEmpty {
+            return labelText
+        }
+        if let labelView = try? inspected.accessibilityLabel(),
+           let labelText = try? labelView.string(), !labelText.isEmpty {
+            return labelText
         }
     }
     #endif
@@ -1949,40 +1963,6 @@ public enum AccessibilityTestUtilities {
         return passed
     }
 
-    #if canImport(ViewInspector)
-    /// Same as testComponentComplianceSinglePlatform but for Inspectable views: uses direct view.inspect() (no AnyView — Issue 178).
-    @MainActor
-    public static func testComponentComplianceSinglePlatform<V: View & ViewInspector.Inspectable>(
-        _ view: V,
-        expectedPattern: String,
-        platform: SixLayerPlatform,
-        componentName: String,
-        testHIGCompliance: Bool = true,
-        diagnostic: inout String?,
-        exposeContentAccessibility: Bool = true
-    ) -> Bool {
-        let passed = testComponentComplianceSinglePlatform(
-            view,
-            expectedPattern: expectedPattern,
-            platform: platform,
-            componentName: componentName,
-            testHIGCompliance: testHIGCompliance,
-            exposeContentAccessibility: exposeContentAccessibility,
-            recordFailureIssues: false
-        )
-        if !passed {
-            populateComplianceFailureDiagnostic(
-                view: view,
-                expectedPattern: expectedPattern,
-                componentName: componentName,
-                exposeContentAccessibility: exposeContentAccessibility,
-                diagnostic: &diagnostic
-            )
-        }
-        return passed
-    }
-    #endif // canImport(ViewInspector)
-
     /// Test accessibility identifiers for a view across platforms.
     /// Returns true only if at least one accessibility identifier matches the expected pattern or contains the component name.
     @MainActor
@@ -2051,30 +2031,6 @@ public func testComponentComplianceSinglePlatform<V: View>(
         exposeContentAccessibility: exposeContentAccessibility
     )
 }
-
-#if canImport(ViewInspector)
-/// Global alias for Inspectable views: uses direct view.inspect() (no AnyView — Issue 178).
-@MainActor
-public func testComponentComplianceSinglePlatform<V: View & ViewInspector.Inspectable>(
-    _ view: V,
-    expectedPattern: String,
-    platform: SixLayerPlatform,
-    componentName: String,
-    testHIGCompliance: Bool = true,
-    diagnostic: inout String?,
-    exposeContentAccessibility: Bool = true
-) -> Bool {
-    return AccessibilityTestUtilities.testComponentComplianceSinglePlatform(
-        view,
-        expectedPattern: expectedPattern,
-        platform: platform,
-        componentName: componentName,
-        testHIGCompliance: testHIGCompliance,
-        diagnostic: &diagnostic,
-        exposeContentAccessibility: exposeContentAccessibility
-    )
-}
-#endif
 
 /// Global function alias for testAccessibilityIdentifiersCrossPlatform
 @MainActor

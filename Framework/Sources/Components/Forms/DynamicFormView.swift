@@ -203,7 +203,7 @@ public struct DynamicFormView: View {
 }
 
 // MARK: - Dynamic Form View Inner (Issue #186: uses resolved formState for observation)
-// Internal so tests can add ViewInspector.Inspectable and find the Submit button.
+// Internal so tests can inspect DynamicFormViewInner directly and find the Submit button.
 
 @MainActor
 struct DynamicFormViewInner: View {
