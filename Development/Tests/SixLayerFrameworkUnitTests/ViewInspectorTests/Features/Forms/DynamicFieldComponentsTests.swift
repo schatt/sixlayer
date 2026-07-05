@@ -64,17 +64,6 @@ open class DynamicFieldComponentsTests: BaseTestClass {
     }
 
     @MainActor
-    private func withFieldHierarchy(
-        _ view: some View,
-        _ perform: (ViewInspector.InspectableView<ViewType.AnyView>) -> Void
-    ) -> Bool {
-        withInspectedViewUnwrapped(view, perform: { inner in
-            perform(inner)
-            return true
-        }) != nil
-    }
-
-    @MainActor
     private func assertFieldGeneratesAccessibilityIdentifier(
         _ view: some View,
         componentName: String,
