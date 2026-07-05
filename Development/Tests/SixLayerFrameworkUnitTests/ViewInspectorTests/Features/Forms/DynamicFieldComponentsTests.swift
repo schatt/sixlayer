@@ -24,11 +24,11 @@ open class DynamicFieldComponentsTests: BaseTestClass {
 
     #if canImport(ViewInspector)
     @MainActor
-    private func findAllInFieldHierarchy<F: View & ViewInspector.Inspectable, T: ViewInspector.KnownViewType>(
+    private func findAllInFieldHierarchy<F: View, T: ViewInspector.KnownViewType>(
         _ fieldView: F,
         _ viewType: T.Type
     ) -> [ViewInspector.InspectableView<T>] {
-        if let inspected = try? fieldView.inspect() {
+        if let inspected = try? fieldView.inspect().view(F.self) {
             let found = inspected.findAll(viewType)
             if !found.isEmpty { return found }
         }
@@ -36,15 +36,11 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             let found = vStack.findAll(viewType)
             if !found.isEmpty { return found }
         }
-        if let inner = withInspectedViewUnwrapped(AnyView(fieldView), perform: { inner in inner }) {
-            let found = inner.findAll(viewType)
-            if !found.isEmpty { return found }
-        }
-        return []
+        return findAllInViewHierarchy(fieldView, viewType)
     }
 
     @MainActor
-    private func expectCharacterCounterText<F: View & ViewInspector.Inspectable>(
+    private func expectCharacterCounterText<F: View>(
         in fieldView: F,
         maxLength: Int,
         message: String
@@ -58,11 +54,11 @@ open class DynamicFieldComponentsTests: BaseTestClass {
     }
 
     @MainActor
-    private func withFieldHierarchy<F: View & ViewInspector.Inspectable>(
+    private func withFieldHierarchy<F: View>(
         _ fieldView: F,
         _ perform: (ViewInspector.InspectableView<ViewInspector.ViewType.View<F>>) -> Void
     ) -> Bool {
-        guard let inspected = try? fieldView.inspect() else { return false }
+        guard let inspected = try? fieldView.inspect().view(F.self) else { return false }
         perform(inspected)
         return true
     }
