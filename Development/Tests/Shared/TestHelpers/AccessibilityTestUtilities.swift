@@ -1468,6 +1468,47 @@ public enum AccessibilityTestUtilities {
         return generated.isEmpty ? nil : generated
     }
 
+    /// `DynamicFormFieldView` applies `.automaticComplianceForDynamicFormField` in `body`; mirror walks of the struct value do not see that modifier (#314).
+    @MainActor
+    private static func appendDynamicFormFieldRowSyntheticIdentifier(
+        in value: Any,
+        config: AccessibilityIdentifierConfig,
+        identifiers: inout [String],
+        seen: inout Set<String>,
+        remainingDepth: Int = 12
+    ) {
+        guard remainingDepth >= 0 else { return }
+        if let fieldView = value as? DynamicFormFieldView {
+            let generated = generateAccessibilityIdentifier(
+                config: config,
+                identifierName: fieldView.field.effectiveAccessibilityIdentifierSegment,
+                identifierElementType: "View",
+                identifierLabel: nil,
+                capturedScreenContext: config.currentScreenContext,
+                capturedViewHierarchy: config.currentViewHierarchy,
+                capturedEnableUITestIntegration: config.enableUITestIntegration,
+                capturedIncludeComponentNames: config.includeComponentNames,
+                capturedIncludeElementTypes: config.includeElementTypes,
+                capturedEnableDebugLogging: false,
+                capturedNamespace: config.namespace,
+                capturedGlobalPrefix: config.globalPrefix,
+                defaultElementType: "View",
+                emptyFallback: "element"
+            )
+            appendSyntheticIdentifier(generated, to: &identifiers, seen: &seen)
+        }
+        let mirror = Mirror(reflecting: value)
+        for child in mirror.children {
+            appendDynamicFormFieldRowSyntheticIdentifier(
+                in: child.value,
+                config: config,
+                identifiers: &identifiers,
+                seen: &seen,
+                remainingDepth: remainingDepth - 1
+            )
+        }
+    }
+
     /// Recover IDs from `.automaticCompliance(identifierName:)` / field compliance when hosting skips modifier bodies (#314).
     @MainActor
     private static func syntheticAutomaticComplianceIdentifiers<V: View>(
@@ -1478,6 +1519,7 @@ public enum AccessibilityTestUtilities {
             var identifiers: [String] = []
             var seen = Set<String>()
             syntheticExplicitModifierIdentifiers(view: view, config: config, identifiers: &identifiers, seen: &seen)
+            appendDynamicFormFieldRowSyntheticIdentifier(in: view, config: config, identifiers: &identifiers, seen: &seen)
             return identifiers
         }
 
@@ -1486,6 +1528,8 @@ public enum AccessibilityTestUtilities {
 
         var identifiers: [String] = []
         var seen = Set<String>()
+
+        appendDynamicFormFieldRowSyntheticIdentifier(in: view, config: config, identifiers: &identifiers, seen: &seen)
 
         var namedComponentNames: [String] = []
         collectNamedAutomaticComplianceComponentNames(in: view, into: &namedComponentNames)
@@ -1734,7 +1778,14 @@ public enum AccessibilityTestUtilities {
             if let directID = try? inspected.accessibilityIdentifier(), !directID.isEmpty { return directID }
             if let button = try? inspected.button(), let buttonID = try? button.accessibilityIdentifier(), !buttonID.isEmpty { return buttonID }
             let deepIDs = allAccessibilityIdentifiersFromViewInspector(view)
-            if let first = deepIDs.first { return first }
+            let namespace = AccessibilityIdentifierConfig.currentTaskLocalConfig?.namespace ?? "SixLayer"
+            let manualPrefix = namespace + "."
+            if let manualID = deepIDs.first(where: { !$0.hasPrefix(manualPrefix) }) {
+                return manualID
+            }
+            if let preferred = preferredAccessibilityIdentifierFromCandidates(deepIDs, view: view) {
+                return preferred
+            }
             if let syntheticID = syntheticModifierIdentifierFromView(view), !syntheticID.isEmpty { return syntheticID }
             // If we reach here, ViewInspector couldn't find an identifier. This is
             // treated as an inspection limitation rather than a hard failure; the
