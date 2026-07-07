@@ -27,7 +27,7 @@ Navigate to the `Framework/` directory and use it as a Swift Package:
 ```swift
 // In your Package.swift
 dependencies: [
-    .package(url: "https://github.com/schatt/sixlayer.git", from: "8.0.0")
+    .package(url: "https://github.com/schatt/sixlayer.git", from: "8.1.0")
 ]
 ```
 
@@ -41,13 +41,13 @@ dependencies: [
 
 The framework is distributed as a Swift Package from the `Framework/` directory. This ensures that only the essential framework code is included when other projects consume it.
 
-## 🆕 Latest Release: v8.0.0
+## 🆕 Latest Release: v8.1.0
 
-### **Major release**
+### **Minor release**
+🔧 **Minor**: ViewInspector 0.10 test infrastructure — hosted accessibility identifier collection (#314); **SixLayerViewInspectorTestKit** for consumers (#327); typed inspect helpers (#326); deprecated `Inspectable` conformance removal (#328). See [RELEASE_v8.1.0.md](Development/RELEASE_v8.1.0.md).
+
+### **Previous Release: v8.0.0 - Major release**
 🎯 **Major**: App navigation chrome — navigation sheet toolbar leading control with phone / detailOnly visibility (#323); sidebar reveal chrome for split detail-only layouts (#324); iOS automatic vs explicit detailOnly fix (#325); `platformMenu` SwiftUI Menu on iOS (#321). See [RELEASE_v8.0.0.md](Development/RELEASE_v8.0.0.md).
-
-### **Previous Release: v7.9.0 - Minor release**
-🔧 **Patch**: Dynamic Type typography — `DynamicFontResolver` (#295), design-token scaling (#294), scalable `platformSystem` and `platformDecorativeIconFont` (#296). See [RELEASE_v7.8.8.md](Development/RELEASE_v7.8.8.md).
 
 ### **Previous Release: v7.8.7 - Patch release**
 🔧 **Patch**: `PlatformTabStrip` public initializer for app-target consumers (#292). See [RELEASE_v7.8.7.md](Development/RELEASE_v7.8.7.md).
@@ -283,8 +283,8 @@ These guides contain critical information about the Layer 1 Semantic Intent phil
 
 ## 📋 Current Status
 
-**Version**: v8.0.0 (Major)
-**Phase**: Major release
+**Version**: v8.1.0 (Minor)
+**Phase**: Minor release
 **Next**: TBD
 
 ## 🤝 Contributing
