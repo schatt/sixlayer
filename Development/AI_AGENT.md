@@ -11,6 +11,8 @@ This document provides guidance for AI assistants working with the SixLayer Fram
 ## 📚 Version-Specific Guides
 
 ### Latest Versions (Recommended)
+- **v8.1.0** — Minor release: ViewInspector 0.10 test infrastructure — hosted accessibility identifier collection (#314), SixLayerViewInspectorTestKit (#327), typed inspect helpers (#326), Inspectable removal (#328) (see [RELEASE_v8.1.0.md](RELEASE_v8.1.0.md))
+- **[AI_AGENT_v8.1.0.md](AI_AGENT_v8.1.0.md)** - v8.1.x architecture guide (minor): ViewInspectorTestKit, hosted a11y collection, no Inspectable conformances
 - **v8.0.0** — Major release: app navigation chrome — navigation sheet toolbar visibility (#323), sidebar reveal chrome (#324), iOS automatic vs detailOnly (#325), `platformMenu` SwiftUI Menu on iOS (#321) (see [RELEASE_v8.0.0.md](RELEASE_v8.0.0.md))
 - **[AI_AGENT_v8.0.0.md](AI_AGENT_v8.0.0.md)** - v8.0.x architecture guide (major): navigation sheet visibility policy, sidebar reveal chrome, iOS explicit detailOnly, platformMenu Menu on iOS
 - **v7.9.0** — Minor release: HIG automatic compliance (#302–#303), intelligent card viewport/layout (#306–#309), capability override test hygiene (#251, #311–#313), Sendable policy (#310) (see [RELEASE_v7.9.0.md](RELEASE_v7.9.0.md))
