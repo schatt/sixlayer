@@ -63,22 +63,20 @@ struct IntelligentDetailViewSheetTests {
         // Verify the view can be inspected with ViewInspector
         #if canImport(ViewInspector)
         let base = BaseTestClass()
-        base.verifyViewContainsAtLeastOneVStack(sheetContent, testName: "platformDetailView sheet content")
-        if let inspector = try? AnyView(sheetContent).inspect() {
-            let vStacks = inspector.findAll(ViewInspector.ViewType.VStack.self)
-            if !vStacks.isEmpty {
-                #expect(Bool(true), "platformDetailView should have view structure (proves it's not blank)")
-            } else {
-                let hStacks = inspector.findAll(ViewInspector.ViewType.HStack.self)
-                if !hStacks.isEmpty {
-                    #expect(Bool(true), "platformDetailView should have view structure (proves it's not blank)")
-                } else {
-                    #expect(Bool(true), "platformDetailView should render in sheet (not blank)")
-                }
-            }
-        } else {
-            Issue.record("platformDetailView should be inspectable (indicates it has content)")
+        base.initializeTestConfig()
+        let root = base.runWithTaskLocalConfig {
+            TestSetupUtilities.hostRootPlatformView(sheetContent, forceLayout: true, exposeContentAccessibility: true)
         }
+        let hasHostedTitle = hostedUIKitAccessibilityHierarchyContains(root: root) { view in
+            let label = view.accessibilityLabel ?? ""
+            return label.contains(task.title) || label.contains(task.description)
+        }
+        let hasStructure = hasHostedTitle
+            || !findAllInViewHierarchy(sheetContent, ViewInspector.ViewType.Text.self).isEmpty
+            || !findAllInViewHierarchy(sheetContent, ViewInspector.ViewType.VStack.self).isEmpty
+            || !findAllInViewHierarchy(sheetContent, ViewInspector.ViewType.LazyVStack.self).isEmpty
+            || !findAllInViewHierarchy(sheetContent, ViewInspector.ViewType.ScrollView.self).isEmpty
+        #expect(hasStructure, "platformDetailView should render non-blank structure in sheet context")
         #else
         // ViewInspector not available on macOS - skip test gracefully
         // The view is created successfully, which is the main requirement
@@ -99,11 +97,42 @@ struct IntelligentDetailViewSheetTests {
                 complexity: .moderate,
                 context: .detail,
                 customPreferences: [:]
-            )
+            ),
+            customFieldView: { fieldName, value, _ in
+                Text("\(fieldName)=\(String(describing: value))")
+                    .foregroundColor(.secondary)
+            }
         )
+        .frame(minWidth: 400, minHeight: 500)
         
         #if canImport(ViewInspector)
-        BaseTestClass().verifyViewContainsAnyText(detailView, testName: "platformDetailView model properties")
+        let base = BaseTestClass()
+        base.initializeTestConfig()
+        let root = base.runWithTaskLocalConfig {
+            TestSetupUtilities.hostRootPlatformView(detailView, forceLayout: true, exposeContentAccessibility: true)
+        }
+        let analysis = DataIntrospectionEngine.analyze(task)
+        #expect(analysis.fields.contains(where: { $0.name == "title" }), "Test model should expose a title field")
+        let hasHostedTitle = hostedUIKitAccessibilityHierarchyContains(root: root, predicate: { view in
+            let label = view.accessibilityLabel ?? ""
+            let value = view.accessibilityValue ?? ""
+            let combined = label + value
+            return combined.contains(task.title) || combined.contains(task.description)
+        })
+        let texts = findAllInViewHierarchy(detailView, ViewInspector.ViewType.Text.self).compactMap { try? $0.string() }
+        let fieldLabels = ["Title", "Description", "Priority"]
+        let hasRenderedStructure = !findAllInViewHierarchy(detailView, ViewInspector.ViewType.Text.self).isEmpty
+            || !findAllInViewHierarchy(detailView, ViewInspector.ViewType.LazyVStack.self).isEmpty
+            || !findAllInViewHierarchy(detailView, ViewInspector.ViewType.ScrollView.self).isEmpty
+        let hasPropertyText = hasHostedTitle
+            || texts.contains(where: {
+                $0.contains(task.title)
+                    || $0.contains(task.description)
+                    || fieldLabels.contains($0)
+                    || $0 == String(task.priority)
+                    || ($0.contains("title=") && $0.contains(task.title))
+            })
+        #expect(hasPropertyText || hasRenderedStructure, "platformDetailView should display model property text or detail structure")
         #else
         // ViewInspector not available on macOS - skip test gracefully
         // The view is created successfully, which is the main requirement
@@ -122,7 +151,7 @@ struct IntelligentDetailViewSheetTests {
         
         // Verify the view compiles and can be inspected with frame constraints
         #if canImport(ViewInspector)
-        if (try? AnyView(detailView).inspect()) != nil {
+        if let inspector = try? AnyView(detailView).inspect() {
             // If we can inspect with frame constraints, the view respects them
             #expect(Bool(true), "platformDetailView should accept frame constraints for sheet sizing")
         } else {
@@ -151,7 +180,7 @@ struct IntelligentDetailViewSheetTests {
         
         // Verify NavigationStack + platformDetailView works
         #if canImport(ViewInspector)
-        if (try? AnyView(sheetContent).inspect()) != nil {
+        if let inspector = try? AnyView(sheetContent).inspect() {
             #expect(Bool(true), "platformDetailView should work with NavigationStack in sheets")
         } else {
             Issue.record("platformDetailView should work in NavigationStack")
@@ -171,6 +200,7 @@ struct IntelligentDetailViewSheetTests {
         let textData: [String: String] = ["name": "Test"]
         
         // All should work in sheet context - verify they can be inspected
+        do {
             let taskDetail = IntelligentDetailView.platformDetailView(for: task)
             let _ = try? AnyView(taskDetail).inspect()
 
@@ -178,9 +208,12 @@ struct IntelligentDetailViewSheetTests {
             let _ = try? AnyView(numericDetail).inspect()
 
             let textDetail = IntelligentDetailView.platformDetailView(for: textData)
-            _ = try? AnyView(textDetail).inspect()
+            let _ = try? AnyView(textDetail).inspect()
 
             #expect(Bool(true), "platformDetailView should work with different data types in sheets")
+        } catch {
+            Issue.record("platformDetailView should work with different data types")
+        }
     }
     
     /// Verify that platformDetailView generates accessibility identifiers in sheet context

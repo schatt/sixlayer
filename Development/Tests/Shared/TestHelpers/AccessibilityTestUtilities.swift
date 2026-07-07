@@ -134,7 +134,68 @@ private func allAccessibilityIdentifiersFromTypedInspectable<V: View>(
 }
 #endif
 
-/// Get accessibility identifier when direct typed inspection is unavailable: try platform hierarchy first (IDs applied by SwiftUI), then ViewInspector (Issue 178).
+#if canImport(ViewInspector)
+@MainActor
+private func uniqueNonEmptyAccessibilityIdentifiers(_ values: [String]) -> [String] {
+    var seen = Set<String>()
+    return values.filter { value in
+        guard !value.isEmpty else { return false }
+        return seen.insert(value).inserted
+    }
+}
+
+/// Prefer the richest identifier when hosting returns a shallow leaf but mirror/debug synthesis has named/label segments (#314).
+@MainActor
+private func preferredAccessibilityIdentifierFromCandidates(_ candidates: [String], view: Any? = nil) -> String? {
+    let unique = uniqueNonEmptyAccessibilityIdentifiers(candidates)
+    guard !unique.isEmpty else { return nil }
+    if let view {
+        let anchors = AccessibilityTestUtilities.explicitNamedModifierNames(in: view)
+        for anchor in anchors.reversed() {
+            if let match = unique.first(where: { $0.localizedCaseInsensitiveContains(anchor) }) {
+                return match
+            }
+        }
+    }
+    return unique.max { lhs, rhs in
+        let lhsDepth = lhs.split(separator: ".").count
+        let rhsDepth = rhs.split(separator: ".").count
+        if lhsDepth != rhsDepth { return lhsDepth < rhsDepth }
+        return lhs.count < rhs.count
+    }
+}
+
+private struct AccessibilityIdentifierCandidateBuckets {
+    var hosted: [String] = []
+    var inspected: [String] = []
+    var synthesized: [String] = []
+    var debugLog: [String] = []
+}
+
+@MainActor
+private func collectAccessibilityIdentifierCandidateBucketsForTest<V: View>(
+    view: V,
+    hostedRoot: Any?
+) -> AccessibilityIdentifierCandidateBuckets {
+    var buckets = AccessibilityIdentifierCandidateBuckets()
+    if let root = hostedRoot {
+        buckets.hosted = findAllAccessibilityIdentifiersFromPlatformView(root)
+    }
+    if let inspected = try? AnyView(view).inspect() {
+        buckets.inspected = allAccessibilityIdentifiersInInspectedRecursive(inspected)
+    }
+    if let cfg = AccessibilityIdentifierConfig.currentTaskLocalConfig {
+        buckets.synthesized = AccessibilityTestUtilities.testingSyntheticAutomaticComplianceIdentifiers(
+            view: view,
+            config: cfg
+        )
+        buckets.debugLog = AccessibilityTestUtilities.parsedIdentifiersFromConfigDebugLog(config: cfg)
+    }
+    return buckets
+}
+#endif
+
+/// Merge typed inspection, hosted UIKit, ViewInspector recursion, synthesis, and debug-log candidates (#314 / #178).
 @MainActor
 public func getAccessibilityIdentifierForTest<V: View>(view: V, hostedRoot: Any? = nil) -> String? {
     #if canImport(ViewInspector)
@@ -142,14 +203,21 @@ public func getAccessibilityIdentifierForTest<V: View>(view: V, hostedRoot: Any?
         if let id = try? inspected.accessibilityIdentifier(), !id.isEmpty { return id }
         if let button = try? inspected.button(), let id = try? button.accessibilityIdentifier(), !id.isEmpty { return id }
     }
-    // Prefer platform hierarchy when available — SwiftUI applies modifiers to hosted views
+
+    let buckets = collectAccessibilityIdentifierCandidateBucketsForTest(view: view, hostedRoot: hostedRoot)
+    let scoped = buckets.hosted + buckets.inspected + buckets.synthesized
+    if let preferred = preferredAccessibilityIdentifierFromCandidates(scoped, view: view) {
+        return preferred
+    }
+    if let fromLog = preferredAccessibilityIdentifierFromCandidates(buckets.debugLog, view: view) {
+        return fromLog
+    }
+
     if let root = hostedRoot, let id = firstAccessibilityIdentifier(inHosted: root), !id.isEmpty {
         return id
     }
-    // Generator debug log (isolated test configs enable debug logging): UIKit may not mirror IDs in unit-test hosting.
     if let cfg = AccessibilityIdentifierConfig.currentTaskLocalConfig {
         let fromLog = AccessibilityTestUtilities.parsedIdentifiersFromConfigDebugLog(config: cfg)
-        // Prefer single-segment ids (exactNamed, short names) over long automaticCompliance shells.
         if let id = fromLog.reversed().first(where: { !$0.isEmpty && $0.split(separator: ".").count == 1 }) {
             return id
         }
@@ -171,10 +239,13 @@ public func getAccessibilityIdentifierForTest<V: View>(view: V, hostedRoot: Any?
     return firstAccessibilityIdentifier(inHosted: root)
 }
 
-/// Get accessibility label: direct typed inspection when possible, then platform/AnyView fallback.
+/// Get accessibility label: modifier parameter, typed inspection, hosted hierarchy, then AnyView recursion (#314 / #178).
 @MainActor
 public func getAccessibilityLabelForTest<V: View>(view: V, hostedRoot: Any? = nil) -> String? {
     #if canImport(ViewInspector)
+    if let rawLabel = explicitAccessibilityLabelFromAutomaticComplianceModifier(in: view) {
+        return localizeAccessibilityLabel(rawLabel, context: nil, elementType: nil)
+    }
     if let inspected = inspectView(view) {
         if let labelView = try? inspected.accessibilityLabel(), let labelText = try? labelView.string(), !labelText.isEmpty {
             return labelText
@@ -184,6 +255,9 @@ public func getAccessibilityLabelForTest<V: View>(view: V, hostedRoot: Any? = ni
         return label
     }
     if let inspected = try? AnyView(view).inspect() {
+        if let label = firstAccessibilityLabelInInspectedRecursive(inspected) {
+            return label
+        }
         if let inner = try? inspected.anyView(),
            let labelView = try? inner.accessibilityLabel(),
            let labelText = try? labelView.string(), !labelText.isEmpty {
@@ -198,6 +272,75 @@ public func getAccessibilityLabelForTest<V: View>(view: V, hostedRoot: Any? = ni
     guard let root = hostedRoot else { return nil }
     return firstAccessibilityLabel(inHosted: root)
 }
+
+#if canImport(ViewInspector)
+/// Read `accessibilityLabel` parameter from an `AutomaticComplianceModifier` when ViewInspector cannot see the applied label.
+@MainActor
+private func explicitAccessibilityLabelFromAutomaticComplianceModifier(
+    in value: Any,
+    remainingDepth: Int = 12
+) -> String? {
+    guard remainingDepth >= 0 else { return nil }
+    let typeName = String(describing: Swift.type(of: value))
+    if typeName.contains("AutomaticComplianceModifier") || typeName.contains("BasicAutomaticComplianceModifier") {
+        let mirror = Mirror(reflecting: value)
+        var accessibilityLabel: String?
+        var identifierLabel: String?
+        for child in mirror.children {
+            switch child.label {
+            case "accessibilityLabel": accessibilityLabel = child.value as? String
+            case "identifierLabel": identifierLabel = child.value as? String
+            default: break
+            }
+        }
+        if let label = accessibilityLabel, !label.isEmpty { return label }
+        if let label = identifierLabel, !label.isEmpty { return label }
+    }
+    let mirror = Mirror(reflecting: value)
+    for child in mirror.children {
+        if let label = explicitAccessibilityLabelFromAutomaticComplianceModifier(in: child.value, remainingDepth: remainingDepth - 1) {
+            return label
+        }
+    }
+    return nil
+}
+
+/// Deep ViewInspector walk for first non-empty accessibility label (modifier often on ClassifiedView nodes).
+@MainActor
+private func firstAccessibilityLabelInInspectedRecursive(
+    _ inspected: ViewInspector.InspectableView<ViewInspector.ViewType.ClassifiedView>
+) -> String? {
+    func labelFrom(_ node: ViewInspector.InspectableView<ViewInspector.ViewType.ClassifiedView>) -> String? {
+        if let labelView = try? node.accessibilityLabel(),
+           let labelText = try? labelView.string(), !labelText.isEmpty {
+            return labelText
+        }
+        return nil
+    }
+    if let label = labelFrom(inspected) { return label }
+    if let inner = try? inspected.anyView() {
+        if let labelView = try? inner.accessibilityLabel(),
+           let labelText = try? labelView.string(), !labelText.isEmpty {
+            return labelText
+        }
+    }
+    for node in inspected.findAll(ViewInspector.ViewType.ClassifiedView.self, where: { _ in true }) {
+        if let label = labelFrom(node) { return label }
+    }
+    for button in inspected.findAll(ViewInspector.ViewType.Button.self) {
+        if let labelView = try? button.labelView().find(ViewInspector.ViewType.Text.self),
+           let labelText = try? labelView.string(), !labelText.isEmpty {
+            return labelText
+        }
+    }
+    for text in inspected.findAll(ViewInspector.ViewType.Text.self) {
+        if let labelText = try? text.string(), !labelText.isEmpty {
+            return labelText
+        }
+    }
+    return nil
+}
+#endif
 
 #if canImport(UIKit) && !os(watchOS)
 /// Upper bound for `accessibilityElementCount` before enumerating via `accessibilityElementAtIndex:`.
@@ -505,12 +648,19 @@ public func dumpAccessibilityTreeForDiagnostics(root: Any?, maxViews: Int = 150)
 @MainActor
 public func hostedViewHasAccessibilityElementWithLabelAndButtonTrait(root: Any?, expectedLabel: String) -> Bool {
     guard let rootView = root as? UIView, !expectedLabel.isEmpty else { return false }
+    func labelMatches(_ label: String?) -> Bool {
+        guard let label, !label.isEmpty else { return false }
+        return label.contains(expectedLabel)
+    }
+    func isButtonLike(_ traits: UIAccessibilityTraits) -> Bool {
+        traits.contains(.button) || traits.contains(.allowsDirectInteraction)
+    }
     func checkElement(_ ax: UIAccessibilityElement) -> Bool {
-        guard let label = ax.accessibilityLabel, label.contains(expectedLabel) else { return false }
-        return ax.accessibilityTraits.contains(.button)
+        guard labelMatches(ax.accessibilityLabel) else { return false }
+        return isButtonLike(ax.accessibilityTraits)
     }
     func checkView(_ view: UIView) -> Bool {
-        if let label = view.accessibilityLabel, label.contains(expectedLabel), view.accessibilityTraits.contains(.button) {
+        if labelMatches(view.accessibilityLabel), isButtonLike(view.accessibilityTraits) {
             return true
         }
         if let elements = view.accessibilityElements {
@@ -524,8 +674,8 @@ public func hostedViewHasAccessibilityElementWithLabelAndButtonTrait(root: Any?,
                 if let el = raw as? UIAccessibilityElement, checkElement(el) {
                     return true
                 }
-                if let v = raw as? UIView, let label = v.accessibilityLabel, label.contains(expectedLabel),
-                   v.accessibilityTraits.contains(.button) {
+                if let v = raw as? UIView, labelMatches(v.accessibilityLabel),
+                   isButtonLike(v.accessibilityTraits) {
                     return true
                 }
             }
@@ -831,7 +981,7 @@ public enum AccessibilityTestUtilities {
 
     @MainActor
     private static func normalizedIdentifierCandidates(_ value: String) -> [String] {
-        guard !value.isEmpty else { return [] }
+        if value.isEmpty { return [""] }
         
         var candidates: [String] = [value]
         
@@ -858,10 +1008,41 @@ public enum AccessibilityTestUtilities {
         var seen = Set<String>()
         return candidates.filter { seen.insert($0).inserted }
     }
+
+    /// Legacy Layer 4/5/6 globs use `*.main.ui.element.*` while generators emit `SixLayer.main.ui.<Component>.View`.
+    @MainActor
+    private static func normalizedPatternCandidates(_ pattern: String) -> [String] {
+        guard !pattern.isEmpty else { return [] }
+        var candidates = normalizedIdentifierCandidates(pattern)
+        if pattern.contains(".main.ui.element.") {
+            candidates.append(pattern.replacingOccurrences(of: ".main.ui.element.", with: ".main.ui."))
+        }
+        if pattern.contains(".main.element.") {
+            candidates.append(pattern.replacingOccurrences(of: ".main.element.", with: ".main."))
+        }
+        var seen = Set<String>()
+        return candidates.filter { seen.insert($0).inserted }
+    }
     
+    /// True when `pattern` is a dot-segment glob (`*` only wildcards), not a regex.
+    @MainActor
+    private static func isDotSegmentGlobPattern(_ pattern: String) -> Bool {
+        guard pattern.contains("*") else { return false }
+        var remaining = pattern
+        while remaining.hasPrefix("*") { remaining.removeFirst() }
+        while remaining.hasSuffix("*") { remaining.removeLast() }
+        let segments = remaining.split(separator: "*", omittingEmptySubsequences: false)
+        return segments.allSatisfy { segment in
+            segment.isEmpty || segment.unicodeScalars.allSatisfy {
+                CharacterSet.alphanumerics.contains($0) || $0 == "." || $0 == "-" || $0 == "_"
+            }
+        }
+    }
+
     @MainActor
     private static func isRegexLikePattern(_ pattern: String) -> Bool {
-        pattern.contains("\\") || pattern.contains("^") || pattern.contains("$") || pattern.contains(".*")
+        if isDotSegmentGlobPattern(pattern) { return false }
+        return pattern.contains("\\") || pattern.contains("^") || pattern.contains("$") || pattern.contains(".*")
     }
     
     @MainActor
@@ -981,7 +1162,7 @@ public enum AccessibilityTestUtilities {
     private static func matchesExpectedPattern(_ identifier: String, expectedPattern: String) -> Bool {
         guard !expectedPattern.isEmpty else { return false }
         let idCandidates = normalizedIdentifierCandidates(identifier)
-        let patternCandidates = normalizedIdentifierCandidates(expectedPattern)
+        let patternCandidates = normalizedPatternCandidates(expectedPattern)
         
         for id in idCandidates {
             for pattern in patternCandidates {
@@ -1038,16 +1219,456 @@ public enum AccessibilityTestUtilities {
 
     /// UIHosting often skips `NamedModifier` / `ExactNamedModifier` bodies; use modifier algorithms as fallback.
     @MainActor
-    private static func syntheticModifierIdentifiers(
-        config: AccessibilityIdentifierConfig,
-        expectedPattern: String
-    ) -> [String] {
-        guard let explicitName = inferredExplicitName(from: expectedPattern) else { return [] }
-        return [
-            NamedModifier.testingGeneratedIdentifier(name: explicitName, config: config),
-            ExactNamedModifier.testingGeneratedIdentifier(name: explicitName, config: config)
-        ]
+    private static func collectNamedAutomaticComplianceComponentNames(
+        in value: Any,
+        remainingDepth: Int = 12,
+        into results: inout [String]
+    ) {
+        guard remainingDepth >= 0 else { return }
+        let typeName = String(describing: Swift.type(of: value))
+        let mirror = Mirror(reflecting: value)
+        if typeName.contains("NamedAutomaticComplianceModifier") {
+            for child in mirror.children where child.label == "componentName" {
+                if let name = child.value as? String, !name.isEmpty {
+                    results.append(name)
+                }
+            }
+        }
+        for child in mirror.children {
+            collectNamedAutomaticComplianceComponentNames(
+                in: child.value,
+                remainingDepth: remainingDepth - 1,
+                into: &results
+            )
+        }
     }
+
+    @MainActor
+    private static func appendSyntheticIdentifier(
+        _ generated: String?,
+        to identifiers: inout [String],
+        seen: inout Set<String>,
+        allowEmpty: Bool = false
+    ) {
+        guard let generated else { return }
+        if !allowEmpty && generated.isEmpty { return }
+        guard seen.insert(generated).inserted else { return }
+        identifiers.append(generated)
+    }
+
+    @MainActor
+    private static func collectExplicitModifierNames(
+        in value: Any,
+        modifierTypeFragment: String,
+        remainingDepth: Int = 12,
+        excludingTypeFragments: [String] = [],
+        into results: inout [String]
+    ) {
+        guard remainingDepth >= 0 else { return }
+        let typeName = String(describing: Swift.type(of: value))
+        let mirror = Mirror(reflecting: value)
+        if excludingTypeFragments.allSatisfy({ !typeName.contains($0) }),
+           typeName.contains(modifierTypeFragment) {
+            for child in mirror.children where child.label == "name" {
+                if let name = child.value as? String {
+                    results.append(name)
+                }
+            }
+        }
+        for child in mirror.children {
+            collectExplicitModifierNames(
+                in: child.value,
+                modifierTypeFragment: modifierTypeFragment,
+                remainingDepth: remainingDepth - 1,
+                excludingTypeFragments: excludingTypeFragments,
+                into: &results
+            )
+        }
+    }
+
+    @MainActor
+    private static func syntheticExplicitModifierIdentifiers<V: View>(
+        view: V,
+        config: AccessibilityIdentifierConfig,
+        identifiers: inout [String],
+        seen: inout Set<String>
+    ) {
+        var exactNames: [String] = []
+        collectExplicitModifierNames(in: view, modifierTypeFragment: "ExactNamedModifier", into: &exactNames)
+        for name in exactNames {
+            appendSyntheticIdentifier(
+                ExactNamedModifier.testingGeneratedIdentifier(name: name, config: config),
+                to: &identifiers,
+                seen: &seen,
+                allowEmpty: true
+            )
+        }
+
+        var namedNames: [String] = []
+        collectExplicitModifierNames(
+            in: view,
+            modifierTypeFragment: "NamedModifier",
+            excludingTypeFragments: ["NamedAutomaticCompliance", "ExactNamed"],
+            into: &namedNames
+        )
+        for name in namedNames {
+            appendSyntheticIdentifier(
+                NamedModifier.testingGeneratedIdentifier(name: name, config: config),
+                to: &identifiers,
+                seen: &seen
+            )
+        }
+    }
+
+    @MainActor
+    private static func syntheticModifierIdentifiers<V: View>(
+        view: V,
+        config: AccessibilityIdentifierConfig,
+        expectedPattern: String,
+        componentName: String
+    ) -> [String] {
+        var anchorNames: [String] = []
+        if let explicitName = inferredExplicitName(from: expectedPattern) {
+            anchorNames.append(explicitName)
+        }
+        var namedInView: [String] = []
+        collectNamedAutomaticComplianceComponentNames(in: view, into: &namedInView)
+        if namedInView.contains(componentName) {
+            anchorNames.append(componentName)
+        }
+        var seenAnchors = Set<String>()
+        let uniqueAnchors = anchorNames.filter { seenAnchors.insert($0).inserted }
+        return uniqueAnchors.flatMap { name in
+            [
+                NamedModifier.testingGeneratedIdentifier(name: name, config: config),
+                ExactNamedModifier.testingGeneratedIdentifier(name: name, config: config)
+            ]
+        }
+    }
+
+    /// Exposed for unit tests of anonymous `.automaticCompliance()` synthetic recovery (#314).
+    @MainActor
+    public static func testingSyntheticAutomaticComplianceIdentifiers<V: View>(
+        view: V,
+        config: AccessibilityIdentifierConfig
+    ) -> [String] {
+        syntheticAutomaticComplianceIdentifiers(view: view, config: config)
+    }
+
+    /// Explicit `.named()` / `.exactNamed()` anchors from the view value tree (for harness preference #314).
+    @MainActor
+    public static func explicitNamedModifierNames(in value: Any) -> [String] {
+        var exactNames: [String] = []
+        var namedNames: [String] = []
+        collectExplicitModifierNames(in: value, modifierTypeFragment: "ExactNamedModifier", into: &exactNames)
+        collectExplicitModifierNames(
+            in: value,
+            modifierTypeFragment: "NamedModifier",
+            excludingTypeFragments: ["NamedAutomaticCompliance", "ExactNamed"],
+            into: &namedNames
+        )
+        return exactNames + namedNames
+    }
+
+    @MainActor
+    public static func explicitNamedModifierNames<V: View>(in view: V) -> [String] {
+        explicitNamedModifierNames(in: view as Any)
+    }
+
+    @MainActor
+    private static func viewHasDisableAutomaticAccessibilityIdentifiersModifier(
+        in value: Any,
+        remainingDepth: Int = 12
+    ) -> Bool {
+        guard remainingDepth >= 0 else { return false }
+        let typeName = String(describing: Swift.type(of: value))
+        if typeName.contains("DisableAutomaticAccessibilityIdentifiersModifier") {
+            return true
+        }
+        let mirror = Mirror(reflecting: value)
+        for child in mirror.children {
+            if viewHasDisableAutomaticAccessibilityIdentifiersModifier(
+                in: child.value,
+                remainingDepth: remainingDepth - 1
+            ) {
+                return true
+            }
+        }
+        return false
+    }
+
+    #if canImport(ViewInspector)
+    private struct AutomaticComplianceModifierSnapshot {
+        var identifierName: String?
+        var identifierElementType: String?
+        var identifierLabel: String?
+        var accessibilityLabel: String?
+        var accessibilityHint: String?
+        var accessibilityTraits: AccessibilityTraits?
+        var accessibilityValue: String?
+        var accessibilitySortPriority: Double?
+    }
+
+    @MainActor
+    private static func collectAutomaticComplianceModifierSnapshots(
+        in value: Any,
+        remainingDepth: Int = 12,
+        into results: inout [AutomaticComplianceModifierSnapshot]
+    ) {
+        guard remainingDepth >= 0 else { return }
+        let typeName = String(describing: Swift.type(of: value))
+        let mirror = Mirror(reflecting: value)
+        if typeName.contains("AutomaticComplianceModifier") {
+            var snapshot = AutomaticComplianceModifierSnapshot()
+            for child in mirror.children {
+                switch child.label {
+                case "identifierName": snapshot.identifierName = child.value as? String
+                case "identifierElementType": snapshot.identifierElementType = child.value as? String
+                case "identifierLabel": snapshot.identifierLabel = child.value as? String
+                case "accessibilityLabel": snapshot.accessibilityLabel = child.value as? String
+                case "accessibilityHint": snapshot.accessibilityHint = child.value as? String
+                case "accessibilityTraits": snapshot.accessibilityTraits = child.value as? AccessibilityTraits
+                case "accessibilityValue": snapshot.accessibilityValue = child.value as? String
+                case "accessibilitySortPriority": snapshot.accessibilitySortPriority = child.value as? Double
+                default: break
+                }
+            }
+            results.append(snapshot)
+        }
+        for child in mirror.children {
+            collectAutomaticComplianceModifierSnapshots(
+                in: child.value,
+                remainingDepth: remainingDepth - 1,
+                into: &results
+            )
+        }
+    }
+
+    @MainActor
+    private static func generatedIdentifier(
+        for snapshot: AutomaticComplianceModifierSnapshot,
+        config: AccessibilityIdentifierConfig
+    ) -> String? {
+        let generated = generateAccessibilityIdentifier(
+            config: config,
+            identifierName: snapshot.identifierName,
+            identifierElementType: snapshot.identifierElementType,
+            identifierLabel: snapshot.identifierLabel,
+            capturedScreenContext: config.currentScreenContext,
+            capturedViewHierarchy: config.currentViewHierarchy,
+            capturedEnableUITestIntegration: config.enableUITestIntegration,
+            capturedIncludeComponentNames: config.includeComponentNames,
+            capturedIncludeElementTypes: config.includeElementTypes,
+            capturedEnableDebugLogging: false,
+            capturedNamespace: config.namespace,
+            capturedGlobalPrefix: config.globalPrefix,
+            defaultElementType: "View",
+            emptyFallback: "main.ui.element"
+        )
+        return generated.isEmpty ? nil : generated
+    }
+
+    /// `DynamicFormFieldView` applies `.automaticComplianceForDynamicFormField` in `body`; mirror walks of the struct value do not see that modifier (#314).
+    @MainActor
+    private static func appendDynamicFormFieldRowSyntheticIdentifier(
+        in value: Any,
+        config: AccessibilityIdentifierConfig,
+        identifiers: inout [String],
+        seen: inout Set<String>,
+        remainingDepth: Int = 12
+    ) {
+        guard remainingDepth >= 0 else { return }
+        if let fieldView = value as? DynamicFormFieldView {
+            let generated = generateAccessibilityIdentifier(
+                config: config,
+                identifierName: fieldView.field.effectiveAccessibilityIdentifierSegment,
+                identifierElementType: "View",
+                identifierLabel: nil,
+                capturedScreenContext: config.currentScreenContext,
+                capturedViewHierarchy: config.currentViewHierarchy,
+                capturedEnableUITestIntegration: config.enableUITestIntegration,
+                capturedIncludeComponentNames: config.includeComponentNames,
+                capturedIncludeElementTypes: config.includeElementTypes,
+                capturedEnableDebugLogging: false,
+                capturedNamespace: config.namespace,
+                capturedGlobalPrefix: config.globalPrefix,
+                defaultElementType: "View",
+                emptyFallback: "element"
+            )
+            appendSyntheticIdentifier(generated, to: &identifiers, seen: &seen)
+        }
+        let mirror = Mirror(reflecting: value)
+        for child in mirror.children {
+            appendDynamicFormFieldRowSyntheticIdentifier(
+                in: child.value,
+                config: config,
+                identifiers: &identifiers,
+                seen: &seen,
+                remainingDepth: remainingDepth - 1
+            )
+        }
+    }
+
+    /// Recover IDs from `.automaticCompliance(identifierName:)` / field compliance when hosting skips modifier bodies (#314).
+    @MainActor
+    private static func syntheticAutomaticComplianceIdentifiers<V: View>(
+        view: V,
+        config: AccessibilityIdentifierConfig
+    ) -> [String] {
+        if viewHasDisableAutomaticAccessibilityIdentifiersModifier(in: view) {
+            var identifiers: [String] = []
+            var seen = Set<String>()
+            syntheticExplicitModifierIdentifiers(view: view, config: config, identifiers: &identifiers, seen: &seen)
+            appendDynamicFormFieldRowSyntheticIdentifier(in: view, config: config, identifiers: &identifiers, seen: &seen)
+            return identifiers
+        }
+
+        var snapshots: [AutomaticComplianceModifierSnapshot] = []
+        collectAutomaticComplianceModifierSnapshots(in: view, into: &snapshots)
+
+        var identifiers: [String] = []
+        var seen = Set<String>()
+
+        appendDynamicFormFieldRowSyntheticIdentifier(in: view, config: config, identifiers: &identifiers, seen: &seen)
+
+        var namedComponentNames: [String] = []
+        collectNamedAutomaticComplianceComponentNames(in: view, into: &namedComponentNames)
+        for componentName in namedComponentNames {
+            let generated = generateAccessibilityIdentifier(
+                config: config,
+                identifierName: componentName,
+                identifierElementType: "View",
+                identifierLabel: nil,
+                capturedScreenContext: config.currentScreenContext,
+                capturedViewHierarchy: config.currentViewHierarchy,
+                capturedEnableUITestIntegration: config.enableUITestIntegration,
+                capturedIncludeComponentNames: config.includeComponentNames,
+                capturedIncludeElementTypes: config.includeElementTypes,
+                capturedEnableDebugLogging: false,
+                capturedNamespace: config.namespace,
+                capturedGlobalPrefix: config.globalPrefix,
+                defaultElementType: "View",
+                emptyFallback: "element"
+            )
+            appendSyntheticIdentifier(generated, to: &identifiers, seen: &seen)
+        }
+
+        syntheticExplicitModifierIdentifiers(view: view, config: config, identifiers: &identifiers, seen: &seen)
+
+        for snapshot in snapshots {
+            if let name = snapshot.identifierName?.trimmingCharacters(in: .whitespacesAndNewlines),
+               !name.isEmpty,
+               let generated = generatedIdentifier(for: snapshot, config: config) {
+                appendSyntheticIdentifier(generated, to: &identifiers, seen: &seen)
+            }
+        }
+
+        let hasAnonymous = snapshots.contains {
+            slfSuppressAnonymousAutomaticComplianceWrapperIdentifier(
+                identifierName: $0.identifierName,
+                identifierElementType: $0.identifierElementType,
+                identifierLabel: $0.identifierLabel,
+                accessibilityLabel: $0.accessibilityLabel,
+                accessibilityHint: $0.accessibilityHint,
+                accessibilityTraits: $0.accessibilityTraits,
+                accessibilityValue: $0.accessibilityValue,
+                accessibilitySortPriority: $0.accessibilitySortPriority
+            )
+        }
+        guard hasAnonymous, identifiers.isEmpty else { return identifiers }
+        guard let params = inferredInteractiveControlParameters(from: view) else { return identifiers }
+        let generated = generateAccessibilityIdentifier(
+            config: config,
+            identifierName: nil,
+            identifierElementType: params.elementType,
+            identifierLabel: params.label,
+            capturedScreenContext: config.currentScreenContext,
+            capturedViewHierarchy: config.currentViewHierarchy,
+            capturedEnableUITestIntegration: config.enableUITestIntegration,
+            capturedIncludeComponentNames: config.includeComponentNames,
+            capturedIncludeElementTypes: config.includeElementTypes,
+            capturedEnableDebugLogging: false,
+            capturedNamespace: config.namespace,
+            capturedGlobalPrefix: config.globalPrefix,
+            defaultElementType: "View",
+            emptyFallback: "main.ui.element"
+        )
+        appendSyntheticIdentifier(generated, to: &identifiers, seen: &seen)
+        return identifiers
+    }
+
+    @MainActor
+    private static func viewHasAnonymousAutomaticComplianceModifier(
+        in value: Any,
+        remainingDepth: Int = 12
+    ) -> Bool {
+        var snapshots: [AutomaticComplianceModifierSnapshot] = []
+        collectAutomaticComplianceModifierSnapshots(in: value, remainingDepth: remainingDepth, into: &snapshots)
+        return snapshots.contains {
+            slfSuppressAnonymousAutomaticComplianceWrapperIdentifier(
+                identifierName: $0.identifierName,
+                identifierElementType: $0.identifierElementType,
+                identifierLabel: $0.identifierLabel,
+                accessibilityLabel: $0.accessibilityLabel,
+                accessibilityHint: $0.accessibilityHint,
+                accessibilityTraits: $0.accessibilityTraits,
+                accessibilityValue: $0.accessibilityValue,
+                accessibilitySortPriority: $0.accessibilitySortPriority
+            )
+        }
+    }
+
+    @MainActor
+    private static func inferredInteractiveControlParameters<V: View>(
+        from view: V
+    ) -> (elementType: String, label: String?)? {
+        guard let inspected = try? AnyView(view).inspect() else { return nil }
+        if let button = try? inspected.find(ViewInspector.ViewType.Button.self) {
+            let label = buttonLabelText(from: button)
+            return ("Button", label)
+        }
+        if let _ = try? inspected.find(ViewInspector.ViewType.Link.self) {
+            return ("Link", nil)
+        }
+        if let _ = try? inspected.find(ViewInspector.ViewType.TextField.self) {
+            return ("TextField", nil)
+        }
+        if let _ = try? inspected.find(ViewInspector.ViewType.SecureField.self) {
+            return ("SecureField", nil)
+        }
+        if let _ = try? inspected.find(ViewInspector.ViewType.Toggle.self) {
+            return ("Toggle", nil)
+        }
+        if let _ = try? inspected.find(ViewInspector.ViewType.Image.self) {
+            return ("Image", nil)
+        }
+        if let text = try? inspected.find(ViewInspector.ViewType.Text.self) {
+            let label = (try? text.string()).flatMap { $0.isEmpty ? nil : $0 }
+            return ("Text", label)
+        }
+        return nil
+    }
+
+    @MainActor
+    private static func buttonLabelText(
+        from button: ViewInspector.InspectableView<ViewInspector.ViewType.Button>
+    ) -> String? {
+        if let text = try? button.labelView().find(ViewInspector.ViewType.Text.self).string(), !text.isEmpty {
+            return text
+        }
+        return nil
+    }
+    #else
+    @MainActor
+    private static func syntheticAutomaticComplianceIdentifiers<V: View>(
+        view: V,
+        config: AccessibilityIdentifierConfig
+    ) -> [String] {
+        _ = view
+        _ = config
+        return []
+    }
+    #endif
 
     /// UIHosting/ViewInspector can skip modifier bodies for direct `.named()` checks; recover the explicit
     /// modifier name from the SwiftUI value so direct helper lookups exercise the same generator path.
@@ -1055,10 +1676,19 @@ public enum AccessibilityTestUtilities {
     private static func syntheticModifierIdentifierFromView<V: View>(_ view: V) -> String? {
         let config = AccessibilityIdentifierConfig.currentTaskLocalConfig
             ?? TestSetupUtilities.makeIsolatedAccessibilityIdentifierConfig()
-        if let exactName = explicitModifierName(in: view, modifierTypeFragment: "ExactNamedModifier") {
+        var exactNames: [String] = []
+        collectExplicitModifierNames(in: view, modifierTypeFragment: "ExactNamedModifier", into: &exactNames)
+        if let exactName = exactNames.first {
             return ExactNamedModifier.testingGeneratedIdentifier(name: exactName, config: config)
         }
-        if let named = explicitModifierName(in: view, modifierTypeFragment: "NamedModifier") {
+        var namedNames: [String] = []
+        collectExplicitModifierNames(
+            in: view,
+            modifierTypeFragment: "NamedModifier",
+            excludingTypeFragments: ["NamedAutomaticCompliance", "ExactNamed"],
+            into: &namedNames
+        )
+        if let named = namedNames.first {
             return NamedModifier.testingGeneratedIdentifier(name: named, config: config)
         }
         return nil
@@ -1148,7 +1778,14 @@ public enum AccessibilityTestUtilities {
             if let directID = try? inspected.accessibilityIdentifier(), !directID.isEmpty { return directID }
             if let button = try? inspected.button(), let buttonID = try? button.accessibilityIdentifier(), !buttonID.isEmpty { return buttonID }
             let deepIDs = allAccessibilityIdentifiersFromViewInspector(view)
-            if let first = deepIDs.first { return first }
+            let namespace = AccessibilityIdentifierConfig.currentTaskLocalConfig?.namespace ?? "SixLayer"
+            let manualPrefix = namespace + "."
+            if let manualID = deepIDs.first(where: { !$0.hasPrefix(manualPrefix) }) {
+                return manualID
+            }
+            if let preferred = preferredAccessibilityIdentifierFromCandidates(deepIDs, view: view) {
+                return preferred
+            }
             if let syntheticID = syntheticModifierIdentifierFromView(view), !syntheticID.isEmpty { return syntheticID }
             // If we reach here, ViewInspector couldn't find an identifier. This is
             // treated as an inspection limitation rather than a hard failure; the
@@ -1222,8 +1859,9 @@ public enum AccessibilityTestUtilities {
             allSignals.append(contentsOf: platformIdentifiers)
             allSignals.append(contentsOf: debugIdentifiers)
             allSignals.append(contentsOf: viewInspectorIdentifiers)
-            if let directIdentifier, !directIdentifier.isEmpty { allSignals.append(directIdentifier) }
-            if let inspectButtonIdentifier, !inspectButtonIdentifier.isEmpty { allSignals.append(inspectButtonIdentifier) }
+            if let directIdentifier { allSignals.append(directIdentifier) }
+            if let inspectButtonIdentifier { allSignals.append(inspectButtonIdentifier) }
+            allSignals.append(contentsOf: syntheticAutomaticComplianceIdentifiers(view: view, config: config))
             var seenSignals = Set<String>()
             let uniqueSignals = allSignals.filter { seenSignals.insert($0).inserted }
             
@@ -1240,9 +1878,19 @@ public enum AccessibilityTestUtilities {
                 return true
             }
 
-            if syntheticModifierIdentifiers(config: config, expectedPattern: expectedPattern)
+            if syntheticModifierIdentifiers(
+                view: view,
+                config: config,
+                expectedPattern: expectedPattern,
+                componentName: componentName
+            )
                 .contains(where: { matchesExpectedPattern($0, expectedPattern: expectedPattern) }) {
                 // Swift Testing treats recorded issues as failures (#271) — pass without Issue.record.
+                return true
+            }
+
+            if syntheticAutomaticComplianceIdentifiers(view: view, config: config)
+                .contains(where: { matchesExpectedPattern($0, expectedPattern: expectedPattern) }) {
                 return true
             }
 

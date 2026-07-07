@@ -21,7 +21,7 @@ open class MaterialAccessibilityManagerAccessibilityTests: BaseTestClass {
                 Text("Material Accessibility Content")
             }
             .accessibilityMaterialEnhanced()
-            .automaticCompliance()
+            .automaticCompliance(named: "MaterialAccessibilityEnhancedView")
             
             // When & Then: Should generate accessibility identifiers
             let hasAccessibilityID = testComponentComplianceSinglePlatform(
@@ -44,7 +44,7 @@ open class MaterialAccessibilityManagerAccessibilityTests: BaseTestClass {
                 Text("Material Accessibility Content")
             }
             .accessibilityMaterialEnhanced()
-            .automaticCompliance()
+            .automaticCompliance(named: "MaterialAccessibilityEnhancedView")
             
             // When & Then: Should generate accessibility identifiers
             let hasAccessibilityID = testComponentComplianceSinglePlatform(

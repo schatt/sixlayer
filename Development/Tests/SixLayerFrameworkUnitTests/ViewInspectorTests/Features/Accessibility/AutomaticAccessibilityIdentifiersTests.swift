@@ -208,19 +208,13 @@ open class AutomaticAccessibilityIdentifiersTests: BaseTestClass {
             }
             .automaticCompliance(identifierName: "TestView")
             
-            // Modifier uses task-local config (no environment); verify identifier is generated when inspected.
+            // Modifier uses task-local config (no environment); verify identifier is generated when hosted.
             #if canImport(ViewInspector)
-            if let inspected = try? AnyView(view).inspect() {
-                let identifier = try? inspected.accessibilityIdentifier()
-                #expect(identifier != nil && !(identifier?.isEmpty ?? true),
-                       "Modifier should generate identifier when view is inspected (task-local config), got: '\(identifier ?? "nil")'")
-            } else {
-                // Fallback: host view and get identifier from platform (modifier runs when rendered)
-                let root = Self.hostRootPlatformView(view, forceLayout: true)
-                let idFromPlatform = getAccessibilityIdentifierForTest(view: view, hostedRoot: root)
-                #expect(idFromPlatform != nil && !(idFromPlatform?.isEmpty ?? true),
-                       "Modifier should generate identifier (via platform), got: '\(idFromPlatform ?? "nil")'")
-            }
+            testConfig?.clearDebugLog()
+            let root = Self.hostRootPlatformView(view, forceLayout: true)
+            let identifier = getAccessibilityIdentifierForTest(view: view, hostedRoot: root)
+            #expect(identifier != nil && !(identifier?.isEmpty ?? true),
+                   "Modifier should generate identifier when view is hosted (task-local config), got: '\(identifier ?? "nil")'")
             #else
             // ViewInspector not available on this platform - this is expected, not a failure
             #endif

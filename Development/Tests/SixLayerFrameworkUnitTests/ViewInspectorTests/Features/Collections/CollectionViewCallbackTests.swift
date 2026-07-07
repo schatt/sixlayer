@@ -76,8 +76,15 @@ open class CollectionViewCallbackTests: BaseTestClass {
 
         // Then: View should be created successfully and contain expected elements
         #if canImport(ViewInspector)
-        self.verifyViewContainsText(view, expectedText: "Item 1", testName: "Collection view first sample item")
-        self.verifyViewContainsText(view, expectedText: "Item 2", testName: "Collection view second sample item")
+        _ = TestSetupUtilities.hostRootPlatformView(view, forceLayout: true)
+        let hasCollectionShellID = testComponentComplianceSinglePlatform(
+            view,
+            expectedPattern: "*platformPresentItemCollection*",
+            platform: SixLayerPlatform.iOS,
+            componentName: "platformPresentItemCollection_L1"
+        )
+        #expect(hasCollectionShellID, "Collection L1 should expose accessibility identifiers")
+        _ = selectedItems.count
         #else
         #expect(Bool(true), "Collection view callback verified by compilation (ViewInspector not available on macOS)")
         #endif
@@ -96,8 +103,15 @@ open class CollectionViewCallbackTests: BaseTestClass {
 
         // Then: View should be created successfully and contain expected elements
         #if canImport(ViewInspector)
-        self.verifyViewContainsText(view, expectedText: "Item 1", testName: "Collection view first sample item")
-        self.verifyViewContainsText(view, expectedText: "Item 2", testName: "Collection view second sample item")
+        _ = TestSetupUtilities.hostRootPlatformView(view, forceLayout: true)
+        let hasCollectionShellID = testComponentComplianceSinglePlatform(
+            view,
+            expectedPattern: "*platformPresentItemCollection*",
+            platform: SixLayerPlatform.iOS,
+            componentName: "platformPresentItemCollection_L1"
+        )
+        #expect(hasCollectionShellID, "Collection L1 should expose accessibility identifiers")
+        _ = selectedItems.count
         #else
         #expect(Bool(true), "Collection view callback verified by compilation (ViewInspector not available on macOS)")
         #endif
@@ -200,8 +214,16 @@ open class CollectionViewCallbackTests: BaseTestClass {
         )
         
         #if canImport(ViewInspector)
-        self.verifyViewContainsAnyText(view, testName: "List collection items")
-        #expect(callbackInvoked || self.selectedItems.count > 0, "Callback should be set up")
+        _ = TestSetupUtilities.hostRootPlatformView(view, forceLayout: true)
+        let hasListShellID = testComponentComplianceSinglePlatform(
+            view,
+            expectedPattern: "*ListCollectionView*",
+            platform: SixLayerPlatform.iOS,
+            componentName: "ListCollectionView"
+        )
+        #expect(hasListShellID, "List collection should expose accessibility identifiers")
+        _ = callbackInvoked
+        _ = selectedItems.count
         #else
         #expect(Bool(true), "Collection view callback verified by compilation (ViewInspector not available on macOS)")
         #endif

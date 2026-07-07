@@ -286,7 +286,7 @@ public struct DynamicFormField: Identifiable {
         trailingView: ((DynamicFormField, DynamicFormState) -> AnyView)? = nil,
         valueView: ((DynamicFormField, DynamicFormState) -> AnyView)? = nil,
         maxVisibleActions: Int = 2,
-        useActionMenu: Bool = true
+        useActionMenu: Bool = false
     ) {
         self.id = id
         self.textContentType = textContentType
@@ -444,7 +444,7 @@ public struct DynamicFormField: Identifiable {
         self.trailingView = nil
         self.valueView = nil
         self.maxVisibleActions = 2
-        self.useActionMenu = true
+        self.useActionMenu = false
     }
     
 

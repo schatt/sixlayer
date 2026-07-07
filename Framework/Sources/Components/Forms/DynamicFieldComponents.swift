@@ -276,7 +276,7 @@ extension DynamicFormField {
 // MARK: - Field container shell (Issue #194)
 
 @MainActor
-private struct DynamicFormFieldStandardContainer<Content: View>: View {
+struct DynamicFormFieldStandardContainer<Content: View>: View {
     let field: DynamicFormField
     let componentName: String
     private let content: () -> Content
@@ -857,14 +857,17 @@ public struct DynamicURLField: View {
 
     /// Parse and validate URL, returning both the URL object and validity
     private var parsedURL: (url: URL?, isValid: Bool) {
-        let value = urlValue
+        let value = urlValue.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !value.isEmpty else {
             return (nil, false)
         }
-        if let url = URL(string: value) {
-            return (url, true)
+        guard let url = URL(string: value),
+              let scheme = url.scheme?.lowercased(),
+              scheme == "http" || scheme == "https",
+              url.host != nil else {
+            return (nil, false)
         }
-        return (nil, false)
+        return (url, true)
     }
 
     public var body: some View {
