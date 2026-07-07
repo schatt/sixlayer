@@ -1,12 +1,21 @@
 # 🚀 Six-Layer Framework Release History
 
-## 📍 **Current Release: v8.0.0** 🎯
+## 📍 **Current Release: v8.1.0** 🔧
 
-**Release Date**: June 4, 2026
-**Status**: Major release (prep on `next`)
-**Previous Release**: v7.9.0 - Minor release
-**Note**: App navigation chrome — navigation sheet toolbar visibility (#323), sidebar reveal chrome (#324), iOS automatic vs detailOnly (#325); `platformMenu` SwiftUI Menu on iOS (#321).
+**Release Date**: July 7, 2026
+**Status**: Minor release (prep on `next`)
+**Previous Release**: v8.0.0 - Major release
+**Note**: ViewInspector 0.10 test infrastructure — accessibility identifier collection (#314), SixLayerViewInspectorTestKit (#327), typed inspect helpers (#326), Inspectable removal (#328).
 **Next Release**: TBD
+
+---
+
+## 🎯 **v8.1.0 - ViewInspector 0.10 test infrastructure and a11y collection** (July 7, 2026)
+
+### **What's in v8.1.0:**
+- Minor release (#314, #326–#328). See [RELEASE_v8.1.0.md](RELEASE_v8.1.0.md) for details.
+
+**See [RELEASE_v8.1.0.md](RELEASE_v8.1.0.md) for complete release notes.**
 
 ---
 
