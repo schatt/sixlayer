@@ -123,13 +123,10 @@ open class BarcodeScanningUITests: BaseTestClass {
         // Barcode field should show barcode button
         #if canImport(ViewInspector)
         if let inspected = try? AnyView(barcodeFieldView).inspect() {
-            // Look for barcode button by finding the HStack that contains both TextField and Button
-            let hStacks = inspected.findAll(ViewInspector.ViewType.HStack.self)
-            if let hStack = hStacks.first {
-                // The HStack should contain TextField and barcode Button
-                let children = hStack.findAll(ViewInspector.ViewType.AnyView.self)
-                #expect(children.count >= 2, "Barcode field HStack should contain TextField and barcode button")
-            }
+            let textFields = inspected.findAll(ViewInspector.ViewType.TextField.self)
+            let buttons = inspected.findAll(ViewInspector.ViewType.Button.self)
+            #expect(!textFields.isEmpty, "Barcode-enabled field should include a TextField")
+            #expect(buttons.count >= 1, "Barcode-enabled field should show a barcode action button; got \(buttons.count)")
         } else {
             Issue.record("Barcode button not found in barcode-enabled field")
         }
@@ -183,15 +180,18 @@ open class BarcodeScanningUITests: BaseTestClass {
         #expect(dualField.supportsOCR == true, "Field should support OCR")
         #expect(dualField.supportsBarcodeScanning == true, "Field should support barcode scanning")
         
-        // Both buttons should be rendered
+        // Both buttons should be rendered (FieldActionRenderer horizontal layout when count <= maxVisibleActions)
         #if canImport(ViewInspector)
         if let inspected = try? AnyView(dualFieldView).inspect() {
-            let hStacks = inspected.findAll(ViewInspector.ViewType.HStack.self)
-            if let hStack = hStacks.first {
-                // Should have at least 3 items: TextField, OCR button, Barcode button
-                let children = hStack.findAll(ViewInspector.ViewType.AnyView.self)
-                #expect(children.count >= 3, "Dual field should have TextField, OCR button, and barcode button")
-            }
+            let textFields = inspected.findAll(ViewInspector.ViewType.TextField.self)
+            let buttons = inspected.findAll(ViewInspector.ViewType.Button.self)
+            #expect(!textFields.isEmpty, "Dual field should include a TextField")
+            #expect(
+                buttons.count >= 2,
+                "Dual field should render OCR and barcode action buttons; got \(buttons.count)"
+            )
+        } else {
+            Issue.record("Failed to inspect dual OCR/barcode field view")
         }
         #else
         #expect(Bool(true), "Dual field test skipped (ViewInspector not available)")
