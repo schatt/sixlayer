@@ -54,8 +54,8 @@ Follow SixLayer issue [#178](https://github.com/schatt/sixlayer/issues/178):
 | Approach | Prefer when |
 |----------|-------------|
 | **Accessibility identifiers** (`accessibilityIdentifier`, XCUITest) | Contract you want stable across refactors; navigation and end-to-end flows; views wrapped in `AnyView` where hierarchy traversal is brittle. |
-| **Typed ViewInspector** (`inspectView`, `withInspectedView*`) | Unit-level layout/structure assertions on concrete `Inspectable` view types; verifying modifier stacks and child counts without launching the app. |
-| **AnyView / unwrapped helpers** (`withInspectedViewUnwrapped`, `firstVStackInHierarchy`) | Production view types are not `Inspectable` or are type-erased; last resort before identifiers. Unwrap before `findAll` — see `VIEWINSPECTOR_ANYVIEW_INVESTIGATION.md` in SixLayer's internal test helpers. |
+| **Typed ViewInspector** (`inspectView`, `withInspectedView*`) | Unit-level layout/structure assertions on concrete view types; verifying modifier stacks and child counts without launching the app. |
+| **AnyView / unwrapped helpers** (`withInspectedViewUnwrapped`, `firstVStackInHierarchy`) | Type-erased or deeply nested views where hierarchy traversal is brittle; last resort before identifiers. Unwrap before `findAll` — see `VIEWINSPECTOR_ANYVIEW_INVESTIGATION.md` in SixLayer's internal test helpers. |
 
 **Default:** add accessibility identifiers for user-visible contract surfaces; use this kit for focused unit tests on inspectable view builders.
 
@@ -65,10 +65,6 @@ Follow SixLayer issue [#178](https://github.com/schatt/sixlayer/issues/178):
 - Type-erased `AnyView` / `ClassifiedView` overloads and `*Unwrapped` variants
 - `firstVStackInHierarchy`, `firstVStackInView`
 - `NoVStackInHierarchy`
-
-## Not included (phase 2 / follow-up)
-
-`ViewInspectorInspectableConformances` for internal SixLayer form views may remain consumer-local until inner types are exported or conformances ship in this kit with `@testable import SixLayerFramework`. See issue [#327](https://github.com/schatt/sixlayer/issues/327).
 
 ## Related
 
