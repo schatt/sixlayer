@@ -368,10 +368,8 @@ private func firstAccessibilityLabelInInspectedRecursive(
 }
 #endif
 
-#if canImport(UIKit) && !os(watchOS)
-/// Upper bound for `accessibilityElementCount` before enumerating via `accessibilityElementAtIndex:`.
-/// Some SwiftUI/UIKit hosting views report counts that make naive enumeration effectively hang
-/// (main-thread retain churn in test helpers; e.g. modal sheet chrome ViewInspector tests).
+/// Upper bound for accessibility container enumeration in hosted test helpers.
+/// Some SwiftUI hosting views report huge counts; cap traversal for predictable test runtime.
 private let maxAccessibilityContainerEnumerationCount = 256
 
 @MainActor
@@ -394,6 +392,7 @@ private func boundedAccessibilityContainerIndices(_ rawCount: Int) -> [Int] {
     return indices
 }
 
+#if canImport(UIKit) && !os(watchOS)
 /// Identifier from a child returned by `accessibilityElement(at:)` (may be `UIAccessibilityElement` or `UIView`).
 @MainActor
 private func accessibilityIdentifierFromAccessibilityContainerChild(_ raw: Any?) -> String? {
