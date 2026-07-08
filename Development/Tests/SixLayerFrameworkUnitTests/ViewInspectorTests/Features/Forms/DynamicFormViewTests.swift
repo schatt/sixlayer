@@ -94,7 +94,7 @@ open class DynamicFormViewTests: BaseTestClass {
                 let log = isolated.getDebugLog()
                 if log.localizedCaseInsensitiveContains("batchocrbutton") { return true }
                 if hostedUIKitAccessibilityHierarchyContains(root: hosted, predicate: { view in
-                    (view.accessibilityLabel ?? "").localizedCaseInsensitiveContains("scan document")
+                    view.hostedAccessibilityLabelText.localizedCaseInsensitiveContains("scan document")
                 }) {
                     return true
                 }
