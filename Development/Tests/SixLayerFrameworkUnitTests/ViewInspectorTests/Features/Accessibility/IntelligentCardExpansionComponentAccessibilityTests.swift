@@ -37,7 +37,7 @@ open class IntelligentCardExpansionComponentAccessibilityTests: BaseTestClass {
             return true
         }
         if hostedUIKitAccessibilityHierarchyContains(root: hostedRoot, predicate: { uiView in
-            (uiView.accessibilityLabel ?? "").contains(cardTitle)
+            uiView.hostedAccessibilityLabelText.contains(cardTitle)
         }) {
             return true
         }
