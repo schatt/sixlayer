@@ -33,29 +33,32 @@ open class PlatformOCRDisambiguationLayer1Tests: BaseTestClass {
         #expect(alternatives[1] == "Option 2", "Second alternative should be correct")
         #expect(alternatives[2] == "Option 3", "Third alternative should be correct")
         
-        let view = platformOCRWithDisambiguation_L1(
-            image: PlatformImage(),
-            context: OCRContext(
-                textTypes: [.general],
-                language: .english,
-                confidenceThreshold: 0.8,
-                allowsEditing: true
-            ),
-            onResult: { _ in }
-        )
-        
-        #if canImport(ViewInspector)
-        let hasAccessibilityID = testAccessibilityIdentifiersCrossPlatform(
-            view, 
-            expectedPattern: "SixLayer.*ui", 
-            componentName: "platformOCRDisambiguation_L1",
-            testName: "PlatformTest"
-        )
- #expect(hasAccessibilityID, "platformOCRDisambiguation_L1 should generate accessibility identifiers on iOS ")
-        #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-        // The modifier IS present in the code, but ViewInspector can't detect it on macOS
-        #endif
+        runWithTaskLocalConfig {
+            let view = platformOCRWithDisambiguation_L1(
+                image: PlatformImage(),
+                context: OCRContext(
+                    textTypes: [.general],
+                    language: .english,
+                    confidenceThreshold: 0.8,
+                    allowsEditing: true
+                ),
+                onResult: { _ in }
+            )
+            
+            #if canImport(ViewInspector)
+            _ = TestSetupUtilities.hostRootPlatformView(view, forceLayout: true)
+            let hasAccessibilityID = testComponentComplianceSinglePlatform(
+                view,
+                expectedPattern: "*platformOCRWithDisambiguation_L1*",
+                platform: SixLayerPlatform.iOS,
+                componentName: "platformOCRWithDisambiguation_L1"
+            )
+            #expect(hasAccessibilityID, "platformOCRWithDisambiguation_L1 should generate accessibility identifiers on iOS")
+            #else
+            // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+            // The modifier IS present in the code, but ViewInspector can't detect it on macOS
+            #endif
+        }
     }
     
     @Test @MainActor func testPlatformOCRDisambiguationL1GeneratesAccessibilityIdentifiersOnMacOS() async {
@@ -68,29 +71,32 @@ open class PlatformOCRDisambiguationLayer1Tests: BaseTestClass {
         #expect(alternatives[1] == "Option 2", "Second alternative should be correct")
         #expect(alternatives[2] == "Option 3", "Third alternative should be correct")
         
-        let view = platformOCRWithDisambiguation_L1(
-            image: PlatformImage(),
-            context: OCRContext(
-                textTypes: [.general],
-                language: .english,
-                confidenceThreshold: 0.8,
-                allowsEditing: true
-            ),
-            onResult: { _ in }
-        )
-        
-        #if canImport(ViewInspector)
-        let hasAccessibilityID = testAccessibilityIdentifiersCrossPlatform(
-            view, 
-            expectedPattern: "SixLayer.*ui", 
-            componentName: "platformOCRDisambiguation_L1",
-            testName: "PlatformTest"
-        )
- #expect(hasAccessibilityID, "platformOCRDisambiguation_L1 should generate accessibility identifiers on macOS ")
-        #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-        // The modifier IS present in the code, but ViewInspector can't detect it on macOS
-        #endif
+        runWithTaskLocalConfig {
+            let view = platformOCRWithDisambiguation_L1(
+                image: PlatformImage(),
+                context: OCRContext(
+                    textTypes: [.general],
+                    language: .english,
+                    confidenceThreshold: 0.8,
+                    allowsEditing: true
+                ),
+                onResult: { _ in }
+            )
+            
+            #if canImport(ViewInspector)
+            _ = TestSetupUtilities.hostRootPlatformView(view, forceLayout: true)
+            let hasAccessibilityID = testComponentComplianceSinglePlatform(
+                view,
+                expectedPattern: "*platformOCRWithDisambiguation_L1*",
+                platform: SixLayerPlatform.iOS,
+                componentName: "platformOCRWithDisambiguation_L1"
+            )
+            #expect(hasAccessibilityID, "platformOCRWithDisambiguation_L1 should generate accessibility identifiers on macOS lane")
+            #else
+            // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
+            // The modifier IS present in the code, but ViewInspector can't detect it on macOS
+            #endif
+        }
     }
 }
 

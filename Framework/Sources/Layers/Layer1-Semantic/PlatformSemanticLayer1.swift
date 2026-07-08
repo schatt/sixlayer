@@ -2237,8 +2237,9 @@ public struct GenericFormView: View {
                 }
             }
         )
-        // Issue #245 / gh-243: caller-defined fields are arbitrary content; name root for harness.
-        .automaticCompliance(named: "GenericFormView")
+        // Issue #245 / gh-243: caller-defined fields are arbitrary content; use identifierName shell.
+        .environment(\.accessibilityIdentifierName, "GenericFormView")
+        .automaticCompliance(identifierName: "GenericFormView")
     }
 }
 
@@ -4377,8 +4378,8 @@ public struct GenericSettingsView: View {
         .onAppear {
             initializeValues()
         }
-        // Issue #245 / gh-243: named root for direct GenericSettingsView hosting in tests.
-        .automaticCompliance(named: "GenericSettingsView")
+        .environment(\.accessibilityIdentifierName, "GenericSettingsView")
+        .automaticCompliance(identifierName: "GenericSettingsView")
     }
     
     private func initializeValues() {

@@ -326,15 +326,15 @@ Text(i18n.localizedString(for: "SixLayerFramework.form.title"))
                         }
                     )
                     .automaticCompliance(named: "DynamicFormSectionView")
-                }
-                .automaticCompliance(named: "DynamicFormView")
-                .overlay(
+
                     generateFormActions(
                         initialData: initialData,
                         onSubmit: onSubmit,
-                        onCancel: onCancel
+                        onCancel: onCancel,
+                        floating: false
                     )
-                )
+                }
+                .automaticCompliance(named: "DynamicFormView")
                 
             case .standard, .scrollView, .custom, .adaptive:
                 // Wrap in DynamicFormView structure for accessibility testing
@@ -364,15 +364,15 @@ Text(i18n.localizedString(for: "SixLayerFramework.form.title"))
                         }
                     )
                     .automaticCompliance(named: "DynamicFormSectionView")
-                }
-                .automaticCompliance(named: "DynamicFormView")
-                .overlay(
+
                     generateFormActions(
                         initialData: initialData,
                         onSubmit: onSubmit,
-                        onCancel: onCancel
+                        onCancel: onCancel,
+                        floating: false
                     )
-                )
+                }
+                .automaticCompliance(named: "DynamicFormView")
             }
             }
         }
@@ -473,16 +473,16 @@ Text(i18n.localizedString(for: "SixLayerFramework.form.title"))
                         }
                     )
                     .automaticCompliance(named: "DynamicFormSectionView")
-                }
-                .automaticCompliance(named: "DynamicFormView")
-                .overlay(
+
                     generateFormActions(
                         initialData: data,
                         onSubmit: { onUpdate($0) },
                         onCancel: onCancel,
-                        isDraft: isDraft
+                        isDraft: isDraft,
+                        floating: false
                     )
-                )
+                }
+                .automaticCompliance(named: "DynamicFormView")
                 
             case .standard, .scrollView, .custom, .adaptive:
                 // Wrap in DynamicFormView structure for accessibility testing
@@ -512,16 +512,16 @@ Text(i18n.localizedString(for: "SixLayerFramework.form.title"))
                         }
                     )
                     .automaticCompliance(named: "DynamicFormSectionView")
-                }
-                .automaticCompliance(named: "DynamicFormView")
-                .overlay(
+
                     generateFormActions(
                         initialData: data,
                         onSubmit: { onUpdate($0) },
                         onCancel: onCancel,
-                        isDraft: isDraft
+                        isDraft: isDraft,
+                        floating: false
                     )
-                )
+                }
+                .automaticCompliance(named: "DynamicFormView")
             }
             }
         }
@@ -899,43 +899,47 @@ Text(i18n.localizedString(for: "SixLayerFramework.form.title"))
         }
         .padding(.vertical, 4)
     }
-    
+
     /// Generate form action buttons using our platform extensions
+    @ViewBuilder
     private static func generateFormActions<T>(
         initialData: T?,
         onSubmit: @escaping (T) -> Void,
         onCancel: @escaping () -> Void,
-        isDraft: Bool = false
+        isDraft: Bool = false,
+        floating: Bool = true
     ) -> some View {
-        VStack {
+        let i18n = InternationalizationService()
+        let actionBar = platformHStackContainer(spacing: 12) {
+            Button(i18n.localizedString(for: "SixLayerFramework.button.cancel")) { onCancel() }
+                .buttonStyle(.bordered)
+                .foregroundColor(Color.platformLabel)
+
             Spacer()
-            let i18n = InternationalizationService()
-            platformHStackContainer(spacing: 12) {
-                Button(i18n.localizedString(for: "SixLayerFramework.button.cancel")) { onCancel() }
-                    .buttonStyle(.bordered)
-                    .foregroundColor(Color.platformLabel)
 
-                Spacer()
-
-                Button(initialData != nil ? i18n.localizedString(for: "SixLayerFramework.button.update") : i18n.localizedString(for: "SixLayerFramework.button.create")) {
-                    // Note: For SwiftData models, ModelContext should be passed explicitly
-                    // In a SwiftUI view, you can get it from @Environment(\.modelContext)
-                    // For now, handleSubmit will attempt to find it via reflection (may not work reliably)
-                    // Future enhancement: Modify generateFormActions to accept optional ModelContext parameter
-                    handleSubmit(
-                        initialData: initialData,
-                        modelContext: nil, // TODO: Could be enhanced to get from @Environment(\.modelContext) if available
-                        onSubmit: onSubmit,
-                        isDraft: isDraft
-                    )
-                }
-                    .buttonStyle(.borderedProminent)
-                    .foregroundColor(Color.platformBackground)
+            Button(initialData != nil ? i18n.localizedString(for: "SixLayerFramework.button.update") : i18n.localizedString(for: "SixLayerFramework.button.create")) {
+                handleSubmit(
+                    initialData: initialData,
+                    modelContext: nil,
+                    onSubmit: onSubmit,
+                    isDraft: isDraft
+                )
             }
-            .padding()
-            .background(Color.platformSecondaryBackground)
-            .cornerRadius(8)
-            .automaticCompliance(named: "DynamicFormActions")
+            .buttonStyle(.borderedProminent)
+            .foregroundColor(Color.platformBackground)
+        }
+        .padding()
+        .background(Color.platformSecondaryBackground)
+        .cornerRadius(8)
+        .automaticCompliance(named: "DynamicFormActions")
+
+        if floating {
+            VStack {
+                Spacer()
+                actionBar
+            }
+        } else {
+            actionBar
         }
     }
     
@@ -1479,6 +1483,7 @@ private struct TypeOnlyFormWrapper<T>: View {
                     }
             }
         }
+        .automaticCompliance(named: "IntelligentFormView")
     }
     
     /// Create a blank entity and populate with defaults from hints

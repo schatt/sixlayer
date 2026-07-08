@@ -288,19 +288,12 @@ open class BasicAutomaticComplianceTests: BaseTestClass {
                 )
             
             #if canImport(ViewInspector)
-            do {
-                let inspected = try view.inspect()
-                // Label is applied to the Button; identifier wrapper is an outer Group (#172).
-                let button = try inspected.find(ViewType.Button.self)
-                let labelView = try? button.accessibilityLabel()
-                let labelText = labelView.flatMap { try? $0.string() }
-                #expect(
-                    labelText?.localizedCaseInsensitiveContains("Save document") == true,
-                    "Interactive Button should receive automatic accessibility label when interactive-only mode is on"
-                )
-            } catch {
-                Issue.record("Failed to inspect view: \(error)")
-            }
+            let root = TestSetupUtilities.hostRootPlatformView(view, forceLayout: true)
+            let labelText = getAccessibilityLabelForTest(view: view, hostedRoot: root)
+            #expect(
+                labelText?.localizedCaseInsensitiveContains("Save document") == true,
+                "Interactive Button should receive automatic accessibility label when interactive-only mode is on"
+            )
             #else
             #expect(Bool(true), "ViewInspector not available on this platform")
             #endif

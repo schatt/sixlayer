@@ -19,7 +19,7 @@ open class ImageProcessingPipelineAccessibilityTests: BaseTestClass {
             // Given: A view that displays an image (ImageProcessor processes images, views display them)
             // Since ImageProcessor doesn't generate views directly, we test that image views generate identifiers
             let view = Image(systemName: "photo")
-                .automaticCompliance()
+                .automaticCompliance(named: "Image")
             
             // When & Then: Should generate accessibility identifiers
             let hasAccessibilityID = testComponentComplianceSinglePlatform(
@@ -40,7 +40,7 @@ open class ImageProcessingPipelineAccessibilityTests: BaseTestClass {
             // Given: A view that displays an image (ImageProcessor processes images, views display them)
             // Since ImageProcessor doesn't generate views directly, we test that image views generate identifiers
             let view = Image(systemName: "photo")
-                .automaticCompliance()
+                .automaticCompliance(named: "Image")
             
             // When & Then: Should generate accessibility identifiers
             let hasAccessibilityID = testComponentComplianceSinglePlatform(

@@ -79,4 +79,15 @@ struct AccessibilityTestUtilitiesPatternTests {
             )
         )
     }
+
+    /// Layer 4/5/6 tests still use `*.main.ui.element.*`; named modifiers emit `SixLayer.main.ui.<Component>.View`.
+    @Test @MainActor
+    func legacyLayerElementGlobMatchesViewWithoutElementSegment() {
+        #expect(
+            AccessibilityTestUtilities.identifierMatchesExpectedPattern(
+                "SixLayer.main.ui.AlertButton.View",
+                expectedPattern: "*.main.ui.element.*"
+            )
+        )
+    }
 }

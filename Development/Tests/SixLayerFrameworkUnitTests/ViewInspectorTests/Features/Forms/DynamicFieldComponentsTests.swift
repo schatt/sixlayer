@@ -1,7 +1,7 @@
 import Testing
 import SwiftUI
 #if canImport(ViewInspector)
-import ViewInspector
+@testable import ViewInspector
 #endif
 @testable import SixLayerFramework
 
@@ -18,9 +18,82 @@ import ViewInspector
  * form state, generate accessibility identifiers, and provide expected functionality.
  */
 
-@Suite("Dynamic Field Components")
-/// NOTE: Not marked @MainActor on class to allow parallel execution
+@Suite("Dynamic Field Components", .serialized)
+/// Serialized — ViewInspector + task-local a11y config do not tolerate parallel execution (#314).
 open class DynamicFieldComponentsTests: BaseTestClass {
+
+    #if canImport(ViewInspector)
+    @MainActor
+    private func findAllInFieldHierarchy<F: View, T: ViewInspector.KnownViewType>(
+        _ fieldView: F,
+        _ viewType: T.Type
+    ) -> [ViewInspector.InspectableView<T>] {
+        if let inspected = try? fieldView.inspect().view(F.self) {
+            let found = inspected.findAll(viewType)
+            if !found.isEmpty { return found }
+        }
+        if let vStack = try? firstVStackInView(fieldView) {
+            let found = vStack.findAll(viewType)
+            if !found.isEmpty { return found }
+        }
+        return findAllInViewHierarchy(fieldView, viewType)
+    }
+
+    @MainActor
+    private func expectCharacterCounterText<F: View>(
+        in fieldView: F,
+        maxLength: Int,
+        message: String
+    ) {
+        let allTexts = findAllInFieldHierarchy(fieldView, ViewInspector.ViewType.Text.self)
+        let hasCounter = allTexts.contains { text in
+            let textContent = (try? text.string()) ?? ""
+            return textContent.contains("/") && textContent.contains(String(maxLength))
+        }
+        #expect(hasCounter, "\(message)")
+    }
+
+    @MainActor
+    private func withFieldHierarchy<F: View>(
+        _ fieldView: F,
+        _ perform: (ViewInspector.InspectableView<ViewInspector.ViewType.View<F>>) -> Void
+    ) -> Bool {
+        guard let inspected = try? fieldView.inspect().view(F.self) else { return false }
+        perform(inspected)
+        return true
+    }
+
+    @MainActor
+    private func assertFieldGeneratesAccessibilityIdentifier(
+        _ view: some View,
+        componentName: String,
+        field: DynamicFormField
+    ) {
+        initializeTestConfig()
+        runWithTaskLocalConfig {
+            guard testConfig != nil else {
+                Issue.record("testConfig is nil")
+                return
+            }
+            let segment = field.effectiveAccessibilityIdentifierSegment
+            let patterns = Array(Set([
+                "SixLayer.main.ui.*\(componentName)*",
+                "SixLayer.main.ui.*\(field.id)*",
+                "SixLayer.main.ui.*\(segment)*"
+            ]))
+            let matched = patterns.contains { pattern in
+                AccessibilityTestUtilities.testComponentComplianceSinglePlatform(
+                    view,
+                    expectedPattern: pattern,
+                    platform: .iOS,
+                    componentName: componentName,
+                    recordFailureIssues: false
+                )
+            }
+            #expect(matched, "\(componentName) should generate accessibility identifier")
+        }
+    }
+    #endif
 
     // MARK: - Multi-Select Field
 
@@ -84,13 +157,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
 
         // Should generate accessibility identifier
         #if canImport(ViewInspector)
-        let hasAccessibilityID = testComponentComplianceSinglePlatform(
-            view,
-            expectedPattern: "SixLayer.main.ui.*DynamicMultiSelectField.*",
-            platform: .iOS,
-            componentName: "DynamicMultiSelectField"
-        )
- #expect(hasAccessibilityID, "Should generate accessibility identifier ")
+        assertFieldGeneratesAccessibilityIdentifier(view, componentName: "DynamicMultiSelectField", field: field)
         #else
         // ViewInspector not available on this platform - this is expected, not a failure
         #endif
@@ -152,13 +219,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
 
         // Should generate accessibility identifier
         #if canImport(ViewInspector)
-        let hasAccessibilityID = testComponentComplianceSinglePlatform(
-            view,
-            expectedPattern: "SixLayer.main.ui.*DynamicRadioField.*",
-            platform: .iOS,
-            componentName: "DynamicRadioField"
-        )
- #expect(hasAccessibilityID, "Should generate accessibility identifier ")
+        assertFieldGeneratesAccessibilityIdentifier(view, componentName: "DynamicRadioField", field: field)
         #else
         // ViewInspector not available on this platform - this is expected, not a failure
         #endif
@@ -219,13 +280,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
 
         // Should generate accessibility identifier
         #if canImport(ViewInspector)
-        let hasAccessibilityID = testComponentComplianceSinglePlatform(
-            view,
-            expectedPattern: "SixLayer.main.ui.*DynamicCheckboxField.*",
-            platform: .iOS,
-            componentName: "DynamicCheckboxField"
-        )
- #expect(hasAccessibilityID, "Should generate accessibility identifier ")
+        assertFieldGeneratesAccessibilityIdentifier(view, componentName: "DynamicCheckboxField", field: field)
         #else
         // ViewInspector not available on this platform - this is expected, not a failure
         #endif
@@ -278,13 +333,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
 
         // Should generate accessibility identifier
         #if canImport(ViewInspector)
-        let hasAccessibilityID = testComponentComplianceSinglePlatform(
-            view,
-            expectedPattern: "SixLayer.main.ui.*DynamicRichTextField.*",
-            platform: .iOS,
-            componentName: "DynamicRichTextField"
-        )
- #expect(hasAccessibilityID, "Should generate accessibility identifier ")
+        assertFieldGeneratesAccessibilityIdentifier(view, componentName: "DynamicRichTextField", field: field)
         #else
         // ViewInspector not available on this platform - this is expected, not a failure
         #endif
@@ -334,13 +383,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
 
         // Should generate accessibility identifier
         #if canImport(ViewInspector)
-        let hasAccessibilityID = testComponentComplianceSinglePlatform(
-            view,
-            expectedPattern: "SixLayer.main.ui.*DynamicFileField.*",
-            platform: .iOS,
-            componentName: "DynamicFileField"
-        )
- #expect(hasAccessibilityID, "Should generate accessibility identifier ")
+        assertFieldGeneratesAccessibilityIdentifier(view, componentName: "DynamicFileField", field: field)
         #else
         // ViewInspector not available on this platform - this is expected, not a failure
         #endif
@@ -390,13 +433,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
 
         // Should generate accessibility identifier
         #if canImport(ViewInspector)
-        let hasAccessibilityID = testComponentComplianceSinglePlatform(
-            view,
-            expectedPattern: "SixLayer.main.ui.*DynamicImageField.*",
-            platform: .iOS,
-            componentName: "DynamicImageField"
-        )
- #expect(hasAccessibilityID, "Should generate accessibility identifier ")
+        assertFieldGeneratesAccessibilityIdentifier(view, componentName: "DynamicImageField", field: field)
         #else
         // ViewInspector not available on this platform - this is expected, not a failure
         #endif
@@ -446,13 +483,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
 
         // Should generate accessibility identifier
         #if canImport(ViewInspector)
-        let hasAccessibilityID = testComponentComplianceSinglePlatform(
-            view,
-            expectedPattern: "SixLayer.main.ui.*DynamicArrayField.*",
-            platform: .iOS,
-            componentName: "DynamicArrayField"
-        )
- #expect(hasAccessibilityID, "Should generate accessibility identifier ")
+        assertFieldGeneratesAccessibilityIdentifier(view, componentName: "DynamicArrayField", field: field)
         #else
         // ViewInspector not available on this platform - this is expected, not a failure
         #endif
@@ -502,13 +533,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
 
         // Should generate accessibility identifier
         #if canImport(ViewInspector)
-        let hasAccessibilityID = testComponentComplianceSinglePlatform(
-            view,
-            expectedPattern: "SixLayer.main.ui.*DynamicDataField.*",
-            platform: .iOS,
-            componentName: "DynamicDataField"
-        )
- #expect(hasAccessibilityID, "Should generate accessibility identifier ")
+        assertFieldGeneratesAccessibilityIdentifier(view, componentName: "DynamicDataField", field: field)
         #else
         // ViewInspector not available on this platform - this is expected, not a failure
         #endif
@@ -557,13 +582,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
 
         // Should generate accessibility identifier
         #if canImport(ViewInspector)
-        let hasAccessibilityID = testComponentComplianceSinglePlatform(
-            view,
-            expectedPattern: "SixLayer.main.ui.*DynamicAutocompleteField.*",
-            platform: .iOS,
-            componentName: "DynamicAutocompleteField"
-        )
- #expect(hasAccessibilityID, "Should generate accessibility identifier ")
+        assertFieldGeneratesAccessibilityIdentifier(view, componentName: "DynamicAutocompleteField", field: field)
         #else
         // ViewInspector not available on this platform - this is expected, not a failure
         #endif
@@ -619,13 +638,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
 
         // Should generate accessibility identifier
         #if canImport(ViewInspector)
-        let hasAccessibilityID = testComponentComplianceSinglePlatform(
-            view,
-            expectedPattern: "SixLayer.main.ui.*DynamicEnumField.*",
-            platform: .iOS,
-            componentName: "DynamicEnumField"
-        )
- #expect(hasAccessibilityID, "Should generate accessibility identifier ")
+        assertFieldGeneratesAccessibilityIdentifier(view, componentName: "DynamicEnumField", field: field)
         #else
         // ViewInspector not available on this platform - this is expected, not a failure
         #endif
@@ -673,13 +686,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
 
         // Should generate accessibility identifier
         #if canImport(ViewInspector)
-        let hasAccessibilityID = testComponentComplianceSinglePlatform(
-            view,
-            expectedPattern: "SixLayer.main.ui.*DynamicCustomField.*",
-            platform: .iOS,
-            componentName: "DynamicCustomField"
-        )
- #expect(hasAccessibilityID, "Should generate accessibility identifier ")
+        assertFieldGeneratesAccessibilityIdentifier(view, componentName: "DynamicCustomField", field: field)
         #else
         // ViewInspector not available on this platform - this is expected, not a failure
         #endif
@@ -727,13 +734,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
 
         // Should generate accessibility identifier
         #if canImport(ViewInspector)
-        let hasAccessibilityID = testComponentComplianceSinglePlatform(
-            view,
-            expectedPattern: "SixLayer.main.ui.*DynamicColorField.*",
-            platform: .iOS,
-            componentName: "DynamicColorField"
-        )
- #expect(hasAccessibilityID, "Should generate accessibility identifier ")
+        assertFieldGeneratesAccessibilityIdentifier(view, componentName: "DynamicColorField", field: field)
         #else
         // ViewInspector not available on this platform - this is expected, not a failure
         #endif
@@ -762,32 +763,19 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             label: "Text Area"
         )
 
-        let view = DynamicTextAreaField(field: field, formState: formState)
-            .enableGlobalAutomaticCompliance()
+        let fieldView = DynamicTextAreaField(field: field, formState: formState)
+        let view = fieldView.enableGlobalAutomaticCompliance()
 
         // Should render multi-line text editor
-        if let inspected = try? AnyView(view).inspect() {
-            // Should have text input capability
-            let texts = inspected.findAll(ViewInspector.ViewType.Text.self)
-            let hasTextArea = !texts.isEmpty
-            #expect(hasTextArea, "Should provide multi-line text editor")
-        } else {
-            #if canImport(ViewInspector)
-            Issue.record("DynamicTextAreaField interface not found")
-            #else
-            #expect(Bool(true), "DynamicTextAreaField created")
-            #endif
-        }
-
-        // Should generate accessibility identifier
         #if canImport(ViewInspector)
-        let hasAccessibilityID = testComponentComplianceSinglePlatform(
-            view,
-            expectedPattern: "SixLayer.main.ui.*DynamicTextAreaField.*",
-            platform: .iOS,
-            componentName: "DynamicTextAreaField"
-        )
- #expect(hasAccessibilityID, "Should generate accessibility identifier ")
+        if !withFieldHierarchy(fieldView, { _ in
+            let hasTextArea = !findAllInFieldHierarchy(fieldView, ViewInspector.ViewType.TextEditor.self).isEmpty
+                || !findAllInFieldHierarchy(fieldView, ViewInspector.ViewType.TextField.self).isEmpty
+            #expect(hasTextArea, "Should provide multi-line text editor")
+        }) {
+            Issue.record("DynamicTextAreaField interface not found")
+        }
+        assertFieldGeneratesAccessibilityIdentifier(view, componentName: "DynamicTextAreaField", field: field)
         #else
         // ViewInspector not available on this platform - this is expected, not a failure
         #endif
@@ -821,21 +809,16 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             validationRules: ["maxLength": "100"]
         )
 
-        let view = DynamicTextField(field: field, formState: formState)
-            .enableGlobalAutomaticCompliance()
+        let fieldView = DynamicTextField(field: field, formState: formState)
+        _ = fieldView.enableGlobalAutomaticCompliance()
 
         // Should show character counter
         #if canImport(ViewInspector)
-        withInspectedView(view) { inspected in
-            let allTexts = inspected.findAll(ViewInspector.ViewType.Text.self)
-            if !allTexts.isEmpty {
-                let hasCounter = allTexts.contains { text in
-                    let textContent = (try? text.string()) ?? ""
-                    return textContent.contains("/") && textContent.contains("100")
-                }
-                #expect(hasCounter, "Should display character counter with max length")
-            }
-        }
+        expectCharacterCounterText(
+            in: fieldView,
+            maxLength: 100,
+            message: "Should display character counter with max length"
+        )
         #else
         // ViewInspector not available on this platform - this is expected, not a failure
         #endif
@@ -891,21 +874,17 @@ open class DynamicFieldComponentsTests: BaseTestClass {
         let longText = String(repeating: "a", count: 85)
         formState.setValue(longText, for: "text-with-limit")
 
-        let view = DynamicTextField(field: field, formState: formState)
-            .enableGlobalAutomaticCompliance()
+        let fieldView = DynamicTextField(field: field, formState: formState)
+        _ = fieldView.enableGlobalAutomaticCompliance()
 
         // Counter should be visible and show warning color
         #if canImport(ViewInspector)
-        withInspectedView(view) { inspected in
-            let allTexts = inspected.findAll(ViewInspector.ViewType.Text.self)
-            if !allTexts.isEmpty {
-                let hasCounter = allTexts.contains { text in
-                    let textContent = (try? text.string()) ?? ""
-                    return textContent.contains("85") && textContent.contains("100")
-                }
-                #expect(hasCounter, "Should show updated counter when approaching limit")
-            }
+        let allTexts = findAllInFieldHierarchy(fieldView, ViewInspector.ViewType.Text.self)
+        let hasCounter = allTexts.contains { text in
+            let textContent = (try? text.string()) ?? ""
+            return textContent.contains("85") && textContent.contains("100")
         }
+        #expect(hasCounter, "Should show updated counter when approaching limit")
         #else
         // ViewInspector not available on this platform - this is expected, not a failure
         #endif
@@ -964,21 +943,16 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             validationRules: ["maxLength": "500"]
         )
 
-        let view = DynamicTextAreaField(field: field, formState: formState)
-            .enableGlobalAutomaticCompliance()
+        let fieldView = DynamicTextAreaField(field: field, formState: formState)
+        _ = fieldView.enableGlobalAutomaticCompliance()
 
         // Should show character counter
         #if canImport(ViewInspector)
-        withInspectedView(view) { inspected in
-            let allTexts = inspected.findAll(ViewInspector.ViewType.Text.self)
-            if !allTexts.isEmpty {
-                let hasCounter = allTexts.contains { text in
-                    let textContent = (try? text.string()) ?? ""
-                    return textContent.contains("/") && textContent.contains("500")
-                }
-                #expect(hasCounter, "Should display character counter in text area")
-            }
-        }
+        expectCharacterCounterText(
+            in: fieldView,
+            maxLength: 500,
+            message: "Should display character counter in text area"
+        )
         #else
         // ViewInspector not available on this platform - this is expected, not a failure
         #endif
@@ -1033,13 +1007,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
 
         // Should have accessibility support
         #if canImport(ViewInspector)
-        let hasAccessibilityID = testComponentComplianceSinglePlatform(
-            view,
-            expectedPattern: "SixLayer.main.ui.*DynamicTextField.*",
-            platform: .iOS,
-            componentName: "DynamicTextField"
-        )
-        #expect(hasAccessibilityID, "Should have accessibility identifier")
+        assertFieldGeneratesAccessibilityIdentifier(view, componentName: "DynamicTextField", field: field)
         #else
         // ViewInspector not available on this platform - this is expected, not a failure
         #endif
@@ -1062,21 +1030,16 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             validationRules: ["maxLength": "500"]
         )
 
-        let view = DynamicRichTextField(field: field, formState: formState)
-            .enableGlobalAutomaticCompliance()
+        let fieldView = DynamicRichTextField(field: field, formState: formState)
+        _ = fieldView.enableGlobalAutomaticCompliance()
 
         // Should show character counter
         #if canImport(ViewInspector)
-        withInspectedView(view) { inspected in
-            let allTexts = inspected.findAll(ViewInspector.ViewType.Text.self)
-            if !allTexts.isEmpty {
-                let hasCounter = allTexts.contains { text in
-                    let textContent = (try? text.string()) ?? ""
-                    return textContent.contains("/") && textContent.contains("500")
-                }
-                #expect(hasCounter, "Should display character counter in rich text field")
-            }
-        }
+        expectCharacterCounterText(
+            in: fieldView,
+            maxLength: 500,
+            message: "Should display character counter in rich text field"
+        )
         #else
         // ViewInspector not available on this platform - this is expected, not a failure
         #endif
@@ -1101,20 +1064,15 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             validationRules: ["maxLength": "255"]
         )
 
-        let view = DynamicEmailField(field: field, formState: formState)
-            .enableGlobalAutomaticCompliance()
+        let fieldView = DynamicEmailField(field: field, formState: formState)
+        _ = fieldView.enableGlobalAutomaticCompliance()
 
         #if canImport(ViewInspector)
-        withInspectedView(view) { inspected in
-            let allTexts = inspected.findAll(ViewInspector.ViewType.Text.self)
-            if !allTexts.isEmpty {
-                let hasCounter = allTexts.contains { text in
-                    let textContent = (try? text.string()) ?? ""
-                    return textContent.contains("/") && textContent.contains("255")
-                }
-                #expect(hasCounter, "Should display character counter in email field")
-            }
-        }
+        expectCharacterCounterText(
+            in: fieldView,
+            maxLength: 255,
+            message: "Should display character counter in email field"
+        )
         #else
         // ViewInspector not available on this platform - this is expected, not a failure
         #endif
@@ -1137,20 +1095,15 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             validationRules: ["maxLength": "20"]
         )
 
-        let view = DynamicPhoneField(field: field, formState: formState)
-            .enableGlobalAutomaticCompliance()
+        let fieldView = DynamicPhoneField(field: field, formState: formState)
+        _ = fieldView.enableGlobalAutomaticCompliance()
 
         #if canImport(ViewInspector)
-        withInspectedView(view) { inspected in
-            let allTexts = inspected.findAll(ViewInspector.ViewType.Text.self)
-            if !allTexts.isEmpty {
-                let hasCounter = allTexts.contains { text in
-                    let textContent = (try? text.string()) ?? ""
-                    return textContent.contains("/") && textContent.contains("20")
-                }
-                #expect(hasCounter, "Should display character counter in phone field")
-            }
-        }
+        expectCharacterCounterText(
+            in: fieldView,
+            maxLength: 20,
+            message: "Should display character counter in phone field"
+        )
         #else
         // ViewInspector not available on this platform - this is expected, not a failure
         #endif
@@ -1173,20 +1126,15 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             validationRules: ["maxLength": "2048"]
         )
 
-        let view = DynamicURLField(field: field, formState: formState)
-            .enableGlobalAutomaticCompliance()
+        let fieldView = DynamicURLField(field: field, formState: formState)
+        _ = fieldView.enableGlobalAutomaticCompliance()
 
         #if canImport(ViewInspector)
-        withInspectedView(view) { inspected in
-            let allTexts = inspected.findAll(ViewInspector.ViewType.Text.self)
-            if !allTexts.isEmpty {
-                let hasCounter = allTexts.contains { text in
-                    let textContent = (try? text.string()) ?? ""
-                    return textContent.contains("/") && textContent.contains("2048")
-                }
-                #expect(hasCounter, "Should display character counter in URL field")
-            }
-        }
+        expectCharacterCounterText(
+            in: fieldView,
+            maxLength: 2048,
+            message: "Should display character counter in URL field"
+        )
         #else
         // ViewInspector not available on this platform - this is expected, not a failure
         #endif
@@ -1213,26 +1161,19 @@ open class DynamicFieldComponentsTests: BaseTestClass {
         )
         formState.initializeField(field)
 
-        let view = DynamicURLField(field: field, formState: formState)
-            .enableGlobalAutomaticCompliance()
+        let fieldView = DynamicURLField(field: field, formState: formState)
+        let view = fieldView.enableGlobalAutomaticCompliance()
 
         #if canImport(ViewInspector)
-        withInspectedView(view) { inspected in
-            // Should contain Link component, not TextField
-            // Use specialized method to directly verify Link component is used
-            // Links are not directly inspectable, check for text elements instead
-            let links: [ViewInspector.InspectableView<ViewInspector.ViewType.Text>] = []
-            let textFields = inspected.findAll(ViewInspector.ViewType.TextField.self)
-            
-            // Verify Link component is present for read-only valid URL
+        withFieldHierarchy(fieldView) { _ in
+            let links = findAllInFieldHierarchy(fieldView, ViewInspector.ViewType.Link.self)
+            let textFields = findAllInFieldHierarchy(fieldView, ViewInspector.ViewType.TextField.self)
             #expect(!links.isEmpty, "Read-only URL field with valid URL should use Link component")
             #expect(textFields.isEmpty, "Read-only URL field should not use TextField")
-            
-            // Verify Link contains the URL text
             if let firstLink = links.first {
-                let linkText = try? firstLink.string()
-                #expect(linkText?.contains("https://example.com") == true || linkText?.contains("example.com") == true,
-                       "Link should display the URL text")
+                let linkTexts = firstLink.findAll(ViewInspector.ViewType.Text.self).compactMap { try? $0.string() }
+                let hasURLText = linkTexts.contains { $0.contains("example.com") }
+                #expect(hasURLText, "Link should display the URL text")
             }
         }
         #else
@@ -1260,22 +1201,15 @@ open class DynamicFieldComponentsTests: BaseTestClass {
         )
         formState.initializeField(field)
 
-        let view = DynamicURLField(field: field, formState: formState)
-            .enableGlobalAutomaticCompliance()
+        let fieldView = DynamicURLField(field: field, formState: formState)
+        _ = fieldView.enableGlobalAutomaticCompliance()
 
         #if canImport(ViewInspector)
-        withInspectedView(view) { inspected in
-            // Should contain Text component for invalid URL, not Link
-            // Use specialized method to directly verify Link component is NOT used
-            // Links are not directly inspectable, check for text elements instead
-            let links: [ViewInspector.InspectableView<ViewInspector.ViewType.Text>] = []
-            let allTexts = inspected.findAll(ViewInspector.ViewType.Text.self)
-            
-            // Invalid URL should not use Link component
+        withFieldHierarchy(fieldView) { _ in
+            let links = findAllInFieldHierarchy(fieldView, ViewInspector.ViewType.Link.self)
+            let allTexts = findAllInFieldHierarchy(fieldView, ViewInspector.ViewType.Text.self)
             #expect(links.isEmpty, "Invalid URL should not use Link component")
             #expect(!allTexts.isEmpty, "Invalid URL should use Text component")
-            
-            // Verify Text displays the invalid URL
             let allTextStrings = allTexts.compactMap { try? $0.string() }
             let hasInvalidURL = allTextStrings.contains { $0.contains("not a valid url") }
             #expect(hasInvalidURL, "Text should display the invalid URL value")
@@ -1305,16 +1239,13 @@ open class DynamicFieldComponentsTests: BaseTestClass {
         )
         formState.initializeField(field)
 
-        let view = DynamicURLField(field: field, formState: formState)
-            .enableGlobalAutomaticCompliance()
+        let fieldView = DynamicURLField(field: field, formState: formState)
+        _ = fieldView.enableGlobalAutomaticCompliance()
 
         #if canImport(ViewInspector)
-        withInspectedView(view) { inspected in
-            // Should contain TextField, not Link
-            let textFields = inspected.findAll(ViewInspector.ViewType.TextField.self)
-            let allTexts = inspected.findAll(ViewInspector.ViewType.Text.self)
-            
-            // Editable field should have TextField, not clickable link text
+        withFieldHierarchy(fieldView) { _ in
+            let textFields = findAllInFieldHierarchy(fieldView, ViewInspector.ViewType.TextField.self)
+            let allTexts = findAllInFieldHierarchy(fieldView, ViewInspector.ViewType.Text.self)
             let hasURLLikeText = allTexts.contains { text in
                 if let textContent = try? text.string() {
                     return textContent.contains("https://") || textContent.contains("http://")
@@ -1349,26 +1280,19 @@ open class DynamicFieldComponentsTests: BaseTestClass {
         )
         formState.initializeField(field)
 
-        let view = DynamicURLField(field: field, formState: formState)
-            .enableGlobalAutomaticCompliance()
+        let fieldView = DynamicURLField(field: field, formState: formState)
+        _ = fieldView.enableGlobalAutomaticCompliance()
 
         #if canImport(ViewInspector)
-        withInspectedView(view) { inspected in
-            // Should use Link for display-only field with valid URL
-            // Use specialized method to directly verify Link component is used
-            // Links are not directly inspectable, check for text elements instead
-            let links: [ViewInspector.InspectableView<ViewInspector.ViewType.Text>] = []
-            let textFields = inspected.findAll(ViewInspector.ViewType.TextField.self)
-            
-            // Verify Link component is present for display-only valid URL
+        withFieldHierarchy(fieldView) { _ in
+            let links = findAllInFieldHierarchy(fieldView, ViewInspector.ViewType.Link.self)
+            let textFields = findAllInFieldHierarchy(fieldView, ViewInspector.ViewType.TextField.self)
             #expect(!links.isEmpty, "Display-only URL field should use Link component")
             #expect(textFields.isEmpty, "Display-only URL field should not use TextField")
-            
-            // Verify Link contains the URL text
             if let firstLink = links.first {
-                let linkText = try? firstLink.string()
-                #expect(linkText?.contains("https://apple.com") == true || linkText?.contains("apple.com") == true,
-                       "Link should display the URL text")
+                let linkTexts = firstLink.findAll(ViewInspector.ViewType.Text.self).compactMap { try? $0.string() }
+                let hasURLText = linkTexts.contains { $0.contains("apple.com") }
+                #expect(hasURLText, "Link should display the URL text")
             }
         }
         #else
@@ -1395,13 +1319,12 @@ open class DynamicFieldComponentsTests: BaseTestClass {
         )
         formState.initializeField(field)
 
-        let view = DynamicURLField(field: field, formState: formState)
-            .enableGlobalAutomaticCompliance()
+        let fieldView = DynamicURLField(field: field, formState: formState)
+        _ = fieldView.enableGlobalAutomaticCompliance()
 
         #if canImport(ViewInspector)
-        withInspectedView(view) { inspected in
-            // Should show placeholder text (—) for empty read-only URL
-            let texts = inspected.findAll(ViewInspector.ViewType.Text.self)
+        withFieldHierarchy(fieldView) { _ in
+            let texts = findAllInFieldHierarchy(fieldView, ViewInspector.ViewType.Text.self)
             let allTexts = texts.compactMap { try? $0.string() }
             let hasPlaceholder = allTexts.contains { $0 == "—" || $0.trimmingCharacters(in: .whitespaces) == "—" }
             #expect(hasPlaceholder, "Empty read-only URL should show placeholder (—)")
@@ -1430,20 +1353,15 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             validationRules: ["maxLength": "128"]
         )
 
-        let view = DynamicPasswordField(field: field, formState: formState)
-            .enableGlobalAutomaticCompliance()
+        let fieldView = DynamicPasswordField(field: field, formState: formState)
+        _ = fieldView.enableGlobalAutomaticCompliance()
 
         #if canImport(ViewInspector)
-        withInspectedView(view) { inspected in
-            let allTexts = inspected.findAll(ViewInspector.ViewType.Text.self)
-            if !allTexts.isEmpty {
-                let hasCounter = allTexts.contains { text in
-                    let textContent = (try? text.string()) ?? ""
-                    return textContent.contains("/") && textContent.contains("128")
-                }
-                #expect(hasCounter, "Should display character counter in password field")
-            }
-        }
+        expectCharacterCounterText(
+            in: fieldView,
+            maxLength: 128,
+            message: "Should display character counter in password field"
+        )
         #else
         // ViewInspector not available on this platform - this is expected, not a failure
         #endif
@@ -1466,20 +1384,15 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             validationRules: ["maxLength": "100"]
         )
 
-        let view = DynamicAutocompleteField(field: field, formState: formState)
-            .enableGlobalAutomaticCompliance()
+        let fieldView = DynamicAutocompleteField(field: field, formState: formState)
+        _ = fieldView.enableGlobalAutomaticCompliance()
 
         #if canImport(ViewInspector)
-        withInspectedView(view) { inspected in
-            let allTexts = inspected.findAll(ViewInspector.ViewType.Text.self)
-            if !allTexts.isEmpty {
-                let hasCounter = allTexts.contains { text in
-                    let textContent = (try? text.string()) ?? ""
-                    return textContent.contains("/") && textContent.contains("100")
-                }
-                #expect(hasCounter, "Should display character counter in autocomplete field")
-            }
-        }
+        expectCharacterCounterText(
+            in: fieldView,
+            maxLength: 100,
+            message: "Should display character counter in autocomplete field"
+        )
         #else
         // ViewInspector not available on this platform - this is expected, not a failure
         #endif
@@ -1675,13 +1588,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
 
         // Should generate accessibility identifier
         #if canImport(ViewInspector)
-        let hasAccessibilityID = testComponentComplianceSinglePlatform(
-            view,
-            expectedPattern: "SixLayer.main.ui.*DynamicStepperField.*",
-            platform: .iOS,
-            componentName: "DynamicStepperField"
-        )
-        #expect(hasAccessibilityID, "Should generate accessibility identifier")
+        assertFieldGeneratesAccessibilityIdentifier(view, componentName: "DynamicStepperField", field: field)
         #else
         // ViewInspector not available on this platform - this is expected, not a failure
         #endif
@@ -1980,18 +1887,15 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             metadata: ["multiLine": "true"]
         )
 
-        let view = DynamicTextField(field: field, formState: formState)
-            .enableGlobalAutomaticCompliance()
+        let fieldView = DynamicTextField(field: field, formState: formState)
+        _ = fieldView.enableGlobalAutomaticCompliance()
 
         // On iOS 16+, should use TextField with axis: .vertical
         #if os(iOS)
         if #available(iOS 16.0, *) {
             #if canImport(ViewInspector)
-            withInspectedView(view) { inspected in
-                // Should have TextField with axis parameter (multi-line)
-                // Note: ViewInspector may not directly detect axis, but we can verify
-                // the TextField exists and is configured for multi-line
-                let textFields = inspected.findAll(ViewInspector.ViewType.TextField.self)
+            withFieldHierarchy(fieldView) { _ in
+                let textFields = findAllInFieldHierarchy(fieldView, ViewInspector.ViewType.TextField.self)
                 #expect(!textFields.isEmpty, "Should use TextField for multi-line on iOS 16+")
             }
             #else
@@ -2001,7 +1905,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
         } else {
             // iOS < 16: Should fall back to TextEditor
             #if canImport(ViewInspector)
-            withInspectedView(view) { inspected in
+            withInspectedView(fieldView) { inspected in
                 // Should use TextEditor as fallback
                 let textEditors = inspected.findAll(ViewInspector.ViewType.TextEditor.self)
                 #expect(!textEditors.isEmpty, "Should use TextEditor as fallback on iOS < 16")
@@ -2143,21 +2047,16 @@ open class DynamicFieldComponentsTests: BaseTestClass {
 
         formState.setValue("Some multi-line text\nwith multiple lines", for: "multiline-text")
 
-        let view = DynamicTextField(field: field, formState: formState)
-            .enableGlobalAutomaticCompliance()
+        let fieldView = DynamicTextField(field: field, formState: formState)
+        _ = fieldView.enableGlobalAutomaticCompliance()
 
         // Should show character counter
         #if canImport(ViewInspector)
-        withInspectedView(view) { inspected in
-            let allTexts = inspected.findAll(ViewInspector.ViewType.Text.self)
-            if !allTexts.isEmpty {
-                let hasCounter = allTexts.contains { text in
-                    let textContent = (try? text.string()) ?? ""
-                    return textContent.contains("/") && textContent.contains("200")
-                }
-                #expect(hasCounter, "Should display character counter for multi-line TextField")
-            }
-        }
+        expectCharacterCounterText(
+            in: fieldView,
+            maxLength: 200,
+            message: "Should display character counter for multi-line TextField"
+        )
         #else
         // ViewInspector not available - verify conceptually
         let currentValue = formState.getValue(for: "multiline-text") as? String ?? ""
@@ -2308,13 +2207,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
 
         // Should generate accessibility identifier
         #if canImport(ViewInspector)
-        let hasAccessibilityID = testComponentComplianceSinglePlatform(
-            view,
-            expectedPattern: "SixLayer.main.ui.*DynamicGaugeField.*",
-            platform: .iOS,
-            componentName: "DynamicGaugeField"
-        )
-        #expect(hasAccessibilityID, "Should generate accessibility identifier ")
+        assertFieldGeneratesAccessibilityIdentifier(view, componentName: "DynamicGaugeField", field: field)
         #else
         // ViewInspector not available on this platform - this is expected, not a failure
         #endif

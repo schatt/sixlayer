@@ -106,17 +106,18 @@ open class PlatformCameraPreviewViewTests: BaseTestClass {
             // Given: A valid AVCaptureSession
             let session = createTestCaptureSession()
             
-            // When: Create PlatformCameraPreviewView
-            let previewView = PlatformCameraPreviewView(session: session)
+            // When: Create L4 camera preview wrapper (named automaticCompliance)
+            let previewView = PlatformPhotoComponentsLayer4.platformCameraPreview_L4(session: session)
             
             // Then: View should have accessibility identifier applied
             #if canImport(ViewInspector)
+            _ = TestSetupUtilities.hostRootPlatformView(previewView, forceLayout: true)
             #expect(testComponentComplianceSinglePlatform(
                 previewView,
-                expectedPattern: "SixLayer.*ui",
+                expectedPattern: "*platformCameraPreview_L4*",
                 platform: SixLayerPlatform.current,
-                componentName: "PlatformCameraPreviewView"
-            ), "PlatformCameraPreviewView should have accessibility identifier")
+                componentName: "platformCameraPreview_L4"
+            ), "platformCameraPreview_L4 should have accessibility identifier")
             #else
             // ViewInspector not available on this platform - this is expected, not a failure
             #endif

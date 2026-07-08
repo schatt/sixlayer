@@ -31,23 +31,15 @@ open class LocalEnableOverrideTests: BaseTestClass {
             let view = Button("Special Button") { }
                 .automaticCompliance(identifierName: "SpecialButton")  // ← Local enable + name so ID is generated
             
-            // 3. Try to inspect for accessibility identifier
+            // 3. Verify local enable overrides global disable via harness
             #if canImport(ViewInspector)
-            do {
-                let inspectedView = try AnyView(view).inspect()
-                let button = try inspectedView.button()
-                let accessibilityID = try button.accessibilityIdentifier()
-                
-                // Should have an ID - local enable should override global disable
-                #expect(!accessibilityID.isEmpty, "Local enable should override global disable")
-                #expect(accessibilityID.contains("TestApp"), "ID should contain namespace")
-                #expect(accessibilityID.contains("SixLayer"), "ID should contain framework prefix")
-                
-                print("   Generated ID: '\(accessibilityID)'")
-                
-            } catch {
-                Issue.record("Failed to inspect view with local enable")
-            }
+            let hasLocalEnableID = testComponentComplianceSinglePlatform(
+                view,
+                expectedPattern: "*SpecialButton*",
+                platform: SixLayerPlatform.iOS,
+                componentName: "SpecialButton"
+            )
+            #expect(hasLocalEnableID, "Local enable should override global disable")
             #else
             // ViewInspector not available on this platform - this is expected, not a failure
             #endif
@@ -81,21 +73,15 @@ open class LocalEnableOverrideTests: BaseTestClass {
                 .disableAutomaticAccessibilityIdentifiers()  // ← Apply disable FIRST
                 .named("DisabledButton")
             
-            // 3. Try to inspect for accessibility identifier
-            // Using wrapper - when ViewInspector works on macOS, no changes needed here
+            // 3. Verify explicit naming via harness (applies regardless of global settings)
             #if canImport(ViewInspector)
-            if let inspectedView = try? AnyView(view).inspect(),
-               let buttons = inspectedView.findAll(ViewInspector.ViewType.Button.self).first,
-               let accessibilityID = try? buttons.accessibilityIdentifier() {
-                // .named() should always work regardless of global settings
-                // This is the correct behavior - explicit naming should not be affected by global config
-                #expect(!accessibilityID.isEmpty, ".named() should always generate identifier regardless of global settings")
-                #expect(accessibilityID.contains("DisabledButton"), "Should contain the explicit name")
-                
-                print("   Generated ID: '\(accessibilityID)'")
-            } else {
-                Issue.record("Failed to inspect view with explicit naming")
-            }
+            let hasNamedID = testComponentComplianceSinglePlatform(
+                view,
+                expectedPattern: "*DisabledButton*",
+                platform: SixLayerPlatform.iOS,
+                componentName: "DisabledButton"
+            )
+            #expect(hasNamedID, ".named() should always generate identifier regardless of global settings")
             #else
             // ViewInspector not available on this platform - this is expected, not a failure
             #endif
