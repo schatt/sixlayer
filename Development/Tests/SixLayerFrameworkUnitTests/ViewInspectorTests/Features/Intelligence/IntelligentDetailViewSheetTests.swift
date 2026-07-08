@@ -68,7 +68,7 @@ struct IntelligentDetailViewSheetTests {
             TestSetupUtilities.hostRootPlatformView(sheetContent, forceLayout: true, exposeContentAccessibility: true)
         }
         let hasHostedTitle = hostedUIKitAccessibilityHierarchyContains(root: root) { view in
-            let label = view.accessibilityLabel ?? ""
+            let label = view.hostedAccessibilityLabelText
             return label.contains(task.title) || label.contains(task.description)
         }
         let hasStructure = hasHostedTitle
@@ -114,8 +114,8 @@ struct IntelligentDetailViewSheetTests {
         let analysis = DataIntrospectionEngine.analyze(task)
         #expect(analysis.fields.contains(where: { $0.name == "title" }), "Test model should expose a title field")
         let hasHostedTitle = hostedUIKitAccessibilityHierarchyContains(root: root, predicate: { view in
-            let label = view.accessibilityLabel ?? ""
-            let value = view.accessibilityValue ?? ""
+            let label = view.hostedAccessibilityLabelText
+            let value = view.hostedAccessibilityValueText
             let combined = label + value
             return combined.contains(task.title) || combined.contains(task.description)
         })
