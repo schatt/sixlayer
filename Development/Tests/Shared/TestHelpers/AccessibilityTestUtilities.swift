@@ -23,6 +23,32 @@ import UIKit
 import AppKit
 #endif
 
+#if canImport(UIKit) && !os(watchOS)
+extension UIView {
+    /// Cross-platform label text for hosted hierarchy probes (Issue #315 macOS lane).
+    var hostedAccessibilityLabelText: String { accessibilityLabel ?? "" }
+    /// Cross-platform value text for hosted hierarchy probes (Issue #315 macOS lane).
+    var hostedAccessibilityValueText: String {
+        if let stringValue = accessibilityValue as? String { return stringValue }
+        guard let value = accessibilityValue else { return "" }
+        return String(describing: value)
+    }
+}
+#endif
+
+#if canImport(AppKit)
+extension NSView {
+    /// Cross-platform label text for hosted hierarchy probes (Issue #315 macOS lane).
+    var hostedAccessibilityLabelText: String { accessibilityLabel() ?? "" }
+    /// Cross-platform value text for hosted hierarchy probes (Issue #315 macOS lane).
+    var hostedAccessibilityValueText: String {
+        if let stringValue = accessibilityValue() as? String { return stringValue }
+        guard let value = accessibilityValue() else { return "" }
+        return String(describing: value)
+    }
+}
+#endif
+
 // MARK: - Cross-platform hosting and accessibility utilities
 
 /// Host a SwiftUI view and return the platform root view for inspection.
@@ -809,6 +835,45 @@ public func hostedTreesRetainOverlappingSixLayerAccessibilityKeys(defaultRoot: A
     let adaptedIDs = Set(findAllAccessibilityIdentifiersFromPlatformView(adaptedRoot).filter { $0.contains("SixLayer") })
     guard !defaultIDs.isEmpty, !adaptedIDs.isEmpty else { return false }
     return !defaultIDs.isDisjoint(with: adaptedIDs)
+}
+#endif
+
+#if canImport(AppKit)
+@MainActor
+private func accessibilityContainerChildren(for view: NSView) -> [Any] {
+    if let children = view.accessibilityChildren(), !children.isEmpty {
+        return Array(children.prefix(maxAccessibilityContainerEnumerationCount))
+    }
+    return []
+}
+
+/// Walks `NSView` and nested accessibility container children; returns true if `predicate` matches any node.
+/// AppKit counterpart to the UIKit helper used for Issue #254 / #314 hosted semantic checks on macOS (#315).
+@MainActor
+public func hostedUIKitAccessibilityHierarchyContains(
+    root: Any?,
+    maxVisited: Int = 800,
+    predicate: (NSView) -> Bool
+) -> Bool {
+    guard let rootView = root as? NSView else { return false }
+    func checkView(_ view: NSView) -> Bool {
+        if predicate(view) { return true }
+        for child in accessibilityContainerChildren(for: view) {
+            if let sub = child as? NSView, predicate(sub) { return true }
+        }
+        return false
+    }
+    if checkView(rootView) { return true }
+    var stack: [NSView] = rootView.subviews
+    var checked: Set<ObjectIdentifier> = []
+    var count = 0
+    while let next = stack.popLast(), count < maxVisited {
+        count += 1
+        guard checked.insert(ObjectIdentifier(next)).inserted else { continue }
+        if checkView(next) { return true }
+        stack.append(contentsOf: next.subviews.prefix(80))
+    }
+    return false
 }
 #endif
 
