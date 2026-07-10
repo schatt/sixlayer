@@ -24,9 +24,8 @@ import AppKit
 /// Per-test-invocation retention for hosted UIKit/AppKit windows.
 ///
 /// Parallel-safe: each test's `HostedViewTestIsolationTrait` installs a dedicated session in
-/// `@TaskLocal` and on the main actor. No global map, lock, or cross-test bucket.
-@MainActor
-final class HostingSession {
+/// `@TaskLocal`. No global map, lock, or cross-test slot.
+final class HostingSession: @unchecked Sendable {
     private struct HostedEntry {
         let window: AnyObject
         let controller: AnyObject
@@ -55,24 +54,19 @@ final class HostingSession {
 
     private var entries: [ObjectIdentifier: HostedEntry] = [:]
 
+    @MainActor
     func store(controller: AnyObject, window: AnyObject, for view: Any) {
         let key = ObjectIdentifier(view as AnyObject)
         entries[key] = HostedEntry(window: window, controller: controller)
     }
 
+    @MainActor
     func tearDownAll() {
         for entry in entries.values {
             entry.tearDown()
         }
         entries.removeAll()
     }
-}
-
-/// Main-actor slot for the test currently executing UI hosting.
-/// Safe under parallelism: only one `@MainActor` test runs on the main thread at a time.
-@MainActor
-enum MainActorHostingContext {
-    static var currentSession: HostingSession?
 }
 
 enum HostingControllerStorage {
@@ -82,13 +76,8 @@ enum HostingControllerStorage {
     @TaskLocal static var scopeTestID: Test.ID?
 
     @MainActor
-    static func activeSession() -> HostingSession? {
-        session ?? MainActorHostingContext.currentSession
-    }
-
-    @MainActor
     static func store(controller: AnyObject, window: AnyObject, for view: Any) {
-        guard let session = activeSession() else {
+        guard let session = HostingControllerStorage.session else {
             Issue.record(
                 "hostRootPlatformView requires HostedViewTestIsolationTrait on the enclosing @Suite"
             )
@@ -99,7 +88,7 @@ enum HostingControllerStorage {
 
     @MainActor
     static func tearDownActiveSession() {
-        activeSession()?.tearDownAll()
+        session?.tearDownAll()
     }
 }
 
