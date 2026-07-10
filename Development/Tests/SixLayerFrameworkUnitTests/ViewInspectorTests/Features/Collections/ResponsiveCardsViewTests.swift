@@ -8,7 +8,7 @@ import SwiftUI
 /// BUSINESS PURPOSE: Ensure ResponsiveCardsView components generate proper accessibility identifiers
 /// TESTING SCOPE: All components in ResponsiveCardsView.swift
 /// METHODOLOGY: Test each component on both iOS and macOS platforms as required by mandatory testing guidelines
-@Suite("Responsive Cards View")
+@Suite("Responsive Cards View", HostedViewTestIsolationTrait())
 /// NOTE: Not marked @MainActor on class to allow parallel execution
 open class ResponsiveCardsViewTests: BaseTestClass {
     
