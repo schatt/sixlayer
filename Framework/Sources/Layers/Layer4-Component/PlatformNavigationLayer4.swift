@@ -14,6 +14,23 @@ private let layer4OverlayShowSidebarAccessibilityIdentifier = "L4OverlayShowSide
 private let layer4OverlayCloseSidebarAccessibilityIdentifier = "L4OverlayCloseSidebar"
 private let layer4OverlayModalRootAccessibilityIdentifier = "L4OverlayModalRoot"
 
+/// Applies `navigationSplitViewColumnWidth` when sizing is available (GitHub #330).
+private struct NavigationSplitSidebarColumnWidthModifier: ViewModifier {
+    let sizing: NavigationSplitColumnSizing?
+
+    func body(content: Content) -> some View {
+        if let sizing {
+            content.navigationSplitViewColumnWidth(
+                min: sizing.min,
+                ideal: sizing.ideal,
+                max: sizing.max
+            )
+        } else {
+            content
+        }
+    }
+}
+
 /// Detail-first shell with toolbar affordance and dismissible sheet for the outer sidebar (no column squeeze).
 private struct Layer4OuterSidebarOverlayHost<SidebarSheet: View, Detail: View>: View {
     @State private var isOuterSidebarPresented = false
@@ -125,14 +142,11 @@ private struct Layer4NestedSplitShellPresentationHost<Sidebar: View, Detail: Vie
     var body: some View {
         GeometryReader { geo in
             let width = NavigationLayoutResolver.layer4SanitizedSplitAxisWidthForPresentation(geo.size.width)
-            let fresh = NavigationLayoutResolver.layer4CompactPresentation(forAvailableWidth: width)
+            let fresh = freshPresentation(for: width)
             let columnSeeded = columnSeededPresentation()
             let prev = persistedPresentation ?? columnSeeded ?? fresh
-            let presentation = NavigationLayoutResolver.layer4CompactPresentationForTransition(
-                availableWidth: width,
-                previousPresentation: prev
-            )
-            shellContent(presentation: presentation)
+            let presentation = transitionPresentation(availableWidth: width, previous: prev)
+            shellContent(presentation: presentation, availableWidth: width)
                 .task(id: widthTaskID(width)) {
                     syncPersistedPresentationForWidth(width)
                 }
@@ -143,18 +157,47 @@ private struct Layer4NestedSplitShellPresentationHost<Sidebar: View, Detail: Vie
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
+    private var usesAppNavigationWidthBudget: Bool {
+        switch kind {
+        case .appNavigation, .appNavigationMacOS12:
+            return true
+        case .settingsIPad, .settingsMacOS:
+            return false
+        }
+    }
+
+    private func freshPresentation(for width: CGFloat) -> NavigationLayoutCompactPresentation {
+        if usesAppNavigationWidthBudget {
+            return NavigationLayoutResolver.layer4AppNavigationCompactPresentation(forAvailableWidth: width)
+        }
+        return NavigationLayoutResolver.layer4CompactPresentation(forAvailableWidth: width)
+    }
+
+    private func transitionPresentation(
+        availableWidth: CGFloat,
+        previous: NavigationLayoutCompactPresentation
+    ) -> NavigationLayoutCompactPresentation {
+        if usesAppNavigationWidthBudget {
+            return NavigationLayoutResolver.layer4AppNavigationCompactPresentationForTransition(
+                availableWidth: availableWidth,
+                previousPresentation: previous
+            )
+        }
+        return NavigationLayoutResolver.layer4CompactPresentationForTransition(
+            availableWidth: availableWidth,
+            previousPresentation: previous
+        )
+    }
+
     private func columnSeededPresentation() -> NavigationLayoutCompactPresentation? {
         Layer4MeasuredSplitPresentationSync.seededPresentation(columnVisibility: columnVisibility)
     }
 
     private func syncPersistedPresentationForWidth(_ width: CGFloat) {
-        let fresh = NavigationLayoutResolver.layer4CompactPresentation(forAvailableWidth: width)
+        let fresh = freshPresentation(for: width)
         let seeded = columnSeededPresentation()
         let previous = persistedPresentation ?? seeded ?? fresh
-        persistedPresentation = NavigationLayoutResolver.layer4CompactPresentationForTransition(
-            availableWidth: width,
-            previousPresentation: previous
-        )
+        persistedPresentation = transitionPresentation(availableWidth: width, previous: previous)
     }
 
     private func applyColumnVisibilityToPersistedPresentation(_ visibility: NavigationSplitViewVisibility?) {
@@ -171,11 +214,15 @@ private struct Layer4NestedSplitShellPresentationHost<Sidebar: View, Detail: Vie
     }
 
     @ViewBuilder
-    private func shellContent(presentation: NavigationLayoutCompactPresentation) -> some View {
+    private func shellContent(
+        presentation: NavigationLayoutCompactPresentation,
+        availableWidth: CGFloat
+    ) -> some View {
         switch kind {
         case .appNavigation:
             EmptyView().layer4CreateAppNavigationSplitView(
                 presentation: presentation,
+                availableWidth: availableWidth,
                 columnVisibility: columnVisibility,
                 sidebar: sidebar,
                 detail: detail
@@ -618,16 +665,18 @@ public extension View {
     
     // MARK: - App Navigation Layer 4
     
-    /// Helper to create NavigationSplitView with optional column visibility
+    /// Helper to create NavigationSplitView with optional column visibility and progressive sidebar sizing (#330).
     @ViewBuilder
     private func createNavigationSplitView<SidebarContent: View, DetailContent: View>(
         columnVisibility: Binding<NavigationSplitViewVisibility>?,
+        sidebarColumnSizing: NavigationSplitColumnSizing? = nil,
         @ViewBuilder sidebar: () -> SidebarContent,
         @ViewBuilder detail: () -> DetailContent
     ) -> some View {
         if let columnVisibility = columnVisibility {
             NavigationSplitView(columnVisibility: columnVisibility) {
                 sidebar()
+                    .modifier(NavigationSplitSidebarColumnWidthModifier(sizing: sidebarColumnSizing))
             } detail: {
                 layer4DetailWithOptionalRevealChrome(
                     columnVisibility: columnVisibility,
@@ -637,6 +686,7 @@ public extension View {
         } else {
             NavigationSplitView {
                 sidebar()
+                    .modifier(NavigationSplitSidebarColumnWidthModifier(sizing: sidebarColumnSizing))
             } detail: {
                 detail()
             }
@@ -681,6 +731,7 @@ public extension View {
     @ViewBuilder
     fileprivate func layer4CreateAppNavigationSplitView<SidebarContent: View, DetailContent: View>(
         presentation: NavigationLayoutCompactPresentation,
+        availableWidth: CGFloat,
         columnVisibility: Binding<NavigationSplitViewVisibility>?,
         @ViewBuilder sidebar: () -> SidebarContent,
         @ViewBuilder detail: () -> DetailContent
@@ -689,6 +740,9 @@ public extension View {
         case .fullSplit:
             createNavigationSplitView(
                 columnVisibility: columnVisibility,
+                sidebarColumnSizing: NavigationLayoutResolver.appNavigationSidebarColumnSizing(
+                    availableWidth: availableWidth
+                ),
                 sidebar: sidebar,
                 detail: detail
             )

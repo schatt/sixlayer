@@ -1,12 +1,21 @@
 # 🚀 Six-Layer Framework Release History
 
-## 📍 **Current Release: v8.1.0** 🔧
+## 📍 **Current Release: v8.1.1** 🔧
 
-**Release Date**: July 7, 2026
-**Status**: Minor release (prep on `next`)
-**Previous Release**: v8.0.0 - Major release
-**Note**: ViewInspector 0.10 test infrastructure — accessibility identifier collection (#314), SixLayerViewInspectorTestKit (#327), typed inspect helpers (#326), Inspectable removal (#328).
+**Release Date**: TBD (prep on `next`)
+**Status**: Patch release (prep on `next`)
+**Previous Release**: v8.1.0 - Minor release
+**Note**: Window/container resize — app-nav single-sidebar column sizing and intelligent card reflow (#330).
 **Next Release**: TBD
+
+---
+
+## 🎯 **v8.1.1 - macOS/iPad resize: app nav and card collections** (TBD)
+
+### **What's in v8.1.1:**
+- Patch release (#330, #332). See [RELEASE_v8.1.1.md](RELEASE_v8.1.1.md) for details.
+
+**See [RELEASE_v8.1.1.md](RELEASE_v8.1.1.md) for complete release notes.**
 
 ---
 

@@ -217,7 +217,8 @@ public struct ExpandableCardComponent<Item: Identifiable>: View {
                     expandedContent
                 }
             }
-            .frame(width: layoutDecision.cardWidth, height: layoutDecision.cardHeight)
+            .frame(maxWidth: .infinity)
+            .frame(height: layoutDecision.cardHeight)
             .background(cardBackground)
             .cornerRadius(12)
             .shadow(color: .black.opacity(0.1), radius: isExpanded ? 8 : 4, x: 0, y: 2)
@@ -905,7 +906,8 @@ public struct SimpleCardComponent<Item: Identifiable>: View {
                     badgeContent(item)
                 }
             }
-            .frame(width: layoutDecision.cardWidth, height: layoutDecision.cardHeight)
+            .frame(maxWidth: .infinity)
+            .frame(height: layoutDecision.cardHeight)
             .background(.regularMaterial)
             .cornerRadius(12)
             .shadow(radius: 4)
