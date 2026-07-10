@@ -10,7 +10,7 @@
 
 ## 📍 **Current Status**
 
-**Last Release**: v8.1.1 (prep on `next` — resize #330)
+**Last Release**: v8.1.1 (prep on `next` — resize #330, adaptive sidebar #331)
 **Current Phase**: Patch Release
 **Next Phase**: Continue framework evolution and stability improvements
 
