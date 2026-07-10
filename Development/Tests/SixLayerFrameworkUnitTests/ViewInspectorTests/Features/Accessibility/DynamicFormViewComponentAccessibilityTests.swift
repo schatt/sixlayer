@@ -21,7 +21,7 @@ struct TestData {
     let email: String
 }
 
-@Suite("Dynamic Form View Component Accessibility", .serialized)
+@Suite("Dynamic Form View Component Accessibility")
 /// NOTE: Serialized — ViewInspector hosting and task-local a11y config do not tolerate parallel execution in this suite (#314).
 open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
     
