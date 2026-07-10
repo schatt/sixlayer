@@ -8,7 +8,7 @@ import SwiftUI
 /// BUSINESS PURPOSE: Ensure IntelligentDetailView generates proper accessibility identifiers
 /// TESTING SCOPE: All components in IntelligentDetailView.swift
 /// METHODOLOGY: Test each component on both iOS and macOS platforms as required by mandatory testing guidelines
-@Suite("Intelligent Detail View")
+@Suite("Intelligent Detail View", HostedViewTestIsolationTrait())
 /// NOTE: Not marked @MainActor on class to allow parallel execution
 open class IntelligentDetailViewTests: BaseTestClass {
     
