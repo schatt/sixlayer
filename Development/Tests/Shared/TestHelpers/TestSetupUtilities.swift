@@ -24,13 +24,13 @@ import AppKit
 /// Per-test-invocation retention for hosted UIKit/AppKit windows.
 ///
 /// Parallel-safe: each test's `HostedViewTestIsolationTrait` installs a dedicated session in
-/// `@TaskLocal`. No global dictionary, lock, or cross-test bucket — only this task's hosts.
-final class HostingSession: @unchecked Sendable {
+/// `@TaskLocal` and on the main actor. No global map, lock, or cross-test bucket.
+@MainActor
+final class HostingSession {
     private struct HostedEntry {
         let window: AnyObject
         let controller: AnyObject
 
-        @MainActor
         func tearDown() {
             #if canImport(UIKit) && !os(watchOS)
             if let hosting = controller as? UIHostingController<AnyView> {
@@ -60,7 +60,6 @@ final class HostingSession: @unchecked Sendable {
         entries[key] = HostedEntry(window: window, controller: controller)
     }
 
-    @MainActor
     func tearDownAll() {
         for entry in entries.values {
             entry.tearDown()
@@ -69,14 +68,27 @@ final class HostingSession: @unchecked Sendable {
     }
 }
 
+/// Main-actor slot for the test currently executing UI hosting.
+/// Safe under parallelism: only one `@MainActor` test runs on the main thread at a time.
+@MainActor
+enum MainActorHostingContext {
+    static var currentSession: HostingSession?
+}
+
 enum HostingControllerStorage {
-    /// Active per-test session; set by `HostedViewTestIsolationTrait`.
+    /// Active per-test session; set by `HostedViewTestIsolationTrait` on the test task.
     @TaskLocal static var session: HostingSession?
-    /// Active test id; set by isolation traits for `hostRootPlatformView` attribution.
+    /// Active test id; set by isolation traits for attribution.
     @TaskLocal static var scopeTestID: Test.ID?
 
+    @MainActor
+    static func activeSession() -> HostingSession? {
+        session ?? MainActorHostingContext.currentSession
+    }
+
+    @MainActor
     static func store(controller: AnyObject, window: AnyObject, for view: Any) {
-        guard let session else {
+        guard let session = activeSession() else {
             Issue.record(
                 "hostRootPlatformView requires HostedViewTestIsolationTrait on the enclosing @Suite"
             )
@@ -87,7 +99,15 @@ enum HostingControllerStorage {
 
     @MainActor
     static func tearDownActiveSession() {
-        session?.tearDownAll()
+        activeSession()?.tearDownAll()
+    }
+}
+
+@MainActor
+private func pumpHostedViewRunLoop(for duration: TimeInterval) {
+    let deadline = Date().addingTimeInterval(duration)
+    while Date() < deadline {
+        RunLoop.main.run(mode: .common, before: Date(timeIntervalSinceNow: 0.005))
     }
 }
 
@@ -155,27 +175,24 @@ public enum TestSetupUtilities {
             // Without a window, identifiers may not be set on platform views (iOS behavior).
             if let root = root {
                 let window = UIWindow(frame: CGRect(x: -10_000, y: -10_000, width: 400, height: 400))
-                window.isHidden = false
                 window.rootViewController = hosting
+                window.makeKeyAndVisible()
                 // Drive appearance so SwiftUI/UIKit commit the view hierarchy (identifiers often stay empty without this in unit tests).
                 hosting.beginAppearanceTransition(true, animated: false)
                 hosting.endAppearanceTransition()
-                // Allow run loop so UIKit/SwiftUI can apply accessibility traits to the hierarchy (0.1s on iOS for identifier propagation)
-                RunLoop.current.run(until: Date().addingTimeInterval(0.1))
+                pumpHostedViewRunLoop(for: 0.1)
                 // Optionally force layout so identifiers are applied to the UIView tree (Option A for a11y tests).
                 // Only use for simple views; complex views can hang (NavigationStack, platformPresentContent_L1).
                 if forceLayout {
                     root.setNeedsLayout()
                     root.layoutIfNeeded()
-                    // Second run loop on iOS so SwiftUI can propagate accessibilityIdentifier to nested views
-                    RunLoop.current.run(until: Date().addingTimeInterval(0.02))
+                    pumpHostedViewRunLoop(for: 0.02)
                     root.setNeedsLayout()
                     root.layoutIfNeeded()
                 }
                 // Store both so window and controller stay alive; keyed by root for cleanup
                 HostingControllerStorage.store(controller: hosting, window: window, for: root)
-                // Deferred SwiftUI updates may run after layoutIfNeeded; drain so accessibility + debug log entries settle before tests read them.
-                RunLoop.current.run(until: Date().addingTimeInterval(0.15))
+                pumpHostedViewRunLoop(for: 0.15)
             }
             return root
         }
@@ -217,13 +234,13 @@ public enum TestSetupUtilities {
             let root = hosting.view
             // Retain window + controller like UIKit path so layout and a11y stay alive for traversal.
             HostingControllerStorage.store(controller: hosting, window: window, for: root)
-            RunLoop.current.run(until: Date().addingTimeInterval(0.12))
+            pumpHostedViewRunLoop(for: 0.12)
             if forceLayout {
                 root.needsLayout = true
                 root.layoutSubtreeIfNeeded()
-                RunLoop.current.run(until: Date().addingTimeInterval(0.05))
+                pumpHostedViewRunLoop(for: 0.05)
             }
-            RunLoop.current.run(until: Date().addingTimeInterval(0.15))
+            pumpHostedViewRunLoop(for: 0.15)
             root.setAccessibilityElement(!exposeContentAccessibility)
             return root
         }
