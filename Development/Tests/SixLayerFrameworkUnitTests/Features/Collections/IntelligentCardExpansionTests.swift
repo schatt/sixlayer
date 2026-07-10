@@ -133,16 +133,16 @@ open class IntelligentCardExpansionTests: BaseTestClass {
         #expect(abs(layout.cardHeight - intrinsic) < 0.5)
     }
     
-    @Test func testIntelligentCardLayoutPadIgnoresViewportHeightClamp() {
+    @Test func testIntelligentCardLayoutPadRespectsViewportHeightWhenProvided() {
+        let viewport: CGFloat = 400
         let layout = determineIntelligentCardLayout_L2(
             contentCount: 2,
             screenWidth: 768,
             deviceType: .pad,
             contentComplexity: .moderate,
-            viewportHeight: 400
+            viewportHeight: viewport
         )
-        let intrinsic = layout.cardWidth * 1.4
-        #expect(abs(layout.cardHeight - intrinsic) < 0.5)
+        #expect(layout.cardHeight <= viewport - layout.padding * 2 + 0.5)
     }
     
     @Test func testDeviceAdaptation() {
