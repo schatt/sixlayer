@@ -34,18 +34,8 @@ import ViewInspector
 /// host injects at `WindowGroup` instead of touching `shared` (`TestApp.swift`). Reading `shared`
 /// is acceptable; writes belong on an isolated instance (or a tiny dedicated suite that restores state).
 open class BaseTestClass {
-    private let hostingTestID: Test.ID?
-
     /// Public initializer required for Swift testing framework to instantiate test classes
-    init() {
-        hostingTestID = Test.current?.id
-    }
-
-    deinit {
-        let testID = hostingTestID ?? HostingControllerStorage.scopeTestID
-        guard let testID else { return }
-        HostingControllerStorage.teardownAfterTest(testID)
-    }
+    init() {}
     
     /// Isolated test configuration for this test
     /// Set by initializeTestConfig() and used via runWithTaskLocalConfig()
