@@ -4,7 +4,7 @@
 //
 //  BUSINESS PURPOSE: Consolidated accessibility tests for the entire SixLayer framework
 //  This file consolidates all accessibility tests from 93+ separate files into a single
-//  serialized test suite to reduce MainActor contention and improve test organization.
+//  consolidated test suite and improve test organization.
 //
 //  TESTING SCOPE: All accessibility functionality including:
 //  - Identifier generation for all components
@@ -12,7 +12,7 @@
 //  - Accessibility behavior and features
 //  - Configuration and edge cases
 //
-//  METHODOLOGY: Uses @Suite(.serialized) to serialize execution and reduce MainActor contention
+//  METHODOLOGY: Uses @Suite to serialize execution and reduce MainActor contention
 //  Tests are organized into logical sections with MARK comments for easy navigation
 //
 
@@ -67,9 +67,9 @@ import AppKit
 #endif
 
 /// Consolidated accessibility tests for the entire SixLayer framework
-/// Uses @Suite(.serialized) to serialize execution and reduce MainActor contention
+/// Uses @Suite to serialize execution and reduce MainActor contention
 /// All tests are organized into logical sections with MARK comments
-@Suite(.serialized, HostedViewTestIsolationTrait())
+@Suite
 open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     // MARK: - Test Setup & Configuration
@@ -17057,6 +17057,6 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 
         // NOTE: Due to the massive scale (546 total tests), this consolidated file contains
         // representative tests from all major categories. Additional tests from remaining files
-        // can be added incrementally as needed. The @Suite(.serialized) attribute ensures
+        // can be added incrementally as needed. The @Suite attribute ensures
         // all tests run serially to reduce MainActor contention.
 }
