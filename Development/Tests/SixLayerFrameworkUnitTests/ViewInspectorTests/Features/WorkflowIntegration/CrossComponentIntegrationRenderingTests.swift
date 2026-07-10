@@ -35,7 +35,7 @@ import SwiftUI
 /// Tests that views combining multiple components actually render correctly
 /// NOTE: Not marked @MainActor on class to allow parallel execution
 /// CRITICAL: These tests MUST run with xcodebuild test (not swift test) to catch rendering issues
-@Suite("Cross-Component Integration Rendering")
+@Suite("Cross-Component Integration Rendering", HostedViewTestIsolationTrait())
 final class CrossComponentIntegrationRenderingTests: BaseTestClass {
     
     // MARK: - Test Helpers
