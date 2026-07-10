@@ -10,7 +10,7 @@ import ViewInspector
 /// Tests for Collection View Callback Functionality
 /// Tests that collection views properly handle item selection, deletion, and editing callbacks
 /// NOTE: Not marked @MainActor on class to allow parallel execution
-@Suite("Collection View Callback")
+@Suite("Collection View Callback", HostedViewTestIsolationTrait())
 open class CollectionViewCallbackTests: BaseTestClass {
     
     // MARK: - Test Data
