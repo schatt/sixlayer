@@ -15,7 +15,7 @@ import ViewInspector
  * METHODOLOGY: Harness-first ViewInspector traversal with hosted layout (#314).
  */
 
-@Suite("OCR Components")
+@Suite("OCR Components", HostedViewTestIsolationTrait())
 open class OCRComponentsTDDTests: BaseTestClass {
 
     #if canImport(ViewInspector)
