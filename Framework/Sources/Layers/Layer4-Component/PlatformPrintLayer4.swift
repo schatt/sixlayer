@@ -205,7 +205,6 @@ private struct PrintSheet: UIViewControllerRepresentable {
         if skipRealPrintForUITest {
             DispatchQueue.main.async {
                 self.onComplete?(true)
-                viewController.dismiss(animated: false, completion: nil)
             }
             return
         }
@@ -336,7 +335,10 @@ private struct PlatformPrintL4IOSModifier: ViewModifier {
                 PrintSheet(
                     content: printContent,
                     options: options,
-                    onComplete: onComplete
+                    onComplete: { success in
+                        isPresented = false
+                        onComplete?(success)
+                    }
                 )
             }
             .automaticCompliance(named: "platformPrint_L4")
