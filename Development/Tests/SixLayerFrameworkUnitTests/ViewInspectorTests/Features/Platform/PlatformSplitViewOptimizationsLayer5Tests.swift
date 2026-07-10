@@ -8,7 +8,7 @@ import SwiftUI
 /// TESTING SCOPE: iOS and macOS-specific performance optimizations for split views
 /// METHODOLOGY: Test optimization application and platform-specific behavior
 /// Implements Issue #19: Split View Platform-Specific Optimizations (Layer 5)
-@Suite("Platform Split View Optimizations Layer 5")
+@Suite("Platform Split View Optimizations Layer 5", HostedViewTestIsolationTrait())
 /// NOTE: Not marked @MainActor on class to allow parallel execution
 open class PlatformSplitViewOptimizationsLayer5Tests: BaseTestClass {
     
