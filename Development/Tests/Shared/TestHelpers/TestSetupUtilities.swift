@@ -80,7 +80,7 @@ final class HostingControllerStorage {
         lock.lock()
         let entries: [HostedEntry]
         if let testID {
-            entries = Array(storageByTestID.removeValue(forKey: testID)?.values ?? [])
+            entries = storageByTestID.removeValue(forKey: testID).map { Array($0.values) } ?? []
         } else {
             entries = Array(storageByTestID.values.flatMap(\.values)) + Array(unscopedStorage.values)
             storageByTestID.removeAll()
