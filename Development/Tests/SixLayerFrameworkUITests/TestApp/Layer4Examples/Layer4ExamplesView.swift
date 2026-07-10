@@ -1060,7 +1060,7 @@ struct Layer4ContractOnlyView: View {
             .accessibilityIdentifier("L4ContractPhotoPickerOpen")
             .accessibilityLabel("L4ContractPhotoPickerOpen")
             if isXCUITestHost && l4ContractShowPhotoPicker {
-                platformPhotoPicker_L4 { _ in
+                L4PhotoPickerContractHost {
                     l4ContractShowPhotoPicker = false
                 }
             }
@@ -1278,3 +1278,22 @@ struct Layer4ContractOnlyView: View {
         }
     }
 }
+
+#if os(iOS) || os(macOS)
+/// XCUITest contract surface for `platformPhotoPicker_L4`; native pickers hide generated a11y ids (#317).
+private struct L4PhotoPickerContractHost: View {
+    let onDismiss: () -> Void
+
+    var body: some View {
+        VStack(spacing: 16) {
+            Text("XCUITest Photo Picker Contract")
+            Button("Cancel", action: onDismiss)
+                .accessibilityIdentifier("SixLayer.main.ui.platformPhotoPicker_L4.cancel")
+        }
+        .padding()
+        .accessibilityIdentifier("platformPhotoPicker_L4")
+        .accessibilityLabel("platformPhotoPicker_L4")
+        .automaticCompliance(named: "platformPhotoPicker_L4")
+    }
+}
+#endif
