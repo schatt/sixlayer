@@ -10,7 +10,7 @@ import ViewInspector
 /// TDD Tests for "Global Disable, Local Enable" Functionality
 /// Following proper TDD: Write failing tests first to prove the desired behavior
 /// NOTE: Not marked @MainActor on class to allow parallel execution
-@Suite("Global Disable Local Enable")
+@Suite("Global Disable Local Enable", HostedViewTestIsolationTrait())
 open class GlobalDisableLocalEnableTDDTests: BaseTestClass {
 
     // BaseTestClass handles setup automatically - no need for custom init    // MARK: - TDD Red Phase: Tests That Should Fail Initially
