@@ -25,7 +25,7 @@ import Testing
 import SwiftUI
 @testable import SixLayerFramework
 
-@Suite("HIG Compliance - Touch Target Sizing", DefaultRuntimeCapabilityIsolationTrait())
+@Suite("HIG Compliance - Touch Target Sizing", HostedViewTestIsolationTrait(), DefaultRuntimeCapabilityIsolationTrait())
 /// NOTE: Not marked @MainActor on class to allow parallel execution
 open class HIGComplianceTouchTargetTests: BaseTestClass {
     
