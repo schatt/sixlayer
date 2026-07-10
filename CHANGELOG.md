@@ -1,6 +1,6 @@
 # Changelog
 
-## v8.1.1 - macOS/iPad resize + adaptive app-nav sidebar (TBD)
+## v8.1.1 - macOS/iPad resize, adaptive sidebar, and ViewInspector reliability (TBD)
 
 ### ✨ Added
 - **`NavigationSplitColumnSizing`**: min/ideal/max for app-nav `NavigationSplitView` sidebar columns (#330).
@@ -11,12 +11,18 @@
 - **`NavigationLayoutResolver.activeSidebarRenderingProfile`**: maps column ideal / available width to rendering profile (#331).
 - **`\.navigationSidebarRenderingProfile`**: environment for custom sidebars (#331).
 - **`platformManagedAppNavigation_L4` / `platformPresentManagedAppNavigation_L1`**: managed adaptive app-nav entry points (#331).
+- **`CapabilityTestOverrideBag`** and **`RuntimeCapabilityHarness.withCapabilityTestOverrideBag(_:)`**: task-local `setTest*` override storage for parallel Swift Testing (#315).
 
 ### 🧩 Changed
 - **`resolveAppNavigationShell`**: single sidebar + detail (no longer mirrors nested settings) (#330).
 - **App-nav Layer 4**: applies `navigationSplitViewColumnWidth` from progressive sizing; publishes rendering profile (#330, #331).
 - **Intelligent card L2**: width-capped columns on mac/pad; card width may go below legacy 200pt; sparse height tracks viewport; dense scrolls (#330).
 - **Expandable card L4**: flexible frames so grid cells track the pane (#330).
+- **`RuntimeCapabilityDetection.setTest*`**: reads/writes per-task `CapabilityTestOverrideBag` instead of `Thread.current.threadDictionary` (#315).
+- **Layer 4 production APIs** (print, export, open URL, register, share, photo picker): removed XCUITest side-effect stubs; UITest contracts mount in test host (#315).
+
+### 🐛 Fixed
+- **macOS ViewInspector lane (`SLF-macOS-ViewInspectorTests`)**: green under parallel execution — stale capability overrides no longer leak across `@MainActor` tests (#315).
 
 ### 📚 Documentation
 - Full notes: [`Development/RELEASE_v8.1.1.md`](Development/RELEASE_v8.1.1.md), index [`Development/RELEASES.md`](Development/RELEASES.md).

@@ -44,7 +44,7 @@ Layer 1: Semantic Intent → Layer 2: Layout Decision → Layer 3: Strategy Sele
 
 ### Patch release
 
-Window/container resize: app-nav single-sidebar column sizing (`navigationSplitViewColumnWidth`) and intelligent card reflow on width and height (#330). Framework-owned adaptive app-nav sidebar: `platformPresentManagedAppNavigation_L1` / descriptors step labeled → icon-rail (#331). See [RELEASE_v8.1.1.md](../Development/RELEASE_v8.1.1.md).
+Window/container resize (#330), framework-owned adaptive app-nav sidebar (#331), and macOS ViewInspector parallel-test reliability (#315). See [RELEASE_v8.1.1.md](../Development/RELEASE_v8.1.1.md).
 
 ## 🆕 What's New in v8.1.0
 
