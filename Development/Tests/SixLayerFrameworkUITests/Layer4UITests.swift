@@ -220,6 +220,26 @@ final class Layer4UITests: XCTestCase {
             || waitForContractRoot(timeout: min(timeout, 1.5))
     }
 
+    /// L4 System invocation rows expose result copy as grouped labels, not always `staticText`.
+    @MainActor
+    private func waitForL4ContractInvocationResult(label: String, timeout: TimeInterval = 2.5) -> Bool {
+        if anyDescendantHasLabel(equalTo: label, timeout: timeout) { return true }
+        if app.staticTexts[label].waitForExistence(timeout: min(timeout, 1.5)) { return true }
+        let prefix = label.components(separatedBy: ":").first ?? label
+        return element(matchingIdentifier: prefix).waitForExistence(timeout: min(timeout, 1.5))
+            || app.descendants(matching: .any)
+                .matching(NSPredicate(format: "label == %@ OR identifier == %@", label, prefix))
+                .firstMatch
+                .waitForExistence(timeout: min(timeout, 1.5))
+    }
+
+    /// Scroll L4 System contract rows (copy/print/export/url/register) into the Form viewport.
+    @MainActor
+    private func scrollToL4SystemActionContracts(anchorLabel: String) {
+        scrollToFormSectionHeader(title: "L4 System")
+        scrollToElement(label: anchorLabel, maxAttempts: Self.maxL4SystemScrollAttempts)
+    }
+
     /// Nested overlay host (400pt) sits below the Form section header; nudge without overscrolling past toolbar (#259).
     @MainActor
     private func nudgeScrollInsideL4OverlayAccessibilitySection() {
@@ -1020,7 +1040,7 @@ final class Layer4UITests: XCTestCase {
     @MainActor
     func testL4_platformPrint_L4() throws {
         ensureContractRoot()
-        scrollToElement(label: "L4ContractPrint")
+        scrollToL4SystemActionContracts(anchorLabel: "L4ContractPrint")
         let printById = app.descendants(matching: .any).matching(NSPredicate(format: "identifier == %@", "L4ContractPrint")).firstMatch
         let printByLabel = app.buttons["L4ContractPrint"].firstMatch
         let printButton: XCUIElement
@@ -1046,7 +1066,7 @@ final class Layer4UITests: XCTestCase {
     @MainActor
     func testL4_platformExportActions_L4() throws {
         ensureContractRoot()
-        scrollToElement(label: "L4ContractExportActions")
+        scrollToL4SystemActionContracts(anchorLabel: "L4ContractExportActions")
         let exportById = app.descendants(matching: .any)
             .matching(NSPredicate(format: "identifier == %@", "L4ContractExportActions"))
             .firstMatch
@@ -1070,7 +1090,7 @@ final class Layer4UITests: XCTestCase {
     @MainActor
     func testL4_platformOpenURL_L4() throws {
         ensureContractRoot()
-        scrollToElement(label: "L4ContractOpenURL")
+        scrollToL4SystemActionContracts(anchorLabel: "L4ContractOpenURL")
         let openById = app.descendants(matching: .any)
             .matching(NSPredicate(format: "identifier == %@", "L4ContractOpenURL"))
             .firstMatch
@@ -1084,14 +1104,17 @@ final class Layer4UITests: XCTestCase {
             openButton = openByLabel
         }
         tapByNormalizedCenter(openButton)
-        XCTAssertTrue(app.staticTexts["L4ContractOpenURLResult:true"].waitForExistence(timeout: 1.0),
-                      "platformOpenURL_L4: invocation should produce deterministic contract result text")
+        scrollToElement(label: "L4ContractOpenURLResult:true", maxAttempts: 6)
+        XCTAssertTrue(
+            waitForL4ContractInvocationResult(label: "L4ContractOpenURLResult:true", timeout: 2.5),
+            "platformOpenURL_L4: invocation should produce deterministic contract result text"
+        )
     }
 
     @MainActor
     func testL4_platformRegisterForRemoteNotifications_L4() throws {
         ensureContractRoot()
-        scrollToElement(label: "L4ContractRegisterRemoteNotifications")
+        scrollToL4SystemActionContracts(anchorLabel: "L4ContractRegisterRemoteNotifications")
         let registerById = app.descendants(matching: .any)
             .matching(NSPredicate(format: "identifier == %@", "L4ContractRegisterRemoteNotifications"))
             .firstMatch
@@ -1105,8 +1128,11 @@ final class Layer4UITests: XCTestCase {
             registerButton = registerByLabel
         }
         tapByNormalizedCenter(registerButton)
-        XCTAssertTrue(app.staticTexts["L4ContractRegisterRemoteNotificationsResult:true"].waitForExistence(timeout: 1.0),
-                      "platformRegisterForRemoteNotifications_L4: invocation should produce deterministic contract result text")
+        scrollToElement(label: "L4ContractRegisterRemoteNotificationsResult:true", maxAttempts: 6)
+        XCTAssertTrue(
+            waitForL4ContractInvocationResult(label: "L4ContractRegisterRemoteNotificationsResult:true", timeout: 2.5),
+            "platformRegisterForRemoteNotifications_L4: invocation should produce deterministic contract result text"
+        )
     }
 
     @MainActor
