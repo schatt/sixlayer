@@ -23,7 +23,6 @@ import AppKit
 
 /// Retains hosting controllers and their windows for the duration of a test invocation.
 /// Made internal for navigation view tests that need to host views directly.
-@MainActor
 final class HostingControllerStorage {
     private struct HostedEntry {
         let window: AnyObject
@@ -45,33 +44,84 @@ final class HostingControllerStorage {
         }
     }
 
-    private static var storageByTestID: [Test.ID: [ObjectIdentifier: HostedEntry]] = [:]
-    private static var unscopedStorage: [ObjectIdentifier: HostedEntry] = [:]
+    private struct TestHostBucket {
+        var orderedKeys: [ObjectIdentifier] = []
+        var entries: [ObjectIdentifier: HostedEntry] = [:]
+
+        mutating func insert(key: ObjectIdentifier, entry: HostedEntry, maxEntries: Int) -> [HostedEntry] {
+            if let existingIndex = orderedKeys.firstIndex(of: key) {
+                orderedKeys.remove(at: existingIndex)
+            }
+            orderedKeys.append(key)
+            entries[key] = entry
+            var evicted: [HostedEntry] = []
+            while orderedKeys.count > maxEntries {
+                let evictKey = orderedKeys.removeFirst()
+                if let removed = entries.removeValue(forKey: evictKey) {
+                    evicted.append(removed)
+                }
+            }
+            return evicted
+        }
+
+        mutating func drain() -> [HostedEntry] {
+            let all = Array(entries.values)
+            entries.removeAll()
+            orderedKeys.removeAll()
+            return all
+        }
+    }
+
+    /// Dual-root accessibility tests need two simultaneous hosts; keep a small cap for sequential suites.
+    private static let maxRetainedHostsPerTest = 4
+
+    private static var storageByTestID: [Test.ID: TestHostBucket] = [:]
+    private static var unscopedBucket = TestHostBucket()
     private static let lock = NSLock()
-    private static var lastKnownTestID: Test.ID?
+
+    private static func tearDownOnMainThread(_ entries: [HostedEntry]) {
+        guard !entries.isEmpty else { return }
+        let work = { entries.forEach { $0.tearDown() } }
+        if Thread.isMainThread {
+            work()
+        } else {
+            DispatchQueue.main.sync(execute: work)
+        }
+    }
 
     static func store(controller: AnyObject, window: AnyObject, for view: Any) {
         let entry = HostedEntry(window: window, controller: controller)
         let key = ObjectIdentifier(view as AnyObject)
+        var evicted: [HostedEntry] = []
         lock.lock()
-        defer { lock.unlock() }
         if let testID = Test.current?.id {
-            var bucket = storageByTestID[testID, default: [:]]
-            bucket[key] = entry
+            var bucket = storageByTestID[testID, default: TestHostBucket()]
+            evicted = bucket.insert(key: key, entry: entry, maxEntries: maxRetainedHostsPerTest)
             storageByTestID[testID] = bucket
         } else {
-            unscopedStorage[key] = entry
+            evicted = unscopedBucket.insert(key: key, entry: entry, maxEntries: maxRetainedHostsPerTest)
         }
+        lock.unlock()
+        tearDownOnMainThread(evicted)
     }
 
     static func remove(for view: Any) {
         let key = ObjectIdentifier(view as AnyObject)
+        var removed: HostedEntry?
         lock.lock()
-        defer { lock.unlock() }
         if let testID = Test.current?.id {
-            storageByTestID[testID]?.removeValue(forKey: key)
+            if var bucket = storageByTestID[testID] {
+                removed = bucket.entries.removeValue(forKey: key)
+                bucket.orderedKeys.removeAll { $0 == key }
+                storageByTestID[testID] = bucket
+            }
         } else {
-            unscopedStorage.removeValue(forKey: key)
+            removed = unscopedBucket.entries.removeValue(forKey: key)
+            unscopedBucket.orderedKeys.removeAll { $0 == key }
+        }
+        lock.unlock()
+        if let removed {
+            tearDownOnMainThread([removed])
         }
     }
 
@@ -80,30 +130,18 @@ final class HostingControllerStorage {
         lock.lock()
         let entries: [HostedEntry]
         if let testID {
-            entries = storageByTestID.removeValue(forKey: testID).map { Array($0.values) } ?? []
+            entries = storageByTestID.removeValue(forKey: testID)?.drain() ?? []
         } else {
-            entries = Array(storageByTestID.values.flatMap(\.values)) + Array(unscopedStorage.values)
+            entries = storageByTestID.values.flatMap { $0.drain() } + unscopedBucket.drain()
             storageByTestID.removeAll()
-            unscopedStorage.removeAll()
+            unscopedBucket = TestHostBucket()
         }
         lock.unlock()
-        entries.forEach { $0.tearDown() }
+        tearDownOnMainThread(entries)
     }
 
     static func cleanup() {
         releaseAll()
-    }
-
-    /// When Swift Testing moves to a new test, release hosts retained for the previous test.
-    /// Supports multiple simultaneous hosts within one test (e.g. default + adapted roots).
-    static func releaseHostsForNewTestIfNeeded() {
-        guard let currentID = Test.current?.id else { return }
-        if currentID != lastKnownTestID {
-            if let previousID = lastKnownTestID {
-                releaseAll(for: previousID)
-            }
-            lastKnownTestID = currentID
-        }
     }
 }
 
@@ -150,7 +188,7 @@ public enum TestSetupUtilities {
         exposeContentAccessibility: Bool = false,
         accessibilityIdentifierConfig: AccessibilityIdentifierConfig? = nil
     ) -> Any? {
-        HostingControllerStorage.releaseHostsForNewTestIfNeeded()
+        autoreleasepool {
         let injectedConfig = accessibilityIdentifierConfig ?? AccessibilityIdentifierConfig.currentTaskLocalConfig
         #if canImport(UIKit) && !os(watchOS)
         // Re-bind task-local config for the whole hosting + layout window so SwiftUI modifier bodies that run
@@ -254,6 +292,7 @@ public enum TestSetupUtilities {
         #else
         return nil
         #endif
+        }
     }
     
     // MARK: - Field Type Helpers
