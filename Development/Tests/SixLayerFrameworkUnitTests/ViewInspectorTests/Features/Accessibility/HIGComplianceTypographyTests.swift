@@ -14,7 +14,7 @@ import SwiftUI
 import UIKit
 #endif
 
-@Suite("HIG Compliance - Typography Scaling", .serialized)
+@Suite("HIG Compliance - Typography Scaling")
 open class HIGComplianceTypographyTests: BaseTestClass {
 
     // MARK: - Helpers
