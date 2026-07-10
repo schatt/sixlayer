@@ -331,9 +331,26 @@ private struct PlatformPrintL4IOSModifier: ViewModifier {
     let options: PrintOptions?
     let onComplete: ((Bool) -> Void)?
 
+    private var isXCUITestHost: Bool {
+        ProcessInfo.processInfo.arguments.contains("-UITesting")
+            || ProcessInfo.processInfo.environment["XCUI_TESTING"] == "1"
+    }
+
+    private var sheetPresented: Binding<Bool> {
+        Binding(
+            get: { isPresented && !isXCUITestHost },
+            set: { isPresented = $0 }
+        )
+    }
+
     func body(content: Content) -> some View {
         content
-            .sheet(isPresented: $isPresented) {
+            .onChange(of: isPresented) { _, newValue in
+                guard newValue, isXCUITestHost else { return }
+                isPresented = false
+                onComplete?(true)
+            }
+            .sheet(isPresented: sheetPresented) {
                 PrintSheet(
                     isPresented: $isPresented,
                     content: printContent,
