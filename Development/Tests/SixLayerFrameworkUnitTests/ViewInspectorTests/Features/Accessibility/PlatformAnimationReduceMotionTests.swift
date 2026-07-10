@@ -3,7 +3,7 @@ import Testing
 @testable import SixLayerFramework
 
 /// Hosting coverage for reduce-motion animation APIs after subtree-gating fix (#298).
-@Suite(.serialized)
+@Suite
 open class PlatformAnimationReduceMotionTests: BaseTestClass {
 
     @MainActor
