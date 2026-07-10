@@ -16,7 +16,7 @@ import ViewInspector
 #endif
 
 /// NOTE: Not marked @MainActor on class to allow parallel execution
-@Suite("Layer Form Container")
+@Suite("Layer Form Container", HostedViewTestIsolationTrait())
 open class Layer4FormContainerTests: BaseTestClass {
     
     // MARK: - Test Data
