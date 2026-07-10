@@ -52,7 +52,8 @@ struct IntelligentCardResize330Tests {
     }
 
     @Test func mac_veryNarrowWidth_allowsCardWidthBelowLegacyMin200() {
-        let screenWidth: CGFloat = 250
+        // padding*2 = 32 → available 168 < preferred min 200
+        let screenWidth: CGFloat = 200
         let decision = determineIntelligentCardLayout_L2(
             contentCount: 3,
             screenWidth: screenWidth,
@@ -63,6 +64,7 @@ struct IntelligentCardResize330Tests {
         #expect(decision.columns == 1)
         #expect(decision.cardWidth <= availableWidth + 0.5)
         #expect(decision.cardWidth < 200)
+        #expect(availableWidth < 200)
     }
 
     // MARK: - Height grow / max + scroll
