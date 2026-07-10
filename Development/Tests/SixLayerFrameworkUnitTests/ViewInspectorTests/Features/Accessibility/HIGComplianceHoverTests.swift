@@ -24,7 +24,7 @@ import Testing
 import SwiftUI
 @testable import SixLayerFramework
 
-@Suite("HIG Compliance - Hover Support", DefaultRuntimeCapabilityIsolationTrait())
+@Suite("HIG Compliance - Hover Support", HostedViewTestIsolationTrait(), DefaultRuntimeCapabilityIsolationTrait())
 /// NOTE: Not marked @MainActor on class to allow parallel execution
 open class HIGComplianceHoverTests: BaseTestClass {
     
