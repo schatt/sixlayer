@@ -308,6 +308,21 @@ public enum NavigationLayoutResolver {
         )
     }
 
+    /// Rendering profile for framework-owned app-nav sidebar rows from column ideal width (GitHub #331).
+    /// Steps `textSidebar` → `compactList` → `iconRail` as the column narrows.
+    public static func activeSidebarRenderingProfile(columnIdealWidth: CGFloat) -> NavigationSidebarProfile {
+        // Deliberately wrong stub for TDD red (#331); replaced in green.
+        _ = columnIdealWidth
+        return .textSidebar
+    }
+
+    /// Rendering profile from measured shell available width via ``appNavigationSidebarColumnSizing`` (#331).
+    public static func activeSidebarRenderingProfile(availableWidth: CGFloat) -> NavigationSidebarProfile {
+        // Deliberately wrong stub for TDD red (#331); replaced in green.
+        _ = availableWidth
+        return .textSidebar
+    }
+
     /// Canonical Layer 4 UI presentation for **app navigation** available width (#330).
     public static func layer4AppNavigationCompactPresentation(
         forAvailableWidth width: CGFloat
