@@ -24,6 +24,9 @@ import AppKit
 /// Retains hosting controllers and their windows for the duration of a test invocation.
 /// Made internal for navigation view tests that need to host views directly.
 final class HostingControllerStorage {
+    /// Set by `HostedViewTestIsolationTrait` (and peers) for the active test scope.
+    /// `Test.current` is often nil on `@MainActor` during `hostRootPlatformView`, so storage keys by this ID.
+    @TaskLocal static var scopeTestID: Test.ID?
     private struct HostedEntry {
         let window: AnyObject
         let controller: AnyObject
@@ -74,6 +77,8 @@ final class HostingControllerStorage {
 
     /// Dual-root accessibility tests need two simultaneous hosts; keep a small cap for sequential suites.
     private static let maxRetainedHostsPerTest = 4
+    /// Safety valve when per-test teardown is missed (throws, TaskLocal mismatch, etc.).
+    private static let maxRetainedTestBuckets = 64
 
     nonisolated(unsafe) private static var storageByTestID: [Test.ID: TestHostBucket] = [:]
     nonisolated(unsafe) private static var unscopedBucket = TestHostBucket()
@@ -89,27 +94,45 @@ final class HostingControllerStorage {
         }
     }
 
+    private static func resolvedTestID() -> Test.ID? {
+        if let scopeTestID { return scopeTestID }
+        return Test.current?.id
+    }
+
+    private static func pruneStaleBuckets(keeping testID: Test.ID?) -> [HostedEntry] {
+        guard storageByTestID.count > maxRetainedTestBuckets else { return [] }
+        var drained: [HostedEntry] = []
+        for key in storageByTestID.keys where key != testID {
+            if var bucket = storageByTestID.removeValue(forKey: key) {
+                drained.append(contentsOf: bucket.drain())
+            }
+        }
+        return drained
+    }
+
     static func store(controller: AnyObject, window: AnyObject, for view: Any) {
         let entry = HostedEntry(window: window, controller: controller)
         let key = ObjectIdentifier(view as AnyObject)
         var evicted: [HostedEntry] = []
+        var pruned: [HostedEntry] = []
         lock.lock()
-        if let testID = Test.current?.id {
+        if let testID = resolvedTestID() {
             var bucket = storageByTestID[testID, default: TestHostBucket()]
             evicted = bucket.insert(key: key, entry: entry, maxEntries: maxRetainedHostsPerTest)
             storageByTestID[testID] = bucket
+            pruned = pruneStaleBuckets(keeping: testID)
         } else {
             evicted = unscopedBucket.insert(key: key, entry: entry, maxEntries: maxRetainedHostsPerTest)
         }
         lock.unlock()
-        tearDownOnMainThread(evicted)
+        tearDownOnMainThread(evicted + pruned)
     }
 
     static func remove(for view: Any) {
         let key = ObjectIdentifier(view as AnyObject)
         var removed: HostedEntry?
         lock.lock()
-        if let testID = Test.current?.id {
+        if let testID = resolvedTestID() {
             if var bucket = storageByTestID[testID] {
                 removed = bucket.entries.removeValue(forKey: key)
                 bucket.orderedKeys.removeAll { $0 == key }
@@ -152,6 +175,15 @@ final class HostingControllerStorage {
 
     static func cleanup() {
         releaseAll()
+    }
+
+    /// Per-test teardown from isolation traits: scoped bucket + any unscoped hosts from MainActor paths.
+    static func teardownAfterTest(_ testID: Test.ID) {
+        releaseAll(for: testID)
+        lock.lock()
+        let unscoped = unscopedBucket.drain()
+        lock.unlock()
+        tearDownOnMainThread(unscoped)
     }
 }
 
@@ -420,8 +452,8 @@ public enum TestSetupUtilities {
     public static func cleanupTestEnvironment() {
         // Clear all test overrides
         RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-        if let testID = Test.current?.id {
-            HostingControllerStorage.releaseAll(for: testID)
+        if let testID = HostingControllerStorage.scopeTestID ?? Test.current?.id {
+            HostingControllerStorage.teardownAfterTest(testID)
         } else {
             HostingControllerStorage.releaseAll()
         }
