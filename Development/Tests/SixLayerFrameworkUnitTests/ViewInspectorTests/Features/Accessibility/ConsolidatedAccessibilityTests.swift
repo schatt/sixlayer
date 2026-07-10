@@ -69,7 +69,7 @@ import AppKit
 /// Consolidated accessibility tests for the entire SixLayer framework
 /// Uses @Suite(.serialized) to serialize execution and reduce MainActor contention
 /// All tests are organized into logical sections with MARK comments
-@Suite(.serialized, .hostedViewIsolation)
+@Suite(.serialized, HostedViewTestIsolationTrait())
 open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     // MARK: - Test Setup & Configuration
