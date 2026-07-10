@@ -36,12 +36,6 @@ public enum CameraAuthorizationState: Sendable {
 /// - Seamless integration with platform photo services.
 /// - Accessibility features for image content and interactions.
 public enum PlatformPhotoComponentsLayer4 {
-    #if os(iOS)
-    private static var isXCUITestHost: Bool {
-        ProcessInfo.processInfo.arguments.contains("-UITesting")
-            || ProcessInfo.processInfo.environment["XCUI_TESTING"] == "1"
-    }
-    #endif
     
     // MARK: - Camera Interface Components
     
@@ -78,13 +72,9 @@ public enum PlatformPhotoComponentsLayer4 {
     @ViewBuilder
     @MainActor
     public static func platformPhotoPicker_L4(onImageSelected: @escaping (PlatformImage) -> Void) -> some View {
-        if Self.isXCUITestHost {
-            XCUITestPhotoPickerContractHost()
-        } else {
-            UnifiedImagePicker(onImageSelected: onImageSelected)
-                .automaticCompliance(named: "platformPhotoPicker_L4")
-                .accessibilityIdentifier("platformPhotoPicker_L4")
-        }
+        UnifiedImagePicker(onImageSelected: onImageSelected)
+            .automaticCompliance(named: "platformPhotoPicker_L4")
+            .accessibilityIdentifier("platformPhotoPicker_L4")
     }
     
     // MARK: - Photo Display Components
@@ -944,25 +934,6 @@ struct PhotoSourceTabbedView: View {
         .automaticCompliance(named: "PhotoSourceTabbedView")
     }
 }
-
-#if os(iOS)
-/// SwiftUI contract surface for XCUITest; PHPickerViewController hides generated a11y ids (Issue #317).
-private struct XCUITestPhotoPickerContractHost: View {
-    @Environment(\.dismiss) private var dismiss
-
-    var body: some View {
-        VStack(spacing: 16) {
-            Text("XCUITest Photo Picker Contract")
-            Button("Cancel") { dismiss() }
-                .accessibilityIdentifier("SixLayer.main.ui.platformPhotoPicker_L4.cancel")
-        }
-        .padding()
-        .accessibilityIdentifier("platformPhotoPicker_L4")
-        .accessibilityLabel("platformPhotoPicker_L4")
-        .automaticCompliance(named: "platformPhotoPicker_L4")
-    }
-}
-#endif
 
 // MARK: - Supporting Types
 

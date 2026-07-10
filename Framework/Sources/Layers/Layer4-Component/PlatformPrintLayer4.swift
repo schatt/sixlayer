@@ -197,20 +197,6 @@ private struct PrintSheet: UIViewControllerRepresentable {
     }
     
     private func presentPrintController(on viewController: UIViewController) {
-        // XCUITest launches the host app with -UITesting / XCUI_TESTING; XCTest is not linked into the app
-        // bundle, so `NSClassFromString("XCTest")` guards elsewhere never fire here. Presenting
-        // UIPrintInteractionController leaves a system modal that UITests often cannot dismiss reliably,
-        // which blocks the rest of the shared-app suite (Issue #193).
-        let skipRealPrintForUITest = ProcessInfo.processInfo.arguments.contains("-UITesting")
-            || ProcessInfo.processInfo.environment["XCUI_TESTING"] == "1"
-        if skipRealPrintForUITest {
-            DispatchQueue.main.async {
-                self.isPresented = false
-                self.onComplete?(true)
-            }
-            return
-        }
-
         // Check if printing is available
         guard UIPrintInteractionController.canPrint(content: content) else {
             print("[SixLayer] Print error: Cannot print content type")
@@ -331,26 +317,9 @@ private struct PlatformPrintL4IOSModifier: ViewModifier {
     let options: PrintOptions?
     let onComplete: ((Bool) -> Void)?
 
-    private var isXCUITestHost: Bool {
-        ProcessInfo.processInfo.arguments.contains("-UITesting")
-            || ProcessInfo.processInfo.environment["XCUI_TESTING"] == "1"
-    }
-
-    private var sheetPresented: Binding<Bool> {
-        Binding(
-            get: { isPresented && !isXCUITestHost },
-            set: { isPresented = $0 }
-        )
-    }
-
     func body(content: Content) -> some View {
         content
-            .onChange(of: isPresented) { _, newValue in
-                guard newValue, isXCUITestHost else { return }
-                isPresented = false
-                onComplete?(true)
-            }
-            .sheet(isPresented: sheetPresented) {
+            .sheet(isPresented: $isPresented) {
                 PrintSheet(
                     isPresented: $isPresented,
                     content: printContent,
@@ -368,16 +337,12 @@ private func platformPrintiOS(
     content: PrintContent,
     options: PrintOptions?
 ) -> Bool {
-    // Don't actually print during unit tests (in-process XCTest) or XCUITest host (-UITesting / env).
+    // Don't actually print during unit tests (in-process XCTest).
     #if DEBUG
     if NSClassFromString("XCTest") != nil {
         return true
     }
     #endif
-    if ProcessInfo.processInfo.arguments.contains("-UITesting")
-        || ProcessInfo.processInfo.environment["XCUI_TESTING"] == "1" {
-        return true
-    }
 
     // Check if printing is available
     guard UIPrintInteractionController.canPrint(content: content) else {

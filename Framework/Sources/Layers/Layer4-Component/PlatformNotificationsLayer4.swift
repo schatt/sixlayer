@@ -77,10 +77,6 @@ private func platformRegisterForRemoteNotificationsiOS() -> Bool {
         return true
     }
     #endif
-    if ProcessInfo.processInfo.arguments.contains("-UITesting")
-        || ProcessInfo.processInfo.environment["XCUI_TESTING"] == "1" {
-        return true
-    }
     
     // Register for remote notifications
     // Note: Calling this multiple times is safe - the system handles re-registration gracefully

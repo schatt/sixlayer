@@ -10,7 +10,7 @@
 import Testing
 @testable import SixLayerFramework
 
-/// Resets thread-local capability overrides, clears legacy `UserDefaults.standard` keys used for
+/// Resets task-local capability overrides, clears legacy `UserDefaults.standard` keys used for
 /// capability simulation, and pins macOS harness preferences to `false` for each test invocation.
 public struct DefaultRuntimeCapabilityIsolationTrait: Sendable, TestTrait, SuiteTrait, TestScoping {
     public typealias TestScopeProvider = DefaultRuntimeCapabilityIsolationTrait
@@ -30,27 +30,27 @@ public struct DefaultRuntimeCapabilityIsolationTrait: Sendable, TestTrait, Suite
         // `@MainActor` tests), unlike `Thread.current.threadDictionary` which is per-OS-thread.
         let touchHarness: Bool? = false
         let hapticHarness: Bool? = false
+        let overrideBag = CapabilityTestOverrideBag()
         var propagation: Error?
-        try await RuntimeCapabilityHarness.$macOSTouchEnabledPreference.withValue(touchHarness) {
-            try await RuntimeCapabilityHarness.$macOSHapticEnabledPreference.withValue(hapticHarness) {
-                // `Thread.current` here is often the cooperative pool executor, while `@MainActor`
-                // tests run on the main thread. Clearing only the executor thread leaves stale
-                // `testTouchSupport` / `CapabilityOverride` entries on main and breaks suites
-                // (e.g. RuntimeCapabilityDetectionTDDTests.testOverrideClearing — gh-250 / release xcresult).
-                RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-                await MainActor.run {
+        try await RuntimeCapabilityHarness.$capabilityTestOverrideBag.withValue(overrideBag) {
+            try await RuntimeCapabilityHarness.$macOSTouchEnabledPreference.withValue(touchHarness) {
+                try await RuntimeCapabilityHarness.$macOSHapticEnabledPreference.withValue(hapticHarness) {
+                    // `CapabilityOverride` still uses per-OS-thread storage — clear on main for @MainActor tests.
                     RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-                }
-                defer {
-                    RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-                }
-                do {
-                    try await function()
-                } catch {
-                    propagation = error
-                }
-                await MainActor.run {
-                    RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+                    await MainActor.run {
+                        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+                    }
+                    defer {
+                        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+                    }
+                    do {
+                        try await function()
+                    } catch {
+                        propagation = error
+                    }
+                    await MainActor.run {
+                        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+                    }
                 }
             }
         }
