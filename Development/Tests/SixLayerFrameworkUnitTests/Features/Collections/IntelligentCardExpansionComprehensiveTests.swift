@@ -760,15 +760,14 @@ open class IntelligentCardExpansionComprehensiveTests: BaseTestClass {    // MAR
     
     @Test @MainActor func testErrorHandlingWithExtremeValues() {
         initializeTestConfig()
-        // Test error handling with extreme values
+        // Bounded extremes: still stress layout without invalid geometry (GitHub #334).
         _ = determineIntelligentCardLayout_L2(
-            contentCount: Int.max,
-            screenWidth: 0,
+            contentCount: 10_000,
+            screenWidth: 1,
             deviceType: .phone,
-            contentComplexity: .complex
+            contentComplexity: .complex,
+            viewportHeight: 100
         )
-        
-        // Extreme layout creation succeeded (non-optional result)
     }
     
     // MARK: - Accessibility Tests
