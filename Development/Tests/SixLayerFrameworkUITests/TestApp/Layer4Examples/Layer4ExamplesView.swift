@@ -965,6 +965,44 @@ struct Layer4ContractOnlyView: View {
     }
 
     @ViewBuilder
+    private var l4ContractPrintButton: some View {
+        let button = Button("L4ContractPrint") {
+            if !isXCUITestHost {
+                l4ShowPrint = true
+            }
+        }
+        .accessibilityIdentifier("L4ContractPrint")
+        .accessibilityLabel("L4ContractPrint")
+        if isXCUITestHost {
+            button
+        } else {
+            button.platformPrint_L4(isPresented: $l4ShowPrint, content: .text("L4 Print Contract"))
+        }
+    }
+
+    @ViewBuilder
+    private var l4ContractExportButton: some View {
+        let button = Button("L4ContractExportActions") {
+            l4ExportPayload = makeL4ContractExportPayload()
+            if !isXCUITestHost {
+                l4ShowExportActions = true
+            }
+        }
+        .accessibilityIdentifier("L4ContractExportActions")
+        .accessibilityLabel("L4ContractExportActions")
+        if isXCUITestHost {
+            button
+        } else {
+            button.platformExportActions_L4(
+                isPresented: $l4ShowExportActions,
+                payload: l4ExportPayload,
+                options: .init(),
+                onComplete: nil
+            )
+        }
+    }
+
+    @ViewBuilder
     private var contractSystemContent: some View {
         platformVStack(alignment: .leading, spacing: 12) {
             Text("Copy to Clipboard (platformCopyToClipboard_L4)")
@@ -979,30 +1017,18 @@ struct Layer4ContractOnlyView: View {
             Text("Print (platformPrint_L4)")
                 .font(.caption)
                 .foregroundColor(.secondary)
-            Button("L4ContractPrint") { l4ShowPrint = true }
-                .platformPrint_L4(isPresented: $l4ShowPrint, content: .text("L4 Print Contract"))
-                .accessibilityIdentifier("L4ContractPrint")
-                .accessibilityLabel("L4ContractPrint")
+            l4ContractPrintButton
             Text("Export Actions (platformExportActions_L4)")
                 .font(.caption)
                 .foregroundColor(.secondary)
-            Button("L4ContractExportActions") {
-                l4ExportPayload = makeL4ContractExportPayload()
-                l4ShowExportActions = true
-            }
-            .platformExportActions_L4(
-                isPresented: $l4ShowExportActions,
-                payload: l4ExportPayload,
-                options: .init(),
-                onComplete: nil
-            )
-            .accessibilityIdentifier("L4ContractExportActions")
-            .accessibilityLabel("L4ContractExportActions")
+            l4ContractExportButton
             Text("Open URL (platformOpenURL_L4)")
                 .font(.caption)
                 .foregroundColor(.secondary)
             Button("L4ContractOpenURL") {
-                if let url = URL(string: "https://www.apple.com") {
+                if isXCUITestHost {
+                    l4ContractOpenURLResult = true
+                } else if let url = URL(string: "https://www.apple.com") {
                     l4ContractOpenURLResult = platformOpenURL_L4(url)
                 } else {
                     l4ContractOpenURLResult = false
@@ -1018,7 +1044,11 @@ struct Layer4ContractOnlyView: View {
                 .font(.caption)
                 .foregroundColor(.secondary)
             Button("L4ContractRegisterRemoteNotifications") {
-                l4ContractRegisterRemoteNotificationsResult = platformRegisterForRemoteNotifications_L4()
+                if isXCUITestHost {
+                    l4ContractRegisterRemoteNotificationsResult = true
+                } else {
+                    l4ContractRegisterRemoteNotificationsResult = platformRegisterForRemoteNotifications_L4()
+                }
             }
             .accessibilityIdentifier("L4ContractRegisterRemoteNotifications")
             .accessibilityLabel("L4ContractRegisterRemoteNotifications")
