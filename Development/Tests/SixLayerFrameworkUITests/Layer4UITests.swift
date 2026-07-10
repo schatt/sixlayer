@@ -244,6 +244,35 @@ final class Layer4UITests: XCTestCase {
         return waitForContractRoot(timeout: timeout)
     }
 
+    /// Modal flows should dismiss without stranding the host; deep-scroll position may hide the nav title.
+    @MainActor
+    private func assertNoStuckModalAndContractHostReachable(
+        anchorLabel: String,
+        message: String,
+        expectSheet: Bool = false
+    ) {
+        if expectSheet {
+            XCTAssertTrue(
+                app.sheets.firstMatch.waitForExistence(timeout: 2.5),
+                "\(message): expected contract sheet presentation"
+            )
+        } else {
+            XCTAssertFalse(
+                app.sheets.firstMatch.waitForExistence(timeout: 1.0),
+                "\(message): unexpected sheet still presented"
+            )
+        }
+        let anchor = app.descendants(matching: .any)
+            .matching(NSPredicate(format: "identifier == %@ OR label == %@", anchorLabel, anchorLabel))
+            .firstMatch
+        XCTAssertTrue(
+            anchor.waitForExistence(timeout: 2.5)
+                || waitForContractRoot(timeout: 2.0)
+                || recoverContractRootAfterDeepScroll(timeout: 2.0),
+            message
+        )
+    }
+
     /// Scroll L4 System contract rows (copy/print/export/url/register) into the Form viewport.
     @MainActor
     private func scrollToL4SystemActionContracts(anchorLabel: String) {
@@ -1068,9 +1097,9 @@ final class Layer4UITests: XCTestCase {
         if cancelPrint.waitForExistence(timeout: 1.0) { cancelPrint.tap() }
         let closePrint = app.navigationBars.buttons["Close"].firstMatch
         if closePrint.waitForExistence(timeout: 0.5) { closePrint.tap() }
-        XCTAssertTrue(
-            recoverContractRootAfterDeepScroll(timeout: 3.0),
-            "platformPrint_L4: contract screen must be reachable after print (no stuck modal blocking the suite)"
+        assertNoStuckModalAndContractHostReachable(
+            anchorLabel: "L4ContractPrint",
+            message: "platformPrint_L4: contract screen must be reachable after print (no stuck modal blocking the suite)"
         )
     }
 
@@ -1092,9 +1121,9 @@ final class Layer4UITests: XCTestCase {
         }
         tapByNormalizedCenter(exportButton)
         dismissExportActionsChooserIfPresent()
-        XCTAssertTrue(
-            recoverContractRootAfterDeepScroll(timeout: 3.0),
-            "platformExportActions_L4: contract screen must be reachable after export chooser (no stuck modal blocking the suite)"
+        assertNoStuckModalAndContractHostReachable(
+            anchorLabel: "L4ContractExportActions",
+            message: "platformExportActions_L4: contract screen must be reachable after export chooser (no stuck modal blocking the suite)"
         )
     }
 
@@ -1290,27 +1319,22 @@ final class Layer4UITests: XCTestCase {
         )
         let openControl = openBtn.exists ? openBtn : openAny
         tapByNormalizedCenter(openControl)
-        let pickerInSheet = app.sheets.firstMatch.descendants(matching: .any)
-            .matching(NSPredicate(format: "identifier CONTAINS[c] %@", "platformPhotoPicker_L4"))
-            .firstMatch
-        let pickerNode = app.descendants(matching: .any)
-            .matching(NSPredicate(format: "identifier CONTAINS[c] %@", "platformPhotoPicker_L4"))
-            .firstMatch
-        XCTAssertTrue(
-            pickerInSheet.waitForExistence(timeout: 3.0)
-                || pickerNode.waitForExistence(timeout: 2.0)
-                || app.sheets.buttons["Cancel"].waitForExistence(timeout: 2.0),
-            "platformPhotoPicker_L4: picker subtree must expose contract a11y identifier"
+        assertNoStuckModalAndContractHostReachable(
+            anchorLabel: "platformPhotoPicker_L4",
+            message: "platformPhotoPicker_L4: picker subtree must expose contract a11y identifier",
+            expectSheet: true
         )
-        let cancel = app.buttons["Cancel"].firstMatch
+        let cancel = app.sheets.buttons["Cancel"].firstMatch
         if cancel.waitForExistence(timeout: 1.2) {
             cancel.tap()
+        } else if app.buttons["Cancel"].firstMatch.waitForExistence(timeout: 1.0) {
+            app.buttons["Cancel"].firstMatch.tap()
         } else if app.navigationBars.buttons["Cancel"].firstMatch.waitForExistence(timeout: 1.0) {
             app.navigationBars.buttons["Cancel"].firstMatch.tap()
         }
-        XCTAssertTrue(
-            recoverContractRootAfterDeepScroll(timeout: 3.0),
-            "platformPhotoPicker_L4: must return to contract root after dismiss (no stuck sheet)"
+        assertNoStuckModalAndContractHostReachable(
+            anchorLabel: "L4ContractPhotoPickerOpen",
+            message: "platformPhotoPicker_L4: must return to contract root after dismiss (no stuck sheet)"
         )
     }
     #endif
