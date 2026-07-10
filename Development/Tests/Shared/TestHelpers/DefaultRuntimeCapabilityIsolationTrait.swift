@@ -43,9 +43,6 @@ public struct DefaultRuntimeCapabilityIsolationTrait: Sendable, TestTrait, Suite
                 }
                 defer {
                     RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-                    Task { @MainActor in
-                        HostingControllerStorage.releaseAll(for: testID)
-                    }
                 }
                 try await function()
                 await MainActor.run {
