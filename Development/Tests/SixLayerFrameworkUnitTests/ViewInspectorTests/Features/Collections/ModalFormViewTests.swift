@@ -8,7 +8,7 @@ import SwiftUI
 /// BUSINESS PURPOSE: Ensure ModalFormView generates proper accessibility identifiers
 /// TESTING SCOPE: ModalFormView component from PlatformSemanticLayer1.swift
 /// METHODOLOGY: Test component on both iOS and macOS platforms as required by mandatory testing guidelines
-@Suite("Modal Form View")
+@Suite("Modal Form View", HostedViewTestIsolationTrait())
 /// NOTE: Not marked @MainActor on class to allow parallel execution
 open class ModalFormViewTests: BaseTestClass {
     
