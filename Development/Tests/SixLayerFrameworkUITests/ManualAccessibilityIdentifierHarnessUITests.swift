@@ -59,13 +59,18 @@ final class ManualAccessibilityIdentifierHarnessUITests: XCTestCase {
             app.scrollViews.firstMatch,
             app.tables.firstMatch,
             app.collectionViews.firstMatch,
-            app
         ]
-        for root in roots where root.exists {
-            let el = root.descendants(matching: .any).matching(pred).firstMatch
-            if el.waitForExistence(timeout: min(timeout, 2.0)) {
-                return
+        func queryRoots(_ wait: TimeInterval) -> Bool {
+            for root in roots where root.exists {
+                let el = root.descendants(matching: .any).matching(pred).firstMatch
+                if el.waitForExistence(timeout: wait) { return true }
             }
+            return false
+        }
+        if queryRoots(min(timeout, 2.0)) { return }
+        for _ in 0..<8 {
+            app.xcuiSwipeScrollHostsUp()
+            if queryRoots(0.4) { return }
         }
         XCTFail(
             "Expected an element whose accessibility identifier contains '\(substring)' (query bounded scroll/table/collection first)"
