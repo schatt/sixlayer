@@ -10,8 +10,8 @@ import Testing
 
 /// Releases all views hosted via `TestSetupUtilities.hostRootPlatformView` when each test finishes.
 ///
-/// Prefer attaching this trait on `@Suite` roots that call `hostRootPlatformView`. Cross-test cleanup
-/// also runs automatically when `Test.current` changes at the next `hostRootPlatformView` call.
+/// Attach on `@Suite` roots that host SwiftUI for ViewInspector. Pairs with per-test storage caps
+/// in `HostingControllerStorage` and `BaseTestClass` deinit for class-based suites.
 public struct HostedViewTestIsolationTrait: Sendable, TestTrait, SuiteTrait, TestScoping {
     public typealias TestScopeProvider = HostedViewTestIsolationTrait
 
