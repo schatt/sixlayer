@@ -22,7 +22,9 @@ import AppKit
 // MARK: - Hosting Controller Storage
 
 /// Retains hosting controllers and their windows for the duration of a test invocation.
-/// Made internal for navigation view tests that need to host views directly.
+/// All UI mutation and teardown run on the main actor — no global lock; parallel tests
+/// coordinate through `@MainActor` and per-test buckets, not cross-test mutex contention.
+@MainActor
 final class HostingControllerStorage {
     /// Set by isolation traits for the active test scope (async task).
     @TaskLocal static var scopeTestID: Test.ID?
@@ -67,24 +69,16 @@ final class HostingControllerStorage {
         }
     }
 
-    nonisolated(unsafe) private static var storageByTestID: [Test.ID: TestHostBucket] = [:]
-    nonisolated(unsafe) private static var unscopedBucket = TestHostBucket()
-    private static let lock = NSLock()
+    private static var storageByTestID: [Test.ID: TestHostBucket] = [:]
+    private static var unscopedBucket = TestHostBucket()
 
-    /// Resolve the owning test before taking `lock` — never call this while holding the lock.
     private static func resolvedTestID() -> Test.ID? {
         if let scopeTestID { return scopeTestID }
         return Test.current?.id
     }
 
-    private static func tearDownOnMainThread(_ entries: [HostedEntry]) {
-        guard !entries.isEmpty else { return }
-        let work = { entries.forEach { $0.tearDown() } }
-        if Thread.isMainThread {
-            work()
-        } else {
-            DispatchQueue.main.sync(execute: work)
-        }
+    private static func tearDown(_ entries: [HostedEntry]) {
+        entries.forEach { $0.tearDown() }
     }
 
     static func store(
@@ -96,7 +90,6 @@ final class HostingControllerStorage {
         let entry = HostedEntry(window: window, controller: controller)
         let key = ObjectIdentifier(view as AnyObject)
         let testID = ownerTestID ?? resolvedTestID()
-        lock.lock()
         if let testID {
             var bucket = storageByTestID[testID, default: TestHostBucket()]
             bucket.insert(key: key, entry: entry)
@@ -104,31 +97,29 @@ final class HostingControllerStorage {
         } else {
             unscopedBucket.insert(key: key, entry: entry)
         }
-        lock.unlock()
     }
 
     static func remove(for view: Any, ownerTestID: Test.ID? = nil) {
         let key = ObjectIdentifier(view as AnyObject)
         let testID = ownerTestID ?? resolvedTestID()
-        var removed: HostedEntry?
-        lock.lock()
+        let removed: HostedEntry?
         if let testID {
             if var bucket = storageByTestID[testID] {
                 removed = bucket.entries.removeValue(forKey: key)
                 storageByTestID[testID] = bucket
+            } else {
+                removed = nil
             }
         } else {
             removed = unscopedBucket.entries.removeValue(forKey: key)
         }
-        lock.unlock()
         if let removed {
-            tearDownOnMainThread([removed])
+            tearDown([removed])
         }
     }
 
     /// Tear down hosted windows for one test or, when `testID` is nil, every retained host.
     static func releaseAll(for testID: Test.ID? = nil) {
-        lock.lock()
         let entries: [HostedEntry]
         if let testID {
             if var bucket = storageByTestID.removeValue(forKey: testID) {
@@ -147,8 +138,7 @@ final class HostingControllerStorage {
             unscopedBucket = TestHostBucket()
             entries = allEntries
         }
-        lock.unlock()
-        tearDownOnMainThread(entries)
+        tearDown(entries)
     }
 
     static func cleanup() {
