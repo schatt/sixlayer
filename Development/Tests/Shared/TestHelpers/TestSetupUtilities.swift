@@ -24,21 +24,28 @@ import AppKit
 /// Retains hosting controllers and their windows for the duration of a test invocation.
 /// Made internal for navigation view tests that need to host views directly.
 final class HostingControllerStorage {
-    /// Set by `HostedViewTestIsolationTrait` (and peers) for the active test scope.
-    /// `Test.current` is often nil on `@MainActor` during `hostRootPlatformView`, so storage keys by this ID.
+    /// Set by isolation traits for the active test scope (async task).
     @TaskLocal static var scopeTestID: Test.ID?
+
     private struct HostedEntry {
+        let ownerTestID: Test.ID?
         let window: AnyObject
         let controller: AnyObject
 
         func tearDown() {
             #if canImport(UIKit) && !os(watchOS)
+            if let hosting = controller as? UIHostingController<AnyView> {
+                hosting.rootView = AnyView(EmptyView())
+            }
             if let window = window as? UIWindow {
                 window.isHidden = true
                 window.rootViewController = nil
             }
             #endif
             #if canImport(AppKit)
+            if let hosting = controller as? NSHostingController<AnyView> {
+                hosting.rootView = AnyView(EmptyView())
+            }
             if let window = window as? NSWindow {
                 window.orderOut(nil)
                 window.contentViewController = nil
@@ -47,11 +54,16 @@ final class HostingControllerStorage {
         }
     }
 
-    private struct TestHostBucket {
+    private struct GlobalHostPool {
         var orderedKeys: [ObjectIdentifier] = []
         var entries: [ObjectIdentifier: HostedEntry] = [:]
 
-        mutating func insert(key: ObjectIdentifier, entry: HostedEntry, maxEntries: Int) -> [HostedEntry] {
+        mutating func insert(
+            ownerTestID: Test.ID?,
+            key: ObjectIdentifier,
+            entry: HostedEntry,
+            maxEntries: Int
+        ) -> [HostedEntry] {
             if let existingIndex = orderedKeys.firstIndex(of: key) {
                 orderedKeys.remove(at: existingIndex)
             }
@@ -67,6 +79,18 @@ final class HostingControllerStorage {
             return evicted
         }
 
+        mutating func removeAll(ownerTestID: Test.ID) -> [HostedEntry] {
+            var removed: [HostedEntry] = []
+            for key in orderedKeys {
+                guard entries[key]?.ownerTestID == ownerTestID else { continue }
+                if let entry = entries.removeValue(forKey: key) {
+                    removed.append(entry)
+                }
+            }
+            orderedKeys.removeAll { entries[$0] == nil }
+            return removed
+        }
+
         mutating func drain() -> [HostedEntry] {
             let all = Array(entries.values)
             entries.removeAll()
@@ -75,14 +99,19 @@ final class HostingControllerStorage {
         }
     }
 
-    /// Dual-root accessibility tests need two simultaneous hosts; keep a small cap for sequential suites.
-    private static let maxRetainedHostsPerTest = 4
-    /// Safety valve when per-test teardown is missed (throws, TaskLocal mismatch, etc.).
-    private static let maxRetainedTestBuckets = 64
+    /// Hard process-wide cap — bounds RSS even when per-test teardown is missed under parallel runs.
+    private static let maxGlobalHosts = 24
 
-    nonisolated(unsafe) private static var storageByTestID: [Test.ID: TestHostBucket] = [:]
-    nonisolated(unsafe) private static var unscopedBucket = TestHostBucket()
+    nonisolated(unsafe) private static var globalPool = GlobalHostPool()
+    /// `TaskLocal` does not reliably propagate to `@MainActor` hosting; traits set this on the main thread.
+    nonisolated(unsafe) private static var mainThreadScopeTestID: Test.ID?
     private static let lock = NSLock()
+
+    static func setMainThreadScopeTestID(_ testID: Test.ID?) {
+        lock.lock()
+        mainThreadScopeTestID = testID
+        lock.unlock()
+    }
 
     private static func tearDownOnMainThread(_ entries: [HostedEntry]) {
         guard !entries.isEmpty else { return }
@@ -95,79 +124,55 @@ final class HostingControllerStorage {
     }
 
     private static func resolvedTestID() -> Test.ID? {
+        if Thread.isMainThread {
+            lock.lock()
+            let mainID = mainThreadScopeTestID
+            lock.unlock()
+            if let mainID { return mainID }
+        }
         if let scopeTestID { return scopeTestID }
         return Test.current?.id
     }
 
-    private static func pruneStaleBuckets(keeping testID: Test.ID?) -> [HostedEntry] {
-        guard storageByTestID.count > maxRetainedTestBuckets else { return [] }
-        var drained: [HostedEntry] = []
-        for key in storageByTestID.keys where key != testID {
-            if var bucket = storageByTestID.removeValue(forKey: key) {
-                drained.append(contentsOf: bucket.drain())
-            }
-        }
-        return drained
-    }
-
     static func store(controller: AnyObject, window: AnyObject, for view: Any) {
-        let entry = HostedEntry(window: window, controller: controller)
+        let entry = HostedEntry(
+            ownerTestID: resolvedTestID(),
+            window: window,
+            controller: controller
+        )
         let key = ObjectIdentifier(view as AnyObject)
         var evicted: [HostedEntry] = []
-        var pruned: [HostedEntry] = []
         lock.lock()
-        if let testID = resolvedTestID() {
-            var bucket = storageByTestID[testID, default: TestHostBucket()]
-            evicted = bucket.insert(key: key, entry: entry, maxEntries: maxRetainedHostsPerTest)
-            storageByTestID[testID] = bucket
-            pruned = pruneStaleBuckets(keeping: testID)
-        } else {
-            evicted = unscopedBucket.insert(key: key, entry: entry, maxEntries: maxRetainedHostsPerTest)
-        }
+        evicted = globalPool.insert(
+            ownerTestID: entry.ownerTestID,
+            key: key,
+            entry: entry,
+            maxEntries: maxGlobalHosts
+        )
         lock.unlock()
-        tearDownOnMainThread(evicted + pruned)
+        tearDownOnMainThread(evicted)
     }
 
     static func remove(for view: Any) {
         let key = ObjectIdentifier(view as AnyObject)
         var removed: HostedEntry?
         lock.lock()
-        if let testID = resolvedTestID() {
-            if var bucket = storageByTestID[testID] {
-                removed = bucket.entries.removeValue(forKey: key)
-                bucket.orderedKeys.removeAll { $0 == key }
-                storageByTestID[testID] = bucket
-            }
-        } else {
-            removed = unscopedBucket.entries.removeValue(forKey: key)
-            unscopedBucket.orderedKeys.removeAll { $0 == key }
-        }
+        removed = globalPool.entries.removeValue(forKey: key)
+        globalPool.orderedKeys.removeAll { $0 == key }
         lock.unlock()
         if let removed {
             tearDownOnMainThread([removed])
         }
     }
 
-    /// Tear down hosted windows for one test or, when `testID` is nil, every retained host.
+    /// Tear down all hosted windows, or only those owned by one test when `testID` is set.
     static func releaseAll(for testID: Test.ID? = nil) {
         lock.lock()
         let entries: [HostedEntry]
         if let testID {
-            if var bucket = storageByTestID.removeValue(forKey: testID) {
-                entries = bucket.drain()
-            } else {
-                entries = []
-            }
+            entries = globalPool.removeAll(ownerTestID: testID)
         } else {
-            var allEntries: [HostedEntry] = []
-            let buckets = storageByTestID
-            storageByTestID.removeAll()
-            for var bucket in buckets.values {
-                allEntries.append(contentsOf: bucket.drain())
-            }
-            allEntries.append(contentsOf: unscopedBucket.drain())
-            unscopedBucket = TestHostBucket()
-            entries = allEntries
+            entries = globalPool.drain()
         }
         lock.unlock()
         tearDownOnMainThread(entries)
@@ -177,13 +182,9 @@ final class HostingControllerStorage {
         releaseAll()
     }
 
-    /// Per-test teardown from isolation traits: scoped bucket + any unscoped hosts from MainActor paths.
+    /// Per-test teardown from isolation traits.
     static func teardownAfterTest(_ testID: Test.ID) {
         releaseAll(for: testID)
-        lock.lock()
-        let unscoped = unscopedBucket.drain()
-        lock.unlock()
-        tearDownOnMainThread(unscoped)
     }
 }
 
@@ -250,9 +251,9 @@ public enum TestSetupUtilities {
             // Add hosting view to a window so SwiftUI propagates accessibilityIdentifier to the UIView hierarchy.
             // Without a window, identifiers may not be set on platform views (iOS behavior).
             if let root = root {
-                let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 400, height: 400))
+                let window = UIWindow(frame: CGRect(x: -10_000, y: -10_000, width: 400, height: 400))
+                window.isHidden = false
                 window.rootViewController = hosting
-                window.makeKeyAndVisible()
                 // Drive appearance so SwiftUI/UIKit commit the view hierarchy (identifiers often stay empty without this in unit tests).
                 hosting.beginAppearanceTransition(true, animated: false)
                 hosting.endAppearanceTransition()
@@ -299,16 +300,17 @@ public enum TestSetupUtilities {
                 return AnyView(view)
             }()
             let hosting = NSHostingController(rootView: rootView)
-            let frame = NSRect(x: 0, y: 0, width: 480, height: 640)
+            let frame = NSRect(x: -10_000, y: -10_000, width: 480, height: 640)
             let window = NSWindow(
                 contentRect: frame,
-                styleMask: [.titled, .closable, .miniaturizable, .resizable],
+                styleMask: [.borderless],
                 backing: .buffered,
-                defer: false
+                defer: true
             )
+            window.isReleasedWhenClosed = false
             window.contentViewController = hosting
             window.setFrame(frame, display: false)
-            window.orderFrontRegardless()
+            window.orderOut(nil)
             let root = hosting.view
             // Retain window + controller like UIKit path so layout and a11y stay alive for traversal.
             HostingControllerStorage.store(controller: hosting, window: window, for: root)
