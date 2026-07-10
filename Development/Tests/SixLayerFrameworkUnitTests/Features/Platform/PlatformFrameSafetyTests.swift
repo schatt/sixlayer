@@ -51,7 +51,7 @@ private func expectUIKitHostedRootIfAvailable<V: View>(_ view: V, _ message: Str
 
 /// Tests for platform frame sizing safety
 /// Validates that frame constraints are properly clamped to prevent overflow
-@Suite("Platform Frame Safety")
+@Suite("Platform Frame Safety", HostedViewTestIsolationTrait())
 open class PlatformFrameSafetyTests: BaseTestClass {
     
     // MARK: - PlatformFrameHelpers Tests
