@@ -16,7 +16,7 @@ import SwiftUI
 @testable import SixLayerFramework
 
 /// NOTE: Serialized to avoid UI conflicts with hostRootPlatformView (prevents Xcode crashes from too many @MainActor threads)
-@Suite(.serialized)
+@Suite
 open class PlatformNavigationSplitViewHelperTests: BaseTestClass {
     
     // MARK: - 2-Column Helper Tests
