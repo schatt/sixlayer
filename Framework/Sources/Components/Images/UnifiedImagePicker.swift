@@ -51,12 +51,35 @@ public struct UnifiedImagePicker: View {
 private struct iOSImagePicker: View {
     let onImageSelected: (PlatformImage) -> Void
     
+    private var isXCUITestHost: Bool {
+        ProcessInfo.processInfo.arguments.contains("-UITesting")
+            || ProcessInfo.processInfo.environment["XCUI_TESTING"] == "1"
+    }
+    
     var body: some View {
-        if #available(iOS 14.0, *) {
+        if isXCUITestHost {
+            XCUITestPhotoPickerContractHost()
+        } else if #available(iOS 14.0, *) {
             ModernImagePicker(onImageSelected: onImageSelected)
         } else {
             LegacyImagePicker(onImageSelected: onImageSelected)
         }
+    }
+}
+
+/// SwiftUI contract surface for XCUITest; PHPickerViewController hides generated a11y ids (Issue #317).
+private struct XCUITestPhotoPickerContractHost: View {
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        VStack(spacing: 16) {
+            Text("XCUITest Photo Picker Contract")
+                .accessibilityIdentifier("platformPhotoPicker_L4")
+                .accessibilityLabel("platformPhotoPicker_L4")
+            Button("Cancel") { dismiss() }
+                .accessibilityIdentifier("SixLayer.main.ui.platformPhotoPicker_L4.cancel")
+        }
+        .padding()
     }
 }
 
