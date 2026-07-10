@@ -8,7 +8,7 @@ import SwiftUI
 /// TESTING SCOPE: Style configuration and appearance customization for PlatformSplitViewLayer4
 /// METHODOLOGY: Test style application, divider customization, and visual treatments
 /// Implements Issue #17: Split View Styles & Appearance (Layer 4)
-@Suite("Platform Split View Styles Layer 4")
+@Suite("Platform Split View Styles Layer 4", HostedViewTestIsolationTrait())
 /// NOTE: Not marked @MainActor on class to allow parallel execution
 open class PlatformSplitViewStylesLayer4Tests: BaseTestClass {
     
