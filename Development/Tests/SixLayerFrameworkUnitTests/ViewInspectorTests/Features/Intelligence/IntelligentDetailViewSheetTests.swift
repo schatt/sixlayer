@@ -21,7 +21,7 @@ import AppKit
 /// BUSINESS PURPOSE:
 /// Apps using the framework need to display detail views in sheets, and these must work correctly.
 
-@Suite("Intelligent Detail View Sheet")
+@Suite("Intelligent Detail View Sheet", HostedViewTestIsolationTrait())
 /// NOTE: Not marked @MainActor on class to allow parallel execution
 struct IntelligentDetailViewSheetTests {
     
