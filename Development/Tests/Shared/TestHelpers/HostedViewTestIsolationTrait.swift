@@ -10,8 +10,8 @@ import Testing
 
 /// Releases all views hosted via `TestSetupUtilities.hostRootPlatformView` when each test finishes.
 ///
-/// Attach on `@Suite` roots that host SwiftUI for ViewInspector. Pairs with per-test teardown
-/// in `HostingControllerStorage` and `BaseTestClass` deinit for class-based suites.
+/// Attach on `@Suite` roots that host SwiftUI for ViewInspector. Teardown runs on the main
+/// actor via `HostedViewTestIsolationTrait` when each test invocation completes.
 public struct HostedViewTestIsolationTrait: Sendable, TestTrait, SuiteTrait, TestScoping {
     public typealias TestScopeProvider = HostedViewTestIsolationTrait
 
