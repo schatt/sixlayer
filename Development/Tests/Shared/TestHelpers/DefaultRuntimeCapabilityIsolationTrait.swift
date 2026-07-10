@@ -31,25 +31,37 @@ public struct DefaultRuntimeCapabilityIsolationTrait: Sendable, TestTrait, Suite
         // `@MainActor` tests), unlike `Thread.current.threadDictionary` which is per-OS-thread.
         let touchHarness: Bool? = false
         let hapticHarness: Bool? = false
-        try await RuntimeCapabilityHarness.$macOSTouchEnabledPreference.withValue(touchHarness) {
-            try await RuntimeCapabilityHarness.$macOSHapticEnabledPreference.withValue(hapticHarness) {
-                // `Thread.current` here is often the cooperative pool executor, while `@MainActor`
-                // tests run on the main thread. Clearing only the executor thread leaves stale
-                // `testTouchSupport` / `CapabilityOverride` entries on main and breaks suites
-                // (e.g. RuntimeCapabilityDetectionTDDTests.testOverrideClearing — gh-250 / release xcresult).
-                RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-                await MainActor.run {
+        var propagation: Error?
+        try await HostingControllerStorage.$scopeTestID.withValue(testID) {
+            try await RuntimeCapabilityHarness.$macOSTouchEnabledPreference.withValue(touchHarness) {
+                try await RuntimeCapabilityHarness.$macOSHapticEnabledPreference.withValue(hapticHarness) {
+                    // `Thread.current` here is often the cooperative pool executor, while `@MainActor`
+                    // tests run on the main thread. Clearing only the executor thread leaves stale
+                    // `testTouchSupport` / `CapabilityOverride` entries on main and breaks suites
+                    // (e.g. RuntimeCapabilityDetectionTDDTests.testOverrideClearing — gh-250 / release xcresult).
                     RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-                }
-                defer {
-                    RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-                }
-                try await function()
-                await MainActor.run {
-                    RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-                    HostingControllerStorage.releaseAll(for: testID)
+                    await MainActor.run {
+                        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+                    }
+                    defer {
+                        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+                    }
+                    do {
+                        try await function()
+                    } catch {
+                        propagation = error
+                    }
+                    await MainActor.run {
+                        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+                    }
                 }
             }
+        }
+        await MainActor.run {
+            HostingControllerStorage.teardownAfterTest(testID)
+        }
+        if let propagation {
+            throw propagation
         }
     }
 }
