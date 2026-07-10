@@ -24,7 +24,7 @@ import ViewInspector
 /// BUSINESS PURPOSE: Ensure basic compliance works for Text, Image, and other basic types
 /// TESTING SCOPE: BasicAutomaticComplianceModifier and Text extension
 /// METHODOLOGY: Test each function, verify identifier/label application, verify HIG features are skipped
-@Suite("Basic Automatic Compliance")
+@Suite("Basic Automatic Compliance", HostedViewTestIsolationTrait())
 /// NOTE: Not marked @MainActor on class to allow parallel execution
 open class BasicAutomaticComplianceTests: BaseTestClass {
     
