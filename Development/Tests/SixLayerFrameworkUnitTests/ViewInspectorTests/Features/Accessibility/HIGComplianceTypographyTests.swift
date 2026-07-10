@@ -14,7 +14,7 @@ import SwiftUI
 import UIKit
 #endif
 
-@Suite("HIG Compliance - Typography Scaling")
+@Suite("HIG Compliance - Typography Scaling", HostedViewTestIsolationTrait())
 open class HIGComplianceTypographyTests: BaseTestClass {
 
     // MARK: - Helpers
