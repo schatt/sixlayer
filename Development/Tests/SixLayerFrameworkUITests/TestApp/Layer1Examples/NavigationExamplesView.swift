@@ -55,24 +55,32 @@ struct NavigationStackExamples: View {
 }
 
 struct AppNavigationExamples: View {
+    private enum ExamplePane: String, Hashable, CaseIterable, Sendable {
+        case item1
+        case item2
+        case item3
+    }
+
+    @State private var navState = PlatformAppNavigationTopLevelState<ExamplePane>(deviceType: .current)
+
+    private let descriptors: [AppNavigationPaneDescriptor<ExamplePane>] = [
+        .init(id: .item1, titleKey: "Sidebar Item 1", systemImage: "1.circle"),
+        .init(id: .item2, titleKey: "Sidebar Item 2", systemImage: "2.circle"),
+        .init(id: .item3, titleKey: "Sidebar Item 3", systemImage: "3.circle")
+    ]
+
     var body: some View {
         platformVStack(alignment: .leading, spacing: 12) {
-            Text("App Navigation (Sidebar + Detail)")
+            Text("App Navigation (adaptive sidebar + Detail)")
                 .font(.headline)
-            
-            platformPresentAppNavigation_L1(
-                sidebar: {
-                    List {
-                        Text("Sidebar Item 1")
-                        Text("Sidebar Item 2")
-                        Text("Sidebar Item 3")
-                    }
-                },
-                detail: {
-                    Text("Detail Content")
-                        .padding()
-                }
-            )
+
+            platformPresentManagedAppNavigation_L1(
+                state: $navState,
+                descriptors: descriptors
+            ) { selected in
+                Text(selected.map { "Detail: \($0.rawValue)" } ?? "Detail Content")
+                    .padding()
+            }
             .frame(height: 300)
         }
         .padding()
