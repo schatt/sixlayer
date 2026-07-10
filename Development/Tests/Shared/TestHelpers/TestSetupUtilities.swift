@@ -28,7 +28,6 @@ final class HostingControllerStorage {
     @TaskLocal static var scopeTestID: Test.ID?
 
     private struct HostedEntry {
-        let ownerTestID: Test.ID?
         let window: AnyObject
         let controller: AnyObject
 
@@ -54,16 +53,11 @@ final class HostingControllerStorage {
         }
     }
 
-    private struct GlobalHostPool {
+    private struct TestHostBucket {
         var orderedKeys: [ObjectIdentifier] = []
         var entries: [ObjectIdentifier: HostedEntry] = [:]
 
-        mutating func insert(
-            ownerTestID: Test.ID?,
-            key: ObjectIdentifier,
-            entry: HostedEntry,
-            maxEntries: Int
-        ) -> [HostedEntry] {
+        mutating func insert(key: ObjectIdentifier, entry: HostedEntry, maxEntries: Int) -> [HostedEntry] {
             if let existingIndex = orderedKeys.firstIndex(of: key) {
                 orderedKeys.remove(at: existingIndex)
             }
@@ -79,18 +73,6 @@ final class HostingControllerStorage {
             return evicted
         }
 
-        mutating func removeAll(ownerTestID: Test.ID) -> [HostedEntry] {
-            var removed: [HostedEntry] = []
-            for key in orderedKeys {
-                guard entries[key]?.ownerTestID == ownerTestID else { continue }
-                if let entry = entries.removeValue(forKey: key) {
-                    removed.append(entry)
-                }
-            }
-            orderedKeys.removeAll { entries[$0] == nil }
-            return removed
-        }
-
         mutating func drain() -> [HostedEntry] {
             let all = Array(entries.values)
             entries.removeAll()
@@ -99,10 +81,13 @@ final class HostingControllerStorage {
         }
     }
 
-    /// Hard process-wide cap — bounds RSS even when per-test teardown is missed under parallel runs.
-    private static let maxGlobalHosts = 24
+    /// Dual-root accessibility tests need two simultaneous hosts within one test.
+    private static let maxRetainedHostsPerTest = 4
+    /// Safety valve when per-test teardown is missed — prunes orphaned buckets, not live parallel tests.
+    private static let maxRetainedTestBuckets = 64
 
-    nonisolated(unsafe) private static var globalPool = GlobalHostPool()
+    nonisolated(unsafe) private static var storageByTestID: [Test.ID: TestHostBucket] = [:]
+    nonisolated(unsafe) private static var unscopedBucket = TestHostBucket()
     /// `TaskLocal` does not reliably propagate to `@MainActor` hosting; traits set this on the main thread.
     nonisolated(unsafe) private static var mainThreadScopeTestID: Test.ID?
     private static let lock = NSLock()
@@ -134,45 +119,75 @@ final class HostingControllerStorage {
         return Test.current?.id
     }
 
+    private static func pruneStaleBuckets(keeping testID: Test.ID?) -> [HostedEntry] {
+        guard storageByTestID.count > maxRetainedTestBuckets else { return [] }
+        var drained: [HostedEntry] = []
+        for key in storageByTestID.keys where key != testID {
+            if var bucket = storageByTestID.removeValue(forKey: key) {
+                drained.append(contentsOf: bucket.drain())
+            }
+        }
+        return drained
+    }
+
     static func store(controller: AnyObject, window: AnyObject, for view: Any) {
-        let entry = HostedEntry(
-            ownerTestID: resolvedTestID(),
-            window: window,
-            controller: controller
-        )
+        let entry = HostedEntry(window: window, controller: controller)
         let key = ObjectIdentifier(view as AnyObject)
         var evicted: [HostedEntry] = []
+        var pruned: [HostedEntry] = []
         lock.lock()
-        evicted = globalPool.insert(
-            ownerTestID: entry.ownerTestID,
-            key: key,
-            entry: entry,
-            maxEntries: maxGlobalHosts
-        )
+        if let testID = resolvedTestID() {
+            var bucket = storageByTestID[testID, default: TestHostBucket()]
+            evicted = bucket.insert(key: key, entry: entry, maxEntries: maxRetainedHostsPerTest)
+            storageByTestID[testID] = bucket
+            pruned = pruneStaleBuckets(keeping: testID)
+        } else {
+            evicted = unscopedBucket.insert(key: key, entry: entry, maxEntries: maxRetainedHostsPerTest)
+        }
         lock.unlock()
-        tearDownOnMainThread(evicted)
+        tearDownOnMainThread(evicted + pruned)
     }
 
     static func remove(for view: Any) {
         let key = ObjectIdentifier(view as AnyObject)
         var removed: HostedEntry?
         lock.lock()
-        removed = globalPool.entries.removeValue(forKey: key)
-        globalPool.orderedKeys.removeAll { $0 == key }
+        if let testID = resolvedTestID() {
+            if var bucket = storageByTestID[testID] {
+                removed = bucket.entries.removeValue(forKey: key)
+                bucket.orderedKeys.removeAll { $0 == key }
+                storageByTestID[testID] = bucket
+            }
+        } else {
+            removed = unscopedBucket.entries.removeValue(forKey: key)
+            unscopedBucket.orderedKeys.removeAll { $0 == key }
+        }
         lock.unlock()
         if let removed {
             tearDownOnMainThread([removed])
         }
     }
 
-    /// Tear down all hosted windows, or only those owned by one test when `testID` is set.
+    /// Tear down hosted windows for one test or, when `testID` is nil, every retained host.
     static func releaseAll(for testID: Test.ID? = nil) {
         lock.lock()
         let entries: [HostedEntry]
         if let testID {
-            entries = globalPool.removeAll(ownerTestID: testID)
+            if var bucket = storageByTestID.removeValue(forKey: testID) {
+                entries = bucket.drain()
+            } else {
+                entries = []
+            }
         } else {
-            entries = globalPool.drain()
+            var allEntries: [HostedEntry] = []
+            let buckets = storageByTestID
+            storageByTestID.removeAll()
+            for var bucket in buckets.values {
+                allEntries.append(contentsOf: bucket.drain())
+            }
+            allEntries.append(contentsOf: unscopedBucket.drain())
+            unscopedBucket = TestHostBucket()
+            entries = allEntries
         }
         lock.unlock()
         tearDownOnMainThread(entries)
@@ -182,9 +197,13 @@ final class HostingControllerStorage {
         releaseAll()
     }
 
-    /// Per-test teardown from isolation traits.
+    /// Per-test teardown from isolation traits: scoped bucket + any unscoped MainActor hosts.
     static func teardownAfterTest(_ testID: Test.ID) {
         releaseAll(for: testID)
+        lock.lock()
+        let unscoped = unscopedBucket.drain()
+        lock.unlock()
+        tearDownOnMainThread(unscoped)
     }
 }
 
