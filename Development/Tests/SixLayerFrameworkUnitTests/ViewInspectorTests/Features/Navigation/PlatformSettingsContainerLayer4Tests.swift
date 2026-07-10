@@ -23,7 +23,7 @@ import SwiftUI
 /// METHODOLOGY: Test device-aware behavior (iPad, iPhone, macOS)
 /// Implements Issue #58: Add platformSettingsContainer_L4 for Settings Views (Layer 4)
 /// NOTE: Serialized to avoid UI conflicts with hostRootPlatformView
-@Suite("Platform Settings Container Layer 4", .serialized)
+@Suite("Platform Settings Container Layer 4")
 open class PlatformSettingsContainerLayer4Tests: BaseTestClass {
     
     // MARK: - Basic Functionality Tests
