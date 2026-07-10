@@ -117,12 +117,15 @@ struct NavigationLayoutResolverStress208Tests {
     }
 
     @Test
-    func resolveAppNavigationShell_matches_resolveSettingsContainer_withStressMetrics() {
+    func resolveAppNavigationShell_withStressMetrics_usesSingleSidebarBudget() {
         let stress = NavigationLayoutStressMetrics(dynamicTypeScale: 1.25, estimatedLongFormExtraCharacters: 500)
         let w: CGFloat = 1100
         let app = NavigationLayoutResolver.resolveAppNavigationShell(availableWidth: w, stressMetrics: stress)
         let settings = NavigationLayoutResolver.resolveSettingsContainer(availableWidth: w, stressMetrics: stress)
-        #expect(app == settings)
+        // App-nav is single sidebar; settings remains nested — resolutions need not match (#330).
+        #expect(app.innerWidth == 0)
+        #expect(app.mode == .sideBySide || app.mode == .compactCollapsedOuter)
+        #expect(settings.mode == .sideBySide || settings.mode == .compactCollapsedOuter)
     }
 }
 
