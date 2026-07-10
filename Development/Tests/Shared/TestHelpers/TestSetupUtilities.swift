@@ -54,37 +54,18 @@ final class HostingControllerStorage {
     }
 
     private struct TestHostBucket {
-        var orderedKeys: [ObjectIdentifier] = []
         var entries: [ObjectIdentifier: HostedEntry] = [:]
 
-        mutating func insert(key: ObjectIdentifier, entry: HostedEntry, maxEntries: Int) -> [HostedEntry] {
-            if let existingIndex = orderedKeys.firstIndex(of: key) {
-                orderedKeys.remove(at: existingIndex)
-            }
-            orderedKeys.append(key)
+        mutating func insert(key: ObjectIdentifier, entry: HostedEntry) {
             entries[key] = entry
-            var evicted: [HostedEntry] = []
-            while orderedKeys.count > maxEntries {
-                let evictKey = orderedKeys.removeFirst()
-                if let removed = entries.removeValue(forKey: evictKey) {
-                    evicted.append(removed)
-                }
-            }
-            return evicted
         }
 
         mutating func drain() -> [HostedEntry] {
             let all = Array(entries.values)
             entries.removeAll()
-            orderedKeys.removeAll()
             return all
         }
     }
-
-    /// Dual-root accessibility tests need two simultaneous hosts within one test.
-    private static let maxRetainedHostsPerTest = 4
-    /// Safety valve when per-test teardown is missed — prunes orphaned buckets, not live parallel tests.
-    private static let maxRetainedTestBuckets = 64
 
     nonisolated(unsafe) private static var storageByTestID: [Test.ID: TestHostBucket] = [:]
     nonisolated(unsafe) private static var unscopedBucket = TestHostBucket()
@@ -119,33 +100,18 @@ final class HostingControllerStorage {
         return Test.current?.id
     }
 
-    private static func pruneStaleBuckets(keeping testID: Test.ID?) -> [HostedEntry] {
-        guard storageByTestID.count > maxRetainedTestBuckets else { return [] }
-        var drained: [HostedEntry] = []
-        for key in storageByTestID.keys where key != testID {
-            if var bucket = storageByTestID.removeValue(forKey: key) {
-                drained.append(contentsOf: bucket.drain())
-            }
-        }
-        return drained
-    }
-
     static func store(controller: AnyObject, window: AnyObject, for view: Any) {
         let entry = HostedEntry(window: window, controller: controller)
         let key = ObjectIdentifier(view as AnyObject)
-        var evicted: [HostedEntry] = []
-        var pruned: [HostedEntry] = []
         lock.lock()
         if let testID = resolvedTestID() {
             var bucket = storageByTestID[testID, default: TestHostBucket()]
-            evicted = bucket.insert(key: key, entry: entry, maxEntries: maxRetainedHostsPerTest)
+            bucket.insert(key: key, entry: entry)
             storageByTestID[testID] = bucket
-            pruned = pruneStaleBuckets(keeping: testID)
         } else {
-            evicted = unscopedBucket.insert(key: key, entry: entry, maxEntries: maxRetainedHostsPerTest)
+            unscopedBucket.insert(key: key, entry: entry)
         }
         lock.unlock()
-        tearDownOnMainThread(evicted + pruned)
     }
 
     static func remove(for view: Any) {
@@ -155,12 +121,10 @@ final class HostingControllerStorage {
         if let testID = resolvedTestID() {
             if var bucket = storageByTestID[testID] {
                 removed = bucket.entries.removeValue(forKey: key)
-                bucket.orderedKeys.removeAll { $0 == key }
                 storageByTestID[testID] = bucket
             }
         } else {
             removed = unscopedBucket.entries.removeValue(forKey: key)
-            unscopedBucket.orderedKeys.removeAll { $0 == key }
         }
         lock.unlock()
         if let removed {
