@@ -1459,6 +1459,8 @@
 		6FD5AE96015E0458060A05FB /* IntelligentCardExpansionLayer3.swift in Sources */ = {isa = PBXBuildFile; fileRef = C33525F4FAE35F239E081EAD /* IntelligentCardExpansionLayer3.swift */; };
 		700FD505413E0C3E3AD8184A /* PlatformSharePrintLayer4ComponentAccessibilityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0BC207AB40BF5240D2B786 /* PlatformSharePrintLayer4ComponentAccessibilityTests.swift */; };
 		701637D25DBE10206A71E199 /* PlatformAccessibilityExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71997B40CEA5F546B35AF408 /* PlatformAccessibilityExtensions.swift */; };
+		702762841B3FCA5A5E523B2E /* IntelligentCardResize330Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6D97F1E0244C6E7FAF58031 /* IntelligentCardResize330Tests.swift */; };
+		703D2418F2BEF62A9047F722 /* IntelligentCardResize330Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6D97F1E0244C6E7FAF58031 /* IntelligentCardResize330Tests.swift */; };
 		7059027A58E928E0BF429AAD /* DynamicFormStoredDateValueTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 368FF71A89A9A3ECB835DCBB /* DynamicFormStoredDateValueTests.swift */; };
 		706DF23F0FB7B22D4B1A9BA6 /* PlatformFileSystemUtilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 997D8032D77A11032B4C503C /* PlatformFileSystemUtilities.swift */; };
 		7089563A225CB02251C2F9D3 /* SixLayerViewInspectorTestKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6464F1865CC0E4C9F4418F14 /* SixLayerViewInspectorTestKit.framework */; };
@@ -1875,6 +1877,7 @@
 		8ED15AFBE2C1AB0637EE7DA9 /* FieldActionRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 005CBFEDAF661A476589B52D /* FieldActionRenderer.swift */; };
 		8EE909DFFBCF8A0BA5F8AD79 /* FieldHintsOCRExtensionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51C76DF826AE55E108692F37 /* FieldHintsOCRExtensionTests.swift */; };
 		8EF57B93A19912DA08F9FF6F /* PlatformFormsLayer4.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2942FE44CEFD42029C36238 /* PlatformFormsLayer4.swift */; };
+		8EF61340643A3E3E9245B4C0 /* IntelligentCardResize330Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6D97F1E0244C6E7FAF58031 /* IntelligentCardResize330Tests.swift */; };
 		8F07DB3DB71EBFAE2FA4118A /* AdaptiveDetailViewRenderingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A415D5DCC8C815D57E05EF0A /* AdaptiveDetailViewRenderingTests.swift */; };
 		8F589CC8B43981F068335D05 /* DynamicFormViewAutoSaveTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0B047B2879F85EC19B4CBE0 /* DynamicFormViewAutoSaveTests.swift */; };
 		8F7CE627C05ADCA76AD66CF4 /* PlatformToolbarPlacement.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5F9E295CE1103F27F5E5EF1 /* PlatformToolbarPlacement.swift */; };
@@ -2420,6 +2423,7 @@
 		BD0BF4A534B31B861A7BDD39 /* PlatformManagedSettingsFlowLayer4Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3D00A234DB60BFBA1F5F4F9 /* PlatformManagedSettingsFlowLayer4Tests.swift */; };
 		BD1BC92983A06BD5E7FC5D60 /* ImageProcessingPipeline.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15643EB387561B3850E61245 /* ImageProcessingPipeline.swift */; };
 		BD6F7C849871BDFD4A1B80E7 /* SixLayerViewInspectorTestKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6464F1865CC0E4C9F4418F14 /* SixLayerViewInspectorTestKit.framework */; };
+		BD7B0AC655AA87DF35912112 /* IntelligentCardResize330Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6D97F1E0244C6E7FAF58031 /* IntelligentCardResize330Tests.swift */; };
 		BD8016371AB4B2B99490B1BD /* PlatformAdvancedContainersExtensionsAuditView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6AB7940493A08BAC4D395BB9 /* PlatformAdvancedContainersExtensionsAuditView.swift */; };
 		BD9D23EB30168C8A8623549A /* SingleInstanceLayer1Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDE3D641C2315DA92CEA804D /* SingleInstanceLayer1Tests.swift */; };
 		BDB6C06EA56E7BFA41741D54 /* PlatformUIExamples.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02BBFD40482F165E69094C2E /* PlatformUIExamples.swift */; };
@@ -3061,6 +3065,7 @@
 		EFB03DC6B16E0459DD6C0563 /* PlatformExportActionsLayer4Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3537F5B30C12EC39975E8C11 /* PlatformExportActionsLayer4Tests.swift */; };
 		EFBD91B9F84373E3CAB10CA3 /* PlatformSystemZoomPreferenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5C97661144994BBF292BA4D /* PlatformSystemZoomPreferenceTests.swift */; };
 		EFE0EBB95FFEA1B53FE917DC /* OCRServiceAccessibilityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB35DECEACAF403EBB246937 /* OCRServiceAccessibilityTests.swift */; };
+		F067B777E9ACDA385950E619 /* IntelligentCardResize330Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6D97F1E0244C6E7FAF58031 /* IntelligentCardResize330Tests.swift */; };
 		F075C4518C37F25AC5E6CB1E /* PlatformSemanticLayer1.swift in Sources */ = {isa = PBXBuildFile; fileRef = B808713B8169C802671D8EA5 /* PlatformSemanticLayer1.swift */; };
 		F090C25AC0C69D0754AD8A44 /* NavigationStackLayer2Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 706465D4107006975FD4F694 /* NavigationStackLayer2Tests.swift */; };
 		F0A62F1D76E65BC5C85D0B3A /* DetailViewCategoryBAuditView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A968477710FAE02D44A6871 /* DetailViewCategoryBAuditView.swift */; };
@@ -4216,6 +4221,7 @@
 		A653EAABDBAD48A4CA036606 /* ImageMetadataTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageMetadataTypes.swift; sourceTree = "<group>"; };
 		A69DFF680E20CE100676A89C /* CollectionEmptyStateViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollectionEmptyStateViewTests.swift; sourceTree = "<group>"; };
 		A6A51921688AA927D4B5CFDE /* AutomaticAccessibilityIdentifiers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutomaticAccessibilityIdentifiers.swift; sourceTree = "<group>"; };
+		A6D97F1E0244C6E7FAF58031 /* IntelligentCardResize330Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntelligentCardResize330Tests.swift; sourceTree = "<group>"; };
 		A734A20D26DCDAE6B9BD8644 /* PlatformSystemZoomPreference.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformSystemZoomPreference.swift; sourceTree = "<group>"; };
 		A787C6AF9F9815D5113F0960 /* PlatformPhotoComponentsLayer4IntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformPhotoComponentsLayer4IntegrationTests.swift; sourceTree = "<group>"; };
 		A79B660D34A588E35C81AD66 /* PlatformPrivacyLayer5.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformPrivacyLayer5.swift; sourceTree = "<group>"; };
@@ -5876,6 +5882,7 @@
 				4F370DFBCC1AB86D88105C77 /* IntelligentCardExpansionComprehensiveTests.swift */,
 				FEAAB236351B68057C864ECC /* IntelligentCardExpansionLayer2Tests.swift */,
 				F7BEE98C1F3F5F36FBBAE884 /* IntelligentCardExpansionTests.swift */,
+				A6D97F1E0244C6E7FAF58031 /* IntelligentCardResize330Tests.swift */,
 				F705A5F33E5F219CDFB207EE /* ItemBadgeTests.swift */,
 				89B8DD611932EF41B2686E6E /* ItemCollectionL1Tests.swift */,
 				154666A424FEB9A2AC333AE6 /* ItemCollectionPresentationStrategyResolverTests.swift */,
@@ -6610,7 +6617,7 @@
 			path = API;
 			sourceTree = "<group>";
 		};
-		"TEMP_662E39F1-D411-4D50-801B-6632A4762290" /* Utilities */ = {
+		"TEMP_3ADAEB53-8CE4-4769-9B1C-841893A24E3F" /* Utilities */ = {
 			isa = PBXGroup;
 			children = (
 			);
@@ -7813,6 +7820,7 @@
 				76191CE0B94C7BBD5C97FF7F /* IntelligentCardExpansionComprehensiveTests.swift in Sources */,
 				5F7817C0159AD09270063D38 /* IntelligentCardExpansionLayer2Tests.swift in Sources */,
 				B90A002CF1D69142FC746DE2 /* IntelligentCardExpansionTests.swift in Sources */,
+				703D2418F2BEF62A9047F722 /* IntelligentCardResize330Tests.swift in Sources */,
 				1E3F0CC21B500F345DCD6F9B /* IntelligentFormViewAutoBindingTests.swift in Sources */,
 				5407C126A2BB53DF750F7DDF /* IntelligentFormViewHintsFirstTests.swift in Sources */,
 				56056B3596C97813A9B1F928 /* IntelligentFormViewPickerTests.swift in Sources */,
@@ -9200,6 +9208,7 @@
 				308A5FFCCBE60299CF321195 /* IntelligentCardExpansionComprehensiveTests.swift in Sources */,
 				12E4D8D622E7FE45A3E6D632 /* IntelligentCardExpansionLayer2Tests.swift in Sources */,
 				2FCFEE5D682D60467F09B4D6 /* IntelligentCardExpansionTests.swift in Sources */,
+				BD7B0AC655AA87DF35912112 /* IntelligentCardResize330Tests.swift in Sources */,
 				CCE08657D3B0B15279335204 /* IntelligentFormViewAutoBindingTests.swift in Sources */,
 				5BE0E6F900A57C3DABE22EB4 /* IntelligentFormViewHintsFirstTests.swift in Sources */,
 				7C52624691D33E7594AFBED5 /* IntelligentFormViewPickerTests.swift in Sources */,
@@ -9753,6 +9762,7 @@
 				D011C41478C7E04B84C92077 /* IntelligentCardExpansionComprehensiveTests.swift in Sources */,
 				414D78C5CC8AEC839F49CB99 /* IntelligentCardExpansionLayer2Tests.swift in Sources */,
 				FD8609C1027993BAA2956021 /* IntelligentCardExpansionTests.swift in Sources */,
+				8EF61340643A3E3E9245B4C0 /* IntelligentCardResize330Tests.swift in Sources */,
 				82CA21A17040C6056F986081 /* IntelligentFormViewAutoBindingTests.swift in Sources */,
 				5867340B23C393E418606896 /* IntelligentFormViewHintsFirstTests.swift in Sources */,
 				05AC9C61928BE89D3B2BB89A /* IntelligentFormViewPickerTests.swift in Sources */,
@@ -10296,6 +10306,7 @@
 				EF0AE8B4B11BDECE4AAB494E /* IntelligentCardExpansionComprehensiveTests.swift in Sources */,
 				FE460FEDA076488468F7B844 /* IntelligentCardExpansionLayer2Tests.swift in Sources */,
 				52C52D99B36B2D51625BFF91 /* IntelligentCardExpansionTests.swift in Sources */,
+				F067B777E9ACDA385950E619 /* IntelligentCardResize330Tests.swift in Sources */,
 				4AB7D407CD85AC1E54945FFF /* IntelligentFormViewAutoBindingTests.swift in Sources */,
 				611FD151DF185368559EE6B4 /* IntelligentFormViewHintsFirstTests.swift in Sources */,
 				B9027258349E51C993424AA4 /* IntelligentFormViewPickerTests.swift in Sources */,
@@ -10839,6 +10850,7 @@
 				B79BB83F758140DF45C65E05 /* IntelligentCardExpansionComprehensiveTests.swift in Sources */,
 				BB5D8A93788288A6DE38E9F3 /* IntelligentCardExpansionLayer2Tests.swift in Sources */,
 				77F088FDE8F96C1A10D39BF2 /* IntelligentCardExpansionTests.swift in Sources */,
+				702762841B3FCA5A5E523B2E /* IntelligentCardResize330Tests.swift in Sources */,
 				D5A2AF4849F594A18B43666E /* IntelligentFormViewAutoBindingTests.swift in Sources */,
 				D4B427F454BE10D2A1E1ED82 /* IntelligentFormViewHintsFirstTests.swift in Sources */,
 				59B1A94FF8D6601E6460AFD7 /* IntelligentFormViewPickerTests.swift in Sources */,
