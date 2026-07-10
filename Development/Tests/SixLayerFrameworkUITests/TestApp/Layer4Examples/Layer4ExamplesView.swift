@@ -882,6 +882,11 @@ struct Layer4ContractOnlyView: View {
         reasoning: "L4 overlay accessibility contract"
     )
 
+    private var isXCUITestHost: Bool {
+        ProcessInfo.processInfo.arguments.contains("-UITesting")
+            || ProcessInfo.processInfo.environment["XCUI_TESTING"] == "1"
+    }
+
     /// Section title styling aligned with ExampleSection (scroll layout).
     @ViewBuilder
     private func contractSectionHeader(_ title: String) -> some View {
@@ -1005,12 +1010,10 @@ struct Layer4ContractOnlyView: View {
             }
             .accessibilityIdentifier("L4ContractOpenURL")
             .accessibilityLabel("L4ContractOpenURL")
-            if let openURLResult = l4ContractOpenURLResult {
-                Text("L4ContractOpenURLResult:\(openURLResult ? "true" : "false")")
-                    .font(.caption)
-                    .accessibilityIdentifier("L4ContractOpenURLResult")
-                    .accessibilityLabel("L4ContractOpenURLResult:\(openURLResult ? "true" : "false")")
-            }
+            Text("L4ContractOpenURLResult:\(l4ContractOpenURLResult.map { $0 ? "true" : "false" } ?? "pending")")
+                .font(.caption)
+                .accessibilityIdentifier("L4ContractOpenURLResult")
+                .accessibilityLabel("L4ContractOpenURLResult:\(l4ContractOpenURLResult.map { $0 ? "true" : "false" } ?? "pending")")
             Text("Remote notifications (platformRegisterForRemoteNotifications_L4)")
                 .font(.caption)
                 .foregroundColor(.secondary)
@@ -1019,12 +1022,10 @@ struct Layer4ContractOnlyView: View {
             }
             .accessibilityIdentifier("L4ContractRegisterRemoteNotifications")
             .accessibilityLabel("L4ContractRegisterRemoteNotifications")
-            if let registerResult = l4ContractRegisterRemoteNotificationsResult {
-                Text("L4ContractRegisterRemoteNotificationsResult:\(registerResult ? "true" : "false")")
-                    .font(.caption)
-                    .accessibilityIdentifier("L4ContractRegisterRemoteNotificationsResult")
-                    .accessibilityLabel("L4ContractRegisterRemoteNotificationsResult:\(registerResult ? "true" : "false")")
-            }
+            Text("L4ContractRegisterRemoteNotificationsResult:\(l4ContractRegisterRemoteNotificationsResult.map { $0 ? "true" : "false" } ?? "pending")")
+                .font(.caption)
+                .accessibilityIdentifier("L4ContractRegisterRemoteNotificationsResult")
+                .accessibilityLabel("L4ContractRegisterRemoteNotificationsResult:\(l4ContractRegisterRemoteNotificationsResult.map { $0 ? "true" : "false" } ?? "pending")")
             Text("CloudKit Sync Status")
                 .font(.caption)
                 .foregroundColor(.secondary)
@@ -1058,6 +1059,11 @@ struct Layer4ContractOnlyView: View {
             }
             .accessibilityIdentifier("L4ContractPhotoPickerOpen")
             .accessibilityLabel("L4ContractPhotoPickerOpen")
+            if isXCUITestHost && l4ContractShowPhotoPicker {
+                platformPhotoPicker_L4 { _ in
+                    l4ContractShowPhotoPicker = false
+                }
+            }
             #endif
             Text("Photo Display")
                 .font(.caption)
@@ -1240,7 +1246,12 @@ struct Layer4ContractOnlyView: View {
         }
         #if os(iOS) || os(macOS)
         // Sheet on root stack, not inside `Form`, keeps picker a11y visible to XCUITest (Issue #193).
-        .sheet(isPresented: $l4ContractShowPhotoPicker) {
+        // Under -UITesting, mount the picker inline in the Form row instead — iOS 26 XCTest often
+        // does not surface `.sheet` content in the accessibility tree (Issue #317).
+        .sheet(isPresented: Binding(
+            get: { l4ContractShowPhotoPicker && !isXCUITestHost },
+            set: { l4ContractShowPhotoPicker = $0 }
+        )) {
             platformPhotoPicker_L4 { _ in
                 l4ContractShowPhotoPicker = false
             }

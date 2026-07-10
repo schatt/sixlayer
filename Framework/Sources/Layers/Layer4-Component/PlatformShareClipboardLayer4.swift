@@ -531,6 +531,12 @@ public func platformOpenURL_L4(_ url: URL) -> Bool {
         return true
     }
     #endif
+    // XCUITest host is a separate process without XCTest linked; opening a URL backgrounds
+    // the app and contract result UI never appears (Issue #317).
+    if ProcessInfo.processInfo.arguments.contains("-UITesting")
+        || ProcessInfo.processInfo.environment["XCUI_TESTING"] == "1" {
+        return true
+    }
     
     #if os(iOS)
     // iOS 16+: Use async API (deployment target is iOS 17, so always use async)

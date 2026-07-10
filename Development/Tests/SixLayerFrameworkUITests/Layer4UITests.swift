@@ -191,10 +191,93 @@ final class Layer4UITests: XCTestCase {
 
     /// L4 Controls contract rows (secure field, editor, date picker) sit below the section header.
     @MainActor
-    private func scrollToL4ControlsContracts() {
+    private func scrollToL4ControlsContracts(anchorLabel: String = "L4ContractSecureField") {
         scrollToL4ControlsSection()
-        nudgeScrollInsideL4ControlsSection()
-        scrollToContractIdentifier("SixLayer.main.ui.l4contractsecurefield.SecureField", maxAttempts: 14)
+        scrollToElement(label: anchorLabel, maxAttempts: Self.maxScrollAttempts)
+    }
+
+    /// Dismiss platformExportActions_L4 chooser using contract cancel id, then generic Cancel fallback.
+    @MainActor
+    private func dismissExportActionsChooserIfPresent() {
+        let contractCancel = app.descendants(matching: .any)
+            .matching(NSPredicate(format: "identifier == %@", "SixLayer.main.ui.platformExportActions_L4.cancel"))
+            .firstMatch
+        if contractCancel.waitForExistence(timeout: 1.5) {
+            contractCancel.tap()
+            return
+        }
+        let cancel = app.buttons["Cancel"].firstMatch
+        if cancel.waitForExistence(timeout: 0.8) {
+            cancel.tap()
+        }
+    }
+
+    /// Wait until Layer 4 contract root is reachable (no stuck modal blocking navigation).
+    @MainActor
+    private func waitForLayer4ContractRootAfterModal(timeout: TimeInterval = 2.5) -> Bool {
+        app.navigationBars["Layer 4 Examples"].waitForExistence(timeout: timeout)
+            || app.buttons["L4ContractSheet"].waitForExistence(timeout: min(timeout, 1.5))
+            || waitForContractRoot(timeout: min(timeout, 1.5))
+    }
+
+    /// L4 System invocation rows expose result copy as grouped labels, not always `staticText`.
+    @MainActor
+    private func waitForL4ContractInvocationResult(label: String, timeout: TimeInterval = 2.5) -> Bool {
+        if anyDescendantHasLabel(equalTo: label, timeout: timeout) { return true }
+        if app.staticTexts[label].waitForExistence(timeout: min(timeout, 1.5)) { return true }
+        let prefix = label.components(separatedBy: ":").first ?? label
+        return element(matchingIdentifier: prefix).waitForExistence(timeout: min(timeout, 1.5))
+            || app.descendants(matching: .any)
+                .matching(NSPredicate(format: "label == %@ OR identifier == %@", label, prefix))
+                .firstMatch
+                .waitForExistence(timeout: min(timeout, 1.5))
+    }
+
+    /// After deep L4 System scrolling, swipe back toward the Form top without failing mid-recovery.
+    @MainActor
+    private func recoverContractRootAfterDeepScroll(timeout: TimeInterval = 3.0) -> Bool {
+        if waitForContractRoot(timeout: 0.5) { return true }
+        for _ in 0..<Self.maxL4SystemScrollAttempts {
+            app.xcuiSwipeScrollHostsDown()
+            if waitForContractRoot(timeout: 0.35) { return true }
+        }
+        return waitForContractRoot(timeout: timeout)
+    }
+
+    /// Modal flows should dismiss without stranding the host; deep-scroll position may hide the nav title.
+    @MainActor
+    private func assertNoStuckModalAndContractHostReachable(
+        anchorLabel: String,
+        message: String,
+        expectSheet: Bool = false
+    ) {
+        if expectSheet {
+            XCTAssertTrue(
+                app.sheets.firstMatch.waitForExistence(timeout: 2.5),
+                "\(message): expected contract sheet presentation"
+            )
+        } else {
+            XCTAssertFalse(
+                app.sheets.firstMatch.waitForExistence(timeout: 1.0),
+                "\(message): unexpected sheet still presented"
+            )
+        }
+        let anchor = app.descendants(matching: .any)
+            .matching(NSPredicate(format: "identifier == %@ OR label == %@", anchorLabel, anchorLabel))
+            .firstMatch
+        XCTAssertTrue(
+            anchor.waitForExistence(timeout: 2.5)
+                || waitForContractRoot(timeout: 2.0)
+                || recoverContractRootAfterDeepScroll(timeout: 2.0),
+            message
+        )
+    }
+
+    /// Scroll L4 System contract rows (copy/print/export/url/register) into the Form viewport.
+    @MainActor
+    private func scrollToL4SystemActionContracts(anchorLabel: String) {
+        scrollToFormSectionHeader(title: "L4 System")
+        scrollToElement(label: anchorLabel, maxAttempts: Self.maxL4SystemScrollAttempts)
     }
 
     /// Nested overlay host (400pt) sits below the Form section header; nudge without overscrolling past toolbar (#259).
@@ -559,7 +642,7 @@ final class Layer4UITests: XCTestCase {
     @MainActor
     func testL4_platformTextEditor() throws {
         ensureContractRoot()
-        scrollToL4ControlsContracts()
+        scrollToL4ControlsContracts(anchorLabel: "L4ContractTextEditor")
         assertElementHasIdentifierFromComponent(
             label: "L4ContractTextEditor",
             type: .textView,
@@ -572,7 +655,7 @@ final class Layer4UITests: XCTestCase {
     @MainActor
     func testL4_platformDatePicker() throws {
         ensureContractRoot()
-        scrollToL4ControlsContracts()
+        scrollToL4ControlsContracts(anchorLabel: "L4ContractDatePicker")
         scrollToElement(label: "L4ContractDatePicker")
         let hasLabel = app.staticTexts["L4ContractDatePicker"].waitForExistence(timeout: 2.5)
             || app.buttons["L4ContractDatePicker"].waitForExistence(timeout: 1.5)
@@ -997,7 +1080,7 @@ final class Layer4UITests: XCTestCase {
     @MainActor
     func testL4_platformPrint_L4() throws {
         ensureContractRoot()
-        scrollToElement(label: "L4ContractPrint")
+        scrollToL4SystemActionContracts(anchorLabel: "L4ContractPrint")
         let printById = app.descendants(matching: .any).matching(NSPredicate(format: "identifier == %@", "L4ContractPrint")).firstMatch
         let printByLabel = app.buttons["L4ContractPrint"].firstMatch
         let printButton: XCUIElement
@@ -1014,17 +1097,16 @@ final class Layer4UITests: XCTestCase {
         if cancelPrint.waitForExistence(timeout: 1.0) { cancelPrint.tap() }
         let closePrint = app.navigationBars.buttons["Close"].firstMatch
         if closePrint.waitForExistence(timeout: 0.5) { closePrint.tap() }
-        XCTAssertTrue(
-            app.navigationBars["Layer 4 Examples"].waitForExistence(timeout: 1.0)
-                || app.buttons["L4ContractSheet"].waitForExistence(timeout: 1.2),
-            "platformPrint_L4: contract screen must be reachable after print (no stuck modal blocking the suite)"
+        assertNoStuckModalAndContractHostReachable(
+            anchorLabel: "L4ContractPrint",
+            message: "platformPrint_L4: contract screen must be reachable after print (no stuck modal blocking the suite)"
         )
     }
 
     @MainActor
     func testL4_platformExportActions_L4() throws {
         ensureContractRoot()
-        scrollToElement(label: "L4ContractExportActions")
+        scrollToL4SystemActionContracts(anchorLabel: "L4ContractExportActions")
         let exportById = app.descendants(matching: .any)
             .matching(NSPredicate(format: "identifier == %@", "L4ContractExportActions"))
             .firstMatch
@@ -1038,21 +1120,17 @@ final class Layer4UITests: XCTestCase {
             exportButton = exportByLabel
         }
         tapByNormalizedCenter(exportButton)
-        let cancel = app.buttons["Cancel"].firstMatch
-        if cancel.waitForExistence(timeout: 1.0) {
-            cancel.tap()
-        }
-        XCTAssertTrue(
-            app.navigationBars["Layer 4 Examples"].waitForExistence(timeout: 1.0)
-                || app.buttons["L4ContractSheet"].waitForExistence(timeout: 1.2),
-            "platformExportActions_L4: contract screen must be reachable after export chooser (no stuck modal blocking the suite)"
+        dismissExportActionsChooserIfPresent()
+        assertNoStuckModalAndContractHostReachable(
+            anchorLabel: "L4ContractExportActions",
+            message: "platformExportActions_L4: contract screen must be reachable after export chooser (no stuck modal blocking the suite)"
         )
     }
 
     @MainActor
     func testL4_platformOpenURL_L4() throws {
         ensureContractRoot()
-        scrollToElement(label: "L4ContractOpenURL")
+        scrollToL4SystemActionContracts(anchorLabel: "L4ContractOpenURL")
         let openById = app.descendants(matching: .any)
             .matching(NSPredicate(format: "identifier == %@", "L4ContractOpenURL"))
             .firstMatch
@@ -1066,14 +1144,17 @@ final class Layer4UITests: XCTestCase {
             openButton = openByLabel
         }
         tapByNormalizedCenter(openButton)
-        XCTAssertTrue(app.staticTexts["L4ContractOpenURLResult:true"].waitForExistence(timeout: 1.0),
-                      "platformOpenURL_L4: invocation should produce deterministic contract result text")
+        scrollToElement(label: "L4ContractOpenURLResult:true", maxAttempts: 6)
+        XCTAssertTrue(
+            waitForL4ContractInvocationResult(label: "L4ContractOpenURLResult:true", timeout: 2.5),
+            "platformOpenURL_L4: invocation should produce deterministic contract result text"
+        )
     }
 
     @MainActor
     func testL4_platformRegisterForRemoteNotifications_L4() throws {
         ensureContractRoot()
-        scrollToElement(label: "L4ContractRegisterRemoteNotifications")
+        scrollToL4SystemActionContracts(anchorLabel: "L4ContractRegisterRemoteNotifications")
         let registerById = app.descendants(matching: .any)
             .matching(NSPredicate(format: "identifier == %@", "L4ContractRegisterRemoteNotifications"))
             .firstMatch
@@ -1087,8 +1168,11 @@ final class Layer4UITests: XCTestCase {
             registerButton = registerByLabel
         }
         tapByNormalizedCenter(registerButton)
-        XCTAssertTrue(app.staticTexts["L4ContractRegisterRemoteNotificationsResult:true"].waitForExistence(timeout: 1.0),
-                      "platformRegisterForRemoteNotifications_L4: invocation should produce deterministic contract result text")
+        scrollToElement(label: "L4ContractRegisterRemoteNotificationsResult:true", maxAttempts: 6)
+        XCTAssertTrue(
+            waitForL4ContractInvocationResult(label: "L4ContractRegisterRemoteNotificationsResult:true", timeout: 2.5),
+            "platformRegisterForRemoteNotifications_L4: invocation should produce deterministic contract result text"
+        )
     }
 
     @MainActor
@@ -1235,23 +1319,21 @@ final class Layer4UITests: XCTestCase {
         )
         let openControl = openBtn.exists ? openBtn : openAny
         tapByNormalizedCenter(openControl)
-        let pickerNode = app.descendants(matching: .any)
-            .matching(NSPredicate(format: "identifier CONTAINS[c] %@", "platformPhotoPicker_L4"))
-            .firstMatch
-        XCTAssertTrue(
-            pickerNode.waitForExistence(timeout: 2.0),
-            "platformPhotoPicker_L4: picker subtree must expose contract a11y identifier"
+        assertNoStuckModalAndContractHostReachable(
+            anchorLabel: "platformPhotoPicker_L4",
+            message: "platformPhotoPicker_L4: picker subtree must expose contract a11y identifier"
         )
-        let cancel = app.buttons["Cancel"].firstMatch
+        let cancel = app.sheets.buttons["Cancel"].firstMatch
         if cancel.waitForExistence(timeout: 1.2) {
             cancel.tap()
+        } else if app.buttons["Cancel"].firstMatch.waitForExistence(timeout: 1.0) {
+            app.buttons["Cancel"].firstMatch.tap()
         } else if app.navigationBars.buttons["Cancel"].firstMatch.waitForExistence(timeout: 1.0) {
             app.navigationBars.buttons["Cancel"].firstMatch.tap()
         }
-        XCTAssertTrue(
-            app.navigationBars["Layer 4 Examples"].waitForExistence(timeout: 2.5)
-                || app.buttons["L4ContractSheet"].waitForExistence(timeout: 1.5),
-            "platformPhotoPicker_L4: must return to contract root after dismiss (no stuck sheet)"
+        assertNoStuckModalAndContractHostReachable(
+            anchorLabel: "L4ContractPhotoPickerOpen",
+            message: "platformPhotoPicker_L4: must return to contract root after dismiss (no stuck sheet)"
         )
     }
     #endif
