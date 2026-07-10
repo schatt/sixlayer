@@ -5,15 +5,15 @@
 **Release Date**: TBD (prep on `next`)
 **Status**: Patch release (prep on `next`)
 **Previous Release**: v8.1.0 - Minor release
-**Note**: Window/container resize — app-nav single-sidebar column sizing and intelligent card reflow (#330).
+**Note**: Window/container resize (#330) and macOS ViewInspector parallel-test reliability (#315).
 **Next Release**: TBD
 
 ---
 
-## 🎯 **v8.1.1 - macOS/iPad resize: app nav and card collections** (TBD)
+## 🎯 **v8.1.1 - macOS/iPad resize and ViewInspector reliability** (TBD)
 
 ### **What's in v8.1.1:**
-- Patch release (#330, #332). See [RELEASE_v8.1.1.md](RELEASE_v8.1.1.md) for details.
+- Patch release (#330, #315, #332). See [RELEASE_v8.1.1.md](RELEASE_v8.1.1.md) for details.
 
 **See [RELEASE_v8.1.1.md](RELEASE_v8.1.1.md) for complete release notes.**
 
