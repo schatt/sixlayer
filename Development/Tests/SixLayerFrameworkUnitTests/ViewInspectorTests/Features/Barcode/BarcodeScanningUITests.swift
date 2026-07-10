@@ -29,7 +29,7 @@ import ViewInspector
 
 /// Tests for Barcode Scanning UI functionality
 /// NOTE: Serialized to avoid UI conflicts with hostRootPlatformView
-@Suite
+@Suite(HostedViewTestIsolationTrait())
 open class BarcodeScanningUITests: BaseTestClass {
     
     // MARK: - Test Setup
