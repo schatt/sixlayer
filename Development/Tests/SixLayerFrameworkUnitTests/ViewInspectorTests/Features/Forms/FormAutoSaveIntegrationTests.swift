@@ -25,7 +25,7 @@ import Foundation
 //
 
 /// NOTE: Not marked @MainActor on class to allow parallel execution
-@Suite("Form Auto-Save Integration")
+@Suite("Form Auto-Save Integration", HostedViewTestIsolationTrait())
 open class FormAutoSaveIntegrationTests: BaseTestClass {
     
     /// BUSINESS PURPOSE: Validate draft persists across app restart simulation
