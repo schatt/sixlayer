@@ -1,15 +1,20 @@
 # Changelog
 
-## v8.1.1 - macOS/iPad resize: app nav and card collections (TBD)
+## v8.1.1 - macOS/iPad resize + adaptive app-nav sidebar (TBD)
 
 ### ✨ Added
 - **`NavigationSplitColumnSizing`**: min/ideal/max for app-nav `NavigationSplitView` sidebar columns (#330).
 - **`NavigationLayoutResolver.appNavigationSidebarColumnSizing(...)`**: progressive column sizing that shrinks with available width; `nil` when icon-rail + detail cannot fit (#330).
 - **`layer4AppNavigationCompactPresentation` / `ForTransition`**: app-nav presentation from the single-sidebar budget (#330).
+- **`AppNavigationPaneDescriptor` / `AppNavigationPaneSectionBuilder`**: structured app-nav sidebar rows (title + systemImage) (#331).
+- **`ManagedAppNavigationPaneList`**: framework-owned list that steps labeled → compact → icon-only (#331).
+- **`NavigationLayoutResolver.activeSidebarRenderingProfile`**: maps column ideal / available width to rendering profile (#331).
+- **`\.navigationSidebarRenderingProfile`**: environment for custom sidebars (#331).
+- **`platformManagedAppNavigation_L4` / `platformPresentManagedAppNavigation_L1`**: managed adaptive app-nav entry points (#331).
 
 ### 🧩 Changed
 - **`resolveAppNavigationShell`**: single sidebar + detail (no longer mirrors nested settings) (#330).
-- **App-nav Layer 4**: applies `navigationSplitViewColumnWidth` from progressive sizing (#330).
+- **App-nav Layer 4**: applies `navigationSplitViewColumnWidth` from progressive sizing; publishes rendering profile (#330, #331).
 - **Intelligent card L2**: width-capped columns on mac/pad; card width may go below legacy 200pt; sparse height tracks viewport; dense scrolls (#330).
 - **Expandable card L4**: flexible frames so grid cells track the pane (#330).
 
