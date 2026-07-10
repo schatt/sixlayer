@@ -35,7 +35,7 @@ import SwiftUI
 /// Tests that form workflow views actually render correctly with proper accessibility
 /// NOTE: Not marked @MainActor on class to allow parallel execution
 /// CRITICAL: These tests MUST run with xcodebuild test (not swift test) to catch rendering issues
-@Suite("Form Processing Workflow Rendering")
+@Suite("Form Processing Workflow Rendering", HostedViewTestIsolationTrait())
 final class FormProcessingWorkflowRenderingTests: BaseTestClass {
     
     // MARK: - Test Helpers
