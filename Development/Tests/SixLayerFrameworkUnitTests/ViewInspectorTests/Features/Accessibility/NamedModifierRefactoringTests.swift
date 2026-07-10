@@ -13,7 +13,7 @@ import SwiftUI
 /// 
 /// TESTING SCOPE: UI tests verify that modifiers correctly apply accessibility identifiers
 /// to rendered views. These tests belong in UI tests because they verify rendering behavior.
-@Suite("Named Modifier Refactoring")
+@Suite("Named Modifier Refactoring", HostedViewTestIsolationTrait())
 open class NamedModifierRefactoringTDDTests: BaseTestClass {
     
     // MARK: - Test Constants
