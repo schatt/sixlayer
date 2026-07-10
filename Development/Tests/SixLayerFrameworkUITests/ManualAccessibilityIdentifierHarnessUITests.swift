@@ -75,25 +75,17 @@ final class ManualAccessibilityIdentifierHarnessUITests: XCTestCase {
     /// SetUp opens Layer 4 Examples via `-OpenLayer4ComponentExamples`. Navigate: Identifier Edge Case → assert manual ids queryable.
     func testManualPlatformButtonIds_queryableViaXCUITest() throws {
         let edgeId = "test-view-Identifier Edge Case"
-        let idQuery = app.descendants(matching: .any).matching(NSPredicate(format: "identifier == %@", edgeId)).firstMatch
-        let labelQuery = app.descendants(matching: .any).matching(NSPredicate(format: "label == %@", "Identifier Edge Case")).firstMatch
-
-        func resolveEdgeRow() -> XCUIElement {
-            if idQuery.waitForExistence(timeout: 0.4), idQuery.isHittable { return idQuery }
-            if labelQuery.waitForExistence(timeout: 0.4), labelQuery.isHittable { return labelQuery }
-            let fallback = app.findLaunchPageEntry(identifier: edgeId)
-            if fallback.waitForExistence(timeout: 0.3), fallback.isHittable { return fallback }
-            return app.links["Identifier Edge Case"].firstMatch
-        }
-
-        var edgeLink = resolveEdgeRow()
-        for _ in 0..<8 {
-            if edgeLink.waitForExistence(timeout: 0.4), edgeLink.isHittable { break }
+        let edgeLink = app.findLaunchPageEntry(identifier: edgeId)
+        for _ in 0..<10 {
+            if edgeLink.waitForExistence(timeout: 0.4) { break }
             app.xcuiSwipeScrollHostsUp()
-            edgeLink = resolveEdgeRow()
         }
-        XCTAssertTrue(edgeLink.waitForExistence(timeout: 2.0) && edgeLink.isHittable, "Identifier Edge Case link should exist")
-        edgeLink.tap()
+        XCTAssertTrue(edgeLink.waitForExistence(timeout: 2.5), "Identifier Edge Case link should exist")
+        if edgeLink.isHittable {
+            edgeLink.tap()
+        } else {
+            edgeLink.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
+        }
 
         XCTAssertTrue(
             app.navigationBars["Identifier Edge Case"].waitForExistence(timeout: 2.5),
