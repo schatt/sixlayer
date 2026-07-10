@@ -176,6 +176,7 @@ public func platformPrint_L4(
 #if os(iOS)
 /// iOS print sheet wrapper
 private struct PrintSheet: UIViewControllerRepresentable {
+    @Binding var isPresented: Bool
     let content: PrintContent
     let options: PrintOptions?
     let onComplete: ((Bool) -> Void)?
@@ -204,6 +205,7 @@ private struct PrintSheet: UIViewControllerRepresentable {
             || ProcessInfo.processInfo.environment["XCUI_TESTING"] == "1"
         if skipRealPrintForUITest {
             DispatchQueue.main.async {
+                self.isPresented = false
                 self.onComplete?(true)
             }
             return
@@ -333,12 +335,10 @@ private struct PlatformPrintL4IOSModifier: ViewModifier {
         content
             .sheet(isPresented: $isPresented) {
                 PrintSheet(
+                    isPresented: $isPresented,
                     content: printContent,
                     options: options,
-                    onComplete: { success in
-                        isPresented = false
-                        onComplete?(success)
-                    }
+                    onComplete: onComplete
                 )
             }
             .automaticCompliance(named: "platformPrint_L4")
