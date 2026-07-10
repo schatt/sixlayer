@@ -5,15 +5,15 @@
 **Release Date**: TBD (prep on `next`)
 **Status**: Patch release (prep on `next`)
 **Previous Release**: v8.1.0 - Minor release
-**Note**: Window/container resize (#330) and macOS ViewInspector parallel-test reliability (#315).
+**Note**: Window/container resize (#330), framework-owned adaptive app-nav sidebar / icon-rail (#331), and macOS ViewInspector parallel-test reliability (#315).
 **Next Release**: TBD
 
 ---
 
-## 🎯 **v8.1.1 - macOS/iPad resize and ViewInspector reliability** (TBD)
+## 🎯 **v8.1.1 - macOS/iPad resize, adaptive sidebar, and ViewInspector reliability** (TBD)
 
 ### **What's in v8.1.1:**
-- Patch release (#330, #315, #332). See [RELEASE_v8.1.1.md](RELEASE_v8.1.1.md) for details.
+- Patch release (#330, #315, #331, #332, #333). See [RELEASE_v8.1.1.md](RELEASE_v8.1.1.md) for details.
 
 **See [RELEASE_v8.1.1.md](RELEASE_v8.1.1.md) for complete release notes.**
 
