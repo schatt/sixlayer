@@ -34,10 +34,16 @@ import ViewInspector
 /// host injects at `WindowGroup` instead of touching `shared` (`TestApp.swift`). Reading `shared`
 /// is acceptable; writes belong on an isolated instance (or a tiny dedicated suite that restores state).
 open class BaseTestClass {
+    private let hostingTestID: Test.ID?
+
     /// Public initializer required for Swift testing framework to instantiate test classes
     init() {
-        // BaseTestClass doesn't require any initialization
-        // Subclasses can override if needed
+        hostingTestID = Test.current?.id
+    }
+
+    deinit {
+        guard let hostingTestID else { return }
+        HostingControllerStorage.releaseAll(for: hostingTestID)
     }
     
     /// Isolated test configuration for this test
@@ -48,7 +54,6 @@ open class BaseTestClass {
     /// Creates an isolated config instance for this test
     @MainActor
     func initializeTestConfig() {
-        HostingControllerStorage.releaseHostsForNewTestIfNeeded()
         // Fresh config per test with unique UserDefaults suite — safe for parallel execution.
         testConfig = TestSetupUtilities.makeIsolatedAccessibilityIdentifierConfig()
     }
