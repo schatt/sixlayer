@@ -18,7 +18,7 @@ import SwiftUI
  * form state, generate accessibility identifiers, and provide expected functionality.
  */
 
-@Suite("Dynamic Field Components", .serialized)
+@Suite("Dynamic Field Components")
 /// Serialized — ViewInspector + task-local a11y config do not tolerate parallel execution (#314).
 open class DynamicFieldComponentsTests: BaseTestClass {
 
