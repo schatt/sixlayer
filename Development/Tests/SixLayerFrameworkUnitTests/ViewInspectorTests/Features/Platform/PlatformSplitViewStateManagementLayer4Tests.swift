@@ -8,7 +8,7 @@ import SwiftUI
 /// TESTING SCOPE: State management features for PlatformSplitViewLayer4
 /// METHODOLOGY: Test state management, visibility control, and persistence
 /// Implements Issue #15: Split View State Management & Visibility Control (Layer 4)
-@Suite("Platform Split View State Management Layer 4")
+@Suite("Platform Split View State Management Layer 4", HostedViewTestIsolationTrait())
 /// NOTE: Not marked @MainActor on class to allow parallel execution
 open class PlatformSplitViewStateManagementLayer4Tests: BaseTestClass {
     
