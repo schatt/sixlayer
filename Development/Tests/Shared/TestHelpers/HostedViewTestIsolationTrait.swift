@@ -27,6 +27,9 @@ public struct HostedViewTestIsolationTrait: Sendable, TestTrait, SuiteTrait, Tes
         performing function: @Sendable () async throws -> Void
     ) async throws {
         let testID = test.id
+        await MainActor.run {
+            HostingControllerStorage.setMainThreadScopeTestID(testID)
+        }
         var propagation: Error?
         try await HostingControllerStorage.$scopeTestID.withValue(testID) {
             do {
@@ -36,6 +39,7 @@ public struct HostedViewTestIsolationTrait: Sendable, TestTrait, SuiteTrait, Tes
             }
         }
         await MainActor.run {
+            HostingControllerStorage.setMainThreadScopeTestID(nil)
             HostingControllerStorage.teardownAfterTest(testID)
         }
         if let propagation {
