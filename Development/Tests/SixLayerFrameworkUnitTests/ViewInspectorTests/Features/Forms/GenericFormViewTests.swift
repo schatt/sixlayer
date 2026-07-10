@@ -8,7 +8,7 @@ import SwiftUI
 /// BUSINESS PURPOSE: Ensure GenericFormView generates proper accessibility identifiers
 /// TESTING SCOPE: GenericFormView component from PlatformSemanticLayer1.swift
 /// METHODOLOGY: Test component on both iOS and macOS platforms as required by mandatory testing guidelines
-@Suite("Generic Form View")
+@Suite("Generic Form View", HostedViewTestIsolationTrait())
 /// NOTE: Not marked @MainActor on class to allow parallel execution
 open class GenericFormViewTests: BaseTestClass {
     
