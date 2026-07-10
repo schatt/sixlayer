@@ -11,6 +11,8 @@ This document provides guidance for AI assistants working with the SixLayer Fram
 ## 📚 Version-Specific Guides
 
 ### Latest Versions (Recommended)
+- **v8.1.1** — Patch release: window/container resize — app-nav single-sidebar column sizing and intelligent card reflow (#330) (see [RELEASE_v8.1.1.md](RELEASE_v8.1.1.md))
+- **[AI_AGENT_v8.1.1.md](AI_AGENT_v8.1.1.md)** - v8.1.1 patch notes; ViewInspector baseline remains [AI_AGENT_v8.1.0.md](AI_AGENT_v8.1.0.md)
 - **v8.1.0** — Minor release: ViewInspector 0.10 test infrastructure — hosted accessibility identifier collection (#314), SixLayerViewInspectorTestKit (#327), typed inspect helpers (#326), Inspectable removal (#328) (see [RELEASE_v8.1.0.md](RELEASE_v8.1.0.md))
 - **[AI_AGENT_v8.1.0.md](AI_AGENT_v8.1.0.md)** - v8.1.x architecture guide (minor): ViewInspectorTestKit, hosted a11y collection, no Inspectable conformances
 - **v8.0.0** — Major release: app navigation chrome — navigation sheet toolbar visibility (#323), sidebar reveal chrome (#324), iOS automatic vs detailOnly (#325), `platformMenu` SwiftUI Menu on iOS (#321) (see [RELEASE_v8.0.0.md](RELEASE_v8.0.0.md))

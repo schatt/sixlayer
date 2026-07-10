@@ -1092,7 +1092,7 @@ final class Layer4UITests: XCTestCase {
             printButton = printByLabel
         }
         tapByNormalizedCenter(printButton)
-        // Host skips real UIPrintInteractionController under -UITesting; if a system print UI still appears, dismiss it.
+        // Host avoids attaching platformPrint_L4 under -UITesting; dismiss stray system print UI if it appears.
         let cancelPrint = app.buttons["Cancel"].firstMatch
         if cancelPrint.waitForExistence(timeout: 1.0) { cancelPrint.tap() }
         let closePrint = app.navigationBars.buttons["Close"].firstMatch

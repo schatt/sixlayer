@@ -231,10 +231,6 @@ func platformShareMacOSInternal(items: [Any], sourceView: (any View)? = nil) -> 
         return true
     }
     #endif
-    if ProcessInfo.processInfo.arguments.contains("-UITesting")
-        || ProcessInfo.processInfo.environment["XCUI_TESTING"] == "1" {
-        return true
-    }
 
     guard let window = NSApplication.shared.keyWindow,
           let contentView = window.contentView else {
@@ -319,11 +315,6 @@ private func platformShareIOSImperative(
         return true
     }
     #endif
-    if ProcessInfo.processInfo.arguments.contains("-UITesting")
-        || ProcessInfo.processInfo.environment["XCUI_TESTING"] == "1" {
-        onComplete?(true)
-        return true
-    }
 
     guard let windowScene = UIApplication.shared.connectedScenes
         .compactMap({ $0 as? UIWindowScene })
@@ -531,12 +522,6 @@ public func platformOpenURL_L4(_ url: URL) -> Bool {
         return true
     }
     #endif
-    // XCUITest host is a separate process without XCTest linked; opening a URL backgrounds
-    // the app and contract result UI never appears (Issue #317).
-    if ProcessInfo.processInfo.arguments.contains("-UITesting")
-        || ProcessInfo.processInfo.environment["XCUI_TESTING"] == "1" {
-        return true
-    }
     
     #if os(iOS)
     // iOS 16+: Use async API (deployment target is iOS 17, so always use async)

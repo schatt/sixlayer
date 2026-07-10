@@ -243,10 +243,6 @@ private struct PlatformExportActionsL4Modifier: ViewModifier {
                     isPresented = false
                     return
                 }
-                if isXCUITestHost {
-                    finish(.cancelled)
-                    return
-                }
                 beginPresentation(with: payload)
             }
             .confirmationDialog(
@@ -423,8 +419,3 @@ private var exportActionsDialogMessage: String { "What would you like to do with
 private var exportActionsShareTitle: String { "Share" }
 private var exportActionsPrintTitle: String { "Print" }
 private var exportActionsCancelTitle: String { "Cancel" }
-
-private var isXCUITestHost: Bool {
-    ProcessInfo.processInfo.arguments.contains("-UITesting")
-        || ProcessInfo.processInfo.environment["XCUI_TESTING"] == "1"
-}

@@ -157,21 +157,6 @@ open class PlatformSystemActionsLayer4Tests: BaseTestClass {
         #endif
     }
     
-    /// BUSINESS PURPOSE: Verify XCUITest host skips real URL opens
-    /// TESTING SCOPE: XCUI_TESTING env mirrors -UITesting launch argument behavior
-    @Test @MainActor func testPlatformOpenURL_SkipsRealOpenUnderXCUITestHost() {
-        guard let url = URL(string: "https://example.com") else {
-            Issue.record("Failed to create test URL")
-            return
-        }
-        setenv("XCUI_TESTING", "1", 1)
-        defer { unsetenv("XCUI_TESTING") }
-
-        let result = platformOpenURL_L4(url)
-
-        #expect(result == true, "platformOpenURL_L4 should skip opening URLs under XCUI_TESTING")
-    }
-
     /// BUSINESS PURPOSE: Verify function handles edge cases gracefully
     /// TESTING SCOPE: Tests that the API doesn't crash with edge case inputs
     /// METHODOLOGY: Test with edge case URLs
