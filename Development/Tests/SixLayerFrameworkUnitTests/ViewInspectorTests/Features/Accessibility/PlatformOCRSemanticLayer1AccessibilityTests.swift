@@ -6,7 +6,7 @@ import SwiftUI
 /// Ensures OCR semantic Layer 1 functions generate proper accessibility identifiers
 /// for automated testing and accessibility tools compliance
 /// NOTE: Not marked @MainActor on class to allow parallel execution
-@Suite("Platform OCR Semantic Layer Accessibility")
+@Suite("Platform OCR Semantic Layer Accessibility", HostedViewTestIsolationTrait())
 open class PlatformOCRSemanticLayer1AccessibilityTests: BaseTestClass {    // MARK: - OCR Visual Correction Tests
     
     /// BUSINESS PURPOSE: Validates that platformOCRWithVisualCorrection_L1 generates proper accessibility identifiers
