@@ -48,6 +48,7 @@ open class BaseTestClass {
     /// Creates an isolated config instance for this test
     @MainActor
     func initializeTestConfig() {
+        HostingControllerStorage.releaseHostsForNewTestIfNeeded()
         // Fresh config per test with unique UserDefaults suite — safe for parallel execution.
         testConfig = TestSetupUtilities.makeIsolatedAccessibilityIdentifierConfig()
     }
