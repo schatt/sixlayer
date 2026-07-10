@@ -10,8 +10,8 @@ import Testing
 
 /// Releases all views hosted via `TestSetupUtilities.hostRootPlatformView` when each test finishes.
 ///
-/// Installs a per-invocation `HostingSession` in `@TaskLocal` so parallel tests retain hosts in
-/// isolated storage with no global map or lock. Teardown runs on the main actor when the test ends.
+/// Installs a per-invocation `HostingSession` in `@TaskLocal` and on the main actor so `@MainActor`
+/// hosting always resolves the correct session under parallel Swift Testing.
 public struct HostedViewTestIsolationTrait: Sendable, TestTrait, SuiteTrait, TestScoping {
     public typealias TestScopeProvider = HostedViewTestIsolationTrait
 
@@ -27,7 +27,10 @@ public struct HostedViewTestIsolationTrait: Sendable, TestTrait, SuiteTrait, Tes
         performing function: @Sendable () async throws -> Void
     ) async throws {
         let testID = test.id
-        let hostingSession = HostingSession()
+        let hostingSession = await MainActor.run { HostingSession() }
+        await MainActor.run {
+            MainActorHostingContext.currentSession = hostingSession
+        }
         var propagation: Error?
         try await HostingControllerStorage.$session.withValue(hostingSession) {
             try await HostingControllerStorage.$scopeTestID.withValue(testID) {
@@ -40,6 +43,9 @@ public struct HostedViewTestIsolationTrait: Sendable, TestTrait, SuiteTrait, Tes
         }
         await MainActor.run {
             hostingSession.tearDownAll()
+            if MainActorHostingContext.currentSession === hostingSession {
+                MainActorHostingContext.currentSession = nil
+            }
         }
         if let propagation {
             throw propagation
