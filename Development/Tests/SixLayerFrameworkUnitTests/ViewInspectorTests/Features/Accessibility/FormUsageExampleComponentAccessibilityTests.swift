@@ -12,7 +12,7 @@ import SwiftUI
 @testable import SixLayerFramework
 
 /// NOTE: Not marked @MainActor on class to allow parallel execution
-@Suite("Form Usage Example Component Accessibility")
+@Suite("Form Usage Example Component Accessibility", HostedViewTestIsolationTrait())
 open class FormUsageExampleComponentAccessibilityTests: BaseTestClass {
     
     // MARK: - Form Usage Example Component Tests
