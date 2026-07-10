@@ -44,7 +44,7 @@ import SwiftUI
 /// Comprehensive coverage: positive, negative, edge cases, error conditions
 /// NOTE: Not marked @MainActor on class to allow parallel execution
 /// NOTE: Serialized to avoid UI conflicts with hostRootPlatformView (prevents Xcode crashes from too many @MainActor threads)
-@Suite(HostedViewTestIsolationTrait())
+@Suite("Card Action Button", HostedViewTestIsolationTrait())
 open class CardActionButtonTests: BaseTestClass {
     
     // MARK: - Test Data
