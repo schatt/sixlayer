@@ -12,7 +12,7 @@ import CloudKit
 @testable import SixLayerFramework
 
 /// NOTE: Not marked @MainActor on class to allow parallel execution
-@Suite("Platform CloudKit Components Layer 4 Accessibility")
+@Suite("Platform CloudKit Components Layer 4 Accessibility", HostedViewTestIsolationTrait())
 open class PlatformCloudKitComponentsLayer4ComponentAccessibilityTests: BaseTestClass {
 
     // MARK: - platformCloudKitSyncStatus_L4
