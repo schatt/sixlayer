@@ -34,7 +34,7 @@ import AppKit
 
 
 /// NOTE: Not marked @MainActor on class to allow parallel execution
-@Suite("Platform Photo Components Layer Integration")
+@Suite("Platform Photo Components Layer Integration", HostedViewTestIsolationTrait())
 open class PlatformPhotoComponentsLayer4IntegrationTests: BaseTestClass {
     
     // MARK: - Integration Tests for Camera Interface
