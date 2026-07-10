@@ -11,7 +11,7 @@ import ViewInspector
 /// BUSINESS PURPOSE: Ensure DynamicFormView generates proper accessibility identifiers
 /// TESTING SCOPE: All components in DynamicFormView.swift
 /// METHODOLOGY: Test each component on both iOS and macOS platforms as required by mandatory testing guidelines
-@Suite("Dynamic Form View")
+@Suite("Dynamic Form View", HostedViewTestIsolationTrait())
 /// NOTE: Not marked @MainActor on class to allow parallel execution
 open class DynamicFormViewTests: BaseTestClass {
     
