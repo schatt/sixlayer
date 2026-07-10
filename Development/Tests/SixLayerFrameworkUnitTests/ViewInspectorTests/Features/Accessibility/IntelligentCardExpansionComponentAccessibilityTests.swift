@@ -20,7 +20,7 @@ import ViewInspector
 /// (one combined a11y element with label and button trait). The helper uses the view's UIAccessibilityContainer-style
 /// API (accessibilityElementCount / accessibilityElementAtIndex:) when present, so SwiftUI hosting views that expose
 /// elements that way are verified correctly.
-@Suite("Intelligent Card Expansion Component Accessibility", .serialized)
+@Suite("Intelligent Card Expansion Component Accessibility", HostedViewTestIsolationTrait())
 open class IntelligentCardExpansionComponentAccessibilityTests: BaseTestClass {
 
     #if canImport(ViewInspector) && canImport(UIKit)
@@ -37,7 +37,7 @@ open class IntelligentCardExpansionComponentAccessibilityTests: BaseTestClass {
             return true
         }
         if hostedUIKitAccessibilityHierarchyContains(root: hostedRoot, predicate: { uiView in
-            (uiView.accessibilityLabel ?? "").contains(cardTitle)
+            uiView.hostedAccessibilityLabelText.contains(cardTitle)
         }) {
             return true
         }

@@ -41,7 +41,7 @@ import TabularData
 
 /// NOTE: Not marked @MainActor on class to allow parallel execution
 /// NOTE: Serialized to avoid UI conflicts with hostRootPlatformView
-@Suite(.serialized)
+@Suite
 open class PlatformDataFrameAnalysisL1Tests: BaseTestClass {
     
     // MARK: - Basic DataFrame Analysis Tests

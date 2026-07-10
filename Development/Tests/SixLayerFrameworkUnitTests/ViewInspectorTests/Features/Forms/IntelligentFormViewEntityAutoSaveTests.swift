@@ -29,7 +29,7 @@ import CoreData
 //
 
 /// NOTE: Marked @MainActor for UI tests
-@Suite("IntelligentFormView Entity Auto-Save")
+@Suite("IntelligentFormView Entity Auto-Save", HostedViewTestIsolationTrait())
 @MainActor
 open class IntelligentFormViewEntityAutoSaveTests: BaseTestClass {
     

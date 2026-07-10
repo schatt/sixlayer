@@ -8,7 +8,7 @@ import SwiftUI
 /// BUSINESS PURPOSE: Ensure CustomItemCollectionView generates proper accessibility identifiers
 /// TESTING SCOPE: CustomItemCollectionView component from PlatformSemanticLayer1.swift
 /// METHODOLOGY: Test component on both iOS and macOS platforms as required by mandatory testing guidelines
-@Suite("Custom Item Collection View")
+@Suite("Custom Item Collection View", HostedViewTestIsolationTrait())
 /// NOTE: Not marked @MainActor on class to allow parallel execution
 open class CustomItemCollectionViewTests: BaseTestClass {
     

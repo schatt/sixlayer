@@ -4,7 +4,7 @@ import SwiftUI
 /// TDD Tests for Accessibility Identifier Persistence
 /// Following proper TDD: Write failing tests first to prove the issue exists
 /// NOTE: Not marked @MainActor on class to allow parallel execution
-@Suite("Accessibility Identifier Persistence")
+@Suite("Accessibility Identifier Persistence", HostedViewTestIsolationTrait())
 open class AccessibilityIdentifierPersistenceTests: BaseTestClass {
     
     // MARK: - TDD Red Phase: Tests That Should Fail

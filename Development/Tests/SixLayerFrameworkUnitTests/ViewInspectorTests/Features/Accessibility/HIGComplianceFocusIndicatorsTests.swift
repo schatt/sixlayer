@@ -24,7 +24,7 @@ import Testing
 import SwiftUI
 @testable import SixLayerFramework
 
-@Suite("HIG Compliance - Focus Indicators")
+@Suite("HIG Compliance - Focus Indicators", HostedViewTestIsolationTrait())
 /// NOTE: Not marked @MainActor on class to allow parallel execution
 open class HIGComplianceFocusIndicatorsTests: BaseTestClass {
     

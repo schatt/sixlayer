@@ -24,7 +24,7 @@ import Testing
 import SwiftUI
 @testable import SixLayerFramework
 
-@Suite("HIG Compliance - Color Contrast")
+@Suite("HIG Compliance - Color Contrast", HostedViewTestIsolationTrait())
 /// NOTE: Not marked @MainActor on class to allow parallel execution
 open class HIGComplianceColorContrastTests: BaseTestClass {
     

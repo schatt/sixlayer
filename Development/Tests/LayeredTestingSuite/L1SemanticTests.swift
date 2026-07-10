@@ -12,7 +12,7 @@ import SwiftUI
 
 /// NOTE: Serialized to avoid UI conflicts with hostRootPlatformView
 /// This suite uses hostRootPlatformView extensively and must run serially to prevent Xcode hangs
-@Suite(.serialized)
+@Suite
 class L1SemanticTests: BaseTestClass {
     
     // MARK: - Test Data

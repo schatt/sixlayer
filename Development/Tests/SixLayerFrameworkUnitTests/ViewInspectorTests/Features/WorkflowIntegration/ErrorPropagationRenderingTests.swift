@@ -35,7 +35,7 @@ import SwiftUI
 /// Tests that error workflow views actually render correctly
 /// NOTE: Not marked @MainActor on class to allow parallel execution
 /// CRITICAL: These tests MUST run with xcodebuild test (not swift test) to catch rendering issues
-@Suite("Error Propagation Rendering")
+@Suite("Error Propagation Rendering", HostedViewTestIsolationTrait())
 final class ErrorPropagationRenderingTests: BaseTestClass {
     
     // MARK: - OCR Error Rendering Tests

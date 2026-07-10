@@ -1,7 +1,7 @@
 import Testing
 
 /// Unit tests for `AccessibilityTestUtilities.identifierMatchesExpectedPattern` glob vs regex semantics.
-@Suite("AccessibilityTestUtilities pattern matching")
+@Suite("AccessibilityTestUtilities pattern matching", HostedViewTestIsolationTrait())
 struct AccessibilityTestUtilitiesPatternTests {
     
     @Test @MainActor

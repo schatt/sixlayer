@@ -11,7 +11,7 @@ import UIKit
 #endif
 
 /// Behavioral tests for ``platformModalSheetNavigationChrome_L4`` (issue #223).
-@Suite(.serialized)
+@Suite(HostedViewTestIsolationTrait())
 open class PlatformModalSheetNavigationChromeLayer4Tests: BaseTestClass {
 
     // MARK: - API surface
@@ -69,7 +69,7 @@ open class PlatformModalSheetNavigationChromeLayer4Tests: BaseTestClass {
         #endif
         let hostedFound = hostedViewHasAccessibilityElementWithLabelAndButtonTrait(root: hosted, expectedLabel: "Apply")
             || hostedUIKitAccessibilityHierarchyContains(root: hosted, predicate: { view in
-                (view.accessibilityLabel ?? "").contains("Apply")
+                view.hostedAccessibilityLabelText.contains("Apply")
             })
         #expect(
             hostedFound || inspectorFound,
@@ -139,14 +139,14 @@ open class PlatformModalSheetNavigationChromeLayer4Tests: BaseTestClass {
         #expect(
             hostedViewHasAccessibilityElementWithLabelAndButtonTrait(root: hosted, expectedLabel: "Reset")
                 || hostedUIKitAccessibilityHierarchyContains(root: hosted, predicate: { view in
-                    (view.accessibilityLabel ?? "").contains("Reset")
+                    view.hostedAccessibilityLabelText.contains("Reset")
                 })
                 || inspectorFoundReset
         )
         #expect(
             hostedViewHasAccessibilityElementWithLabelAndButtonTrait(root: hosted, expectedLabel: "Done")
                 || hostedUIKitAccessibilityHierarchyContains(root: hosted, predicate: { view in
-                    (view.accessibilityLabel ?? "").contains("Done")
+                    view.hostedAccessibilityLabelText.contains("Done")
                 })
                 || inspectorFoundDone
         )

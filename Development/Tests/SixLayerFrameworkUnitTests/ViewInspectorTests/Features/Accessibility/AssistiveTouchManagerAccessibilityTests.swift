@@ -6,7 +6,7 @@ import SwiftUI
 /// BUSINESS PURPOSE: Accessibility tests for AssistiveTouchManager.swift classes
 /// Ensures AssistiveTouchManager classes generate proper accessibility identifiers
 /// for automated testing and accessibility tools compliance
-@Suite("Assistive Touch Manager Accessibility")
+@Suite("Assistive Touch Manager Accessibility", HostedViewTestIsolationTrait())
 open class AssistiveTouchManagerAccessibilityTests: BaseTestClass {
     
     // MARK: - AssistiveTouchManager Tests

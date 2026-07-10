@@ -12,7 +12,7 @@ import ViewInspector
 /// BUSINESS PURPOSE: Ensure all components with String labels include label text in identifiers
 /// TESTING SCOPE: All framework components that accept String labels/titles
 /// METHODOLOGY: Test each component type, verify label text is included and sanitized
-@Suite("Component Label Text Accessibility")
+@Suite("Component Label Text Accessibility", HostedViewTestIsolationTrait())
 /// NOTE: Not marked @MainActor on class to allow parallel execution
 open class ComponentLabelTextAccessibilityTests: BaseTestClass {
     

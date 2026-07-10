@@ -30,6 +30,7 @@ public struct DefaultRuntimeCapabilityIsolationTrait: Sendable, TestTrait, Suite
         // `@MainActor` tests), unlike `Thread.current.threadDictionary` which is per-OS-thread.
         let touchHarness: Bool? = false
         let hapticHarness: Bool? = false
+        var propagation: Error?
         try await RuntimeCapabilityHarness.$macOSTouchEnabledPreference.withValue(touchHarness) {
             try await RuntimeCapabilityHarness.$macOSHapticEnabledPreference.withValue(hapticHarness) {
                 // `Thread.current` here is often the cooperative pool executor, while `@MainActor`
@@ -43,11 +44,18 @@ public struct DefaultRuntimeCapabilityIsolationTrait: Sendable, TestTrait, Suite
                 defer {
                     RuntimeCapabilityDetection.clearAllCapabilityOverrides()
                 }
-                try await function()
+                do {
+                    try await function()
+                } catch {
+                    propagation = error
+                }
                 await MainActor.run {
                     RuntimeCapabilityDetection.clearAllCapabilityOverrides()
                 }
             }
+        }
+        if let propagation {
+            throw propagation
         }
     }
 }

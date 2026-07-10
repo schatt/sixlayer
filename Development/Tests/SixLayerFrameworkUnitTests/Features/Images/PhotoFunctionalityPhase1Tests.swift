@@ -25,7 +25,7 @@ import AppKit
 
 
 /// NOTE: Serialized to avoid UI conflicts with hostRootPlatformView (prevents Xcode hangs)
-@Suite(.serialized)
+@Suite
 open class PhotoFunctionalityPhase1Tests: BaseTestClass {
     
     // MARK: - Enhanced PlatformImage Tests

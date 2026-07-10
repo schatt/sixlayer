@@ -24,7 +24,7 @@ import ViewInspector
 /// BUSINESS PURPOSE: Ensure View extensions apply modifiers correctly
 /// TESTING SCOPE: View extensions for Text-specific modifiers
 /// METHODOLOGY: Use ViewInspector to verify modifier application
-@Suite("View Extensions for Text Modifiers (ViewInspector)")
+@Suite("View Extensions for Text Modifiers (ViewInspector)", HostedViewTestIsolationTrait())
 /// NOTE: Not marked @MainActor on class to allow parallel execution
 open class TextModifierExtensionsViewInspectorTests: BaseTestClass {
     

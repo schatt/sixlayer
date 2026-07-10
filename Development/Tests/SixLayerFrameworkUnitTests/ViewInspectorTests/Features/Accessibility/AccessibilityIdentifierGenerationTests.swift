@@ -4,7 +4,7 @@ import SwiftUI
 /// TDD Tests for Accessibility Identifier Generation
 /// Following proper TDD: Test drives design, write best code to make tests pass
 /// NOTE: Not marked @MainActor on class to allow parallel execution
-@Suite("Accessibility Identifier Generation")
+@Suite("Accessibility Identifier Generation", HostedViewTestIsolationTrait())
 open class AccessibilityIdentifierGenerationTests: BaseTestClass {
     
     // MARK: - TDD Red Phase: Write Failing Tests for Desired Behavior

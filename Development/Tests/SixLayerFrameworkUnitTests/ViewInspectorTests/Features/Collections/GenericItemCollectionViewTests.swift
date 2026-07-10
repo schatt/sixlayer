@@ -8,7 +8,7 @@ import SwiftUI
 /// BUSINESS PURPOSE: Ensure GenericItemCollectionView generates proper accessibility identifiers
 /// TESTING SCOPE: GenericItemCollectionView component from PlatformSemanticLayer1.swift
 /// METHODOLOGY: Test component on both iOS and macOS platforms as required by mandatory testing guidelines
-@Suite("Generic Item Collection View")
+@Suite("Generic Item Collection View", HostedViewTestIsolationTrait())
 /// NOTE: Not marked @MainActor on class to allow parallel execution
 open class GenericItemCollectionViewTests: BaseTestClass {
     

@@ -8,7 +8,7 @@ import SwiftUI
 /// TESTING SCOPE: Sizing configuration for PlatformSplitViewLayer4
 /// METHODOLOGY: Test sizing constraints, per-pane sizing, and container sizing
 /// Implements Issue #16: Split View Sizing & Constraints (Layer 4)
-@Suite("Platform Split View Sizing Layer 4")
+@Suite("Platform Split View Sizing Layer 4", HostedViewTestIsolationTrait())
 /// NOTE: Not marked @MainActor on class to allow parallel execution
 open class PlatformSplitViewSizingLayer4Tests: BaseTestClass {
     

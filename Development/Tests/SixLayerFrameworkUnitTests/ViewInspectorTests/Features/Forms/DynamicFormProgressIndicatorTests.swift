@@ -14,7 +14,7 @@ import ViewInspector
 /// BUSINESS PURPOSE: Ensure form progress indicator displays correctly and updates in real-time
 /// TESTING SCOPE: Visual display, real-time updates, and accessibility of progress indicator
 /// METHODOLOGY: Test UI rendering and behavior on both iOS and macOS platforms
-@Suite("Dynamic Form Progress Indicator UI")
+@Suite("Dynamic Form Progress Indicator UI", HostedViewTestIsolationTrait())
 open class DynamicFormProgressIndicatorTests: BaseTestClass {
     
     // MARK: - Helper Methods

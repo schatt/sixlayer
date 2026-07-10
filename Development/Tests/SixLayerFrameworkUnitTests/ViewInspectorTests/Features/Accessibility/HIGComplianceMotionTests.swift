@@ -24,7 +24,7 @@ import Testing
 import SwiftUI
 @testable import SixLayerFramework
 
-@Suite("HIG Compliance - Motion Preferences")
+@Suite("HIG Compliance - Motion Preferences", HostedViewTestIsolationTrait())
 /// NOTE: Not marked @MainActor on class to allow parallel execution
 open class HIGComplianceMotionTests: BaseTestClass {
     

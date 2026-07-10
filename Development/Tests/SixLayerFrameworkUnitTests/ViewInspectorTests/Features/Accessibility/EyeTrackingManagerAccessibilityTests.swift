@@ -6,7 +6,7 @@ import SwiftUI
 /// BUSINESS PURPOSE: Accessibility tests for EyeTrackingManager.swift classes
 /// Ensures EyeTrackingManager classes generate proper accessibility identifiers
 /// for automated testing and accessibility tools compliance
-@Suite("Eye Tracking Manager Accessibility")
+@Suite("Eye Tracking Manager Accessibility", HostedViewTestIsolationTrait())
 open class EyeTrackingManagerAccessibilityTests: BaseTestClass {
     
     // MARK: - EyeTrackingManager Tests

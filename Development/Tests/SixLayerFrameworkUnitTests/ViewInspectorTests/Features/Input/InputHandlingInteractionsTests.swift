@@ -35,7 +35,7 @@ import SwiftUI
 /// Tests platform-specific input handling, keyboard shortcuts, haptic feedback, and drag & drop
 /// NOTE: Not marked @MainActor on class to allow parallel execution
 /// Individual test functions that need UI access are marked @MainActor
-@Suite("Input Handling Interactions")
+@Suite("Input Handling Interactions", HostedViewTestIsolationTrait())
 open class InputHandlingInteractionsTests: BaseTestClass {
     
     // MARK: - Test Setup

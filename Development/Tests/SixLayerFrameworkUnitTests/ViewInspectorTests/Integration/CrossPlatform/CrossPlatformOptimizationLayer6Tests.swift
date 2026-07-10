@@ -13,7 +13,7 @@ import Testing
 import SwiftUI
 @testable import SixLayerFramework
 /// NOTE: Not marked @MainActor on class to allow parallel execution
-@Suite("Cross Platform Optimization Layer")
+@Suite("Cross Platform Optimization Layer", HostedViewTestIsolationTrait())
 open class CrossPlatformOptimizationLayer6Tests: BaseTestClass {
     
     // MARK: - CrossPlatformOptimizationManager Tests

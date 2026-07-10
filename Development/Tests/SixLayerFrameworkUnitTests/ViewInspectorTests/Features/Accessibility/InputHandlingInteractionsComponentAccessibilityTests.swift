@@ -12,7 +12,7 @@ import SwiftUI
 @testable import SixLayerFramework
 
 /// NOTE: Not marked @MainActor on class to allow parallel execution
-@Suite("Input Handling Interactions Component Accessibility")
+@Suite("Input Handling Interactions Component Accessibility", HostedViewTestIsolationTrait())
 open class InputHandlingInteractionsComponentAccessibilityTests: BaseTestClass {
     
     // MARK: - PlatformInteractionButton Tests

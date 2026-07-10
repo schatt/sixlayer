@@ -15,7 +15,7 @@ import UIKit
 import AppKit
 #endif
 
-@Suite(.serialized)
+@Suite
 struct DynamicFontResolverTests {
 
     #if os(iOS) || os(macOS)

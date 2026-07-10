@@ -5,7 +5,7 @@ import SwiftUI
 /// Comprehensive tests for Layer 4 View extension functions
 /// Ensures all View extension functions in Layer 4 are tested
 /// NOTE: Not marked @MainActor on class to allow parallel execution
-@Suite("Layer View Extension")
+@Suite("Layer View Extension", HostedViewTestIsolationTrait())
 open class Layer4ViewExtensionTests: BaseTestClass {
     
     // MARK: - platformFormField Tests

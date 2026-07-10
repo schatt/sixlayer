@@ -26,7 +26,7 @@ import SwiftUI
 //
 
 /// NOTE: Marked @MainActor for UI tests
-@Suite("DynamicFormView Auto-Save")
+@Suite("DynamicFormView Auto-Save", HostedViewTestIsolationTrait())
 @MainActor
 open class DynamicFormViewAutoSaveTests: BaseTestClass {
     

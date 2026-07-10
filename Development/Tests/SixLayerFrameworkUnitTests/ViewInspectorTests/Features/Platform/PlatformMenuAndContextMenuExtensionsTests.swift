@@ -7,7 +7,7 @@ import ViewInspector
 #endif
 
 /// `platformMenu` / `platformContextMenu` extensions (Issue #170). Grouped; keep <=10 tests.
-@Suite("Platform Menu and Context Menu Extensions")
+@Suite("Platform Menu and Context Menu Extensions", HostedViewTestIsolationTrait())
 open class PlatformMenuAndContextMenuExtensionsTests: BaseTestClass {
 
     @MainActor

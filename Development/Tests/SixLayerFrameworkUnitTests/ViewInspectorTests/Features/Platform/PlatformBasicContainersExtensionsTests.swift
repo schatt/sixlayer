@@ -4,7 +4,7 @@ import SwiftUI
 
 /// Focused coverage for core container/navigation helpers (Issue #170).
 /// Keep this file intentionally small and grouped (<=10 tests).
-@Suite("Platform Basic Containers Extensions")
+@Suite("Platform Basic Containers Extensions", HostedViewTestIsolationTrait())
 open class PlatformBasicContainersExtensionsTests: BaseTestClass {
 
     @MainActor

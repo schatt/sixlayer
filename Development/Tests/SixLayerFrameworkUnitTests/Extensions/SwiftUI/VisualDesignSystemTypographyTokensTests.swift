@@ -15,7 +15,7 @@ import UIKit
 import AppKit
 #endif
 
-@Suite(.serialized)
+@Suite
 struct VisualDesignSystemTypographyTokensTests {
 
     @Test func testTypographyScaleFactor_reflectsPreferredContentSize() {

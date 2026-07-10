@@ -11,7 +11,7 @@ import SwiftUI
 @testable import SixLayerFramework
 
 /// NOTE: Not marked @MainActor on class to allow parallel execution
-@Suite("Apple HIG Compliance Component Accessibility")
+@Suite("Apple HIG Compliance Component Accessibility", HostedViewTestIsolationTrait())
 open class AppleHIGComplianceComponentAccessibilityTests: BaseTestClass {
     
     // MARK: - AppleHIGComplianceModifier Tests

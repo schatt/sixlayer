@@ -35,10 +35,7 @@ import ViewInspector
 /// is acceptable; writes belong on an isolated instance (or a tiny dedicated suite that restores state).
 open class BaseTestClass {
     /// Public initializer required for Swift testing framework to instantiate test classes
-    init() {
-        // BaseTestClass doesn't require any initialization
-        // Subclasses can override if needed
-    }
+    init() {}
     
     /// Isolated test configuration for this test
     /// Set by initializeTestConfig() and used via runWithTaskLocalConfig()

@@ -8,7 +8,7 @@ import SwiftUI
 /// BUSINESS PURPOSE: Ensure ResponsiveContainer generates proper accessibility identifiers
 /// TESTING SCOPE: All components in ResponsiveContainer.swift
 /// METHODOLOGY: Test each component on both iOS and macOS platforms as required by mandatory testing guidelines
-@Suite("Responsive Container")
+@Suite("Responsive Container", HostedViewTestIsolationTrait())
 /// NOTE: Not marked @MainActor on class to allow parallel execution
 open class ResponsiveContainerTests: BaseTestClass {
     

@@ -5,7 +5,7 @@ import SwiftUI
 /// Integration tests for platformAdaptiveDetailView rendering
 /// These test the ACTUAL framework behavior - that the view renders correctly
 /// BUSINESS PURPOSE: Verify that platformAdaptiveDetailView actually renders the right view AND has accessibility IDs
-@Suite("Adaptive Detail View Rendering", DefaultRuntimeCapabilityIsolationTrait())
+@Suite("Adaptive Detail View Rendering", HostedViewTestIsolationTrait(), DefaultRuntimeCapabilityIsolationTrait())
 /// NOTE: Not marked @MainActor on class to allow parallel execution
 open class AdaptiveDetailViewRenderingTests: BaseTestClass {
     

@@ -36,7 +36,7 @@ import SwiftUI
 /// Tests that workflow views render identically across platforms
 /// NOTE: Not marked @MainActor on class to allow parallel execution
 /// CRITICAL: These tests MUST run with xcodebuild test (not swift test) to catch rendering issues
-@Suite("Cross-Platform Workflow Parity Rendering")
+@Suite("Cross-Platform Workflow Parity Rendering", HostedViewTestIsolationTrait())
 final class CrossPlatformWorkflowParityRenderingTests: BaseTestClass {
     
     // MARK: - Form View Rendering Parity Tests

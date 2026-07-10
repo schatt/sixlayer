@@ -10,7 +10,7 @@ import SwiftUI
 //  Tests Layer 6 optimization components for accessibility - these are classes with methods that return Views
 //
 
-@Suite("Layer Component Accessibility")
+@Suite("Layer Component Accessibility", HostedViewTestIsolationTrait())
 /// NOTE: Not marked @MainActor on class to allow parallel execution
 open class Layer6ComponentAccessibilityTests: BaseTestClass {
     

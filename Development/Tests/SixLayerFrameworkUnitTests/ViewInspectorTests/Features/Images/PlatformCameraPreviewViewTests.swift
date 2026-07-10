@@ -39,7 +39,7 @@ import AppKit
 #endif
 
 /// NOTE: Not marked @MainActor on class to allow parallel execution
-@Suite("Platform Camera Preview View")
+@Suite("Platform Camera Preview View", HostedViewTestIsolationTrait())
 open class PlatformCameraPreviewViewTests: BaseTestClass {
     
     // MARK: - Test Data Setup

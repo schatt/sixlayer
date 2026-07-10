@@ -15,7 +15,7 @@ fileprivate struct MockTaskItemReal: Identifiable {
 
 /// TDD Red Phase: REAL Test for GenericItemCollectionView
 /// This test SHOULD FAIL - proving GenericItemCollectionView doesn't generate accessibility IDs
-@Suite("Generic Item Collection View Real Accessibility")
+@Suite("Generic Item Collection View Real Accessibility", HostedViewTestIsolationTrait())
 /// NOTE: Not marked @MainActor on class to allow parallel execution
 open class GenericItemCollectionViewRealAccessibilityTDDTests: BaseTestClass {    @Test @MainActor func testExpandableCardCollectionView_AppliesCorrectModifiersOnIOS() {
         initializeTestConfig()

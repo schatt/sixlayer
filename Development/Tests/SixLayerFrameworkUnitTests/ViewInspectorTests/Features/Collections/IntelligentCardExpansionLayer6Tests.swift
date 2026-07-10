@@ -12,7 +12,7 @@ import Testing
 import SwiftUI
 @testable import SixLayerFramework
 /// NOTE: Not marked @MainActor on class to allow parallel execution
-@Suite("Intelligent Card Expansion Layer", DefaultRuntimeCapabilityIsolationTrait())
+@Suite("Intelligent Card Expansion Layer", HostedViewTestIsolationTrait(), DefaultRuntimeCapabilityIsolationTrait())
 open class IntelligentCardExpansionLayer6Tests: BaseTestClass {
     
     // MARK: - Test Data

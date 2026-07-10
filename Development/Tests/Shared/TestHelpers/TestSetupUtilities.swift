@@ -8,6 +8,7 @@
 
 import Foundation
 import SwiftUI
+import Testing
 @testable import SixLayerFramework
 
 #if canImport(UIKit) && !os(watchOS)
@@ -20,29 +21,82 @@ import AppKit
 
 // MARK: - Hosting Controller Storage
 
-/// Thread-local storage for hosting controllers to prevent deallocation during test execution
-/// Made internal for navigation view tests that need to host views directly
+/// Per-test-invocation retention for hosted UIKit/AppKit windows.
+///
+/// Parallel-safe: each test's `HostedViewTestIsolationTrait` installs a dedicated session in
+/// `@TaskLocal`. No global map, lock, or cross-test slot.
+final class HostingSession: @unchecked Sendable {
+    private struct HostedEntry {
+        let window: AnyObject
+        let controller: AnyObject
+
+        func tearDown() {
+            #if canImport(UIKit) && !os(watchOS)
+            if let hosting = controller as? UIHostingController<AnyView> {
+                hosting.rootView = AnyView(EmptyView())
+            }
+            if let window = window as? UIWindow {
+                window.isHidden = true
+                window.rootViewController = nil
+            }
+            #endif
+            #if canImport(AppKit)
+            if let hosting = controller as? NSHostingController<AnyView> {
+                hosting.rootView = AnyView(EmptyView())
+            }
+            if let window = window as? NSWindow {
+                window.orderOut(nil)
+                window.contentViewController = nil
+            }
+            #endif
+        }
+    }
+
+    private var entries: [ObjectIdentifier: HostedEntry] = [:]
+
+    @MainActor
+    func store(controller: AnyObject, window: AnyObject, for view: Any) {
+        let key = ObjectIdentifier(view as AnyObject)
+        entries[key] = HostedEntry(window: window, controller: controller)
+    }
+
+    @MainActor
+    func tearDownAll() {
+        for entry in entries.values {
+            entry.tearDown()
+        }
+        entries.removeAll()
+    }
+}
+
+enum HostingControllerStorage {
+    /// Active per-test session; set by `HostedViewTestIsolationTrait` on the test task.
+    @TaskLocal static var session: HostingSession?
+    /// Active test id; set by isolation traits for attribution.
+    @TaskLocal static var scopeTestID: Test.ID?
+
+    @MainActor
+    static func store(controller: AnyObject, window: AnyObject, for view: Any) {
+        guard let session = HostingControllerStorage.session else {
+            Issue.record(
+                "hostRootPlatformView requires HostedViewTestIsolationTrait on the enclosing @Suite"
+            )
+            return
+        }
+        session.store(controller: controller, window: window, for: view)
+    }
+
+    @MainActor
+    static func tearDownActiveSession() {
+        session?.tearDownAll()
+    }
+}
+
 @MainActor
-final class HostingControllerStorage {
-    private static var storage: [ObjectIdentifier: Any] = [:]
-    private static let lock = NSLock()
-    
-    static func store(_ controller: Any, for view: Any) {
-        lock.lock()
-        defer { lock.unlock() }
-        storage[ObjectIdentifier(view as AnyObject)] = controller
-    }
-    
-    static func remove(for view: Any) {
-        lock.lock()
-        defer { lock.unlock() }
-        storage.removeValue(forKey: ObjectIdentifier(view as AnyObject))
-    }
-    
-    static func cleanup() {
-        lock.lock()
-        defer { lock.unlock() }
-        storage.removeAll()
+private func pumpHostedViewRunLoop(for duration: TimeInterval) {
+    let deadline = Date().addingTimeInterval(duration)
+    while Date() < deadline {
+        RunLoop.main.run(mode: .common, before: Date(timeIntervalSinceNow: 0.005))
     }
 }
 
@@ -89,6 +143,7 @@ public enum TestSetupUtilities {
         exposeContentAccessibility: Bool = false,
         accessibilityIdentifierConfig: AccessibilityIdentifierConfig? = nil
     ) -> Any? {
+        autoreleasepool {
         let injectedConfig = accessibilityIdentifierConfig ?? AccessibilityIdentifierConfig.currentTaskLocalConfig
         #if canImport(UIKit) && !os(watchOS)
         // Re-bind task-local config for the whole hosting + layout window so SwiftUI modifier bodies that run
@@ -108,28 +163,25 @@ public enum TestSetupUtilities {
             // Add hosting view to a window so SwiftUI propagates accessibilityIdentifier to the UIView hierarchy.
             // Without a window, identifiers may not be set on platform views (iOS behavior).
             if let root = root {
-                let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 400, height: 400))
+                let window = UIWindow(frame: CGRect(x: -10_000, y: -10_000, width: 400, height: 400))
                 window.rootViewController = hosting
                 window.makeKeyAndVisible()
                 // Drive appearance so SwiftUI/UIKit commit the view hierarchy (identifiers often stay empty without this in unit tests).
                 hosting.beginAppearanceTransition(true, animated: false)
                 hosting.endAppearanceTransition()
-                // Allow run loop so UIKit/SwiftUI can apply accessibility traits to the hierarchy (0.1s on iOS for identifier propagation)
-                RunLoop.current.run(until: Date().addingTimeInterval(0.1))
+                pumpHostedViewRunLoop(for: 0.1)
                 // Optionally force layout so identifiers are applied to the UIView tree (Option A for a11y tests).
                 // Only use for simple views; complex views can hang (NavigationStack, platformPresentContent_L1).
                 if forceLayout {
                     root.setNeedsLayout()
                     root.layoutIfNeeded()
-                    // Second run loop on iOS so SwiftUI can propagate accessibilityIdentifier to nested views
-                    RunLoop.current.run(until: Date().addingTimeInterval(0.02))
+                    pumpHostedViewRunLoop(for: 0.02)
                     root.setNeedsLayout()
                     root.layoutIfNeeded()
                 }
                 // Store both so window and controller stay alive; keyed by root for cleanup
-                HostingControllerStorage.store((controller: hosting, window: window), for: root)
-                // Deferred SwiftUI updates may run after layoutIfNeeded; drain so accessibility + debug log entries settle before tests read them.
-                RunLoop.current.run(until: Date().addingTimeInterval(0.15))
+                HostingControllerStorage.store(controller: hosting, window: window, for: root)
+                pumpHostedViewRunLoop(for: 0.15)
             }
             return root
         }
@@ -157,26 +209,27 @@ public enum TestSetupUtilities {
                 return AnyView(view)
             }()
             let hosting = NSHostingController(rootView: rootView)
-            let frame = NSRect(x: 0, y: 0, width: 480, height: 640)
+            let frame = NSRect(x: -10_000, y: -10_000, width: 480, height: 640)
             let window = NSWindow(
                 contentRect: frame,
-                styleMask: [.titled, .closable, .miniaturizable, .resizable],
+                styleMask: [.borderless],
                 backing: .buffered,
-                defer: false
+                defer: true
             )
+            window.isReleasedWhenClosed = false
             window.contentViewController = hosting
             window.setFrame(frame, display: false)
-            window.orderFrontRegardless()
+            window.orderOut(nil)
             let root = hosting.view
             // Retain window + controller like UIKit path so layout and a11y stay alive for traversal.
-            HostingControllerStorage.store((controller: hosting, window: window), for: root)
-            RunLoop.current.run(until: Date().addingTimeInterval(0.12))
+            HostingControllerStorage.store(controller: hosting, window: window, for: root)
+            pumpHostedViewRunLoop(for: 0.12)
             if forceLayout {
                 root.needsLayout = true
                 root.layoutSubtreeIfNeeded()
-                RunLoop.current.run(until: Date().addingTimeInterval(0.05))
+                pumpHostedViewRunLoop(for: 0.05)
             }
-            RunLoop.current.run(until: Date().addingTimeInterval(0.15))
+            pumpHostedViewRunLoop(for: 0.15)
             root.setAccessibilityElement(!exposeContentAccessibility)
             return root
         }
@@ -192,6 +245,7 @@ public enum TestSetupUtilities {
         #else
         return nil
         #endif
+        }
     }
     
     // MARK: - Field Type Helpers
@@ -309,5 +363,6 @@ public enum TestSetupUtilities {
     public static func cleanupTestEnvironment() {
         // Clear all test overrides
         RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        HostingControllerStorage.tearDownActiveSession()
     }
 }

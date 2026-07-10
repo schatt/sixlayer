@@ -33,7 +33,7 @@ struct AutomaticHIGComplianceTestItem: Identifiable {
  * without requiring manual modifier application.
  */
 /// NOTE: Serialized to avoid UI conflicts with hostRootPlatformView (prevents Xcode hangs)
-@Suite(.serialized, DefaultRuntimeCapabilityIsolationTrait())
+@Suite(DefaultRuntimeCapabilityIsolationTrait())
 open class AutomaticHIGComplianceTests: BaseTestClass {
     
     // MARK: - Test Data Setup

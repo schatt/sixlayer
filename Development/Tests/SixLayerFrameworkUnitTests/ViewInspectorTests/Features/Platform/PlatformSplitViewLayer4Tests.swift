@@ -8,7 +8,7 @@ import SwiftUI
 /// TESTING SCOPE: All split view components in PlatformSplitViewLayer4.swift
 /// METHODOLOGY: Test each component on both iOS and macOS platforms
 /// Implements Issue #14: Add Split View Helpers to Six-Layer Architecture (Layer 4)
-@Suite("Platform Split View Layer 4")
+@Suite("Platform Split View Layer 4", HostedViewTestIsolationTrait())
 /// NOTE: Not marked @MainActor on class to allow parallel execution
 open class PlatformSplitViewLayer4Tests: BaseTestClass {
     

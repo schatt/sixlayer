@@ -8,7 +8,7 @@ import SwiftUI
 /// BUSINESS PURPOSE: Ensure automatic accessibility identifier system functions correctly
 /// TESTING SCOPE: All functions in AutomaticAccessibilityIdentifiers.swift
 /// METHODOLOGY: Test each function on both iOS and macOS platforms as required by mandatory testing guidelines
-@Suite("Automatic Accessibility Identifiers")
+@Suite("Automatic Accessibility Identifiers", HostedViewTestIsolationTrait())
 /// NOTE: Not marked @MainActor on class to allow parallel execution
 open class AutomaticAccessibilityIdentifiersTests: BaseTestClass {
     

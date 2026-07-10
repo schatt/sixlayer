@@ -12,7 +12,7 @@ import ViewInspector
 /// METHODOLOGY: Uses centralized test functions following DRY principles
 /// NOTE: Not marked @MainActor on class to allow parallel execution
 /// Individual test functions that need UI access are marked @MainActor
-@Suite("Collection Empty State View")
+@Suite("Collection Empty State View", HostedViewTestIsolationTrait())
 open class CollectionEmptyStateViewTests: BaseTestClass {
     
     // MARK: - CollectionEmptyStateView Tests

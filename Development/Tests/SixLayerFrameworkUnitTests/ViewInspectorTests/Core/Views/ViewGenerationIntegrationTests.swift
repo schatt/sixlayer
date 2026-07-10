@@ -6,7 +6,7 @@ import SwiftUI
 /// View Generation Integration Tests
 /// Tests the actual view generation pipeline with different capability states
 /// NOTE: Not marked @MainActor on class to allow parallel execution
-@Suite("View Generation Integration", DefaultRuntimeCapabilityIsolationTrait())
+@Suite("View Generation Integration", HostedViewTestIsolationTrait(), DefaultRuntimeCapabilityIsolationTrait())
 open class ViewGenerationIntegrationTests: BaseTestClass {
     
     // MARK: - Test Configuration

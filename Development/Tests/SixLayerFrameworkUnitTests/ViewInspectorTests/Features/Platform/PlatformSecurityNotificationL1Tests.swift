@@ -2,7 +2,7 @@ import Testing
 import SwiftUI
 @testable import SixLayerFramework
 
-@Suite("Platform Security and Notification L1")
+@Suite("Platform Security and Notification L1", HostedViewTestIsolationTrait())
 open class PlatformSecurityNotificationL1Tests: BaseTestClass {
 
     private nonisolated static func issue245_namedAutomaticComplianceFingerprint(componentName: String) -> String {

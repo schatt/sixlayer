@@ -7,7 +7,7 @@ import SwiftUI
 /// Layer 1 Function Callback Functional Tests
 /// Tests that Layer 1 functions ACTUALLY INVOKE callbacks when expected (Rules 6.1, 6.2, 7.3, 7.4)
 /// NOTE: Not marked @MainActor on class to allow parallel execution
-@Suite("Layer Callback Functional")
+@Suite("Layer Callback Functional", HostedViewTestIsolationTrait())
 open class Layer1CallbackFunctionalTests: BaseTestClass {
     
     // MARK: - Test Data
