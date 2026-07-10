@@ -5,82 +5,58 @@
 //  Test- and concurrency-safe overrides for runtime capability *preferences* and
 //  `setTest*` simulation hooks (GitHub #236, #315).
 //
-//  Values use `@TaskLocal` so they propagate with the Swift Testing `provideScope`
-//  → test body task (including `@MainActor` tests), unlike `Thread.current.threadDictionary`
-//  which is tied to the OS thread that set it and leaks under parallel Swift Testing.
+//  macOS preference shadowing and `setTest*` overrides use `@TaskLocal` so values
+//  propagate with the Swift Testing `provideScope` → test body task (including
+//  `@MainActor` tests). Mutable override state lives in a reference-type bag bound
+//  once per test scope so sync setters can mutate in place without reassigning
+//  `@TaskLocal` from synchronous functions.
 //
 
 import Foundation
 
-// MARK: - macOS preference simulation (harness)
+// MARK: - Mutable capability override bag (per-task via @TaskLocal)
 
-public enum RuntimeCapabilityHarness: Sendable {
+/// Per-test mutable storage for `RuntimeCapabilityDetection.setTest*` hooks.
+public final class CapabilityTestOverrideBag: @unchecked Sendable {
+    public var testTouchSupport: Bool?
+    public var testHapticFeedback: Bool?
+    public var testHover: Bool?
+    public var testVoiceOver: Bool?
+    public var testSwitchControl: Bool?
+    public var testAssistiveTouch: Bool?
+    public var testHighContrast: Bool?
 
-    /// When non-`nil`, macOS `SixLayerFramework.TouchEnabled` resolves to this value for the
-    /// current task instead of reading `UserDefaults.standard`.
-    @TaskLocal public static var macOSTouchEnabledPreference: Bool?
+    public var testPhotosHasCamera: Bool?
+    public var testPhotosIsPhotoLibraryPickerAvailable: Bool?
+    public var testPhotosSupportsLiveDataScanner: Bool?
 
-    /// When non-`nil`, macOS `SixLayerFramework.HapticEnabled` resolves to this value for the
-    /// current task instead of reading `UserDefaults.standard`.
-    @TaskLocal public static var macOSHapticEnabledPreference: Bool?
+    public var testVisionIsFrameworkAvailable: Bool?
+    public var testVisionSupportsOCR: Bool?
+    public var testVisionSupportsImageAnalyzer: Bool?
+    public var testVisionSupportsDocumentCamera: Bool?
 
-    // MARK: - `setTest*` capability overrides (@TaskLocal)
-
-    @TaskLocal public static var testTouchSupport: Bool?
-    @TaskLocal public static var testHapticFeedback: Bool?
-    @TaskLocal public static var testHover: Bool?
-    @TaskLocal public static var testVoiceOver: Bool?
-    @TaskLocal public static var testSwitchControl: Bool?
-    @TaskLocal public static var testAssistiveTouch: Bool?
-    @TaskLocal public static var testHighContrast: Bool?
-
-    @TaskLocal public static var testPhotosHasCamera: Bool?
-    @TaskLocal public static var testPhotosIsPhotoLibraryPickerAvailable: Bool?
-    @TaskLocal public static var testPhotosSupportsLiveDataScanner: Bool?
-
-    @TaskLocal public static var testVisionIsFrameworkAvailable: Bool?
-    @TaskLocal public static var testVisionSupportsOCR: Bool?
-    @TaskLocal public static var testVisionSupportsImageAnalyzer: Bool?
-    @TaskLocal public static var testVisionSupportsDocumentCamera: Bool?
-
-    @TaskLocal public static var testFilesSupportsSecurityScopedResources: Bool?
-    @TaskLocal public static var testFilesSupportsSecurityScopedBookmarks: Bool?
+    public var testFilesSupportsSecurityScopedResources: Bool?
+    public var testFilesSupportsSecurityScopedBookmarks: Bool?
 
     #if os(iOS)
-    @TaskLocal public static var testiOSHoverDeviceCapability: Bool?
+    public var testiOSHoverDeviceCapability: Bool?
     #endif
 
-    @TaskLocal public static var testNetworkIsConstrained: Bool?
-    @TaskLocal public static var testNetworkIsExpensive: Bool?
-    @TaskLocal public static var testNetworkHasPathSnapshot: Bool?
+    public var testNetworkIsConstrained: Bool?
+    public var testNetworkIsExpensive: Bool?
+    public var testNetworkHasPathSnapshot: Bool?
 
-    @TaskLocal public static var testMediaHasMicrophoneInput: Bool?
-    @TaskLocal public static var testMediaSupportsScreenCapture: Bool?
+    public var testMediaHasMicrophoneInput: Bool?
+    public var testMediaSupportsScreenCapture: Bool?
 
-    @TaskLocal public static var testPasteboardCanReadStrings: Bool?
-    @TaskLocal public static var testPasteboardCanWriteStrings: Bool?
+    public var testPasteboardCanReadStrings: Bool?
+    public var testPasteboardCanWriteStrings: Bool?
 
-    /// Dedupes one-time os_log lines for ignored `setTest*` calls within the current task.
-    @TaskLocal public static var loggedIgnoredTestOverrideKeys: [String]?
+    public var loggedIgnoredTestOverrideKeys: [String] = []
 
-    /// Keys used for macOS capability *simulation* and `CapabilityOverride` persistence on `UserDefaults.standard`.
-    public static let legacyCapabilityUserDefaultsKeys: [String] = [
-        "SixLayerFramework.TouchEnabled",
-        "SixLayerFramework.HapticEnabled",
-        "SixLayerFramework.Override.TouchSupport",
-        "SixLayerFramework.Override.HapticSupport",
-        "SixLayerFramework.Override.HoverSupport",
-    ]
+    public init() {}
 
-    /// Clears legacy capability keys from `UserDefaults.standard` for the current process.
-    public static func scrubLegacyCapabilityKeysFromUserDefaultsStandard() {
-        for key in legacyCapabilityUserDefaultsKeys {
-            UserDefaults.standard.removeObject(forKey: key)
-        }
-    }
-
-    /// Clears all `@TaskLocal` `setTest*` overrides on the current task.
-    public static func clearAllTestCapabilityOverrides() {
+    public func clearAll() {
         testTouchSupport = nil
         testHapticFeedback = nil
         testHover = nil
@@ -107,7 +83,53 @@ public enum RuntimeCapabilityHarness: Sendable {
         testMediaSupportsScreenCapture = nil
         testPasteboardCanReadStrings = nil
         testPasteboardCanWriteStrings = nil
-        loggedIgnoredTestOverrideKeys = nil
+        loggedIgnoredTestOverrideKeys = []
+    }
+}
+
+// MARK: - macOS preference simulation (harness)
+
+public enum RuntimeCapabilityHarness: Sendable {
+
+    /// When non-`nil`, macOS `SixLayerFramework.TouchEnabled` resolves to this value for the
+    /// current task instead of reading `UserDefaults.standard`.
+    @TaskLocal public static var macOSTouchEnabledPreference: Bool?
+
+    /// When non-`nil`, macOS `SixLayerFramework.HapticEnabled` resolves to this value for the
+    /// current task instead of reading `UserDefaults.standard`.
+    @TaskLocal public static var macOSHapticEnabledPreference: Bool?
+
+    /// Per-task mutable bag for `setTest*` overrides. Bound for each test by
+    /// ``DefaultRuntimeCapabilityIsolationTrait`` or ``withCapabilityTestOverrideBag(_:)``.
+    @TaskLocal public static var capabilityTestOverrideBag: CapabilityTestOverrideBag?
+
+    /// Keys used for macOS capability *simulation* and `CapabilityOverride` persistence on `UserDefaults.standard`.
+    public static let legacyCapabilityUserDefaultsKeys: [String] = [
+        "SixLayerFramework.TouchEnabled",
+        "SixLayerFramework.HapticEnabled",
+        "SixLayerFramework.Override.TouchSupport",
+        "SixLayerFramework.Override.HapticSupport",
+        "SixLayerFramework.Override.HoverSupport",
+    ]
+
+    /// Clears legacy capability keys from `UserDefaults.standard` for the current process.
+    public static func scrubLegacyCapabilityKeysFromUserDefaultsStandard() {
+        for key in legacyCapabilityUserDefaultsKeys {
+            UserDefaults.standard.removeObject(forKey: key)
+        }
+    }
+
+    /// Clears all `setTest*` overrides on the current task's bag when present.
+    public static func clearAllTestCapabilityOverrides() {
+        capabilityTestOverrideBag?.clearAll()
+    }
+
+    /// Runs `body` with a fresh ``CapabilityTestOverrideBag`` bound for the current task.
+    public static func withCapabilityTestOverrideBag<T>(
+        _ body: () throws -> T
+    ) rethrows -> T {
+        let bag = CapabilityTestOverrideBag()
+        return try $capabilityTestOverrideBag.withValue(bag, operation: body)
     }
 
     /// Clears thread-local `CapabilityOverride` values and legacy `standard` keys.
