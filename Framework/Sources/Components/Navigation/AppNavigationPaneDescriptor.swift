@@ -37,9 +37,26 @@ public enum AppNavigationPaneSectionBuilder: Sendable {
     public static func groupedBySection<ID: Hashable & Sendable>(
         _ descriptors: [AppNavigationPaneDescriptor<ID>]
     ) throws -> [(section: String?, descriptors: [AppNavigationPaneDescriptor<ID>])] {
-        // Deliberately wrong stub for TDD red (#331); replaced in green.
-        _ = descriptors
-        return []
+        var seenIDs = Set<ID>()
+        var sectionOrder: [String?] = []
+        var sectionBuckets: [String?: [AppNavigationPaneDescriptor<ID>]] = [:]
+
+        for descriptor in descriptors {
+            let insertion = seenIDs.insert(descriptor.id)
+            guard insertion.inserted else {
+                throw AppNavigationPaneSectionBuilderError.duplicatePaneID(String(describing: descriptor.id))
+            }
+
+            if sectionBuckets[descriptor.section] == nil {
+                sectionOrder.append(descriptor.section)
+                sectionBuckets[descriptor.section] = []
+            }
+            sectionBuckets[descriptor.section, default: []].append(descriptor)
+        }
+
+        return sectionOrder.map { section in
+            (section: section, descriptors: sectionBuckets[section] ?? [])
+        }
     }
 }
 
@@ -50,8 +67,12 @@ public enum AppNavigationSidebarRowPresentation: Sendable, Equatable {
     case iconOnly
 
     public static func forProfile(_ profile: NavigationSidebarProfile) -> AppNavigationSidebarRowPresentation {
-        // Deliberately wrong stub for TDD red (#331); replaced in green.
-        _ = profile
+        if profile == .iconRail {
+            return .iconOnly
+        }
+        if profile == .compactList {
+            return .compactLabeled
+        }
         return .labeled
     }
 }
@@ -61,8 +82,6 @@ public enum AppNavigationSidebarRowAccessibility: Sendable {
     public static func iconOnlyLabel<ID: Hashable & Sendable>(
         for pane: AppNavigationPaneDescriptor<ID>
     ) -> String {
-        // Deliberately wrong stub for TDD red (#331); replaced in green.
-        _ = pane
-        return ""
+        pane.titleKey
     }
 }
