@@ -9,7 +9,7 @@ import AppKit
 /// TDD Red Phase: REAL Test for OCROverlayView
 /// This test SHOULD FAIL - proving OCROverlayView doesn't generate accessibility IDs
 /// NOTE: Not marked @MainActor on class to allow parallel execution
-@Suite("OCR Overlay View Real Accessibility")
+@Suite("OCR Overlay View Real Accessibility", HostedViewTestIsolationTrait())
 open class OCROverlayViewRealAccessibilityTDDTests: BaseTestClass {
     
     @Test @MainActor func testOCROverlayView_AppliesCorrectModifiersOnIOS() {
