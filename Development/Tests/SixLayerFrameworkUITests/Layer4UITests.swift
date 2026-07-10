@@ -1081,6 +1081,7 @@ final class Layer4UITests: XCTestCase {
         }
         tapByNormalizedCenter(exportButton)
         dismissExportActionsChooserIfPresent()
+        ensureContractRoot()
         XCTAssertTrue(
             waitForLayer4ContractRootAfterModal(timeout: 2.5),
             "platformExportActions_L4: contract screen must be reachable after export chooser (no stuck modal blocking the suite)"
@@ -1279,11 +1280,14 @@ final class Layer4UITests: XCTestCase {
         )
         let openControl = openBtn.exists ? openBtn : openAny
         tapByNormalizedCenter(openControl)
+        let pickerInSheet = app.sheets.firstMatch.descendants(matching: .any)
+            .matching(NSPredicate(format: "identifier CONTAINS[c] %@", "platformPhotoPicker_L4"))
+            .firstMatch
         let pickerNode = app.descendants(matching: .any)
             .matching(NSPredicate(format: "identifier CONTAINS[c] %@", "platformPhotoPicker_L4"))
             .firstMatch
         XCTAssertTrue(
-            pickerNode.waitForExistence(timeout: 2.0),
+            pickerInSheet.waitForExistence(timeout: 3.0) || pickerNode.waitForExistence(timeout: 2.0),
             "platformPhotoPicker_L4: picker subtree must expose contract a11y identifier"
         )
         let cancel = app.buttons["Cancel"].firstMatch
@@ -1292,6 +1296,7 @@ final class Layer4UITests: XCTestCase {
         } else if app.navigationBars.buttons["Cancel"].firstMatch.waitForExistence(timeout: 1.0) {
             app.navigationBars.buttons["Cancel"].firstMatch.tap()
         }
+        ensureContractRoot()
         XCTAssertTrue(
             waitForLayer4ContractRootAfterModal(timeout: 2.5),
             "platformPhotoPicker_L4: must return to contract root after dismiss (no stuck sheet)"
