@@ -10,7 +10,7 @@ import ViewInspector
 /// Tests that the framework correctly generates SwiftUI views with proper structure and properties
 /// These tests focus on what we can actually verify when running on macOS
 /// NOTE: Not marked @MainActor on class to allow parallel execution
-@Suite("View Generation")
+@Suite("View Generation", HostedViewTestIsolationTrait())
 open class ViewGenerationTests: BaseTestClass {
     
     // MARK: - Test Data
