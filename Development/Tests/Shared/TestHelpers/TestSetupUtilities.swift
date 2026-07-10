@@ -21,18 +21,16 @@ import AppKit
 
 // MARK: - Hosting Controller Storage
 
-/// Retains hosting controllers and their windows for the duration of a test invocation.
-/// All UI mutation and teardown run on the main actor — no global lock; parallel tests
-/// coordinate through `@MainActor` and per-test buckets, not cross-test mutex contention.
-@MainActor
-final class HostingControllerStorage {
-    /// Set by isolation traits for the active test scope (async task).
-    @TaskLocal static var scopeTestID: Test.ID?
-
+/// Per-test-invocation retention for hosted UIKit/AppKit windows.
+///
+/// Parallel-safe: each test's `HostedViewTestIsolationTrait` installs a dedicated session in
+/// `@TaskLocal`. No global dictionary, lock, or cross-test bucket — only this task's hosts.
+final class HostingSession: @unchecked Sendable {
     private struct HostedEntry {
         let window: AnyObject
         let controller: AnyObject
 
+        @MainActor
         func tearDown() {
             #if canImport(UIKit) && !os(watchOS)
             if let hosting = controller as? UIHostingController<AnyView> {
@@ -55,99 +53,41 @@ final class HostingControllerStorage {
         }
     }
 
-    private struct TestHostBucket {
-        var entries: [ObjectIdentifier: HostedEntry] = [:]
+    private var entries: [ObjectIdentifier: HostedEntry] = [:]
 
-        mutating func insert(key: ObjectIdentifier, entry: HostedEntry) {
-            entries[key] = entry
-        }
-
-        mutating func drain() -> [HostedEntry] {
-            let all = Array(entries.values)
-            entries.removeAll()
-            return all
-        }
-    }
-
-    private static var storageByTestID: [Test.ID: TestHostBucket] = [:]
-    private static var unscopedBucket = TestHostBucket()
-
-    private static func resolvedTestID() -> Test.ID? {
-        if let scopeTestID { return scopeTestID }
-        return Test.current?.id
-    }
-
-    private static func tearDown(_ entries: [HostedEntry]) {
-        entries.forEach { $0.tearDown() }
-    }
-
-    static func store(
-        controller: AnyObject,
-        window: AnyObject,
-        for view: Any,
-        ownerTestID: Test.ID? = nil
-    ) {
-        let entry = HostedEntry(window: window, controller: controller)
+    func store(controller: AnyObject, window: AnyObject, for view: Any) {
         let key = ObjectIdentifier(view as AnyObject)
-        let testID = ownerTestID ?? resolvedTestID()
-        if let testID {
-            var bucket = storageByTestID[testID, default: TestHostBucket()]
-            bucket.insert(key: key, entry: entry)
-            storageByTestID[testID] = bucket
-        } else {
-            unscopedBucket.insert(key: key, entry: entry)
-        }
+        entries[key] = HostedEntry(window: window, controller: controller)
     }
 
-    static func remove(for view: Any, ownerTestID: Test.ID? = nil) {
-        let key = ObjectIdentifier(view as AnyObject)
-        let testID = ownerTestID ?? resolvedTestID()
-        let removed: HostedEntry?
-        if let testID {
-            if var bucket = storageByTestID[testID] {
-                removed = bucket.entries.removeValue(forKey: key)
-                storageByTestID[testID] = bucket
-            } else {
-                removed = nil
-            }
-        } else {
-            removed = unscopedBucket.entries.removeValue(forKey: key)
+    @MainActor
+    func tearDownAll() {
+        for entry in entries.values {
+            entry.tearDown()
         }
-        if let removed {
-            tearDown([removed])
+        entries.removeAll()
+    }
+}
+
+enum HostingControllerStorage {
+    /// Active per-test session; set by `HostedViewTestIsolationTrait`.
+    @TaskLocal static var session: HostingSession?
+    /// Active test id; set by isolation traits for `hostRootPlatformView` attribution.
+    @TaskLocal static var scopeTestID: Test.ID?
+
+    static func store(controller: AnyObject, window: AnyObject, for view: Any) {
+        guard let session else {
+            Issue.record(
+                "hostRootPlatformView requires HostedViewTestIsolationTrait on the enclosing @Suite"
+            )
+            return
         }
+        session.store(controller: controller, window: window, for: view)
     }
 
-    /// Tear down hosted windows for one test or, when `testID` is nil, every retained host.
-    static func releaseAll(for testID: Test.ID? = nil) {
-        let entries: [HostedEntry]
-        if let testID {
-            if var bucket = storageByTestID.removeValue(forKey: testID) {
-                entries = bucket.drain()
-            } else {
-                entries = []
-            }
-        } else {
-            var allEntries: [HostedEntry] = []
-            let buckets = storageByTestID
-            storageByTestID.removeAll()
-            for var bucket in buckets.values {
-                allEntries.append(contentsOf: bucket.drain())
-            }
-            allEntries.append(contentsOf: unscopedBucket.drain())
-            unscopedBucket = TestHostBucket()
-            entries = allEntries
-        }
-        tearDown(entries)
-    }
-
-    static func cleanup() {
-        releaseAll()
-    }
-
-    /// Per-test teardown from isolation traits.
-    static func teardownAfterTest(_ testID: Test.ID) {
-        releaseAll(for: testID)
+    @MainActor
+    static func tearDownActiveSession() {
+        session?.tearDownAll()
     }
 }
 
@@ -195,7 +135,6 @@ public enum TestSetupUtilities {
         accessibilityIdentifierConfig: AccessibilityIdentifierConfig? = nil
     ) -> Any? {
         autoreleasepool {
-        let ownerTestID = HostingControllerStorage.scopeTestID ?? Test.current?.id
         let injectedConfig = accessibilityIdentifierConfig ?? AccessibilityIdentifierConfig.currentTaskLocalConfig
         #if canImport(UIKit) && !os(watchOS)
         // Re-bind task-local config for the whole hosting + layout window so SwiftUI modifier bodies that run
@@ -234,12 +173,7 @@ public enum TestSetupUtilities {
                     root.layoutIfNeeded()
                 }
                 // Store both so window and controller stay alive; keyed by root for cleanup
-                HostingControllerStorage.store(
-                    controller: hosting,
-                    window: window,
-                    for: root,
-                    ownerTestID: ownerTestID
-                )
+                HostingControllerStorage.store(controller: hosting, window: window, for: root)
                 // Deferred SwiftUI updates may run after layoutIfNeeded; drain so accessibility + debug log entries settle before tests read them.
                 RunLoop.current.run(until: Date().addingTimeInterval(0.15))
             }
@@ -282,12 +216,7 @@ public enum TestSetupUtilities {
             window.orderOut(nil)
             let root = hosting.view
             // Retain window + controller like UIKit path so layout and a11y stay alive for traversal.
-            HostingControllerStorage.store(
-                controller: hosting,
-                window: window,
-                for: root,
-                ownerTestID: ownerTestID
-            )
+            HostingControllerStorage.store(controller: hosting, window: window, for: root)
             RunLoop.current.run(until: Date().addingTimeInterval(0.12))
             if forceLayout {
                 root.needsLayout = true
@@ -428,10 +357,6 @@ public enum TestSetupUtilities {
     public static func cleanupTestEnvironment() {
         // Clear all test overrides
         RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-        if let testID = HostingControllerStorage.scopeTestID ?? Test.current?.id {
-            HostingControllerStorage.teardownAfterTest(testID)
-        } else {
-            HostingControllerStorage.releaseAll()
-        }
+        HostingControllerStorage.tearDownActiveSession()
     }
 }
