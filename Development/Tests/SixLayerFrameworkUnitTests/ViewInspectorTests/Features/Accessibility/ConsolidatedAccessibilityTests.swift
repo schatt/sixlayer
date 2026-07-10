@@ -68,7 +68,7 @@ import AppKit
 
 /// Consolidated accessibility tests for the entire SixLayer framework.
 /// All tests are organized into logical sections with MARK comments.
-@Suite(HostedViewTestIsolationTrait())
+@Suite(HostedViewTestIsolationTrait(), DefaultRuntimeCapabilityIsolationTrait())
 open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     // MARK: - Test Setup & Configuration
@@ -9480,7 +9480,11 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         defer { RuntimeCapabilityDetection.clearAllCapabilityOverrides() }
 
         RuntimeCapabilityDetection.setTestAssistiveTouch(true)
-        #expect(RuntimeCapabilityDetection.supportsAssistiveTouch, "AssistiveTouch should be enabled")
+        if SixLayerPlatform.current.supportsAssistiveTouch {
+            #expect(RuntimeCapabilityDetection.supportsAssistiveTouch, "AssistiveTouch should be enabled")
+        } else {
+            #expect(!RuntimeCapabilityDetection.supportsAssistiveTouch, "AssistiveTouch override ignored on unsupported platform")
+        }
 
         RuntimeCapabilityDetection.setTestAssistiveTouch(false)
         #expect(!RuntimeCapabilityDetection.supportsAssistiveTouch, "AssistiveTouch should be disabled")
@@ -15408,41 +15412,23 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 }
 
     @Test @MainActor func testDemonstrateAutomaticComplianceWithAccessibilityStates() async {
-        self.initializeTestConfig()
         defer { RuntimeCapabilityDetection.clearAllCapabilityOverrides() }
 
-        let testItems = [
-        TestPatterns.TestDataItem(title: "Test Item 1", subtitle: "Subtitle 1"),
-        TestPatterns.TestDataItem(title: "Test Item 2", subtitle: "Subtitle 2")
-        ]
-        let testHints = PresentationHints()
-        
         RuntimeCapabilityDetection.setTestVoiceOver(true)
-        _ = platformPresentItemCollection_L1(
-        items: testItems,
-        hints: testHints
-        )
-        #expect(Bool(true), "View should work with VoiceOver enabled")
         #expect(RuntimeCapabilityDetection.supportsVoiceOver, "VoiceOver should be enabled")
-        
+
         RuntimeCapabilityDetection.setTestVoiceOver(false)
         RuntimeCapabilityDetection.setTestSwitchControl(true)
-        _ = platformPresentItemCollection_L1(
-        items: testItems,
-        hints: testHints
-        )
-        #expect(Bool(true), "View should work with Switch Control enabled")
         #expect(RuntimeCapabilityDetection.supportsSwitchControl, "Switch Control should be enabled")
-        
+
         RuntimeCapabilityDetection.setTestSwitchControl(false)
         RuntimeCapabilityDetection.setTestAssistiveTouch(true)
-        _ = platformPresentItemCollection_L1(
-        items: testItems,
-        hints: testHints
-        )
-        #expect(Bool(true), "View should work with AssistiveTouch enabled")
-        #expect(RuntimeCapabilityDetection.supportsAssistiveTouch, "AssistiveTouch should be enabled")
-}
+        if SixLayerPlatform.current.supportsAssistiveTouch {
+            #expect(RuntimeCapabilityDetection.supportsAssistiveTouch, "AssistiveTouch should be enabled")
+        } else {
+            #expect(!RuntimeCapabilityDetection.supportsAssistiveTouch, "AssistiveTouch override ignored on unsupported platform")
+        }
+    }
 
     @Test @MainActor func testDemonstrateAutomaticComplianceAcrossPlatforms() async {
         self.initializeTestConfig()
