@@ -191,10 +191,33 @@ final class Layer4UITests: XCTestCase {
 
     /// L4 Controls contract rows (secure field, editor, date picker) sit below the section header.
     @MainActor
-    private func scrollToL4ControlsContracts() {
+    private func scrollToL4ControlsContracts(anchorLabel: String = "L4ContractSecureField") {
         scrollToL4ControlsSection()
-        nudgeScrollInsideL4ControlsSection()
-        scrollToContractIdentifier("SixLayer.main.ui.l4contractsecurefield.SecureField", maxAttempts: 14)
+        scrollToElement(label: anchorLabel, maxAttempts: Self.maxScrollAttempts)
+    }
+
+    /// Dismiss platformExportActions_L4 chooser using contract cancel id, then generic Cancel fallback.
+    @MainActor
+    private func dismissExportActionsChooserIfPresent() {
+        let contractCancel = app.descendants(matching: .any)
+            .matching(NSPredicate(format: "identifier == %@", "SixLayer.main.ui.platformExportActions_L4.cancel"))
+            .firstMatch
+        if contractCancel.waitForExistence(timeout: 1.5) {
+            contractCancel.tap()
+            return
+        }
+        let cancel = app.buttons["Cancel"].firstMatch
+        if cancel.waitForExistence(timeout: 0.8) {
+            cancel.tap()
+        }
+    }
+
+    /// Wait until Layer 4 contract root is reachable (no stuck modal blocking navigation).
+    @MainActor
+    private func waitForLayer4ContractRootAfterModal(timeout: TimeInterval = 2.5) -> Bool {
+        app.navigationBars["Layer 4 Examples"].waitForExistence(timeout: timeout)
+            || app.buttons["L4ContractSheet"].waitForExistence(timeout: min(timeout, 1.5))
+            || waitForContractRoot(timeout: min(timeout, 1.5))
     }
 
     /// Nested overlay host (400pt) sits below the Form section header; nudge without overscrolling past toolbar (#259).
@@ -559,7 +582,7 @@ final class Layer4UITests: XCTestCase {
     @MainActor
     func testL4_platformTextEditor() throws {
         ensureContractRoot()
-        scrollToL4ControlsContracts()
+        scrollToL4ControlsContracts(anchorLabel: "L4ContractTextEditor")
         assertElementHasIdentifierFromComponent(
             label: "L4ContractTextEditor",
             type: .textView,
@@ -572,7 +595,7 @@ final class Layer4UITests: XCTestCase {
     @MainActor
     func testL4_platformDatePicker() throws {
         ensureContractRoot()
-        scrollToL4ControlsContracts()
+        scrollToL4ControlsContracts(anchorLabel: "L4ContractDatePicker")
         scrollToElement(label: "L4ContractDatePicker")
         let hasLabel = app.staticTexts["L4ContractDatePicker"].waitForExistence(timeout: 2.5)
             || app.buttons["L4ContractDatePicker"].waitForExistence(timeout: 1.5)
@@ -1015,8 +1038,7 @@ final class Layer4UITests: XCTestCase {
         let closePrint = app.navigationBars.buttons["Close"].firstMatch
         if closePrint.waitForExistence(timeout: 0.5) { closePrint.tap() }
         XCTAssertTrue(
-            app.navigationBars["Layer 4 Examples"].waitForExistence(timeout: 1.0)
-                || app.buttons["L4ContractSheet"].waitForExistence(timeout: 1.2),
+            waitForLayer4ContractRootAfterModal(timeout: 2.5),
             "platformPrint_L4: contract screen must be reachable after print (no stuck modal blocking the suite)"
         )
     }
@@ -1038,13 +1060,9 @@ final class Layer4UITests: XCTestCase {
             exportButton = exportByLabel
         }
         tapByNormalizedCenter(exportButton)
-        let cancel = app.buttons["Cancel"].firstMatch
-        if cancel.waitForExistence(timeout: 1.0) {
-            cancel.tap()
-        }
+        dismissExportActionsChooserIfPresent()
         XCTAssertTrue(
-            app.navigationBars["Layer 4 Examples"].waitForExistence(timeout: 1.0)
-                || app.buttons["L4ContractSheet"].waitForExistence(timeout: 1.2),
+            waitForLayer4ContractRootAfterModal(timeout: 2.5),
             "platformExportActions_L4: contract screen must be reachable after export chooser (no stuck modal blocking the suite)"
         )
     }
@@ -1249,8 +1267,7 @@ final class Layer4UITests: XCTestCase {
             app.navigationBars.buttons["Cancel"].firstMatch.tap()
         }
         XCTAssertTrue(
-            app.navigationBars["Layer 4 Examples"].waitForExistence(timeout: 2.5)
-                || app.buttons["L4ContractSheet"].waitForExistence(timeout: 1.5),
+            waitForLayer4ContractRootAfterModal(timeout: 2.5),
             "platformPhotoPicker_L4: must return to contract root after dismiss (no stuck sheet)"
         )
     }
