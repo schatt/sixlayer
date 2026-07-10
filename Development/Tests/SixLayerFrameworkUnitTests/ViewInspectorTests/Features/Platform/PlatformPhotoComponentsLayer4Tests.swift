@@ -8,7 +8,7 @@ import SwiftUI
 /// BUSINESS PURPOSE: Ensure all photo Layer 4 components generate proper accessibility identifiers
 /// TESTING SCOPE: All components in PlatformPhotoComponentsLayer4.swift
 /// METHODOLOGY: Test each component on both iOS and macOS platforms as required by mandatory testing guidelines
-@Suite("Platform Photo Components Layer")
+@Suite("Platform Photo Components Layer", HostedViewTestIsolationTrait())
 /// NOTE: Not marked @MainActor on class to allow parallel execution
 open class PlatformPhotoComponentsLayer4Tests: BaseTestClass {
     
