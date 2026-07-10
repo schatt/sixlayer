@@ -8,6 +8,7 @@
 
 import Foundation
 import SwiftUI
+import Testing
 @testable import SixLayerFramework
 
 #if canImport(UIKit) && !os(watchOS)
@@ -20,29 +21,67 @@ import AppKit
 
 // MARK: - Hosting Controller Storage
 
-/// Thread-local storage for hosting controllers to prevent deallocation during test execution
-/// Made internal for navigation view tests that need to host views directly
+/// Retains hosting controllers and their windows for the duration of a test invocation.
+/// Made internal for navigation view tests that need to host views directly.
 @MainActor
 final class HostingControllerStorage {
-    private static var storage: [ObjectIdentifier: Any] = [:]
+    private struct HostedEntry {
+        let window: AnyObject
+        let controller: AnyObject
+
+        func tearDown() {
+            #if canImport(UIKit) && !os(watchOS)
+            if let window = window as? UIWindow {
+                window.isHidden = true
+                window.rootViewController = nil
+            }
+            #endif
+            #if canImport(AppKit)
+            if let window = window as? NSWindow {
+                window.orderOut(nil)
+                window.contentViewController = nil
+            }
+            #endif
+        }
+    }
+
+    private static var storage: [ObjectIdentifier: HostedEntry] = [:]
     private static let lock = NSLock()
-    
-    static func store(_ controller: Any, for view: Any) {
+    private static var lastKnownTestID: Test.ID?
+
+    static func store(controller: AnyObject, window: AnyObject, for view: Any) {
         lock.lock()
         defer { lock.unlock() }
-        storage[ObjectIdentifier(view as AnyObject)] = controller
+        storage[ObjectIdentifier(view as AnyObject)] = HostedEntry(window: window, controller: controller)
     }
-    
+
     static func remove(for view: Any) {
         lock.lock()
         defer { lock.unlock() }
         storage.removeValue(forKey: ObjectIdentifier(view as AnyObject))
     }
-    
-    static func cleanup() {
+
+    /// Tear down every retained hosting window/controller pair and clear storage.
+    static func releaseAll() {
         lock.lock()
-        defer { lock.unlock() }
+        let entries = Array(storage.values)
         storage.removeAll()
+        lock.unlock()
+        entries.forEach { $0.tearDown() }
+    }
+
+    static func cleanup() {
+        releaseAll()
+    }
+
+    /// When Swift Testing moves to a new test, release hosts retained for the previous test.
+    /// Supports multiple simultaneous hosts within one test (e.g. default + adapted roots).
+    static func releaseHostsForNewTestIfNeeded() {
+        guard let currentID = Test.current?.id else { return }
+        if currentID != lastKnownTestID {
+            releaseAll()
+            lastKnownTestID = currentID
+        }
     }
 }
 
@@ -89,6 +128,7 @@ public enum TestSetupUtilities {
         exposeContentAccessibility: Bool = false,
         accessibilityIdentifierConfig: AccessibilityIdentifierConfig? = nil
     ) -> Any? {
+        HostingControllerStorage.releaseHostsForNewTestIfNeeded()
         let injectedConfig = accessibilityIdentifierConfig ?? AccessibilityIdentifierConfig.currentTaskLocalConfig
         #if canImport(UIKit) && !os(watchOS)
         // Re-bind task-local config for the whole hosting + layout window so SwiftUI modifier bodies that run
@@ -127,7 +167,7 @@ public enum TestSetupUtilities {
                     root.layoutIfNeeded()
                 }
                 // Store both so window and controller stay alive; keyed by root for cleanup
-                HostingControllerStorage.store((controller: hosting, window: window), for: root)
+                HostingControllerStorage.store(controller: hosting, window: window, for: root)
                 // Deferred SwiftUI updates may run after layoutIfNeeded; drain so accessibility + debug log entries settle before tests read them.
                 RunLoop.current.run(until: Date().addingTimeInterval(0.15))
             }
@@ -169,7 +209,7 @@ public enum TestSetupUtilities {
             window.orderFrontRegardless()
             let root = hosting.view
             // Retain window + controller like UIKit path so layout and a11y stay alive for traversal.
-            HostingControllerStorage.store((controller: hosting, window: window), for: root)
+            HostingControllerStorage.store(controller: hosting, window: window, for: root)
             RunLoop.current.run(until: Date().addingTimeInterval(0.12))
             if forceLayout {
                 root.needsLayout = true
@@ -309,5 +349,6 @@ public enum TestSetupUtilities {
     public static func cleanupTestEnvironment() {
         // Clear all test overrides
         RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        HostingControllerStorage.releaseAll()
     }
 }
