@@ -12,7 +12,7 @@ import SwiftUI
 @testable import SixLayerFramework
 
 /// NOTE: Not marked @MainActor on class to allow parallel execution
-@Suite("Vision Safety Component Accessibility")
+@Suite("Vision Safety Component Accessibility", HostedViewTestIsolationTrait())
 open class VisionSafetyComponentAccessibilityTests: BaseTestClass {
     
     // MARK: - Vision Safety Component Tests
