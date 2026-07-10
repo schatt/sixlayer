@@ -9,7 +9,7 @@
 
 ## 🎯 Release Summary
 
-v8.1.1 is a **patch** release focused on **window / container resize** for app navigation and intelligent card collections (**#330**). On macOS and iPad, shrinking the available width no longer crushes the app-nav sidebar into an unusable strip or parks a sticky minimum offscreen, and card collections reflow with the detail pane on **both axes** (columns and card size track the viewport; sparse content can grow; dense content scrolls).
+v8.1.1 is a **patch** release focused on **window / container resize** for app navigation and intelligent card collections (**#330**), plus **macOS ViewInspector test-lane reliability** under parallel Swift Testing (**#315**). On macOS and iPad, shrinking the available width no longer crushes the app-nav sidebar into an unusable strip or parks a sticky minimum offscreen, and card collections reflow with the detail pane on **both axes** (columns and card size track the viewport; sparse content can grow; dense content scrolls). Framework and test harness changes make `setTest*` capability overrides task-isolated so parallel `@MainActor` ViewInspector suites do not leak state across tests; UITest Layer 4 contracts live in the test host instead of production `#if UITesting` branches.
 
 Icon-only sidebar **content** (framework-owned adaptive rows) remains tracked separately as **#331**.
 
@@ -35,10 +35,18 @@ Icon-only sidebar **content** (framework-owned adaptive rows) remains tracked se
 - `IntelligentCardResize330Tests` — width-capped columns, sub-200 width, sparse/tall vs dense/short height, vertical-only resize, phone non-regression.
 - `NavigationLayoutResolverAppNavigation330Tests` — single-sidebar vs nested settings budget, progressive column sizing, leave-fullSplit when budget fails.
 
+### **macOS ViewInspector lane + parallel test isolation (#315)**
+
+- **`CapabilityTestOverrideBag`**: per-task mutable storage for all `RuntimeCapabilityDetection.setTest*` hooks; bound once per test by `DefaultRuntimeCapabilityIsolationTrait` (fixes parallel `@MainActor` suites sharing stale overrides via `Thread.current.threadDictionary`).
+- **`RuntimeCapabilityHarness.withCapabilityTestOverrideBag(_:)`**: opt-in scope wrapper for ad hoc tests or host apps that call `setTest*` outside the suite trait.
+- **UITest contract ownership**: Layer 4 photo picker / print / export / open URL / register / share contracts mount in the UITest host app under `-UITesting`; framework production APIs no longer carry XCUITest side-effect stubs.
+- **Lane status**: `SLF-macOS-ViewInspectorTests` green on macOS — **2004** tests, **0** failed (parallel, default DerivedData).
+
 ---
 
 ## ✅ Resolved GitHub issues (milestone v8.1.1)
 
+- **[Issue #315](https://github.com/schatt/sixlayer/issues/315)** — macOS ViewInspector lane green; parallel-safe `setTest*` capability overrides; UITest contracts in test host.
 - **[Issue #330](https://github.com/schatt/sixlayer/issues/330)** — macOS/iPad resize: app nav sidebar crush; card collections ignore window/container resize (width + height).
 - **[Issue #332](https://github.com/schatt/sixlayer/issues/332)** — Document v8.1.1 release notes (this documentation).
 
@@ -50,6 +58,8 @@ Icon-only sidebar **content** (framework-owned adaptive rows) remains tracked se
 - **Settings shells:** Nested settings budget is unchanged; only app-nav uses the single-sidebar resolver path.
 - **Cards:** Hosts using `platformPresentItemCollection_L1` / intelligent card expansion get reflow automatically; no CarManager-local patches needed for column or card sizing.
 - **Icon-only sidebar chrome:** Not in this release — see **#331** for a framework-owned adaptive sidebar API.
+- **Parallel tests / `setTest*`:** Consumer or extension tests that call `RuntimeCapabilityDetection.setTest*` must use `DefaultRuntimeCapabilityIsolationTrait()` on the suite or wrap the body in `RuntimeCapabilityHarness.withCapabilityTestOverrideBag(_:)`. Direct assignment without a bound bag triggers a debug precondition.
+- **UITest Layer 4:** Host apps under test should mount contract UI (e.g. deterministic photo picker) in the test target; do not expect framework production code to no-op system actions when `XCUI_TESTING` is set.
 - **No intentional breaking public API changes** — patch release; additive resolver/sizing APIs and layout behavior fixes.
 
 ---
