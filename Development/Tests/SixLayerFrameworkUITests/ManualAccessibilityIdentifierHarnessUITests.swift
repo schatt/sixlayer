@@ -32,15 +32,13 @@ final class ManualAccessibilityIdentifierHarnessUITests: XCTestCase {
         MainActor.assumeIsolated {
             let localApp = XCUIApplication()
             localApp.configureForFastTesting()
-            // Deep-link full Layer 4 component list (Identifier Edge Case lives here). Avoids launch-page scroll / combined-a11y flakiness.
-            localApp.launchArguments.append("-OpenLayer4ComponentExamples")
+            localApp.launchArguments.append("-OpenLayer4IdentifierEdgeCase")
             localApp.launch()
             instance.app = localApp
-            // Large-title layouts may not expose "Layer 4 Examples" on NavigationBar immediately; section title is stable.
-            let onLayer4 = localApp.navigationBars["Layer 4 Examples"].waitForExistence(timeout: 2.0)
-                || localApp.staticTexts["Layer 4 Examples"].waitForExistence(timeout: 1.2)
-                || localApp.staticTexts["Component test views"].waitForExistence(timeout: 2.5)
-            XCTAssertTrue(onLayer4, "Test app should open Layer 4 Examples (-OpenLayer4ComponentExamples)")
+            XCTAssertTrue(
+                localApp.navigationBars["Identifier Edge Case"].waitForExistence(timeout: 2.5),
+                "Test app should open Identifier Edge Case (-OpenLayer4IdentifierEdgeCase)"
+            )
         }
     }
 
@@ -59,47 +57,26 @@ final class ManualAccessibilityIdentifierHarnessUITests: XCTestCase {
             app.scrollViews.firstMatch,
             app.tables.firstMatch,
             app.collectionViews.firstMatch,
-            app
         ]
-        for root in roots where root.exists {
-            let el = root.descendants(matching: .any).matching(pred).firstMatch
-            if el.waitForExistence(timeout: min(timeout, 2.0)) {
-                return
+        func queryRoots(_ wait: TimeInterval) -> Bool {
+            for root in roots where root.exists {
+                let el = root.descendants(matching: .any).matching(pred).firstMatch
+                if el.waitForExistence(timeout: wait) { return true }
             }
+            return false
+        }
+        if queryRoots(min(timeout, 2.0)) { return }
+        for _ in 0..<8 {
+            app.xcuiSwipeScrollHostsUp()
+            if queryRoots(0.4) { return }
         }
         XCTFail(
             "Expected an element whose accessibility identifier contains '\(substring)' (query bounded scroll/table/collection first)"
         )
     }
 
-    /// SetUp opens Layer 4 Examples via `-OpenLayer4ComponentExamples`. Navigate: Identifier Edge Case → assert manual ids queryable.
+    /// Opens directly on Identifier Edge Case via `-OpenLayer4IdentifierEdgeCase`; assert manual ids queryable.
     func testManualPlatformButtonIds_queryableViaXCUITest() throws {
-        let edgeId = "test-view-Identifier Edge Case"
-        let idQuery = app.descendants(matching: .any).matching(NSPredicate(format: "identifier == %@", edgeId)).firstMatch
-        let labelQuery = app.descendants(matching: .any).matching(NSPredicate(format: "label == %@", "Identifier Edge Case")).firstMatch
-
-        func resolveEdgeRow() -> XCUIElement {
-            if idQuery.waitForExistence(timeout: 0.4), idQuery.isHittable { return idQuery }
-            if labelQuery.waitForExistence(timeout: 0.4), labelQuery.isHittable { return labelQuery }
-            let fallback = app.findLaunchPageEntry(identifier: edgeId)
-            if fallback.waitForExistence(timeout: 0.3), fallback.isHittable { return fallback }
-            return app.links["Identifier Edge Case"].firstMatch
-        }
-
-        var edgeLink = resolveEdgeRow()
-        for _ in 0..<8 {
-            if edgeLink.waitForExistence(timeout: 0.4), edgeLink.isHittable { break }
-            app.xcuiSwipeScrollHostsUp()
-            edgeLink = resolveEdgeRow()
-        }
-        XCTAssertTrue(edgeLink.waitForExistence(timeout: 2.0) && edgeLink.isHittable, "Identifier Edge Case link should exist")
-        edgeLink.tap()
-
-        XCTAssertTrue(
-            app.navigationBars["Identifier Edge Case"].waitForExistence(timeout: 2.5),
-            "Should land on Identifier Edge Case screen"
-        )
-
         app.xcuiSwipeScrollHostsUp()
 
         assertAccessibilityIdentifierContains("manual-override-id")
