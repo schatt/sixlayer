@@ -87,8 +87,12 @@ public func determineIntelligentCardLayout_L2(
     )
     
     // Share of remaining width; may shrink below preferred min when the pane is narrower (#330).
-    let rawCardWidth = (availableWidth - spacing * CGFloat(max(0, columns - 1))) / CGFloat(max(1, columns))
-    let cardWidth = min(maxCardWidth, max(0, rawCardWidth))
+    let cardWidth = resolvedIntelligentCardWidth(
+        availableWidth: availableWidth,
+        columns: columns,
+        spacing: spacing,
+        maxCardWidth: maxCardWidth
+    )
     let defaultIntrinsicHeight = calculateOptimalHeight(
         cardWidth: cardWidth,
         contentComplexity: contentComplexity,
@@ -152,6 +156,17 @@ private func columnsCappedByAvailableWidth(
         let maxColumns = max(1, Int(floor((availableWidth + spacing) / denominator)))
         return min(desired, maxColumns)
     }
+}
+
+/// Card width as a share of available width, capped by max; may fall below preferred min (#330).
+private func resolvedIntelligentCardWidth(
+    availableWidth: CGFloat,
+    columns: Int,
+    spacing: CGFloat,
+    maxCardWidth: CGFloat
+) -> CGFloat {
+    let rawCardWidth = (availableWidth - spacing * CGFloat(max(0, columns - 1))) / CGFloat(max(1, columns))
+    return min(maxCardWidth, max(0, rawCardWidth))
 }
 
 /// Calculate optimal number of columns
