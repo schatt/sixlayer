@@ -831,7 +831,7 @@ schemes:
     test:
       targets:
         - name: SLFmacOSViewInspectorTests
-          parallelizable: true
+          parallelizable: false
           randomExecutionOrder: true
 
   SLF-iOS-ViewInspectorTests:
@@ -842,7 +842,7 @@ schemes:
     test:
       targets:
         - name: SLFiOSViewInspectorTests
-          parallelizable: true
+          parallelizable: false
           randomExecutionOrder: true
 
   SLF-tvOS-Framework:
