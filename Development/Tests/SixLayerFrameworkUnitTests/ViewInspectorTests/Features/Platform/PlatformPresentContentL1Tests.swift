@@ -40,7 +40,7 @@ import SwiftUI
 @testable import SixLayerFramework
 /// NOTE: Not marked @MainActor on class to allow parallel execution
 /// NOTE: Serialized to avoid UI conflicts with hostRootPlatformView (prevents Xcode crashes from too many @MainActor threads)
-@Suite(.serialized)
+@Suite
 open class PlatformPresentContentL1Tests: BaseTestClass {
     
     // MARK: - Basic Functionality Tests
