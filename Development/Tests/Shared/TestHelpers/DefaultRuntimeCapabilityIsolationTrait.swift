@@ -30,25 +30,27 @@ public struct DefaultRuntimeCapabilityIsolationTrait: Sendable, TestTrait, Suite
         // `@MainActor` tests), unlike `Thread.current.threadDictionary` which is per-OS-thread.
         let touchHarness: Bool? = false
         let hapticHarness: Bool? = false
+        let overrideBag = CapabilityTestOverrideBag()
         var propagation: Error?
-        try await RuntimeCapabilityHarness.$macOSTouchEnabledPreference.withValue(touchHarness) {
-            try await RuntimeCapabilityHarness.$macOSHapticEnabledPreference.withValue(hapticHarness) {
-                // `setTest*` overrides use `@TaskLocal` and inherit from this scope task.
-                // `CapabilityOverride` still uses per-OS-thread storage — clear on main for @MainActor tests.
-                RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-                await MainActor.run {
+        try await RuntimeCapabilityHarness.$capabilityTestOverrideBag.withValue(overrideBag) {
+            try await RuntimeCapabilityHarness.$macOSTouchEnabledPreference.withValue(touchHarness) {
+                try await RuntimeCapabilityHarness.$macOSHapticEnabledPreference.withValue(hapticHarness) {
+                    // `CapabilityOverride` still uses per-OS-thread storage — clear on main for @MainActor tests.
                     RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-                }
-                defer {
-                    RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-                }
-                do {
-                    try await function()
-                } catch {
-                    propagation = error
-                }
-                await MainActor.run {
-                    RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+                    await MainActor.run {
+                        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+                    }
+                    defer {
+                        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+                    }
+                    do {
+                        try await function()
+                    } catch {
+                        propagation = error
+                    }
+                    await MainActor.run {
+                        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+                    }
                 }
             }
         }
