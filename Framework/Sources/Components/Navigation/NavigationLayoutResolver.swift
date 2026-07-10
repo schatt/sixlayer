@@ -43,6 +43,19 @@ public extension NavigationSidebarProfile {
     )
 }
 
+/// Min/ideal/max widths for a `NavigationSplitView` column (GitHub #330).
+public struct NavigationSplitColumnSizing: Sendable, Equatable {
+    public let min: CGFloat
+    public let ideal: CGFloat
+    public let max: CGFloat
+
+    public init(min: CGFloat, ideal: CGFloat, max: CGFloat) {
+        self.min = min
+        self.ideal = ideal
+        self.max = max
+    }
+}
+
 public enum NavigationLayoutPolicy: Sendable {
     case automatic
     case preferOuter
@@ -226,7 +239,8 @@ public enum NavigationLayoutResolver {
         )
     }
 
-    /// Preset resolution for the Layer 4 app navigation split shell (same contract as `resolveSettingsContainer`).
+    /// Preset resolution for the Layer 4 app navigation split shell (single sidebar + detail; GitHub #330).
+    /// Settings nested shells keep ``resolveSettingsContainer(availableWidth:)``.
     public static func resolveAppNavigationShell(availableWidth: CGFloat) -> NavigationLayoutResolution {
         resolveLayer4NestedSplitShell(
             availableWidth: availableWidth,
@@ -234,12 +248,50 @@ public enum NavigationLayoutResolver {
         )
     }
 
-    /// Same contract as ``resolveSettingsContainer(availableWidth:stressMetrics:)`` for app navigation shell parity (#205 / #208).
+    /// Same contract as ``resolveAppNavigationShell(availableWidth:)`` with stress metrics folded into detail minimum (#208 / #330).
     public static func resolveAppNavigationShell(
         availableWidth: CGFloat,
         stressMetrics: NavigationLayoutStressMetrics
     ) -> NavigationLayoutResolution {
-        resolveSettingsContainer(availableWidth: availableWidth, stressMetrics: stressMetrics)
+        let minDetail = effectiveDetailMinimumWidthForNestedSplit(stressMetrics: stressMetrics)
+        return resolveLayer4NestedSplitShell(
+            availableWidth: availableWidth,
+            minimumDetailWidth: minDetail
+        )
+    }
+
+    /// Column min/ideal/max for app-nav `NavigationSplitView` sidebar; `nil` when even the shrink floor + detail cannot fit (#330).
+    public static func appNavigationSidebarColumnSizing(
+        availableWidth: CGFloat,
+        profile: NavigationSidebarProfile = .textSidebar,
+        minimumDetailWidth: CGFloat = layer4NestedSplitShellMinimumDetailWidth,
+        shrinkFloor: CGFloat = NavigationSidebarProfile.iconRail.minWidth
+    ) -> NavigationSplitColumnSizing? {
+        // Stub: wrong until #330 green implementation.
+        _ = (availableWidth, profile, minimumDetailWidth, shrinkFloor)
+        return nil
+    }
+
+    /// Canonical Layer 4 UI presentation for **app navigation** available width (#330).
+    public static func layer4AppNavigationCompactPresentation(
+        forAvailableWidth width: CGFloat
+    ) -> NavigationLayoutCompactPresentation {
+        NavigationLayoutCompactPresentation(resolution: resolveAppNavigationShell(availableWidth: width))
+    }
+
+    /// App-nav compact presentation after resize, preserving prior compact mode across churn (#208 / #330).
+    public static func layer4AppNavigationCompactPresentationForTransition(
+        availableWidth: CGFloat,
+        previousPresentation: NavigationLayoutCompactPresentation
+    ) -> NavigationLayoutCompactPresentation {
+        let fresh = layer4AppNavigationCompactPresentation(forAvailableWidth: availableWidth)
+        if fresh == .fullSplit {
+            return .fullSplit
+        }
+        if previousPresentation == .detailOnlyCollapsedInner {
+            return .detailOnlyCollapsedInner
+        }
+        return fresh
     }
 
     /// Same as ``resolveSettingsContainer(availableWidth:)`` but with **stress metrics** folded into the effective minimum detail width (#208).
