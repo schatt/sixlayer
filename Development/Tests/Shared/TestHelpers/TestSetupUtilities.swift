@@ -45,27 +45,47 @@ final class HostingControllerStorage {
         }
     }
 
-    private static var storage: [ObjectIdentifier: HostedEntry] = [:]
+    private static var storageByTestID: [Test.ID: [ObjectIdentifier: HostedEntry]] = [:]
+    private static var unscopedStorage: [ObjectIdentifier: HostedEntry] = [:]
     private static let lock = NSLock()
     private static var lastKnownTestID: Test.ID?
 
     static func store(controller: AnyObject, window: AnyObject, for view: Any) {
+        let entry = HostedEntry(window: window, controller: controller)
+        let key = ObjectIdentifier(view as AnyObject)
         lock.lock()
         defer { lock.unlock() }
-        storage[ObjectIdentifier(view as AnyObject)] = HostedEntry(window: window, controller: controller)
+        if let testID = Test.current?.id {
+            var bucket = storageByTestID[testID, default: [:]]
+            bucket[key] = entry
+            storageByTestID[testID] = bucket
+        } else {
+            unscopedStorage[key] = entry
+        }
     }
 
     static func remove(for view: Any) {
+        let key = ObjectIdentifier(view as AnyObject)
         lock.lock()
         defer { lock.unlock() }
-        storage.removeValue(forKey: ObjectIdentifier(view as AnyObject))
+        if let testID = Test.current?.id {
+            storageByTestID[testID]?.removeValue(forKey: key)
+        } else {
+            unscopedStorage.removeValue(forKey: key)
+        }
     }
 
-    /// Tear down every retained hosting window/controller pair and clear storage.
-    static func releaseAll() {
+    /// Tear down hosted windows for one test or, when `testID` is nil, every retained host.
+    static func releaseAll(for testID: Test.ID? = nil) {
         lock.lock()
-        let entries = Array(storage.values)
-        storage.removeAll()
+        let entries: [HostedEntry]
+        if let testID {
+            entries = Array(storageByTestID.removeValue(forKey: testID)?.values ?? [])
+        } else {
+            entries = Array(storageByTestID.values.flatMap(\.values)) + Array(unscopedStorage.values)
+            storageByTestID.removeAll()
+            unscopedStorage.removeAll()
+        }
         lock.unlock()
         entries.forEach { $0.tearDown() }
     }
@@ -79,7 +99,9 @@ final class HostingControllerStorage {
     static func releaseHostsForNewTestIfNeeded() {
         guard let currentID = Test.current?.id else { return }
         if currentID != lastKnownTestID {
-            releaseAll()
+            if let previousID = lastKnownTestID {
+                releaseAll(for: previousID)
+            }
             lastKnownTestID = currentID
         }
     }
@@ -349,6 +371,10 @@ public enum TestSetupUtilities {
     public static func cleanupTestEnvironment() {
         // Clear all test overrides
         RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-        HostingControllerStorage.releaseAll()
+        if let testID = Test.current?.id {
+            HostingControllerStorage.releaseAll(for: testID)
+        } else {
+            HostingControllerStorage.releaseAll()
+        }
     }
 }
