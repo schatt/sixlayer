@@ -6,7 +6,7 @@ import SwiftUI
 /// BUSINESS PURPOSE: Accessibility tests for MaterialAccessibilityManager.swift classes
 /// Ensures MaterialAccessibilityManager classes generate proper accessibility identifiers
 /// for automated testing and accessibility tools compliance
-@Suite("Material Accessibility Manager Accessibility")
+@Suite("Material Accessibility Manager Accessibility", HostedViewTestIsolationTrait())
 open class MaterialAccessibilityManagerAccessibilityTests: BaseTestClass {
     
     // MARK: - MaterialAccessibilityManager Tests
