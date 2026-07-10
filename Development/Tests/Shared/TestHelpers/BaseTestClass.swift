@@ -42,8 +42,9 @@ open class BaseTestClass {
     }
 
     deinit {
-        guard let hostingTestID else { return }
-        HostingControllerStorage.releaseAll(for: hostingTestID)
+        let testID = hostingTestID ?? HostingControllerStorage.scopeTestID
+        guard let testID else { return }
+        HostingControllerStorage.teardownAfterTest(testID)
     }
     
     /// Isolated test configuration for this test
