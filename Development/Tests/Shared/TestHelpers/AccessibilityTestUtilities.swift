@@ -146,7 +146,7 @@ private func preferredAccessibilityIdentifierFromCandidates(_ candidates: [Strin
     let unique = uniqueNonEmptyAccessibilityIdentifiers(candidates)
     guard !unique.isEmpty else { return nil }
     if let view {
-        let anchors = AccessibilityTestUtilities.explicitNamedModifierNames(in: view)
+        let anchors = AccessibilityTestUtilities.harnessIdentifierAnchorNames(in: view)
         for anchor in anchors.reversed() {
             if let match = unique.first(where: { $0.localizedCaseInsensitiveContains(anchor) }) {
                 return match
@@ -158,6 +158,23 @@ private func preferredAccessibilityIdentifierFromCandidates(_ candidates: [Strin
         let rhsDepth = rhs.split(separator: ".").count
         if lhsDepth != rhsDepth { return lhsDepth < rhsDepth }
         return lhs.count < rhs.count
+    }
+}
+
+@MainActor
+private func filterHarnessIdentifiersForLocalAutomaticDisable<V: View>(
+    view: V,
+    candidates: [String]
+) -> [String] {
+    guard AccessibilityTestUtilities.viewHasDisableAutomaticAccessibilityIdentifiersModifier(in: view) else {
+        return candidates
+    }
+    let blocked = AccessibilityTestUtilities.basicAutomaticComplianceIdentifierAnchorNames(in: view)
+    guard !blocked.isEmpty else { return candidates }
+    return candidates.filter { candidate in
+        !blocked.contains { name in
+            !name.isEmpty && candidate.localizedCaseInsensitiveContains(name)
+        }
     }
 }
 
@@ -187,6 +204,10 @@ private func collectAccessibilityIdentifierCandidateBucketsForTest<V: View>(
         )
         buckets.debugLog = AccessibilityTestUtilities.parsedIdentifiersFromConfigDebugLog(config: cfg)
     }
+    buckets.hosted = filterHarnessIdentifiersForLocalAutomaticDisable(view: view, candidates: buckets.hosted)
+    buckets.inspected = filterHarnessIdentifiersForLocalAutomaticDisable(view: view, candidates: buckets.inspected)
+    buckets.synthesized = filterHarnessIdentifiersForLocalAutomaticDisable(view: view, candidates: buckets.synthesized)
+    buckets.debugLog = filterHarnessIdentifiersForLocalAutomaticDisable(view: view, candidates: buckets.debugLog)
     return buckets
 }
 #endif
@@ -213,7 +234,10 @@ public func getAccessibilityIdentifierForTest<V: View>(view: V, hostedRoot: Any?
         return id
     }
     if let cfg = AccessibilityIdentifierConfig.currentTaskLocalConfig {
-        let fromLog = AccessibilityTestUtilities.parsedIdentifiersFromConfigDebugLog(config: cfg)
+        let fromLog = filterHarnessIdentifiersForLocalAutomaticDisable(
+            view: view,
+            candidates: AccessibilityTestUtilities.parsedIdentifiersFromConfigDebugLog(config: cfg)
+        )
         if let id = fromLog.reversed().first(where: { !$0.isEmpty && $0.split(separator: ".").count == 1 }) {
             return id
         }
@@ -1409,8 +1433,63 @@ public enum AccessibilityTestUtilities {
         explicitNamedModifierNames(in: view as Any)
     }
 
+    /// Anchor names for harness candidate preference: explicit `.named()` plus `basicAutomaticCompliance(identifierName:)`.
     @MainActor
-    private static func viewHasDisableAutomaticAccessibilityIdentifiersModifier(
+    public static func harnessIdentifierAnchorNames(in value: Any) -> [String] {
+        var seen = Set<String>()
+        var anchors: [String] = []
+        func append(_ name: String?) {
+            guard let name = name?.trimmingCharacters(in: .whitespacesAndNewlines), !name.isEmpty else { return }
+            guard seen.insert(name).inserted else { return }
+            anchors.append(name)
+        }
+        for name in explicitNamedModifierNames(in: value) { append(name) }
+        for name in basicAutomaticComplianceIdentifierAnchorNames(in: value) { append(name) }
+        return anchors
+    }
+
+    @MainActor
+    public static func basicAutomaticComplianceIdentifierAnchorNames(
+        in value: Any,
+        remainingDepth: Int = 12
+    ) -> [String] {
+        var results: [String] = []
+        collectBasicAutomaticComplianceIdentifierAnchorNames(
+            in: value,
+            remainingDepth: remainingDepth,
+            into: &results
+        )
+        return results
+    }
+
+    @MainActor
+    private static func collectBasicAutomaticComplianceIdentifierAnchorNames(
+        in value: Any,
+        remainingDepth: Int,
+        into results: inout [String]
+    ) {
+        guard remainingDepth >= 0 else { return }
+        let typeName = String(describing: Swift.type(of: value))
+        if typeName.contains("BasicAutomaticComplianceModifier") {
+            let mirror = Mirror(reflecting: value)
+            for child in mirror.children where child.label == "identifierName" {
+                if let name = child.value as? String, !name.isEmpty {
+                    results.append(name)
+                }
+            }
+        }
+        let mirror = Mirror(reflecting: value)
+        for child in mirror.children {
+            collectBasicAutomaticComplianceIdentifierAnchorNames(
+                in: child.value,
+                remainingDepth: remainingDepth - 1,
+                into: &results
+            )
+        }
+    }
+
+    @MainActor
+    static func viewHasDisableAutomaticAccessibilityIdentifiersModifier(
         in value: Any,
         remainingDepth: Int = 12
     ) -> Bool {
