@@ -11,7 +11,7 @@ import UIKit
 #endif
 
 /// Behavioral tests for ``platformModalSheetNavigationChrome_L4`` (issue #223).
-@Suite
+@Suite(HostedViewTestIsolationTrait())
 open class PlatformModalSheetNavigationChromeLayer4Tests: BaseTestClass {
 
     // MARK: - API surface
