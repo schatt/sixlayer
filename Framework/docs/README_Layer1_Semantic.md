@@ -231,6 +231,33 @@ platformPresentNavigationStack_L1(
 **See [NavigationStackGuide.md](NavigationStackGuide.md) for complete documentation.**
 
 ### **App Navigation with Device-Aware Pattern Selection**
+
+**Preferred (framework-owned adaptive sidebar, GitHub #331):** structured rows so SixLayer can step `textSidebar` → `compactList` → `iconRail` (icons only, a11y labels retained):
+
+```swift
+enum AppPane: String, Hashable, CaseIterable, Sendable {
+    case garage, trips, settings
+}
+
+@State private var navState = PlatformAppNavigationTopLevelState<AppPane>(deviceType: .current)
+let descriptors: [AppNavigationPaneDescriptor<AppPane>] = [
+    .init(id: .garage, titleKey: "Garage", systemImage: "car"),
+    .init(id: .trips, titleKey: "Trips", systemImage: "map"),
+    .init(id: .settings, titleKey: "Settings", systemImage: "gearshape")
+]
+
+platformPresentManagedAppNavigation_L1(
+    columnVisibility: $columnVisibility,
+    showingNavigationSheet: $showingNavigationSheet,
+    state: $navState,
+    descriptors: descriptors
+) { selected in
+    DetailView(pane: selected)
+}
+```
+
+**Escape hatch (opaque `@ViewBuilder` sidebar):** custom chrome; column width still follows #330, but icon-only is not automatic. Read `\.navigationSidebarRenderingProfile` to adapt manually.
+
 ```swift
 platformPresentAppNavigation_L1(
     columnVisibility: $columnVisibility,

@@ -146,7 +146,11 @@ private struct Layer4NestedSplitShellPresentationHost<Sidebar: View, Detail: Vie
             let columnSeeded = columnSeededPresentation()
             let prev = persistedPresentation ?? columnSeeded ?? fresh
             let presentation = transitionPresentation(availableWidth: width, previous: prev)
+            let renderingProfile = usesAppNavigationWidthBudget
+                ? NavigationLayoutResolver.activeSidebarRenderingProfile(availableWidth: width)
+                : NavigationSidebarProfile.textSidebar
             shellContent(presentation: presentation, availableWidth: width)
+                .environment(\.navigationSidebarRenderingProfile, renderingProfile)
                 .task(id: widthTaskID(width)) {
                     syncPersistedPresentationForWidth(width)
                 }
