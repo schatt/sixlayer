@@ -27,9 +27,19 @@ public struct HostedViewTestIsolationTrait: Sendable, TestTrait, SuiteTrait, Tes
         performing function: @Sendable () async throws -> Void
     ) async throws {
         let testID = test.id
-        try await function()
+        var propagation: Error?
+        try await HostingControllerStorage.$scopeTestID.withValue(testID) {
+            do {
+                try await function()
+            } catch {
+                propagation = error
+            }
+        }
         await MainActor.run {
-            HostingControllerStorage.releaseAll(for: testID)
+            HostingControllerStorage.teardownAfterTest(testID)
+        }
+        if let propagation {
+            throw propagation
         }
     }
 }
