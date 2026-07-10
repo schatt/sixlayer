@@ -4,7 +4,7 @@ import UniformTypeIdentifiers
 @testable import SixLayerFramework
 
 /// `platformPresentationDetents` and `platformFileImporter` (Issue #170). Grouped; keep <=10 tests.
-@Suite("Platform Presentation and File Importer Extensions")
+@Suite("Platform Presentation and File Importer Extensions", HostedViewTestIsolationTrait())
 open class PlatformPresentationFileImporterExtensionsTests: BaseTestClass {
 
     @MainActor
