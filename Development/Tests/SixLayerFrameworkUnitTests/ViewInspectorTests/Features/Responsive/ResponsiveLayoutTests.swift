@@ -8,7 +8,7 @@ import SwiftUI
 /// BUSINESS PURPOSE: Ensure ResponsiveLayout generates proper accessibility identifiers
 /// TESTING SCOPE: All components in ResponsiveLayout.swift
 /// METHODOLOGY: Test each component on both iOS and macOS platforms as required by mandatory testing guidelines
-@Suite("Responsive Layout")
+@Suite("Responsive Layout", HostedViewTestIsolationTrait())
 /// NOTE: Not marked @MainActor on class to allow parallel execution
 open class ResponsiveLayoutTests: BaseTestClass {
     
