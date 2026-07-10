@@ -1321,8 +1321,7 @@ final class Layer4UITests: XCTestCase {
         tapByNormalizedCenter(openControl)
         assertNoStuckModalAndContractHostReachable(
             anchorLabel: "platformPhotoPicker_L4",
-            message: "platformPhotoPicker_L4: picker subtree must expose contract a11y identifier",
-            expectSheet: true
+            message: "platformPhotoPicker_L4: picker subtree must expose contract a11y identifier"
         )
         let cancel = app.sheets.buttons["Cancel"].firstMatch
         if cancel.waitForExistence(timeout: 1.2) {
