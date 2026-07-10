@@ -1005,12 +1005,10 @@ struct Layer4ContractOnlyView: View {
             }
             .accessibilityIdentifier("L4ContractOpenURL")
             .accessibilityLabel("L4ContractOpenURL")
-            if let openURLResult = l4ContractOpenURLResult {
-                Text("L4ContractOpenURLResult:\(openURLResult ? "true" : "false")")
-                    .font(.caption)
-                    .accessibilityIdentifier("L4ContractOpenURLResult")
-                    .accessibilityLabel("L4ContractOpenURLResult:\(openURLResult ? "true" : "false")")
-            }
+            Text("L4ContractOpenURLResult:\(l4ContractOpenURLResult.map { $0 ? "true" : "false" } ?? "pending")")
+                .font(.caption)
+                .accessibilityIdentifier("L4ContractOpenURLResult")
+                .accessibilityLabel("L4ContractOpenURLResult:\(l4ContractOpenURLResult.map { $0 ? "true" : "false" } ?? "pending")")
             Text("Remote notifications (platformRegisterForRemoteNotifications_L4)")
                 .font(.caption)
                 .foregroundColor(.secondary)
@@ -1019,12 +1017,10 @@ struct Layer4ContractOnlyView: View {
             }
             .accessibilityIdentifier("L4ContractRegisterRemoteNotifications")
             .accessibilityLabel("L4ContractRegisterRemoteNotifications")
-            if let registerResult = l4ContractRegisterRemoteNotificationsResult {
-                Text("L4ContractRegisterRemoteNotificationsResult:\(registerResult ? "true" : "false")")
-                    .font(.caption)
-                    .accessibilityIdentifier("L4ContractRegisterRemoteNotificationsResult")
-                    .accessibilityLabel("L4ContractRegisterRemoteNotificationsResult:\(registerResult ? "true" : "false")")
-            }
+            Text("L4ContractRegisterRemoteNotificationsResult:\(l4ContractRegisterRemoteNotificationsResult.map { $0 ? "true" : "false" } ?? "pending")")
+                .font(.caption)
+                .accessibilityIdentifier("L4ContractRegisterRemoteNotificationsResult")
+                .accessibilityLabel("L4ContractRegisterRemoteNotificationsResult:\(l4ContractRegisterRemoteNotificationsResult.map { $0 ? "true" : "false" } ?? "pending")")
             Text("CloudKit Sync Status")
                 .font(.caption)
                 .foregroundColor(.secondary)
