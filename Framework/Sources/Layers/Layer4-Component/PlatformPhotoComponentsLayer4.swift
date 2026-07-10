@@ -953,14 +953,13 @@ private struct XCUITestPhotoPickerContractHost: View {
     var body: some View {
         VStack(spacing: 16) {
             Text("XCUITest Photo Picker Contract")
-                .accessibilityIdentifier("platformPhotoPicker_L4")
-                .accessibilityLabel("platformPhotoPicker_L4")
             Button("Cancel") { dismiss() }
                 .accessibilityIdentifier("SixLayer.main.ui.platformPhotoPicker_L4.cancel")
         }
         .padding()
-        .automaticCompliance(named: "platformPhotoPicker_L4")
         .accessibilityIdentifier("platformPhotoPicker_L4")
+        .accessibilityLabel("platformPhotoPicker_L4")
+        .automaticCompliance(named: "platformPhotoPicker_L4")
     }
 }
 #endif
