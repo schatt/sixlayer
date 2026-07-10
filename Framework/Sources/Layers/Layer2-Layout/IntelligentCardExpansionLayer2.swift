@@ -66,7 +66,7 @@ public func determineIntelligentCardLayout_L2(
     // Base calculations
     let layoutPadding: CGFloat = 16
     let minCardWidth = IntelligentCardResizeBudget.preferredMinCardWidth
-    let safeScreenWidth = max(screenWidth, layoutPadding * 2 + minCardWidth)
+    let safeScreenWidth = max(screenWidth, layoutPadding * 2 + 1)
     let availableWidth = safeScreenWidth - layoutPadding * 2
     let maxCardWidth = IntelligentCardResizeBudget.maxCardWidth
     let spacing = calculateOptimalSpacing(deviceType: deviceType, contentComplexity: contentComplexity)
