@@ -3,7 +3,7 @@ import SwiftUI
 @testable import SixLayerFramework
 
 /// Navigation routing + open settings helpers (Issue #170). Grouped; keep <=10 tests.
-@Suite("Platform Navigation Routing Extensions")
+@Suite("Platform Navigation Routing Extensions", HostedViewTestIsolationTrait())
 open class PlatformNavigationRoutingExtensionsTests: BaseTestClass {
 
     struct NavRow: Identifiable, Hashable {
