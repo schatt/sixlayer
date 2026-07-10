@@ -64,49 +64,62 @@ public struct RuntimeCapabilityDetection {
         return SixLayerPlatform.current
     }
 
-    // MARK: - Private Capability Override Getters (@TaskLocal via RuntimeCapabilityHarness)
+    // MARK: - Private Capability Override Getters (task-local bag via RuntimeCapabilityHarness)
 
-    private static var testTouchSupport: Bool? { RuntimeCapabilityHarness.testTouchSupport }
-    private static var testHapticFeedback: Bool? { RuntimeCapabilityHarness.testHapticFeedback }
-    private static var testHover: Bool? { RuntimeCapabilityHarness.testHover }
-    private static var testVoiceOver: Bool? { RuntimeCapabilityHarness.testVoiceOver }
-    private static var testSwitchControl: Bool? { RuntimeCapabilityHarness.testSwitchControl }
-    private static var testAssistiveTouch: Bool? { RuntimeCapabilityHarness.testAssistiveTouch }
-    private static var testHighContrast: Bool? { RuntimeCapabilityHarness.testHighContrast }
+    private static var capabilityOverrides: CapabilityTestOverrideBag? {
+        RuntimeCapabilityHarness.capabilityTestOverrideBag
+    }
 
-    private static var testPhotosHasCamera: Bool? { RuntimeCapabilityHarness.testPhotosHasCamera }
+    private static var testTouchSupport: Bool? { capabilityOverrides?.testTouchSupport }
+    private static var testHapticFeedback: Bool? { capabilityOverrides?.testHapticFeedback }
+    private static var testHover: Bool? { capabilityOverrides?.testHover }
+    private static var testVoiceOver: Bool? { capabilityOverrides?.testVoiceOver }
+    private static var testSwitchControl: Bool? { capabilityOverrides?.testSwitchControl }
+    private static var testAssistiveTouch: Bool? { capabilityOverrides?.testAssistiveTouch }
+    private static var testHighContrast: Bool? { capabilityOverrides?.testHighContrast }
+
+    private static var testPhotosHasCamera: Bool? { capabilityOverrides?.testPhotosHasCamera }
     private static var testPhotosIsPhotoLibraryPickerAvailable: Bool? {
-        RuntimeCapabilityHarness.testPhotosIsPhotoLibraryPickerAvailable
+        capabilityOverrides?.testPhotosIsPhotoLibraryPickerAvailable
     }
     private static var testPhotosSupportsLiveDataScanner: Bool? {
-        RuntimeCapabilityHarness.testPhotosSupportsLiveDataScanner
+        capabilityOverrides?.testPhotosSupportsLiveDataScanner
     }
 
-    private static var testVisionIsFrameworkAvailable: Bool? { RuntimeCapabilityHarness.testVisionIsFrameworkAvailable }
-    private static var testVisionSupportsOCR: Bool? { RuntimeCapabilityHarness.testVisionSupportsOCR }
-    private static var testVisionSupportsImageAnalyzer: Bool? { RuntimeCapabilityHarness.testVisionSupportsImageAnalyzer }
+    private static var testVisionIsFrameworkAvailable: Bool? { capabilityOverrides?.testVisionIsFrameworkAvailable }
+    private static var testVisionSupportsOCR: Bool? { capabilityOverrides?.testVisionSupportsOCR }
+    private static var testVisionSupportsImageAnalyzer: Bool? { capabilityOverrides?.testVisionSupportsImageAnalyzer }
     private static var testVisionSupportsDocumentCamera: Bool? {
-        RuntimeCapabilityHarness.testVisionSupportsDocumentCamera
+        capabilityOverrides?.testVisionSupportsDocumentCamera
     }
 
     private static var testFilesSupportsSecurityScopedResources: Bool? {
-        RuntimeCapabilityHarness.testFilesSupportsSecurityScopedResources
+        capabilityOverrides?.testFilesSupportsSecurityScopedResources
     }
     private static var testFilesSupportsSecurityScopedBookmarks: Bool? {
-        RuntimeCapabilityHarness.testFilesSupportsSecurityScopedBookmarks
+        capabilityOverrides?.testFilesSupportsSecurityScopedBookmarks
     }
 
     #if os(iOS)
-    private static var testiOSHoverDeviceCapability: Bool? { RuntimeCapabilityHarness.testiOSHoverDeviceCapability }
+    private static var testiOSHoverDeviceCapability: Bool? { capabilityOverrides?.testiOSHoverDeviceCapability }
     #endif
 
-    private static var testNetworkIsConstrained: Bool? { RuntimeCapabilityHarness.testNetworkIsConstrained }
-    private static var testNetworkIsExpensive: Bool? { RuntimeCapabilityHarness.testNetworkIsExpensive }
-    private static var testNetworkHasPathSnapshot: Bool? { RuntimeCapabilityHarness.testNetworkHasPathSnapshot }
-    private static var testMediaHasMicrophoneInput: Bool? { RuntimeCapabilityHarness.testMediaHasMicrophoneInput }
-    private static var testMediaSupportsScreenCapture: Bool? { RuntimeCapabilityHarness.testMediaSupportsScreenCapture }
-    private static var testPasteboardCanReadStrings: Bool? { RuntimeCapabilityHarness.testPasteboardCanReadStrings }
-    private static var testPasteboardCanWriteStrings: Bool? { RuntimeCapabilityHarness.testPasteboardCanWriteStrings }
+    private static var testNetworkIsConstrained: Bool? { capabilityOverrides?.testNetworkIsConstrained }
+    private static var testNetworkIsExpensive: Bool? { capabilityOverrides?.testNetworkIsExpensive }
+    private static var testNetworkHasPathSnapshot: Bool? { capabilityOverrides?.testNetworkHasPathSnapshot }
+    private static var testMediaHasMicrophoneInput: Bool? { capabilityOverrides?.testMediaHasMicrophoneInput }
+    private static var testMediaSupportsScreenCapture: Bool? { capabilityOverrides?.testMediaSupportsScreenCapture }
+    private static var testPasteboardCanReadStrings: Bool? { capabilityOverrides?.testPasteboardCanReadStrings }
+    private static var testPasteboardCanWriteStrings: Bool? { capabilityOverrides?.testPasteboardCanWriteStrings }
+
+    private static func mutableCapabilityOverrides() -> CapabilityTestOverrideBag {
+        guard let bag = RuntimeCapabilityHarness.capabilityTestOverrideBag else {
+            preconditionFailure(
+                "RuntimeCapabilityDetection.setTest* requires DefaultRuntimeCapabilityIsolationTrait or RuntimeCapabilityHarness.withCapabilityTestOverrideBag(_:)."
+            )
+        }
+        return bag
+    }
     
     // MARK: - High Contrast Detection
     
@@ -663,7 +676,7 @@ public struct RuntimeCapabilityDetection {
             if value == false || value == nil {
                 clearVisionDependentTestOverrides()
             }
-            RuntimeCapabilityHarness.testVisionIsFrameworkAvailable = value
+            mutableCapabilityOverrides().testVisionIsFrameworkAvailable = value
         }
 
         public static func setTestSupportsOCR(_ value: Bool?) {
@@ -677,7 +690,7 @@ public struct RuntimeCapabilityDetection {
                 }
                 setTestIsFrameworkAvailable(true)
             }
-            RuntimeCapabilityHarness.testVisionSupportsOCR = value
+            mutableCapabilityOverrides().testVisionSupportsOCR = value
         }
 
         public static func setTestSupportsImageAnalyzer(_ value: Bool?) {
@@ -691,7 +704,7 @@ public struct RuntimeCapabilityDetection {
                 }
                 setTestIsFrameworkAvailable(true)
             }
-            RuntimeCapabilityHarness.testVisionSupportsImageAnalyzer = value
+            mutableCapabilityOverrides().testVisionSupportsImageAnalyzer = value
         }
 
         public static func setTestSupportsDocumentCamera(_ value: Bool?) {
@@ -705,7 +718,7 @@ public struct RuntimeCapabilityDetection {
                 }
                 setTestIsFrameworkAvailable(true)
             }
-            RuntimeCapabilityHarness.testVisionSupportsDocumentCamera = value
+            mutableCapabilityOverrides().testVisionSupportsDocumentCamera = value
         }
 
         private static var platformShipsVisionFramework: Bool {
@@ -713,9 +726,10 @@ public struct RuntimeCapabilityDetection {
         }
 
         private static func clearVisionDependentTestOverrides() {
-            RuntimeCapabilityHarness.testVisionSupportsOCR = nil
-            RuntimeCapabilityHarness.testVisionSupportsImageAnalyzer = nil
-            RuntimeCapabilityHarness.testVisionSupportsDocumentCamera = nil
+            let bag = mutableCapabilityOverrides()
+            bag.testVisionSupportsOCR = nil
+            bag.testVisionSupportsImageAnalyzer = nil
+            bag.testVisionSupportsDocumentCamera = nil
         }
     }
 
@@ -739,12 +753,12 @@ public struct RuntimeCapabilityDetection {
 
         /// Thread-local override for tests. `nil` removes the entry so ``clearAllCapabilityOverrides()`` and subsequent reads use OS detection.
         public static func setTestSupportsSecurityScopedResources(_ value: Bool?) {
-            RuntimeCapabilityHarness.testFilesSupportsSecurityScopedResources = value
+            mutableCapabilityOverrides().testFilesSupportsSecurityScopedResources = value
         }
 
         /// Task-local override for tests. `nil` removes the entry so ``clearAllCapabilityOverrides()`` and subsequent reads use OS detection.
         public static func setTestSupportsSecurityScopedBookmarks(_ value: Bool?) {
-            RuntimeCapabilityHarness.testFilesSupportsSecurityScopedBookmarks = value
+            mutableCapabilityOverrides().testFilesSupportsSecurityScopedBookmarks = value
         }
     }
 
@@ -767,15 +781,15 @@ public struct RuntimeCapabilityDetection {
         }
 
         public static func setTestIsConstrained(_ value: Bool?) {
-            RuntimeCapabilityHarness.testNetworkIsConstrained = value
+            mutableCapabilityOverrides().testNetworkIsConstrained = value
         }
 
         public static func setTestIsExpensive(_ value: Bool?) {
-            RuntimeCapabilityHarness.testNetworkIsExpensive = value
+            mutableCapabilityOverrides().testNetworkIsExpensive = value
         }
 
         public static func setTestHasPathSnapshot(_ value: Bool?) {
-            RuntimeCapabilityHarness.testNetworkHasPathSnapshot = value
+            mutableCapabilityOverrides().testNetworkHasPathSnapshot = value
         }
     }
 
@@ -790,11 +804,11 @@ public struct RuntimeCapabilityDetection {
         }
 
         public static func setTestHasMicrophoneInput(_ value: Bool?) {
-            RuntimeCapabilityHarness.testMediaHasMicrophoneInput = value
+            mutableCapabilityOverrides().testMediaHasMicrophoneInput = value
         }
 
         public static func setTestSupportsScreenCapture(_ value: Bool?) {
-            RuntimeCapabilityHarness.testMediaSupportsScreenCapture = value
+            mutableCapabilityOverrides().testMediaSupportsScreenCapture = value
         }
     }
 
@@ -809,11 +823,11 @@ public struct RuntimeCapabilityDetection {
         }
 
         public static func setTestCanReadStrings(_ value: Bool?) {
-            RuntimeCapabilityHarness.testPasteboardCanReadStrings = value
+            mutableCapabilityOverrides().testPasteboardCanReadStrings = value
         }
 
         public static func setTestCanWriteStrings(_ value: Bool?) {
-            RuntimeCapabilityHarness.testPasteboardCanWriteStrings = value
+            mutableCapabilityOverrides().testPasteboardCanWriteStrings = value
         }
     }
 
@@ -867,15 +881,15 @@ public struct RuntimeCapabilityDetection {
         }
 
         public static func setTestHasCamera(_ value: Bool?) {
-            RuntimeCapabilityHarness.testPhotosHasCamera = value
+            mutableCapabilityOverrides().testPhotosHasCamera = value
         }
 
         public static func setTestIsPhotoLibraryPickerAvailable(_ value: Bool?) {
-            RuntimeCapabilityHarness.testPhotosIsPhotoLibraryPickerAvailable = value
+            mutableCapabilityOverrides().testPhotosIsPhotoLibraryPickerAvailable = value
         }
 
         public static func setTestSupportsLiveDataScanner(_ value: Bool?) {
-            RuntimeCapabilityHarness.testPhotosSupportsLiveDataScanner = value
+            mutableCapabilityOverrides().testPhotosSupportsLiveDataScanner = value
         }
     }
 
@@ -1209,14 +1223,14 @@ public struct RuntimeCapabilityDetection {
     // MARK: - Test override hooks (public for consumer app tests; Resolves #311)
 
     private static func logIgnoredTestOverrideOnce(key: String, message: String) {
-        var keys = RuntimeCapabilityHarness.loggedIgnoredTestOverrideKeys ?? []
-        guard !keys.contains(key) else { return }
-        keys.append(key)
-        RuntimeCapabilityHarness.loggedIgnoredTestOverrideKeys = keys
+        let bag = mutableCapabilityOverrides()
+        guard !bag.loggedIgnoredTestOverrideKeys.contains(key) else { return }
+        bag.loggedIgnoredTestOverrideKeys.append(key)
         os_log("%{public}@", log: .default, type: .info, message)
     }
 
     private static func writeTestTouchSupportOverride(_ value: Bool?) {
+        let bag = mutableCapabilityOverrides()
         #if os(iOS) || os(watchOS)
         switch value {
         case .some(false):
@@ -1225,16 +1239,14 @@ public struct RuntimeCapabilityDetection {
                 message: "SixLayerFramework: setTestTouchSupport(false) ignored on touch-first platform (primary touch is a platform guarantee)."
             )
         default:
-            var keys = RuntimeCapabilityHarness.loggedIgnoredTestOverrideKeys ?? []
-            keys.removeAll { $0 == "SixLayerFramework.didLogIgnoredTestTouchFalse" }
-            RuntimeCapabilityHarness.loggedIgnoredTestOverrideKeys = keys.isEmpty ? nil : keys
+            bag.loggedIgnoredTestOverrideKeys.removeAll { $0 == "SixLayerFramework.didLogIgnoredTestTouchFalse" }
         }
         #endif
-        RuntimeCapabilityHarness.testTouchSupport = value
+        bag.testTouchSupport = value
     }
 
     private static func writeTestAssistiveTouchOverride(_ value: Bool?) {
-        RuntimeCapabilityHarness.testAssistiveTouch = value
+        mutableCapabilityOverrides().testAssistiveTouch = value
     }
 
     /// Override touch support detection for testing (task-local).
@@ -1250,22 +1262,22 @@ public struct RuntimeCapabilityDetection {
 
     /// Override haptic feedback detection for testing
     public static func setTestHapticFeedback(_ value: Bool?) {
-        RuntimeCapabilityHarness.testHapticFeedback = value
+        mutableCapabilityOverrides().testHapticFeedback = value
     }
 
     /// Override hover detection for testing
     public static func setTestHover(_ value: Bool?) {
-        RuntimeCapabilityHarness.testHover = value
+        mutableCapabilityOverrides().testHover = value
     }
 
     /// Override VoiceOver detection for testing
     public static func setTestVoiceOver(_ value: Bool?) {
-        RuntimeCapabilityHarness.testVoiceOver = value
+        mutableCapabilityOverrides().testVoiceOver = value
     }
 
     /// Override Switch Control detection for testing
     public static func setTestSwitchControl(_ value: Bool?) {
-        RuntimeCapabilityHarness.testSwitchControl = value
+        mutableCapabilityOverrides().testSwitchControl = value
     }
 
     /// Override AssistiveTouch detection for testing.
@@ -1293,13 +1305,13 @@ public struct RuntimeCapabilityDetection {
 
     /// Override high contrast mode detection for testing
     public static func setTestHighContrast(_ value: Bool?) {
-        RuntimeCapabilityHarness.testHighContrast = value
+        mutableCapabilityOverrides().testHighContrast = value
     }
 
     #if os(iOS)
     /// Override iOS hover-device capability probe (separate from `setTestHover` result override).
     public static func setTestiOSHoverDeviceCapability(_ value: Bool?) {
-        RuntimeCapabilityHarness.testiOSHoverDeviceCapability = value
+        mutableCapabilityOverrides().testiOSHoverDeviceCapability = value
     }
     #endif
 
