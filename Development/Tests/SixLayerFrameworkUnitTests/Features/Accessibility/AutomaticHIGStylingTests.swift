@@ -17,7 +17,7 @@ import SwiftUI
  * modifier chains.
  */
 /// NOTE: Serialized to avoid UI conflicts with hostRootPlatformView (prevents Xcode hangs)
-@Suite("Automatic HIG Styling")
+@Suite("Automatic HIG Styling", HostedViewTestIsolationTrait())
 open class AutomaticHIGStylingTests: BaseTestClass {
     
     // MARK: - Automatic Visual Design Tests
