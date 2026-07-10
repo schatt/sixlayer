@@ -3,7 +3,7 @@ import SwiftUI
 import TabularData
 @testable import SixLayerFramework
 
-@Suite("Platform DataFrame Analysis L1 Issue245")
+@Suite("Platform DataFrame Analysis L1 Issue245", HostedViewTestIsolationTrait())
 open class PlatformDataFrameAnalysisL1Issue245Tests: BaseTestClass {
 
     private nonisolated static func issue245_namedAutomaticComplianceFingerprint(componentName: String) -> String {
