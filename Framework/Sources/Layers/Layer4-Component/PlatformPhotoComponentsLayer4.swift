@@ -78,6 +78,7 @@ public enum PlatformPhotoComponentsLayer4 {
     @ViewBuilder
     @MainActor
     public static func platformPhotoPicker_L4(onImageSelected: @escaping (PlatformImage) -> Void) -> some View {
+        #if os(iOS)
         if Self.isXCUITestHost {
             XCUITestPhotoPickerContractHost()
         } else {
@@ -85,6 +86,11 @@ public enum PlatformPhotoComponentsLayer4 {
                 .automaticCompliance(named: "platformPhotoPicker_L4")
                 .accessibilityIdentifier("platformPhotoPicker_L4")
         }
+        #else
+        UnifiedImagePicker(onImageSelected: onImageSelected)
+            .automaticCompliance(named: "platformPhotoPicker_L4")
+            .accessibilityIdentifier("platformPhotoPicker_L4")
+        #endif
     }
     
     // MARK: - Photo Display Components
