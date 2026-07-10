@@ -75,8 +75,8 @@ final class HostingControllerStorage {
     /// Dual-root accessibility tests need two simultaneous hosts; keep a small cap for sequential suites.
     private static let maxRetainedHostsPerTest = 4
 
-    private static var storageByTestID: [Test.ID: TestHostBucket] = [:]
-    private static var unscopedBucket = TestHostBucket()
+    nonisolated(unsafe) private static var storageByTestID: [Test.ID: TestHostBucket] = [:]
+    nonisolated(unsafe) private static var unscopedBucket = TestHostBucket()
     private static let lock = NSLock()
 
     private static func tearDownOnMainThread(_ entries: [HostedEntry]) {
@@ -130,11 +130,21 @@ final class HostingControllerStorage {
         lock.lock()
         let entries: [HostedEntry]
         if let testID {
-            entries = storageByTestID.removeValue(forKey: testID)?.drain() ?? []
+            if var bucket = storageByTestID.removeValue(forKey: testID) {
+                entries = bucket.drain()
+            } else {
+                entries = []
+            }
         } else {
-            entries = storageByTestID.values.flatMap { $0.drain() } + unscopedBucket.drain()
+            var allEntries: [HostedEntry] = []
+            let buckets = storageByTestID
             storageByTestID.removeAll()
+            for var bucket in buckets.values {
+                allEntries.append(contentsOf: bucket.drain())
+            }
+            allEntries.append(contentsOf: unscopedBucket.drain())
             unscopedBucket = TestHostBucket()
+            entries = allEntries
         }
         lock.unlock()
         tearDownOnMainThread(entries)
