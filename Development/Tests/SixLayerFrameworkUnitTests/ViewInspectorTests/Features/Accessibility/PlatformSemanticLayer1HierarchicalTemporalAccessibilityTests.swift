@@ -6,7 +6,7 @@ import SwiftUI
 /// Ensures hierarchical and temporal data presentation functions generate proper accessibility identifiers
 /// for automated testing and accessibility tools compliance
 /// NOTE: Not marked @MainActor on class to allow parallel execution
-@Suite("Platform Semantic Layer Hierarchical Temporal Accessibility")
+@Suite("Platform Semantic Layer Hierarchical Temporal Accessibility", HostedViewTestIsolationTrait())
 open class PlatformSemanticLayer1HierarchicalTemporalAccessibilityTests: BaseTestClass {
     
     
