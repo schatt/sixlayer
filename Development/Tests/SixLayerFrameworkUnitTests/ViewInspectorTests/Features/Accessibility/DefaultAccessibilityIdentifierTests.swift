@@ -11,7 +11,7 @@ import SwiftUI
  * TESTING SCOPE: Tests that the default behavior now enables automatic identifiers
  * METHODOLOGY: Tests that views get automatic identifiers without explicit enabling
  */
-@Suite("Default Accessibility Identifier")
+@Suite("Default Accessibility Identifier", HostedViewTestIsolationTrait())
 /// NOTE: Not marked @MainActor on class to allow parallel execution
 open class DefaultAccessibilityIdentifierTests: BaseTestClass {    /// BUSINESS PURPOSE: Verify that automatic identifiers work by default
     /// TESTING SCOPE: Tests that no explicit enabling is required
