@@ -8,7 +8,7 @@ import SwiftUI
 /// TESTING SCOPE: Animations, keyboard shortcuts, pane locking, divider interactions
 /// METHODOLOGY: Test advanced feature configuration and behavior
 /// Implements Issue #18: Advanced Split View Features
-@Suite("Platform Split View Advanced Features Layer 4")
+@Suite("Platform Split View Advanced Features Layer 4", HostedViewTestIsolationTrait())
 /// NOTE: Not marked @MainActor on class to allow parallel execution
 open class PlatformSplitViewAdvancedLayer4Tests: BaseTestClass {
     
