@@ -44,7 +44,7 @@ The framework is distributed as a Swift Package from the `Framework/` directory.
 ## 🆕 Latest Release: v8.1.1
 
 ### **Patch release**
-🔧 **Patch**: Window/container resize (#330); macOS ViewInspector lane green and parallel-safe capability test hooks (#315). See [RELEASE_v8.1.1.md](Development/RELEASE_v8.1.1.md).
+🔧 **Patch**: Window/container resize (#330); framework-owned adaptive app-nav sidebar (#331); macOS ViewInspector lane green and parallel-safe capability test hooks (#315). See [RELEASE_v8.1.1.md](Development/RELEASE_v8.1.1.md).
 
 ### **Previous Release: v8.1.0 - Minor release**
 🔧 **Minor**: ViewInspector 0.10 test infrastructure — hosted accessibility identifier collection (#314); **SixLayerViewInspectorTestKit** for consumers (#327); typed inspect helpers (#326); deprecated `Inspectable` conformance removal (#328). See [RELEASE_v8.1.0.md](Development/RELEASE_v8.1.0.md).
