@@ -8,7 +8,7 @@ import SwiftUI
 /// BUSINESS PURPOSE: Test that Layer 1 functions generate proper accessibility identifiers
 /// TESTING SCOPE: All Layer 1 presentation functions
 /// METHODOLOGY: TDD Red Phase - tests should fail until accessibility identifiers are implemented
-@Suite("Layer Accessibility")
+@Suite("Layer Accessibility", HostedViewTestIsolationTrait())
 /// NOTE: Not marked @MainActor on class to allow parallel execution
 open class Layer1AccessibilityTests: BaseTestClass {
     
