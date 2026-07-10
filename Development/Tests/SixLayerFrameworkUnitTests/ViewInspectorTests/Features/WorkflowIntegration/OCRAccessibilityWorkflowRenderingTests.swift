@@ -35,7 +35,7 @@ import SwiftUI
 /// Tests that OCR workflow views actually render correctly with proper accessibility
 /// NOTE: Not marked @MainActor on class to allow parallel execution
 /// CRITICAL: These tests MUST run with xcodebuild test (not swift test) to catch rendering issues
-@Suite("OCR Accessibility Workflow Rendering")
+@Suite("OCR Accessibility Workflow Rendering", HostedViewTestIsolationTrait())
 final class OCRAccessibilityWorkflowRenderingTests: BaseTestClass {
     
     // MARK: - Test Helpers
