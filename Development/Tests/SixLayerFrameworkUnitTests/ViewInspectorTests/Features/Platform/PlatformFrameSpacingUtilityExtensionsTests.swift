@@ -4,7 +4,7 @@ import SwiftUI
 
 /// `platformFrame`, `platformContentSpacing`, `platformHelp`, and `platformHoverEffect` utilities (Issue #170).
 /// Grouped; keep <=10 tests.
-@Suite("Platform Frame Spacing Utility Extensions")
+@Suite("Platform Frame Spacing Utility Extensions", HostedViewTestIsolationTrait())
 open class PlatformFrameSpacingUtilityExtensionsTests: BaseTestClass {
 
     @MainActor
