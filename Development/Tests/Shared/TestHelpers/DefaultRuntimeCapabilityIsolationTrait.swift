@@ -15,7 +15,7 @@ import Testing
 public struct DefaultRuntimeCapabilityIsolationTrait: Sendable, TestTrait, SuiteTrait, TestScoping {
     public typealias TestScopeProvider = DefaultRuntimeCapabilityIsolationTrait
 
-    public var isRecursive: Bool { false }
+    public var isRecursive: Bool { true }
 
     public func scopeProvider(for test: Testing.Test, testCase: Testing.Test.Case?) -> DefaultRuntimeCapabilityIsolationTrait? {
         self
@@ -35,21 +35,19 @@ public struct DefaultRuntimeCapabilityIsolationTrait: Sendable, TestTrait, Suite
         try await RuntimeCapabilityHarness.$capabilityTestOverrideBag.withValue(overrideBag) {
             try await RuntimeCapabilityHarness.$macOSTouchEnabledPreference.withValue(touchHarness) {
                 try await RuntimeCapabilityHarness.$macOSHapticEnabledPreference.withValue(hapticHarness) {
-                    // `CapabilityOverride` still uses per-OS-thread storage — clear on main for @MainActor tests.
-                    RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-                    await MainActor.run {
-                        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-                    }
+                    // Parallel-safe: clear only this test's bag and current-thread legacy overrides.
+                    // Do not scrub `UserDefaults.standard` or MainActor-global state — other parallel
+                    // tests (CloudKit queues, hosted views, etc.) share the process (GitHub #334).
+                    overrideBag.clearAll()
+                    CapabilityOverride.clearThreadIsolationFromCurrentThread()
                     defer {
-                        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+                        overrideBag.clearAll()
+                        CapabilityOverride.clearThreadIsolationFromCurrentThread()
                     }
                     do {
                         try await function()
                     } catch {
                         propagation = error
-                    }
-                    await MainActor.run {
-                        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
                     }
                 }
             }
