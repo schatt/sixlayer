@@ -26,6 +26,7 @@ public struct DefaultRuntimeCapabilityIsolationTrait: Sendable, TestTrait, Suite
         testCase: Testing.Test.Case?,
         performing function: @Sendable () async throws -> Void
     ) async throws {
+        let testID = test.id
         // `@TaskLocal` so harness values follow the same async task as `function()` (including
         // `@MainActor` tests), unlike `Thread.current.threadDictionary` which is per-OS-thread.
         let touchHarness: Bool? = false
@@ -43,13 +44,13 @@ public struct DefaultRuntimeCapabilityIsolationTrait: Sendable, TestTrait, Suite
                 defer {
                     RuntimeCapabilityDetection.clearAllCapabilityOverrides()
                     Task { @MainActor in
-                        HostingControllerStorage.releaseAll()
+                        HostingControllerStorage.releaseAll(for: testID)
                     }
                 }
                 try await function()
                 await MainActor.run {
                     RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-                    HostingControllerStorage.releaseAll()
+                    HostingControllerStorage.releaseAll(for: testID)
                 }
             }
         }
