@@ -46,9 +46,9 @@ struct NavigationLayoutResolverAppNavigation331Tests {
         let wide = NavigationLayoutResolver.activeSidebarRenderingProfile(availableWidth: 1400)
         #expect(wide == .textSidebar)
 
-        // Mid: column ideal shrinks toward compact band.
-        let mid = NavigationLayoutResolver.activeSidebarRenderingProfile(availableWidth: 700)
-        // 700 - 480 detail = 220 budget; profileIdeal = 175 → ideal 175 → compactList (< 180 text min)
+        // Mid: budgetIdeal = available - detailMin forces ideal into compact band.
+        // At 620: budgetIdeal = 140; profileIdeal clamped to ≥180 → ideal 140 → compactList.
+        let mid = NavigationLayoutResolver.activeSidebarRenderingProfile(availableWidth: 620)
         #expect(mid == .compactList)
 
         // Narrow but still fits icon-rail floor + detail (80+480=560).
