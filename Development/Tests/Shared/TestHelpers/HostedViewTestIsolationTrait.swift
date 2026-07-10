@@ -26,9 +26,10 @@ public struct HostedViewTestIsolationTrait: Sendable, TestTrait, SuiteTrait, Tes
         testCase: Testing.Test.Case?,
         performing function: @Sendable () async throws -> Void
     ) async throws {
+        let testID = test.id
         defer {
             Task { @MainActor in
-                HostingControllerStorage.releaseAll()
+                HostingControllerStorage.releaseAll(for: testID)
             }
         }
         try await function()
