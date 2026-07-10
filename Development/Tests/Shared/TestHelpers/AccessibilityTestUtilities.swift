@@ -91,45 +91,19 @@ private func allAccessibilityIdentifiersInInspected(_ inspected: ViewInspector.I
 }
 
 /// Collect all accessibility identifiers from the full ViewInspector hierarchy.
-/// Uses findAll for AnyView, VStack, HStack, ZStack and unwraps root AnyView so the inner view (e.g. card with modifier) is checked.
+/// Single `ClassifiedView` walk — overlapping per-type `findAll` calls each recurse the full tree
+/// and explode CPU/memory under parallel `@MainActor` tests (#315).
 @MainActor
 private func allAccessibilityIdentifiersInInspectedRecursive(
     _ inspected: ViewInspector.InspectableView<ViewInspector.ViewType.ClassifiedView>
 ) -> [String] {
     var ids: [String] = []
+    var seen = Set<String>()
     func collect(_ id: String?) {
-        if let id = id, !id.isEmpty { ids.append(id) }
+        guard let id, !id.isEmpty, seen.insert(id).inserted else { return }
+        ids.append(id)
     }
     collect(try? inspected.accessibilityIdentifier())
-    // Unwrap root AnyView: the modifier is on the inner view (e.g. ExpandableCardComponent), not the AnyView container.
-    if let inner = try? inspected.anyView() {
-        collect(try? inner.accessibilityIdentifier())
-        for av in inner.findAll(ViewInspector.ViewType.AnyView.self) { collect(try? av.accessibilityIdentifier()) }
-        for v in inner.findAll(ViewInspector.ViewType.VStack.self) { collect(try? v.accessibilityIdentifier()) }
-        for v in inner.findAll(ViewInspector.ViewType.HStack.self) { collect(try? v.accessibilityIdentifier()) }
-        for v in inner.findAll(ViewInspector.ViewType.ZStack.self) { collect(try? v.accessibilityIdentifier()) }
-        for v in inner.findAll(ViewInspector.ViewType.Button.self) { collect(try? v.accessibilityIdentifier()) }
-        for v in inner.findAll(ViewInspector.ViewType.Text.self) { collect(try? v.accessibilityIdentifier()) }
-    }
-    for av in inspected.findAll(ViewInspector.ViewType.AnyView.self) {
-        collect(try? av.accessibilityIdentifier())
-    }
-    for v in inspected.findAll(ViewInspector.ViewType.VStack.self) {
-        collect(try? v.accessibilityIdentifier())
-    }
-    for v in inspected.findAll(ViewInspector.ViewType.HStack.self) {
-        collect(try? v.accessibilityIdentifier())
-    }
-    for v in inspected.findAll(ViewInspector.ViewType.ZStack.self) {
-        collect(try? v.accessibilityIdentifier())
-    }
-    for v in inspected.findAll(ViewInspector.ViewType.Button.self) {
-        collect(try? v.accessibilityIdentifier())
-    }
-    for v in inspected.findAll(ViewInspector.ViewType.Text.self) {
-        collect(try? v.accessibilityIdentifier())
-    }
-    // ClassifiedView is the generic "any" view type; the modifier may be on a node that only appears as ClassifiedView.
     for node in inspected.findAll(ViewInspector.ViewType.ClassifiedView.self, where: { _ in true }) {
         collect(try? node.accessibilityIdentifier())
     }
@@ -143,16 +117,12 @@ private func allAccessibilityIdentifiersFromTypedInspectable<V: View>(
     _ inspected: ViewInspector.InspectableView<ViewInspector.ViewType.View<V>>
 ) -> [String] {
     var ids: [String] = []
+    var seen = Set<String>()
     func collect(_ id: String?) {
-        if let id = id, !id.isEmpty { ids.append(id) }
+        guard let id, !id.isEmpty, seen.insert(id).inserted else { return }
+        ids.append(id)
     }
     collect(try? inspected.accessibilityIdentifier())
-    for av in inspected.findAll(ViewInspector.ViewType.AnyView.self) { collect(try? av.accessibilityIdentifier()) }
-    for v in inspected.findAll(ViewInspector.ViewType.VStack.self) { collect(try? v.accessibilityIdentifier()) }
-    for v in inspected.findAll(ViewInspector.ViewType.HStack.self) { collect(try? v.accessibilityIdentifier()) }
-    for v in inspected.findAll(ViewInspector.ViewType.ZStack.self) { collect(try? v.accessibilityIdentifier()) }
-    for v in inspected.findAll(ViewInspector.ViewType.Button.self) { collect(try? v.accessibilityIdentifier()) }
-    // Deep traversal: modifier may be on a node that only appears as ClassifiedView (same as AnyView path).
     for node in inspected.findAll(ViewInspector.ViewType.ClassifiedView.self, where: { _ in true }) {
         collect(try? node.accessibilityIdentifier())
     }
