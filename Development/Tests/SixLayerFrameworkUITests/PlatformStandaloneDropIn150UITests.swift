@@ -107,8 +107,8 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
             sd150TypeIntoSecureField(field, text, file: file, line: line)
             return
         }
-        #endif
         scrollUntilHittable(field)
+        #endif
         XCTAssertTrue(field.waitForExistence(timeout: 2.5), "Field should exist before typing", file: file, line: line)
         field.xcuiTapToBecomeFirstResponder()
         #if os(iOS)
@@ -220,10 +220,17 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
         let genPred = NSPredicate(format: "identifier CONTAINS[c] %@", "SixLayer.main.ui.\(hyphenated)")
         let byGen = app.switches.matching(genPred).firstMatch
         if byGen.waitForExistence(timeout: 0.6) { return byGen }
+        // macOS SwiftUI Toggle often surfaces as checkBox (#316).
+        let byCheck = app.checkBoxes.matching(genPred).firstMatch
+        if byCheck.waitForExistence(timeout: 0.6) { return byCheck }
         let direct = app.switches[fragment]
         if direct.waitForExistence(timeout: 0.3) { return direct }
+        let directCheck = app.checkBoxes[fragment]
+        if directCheck.waitForExistence(timeout: 0.3) { return directCheck }
         let pred = NSPredicate(format: "identifier CONTAINS[c] %@ OR label CONTAINS[c] %@", fragment, fragment)
-        return app.switches.matching(pred).firstMatch
+        let sw = app.switches.matching(pred).firstMatch
+        if sw.waitForExistence(timeout: 0.25) { return sw }
+        return app.checkBoxes.matching(pred).firstMatch
     }
 
     private func sd150TextField(matching fragment: String) -> XCUIElement {
@@ -235,6 +242,9 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
         if byGenField.waitForExistence(timeout: 0.6) { return byGenField }
         let byGenView = app.descendants(matching: .textView).matching(genPred).firstMatch
         if byGenView.waitForExistence(timeout: 0.6) { return byGenView }
+        // macOS may expose the control as `.any` with the generated id (#316).
+        let byAny = app.descendants(matching: .any).matching(genPred).firstMatch
+        if byAny.waitForExistence(timeout: 0.6) { return byAny }
         let direct = app.textFields[fragment]
         if direct.waitForExistence(timeout: 0.25) { return direct }
         let textView = app.textViews[fragment]
@@ -245,7 +255,9 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
         })
         let byField = app.descendants(matching: .textField).matching(pred).firstMatch
         if byField.waitForExistence(timeout: 0.25) { return byField }
-        return app.descendants(matching: .textView).matching(pred).firstMatch
+        let byView = app.descendants(matching: .textView).matching(pred).firstMatch
+        if byView.waitForExistence(timeout: 0.25) { return byView }
+        return app.descendants(matching: .any).matching(pred).firstMatch
     }
 
     private func assertBindingMirrorContains(
@@ -270,9 +282,8 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
 
     func test150_platformTextField_typingUpdatesBinding() throws {
         #if os(iOS) || os(macOS)
-        let field = app.textFields["SD150_TextField"]
-        scrollUntilHittable(field)
-        XCTAssertTrue(field.waitForExistence(timeout: 2.0), "Text field")
+        let field = sd150TextField(matching: "SD150_TextField")
+        XCTAssertTrue(field.waitForExistence(timeout: 2.5), "Text field")
         field.xcuiTapToBecomeFirstResponder()
         field.typeText("Hello150")
         assertBindingMirrorContains("SD150_Mirror_T", "Hello150")
@@ -286,9 +297,8 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
 
     func test150_platformTextField_verticalAxis_typingUpdatesBinding() throws {
         #if os(iOS) || os(macOS)
-        let field = app.textFields["SD150_AxisField"]
-        scrollUntilHittable(field)
-        XCTAssertTrue(field.waitForExistence(timeout: 2.0), "Axis text field")
+        let field = sd150TextField(matching: "SD150_AxisField")
+        XCTAssertTrue(field.waitForExistence(timeout: 2.5), "Axis text field")
         field.xcuiTapToBecomeFirstResponder()
         field.typeText("AxisX")
         assertBindingMirrorContains("SD150_Mirror_A", "AxisX")
@@ -299,9 +309,7 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
 
     func test150_platformSecureField_typingUpdatesBinding() throws {
         #if os(iOS) || os(macOS)
-        scrollToSectionHeader("SD150 Secure")
         let field = sd150SecureField(matching: "sd150-securefield")
-        scrollUntilHittable(field)
         XCTAssertTrue(field.waitForExistence(timeout: 2.5), "Secure field")
         sd150FocusAndType(field, "hunter2")
         assertBindingMirrorContains("SD150_Mirror_S", "hunter2")
@@ -312,12 +320,9 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
 
     func test150_platformToggle_tapUpdatesBinding() throws {
         #if os(iOS) || os(macOS)
-        let mirrorOff = mirrorElement(identifier: "SD150_Mirror_G")
-        scrollUntilHittable(mirrorOff)
         assertBindingMirrorContains("SD150_Mirror_G", "0")
         let toggle = sd150Switch(matching: "SD150_Toggle")
-        scrollUntilHittable(toggle)
-        XCTAssertTrue(toggle.waitForExistence(timeout: 2.0), "Toggle")
+        XCTAssertTrue(toggle.waitForExistence(timeout: 2.5), "Toggle")
         toggle.xcuiTapToBecomeFirstResponder()
         assertBindingMirrorContains("SD150_Mirror_G", "1")
         #else
@@ -328,7 +333,6 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
     func test150_platformTextEditor_prefillAndAdditionalTyping() throws {
         #if os(iOS) || os(macOS)
         let editor = sd150TextView(matching: "SD150_EditorPrompt")
-        scrollUntilHittable(editor)
         XCTAssertTrue(editor.waitForExistence(timeout: 2.5), "Text editor")
         assertBindingMirrorContains("SD150_Mirror_E", "PrefillSeed")
         editor.xcuiTapToBecomeFirstResponder()
@@ -353,9 +357,8 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
     func test150_platformTextField_longInputMirror() throws {
         #if os(iOS) || os(macOS)
         let long = String(repeating: "Z", count: 220)
-        let field = app.textFields["SD150_LongField"]
-        scrollUntilHittable(field)
-        XCTAssertTrue(field.waitForExistence(timeout: 2.0), "Long field")
+        let field = sd150TextField(matching: "SD150_LongField")
+        XCTAssertTrue(field.waitForExistence(timeout: 2.5), "Long field")
         field.xcuiTapToBecomeFirstResponder()
         field.typeText(long)
         assertBindingMirrorContains("SD150_Mirror_L", String(repeating: "Z", count: 32))
@@ -367,8 +370,8 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
 
     func test150_rapidSequentialTyping_appends() throws {
         #if os(iOS) || os(macOS)
-        let field = app.textFields["SD150_TextField"]
-        scrollUntilHittable(field)
+        let field = sd150TextField(matching: "SD150_TextField")
+        XCTAssertTrue(field.waitForExistence(timeout: 2.5), "Text field")
         field.xcuiTapToBecomeFirstResponder()
         field.typeText("a")
         field.typeText("b")
@@ -380,12 +383,9 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
 
     func test150_platformForm_integrationMultipleControls() throws {
         #if os(iOS) || os(macOS)
-        scrollToIntegrationSection()
         let name = sd150TextField(matching: "SD150_Integration_Name")
         let pass = sd150SecureField(matching: "sd150-integration-password")
         let toggle = sd150Switch(matching: "sd150-integration-toggle")
-        scrollUntilHittable(name)
-        scrollUntilExists(pass)
         XCTAssertTrue(name.waitForExistence(timeout: 2.5), "Integration name field")
         XCTAssertTrue(pass.waitForExistence(timeout: 2.5), "Integration password field")
         #if os(iOS)
@@ -407,8 +407,7 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
             RunLoop.current.run(until: Date().addingTimeInterval(0.25))
         }
         #endif
-        scrollUntilHittable(toggle)
-        XCTAssertTrue(toggle.waitForExistence(timeout: 2.0), "Integration toggle should exist")
+        XCTAssertTrue(toggle.waitForExistence(timeout: 2.5), "Integration toggle should exist")
         // Toggle binding in this multi-control Form row is covered by test150_platformToggle_tapUpdatesBinding;
         // iOS 26 keeps integrationOn at 0 in the mirror after taps (keyboard/secure-field focus interaction).
         toggle.xcuiTapToBecomeFirstResponder()
