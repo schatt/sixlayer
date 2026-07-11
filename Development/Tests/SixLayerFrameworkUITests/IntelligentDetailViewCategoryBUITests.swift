@@ -52,7 +52,15 @@ final class IntelligentDetailViewCategoryBUITests: XCTestCase {
             return true
         }
         let containsText = NSPredicate(format: "label CONTAINS[c] %@", text)
-        return app.descendants(matching: .staticText).matching(containsText).firstMatch.waitForExistence(timeout: timeout)
+        if app.descendants(matching: .staticText).matching(containsText).firstMatch.waitForExistence(timeout: timeout) {
+            return true
+        }
+        // macOS: Text content may live in value/title with empty label (#316).
+        let valueOrTitle = NSPredicate(
+            format: "value CONTAINS[c] %@ OR title CONTAINS[c] %@ OR label CONTAINS[c] %@",
+            text, text, text
+        )
+        return app.descendants(matching: .any).matching(valueOrTitle).firstMatch.waitForExistence(timeout: timeout)
     }
 
     @MainActor
