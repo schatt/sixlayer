@@ -372,6 +372,20 @@ private func applyPlatformCameraInterfaceLayer4Accessibility(to picker: UIImageP
     picker.view.addSubview(anchor)
 }
 
+/// Shared camera authorization probe for ``CameraView`` and unit tests (GitHub #334).
+func resolvedCameraAuthorizationStateForLayer4() -> CameraAuthorizationState {
+    let cameraAvailable = UIImagePickerController.isSourceTypeAvailable(.camera)
+    let authStatus = AVCaptureDevice.authorizationStatus(for: .video)
+    if !cameraAvailable { return .unavailable }
+    switch authStatus {
+    case .authorized: return .authorized
+    case .notDetermined: return .notDetermined
+    case .denied: return .denied
+    case .restricted: return .restricted
+    @unknown default: return .denied
+    }
+}
+
 public struct CameraView: UIViewControllerRepresentable {
     let onImageCaptured: (PlatformImage) -> Void
     let onCameraAuthorizationState: ((CameraAuthorizationState) -> Void)?
@@ -388,19 +402,10 @@ public struct CameraView: UIViewControllerRepresentable {
         let picker = UIImagePickerController()
         // Issue #179: Simulator and some devices have no camera; setting .camera throws.
         // When user has denied camera permission, use photo library to avoid black screen.
+        let state = resolvedCameraAuthorizationStateForLayer4()
+        onCameraAuthorizationState?(state)
         let cameraAvailable = UIImagePickerController.isSourceTypeAvailable(.camera)
         let authStatus = AVCaptureDevice.authorizationStatus(for: .video)
-        let state: CameraAuthorizationState = {
-            if !cameraAvailable { return .unavailable }
-            switch authStatus {
-            case .authorized: return .authorized
-            case .notDetermined: return .notDetermined
-            case .denied: return .denied
-            case .restricted: return .restricted
-            @unknown default: return .denied
-            }
-        }()
-        onCameraAuthorizationState?(state)
         let useCamera = cameraAvailable && (authStatus == .authorized || authStatus == .notDetermined)
         if useCamera {
             picker.sourceType = .camera
