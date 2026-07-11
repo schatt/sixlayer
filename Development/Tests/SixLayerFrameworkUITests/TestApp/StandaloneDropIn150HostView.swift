@@ -33,13 +33,16 @@ struct StandaloneDropIn150HostView: View {
                 Section {
                     SixLayerFramework.platformTextField("SD150_TextField", text: $textFieldValue)
                     if showBindingMirrors {
+                        // Explicit accessibilityLabel: macOS XCUI often leaves Text.label empty when only identifier is set (#316).
                         Text("SD150_Mirror_T:\(textFieldValue)")
                             .accessibilityIdentifier("SD150_Mirror_T")
+                            .accessibilityLabel("SD150_Mirror_T:\(textFieldValue)")
                     }
                     SixLayerFramework.platformTextField("SD150_AxisField", text: $axisFieldValue, axis: .vertical)
                     if showBindingMirrors {
                         Text("SD150_Mirror_A:\(axisFieldValue)")
                             .accessibilityIdentifier("SD150_Mirror_A")
+                            .accessibilityLabel("SD150_Mirror_A:\(axisFieldValue)")
                     }
                 } header: {
                     Text("SD150 Text inputs")
@@ -50,6 +53,7 @@ struct StandaloneDropIn150HostView: View {
                     if showBindingMirrors {
                         Text("SD150_Mirror_S:\(secureValue)")
                             .accessibilityIdentifier("SD150_Mirror_S")
+                            .accessibilityLabel("SD150_Mirror_S:\(secureValue)")
                     }
                 } header: {
                     Text("SD150 Secure")
@@ -59,6 +63,7 @@ struct StandaloneDropIn150HostView: View {
                     if showBindingMirrors {
                         Text("SD150_Mirror_G:\(toggleOn ? "1" : "0")")
                             .accessibilityIdentifier("SD150_Mirror_G")
+                            .accessibilityLabel("SD150_Mirror_G:\(toggleOn ? "1" : "0")")
                     }
                 } header: {
                     Text("SD150 Toggle")
@@ -68,6 +73,7 @@ struct StandaloneDropIn150HostView: View {
                     if showBindingMirrors {
                         Text("SD150_Mirror_E:\(editorValue)")
                             .accessibilityIdentifier("SD150_Mirror_E")
+                            .accessibilityLabel("SD150_Mirror_E:\(editorValue)")
                     }
                 } header: {
                     Text("SD150 Editor")
@@ -77,6 +83,7 @@ struct StandaloneDropIn150HostView: View {
                     if showBindingMirrors {
                         Text("SD150_Mirror_L:\(longFieldValue)")
                             .accessibilityIdentifier("SD150_Mirror_L")
+                            .accessibilityLabel("SD150_Mirror_L:\(longFieldValue)")
                     }
                 } header: {
                     Text("SD150 Long")
@@ -88,6 +95,7 @@ struct StandaloneDropIn150HostView: View {
                     if showBindingMirrors {
                         Text("SD150_Mirror_IN:\(integrationName)|\(integrationPassword)|\(integrationOn ? "1" : "0")")
                             .accessibilityIdentifier("SD150_Mirror_IN")
+                            .accessibilityLabel("SD150_Mirror_IN:\(integrationName)|\(integrationPassword)|\(integrationOn ? "1" : "0")")
                     }
                 } header: {
                     Text("SD150 Integration")
