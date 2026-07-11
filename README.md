@@ -44,7 +44,7 @@ The framework is distributed as a Swift Package from the `Framework/` directory.
 ## 🆕 Latest Release: v8.2.0
 
 ### **Minor release**
-🔧 **Minor**: macOS XCUITest deep-link hosts (#316); parallel suite policy (#335); unit-test isolation follow-ups (#334/#337); CI Gitea CA trust (#336). See [RELEASE_v8.2.0.md](Development/RELEASE_v8.2.0.md).
+🔧 **Minor**: macOS/iOS XCUITest reliability (#316, #317); parallel suite policy (#335); unit-test isolation follow-ups (#334/#337); CI Gitea CA trust (#336). See [RELEASE_v8.2.0.md](Development/RELEASE_v8.2.0.md).
 
 ### **Previous Release: v8.1.1 - Patch release**
 🔧 **Patch**: Window/container resize (#330); framework-owned adaptive app-nav sidebar (#331); macOS ViewInspector lane green and parallel-safe capability test hooks (#315). See [RELEASE_v8.1.1.md](Development/RELEASE_v8.1.1.md).
