@@ -387,6 +387,18 @@ func resolvedCameraAuthorizationStateForLayer4() -> CameraAuthorizationState {
     }
 }
 
+/// Shared picker source-type decision for ``CameraView`` and unit tests (GitHub #335).
+/// Unit tests assert this instead of hosting `UIImagePickerController` under parallel workers.
+@MainActor
+func resolvedCameraPickerSourceTypeForLayer4() -> UIImagePickerController.SourceType {
+    switch resolvedCameraAuthorizationStateForLayer4() {
+    case .authorized, .notDetermined:
+        return .camera
+    case .unavailable, .denied, .restricted:
+        return .photoLibrary
+    }
+}
+
 public struct CameraView: UIViewControllerRepresentable {
     let onImageCaptured: (PlatformImage) -> Void
     let onCameraAuthorizationState: ((CameraAuthorizationState) -> Void)?
@@ -405,14 +417,7 @@ public struct CameraView: UIViewControllerRepresentable {
         // When user has denied camera permission, use photo library to avoid black screen.
         let state = resolvedCameraAuthorizationStateForLayer4()
         onCameraAuthorizationState?(state)
-        let cameraAvailable = UIImagePickerController.isSourceTypeAvailable(.camera)
-        let authStatus = AVCaptureDevice.authorizationStatus(for: .video)
-        let useCamera = cameraAvailable && (authStatus == .authorized || authStatus == .notDetermined)
-        if useCamera {
-            picker.sourceType = .camera
-        } else {
-            picker.sourceType = .photoLibrary
-        }
+        picker.sourceType = resolvedCameraPickerSourceTypeForLayer4()
         picker.delegate = context.coordinator
         applyPlatformCameraInterfaceLayer4Accessibility(to: picker)
         return picker
