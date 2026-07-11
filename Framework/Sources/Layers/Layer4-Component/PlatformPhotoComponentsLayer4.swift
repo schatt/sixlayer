@@ -373,6 +373,7 @@ private func applyPlatformCameraInterfaceLayer4Accessibility(to picker: UIImageP
 }
 
 /// Shared camera authorization probe for ``CameraView`` and unit tests (GitHub #334).
+@MainActor
 func resolvedCameraAuthorizationStateForLayer4() -> CameraAuthorizationState {
     let cameraAvailable = UIImagePickerController.isSourceTypeAvailable(.camera)
     let authStatus = AVCaptureDevice.authorizationStatus(for: .video)
