@@ -56,7 +56,7 @@ final class IntelligentDetailViewCategoryBUITests: XCTestCase {
             format: "label CONTAINS[c] %@ OR value CONTAINS[c] %@ OR title CONTAINS[c] %@",
             text, text, text
         )
-        let root = app.windows.firstMatch.exists ? app.windows.firstMatch : app
+        let root: XCUIElement = app.windows.firstMatch.exists ? app.windows.firstMatch : app
         let match = root.descendants(matching: .any).matching(pred).firstMatch
         let deadline = Date().addingTimeInterval(min(timeout, 0.6))
         while Date() < deadline {
