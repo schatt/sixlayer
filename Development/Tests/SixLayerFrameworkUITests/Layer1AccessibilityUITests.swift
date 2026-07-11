@@ -58,6 +58,8 @@ final class Layer1AccessibilityUITests: XCTestCase {
             switch section {
             case "items": marker = "L1_Section_Items"
             case "responsiveCard": marker = "L1_Section_ResponsiveCard"
+            case "navStack": marker = "L1_Section_NavStack"
+            case "appNav": marker = "L1_Section_AppNav"
             default: marker = "L1_Section_\(section)"
             }
             let el = app.descendants(matching: .any)[marker].firstMatch
@@ -122,9 +124,12 @@ final class Layer1AccessibilityUITests: XCTestCase {
     }
 
     /// Single-tappable card contract without scroll-as-discovery (#316).
+    /// macOS XCUI often surfaces list-card labels as `"Item 1."` (trailing period); match with BEGINSWITH.
     @MainActor
     private func assertSingleTappableCard(title: String, elementName: String) {
-        let el = app.buttons[title].firstMatch
+        let el = app.buttons
+            .matching(NSPredicate(format: "label BEGINSWITH %@", title))
+            .firstMatch
         if el.exists {
             el.verifyAccessibilityContract(
                 elementName: elementName,
@@ -132,12 +137,6 @@ final class Layer1AccessibilityUITests: XCTestCase {
                 requireLabel: true
             )
             return
-        }
-        let labeled = app.buttons.matching(NSPredicate(format: "label CONTAINS[c] %@", title))
-        let labelLimit = min(labeled.count, 10)
-        var labelSamples: [String] = []
-        for i in 0..<labelLimit {
-            labelSamples.append(labeled.element(boundBy: i).label)
         }
         let allButtons = app.buttons
         let buttonLimit = min(allButtons.count, 20)
@@ -147,7 +146,7 @@ final class Layer1AccessibilityUITests: XCTestCase {
             buttonSamples.append("label=\(b.label) id=\(b.identifier)")
         }
         XCTFail(
-            "\(elementName) with title '\(title)' should exist at section launch (no scroll). labelCONTAINS: \(labelSamples). buttons: \(buttonSamples)"
+            "\(elementName) with title BEGINSWITH '\(title)' should exist at section launch (no scroll). buttons: \(buttonSamples)"
         )
     }
 
@@ -197,8 +196,9 @@ final class Layer1AccessibilityUITests: XCTestCase {
 
     @MainActor
     func testLayer1_navigation_accessibilitySurfaces() throws {
-        launchLayer1Category("Navigation")
-        assertCategorySurfaces("Navigation")
+        launchLayer1Category("Navigation", section: "navStack")
+        assertExactIdentifierExists("L1_Section_NavStack", context: "Navigation stack host")
+        assertIdentifierContains("platformPresentNavigationStack_L1", context: "Navigation stack")
     }
 
     @MainActor
