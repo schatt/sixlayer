@@ -48,30 +48,35 @@ final class IntelligentDetailViewCategoryBUITests: XCTestCase {
 
     @MainActor
     private func textVisible(_ text: String, timeout: TimeInterval) -> Bool {
-        if app.staticTexts[text].waitForExistence(timeout: timeout) {
+        if app.staticTexts[text].waitForExistence(timeout: min(timeout, 0.6)) {
             return true
         }
-        let containsText = NSPredicate(format: "label CONTAINS[c] %@", text)
-        if app.descendants(matching: .staticText).matching(containsText).firstMatch.waitForExistence(timeout: timeout) {
-            return true
-        }
-        // macOS: demoted Text may be `.other` with label/value; avoid unbounded `.any` value
-        // CONTAINS queries — they can hang for minutes evaluating the full tree (#316).
-        let otherPred = NSPredicate(
-            format: "label CONTAINS[c] %@ OR value CONTAINS[c] %@",
-            text, text
+        // Prefer label/value match scoped to window — full-tree `.any` value CONTAINS can hang (#316).
+        let pred = NSPredicate(
+            format: "label CONTAINS[c] %@ OR value CONTAINS[c] %@ OR title CONTAINS[c] %@",
+            text, text, text
         )
-        let other = app.descendants(matching: .other).matching(otherPred).firstMatch
-        return other.waitForExistence(timeout: min(timeout, 0.75))
+        let root = app.windows.firstMatch.exists ? app.windows.firstMatch : app
+        let match = root.descendants(matching: .any).matching(pred).firstMatch
+        let deadline = Date().addingTimeInterval(min(timeout, 0.6))
+        while Date() < deadline {
+            if match.exists { return true }
+            RunLoop.current.run(until: Date().addingTimeInterval(0.05))
+        }
+        return false
     }
 
     @MainActor
     private func scrollUntilVisible(_ text: String, attempts: Int = 10) -> Bool {
         if textVisible(text, timeout: 1.0) { return true }
-        // Avoid probing xcuiPrimaryScrollHost().exists — macOS can time out evaluating
-        // collapsed ScrollView queries (#316). Shared swipe helper already falls back safely.
+        // Do not swipe IntelligentDetail's inner ScrollView (last host) — that scrolls within a
+        // card and can hide sibling fields. Window-level swipe moves the outer page (#316).
         for _ in 0..<attempts {
-            app.xcuiSwipeScrollHostsUp()
+            if app.windows.firstMatch.exists {
+                app.windows.firstMatch.swipeUp()
+            } else {
+                app.swipeUp()
+            }
             if textVisible(text, timeout: 0.5) { return true }
         }
         return textVisible(text, timeout: 0.5)
