@@ -1235,16 +1235,18 @@ struct Layer4ContractOnlyView: View {
                 }
             }
             #else
+            // Overlay first on macOS so expand/close affordances are on-screen at launch
+            // without scroll-until-found (#316). Presentation/Navigation follow.
             ScrollView {
                 platformVStack(alignment: .leading, spacing: 24) {
+                    ExampleSection(title: "L4 Overlay Accessibility") {
+                        contractOverlayAccessibilityContent
+                    }
                     ExampleSection(title: "L4 Presentation") {
                         contractPresentationContent
                     }
                     ExampleSection(title: "L4 Navigation") {
                         contractNavigationContent
-                    }
-                    ExampleSection(title: "L4 Overlay Accessibility") {
-                        contractOverlayAccessibilityContent
                     }
                     ExampleSection(title: "L4 System") {
                         contractSystemContent
