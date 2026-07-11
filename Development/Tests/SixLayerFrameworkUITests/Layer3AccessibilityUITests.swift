@@ -268,22 +268,32 @@ final class Layer3AccessibilityUITests: XCTestCase {
         // Given: Navigate to Layer 3 examples
         try navigateToLayer3Examples()
         
-        // When: Query for all interactive elements
-        // Then: All should have correct traits for Switch Control
+        // When: Query for interactive example buttons (skip empty macOS chrome #316)
+        // Then: Content buttons should have correct traits for Switch Control
         
         let buttons = app.buttons.allElementsBoundByIndex
+        var contentButtons = 0
         for button in buttons {
-            if button.exists {
-                // Verify button has correct element type for Switch Control
-                XCTAssertEqual(button.elementType, .button,
-                               "Layer 3 example button should have button trait for Switch Control")
-                
-                // Enabled when present; skip latent/disabled chrome (#316).
-                if button.isHittable {
-                    XCTAssertTrue(button.isEnabled,
-                                 "Layer 3 example button should be enabled for Switch Control")
-                }
+            guard button.exists else { continue }
+            let accessible = button.xcuiAccessibleText
+            let identifier = button.identifier
+            if !button.isEnabled && identifier.isEmpty && accessible.isEmpty {
+                continue
+            }
+            contentButtons += 1
+            XCTAssertEqual(
+                button.elementType,
+                .button,
+                "Layer 3 example button should have button trait for Switch Control"
+            )
+            // Enabled when hittable; off-screen / latent chrome may report isHittable without being content.
+            if button.isHittable && (!identifier.isEmpty || !accessible.isEmpty) {
+                XCTAssertTrue(
+                    button.isEnabled,
+                    "Layer 3 example button should be enabled for Switch Control"
+                )
             }
         }
+        XCTAssertGreaterThan(contentButtons, 0, "Layer 3 examples should expose at least one Switch Control-reachable button")
     }
 }
