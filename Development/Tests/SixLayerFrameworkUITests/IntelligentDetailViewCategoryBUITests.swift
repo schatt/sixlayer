@@ -55,12 +55,14 @@ final class IntelligentDetailViewCategoryBUITests: XCTestCase {
         if app.descendants(matching: .staticText).matching(containsText).firstMatch.waitForExistence(timeout: timeout) {
             return true
         }
-        // macOS: Text content may live in value/title with empty label (#316).
-        let valueOrTitle = NSPredicate(
-            format: "value CONTAINS[c] %@ OR title CONTAINS[c] %@ OR label CONTAINS[c] %@",
-            text, text, text
+        // macOS: demoted Text may be `.other` with label/value; avoid unbounded `.any` value
+        // CONTAINS queries — they can hang for minutes evaluating the full tree (#316).
+        let otherPred = NSPredicate(
+            format: "label CONTAINS[c] %@ OR value CONTAINS[c] %@",
+            text, text
         )
-        return app.descendants(matching: .any).matching(valueOrTitle).firstMatch.waitForExistence(timeout: timeout)
+        let other = app.descendants(matching: .other).matching(otherPred).firstMatch
+        return other.waitForExistence(timeout: min(timeout, 0.75))
     }
 
     @MainActor
@@ -88,7 +90,8 @@ final class IntelligentDetailViewCategoryBUITests: XCTestCase {
     }
 
     func testCategoryB_nilValueData_showsRemainingVisibleContent() throws {
-        XCTAssertTrue(scrollUntilVisible(Copy.nilTitle), "Nil-value detail title should be visible")
-        XCTAssertTrue(scrollUntilVisible(Copy.nilDescription), "Nil-value detail description should be visible")
+        // Nil-value detail is below default + custom sections; allow more scroll attempts.
+        XCTAssertTrue(scrollUntilVisible(Copy.nilTitle, attempts: 16), "Nil-value detail title should be visible")
+        XCTAssertTrue(scrollUntilVisible(Copy.nilDescription, attempts: 8), "Nil-value detail description should be visible")
     }
 }
