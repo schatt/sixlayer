@@ -32,9 +32,9 @@ public struct DefaultRuntimeCapabilityIsolationTrait: Sendable, TestTrait, Suite
         let hapticHarness: Bool? = false
         let overrideBag = CapabilityTestOverrideBag()
         var propagation: Error?
-        try await RuntimeCapabilityHarness.$capabilityTestOverrideBag.withValue(overrideBag) {
-            try await RuntimeCapabilityHarness.$macOSTouchEnabledPreference.withValue(touchHarness) {
-                try await RuntimeCapabilityHarness.$macOSHapticEnabledPreference.withValue(hapticHarness) {
+        await RuntimeCapabilityHarness.$capabilityTestOverrideBag.withValue(overrideBag) {
+            await RuntimeCapabilityHarness.$macOSTouchEnabledPreference.withValue(touchHarness) {
+                await RuntimeCapabilityHarness.$macOSHapticEnabledPreference.withValue(hapticHarness) {
                     // Parallel-safe: clear only this test's bag and current-thread legacy overrides.
                     // Do not scrub `UserDefaults.standard` or MainActor-global state — other parallel
                     // tests (CloudKit queues, hosted views, etc.) share the process (GitHub #334).
