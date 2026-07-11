@@ -210,11 +210,11 @@ final class Layer4UITests: XCTestCase {
     @MainActor
     func testL4_platformPicker() throws {
         launchL4Contract(section: "controls")
-        let pickerId = Self.l4ContractIdentifier(sanitizedName: "l4contractpicker", elementType: "Picker")
+        // `platformPicker` uses automaticCompliance(named:) without element-type suffix.
+        let pickerId = "SixLayer.main.ui.l4contractpicker"
         XCTAssertTrue(
-            element(matchingIdentifier: pickerId).exists
-                || element(matchingIdentifier: "L4ContractPicker").exists,
-            "platformPicker: exact picker id '\(pickerId)' or host id L4ContractPicker should exist"
+            element(matchingIdentifier: pickerId).exists,
+            "platformPicker: exact id '\(pickerId)' should exist"
         )
     }
 
@@ -314,46 +314,50 @@ final class Layer4UITests: XCTestCase {
     @MainActor
     func testL4_platformListRow() throws {
         launchL4Contract(section: "list")
+        // automaticCompliance(named: "platformListRow", identifierLabel: title) → …platformListRow.<sanitized>
+        let rowId = "SixLayer.main.ui.platformListRow.l4listrowcontract"
         XCTAssertTrue(
-            app.staticTexts["L4ListRowContract"].exists
-                || element(matchingIdentifier: "L4ListRowContract").exists,
-            "platformListRow: row title must be visible (contract structure)"
+            element(matchingIdentifier: rowId).exists,
+            "platformListRow: exact id '\(rowId)' must exist (contract structure)"
         )
     }
 
     @MainActor
     func testL4_platformListSectionHeader() throws {
         launchL4Contract(section: "list")
+        let headerId = "SixLayer.main.ui.platformListSectionHeader.l4listsectionheadercontract"
         XCTAssertTrue(
-            app.staticTexts["L4ListSectionHeaderContract"].exists
-                || element(matchingIdentifier: "L4ListSectionHeaderContract").exists,
-            "platformListSectionHeader: header title must exist (contract structure)"
+            element(matchingIdentifier: headerId).exists,
+            "platformListSectionHeader: exact id '\(headerId)' must exist (contract structure)"
         )
     }
 
     @MainActor
     func testL4_platformListEmptyState() throws {
         launchL4Contract(section: "list")
+        let emptyId = "SixLayer.main.ui.platformListEmptyState.l4listemptystatecontract"
         XCTAssertTrue(
-            app.staticTexts["L4ListEmptyStateContract"].exists
-                || element(matchingIdentifier: "L4ListEmptyStateContract").exists,
-            "platformListEmptyState: title must exist (contract structure)"
+            element(matchingIdentifier: emptyId).exists,
+            "platformListEmptyState: exact id '\(emptyId)' must exist (contract structure)"
         )
     }
 
     @MainActor
     func testL4_platformRowActions_L4() throws {
         launchL4Contract(section: "list")
+        let rowId = "SixLayer.main.ui.platformListRow.l4rowactionscontractrow"
         XCTAssertTrue(
-            app.staticTexts["L4RowActionsContractRow"].exists
-                || element(matchingIdentifier: "L4RowActionsContractRow").exists,
-            "platformRowActions_L4: contract row must be visible (contract structure)"
+            element(matchingIdentifier: rowId).exists,
+            "platformRowActions_L4: contract row id '\(rowId)' must exist"
         )
-        let containsId = app.descendants(matching: .any)
+        let actionsId = element(matchingIdentifier: "platformRowActions_L4")
+        let actionsContains = app.descendants(matching: .any)
             .matching(NSPredicate(format: "identifier CONTAINS[c] %@", "platformRowActions_L4"))
             .firstMatch
-        XCTAssertTrue(containsId.exists,
-                      "platformRowActions_L4: row must expose contract a11y identifier")
+        XCTAssertTrue(
+            actionsId.exists || actionsContains.exists,
+            "platformRowActions_L4: row must expose contract a11y identifier"
+        )
     }
 
     // MARK: - Presentation
@@ -391,8 +395,22 @@ final class Layer4UITests: XCTestCase {
         let navLink = element(matchingIdentifier: "L4NavLinkContract")
         XCTAssertTrue(navLink.exists, "Nav link L4NavLinkContract should exist")
         tapByNormalizedCenter(navLink)
-        XCTAssertTrue(app.navigationBars["L4NavTitleContract"].exists,
-                      "platformNavigationTitle_L4: destination title must appear in nav bar")
+        let deadline = Date().addingTimeInterval(2.0)
+        var titleVisible = false
+        while Date() < deadline {
+            if app.navigationBars["L4NavTitleContract"].exists {
+                titleVisible = true
+                break
+            }
+            // macOS may expose the title as a static text rather than a nav-bar match.
+            if app.staticTexts["L4NavTitleContract"].exists {
+                titleVisible = true
+                break
+            }
+            RunLoop.current.run(until: Date().addingTimeInterval(0.05))
+        }
+        XCTAssertTrue(titleVisible,
+                      "platformNavigationTitle_L4: destination title L4NavTitleContract must appear")
         XCTAssertTrue(waitForDestinationContent(timeout: 2.0),
                       "platformNavigationTitle_L4: destination content should be visible")
     }
@@ -415,11 +433,19 @@ final class Layer4UITests: XCTestCase {
                 || app.staticTexts["L4NavStackContractRoot"].exists,
             "platformImplementNavigationStack_L4: stack root content must be visible"
         )
-        XCTAssertTrue(
-            app.navigationBars["L4NavStackContract"].exists
-                || app.staticTexts["L4NavStackContract"].exists,
-            "platformImplementNavigationStack_L4: inner navigation title should be exposed"
-        )
+        let deadline = Date().addingTimeInterval(2.0)
+        var titleVisible = false
+        while Date() < deadline {
+            if app.navigationBars["L4NavStackContract"].exists
+                || app.staticTexts["L4NavStackContract"].exists
+                || element(matchingIdentifier: "L4NavStackContract").exists {
+                titleVisible = true
+                break
+            }
+            RunLoop.current.run(until: Date().addingTimeInterval(0.05))
+        }
+        XCTAssertTrue(titleVisible,
+                      "platformImplementNavigationStack_L4: inner navigation title should be exposed")
     }
 
     @MainActor
