@@ -91,15 +91,7 @@ final class Layer4UITests: XCTestCase {
     private func waitForContractRoot(timeout: TimeInterval) -> Bool {
         let deadline = Date().addingTimeInterval(timeout)
         while Date() < deadline {
-            // macOS host puts Overlay first (#316).
-            if app.staticTexts["L4 Overlay Accessibility"].exists { return true }
-            if app.descendants(matching: .any)
-                .matching(NSPredicate(format: "identifier == %@ OR label == %@", "L4OverlayShowSidebar", "Show sidebar"))
-                .firstMatch.exists { return true }
-            if app.buttons["L4ContractSheet"].exists { return true }
-            if app.staticTexts["L4 Presentation"].exists { return true }
-            if app.navigationBars["Layer 4 Examples"].exists { return true }
-            if app.staticTexts["Layer 4 Examples"].exists { return true }
+            if element(matchingIdentifier: "L4ContractSheet").exists { return true }
             RunLoop.current.run(until: Date().addingTimeInterval(Self.quickWait))
         }
         return false
@@ -286,6 +278,7 @@ final class Layer4UITests: XCTestCase {
     }
 
     /// Nested overlay host (400pt) sits below the Form section header; nudge without overscrolling past toolbar (#259).
+    /// Deprecated for discovery (#316): overlay tests use `-OpenLayer4OverlayAccessibility` instead.
     @MainActor
     private func nudgeScrollInsideL4OverlayAccessibilitySection() {
         for _ in 0..<2 {
@@ -293,18 +286,39 @@ final class Layer4UITests: XCTestCase {
         }
     }
 
-    /// Scroll the L4 Overlay Accessibility section into view; keep nested nav toolbar on-screen (#259).
-    /// On macOS the overlay section is first in the host (#316) — skip scroll when expand affordance exists.
+    /// Launch overlay-only deep-link host (`-OpenLayer4OverlayAccessibility`). No scroll discovery (#316).
     @MainActor
-    private func scrollToL4OverlayAccessibilitySection() {
-        if l4OverlayExpandSidebarElement().waitForExistence(timeout: 0.8) {
-            return
+    private func launchOverlayAccessibilityHost() {
+        if let running = app, running.state != .notRunning {
+            running.terminate()
+            _ = running.wait(for: .notRunning, timeout: 5)
         }
-        scrollToFormSectionHeader(title: "L4 Overlay Accessibility")
-        if l4OverlayExpandSidebarElement().waitForExistence(timeout: 0.8) {
-            return
-        }
-        nudgeScrollInsideL4OverlayAccessibilitySection()
+        let localApp = XCUIApplication()
+        localApp.configureForFastTesting()
+        localApp.launchArguments.removeAll(where: { $0 == "-SkipAnimations" })
+        localApp.launchArguments.append("-OpenLayer4OverlayAccessibility")
+        localApp.launch()
+        app = localApp
+        XCTAssertTrue(
+            localApp.wait(for: .runningForeground, timeout: Self.rootReadyTimeout),
+            "Overlay host should reach foreground"
+        )
+        XCTAssertTrue(
+            element(matchingIdentifier: "L4OverlayShowSidebar").waitForExistence(timeout: Self.rootReadyTimeout),
+            "L4OverlayShowSidebar should exist at launch (-OpenLayer4OverlayAccessibility)"
+        )
+    }
+
+    /// Exact-id expand affordance (no label/type OR-fallbacks) (#316).
+    @MainActor
+    private func l4OverlayExpandSidebarElement() -> XCUIElement {
+        element(matchingIdentifier: "L4OverlayShowSidebar")
+    }
+
+    /// Exact-id close affordance (#316).
+    @MainActor
+    private func l4OverlayCloseSidebarElement() -> XCUIElement {
+        element(matchingIdentifier: "L4OverlayCloseSidebar")
     }
 
     /// CloudKit + photo picker rows are deep in L4 System (after clipboard/print/url rows and overlay above).
@@ -347,27 +361,6 @@ final class Layer4UITests: XCTestCase {
         } else {
             element.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
         }
-    }
-
-    /// Toolbar uses `accessibilityLabel` "Show sidebar"; XCTest may type it as button, nav bar item, or other (#259).
-    @MainActor
-    private func l4OverlayExpandSidebarElement() -> XCUIElement {
-        let showSidebarMatch = NSPredicate(
-            format: "identifier == %@ OR label == %@",
-            "L4OverlayShowSidebar",
-            "Show sidebar"
-        )
-        let byId = app.descendants(matching: .any).matching(showSidebarMatch).firstMatch
-        if byId.waitForExistence(timeout: 2.0) { return byId }
-        let navBarItem = app.navigationBars.buttons.matching(showSidebarMatch).firstMatch
-        if navBarItem.waitForExistence(timeout: 1.2) { return navBarItem }
-        if app.buttons["Show sidebar"].waitForExistence(timeout: 1.0) {
-            return app.buttons["Show sidebar"].firstMatch
-        }
-        if app.otherElements["Show sidebar"].waitForExistence(timeout: 1.0) {
-            return app.otherElements["Show sidebar"].firstMatch
-        }
-        return app.buttons["L4OverlayShowSidebar"].firstMatch
     }
 
     @MainActor
@@ -489,16 +482,6 @@ final class Layer4UITests: XCTestCase {
             "Contract root: Layer 4 Examples nav bar or L4 contract anchors (L4ContractSheet / L4 Presentation) should exist"
         )
         func contractTopVisible() -> Bool {
-            // macOS: Overlay section is first (#316).
-            if app.staticTexts["L4 Overlay Accessibility"].waitForExistence(timeout: 0.3) { return true }
-            if anyDescendantHasLabel(equalTo: "L4 Overlay Accessibility", timeout: 0.25) { return true }
-            if l4OverlayExpandSidebarElement().waitForExistence(timeout: 0.3) { return true }
-            if app.staticTexts["L4 Presentation"].waitForExistence(timeout: 0.3) { return true }
-            if anyDescendantHasLabel(equalTo: "L4 Presentation", timeout: 0.25) { return true }
-            if app.staticTexts["L4 System"].waitForExistence(timeout: 0.3) { return true }
-            if anyDescendantHasLabel(equalTo: "L4 System", timeout: 0.25) { return true }
-            // iOS root `Form`: section titles are not always `staticTexts`; sheet button is a stable top anchor (Issue #193).
-            if app.buttons["L4ContractSheet"].waitForExistence(timeout: 0.3) { return true }
             if element(matchingIdentifier: "L4ContractSheet").waitForExistence(timeout: 0.3) { return true }
             return false
         }
@@ -949,20 +932,21 @@ final class Layer4UITests: XCTestCase {
 
     @MainActor
     func testL4_overlayAccessibility_hidesUnderlyingContent_whenOverlayPresented() throws {
-        ensureContractRoot()
-        scrollToL4OverlayAccessibilitySection()
+        launchOverlayAccessibilityHost()
 
         let showSidebarButton = l4OverlayExpandSidebarElement()
         XCTAssertTrue(showSidebarButton.waitForExistence(timeout: 2.0),
-                      "overlay contract: explicit expand affordance button should exist")
+                      "overlay contract: L4OverlayShowSidebar should exist")
 
-        let detailAction = app.buttons["L4OverlayDetailAction"].firstMatch
+        let detailAction = element(matchingIdentifier: "L4OverlayDetailAction")
         XCTAssertTrue(detailAction.waitForExistence(timeout: 1.5),
-                      "overlay contract: underlying detail action should exist before overlay opens")
+                      "overlay contract: L4OverlayDetailAction should exist before overlay opens")
 
         tapByNormalizedCenter(showSidebarButton)
-        XCTAssertTrue(app.staticTexts["L4OverlaySidebarContent"].waitForExistence(timeout: 1.0),
-                      "overlay contract: sidebar content should be presented in overlay")
+        XCTAssertTrue(
+            element(matchingIdentifier: "L4OverlaySidebarContent").waitForExistence(timeout: 1.0),
+            "overlay contract: L4OverlaySidebarContent should be presented in overlay"
+        )
 
         XCTAssertFalse(detailAction.isHittable,
                        "overlay contract: underlying detail action should not be hittable while overlay is active")
@@ -970,29 +954,21 @@ final class Layer4UITests: XCTestCase {
 
     @MainActor
     func testL4_overlayAccessibility_returnsFocusToExpandButton_onDismiss() throws {
-        ensureContractRoot()
-        scrollToL4OverlayAccessibilitySection()
+        launchOverlayAccessibilityHost()
 
         let showSidebarButton = l4OverlayExpandSidebarElement()
         XCTAssertTrue(showSidebarButton.waitForExistence(timeout: 2.0),
-                      "overlay contract: explicit expand affordance button should exist")
+                      "overlay contract: L4OverlayShowSidebar should exist")
 
         tapByNormalizedCenter(showSidebarButton)
-        XCTAssertTrue(app.staticTexts["L4OverlaySidebarContent"].waitForExistence(timeout: 1.0),
-                      "overlay contract: sidebar content should be presented in overlay")
+        XCTAssertTrue(
+            element(matchingIdentifier: "L4OverlaySidebarContent").waitForExistence(timeout: 1.0),
+            "overlay contract: L4OverlaySidebarContent should be presented in overlay"
+        )
 
-        let closeSidebarByID = app.descendants(matching: .any)
-            .matching(NSPredicate(format: "identifier == %@", "L4OverlayCloseSidebar"))
-            .firstMatch
-        let closeSidebarByLabel = app.buttons["Close sidebar"].firstMatch
-        let closeSidebarButton: XCUIElement
-        if closeSidebarByID.waitForExistence(timeout: 1.5) {
-            closeSidebarButton = closeSidebarByID
-        } else {
-            XCTAssertTrue(closeSidebarByLabel.waitForExistence(timeout: 1.5),
-                          "overlay contract: explicit close affordance should exist in overlay")
-            closeSidebarButton = closeSidebarByLabel
-        }
+        let closeSidebarButton = l4OverlayCloseSidebarElement()
+        XCTAssertTrue(closeSidebarButton.waitForExistence(timeout: 1.5),
+                      "overlay contract: L4OverlayCloseSidebar should exist in overlay")
         tapByNormalizedCenter(closeSidebarButton)
 
         XCTAssertTrue(showSidebarButton.waitForExistence(timeout: 1.5),
@@ -1003,78 +979,60 @@ final class Layer4UITests: XCTestCase {
 
     @MainActor
     func testL4_overlayAccessibility_modalRootVisible_whenPresented() throws {
-        ensureContractRoot()
-        scrollToL4OverlayAccessibilitySection()
+        launchOverlayAccessibilityHost()
 
         let showSidebarButton = l4OverlayExpandSidebarElement()
         XCTAssertTrue(showSidebarButton.waitForExistence(timeout: 2.0),
-                      "overlay contract: explicit expand affordance button should exist")
+                      "overlay contract: L4OverlayShowSidebar should exist")
         tapByNormalizedCenter(showSidebarButton)
 
-        let modalRoot = app.otherElements["L4OverlayModalRoot"].firstMatch
-        XCTAssertTrue(modalRoot.waitForExistence(timeout: 1.0),
-                      "overlay contract: modal root should be exposed for a11y navigation")
+        XCTAssertTrue(
+            element(matchingIdentifier: "L4OverlayModalRoot").waitForExistence(timeout: 1.0),
+            "overlay contract: L4OverlayModalRoot should be exposed for a11y navigation"
+        )
     }
 
     @MainActor
     func testL4_overlayAccessibility_closeAffordanceHasExplicitAccessibilityLabel() throws {
-        ensureContractRoot()
-        scrollToL4OverlayAccessibilitySection()
+        launchOverlayAccessibilityHost()
 
         let showSidebarButton = l4OverlayExpandSidebarElement()
         XCTAssertTrue(showSidebarButton.waitForExistence(timeout: 2.0),
-                      "overlay contract: explicit expand affordance button should exist")
+                      "overlay contract: L4OverlayShowSidebar should exist")
         tapByNormalizedCenter(showSidebarButton)
 
-        let closeSidebarByID = app.descendants(matching: .any)
-            .matching(NSPredicate(format: "identifier == %@", "L4OverlayCloseSidebar"))
-            .firstMatch
-        let closeSidebarByLabel = app.buttons["Close sidebar"].firstMatch
-        let closeSidebarElement = closeSidebarByID.waitForExistence(timeout: 1.0) ? closeSidebarByID : closeSidebarByLabel
+        let closeSidebarElement = l4OverlayCloseSidebarElement()
         XCTAssertTrue(closeSidebarElement.waitForExistence(timeout: 1.0),
-                      "overlay contract: close affordance should be exposed with explicit accessibility label")
+                      "overlay contract: L4OverlayCloseSidebar should be exposed")
         XCTAssertEqual(closeSidebarElement.label, "Close sidebar",
                        "overlay contract: close affordance should expose explicit accessibility label")
     }
 
     @MainActor
     func testL4_overlayAccessibility_sidebarContentHidden_afterDismiss() throws {
-        ensureContractRoot()
-        scrollToL4OverlayAccessibilitySection()
+        launchOverlayAccessibilityHost()
 
         let showSidebarButton = l4OverlayExpandSidebarElement()
         XCTAssertTrue(showSidebarButton.waitForExistence(timeout: 2.0),
-                      "overlay contract: explicit expand affordance button should exist")
+                      "overlay contract: L4OverlayShowSidebar should exist")
         tapByNormalizedCenter(showSidebarButton)
 
-        let modalRoot = app.otherElements["L4OverlayModalRoot"].firstMatch
+        let modalRoot = element(matchingIdentifier: "L4OverlayModalRoot")
         XCTAssertTrue(modalRoot.waitForExistence(timeout: 1.0),
-                      "overlay contract: modal root should be exposed while overlay is active before dismiss")
+                      "overlay contract: L4OverlayModalRoot should be exposed while overlay is active")
 
-        let sidebarContentAny = app.descendants(matching: .any)
-            .matching(NSPredicate(format: "identifier == %@", "L4OverlaySidebarContent"))
-            .firstMatch
-        XCTAssertTrue(sidebarContentAny.waitForExistence(timeout: 1.5),
-                      "overlay contract: sidebar content should be exposed while overlay is active before dismiss")
+        let sidebarContent = element(matchingIdentifier: "L4OverlaySidebarContent")
+        XCTAssertTrue(sidebarContent.waitForExistence(timeout: 1.5),
+                      "overlay contract: L4OverlaySidebarContent should be exposed while overlay is active")
 
-        let closeSidebarByID = app.descendants(matching: .any)
-            .matching(NSPredicate(format: "identifier == %@", "L4OverlayCloseSidebar"))
-            .firstMatch
-        let closeSidebarByLabel = app.buttons["Close sidebar"].firstMatch
-        let closeSidebarButton: XCUIElement
-        if closeSidebarByID.waitForExistence(timeout: 1.5) {
-            closeSidebarButton = closeSidebarByID
-        } else {
-            XCTAssertTrue(closeSidebarByLabel.waitForExistence(timeout: 1.5),
-                          "overlay contract: explicit close affordance should exist in overlay")
-            closeSidebarButton = closeSidebarByLabel
-        }
-
+        let closeSidebarButton = l4OverlayCloseSidebarElement()
+        XCTAssertTrue(closeSidebarButton.waitForExistence(timeout: 1.5),
+                      "overlay contract: L4OverlayCloseSidebar should exist")
         tapByNormalizedCenter(closeSidebarButton)
 
         XCTAssertFalse(modalRoot.waitForExistence(timeout: 1.0),
                        "overlay contract: modal root should be removed after dismiss")
-        XCTAssertFalse(sidebarContentAny.waitForExistence(timeout: 1.0),
+        XCTAssertFalse(sidebarContent.waitForExistence(timeout: 1.0),
                        "overlay contract: sidebar content should not remain exposed after dismiss")
         XCTAssertTrue(showSidebarButton.isHittable,
                       "overlay contract: expand affordance should be hittable after dismiss")
