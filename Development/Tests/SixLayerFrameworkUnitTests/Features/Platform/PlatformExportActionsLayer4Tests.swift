@@ -9,7 +9,7 @@ import SwiftUI
 //  Issue #300: platformExportActions_L4 — compose share + print for file export.
 //
 
-@Suite("Platform Export Actions Layer 4")
+@Suite("Platform Export Actions Layer 4", HostedViewTestIsolationTrait())
 open class PlatformExportActionsLayer4Tests: BaseTestClass {
 
     // MARK: - Resolution logic (unit)

@@ -13,7 +13,7 @@ import MapKit
 #endif
 @testable import SixLayerFramework
 
-@Suite("Platform Map Components Layer 4 Accessibility")
+@Suite("Platform Map Components Layer 4 Accessibility", HostedViewTestIsolationTrait())
 open class PlatformMapComponentsLayer4ComponentAccessibilityTests: BaseTestClass {
 
 #if canImport(MapKit) && (os(iOS) || os(macOS))

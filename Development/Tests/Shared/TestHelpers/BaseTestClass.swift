@@ -132,12 +132,25 @@ open class BaseTestClass {
         exposeContentAccessibility: Bool = false,
         accessibilityIdentifierConfig: AccessibilityIdentifierConfig? = nil
     ) -> Any? {
-        return TestSetupUtilities.hostRootPlatformView(
-            view,
-            forceLayout: forceLayout,
-            exposeContentAccessibility: exposeContentAccessibility,
-            accessibilityIdentifierConfig: accessibilityIdentifierConfig
-        )
+        if HostingControllerStorage.session != nil {
+            return TestSetupUtilities.hostRootPlatformView(
+                view,
+                forceLayout: forceLayout,
+                exposeContentAccessibility: exposeContentAccessibility,
+                accessibilityIdentifierConfig: accessibilityIdentifierConfig
+            )
+        }
+        // Class-based @MainActor tests may not inherit suite trait `@TaskLocal` on static entry points.
+        let fallbackSession = HostingSession()
+        return HostingControllerStorage.$session.withValue(fallbackSession) {
+            defer { fallbackSession.tearDownAll() }
+            return TestSetupUtilities.hostRootPlatformView(
+                view,
+                forceLayout: forceLayout,
+                exposeContentAccessibility: exposeContentAccessibility,
+                accessibilityIdentifierConfig: accessibilityIdentifierConfig
+            )
+        }
     }
     
     // MARK: - Test Environment Setup

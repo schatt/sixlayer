@@ -9,7 +9,7 @@ import SwiftUI
 import Testing
 @testable import SixLayerFramework
 
-@Suite("Platform data scanner Layer 4 (#252)", DefaultRuntimeCapabilityIsolationTrait())
+@Suite("Platform data scanner Layer 4 (#252)", DefaultRuntimeCapabilityIsolationTrait(), HostedViewTestIsolationTrait())
 struct PlatformDataScannerLayer4Tests {
 
     #if os(iOS)

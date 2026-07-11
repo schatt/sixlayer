@@ -65,15 +65,16 @@ public func determineIntelligentCardLayout_L2(
     
     // Base calculations
     let layoutPadding: CGFloat = 16
-    let availableWidth = screenWidth - layoutPadding * 2
     let minCardWidth = IntelligentCardResizeBudget.preferredMinCardWidth
+    let safeScreenWidth = max(screenWidth, layoutPadding * 2 + 1)
+    let availableWidth = safeScreenWidth - layoutPadding * 2
     let maxCardWidth = IntelligentCardResizeBudget.maxCardWidth
     let spacing = calculateOptimalSpacing(deviceType: deviceType, contentComplexity: contentComplexity)
 
     // Desired columns from device/content, then cap by width budget (GitHub #330).
     let desiredColumns = calculateOptimalColumns(
         contentCount: contentCount,
-        screenWidth: screenWidth,
+        screenWidth: safeScreenWidth,
         deviceType: deviceType,
         contentComplexity: contentComplexity,
         availableHeight: viewportHeight
