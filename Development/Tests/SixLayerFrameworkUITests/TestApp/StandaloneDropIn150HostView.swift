@@ -71,6 +71,7 @@ struct StandaloneDropIn150HostView: View {
                         }
                     } header: {
                         Text("SD150 Integration")
+                            .accessibilityIdentifier("SD150_Section_Integration")
                     }
                 }
                 if shows("text") {
@@ -87,6 +88,7 @@ struct StandaloneDropIn150HostView: View {
                         }
                     } header: {
                         Text("SD150 Text inputs")
+                            .accessibilityIdentifier("SD150_Section_Text")
                     }
                 }
                 if shows("secure") {
@@ -98,6 +100,7 @@ struct StandaloneDropIn150HostView: View {
                         }
                     } header: {
                         Text("SD150 Secure")
+                            .accessibilityIdentifier("SD150_Section_Secure")
                     }
                 }
                 if shows("toggle") {
@@ -109,6 +112,7 @@ struct StandaloneDropIn150HostView: View {
                         }
                     } header: {
                         Text("SD150 Toggle")
+                            .accessibilityIdentifier("SD150_Section_Toggle")
                     }
                 }
                 if shows("editor") {
@@ -120,6 +124,7 @@ struct StandaloneDropIn150HostView: View {
                         }
                     } header: {
                         Text("SD150 Editor")
+                            .accessibilityIdentifier("SD150_Section_Editor")
                     }
                 }
                 if shows("long") {
@@ -131,6 +136,7 @@ struct StandaloneDropIn150HostView: View {
                         }
                     } header: {
                         Text("SD150 Long")
+                            .accessibilityIdentifier("SD150_Section_Long")
                     }
                 }
             }
