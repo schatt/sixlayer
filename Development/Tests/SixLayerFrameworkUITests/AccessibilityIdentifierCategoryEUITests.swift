@@ -67,6 +67,6 @@ final class AccessibilityIdentifierCategoryEUITests: XCTestCase {
 
         let state = app.staticTexts[IDs.clipboardStateLabel]
         XCTAssertTrue(state.waitForExistence(timeout: 1.5), "Clipboard state label should exist")
-        XCTAssertEqual(state.label, "Clipboard state: generated")
+        XCTAssertEqual(state.xcuiAccessibleText, "Clipboard state: generated")
     }
 }
