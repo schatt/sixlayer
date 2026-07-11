@@ -340,7 +340,7 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
         editor.typeText("More")
         let mirrorE = mirrorElement(identifier: "SD150_Mirror_E")
         XCTAssertTrue(mirrorE.waitForExistence(timeout: 3.0), "Mirror SD150_Mirror_E should exist after edit")
-        let raw = mirrorE.label
+        let raw = mirrorE.xcuiAccessibleText
         XCTAssertTrue(
             raw.contains("PrefillSeed") && raw.contains("More"),
             "Editor mirror should reflect prefill plus appended text (order may vary); got: '\(raw)'"
