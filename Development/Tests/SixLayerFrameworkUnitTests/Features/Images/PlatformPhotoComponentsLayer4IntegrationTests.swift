@@ -89,7 +89,7 @@ open class PlatformPhotoComponentsLayer4IntegrationTests: BaseTestClass {
     /// TESTING SCOPE: CameraAuthorizationState and onCameraAuthorizationState callback in platformCameraInterface_L4.
     /// METHODOLOGY: Host the camera interface with callback; makeUIViewController invokes callback with current state.
     #if os(iOS)
-    @Test func testResolvedCameraAuthorizationState_isKnownCase() {
+    @Test @MainActor func testResolvedCameraAuthorizationState_isKnownCase() {
         let state = resolvedCameraAuthorizationStateForLayer4()
         let validStates: [CameraAuthorizationState] = [.authorized, .notDetermined, .denied, .restricted, .unavailable]
         #expect(validStates.contains(state), "State should be a known authorization case, got: \(state)")
