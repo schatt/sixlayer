@@ -6,42 +6,25 @@
 //  `platformTextField` / `platformSecureField` / `platformToggle` / `platformTextEditor` / `platformForm`.
 //  Cross-links: layer semantics / a11y matrices remain #254 / #255 / #256 — not asserted here.
 //
+//  #316: one section per launch via `-SD150Section=…`; assert by exact accessibilityIdentifier only
+//  (no scroll-as-discovery, no label/value/title OR-fallback chains).
+//
 
 import XCTest
 #if os(iOS)
 import UIKit
 #endif
 
-/// XCUITest for Issue #150 — binding propagation and user interaction on `StandaloneDropIn150HostView` (`-OpenStandaloneDropIn150`).
+/// XCUITest for Issue #150 — binding propagation and user interaction on `StandaloneDropIn150HostView`.
 @MainActor
 final class PlatformStandaloneDropIn150UITests: XCTestCase {
     private nonisolated(unsafe) var app: XCUIApplication!
 
     private static let hostReadyTimeout: TimeInterval = 3.0
-    /// Deep SD150 `Form` hosts need more swipes than shallow caps (Refs #261; align with Layer4UITests).
-    private static let maxFormScrolls = 18
 
     nonisolated override func setUpWithError() throws {
         continueAfterFailure = false
         addDefaultUIInterruptionMonitor()
-
-        nonisolated(unsafe) let instance = self
-        MainActor.assumeIsolated {
-            let localApp = XCUIApplication()
-            localApp.configureForFastTesting()
-            localApp.launchArguments.removeAll { $0 == "-SkipAnimations" }
-            localApp.launchArguments.append("-OpenStandaloneDropIn150")
-            localApp.launch()
-            instance.app = localApp
-            XCTAssertTrue(
-                localApp.wait(for: .runningForeground, timeout: Self.hostReadyTimeout),
-                "Test app should be foreground (Issue #150 host)"
-            )
-            let ready = localApp.navigationBars["SD150 Standalone"].waitForExistence(timeout: Self.hostReadyTimeout)
-                || localApp.staticTexts["SD150 Integration"].waitForExistence(timeout: 2.0)
-                || localApp.staticTexts["SD150 Text inputs"].waitForExistence(timeout: 2.0)
-            XCTAssertTrue(ready, "SD150 host should show navigation title or first section (launch arg -OpenStandaloneDropIn150)")
-        }
     }
 
     nonisolated override func tearDownWithError() throws {
@@ -53,72 +36,75 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
         try super.tearDownWithError()
     }
 
-    // MARK: - Helpers
+    // MARK: - Launch / query (single-path)
 
-    private func mirrorElement(identifier: String) -> XCUIElement {
-        if let found = app.findElement(
-            byIdentifier: identifier,
-            primaryType: .staticText,
-            secondaryTypes: [.any, .other],
-            timeout: 1.5
-        ) {
-            return found
+    @MainActor
+    private func launchSD150Host(section: String) {
+        if let running = app, running.state != .notRunning {
+            running.terminate()
+            _ = running.wait(for: .notRunning, timeout: 5)
         }
-        return app.descendants(matching: .any)
-            .matching(NSPredicate(format: "identifier == %@", identifier))
+        let localApp = XCUIApplication()
+        localApp.configureForFastTesting()
+        localApp.launchArguments.removeAll { $0 == "-SkipAnimations" }
+        localApp.launchArguments.append("-OpenStandaloneDropIn150")
+        localApp.launchArguments.append("-SD150Section=\(section)")
+        localApp.launch()
+        app = localApp
+        XCTAssertTrue(
+            localApp.wait(for: .runningForeground, timeout: Self.hostReadyTimeout),
+            "Test app should be foreground (Issue #150 host)"
+        )
+        let sectionHeader: String
+        switch section {
+        case "integration": sectionHeader = "SD150 Integration"
+        case "text": sectionHeader = "SD150 Text inputs"
+        case "secure": sectionHeader = "SD150 Secure"
+        case "toggle": sectionHeader = "SD150 Toggle"
+        case "editor": sectionHeader = "SD150 Editor"
+        case "long": sectionHeader = "SD150 Long"
+        default:
+            XCTFail("Unknown SD150 section: \(section)")
+            return
+        }
+        XCTAssertTrue(
+            localApp.staticTexts[sectionHeader].waitForExistence(timeout: Self.hostReadyTimeout),
+            "SD150 host section header '\(sectionHeader)' should exist (-SD150Section=\(section))"
+        )
+    }
+
+    /// Single-path query: exact accessibilityIdentifier on any element type.
+    @MainActor
+    private func element(exactIdentifier id: String) -> XCUIElement {
+        app.descendants(matching: .any)
+            .matching(NSPredicate(format: "identifier == %@", id))
             .firstMatch
     }
 
-    private func scrollUntilExists(_ element: XCUIElement) {
-        for _ in 0..<Self.maxFormScrolls {
-            if element.waitForExistence(timeout: 0.35) { return }
-            app.xcuiSwipeScrollHostsUp()
-        }
+    @MainActor
+    private func assertBindingMirrorContains(
+        _ mirrorId: String,
+        _ substring: String,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) {
+        let m = element(exactIdentifier: mirrorId)
+        XCTAssertTrue(m.waitForExistence(timeout: 2.5), "Mirror \(mirrorId) should exist", file: file, line: line)
+        // Contract: host sets accessibilityLabel to the mirror text (#316 — no value/title fallback).
+        XCTAssertTrue(
+            m.label.contains(substring),
+            "Mirror \(mirrorId) label should contain '\(substring)'; got label: '\(m.label)'",
+            file: file,
+            line: line
+        )
     }
 
-    private func scrollUntilHittable(_ element: XCUIElement) {
-        scrollUntilExists(element)
-        for _ in 0..<Self.maxFormScrolls {
-            if element.waitForExistence(timeout: 0.35), element.isHittable { return }
-            app.xcuiSwipeScrollHostsUp()
-        }
-    }
-
-    private func scrollToSectionHeader(_ title: String) {
-        if app.staticTexts[title].waitForExistence(timeout: 0.35) { return }
-        let pred = NSPredicate(format: "label == %@ OR label CONTAINS[c] %@", title, title)
-        if app.descendants(matching: .any).matching(pred).firstMatch.waitForExistence(timeout: 0.35) { return }
-        for _ in 0..<Self.maxFormScrolls {
-            app.xcuiSwipeScrollHostsUp()
-            if app.staticTexts[title].waitForExistence(timeout: 0.35) { return }
-            if app.descendants(matching: .any).matching(pred).firstMatch.waitForExistence(timeout: 0.35) { return }
-        }
-    }
-
-    private func tapCenter(_ element: XCUIElement) {
-        element.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
-    }
-
-    /// Focus a `Form` control and type; on iOS waits for the software keyboard before `typeText` (Refs #261).
-    private func sd150FocusAndType(_ field: XCUIElement, _ text: String, file: StaticString = #filePath, line: UInt = #line) {
-        #if os(iOS)
-        if field.elementType == .secureTextField {
-            app.xcuiDismissSoftwareKeyboardIfPresent()
-            RunLoop.current.run(until: Date().addingTimeInterval(0.4))
-            sd150TypeIntoSecureField(field, text, file: file, line: line)
-            return
-        }
-        scrollUntilHittable(field)
-        #endif
+    @MainActor
+    private func focusAndType(_ field: XCUIElement, _ text: String, file: StaticString = #filePath, line: UInt = #line) {
         XCTAssertTrue(field.waitForExistence(timeout: 2.5), "Field should exist before typing", file: file, line: line)
         field.xcuiTapToBecomeFirstResponder()
         #if os(iOS)
         let keyboard = app.keyboards.firstMatch
-        if !keyboard.waitForExistence(timeout: 2.0) {
-            tapCenter(field)
-            RunLoop.current.run(until: Date().addingTimeInterval(0.35))
-            field.xcuiTapToBecomeFirstResponder()
-        }
         XCTAssertTrue(
             keyboard.waitForExistence(timeout: 2.5),
             "Software keyboard should be visible before typeText",
@@ -130,167 +116,27 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
     }
 
     #if os(iOS)
-    /// Paste into a text control to avoid software-keyboard autocorrect drift (Refs #261).
-    private func sd150PasteIntoField(
-        _ field: XCUIElement,
-        _ text: String,
-        file: StaticString = #filePath,
-        line: UInt = #line
-    ) {
-        scrollUntilHittable(field)
+    @MainActor
+    private func pasteIntoField(_ field: XCUIElement, _ text: String, file: StaticString = #filePath, line: UInt = #line) {
         XCTAssertTrue(field.waitForExistence(timeout: 2.5), "Field should exist before paste", file: file, line: line)
         field.xcuiTapToBecomeFirstResponder()
         UIPasteboard.general.string = text
         field.press(forDuration: 1.2)
         let paste = app.menuItems["Paste"]
-        if paste.waitForExistence(timeout: 2.0) {
-            paste.tap()
-            return
-        }
-        app.typeText(text)
-    }
-
-    /// iOS 26 integration `Form`: blur prior field, refocus secure row, then `typeText` on the leaf (Refs #261).
-    private func sd150TypeIntoSecureField(
-        _ field: XCUIElement,
-        _ text: String,
-        file: StaticString = #filePath,
-        line: UInt = #line
-    ) {
-        if app.navigationBars.firstMatch.waitForExistence(timeout: 0.5) {
-            app.navigationBars.firstMatch.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
-            RunLoop.current.run(until: Date().addingTimeInterval(0.25))
-        }
-        scrollUntilHittable(field)
-        field.xcuiTapToBecomeFirstResponder()
-        let keyboard = app.keyboards.firstMatch
-        if !keyboard.waitForExistence(timeout: 2.0) {
-            tapCenter(field)
-            RunLoop.current.run(until: Date().addingTimeInterval(0.35))
-            field.xcuiTapToBecomeFirstResponder()
-        }
-        XCTAssertTrue(keyboard.waitForExistence(timeout: 3.0), "Keyboard required for secure field", file: file, line: line)
-        RunLoop.current.run(until: Date().addingTimeInterval(0.35))
-        UIPasteboard.general.string = text
-        field.press(forDuration: 1.2)
-        let paste = app.menuItems["Paste"]
-        if paste.waitForExistence(timeout: 2.0) {
-            paste.tap()
-            return
-        }
-        tapCenter(field)
-        RunLoop.current.run(until: Date().addingTimeInterval(0.25))
-        app.typeText(text)
+        XCTAssertTrue(paste.waitForExistence(timeout: 2.0), "Paste menu item should appear", file: file, line: line)
+        paste.tap()
     }
     #endif
 
-    private func scrollToIntegrationSection() {
-        scrollUntilExists(mirrorElement(identifier: "SD150_Mirror_IN"))
-    }
-
-    /// Resolves a secure field by label, `exactNamed`, or generated `SixLayer.main.ui.<sanitized>.SecureField` id (hyphenated).
-    private func sd150SecureField(matching fragment: String) -> XCUIElement {
-        let hyphenated = fragment
-            .replacingOccurrences(of: "_", with: "-")
-            .lowercased()
-        let genPred = NSPredicate(format: "identifier CONTAINS[c] %@", "SixLayer.main.ui.\(hyphenated)")
-        let byGen = app.descendants(matching: .secureTextField).matching(genPred).firstMatch
-        if byGen.waitForExistence(timeout: 0.6) { return byGen }
-        let candidates = [fragment, hyphenated, "UITest_\(fragment)"]
-        for key in candidates {
-            let direct = app.secureTextFields[key]
-            if direct.waitForExistence(timeout: 0.25) { return direct }
-        }
-        let pred = NSCompoundPredicate(orPredicateWithSubpredicates: candidates.map {
-            NSPredicate(format: "identifier CONTAINS[c] %@ OR label CONTAINS[c] %@", $0, $0)
-        })
-        return app.descendants(matching: .secureTextField).matching(pred).firstMatch
-    }
-
-    private func sd150TextView(matching fragment: String) -> XCUIElement {
-        let direct = app.textViews[fragment]
-        if direct.waitForExistence(timeout: 0.25) { return direct }
-        let pred = NSPredicate(format: "identifier CONTAINS[c] %@ OR label CONTAINS[c] %@", fragment, fragment)
-        return app.descendants(matching: .textView).matching(pred).firstMatch
-    }
-
-    private func sd150Switch(matching fragment: String) -> XCUIElement {
-        let hyphenated = fragment
-            .replacingOccurrences(of: "_", with: "-")
-            .lowercased()
-        let genPred = NSPredicate(format: "identifier CONTAINS[c] %@", "SixLayer.main.ui.\(hyphenated)")
-        let byGen = app.switches.matching(genPred).firstMatch
-        if byGen.waitForExistence(timeout: 0.6) { return byGen }
-        // macOS SwiftUI Toggle often surfaces as checkBox (#316).
-        let byCheck = app.checkBoxes.matching(genPred).firstMatch
-        if byCheck.waitForExistence(timeout: 0.6) { return byCheck }
-        let direct = app.switches[fragment]
-        if direct.waitForExistence(timeout: 0.3) { return direct }
-        let directCheck = app.checkBoxes[fragment]
-        if directCheck.waitForExistence(timeout: 0.3) { return directCheck }
-        let pred = NSPredicate(format: "identifier CONTAINS[c] %@ OR label CONTAINS[c] %@", fragment, fragment)
-        let sw = app.switches.matching(pred).firstMatch
-        if sw.waitForExistence(timeout: 0.25) { return sw }
-        return app.checkBoxes.matching(pred).firstMatch
-    }
-
-    private func sd150TextField(matching fragment: String) -> XCUIElement {
-        let hyphenated = fragment
-            .replacingOccurrences(of: "_", with: "-")
-            .lowercased()
-        let genPred = NSPredicate(format: "identifier CONTAINS[c] %@", "SixLayer.main.ui.\(hyphenated)")
-        let byGenField = app.descendants(matching: .textField).matching(genPred).firstMatch
-        if byGenField.waitForExistence(timeout: 0.6) { return byGenField }
-        let byGenView = app.descendants(matching: .textView).matching(genPred).firstMatch
-        if byGenView.waitForExistence(timeout: 0.6) { return byGenView }
-        // macOS may expose the control as `.any` with the generated id (#316).
-        let byAny = app.descendants(matching: .any).matching(genPred).firstMatch
-        if byAny.waitForExistence(timeout: 0.6) { return byAny }
-        let direct = app.textFields[fragment]
-        if direct.waitForExistence(timeout: 0.25) { return direct }
-        let textView = app.textViews[fragment]
-        if textView.waitForExistence(timeout: 0.25) { return textView }
-        let candidates = [fragment, hyphenated, "UITest_\(fragment)"]
-        let pred = NSCompoundPredicate(orPredicateWithSubpredicates: candidates.map {
-            NSPredicate(format: "identifier CONTAINS[c] %@ OR label CONTAINS[c] %@", $0, $0)
-        })
-        let byField = app.descendants(matching: .textField).matching(pred).firstMatch
-        if byField.waitForExistence(timeout: 0.25) { return byField }
-        let byView = app.descendants(matching: .textView).matching(pred).firstMatch
-        if byView.waitForExistence(timeout: 0.25) { return byView }
-        return app.descendants(matching: .any).matching(pred).firstMatch
-    }
-
-    private func assertBindingMirrorContains(
-        _ mirrorId: String,
-        _ substring: String,
-        file: StaticString = #filePath,
-        line: UInt = #line
-    ) {
-        let m = mirrorElement(identifier: mirrorId)
-        XCTAssertTrue(m.waitForExistence(timeout: 2.5), "Mirror \(mirrorId) should exist", file: file, line: line)
-        // macOS often leaves Text.label empty; prefer label/value/title (#316).
-        let text = m.xcuiAccessibleText
-        XCTAssertTrue(
-            text.contains(substring),
-            "Mirror \(mirrorId) should contain '\(substring)'; got accessible text: '\(text)' (label='\(m.label)', value='\(String(describing: m.value))')",
-            file: file,
-            line: line
-        )
-    }
-
-    // MARK: - Tests (iOS + macOS TestApp)
+    // MARK: - Tests
 
     func test150_platformTextField_typingUpdatesBinding() throws {
         #if os(iOS) || os(macOS)
-        let field = sd150TextField(matching: "SD150_TextField")
-        XCTAssertTrue(field.waitForExistence(timeout: 2.5), "Text field")
-        field.xcuiTapToBecomeFirstResponder()
-        field.typeText("Hello150")
+        launchSD150Host(section: "text")
+        let field = element(exactIdentifier: "SD150_TextField")
+        XCTAssertTrue(field.waitForExistence(timeout: 2.5), "SD150_TextField should exist")
+        focusAndType(field, "Hello150")
         assertBindingMirrorContains("SD150_Mirror_T", "Hello150")
-        #if os(iOS)
-        XCTAssertEqual((field.value as? String)?.contains("Hello150") ?? false, true, "Text field value should reflect binding")
-        #endif
         #else
         throw XCTSkip("Issue #150 host UI tests require iOS or macOS TestApp")
         #endif
@@ -298,10 +144,10 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
 
     func test150_platformTextField_verticalAxis_typingUpdatesBinding() throws {
         #if os(iOS) || os(macOS)
-        let field = sd150TextField(matching: "SD150_AxisField")
-        XCTAssertTrue(field.waitForExistence(timeout: 2.5), "Axis text field")
-        field.xcuiTapToBecomeFirstResponder()
-        field.typeText("AxisX")
+        launchSD150Host(section: "text")
+        let field = element(exactIdentifier: "SD150_AxisField")
+        XCTAssertTrue(field.waitForExistence(timeout: 2.5), "SD150_AxisField should exist")
+        focusAndType(field, "AxisX")
         assertBindingMirrorContains("SD150_Mirror_A", "AxisX")
         #else
         throw XCTSkip("Issue #150 host UI tests require iOS or macOS TestApp")
@@ -310,9 +156,10 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
 
     func test150_platformSecureField_typingUpdatesBinding() throws {
         #if os(iOS) || os(macOS)
-        let field = sd150SecureField(matching: "sd150-securefield")
-        XCTAssertTrue(field.waitForExistence(timeout: 2.5), "Secure field")
-        sd150FocusAndType(field, "hunter2")
+        launchSD150Host(section: "secure")
+        let field = element(exactIdentifier: "SD150_SecureField")
+        XCTAssertTrue(field.waitForExistence(timeout: 2.5), "SD150_SecureField should exist")
+        focusAndType(field, "hunter2")
         assertBindingMirrorContains("SD150_Mirror_S", "hunter2")
         #else
         throw XCTSkip("Issue #150 host UI tests require iOS or macOS TestApp")
@@ -321,9 +168,10 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
 
     func test150_platformToggle_tapUpdatesBinding() throws {
         #if os(iOS) || os(macOS)
+        launchSD150Host(section: "toggle")
         assertBindingMirrorContains("SD150_Mirror_G", "0")
-        let toggle = sd150Switch(matching: "SD150_Toggle")
-        XCTAssertTrue(toggle.waitForExistence(timeout: 2.5), "Toggle")
+        let toggle = element(exactIdentifier: "SD150_Toggle")
+        XCTAssertTrue(toggle.waitForExistence(timeout: 2.5), "SD150_Toggle should exist")
         toggle.xcuiTapToBecomeFirstResponder()
         assertBindingMirrorContains("SD150_Mirror_G", "1")
         #else
@@ -333,23 +181,13 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
 
     func test150_platformTextEditor_prefillAndAdditionalTyping() throws {
         #if os(iOS) || os(macOS)
-        let editor = sd150TextView(matching: "SD150_EditorPrompt")
-        XCTAssertTrue(editor.waitForExistence(timeout: 2.5), "Text editor")
+        launchSD150Host(section: "editor")
+        let editor = element(exactIdentifier: "SD150_EditorPrompt")
+        XCTAssertTrue(editor.waitForExistence(timeout: 2.5), "SD150_EditorPrompt should exist")
         assertBindingMirrorContains("SD150_Mirror_E", "PrefillSeed")
-        editor.xcuiTapToBecomeFirstResponder()
-        #if os(iOS)
-        // UITest often inserts at the start of the first line; nudge toward the trailing edge before append.
-        editor.coordinate(withNormalizedOffset: CGVector(dx: 0.92, dy: 0.88)).tap()
-        RunLoop.current.run(until: Date().addingTimeInterval(0.2))
-        #endif
-        editor.typeText("More")
-        let mirrorE = mirrorElement(identifier: "SD150_Mirror_E")
-        XCTAssertTrue(mirrorE.waitForExistence(timeout: 3.0), "Mirror SD150_Mirror_E should exist after edit")
-        let raw = mirrorE.xcuiAccessibleText
-        XCTAssertTrue(
-            raw.contains("PrefillSeed") && raw.contains("More"),
-            "Editor mirror should reflect prefill plus appended text (order may vary); got: '\(raw)'"
-        )
+        focusAndType(editor, "More")
+        assertBindingMirrorContains("SD150_Mirror_E", "PrefillSeed")
+        assertBindingMirrorContains("SD150_Mirror_E", "More")
         #else
         throw XCTSkip("Issue #150 host UI tests require iOS or macOS TestApp")
         #endif
@@ -357,13 +195,12 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
 
     func test150_platformTextField_longInputMirror() throws {
         #if os(iOS) || os(macOS)
+        launchSD150Host(section: "long")
         let long = String(repeating: "Z", count: 220)
-        let field = sd150TextField(matching: "SD150_LongField")
-        XCTAssertTrue(field.waitForExistence(timeout: 2.5), "Long field")
-        field.xcuiTapToBecomeFirstResponder()
-        field.typeText(long)
+        let field = element(exactIdentifier: "SD150_LongField")
+        XCTAssertTrue(field.waitForExistence(timeout: 2.5), "SD150_LongField should exist")
+        focusAndType(field, long)
         assertBindingMirrorContains("SD150_Mirror_L", String(repeating: "Z", count: 32))
-        assertBindingMirrorContains("SD150_Mirror_L", "ZZZZ")
         #else
         throw XCTSkip("Issue #150 host UI tests require iOS or macOS TestApp")
         #endif
@@ -371,10 +208,10 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
 
     func test150_rapidSequentialTyping_appends() throws {
         #if os(iOS) || os(macOS)
-        let field = sd150TextField(matching: "SD150_TextField")
-        XCTAssertTrue(field.waitForExistence(timeout: 2.5), "Text field")
-        field.xcuiTapToBecomeFirstResponder()
-        field.typeText("a")
+        launchSD150Host(section: "text")
+        let field = element(exactIdentifier: "SD150_TextField")
+        XCTAssertTrue(field.waitForExistence(timeout: 2.5), "SD150_TextField should exist")
+        focusAndType(field, "a")
         field.typeText("b")
         assertBindingMirrorContains("SD150_Mirror_T", "ab")
         #else
@@ -384,33 +221,23 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
 
     func test150_platformForm_integrationMultipleControls() throws {
         #if os(iOS) || os(macOS)
-        let name = sd150TextField(matching: "SD150_Integration_Name")
-        let pass = sd150SecureField(matching: "sd150-integration-password")
-        let toggle = sd150Switch(matching: "sd150-integration-toggle")
-        XCTAssertTrue(name.waitForExistence(timeout: 2.5), "Integration name field")
-        XCTAssertTrue(pass.waitForExistence(timeout: 2.5), "Integration password field")
+        launchSD150Host(section: "integration")
+        let name = element(exactIdentifier: "SD150_Integration_Name")
+        let pass = element(exactIdentifier: "SD150_Integration_Password")
+        let toggle = element(exactIdentifier: "SD150_Integration_Toggle")
+        XCTAssertTrue(name.waitForExistence(timeout: 2.5), "SD150_Integration_Name should exist")
+        XCTAssertTrue(pass.waitForExistence(timeout: 2.5), "SD150_Integration_Password should exist")
         #if os(iOS)
-        sd150PasteIntoField(name, "Pat")
-        sd150FocusAndType(pass, "secret")
+        pasteIntoField(name, "Pat")
+        focusAndType(pass, "secret")
         app.xcuiDismissSoftwareKeyboardIfPresent()
-        RunLoop.current.run(until: Date().addingTimeInterval(0.35))
         #else
-        sd150FocusAndType(name, "Pat")
-        sd150FocusAndType(pass, "secret")
+        focusAndType(name, "Pat")
+        focusAndType(pass, "secret")
         #endif
         assertBindingMirrorContains("SD150_Mirror_IN", "Pat")
         assertBindingMirrorContains("SD150_Mirror_IN", "secret")
-        #if os(iOS)
-        app.xcuiDismissSoftwareKeyboardIfPresent()
-        RunLoop.current.run(until: Date().addingTimeInterval(0.4))
-        if app.navigationBars.firstMatch.waitForExistence(timeout: 0.5) {
-            app.navigationBars.firstMatch.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
-            RunLoop.current.run(until: Date().addingTimeInterval(0.25))
-        }
-        #endif
-        XCTAssertTrue(toggle.waitForExistence(timeout: 2.5), "Integration toggle should exist")
-        // Toggle binding in this multi-control Form row is covered by test150_platformToggle_tapUpdatesBinding;
-        // iOS 26 keeps integrationOn at 0 in the mirror after taps (keyboard/secure-field focus interaction).
+        XCTAssertTrue(toggle.waitForExistence(timeout: 2.5), "SD150_Integration_Toggle should exist")
         toggle.xcuiTapToBecomeFirstResponder()
         #else
         throw XCTSkip("Issue #150 host UI tests require iOS or macOS TestApp")
