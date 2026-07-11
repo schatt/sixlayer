@@ -50,9 +50,26 @@ final class Layer1AccessibilityUITests: XCTestCase {
         localApp.launch()
         app = localApp
         XCTAssertEqual(localApp.state, .runningForeground, "Layer1 host should be foreground")
+
+        // Prefer section marker when deep-linked — nav titles are unreliable under parallel
+        // macOS UITest launches for heavier Data Presentation hosts (#316).
+        if let section {
+            let marker: String
+            switch section {
+            case "items": marker = "L1_Section_Items"
+            case "responsiveCard": marker = "L1_Section_ResponsiveCard"
+            default: marker = "L1_Section_\(section)"
+            }
+            let el = app.descendants(matching: .any)[marker].firstMatch
+            XCTAssertTrue(
+                el.exists,
+                "Layer1 section marker '\(marker)' should exist at launch (-OpenLayer1Category=\(Self.categoryArg(categoryName)) -L1Section=\(section))"
+            )
+            return
+        }
+
         XCTAssertTrue(
-            app.navigationBars[categoryName].exists
-                || app.staticTexts[categoryName].exists,
+            app.navigationBars[categoryName].exists,
             "Layer1 category '\(categoryName)' nav title should exist at launch (-OpenLayer1Category=\(Self.categoryArg(categoryName)))"
         )
     }
@@ -67,15 +84,39 @@ final class Layer1AccessibilityUITests: XCTestCase {
     @MainActor
     private func assertExactIdentifierExists(_ identifier: String, context: String) {
         let el = app.descendants(matching: .any)[identifier].firstMatch
-        XCTAssertTrue(el.exists, "\(context): missing exact id '\(identifier)'")
+        if el.exists { return }
+        let matches = app.descendants(matching: .any)
+            .matching(NSPredicate(format: "identifier CONTAINS[c] %@", identifier))
+        let nearbyLimit = min(matches.count, 15)
+        var nearby: [String] = []
+        for i in 0..<nearbyLimit {
+            let value = matches.element(boundBy: i).identifier
+            if !value.isEmpty { nearby.append(value) }
+        }
+        let anyWithId = app.descendants(matching: .any)
+            .matching(NSPredicate(format: "identifier != %@", ""))
+        let sampleLimit = min(anyWithId.count, 25)
+        var samples: [String] = []
+        for i in 0..<sampleLimit {
+            let value = anyWithId.element(boundBy: i).identifier
+            if !value.isEmpty { samples.append(value) }
+        }
+        XCTFail("\(context): missing exact id '\(identifier)'. Nearby: \(nearby). Sample ids: \(samples)")
     }
 
     @MainActor
-    private func verifyAccessibilityIdentifier(_ element: XCUIElement, functionName: String) {
-        XCTAssertFalse(
-            element.identifier.isEmpty,
-            "\(functionName) should have accessibility identifier. Found: '\(element.identifier)'"
-        )
+    private func assertIdentifierContains(_ substring: String, context: String) {
+        let el = element(identifierContains: substring)
+        if el.exists { return }
+        let anyWithId = app.descendants(matching: .any)
+            .matching(NSPredicate(format: "identifier != %@", ""))
+        let sampleLimit = min(anyWithId.count, 30)
+        var samples: [String] = []
+        for i in 0..<sampleLimit {
+            let value = anyWithId.element(boundBy: i).identifier
+            if !value.isEmpty { samples.append(value) }
+        }
+        XCTFail("\(context): missing identifier CONTAINS '\(substring)'. Sample ids: \(samples)")
     }
 
     /// Single-tappable card contract without scroll-as-discovery (#316).
@@ -98,30 +139,19 @@ final class Layer1AccessibilityUITests: XCTestCase {
         switch category {
         case "Data Presentation":
             assertExactIdentifierExists("L1_Section_Items", context: "Data Presentation items section")
-            let itemCollection = element(identifierContains: "platformPresentItemCollection_L1")
-            XCTAssertTrue(itemCollection.exists, "Data Presentation should expose platformPresentItemCollection_L1")
-            verifyAccessibilityIdentifier(itemCollection, functionName: "platformPresentItemCollection_L1")
+            assertIdentifierContains("platformPresentItemCollection_L1", context: "Data Presentation item collection")
 
         case "Navigation":
-            let navStack = element(identifierContains: "platformPresentNavigationStack_L1")
-            XCTAssertTrue(navStack.exists, "Navigation should expose platformPresentNavigationStack_L1")
-            verifyAccessibilityIdentifier(navStack, functionName: "platformPresentNavigationStack_L1")
+            assertIdentifierContains("platformPresentNavigationStack_L1", context: "Navigation stack")
 
         case "Photos":
-            let photoCapture = element(identifierContains: "platformPhotoCapture_L1")
-            XCTAssertTrue(photoCapture.exists, "Photos should expose platformPhotoCapture_L1")
-            verifyAccessibilityIdentifier(photoCapture, functionName: "platformPhotoCapture_L1")
+            assertIdentifierContains("platformPhotoCapture_L1", context: "Photo capture")
 
         case "Security":
-            XCTAssertTrue(
-                element(identifierContains: "SixLayer.main.ui").exists,
-                "Security examples should expose SixLayer automatic accessibility identifiers (#245)"
-            )
+            assertIdentifierContains("SixLayer.main.ui", context: "Security examples")
 
         case "OCR":
-            let ocr = element(identifierContains: "platformOCRWithDisambiguation_L1")
-            XCTAssertTrue(ocr.exists, "OCR should expose platformOCRWithDisambiguation_L1")
-            verifyAccessibilityIdentifier(ocr, functionName: "platformOCRWithDisambiguation_L1")
+            assertIdentifierContains("platformOCRWithDisambiguation_L1", context: "OCR")
 
         case "Notifications":
             assertExactIdentifierExists(
@@ -130,15 +160,10 @@ final class Layer1AccessibilityUITests: XCTestCase {
             )
 
         case "Internationalization":
-            XCTAssertTrue(
-                element(identifierContains: "SixLayer.main.ui").exists,
-                "Internationalization examples should expose SixLayer automatic accessibility identifiers (#245)"
-            )
+            assertIdentifierContains("SixLayer.main.ui", context: "Internationalization examples")
 
         case "Data Analysis":
-            let analyze = element(identifierContains: "platformAnalyzeDataFrame_L1")
-            XCTAssertTrue(analyze.exists, "Data Analysis should expose platformAnalyzeDataFrame_L1")
-            verifyAccessibilityIdentifier(analyze, functionName: "platformAnalyzeDataFrame_L1")
+            assertIdentifierContains("platformAnalyzeDataFrame_L1", context: "Data Analysis")
 
         default:
             XCTFail("Unknown Layer1 category: \(category)")
