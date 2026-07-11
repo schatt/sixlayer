@@ -55,21 +55,21 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
             localApp.wait(for: .runningForeground, timeout: Self.hostReadyTimeout),
             "Test app should be foreground (Issue #150 host)"
         )
-        let sectionHeader: String
+        let sectionId: String
         switch section {
-        case "integration": sectionHeader = "SD150 Integration"
-        case "text": sectionHeader = "SD150 Text inputs"
-        case "secure": sectionHeader = "SD150 Secure"
-        case "toggle": sectionHeader = "SD150 Toggle"
-        case "editor": sectionHeader = "SD150 Editor"
-        case "long": sectionHeader = "SD150 Long"
+        case "integration": sectionId = "SD150_Section_Integration"
+        case "text": sectionId = "SD150_Section_Text"
+        case "secure": sectionId = "SD150_Section_Secure"
+        case "toggle": sectionId = "SD150_Section_Toggle"
+        case "editor": sectionId = "SD150_Section_Editor"
+        case "long": sectionId = "SD150_Section_Long"
         default:
             XCTFail("Unknown SD150 section: \(section)")
             return
         }
         XCTAssertTrue(
-            localApp.staticTexts[sectionHeader].waitForExistence(timeout: Self.hostReadyTimeout),
-            "SD150 host section header '\(sectionHeader)' should exist (-SD150Section=\(section))"
+            element(exactIdentifier: sectionId).waitForExistence(timeout: Self.hostReadyTimeout),
+            "SD150 host section '\(sectionId)' should exist (-SD150Section=\(section))"
         )
     }
 
