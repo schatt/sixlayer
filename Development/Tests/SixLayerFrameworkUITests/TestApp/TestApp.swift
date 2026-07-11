@@ -546,18 +546,17 @@ struct TestAppContentView: View {
         }
         .navigationTitle(category.rawValue)
         .platformNavigationTitleDisplayMode_L4(.inline)
-        .safeAreaInset(edge: .bottom, spacing: 0) {
-            // Tiny marker only — do not put accessibilityIdentifier on the category root
-            // (that can collapse children and hide L1 surfaces from XCUI) (#316).
+        .overlay(alignment: .topLeading) {
+            // Tiny marker — avoid accessibilityIdentifier on the category root (collapses children).
+            // Prefer overlay over safeAreaInset so the marker stays in the a11y tree (#316).
             Text("L1_Category_\(category.rawValue.replacingOccurrences(of: " ", with: "-"))")
                 .font(.caption2)
                 .foregroundStyle(.secondary)
                 .accessibilityIdentifier(
                     "L1_Category_\(category.rawValue.replacingOccurrences(of: " ", with: "-"))"
                 )
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal)
-                .padding(.bottom, 4)
+                .padding(8)
+                .allowsHitTesting(false)
         }
     }
 }
