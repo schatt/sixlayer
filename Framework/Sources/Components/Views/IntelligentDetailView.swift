@@ -25,13 +25,12 @@ public struct IntelligentDetailView {
         hints: PresentationHints? = nil,
         showEditButton: Bool = true,
         onEdit: (() -> Void)? = nil,
-        @ViewBuilder customFieldView: @escaping (String, Any, FieldType) -> some View = { fieldName, value, fieldType in
-            let text = String(describing: value)
+        @ViewBuilder customFieldView: @escaping (String, Any, FieldType) -> some View = { _, value, _ in
             // Explicit label/value: macOS XCUI often leaves Text.label empty under automaticCompliance (#316).
-            Text(text)
+            Text(String(describing: value))
                 .foregroundColor(.secondary)
-                .accessibilityLabel(text)
-                .accessibilityValue(text)
+                .accessibilityLabel(String(describing: value))
+                .accessibilityValue(String(describing: value))
         }
     ) -> some View {
         let analysis = DataIntrospectionEngine.analyze(data)
