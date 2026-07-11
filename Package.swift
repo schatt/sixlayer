@@ -1,5 +1,5 @@
 // swift-tools-version: 6.0
-// SixLayerFramework v8.1.1 - Patch: macOS/iPad resize — app-nav column sizing and card reflow (#330)
+// SixLayerFramework v8.2.0 - Minor: macOS UITest deep-links (#316) and parallel test hygiene (#335)
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
