@@ -69,6 +69,8 @@ struct TestAppContentView: View {
     private let openAccessibilityCompatibilityPlatformPickerTest = ProcessInfo.processInfo.arguments.contains("-OpenAccessibilityCompatibilityPlatformPickerTest")
     /// When true, app opens directly to Layer 4 contract section (launch arg -OpenLayer4Examples).
     private let openLayer4Examples = ProcessInfo.processInfo.arguments.contains("-OpenLayer4Examples")
+    /// When true, app opens directly to Layer 3 examples (launch arg -OpenLayer3Examples). Refs #316.
+    private let openLayer3Examples = ProcessInfo.processInfo.arguments.contains("-OpenLayer3Examples")
     /// When true, app opens directly to Layer 5 Accessibility section (launch arg -OpenLayer5Accessibility).
     private let openLayer5Accessibility = ProcessInfo.processInfo.arguments.contains("-OpenLayer5Accessibility")
     /// When true, app opens directly to Layer 6 Cross-Platform section (launch arg -OpenLayer6Examples).
@@ -184,6 +186,10 @@ struct TestAppContentView: View {
             } else if openLayer4Examples {
                 NavigationStack {
                     Layer4ContractOnlyView()
+                }
+            } else if openLayer3Examples {
+                NavigationStack {
+                    Layer3ExamplesView()
                 }
             } else if openLayer5Accessibility {
                 NavigationStack {
