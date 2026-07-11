@@ -48,7 +48,7 @@ final class CallbackCategoryCUITests: XCTestCase {
     }
 
     func testCategoryC_formFlow_submitThenCancel_updatesVisibleCallbackState() throws {
-        let state = app.staticTexts[IDs.formStateText]
+        let state = app.descendants(matching: .any)[IDs.formStateText]
         XCTAssertTrue(state.waitForExistence(timeout: 1.5), "Form callback state label should exist")
         XCTAssertEqual(state.xcuiAccessibleText, "Form callback state: none")
 
@@ -64,7 +64,7 @@ final class CallbackCategoryCUITests: XCTestCase {
     }
 
     func testCategoryC_selectionFlow_tappingItem_updatesVisibleSelectionState() throws {
-        let state = app.staticTexts[IDs.selectionStateText]
+        let state = app.descendants(matching: .any)[IDs.selectionStateText]
         XCTAssertTrue(state.waitForExistence(timeout: 1.5), "Selection callback state label should exist")
         XCTAssertEqual(state.xcuiAccessibleText, "Selected item: none")
 
