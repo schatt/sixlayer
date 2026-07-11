@@ -69,8 +69,10 @@ struct CategoryEOneOffAuditView: View {
 
                 // Explicit accessibilityLabel: macOS XCUI often leaves Text.label empty when only identifier is set (#316).
                 Text(clipboardState)
+                    .accessibilityElement(children: .ignore)
                     .accessibilityIdentifier("category-e-clipboard-state-label")
                     .accessibilityLabel(clipboardState)
+                    .accessibilityValue(clipboardState)
             }
             .padding()
         }
