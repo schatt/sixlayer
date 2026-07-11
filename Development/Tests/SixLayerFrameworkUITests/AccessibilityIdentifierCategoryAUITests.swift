@@ -185,13 +185,16 @@ final class AccessibilityIdentifierCategoryAUITests: XCTestCase {
     }
 
     func testCategoryA_accessibilityLabel_parameter_surfacesInLabel() throws {
+        let el = anyElement(identifierContains: "CatALabelAndId")
         XCTAssertTrue(
-            scrollUntilLabelContains("VoiceOver Cat A Label"),
-            "basicAutomaticCompliance accessibilityLabel should appear on XCUIElement label"
-        )
-        XCTAssertTrue(
-            anyElement(identifierContains: "CatALabelAndId").waitForExistence(timeout: Self.mediumWait),
+            el.waitForExistence(timeout: 2.5),
             "identifier should still include CatALabelAndId when accessibilityLabel is set"
+        )
+        // macOS may expose the VoiceOver string via label or value (#316).
+        let text = el.xcuiAccessibleText
+        XCTAssertTrue(
+            text.contains("VoiceOver Cat A Label"),
+            "basicAutomaticCompliance accessibilityLabel should appear on XCUIElement; got '\(text)' (label='\(el.label)')"
         )
     }
 

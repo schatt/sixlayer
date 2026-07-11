@@ -32,6 +32,15 @@ struct AccessibilityIdentifierCategoryAUDITView: View {
                 .accessibilityLabel("Category A — identifier audit (#197)")
                 .accessibilityIdentifier(Self.auditTitleUITestID)
 
+                // Near top so XCUI can assert without scrolling (#316).
+                sectionCaption("Explicit accessibilityLabel (basicAutomaticCompliance)")
+                platformText("Label row")
+                    .basicAutomaticCompliance(
+                        identifierName: "CatALabelAndId",
+                        identifierLabel: "Visible",
+                        accessibilityLabel: "VoiceOver Cat A Label"
+                    )
+
                 // `children: .combine` surfaces one element with explicit identifier for XCUITest (Issue #197).
                 sectionCaption("Manual id on outer Group (wrapper)")
                 // Group + children: .ignore matches CatAAuditTitle / CatAExactNamed: XCTest reliably sees the
@@ -98,15 +107,6 @@ struct AccessibilityIdentifierCategoryAUDITView: View {
                 .accessibilityElement(children: .ignore)
                 .accessibilityLabel("Exact named minimal")
                 .accessibilityIdentifier("CatAExactNamed")
-
-                // accessibilityLabel parameter (AutomaticAccessibilityLabelTests / VoiceOver string).
-                sectionCaption("Explicit accessibilityLabel (basicAutomaticCompliance)")
-                platformText("Label row")
-                    .basicAutomaticCompliance(
-                        identifierName: "CatALabelAndId",
-                        identifierLabel: "Visible",
-                        accessibilityLabel: "VoiceOver Cat A Label"
-                    )
 
                 // Empty identifierName: generator falls back to "element" and includes sanitized label (audit empty string).
                 sectionCaption("Empty identifier name (sanitized label segment)")
