@@ -166,8 +166,13 @@ final class Layer4UITests: XCTestCase {
 
     @MainActor
     private func waitForDestinationContent(timeout: TimeInterval) -> Bool {
-        waitForIdentifier("L4NavDestinationContent", timeout: timeout)
-            || waitForStaticTextInForeground("L4NavDestinationContent", timeout: 0.01)
+        let deadline = Date().addingTimeInterval(timeout)
+        while Date() < deadline {
+            if element(matchingIdentifier: "L4NavDestinationContent").exists { return true }
+            if app.staticTexts["L4NavDestinationContent"].exists { return true }
+            RunLoop.current.run(until: Date().addingTimeInterval(0.05))
+        }
+        return false
     }
 
     @MainActor
