@@ -467,24 +467,14 @@ final class Layer4UITests: XCTestCase {
                 || app.staticTexts["L4NavStackContractRoot"].exists,
             "platformImplementNavigationStack_L4: stack root content must be visible"
         )
-        let deadline = Date().addingTimeInterval(2.0)
-        var titleVisible = false
-        while Date() < deadline {
-            if app.navigationBars["L4NavStackContract"].exists
-                || app.staticTexts["L4NavStackContract"].exists
-                || element(matchingIdentifier: "L4NavStackContract").exists {
-                titleVisible = true
-                break
-            }
-            RunLoop.current.run(until: Date().addingTimeInterval(0.05))
-        }
-        if !titleVisible {
-            assertExactIdentifierExists(
-                "L4NavStackContract",
-                message: "platformImplementNavigationStack_L4: inner navigation title should be exposed",
-                nearbyHint: "L4NavStack"
-            )
-        }
+        // Observed via failure dump in /tmp/316-l4-id-dump-*.xcresult (#316):
+        // platformImplementNavigationStack_L4 titles stamp …l4navstackcontract.l4navstackcontract.Header
+        let titleId = "SixLayer.main.ui.l4navstackcontract.l4navstackcontract.Header"
+        assertExactIdentifierExists(
+            titleId,
+            message: "platformImplementNavigationStack_L4: inner navigation title should be exposed",
+            nearbyHint: "l4navstackcontract"
+        )
     }
 
     @MainActor
