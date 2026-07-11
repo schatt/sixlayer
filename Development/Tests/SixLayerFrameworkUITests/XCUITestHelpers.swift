@@ -79,20 +79,32 @@ extension XCUIApplication {
     }
 
     /// iOS 26 SwiftUI `Form` often reports `tables.count == 0` while `tables.firstMatch` exists; window swipes do not move rows (#261).
+    /// macOS often exposes collapsed/non-hittable `ScrollView` hosts (height ~12); swiping them throws
+    /// "Unable to find hit point" (#316) — only swipe hittable hosts with a usable frame, else window-drag.
     private func xcuiSwipePrimaryContent(up: Bool) {
-        func swipe(_ element: XCUIElement) {
+        /// Returns true when a real swipe was performed on a hittable host.
+        func swipeIfHittable(_ element: XCUIElement) -> Bool {
+            guard element.exists else { return false }
+            let frame = element.frame
+            // Collapsed / off-layout hosts are not safe to swipe (macOS XCUI #316).
+            guard frame.width > 20, frame.height > 20 else { return false }
+            guard element.isHittable else { return false }
             if up { element.swipeUp() } else { element.swipeDown() }
+            return true
         }
 
         let tbls = tables
         let tableCount = tbls.count
         if tableCount > 1 {
-            swipe(tbls.element(boundBy: tableCount - 1))
-            swipe(tbls.element(boundBy: 0))
+            let outer = swipeIfHittable(tbls.element(boundBy: tableCount - 1))
+            let inner = swipeIfHittable(tbls.element(boundBy: 0))
+            if outer || inner { return }
+            xcuiDragScrollContent(up: up)
             return
         }
         if tableCount == 1 {
-            swipe(tbls.element(boundBy: 0))
+            if swipeIfHittable(tbls.element(boundBy: 0)) { return }
+            xcuiDragScrollContent(up: up)
             return
         }
 
@@ -100,12 +112,12 @@ extension XCUIApplication {
         let collectionCount = cols.count
         // Root `Form` is usually the outermost list; a lone CollectionView is often overlay split (#261).
         if collectionCount > 1 {
-            swipe(cols.element(boundBy: collectionCount - 1))
+            if swipeIfHittable(cols.element(boundBy: collectionCount - 1)) { return }
+            xcuiDragScrollContent(up: up)
             return
         }
         if collectionCount == 1 {
-            if tbls.element(boundBy: 0).exists {
-                swipe(tbls.element(boundBy: 0))
+            if tbls.element(boundBy: 0).exists, swipeIfHittable(tbls.element(boundBy: 0)) {
                 return
             }
             xcuiDragScrollContent(up: up)
@@ -115,11 +127,16 @@ extension XCUIApplication {
         let svs = scrollViews
         let scrollCount = svs.count
         if scrollCount > 1 {
-            swipe(svs.element(boundBy: scrollCount - 1))
+            // Prefer the last scroll view, but skip collapsed/non-hittable macOS hosts (#316).
+            for index in stride(from: scrollCount - 1, through: 0, by: -1) {
+                if swipeIfHittable(svs.element(boundBy: index)) { return }
+            }
+            xcuiDragScrollContent(up: up)
             return
         }
         if scrollCount == 1 {
-            swipe(svs.element(boundBy: 0))
+            if swipeIfHittable(svs.element(boundBy: 0)) { return }
+            xcuiDragScrollContent(up: up)
             return
         }
 
@@ -135,11 +152,9 @@ extension XCUIApplication {
             cols.firstMatch,
             svs.firstMatch,
         ]
-        for host in latentHosts where host.exists {
-            swipe(host)
-            return
+        for host in latentHosts {
+            if swipeIfHittable(host) { return }
         }
-        swipe(tbls.element(boundBy: 0))
         xcuiDragScrollContent(up: up)
     }
 
@@ -185,6 +200,16 @@ extension XCUIElement {
     /// - Returns: true if element exists immediately
     var existsImmediately: Bool {
         return exists
+    }
+
+    /// Best-effort visible/accessible string for XCUI assertions (#316).
+    /// macOS SwiftUI often leaves `label` empty for `Text` that also has an accessibilityIdentifier;
+    /// content may still appear in `value` or `title`.
+    var xcuiAccessibleText: String {
+        if !label.isEmpty { return label }
+        if let valueString = value as? String, !valueString.isEmpty { return valueString }
+        if !title.isEmpty { return title }
+        return ""
     }
 
     /// Wait for this element to become not hittable (e.g. menu/popover dismissed).

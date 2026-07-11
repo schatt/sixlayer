@@ -79,7 +79,9 @@ jobs:
 
       - name: Upload iOS test result bundle
         if: failure()
-        uses: https://github.com/christopherHX/gitea-upload-artifact@v7
+        env:
+          NODE_OPTIONS: --use-system-ca
+        uses: christopherHX/gitea-upload-artifact@v7
         with:
           name: xcresult-${{ matrix.scheme }}
           path: build/${{ matrix.scheme }}.xcresult
@@ -141,7 +143,9 @@ jobs:
 
       - name: Upload macOS test result bundle
         if: failure()
-        uses: https://github.com/christopherHX/gitea-upload-artifact@v7
+        env:
+          NODE_OPTIONS: --use-system-ca
+        uses: christopherHX/gitea-upload-artifact@v7
         with:
           name: xcresult-${{ matrix.scheme }}
           path: build/${{ matrix.scheme }}.xcresult
@@ -188,7 +192,9 @@ jobs:
 
       - name: Upload tvOS test result bundle
         if: failure()
-        uses: https://github.com/christopherHX/gitea-upload-artifact@v7
+        env:
+          NODE_OPTIONS: --use-system-ca
+        uses: christopherHX/gitea-upload-artifact@v7
         with:
           name: xcresult-tvos
           path: build/SLF-tvOS-AllTests.xcresult
@@ -235,7 +241,9 @@ jobs:
 
       - name: Upload visionOS test result bundle
         if: failure()
-        uses: https://github.com/christopherHX/gitea-upload-artifact@v7
+        env:
+          NODE_OPTIONS: --use-system-ca
+        uses: christopherHX/gitea-upload-artifact@v7
         with:
           name: xcresult-visionos
           path: build/SLF-visionOS-AllTests.xcresult
@@ -282,7 +290,9 @@ jobs:
 
       - name: Upload watchOS test result bundle
         if: failure()
-        uses: https://github.com/christopherHX/gitea-upload-artifact@v7
+        env:
+          NODE_OPTIONS: --use-system-ca
+        uses: christopherHX/gitea-upload-artifact@v7
         with:
           name: xcresult-watchos
           path: build/SLF-watchOS-AllTests.xcresult

@@ -12,8 +12,8 @@
 //  2. **In-process UIKit tree** — `findAllAccessibilityIdentifiersFromPlatformView` frequently yields an
 //     empty list for the same hosted views in the unit-test harness, so it is not a dependable second source.
 //
-//  This file queries **XCUIApplication** after full launch and navigation — the same path production UI
-//  tests use. The views under test live in `TestApp/TestViews/IdentifierEdgeCaseTestView.swift`.
+//  This file queries **XCUIApplication** after full launch — the same path production UI tests use.
+//  The views under test live in `TestApp/TestViews/IdentifierEdgeCaseTestView.swift`.
 //
 
 import XCTest
@@ -35,8 +35,15 @@ final class ManualAccessibilityIdentifierHarnessUITests: XCTestCase {
             localApp.launchArguments.append("-OpenLayer4IdentifierEdgeCase")
             localApp.launch()
             instance.app = localApp
+            // macOS often does not expose NavigationStack titles as navigationBars (#316).
+            let landed =
+                localApp.navigationBars["Identifier Edge Case"].waitForExistence(timeout: 2.5)
+                || localApp.staticTexts["Identifier Edge Case Test"].waitForExistence(timeout: 2.0)
+                || localApp.descendants(matching: .any)
+                    .matching(NSPredicate(format: "identifier CONTAINS[c] %@", "manual-override-id"))
+                    .firstMatch.waitForExistence(timeout: 2.0)
             XCTAssertTrue(
-                localApp.navigationBars["Identifier Edge Case"].waitForExistence(timeout: 2.5),
+                landed,
                 "Test app should open Identifier Edge Case (-OpenLayer4IdentifierEdgeCase)"
             )
         }
@@ -53,32 +60,15 @@ final class ManualAccessibilityIdentifierHarnessUITests: XCTestCase {
     /// `SixLayer.main.ui.<id>.Button` (see `Layer4UITests` / `ButtonTestView` comments).
     private func assertAccessibilityIdentifierContains(_ substring: String, timeout: TimeInterval = 3.0) {
         let pred = NSPredicate(format: "identifier CONTAINS[c] %@", substring)
-        let roots: [XCUIElement] = [
-            app.scrollViews.firstMatch,
-            app.tables.firstMatch,
-            app.collectionViews.firstMatch,
-        ]
-        func queryRoots(_ wait: TimeInterval) -> Bool {
-            for root in roots where root.exists {
-                let el = root.descendants(matching: .any).matching(pred).firstMatch
-                if el.waitForExistence(timeout: wait) { return true }
-            }
-            return false
-        }
-        if queryRoots(min(timeout, 2.0)) { return }
-        for _ in 0..<8 {
-            app.xcuiSwipeScrollHostsUp()
-            if queryRoots(0.4) { return }
-        }
-        XCTFail(
-            "Expected an element whose accessibility identifier contains '\(substring)' (query bounded scroll/table/collection first)"
+        let el = app.descendants(matching: .any).matching(pred).firstMatch
+        XCTAssertTrue(
+            el.waitForExistence(timeout: timeout),
+            "Expected an element whose accessibility identifier contains '\(substring)'"
         )
     }
 
     /// Opens directly on Identifier Edge Case via `-OpenLayer4IdentifierEdgeCase`; assert manual ids queryable.
     func testManualPlatformButtonIds_queryableViaXCUITest() throws {
-        app.xcuiSwipeScrollHostsUp()
-
         assertAccessibilityIdentifierContains("manual-override-id")
         assertAccessibilityIdentifierContains("manual-cancel-id")
     }

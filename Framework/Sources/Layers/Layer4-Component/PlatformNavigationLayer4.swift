@@ -51,6 +51,8 @@ private struct Layer4OuterSidebarOverlayHost<SidebarSheet: View, Detail: View>: 
             sidebarSheet()
         }
         .padding()
+        // Keep Close / sidebar ids individually queryable under the modal root (macOS XCUI).
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier(layer4OverlayModalRootAccessibilityIdentifier)
         .accessibilityAddTraits(.isModal)
     }

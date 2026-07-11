@@ -65,8 +65,8 @@ final class AccessibilityIdentifierCategoryEUITests: XCTestCase {
         XCTAssertTrue(trigger.waitForExistence(timeout: 1.5), "Clipboard generation trigger should exist")
         trigger.tap()
 
-        let state = app.staticTexts[IDs.clipboardStateLabel]
+        let state = app.descendants(matching: .any)[IDs.clipboardStateLabel]
         XCTAssertTrue(state.waitForExistence(timeout: 1.5), "Clipboard state label should exist")
-        XCTAssertEqual(state.label, "Clipboard state: generated")
+        XCTAssertEqual(state.xcuiAccessibleText, "Clipboard state: generated")
     }
 }

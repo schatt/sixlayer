@@ -64,27 +64,27 @@ final class OCRCategoryDUITests: XCTestCase {
         XCTAssertTrue(firstCandidate.waitForExistence(timeout: 1.5), "First OCR candidate should exist")
         XCTAssertTrue(secondCandidate.waitForExistence(timeout: 1.5), "Second OCR candidate should exist")
 
-        let selectionState = app.staticTexts[IDs.selectionState]
+        let selectionState = app.descendants(matching: .any)[IDs.selectionState]
         XCTAssertTrue(selectionState.waitForExistence(timeout: 1.5), "Selection state label should exist")
-        XCTAssertEqual(selectionState.label, "Selected candidate: none")
+        XCTAssertEqual(selectionState.xcuiAccessibleText, "Selected candidate: none")
 
         secondCandidate.tap()
-        XCTAssertEqual(selectionState.label, "Selected candidate: Category D Candidate 2")
+        XCTAssertEqual(selectionState.xcuiAccessibleText, "Selected candidate: Category D Candidate 2")
     }
 
     func testCategoryD_overlayFlow_presentAndDismiss_updatesOutcomeState() throws {
-        let overlayState = app.staticTexts[IDs.overlayState]
+        let overlayState = app.descendants(matching: .any)[IDs.overlayState]
         XCTAssertTrue(overlayState.waitForExistence(timeout: 1.5), "Overlay state label should exist")
-        XCTAssertEqual(overlayState.label, "Overlay state: hidden")
+        XCTAssertEqual(overlayState.xcuiAccessibleText, "Overlay state: hidden")
 
         let openOverlay = app.buttons[IDs.openOverlayButton]
         XCTAssertTrue(openOverlay.waitForExistence(timeout: 1.5), "Open overlay action should exist")
         openOverlay.tap()
-        XCTAssertEqual(overlayState.label, "Overlay state: presented")
+        XCTAssertEqual(overlayState.xcuiAccessibleText, "Overlay state: presented")
 
         let done = app.buttons[IDs.overlayDoneButton]
         XCTAssertTrue(done.waitForExistence(timeout: 1.5), "Overlay dismiss action should exist")
         done.tap()
-        XCTAssertEqual(overlayState.label, "Overlay state: dismissed")
+        XCTAssertEqual(overlayState.xcuiAccessibleText, "Overlay state: dismissed")
     }
 }

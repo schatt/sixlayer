@@ -48,30 +48,30 @@ final class CallbackCategoryCUITests: XCTestCase {
     }
 
     func testCategoryC_formFlow_submitThenCancel_updatesVisibleCallbackState() throws {
-        let state = app.staticTexts[IDs.formStateText]
+        let state = app.descendants(matching: .any)[IDs.formStateText]
         XCTAssertTrue(state.waitForExistence(timeout: 1.5), "Form callback state label should exist")
-        XCTAssertEqual(state.label, "Form callback state: none")
+        XCTAssertEqual(state.xcuiAccessibleText, "Form callback state: none")
 
         let submit = app.buttons[IDs.formSubmitButton]
         XCTAssertTrue(submit.waitForExistence(timeout: 1.5), "Submit action should exist")
         submit.tap()
-        XCTAssertEqual(state.label, "Form callback state: submit")
+        XCTAssertEqual(state.xcuiAccessibleText, "Form callback state: submit")
 
         let cancel = app.buttons[IDs.formCancelButton]
         XCTAssertTrue(cancel.waitForExistence(timeout: 1.5), "Cancel action should exist")
         cancel.tap()
-        XCTAssertEqual(state.label, "Form callback state: cancel")
+        XCTAssertEqual(state.xcuiAccessibleText, "Form callback state: cancel")
     }
 
     func testCategoryC_selectionFlow_tappingItem_updatesVisibleSelectionState() throws {
-        let state = app.staticTexts[IDs.selectionStateText]
+        let state = app.descendants(matching: .any)[IDs.selectionStateText]
         XCTAssertTrue(state.waitForExistence(timeout: 1.5), "Selection callback state label should exist")
-        XCTAssertEqual(state.label, "Selected item: none")
+        XCTAssertEqual(state.xcuiAccessibleText, "Selected item: none")
 
         let row = app.buttons[IDs.selectionRowSecond]
         XCTAssertTrue(row.waitForExistence(timeout: 2.0), "Selection row should exist")
         row.tap()
 
-        XCTAssertEqual(state.label, "Selected item: Category C Item 2")
+        XCTAssertEqual(state.xcuiAccessibleText, "Selected item: Category C Item 2")
     }
 }

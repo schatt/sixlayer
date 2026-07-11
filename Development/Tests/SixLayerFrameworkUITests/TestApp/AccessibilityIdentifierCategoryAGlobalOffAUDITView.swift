@@ -15,13 +15,13 @@ struct AccessibilityIdentifierCategoryAGlobalOffAUDITView: View {
     var body: some View {
         platformScrollViewContainer {
             platformVStack(alignment: .leading, spacing: 24) {
-                Group {
-                    Text("Category A — global automatic IDs off")
-                        .font(.headline)
-                        .automaticCompliance(named: "CatAGlobalOffTitle")
-                }
-                .accessibilityElement(children: .ignore)
-                .accessibilityLabel("Category A — global automatic IDs off")
+                // Do not wrap in accessibilityElement(children: .ignore) — that drops the
+                // named identifier from the XCUI tree on macOS (#316).
+                Text("Category A — global automatic IDs off")
+                    .font(.headline)
+                    .accessibilityLabel("Category A — global automatic IDs off")
+                    .accessibilityValue("Category A — global automatic IDs off")
+                    .automaticCompliance(named: "CatAGlobalOffTitle")
 
                 sectionCaption("basicAutomaticCompliance (auto ID suppressed when global off)")
                 platformText("Auto suppressed")
