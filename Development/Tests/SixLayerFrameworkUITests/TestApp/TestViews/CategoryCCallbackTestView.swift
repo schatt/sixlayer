@@ -30,6 +30,7 @@ struct CategoryCCallbackTestView: View {
                 Text("Category C Callback Coverage")
                     .font(.title2)
                     .accessibilityIdentifier("category-c-callback-host-title")
+                    .accessibilityLabel("Category C Callback Coverage")
 
                 platformVStackContainer(alignment: .leading, spacing: 10) {
                     Text("Form flow")
@@ -50,8 +51,10 @@ struct CategoryCCallbackTestView: View {
                         .accessibilityIdentifier("category-c-form-cancel-button")
                     }
 
+                    // Explicit accessibilityLabel: macOS XCUI often leaves Text.label empty when only identifier is set (#316).
                     Text("Form callback state: \(formCallbackState)")
                         .accessibilityIdentifier("category-c-form-state-text")
+                        .accessibilityLabel("Form callback state: \(formCallbackState)")
                 }
 
                 platformVStackContainer(alignment: .leading, spacing: 10) {
@@ -69,6 +72,7 @@ struct CategoryCCallbackTestView: View {
 
                     Text("Selected item: \(selectedItemTitle)")
                         .accessibilityIdentifier("category-c-selection-state-text")
+                        .accessibilityLabel("Selected item: \(selectedItemTitle)")
                 }
             }
             .padding()
