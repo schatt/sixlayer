@@ -31,6 +31,9 @@ final class AccessibilityIdentifierCategoryAGlobalOffUITests: XCTestCase {
                 localApp.navigationBars["Category A Global Off"].waitForExistence(timeout: 2.5)
                 || localApp.staticTexts["Category A — global automatic IDs off"].waitForExistence(timeout: 2.0)
                 || localApp.descendants(matching: .any)
+                    .matching(NSPredicate(format: "label CONTAINS[c] %@", "global automatic IDs off"))
+                    .firstMatch.waitForExistence(timeout: 1.5)
+                || localApp.descendants(matching: .any)
                     .matching(NSPredicate(format: "identifier CONTAINS[c] %@", "CatAGlobalOffTitle"))
                     .firstMatch.waitForExistence(timeout: 2.0)
             XCTAssertTrue(
