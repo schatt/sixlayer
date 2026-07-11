@@ -183,6 +183,37 @@ final class Layer4UITests: XCTestCase {
         if close.exists { close.tap() }
     }
 
+    /// Fail with nearby identifier samples so the next xcresult failure text carries real a11y ids (#316).
+    @MainActor
+    private func assertExactIdentifierExists(
+        _ id: String,
+        message: String,
+        nearbyHint: String
+    ) {
+        if element(matchingIdentifier: id).exists { return }
+        let matches = app.descendants(matching: .any)
+            .matching(NSPredicate(format: "identifier CONTAINS[c] %@", nearbyHint))
+        let limit = min(matches.count, 25)
+        var samples: [String] = []
+        for i in 0..<limit {
+            let el = matches.element(boundBy: i)
+            let value = el.identifier
+            if !value.isEmpty { samples.append(value) }
+        }
+        // Also sample a few non-empty ids under the section header for context.
+        let anyWithId = app.descendants(matching: .any)
+            .matching(NSPredicate(format: "identifier != %@", ""))
+        let anyLimit = min(anyWithId.count, 40)
+        var allSamples: [String] = []
+        for i in 0..<anyLimit {
+            let value = anyWithId.element(boundBy: i).identifier
+            if !value.isEmpty { allSamples.append(value) }
+        }
+        XCTFail(
+            "\(message). Missing exact id '\(id)'. Nearby(\(nearbyHint)): \(samples). Sample ids: \(Array(allSamples.prefix(25)))"
+        )
+    }
+
     // MARK: - Controls
 
     @MainActor
@@ -210,11 +241,12 @@ final class Layer4UITests: XCTestCase {
     @MainActor
     func testL4_platformPicker() throws {
         launchL4Contract(section: "controls")
-        // `platformPicker` uses automaticCompliance(named:) without element-type suffix.
-        let pickerId = "SixLayer.main.ui.l4contractpicker"
-        XCTAssertTrue(
-            element(matchingIdentifier: pickerId).exists,
-            "platformPicker: exact id '\(pickerId)' should exist"
+        // TestApp sets includeElementTypes=true → named picker without type hint gets `.View`.
+        let pickerId = "SixLayer.main.ui.l4contractpicker.View"
+        assertExactIdentifierExists(
+            pickerId,
+            message: "platformPicker: exact generated id should exist",
+            nearbyHint: "picker"
         )
     }
 
@@ -314,49 +346,50 @@ final class Layer4UITests: XCTestCase {
     @MainActor
     func testL4_platformListRow() throws {
         launchL4Contract(section: "list")
-        // automaticCompliance(named: "platformListRow", identifierLabel: title) → …platformListRow.<sanitized>
-        let rowId = "SixLayer.main.ui.platformListRow.l4listrowcontract"
-        XCTAssertTrue(
-            element(matchingIdentifier: rowId).exists,
-            "platformListRow: exact id '\(rowId)' must exist (contract structure)"
+        // includeElementTypes=true → …platformListRow.<sanitized>.View
+        let rowId = "SixLayer.main.ui.platformListRow.l4listrowcontract.View"
+        assertExactIdentifierExists(
+            rowId,
+            message: "platformListRow: exact generated id must exist",
+            nearbyHint: "platformListRow"
         )
     }
 
     @MainActor
     func testL4_platformListSectionHeader() throws {
         launchL4Contract(section: "list")
-        let headerId = "SixLayer.main.ui.platformListSectionHeader.l4listsectionheadercontract"
-        XCTAssertTrue(
-            element(matchingIdentifier: headerId).exists,
-            "platformListSectionHeader: exact id '\(headerId)' must exist (contract structure)"
+        let headerId = "SixLayer.main.ui.platformListSectionHeader.l4listsectionheadercontract.View"
+        assertExactIdentifierExists(
+            headerId,
+            message: "platformListSectionHeader: exact generated id must exist",
+            nearbyHint: "platformListSectionHeader"
         )
     }
 
     @MainActor
     func testL4_platformListEmptyState() throws {
         launchL4Contract(section: "list")
-        let emptyId = "SixLayer.main.ui.platformListEmptyState.l4listemptystatecontract"
-        XCTAssertTrue(
-            element(matchingIdentifier: emptyId).exists,
-            "platformListEmptyState: exact id '\(emptyId)' must exist (contract structure)"
+        let emptyId = "SixLayer.main.ui.platformListEmptyState.l4listemptystatecontract.View"
+        assertExactIdentifierExists(
+            emptyId,
+            message: "platformListEmptyState: exact generated id must exist",
+            nearbyHint: "platformListEmptyState"
         )
     }
 
     @MainActor
     func testL4_platformRowActions_L4() throws {
         launchL4Contract(section: "list")
-        let rowId = "SixLayer.main.ui.platformListRow.l4rowactionscontractrow"
-        XCTAssertTrue(
-            element(matchingIdentifier: rowId).exists,
-            "platformRowActions_L4: contract row id '\(rowId)' must exist"
+        let rowId = "SixLayer.main.ui.platformListRow.l4rowactionscontractrow.View"
+        assertExactIdentifierExists(
+            rowId,
+            message: "platformRowActions_L4: contract row generated id must exist",
+            nearbyHint: "platformListRow"
         )
-        let actionsId = element(matchingIdentifier: "platformRowActions_L4")
-        let actionsContains = app.descendants(matching: .any)
-            .matching(NSPredicate(format: "identifier CONTAINS[c] %@", "platformRowActions_L4"))
-            .firstMatch
-        XCTAssertTrue(
-            actionsId.exists || actionsContains.exists,
-            "platformRowActions_L4: row must expose contract a11y identifier"
+        assertExactIdentifierExists(
+            "SixLayer.main.ui.platformRowActions_L4.View",
+            message: "platformRowActions_L4: actions wrapper generated id must exist",
+            nearbyHint: "platformRowActions"
         )
     }
 
@@ -428,6 +461,7 @@ final class Layer4UITests: XCTestCase {
     @MainActor
     func testL4_platformImplementNavigationStack_L4() throws {
         launchL4Contract(section: "navigation")
+        // xcresult recording shows L4NavStackContractRoot on-screen at launch.
         XCTAssertTrue(
             element(matchingIdentifier: "L4NavStackContractRoot").exists
                 || app.staticTexts["L4NavStackContractRoot"].exists,
@@ -444,8 +478,13 @@ final class Layer4UITests: XCTestCase {
             }
             RunLoop.current.run(until: Date().addingTimeInterval(0.05))
         }
-        XCTAssertTrue(titleVisible,
-                      "platformImplementNavigationStack_L4: inner navigation title should be exposed")
+        if !titleVisible {
+            assertExactIdentifierExists(
+                "L4NavStackContract",
+                message: "platformImplementNavigationStack_L4: inner navigation title should be exposed",
+                nearbyHint: "L4NavStack"
+            )
+        }
     }
 
     @MainActor
