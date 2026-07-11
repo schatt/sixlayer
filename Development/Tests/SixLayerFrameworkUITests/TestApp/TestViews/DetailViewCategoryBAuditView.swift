@@ -53,18 +53,21 @@ struct DetailViewCategoryBAuditView: View {
 
                 Text("Default IntelligentDetailView")
                     .font(.headline)
+                    .accessibilityLabel("Default IntelligentDetailView")
                 IntelligentDetailView.platformDetailView(for: defaultItem, showEditButton: false)
 
                 Divider()
 
                 Text("Custom Field IntelligentDetailView")
                     .font(.headline)
+                    .accessibilityLabel("Custom Field IntelligentDetailView")
                 IntelligentDetailView.platformDetailView(
                     for: defaultItem,
                     hints: compactHints,
                     showEditButton: false,
                     customFieldView: { fieldName, value, _ in
                         Text("Custom Field: \(fieldName) = \(value)")
+                            .accessibilityLabel("Custom Field: \(fieldName) = \(value)")
                     }
                 )
 
@@ -72,6 +75,7 @@ struct DetailViewCategoryBAuditView: View {
 
                 Text("Nil Value IntelligentDetailView")
                     .font(.headline)
+                    .accessibilityLabel("Nil Value IntelligentDetailView")
                 IntelligentDetailView.platformDetailView(
                     for: nilValueItem,
                     showEditButton: false
