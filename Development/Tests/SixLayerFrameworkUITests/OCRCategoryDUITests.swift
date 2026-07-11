@@ -64,7 +64,7 @@ final class OCRCategoryDUITests: XCTestCase {
         XCTAssertTrue(firstCandidate.waitForExistence(timeout: 1.5), "First OCR candidate should exist")
         XCTAssertTrue(secondCandidate.waitForExistence(timeout: 1.5), "Second OCR candidate should exist")
 
-        let selectionState = app.staticTexts[IDs.selectionState]
+        let selectionState = app.descendants(matching: .any)[IDs.selectionState]
         XCTAssertTrue(selectionState.waitForExistence(timeout: 1.5), "Selection state label should exist")
         XCTAssertEqual(selectionState.xcuiAccessibleText, "Selected candidate: none")
 
@@ -73,7 +73,7 @@ final class OCRCategoryDUITests: XCTestCase {
     }
 
     func testCategoryD_overlayFlow_presentAndDismiss_updatesOutcomeState() throws {
-        let overlayState = app.staticTexts[IDs.overlayState]
+        let overlayState = app.descendants(matching: .any)[IDs.overlayState]
         XCTAssertTrue(overlayState.waitForExistence(timeout: 1.5), "Overlay state label should exist")
         XCTAssertEqual(overlayState.xcuiAccessibleText, "Overlay state: hidden")
 
