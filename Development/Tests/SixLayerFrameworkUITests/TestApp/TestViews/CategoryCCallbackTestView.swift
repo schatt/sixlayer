@@ -24,6 +24,16 @@ struct CategoryCCallbackTestView: View {
         .init(id: "3", title: "Category C Item 3"),
     ]
 
+    /// macOS XCUI often leaves `Text.label` empty when only an identifier is set (#316).
+    @ViewBuilder
+    private func stateText(_ text: String, id: String) -> some View {
+        Text(text)
+            .accessibilityElement(children: .ignore)
+            .accessibilityIdentifier(id)
+            .accessibilityLabel(text)
+            .accessibilityValue(text)
+    }
+
     var body: some View {
         ScrollView {
             platformVStackContainer(alignment: .leading, spacing: 16) {
@@ -51,10 +61,10 @@ struct CategoryCCallbackTestView: View {
                         .accessibilityIdentifier("category-c-form-cancel-button")
                     }
 
-                    // Explicit accessibilityLabel: macOS XCUI often leaves Text.label empty when only identifier is set (#316).
-                    Text("Form callback state: \(formCallbackState)")
-                        .accessibilityIdentifier("category-c-form-state-text")
-                        .accessibilityLabel("Form callback state: \(formCallbackState)")
+                    stateText(
+                        "Form callback state: \(formCallbackState)",
+                        id: "category-c-form-state-text"
+                    )
                 }
 
                 platformVStackContainer(alignment: .leading, spacing: 10) {
@@ -70,9 +80,10 @@ struct CategoryCCallbackTestView: View {
                         }
                     }
 
-                    Text("Selected item: \(selectedItemTitle)")
-                        .accessibilityIdentifier("category-c-selection-state-text")
-                        .accessibilityLabel("Selected item: \(selectedItemTitle)")
+                    stateText(
+                        "Selected item: \(selectedItemTitle)",
+                        id: "category-c-selection-state-text"
+                    )
                 }
             }
             .padding()
