@@ -68,9 +68,11 @@ final class Layer1AccessibilityUITests: XCTestCase {
             return
         }
 
+        let categoryMarker = "L1_Category_\(Self.categoryArg(categoryName))"
+        let markerEl = app.descendants(matching: .any)[categoryMarker].firstMatch
         XCTAssertTrue(
-            app.navigationBars[categoryName].exists,
-            "Layer1 category '\(categoryName)' nav title should exist at launch (-OpenLayer1Category=\(Self.categoryArg(categoryName)))"
+            markerEl.exists,
+            "Layer1 category marker '\(categoryMarker)' should exist at launch (-OpenLayer1Category=\(Self.categoryArg(categoryName)))"
         )
     }
 
@@ -123,14 +125,29 @@ final class Layer1AccessibilityUITests: XCTestCase {
     @MainActor
     private func assertSingleTappableCard(title: String, elementName: String) {
         let el = app.buttons[title].firstMatch
-        XCTAssertTrue(
-            el.exists,
-            "\(elementName) with title '\(title)' should exist at section launch (no scroll)"
-        )
-        el.verifyAccessibilityContract(
-            elementName: elementName,
-            expectedType: .button,
-            requireLabel: true
+        if el.exists {
+            el.verifyAccessibilityContract(
+                elementName: elementName,
+                expectedType: .button,
+                requireLabel: true
+            )
+            return
+        }
+        let labeled = app.buttons.matching(NSPredicate(format: "label CONTAINS[c] %@", title))
+        let labelLimit = min(labeled.count, 10)
+        var labelSamples: [String] = []
+        for i in 0..<labelLimit {
+            labelSamples.append(labeled.element(boundBy: i).label)
+        }
+        let allButtons = app.buttons
+        let buttonLimit = min(allButtons.count, 20)
+        var buttonSamples: [String] = []
+        for i in 0..<buttonLimit {
+            let b = allButtons.element(boundBy: i)
+            buttonSamples.append("label=\(b.label) id=\(b.identifier)")
+        }
+        XCTFail(
+            "\(elementName) with title '\(title)' should exist at section launch (no scroll). labelCONTAINS: \(labelSamples). buttons: \(buttonSamples)"
         )
     }
 
