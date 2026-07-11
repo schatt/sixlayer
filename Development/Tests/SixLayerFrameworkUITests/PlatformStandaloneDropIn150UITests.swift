@@ -6,8 +6,8 @@
 //  `platformTextField` / `platformSecureField` / `platformToggle` / `platformTextEditor` / `platformForm`.
 //  Cross-links: layer semantics / a11y matrices remain #254 / #255 / #256 — not asserted here.
 //
-//  #316: one section per launch via `-SD150Section=…`; assert by exact accessibilityIdentifier only
-//  (no scroll-as-discovery, no label/value/title OR-fallback chains).
+//  #316: one section per launch via `-SD150Section=…`; assert by exact accessibilityIdentifier only.
+//  Parallel-safe: no shared app, no scroll discovery, no padded waitForExistence timeouts.
 //
 
 import XCTest
@@ -20,8 +20,6 @@ import UIKit
 final class PlatformStandaloneDropIn150UITests: XCTestCase {
     private nonisolated(unsafe) var app: XCUIApplication!
 
-    private static let hostReadyTimeout: TimeInterval = 3.0
-
     nonisolated override func setUpWithError() throws {
         continueAfterFailure = false
         addDefaultUIInterruptionMonitor()
@@ -30,19 +28,17 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
     nonisolated override func tearDownWithError() throws {
         if let running = app, running.state != .notRunning {
             running.terminate()
-            _ = running.wait(for: .notRunning, timeout: 5)
         }
         app = nil
         try super.tearDownWithError()
     }
 
-    // MARK: - Launch / query (single-path)
+    // MARK: - Launch / query (single-path, fail-fast)
 
     @MainActor
     private func launchSD150Host(section: String) {
         if let running = app, running.state != .notRunning {
             running.terminate()
-            _ = running.wait(for: .notRunning, timeout: 5)
         }
         let localApp = XCUIApplication()
         localApp.configureForFastTesting()
@@ -51,10 +47,8 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
         localApp.launchArguments.append("-SD150Section=\(section)")
         localApp.launch()
         app = localApp
-        XCTAssertTrue(
-            localApp.wait(for: .runningForeground, timeout: Self.hostReadyTimeout),
-            "Test app should be foreground (Issue #150 host)"
-        )
+        XCTAssertEqual(localApp.state, .runningForeground, "SD150 host should be foreground after launch")
+
         let sectionId: String
         switch section {
         case "integration": sectionId = "SD150_Section_Integration"
@@ -68,8 +62,8 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
             return
         }
         XCTAssertTrue(
-            element(exactIdentifier: sectionId).waitForExistence(timeout: Self.hostReadyTimeout),
-            "SD150 host section '\(sectionId)' should exist (-SD150Section=\(section))"
+            element(exactIdentifier: sectionId).exists,
+            "SD150 host section '\(sectionId)' should exist at launch (-SD150Section=\(section))"
         )
     }
 
@@ -89,7 +83,7 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
         line: UInt = #line
     ) {
         let m = element(exactIdentifier: mirrorId)
-        XCTAssertTrue(m.waitForExistence(timeout: 2.5), "Mirror \(mirrorId) should exist", file: file, line: line)
+        XCTAssertTrue(m.exists, "Mirror \(mirrorId) should exist", file: file, line: line)
         // Contract: host sets accessibilityLabel to the mirror text (#316 — no value/title fallback).
         XCTAssertTrue(
             m.label.contains(substring),
@@ -101,16 +95,10 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
 
     @MainActor
     private func focusAndType(_ field: XCUIElement, _ text: String, file: StaticString = #filePath, line: UInt = #line) {
-        XCTAssertTrue(field.waitForExistence(timeout: 2.5), "Field should exist before typing", file: file, line: line)
+        XCTAssertTrue(field.exists, "Field should exist before typing", file: file, line: line)
         field.xcuiTapToBecomeFirstResponder()
         #if os(iOS)
-        let keyboard = app.keyboards.firstMatch
-        XCTAssertTrue(
-            keyboard.waitForExistence(timeout: 2.5),
-            "Software keyboard should be visible before typeText",
-            file: file,
-            line: line
-        )
+        XCTAssertTrue(app.keyboards.firstMatch.exists, "Software keyboard should be visible before typeText", file: file, line: line)
         #endif
         field.typeText(text)
     }
@@ -118,12 +106,12 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
     #if os(iOS)
     @MainActor
     private func pasteIntoField(_ field: XCUIElement, _ text: String, file: StaticString = #filePath, line: UInt = #line) {
-        XCTAssertTrue(field.waitForExistence(timeout: 2.5), "Field should exist before paste", file: file, line: line)
+        XCTAssertTrue(field.exists, "Field should exist before paste", file: file, line: line)
         field.xcuiTapToBecomeFirstResponder()
         UIPasteboard.general.string = text
         field.press(forDuration: 1.2)
         let paste = app.menuItems["Paste"]
-        XCTAssertTrue(paste.waitForExistence(timeout: 2.0), "Paste menu item should appear", file: file, line: line)
+        XCTAssertTrue(paste.exists, "Paste menu item should appear", file: file, line: line)
         paste.tap()
     }
     #endif
@@ -134,7 +122,7 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
         #if os(iOS) || os(macOS)
         launchSD150Host(section: "text")
         let field = element(exactIdentifier: "SD150_TextField")
-        XCTAssertTrue(field.waitForExistence(timeout: 2.5), "SD150_TextField should exist")
+        XCTAssertTrue(field.exists, "SD150_TextField should exist")
         focusAndType(field, "Hello150")
         assertBindingMirrorContains("SD150_Mirror_T", "Hello150")
         #else
@@ -146,7 +134,7 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
         #if os(iOS) || os(macOS)
         launchSD150Host(section: "text")
         let field = element(exactIdentifier: "SD150_AxisField")
-        XCTAssertTrue(field.waitForExistence(timeout: 2.5), "SD150_AxisField should exist")
+        XCTAssertTrue(field.exists, "SD150_AxisField should exist")
         focusAndType(field, "AxisX")
         assertBindingMirrorContains("SD150_Mirror_A", "AxisX")
         #else
@@ -158,7 +146,7 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
         #if os(iOS) || os(macOS)
         launchSD150Host(section: "secure")
         let field = element(exactIdentifier: "SD150_SecureField")
-        XCTAssertTrue(field.waitForExistence(timeout: 2.5), "SD150_SecureField should exist")
+        XCTAssertTrue(field.exists, "SD150_SecureField should exist")
         focusAndType(field, "hunter2")
         assertBindingMirrorContains("SD150_Mirror_S", "hunter2")
         #else
@@ -171,7 +159,7 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
         launchSD150Host(section: "toggle")
         assertBindingMirrorContains("SD150_Mirror_G", "0")
         let toggle = element(exactIdentifier: "SD150_Toggle")
-        XCTAssertTrue(toggle.waitForExistence(timeout: 2.5), "SD150_Toggle should exist")
+        XCTAssertTrue(toggle.exists, "SD150_Toggle should exist")
         toggle.xcuiTapToBecomeFirstResponder()
         assertBindingMirrorContains("SD150_Mirror_G", "1")
         #else
@@ -183,7 +171,7 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
         #if os(iOS) || os(macOS)
         launchSD150Host(section: "editor")
         let editor = element(exactIdentifier: "SD150_EditorPrompt")
-        XCTAssertTrue(editor.waitForExistence(timeout: 2.5), "SD150_EditorPrompt should exist")
+        XCTAssertTrue(editor.exists, "SD150_EditorPrompt should exist")
         assertBindingMirrorContains("SD150_Mirror_E", "PrefillSeed")
         focusAndType(editor, "More")
         assertBindingMirrorContains("SD150_Mirror_E", "PrefillSeed")
@@ -198,7 +186,7 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
         launchSD150Host(section: "long")
         let long = String(repeating: "Z", count: 220)
         let field = element(exactIdentifier: "SD150_LongField")
-        XCTAssertTrue(field.waitForExistence(timeout: 2.5), "SD150_LongField should exist")
+        XCTAssertTrue(field.exists, "SD150_LongField should exist")
         focusAndType(field, long)
         assertBindingMirrorContains("SD150_Mirror_L", String(repeating: "Z", count: 32))
         #else
@@ -210,7 +198,7 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
         #if os(iOS) || os(macOS)
         launchSD150Host(section: "text")
         let field = element(exactIdentifier: "SD150_TextField")
-        XCTAssertTrue(field.waitForExistence(timeout: 2.5), "SD150_TextField should exist")
+        XCTAssertTrue(field.exists, "SD150_TextField should exist")
         focusAndType(field, "a")
         field.typeText("b")
         assertBindingMirrorContains("SD150_Mirror_T", "ab")
@@ -225,8 +213,8 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
         let name = element(exactIdentifier: "SD150_Integration_Name")
         let pass = element(exactIdentifier: "SD150_Integration_Password")
         let toggle = element(exactIdentifier: "SD150_Integration_Toggle")
-        XCTAssertTrue(name.waitForExistence(timeout: 2.5), "SD150_Integration_Name should exist")
-        XCTAssertTrue(pass.waitForExistence(timeout: 2.5), "SD150_Integration_Password should exist")
+        XCTAssertTrue(name.exists, "SD150_Integration_Name should exist")
+        XCTAssertTrue(pass.exists, "SD150_Integration_Password should exist")
         #if os(iOS)
         pasteIntoField(name, "Pat")
         focusAndType(pass, "secret")
@@ -237,7 +225,7 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
         #endif
         assertBindingMirrorContains("SD150_Mirror_IN", "Pat")
         assertBindingMirrorContains("SD150_Mirror_IN", "secret")
-        XCTAssertTrue(toggle.waitForExistence(timeout: 2.5), "SD150_Integration_Toggle should exist")
+        XCTAssertTrue(toggle.exists, "SD150_Integration_Toggle should exist")
         toggle.xcuiTapToBecomeFirstResponder()
         #else
         throw XCTSkip("Issue #150 host UI tests require iOS or macOS TestApp")
