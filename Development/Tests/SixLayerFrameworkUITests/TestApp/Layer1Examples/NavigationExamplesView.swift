@@ -5,19 +5,50 @@
 //  Examples of Layer 1 navigation functions
 //  Issue #166
 //
+//  #316: optional `-L1Section=navStack|appNav` mounts one section (App Navigation
+//  SplitView otherwise dominates the a11y tree and hides the stack id).
+//
 
 import SwiftUI
 import SixLayerFramework
 
 struct Layer1NavigationExamples: View {
+    /// `-L1Section=navStack|appNav`
+    private var focusedSection: String? {
+        guard let raw = ProcessInfo.processInfo.arguments
+            .first(where: { $0.hasPrefix("-L1Section=") })?
+            .split(separator: "=", maxSplits: 1)
+            .last
+        else { return nil }
+        let name = String(raw)
+        return name.isEmpty ? nil : name
+    }
+
+    private func shows(_ section: String) -> Bool {
+        guard let focusedSection else { return true }
+        return focusedSection.compare(section, options: [.caseInsensitive]) == .orderedSame
+    }
+
     var body: some View {
         platformVStack(alignment: .leading, spacing: 24) {
-            ExampleSection(title: "Navigation Stack") {
-                NavigationStackExamples()
+            if shows("navStack") {
+                Text("L1_Section_NavStack")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                    .accessibilityIdentifier("L1_Section_NavStack")
+                ExampleSection(title: "Navigation Stack") {
+                    NavigationStackExamples()
+                }
             }
-            
-            ExampleSection(title: "App Navigation") {
-                AppNavigationExamples()
+
+            if shows("appNav") {
+                Text("L1_Section_AppNav")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                    .accessibilityIdentifier("L1_Section_AppNav")
+                ExampleSection(title: "App Navigation") {
+                    AppNavigationExamples()
+                }
             }
         }
         .padding()
@@ -31,12 +62,12 @@ struct NavigationStackExamples: View {
         presentationPreference: .navigation,
         complexity: .simple
     )
-    
+
     var body: some View {
         platformVStack(alignment: .leading, spacing: 12) {
             Text("Basic Navigation Stack")
                 .font(.headline)
-            
+
             platformPresentNavigationStack_L1(
                 content: platformVStack {
                     Text("Navigation Content")
@@ -94,13 +125,13 @@ struct AppNavigationExamples: View {
 private struct ExampleSection<Content: View>: View {
     let title: String
     let content: () -> Content
-    
+
     var body: some View {
         platformVStack(alignment: .leading, spacing: 16) {
             Text(title)
                 .font(.title2)
                 .bold()
-            
+
             content()
         }
     }
