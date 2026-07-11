@@ -3,15 +3,15 @@
 //  SixLayerFrameworkUITests
 //
 //  GitHub #150: Real-window host for standalone drop-in `platform*` functions (binding + interaction XCUITest).
-//  Launched with `-OpenStandaloneDropIn150`. Mirrors are shown only when `XCUI_TESTING=1` (see configureForFastTesting).
-//  Not used for #254/#255/#256 closure matrices — interaction and binding only.
+//  Launched with `-OpenStandaloneDropIn150`. Optional `-SD150Section=<name>` shows one section only
+//  so XCUITest never scroll-discovers (#316). Mirrors when `XCUI_TESTING=1`.
 //
 
 import SwiftUI
 import SixLayerFramework
 
-/// Hosts `platformTextField` / `platformSecureField` / `platformToggle` / `platformTextEditor` / `platformForm` using the public standalone APIs.
-/// Inside `ViewBuilder` scopes, unqualified `platform*` would resolve to `View` extension methods; use `SixLayerFramework.` for the free functions (same pattern as `Layer4ContractOnlyView`).
+/// Hosts `platformTextField` / `platformSecureField` / `platformToggle` / `platformTextEditor` / `platformForm`.
+/// Inside `ViewBuilder` scopes, use `SixLayerFramework.` for the free functions.
 struct StandaloneDropIn150HostView: View {
     @State private var textFieldValue = ""
     @State private var axisFieldValue = ""
@@ -27,79 +27,111 @@ struct StandaloneDropIn150HostView: View {
         ProcessInfo.processInfo.environment["XCUI_TESTING"] == "1"
     }
 
-    /// macOS XCUI often leaves `Text.label` empty when only an identifier is set (#316).
-    /// Collapse children and publish both label + value so `xcuiAccessibleText` can read the mirror.
+    /// Optional single-section deep link: `-SD150Section=integration|text|secure|toggle|editor|long`.
+    private var focusedSection: String? {
+        guard let raw = ProcessInfo.processInfo.arguments
+            .first(where: { $0.hasPrefix("-SD150Section=") })?
+            .split(separator: "=", maxSplits: 1)
+            .last
+        else { return nil }
+        let name = String(raw).lowercased()
+        return name.isEmpty ? nil : name
+    }
+
+    private func shows(_ section: String) -> Bool {
+        guard let focusedSection else { return true }
+        return focusedSection == section
+    }
+
+    /// Mirror contract: exact identifier + non-empty accessibilityLabel (no value/title fallbacks in tests).
     @ViewBuilder
     private func bindingMirror(id: String, text: String) -> some View {
         Text(text)
             .accessibilityElement(children: .ignore)
             .accessibilityIdentifier(id)
             .accessibilityLabel(text)
-            .accessibilityValue(text)
     }
 
     var body: some View {
         NavigationStack {
             SixLayerFramework.platformForm {
-                // Integration first so multi-control fields are on-screen at launch on macOS
-                // without scroll-until-found (#316).
-                Section {
-                    SixLayerFramework.platformTextField("SD150_Integration_Name", text: $integrationName)
-                    SixLayerFramework.platformSecureField("SD150_Integration_Password", text: $integrationPassword)
-                    SixLayerFramework.platformToggle("SD150_Integration_Toggle", isOn: $integrationOn)
-                    if showBindingMirrors {
-                        bindingMirror(
-                            id: "SD150_Mirror_IN",
-                            text: "SD150_Mirror_IN:\(integrationName)|\(integrationPassword)|\(integrationOn ? "1" : "0")"
-                        )
+                if shows("integration") {
+                    Section {
+                        SixLayerFramework.platformTextField("SD150_Integration_Name", text: $integrationName)
+                            .exactNamed("SD150_Integration_Name")
+                        SixLayerFramework.platformSecureField("SD150_Integration_Password", text: $integrationPassword)
+                            .exactNamed("SD150_Integration_Password")
+                        SixLayerFramework.platformToggle("SD150_Integration_Toggle", isOn: $integrationOn)
+                            .exactNamed("SD150_Integration_Toggle")
+                        if showBindingMirrors {
+                            bindingMirror(
+                                id: "SD150_Mirror_IN",
+                                text: "SD150_Mirror_IN:\(integrationName)|\(integrationPassword)|\(integrationOn ? "1" : "0")"
+                            )
+                        }
+                    } header: {
+                        Text("SD150 Integration")
                     }
-                } header: {
-                    Text("SD150 Integration")
                 }
-                Section {
-                    SixLayerFramework.platformTextField("SD150_TextField", text: $textFieldValue)
-                    if showBindingMirrors {
-                        bindingMirror(id: "SD150_Mirror_T", text: "SD150_Mirror_T:\(textFieldValue)")
+                if shows("text") {
+                    Section {
+                        SixLayerFramework.platformTextField("SD150_TextField", text: $textFieldValue)
+                            .exactNamed("SD150_TextField")
+                        if showBindingMirrors {
+                            bindingMirror(id: "SD150_Mirror_T", text: "SD150_Mirror_T:\(textFieldValue)")
+                        }
+                        SixLayerFramework.platformTextField("SD150_AxisField", text: $axisFieldValue, axis: .vertical)
+                            .exactNamed("SD150_AxisField")
+                        if showBindingMirrors {
+                            bindingMirror(id: "SD150_Mirror_A", text: "SD150_Mirror_A:\(axisFieldValue)")
+                        }
+                    } header: {
+                        Text("SD150 Text inputs")
                     }
-                    SixLayerFramework.platformTextField("SD150_AxisField", text: $axisFieldValue, axis: .vertical)
-                    if showBindingMirrors {
-                        bindingMirror(id: "SD150_Mirror_A", text: "SD150_Mirror_A:\(axisFieldValue)")
-                    }
-                } header: {
-                    Text("SD150 Text inputs")
                 }
-                Section {
-                    SixLayerFramework.platformSecureField("SD150_SecureField", text: $secureValue)
-                        .exactNamed("UITest_SD150_SecureField")
-                    if showBindingMirrors {
-                        bindingMirror(id: "SD150_Mirror_S", text: "SD150_Mirror_S:\(secureValue)")
+                if shows("secure") {
+                    Section {
+                        SixLayerFramework.platformSecureField("SD150_SecureField", text: $secureValue)
+                            .exactNamed("SD150_SecureField")
+                        if showBindingMirrors {
+                            bindingMirror(id: "SD150_Mirror_S", text: "SD150_Mirror_S:\(secureValue)")
+                        }
+                    } header: {
+                        Text("SD150 Secure")
                     }
-                } header: {
-                    Text("SD150 Secure")
                 }
-                Section {
-                    SixLayerFramework.platformToggle("SD150_Toggle", isOn: $toggleOn)
-                    if showBindingMirrors {
-                        bindingMirror(id: "SD150_Mirror_G", text: "SD150_Mirror_G:\(toggleOn ? "1" : "0")")
+                if shows("toggle") {
+                    Section {
+                        SixLayerFramework.platformToggle("SD150_Toggle", isOn: $toggleOn)
+                            .exactNamed("SD150_Toggle")
+                        if showBindingMirrors {
+                            bindingMirror(id: "SD150_Mirror_G", text: "SD150_Mirror_G:\(toggleOn ? "1" : "0")")
+                        }
+                    } header: {
+                        Text("SD150 Toggle")
                     }
-                } header: {
-                    Text("SD150 Toggle")
                 }
-                Section {
-                    SixLayerFramework.platformTextEditor("SD150_EditorPrompt", text: $editorValue)
-                    if showBindingMirrors {
-                        bindingMirror(id: "SD150_Mirror_E", text: "SD150_Mirror_E:\(editorValue)")
+                if shows("editor") {
+                    Section {
+                        SixLayerFramework.platformTextEditor("SD150_EditorPrompt", text: $editorValue)
+                            .exactNamed("SD150_EditorPrompt")
+                        if showBindingMirrors {
+                            bindingMirror(id: "SD150_Mirror_E", text: "SD150_Mirror_E:\(editorValue)")
+                        }
+                    } header: {
+                        Text("SD150 Editor")
                     }
-                } header: {
-                    Text("SD150 Editor")
                 }
-                Section {
-                    SixLayerFramework.platformTextField("SD150_LongField", text: $longFieldValue)
-                    if showBindingMirrors {
-                        bindingMirror(id: "SD150_Mirror_L", text: "SD150_Mirror_L:\(longFieldValue)")
+                if shows("long") {
+                    Section {
+                        SixLayerFramework.platformTextField("SD150_LongField", text: $longFieldValue)
+                            .exactNamed("SD150_LongField")
+                        if showBindingMirrors {
+                            bindingMirror(id: "SD150_Mirror_L", text: "SD150_Mirror_L:\(longFieldValue)")
+                        }
+                    } header: {
+                        Text("SD150 Long")
                     }
-                } header: {
-                    Text("SD150 Long")
                 }
             }
             .navigationTitle("SD150 Standalone")
