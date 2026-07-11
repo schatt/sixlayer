@@ -887,6 +887,23 @@ struct Layer4ContractOnlyView: View {
             || ProcessInfo.processInfo.environment["XCUI_TESTING"] == "1"
     }
 
+    /// Optional single-section deep link: `-L4Section=presentation|navigation|overlay|system|controls|form|list`.
+    /// When set, only that section is mounted so XCUITest never scroll-discovers (#316).
+    private var focusedSection: String? {
+        guard let raw = ProcessInfo.processInfo.arguments
+            .first(where: { $0.hasPrefix("-L4Section=") })?
+            .split(separator: "=", maxSplits: 1)
+            .last
+        else { return nil }
+        let name = String(raw).lowercased()
+        return name.isEmpty ? nil : name
+    }
+
+    private func shows(_ section: String) -> Bool {
+        guard let focusedSection else { return true }
+        return focusedSection == section
+    }
+
     /// Section title styling aligned with ExampleSection (scroll layout).
     @ViewBuilder
     private func contractSectionHeader(_ title: String) -> some View {
@@ -1190,77 +1207,110 @@ struct Layer4ContractOnlyView: View {
             // Sheet on `Form` breaks presentation / a11y exposure for XCUITest on iOS 26 (Issue #193); host on outer stack.
             VStack(spacing: 0) {
                 Form {
-                    Section {
-                        contractPresentationContent
-                    } header: {
-                        contractSectionHeader("L4 Presentation")
+                    if shows("presentation") {
+                        Section {
+                            contractPresentationContent
+                        } header: {
+                            contractSectionHeader("L4 Presentation")
+                        }
                     }
-                    Section {
-                        contractNavigationContent
-                    } header: {
-                        contractSectionHeader("L4 Navigation")
+                    if shows("navigation") {
+                        Section {
+                            contractNavigationContent
+                        } header: {
+                            contractSectionHeader("L4 Navigation")
+                        }
                     }
                     // Fixed width so nested split geometry stays narrow; `maxWidth` alone still received full Form width.
-                    Section {
-                        HStack(alignment: .top, spacing: 0) {
-                            contractOverlayAccessibilityContent
-                                .frame(width: 300, alignment: .leading)
-                            Spacer(minLength: 0)
+                    if shows("overlay") {
+                        Section {
+                            HStack(alignment: .top, spacing: 0) {
+                                contractOverlayAccessibilityContent
+                                    .frame(width: 300, alignment: .leading)
+                                Spacer(minLength: 0)
+                            }
+                        } header: {
+                            contractSectionHeader("L4 Overlay Accessibility")
                         }
-                    } header: {
-                        contractSectionHeader("L4 Overlay Accessibility")
                     }
-                    Section {
-                        contractSystemContent
-                    } header: {
-                        contractSectionHeader("L4 System")
-                    }
-                    Section {
-                        contractControlsContent
-                    } header: {
-                        contractSectionHeader("L4 Controls")
-                    }
-                    Section {
-                        platformVStack(alignment: .leading, spacing: 16) {
-                            contractFormInnerContent
+                    if shows("system") {
+                        Section {
+                            contractSystemContent
+                        } header: {
+                            contractSectionHeader("L4 System")
                         }
-                    } header: {
-                        contractSectionHeader("L4 Form")
                     }
-                    Section {
-                        contractListContent
-                    } header: {
-                        contractSectionHeader("L4 List")
+                    if shows("controls") {
+                        Section {
+                            contractControlsContent
+                        } header: {
+                            contractSectionHeader("L4 Controls")
+                        }
+                    }
+                    if shows("form") {
+                        Section {
+                            platformVStack(alignment: .leading, spacing: 16) {
+                                contractFormInnerContent
+                            }
+                        } header: {
+                            contractSectionHeader("L4 Form")
+                        }
+                    }
+                    if shows("list") {
+                        Section {
+                            contractListContent
+                        } header: {
+                            contractSectionHeader("L4 List")
+                        }
                     }
                 }
             }
             #else
-            // Overlay first on macOS so expand/close affordances are on-screen at launch
-            // without scroll-until-found (#316). Presentation/Navigation follow.
+            // Prefer section deep-link (`-L4Section=`) over scroll-until-found (#316).
+            // When unfocused, overlay first so expand/close stay on-screen without scrolling.
             ScrollView {
                 platformVStack(alignment: .leading, spacing: 24) {
-                    ExampleSection(title: "L4 Overlay Accessibility") {
-                        contractOverlayAccessibilityContent
-                    }
-                    ExampleSection(title: "L4 Presentation") {
-                        contractPresentationContent
-                    }
-                    ExampleSection(title: "L4 Navigation") {
-                        contractNavigationContent
-                    }
-                    ExampleSection(title: "L4 System") {
-                        contractSystemContent
-                    }
-                    ExampleSection(title: "L4 Controls") {
-                        contractControlsContent
-                    }
-                    ExampleSection(title: "L4 Form") {
+                    if shows("overlay") {
                         platformVStack(alignment: .leading, spacing: 16) {
+                            contractSectionHeader("L4 Overlay Accessibility")
+                            contractOverlayAccessibilityContent
+                        }
+                    }
+                    if shows("presentation") {
+                        platformVStack(alignment: .leading, spacing: 16) {
+                            contractSectionHeader("L4 Presentation")
+                            contractPresentationContent
+                        }
+                    }
+                    if shows("navigation") {
+                        platformVStack(alignment: .leading, spacing: 16) {
+                            contractSectionHeader("L4 Navigation")
+                            contractNavigationContent
+                        }
+                    }
+                    if shows("system") {
+                        platformVStack(alignment: .leading, spacing: 16) {
+                            contractSectionHeader("L4 System")
+                            contractSystemContent
+                        }
+                    }
+                    if shows("controls") {
+                        platformVStack(alignment: .leading, spacing: 16) {
+                            contractSectionHeader("L4 Controls")
+                            contractControlsContent
+                        }
+                    }
+                    if shows("form") {
+                        platformVStack(alignment: .leading, spacing: 16) {
+                            contractSectionHeader("L4 Form")
                             contractFormInnerContent
                         }
                     }
-                    ExampleSection(title: "L4 List") {
-                        contractListContent
+                    if shows("list") {
+                        platformVStack(alignment: .leading, spacing: 16) {
+                            contractSectionHeader("L4 List")
+                            contractListContent
+                        }
                     }
                 }
                 .padding()
