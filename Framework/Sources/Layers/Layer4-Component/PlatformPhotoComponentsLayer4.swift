@@ -391,8 +391,10 @@ func resolvedCameraAuthorizationStateForLayer4() -> CameraAuthorizationState {
 /// Unit tests assert this instead of hosting `UIImagePickerController` under parallel workers.
 @MainActor
 func resolvedCameraPickerSourceTypeForLayer4() -> UIImagePickerController.SourceType {
-    // Deliberately wrong stub for #335 red: always .camera (fails on Simulator where camera is unavailable).
-    return .camera
+    let cameraAvailable = UIImagePickerController.isSourceTypeAvailable(.camera)
+    let authStatus = AVCaptureDevice.authorizationStatus(for: .video)
+    let useCamera = cameraAvailable && (authStatus == .authorized || authStatus == .notDetermined)
+    return useCamera ? .camera : .photoLibrary
 }
 
 public struct CameraView: UIViewControllerRepresentable {
