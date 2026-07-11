@@ -256,10 +256,11 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
     ) {
         let m = mirrorElement(identifier: mirrorId)
         XCTAssertTrue(m.waitForExistence(timeout: 2.5), "Mirror \(mirrorId) should exist", file: file, line: line)
-        let text = m.label
+        // macOS often leaves Text.label empty; prefer label/value/title (#316).
+        let text = m.xcuiAccessibleText
         XCTAssertTrue(
             text.contains(substring),
-            "Mirror \(mirrorId) should contain '\(substring)'; got label: '\(text)'",
+            "Mirror \(mirrorId) should contain '\(substring)'; got accessible text: '\(text)' (label='\(m.label)', value='\(String(describing: m.value))')",
             file: file,
             line: line
         )
