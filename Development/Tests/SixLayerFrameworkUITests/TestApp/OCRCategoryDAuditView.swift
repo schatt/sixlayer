@@ -63,10 +63,12 @@ struct OCRCategoryDAuditView: View {
                     }
                 }
 
-                // Explicit accessibilityLabel: macOS XCUI often leaves Text.label empty when only identifier is set (#316).
+                // macOS XCUI often leaves Text.label empty when only identifier is set (#316).
                 Text(selectedCandidateText)
+                    .accessibilityElement(children: .ignore)
                     .accessibilityIdentifier("category-d-selection-state")
                     .accessibilityLabel(selectedCandidateText)
+                    .accessibilityValue(selectedCandidateText)
 
                 Button("Open OCR Overlay") {
                     overlayState = "Overlay state: presented"
@@ -75,8 +77,10 @@ struct OCRCategoryDAuditView: View {
                 .accessibilityIdentifier("category-d-open-overlay")
 
                 Text(overlayState)
+                    .accessibilityElement(children: .ignore)
                     .accessibilityIdentifier("category-d-overlay-state")
                     .accessibilityLabel(overlayState)
+                    .accessibilityValue(overlayState)
             }
             .padding()
         }
