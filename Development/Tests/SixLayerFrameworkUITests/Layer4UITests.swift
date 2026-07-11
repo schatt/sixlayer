@@ -91,6 +91,11 @@ final class Layer4UITests: XCTestCase {
     private func waitForContractRoot(timeout: TimeInterval) -> Bool {
         let deadline = Date().addingTimeInterval(timeout)
         while Date() < deadline {
+            // macOS host puts Overlay first (#316).
+            if app.staticTexts["L4 Overlay Accessibility"].exists { return true }
+            if app.descendants(matching: .any)
+                .matching(NSPredicate(format: "identifier == %@ OR label == %@", "L4OverlayShowSidebar", "Show sidebar"))
+                .firstMatch.exists { return true }
             if app.buttons["L4ContractSheet"].exists { return true }
             if app.staticTexts["L4 Presentation"].exists { return true }
             if app.navigationBars["Layer 4 Examples"].exists { return true }
@@ -289,9 +294,16 @@ final class Layer4UITests: XCTestCase {
     }
 
     /// Scroll the L4 Overlay Accessibility section into view; keep nested nav toolbar on-screen (#259).
+    /// On macOS the overlay section is first in the host (#316) — skip scroll when expand affordance exists.
     @MainActor
     private func scrollToL4OverlayAccessibilitySection() {
+        if l4OverlayExpandSidebarElement().waitForExistence(timeout: 0.8) {
+            return
+        }
         scrollToFormSectionHeader(title: "L4 Overlay Accessibility")
+        if l4OverlayExpandSidebarElement().waitForExistence(timeout: 0.8) {
+            return
+        }
         nudgeScrollInsideL4OverlayAccessibilitySection()
     }
 
@@ -477,6 +489,10 @@ final class Layer4UITests: XCTestCase {
             "Contract root: Layer 4 Examples nav bar or L4 contract anchors (L4ContractSheet / L4 Presentation) should exist"
         )
         func contractTopVisible() -> Bool {
+            // macOS: Overlay section is first (#316).
+            if app.staticTexts["L4 Overlay Accessibility"].waitForExistence(timeout: 0.3) { return true }
+            if anyDescendantHasLabel(equalTo: "L4 Overlay Accessibility", timeout: 0.25) { return true }
+            if l4OverlayExpandSidebarElement().waitForExistence(timeout: 0.3) { return true }
             if app.staticTexts["L4 Presentation"].waitForExistence(timeout: 0.3) { return true }
             if anyDescendantHasLabel(equalTo: "L4 Presentation", timeout: 0.25) { return true }
             if app.staticTexts["L4 System"].waitForExistence(timeout: 0.3) { return true }
