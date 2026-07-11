@@ -5,7 +5,8 @@
 //  XCUITest tests for Layer 1 platform*_L1 function accessibility
 //  Implements Issue #166: Complete accessibility for Layer 1 platform* methods
 //
-//  #316: deep-link via `-OpenLayer1Category=…` — no UI Test Views home, no swipe discovery.
+//  #316: deep-link via `-OpenLayer1Category=…` + optional `-L1Section=…` —
+//  no UI Test Views home, no swipe discovery, no OR-fallback query chains.
 //
 
 import XCTest
@@ -36,13 +37,16 @@ final class Layer1AccessibilityUITests: XCTestCase {
     }
 
     @MainActor
-    private func launchLayer1Category(_ categoryName: String) {
+    private func launchLayer1Category(_ categoryName: String, section: String? = nil) {
         if let running = app, running.state != .notRunning {
             running.terminate()
         }
         let localApp = XCUIApplication()
         localApp.configureForFastTesting()
         localApp.launchArguments.append("-OpenLayer1Category=\(Self.categoryArg(categoryName))")
+        if let section {
+            localApp.launchArguments.append("-L1Section=\(section)")
+        }
         localApp.launch()
         app = localApp
         XCTAssertEqual(localApp.state, .runningForeground, "Layer1 host should be foreground")
@@ -61,6 +65,12 @@ final class Layer1AccessibilityUITests: XCTestCase {
     }
 
     @MainActor
+    private func assertExactIdentifierExists(_ identifier: String, context: String) {
+        let el = app.descendants(matching: .any)[identifier].firstMatch
+        XCTAssertTrue(el.exists, "\(context): missing exact id '\(identifier)'")
+    }
+
+    @MainActor
     private func verifyAccessibilityIdentifier(_ element: XCUIElement, functionName: String) {
         XCTAssertFalse(
             element.identifier.isEmpty,
@@ -71,17 +81,11 @@ final class Layer1AccessibilityUITests: XCTestCase {
     /// Single-tappable card contract without scroll-as-discovery (#316).
     @MainActor
     private func assertSingleTappableCard(title: String, elementName: String) {
-        let byButton = app.buttons[title].firstMatch
-        let byLabel = app.buttons.matching(NSPredicate(format: "label == %@", title)).firstMatch
-        let el: XCUIElement
-        if byButton.exists {
-            el = byButton
-        } else if byLabel.exists {
-            el = byLabel
-        } else {
-            XCTFail("\(elementName) with title '\(title)' should exist at category launch (no scroll)")
-            return
-        }
+        let el = app.buttons[title].firstMatch
+        XCTAssertTrue(
+            el.exists,
+            "\(elementName) with title '\(title)' should exist at section launch (no scroll)"
+        )
         el.verifyAccessibilityContract(
             elementName: elementName,
             expectedType: .button,
@@ -93,6 +97,7 @@ final class Layer1AccessibilityUITests: XCTestCase {
     private func assertCategorySurfaces(_ category: String) {
         switch category {
         case "Data Presentation":
+            assertExactIdentifierExists("L1_Section_Items", context: "Data Presentation items section")
             let itemCollection = element(identifierContains: "platformPresentItemCollection_L1")
             XCTAssertTrue(itemCollection.exists, "Data Presentation should expose platformPresentItemCollection_L1")
             verifyAccessibilityIdentifier(itemCollection, functionName: "platformPresentItemCollection_L1")
@@ -119,20 +124,9 @@ final class Layer1AccessibilityUITests: XCTestCase {
             verifyAccessibilityIdentifier(ocr, functionName: "platformOCRWithDisambiguation_L1")
 
         case "Notifications":
-            let section = app.staticTexts["Notification Functions"].firstMatch
-            let anyNotification = app.staticTexts
-                .matching(NSPredicate(format: "label CONTAINS[c] %@", "Notification"))
-                .firstMatch
-            XCTAssertTrue(
-                section.exists || anyNotification.exists,
-                "Notifications category should show notification copy"
-            )
-            let apiName = app.descendants(matching: .any)
-                .matching(NSPredicate(format: "label CONTAINS[c] %@", "platformRequestNotificationPermission_L1"))
-                .firstMatch
-            XCTAssertTrue(
-                apiName.exists,
-                "Notifications category should surface documented Layer 1 notification API names in the UI"
+            assertExactIdentifierExists(
+                "L1_NotificationAPI_platformRequestNotificationPermission_L1",
+                context: "Notifications API surface"
             )
 
         case "Internationalization":
@@ -155,7 +149,7 @@ final class Layer1AccessibilityUITests: XCTestCase {
 
     @MainActor
     func testLayer1_dataPresentation_accessibilitySurfaces() throws {
-        launchLayer1Category("Data Presentation")
+        launchLayer1Category("Data Presentation", section: "items")
         assertCategorySurfaces("Data Presentation")
     }
 
@@ -205,7 +199,8 @@ final class Layer1AccessibilityUITests: XCTestCase {
 
     @MainActor
     func testItemCollectionCards_ExposeSingleTappableElements() throws {
-        launchLayer1Category("Data Presentation")
+        launchLayer1Category("Data Presentation", section: "items")
+        assertExactIdentifierExists("L1_Section_Items", context: "Item collection host")
         for title in ["Item 1", "Item 2", "Item 3"] {
             assertSingleTappableCard(
                 title: title,
@@ -216,7 +211,8 @@ final class Layer1AccessibilityUITests: XCTestCase {
 
     @MainActor
     func testResponsiveCard_ExposesSingleTappableElement() throws {
-        launchLayer1Category("Data Presentation")
+        launchLayer1Category("Data Presentation", section: "responsiveCard")
+        assertExactIdentifierExists("L1_Section_ResponsiveCard", context: "Responsive card host")
         assertSingleTappableCard(
             title: "Card Title",
             elementName: "platformResponsiveCard_L1 card"
