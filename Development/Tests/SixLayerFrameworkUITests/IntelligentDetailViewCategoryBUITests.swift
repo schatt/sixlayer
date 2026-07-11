@@ -49,20 +49,31 @@ final class IntelligentDetailViewCategoryBUITests: XCTestCase {
 
     @MainActor
     private func textVisible(_ text: String, timeout: TimeInterval) -> Bool {
-        if app.staticTexts[text].waitForExistence(timeout: min(timeout, 0.6)) {
+        if app.staticTexts[text].waitForExistence(timeout: min(timeout, 0.5)) {
             return true
         }
-        // Avoid value CONTAINS on `.any` — it can hang for minutes on macOS (#316).
-        let labelPred = NSPredicate(format: "label CONTAINS[c] %@", text)
+        let pred = NSPredicate(format: "label CONTAINS[c] %@ OR value CONTAINS[c] %@", text, text)
+        // Scope CONTAINS to IntelligentDetail scroll hosts — app-wide value CONTAINS hangs (#316).
+        let detailScrolls = app.scrollViews.matching(
+            NSPredicate(format: "identifier CONTAINS[c] %@", "IntelligentDetail")
+        )
+        let scrollCount = detailScrolls.count
+        let limit = min(max(scrollCount, 0), 6)
+        for index in 0..<limit {
+            let host = detailScrolls.element(boundBy: index)
+            if host.descendants(matching: .any).matching(pred).firstMatch.waitForExistence(timeout: 0.2) {
+                return true
+            }
+        }
         let root: XCUIElement = app.windows.firstMatch.exists ? app.windows.firstMatch : app
-        if root.descendants(matching: .staticText).matching(labelPred).firstMatch.waitForExistence(timeout: min(timeout, 0.35)) {
+        if root.descendants(matching: .staticText).matching(
+            NSPredicate(format: "label CONTAINS[c] %@", text)
+        ).firstMatch.waitForExistence(timeout: min(timeout, 0.35)) {
             return true
         }
-        if root.descendants(matching: .other).matching(labelPred).firstMatch.waitForExistence(timeout: min(timeout, 0.35)) {
-            return true
-        }
-        let valuePred = NSPredicate(format: "value == %@", text)
-        return root.descendants(matching: .any).matching(valuePred).firstMatch.waitForExistence(timeout: min(timeout, 0.35))
+        return root.descendants(matching: .other).matching(
+            NSPredicate(format: "label CONTAINS[c] %@", text)
+        ).firstMatch.waitForExistence(timeout: min(timeout, 0.35))
     }
 
     @MainActor
