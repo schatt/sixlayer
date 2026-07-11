@@ -3,194 +3,155 @@
 //  SixLayerFrameworkUITests
 //
 //  Issue #197: Category A — accessibility identifier scenarios assertable via XCUITest
-//  (unicode, nested named, manual-only, special chars, long names). Launch: -OpenCategoryAAccessibility.
+//  (unicode, nested named, manual-only, special chars, long names).
+//  #316: `-OpenCategoryAAccessibility` + `-CatASection=…`; no sharedApp; no scroll discovery.
 //
 
 import XCTest
 
 @MainActor
 final class AccessibilityIdentifierCategoryAUITests: XCTestCase {
-    private static let quickWait: TimeInterval = 0.4
-    private static let mediumWait: TimeInterval = 0.75
-    private static let rootReadyTimeout: TimeInterval = 2.0
-    private static var sharedApp: XCUIApplication?
-    private var app: XCUIApplication! { Self.sharedApp! }
+    nonisolated(unsafe) private var app: XCUIApplication!
 
     nonisolated override func setUpWithError() throws {
         continueAfterFailure = false
         addDefaultUIInterruptionMonitor()
+        // No launch — each test deep-links its section (#316).
+    }
 
-        MainActor.assumeIsolated {
-            if Self.sharedApp == nil {
-                let localApp = XCUIApplication()
-                localApp.configureForFastTesting()
-                localApp.launchArguments.append("-OpenCategoryAAccessibility")
-                localApp.launch()
-                Self.sharedApp = localApp
-                XCTAssertTrue(
-                    localApp.navigationBars["Category A Audit"].waitForExistence(timeout: Self.rootReadyTimeout)
-                        || localApp.staticTexts["Category A Audit"].waitForExistence(timeout: Self.quickWait),
-                    "App should open on Category A Audit (launch arg -OpenCategoryAAccessibility)"
-                )
-            }
-            guard let app = Self.sharedApp else { return }
-            // Shared app + alphabetical test order: a test that scrolls down (e.g. exactNamed) leaves the next test
-            // with top content off-screen and often missing from the a11y tree. Reset once per test instead of ad-hoc swipes.
-            Self.resetCategoryAAuditScrollToTop(app: app)
+    nonisolated override func tearDownWithError() throws {
+        if let running = app, running.state != .notRunning {
+            running.terminate()
+            _ = running.wait(for: .notRunning, timeout: 5)
+        }
+        app = nil
+        try super.tearDownWithError()
+    }
+
+    private static func sectionMarkerId(_ section: String) -> String {
+        switch section {
+        case "title": return "CatA_Section_Title"
+        case "label": return "CatA_Section_Label"
+        case "wrapper": return "CatA_Section_Wrapper"
+        case "unicode": return "CatA_Section_Unicode"
+        case "nested": return "CatA_Section_Nested"
+        case "manual": return "CatA_Section_Manual"
+        case "special": return "CatA_Section_Special"
+        case "long": return "CatA_Section_Long"
+        case "exact": return "CatA_Section_Exact"
+        case "empty": return "CatA_Section_Empty"
+        case "mid": return "CatA_Section_Mid"
+        case "disable": return "CatA_Section_Disable"
+        default:
+            preconditionFailure("Unknown CatA section: \(section)")
         }
     }
 
-    /// Swipe down on the scroll host until top audit anchors appear. No-op when already at top.
-    private static func resetCategoryAAuditScrollToTop(app: XCUIApplication, maxSwipes: Int = 24) {
-        let manualPred = NSPredicate(format: "identifier CONTAINS[c] %@", "CatAManualWinsOnOuter")
-        let titlePred = NSPredicate(format: "identifier CONTAINS[c] %@", "CatAAuditTitle")
-        if app.descendants(matching: .any).matching(manualPred).firstMatch.waitForExistence(timeout: 0.5) { return }
-        if app.descendants(matching: .any).matching(titlePred).firstMatch.waitForExistence(timeout: 0.5) { return }
-        for _ in 0..<maxSwipes {
-            app.xcuiSwipeScrollHostsDown()
-            if app.descendants(matching: .any).matching(manualPred).firstMatch.waitForExistence(timeout: 0.35) { return }
-            if app.descendants(matching: .any).matching(titlePred).firstMatch.waitForExistence(timeout: 0.35) { return }
+    @MainActor
+    private func launchCatA(section: String) {
+        if let running = app, running.state != .notRunning {
+            running.terminate()
         }
+        let localApp = XCUIApplication()
+        localApp.configureForFastTesting()
+        localApp.launchArguments.append("-OpenCategoryAAccessibility")
+        localApp.launchArguments.append("-CatASection=\(section)")
+        localApp.launch()
+        app = localApp
+        XCTAssertEqual(localApp.state, .runningForeground, "CatA host should be foreground")
+        let marker = Self.sectionMarkerId(section)
+        XCTAssertTrue(
+            element(matchingIdentifier: marker).exists,
+            "CatA section '\(marker)' should exist at launch (-CatASection=\(section))"
+        )
     }
 
+    @MainActor
+    private func element(matchingIdentifier id: String) -> XCUIElement {
+        app.descendants(matching: .any).matching(NSPredicate(format: "identifier == %@", id)).firstMatch
+    }
+
+    @MainActor
     private func anyElement(identifierContains substring: String) -> XCUIElement {
         let pred = NSPredicate(format: "identifier CONTAINS[c] %@", substring)
         return app.descendants(matching: .any).matching(pred).firstMatch
     }
 
-    /// Scroll until an element whose identifier contains `substring` exists (below-the-fold content).
-    private func scrollUntilIdentifierContains(_ substring: String, maxSwipes: Int = 16) -> Bool {
-        scrollUntil(
-            matching: NSPredicate(format: "identifier CONTAINS[c] %@", substring),
-            maxSwipes: maxSwipes
+    @MainActor
+    private func assertNoIdentifierContaining(_ substring: String) {
+        let matches = app.descendants(matching: .any)
+            .matching(NSPredicate(format: "identifier CONTAINS[c] %@", substring))
+        XCTAssertEqual(
+            matches.count,
+            0,
+            "No element should expose identifier containing '\(substring)' under disableAutomaticAccessibilityIdentifiers"
         )
-    }
-
-    /// Scroll until an element whose identifier equals `exact` (e.g. `exactNamed` minimal IDs).
-    private func scrollUntilIdentifierEquals(_ exact: String, maxSwipes: Int = 16) -> Bool {
-        scrollUntil(
-            matching: NSPredicate(format: "identifier == %@", exact),
-            maxSwipes: maxSwipes
-        )
-    }
-
-    /// Scroll until an element whose accessibility label contains `substring`.
-    private func scrollUntilLabelContains(_ substring: String, maxSwipes: Int = 16) -> Bool {
-        scrollUntil(
-            matching: NSPredicate(format: "label CONTAINS[c] %@", substring),
-            maxSwipes: maxSwipes
-        )
-    }
-
-    private func scrollUntil(matching pred: NSPredicate, maxSwipes: Int) -> Bool {
-        if app.descendants(matching: .any).matching(pred).firstMatch.waitForExistence(timeout: Self.mediumWait) {
-            return true
-        }
-        for _ in 0..<maxSwipes {
-            app.xcuiSwipeScrollHostsUp()
-            if app.descendants(matching: .any).matching(pred).firstMatch.waitForExistence(timeout: Self.quickWait) {
-                return true
-            }
-        }
-        let window = app.windows.firstMatch
-        guard window.exists else { return false }
-        for _ in 0..<maxSwipes {
-            window.swipeUp()
-            if app.descendants(matching: .any).matching(pred).firstMatch.waitForExistence(timeout: Self.quickWait) {
-                return true
-            }
-        }
-        return false
-    }
-
-    /// Asserts no descendant has an accessibility identifier containing `substring` (scrolls to search).
-    private func assertNoIdentifierContaining(_ substring: String, maxSwipes: Int = 20, file: StaticString = #filePath, line: UInt = #line) {
-        let pred = NSPredicate(format: "identifier CONTAINS[c] %@", substring)
-        let first = app.descendants(matching: .any).matching(pred).firstMatch
-        if first.waitForExistence(timeout: Self.mediumWait) {
-            XCTFail("Unexpected element with identifier containing \(substring)", file: file, line: line)
-            return
-        }
-        for _ in 0..<maxSwipes {
-            app.xcuiSwipeScrollHostsUp()
-            let el = app.descendants(matching: .any).matching(pred).firstMatch
-            if el.waitForExistence(timeout: Self.quickWait) {
-                XCTFail("Unexpected identifier containing \(substring) after scroll", file: file, line: line)
-                return
-            }
-        }
-        let window = app.windows.firstMatch
-        guard window.exists else { return }
-        for _ in 0..<maxSwipes {
-            window.swipeUp()
-            let el = app.descendants(matching: .any).matching(pred).firstMatch
-            if el.waitForExistence(timeout: Self.quickWait) {
-                XCTFail("Unexpected identifier containing \(substring) after window swipe", file: file, line: line)
-                return
-            }
-        }
     }
 
     func testCategoryA_unicodeText_hasAccessibilityIdentifier() throws {
+        launchCatA(section: "unicode")
         XCTAssertTrue(
-            anyElement(identifierContains: "CatAUnicodeText").waitForExistence(timeout: Self.mediumWait),
+            anyElement(identifierContains: "CatAUnicodeText").exists,
             "Unicode identifier name should appear in runtime accessibility identifier (Category A)"
         )
     }
 
     func testCategoryA_nestedNamed_outerAndInner_haveIdentifiers() throws {
+        launchCatA(section: "nested")
         XCTAssertTrue(
-            anyElement(identifierContains: "CatANestedOuter").waitForExistence(timeout: Self.mediumWait),
+            anyElement(identifierContains: "CatANestedOuter").exists,
             "Outer named component should contribute to identifier"
         )
         XCTAssertTrue(
-            anyElement(identifierContains: "CatANestedInnerButton").waitForExistence(timeout: Self.mediumWait),
+            anyElement(identifierContains: "CatANestedInnerButton").exists,
             "Inner named component should contribute to identifier"
         )
     }
 
     func testCategoryA_manualOnlyStaticText_exactIdentifier() throws {
+        launchCatA(section: "manual")
         XCTAssertTrue(
-            scrollUntilIdentifierContains("CatA_ManualOnly_StaticText"),
-            "Manual-only id (platformButton id:) should appear after scrolling the audit screen"
+            anyElement(identifierContains: "CatA_ManualOnly_StaticText").exists,
+            "Manual-only id (platformButton id:) should appear at section launch"
         )
     }
 
     func testCategoryA_specialCharsInLabel_hasIdentifier() throws {
+        launchCatA(section: "special")
         XCTAssertTrue(
-            anyElement(identifierContains: "CatASpecialChars").waitForExistence(timeout: Self.mediumWait),
+            anyElement(identifierContains: "CatASpecialChars").exists,
             "Special characters in label should still yield a stable identifier substring"
         )
     }
 
     func testCategoryA_longIdentifierName_hasStablePrefixInIdentifier() throws {
+        launchCatA(section: "long")
         XCTAssertTrue(
-            anyElement(identifierContains: "CatALong").waitForExistence(timeout: Self.mediumWait),
+            anyElement(identifierContains: "CatALong").exists,
             "Long identifier name should be represented in accessibility identifier (sanitized prefix)"
         )
     }
 
     func testCategoryA_auditTitle_namedComponent() throws {
+        launchCatA(section: "title")
         XCTAssertTrue(
-            anyElement(identifierContains: "CatAAuditTitle").waitForExistence(timeout: Self.mediumWait),
+            anyElement(identifierContains: "CatAAuditTitle").exists,
             "Headline named title should expose identifier for UITest"
         )
     }
 
     func testCategoryA_exactNamed_minimalIdentifier() throws {
+        launchCatA(section: "exact")
         XCTAssertTrue(
-            scrollUntilIdentifierEquals("CatAExactNamed"),
+            element(matchingIdentifier: "CatAExactNamed").exists,
             "exactNamed should set identifier to the literal name (no SixLayer prefix)"
         )
     }
 
     func testCategoryA_accessibilityLabel_parameter_surfacesInLabel() throws {
+        launchCatA(section: "label")
         let el = anyElement(identifierContains: "CatALabelAndId")
-        XCTAssertTrue(
-            el.waitForExistence(timeout: 2.5),
-            "identifier should still include CatALabelAndId when accessibilityLabel is set"
-        )
-        // macOS may expose the VoiceOver string via label or value (#316).
+        XCTAssertTrue(el.exists, "identifier should still include CatALabelAndId when accessibilityLabel is set")
         let text = el.xcuiAccessibleText
         XCTAssertTrue(
             text.contains("VoiceOver Cat A Label"),
@@ -199,37 +160,37 @@ final class AccessibilityIdentifierCategoryAUITests: XCTestCase {
     }
 
     func testCategoryA_manualOnOuterGroup_overridesWrapper() throws {
+        launchCatA(section: "wrapper")
         XCTAssertTrue(
-            anyElement(identifierContains: "CatAManualWinsOnOuter").waitForExistence(timeout: Self.mediumWait),
+            anyElement(identifierContains: "CatAManualWinsOnOuter").exists,
             "outer Group accessibilityIdentifier should be findable (manual override on wrapper)"
         )
     }
 
     func testCategoryA_emptyIdentifierName_sanitizedLabelInIdentifier() throws {
+        launchCatA(section: "empty")
         XCTAssertTrue(
-            scrollUntilIdentifierContains("empty-name-row"),
+            anyElement(identifierContains: "empty-name-row").exists,
             "Empty identifierName should still include sanitized identifierLabel in generated identifier"
         )
     }
 
-    /// Category A audit: `basicAutomaticCompliance` name + sibling with explicit `platformButton` id (Issue #197).
-    /// TestApp already enables global automatic IDs; avoid `enableGlobalAutomaticCompliance` in the audit view —
-    /// it mutates shared config and can break sibling identifiers when rows scroll off-screen.
     func testCategoryA_midHierarchy_autoSiblingAndOptOut_identifiersPresent() throws {
+        launchCatA(section: "mid")
         XCTAssertTrue(
-            scrollUntilIdentifierContains("CatAMidAutoSibling"),
-            "Named basicAutomaticCompliance row should expose identifier substring (scroll if below fold)"
+            anyElement(identifierContains: "CatAMidAutoSibling").exists,
+            "Named basicAutomaticCompliance row should expose identifier substring"
         )
         XCTAssertTrue(
-            scrollUntilIdentifierContains("CatAMid_LocalOptOut_Static"),
-            "Explicit platformButton id should match manual-only row pattern on the audit scroll view"
+            anyElement(identifierContains: "CatAMid_LocalOptOut_Static").exists,
+            "Explicit platformButton id should match manual-only row pattern"
         )
     }
 
-    /// `disableAutomaticAccessibilityIdentifiers()` must suppress `basicAutomaticCompliance` in that subtree (#197).
     func testCategoryA_disableAutomatic_localSubtree_skipsBasicAutomaticIdentifier() throws {
+        launchCatA(section: "disable")
         XCTAssertTrue(
-            scrollUntilIdentifierContains("CatADisableMid_AutoPresent"),
+            anyElement(identifierContains: "CatADisableMid_AutoPresent").exists,
             "Row outside disable wrapper should still expose basicAutomaticCompliance identifier"
         )
         assertNoIdentifierContaining("CatADisableMid_LocalAutoOff")
