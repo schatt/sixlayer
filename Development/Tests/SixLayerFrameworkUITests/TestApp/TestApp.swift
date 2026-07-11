@@ -208,19 +208,9 @@ struct TestAppContentView: View {
                     Layer3ExamplesView()
                 }
             } else if let layer1Category = resolvedOpenLayer1Category {
+                // Do not wrap in VStack — nested ScrollView gets zero height and XCUI sees an empty page (#316).
                 NavigationStack {
-                    VStack(alignment: .leading, spacing: 0) {
-                        Text("Layer1_Section_\(layer1Category.rawValue.replacingOccurrences(of: " ", with: ""))")
-                            .font(.caption2)
-                            .foregroundColor(.secondary)
-                            .accessibilityIdentifier(
-                                "Layer1_Section_\(layer1Category.rawValue.replacingOccurrences(of: " ", with: ""))"
-                            )
-                            .accessibilityLabel(
-                                "Layer1_Section_\(layer1Category.rawValue.replacingOccurrences(of: " ", with: ""))"
-                            )
-                        layer1CategoryView(for: layer1Category)
-                    }
+                    layer1CategoryView(for: layer1Category)
                 }
             } else if openLayer5Accessibility {
                 NavigationStack {
