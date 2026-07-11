@@ -72,9 +72,17 @@ final class Layer1AccessibilityUITests: XCTestCase {
 
         let categoryMarker = "L1_Category_\(Self.categoryArg(categoryName))"
         let markerEl = app.descendants(matching: .any)[categoryMarker].firstMatch
-        XCTAssertTrue(
-            markerEl.exists,
-            "Layer1 category marker '\(categoryMarker)' should exist at launch (-OpenLayer1Category=\(Self.categoryArg(categoryName)))"
+        if markerEl.exists { return }
+        let anyWithId = app.descendants(matching: .any)
+            .matching(NSPredicate(format: "identifier != %@", ""))
+        let sampleLimit = min(anyWithId.count, 30)
+        var samples: [String] = []
+        for i in 0..<sampleLimit {
+            let value = anyWithId.element(boundBy: i).identifier
+            if !value.isEmpty { samples.append(value) }
+        }
+        XCTFail(
+            "Layer1 category marker '\(categoryMarker)' should exist at launch (-OpenLayer1Category=\(Self.categoryArg(categoryName))). Sample ids: \(samples)"
         )
     }
 
