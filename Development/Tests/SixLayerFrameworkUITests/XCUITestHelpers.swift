@@ -202,6 +202,16 @@ extension XCUIElement {
         return exists
     }
 
+    /// Best-effort visible/accessible string for XCUI assertions (#316).
+    /// macOS SwiftUI often leaves `label` empty for `Text` that also has an accessibilityIdentifier;
+    /// content may still appear in `value` or `title`.
+    var xcuiAccessibleText: String {
+        if !label.isEmpty { return label }
+        if let valueString = value as? String, !valueString.isEmpty { return valueString }
+        if !title.isEmpty { return title }
+        return ""
+    }
+
     /// Wait for this element to become not hittable (e.g. menu/popover dismissed).
     /// Polls until the element is not hittable or timeout. Use after tapping a menu option to ensure the menu is gone before the next interaction.
     /// - Parameter timeout: Maximum time to wait (default: 3.0 seconds)
