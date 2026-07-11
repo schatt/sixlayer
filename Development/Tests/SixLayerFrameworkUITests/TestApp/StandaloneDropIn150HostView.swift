@@ -41,6 +41,21 @@ struct StandaloneDropIn150HostView: View {
     var body: some View {
         NavigationStack {
             SixLayerFramework.platformForm {
+                // Integration first so multi-control fields are on-screen at launch on macOS
+                // without scroll-until-found (#316).
+                Section {
+                    SixLayerFramework.platformTextField("SD150_Integration_Name", text: $integrationName)
+                    SixLayerFramework.platformSecureField("SD150_Integration_Password", text: $integrationPassword)
+                    SixLayerFramework.platformToggle("SD150_Integration_Toggle", isOn: $integrationOn)
+                    if showBindingMirrors {
+                        bindingMirror(
+                            id: "SD150_Mirror_IN",
+                            text: "SD150_Mirror_IN:\(integrationName)|\(integrationPassword)|\(integrationOn ? "1" : "0")"
+                        )
+                    }
+                } header: {
+                    Text("SD150 Integration")
+                }
                 Section {
                     SixLayerFramework.platformTextField("SD150_TextField", text: $textFieldValue)
                     if showBindingMirrors {
@@ -85,19 +100,6 @@ struct StandaloneDropIn150HostView: View {
                     }
                 } header: {
                     Text("SD150 Long")
-                }
-                Section {
-                    SixLayerFramework.platformTextField("SD150_Integration_Name", text: $integrationName)
-                    SixLayerFramework.platformSecureField("SD150_Integration_Password", text: $integrationPassword)
-                    SixLayerFramework.platformToggle("SD150_Integration_Toggle", isOn: $integrationOn)
-                    if showBindingMirrors {
-                        bindingMirror(
-                            id: "SD150_Mirror_IN",
-                            text: "SD150_Mirror_IN:\(integrationName)|\(integrationPassword)|\(integrationOn ? "1" : "0")"
-                        )
-                    }
-                } header: {
-                    Text("SD150 Integration")
                 }
             }
             .navigationTitle("SD150 Standalone")
