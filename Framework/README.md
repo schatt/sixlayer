@@ -44,7 +44,7 @@ Layer 1: Semantic Intent → Layer 2: Layout Decision → Layer 3: Strategy Sele
 
 ### Minor release
 
-macOS XCUITest deep-link hosts (#316), parallel suite policy (#335), unit-test isolation follow-ups (#334/#337), and CI Gitea CA trust (#336). See [RELEASE_v8.2.0.md](../Development/RELEASE_v8.2.0.md).
+macOS/iOS XCUITest reliability (#316, #317), parallel suite policy (#335), unit-test isolation follow-ups (#334/#337), and CI Gitea CA trust (#336). See [RELEASE_v8.2.0.md](../Development/RELEASE_v8.2.0.md).
 
 ## 🆕 What's New in v8.1.1
 
