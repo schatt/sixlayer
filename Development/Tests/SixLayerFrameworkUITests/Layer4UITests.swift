@@ -517,11 +517,15 @@ final class Layer4UITests: XCTestCase {
         let typesToTry: [(XCUIElement.ElementType, TimeInterval)] = (type == .textField || type == .secureTextField || type == .switch || type == .textView)
             ? [(type, 1.8), (.other, 0.9)]
             : [(type, 1.8)]
+        // macOS Toggle is often checkBox; include it when looking for switch (#316).
+        let macOSToggleTypes: [(XCUIElement.ElementType, TimeInterval)] =
+            (type == .switch) ? [(.checkBox, 1.2)] : []
+        let orderedTypes = typesToTry + macOSToggleTypes
         var el: XCUIElement?
         if element(matchingIdentifier: hostExplicitId).waitForExistence(timeout: 1.2) {
             el = element(matchingIdentifier: hostExplicitId)
         }
-        for (primaryType, timeout) in typesToTry where el == nil {
+        for (primaryType, timeout) in orderedTypes where el == nil {
             el = app.findElement(byIdentifier: identifier, primaryType: primaryType, secondaryTypes: [.other, .button, .staticText, .any], timeout: timeout)
             if el != nil { break }
         }
@@ -550,6 +554,9 @@ final class Layer4UITests: XCTestCase {
                           "\(componentName) must apply a11y. '\(label)' should expose contract id or a wrapper containing '\(sanitizedIdentifierName)'. Found: '\(el.identifier)'")
             let hasCorrectType = (el.elementType == type)
                 || (el.descendants(matching: type).firstMatch.waitForExistence(timeout: 0.5))
+                // macOS SwiftUI Toggle often surfaces as checkBox rather than switch (#316).
+                || (type == .switch && (el.elementType == .checkBox
+                    || el.descendants(matching: .checkBox).firstMatch.waitForExistence(timeout: 0.5)))
             XCTAssertTrue(hasCorrectType,
                           "\(componentName) must present as \(type) (contract structure). Found: \(el.elementType)")
         }
