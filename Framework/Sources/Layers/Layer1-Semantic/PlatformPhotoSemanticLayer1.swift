@@ -36,6 +36,7 @@ public func platformPhotoCapture_L1(
             onImageCaptured: onImageCaptured,
             onImageSelected: onImageCaptured
         )
+        .automaticCompliance(identifierName: "platformPhotoCapture_L1")
     }
 }
 
