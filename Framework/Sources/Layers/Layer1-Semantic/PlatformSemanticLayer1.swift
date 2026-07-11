@@ -617,15 +617,15 @@ public func platformPresentNavigationStack_L1<Content: View>(
     title: String? = nil,
     hints: PresentationHints
 ) -> some View {
+    // Always stamp a stable L1 name so XCUI can find the stack without a caller title (#316).
+    let identifierName = title.map { sanitizeLabelText($0) } ?? "platformPresentNavigationStack_L1"
     return NavigationStackWrapper(
         content: content,
         title: title,
         hints: hints
     )
-    .environment(\.accessibilityIdentifierName, title ?? "platformPresentNavigationStack_L1")
-    .automaticCompliance(
-        identifierName: title != nil ? sanitizeLabelText(title!) : nil  // Auto-generate identifierName from title if provided
-    )
+    .environment(\.accessibilityIdentifierName, identifierName)
+    .automaticCompliance(identifierName: identifierName)
 }
 
 /// Layer 1 semantic function for presenting a collection of items in a navigation stack
