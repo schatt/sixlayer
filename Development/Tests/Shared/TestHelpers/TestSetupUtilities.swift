@@ -30,6 +30,7 @@ final class HostingSession: @unchecked Sendable {
         let window: AnyObject
         let controller: AnyObject
 
+        @MainActor
         func tearDown() {
             #if canImport(UIKit) && !os(watchOS)
             if let hosting = controller as? UIHostingController<AnyView> {
