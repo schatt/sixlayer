@@ -69,6 +69,8 @@ struct TestAppContentView: View {
     private let openAccessibilityCompatibilityPlatformPickerTest = ProcessInfo.processInfo.arguments.contains("-OpenAccessibilityCompatibilityPlatformPickerTest")
     /// When true, app opens directly to Layer 4 contract section (launch arg -OpenLayer4Examples).
     private let openLayer4Examples = ProcessInfo.processInfo.arguments.contains("-OpenLayer4Examples")
+    /// When true, app opens only L4 overlay accessibility contract (launch arg -OpenLayer4OverlayAccessibility). Refs #316.
+    private let openLayer4OverlayAccessibility = ProcessInfo.processInfo.arguments.contains("-OpenLayer4OverlayAccessibility")
     /// When true, app opens directly to Layer 3 examples (launch arg -OpenLayer3Examples). Refs #316.
     private let openLayer3Examples = ProcessInfo.processInfo.arguments.contains("-OpenLayer3Examples")
     /// When true, app opens directly to Layer 5 Accessibility section (launch arg -OpenLayer5Accessibility).
@@ -182,6 +184,10 @@ struct TestAppContentView: View {
             } else if openLayer4IdentifierEdgeCase {
                 NavigationStack {
                     IdentifierEdgeCaseTestView()
+                }
+            } else if openLayer4OverlayAccessibility {
+                NavigationStack {
+                    Layer4OverlayAccessibilityOnlyView()
                 }
             } else if openLayer4Examples {
                 NavigationStack {
