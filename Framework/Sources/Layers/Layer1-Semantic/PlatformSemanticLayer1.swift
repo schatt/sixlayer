@@ -4944,10 +4944,15 @@ private struct NavigationStackWrapper<Content: View>: View {
         )
         
         // Layer 4: Component implementation
+        // Stamp L1 id on the L4 surface (outer modifiers on this wrapper are often
+        // invisible to XCUI when the stack expands into SidebarNavigationView) (#316).
         platformImplementNavigationStack_L4(
             content: content,
             title: title,
             strategy: l3Strategy
+        )
+        .automaticCompliance(
+            identifierName: title.map { sanitizeLabelText($0) } ?? "platformPresentNavigationStack_L1"
         )
     }
 }
