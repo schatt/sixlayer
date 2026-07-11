@@ -73,6 +73,16 @@ struct TestAppContentView: View {
     private let openLayer4OverlayAccessibility = ProcessInfo.processInfo.arguments.contains("-OpenLayer4OverlayAccessibility")
     /// When true, app opens directly to Layer 3 examples (launch arg -OpenLayer3Examples). Refs #316.
     private let openLayer3Examples = ProcessInfo.processInfo.arguments.contains("-OpenLayer3Examples")
+    /// Deep-link one Layer 1 category: `-OpenLayer1Category=Data-Presentation` (etc). Refs #316.
+    private let openLayer1CategoryArg: String? = {
+        guard let raw = ProcessInfo.processInfo.arguments
+            .first(where: { $0.hasPrefix("-OpenLayer1Category=") })?
+            .split(separator: "=", maxSplits: 1)
+            .last
+            .map(String.init)
+        else { return nil }
+        return raw.isEmpty ? nil : raw
+    }()
     /// When true, app opens directly to Layer 5 Accessibility section (launch arg -OpenLayer5Accessibility).
     private let openLayer5Accessibility = ProcessInfo.processInfo.arguments.contains("-OpenLayer5Accessibility")
     /// When true, app opens directly to Layer 6 Cross-Platform section (launch arg -OpenLayer6Examples).
@@ -196,6 +206,21 @@ struct TestAppContentView: View {
             } else if openLayer3Examples {
                 NavigationStack {
                     Layer3ExamplesView()
+                }
+            } else if let layer1Category = resolvedOpenLayer1Category {
+                NavigationStack {
+                    VStack(alignment: .leading, spacing: 0) {
+                        Text("Layer1_Section_\(layer1Category.rawValue.replacingOccurrences(of: " ", with: ""))")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                            .accessibilityIdentifier(
+                                "Layer1_Section_\(layer1Category.rawValue.replacingOccurrences(of: " ", with: ""))"
+                            )
+                            .accessibilityLabel(
+                                "Layer1_Section_\(layer1Category.rawValue.replacingOccurrences(of: " ", with: ""))"
+                            )
+                        layer1CategoryView(for: layer1Category)
+                    }
                 }
             } else if openLayer5Accessibility {
                 NavigationStack {
@@ -474,6 +499,18 @@ struct TestAppContentView: View {
     }
     
     // MARK: - Layer 1 Examples View
+
+    /// Resolve `-OpenLayer1Category=` to a `TestCategory` (accepts `Data-Presentation` or `Data Presentation`).
+    private var resolvedOpenLayer1Category: TestCategory? {
+        guard let arg = openLayer1CategoryArg else { return nil }
+        let spaced = arg.replacingOccurrences(of: "-", with: " ")
+        return TestCategory.allCases.first {
+            $0.rawValue.compare(spaced, options: [.caseInsensitive, .diacriticInsensitive]) == .orderedSame
+                || $0.rawValue
+                    .replacingOccurrences(of: " ", with: "-")
+                    .compare(arg, options: [.caseInsensitive, .diacriticInsensitive]) == .orderedSame
+        }
+    }
 
     /// Layer 1 expanded content: list of nav links (one per category). No picker.
     @ViewBuilder
