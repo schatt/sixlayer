@@ -38,6 +38,7 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
                 "Test app should be foreground (Issue #150 host)"
             )
             let ready = localApp.navigationBars["SD150 Standalone"].waitForExistence(timeout: Self.hostReadyTimeout)
+                || localApp.staticTexts["SD150 Integration"].waitForExistence(timeout: 2.0)
                 || localApp.staticTexts["SD150 Text inputs"].waitForExistence(timeout: 2.0)
             XCTAssertTrue(ready, "SD150 host should show navigation title or first section (launch arg -OpenStandaloneDropIn150)")
         }
