@@ -16,6 +16,7 @@ final class IntelligentDetailViewCategoryBUITests: XCTestCase {
         static let customFieldPrefix = "Custom Field:"
         static let nilTitle = "Nil Item"
         static let nilDescription = "Nil Description"
+        static let nilSectionHeader = "Nil Value IntelligentDetailView"
     }
 
     var app: XCUIApplication!
@@ -51,19 +52,17 @@ final class IntelligentDetailViewCategoryBUITests: XCTestCase {
         if app.staticTexts[text].waitForExistence(timeout: min(timeout, 0.6)) {
             return true
         }
-        // Prefer label/value match scoped to window — full-tree `.any` value CONTAINS can hang (#316).
-        let pred = NSPredicate(
-            format: "label CONTAINS[c] %@ OR value CONTAINS[c] %@ OR title CONTAINS[c] %@",
-            text, text, text
-        )
+        // Avoid value CONTAINS on `.any` — it can hang for minutes on macOS (#316).
+        let labelPred = NSPredicate(format: "label CONTAINS[c] %@", text)
         let root: XCUIElement = app.windows.firstMatch.exists ? app.windows.firstMatch : app
-        let match = root.descendants(matching: .any).matching(pred).firstMatch
-        let deadline = Date().addingTimeInterval(min(timeout, 0.6))
-        while Date() < deadline {
-            if match.exists { return true }
-            RunLoop.current.run(until: Date().addingTimeInterval(0.05))
+        if root.descendants(matching: .staticText).matching(labelPred).firstMatch.waitForExistence(timeout: min(timeout, 0.35)) {
+            return true
         }
-        return false
+        if root.descendants(matching: .other).matching(labelPred).firstMatch.waitForExistence(timeout: min(timeout, 0.35)) {
+            return true
+        }
+        let valuePred = NSPredicate(format: "value == %@", text)
+        return root.descendants(matching: .any).matching(valuePred).firstMatch.waitForExistence(timeout: min(timeout, 0.35))
     }
 
     @MainActor
@@ -96,7 +95,11 @@ final class IntelligentDetailViewCategoryBUITests: XCTestCase {
 
     func testCategoryB_nilValueData_showsRemainingVisibleContent() throws {
         // Nil-value detail is below default + custom sections; allow more scroll attempts.
-        XCTAssertTrue(scrollUntilVisible(Copy.nilTitle, attempts: 16), "Nil-value detail title should be visible")
+        XCTAssertTrue(
+            scrollUntilVisible(Copy.nilSectionHeader, attempts: 16),
+            "Nil-value section header should be visible after scrolling"
+        )
+        XCTAssertTrue(scrollUntilVisible(Copy.nilTitle, attempts: 8), "Nil-value detail title should be visible")
         XCTAssertTrue(scrollUntilVisible(Copy.nilDescription, attempts: 8), "Nil-value detail description should be visible")
     }
 }
