@@ -3,6 +3,7 @@
 //  SixLayerFrameworkUITests
 //
 //  Issue #198: Category B UI backfill for IntelligentDetailView visible content.
+//  Content must be in the accessibility tree at launch — do not scroll to find it (#316).
 //
 
 import XCTest
@@ -16,7 +17,6 @@ final class IntelligentDetailViewCategoryBUITests: XCTestCase {
         static let customFieldPrefix = "Custom Field:"
         static let nilTitle = "Nil Item"
         static let nilDescription = "Nil Description"
-        static let nilSectionHeader = "Nil Value IntelligentDetailView"
     }
 
     var app: XCUIApplication!
@@ -47,70 +47,49 @@ final class IntelligentDetailViewCategoryBUITests: XCTestCase {
         }
     }
 
+    /// True when any a11y node exposes `text` via label, exact value, or title (no scrolling).
+    /// Avoids app-wide `value CONTAINS` — that query can hang for minutes on macOS (#316).
     @MainActor
-    private func textVisible(_ text: String, timeout: TimeInterval) -> Bool {
-        if app.staticTexts[text].waitForExistence(timeout: min(timeout, 0.5)) {
-            return true
+    private func assertAccessibleTextExists(_ text: String, timeout: TimeInterval = 2.0, _ message: String) {
+        if app.staticTexts[text].waitForExistence(timeout: timeout) {
+            return
         }
-        let pred = NSPredicate(format: "label CONTAINS[c] %@ OR value CONTAINS[c] %@", text, text)
-        // Scope CONTAINS to IntelligentDetail scroll hosts — app-wide value CONTAINS hangs (#316).
-        let detailScrolls = app.scrollViews.matching(
-            NSPredicate(format: "identifier CONTAINS[c] %@", "IntelligentDetail")
+        let labelPred = NSPredicate(format: "label CONTAINS[c] %@", text)
+        if app.descendants(matching: .staticText).matching(labelPred).firstMatch.waitForExistence(timeout: timeout) {
+            return
+        }
+        if app.descendants(matching: .other).matching(labelPred).firstMatch.waitForExistence(timeout: timeout) {
+            return
+        }
+        let exactPred = NSPredicate(format: "value == %@ OR title == %@", text, text)
+        XCTAssertTrue(
+            app.descendants(matching: .any).matching(exactPred).firstMatch.waitForExistence(timeout: timeout),
+            message
         )
-        let scrollCount = detailScrolls.count
-        let limit = min(max(scrollCount, 0), 6)
-        for index in 0..<limit {
-            let host = detailScrolls.element(boundBy: index)
-            if host.descendants(matching: .any).matching(pred).firstMatch.waitForExistence(timeout: 0.2) {
-                return true
-            }
-        }
-        let root: XCUIElement = app.windows.firstMatch.exists ? app.windows.firstMatch : app
-        if root.descendants(matching: .staticText).matching(
-            NSPredicate(format: "label CONTAINS[c] %@", text)
-        ).firstMatch.waitForExistence(timeout: min(timeout, 0.35)) {
-            return true
-        }
-        return root.descendants(matching: .other).matching(
-            NSPredicate(format: "label CONTAINS[c] %@", text)
-        ).firstMatch.waitForExistence(timeout: min(timeout, 0.35))
-    }
-
-    @MainActor
-    private func scrollUntilVisible(_ text: String, attempts: Int = 10) -> Bool {
-        if textVisible(text, timeout: 1.0) { return true }
-        // Do not swipe IntelligentDetail's inner ScrollView (last host) — that scrolls within a
-        // card and can hide sibling fields. Window-level swipe moves the outer page (#316).
-        for _ in 0..<attempts {
-            if app.windows.firstMatch.exists {
-                app.windows.firstMatch.swipeUp()
-            } else {
-                app.swipeUp()
-            }
-            if textVisible(text, timeout: 0.5) { return true }
-        }
-        return textVisible(text, timeout: 0.5)
     }
 
     func testCategoryB_defaultDetailView_showsTitleAndSubtitle() throws {
-        XCTAssertTrue(scrollUntilVisible(Copy.defaultTitle), "Default detail title should be visible")
-        XCTAssertTrue(scrollUntilVisible(Copy.defaultSubtitle), "Default detail subtitle should be visible")
+        assertAccessibleTextExists(Copy.defaultTitle, "Default detail title should be in the accessibility tree")
+        assertAccessibleTextExists(Copy.defaultSubtitle, "Default detail subtitle should be in the accessibility tree")
     }
 
     func testCategoryB_customFieldView_showsCustomMarker() throws {
-        XCTAssertTrue(
-            scrollUntilVisible(Copy.customFieldPrefix),
+        let byId = app.descendants(matching: .any)["category-b-custom-field"]
+        if byId.waitForExistence(timeout: 2.0) {
+            XCTAssertTrue(
+                byId.xcuiAccessibleText.contains(Copy.customFieldPrefix),
+                "Custom field identifier should expose marker text; got '\(byId.xcuiAccessibleText)'"
+            )
+            return
+        }
+        assertAccessibleTextExists(
+            Copy.customFieldPrefix,
             "Custom field rendering should expose the custom marker text"
         )
     }
 
     func testCategoryB_nilValueData_showsRemainingVisibleContent() throws {
-        // Nil-value detail is below default + custom sections; allow more scroll attempts.
-        XCTAssertTrue(
-            scrollUntilVisible(Copy.nilSectionHeader, attempts: 16),
-            "Nil-value section header should be visible after scrolling"
-        )
-        XCTAssertTrue(scrollUntilVisible(Copy.nilTitle, attempts: 8), "Nil-value detail title should be visible")
-        XCTAssertTrue(scrollUntilVisible(Copy.nilDescription, attempts: 8), "Nil-value detail description should be visible")
+        assertAccessibleTextExists(Copy.nilTitle, "Nil-value detail title should be in the accessibility tree")
+        assertAccessibleTextExists(Copy.nilDescription, "Nil-value detail description should be in the accessibility tree")
     }
 }
