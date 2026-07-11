@@ -66,10 +66,8 @@ final class IntelligentDetailViewCategoryBUITests: XCTestCase {
     @MainActor
     private func scrollUntilVisible(_ text: String, attempts: Int = 10) -> Bool {
         if textVisible(text, timeout: 1.0) { return true }
-        let host = app.xcuiPrimaryScrollHost()
-        guard host.exists, !host.frame.isEmpty else {
-            return textVisible(text, timeout: 0.5)
-        }
+        // Avoid probing xcuiPrimaryScrollHost().exists — macOS can time out evaluating
+        // collapsed ScrollView queries (#316). Shared swipe helper already falls back safely.
         for _ in 0..<attempts {
             app.xcuiSwipeScrollHostsUp()
             if textVisible(text, timeout: 0.5) { return true }
