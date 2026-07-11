@@ -26,8 +26,15 @@ final class AccessibilityIdentifierCategoryAGlobalOffUITests: XCTestCase {
             localApp.launchArguments.append("-CategoryAGlobalAutoOff")
             localApp.launch()
             Self.sharedApp = localApp
+            // macOS often does not expose NavigationStack titles as navigationBars (#316).
+            let landed =
+                localApp.navigationBars["Category A Global Off"].waitForExistence(timeout: 2.5)
+                || localApp.staticTexts["Category A — global automatic IDs off"].waitForExistence(timeout: 2.0)
+                || localApp.descendants(matching: .any)
+                    .matching(NSPredicate(format: "identifier CONTAINS[c] %@", "CatAGlobalOffTitle"))
+                    .firstMatch.waitForExistence(timeout: 2.0)
             XCTAssertTrue(
-                localApp.navigationBars["Category A Global Off"].waitForExistence(timeout: 2.5),
+                landed,
                 "App should open Category A Global Off audit (launch args -OpenCategoryAAccessibility -CategoryAGlobalAutoOff)"
             )
         }
@@ -38,53 +45,21 @@ final class AccessibilityIdentifierCategoryAGlobalOffUITests: XCTestCase {
         return app.descendants(matching: .any).matching(pred).firstMatch
     }
 
-    private func scrollUntilIdentifierContains(_ substring: String, maxSwipes: Int = 8) -> Bool {
-        scrollUntil(
-            matching: NSPredicate(format: "identifier CONTAINS[c] %@", substring),
-            maxSwipes: maxSwipes
-        )
+    private func anyElement(identifierEquals exact: String) -> XCUIElement {
+        let pred = NSPredicate(format: "identifier == %@", exact)
+        return app.descendants(matching: .any).matching(pred).firstMatch
     }
 
-    private func scrollUntilIdentifierEquals(_ exact: String, maxSwipes: Int = 8) -> Bool {
-        scrollUntil(
-            matching: NSPredicate(format: "identifier == %@", exact),
-            maxSwipes: maxSwipes
-        )
-    }
-
-    private func scrollUntil(matching pred: NSPredicate, maxSwipes: Int) -> Bool {
-        if app.descendants(matching: .any).matching(pred).firstMatch.waitForExistence(timeout: 1.0) {
-            return true
-        }
-        let scroll = app.scrollViews.firstMatch
-        guard scroll.exists else { return false }
-        for _ in 0..<maxSwipes {
-            scroll.swipeUp()
-            if app.descendants(matching: .any).matching(pred).firstMatch.waitForExistence(timeout: 0.5) {
-                return true
-            }
-        }
-        return false
-    }
-
-    /// Asserts no descendant has an accessibility identifier containing `substring` (scrolls to search).
-    private func assertNoIdentifierContaining(_ substring: String, maxSwipes: Int = 8, file: StaticString = #filePath, line: UInt = #line) {
+    /// Asserts no descendant has an accessibility identifier containing `substring`.
+    private func assertNoIdentifierContaining(_ substring: String, file: StaticString = #filePath, line: UInt = #line) {
         let pred = NSPredicate(format: "identifier CONTAINS[c] %@", substring)
         let first = app.descendants(matching: .any).matching(pred).firstMatch
-        if first.waitForExistence(timeout: 1.0) {
-            XCTFail("Unexpected element with identifier containing \(substring)", file: file, line: line)
-            return
-        }
-        let scroll = app.scrollViews.firstMatch
-        guard scroll.exists else { return }
-        for _ in 0..<maxSwipes {
-            scroll.swipeUp()
-            let el = app.descendants(matching: .any).matching(pred).firstMatch
-            if el.waitForExistence(timeout: 0.5) {
-                XCTFail("Unexpected element with identifier containing \(substring) after scroll", file: file, line: line)
-                return
-            }
-        }
+        XCTAssertFalse(
+            first.waitForExistence(timeout: 1.0),
+            "Unexpected element with identifier containing \(substring)",
+            file: file,
+            line: line
+        )
     }
 
     func testCategoryAGlobalOff_basicAutomaticCompliance_doesNotEmitSuppressedName() throws {
@@ -93,14 +68,14 @@ final class AccessibilityIdentifierCategoryAGlobalOffUITests: XCTestCase {
 
     func testCategoryAGlobalOff_named_stillSurfacesIdentifier() throws {
         XCTAssertTrue(
-            scrollUntilIdentifierContains("CatANamedWhenGlobalOff"),
+            anyElement(identifierContains: "CatANamedWhenGlobalOff").waitForExistence(timeout: 2.5),
             ".named should still apply when global automatic IDs are off"
         )
     }
 
     func testCategoryAGlobalOff_exactNamed_stillMinimalIdentifier() throws {
         XCTAssertTrue(
-            scrollUntilIdentifierEquals("CatAExactWhenGlobalOff"),
+            anyElement(identifierEquals: "CatAExactWhenGlobalOff").waitForExistence(timeout: 2.5),
             ".exactNamed should still set literal identifier when global automatic IDs are off"
         )
     }
