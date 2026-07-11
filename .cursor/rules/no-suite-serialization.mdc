@@ -1,0 +1,31 @@
+---
+description: Never serialize test suites to hide parallel failures; fix the test/harness instead.
+alwaysApply: true
+---
+
+# No Suite Serialization
+
+**Precedence:** standing user instruction.
+
+## Rule
+
+**Do not serialize test suites** to paper over parallel failures.
+
+Forbidden:
+- Swift Testing `@Suite(..., .serialized)`
+- Scheme / `project.yml` `parallelizable: false` (or `parallelizable = "NO"`) as a “fix” for flakes or crashes
+- Disabling `-parallel-testing-enabled` for the same reason
+
+## Correct response
+
+If a test fails, crashes, or flakes under parallel execution, **the test or harness is broken**. Fix isolation, shared state, hosting teardown, or move the observation to the right layer (unit → hosted → XCUITest). Do not make the suite serial.
+
+## Narrow exceptions (not suite serialization)
+
+- Production or harness APIs that are inherently process-global may need careful per-test cleanup — that is isolation, not `.serialized`.
+- XCUITest may still be a thin sentinel for system UI that unit tests must not host concurrently (e.g. `UIImagePickerController`); prefer extracting pure decision logic for unit coverage instead of serializing a unit suite.
+
+## Related
+
+- #335 (policy + remove photo-suite `.serialized`)
+- #334 incorrectly used `.serialized` for iOS photo hosting — do not repeat
