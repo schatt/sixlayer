@@ -24,6 +24,7 @@ struct CategoryEOneOffAuditView: View {
                     .font(.title2)
                     .bold()
                     .accessibilityIdentifier("Category E One-Off Coverage")
+                    .accessibilityLabel("Category E One-Off Coverage")
 
                 Text("Explicit enable for plain SwiftUI")
                     .font(.headline)
@@ -66,8 +67,10 @@ struct CategoryEOneOffAuditView: View {
                 }
                 .accessibilityIdentifier("category-e-clipboard-generate-button")
 
+                // Explicit accessibilityLabel: macOS XCUI often leaves Text.label empty when only identifier is set (#316).
                 Text(clipboardState)
                     .accessibilityIdentifier("category-e-clipboard-state-label")
+                    .accessibilityLabel(clipboardState)
             }
             .padding()
         }
