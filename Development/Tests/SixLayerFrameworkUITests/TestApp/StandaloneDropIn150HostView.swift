@@ -27,22 +27,28 @@ struct StandaloneDropIn150HostView: View {
         ProcessInfo.processInfo.environment["XCUI_TESTING"] == "1"
     }
 
+    /// macOS XCUI often leaves `Text.label` empty when only an identifier is set (#316).
+    /// Collapse children and publish both label + value so `xcuiAccessibleText` can read the mirror.
+    @ViewBuilder
+    private func bindingMirror(id: String, text: String) -> some View {
+        Text(text)
+            .accessibilityElement(children: .ignore)
+            .accessibilityIdentifier(id)
+            .accessibilityLabel(text)
+            .accessibilityValue(text)
+    }
+
     var body: some View {
         NavigationStack {
             SixLayerFramework.platformForm {
                 Section {
                     SixLayerFramework.platformTextField("SD150_TextField", text: $textFieldValue)
                     if showBindingMirrors {
-                        // Explicit accessibilityLabel: macOS XCUI often leaves Text.label empty when only identifier is set (#316).
-                        Text("SD150_Mirror_T:\(textFieldValue)")
-                            .accessibilityIdentifier("SD150_Mirror_T")
-                            .accessibilityLabel("SD150_Mirror_T:\(textFieldValue)")
+                        bindingMirror(id: "SD150_Mirror_T", text: "SD150_Mirror_T:\(textFieldValue)")
                     }
                     SixLayerFramework.platformTextField("SD150_AxisField", text: $axisFieldValue, axis: .vertical)
                     if showBindingMirrors {
-                        Text("SD150_Mirror_A:\(axisFieldValue)")
-                            .accessibilityIdentifier("SD150_Mirror_A")
-                            .accessibilityLabel("SD150_Mirror_A:\(axisFieldValue)")
+                        bindingMirror(id: "SD150_Mirror_A", text: "SD150_Mirror_A:\(axisFieldValue)")
                     }
                 } header: {
                     Text("SD150 Text inputs")
@@ -51,9 +57,7 @@ struct StandaloneDropIn150HostView: View {
                     SixLayerFramework.platformSecureField("SD150_SecureField", text: $secureValue)
                         .exactNamed("UITest_SD150_SecureField")
                     if showBindingMirrors {
-                        Text("SD150_Mirror_S:\(secureValue)")
-                            .accessibilityIdentifier("SD150_Mirror_S")
-                            .accessibilityLabel("SD150_Mirror_S:\(secureValue)")
+                        bindingMirror(id: "SD150_Mirror_S", text: "SD150_Mirror_S:\(secureValue)")
                     }
                 } header: {
                     Text("SD150 Secure")
@@ -61,9 +65,7 @@ struct StandaloneDropIn150HostView: View {
                 Section {
                     SixLayerFramework.platformToggle("SD150_Toggle", isOn: $toggleOn)
                     if showBindingMirrors {
-                        Text("SD150_Mirror_G:\(toggleOn ? "1" : "0")")
-                            .accessibilityIdentifier("SD150_Mirror_G")
-                            .accessibilityLabel("SD150_Mirror_G:\(toggleOn ? "1" : "0")")
+                        bindingMirror(id: "SD150_Mirror_G", text: "SD150_Mirror_G:\(toggleOn ? "1" : "0")")
                     }
                 } header: {
                     Text("SD150 Toggle")
@@ -71,9 +73,7 @@ struct StandaloneDropIn150HostView: View {
                 Section {
                     SixLayerFramework.platformTextEditor("SD150_EditorPrompt", text: $editorValue)
                     if showBindingMirrors {
-                        Text("SD150_Mirror_E:\(editorValue)")
-                            .accessibilityIdentifier("SD150_Mirror_E")
-                            .accessibilityLabel("SD150_Mirror_E:\(editorValue)")
+                        bindingMirror(id: "SD150_Mirror_E", text: "SD150_Mirror_E:\(editorValue)")
                     }
                 } header: {
                     Text("SD150 Editor")
@@ -81,9 +81,7 @@ struct StandaloneDropIn150HostView: View {
                 Section {
                     SixLayerFramework.platformTextField("SD150_LongField", text: $longFieldValue)
                     if showBindingMirrors {
-                        Text("SD150_Mirror_L:\(longFieldValue)")
-                            .accessibilityIdentifier("SD150_Mirror_L")
-                            .accessibilityLabel("SD150_Mirror_L:\(longFieldValue)")
+                        bindingMirror(id: "SD150_Mirror_L", text: "SD150_Mirror_L:\(longFieldValue)")
                     }
                 } header: {
                     Text("SD150 Long")
@@ -93,9 +91,10 @@ struct StandaloneDropIn150HostView: View {
                     SixLayerFramework.platformSecureField("SD150_Integration_Password", text: $integrationPassword)
                     SixLayerFramework.platformToggle("SD150_Integration_Toggle", isOn: $integrationOn)
                     if showBindingMirrors {
-                        Text("SD150_Mirror_IN:\(integrationName)|\(integrationPassword)|\(integrationOn ? "1" : "0")")
-                            .accessibilityIdentifier("SD150_Mirror_IN")
-                            .accessibilityLabel("SD150_Mirror_IN:\(integrationName)|\(integrationPassword)|\(integrationOn ? "1" : "0")")
+                        bindingMirror(
+                            id: "SD150_Mirror_IN",
+                            text: "SD150_Mirror_IN:\(integrationName)|\(integrationPassword)|\(integrationOn ? "1" : "0")"
+                        )
                     }
                 } header: {
                     Text("SD150 Integration")
@@ -108,4 +107,3 @@ struct StandaloneDropIn150HostView: View {
         }
     }
 }
-
