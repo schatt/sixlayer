@@ -694,6 +694,30 @@ public func platformPresentAppNavigation_L1<SidebarContent: View, DetailContent:
     .automaticCompliance(identifierName: "platformPresentAppNavigation_L1")
 }
 
+/// Framework-owned adaptive app navigation (GitHub #331). Prefer for labeled list sidebars
+/// that should step down to icon-rail; use ``platformPresentAppNavigation_L1`` for custom chrome.
+@MainActor
+public func platformPresentManagedAppNavigation_L1<ID: Hashable & Sendable, DetailContent: View>(
+    columnVisibility: Binding<NavigationSplitViewVisibility>? = nil,
+    showingNavigationSheet: Binding<Bool>? = nil,
+    state: Binding<PlatformAppNavigationTopLevelState<ID>>,
+    descriptors: [AppNavigationPaneDescriptor<ID>],
+    navigationTitle: LocalizedStringKey? = nil,
+    @ViewBuilder detail: @escaping (ID?) -> DetailContent
+) -> some View {
+    EmptyView()
+        .platformManagedAppNavigation_L4(
+            columnVisibility: columnVisibility,
+            showingNavigationSheet: showingNavigationSheet,
+            state: state,
+            descriptors: descriptors,
+            navigationTitle: navigationTitle,
+            detail: detail
+        )
+        .environment(\.accessibilityIdentifierName, "platformPresentManagedAppNavigation_L1")
+        .automaticCompliance(identifierName: "platformPresentManagedAppNavigation_L1")
+}
+
 /// Internal wrapper view for app navigation
 /// This view implements the full 6-layer flow: L1 -> L2 -> L3 -> L4
 /// Internal wrapper view for app navigation (no AnyView — Issue 178).

@@ -6,7 +6,7 @@ import SwiftUI
 /// BUSINESS PURPOSE: Accessibility tests for ImageProcessingPipeline.swift classes
 /// Ensures ImageProcessingPipeline classes generate proper accessibility identifiers
 /// for automated testing and accessibility tools compliance
-@Suite("Image Processing Pipeline Accessibility")
+@Suite("Image Processing Pipeline Accessibility", HostedViewTestIsolationTrait())
 open class ImageProcessingPipelineAccessibilityTests: BaseTestClass {
 
     // MARK: - ImageProcessor Tests

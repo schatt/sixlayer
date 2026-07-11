@@ -6,7 +6,7 @@ import SwiftUI
 @testable import SixLayerFramework
 /// Test that accessibility functions respect both global and local configuration options
 /// NOTE: Not marked @MainActor on class to allow parallel execution
-@Suite("Accessibility Global Local Config")
+@Suite("Accessibility Global Local Config", HostedViewTestIsolationTrait())
 open class AccessibilityGlobalLocalConfigTests: BaseTestClass {
     
     // BaseTestClass handles setup automatically - no need for custom init

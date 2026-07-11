@@ -25,7 +25,7 @@ import AppKit
  * Layer 1 functions and verifies they have proper accessibility identifiers generated automatically
  * based on configuration settings and object identity.
  */
-@Suite("Automatic Accessibility Identifier")
+@Suite("Automatic Accessibility Identifier", HostedViewTestIsolationTrait())
 open class AutomaticAccessibilityIdentifierTests: BaseTestClass {
     
     // MARK: - Test Helpers

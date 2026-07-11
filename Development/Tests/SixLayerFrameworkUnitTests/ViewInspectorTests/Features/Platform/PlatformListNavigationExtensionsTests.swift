@@ -4,7 +4,7 @@ import SwiftUI
 
 /// Focused list/navigation helper coverage for Issue #170.
 /// Keep grouped and compact (<=10 tests per file).
-@Suite("Platform List Navigation Extensions")
+@Suite("Platform List Navigation Extensions", HostedViewTestIsolationTrait())
 open class PlatformListNavigationExtensionsTests: BaseTestClass {
     struct TestRow: Identifiable, Hashable {
         let id: Int

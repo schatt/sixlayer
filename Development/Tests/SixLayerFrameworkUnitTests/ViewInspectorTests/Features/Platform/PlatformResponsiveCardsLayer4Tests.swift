@@ -16,7 +16,7 @@ struct PlatformResponsiveCardsTestItem: Identifiable {
 /// BUSINESS PURPOSE: Ensure Layer 4 responsive card components generate proper accessibility identifiers
 /// TESTING SCOPE: All components in PlatformResponsiveCardsLayer4.swift
 /// METHODOLOGY: Test each component on both iOS and macOS platforms as required by mandatory testing guidelines
-@Suite("Platform Responsive Cards Layer")
+@Suite("Platform Responsive Cards Layer", HostedViewTestIsolationTrait())
 /// NOTE: Not marked @MainActor on class to allow parallel execution
 open class PlatformResponsiveCardsLayer4Tests: BaseTestClass {
     

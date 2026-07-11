@@ -10,7 +10,7 @@ import Testing
 import SwiftUI
 @testable import SixLayerFramework
 
-@Suite("Platform Share and Print Layer 4 Accessibility")
+@Suite("Platform Share and Print Layer 4 Accessibility", HostedViewTestIsolationTrait())
 open class PlatformSharePrintLayer4ComponentAccessibilityTests: BaseTestClass {
 
     // MARK: - platformShare_L4

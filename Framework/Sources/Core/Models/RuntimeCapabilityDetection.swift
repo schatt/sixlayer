@@ -64,104 +64,61 @@ public struct RuntimeCapabilityDetection {
         return SixLayerPlatform.current
     }
 
-    // MARK: - Private Capability Override Getters
-    
-    private static var testTouchSupport: Bool? {
-        return Thread.current.threadDictionary["testTouchSupport"] as? Bool
-    }
-    
-    private static var testHapticFeedback: Bool? {
-        return Thread.current.threadDictionary["testHapticFeedback"] as? Bool
-    }
-    
-    private static var testHover: Bool? {
-        return Thread.current.threadDictionary["testHover"] as? Bool
-    }
-    
-    private static var testVoiceOver: Bool? {
-        return Thread.current.threadDictionary["testVoiceOver"] as? Bool
-    }
-    
-    private static var testSwitchControl: Bool? {
-        return Thread.current.threadDictionary["testSwitchControl"] as? Bool
-    }
-    
-    private static var testAssistiveTouch: Bool? {
-        return Thread.current.threadDictionary["testAssistiveTouch"] as? Bool
-    }
-    
-    private static var testHighContrast: Bool? {
-        return Thread.current.threadDictionary["testHighContrast"] as? Bool
+    // MARK: - Private Capability Override Getters (task-local bag via RuntimeCapabilityHarness)
+
+    private static var capabilityOverrides: CapabilityTestOverrideBag? {
+        RuntimeCapabilityHarness.capabilityTestOverrideBag
     }
 
-    private static var testPhotosHasCamera: Bool? {
-        Thread.current.threadDictionary["testPhotosHasCamera"] as? Bool
-    }
+    private static var testTouchSupport: Bool? { capabilityOverrides?.testTouchSupport }
+    private static var testHapticFeedback: Bool? { capabilityOverrides?.testHapticFeedback }
+    private static var testHover: Bool? { capabilityOverrides?.testHover }
+    private static var testVoiceOver: Bool? { capabilityOverrides?.testVoiceOver }
+    private static var testSwitchControl: Bool? { capabilityOverrides?.testSwitchControl }
+    private static var testAssistiveTouch: Bool? { capabilityOverrides?.testAssistiveTouch }
+    private static var testHighContrast: Bool? { capabilityOverrides?.testHighContrast }
 
+    private static var testPhotosHasCamera: Bool? { capabilityOverrides?.testPhotosHasCamera }
     private static var testPhotosIsPhotoLibraryPickerAvailable: Bool? {
-        Thread.current.threadDictionary["testPhotosIsPhotoLibraryPickerAvailable"] as? Bool
+        capabilityOverrides?.testPhotosIsPhotoLibraryPickerAvailable
     }
-
     private static var testPhotosSupportsLiveDataScanner: Bool? {
-        Thread.current.threadDictionary["testPhotosSupportsLiveDataScanner"] as? Bool
+        capabilityOverrides?.testPhotosSupportsLiveDataScanner
     }
 
-    private static var testVisionIsFrameworkAvailable: Bool? {
-        Thread.current.threadDictionary["testVisionIsFrameworkAvailable"] as? Bool
-    }
-
-    private static var testVisionSupportsOCR: Bool? {
-        Thread.current.threadDictionary["testVisionSupportsOCR"] as? Bool
-    }
-
-    private static var testVisionSupportsImageAnalyzer: Bool? {
-        Thread.current.threadDictionary["testVisionSupportsImageAnalyzer"] as? Bool
-    }
-
+    private static var testVisionIsFrameworkAvailable: Bool? { capabilityOverrides?.testVisionIsFrameworkAvailable }
+    private static var testVisionSupportsOCR: Bool? { capabilityOverrides?.testVisionSupportsOCR }
+    private static var testVisionSupportsImageAnalyzer: Bool? { capabilityOverrides?.testVisionSupportsImageAnalyzer }
     private static var testVisionSupportsDocumentCamera: Bool? {
-        Thread.current.threadDictionary["testVisionSupportsDocumentCamera"] as? Bool
+        capabilityOverrides?.testVisionSupportsDocumentCamera
     }
 
     private static var testFilesSupportsSecurityScopedResources: Bool? {
-        Thread.current.threadDictionary["testFilesSupportsSecurityScopedResources"] as? Bool
+        capabilityOverrides?.testFilesSupportsSecurityScopedResources
     }
-
     private static var testFilesSupportsSecurityScopedBookmarks: Bool? {
-        Thread.current.threadDictionary["testFilesSupportsSecurityScopedBookmarks"] as? Bool
+        capabilityOverrides?.testFilesSupportsSecurityScopedBookmarks
     }
 
     #if os(iOS)
-    private static var testiOSHoverDeviceCapability: Bool? {
-        Thread.current.threadDictionary["testiOSHoverDeviceCapability"] as? Bool
-    }
+    private static var testiOSHoverDeviceCapability: Bool? { capabilityOverrides?.testiOSHoverDeviceCapability }
     #endif
 
-    private static var testNetworkIsConstrained: Bool? {
-        Thread.current.threadDictionary["testNetworkIsConstrained"] as? Bool
-    }
+    private static var testNetworkIsConstrained: Bool? { capabilityOverrides?.testNetworkIsConstrained }
+    private static var testNetworkIsExpensive: Bool? { capabilityOverrides?.testNetworkIsExpensive }
+    private static var testNetworkHasPathSnapshot: Bool? { capabilityOverrides?.testNetworkHasPathSnapshot }
+    private static var testMediaHasMicrophoneInput: Bool? { capabilityOverrides?.testMediaHasMicrophoneInput }
+    private static var testMediaSupportsScreenCapture: Bool? { capabilityOverrides?.testMediaSupportsScreenCapture }
+    private static var testPasteboardCanReadStrings: Bool? { capabilityOverrides?.testPasteboardCanReadStrings }
+    private static var testPasteboardCanWriteStrings: Bool? { capabilityOverrides?.testPasteboardCanWriteStrings }
 
-    private static var testNetworkIsExpensive: Bool? {
-        Thread.current.threadDictionary["testNetworkIsExpensive"] as? Bool
-    }
-
-    private static var testNetworkHasPathSnapshot: Bool? {
-        Thread.current.threadDictionary["testNetworkHasPathSnapshot"] as? Bool
-    }
-
-    private static var testMediaHasMicrophoneInput: Bool? {
-        Thread.current.threadDictionary["testMediaHasMicrophoneInput"] as? Bool
-    }
-
-    private static var testMediaSupportsScreenCapture: Bool? {
-        Thread.current.threadDictionary["testMediaSupportsScreenCapture"] as? Bool
-    }
-
-    private static var testPasteboardCanReadStrings: Bool? {
-        Thread.current.threadDictionary["testPasteboardCanReadStrings"] as? Bool
-    }
-
-    private static var testPasteboardCanWriteStrings: Bool? {
-        Thread.current.threadDictionary["testPasteboardCanWriteStrings"] as? Bool
+    private static func mutableCapabilityOverrides() -> CapabilityTestOverrideBag {
+        guard let bag = RuntimeCapabilityHarness.capabilityTestOverrideBag else {
+            preconditionFailure(
+                "RuntimeCapabilityDetection.setTest* requires DefaultRuntimeCapabilityIsolationTrait or RuntimeCapabilityHarness.withCapabilityTestOverrideBag(_:)."
+            )
+        }
+        return bag
     }
     
     // MARK: - High Contrast Detection
@@ -719,7 +676,7 @@ public struct RuntimeCapabilityDetection {
             if value == false || value == nil {
                 clearVisionDependentTestOverrides()
             }
-            setThreadOptionalBool(key: "testVisionIsFrameworkAvailable", value: value)
+            mutableCapabilityOverrides().testVisionIsFrameworkAvailable = value
         }
 
         public static func setTestSupportsOCR(_ value: Bool?) {
@@ -733,7 +690,7 @@ public struct RuntimeCapabilityDetection {
                 }
                 setTestIsFrameworkAvailable(true)
             }
-            setThreadOptionalBool(key: "testVisionSupportsOCR", value: value)
+            mutableCapabilityOverrides().testVisionSupportsOCR = value
         }
 
         public static func setTestSupportsImageAnalyzer(_ value: Bool?) {
@@ -747,7 +704,7 @@ public struct RuntimeCapabilityDetection {
                 }
                 setTestIsFrameworkAvailable(true)
             }
-            setThreadOptionalBool(key: "testVisionSupportsImageAnalyzer", value: value)
+            mutableCapabilityOverrides().testVisionSupportsImageAnalyzer = value
         }
 
         public static func setTestSupportsDocumentCamera(_ value: Bool?) {
@@ -761,7 +718,7 @@ public struct RuntimeCapabilityDetection {
                 }
                 setTestIsFrameworkAvailable(true)
             }
-            setThreadOptionalBool(key: "testVisionSupportsDocumentCamera", value: value)
+            mutableCapabilityOverrides().testVisionSupportsDocumentCamera = value
         }
 
         private static var platformShipsVisionFramework: Bool {
@@ -769,9 +726,10 @@ public struct RuntimeCapabilityDetection {
         }
 
         private static func clearVisionDependentTestOverrides() {
-            setThreadOptionalBool(key: "testVisionSupportsOCR", value: nil)
-            setThreadOptionalBool(key: "testVisionSupportsImageAnalyzer", value: nil)
-            setThreadOptionalBool(key: "testVisionSupportsDocumentCamera", value: nil)
+            let bag = mutableCapabilityOverrides()
+            bag.testVisionSupportsOCR = nil
+            bag.testVisionSupportsImageAnalyzer = nil
+            bag.testVisionSupportsDocumentCamera = nil
         }
     }
 
@@ -795,12 +753,12 @@ public struct RuntimeCapabilityDetection {
 
         /// Thread-local override for tests. `nil` removes the entry so ``clearAllCapabilityOverrides()`` and subsequent reads use OS detection.
         public static func setTestSupportsSecurityScopedResources(_ value: Bool?) {
-            setThreadOptionalBool(key: "testFilesSupportsSecurityScopedResources", value: value)
+            mutableCapabilityOverrides().testFilesSupportsSecurityScopedResources = value
         }
 
-        /// Thread-local override for tests. `nil` removes the entry so ``clearAllCapabilityOverrides()`` and subsequent reads use OS detection.
+        /// Task-local override for tests. `nil` removes the entry so ``clearAllCapabilityOverrides()`` and subsequent reads use OS detection.
         public static func setTestSupportsSecurityScopedBookmarks(_ value: Bool?) {
-            setThreadOptionalBool(key: "testFilesSupportsSecurityScopedBookmarks", value: value)
+            mutableCapabilityOverrides().testFilesSupportsSecurityScopedBookmarks = value
         }
     }
 
@@ -823,15 +781,15 @@ public struct RuntimeCapabilityDetection {
         }
 
         public static func setTestIsConstrained(_ value: Bool?) {
-            setThreadOptionalBool(key: "testNetworkIsConstrained", value: value)
+            mutableCapabilityOverrides().testNetworkIsConstrained = value
         }
 
         public static func setTestIsExpensive(_ value: Bool?) {
-            setThreadOptionalBool(key: "testNetworkIsExpensive", value: value)
+            mutableCapabilityOverrides().testNetworkIsExpensive = value
         }
 
         public static func setTestHasPathSnapshot(_ value: Bool?) {
-            setThreadOptionalBool(key: "testNetworkHasPathSnapshot", value: value)
+            mutableCapabilityOverrides().testNetworkHasPathSnapshot = value
         }
     }
 
@@ -846,11 +804,11 @@ public struct RuntimeCapabilityDetection {
         }
 
         public static func setTestHasMicrophoneInput(_ value: Bool?) {
-            setThreadOptionalBool(key: "testMediaHasMicrophoneInput", value: value)
+            mutableCapabilityOverrides().testMediaHasMicrophoneInput = value
         }
 
         public static func setTestSupportsScreenCapture(_ value: Bool?) {
-            setThreadOptionalBool(key: "testMediaSupportsScreenCapture", value: value)
+            mutableCapabilityOverrides().testMediaSupportsScreenCapture = value
         }
     }
 
@@ -865,11 +823,11 @@ public struct RuntimeCapabilityDetection {
         }
 
         public static func setTestCanReadStrings(_ value: Bool?) {
-            setThreadOptionalBool(key: "testPasteboardCanReadStrings", value: value)
+            mutableCapabilityOverrides().testPasteboardCanReadStrings = value
         }
 
         public static func setTestCanWriteStrings(_ value: Bool?) {
-            setThreadOptionalBool(key: "testPasteboardCanWriteStrings", value: value)
+            mutableCapabilityOverrides().testPasteboardCanWriteStrings = value
         }
     }
 
@@ -923,24 +881,15 @@ public struct RuntimeCapabilityDetection {
         }
 
         public static func setTestHasCamera(_ value: Bool?) {
-            setThreadOptionalBool(key: "testPhotosHasCamera", value: value)
+            mutableCapabilityOverrides().testPhotosHasCamera = value
         }
 
         public static func setTestIsPhotoLibraryPickerAvailable(_ value: Bool?) {
-            setThreadOptionalBool(key: "testPhotosIsPhotoLibraryPickerAvailable", value: value)
+            mutableCapabilityOverrides().testPhotosIsPhotoLibraryPickerAvailable = value
         }
 
         public static func setTestSupportsLiveDataScanner(_ value: Bool?) {
-            setThreadOptionalBool(key: "testPhotosSupportsLiveDataScanner", value: value)
-        }
-    }
-
-    /// Shared thread-local `Bool?` override helper for namespaced surfaces (#253).
-    private static func setThreadOptionalBool(key: String, value: Bool?) {
-        if let value {
-            Thread.current.threadDictionary[key] = value
-        } else {
-            Thread.current.threadDictionary.removeObject(forKey: key)
+            mutableCapabilityOverrides().testPhotosSupportsLiveDataScanner = value
         }
     }
 
@@ -1274,13 +1223,14 @@ public struct RuntimeCapabilityDetection {
     // MARK: - Test override hooks (public for consumer app tests; Resolves #311)
 
     private static func logIgnoredTestOverrideOnce(key: String, message: String) {
-        if Thread.current.threadDictionary[key] == nil {
-            Thread.current.threadDictionary[key] = true
-            os_log("%{public}@", log: .default, type: .info, message)
-        }
+        let bag = mutableCapabilityOverrides()
+        guard !bag.loggedIgnoredTestOverrideKeys.contains(key) else { return }
+        bag.loggedIgnoredTestOverrideKeys.append(key)
+        os_log("%{public}@", log: .default, type: .info, message)
     }
 
     private static func writeTestTouchSupportOverride(_ value: Bool?) {
+        let bag = mutableCapabilityOverrides()
         #if os(iOS) || os(watchOS)
         switch value {
         case .some(false):
@@ -1289,25 +1239,17 @@ public struct RuntimeCapabilityDetection {
                 message: "SixLayerFramework: setTestTouchSupport(false) ignored on touch-first platform (primary touch is a platform guarantee)."
             )
         default:
-            Thread.current.threadDictionary.removeObject(forKey: "SixLayerFramework.didLogIgnoredTestTouchFalse")
+            bag.loggedIgnoredTestOverrideKeys.removeAll { $0 == "SixLayerFramework.didLogIgnoredTestTouchFalse" }
         }
         #endif
-        if let value {
-            Thread.current.threadDictionary["testTouchSupport"] = value
-        } else {
-            Thread.current.threadDictionary.removeObject(forKey: "testTouchSupport")
-        }
+        bag.testTouchSupport = value
     }
 
     private static func writeTestAssistiveTouchOverride(_ value: Bool?) {
-        if let value {
-            Thread.current.threadDictionary["testAssistiveTouch"] = value
-        } else {
-            Thread.current.threadDictionary.removeObject(forKey: "testAssistiveTouch")
-        }
+        mutableCapabilityOverrides().testAssistiveTouch = value
     }
 
-    /// Override touch support detection for testing (thread-local).
+    /// Override touch support detection for testing (task-local).
     ///
     /// **iOS and watchOS:** `false` is ignored — touch is a platform guarantee. On other platforms,
     /// forcing touch off also clears AssistiveTouch (precursor dependency). Haptics are independent.
@@ -1320,38 +1262,22 @@ public struct RuntimeCapabilityDetection {
 
     /// Override haptic feedback detection for testing
     public static func setTestHapticFeedback(_ value: Bool?) {
-        if let value {
-            Thread.current.threadDictionary["testHapticFeedback"] = value
-        } else {
-            Thread.current.threadDictionary.removeObject(forKey: "testHapticFeedback")
-        }
+        mutableCapabilityOverrides().testHapticFeedback = value
     }
 
     /// Override hover detection for testing
     public static func setTestHover(_ value: Bool?) {
-        if let value {
-            Thread.current.threadDictionary["testHover"] = value
-        } else {
-            Thread.current.threadDictionary.removeObject(forKey: "testHover")
-        }
+        mutableCapabilityOverrides().testHover = value
     }
 
     /// Override VoiceOver detection for testing
     public static func setTestVoiceOver(_ value: Bool?) {
-        if let value {
-            Thread.current.threadDictionary["testVoiceOver"] = value
-        } else {
-            Thread.current.threadDictionary.removeObject(forKey: "testVoiceOver")
-        }
+        mutableCapabilityOverrides().testVoiceOver = value
     }
 
     /// Override Switch Control detection for testing
     public static func setTestSwitchControl(_ value: Bool?) {
-        if let value {
-            Thread.current.threadDictionary["testSwitchControl"] = value
-        } else {
-            Thread.current.threadDictionary.removeObject(forKey: "testSwitchControl")
-        }
+        mutableCapabilityOverrides().testSwitchControl = value
     }
 
     /// Override AssistiveTouch detection for testing.
@@ -1379,52 +1305,19 @@ public struct RuntimeCapabilityDetection {
 
     /// Override high contrast mode detection for testing
     public static func setTestHighContrast(_ value: Bool?) {
-        if let value {
-            Thread.current.threadDictionary["testHighContrast"] = value
-        } else {
-            Thread.current.threadDictionary.removeObject(forKey: "testHighContrast")
-        }
+        mutableCapabilityOverrides().testHighContrast = value
     }
 
     #if os(iOS)
     /// Override iOS hover-device capability probe (separate from `setTestHover` result override).
     public static func setTestiOSHoverDeviceCapability(_ value: Bool?) {
-        if let value {
-            Thread.current.threadDictionary["testiOSHoverDeviceCapability"] = value
-        } else {
-            Thread.current.threadDictionary.removeObject(forKey: "testiOSHoverDeviceCapability")
-        }
+        mutableCapabilityOverrides().testiOSHoverDeviceCapability = value
     }
     #endif
 
-    /// Clear all capability overrides for testing (`nil` clears by **removing** thread-dictionary entries).
+    /// Clear all capability overrides for testing (`nil` clears task-local override slots).
     public static func clearAllCapabilityOverrides() {
-        setTestTouchSupport(nil)
-        setTestHapticFeedback(nil)
-        setTestHover(nil)
-        setTestVoiceOver(nil)
-        setTestSwitchControl(nil)
-        setTestAssistiveTouch(nil)
-        setTestHighContrast(nil)
-        #if os(iOS)
-        setTestiOSHoverDeviceCapability(nil)
-        #endif
-        Photos.setTestHasCamera(nil)
-        Photos.setTestIsPhotoLibraryPickerAvailable(nil)
-        Photos.setTestSupportsLiveDataScanner(nil)
-        Vision.setTestIsFrameworkAvailable(nil)
-        Vision.setTestSupportsOCR(nil)
-        Vision.setTestSupportsImageAnalyzer(nil)
-        Vision.setTestSupportsDocumentCamera(nil)
-        Files.setTestSupportsSecurityScopedResources(nil)
-        Files.setTestSupportsSecurityScopedBookmarks(nil)
-        Network.setTestIsConstrained(nil)
-        Network.setTestIsExpensive(nil)
-        Network.setTestHasPathSnapshot(nil)
-        Media.setTestHasMicrophoneInput(nil)
-        Media.setTestSupportsScreenCapture(nil)
-        Pasteboard.setTestCanReadStrings(nil)
-        Pasteboard.setTestCanWriteStrings(nil)
+        RuntimeCapabilityHarness.clearAllTestCapabilityOverrides()
         CapabilityOverride.clearThreadIsolationFromCurrentThread()
         RuntimeCapabilityHarness.scrubLegacyCapabilityKeysFromUserDefaultsStandard()
     }

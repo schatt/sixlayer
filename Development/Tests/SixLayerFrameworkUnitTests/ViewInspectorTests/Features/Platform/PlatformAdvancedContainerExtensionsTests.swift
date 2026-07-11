@@ -3,7 +3,7 @@ import SwiftUI
 @testable import SixLayerFramework
 
 /// `PlatformAdvancedContainerExtensions` styling modifiers (Issue #170). Grouped; keep <=10 tests.
-@Suite("Platform Advanced Container Extensions")
+@Suite("Platform Advanced Container Extensions", HostedViewTestIsolationTrait())
 open class PlatformAdvancedContainerExtensionsTests: BaseTestClass {
 
     @MainActor

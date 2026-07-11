@@ -36,7 +36,7 @@ import SwiftUI
 /// Tests that accessibility workflow views actually render correctly
 /// NOTE: Not marked @MainActor on class to allow parallel execution
 /// CRITICAL: These tests MUST run with xcodebuild test (not swift test) to catch rendering issues
-@Suite("Accessibility Workflow Rendering")
+@Suite("Accessibility Workflow Rendering", HostedViewTestIsolationTrait())
 final class AccessibilityWorkflowRenderingTests: BaseTestClass {
     
     // MARK: - Test Helpers

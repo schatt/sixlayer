@@ -24,7 +24,7 @@ import ViewInspector
 /// BUSINESS PURPOSE: Ensure automatic accessibility labels work in SwiftUI views
 /// TESTING SCOPE: AutomaticComplianceModifier and platform functions
 /// METHODOLOGY: Test each function, verify label is applied via ViewInspector
-@Suite("Automatic Accessibility Labels - ViewInspector")
+@Suite("Automatic Accessibility Labels - ViewInspector", HostedViewTestIsolationTrait())
 /// NOTE: Not marked @MainActor on class to allow parallel execution
 /// Renamed from AutomaticAccessibilityLabelTests to avoid duplicate type name with Features/Accessibility/AutomaticAccessibilityLabelTests.swift in the same test target.
 open class AutomaticAccessibilityLabelViewInspectorTests: BaseTestClass {

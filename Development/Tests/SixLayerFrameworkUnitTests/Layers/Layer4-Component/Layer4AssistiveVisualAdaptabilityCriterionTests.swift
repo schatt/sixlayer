@@ -22,7 +22,7 @@ import AVFoundation
 
 #if canImport(UIKit) && !os(watchOS)
 
-@Suite("Layer 4 assistive & visual adaptability (#255)")
+@Suite("Layer 4 assistive & visual adaptability (#255)", HostedViewTestIsolationTrait())
 open class Layer4AssistiveVisualAdaptabilityCriterionTests: BaseTestClass {
 
     @MainActor

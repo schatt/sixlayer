@@ -8,7 +8,7 @@ import SwiftUI
 /// BUSINESS PURPOSE: Ensure all OCR Layer 1 semantic functions generate proper accessibility identifiers
 /// TESTING SCOPE: All functions in PlatformOCRSemanticLayer1.swift
 /// METHODOLOGY: Test each function on both iOS and macOS platforms as required by mandatory testing guidelines
-@Suite("Platform OCR Semantic Layer")
+@Suite("Platform OCR Semantic Layer", HostedViewTestIsolationTrait())
 /// NOTE: Not marked @MainActor on class to allow parallel execution
 open class PlatformOCRSemanticLayer1Tests: BaseTestClass {
     

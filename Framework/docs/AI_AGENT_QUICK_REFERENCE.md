@@ -111,7 +111,15 @@ platformResponsiveCard_L1<Content: View>(
 
 ### Navigation
 ```swift
-// ✅ App navigation (device-aware) - Layer 1
+// ✅ App navigation — preferred managed adaptive sidebar (GitHub #331)
+platformPresentManagedAppNavigation_L1(
+    state: $navState,
+    descriptors: descriptors
+) { selected in
+    DetailView(pane: selected)
+}
+
+// ✅ App navigation escape hatch (opaque ViewBuilder sidebar) - Layer 1
 platformPresentAppNavigation_L1<SidebarContent: View, DetailContent: View>(
     sidebar: SidebarContent,
     detail: DetailContent
@@ -475,7 +483,7 @@ platformPresentItemCollection_L1(
 | `HStack { ... }` | `platformHStackContainer()` or Layer 1 function |
 | `TextField(...)` in forms | `platformPresentFormData_L1()` |
 | `List(items) { ... }` | `platformPresentItemCollection_L1()` |
-| `NavigationView` | `platformPresentNavigationStack_L1()` or `platformPresentAppNavigation_L1()` or `platformNavigation_L4()` (as component) |
+| `NavigationView` | `platformPresentNavigationStack_L1()` or `platformPresentManagedAppNavigation_L1()` (labeled lists) / `platformPresentAppNavigation_L1()` (custom sidebar) or `platformNavigation_L4()` (as component) |
 | `Color.red` | `Color.platformLabel` or other `Color.platform*` |
 | `Font.system(size:)` | `Font.system(size:)` (this is OK) |
 | `Image(...)` | `Image(...)` (SwiftUI Image is OK) |

@@ -6,12 +6,66 @@ import SwiftUI
 import ViewInspector
 #endif
 @testable import SixLayerFramework
+
+#if canImport(ViewInspector)
+/// Hosts `DynamicFormViewInner` with an explicit `DynamicFormState` for ViewInspector submit tests.
+/// ViewInspector does not evaluate custom `@Environment` keys, so injected environment formState
+/// must be exercised through the same inner view `DynamicFormView` uses after resolving environment.
+@MainActor
+private struct DynamicFormInnerInjectedStateTestHost: View {
+    @ObservedObject var formState: DynamicFormState
+    let configuration: DynamicFormConfiguration
+    let onSubmit: ([String: Any]) -> Void
+    @State private var showImagePicker = false
+    @State private var isProcessingOCR = false
+    @State private var ocrError: String? = nil
+    @State private var batchOCRRequest: BatchOCRRequest? = nil
+
+    var body: some View {
+        DynamicFormViewInner(
+            formState: formState,
+            configuration: configuration,
+            onSubmit: onSubmit,
+            onEntityCreated: nil,
+            onError: nil,
+            entityType: nil,
+            showImagePicker: $showImagePicker,
+            isProcessingOCR: $isProcessingOCR,
+            ocrError: $ocrError,
+            batchOCRRequest: $batchOCRRequest
+        )
+    }
+}
+
+@MainActor
+private func tapDynamicFormSubmitButton<V: View>(
+    in view: V,
+    submitLabel: String = "Submit"
+) {
+    _ = withInspectedView(view) { inspector in
+        let buttons: [ViewInspector.InspectableView<ViewInspector.ViewType.Button>] = {
+            if let inner = try? inspector.view(DynamicFormViewInner.self) {
+                return inner.findAll(ViewInspector.ViewType.Button.self)
+            }
+            return inspector.findAll(ViewInspector.ViewType.Button.self)
+        }()
+        for button in buttons {
+            let labelText = (try? button.labelView().find(ViewInspector.ViewType.Text.self).string()) ?? ""
+            if labelText == submitLabel {
+                try? button.tap()
+                break
+            }
+        }
+    }
+}
+#endif
+
 /// Tests for DynamicFormView.swift
 /// 
 /// BUSINESS PURPOSE: Ensure DynamicFormView generates proper accessibility identifiers
 /// TESTING SCOPE: All components in DynamicFormView.swift
 /// METHODOLOGY: Test each component on both iOS and macOS platforms as required by mandatory testing guidelines
-@Suite("Dynamic Form View")
+@Suite("Dynamic Form View", HostedViewTestIsolationTrait())
 /// NOTE: Not marked @MainActor on class to allow parallel execution
 open class DynamicFormViewTests: BaseTestClass {
     
@@ -94,7 +148,7 @@ open class DynamicFormViewTests: BaseTestClass {
                 let log = isolated.getDebugLog()
                 if log.localizedCaseInsensitiveContains("batchocrbutton") { return true }
                 if hostedUIKitAccessibilityHierarchyContains(root: hosted, predicate: { view in
-                    (view.accessibilityLabel ?? "").localizedCaseInsensitiveContains("scan document")
+                    view.hostedAccessibilityLabelText.localizedCaseInsensitiveContains("scan document")
                 }) {
                     return true
                 }
@@ -2618,23 +2672,19 @@ open class DynamicFormViewTests: BaseTestClass {
         injectedFormState.setValue("Alice", for: "name")
         
         var submittedValues: [String: Any]?
-        let view = DynamicFormView(configuration: configuration, onSubmit: { submittedValues = $0 })
+        let onSubmit: ([String: Any]) -> Void = { submittedValues = $0 }
+        _ = DynamicFormView(configuration: configuration, onSubmit: onSubmit)
             .environment(\.dynamicFormState, injectedFormState)
         
         #if canImport(ViewInspector)
-        _ = withInspectedView(AnyView(view)) { inspector in
-            let buttons = inspector.findAll(ViewInspector.ViewType.Button.self)
-            for button in buttons {
-                let labelText = (try? button.labelView().find(ViewInspector.ViewType.Text.self).string()) ?? ""
-                if labelText == "Submit" {
-                    try? button.tap()
-                    break
-                }
-            }
-        }
-        if submittedValues != nil {
-            #expect(submittedValues?["name"] as? String == "Alice", "onSubmit should receive injected formState's fieldValues")
-        }
+        let host = DynamicFormInnerInjectedStateTestHost(
+            formState: injectedFormState,
+            configuration: configuration,
+            onSubmit: onSubmit
+        )
+        tapDynamicFormSubmitButton(in: host)
+        #expect(submittedValues != nil, "Submit tap should invoke onSubmit")
+        #expect(submittedValues?["name"] as? String == "Alice", "onSubmit should receive injected formState's fieldValues")
         #else
         #expect(Bool(true), "View created with injected formState")
         #endif
@@ -2710,23 +2760,20 @@ open class DynamicFormViewTests: BaseTestClass {
         injectedFormState.setValue(testImage, for: imageFieldId)
         
         var submittedValues: [String: Any]?
-        let view = DynamicFormView(configuration: configuration, onSubmit: { submittedValues = $0 })
+        let onSubmit: ([String: Any]) -> Void = { submittedValues = $0 }
+        _ = DynamicFormView(configuration: configuration, onSubmit: onSubmit)
             .environment(\.dynamicFormState, injectedFormState)
         
         #if canImport(ViewInspector)
-        _ = withInspectedView(AnyView(view)) { inspector in
-            let buttons = inspector.findAll(ViewInspector.ViewType.Button.self)
-            for button in buttons {
-                let labelText = (try? button.labelView().find(ViewInspector.ViewType.Text.self).string()) ?? ""
-                guard labelText == "Submit" else { continue }
-                try? button.tap()
-                break
-            }
-        }
+        let host = DynamicFormInnerInjectedStateTestHost(
+            formState: injectedFormState,
+            configuration: configuration,
+            onSubmit: onSubmit
+        )
+        tapDynamicFormSubmitButton(in: host)
+        #expect(submittedValues != nil, "Submit tap should invoke onSubmit")
         let submittedImage = submittedValues?[imageFieldId] as? PlatformImage
-        if submittedValues != nil {
-            #expect(submittedImage != nil, "onSubmit should include image when image field is set")
-        }
+        #expect(submittedImage != nil, "onSubmit should include image when image field is set")
         #else
         #expect(Bool(true), "View with image field and injected formState builds")
         #endif

@@ -8,7 +8,7 @@ import SwiftUI
 /// BUSINESS PURPOSE: Ensure FormWizardView generates proper accessibility identifiers
 /// TESTING SCOPE: All components in FormWizardView.swift
 /// METHODOLOGY: Test each component on both iOS and macOS platforms as required by mandatory testing guidelines
-@Suite("Form Wizard View")
+@Suite("Form Wizard View", HostedViewTestIsolationTrait())
 /// NOTE: Not marked @MainActor on class to allow parallel execution
 open class FormWizardViewTests: BaseTestClass {
     

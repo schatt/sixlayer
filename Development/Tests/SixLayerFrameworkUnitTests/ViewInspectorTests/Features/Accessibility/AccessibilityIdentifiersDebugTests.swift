@@ -5,7 +5,7 @@ import SwiftUI
 @testable import SixLayerFramework
 /// Debug Test: Check if .automaticCompliance() works at all
 /// NOTE: Not marked @MainActor on class to allow parallel execution
-@Suite("Accessibility Identifiers Debug")
+@Suite("Accessibility Identifiers Debug", HostedViewTestIsolationTrait())
 open class AccessibilityIdentifiersDebugTests: BaseTestClass {
     @Test @MainActor func testDirectAutomaticAccessibilityIdentifiersWorks() async {
         initializeTestConfig()

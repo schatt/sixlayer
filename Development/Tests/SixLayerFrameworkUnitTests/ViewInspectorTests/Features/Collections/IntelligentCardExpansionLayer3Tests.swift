@@ -8,7 +8,7 @@ import SwiftUI
 /// BUSINESS PURPOSE: Ensure Layer 3 card expansion strategy functions generate proper accessibility identifiers
 /// TESTING SCOPE: All functions in IntelligentCardExpansionLayer3.swift
 /// METHODOLOGY: Test each function on both iOS and macOS platforms as required by mandatory testing guidelines
-@Suite("Intelligent Card Expansion Layer")
+@Suite("Intelligent Card Expansion Layer", HostedViewTestIsolationTrait())
 /// NOTE: Not marked @MainActor on class to allow parallel execution
 open class IntelligentCardExpansionLayer3Tests: BaseTestClass {
     

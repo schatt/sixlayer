@@ -8,7 +8,7 @@ import SwiftUI
 /// Edge case tests for accessibility identifier generation bug fix
 /// These tests ensure our fix handles all edge cases properly
 /// NOTE: Not marked @MainActor on class to allow parallel execution
-@Suite("Accessibility Identifier Edge Case")
+@Suite("Accessibility Identifier Edge Case", HostedViewTestIsolationTrait())
 open class AccessibilityIdentifierEdgeCaseTests: BaseTestClass {
     // MARK: - Edge Case 1: Empty String Parameters
     

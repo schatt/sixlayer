@@ -43,6 +43,19 @@ public extension NavigationSidebarProfile {
     )
 }
 
+/// Min/ideal/max widths for a `NavigationSplitView` column (GitHub #330).
+public struct NavigationSplitColumnSizing: Sendable, Equatable {
+    public let min: CGFloat
+    public let ideal: CGFloat
+    public let max: CGFloat
+
+    public init(min: CGFloat, ideal: CGFloat, max: CGFloat) {
+        self.min = min
+        self.ideal = ideal
+        self.max = max
+    }
+}
+
 public enum NavigationLayoutPolicy: Sendable {
     case automatic
     case preferOuter
@@ -218,6 +231,31 @@ public enum NavigationLayoutResolver {
         )
     }
 
+    /// Single sidebar + detail for app navigation (GitHub #330). Does not reserve a second nested sidebar.
+    private static func resolveLayer4AppNavigationShell(
+        availableWidth: CGFloat,
+        minimumDetailWidth: CGFloat,
+        sidebarProfile: NavigationSidebarProfile = .textSidebar
+    ) -> NavigationLayoutResolution {
+        let safeAvailableWidth = max(0, availableWidth)
+        let safeDetailMin = max(0, minimumDetailWidth)
+        let sidebarWidth = resolvedWidth(for: sidebarProfile, availableWidth: safeAvailableWidth)
+        if sidebarWidth + safeDetailMin <= safeAvailableWidth {
+            return NavigationLayoutResolution(
+                mode: .sideBySide,
+                outerWidth: sidebarWidth,
+                innerWidth: 0,
+                detailWidth: max(0, safeAvailableWidth - sidebarWidth)
+            )
+        }
+        return NavigationLayoutResolution(
+            mode: .compactCollapsedOuter,
+            outerWidth: sidebarWidth,
+            innerWidth: 0,
+            detailWidth: max(0, safeAvailableWidth)
+        )
+    }
+
     /// Preset resolution for the Layer 4 settings container.
     public static func resolveSettingsContainer(availableWidth: CGFloat) -> NavigationLayoutResolution {
         resolveLayer4NestedSplitShell(
@@ -226,20 +264,91 @@ public enum NavigationLayoutResolver {
         )
     }
 
-    /// Preset resolution for the Layer 4 app navigation split shell (same contract as `resolveSettingsContainer`).
+    /// Preset resolution for the Layer 4 app navigation split shell (single sidebar + detail; GitHub #330).
+    /// Settings nested shells keep ``resolveSettingsContainer(availableWidth:)``.
     public static func resolveAppNavigationShell(availableWidth: CGFloat) -> NavigationLayoutResolution {
-        resolveLayer4NestedSplitShell(
+        resolveLayer4AppNavigationShell(
             availableWidth: availableWidth,
             minimumDetailWidth: layer4NestedSplitShellMinimumDetailWidth
         )
     }
 
-    /// Same contract as ``resolveSettingsContainer(availableWidth:stressMetrics:)`` for app navigation shell parity (#205 / #208).
+    /// Same contract as ``resolveAppNavigationShell(availableWidth:)`` with stress metrics folded into detail minimum (#208 / #330).
     public static func resolveAppNavigationShell(
         availableWidth: CGFloat,
         stressMetrics: NavigationLayoutStressMetrics
     ) -> NavigationLayoutResolution {
-        resolveSettingsContainer(availableWidth: availableWidth, stressMetrics: stressMetrics)
+        let minDetail = effectiveDetailMinimumWidthForNestedSplit(stressMetrics: stressMetrics)
+        return resolveLayer4AppNavigationShell(
+            availableWidth: availableWidth,
+            minimumDetailWidth: minDetail
+        )
+    }
+
+    /// Column min/ideal/max for app-nav `NavigationSplitView` sidebar; `nil` when even the shrink floor + detail cannot fit (#330).
+    /// Ideal shrinks with available width so the column tracks the window instead of parking a sticky min offscreen.
+    public static func appNavigationSidebarColumnSizing(
+        availableWidth: CGFloat,
+        profile: NavigationSidebarProfile = .textSidebar,
+        minimumDetailWidth: CGFloat = layer4NestedSplitShellMinimumDetailWidth,
+        shrinkFloor: CGFloat = NavigationSidebarProfile.iconRail.minWidth
+    ) -> NavigationSplitColumnSizing? {
+        guard availableWidth.isFinite, availableWidth > 0 else { return nil }
+        let floor = max(0, shrinkFloor)
+        let detailMin = max(0, minimumDetailWidth)
+        guard availableWidth >= floor + detailMin else { return nil }
+
+        let profileIdeal = resolvedWidth(for: profile, availableWidth: availableWidth)
+        let budgetIdeal = availableWidth - detailMin
+        let ideal = min(profile.maxWidth, max(floor, min(profileIdeal, budgetIdeal)))
+        return NavigationSplitColumnSizing(
+            min: floor,
+            ideal: ideal,
+            max: profile.maxWidth
+        )
+    }
+
+    /// Rendering profile for framework-owned app-nav sidebar rows from column ideal width (GitHub #331).
+    /// Steps `textSidebar` → `compactList` → `iconRail` as the column narrows.
+    public static func activeSidebarRenderingProfile(columnIdealWidth: CGFloat) -> NavigationSidebarProfile {
+        let width = columnIdealWidth.isFinite ? columnIdealWidth : 0
+        if width >= NavigationSidebarProfile.textSidebar.minWidth {
+            return .textSidebar
+        }
+        if width >= NavigationSidebarProfile.compactList.minWidth {
+            return .compactList
+        }
+        return .iconRail
+    }
+
+    /// Rendering profile from measured shell available width via ``appNavigationSidebarColumnSizing`` (#331).
+    public static func activeSidebarRenderingProfile(availableWidth: CGFloat) -> NavigationSidebarProfile {
+        guard let sizing = appNavigationSidebarColumnSizing(availableWidth: availableWidth) else {
+            return .iconRail
+        }
+        return activeSidebarRenderingProfile(columnIdealWidth: sizing.ideal)
+    }
+
+    /// Canonical Layer 4 UI presentation for **app navigation** available width (#330).
+    public static func layer4AppNavigationCompactPresentation(
+        forAvailableWidth width: CGFloat
+    ) -> NavigationLayoutCompactPresentation {
+        NavigationLayoutCompactPresentation(resolution: resolveAppNavigationShell(availableWidth: width))
+    }
+
+    /// App-nav compact presentation after resize, preserving prior compact mode across churn (#208 / #330).
+    public static func layer4AppNavigationCompactPresentationForTransition(
+        availableWidth: CGFloat,
+        previousPresentation: NavigationLayoutCompactPresentation
+    ) -> NavigationLayoutCompactPresentation {
+        let fresh = layer4AppNavigationCompactPresentation(forAvailableWidth: availableWidth)
+        if fresh == .fullSplit {
+            return .fullSplit
+        }
+        if previousPresentation == .detailOnlyCollapsedInner {
+            return .detailOnlyCollapsedInner
+        }
+        return fresh
     }
 
     /// Same as ``resolveSettingsContainer(availableWidth:)`` but with **stress metrics** folded into the effective minimum detail width (#208).

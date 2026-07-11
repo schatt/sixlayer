@@ -25,7 +25,7 @@ import SwiftUI
 //  - Test cross-platform consistency
 //
 
-@Suite("Platform Toolbar Placement Helpers")
+@Suite("Platform Toolbar Placement Helpers", HostedViewTestIsolationTrait())
 open class PlatformToolbarPlacementTests: BaseTestClass {
     
     // MARK: - platformConfirmationActionPlacement Tests

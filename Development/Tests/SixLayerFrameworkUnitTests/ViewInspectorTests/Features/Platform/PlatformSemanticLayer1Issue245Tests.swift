@@ -4,7 +4,7 @@ import Testing
 
 /// Issue #245 / gh-243: generic Layer 1 presentation surfaces must not use `automaticCompliance(named:)`
 /// over caller-owned or runtime-unknown content (NamedAutomaticComplianceModifier masks inner a11y).
-@Suite("Platform Semantic Layer 1 — Issue 245")
+@Suite("Platform Semantic Layer 1 — Issue 245", HostedViewTestIsolationTrait())
 open class PlatformSemanticLayer1Issue245Tests: BaseTestClass {
 
     private nonisolated static func issue245_namedAutomaticComplianceFingerprint(componentName: String) -> String {

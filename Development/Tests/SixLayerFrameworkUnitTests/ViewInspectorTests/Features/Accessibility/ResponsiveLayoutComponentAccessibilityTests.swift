@@ -12,7 +12,7 @@ import SwiftUI
 @testable import SixLayerFramework
 
 /// NOTE: Not marked @MainActor on class to allow parallel execution
-@Suite("Responsive Layout Component Accessibility")
+@Suite("Responsive Layout Component Accessibility", HostedViewTestIsolationTrait())
 open class ResponsiveLayoutComponentAccessibilityTests: BaseTestClass {
     
     // MARK: - ResponsiveGrid Tests

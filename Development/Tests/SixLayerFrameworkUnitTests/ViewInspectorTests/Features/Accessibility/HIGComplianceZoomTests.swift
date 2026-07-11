@@ -11,7 +11,7 @@ import Testing
 import SwiftUI
 @testable import SixLayerFramework
 
-@Suite("HIG Compliance - Zoom Support")
+@Suite("HIG Compliance - Zoom Support", HostedViewTestIsolationTrait())
 open class HIGComplianceZoomTests: BaseTestClass {
 
     @MainActor

@@ -34,7 +34,8 @@ import AppKit
 
 
 /// NOTE: Not marked @MainActor on class to allow parallel execution
-@Suite("Platform Photo Components Layer Integration")
+/// UIImagePickerController hosting is serialized on iOS to avoid parallel simulator crashes (#334).
+@Suite("Platform Photo Components Layer Integration", HostedViewTestIsolationTrait(), .serialized)
 open class PlatformPhotoComponentsLayer4IntegrationTests: BaseTestClass {
     
     // MARK: - Integration Tests for Camera Interface
@@ -88,17 +89,26 @@ open class PlatformPhotoComponentsLayer4IntegrationTests: BaseTestClass {
     /// TESTING SCOPE: CameraAuthorizationState and onCameraAuthorizationState callback in platformCameraInterface_L4.
     /// METHODOLOGY: Host the camera interface with callback; makeUIViewController invokes callback with current state.
     #if os(iOS)
+    @Test @MainActor func testResolvedCameraAuthorizationState_isKnownCase() {
+        let state = resolvedCameraAuthorizationStateForLayer4()
+        let validStates: [CameraAuthorizationState] = [.authorized, .notDetermined, .denied, .restricted, .unavailable]
+        #expect(validStates.contains(state), "State should be a known authorization case, got: \(state)")
+    }
+
     @Test @MainActor func testPlatformCameraInterface_InvokesOnCameraAuthorizationState() {
         var receivedState: CameraAuthorizationState?
         let cameraInterface = PlatformPhotoComponentsLayer4.platformCameraInterface_L4(
             onImageCaptured: { _ in },
             onCameraAuthorizationState: { state in receivedState = state }
         )
-        _ = hostRootPlatformView(cameraInterface, forceLayout: false)
-        #expect(receivedState != nil, "onCameraAuthorizationState should be invoked when view is created")
-        let state = receivedState!
+        _ = hostRootPlatformView(cameraInterface, forceLayout: true)
+        guard let state = receivedState else {
+            Issue.record("onCameraAuthorizationState should be invoked when view is created")
+            return
+        }
         let validStates: [CameraAuthorizationState] = [.authorized, .notDetermined, .denied, .restricted, .unavailable]
         #expect(validStates.contains(state), "State should be one of authorized/notDetermined/denied/restricted/unavailable, got: \(state)")
+        #expect(state == resolvedCameraAuthorizationStateForLayer4())
     }
     #endif
     

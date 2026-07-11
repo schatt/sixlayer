@@ -231,10 +231,6 @@ func platformShareMacOSInternal(items: [Any], sourceView: (any View)? = nil) -> 
         return true
     }
     #endif
-    if ProcessInfo.processInfo.arguments.contains("-UITesting")
-        || ProcessInfo.processInfo.environment["XCUI_TESTING"] == "1" {
-        return true
-    }
 
     guard let window = NSApplication.shared.keyWindow,
           let contentView = window.contentView else {
@@ -319,11 +315,6 @@ private func platformShareIOSImperative(
         return true
     }
     #endif
-    if ProcessInfo.processInfo.arguments.contains("-UITesting")
-        || ProcessInfo.processInfo.environment["XCUI_TESTING"] == "1" {
-        onComplete?(true)
-        return true
-    }
 
     guard let windowScene = UIApplication.shared.connectedScenes
         .compactMap({ $0 as? UIWindowScene })

@@ -12,7 +12,7 @@ import SwiftUI
 @testable import SixLayerFramework
 
 /// NOTE: Not marked @MainActor on class to allow parallel execution
-@Suite("Internationalization Service Component Accessibility")
+@Suite("Internationalization Service Component Accessibility", HostedViewTestIsolationTrait())
 open class InternationalizationServiceComponentAccessibilityTests: BaseTestClass {
     
     // MARK: - InternationalizationService Tests

@@ -13,7 +13,7 @@ import SwiftUI
 
 /// NOTE: Not marked @MainActor on class to allow parallel execution
 /// NOTE: Serialized to avoid UI conflicts with hostRootPlatformView
-@Suite(.serialized)
+@Suite(HostedViewTestIsolationTrait())
 open class PhotoSelectionL1Tests: BaseTestClass {
     
     // MARK: - Test Data

@@ -8,7 +8,7 @@ import SwiftUI
 /// BUSINESS PURPOSE: Ensure OCRDisambiguationView generates proper accessibility identifiers
 /// TESTING SCOPE: All components in OCRDisambiguationView.swift
 /// METHODOLOGY: Test each component on both iOS and macOS platforms as required by mandatory testing guidelines
-@Suite("OCR Disambiguation View")
+@Suite("OCR Disambiguation View", HostedViewTestIsolationTrait())
 /// NOTE: Not marked @MainActor on class to allow parallel execution
 open class OCRDisambiguationViewTests: BaseTestClass {
     

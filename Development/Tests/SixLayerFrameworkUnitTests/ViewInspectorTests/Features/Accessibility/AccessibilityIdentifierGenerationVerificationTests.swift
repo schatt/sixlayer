@@ -11,7 +11,7 @@ import ViewInspector
  * TESTING SCOPE: Uses centralized test functions following DRY principles
  * METHODOLOGY: Leverages centralized accessibility testing functions for consistent validation
  */
-@Suite("Accessibility Identifier Generation Verification")
+@Suite("Accessibility Identifier Generation Verification", HostedViewTestIsolationTrait())
 open class AccessibilityIdentifierGenerationVerificationTests: BaseTestClass {
     
     /// BUSINESS PURPOSE: Verify that .automaticCompliance() actually generates identifiers

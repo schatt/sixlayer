@@ -27,7 +27,7 @@ Navigate to the `Framework/` directory and use it as a Swift Package:
 ```swift
 // In your Package.swift
 dependencies: [
-    .package(url: "https://github.com/schatt/sixlayer.git", from: "8.1.0")
+    .package(url: "https://github.com/schatt/sixlayer.git", from: "8.1.1")
 ]
 ```
 
@@ -41,9 +41,12 @@ dependencies: [
 
 The framework is distributed as a Swift Package from the `Framework/` directory. This ensures that only the essential framework code is included when other projects consume it.
 
-## 🆕 Latest Release: v8.1.0
+## 🆕 Latest Release: v8.1.1
 
-### **Minor release**
+### **Patch release**
+🔧 **Patch**: Window/container resize (#330); framework-owned adaptive app-nav sidebar (#331); macOS ViewInspector lane green and parallel-safe capability test hooks (#315). See [RELEASE_v8.1.1.md](Development/RELEASE_v8.1.1.md).
+
+### **Previous Release: v8.1.0 - Minor release**
 🔧 **Minor**: ViewInspector 0.10 test infrastructure — hosted accessibility identifier collection (#314); **SixLayerViewInspectorTestKit** for consumers (#327); typed inspect helpers (#326); deprecated `Inspectable` conformance removal (#328). See [RELEASE_v8.1.0.md](Development/RELEASE_v8.1.0.md).
 
 ### **Previous Release: v8.0.0 - Major release**
@@ -283,8 +286,8 @@ These guides contain critical information about the Layer 1 Semantic Intent phil
 
 ## 📋 Current Status
 
-**Version**: v8.1.0 (Minor)
-**Phase**: Minor release
+**Version**: v8.1.1 (Patch)
+**Phase**: Patch release prep
 **Next**: TBD
 
 ## 🤝 Contributing

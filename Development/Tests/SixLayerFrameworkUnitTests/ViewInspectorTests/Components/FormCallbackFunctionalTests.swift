@@ -9,6 +9,7 @@ import ViewInspector
 #endif
 /// Form callback tests — ViewInspector layer verifies action buttons are reachable in the hierarchy.
 /// Callback invocation under tap is covered by XCUITest/E2E (ViewInspector tap does not run SwiftUI actions reliably).
+@Suite(HostedViewTestIsolationTrait())
 open class FormCallbackFunctionalTests: BaseTestClass {
     
     #if canImport(ViewInspector)

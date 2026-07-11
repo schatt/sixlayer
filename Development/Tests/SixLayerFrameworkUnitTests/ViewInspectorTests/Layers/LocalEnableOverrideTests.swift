@@ -5,7 +5,7 @@ import ViewInspector
 @testable import SixLayerFramework
 /// Test the "global disable, local enable" functionality
 /// NOTE: Not marked @MainActor on class to allow parallel execution
-@Suite("Local Enable Override")
+@Suite("Local Enable Override", HostedViewTestIsolationTrait())
 open class LocalEnableOverrideTests: BaseTestClass {
 
     // BaseTestClass handles setup automatically - no need for custom init

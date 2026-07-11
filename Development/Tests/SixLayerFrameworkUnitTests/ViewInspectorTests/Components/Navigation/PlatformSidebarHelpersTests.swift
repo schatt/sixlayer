@@ -9,7 +9,7 @@ import Testing
 import SwiftUI
 @testable import SixLayerFramework
 
-@Suite("Platform Sidebar Helpers Tests")
+@Suite("Platform Sidebar Helpers Tests", HostedViewTestIsolationTrait())
 struct PlatformSidebarHelpersTests {
     
     // MARK: - platformSidebarPullIndicator Tests

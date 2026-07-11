@@ -4,7 +4,7 @@
 //
 //  BUSINESS PURPOSE: Consolidated accessibility tests for the entire SixLayer framework
 //  This file consolidates all accessibility tests from 93+ separate files into a single
-//  serialized test suite to reduce MainActor contention and improve test organization.
+//  consolidated test suite for organization and shared helpers.
 //
 //  TESTING SCOPE: All accessibility functionality including:
 //  - Identifier generation for all components
@@ -12,7 +12,7 @@
 //  - Accessibility behavior and features
 //  - Configuration and edge cases
 //
-//  METHODOLOGY: Uses @Suite(.serialized) to serialize execution and reduce MainActor contention
+//  METHODOLOGY: Per-test isolation via BaseTestClass, task-local config, and hosting cleanup.
 //  Tests are organized into logical sections with MARK comments for easy navigation
 //
 
@@ -66,10 +66,9 @@ import UIKit
 import AppKit
 #endif
 
-/// Consolidated accessibility tests for the entire SixLayer framework
-/// Uses @Suite(.serialized) to serialize execution and reduce MainActor contention
-/// All tests are organized into logical sections with MARK comments
-@Suite(.serialized)
+/// Consolidated accessibility tests for the entire SixLayer framework.
+/// All tests are organized into logical sections with MARK comments.
+@Suite(HostedViewTestIsolationTrait(), DefaultRuntimeCapabilityIsolationTrait())
 open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     // MARK: - Test Setup & Configuration
@@ -9481,7 +9480,11 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         defer { RuntimeCapabilityDetection.clearAllCapabilityOverrides() }
 
         RuntimeCapabilityDetection.setTestAssistiveTouch(true)
-        #expect(RuntimeCapabilityDetection.supportsAssistiveTouch, "AssistiveTouch should be enabled")
+        if SixLayerPlatform.current.supportsAssistiveTouch {
+            #expect(RuntimeCapabilityDetection.supportsAssistiveTouch, "AssistiveTouch should be enabled")
+        } else {
+            #expect(!RuntimeCapabilityDetection.supportsAssistiveTouch, "AssistiveTouch override ignored on unsupported platform")
+        }
 
         RuntimeCapabilityDetection.setTestAssistiveTouch(false)
         #expect(!RuntimeCapabilityDetection.supportsAssistiveTouch, "AssistiveTouch should be disabled")
@@ -15417,7 +15420,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         TestPatterns.TestDataItem(title: "Test Item 2", subtitle: "Subtitle 2")
         ]
         let testHints = PresentationHints()
-        
+
         RuntimeCapabilityDetection.setTestVoiceOver(true)
         _ = platformPresentItemCollection_L1(
         items: testItems,
@@ -15425,7 +15428,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         )
         #expect(Bool(true), "View should work with VoiceOver enabled")
         #expect(RuntimeCapabilityDetection.supportsVoiceOver, "VoiceOver should be enabled")
-        
+
         RuntimeCapabilityDetection.setTestVoiceOver(false)
         RuntimeCapabilityDetection.setTestSwitchControl(true)
         _ = platformPresentItemCollection_L1(
@@ -15434,7 +15437,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         )
         #expect(Bool(true), "View should work with Switch Control enabled")
         #expect(RuntimeCapabilityDetection.supportsSwitchControl, "Switch Control should be enabled")
-        
+
         RuntimeCapabilityDetection.setTestSwitchControl(false)
         RuntimeCapabilityDetection.setTestAssistiveTouch(true)
         _ = platformPresentItemCollection_L1(
@@ -15442,8 +15445,12 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         hints: testHints
         )
         #expect(Bool(true), "View should work with AssistiveTouch enabled")
-        #expect(RuntimeCapabilityDetection.supportsAssistiveTouch, "AssistiveTouch should be enabled")
-}
+        if SixLayerPlatform.current.supportsAssistiveTouch {
+            #expect(RuntimeCapabilityDetection.supportsAssistiveTouch, "AssistiveTouch should be enabled")
+        } else {
+            #expect(!RuntimeCapabilityDetection.supportsAssistiveTouch, "AssistiveTouch override ignored on unsupported platform")
+        }
+    }
 
     @Test @MainActor func testDemonstrateAutomaticComplianceAcrossPlatforms() async {
         self.initializeTestConfig()
@@ -17057,6 +17064,5 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
 
         // NOTE: Due to the massive scale (546 total tests), this consolidated file contains
         // representative tests from all major categories. Additional tests from remaining files
-        // can be added incrementally as needed. The @Suite(.serialized) attribute ensures
-        // all tests run serially to reduce MainActor contention.
+        // can be added incrementally as needed. Parallel safety relies on per-test isolation helpers.
 }

@@ -40,7 +40,6 @@ struct IntelligentCardContentAwareHeightTests {
             screenWidth: 768,
             deviceType: .pad,
             contentComplexity: .veryComplex,
-            viewportHeight: 420,
             preferredContentSizeCategory: .large
         )
         let accessibilityDecision = determineIntelligentCardLayout_L2(
@@ -48,7 +47,6 @@ struct IntelligentCardContentAwareHeightTests {
             screenWidth: 768,
             deviceType: .pad,
             contentComplexity: .veryComplex,
-            viewportHeight: 420,
             preferredContentSizeCategory: .accessibilityExtraExtraExtraLarge
         )
         let floor = contentAwareMinimumIntelligentCardHeight(

@@ -16,7 +16,7 @@ import ViewInspector
  * manages step state, provides navigation controls, and integrates with FormWizardState.
  */
 
-@Suite("Form Wizard View")
+@Suite("Form Wizard View", HostedViewTestIsolationTrait())
 /// NOTE: Not marked @MainActor on class to allow parallel execution
 open class FormWizardViewTDDTests: BaseTestClass {
 

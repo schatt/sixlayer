@@ -18,7 +18,7 @@ import ViewInspector
  * are complete. Tests cover platform-specific integrations and cross-platform capabilities.
  */
 
-@Suite("Layer 5 Platform Components")
+@Suite("Layer 5 Platform Components", HostedViewTestIsolationTrait())
 /// NOTE: Not marked @MainActor on class to allow parallel execution
 open class Layer5PlatformComponentTDDTests: BaseTestClass {
 

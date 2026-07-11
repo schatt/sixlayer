@@ -176,6 +176,7 @@ public func platformPrint_L4(
 #if os(iOS)
 /// iOS print sheet wrapper
 private struct PrintSheet: UIViewControllerRepresentable {
+    @Binding var isPresented: Bool
     let content: PrintContent
     let options: PrintOptions?
     let onComplete: ((Bool) -> Void)?
@@ -196,20 +197,6 @@ private struct PrintSheet: UIViewControllerRepresentable {
     }
     
     private func presentPrintController(on viewController: UIViewController) {
-        // XCUITest launches the host app with -UITesting / XCUI_TESTING; XCTest is not linked into the app
-        // bundle, so `NSClassFromString("XCTest")` guards elsewhere never fire here. Presenting
-        // UIPrintInteractionController leaves a system modal that UITests often cannot dismiss reliably,
-        // which blocks the rest of the shared-app suite (Issue #193).
-        let skipRealPrintForUITest = ProcessInfo.processInfo.arguments.contains("-UITesting")
-            || ProcessInfo.processInfo.environment["XCUI_TESTING"] == "1"
-        if skipRealPrintForUITest {
-            DispatchQueue.main.async {
-                self.onComplete?(true)
-                viewController.dismiss(animated: false, completion: nil)
-            }
-            return
-        }
-
         // Check if printing is available
         guard UIPrintInteractionController.canPrint(content: content) else {
             print("[SixLayer] Print error: Cannot print content type")
@@ -334,6 +321,7 @@ private struct PlatformPrintL4IOSModifier: ViewModifier {
         content
             .sheet(isPresented: $isPresented) {
                 PrintSheet(
+                    isPresented: $isPresented,
                     content: printContent,
                     options: options,
                     onComplete: onComplete
@@ -349,16 +337,12 @@ private func platformPrintiOS(
     content: PrintContent,
     options: PrintOptions?
 ) -> Bool {
-    // Don't actually print during unit tests (in-process XCTest) or XCUITest host (-UITesting / env).
+    // Don't actually print during unit tests (in-process XCTest).
     #if DEBUG
     if NSClassFromString("XCTest") != nil {
         return true
     }
     #endif
-    if ProcessInfo.processInfo.arguments.contains("-UITesting")
-        || ProcessInfo.processInfo.environment["XCUI_TESTING"] == "1" {
-        return true
-    }
 
     // Check if printing is available
     guard UIPrintInteractionController.canPrint(content: content) else {

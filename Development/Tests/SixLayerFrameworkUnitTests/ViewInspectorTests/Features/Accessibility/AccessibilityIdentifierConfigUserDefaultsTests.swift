@@ -18,7 +18,7 @@ import Testing
 import Foundation
 @testable import SixLayerFramework
 
-@Suite("AccessibilityIdentifierConfig UserDefaults Persistence")
+@Suite("AccessibilityIdentifierConfig UserDefaults Persistence", HostedViewTestIsolationTrait())
 open class AccessibilityIdentifierConfigUserDefaultsTests: BaseTestClass {
     
     // MARK: - Test Setup

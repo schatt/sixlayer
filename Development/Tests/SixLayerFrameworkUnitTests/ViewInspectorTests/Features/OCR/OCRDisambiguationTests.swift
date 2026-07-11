@@ -31,7 +31,7 @@ import ViewInspector
 @testable import SixLayerFramework
 
 /// Tests for OCR disambiguation functionality
-@Suite("OCR Disambiguation")
+@Suite("OCR Disambiguation", HostedViewTestIsolationTrait())
 /// NOTE: Not marked @MainActor on class to allow parallel execution
 open class OCRDisambiguationTDDTests: BaseTestClass {
 
@@ -120,7 +120,7 @@ open class OCRDisambiguationTDDTests: BaseTestClass {
 }
 /// TODO: Implement real tests that test actual OCR disambiguation functionality
 /// NOTE: Not marked @MainActor on class to allow parallel execution
-@Suite("OCR Disambiguation")
+@Suite("OCR Disambiguation", HostedViewTestIsolationTrait())
 open class OCRDisambiguationTests: BaseTestClass {// MARK: - Real OCR Disambiguation Tests (To Be Implemented)
     
     // TODO: Implement tests that actually test OCR disambiguation functionality:

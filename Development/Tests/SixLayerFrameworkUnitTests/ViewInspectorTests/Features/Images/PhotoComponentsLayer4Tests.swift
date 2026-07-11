@@ -36,7 +36,7 @@ import ViewInspector
 #endif
 @testable import SixLayerFramework
 /// NOTE: Not marked @MainActor on class to allow parallel execution
-@Suite("Photo Components Layer")
+@Suite("Photo Components Layer", HostedViewTestIsolationTrait())
 open class PhotoComponentsLayer4Tests: BaseTestClass {
     
     // MARK: - Test Data Setup

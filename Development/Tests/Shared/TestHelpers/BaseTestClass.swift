@@ -35,10 +35,7 @@ import ViewInspector
 /// is acceptable; writes belong on an isolated instance (or a tiny dedicated suite that restores state).
 open class BaseTestClass {
     /// Public initializer required for Swift testing framework to instantiate test classes
-    init() {
-        // BaseTestClass doesn't require any initialization
-        // Subclasses can override if needed
-    }
+    init() {}
     
     /// Isolated test configuration for this test
     /// Set by initializeTestConfig() and used via runWithTaskLocalConfig()
@@ -135,12 +132,25 @@ open class BaseTestClass {
         exposeContentAccessibility: Bool = false,
         accessibilityIdentifierConfig: AccessibilityIdentifierConfig? = nil
     ) -> Any? {
-        return TestSetupUtilities.hostRootPlatformView(
-            view,
-            forceLayout: forceLayout,
-            exposeContentAccessibility: exposeContentAccessibility,
-            accessibilityIdentifierConfig: accessibilityIdentifierConfig
-        )
+        if HostingControllerStorage.session != nil {
+            return TestSetupUtilities.hostRootPlatformView(
+                view,
+                forceLayout: forceLayout,
+                exposeContentAccessibility: exposeContentAccessibility,
+                accessibilityIdentifierConfig: accessibilityIdentifierConfig
+            )
+        }
+        // Class-based @MainActor tests may not inherit suite trait `@TaskLocal` on static entry points.
+        let fallbackSession = HostingSession()
+        return HostingControllerStorage.$session.withValue(fallbackSession) {
+            defer { fallbackSession.tearDownAll() }
+            return TestSetupUtilities.hostRootPlatformView(
+                view,
+                forceLayout: forceLayout,
+                exposeContentAccessibility: exposeContentAccessibility,
+                accessibilityIdentifierConfig: accessibilityIdentifierConfig
+            )
+        }
     }
     
     // MARK: - Test Environment Setup

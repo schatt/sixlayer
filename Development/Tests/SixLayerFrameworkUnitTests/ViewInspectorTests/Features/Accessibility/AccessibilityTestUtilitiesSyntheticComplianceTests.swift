@@ -3,7 +3,7 @@ import SwiftUI
 @testable import SixLayerFramework
 
 /// Harness-level tests for synthetic ID recovery when anonymous `.automaticCompliance()` suppresses wrapper IDs (#222).
-@Suite("AccessibilityTestUtilities synthetic anonymous compliance")
+@Suite("AccessibilityTestUtilities synthetic anonymous compliance", HostedViewTestIsolationTrait())
 struct AccessibilityTestUtilitiesSyntheticComplianceTests {
 
     @Test @MainActor

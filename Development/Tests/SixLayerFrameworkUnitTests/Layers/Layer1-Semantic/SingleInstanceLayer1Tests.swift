@@ -8,7 +8,7 @@ import SwiftUI
 /// Following TDD principles - these tests define the expected behavior
 /// NOTE: Not marked @MainActor on class to allow parallel execution
 /// NOTE: Serialized to avoid UI conflicts with hostRootPlatformView (prevents Xcode hangs)
-@Suite(.serialized)
+@Suite(HostedViewTestIsolationTrait())
 open class SingleInstanceLayer1Tests: BaseTestClass {
     
     // MARK: - Helper Methods

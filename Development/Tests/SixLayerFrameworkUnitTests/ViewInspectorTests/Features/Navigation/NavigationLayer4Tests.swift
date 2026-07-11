@@ -15,7 +15,7 @@ import ViewInspector
 import SwiftUI
 @testable import SixLayerFramework
 /// NOTE: Serialized to avoid UI conflicts with hostRootPlatformView (prevents Xcode crashes from too many @MainActor threads)
-@Suite(.serialized)
+@Suite(HostedViewTestIsolationTrait())
 open class NavigationLayer4Tests: BaseTestClass {
     
     // MARK: - Navigation Link Tests

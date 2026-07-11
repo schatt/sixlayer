@@ -7,6 +7,16 @@ private enum PhoneCardViewportHeightClamp {
     static let maxRows: Int = 2
 }
 
+private enum IntelligentCardResizeBudget {
+    /// Preferred minimum card width when the pane can afford it (GitHub #330).
+    static let preferredMinCardWidth: CGFloat = 200
+    static let maxCardWidth: CGFloat = 400
+    /// Default ceiling when sparse cards grow with viewport height (#330).
+    static let defaultMaxCardHeight: CGFloat = 600
+    /// Grow/shrink with viewport when the grid has at most this many rows (mac/pad).
+    static let sparseMaxRows: Int = 2
+}
+
 /// Layout decision result for intelligent card expansion
 public struct IntelligentCardLayoutDecision: Sendable {
     public let columns: Int
@@ -55,22 +65,35 @@ public func determineIntelligentCardLayout_L2(
     
     // Base calculations
     let layoutPadding: CGFloat = 16
-    let availableWidth = screenWidth - 32 // Account for padding
-    let minCardWidth: CGFloat = 200
-    let maxCardWidth: CGFloat = 400
-    
-    // Determine optimal columns based on device and content
-    let columns = calculateOptimalColumns(
+    let minCardWidth = IntelligentCardResizeBudget.preferredMinCardWidth
+    let safeScreenWidth = max(screenWidth, layoutPadding * 2 + 1)
+    let availableWidth = safeScreenWidth - layoutPadding * 2
+    let maxCardWidth = IntelligentCardResizeBudget.maxCardWidth
+    let spacing = calculateOptimalSpacing(deviceType: deviceType, contentComplexity: contentComplexity)
+
+    // Desired columns from device/content, then cap by width budget (GitHub #330).
+    let desiredColumns = calculateOptimalColumns(
         contentCount: contentCount,
-        screenWidth: screenWidth,
+        screenWidth: safeScreenWidth,
         deviceType: deviceType,
         contentComplexity: contentComplexity,
         availableHeight: viewportHeight
     )
+    let columns = columnsCappedByAvailableWidth(
+        desiredColumns: desiredColumns,
+        availableWidth: availableWidth,
+        minCardWidth: minCardWidth,
+        spacing: spacing,
+        deviceType: deviceType
+    )
     
-    // Calculate spacing and card dimensions
-    let spacing = calculateOptimalSpacing(deviceType: deviceType, contentComplexity: contentComplexity)
-    let cardWidth = max(minCardWidth, min(maxCardWidth, (availableWidth - spacing * CGFloat(columns - 1)) / CGFloat(columns)))
+    // Share of remaining width; may shrink below preferred min when the pane is narrower (#330).
+    let cardWidth = resolvedIntelligentCardWidth(
+        availableWidth: availableWidth,
+        columns: columns,
+        spacing: spacing,
+        maxCardWidth: maxCardWidth
+    )
     let defaultIntrinsicHeight = calculateOptimalHeight(
         cardWidth: cardWidth,
         contentComplexity: contentComplexity,
@@ -111,6 +134,40 @@ public func determineIntelligentCardLayout_L2(
         expansionScale: expansionScale,
         animationDuration: animationDuration
     )
+}
+
+/// Caps desired column count so `minCardWidth` columns fit in `availableWidth` (floor 1).
+/// Phone keeps its own width thresholds; mac/pad (and other multi-column types) are capped (#330).
+private func columnsCappedByAvailableWidth(
+    desiredColumns: Int,
+    availableWidth: CGFloat,
+    minCardWidth: CGFloat,
+    spacing: CGFloat,
+    deviceType: DeviceType
+) -> Int {
+    let desired = max(1, desiredColumns)
+    switch deviceType {
+    case .phone, .watch, .vision:
+        return desired
+    case .pad, .mac, .tv, .car:
+        let denominator = minCardWidth + spacing
+        guard denominator > 0, availableWidth.isFinite, availableWidth > 0 else {
+            return 1
+        }
+        let maxColumns = max(1, Int(floor((availableWidth + spacing) / denominator)))
+        return min(desired, maxColumns)
+    }
+}
+
+/// Card width as a share of available width, capped by max; may fall below preferred min (#330).
+private func resolvedIntelligentCardWidth(
+    availableWidth: CGFloat,
+    columns: Int,
+    spacing: CGFloat,
+    maxCardWidth: CGFloat
+) -> CGFloat {
+    let rawCardWidth = (availableWidth - spacing * CGFloat(max(0, columns - 1))) / CGFloat(max(1, columns))
+    return min(maxCardWidth, max(0, rawCardWidth))
 }
 
 /// Calculate optimal number of columns
@@ -215,6 +272,7 @@ private func calculateOptimalSpacing(deviceType: DeviceType, contentComplexity: 
 
 /// Caps card height when a finite viewport height is supplied so collections can fit without scrolling.
 /// Legacy phone behavior (#249) applies when `viewportHints` is nil; hosts override via `preferFitInViewport` and `maxCardHeight` (#306).
+/// Mac/pad sparse grids grow/shrink with viewport share up to a max (#330); dense grids keep intrinsic height and scroll.
 private func cardHeightRespectingViewport(
     intrinsicHeight: CGFloat,
     contentCount: Int,
@@ -226,14 +284,35 @@ private func cardHeightRespectingViewport(
     viewportHints: CardViewportHints?
 ) -> CGFloat {
     var height = intrinsicHeight
+    let columnCount = max(columns, 1)
+    let rows = max(1, Int(ceil(Double(contentCount) / Double(columnCount))))
+    let maxCardHeight = viewportHints?.maxCardHeight
+    let ceiling = (maxCardHeight?.isFinite == true && (maxCardHeight ?? 0) > 0)
+        ? maxCardHeight!
+        : IntelligentCardResizeBudget.defaultMaxCardHeight
+
+    if supportsSparseViewportHeightTracking(deviceType),
+       let viewport = viewportHeight,
+       viewport.isFinite,
+       viewport > 0,
+       rows <= IntelligentCardResizeBudget.sparseMaxRows {
+        let interRowSpacing = CGFloat(max(0, rows - 1)) * spacing
+        let verticalChrome = layoutPadding * 2 + interRowSpacing
+        let heightBudget = viewport - verticalChrome
+        if heightBudget.isFinite, heightBudget > 0 {
+            let share = heightBudget / CGFloat(rows)
+            if share.isFinite, share > 0 {
+                height = min(ceiling, max(0, share))
+            }
+        }
+    }
+
     let fitInViewport: Bool = {
         if let hints = viewportHints { return hints.preferFitInViewport }
         return deviceType == .phone
     }()
 
     if fitInViewport, let viewport = viewportHeight, viewport.isFinite, viewport > 0 {
-        let columnCount = max(columns, 1)
-        let rows = max(1, Int(ceil(Double(contentCount) / Double(columnCount))))
         let enforceLegacyRowCap = viewportHints == nil
         if !enforceLegacyRowCap || rows <= PhoneCardViewportHeightClamp.maxRows {
             let interRowSpacing = CGFloat(max(0, rows - 1)) * spacing
@@ -242,16 +321,25 @@ private func cardHeightRespectingViewport(
             if heightBudget.isFinite, heightBudget > 0 {
                 let maxHeightPerRow = heightBudget / CGFloat(rows)
                 if maxHeightPerRow.isFinite, maxHeightPerRow > 0 {
-                    height = min(intrinsicHeight, maxHeightPerRow)
+                    height = min(height, maxHeightPerRow)
                 }
             }
         }
     }
 
-    if let cap = viewportHints?.maxCardHeight, cap.isFinite, cap > 0 {
+    if let cap = maxCardHeight, cap.isFinite, cap > 0 {
         height = min(height, cap)
     }
     return height
+}
+
+private func supportsSparseViewportHeightTracking(_ deviceType: DeviceType) -> Bool {
+    switch deviceType {
+    case .mac, .pad:
+        return true
+    case .phone, .vision, .watch, .tv, .car:
+        return false
+    }
 }
 
 /// Applies viewport clamp; when the budget is binding, ignore Dynamic Type uplift (#309).

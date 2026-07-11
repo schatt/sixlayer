@@ -6,7 +6,7 @@ import SwiftUI
 /// BUSINESS PURPOSE: Accessibility tests for AppleHIGComplianceManager.swift classes
 /// Ensures AppleHIGComplianceManager classes generate proper accessibility identifiers
 /// for automated testing and accessibility tools compliance
-@Suite("Apple HIG Compliance Manager Accessibility")
+@Suite("Apple HIG Compliance Manager Accessibility", HostedViewTestIsolationTrait())
 open class AppleHIGComplianceManagerAccessibilityTests: BaseTestClass {
     // MARK: - AppleHIGComplianceManager Tests
     

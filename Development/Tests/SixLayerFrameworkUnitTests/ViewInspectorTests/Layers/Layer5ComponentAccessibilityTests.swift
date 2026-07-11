@@ -10,7 +10,7 @@ import SwiftUI
 //  Tests Layer 5 platform components for accessibility - these are classes with methods that return Views
 //
 
-@Suite("Layer Component Accessibility")
+@Suite("Layer Component Accessibility", HostedViewTestIsolationTrait())
 /// NOTE: Not marked @MainActor on class to allow parallel execution
 open class Layer5ComponentAccessibilityTests: BaseTestClass {
     

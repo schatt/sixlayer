@@ -13,7 +13,7 @@ import SwiftUI
 @testable import SixLayerFramework
 
 /// NOTE: Not marked @MainActor on class to allow parallel execution
-@Suite("Platform Photo Components Layer Component Accessibility")
+@Suite("Platform Photo Components Layer Component Accessibility", HostedViewTestIsolationTrait())
 open class PlatformPhotoComponentsLayer4ComponentAccessibilityTests: BaseTestClass {
 
     // MARK: - platformPhotoPicker_L4

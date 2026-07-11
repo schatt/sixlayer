@@ -8,7 +8,7 @@ import SwiftUI
 /// 
 /// UPDATE: Performance layer has been removed entirely, eliminating the Metal crash bug
 /// NOTE: Not marked @MainActor on class to allow parallel execution
-@Suite("Metal Rendering Crash")
+@Suite("Metal Rendering Crash", HostedViewTestIsolationTrait())
 open class MetalRenderingCrashTDDTests: BaseTestClass {
     
     // BaseTestClass handles setup automatically - no singleton access needed    // MARK: - TDD Green Phase: Tests That Now Pass After Performance Layer Removal

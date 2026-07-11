@@ -6,7 +6,7 @@ import SwiftUI
 /// BUSINESS PURPOSE: Accessibility tests for InternationalizationService.swift classes
 /// Ensures InternationalizationService classes generate proper accessibility identifiers
 /// for automated testing and accessibility tools compliance
-@Suite("Internationalization Service Accessibility")
+@Suite("Internationalization Service Accessibility", HostedViewTestIsolationTrait())
 open class InternationalizationServiceAccessibilityTests: BaseTestClass {
     
     // MARK: - InternationalizationService Tests

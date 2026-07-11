@@ -23,6 +23,32 @@ import UIKit
 import AppKit
 #endif
 
+#if canImport(UIKit) && !os(watchOS)
+extension UIView {
+    /// Cross-platform label text for hosted hierarchy probes (Issue #315 macOS lane).
+    var hostedAccessibilityLabelText: String { accessibilityLabel ?? "" }
+    /// Cross-platform value text for hosted hierarchy probes (Issue #315 macOS lane).
+    var hostedAccessibilityValueText: String {
+        if let stringValue = accessibilityValue as? String { return stringValue }
+        guard let value = accessibilityValue else { return "" }
+        return String(describing: value)
+    }
+}
+#endif
+
+#if canImport(AppKit)
+extension NSView {
+    /// Cross-platform label text for hosted hierarchy probes (Issue #315 macOS lane).
+    var hostedAccessibilityLabelText: String { accessibilityLabel() ?? "" }
+    /// Cross-platform value text for hosted hierarchy probes (Issue #315 macOS lane).
+    var hostedAccessibilityValueText: String {
+        if let stringValue = accessibilityValue() as? String { return stringValue }
+        guard let value = accessibilityValue() else { return "" }
+        return String(describing: value)
+    }
+}
+#endif
+
 // MARK: - Cross-platform hosting and accessibility utilities
 
 /// Host a SwiftUI view and return the platform root view for inspection.
@@ -65,45 +91,19 @@ private func allAccessibilityIdentifiersInInspected(_ inspected: ViewInspector.I
 }
 
 /// Collect all accessibility identifiers from the full ViewInspector hierarchy.
-/// Uses findAll for AnyView, VStack, HStack, ZStack and unwraps root AnyView so the inner view (e.g. card with modifier) is checked.
+/// Single `ClassifiedView` walk — overlapping per-type `findAll` calls each recurse the full tree
+/// and explode CPU/memory under parallel `@MainActor` tests (#315).
 @MainActor
 private func allAccessibilityIdentifiersInInspectedRecursive(
     _ inspected: ViewInspector.InspectableView<ViewInspector.ViewType.ClassifiedView>
 ) -> [String] {
     var ids: [String] = []
+    var seen = Set<String>()
     func collect(_ id: String?) {
-        if let id = id, !id.isEmpty { ids.append(id) }
+        guard let id, !id.isEmpty, seen.insert(id).inserted else { return }
+        ids.append(id)
     }
     collect(try? inspected.accessibilityIdentifier())
-    // Unwrap root AnyView: the modifier is on the inner view (e.g. ExpandableCardComponent), not the AnyView container.
-    if let inner = try? inspected.anyView() {
-        collect(try? inner.accessibilityIdentifier())
-        for av in inner.findAll(ViewInspector.ViewType.AnyView.self) { collect(try? av.accessibilityIdentifier()) }
-        for v in inner.findAll(ViewInspector.ViewType.VStack.self) { collect(try? v.accessibilityIdentifier()) }
-        for v in inner.findAll(ViewInspector.ViewType.HStack.self) { collect(try? v.accessibilityIdentifier()) }
-        for v in inner.findAll(ViewInspector.ViewType.ZStack.self) { collect(try? v.accessibilityIdentifier()) }
-        for v in inner.findAll(ViewInspector.ViewType.Button.self) { collect(try? v.accessibilityIdentifier()) }
-        for v in inner.findAll(ViewInspector.ViewType.Text.self) { collect(try? v.accessibilityIdentifier()) }
-    }
-    for av in inspected.findAll(ViewInspector.ViewType.AnyView.self) {
-        collect(try? av.accessibilityIdentifier())
-    }
-    for v in inspected.findAll(ViewInspector.ViewType.VStack.self) {
-        collect(try? v.accessibilityIdentifier())
-    }
-    for v in inspected.findAll(ViewInspector.ViewType.HStack.self) {
-        collect(try? v.accessibilityIdentifier())
-    }
-    for v in inspected.findAll(ViewInspector.ViewType.ZStack.self) {
-        collect(try? v.accessibilityIdentifier())
-    }
-    for v in inspected.findAll(ViewInspector.ViewType.Button.self) {
-        collect(try? v.accessibilityIdentifier())
-    }
-    for v in inspected.findAll(ViewInspector.ViewType.Text.self) {
-        collect(try? v.accessibilityIdentifier())
-    }
-    // ClassifiedView is the generic "any" view type; the modifier may be on a node that only appears as ClassifiedView.
     for node in inspected.findAll(ViewInspector.ViewType.ClassifiedView.self, where: { _ in true }) {
         collect(try? node.accessibilityIdentifier())
     }
@@ -117,16 +117,12 @@ private func allAccessibilityIdentifiersFromTypedInspectable<V: View>(
     _ inspected: ViewInspector.InspectableView<ViewInspector.ViewType.View<V>>
 ) -> [String] {
     var ids: [String] = []
+    var seen = Set<String>()
     func collect(_ id: String?) {
-        if let id = id, !id.isEmpty { ids.append(id) }
+        guard let id, !id.isEmpty, seen.insert(id).inserted else { return }
+        ids.append(id)
     }
     collect(try? inspected.accessibilityIdentifier())
-    for av in inspected.findAll(ViewInspector.ViewType.AnyView.self) { collect(try? av.accessibilityIdentifier()) }
-    for v in inspected.findAll(ViewInspector.ViewType.VStack.self) { collect(try? v.accessibilityIdentifier()) }
-    for v in inspected.findAll(ViewInspector.ViewType.HStack.self) { collect(try? v.accessibilityIdentifier()) }
-    for v in inspected.findAll(ViewInspector.ViewType.ZStack.self) { collect(try? v.accessibilityIdentifier()) }
-    for v in inspected.findAll(ViewInspector.ViewType.Button.self) { collect(try? v.accessibilityIdentifier()) }
-    // Deep traversal: modifier may be on a node that only appears as ClassifiedView (same as AnyView path).
     for node in inspected.findAll(ViewInspector.ViewType.ClassifiedView.self, where: { _ in true }) {
         collect(try? node.accessibilityIdentifier())
     }
@@ -150,7 +146,7 @@ private func preferredAccessibilityIdentifierFromCandidates(_ candidates: [Strin
     let unique = uniqueNonEmptyAccessibilityIdentifiers(candidates)
     guard !unique.isEmpty else { return nil }
     if let view {
-        let anchors = AccessibilityTestUtilities.explicitNamedModifierNames(in: view)
+        let anchors = AccessibilityTestUtilities.harnessIdentifierAnchorNames(in: view)
         for anchor in anchors.reversed() {
             if let match = unique.first(where: { $0.localizedCaseInsensitiveContains(anchor) }) {
                 return match
@@ -162,6 +158,23 @@ private func preferredAccessibilityIdentifierFromCandidates(_ candidates: [Strin
         let rhsDepth = rhs.split(separator: ".").count
         if lhsDepth != rhsDepth { return lhsDepth < rhsDepth }
         return lhs.count < rhs.count
+    }
+}
+
+@MainActor
+private func filterHarnessIdentifiersForLocalAutomaticDisable<V: View>(
+    view: V,
+    candidates: [String]
+) -> [String] {
+    guard AccessibilityTestUtilities.viewHasDisableAutomaticAccessibilityIdentifiersModifier(in: view) else {
+        return candidates
+    }
+    let blocked = AccessibilityTestUtilities.basicAutomaticComplianceIdentifierAnchorNames(in: view)
+    guard !blocked.isEmpty else { return candidates }
+    return candidates.filter { candidate in
+        !blocked.contains { name in
+            !name.isEmpty && candidate.localizedCaseInsensitiveContains(name)
+        }
     }
 }
 
@@ -191,6 +204,10 @@ private func collectAccessibilityIdentifierCandidateBucketsForTest<V: View>(
         )
         buckets.debugLog = AccessibilityTestUtilities.parsedIdentifiersFromConfigDebugLog(config: cfg)
     }
+    buckets.hosted = filterHarnessIdentifiersForLocalAutomaticDisable(view: view, candidates: buckets.hosted)
+    buckets.inspected = filterHarnessIdentifiersForLocalAutomaticDisable(view: view, candidates: buckets.inspected)
+    buckets.synthesized = filterHarnessIdentifiersForLocalAutomaticDisable(view: view, candidates: buckets.synthesized)
+    buckets.debugLog = filterHarnessIdentifiersForLocalAutomaticDisable(view: view, candidates: buckets.debugLog)
     return buckets
 }
 #endif
@@ -217,7 +234,10 @@ public func getAccessibilityIdentifierForTest<V: View>(view: V, hostedRoot: Any?
         return id
     }
     if let cfg = AccessibilityIdentifierConfig.currentTaskLocalConfig {
-        let fromLog = AccessibilityTestUtilities.parsedIdentifiersFromConfigDebugLog(config: cfg)
+        let fromLog = filterHarnessIdentifiersForLocalAutomaticDisable(
+            view: view,
+            candidates: AccessibilityTestUtilities.parsedIdentifiersFromConfigDebugLog(config: cfg)
+        )
         if let id = fromLog.reversed().first(where: { !$0.isEmpty && $0.split(separator: ".").count == 1 }) {
             return id
         }
@@ -342,10 +362,8 @@ private func firstAccessibilityLabelInInspectedRecursive(
 }
 #endif
 
-#if canImport(UIKit) && !os(watchOS)
-/// Upper bound for `accessibilityElementCount` before enumerating via `accessibilityElementAtIndex:`.
-/// Some SwiftUI/UIKit hosting views report counts that make naive enumeration effectively hang
-/// (main-thread retain churn in test helpers; e.g. modal sheet chrome ViewInspector tests).
+/// Upper bound for accessibility container enumeration in hosted test helpers.
+/// Some SwiftUI hosting views report huge counts; cap traversal for predictable test runtime.
 private let maxAccessibilityContainerEnumerationCount = 256
 
 @MainActor
@@ -368,6 +386,7 @@ private func boundedAccessibilityContainerIndices(_ rawCount: Int) -> [Int] {
     return indices
 }
 
+#if canImport(UIKit) && !os(watchOS)
 /// Identifier from a child returned by `accessibilityElement(at:)` (may be `UIAccessibilityElement` or `UIView`).
 @MainActor
 private func accessibilityIdentifierFromAccessibilityContainerChild(_ raw: Any?) -> String? {
@@ -809,6 +828,45 @@ public func hostedTreesRetainOverlappingSixLayerAccessibilityKeys(defaultRoot: A
     let adaptedIDs = Set(findAllAccessibilityIdentifiersFromPlatformView(adaptedRoot).filter { $0.contains("SixLayer") })
     guard !defaultIDs.isEmpty, !adaptedIDs.isEmpty else { return false }
     return !defaultIDs.isDisjoint(with: adaptedIDs)
+}
+#endif
+
+#if canImport(AppKit)
+@MainActor
+private func accessibilityContainerChildren(for view: NSView) -> [Any] {
+    if let children = view.accessibilityChildren(), !children.isEmpty {
+        return Array(children.prefix(maxAccessibilityContainerEnumerationCount))
+    }
+    return []
+}
+
+/// Walks `NSView` and nested accessibility container children; returns true if `predicate` matches any node.
+/// AppKit counterpart to the UIKit helper used for Issue #254 / #314 hosted semantic checks on macOS (#315).
+@MainActor
+public func hostedUIKitAccessibilityHierarchyContains(
+    root: Any?,
+    maxVisited: Int = 800,
+    predicate: (NSView) -> Bool
+) -> Bool {
+    guard let rootView = root as? NSView else { return false }
+    func checkView(_ view: NSView) -> Bool {
+        if predicate(view) { return true }
+        for child in accessibilityContainerChildren(for: view) {
+            if let sub = child as? NSView, predicate(sub) { return true }
+        }
+        return false
+    }
+    if checkView(rootView) { return true }
+    var stack: [NSView] = rootView.subviews
+    var checked: Set<ObjectIdentifier> = []
+    var count = 0
+    while let next = stack.popLast(), count < maxVisited {
+        count += 1
+        guard checked.insert(ObjectIdentifier(next)).inserted else { continue }
+        if checkView(next) { return true }
+        stack.append(contentsOf: next.subviews.prefix(80))
+    }
+    return false
 }
 #endif
 
@@ -1375,8 +1433,63 @@ public enum AccessibilityTestUtilities {
         explicitNamedModifierNames(in: view as Any)
     }
 
+    /// Anchor names for harness candidate preference: explicit `.named()` plus `basicAutomaticCompliance(identifierName:)`.
     @MainActor
-    private static func viewHasDisableAutomaticAccessibilityIdentifiersModifier(
+    public static func harnessIdentifierAnchorNames(in value: Any) -> [String] {
+        var seen = Set<String>()
+        var anchors: [String] = []
+        func append(_ name: String?) {
+            guard let name = name?.trimmingCharacters(in: .whitespacesAndNewlines), !name.isEmpty else { return }
+            guard seen.insert(name).inserted else { return }
+            anchors.append(name)
+        }
+        for name in explicitNamedModifierNames(in: value) { append(name) }
+        for name in basicAutomaticComplianceIdentifierAnchorNames(in: value) { append(name) }
+        return anchors
+    }
+
+    @MainActor
+    public static func basicAutomaticComplianceIdentifierAnchorNames(
+        in value: Any,
+        remainingDepth: Int = 12
+    ) -> [String] {
+        var results: [String] = []
+        collectBasicAutomaticComplianceIdentifierAnchorNames(
+            in: value,
+            remainingDepth: remainingDepth,
+            into: &results
+        )
+        return results
+    }
+
+    @MainActor
+    private static func collectBasicAutomaticComplianceIdentifierAnchorNames(
+        in value: Any,
+        remainingDepth: Int,
+        into results: inout [String]
+    ) {
+        guard remainingDepth >= 0 else { return }
+        let typeName = String(describing: Swift.type(of: value))
+        if typeName.contains("BasicAutomaticComplianceModifier") {
+            let mirror = Mirror(reflecting: value)
+            for child in mirror.children where child.label == "identifierName" {
+                if let name = child.value as? String, !name.isEmpty {
+                    results.append(name)
+                }
+            }
+        }
+        let mirror = Mirror(reflecting: value)
+        for child in mirror.children {
+            collectBasicAutomaticComplianceIdentifierAnchorNames(
+                in: child.value,
+                remainingDepth: remainingDepth - 1,
+                into: &results
+            )
+        }
+    }
+
+    @MainActor
+    static func viewHasDisableAutomaticAccessibilityIdentifiersModifier(
         in value: Any,
         remainingDepth: Int = 12
     ) -> Bool {

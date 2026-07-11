@@ -5,7 +5,7 @@ import SwiftUI
 @testable import SixLayerFramework
 /// Test what happens when automatic accessibility IDs are disabled
 /// NOTE: Not marked @MainActor on class to allow parallel execution
-@Suite("Accessibility Identifier Disabled")
+@Suite("Accessibility Identifier Disabled", HostedViewTestIsolationTrait())
 open class AccessibilityIdentifierDisabledTests: BaseTestClass {
     
     // BaseTestClass handles setup automatically - no need for custom init

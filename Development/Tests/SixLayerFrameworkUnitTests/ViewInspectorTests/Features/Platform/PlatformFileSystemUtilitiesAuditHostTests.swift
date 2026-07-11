@@ -7,7 +7,7 @@ import SwiftUI
 /// `PlatformFileSystemUtilitiesAuditHost` / TestApp; ViewInspector does not reliably enumerate
 /// `Text` rows under `platformNavigationTitleDisplayMode_L4`, so this suite asserts the same
 /// filesystem helpers directly. Keep <=10 tests.
-@Suite("Platform File System Utilities Audit Host")
+@Suite("Platform File System Utilities Audit Host", HostedViewTestIsolationTrait())
 open class PlatformFileSystemUtilitiesAuditHostTests: BaseTestClass {
 
     @Test @MainActor func testPlatformFileSystemAuditHostRenders() async {

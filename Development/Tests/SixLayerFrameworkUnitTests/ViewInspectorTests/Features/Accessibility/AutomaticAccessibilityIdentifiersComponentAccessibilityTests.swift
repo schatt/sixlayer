@@ -5,7 +5,7 @@ import SwiftUI
 @testable import SixLayerFramework
 
 /// NOTE: Not marked @MainActor on class to allow parallel execution
-@Suite("Automatic Accessibility Identifiers Component Accessibility")
+@Suite("Automatic Accessibility Identifiers Component Accessibility", HostedViewTestIsolationTrait())
 open class AutomaticAccessibilityIdentifiersComponentAccessibilityTests: BaseTestClass {
     
     // MARK: - Automatic Accessibility Identifier Component Tests

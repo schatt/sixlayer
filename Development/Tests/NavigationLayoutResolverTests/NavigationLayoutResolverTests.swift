@@ -110,13 +110,13 @@ struct NavigationLayoutResolverTests {
     }
 
     @Test
-    func resolveAppNavigationShell_matchesSettingsContainer_forParity() {
-        let widths: [CGFloat] = [0, 320, 620, 900, 1300, 2000]
-        for width in widths {
-            let app = NavigationLayoutResolver.resolveAppNavigationShell(availableWidth: width)
-            let settings = NavigationLayoutResolver.resolveSettingsContainer(availableWidth: width)
-            #expect(app == settings)
-        }
+    func resolveAppNavigationShell_usesSingleSidebarBudget_distinctFromSettingsNested() {
+        // At 700pt: app-nav textSidebar+detail fits; nested settings (two sidebars+detail) does not (#330).
+        let app = NavigationLayoutResolver.resolveAppNavigationShell(availableWidth: 700)
+        let settings = NavigationLayoutResolver.resolveSettingsContainer(availableWidth: 700)
+        #expect(app.mode == .sideBySide)
+        #expect(settings.mode == .compactCollapsedOuter)
+        #expect(app != settings)
     }
 
     @Test

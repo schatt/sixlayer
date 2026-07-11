@@ -22,7 +22,7 @@ import AVFoundation
 
 #if canImport(UIKit) && !os(watchOS)
 
-@Suite("Layer 4 semantic accessibility criteria (#254)")
+@Suite("Layer 4 semantic accessibility criteria (#254)", HostedViewTestIsolationTrait())
 open class Layer4SemanticAccessibilityCriterionTests: BaseTestClass {
 
     @MainActor

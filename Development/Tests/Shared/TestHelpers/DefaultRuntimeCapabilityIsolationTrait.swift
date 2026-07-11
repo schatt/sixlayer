@@ -10,12 +10,12 @@
 import Testing
 @testable import SixLayerFramework
 
-/// Resets thread-local capability overrides, clears legacy `UserDefaults.standard` keys used for
+/// Resets task-local capability overrides, clears legacy `UserDefaults.standard` keys used for
 /// capability simulation, and pins macOS harness preferences to `false` for each test invocation.
 public struct DefaultRuntimeCapabilityIsolationTrait: Sendable, TestTrait, SuiteTrait, TestScoping {
     public typealias TestScopeProvider = DefaultRuntimeCapabilityIsolationTrait
 
-    public var isRecursive: Bool { false }
+    public var isRecursive: Bool { true }
 
     public func scopeProvider(for test: Testing.Test, testCase: Testing.Test.Case?) -> DefaultRuntimeCapabilityIsolationTrait? {
         self
@@ -30,24 +30,30 @@ public struct DefaultRuntimeCapabilityIsolationTrait: Sendable, TestTrait, Suite
         // `@MainActor` tests), unlike `Thread.current.threadDictionary` which is per-OS-thread.
         let touchHarness: Bool? = false
         let hapticHarness: Bool? = false
-        try await RuntimeCapabilityHarness.$macOSTouchEnabledPreference.withValue(touchHarness) {
-            try await RuntimeCapabilityHarness.$macOSHapticEnabledPreference.withValue(hapticHarness) {
-                // `Thread.current` here is often the cooperative pool executor, while `@MainActor`
-                // tests run on the main thread. Clearing only the executor thread leaves stale
-                // `testTouchSupport` / `CapabilityOverride` entries on main and breaks suites
-                // (e.g. RuntimeCapabilityDetectionTDDTests.testOverrideClearing — gh-250 / release xcresult).
-                RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-                await MainActor.run {
-                    RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-                }
-                defer {
-                    RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-                }
-                try await function()
-                await MainActor.run {
-                    RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        let overrideBag = CapabilityTestOverrideBag()
+        var propagation: Error?
+        await RuntimeCapabilityHarness.$capabilityTestOverrideBag.withValue(overrideBag) {
+            await RuntimeCapabilityHarness.$macOSTouchEnabledPreference.withValue(touchHarness) {
+                await RuntimeCapabilityHarness.$macOSHapticEnabledPreference.withValue(hapticHarness) {
+                    // Parallel-safe: clear only this test's bag and current-thread legacy overrides.
+                    // Do not scrub `UserDefaults.standard` or MainActor-global state — other parallel
+                    // tests (CloudKit queues, hosted views, etc.) share the process (GitHub #334).
+                    overrideBag.clearAll()
+                    CapabilityOverride.clearThreadIsolationFromCurrentThread()
+                    defer {
+                        overrideBag.clearAll()
+                        CapabilityOverride.clearThreadIsolationFromCurrentThread()
+                    }
+                    do {
+                        try await function()
+                    } catch {
+                        propagation = error
+                    }
                 }
             }
+        }
+        if let propagation {
+            throw propagation
         }
     }
 }

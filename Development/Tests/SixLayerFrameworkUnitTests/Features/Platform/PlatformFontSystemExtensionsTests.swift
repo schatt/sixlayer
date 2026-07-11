@@ -30,7 +30,7 @@ import SwiftUI
 @testable import SixLayerFramework
 
 /// NOTE: Serialized to avoid UI conflicts with hostRootPlatformView (prevents Xcode hangs)
-@Suite(.serialized)
+@Suite(HostedViewTestIsolationTrait())
 open class PlatformFontSystemExtensionsTests: BaseTestClass {
     
     // BaseTestClass handles setup automatically - no init() needed

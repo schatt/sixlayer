@@ -11,7 +11,7 @@ import ViewInspector
 /// Tests that the actual SwiftUI views are generated correctly with the right properties and modifiers
 /// This verifies the view structure using the new testing pattern: view created + contains expected content
 /// NOTE: Not marked @MainActor on class to allow parallel execution
-@Suite("View Generation Verification")
+@Suite("View Generation Verification", HostedViewTestIsolationTrait())
 open class ViewGenerationVerificationTests: BaseTestClass {
     
     // MARK: - Test Data
