@@ -13,36 +13,44 @@ struct Layer1InternationalizationExamples: View {
     @State private var textValue = ""
     
     var body: some View {
-        platformVStack(alignment: .leading, spacing: 24) {
-            ExampleSection(title: "Localized Content") {
-                LocalizedContentExamples()
+        ScrollView {
+            platformVStack(alignment: .leading, spacing: 24) {
+                // Explicit host marker — overlay markers were flaky for this tall category (#316).
+                Text("L1_Category_Internationalization")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                    .accessibilityIdentifier("L1_Category_Internationalization")
+
+                ExampleSection(title: "Localized Content") {
+                    LocalizedContentExamples()
+                }
+                
+                ExampleSection(title: "Localized Text") {
+                    LocalizedTextExamples()
+                }
+                
+                ExampleSection(title: "Localized Numbers & Currency") {
+                    LocalizedNumberExamples()
+                }
+                
+                ExampleSection(title: "Localized String") {
+                    LocalizedStringExamples()
+                }
+                
+                ExampleSection(title: "Localized Dates & Time") {
+                    LocalizedDateExamples()
+                }
+                
+                ExampleSection(title: "RTL Containers") {
+                    RTLContainerExamples()
+                }
+                
+                ExampleSection(title: "Localized Form Fields") {
+                    LocalizedFormFieldExamples(text: $textValue)
+                }
             }
-            
-            ExampleSection(title: "Localized Text") {
-                LocalizedTextExamples()
-            }
-            
-            ExampleSection(title: "Localized Numbers & Currency") {
-                LocalizedNumberExamples()
-            }
-            
-            ExampleSection(title: "Localized String") {
-                LocalizedStringExamples()
-            }
-            
-            ExampleSection(title: "Localized Dates & Time") {
-                LocalizedDateExamples()
-            }
-            
-            ExampleSection(title: "RTL Containers") {
-                RTLContainerExamples()
-            }
-            
-            ExampleSection(title: "Localized Form Fields") {
-                LocalizedFormFieldExamples(text: $textValue)
-            }
+            .padding()
         }
-        .padding()
         .platformFrame()
     }
 }
