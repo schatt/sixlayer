@@ -1479,20 +1479,12 @@ private func createSimpleFieldView(for field: DynamicFormField, hints: Presentat
                         accessibilityLabel: field.label  // Issue #156: Parameter-based approach
                     )
             case .display:
-                // Display fields use LabeledContent or fallback HStack
-                if #available(iOS 16.0, macOS 13.0, *) {
-                    LabeledContent(field.label) {
-                        Text(field.defaultValue ?? "—")
-                            .foregroundColor(.secondary)
-                    }
-                } else {
-                    HStack {
-                        Text(field.label)
-                            .font(.subheadline)
-                        Spacer()
-                        Text(field.defaultValue ?? "—")
-                            .foregroundColor(.secondary)
-                    }
+                // Package platforms are iOS 17+ / macOS 15+ — LabeledContent is unconditional.
+                // Dead `#available(iOS 16/macOS 13)` gates inside @ViewBuilder trip Xcode 27
+                // ContentBuilder / TupleContent diagnostics (#340; cf. CarManager #679).
+                LabeledContent(field.label) {
+                    Text(field.defaultValue ?? "—")
+                        .foregroundColor(.secondary)
                 }
             case .gauge:
                 // Gauge fields use Gauge component or fallback ProgressView
@@ -2611,20 +2603,10 @@ public struct ModalFormView: View {
                         accessibilityLabel: field.label  // Issue #156: Parameter-based approach
                     )
                 case .display:
-                    // Display fields use LabeledContent or fallback HStack
-                    if #available(iOS 16.0, macOS 13.0, *) {
-                        LabeledContent(field.label) {
-                            Text(field.defaultValue ?? "—")
-                                .foregroundColor(.secondary)
-                        }
-                    } else {
-                        HStack {
-                            Text(field.label)
-                                .font(.subheadline)
-                            Spacer()
-                            Text(field.defaultValue ?? "—")
-                                .foregroundColor(.secondary)
-                        }
+                    // Package platforms are iOS 17+ / macOS 15+ — LabeledContent is unconditional (#340).
+                    LabeledContent(field.label) {
+                        Text(field.defaultValue ?? "—")
+                            .foregroundColor(.secondary)
                     }
                 case .gauge:
                     // Gauge fields use Gauge component or fallback ProgressView

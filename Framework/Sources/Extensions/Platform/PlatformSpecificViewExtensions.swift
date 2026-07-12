@@ -2283,19 +2283,11 @@ public extension View {
         // iOS: Return content directly, parent provides navigation
         sidebar()
         #else
-        // macOS: Wrap in NavigationSplitView
-        if #available(macOS 13.0, *) {
-            NavigationSplitView(columnVisibility: columnVisibility ?? .constant(.all)) {
-                sidebar()
-            } detail: {
-                detail()
-            }
-        } else {
-            // Fallback for older macOS versions
-            HStack {
-                sidebar()
-                detail()
-            }
+        // Package platforms require macOS 15+ — NavigationSplitView is unconditional (#340).
+        NavigationSplitView(columnVisibility: columnVisibility ?? .constant(.all)) {
+            sidebar()
+        } detail: {
+            detail()
         }
         #endif
     }
@@ -2669,34 +2661,24 @@ public extension View {
             }
         }
         #elseif os(macOS)
-        if #available(macOS 11.0, *) {
-            // Use SwiftUI's native fileImporter for modern macOS
-            self.fileImporter(
-                isPresented: isPresented,
-                allowedContentTypes: allowedContentTypes,
-                allowsMultipleSelection: false
-            ) { result in
-                switch result {
-                case .success(let urls):
-                    if let url = urls.first {
-                        platformSecurityScopedAccess(url: url) { accessibleURL in
-                            onFileSelected(accessibleURL)
-                        }
+        // Package platforms require macOS 15+ — fileImporter is unconditional (#340).
+        self.fileImporter(
+            isPresented: isPresented,
+            allowedContentTypes: allowedContentTypes,
+            allowsMultipleSelection: false
+        ) { result in
+            switch result {
+            case .success(let urls):
+                if let url = urls.first {
+                    platformSecurityScopedAccess(url: url) { accessibleURL in
+                        onFileSelected(accessibleURL)
                     }
-                case .failure(let error):
-                    let i18n = InternationalizationService()
-                    let errorMsg = i18n.localizedString(for: "SixLayerFramework.file.selectError", arguments: [error.localizedDescription])
-                    print(errorMsg)
                 }
+            case .failure(let error):
+                let i18n = InternationalizationService()
+                let errorMsg = i18n.localizedString(for: "SixLayerFramework.file.selectError", arguments: [error.localizedDescription])
+                print(errorMsg)
             }
-        } else {
-            // Fallback for older macOS versions - use async approach to avoid blocking
-            EmptyView()
-                .onAppear {
-                    Task {
-                        await handleFilePickerFallbackAsync(allowedContentTypes: allowedContentTypes, onFileSelected: onFileSelected, isPresented: isPresented)
-                    }
-                }
         }
         #else
         self

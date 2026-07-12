@@ -63,14 +63,9 @@ private struct Layer4OuterSidebarOverlayHost<SidebarSheet: View, Detail: View>: 
         )
         Group {
             #if os(iOS)
-            if #available(iOS 16.0, *) {
-                NavigationStack {
-                    detailContent
-                }
-            } else {
-                NavigationView {
-                    detailContent
-                }
+            // Package platforms require iOS 17+ — NavigationStack is unconditional (#340).
+            NavigationStack {
+                detailContent
             }
             #elseif os(macOS)
             NavigationStack {
@@ -325,21 +320,9 @@ public extension View {
         action: @escaping () -> Void
     ) -> some View {
         Button(action: action) {
-            #if os(macOS)
-            if #available(macOS 11.0, *) {
-                Label(title, systemImage: systemImage)
-                    .foregroundColor(.primary)
-            } else {
-                HStack {
-                    Image(systemName: systemImage)
-                    Text(title)
-                }
-                .foregroundColor(.primary)
-            }
-            #else
+            // Package platforms require macOS 15+ — Label is unconditional (#340).
             Label(title, systemImage: systemImage)
                 .foregroundColor(.primary)
-            #endif
         }
         .buttonStyle(PlainButtonStyle())
         .accessibilityLabel(accessibilityLabel)
@@ -522,21 +505,9 @@ public extension View {
         }
         #elseif os(macOS)
         Button(action: { isActive.wrappedValue = true }) {
-            #if os(macOS)
-            if #available(macOS 11.0, *) {
-                Label(title, systemImage: systemImage)
-                    .foregroundColor(.primary)
-            } else {
-                HStack {
-                    Image(systemName: systemImage)
-                    Text(title)
-                }
-                .foregroundColor(.primary)
-            }
-            #else
+            // Package platforms require macOS 15+ — Label is unconditional (#340).
             Label(title, systemImage: systemImage)
                 .foregroundColor(.primary)
-            #endif
         }
         .buttonStyle(PlainButtonStyle())
         .automaticCompliance(
@@ -792,43 +763,25 @@ public extension View {
         @ViewBuilder detail: () -> DetailContent
     ) -> some View {
         #if os(iOS)
-        if #available(iOS 16.0, *) {
-            let sidebarView = sidebar()
-            let detailView = detail()
-            Layer4NestedSplitShellPresentationHost(
-                kind: .appNavigation,
-                columnVisibility: columnVisibility,
-                sidebar: { sidebarView },
-                detail: { detailView }
-            )
-        } else {
-            let sidebarContent = sidebar()
-            createDetailOnlyWithSheet(
-                showingNavigationSheet: showingNavigationSheet,
-                detail: detail,
-                sidebarContent: sidebarContent
-            )
-        }
+        // Package platforms require iOS 17+ (#340).
+        let sidebarView = sidebar()
+        let detailView = detail()
+        Layer4NestedSplitShellPresentationHost(
+            kind: .appNavigation,
+            columnVisibility: columnVisibility,
+            sidebar: { sidebarView },
+            detail: { detailView }
+        )
         #elseif os(macOS)
-        if #available(macOS 13.0, *) {
-            let sidebarView = sidebar()
-            let detailView = detail()
-            Layer4NestedSplitShellPresentationHost(
-                kind: .appNavigation,
-                columnVisibility: columnVisibility,
-                sidebar: { sidebarView },
-                detail: { detailView }
-            )
-        } else {
-            let sidebarView = sidebar()
-            let detailView = detail()
-            Layer4NestedSplitShellPresentationHost(
-                kind: .appNavigationMacOS12,
-                columnVisibility: columnVisibility,
-                sidebar: { sidebarView },
-                detail: { detailView }
-            )
-        }
+        // Package platforms require macOS 15+ (#340).
+        let sidebarView = sidebar()
+        let detailView = detail()
+        Layer4NestedSplitShellPresentationHost(
+            kind: .appNavigation,
+            columnVisibility: columnVisibility,
+            sidebar: { sidebarView },
+            detail: { detailView }
+        )
         #else
         detail()
         #endif
@@ -840,14 +793,9 @@ public extension View {
         sidebarContent: SidebarContent
     ) -> some View {
         #if os(iOS)
-        if #available(iOS 16.0, *) {
-            NavigationStack {
-                sidebarContent
-            }
-        } else {
-            NavigationView {
-                sidebarContent
-            }
+        // Package platforms require iOS 17+ (#340).
+        NavigationStack {
+            sidebarContent
         }
         #elseif os(macOS)
         sidebarContent
@@ -987,12 +935,8 @@ public extension View {
     
     // MARK: - Settings Container Layer 4
 
-    /// Helper to create settings container for iPad (NavigationSplitView)
-    /// - Parameters:
-    ///   - columnVisibility: Optional binding for NavigationSplitView column visibility
-    ///   - sidebar: View builder for sidebar content
-    ///   - detail: View builder for detail content
-    /// - Returns: NavigationSplitView on iOS 16+, NavigationView on iOS 15
+    /// Helper to create settings container for iPad (NavigationSplitView).
+    /// Package platforms require iOS 17+ — NavigationSplitView is unconditional (#340).
     @ViewBuilder
     fileprivate func layer4CreateSettingsContainerForiPad<Sidebar: View, Detail: View>(
         presentation: NavigationLayoutCompactPresentation,
@@ -1002,23 +946,11 @@ public extension View {
     ) -> some View {
         switch presentation {
         case .fullSplit:
-            if #available(iOS 16.0, *) {
-                createNavigationSplitView(
-                    columnVisibility: columnVisibility,
-                    sidebar: sidebar,
-                    detail: detail
-                )
-            } else {
-                NavigationView {
-                    sidebar()
-                    detail()
-                }
-                #if os(iOS)
-                .navigationViewStyle(.columns)
-                #else
-                .navigationViewStyle(.automatic)
-                #endif
-            }
+            createNavigationSplitView(
+                columnVisibility: columnVisibility,
+                sidebar: sidebar,
+                detail: detail
+            )
         case .detailOnlyCollapsedInner:
             layer4ResolverDetailOnly(columnVisibility: columnVisibility, detail: detail)
         case .overlayOuterSidebar:
@@ -1029,49 +961,30 @@ public extension View {
         }
     }
     
-    /// Helper to create settings container for iPhone (NavigationStack with push/pop semantics on iOS 16+)
-    /// - Parameters:
-    ///   - selectedCategory: Binding to track category selection (controls detail display)
-    ///   - sidebar: View builder for sidebar content
-    ///   - detail: View builder for detail content
-    /// - Returns: NavigationStack on iOS 16+, NavigationView on iOS 15
+    /// Helper to create settings container for iPhone (NavigationStack).
+    /// Package platforms require iOS 17+ (#340).
     @ViewBuilder
     private func createSettingsContainerForiPhone<Sidebar: View, Detail: View>(
         selectedCategory: Binding<AnyHashable?>?,
         @ViewBuilder sidebar: () -> Sidebar,
         @ViewBuilder detail: () -> Detail
     ) -> some View {
-        if #available(iOS 16.0, *) {
-            NavigationStack {
-                if let isPresented = PlatformManagedSettingsFlowLogic.iPhoneTopLevelDetailNavigationIsPresented(
-                    selectedCategory: selectedCategory
-                ) {
-                    sidebar()
-                        .navigationDestination(isPresented: isPresented) {
-                            detail()
-                        }
-                } else {
-                    sidebar()
-                }
-            }
-        } else {
-            // iOS 15: legacy root swap (no unified stack back semantics)
-            NavigationView {
-                if let selectedCategory = selectedCategory, selectedCategory.wrappedValue != nil {
-                    detail()
-                } else {
-                    sidebar()
-                }
+        NavigationStack {
+            if let isPresented = PlatformManagedSettingsFlowLogic.iPhoneTopLevelDetailNavigationIsPresented(
+                selectedCategory: selectedCategory
+            ) {
+                sidebar()
+                    .navigationDestination(isPresented: isPresented) {
+                        detail()
+                    }
+            } else {
+                sidebar()
             }
         }
     }
     
-    /// Helper to create settings container for macOS (NavigationSplitView)
-    /// - Parameters:
-    ///   - columnVisibility: Optional binding for NavigationSplitView column visibility
-    ///   - sidebar: View builder for sidebar content
-    ///   - detail: View builder for detail content
-    /// - Returns: NavigationSplitView on macOS 13+, HStack on macOS 12
+    /// Helper to create settings container for macOS (NavigationSplitView).
+    /// Package platforms require macOS 15+, so NavigationSplitView is unconditional (#340).
     @ViewBuilder
     fileprivate func layer4CreateSettingsContainerForMacOS<Sidebar: View, Detail: View>(
         presentation: NavigationLayoutCompactPresentation,
@@ -1081,18 +994,11 @@ public extension View {
     ) -> some View {
         switch presentation {
         case .fullSplit:
-            if #available(macOS 13.0, *) {
-                createNavigationSplitView(
-                    columnVisibility: columnVisibility,
-                    sidebar: sidebar,
-                    detail: detail
-                )
-            } else {
-                HStack(spacing: 0) {
-                    sidebar()
-                    detail()
-                }
-            }
+            createNavigationSplitView(
+                columnVisibility: columnVisibility,
+                sidebar: sidebar,
+                detail: detail
+            )
         case .detailOnlyCollapsedInner:
             layer4ResolverDetailOnly(columnVisibility: columnVisibility, detail: detail)
         case .overlayOuterSidebar:
