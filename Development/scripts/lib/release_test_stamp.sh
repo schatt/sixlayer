@@ -91,7 +91,7 @@ release_changed_paths_since() {
 release_should_skip_unit_tests() {
     local root="$1"
     local force_tests="${2:-0}"
-    local path commit stamped_repo changed p
+    local path commit stamped_repo p
 
     if [ "$force_tests" -eq 1 ]; then
         return 1
