@@ -4,12 +4,17 @@ import SwiftUI
 
 /// Xcode 27 ContentBuilder / `#available` experiment (#340).
 ///
-/// Question: with deployment target iOS 17, does a *real* (non-redundant)
-/// `#available(iOS 18, *)` inside `@ViewBuilder` trip the same
-/// `TupleContent` / limited-availability failure as dead ≤17 gates?
+/// **Finding (Xcode 27.0 / 27A5218g, iOS 17 deploy):** a *real* future gate
+/// `#available(iOS 18.0, *)` inside `@ViewBuilder` **compiles cleanly** (no
+/// `TupleContent` error, no `buildLimitedAvailability` warning).
 ///
-/// This file intentionally uses the inline `#available` form in a ViewBuilder
-/// so a build under Xcode 27 exercises that path.
+/// Contrast: *redundant* gates (`#available(iOS 16/macOS 13, …)` when deploy is
+/// already iOS 17 / macOS 15) *did* trip `TupleContent … only available in
+/// iOS/macOS 26+` in framework sources. So the landmine is the always-true /
+/// dead availability path, not every `#available` in a ViewBuilder.
+///
+/// This probe stays in-tree as a compile regression: if Xcode starts rejecting
+/// legitimate future-OS gates in ViewBuilders the same way, this file goes red.
 @Suite("ViewBuilder availability gate (Xcode 27 / #340)")
 struct ViewBuilderAvailabilityGateCompileTests {
 
@@ -33,7 +38,7 @@ struct ViewBuilderAvailabilityGateCompileTests {
 @MainActor
 private struct ViewBuilderIOS18AvailabilityProbe: View {
     var body: some View {
-        // Deliberate: availability gate nested in the ViewBuilder (not extracted).
+        // Legitimate future-OS gate nested in the ViewBuilder (not redundant).
         if #available(iOS 18.0, *) {
             Text("iOS 18+ branch")
         } else {
