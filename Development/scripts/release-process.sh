@@ -19,9 +19,9 @@
 #              Mutually exclusive with --release.
 #   --force-tests  Ignore the /tmp last-pass stamp and always run unit tests (not needed with --docs).
 #
-# Test skip stamp: after a green macOS+iOS unit-test gate, HEAD is recorded under /tmp
-# (repo-scoped). Later runs skip tests when every change since that commit is docs-only.
-# See Development/scripts/lib/release_test_stamp.sh.
+# Test skip stamp: after a green macOS+iOS unit-test gate, HEAD is written to
+# /tmp/sixlayer-release-tests-passed (bare commit hash). Later runs skip tests when
+# every change since that commit is docs-only. See lib/release_test_stamp.sh.
 #
 # Version suggestion (when VERSION is omitted): latest local semver tag vX.Y.Z, then
 # Package.swift, then README.md. Removed tags are not visible; pass an explicit version
@@ -431,10 +431,10 @@ REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
 if [ "$DOCS_ONLY" -eq 1 ]; then
     echo "📋 Step 2: Skipping unit tests (--docs)"
 elif release_should_skip_unit_tests "$REPO_ROOT" "$FORCE_TESTS"; then
-    STAMPED_COMMIT="$(release_test_stamp_read_commit "$REPO_ROOT")"
+    STAMPED_COMMIT="$(release_test_stamp_read_commit)"
     TESTS_SKIPPED_STAMP=1
     echo "📋 Step 2: Skipping unit tests (no code changes since last pass at ${STAMPED_COMMIT:0:12})"
-    echo "   Stamp: $(release_test_stamp_path "$REPO_ROOT")"
+    echo "   Stamp: $(release_test_stamp_path)"
     echo "   Use --force-tests to run anyway."
 else
     echo "📋 Step 2: Running unit test suite (macOS + iOS unit tests only)..."
@@ -496,8 +496,8 @@ else
     else
         echo "✅ Unit test suite validation passed (macOS + iOS unit tests only)"
         PASS_COMMIT="$(git -C "$REPO_ROOT" rev-parse HEAD)"
-        release_test_stamp_write "$REPO_ROOT" "$PASS_COMMIT"
-        echo "💾 Recorded test-pass stamp for ${PASS_COMMIT:0:12} → $(release_test_stamp_path "$REPO_ROOT")"
+        release_test_stamp_write "$PASS_COMMIT"
+        echo "💾 Recorded test-pass stamp for ${PASS_COMMIT:0:12} → $(release_test_stamp_path)"
     fi
 fi
 
