@@ -90,9 +90,11 @@ DOCS_RC=$?
 set -e
 
 assert_not_contains "$DOCS_OUT" "XCODEBUILD_INVOKED" "--docs does not invoke xcodebuild"
-assert_contains "$DOCS_OUT" "--docs" "--docs run acknowledges docs mode"
+assert_contains "$DOCS_OUT" "Docs-only mode" "--docs run prints Docs-only mode banner"
+assert_contains "$DOCS_OUT" "Skipping unit tests (--docs)" "--docs explicitly skips unit tests"
 assert_not_contains "$DOCS_OUT" "Creating and pushing tag" "--docs does not create/push release tag"
 assert_not_contains "$DOCS_OUT" "Creating GitHub Release" "--docs does not create GitHub Release"
+assert_not_contains "$DOCS_OUT" "Unknown option" "--docs is a recognized option"
 
 # If documentation checks passed, docs mode must exit 0 and state that release was skipped.
 if printf '%s' "$DOCS_OUT" | grep -Fq "All release documentation checks passed"; then
