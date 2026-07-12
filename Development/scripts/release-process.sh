@@ -1150,7 +1150,7 @@ echo "✅ Example files exist"
 echo ""
 
 if [ "$DOCS_ONLY" -eq 1 ]; then
-    echo "✅ Docs-only checks passed for v$VERSION."
+    echo "✅ Docs-only mode: documentation checks passed for v$VERSION."
     echo "⏭️  Skipping release (tag/merge/push/GitHub Release) because --docs was set."
     echo ""
     echo "Release process complete! ✅"
