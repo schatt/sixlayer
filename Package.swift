@@ -1,5 +1,5 @@
 // swift-tools-version: 6.0
-// SixLayerFramework v8.2.0 - Minor: macOS UITest deep-links (#316) and parallel test hygiene (#335)
+// SixLayerFramework v8.2.1 - Patch: Xcode 27 dead #available / TupleContent compile fix (#340)
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
