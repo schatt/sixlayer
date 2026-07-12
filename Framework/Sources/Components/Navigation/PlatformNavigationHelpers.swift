@@ -11,7 +11,7 @@ import SwiftUI
 /// - **iPhone Landscape**: Uses `NavigationSplitView` for large devices (Plus/ProMax), `NavigationStack` for smaller devices
 ///
 /// **macOS Behavior:**
-/// - Always uses `NavigationSplitView` (macOS 13+) or `HStack` (macOS 12)
+/// - Always uses `NavigationSplitView` (package platforms require macOS 15+)
 ///
 /// - Parameters:
 ///   - content: View builder for the content column
@@ -40,44 +40,24 @@ public func platformNavigationSplitView<Content: View, Detail: View>(
         iPhoneSizeCategory: iPhoneSizeCategory
     )
     
+    // Package platforms require iOS 17+ (#340).
     if decision.useSplitView {
-        if #available(iOS 16.0, *) {
-            NavigationSplitView {
-                content()
-            } detail: {
-                detail()
-            }
-        } else {
-            NavigationView {
-                content()
-            }
-            .navigationViewStyle(DoubleColumnNavigationViewStyle())
-        }
-    } else {
-        // Detail-only with content accessible via navigation
-        if #available(iOS 16.0, *) {
-            NavigationStack {
-                detail()
-            }
-        } else {
-            NavigationView {
-                detail()
-            }
-            .navigationViewStyle(StackNavigationViewStyle())
-        }
-    }
-    #elseif os(macOS)
-    if #available(macOS 13.0, *) {
         NavigationSplitView {
             content()
         } detail: {
             detail()
         }
     } else {
-        platformHStackContainer(spacing: 0) {
-            content()
+        NavigationStack {
             detail()
         }
+    }
+    #elseif os(macOS)
+    // Package platforms require macOS 15+ (#340).
+    NavigationSplitView {
+        content()
+    } detail: {
+        detail()
     }
     #else
     NavigationView {
@@ -95,7 +75,7 @@ public func platformNavigationSplitView<Content: View, Detail: View>(
 /// - **iPhone Landscape**: Uses `NavigationSplitView` for large devices (Plus/ProMax), `NavigationStack` for smaller devices
 ///
 /// **macOS Behavior:**
-/// - Always uses `NavigationSplitView` with all three columns (macOS 13+) or `HStack` (macOS 12)
+/// - Always uses `NavigationSplitView` with all three columns (package platforms require macOS 15+)
 ///
 /// - Parameters:
 ///   - sidebar: View builder for the sidebar column
@@ -126,36 +106,8 @@ public func platformNavigationSplitView<Sidebar: View, Content: View, Detail: Vi
         iPhoneSizeCategory: iPhoneSizeCategory
     )
     
+    // Package platforms require iOS 17+ (#340).
     if decision.useSplitView {
-        if #available(iOS 16.0, *) {
-            NavigationSplitView {
-                sidebar()
-            } content: {
-                content()
-            } detail: {
-                detail()
-            }
-        } else {
-            NavigationView {
-                sidebar()
-            }
-            .navigationViewStyle(DoubleColumnNavigationViewStyle())
-        }
-    } else {
-        // Detail-only with sidebar and content accessible via navigation
-        if #available(iOS 16.0, *) {
-            NavigationStack {
-                detail()
-            }
-        } else {
-            NavigationView {
-                detail()
-            }
-            .navigationViewStyle(StackNavigationViewStyle())
-        }
-    }
-    #elseif os(macOS)
-    if #available(macOS 13.0, *) {
         NavigationSplitView {
             sidebar()
         } content: {
@@ -164,11 +116,18 @@ public func platformNavigationSplitView<Sidebar: View, Content: View, Detail: Vi
             detail()
         }
     } else {
-        platformHStackContainer(spacing: 0) {
-            sidebar()
-            content()
+        NavigationStack {
             detail()
         }
+    }
+    #elseif os(macOS)
+    // Package platforms require macOS 15+ (#340).
+    NavigationSplitView {
+        sidebar()
+    } content: {
+        content()
+    } detail: {
+        detail()
     }
     #else
     NavigationView {
@@ -185,7 +144,7 @@ public func platformNavigationSplitView<Sidebar: View, Content: View, Detail: Vi
 public struct PlatformNavigationHelpers {
     
     /// Cross-platform app navigation with platform-specific behavior
-    /// iOS: Uses NavigationSplitView or NavigationView; macOS: Uses NavigationSplitView
+    /// iOS: Uses NavigationSplitView; macOS: Uses NavigationSplitView
         static func platformAppNavigation<SidebarContent: View, DetailContent: View>(
         columnVisibility: Binding<Bool>,
         showingSidebar: Binding<Bool>,
@@ -229,18 +188,11 @@ private func iosAppNavigation<SidebarContent: View, DetailContent: View>(
     @ViewBuilder sidebar: () -> SidebarContent,
     @ViewBuilder detail: () -> DetailContent
 ) -> some View {
-    if #available(iOS 16.0, *) {
-        // Use NavigationSplitView without columnVisibility for iOS 16+
-        AnyView(NavigationSplitView {
-            sidebar()
-        } detail: {
-            detail()
-        })
-    } else {
-        // Fallback for iOS 15 and earlier
-        AnyView(NavigationView {
-            detail()
-        })
+    // Package platforms require iOS 17+ (#340).
+    NavigationSplitView {
+        sidebar()
+    } detail: {
+        detail()
     }
 }
 
@@ -270,18 +222,11 @@ private func macAppNavigation<SidebarContent: View, DetailContent: View>(
     @ViewBuilder sidebar: () -> SidebarContent,
     @ViewBuilder detail: () -> DetailContent
 ) -> some View {
-    if #available(macOS 13.0, *) {
-        AnyView(NavigationSplitView {
-            sidebar()
-        } detail: {
-            detail()
-        })
-    } else {
-        // Fallback for older macOS versions
-        AnyView(HStack {
-            sidebar()
-            detail()
-        })
+    // Package platforms require macOS 15+ (#340).
+    NavigationSplitView {
+        sidebar()
+    } detail: {
+        detail()
     }
 }
 

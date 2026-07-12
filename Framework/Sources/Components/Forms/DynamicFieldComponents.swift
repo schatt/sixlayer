@@ -637,18 +637,11 @@ public struct DynamicTextField: View {
     /// Check if platform supports TextField with axis parameter
     /// iOS 16+ and macOS 13+ support axis parameter
     private var supportsTextFieldAxis: Bool {
-        #if os(iOS)
-        if #available(iOS 16.0, *) {
-            return true
-        }
-        return false
-        #elseif os(macOS)
-        if #available(macOS 13.0, *) {
-            return true
-        }
-        return false
+        #if os(iOS) || os(macOS)
+        // Package platforms require iOS 17+ / macOS 15+ (#340).
+        true
         #else
-        return false
+        false
         #endif
     }
     
@@ -1248,50 +1241,28 @@ public struct DynamicMultiDateField: View {
         return platformVStackContainer(alignment: .leading, spacing: 8) {
 
             #if os(iOS)
-            if #available(iOS 16.0, *) {
-                Group {
-                    if #available(iOS 17.0, *) {
-                        MultiDatePicker(
-                            field.placeholder ?? i18n.placeholderSelectDates(),
-                            selection: $selectedDateComponents,
-                            in: dateRange
-                        )
-                        .onChange(of: selectedDateComponents) {
-                            // Convert Set<DateComponents> to array of Date objects
-                            let calendar = Calendar.current
-                            let dates = selectedDateComponents.compactMap { components in
-                                calendar.date(from: components)
-                            }
-                            formState.setValue(dates, for: field.id)
-                        }
-                    } else {
-                        MultiDatePicker(
-                            field.placeholder ?? i18n.placeholderSelectDates(),
-                            selection: $selectedDateComponents,
-                            in: dateRange
-                        )
-                        .onChange(of: selectedDateComponents) { newComponents in
-                            // Convert Set<DateComponents> to array of Date objects
-                            let calendar = Calendar.current
-                            let dates = newComponents.compactMap { components in
-                                calendar.date(from: components)
-                            }
-                            formState.setValue(dates, for: field.id)
-                        }
-                    }
+            // Package platforms require iOS 17+ — MultiDatePicker is unconditional (#340).
+            MultiDatePicker(
+                field.placeholder ?? i18n.placeholderSelectDates(),
+                selection: $selectedDateComponents,
+                in: dateRange
+            )
+            .onChange(of: selectedDateComponents) {
+                // Convert Set<DateComponents> to array of Date objects
+                let calendar = Calendar.current
+                let dates = selectedDateComponents.compactMap { components in
+                    calendar.date(from: components)
                 }
-                .onAppear {
-                    // Load existing dates from form state
-                    if let storedDates: [Date] = formState.getValue(for: field.id) {
-                        let calendar = Calendar.current
-                        selectedDateComponents = Set(storedDates.map { date in
-                            calendar.dateComponents([.year, .month, .day], from: date)
-                        })
-                    }
+                formState.setValue(dates, for: field.id)
+            }
+            .onAppear {
+                // Load existing dates from form state
+                if let storedDates: [Date] = formState.getValue(for: field.id) {
+                    let calendar = Calendar.current
+                    selectedDateComponents = Set(storedDates.map { date in
+                        calendar.dateComponents([.year, .month, .day], from: date)
+                    })
                 }
-            } else {
-                // Fallback for iOS < 16
-                fallbackView
             }
             #else
             // macOS fallback - MultiDatePicker not available on macOS
@@ -2088,33 +2059,17 @@ public struct DynamicDisplayField: View {
     }
     
     public var body: some View {
-        if #available(iOS 16.0, macOS 13.0, *) {
-            // Use LabeledContent on supported platforms (label shown by parent — Issue #189)
-            LabeledContent("") {
-                if let customValueView = field.valueView {
-                    customValueView(field, formState)
-                } else {
-                    Text(valueString)
-                        .foregroundColor(.secondary)
-                }
+        // Package platforms require iOS 17+ / macOS 15+ — LabeledContent is unconditional (#340).
+        LabeledContent("") {
+            if let customValueView = field.valueView {
+                customValueView(field, formState)
+            } else {
+                Text(valueString)
+                    .foregroundColor(.secondary)
             }
-            .dynamicFormFieldVoiceOverLabel(field)
-            .automaticComplianceForDynamicFormField(field)
-        } else {
-            // Fallback for older platforms
-            HStack {
-                Spacer()
-                if let customValueView = field.valueView {
-                    customValueView(field, formState)
-                } else {
-                    Text(valueString)
-                        .foregroundColor(.secondary)
-                }
-            }
-            .padding()
-            .dynamicFormFieldVoiceOverLabel(field)
-            .automaticComplianceForDynamicFormField(field)
         }
+        .dynamicFormFieldVoiceOverLabel(field)
+        .automaticComplianceForDynamicFormField(field)
     }
 }
 
@@ -2175,49 +2130,37 @@ public struct DynamicGaugeField: View {
     public var body: some View {
         platformVStackContainer(alignment: .leading, spacing: 8) {
             #if !os(tvOS)
-            if #available(iOS 16.0, macOS 13.0, *) {
-                // Use native Gauge component on supported platforms
-                if gaugeStyle == "circular" {
-                    Gauge(value: value, in: range) {
-                        // Optional gauge label
-                        if let label = gaugeLabel {
-                            Text(label)
-                        }
-                    } currentValueLabel: {
-                        Text("\(Int(value))")
-                    } minimumValueLabel: {
-                        Text("\(Int(range.lowerBound))")
-                    } maximumValueLabel: {
-                        Text("\(Int(range.upperBound))")
+            // Package platforms require iOS 17+ / macOS 15+ — Gauge is unconditional (#340).
+            if gaugeStyle == "circular" {
+                Gauge(value: value, in: range) {
+                    // Optional gauge label
+                    if let label = gaugeLabel {
+                        Text(label)
                     }
-                    .gaugeStyle(.accessoryCircularCapacity)
-                    .automaticCompliance(named: "Gauge")
-                } else {
-                    Gauge(value: value, in: range) {
-                        // Optional gauge label
-                        if let label = gaugeLabel {
-                            Text(label)
-                        }
-                    } currentValueLabel: {
-                        Text("\(Int(value))")
-                    } minimumValueLabel: {
-                        Text("\(Int(range.lowerBound))")
-                    } maximumValueLabel: {
-                        Text("\(Int(range.upperBound))")
-                    }
-                    .gaugeStyle(.linearCapacity)
-                    .automaticCompliance(named: "Gauge")
+                } currentValueLabel: {
+                    Text("\(Int(value))")
+                } minimumValueLabel: {
+                    Text("\(Int(range.lowerBound))")
+                } maximumValueLabel: {
+                    Text("\(Int(range.upperBound))")
                 }
+                .gaugeStyle(.accessoryCircularCapacity)
+                .automaticCompliance(named: "Gauge")
             } else {
-                // Fallback: Use ProgressView for older platforms
-                ProgressView(value: value, total: range.upperBound)
-                    .progressViewStyle(.linear)
-                    .automaticCompliance(named: "ProgressView")
-                
-                Text("\(Int(value)) / \(Int(range.upperBound))")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                    .automaticCompliance(named: "GaugeValueLabel")
+                Gauge(value: value, in: range) {
+                    // Optional gauge label
+                    if let label = gaugeLabel {
+                        Text(label)
+                    }
+                } currentValueLabel: {
+                    Text("\(Int(value))")
+                } minimumValueLabel: {
+                    Text("\(Int(range.lowerBound))")
+                } maximumValueLabel: {
+                    Text("\(Int(range.upperBound))")
+                }
+                .gaugeStyle(.linearCapacity)
+                .automaticCompliance(named: "Gauge")
             }
             #else
             // tvOS: Gauge is unavailable; use ProgressView fallback unconditionally.
