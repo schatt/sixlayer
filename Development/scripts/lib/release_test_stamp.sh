@@ -1,12 +1,10 @@
 #!/usr/bin/env bash
-# Release-process unit-test stamp helpers (#342, #343).
+# Release-process unit-test stamp helpers (#342, #343, #346).
 # Sourced by release-process.sh and unit tests.
 #
 # After a green macOS+iOS unit-test gate, record HEAD in a single /tmp file.
 # Later runs may skip tests when every change since that commit is docs-only.
-#
-# Release runs are manual, one at a time, from one checkout — so one fixed
-# stamp path is enough (override via RELEASE_TEST_STAMP_FILE for tests).
+# The stamp means unit tests passed at that commit — not a completed release.
 
 # Absolute path to the stamp file (single shared file).
 release_test_stamp_path() {
@@ -40,22 +38,71 @@ release_is_docs_only_path() {
     esac
 }
 
-# Write bare commit hash to the stamp file.
-release_test_stamp_write() {
-    local commit="$1"
-    local path
+release_test_stamp_read_field() {
+    local field="$1"
+    local path line
     path=$(release_test_stamp_path)
-    printf '%s\n' "$commit" > "$path"
+    [ -f "$path" ] || return 1
+    line=$(grep -E "^${field}=" "$path" | head -1 || true)
+    [ -n "$line" ] || return 1
+    echo "${line#${field}=}"
 }
 
-# Read bare commit hash from the stamp file.
+# Read commit hash from stamp (supports legacy bare-hash files).
 release_test_stamp_read_commit() {
     local path commit
     path=$(release_test_stamp_path)
     [ -f "$path" ] || return 1
-    commit=$(tr -d '[:space:]' < "$path")
+    if commit=$(release_test_stamp_read_field "commit" 2>/dev/null); then
+        :
+    else
+        commit=$(head -1 "$path" | tr -d '[:space:]')
+    fi
     [ -n "$commit" ] || return 1
     printf '%s\n' "$commit"
+}
+
+release_test_stamp_read_recorded_at() {
+    release_test_stamp_read_field "recorded_at" 2>/dev/null || true
+}
+
+# 0 = tests only; 1 = a release completed after this gate. Legacy bare-hash → empty (unknown).
+release_test_stamp_read_release_completed() {
+    local value
+    value=$(release_test_stamp_read_field "release_completed" 2>/dev/null || true)
+    if [ "$value" = "1" ]; then
+        echo "1"
+    elif [ "$value" = "0" ]; then
+        echo "0"
+    fi
+}
+
+# Write stamp after macOS+iOS unit tests pass (release may still fail afterward).
+release_test_stamp_write() {
+    local commit="$1"
+    local path
+    path=$(release_test_stamp_path)
+    cat > "$path" <<EOF
+commit=${commit}
+recorded_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+release_completed=0
+EOF
+}
+
+# Call when tag/merge/push release finishes successfully.
+release_test_stamp_mark_release_complete() {
+    local path commit recorded_at
+    path=$(release_test_stamp_path)
+    commit=$(release_test_stamp_read_commit || return 1)
+    recorded_at=$(release_test_stamp_read_recorded_at)
+    if [ -z "$recorded_at" ]; then
+        recorded_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+    fi
+    cat > "$path" <<EOF
+commit=${commit}
+recorded_at=${recorded_at}
+release_completed=1
+EOF
 }
 
 # Paths changed since commit (working tree + untracked), relative to repo root.
@@ -72,7 +119,6 @@ release_changed_paths_since() {
 }
 
 # Return 0 if unit tests may be skipped; 1 if they must run.
-# force_tests: 1 → always run.
 release_should_skip_unit_tests() {
     local root="$1"
     local force_tests="${2:-0}"
@@ -106,17 +152,33 @@ release_should_skip_unit_tests() {
     return 0
 }
 
+release_test_stamp_release_status_line() {
+    local completed
+    completed=$(release_test_stamp_read_release_completed)
+    case "$completed" in
+        1) echo "   Release from this gate: completed successfully" ;;
+        0) echo "   Release from this gate: not completed (tests passed; doc checks or ship may have failed afterward)" ;;
+        *) echo "   Release from this gate: unknown (legacy stamp — tests-only skip still applies)" ;;
+    esac
+}
+
 # Print last-pass stamp and whether a non-docs run would skip or run unit tests.
 release_print_unit_test_stamp_status() {
     local root="$1"
     local force_tests="${2:-0}"
-    local commit stamp_path non_docs_only
+    local commit stamp_path recorded_at non_docs_only
 
     stamp_path=$(release_test_stamp_path)
     if commit=$(release_test_stamp_read_commit 2>/dev/null); then
-        echo "📎 Last unit-test pass: $commit"
+        recorded_at=$(release_test_stamp_read_recorded_at)
+        if [ -n "$recorded_at" ]; then
+            echo "📎 Last green unit-test gate: $commit (recorded $recorded_at)"
+        else
+            echo "📎 Last green unit-test gate: $commit"
+        fi
+        release_test_stamp_release_status_line
     else
-        echo "📎 Last unit-test pass: (none recorded)"
+        echo "📎 Last green unit-test gate: (none recorded)"
         echo "   Stamp file: $stamp_path"
     fi
 

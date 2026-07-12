@@ -92,7 +92,7 @@ set -e
 assert_not_contains "$DOCS_OUT" "XCODEBUILD_INVOKED" "--docs does not invoke xcodebuild"
 assert_contains "$DOCS_OUT" "Docs-only mode" "--docs run prints Docs-only mode banner"
 assert_contains "$DOCS_OUT" "Skipping unit tests (--docs)" "--docs explicitly skips unit tests"
-assert_contains "$DOCS_OUT" "Last unit-test pass:" "--docs shows last unit-test pass line"
+assert_contains "$DOCS_OUT" "Last green unit-test gate:" "--docs shows last unit-test gate line"
 assert_contains "$DOCS_OUT" "Unit test gate (non-docs):" "--docs shows non-docs gate preview"
 assert_not_contains "$DOCS_OUT" "Creating and pushing tag" "--docs does not create/push release tag"
 assert_not_contains "$DOCS_OUT" "Creating GitHub Release" "--docs does not create GitHub Release"

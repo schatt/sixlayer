@@ -59,7 +59,7 @@ assert_contains() {
     fi
 }
 
-echo "=== test_release_test_stamp (#345) ==="
+echo "=== test_release_test_stamp (#346) ==="
 
 if [ ! -f "$LIB" ]; then
     echo "❌ library missing: $LIB"
@@ -105,8 +105,9 @@ assert_false "no stamp means run tests" \
     release_should_skip_unit_tests "$REPO" 0
 
 release_test_stamp_write "$BASE"
-assert_eq "$(release_test_stamp_read_commit)" "$BASE" "stamp stores bare commit hash"
-assert_eq "$(cat "$RELEASE_TEST_STAMP_FILE")" "$BASE" "stamp file content is only the hash"
+assert_eq "$(release_test_stamp_read_commit)" "$BASE" "stamp stores commit hash"
+assert_eq "$(release_test_stamp_read_release_completed)" "0" "stamp marks release not completed on test pass"
+assert_contains "$(cat "$RELEASE_TEST_STAMP_FILE")" "commit=$BASE" "stamp file uses commit= metadata"
 
 # Same commit, clean tree → skip
 assert_true "clean tree at stamped commit skips tests" \
@@ -156,7 +157,8 @@ git -C "$REPO" add README.md
 git -C "$REPO" commit -qm "docs for status preview"
 release_test_stamp_write "$BASE"
 STATUS_OUT="$(release_print_unit_test_stamp_status "$REPO" 0)"
-assert_contains "$STATUS_OUT" "Last unit-test pass: $BASE" "status shows full last-pass hash"
+assert_contains "$STATUS_OUT" "Last green unit-test gate: $BASE" "status shows full last-pass hash"
+assert_contains "$STATUS_OUT" "Release from this gate: not completed" "status explains tests-only stamp"
 assert_contains "$STATUS_OUT" "Unit test gate (non-docs): would skip" "status shows skip when docs-only delta"
 
 echo 'code bump' >> "$REPO/Framework/Sources/A.swift"
@@ -166,7 +168,18 @@ git -C "$REPO" checkout -q -- Framework/Sources/A.swift
 
 rm -f "$RELEASE_TEST_STAMP_FILE"
 STATUS_NONE="$(release_print_unit_test_stamp_status "$REPO" 0)"
-assert_contains "$STATUS_NONE" "Last unit-test pass: (none recorded)" "status shows none when no stamp"
+assert_contains "$STATUS_NONE" "Last green unit-test gate: (none recorded)" "status shows none when no stamp"
+
+release_test_stamp_write "$BASE"
+release_test_stamp_mark_release_complete
+assert_eq "$(release_test_stamp_read_release_completed)" "1" "mark_release_complete sets flag"
+COMPLETE_OUT="$(release_print_unit_test_stamp_status "$REPO" 0)"
+assert_contains "$COMPLETE_OUT" "Release from this gate: completed successfully" "status shows completed release"
+
+# Legacy bare-hash stamp still works for skip logic
+printf '%s\n' "$BASE" > "$RELEASE_TEST_STAMP_FILE"
+assert_true "legacy bare-hash stamp still skips on docs-only delta" \
+    release_should_skip_unit_tests "$REPO" 0
 assert_contains "$STATUS_NONE" "would run (no prior test-pass stamp)" "status shows run when no stamp"
 
 # --- CLI wiring smoke (help) ---
