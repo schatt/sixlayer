@@ -45,7 +45,21 @@ assert_false() {
     fi
 }
 
-echo "=== test_release_test_stamp (#343) ==="
+assert_contains() {
+    local haystack="$1"
+    local needle="$2"
+    local label="$3"
+    if printf '%s' "$haystack" | grep -Fq -- "$needle"; then
+        echo "✅ $label"
+        PASS=$((PASS + 1))
+    else
+        echo "❌ $label"
+        echo "   expected to contain: $needle"
+        FAIL=$((FAIL + 1))
+    fi
+}
+
+echo "=== test_release_test_stamp (#345) ==="
 
 if [ ! -f "$LIB" ]; then
     echo "❌ library missing: $LIB"
@@ -134,6 +148,22 @@ assert_false "--force-tests ignores stamp" \
 printf 'deadbeefdeadbeefdeadbeefdeadbeefdeadbeef\n' > "$RELEASE_TEST_STAMP_FILE"
 assert_false "invalid stamp commit forces re-run" \
     release_should_skip_unit_tests "$REPO" 0
+
+# --- stamp status / gate preview ---
+release_test_stamp_write "$BASE"
+STATUS_OUT="$(release_print_unit_test_stamp_status "$REPO" 0)"
+assert_contains "$STATUS_OUT" "Last unit-test pass: $BASE" "status shows full last-pass hash"
+assert_contains "$STATUS_OUT" "Unit test gate (non-docs): would skip" "status shows skip when docs-only delta"
+
+echo 'code bump' >> "$REPO/Framework/Sources/A.swift"
+STATUS_RUN="$(release_print_unit_test_stamp_status "$REPO" 0)"
+assert_contains "$STATUS_RUN" "Unit test gate (non-docs): would run" "status shows run when code changed"
+git -C "$REPO" checkout -q -- Framework/Sources/A.swift
+
+rm -f "$RELEASE_TEST_STAMP_FILE"
+STATUS_NONE="$(release_print_unit_test_stamp_status "$REPO" 0)"
+assert_contains "$STATUS_NONE" "Last unit-test pass: (none recorded)" "status shows none when no stamp"
+assert_contains "$STATUS_NONE" "would run (no prior test-pass stamp)" "status shows run when no stamp"
 
 # --- CLI wiring smoke (help) ---
 HELP_OUT="$("${SCRIPT_DIR}/release-process.sh" --help 2>&1 || true)"
