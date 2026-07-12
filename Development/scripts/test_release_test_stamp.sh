@@ -150,6 +150,7 @@ assert_false "invalid stamp commit forces re-run" \
     release_should_skip_unit_tests "$REPO" 0
 
 # --- stamp status / gate preview ---
+git -C "$REPO" reset --hard "$BASE" >/dev/null
 echo 'status doc' >> "$REPO/README.md"
 git -C "$REPO" add README.md
 git -C "$REPO" commit -qm "docs for status preview"
