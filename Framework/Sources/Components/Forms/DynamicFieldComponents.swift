@@ -2175,49 +2175,37 @@ public struct DynamicGaugeField: View {
     public var body: some View {
         platformVStackContainer(alignment: .leading, spacing: 8) {
             #if !os(tvOS)
-            if #available(iOS 16.0, macOS 13.0, *) {
-                // Use native Gauge component on supported platforms
-                if gaugeStyle == "circular" {
-                    Gauge(value: value, in: range) {
-                        // Optional gauge label
-                        if let label = gaugeLabel {
-                            Text(label)
-                        }
-                    } currentValueLabel: {
-                        Text("\(Int(value))")
-                    } minimumValueLabel: {
-                        Text("\(Int(range.lowerBound))")
-                    } maximumValueLabel: {
-                        Text("\(Int(range.upperBound))")
+            // Package platforms require iOS 17+ / macOS 15+ — Gauge is unconditional (#340).
+            if gaugeStyle == "circular" {
+                Gauge(value: value, in: range) {
+                    // Optional gauge label
+                    if let label = gaugeLabel {
+                        Text(label)
                     }
-                    .gaugeStyle(.accessoryCircularCapacity)
-                    .automaticCompliance(named: "Gauge")
-                } else {
-                    Gauge(value: value, in: range) {
-                        // Optional gauge label
-                        if let label = gaugeLabel {
-                            Text(label)
-                        }
-                    } currentValueLabel: {
-                        Text("\(Int(value))")
-                    } minimumValueLabel: {
-                        Text("\(Int(range.lowerBound))")
-                    } maximumValueLabel: {
-                        Text("\(Int(range.upperBound))")
-                    }
-                    .gaugeStyle(.linearCapacity)
-                    .automaticCompliance(named: "Gauge")
+                } currentValueLabel: {
+                    Text("\(Int(value))")
+                } minimumValueLabel: {
+                    Text("\(Int(range.lowerBound))")
+                } maximumValueLabel: {
+                    Text("\(Int(range.upperBound))")
                 }
+                .gaugeStyle(.accessoryCircularCapacity)
+                .automaticCompliance(named: "Gauge")
             } else {
-                // Fallback: Use ProgressView for older platforms
-                ProgressView(value: value, total: range.upperBound)
-                    .progressViewStyle(.linear)
-                    .automaticCompliance(named: "ProgressView")
-                
-                Text("\(Int(value)) / \(Int(range.upperBound))")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                    .automaticCompliance(named: "GaugeValueLabel")
+                Gauge(value: value, in: range) {
+                    // Optional gauge label
+                    if let label = gaugeLabel {
+                        Text(label)
+                    }
+                } currentValueLabel: {
+                    Text("\(Int(value))")
+                } minimumValueLabel: {
+                    Text("\(Int(range.lowerBound))")
+                } maximumValueLabel: {
+                    Text("\(Int(range.upperBound))")
+                }
+                .gaugeStyle(.linearCapacity)
+                .automaticCompliance(named: "Gauge")
             }
             #else
             // tvOS: Gauge is unavailable; use ProgressView fallback unconditionally.
