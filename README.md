@@ -27,7 +27,7 @@ Navigate to the `Framework/` directory and use it as a Swift Package:
 ```swift
 // In your Package.swift
 dependencies: [
-    .package(url: "https://github.com/schatt/sixlayer.git", from: "8.2.0")
+    .package(url: "https://github.com/schatt/sixlayer.git", from: "8.2.1")
 ]
 ```
 
@@ -41,9 +41,12 @@ dependencies: [
 
 The framework is distributed as a Swift Package from the `Framework/` directory. This ensures that only the essential framework code is included when other projects consume it.
 
-## 🆕 Latest Release: v8.2.0
+## 🆕 Latest Release: v8.2.1
 
-### **Minor release**
+### **Patch release**
+🔧 **Patch**: Xcode 27 beta compile fix — remove dead `#available` gates inside `@ViewBuilder` (#340). See [RELEASE_v8.2.1.md](Development/RELEASE_v8.2.1.md).
+
+### **Previous Release: v8.2.0 - Minor release**
 🔧 **Minor**: macOS/iOS XCUITest reliability (#316, #317); parallel suite policy (#335); unit-test isolation follow-ups (#334/#337); CI Gitea CA trust (#336). See [RELEASE_v8.2.0.md](Development/RELEASE_v8.2.0.md).
 
 ### **Previous Release: v8.1.1 - Patch release**
@@ -289,8 +292,8 @@ These guides contain critical information about the Layer 1 Semantic Intent phil
 
 ## 📋 Current Status
 
-**Version**: v8.2.0 (Minor)
-**Phase**: Minor release prep
+**Version**: v8.2.1 (Patch)
+**Phase**: Patch release
 **Next**: TBD
 
 ## 🤝 Contributing
