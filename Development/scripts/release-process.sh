@@ -402,6 +402,8 @@ create_github_release_for_version() {
 }
 
 echo "🚀 Starting release process for v$VERSION ($RELEASE_TYPE)"
+REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
+release_print_unit_test_stamp_status "$REPO_ROOT" "$FORCE_TESTS"
 if [ "$DOCS_ONLY" -eq 1 ]; then
     echo "📄 Docs-only mode (--docs): skipping unit tests and release (tag/merge/push/GitHub Release)"
 fi
@@ -427,13 +429,12 @@ IOS_TESTS_FAILED=0
 MACOS_XCRESULT=""
 IOS_XCRESULT=""
 TESTS_SKIPPED_STAMP=0
-REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
 if [ "$DOCS_ONLY" -eq 1 ]; then
     echo "📋 Step 2: Skipping unit tests (--docs)"
 elif release_should_skip_unit_tests "$REPO_ROOT" "$FORCE_TESTS"; then
     STAMPED_COMMIT="$(release_test_stamp_read_commit)"
     TESTS_SKIPPED_STAMP=1
-    echo "📋 Step 2: Skipping unit tests (no code changes since last pass at ${STAMPED_COMMIT:0:12})"
+    echo "📋 Step 2: Skipping unit tests (no code changes since last pass at $STAMPED_COMMIT)"
     echo "   Stamp: $(release_test_stamp_path)"
     echo "   Use --force-tests to run anyway."
 else
@@ -497,7 +498,7 @@ else
         echo "✅ Unit test suite validation passed (macOS + iOS unit tests only)"
         PASS_COMMIT="$(git -C "$REPO_ROOT" rev-parse HEAD)"
         release_test_stamp_write "$PASS_COMMIT"
-        echo "💾 Recorded test-pass stamp for ${PASS_COMMIT:0:12} → $(release_test_stamp_path)"
+        echo "💾 Recorded test-pass stamp for $PASS_COMMIT → $(release_test_stamp_path)"
     fi
 fi
 
