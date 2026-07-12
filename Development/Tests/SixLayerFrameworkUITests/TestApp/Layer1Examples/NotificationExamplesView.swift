@@ -64,10 +64,13 @@ struct NotificationFunctionExamples: View {
             platformVStack(alignment: .leading, spacing: 8) {
                 Text("• platformRequestNotificationPermission_L1")
                     .font(.caption)
+                    .accessibilityIdentifier("L1_NotificationAPI_platformRequestNotificationPermission_L1")
                 Text("• platformShowNotification_L1")
                     .font(.caption)
+                    .accessibilityIdentifier("L1_NotificationAPI_platformShowNotification_L1")
                 Text("• platformUpdateBadge_L1")
                     .font(.caption)
+                    .accessibilityIdentifier("L1_NotificationAPI_platformUpdateBadge_L1")
             }
             .foregroundColor(.secondary)
             

@@ -1,6 +1,6 @@
 # SixLayer Framework
 
-[![Version](https://img.shields.io/badge/version-v8.1.1-blue.svg)](https://github.com/schatt/sixlayer/releases/tag/v8.1.1)
+[![Version](https://img.shields.io/badge/version-v8.2.0-blue.svg)](https://github.com/schatt/sixlayer/releases/tag/v8.2.0)
 [![Platform](https://img.shields.io/badge/platform-iOS%2016%2B%20%7C%20macOS%2013%2B-lightgrey.svg)](https://github.com/schatt/6layer)
 [![Swift](https://img.shields.io/badge/Swift-5.9+-orange.svg)](https://swift.org)
 
@@ -39,6 +39,12 @@ Layer 1: Semantic Intent → Layer 2: Layout Decision → Layer 3: Strategy Sele
 - **Extensible**: Easy to extend with custom layers and strategies
 - **Comprehensively Tested**: 800+ tests with platform-aware testing and mandatory TDD implementation
 - **DRY Architecture**: Define hints once in files, use everywhere automatically
+
+## 🆕 What's New in v8.2.0
+
+### Minor release
+
+macOS/iOS XCUITest reliability (#316, #317), parallel suite policy (#335), unit-test isolation follow-ups (#334/#337), and CI Gitea CA trust (#336). See [RELEASE_v8.2.0.md](../Development/RELEASE_v8.2.0.md).
 
 ## 🆕 What's New in v8.1.1
 

@@ -415,7 +415,7 @@ fi
 echo "🧪 Running iOS unit tests on Simulator (SLF-iOS-UnitTests)..."
 echo "🧹 Pruning unavailable iOS Simulators..."
 xcrun simctl delete unavailable 2>/dev/null || true
-IOS_SIM_NAME="${SLF_IOS_TEST_SIMULATOR:-iPhone 16 Pro}"
+IOS_SIM_NAME="${SLF_IOS_TEST_SIMULATOR:-iPhone 17 Pro Max}"
 if ! xcrun simctl list devices available | grep -q "${IOS_SIM_NAME} ("; then
     IOS_RUNTIME=$(xcrun simctl list runtimes available -j | python3 -c "import json,sys; rs=[r for r in json.load(sys.stdin).get('runtimes',[]) if r.get('isAvailable') and 'iOS' in r.get('name','')]; print(sorted(rs,key=lambda r:r.get('version',''))[-1]['identifier'] if rs else '')")
     if [ -n "$IOS_RUNTIME" ]; then

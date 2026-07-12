@@ -69,6 +69,20 @@ struct TestAppContentView: View {
     private let openAccessibilityCompatibilityPlatformPickerTest = ProcessInfo.processInfo.arguments.contains("-OpenAccessibilityCompatibilityPlatformPickerTest")
     /// When true, app opens directly to Layer 4 contract section (launch arg -OpenLayer4Examples).
     private let openLayer4Examples = ProcessInfo.processInfo.arguments.contains("-OpenLayer4Examples")
+    /// When true, app opens only L4 overlay accessibility contract (launch arg -OpenLayer4OverlayAccessibility). Refs #316.
+    private let openLayer4OverlayAccessibility = ProcessInfo.processInfo.arguments.contains("-OpenLayer4OverlayAccessibility")
+    /// When true, app opens directly to Layer 3 examples (launch arg -OpenLayer3Examples). Refs #316.
+    private let openLayer3Examples = ProcessInfo.processInfo.arguments.contains("-OpenLayer3Examples")
+    /// Deep-link one Layer 1 category: `-OpenLayer1Category=Data-Presentation` (etc). Refs #316.
+    private let openLayer1CategoryArg: String? = {
+        guard let raw = ProcessInfo.processInfo.arguments
+            .first(where: { $0.hasPrefix("-OpenLayer1Category=") })?
+            .split(separator: "=", maxSplits: 1)
+            .last
+            .map(String.init)
+        else { return nil }
+        return raw.isEmpty ? nil : raw
+    }()
     /// When true, app opens directly to Layer 5 Accessibility section (launch arg -OpenLayer5Accessibility).
     private let openLayer5Accessibility = ProcessInfo.processInfo.arguments.contains("-OpenLayer5Accessibility")
     /// When true, app opens directly to Layer 6 Cross-Platform section (launch arg -OpenLayer6Examples).
@@ -181,9 +195,22 @@ struct TestAppContentView: View {
                 NavigationStack {
                     IdentifierEdgeCaseTestView()
                 }
+            } else if openLayer4OverlayAccessibility {
+                NavigationStack {
+                    Layer4OverlayAccessibilityOnlyView()
+                }
             } else if openLayer4Examples {
                 NavigationStack {
                     Layer4ContractOnlyView()
+                }
+            } else if openLayer3Examples {
+                NavigationStack {
+                    Layer3ExamplesView()
+                }
+            } else if let layer1Category = resolvedOpenLayer1Category {
+                // Do not wrap in VStack — nested ScrollView gets zero height and XCUI sees an empty page (#316).
+                NavigationStack {
+                    layer1CategoryView(for: layer1Category)
                 }
             } else if openLayer5Accessibility {
                 NavigationStack {
@@ -463,6 +490,18 @@ struct TestAppContentView: View {
     
     // MARK: - Layer 1 Examples View
 
+    /// Resolve `-OpenLayer1Category=` to a `TestCategory` (accepts `Data-Presentation` or `Data Presentation`).
+    private var resolvedOpenLayer1Category: TestCategory? {
+        guard let arg = openLayer1CategoryArg else { return nil }
+        let spaced = arg.replacingOccurrences(of: "-", with: " ")
+        return TestCategory.allCases.first {
+            $0.rawValue.compare(spaced, options: [.caseInsensitive, .diacriticInsensitive]) == .orderedSame
+                || $0.rawValue
+                    .replacingOccurrences(of: " ", with: "-")
+                    .compare(arg, options: [.caseInsensitive, .diacriticInsensitive]) == .orderedSame
+        }
+    }
+
     /// Layer 1 expanded content: list of nav links (one per category). No picker.
     @ViewBuilder
     private var layer1ExamplesView: some View {
@@ -507,6 +546,18 @@ struct TestAppContentView: View {
         }
         .navigationTitle(category.rawValue)
         .platformNavigationTitleDisplayMode_L4(.inline)
+        .overlay(alignment: .topLeading) {
+            // Tiny marker — avoid accessibilityIdentifier on the category root (collapses children).
+            // Prefer overlay over safeAreaInset so the marker stays in the a11y tree (#316).
+            Text("L1_Category_\(category.rawValue.replacingOccurrences(of: " ", with: "-"))")
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+                .accessibilityIdentifier(
+                    "L1_Category_\(category.rawValue.replacingOccurrences(of: " ", with: "-"))"
+                )
+                .padding(8)
+                .allowsHitTesting(false)
+        }
     }
 }
 

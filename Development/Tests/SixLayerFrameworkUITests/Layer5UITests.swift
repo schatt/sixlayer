@@ -46,7 +46,13 @@ final class Layer5UITests: XCTestCase {
 
     @MainActor
     private func assertElementHasIdentifierFromModifier(label: String, modifierName: String) {
-        let el = app.staticTexts[label].firstMatch
+        // Prefer exact staticText; fall back to any node with that label (macOS empty-label demotion #316).
+        var el = app.staticTexts[label].firstMatch
+        if !el.waitForExistence(timeout: Self.quickWait) {
+            el = app.descendants(matching: .any)
+                .matching(NSPredicate(format: "label == %@ OR value == %@", label, label))
+                .firstMatch
+        }
         XCTAssertTrue(el.waitForExistence(timeout: Self.quickWait), "\(modifierName): element '\(label)' should exist")
         XCTAssertFalse(el.identifier.isEmpty,
                        "\(modifierName) must apply a11y to the element it wraps. '\(label)' should have identifier. Found: '\(el.identifier)'")
@@ -60,7 +66,22 @@ final class Layer5UITests: XCTestCase {
     @MainActor
     func testL5_voiceOverEnabled() throws {
         // voiceOverEnabled() uses .accessibilityElement(children: .contain); identifier is on the container.
-        let el = app.otherElements["Enhanced accessibility view"].firstMatch
+        // macOS may not keep the label on `.other` after automaticCompliance — also match by identifier (#316).
+        let byLabel = app.otherElements["Enhanced accessibility view"].firstMatch
+        let byId = app.descendants(matching: .any)
+            .matching(NSPredicate(format: "identifier CONTAINS[c] %@", "voiceoverenabled"))
+            .firstMatch
+        let byAnyLabel = app.descendants(matching: .any)
+            .matching(NSPredicate(format: "label == %@", "Enhanced accessibility view"))
+            .firstMatch
+        let el: XCUIElement
+        if byLabel.waitForExistence(timeout: Self.quickWait) {
+            el = byLabel
+        } else if byAnyLabel.waitForExistence(timeout: Self.quickWait) {
+            el = byAnyLabel
+        } else {
+            el = byId
+        }
         XCTAssertTrue(el.waitForExistence(timeout: Self.quickWait), "voiceOverEnabled(): container 'Enhanced accessibility view' should exist")
         XCTAssertFalse(el.identifier.isEmpty,
                        "voiceOverEnabled() must apply a11y to the view it presents. Container should have identifier. Found: '\(el.identifier)'")

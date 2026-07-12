@@ -25,9 +25,12 @@ public struct IntelligentDetailView {
         hints: PresentationHints? = nil,
         showEditButton: Bool = true,
         onEdit: (() -> Void)? = nil,
-        @ViewBuilder customFieldView: @escaping (String, Any, FieldType) -> some View = { fieldName, value, fieldType in
+        @ViewBuilder customFieldView: @escaping (String, Any, FieldType) -> some View = { _, value, _ in
+            // Explicit label/value: macOS XCUI often leaves Text.label empty under automaticCompliance (#316).
             Text(String(describing: value))
                 .foregroundColor(.secondary)
+                .accessibilityLabel(String(describing: value))
+                .accessibilityValue(String(describing: value))
         }
     ) -> some View {
         let analysis = DataIntrospectionEngine.analyze(data)
@@ -89,6 +92,8 @@ public struct IntelligentDetailView {
         @ViewBuilder customFieldView: @escaping (String, String, FieldType) -> some View = { fieldName, value, fieldType in
             Text(value)
                 .foregroundColor(.secondary)
+                .accessibilityLabel(value)
+                .accessibilityValue(value)
         }
     ) -> some View {
         platformDetailView(
@@ -538,15 +543,21 @@ public extension IntelligentDetailView {
     static func platformDefaultFieldValue(field: DataField, value: Any) -> some View {
         switch field.type {
         case .string:
-            Text(String(describing: value))
+            let text = String(describing: value)
+            Text(text)
                 .font(.body)
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.trailing)
+                .accessibilityLabel(text)
+                .accessibilityValue(text)
         case .number:
-            Text(String(describing: value))
+            let text = String(describing: value)
+            Text(text)
                 .font(.body)
                 .fontWeight(.medium)
                 .foregroundColor(.secondary)
+                .accessibilityLabel(text)
+                .accessibilityValue(text)
         case .boolean:
             Image(systemName: (value as? Bool == true) ? "checkmark.circle.fill" : "xmark.circle.fill")
                 .foregroundColor((value as? Bool == true) ? .green : .red)

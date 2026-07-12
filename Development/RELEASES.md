@@ -1,12 +1,21 @@
 # 🚀 Six-Layer Framework Release History
 
-## 📍 **Current Release: v8.1.1** 🔧
+## 📍 **Current Release: v8.2.0** 🔧
 
 **Release Date**: TBD (prep on `next`)
-**Status**: Patch release (prep on `next`)
-**Previous Release**: v8.1.0 - Minor release
-**Note**: Window/container resize (#330), framework-owned adaptive app-nav sidebar / icon-rail (#331), and macOS ViewInspector parallel-test reliability (#315).
+**Status**: Minor release (prep on `next`)
+**Previous Release**: v8.1.1 - Patch release
+**Note**: macOS/iOS XCUITest reliability (#316, #317), parallel suite policy (#335), unit-test isolation follow-ups (#334/#337), CI Gitea CA trust (#336).
 **Next Release**: TBD
+
+---
+
+## 🎯 **v8.2.0 - XCUITest deep-links and parallel test hygiene** (TBD)
+
+### **What's in v8.2.0:**
+- Minor release (#316, #317, #334–#337). See [RELEASE_v8.2.0.md](RELEASE_v8.2.0.md) for details.
+
+**See [RELEASE_v8.2.0.md](RELEASE_v8.2.0.md) for complete release notes.**
 
 ---
 

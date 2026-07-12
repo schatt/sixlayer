@@ -5,68 +5,119 @@
 //  Examples of Layer 1 data presentation functions
 //  Issue #166
 //
+//  #316: optional `-L1Section=` mounts one section without ScrollView (no scroll-as-discovery).
+//
 
 import SwiftUI
 import SixLayerFramework
 
 /// Examples of data presentation functions for Layer 1
 struct Layer1DataPresentationExamples: View {
+    /// `-L1Section=items|numeric|form|modal|media|hierarchical|temporal|content|settings|responsiveCard`
+    private var focusedSection: String? {
+        guard let raw = ProcessInfo.processInfo.arguments
+            .first(where: { $0.hasPrefix("-L1Section=") })?
+            .split(separator: "=", maxSplits: 1)
+            .last
+        else { return nil }
+        let name = String(raw)
+        return name.isEmpty ? nil : name
+    }
+
+    private func shows(_ section: String) -> Bool {
+        guard let focusedSection else { return true }
+        return focusedSection.compare(section, options: [.caseInsensitive]) == .orderedSame
+    }
+
     var body: some View {
-        ScrollView {
-            platformVStack(alignment: .leading, spacing: 24) {
-                // Item Collection Examples
-                ExampleSection(title: "Item Collection") {
-                    ItemCollectionExamples()
+        // Deep-linked section: no ScrollView (#316). Full browse keeps scroll for manual use only.
+        Group {
+            if focusedSection != nil {
+                platformVStack(alignment: .leading, spacing: 24) {
+                    sectionBody
                 }
-                
-                // Numeric Data Examples
-                ExampleSection(title: "Numeric Data") {
-                    NumericDataExamples()
-                }
-                
-                // Form Data Examples
-                ExampleSection(title: "Form Data") {
-                    FormDataExamples()
-                }
-                
-                // Modal Form Examples
-                ExampleSection(title: "Modal Form") {
-                    ModalFormExamples()
-                }
-                
-                // Media Data Examples
-                ExampleSection(title: "Media Data") {
-                    MediaDataExamples()
-                }
-                
-                // Hierarchical Data Examples
-                ExampleSection(title: "Hierarchical Data") {
-                    HierarchicalDataExamples()
-                }
-                
-                // Temporal Data Examples
-                ExampleSection(title: "Temporal Data") {
-                    TemporalDataExamples()
-                }
-                
-                // Content Examples
-                ExampleSection(title: "Content & Basic Values") {
-                    ContentExamples()
-                }
-                
-                // Settings Examples
-                ExampleSection(title: "Settings") {
-                    SettingsExamples()
-                }
-                
-                // Responsive Card Examples
-                ExampleSection(title: "Responsive Card") {
-                    ResponsiveCardExamples()
+                .padding()
+            } else {
+                ScrollView {
+                    platformVStack(alignment: .leading, spacing: 24) {
+                        sectionBody
+                    }
+                    .padding()
                 }
             }
-            .padding()
         }
         .platformFrame()
+    }
+
+    @ViewBuilder
+    private var sectionBody: some View {
+        if shows("items") {
+            Text("L1_Section_Items")
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+                .accessibilityIdentifier("L1_Section_Items")
+            ExampleSection(title: "Item Collection") {
+                ItemCollectionExamples(compactHost: focusedSection != nil)
+            }
+        }
+
+        if shows("numeric") {
+            ExampleSection(title: "Numeric Data") {
+                NumericDataExamples()
+            }
+        }
+
+        if shows("form") {
+            ExampleSection(title: "Form Data") {
+                FormDataExamples()
+            }
+        }
+
+        if shows("modal") {
+            ExampleSection(title: "Modal Form") {
+                ModalFormExamples()
+            }
+        }
+
+        if shows("media") {
+            ExampleSection(title: "Media Data") {
+                MediaDataExamples()
+            }
+        }
+
+        if shows("hierarchical") {
+            ExampleSection(title: "Hierarchical Data") {
+                HierarchicalDataExamples()
+            }
+        }
+
+        if shows("temporal") {
+            ExampleSection(title: "Temporal Data") {
+                TemporalDataExamples()
+            }
+        }
+
+        if shows("content") {
+            ExampleSection(title: "Content & Basic Values") {
+                ContentExamples()
+            }
+        }
+
+        if shows("settings") {
+            ExampleSection(title: "Settings") {
+                SettingsExamples()
+            }
+        }
+
+        if shows("responsiveCard") {
+            Text("L1_Section_ResponsiveCard")
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+                .accessibilityIdentifier("L1_Section_ResponsiveCard")
+            ExampleSection(title: "Responsive Card") {
+                ResponsiveCardExamples()
+            }
+        }
     }
 }
 
@@ -78,24 +129,27 @@ struct ItemCollectionExamples: View {
         let name: String
         let description: String
     }
-    
+
+    /// UITest deep-link: taller frame so nested list ScrollView stays queryable (#316).
+    var compactHost: Bool = false
+
     let testItems = [
         TestItem(name: "Item 1", description: "First test item"),
         TestItem(name: "Item 2", description: "Second test item"),
         TestItem(name: "Item 3", description: "Third test item")
     ]
-    
+
     let hints = PresentationHints(
         dataType: .generic,
         presentationPreference: .list,
         complexity: .simple
     )
-    
+
     var body: some View {
         platformVStack(alignment: .leading, spacing: 12) {
             Text("Basic Item Collection")
                 .font(.headline)
-            
+
             platformPresentItemCollection_L1(
                 items: testItems,
                 hints: hints,
@@ -103,7 +157,7 @@ struct ItemCollectionExamples: View {
                     print("Selected: \(item.name)")
                 }
             )
-            .frame(height: 200)
+            .frame(height: compactHost ? 360 : 200)
         }
         .padding()
         .background(Color.platformSecondaryBackground)

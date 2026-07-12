@@ -29,8 +29,9 @@ public struct HostedViewTestIsolationTrait: Sendable, TestTrait, SuiteTrait, Tes
         let testID = test.id
         let hostingSession = HostingSession()
         var propagation: Error?
-        try await HostingControllerStorage.$session.withValue(hostingSession) {
-            try await HostingControllerStorage.$scopeTestID.withValue(testID) {
+        // Errors from `function` are caught below — withValue closures are non-throwing (#337).
+        await HostingControllerStorage.$session.withValue(hostingSession) {
+            await HostingControllerStorage.$scopeTestID.withValue(testID) {
                 do {
                     try await function()
                 } catch {
