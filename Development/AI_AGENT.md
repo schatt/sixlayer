@@ -11,6 +11,8 @@ This document provides guidance for AI assistants working with the SixLayer Fram
 ## 📚 Version-Specific Guides
 
 ### Latest Versions (Recommended)
+- **v8.2.1** — Patch release: Xcode 27 beta compile fix — dead `#available` gates inside `@ViewBuilder` (#340) (see [RELEASE_v8.2.1.md](RELEASE_v8.2.1.md))
+- **[AI_AGENT_v8.2.1.md](AI_AGENT_v8.2.1.md)** - v8.2.1 patch notes; minor baseline remains [AI_AGENT_v8.2.0.md](AI_AGENT_v8.2.0.md)
 - **v8.2.0** — Minor release: macOS/iOS XCUITest reliability (#316, #317); parallel suite policy (#335); unit-test isolation follow-ups (#334/#337); CI Gitea CA trust (#336) (see [RELEASE_v8.2.0.md](RELEASE_v8.2.0.md))
 - **[AI_AGENT_v8.2.0.md](AI_AGENT_v8.2.0.md)** - v8.2.0 minor notes; ViewInspector baseline remains [AI_AGENT_v8.1.0.md](AI_AGENT_v8.1.0.md)
 - **v8.1.1** — Patch release: window/container resize (#330); framework-owned adaptive app-nav sidebar / icon-rail (#331); macOS ViewInspector parallel-test reliability (#315) (see [RELEASE_v8.1.1.md](RELEASE_v8.1.1.md))
