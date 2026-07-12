@@ -320,21 +320,9 @@ public extension View {
         action: @escaping () -> Void
     ) -> some View {
         Button(action: action) {
-            #if os(macOS)
-            if #available(macOS 11.0, *) {
-                Label(title, systemImage: systemImage)
-                    .foregroundColor(.primary)
-            } else {
-                HStack {
-                    Image(systemName: systemImage)
-                    Text(title)
-                }
-                .foregroundColor(.primary)
-            }
-            #else
+            // Package platforms require macOS 15+ — Label is unconditional (#340).
             Label(title, systemImage: systemImage)
                 .foregroundColor(.primary)
-            #endif
         }
         .buttonStyle(PlainButtonStyle())
         .accessibilityLabel(accessibilityLabel)
@@ -517,21 +505,9 @@ public extension View {
         }
         #elseif os(macOS)
         Button(action: { isActive.wrappedValue = true }) {
-            #if os(macOS)
-            if #available(macOS 11.0, *) {
-                Label(title, systemImage: systemImage)
-                    .foregroundColor(.primary)
-            } else {
-                HStack {
-                    Image(systemName: systemImage)
-                    Text(title)
-                }
-                .foregroundColor(.primary)
-            }
-            #else
+            // Package platforms require macOS 15+ — Label is unconditional (#340).
             Label(title, systemImage: systemImage)
                 .foregroundColor(.primary)
-            #endif
         }
         .buttonStyle(PlainButtonStyle())
         .automaticCompliance(
