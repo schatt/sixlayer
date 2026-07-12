@@ -336,7 +336,7 @@ public final class LocationService: NSObject, LocationServiceProtocol, CLLocatio
         authorizationStatus = .authorizedAlways
         #endif
         locationServicesEnabled = true
-        updateLocationEnabledStatus()
+        isLocationEnabled = true
     }
 
     private static func stubLocationForTesting() -> CLLocation {
