@@ -150,6 +150,9 @@ assert_false "invalid stamp commit forces re-run" \
     release_should_skip_unit_tests "$REPO" 0
 
 # --- stamp status / gate preview ---
+echo 'status doc' >> "$REPO/README.md"
+git -C "$REPO" add README.md
+git -C "$REPO" commit -qm "docs for status preview"
 release_test_stamp_write "$BASE"
 STATUS_OUT="$(release_print_unit_test_stamp_status "$REPO" 0)"
 assert_contains "$STATUS_OUT" "Last unit-test pass: $BASE" "status shows full last-pass hash"
