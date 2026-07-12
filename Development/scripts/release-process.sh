@@ -14,6 +14,9 @@
 #   --release  Non-interactive release: auto-accept suggested version (when prompted),
 #              proceed with tag/push or merge+release, skip branch delete (keeps branch,
 #              switches back when not on main). Does not auto-resolve a diverged main.
+#   --docs     Docs-only mode: run documentation / metadata validation (and xcodegen),
+#              skip the unit test suite, and do not tag/merge/push or create a GitHub Release.
+#              Mutually exclusive with --release.
 #
 # Version suggestion (when VERSION is omitted): latest local semver tag vX.Y.Z, then
 # Package.swift, then README.md. Removed tags are not visible; pass an explicit version
@@ -34,6 +37,7 @@ exec > >(tee -a "${RELEASE_LOG_FILE}") 2>&1
 echo "📄 Release process log: ${RELEASE_LOG_FILE}"
 
 AUTO_RELEASE=0
+DOCS_ONLY=0
 POSITIONAL=()
 while [ $# -gt 0 ]; do
     case "$1" in
@@ -41,23 +45,31 @@ while [ $# -gt 0 ]; do
             AUTO_RELEASE=1
             shift
             ;;
+        --docs)
+            DOCS_ONLY=1
+            shift
+            ;;
         -h|--help)
-            echo "Usage: $0 [--release] [release_type|version] [version|release_type]"
+            echo "Usage: $0 [--release|--docs] [release_type|version] [version|release_type]"
             echo ""
             echo "  --release  Run without prompts: confirm tag/push or merge+release, keep release branch."
             echo "             Auto-accepts suggested version when version is inferred from the repo."
+            echo "  --docs     Docs-only: validate release documentation/metadata, skip tests, and do not release."
+            echo "             Mutually exclusive with --release."
             echo ""
             echo "  Omitted version: bump is suggested from latest local vX.Y.Z tag, else Package.swift, else README."
             echo ""
             echo "Examples:"
             echo "  $0 minor"
+            echo "  $0 --docs minor"
+            echo "  $0 --docs 8.2.0 minor"
             echo "  $0 --release patch"
             echo "  $0 --release 7.2.0 minor"
             exit 0
             ;;
         -*)
             echo "❌ Unknown option: $1" >&2
-            echo "Usage: $0 [--release] [release_type] [version]  (see --help)" >&2
+            echo "Usage: $0 [--release|--docs] [release_type] [version]  (see --help)" >&2
             exit 1
             ;;
         *)
@@ -66,6 +78,12 @@ while [ $# -gt 0 ]; do
             ;;
     esac
 done
+
+if [ "$AUTO_RELEASE" -eq 1 ] && [ "$DOCS_ONLY" -eq 1 ]; then
+    echo "❌ --docs and --release are mutually exclusive" >&2
+    echo "Usage: $0 [--release|--docs] [release_type] [version]  (see --help)" >&2
+    exit 1
+fi
 
 ARG1=${POSITIONAL[0]:-}
 ARG2=${POSITIONAL[1]:-}
@@ -223,14 +241,15 @@ fi
 # Validate release type early
 if [[ ! "$RELEASE_TYPE" =~ ^(major|minor|patch)$ ]]; then
     echo "❌ Error: Invalid release type '$RELEASE_TYPE'. Must be 'major', 'minor', or 'patch'"
-    echo "Usage: $0 [--release] [release_type] [version]"
-    echo "       $0 [--release] [version] [release_type]"
+    echo "Usage: $0 [--release|--docs] [release_type] [version]"
+    echo "       $0 [--release|--docs] [version] [release_type]"
     echo "Examples:"
     echo "  $0 minor              # Auto-detect version, minor release"
     echo "  $0 5.8.0              # Explicit version, patch release (default)"
     echo "  $0 minor 5.8.0        # Explicit type and version"
     echo "  $0 5.8.0 minor        # Version first, then type (also works)"
     echo "  $0 --release patch    # Non-interactive patch release (see header comment)"
+    echo "  $0 --docs minor       # Docs-only validation (skip tests, no release)"
     exit 1
 fi
 
@@ -263,8 +282,8 @@ if [ -z "$VERSION" ]; then
                 echo
                 if [[ $REPLY =~ ^[Nn]$ ]]; then
                     echo "❌ Error: Version required"
-                    echo "Usage: $0 [--release] [release_type] [version]"
-                    echo "       $0 [--release] [version] [release_type]"
+                    echo "Usage: $0 [--release|--docs] [release_type] [version]"
+                    echo "       $0 [--release|--docs] [version] [release_type]"
                     echo "Examples:"
                     echo "  $0 minor 5.8.0        # Explicit type and version"
                     echo "  $0 5.8.0 minor        # Version first, then type"
@@ -276,14 +295,14 @@ if [ -z "$VERSION" ]; then
             fi
         else
             echo "❌ Error: Failed to calculate suggested version"
-            echo "Usage: $0 [--release] [release_type] [version]"
-            echo "       $0 [--release] [version] [release_type]"
+            echo "Usage: $0 [--release|--docs] [release_type] [version]"
+            echo "       $0 [--release|--docs] [version] [release_type]"
             exit 1
         fi
     else
         echo "❌ Error: Version required and could not detect current version"
-        echo "Usage: $0 [--release] [release_type] [version]"
-        echo "       $0 [--release] [version] [release_type]"
+        echo "Usage: $0 [--release|--docs] [release_type] [version]"
+        echo "       $0 [--release|--docs] [version] [release_type]"
         echo ""
         echo "Could not determine baseline: no semver tag vX.Y.Z, and no version in Package.swift or README.md"
         exit 1
@@ -367,6 +386,9 @@ create_github_release_for_version() {
 }
 
 echo "🚀 Starting release process for v$VERSION ($RELEASE_TYPE)"
+if [ "$DOCS_ONLY" -eq 1 ]; then
+    echo "📄 Docs-only mode (--docs): skipping unit tests and release (tag/merge/push/GitHub Release)"
+fi
 
 # Step 1: Regenerate Xcode project
 echo "📋 Step 1: Ensuring Xcode project is up to date..."
@@ -383,66 +405,73 @@ else
 fi
 
 # Step 2: Run tests (unit tests only per platform — no UI tests, no ViewInspector, no AllTests)
-echo "📋 Step 2: Running unit test suite (macOS + iOS unit tests only)..."
-
-# Write structured test bundles for triage when the release gate fails (ignored via build/)
-RELEASE_TEST_STAMP=$(date -u +"%Y%m%dT%H%M%SZ")
-XCRESULT_BASE="build/release-process/${RELEASE_TEST_STAMP}-v${VERSION}"
-mkdir -p "$XCRESULT_BASE"
-MACOS_XCRESULT="${XCRESULT_BASE}/SLF-macOS-UnitTests.xcresult"
-IOS_XCRESULT="${XCRESULT_BASE}/SLF-iOS-UnitTests.xcresult"
-echo "📎 xcresult bundles for this run: $MACOS_XCRESULT and $IOS_XCRESULT"
-
-# Run both platform unit tests even if one fails (cross-platform signal). Do not exit here:
-# remaining release checks still run so test + documentation failures appear together at the end.
+# Skipped in --docs mode.
 MACOS_TESTS_FAILED=0
 IOS_TESTS_FAILED=0
-
-echo "🧪 Running macOS unit tests (SLF-macOS-UnitTests)..."
-# Note: do NOT use -quiet here so that any failures print detailed diagnostics
-if ! xcodebuild test \
-    -project SixLayerFramework.xcodeproj \
-    -scheme SLF-macOS-UnitTests \
-    -destination "platform=macOS,arch=arm64" \
-    -resultBundlePath "$MACOS_XCRESULT" \
-    -quiet; then
-    MACOS_TESTS_FAILED=1
-    log_error "macOS unit tests failed."
+MACOS_XCRESULT=""
+IOS_XCRESULT=""
+if [ "$DOCS_ONLY" -eq 1 ]; then
+    echo "📋 Step 2: Skipping unit tests (--docs)"
 else
-    echo "✅ macOS unit tests passed"
-fi
+    echo "📋 Step 2: Running unit test suite (macOS + iOS unit tests only)..."
 
-echo "🧪 Running iOS unit tests on Simulator (SLF-iOS-UnitTests)..."
-echo "🧹 Pruning unavailable iOS Simulators..."
-xcrun simctl delete unavailable 2>/dev/null || true
-IOS_SIM_NAME="${SLF_IOS_TEST_SIMULATOR:-iPhone 17 Pro Max}"
-if ! xcrun simctl list devices available | grep -q "${IOS_SIM_NAME} ("; then
-    IOS_RUNTIME=$(xcrun simctl list runtimes available -j | python3 -c "import json,sys; rs=[r for r in json.load(sys.stdin).get('runtimes',[]) if r.get('isAvailable') and 'iOS' in r.get('name','')]; print(sorted(rs,key=lambda r:r.get('version',''))[-1]['identifier'] if rs else '')")
-    if [ -n "$IOS_RUNTIME" ]; then
-        echo "📱 Creating iOS Simulator: ${IOS_SIM_NAME} (${IOS_RUNTIME})"
-        xcrun simctl create "$IOS_SIM_NAME" com.apple.CoreSimulator.SimDeviceType.iPhone-16-Pro "$IOS_RUNTIME" >/dev/null 2>&1 || true
+    # Write structured test bundles for triage when the release gate fails (ignored via build/)
+    RELEASE_TEST_STAMP=$(date -u +"%Y%m%dT%H%M%SZ")
+    XCRESULT_BASE="build/release-process/${RELEASE_TEST_STAMP}-v${VERSION}"
+    mkdir -p "$XCRESULT_BASE"
+    MACOS_XCRESULT="${XCRESULT_BASE}/SLF-macOS-UnitTests.xcresult"
+    IOS_XCRESULT="${XCRESULT_BASE}/SLF-iOS-UnitTests.xcresult"
+    echo "📎 xcresult bundles for this run: $MACOS_XCRESULT and $IOS_XCRESULT"
+
+    # Run both platform unit tests even if one fails (cross-platform signal). Do not exit here:
+    # remaining release checks still run so test + documentation failures appear together at the end.
+
+    echo "🧪 Running macOS unit tests (SLF-macOS-UnitTests)..."
+    # Note: do NOT use -quiet here so that any failures print detailed diagnostics
+    if ! xcodebuild test \
+        -project SixLayerFramework.xcodeproj \
+        -scheme SLF-macOS-UnitTests \
+        -destination "platform=macOS,arch=arm64" \
+        -resultBundlePath "$MACOS_XCRESULT" \
+        -quiet; then
+        MACOS_TESTS_FAILED=1
+        log_error "macOS unit tests failed."
+    else
+        echo "✅ macOS unit tests passed"
     fi
-fi
-if ! xcodebuild test \
-    -project SixLayerFramework.xcodeproj \
-    -scheme SLF-iOS-UnitTests \
-    -destination "platform=iOS Simulator,name=${IOS_SIM_NAME}" \
-    -resultBundlePath "$IOS_XCRESULT" \
-    -quiet; then
-    IOS_TESTS_FAILED=1
-    log_error "iOS unit tests failed."
-else
-    echo "✅ iOS unit tests passed"
-fi
 
-# Release gate runs unit tests only (SLF-*-UnitTests). UI/ViewInspector/AllTests are not run here.
-if [ "$MACOS_TESTS_FAILED" -eq 1 ] || [ "$IOS_TESTS_FAILED" -eq 1 ]; then
-    echo "⚠️  Unit test gate failed on one or more platforms; continuing with remaining release checks." >&2
-    echo "📎 macOS xcresult: $MACOS_XCRESULT" >&2
-    echo "📎 iOS xcresult:   $IOS_XCRESULT" >&2
-    echo "💡 Inspect: xcrun xcresulttool get test-results summary --path <path>" >&2
-else
-    echo "✅ Unit test suite validation passed (macOS + iOS unit tests only)"
+    echo "🧪 Running iOS unit tests on Simulator (SLF-iOS-UnitTests)..."
+    echo "🧹 Pruning unavailable iOS Simulators..."
+    xcrun simctl delete unavailable 2>/dev/null || true
+    IOS_SIM_NAME="${SLF_IOS_TEST_SIMULATOR:-iPhone 17 Pro Max}"
+    if ! xcrun simctl list devices available | grep -q "${IOS_SIM_NAME} ("; then
+        IOS_RUNTIME=$(xcrun simctl list runtimes available -j | python3 -c "import json,sys; rs=[r for r in json.load(sys.stdin).get('runtimes',[]) if r.get('isAvailable') and 'iOS' in r.get('name','')]; print(sorted(rs,key=lambda r:r.get('version',''))[-1]['identifier'] if rs else '')")
+        if [ -n "$IOS_RUNTIME" ]; then
+            echo "📱 Creating iOS Simulator: ${IOS_SIM_NAME} (${IOS_RUNTIME})"
+            xcrun simctl create "$IOS_SIM_NAME" com.apple.CoreSimulator.SimDeviceType.iPhone-16-Pro "$IOS_RUNTIME" >/dev/null 2>&1 || true
+        fi
+    fi
+    if ! xcodebuild test \
+        -project SixLayerFramework.xcodeproj \
+        -scheme SLF-iOS-UnitTests \
+        -destination "platform=iOS Simulator,name=${IOS_SIM_NAME}" \
+        -resultBundlePath "$IOS_XCRESULT" \
+        -quiet; then
+        IOS_TESTS_FAILED=1
+        log_error "iOS unit tests failed."
+    else
+        echo "✅ iOS unit tests passed"
+    fi
+
+    # Release gate runs unit tests only (SLF-*-UnitTests). UI/ViewInspector/AllTests are not run here.
+    if [ "$MACOS_TESTS_FAILED" -eq 1 ] || [ "$IOS_TESTS_FAILED" -eq 1 ]; then
+        echo "⚠️  Unit test gate failed on one or more platforms; continuing with remaining release checks." >&2
+        echo "📎 macOS xcresult: $MACOS_XCRESULT" >&2
+        echo "📎 iOS xcresult:   $IOS_XCRESULT" >&2
+        echo "💡 Inspect: xcrun xcresulttool get test-results summary --path <path>" >&2
+    else
+        echo "✅ Unit test suite validation passed (macOS + iOS unit tests only)"
+    fi
 fi
 
 # Step 2: Check git is clean (no uncommitted changes)
@@ -1103,7 +1132,11 @@ echo "🎉 All release documentation checks passed!"
 echo ""
 echo "📋 Release Checklist Complete:"
 echo "✅ Xcode project regenerated"
-echo "✅ Tests passed"
+if [ "$DOCS_ONLY" -eq 1 ]; then
+    echo "⏭️  Unit tests skipped (--docs)"
+else
+    echo "✅ Tests passed"
+fi
 echo "✅ Git repository is clean"
 echo "✅ RELEASES.md updated correctly"
 echo "✅ Individual release file exists"
@@ -1115,6 +1148,15 @@ echo "✅ Main AI_AGENT.md file exists"
 echo "✅ Documentation files exist"
 echo "✅ Example files exist"
 echo ""
+
+if [ "$DOCS_ONLY" -eq 1 ]; then
+    echo "✅ Docs-only checks passed for v$VERSION."
+    echo "⏭️  Skipping release (tag/merge/push/GitHub Release) because --docs was set."
+    echo ""
+    echo "Release process complete! ✅"
+    exit 0
+fi
+
 echo "🚀 All checks passed! Ready for tagging and release."
 
 # Handle different workflows based on current branch
