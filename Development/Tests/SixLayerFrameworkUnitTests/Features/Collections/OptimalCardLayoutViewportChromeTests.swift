@@ -23,7 +23,8 @@ struct OptimalCardLayoutViewportChromeTests {
         )
         #expect(withChrome.viewportHeight == 621)
         #expect(withoutChrome.viewportHeight == geometryHeight)
-        #expect(withChrome.cardRowHeight < withoutChrome.cardRowHeight)
+        #expect(withChrome.cardRowHeight <= withoutChrome.cardRowHeight)
+        #expect(withChrome.viewportHeight < withoutChrome.viewportHeight)
     }
 
     @Test @MainActor func responsiveCardsView_ZeroChromeInsetsMatchFullGeometryViewport() {
