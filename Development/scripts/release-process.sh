@@ -17,12 +17,21 @@
 #   --docs     Docs-only mode: run documentation / metadata validation (and xcodegen),
 #              skip the unit test suite, and do not tag/merge/push or create a GitHub Release.
 #              Mutually exclusive with --release.
+#   --force-tests  Ignore the /tmp last-pass stamp and always run unit tests (not needed with --docs).
+#
+# Test skip stamp: after a green macOS+iOS unit-test gate, HEAD is recorded under /tmp
+# (repo-scoped). Later runs skip tests when every change since that commit is docs-only.
+# See Development/scripts/lib/release_test_stamp.sh.
 #
 # Version suggestion (when VERSION is omitted): latest local semver tag vX.Y.Z, then
 # Package.swift, then README.md. Removed tags are not visible; pass an explicit version
 # for non-linear cases (e.g. emergency re-release).
 
 set -e
+
+RELEASE_PROCESS_SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=lib/release_test_stamp.sh
+source "${RELEASE_PROCESS_SCRIPT_DIR}/lib/release_test_stamp.sh"
 
 # -----------------------------------------------------------------------------
 # Per-run logging: capture the entire release process output in /tmp
@@ -38,6 +47,7 @@ echo "📄 Release process log: ${RELEASE_LOG_FILE}"
 
 AUTO_RELEASE=0
 DOCS_ONLY=0
+FORCE_TESTS=0
 POSITIONAL=()
 while [ $# -gt 0 ]; do
     case "$1" in
@@ -49,13 +59,18 @@ while [ $# -gt 0 ]; do
             DOCS_ONLY=1
             shift
             ;;
+        --force-tests)
+            FORCE_TESTS=1
+            shift
+            ;;
         -h|--help)
-            echo "Usage: $0 [--release|--docs] [release_type|version] [version|release_type]"
+            echo "Usage: $0 [--release|--docs] [--force-tests] [release_type|version] [version|release_type]"
             echo ""
             echo "  --release  Run without prompts: confirm tag/push or merge+release, keep release branch."
             echo "             Auto-accepts suggested version when version is inferred from the repo."
             echo "  --docs     Docs-only: validate release documentation/metadata, skip tests, and do not release."
             echo "             Mutually exclusive with --release."
+            echo "  --force-tests  Always run unit tests; ignore the /tmp last-pass stamp (docs-only deltas)."
             echo ""
             echo "  Omitted version: bump is suggested from latest local vX.Y.Z tag, else Package.swift, else README."
             echo ""
@@ -63,13 +78,14 @@ while [ $# -gt 0 ]; do
             echo "  $0 minor"
             echo "  $0 --docs minor"
             echo "  $0 --docs 8.2.0 minor"
+            echo "  $0 --force-tests patch"
             echo "  $0 --release patch"
             echo "  $0 --release 7.2.0 minor"
             exit 0
             ;;
         -*)
             echo "❌ Unknown option: $1" >&2
-            echo "Usage: $0 [--release|--docs] [release_type] [version]  (see --help)" >&2
+            echo "Usage: $0 [--release|--docs] [--force-tests] [release_type] [version]  (see --help)" >&2
             exit 1
             ;;
         *)
@@ -81,7 +97,7 @@ done
 
 if [ "$AUTO_RELEASE" -eq 1 ] && [ "$DOCS_ONLY" -eq 1 ]; then
     echo "❌ --docs and --release are mutually exclusive" >&2
-    echo "Usage: $0 [--release|--docs] [release_type] [version]  (see --help)" >&2
+    echo "Usage: $0 [--release|--docs] [--force-tests] [release_type] [version]  (see --help)" >&2
     exit 1
 fi
 
@@ -405,13 +421,21 @@ else
 fi
 
 # Step 2: Run tests (unit tests only per platform — no UI tests, no ViewInspector, no AllTests)
-# Skipped in --docs mode.
+# Skipped in --docs mode, or when a valid last-pass stamp shows only docs-only changes since then.
 MACOS_TESTS_FAILED=0
 IOS_TESTS_FAILED=0
 MACOS_XCRESULT=""
 IOS_XCRESULT=""
+TESTS_SKIPPED_STAMP=0
+REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
 if [ "$DOCS_ONLY" -eq 1 ]; then
     echo "📋 Step 2: Skipping unit tests (--docs)"
+elif release_should_skip_unit_tests "$REPO_ROOT" "$FORCE_TESTS"; then
+    STAMPED_COMMIT="$(release_test_stamp_read_commit "$REPO_ROOT")"
+    TESTS_SKIPPED_STAMP=1
+    echo "📋 Step 2: Skipping unit tests (no code changes since last pass at ${STAMPED_COMMIT:0:12})"
+    echo "   Stamp: $(release_test_stamp_path "$REPO_ROOT")"
+    echo "   Use --force-tests to run anyway."
 else
     echo "📋 Step 2: Running unit test suite (macOS + iOS unit tests only)..."
 
@@ -471,6 +495,9 @@ else
         echo "💡 Inspect: xcrun xcresulttool get test-results summary --path <path>" >&2
     else
         echo "✅ Unit test suite validation passed (macOS + iOS unit tests only)"
+        PASS_COMMIT="$(git -C "$REPO_ROOT" rev-parse HEAD)"
+        release_test_stamp_write "$REPO_ROOT" "$PASS_COMMIT"
+        echo "💾 Recorded test-pass stamp for ${PASS_COMMIT:0:12} → $(release_test_stamp_path "$REPO_ROOT")"
     fi
 fi
 
@@ -1134,6 +1161,8 @@ echo "📋 Release Checklist Complete:"
 echo "✅ Xcode project regenerated"
 if [ "$DOCS_ONLY" -eq 1 ]; then
     echo "⏭️  Unit tests skipped (--docs)"
+elif [ "${TESTS_SKIPPED_STAMP:-0}" -eq 1 ]; then
+    echo "⏭️  Unit tests skipped (no code changes since last pass stamp)"
 else
     echo "✅ Tests passed"
 fi
