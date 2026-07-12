@@ -105,3 +105,59 @@ release_should_skip_unit_tests() {
 
     return 0
 }
+
+# Print last-pass stamp and whether a non-docs run would skip or run unit tests.
+release_print_unit_test_stamp_status() {
+    local root="$1"
+    local force_tests="${2:-0}"
+    local commit stamp_path non_docs_only
+
+    stamp_path=$(release_test_stamp_path)
+    if commit=$(release_test_stamp_read_commit 2>/dev/null); then
+        echo "📎 Last unit-test pass: $commit"
+    else
+        echo "📎 Last unit-test pass: (none recorded)"
+        echo "   Stamp file: $stamp_path"
+    fi
+
+    if [ "$force_tests" -eq 1 ]; then
+        echo "📎 Unit test gate (non-docs): would run (--force-tests)"
+        return 0
+    fi
+
+    if release_should_skip_unit_tests "$root" 0; then
+        commit=$(release_test_stamp_read_commit)
+        echo "📎 Unit test gate (non-docs): would skip (docs-only changes since $commit)"
+        return 0
+    fi
+
+    if [ ! -f "$stamp_path" ]; then
+        echo "📎 Unit test gate (non-docs): would run (no prior test-pass stamp)"
+        return 0
+    fi
+
+    if ! commit=$(release_test_stamp_read_commit 2>/dev/null); then
+        echo "📎 Unit test gate (non-docs): would run (invalid stamp file)"
+        return 0
+    fi
+
+    if ! git -C "$root" cat-file -e "${commit}^{commit}" 2>/dev/null; then
+        echo "📎 Unit test gate (non-docs): would run (stamp commit not in repo: $commit)"
+        return 0
+    fi
+
+    non_docs_only=""
+    while IFS= read -r p; do
+        [ -z "$p" ] && continue
+        if ! release_is_docs_only_path "$p"; then
+            non_docs_only="$p"
+            break
+        fi
+    done < <(release_changed_paths_since "$commit" "$root")
+
+    if [ -n "$non_docs_only" ]; then
+        echo "📎 Unit test gate (non-docs): would run (non-docs-only changes since $commit; e.g. $non_docs_only)"
+    else
+        echo "📎 Unit test gate (non-docs): would run (non-docs-only changes since $commit)"
+    fi
+}
