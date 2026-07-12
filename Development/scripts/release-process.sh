@@ -498,7 +498,8 @@ else
         echo "✅ Unit test suite validation passed (macOS + iOS unit tests only)"
         PASS_COMMIT="$(git -C "$REPO_ROOT" rev-parse HEAD)"
         release_test_stamp_write "$PASS_COMMIT"
-        echo "💾 Recorded test-pass stamp for $PASS_COMMIT → $(release_test_stamp_path)"
+        echo "💾 Recorded unit-test gate pass at $PASS_COMMIT → $(release_test_stamp_path)"
+        echo "   (tests only — stamp is written even if later doc checks fail)"
     fi
 fi
 
@@ -1219,6 +1220,7 @@ if [ "$CURRENT_BRANCH" = "main" ]; then
         echo "🎉 Release v$VERSION completed successfully!"
         echo "📦 Tag: v$VERSION"
         echo "🌐 Pushed to all remotes (GitHub, Codeberg, GitLab)"
+        release_test_stamp_mark_release_complete 2>/dev/null || true
     else
         echo "🚀 Ready to create release tag v$VERSION"
         echo ""
@@ -1307,6 +1309,7 @@ else
         echo "📦 Tag: v$VERSION"
         echo "🌐 Pushed to all remotes (GitHub, Codeberg, GitLab)"
         echo ""
+        release_test_stamp_mark_release_complete 2>/dev/null || true
 
         # After merge we are on main. If the source branch is release-prep (namespaced or legacy flat), create b<major>/b<next patch>.
         RELEASE_PREP_MATCH=0
