@@ -1,12 +1,21 @@
 # 🚀 Six-Layer Framework Release History
 
-## 📍 **Current Release: v8.2.0** 🔧
+## 📍 **Current Release: v8.2.1** 🔧
 
-**Release Date**: TBD (prep on `next`)
-**Status**: Minor release (prep on `next`)
-**Previous Release**: v8.1.1 - Patch release
-**Note**: macOS/iOS XCUITest reliability (#316, #317), parallel suite policy (#335), unit-test isolation follow-ups (#334/#337), CI Gitea CA trust (#336).
+**Release Date**: July 12, 2026
+**Status**: Patch release
+**Previous Release**: v8.2.0 - Minor release
+**Note**: Xcode 27 beta compile fix — remove dead `#available` gates inside `@ViewBuilder` (#340).
 **Next Release**: TBD
+
+---
+
+## 🎯 **v8.2.1 - Xcode 27 TupleContent compile fix** (July 12, 2026)
+
+### **What's in v8.2.1:**
+- Patch release (#340). See [RELEASE_v8.2.1.md](RELEASE_v8.2.1.md) for details.
+
+**See [RELEASE_v8.2.1.md](RELEASE_v8.2.1.md) for complete release notes.**
 
 ---
 
