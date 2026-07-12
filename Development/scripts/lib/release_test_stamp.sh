@@ -1,16 +1,16 @@
 #!/usr/bin/env bash
-# Release-process unit-test stamp helpers (#342).
+# Release-process unit-test stamp helpers (#342, #343).
 # Sourced by release-process.sh and unit tests.
 #
-# After a green macOS+iOS unit-test gate, record HEAD under /tmp (repo-scoped).
+# After a green macOS+iOS unit-test gate, record HEAD in a single /tmp file.
 # Later runs may skip tests when every change since that commit is docs-only.
+#
+# Release runs are manual, one at a time, from one checkout — so one fixed
+# stamp path is enough (override via RELEASE_TEST_STAMP_FILE for tests).
 
-# Absolute path to the stamp file for a given repo root.
+# Absolute path to the stamp file (single shared file).
 release_test_stamp_path() {
-    local root="$1"
-    local key
-    key=$(printf '%s' "$root" | shasum -a 256 | awk '{print $1}')
-    echo "/tmp/sixlayer-release-tests-passed-${key}"
+    echo "${RELEASE_TEST_STAMP_FILE:-/tmp/sixlayer-release-tests-passed}"
 }
 
 # True (0) when path is documentation/metadata-only for release re-runs.
@@ -40,40 +40,25 @@ release_is_docs_only_path() {
     esac
 }
 
+# Write bare commit hash to the stamp file.
 release_test_stamp_write() {
-    local root="$1"
-    local commit="$2"
+    local commit="$1"
     local path
-    path=$(release_test_stamp_path "$root")
-    cat > "$path" <<EOF
-commit=${commit}
-repo=${root}
-passed_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)
-EOF
+    path=$(release_test_stamp_path)
+    printf '%s\n' "$commit" > "$path"
 }
 
+# Read bare commit hash from the stamp file.
 release_test_stamp_read_commit() {
-    local root="$1"
-    local path line
-    path=$(release_test_stamp_path "$root")
+    local path commit
+    path=$(release_test_stamp_path)
     [ -f "$path" ] || return 1
-    line=$(grep -E '^commit=' "$path" | head -1 || true)
-    [ -n "$line" ] || return 1
-    echo "${line#commit=}"
-}
-
-release_test_stamp_read_repo() {
-    local root="$1"
-    local path line
-    path=$(release_test_stamp_path "$root")
-    [ -f "$path" ] || return 1
-    line=$(grep -E '^repo=' "$path" | head -1 || true)
-    [ -n "$line" ] || return 1
-    echo "${line#repo=}"
+    commit=$(tr -d '[:space:]' < "$path")
+    [ -n "$commit" ] || return 1
+    printf '%s\n' "$commit"
 }
 
 # Paths changed since commit (working tree + untracked), relative to repo root.
-# Runs in the current directory (caller should cd to repo root) unless REPO_ROOT set.
 release_changed_paths_since() {
     local commit="$1"
     local root="${2:-.}"
@@ -91,23 +76,18 @@ release_changed_paths_since() {
 release_should_skip_unit_tests() {
     local root="$1"
     local force_tests="${2:-0}"
-    local path commit stamped_repo p
+    local path commit p
 
     if [ "$force_tests" -eq 1 ]; then
         return 1
     fi
 
-    path=$(release_test_stamp_path "$root")
+    path=$(release_test_stamp_path)
     if [ ! -f "$path" ]; then
         return 1
     fi
 
-    stamped_repo=$(release_test_stamp_read_repo "$root" || true)
-    if [ "$stamped_repo" != "$root" ]; then
-        return 1
-    fi
-
-    commit=$(release_test_stamp_read_commit "$root" || true)
+    commit=$(release_test_stamp_read_commit || true)
     if [ -z "$commit" ]; then
         return 1
     fi
