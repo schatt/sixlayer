@@ -3,7 +3,8 @@ import SwiftUI
 // MARK: - Platform Menu System Extensions
 
 /// Platform-specific menu system extensions that provide consistent behavior
-/// across iOS and macOS using SwiftUI `Menu`.
+/// across iOS and macOS using SwiftUI `Menu`. watchOS, tvOS, and visionOS pass
+/// through the label (no `Menu`; unavailable on those platforms).
 public extension View {
 
     /// Platform menu with menu items.
