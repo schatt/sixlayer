@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Unit tests for release-process test-pass stamp / docs-only skip (#342).
+# Unit tests for release-process test-pass stamp / docs-only skip (#342, #343).
 
 set -euo pipefail
 
@@ -45,7 +45,7 @@ assert_false() {
     fi
 }
 
-echo "=== test_release_test_stamp (#342) ==="
+echo "=== test_release_test_stamp (#343) ==="
 
 if [ ! -f "$LIB" ]; then
     echo "❌ library missing: $LIB"
@@ -53,6 +53,11 @@ if [ ! -f "$LIB" ]; then
 fi
 # shellcheck source=/dev/null
 source "$LIB"
+
+# Isolate stamp file so tests never touch the real release stamp.
+RELEASE_TEST_STAMP_FILE="$(mktemp "${TMPDIR:-/tmp}/release-test-stamp-file.XXXXXX")"
+export RELEASE_TEST_STAMP_FILE
+rm -f "$RELEASE_TEST_STAMP_FILE"
 
 # --- path classification ---
 assert_true "README.md is docs-only" release_is_docs_only_path "README.md"
@@ -63,9 +68,12 @@ assert_false "Framework/Sources/foo.swift is not docs-only" release_is_docs_only
 assert_false "Package.swift is not docs-only" release_is_docs_only_path "Package.swift"
 assert_false "project.yml is not docs-only" release_is_docs_only_path "project.yml"
 
+# --- single fixed stamp path ---
+assert_eq "$(release_test_stamp_path)" "$RELEASE_TEST_STAMP_FILE" "stamp path is the single configured file"
+
 # --- temp repo fixtures ---
 REPO="$(mktemp -d "${TMPDIR:-/tmp}/release-test-stamp.XXXXXX")"
-cleanup() { rm -rf "$REPO"; }
+cleanup() { rm -rf "$REPO" "$RELEASE_TEST_STAMP_FILE"; }
 trap cleanup EXIT
 
 git -C "$REPO" init -q
@@ -78,15 +86,13 @@ git -C "$REPO" add -A
 git -C "$REPO" commit -qm "initial"
 BASE="$(git -C "$REPO" rev-parse HEAD)"
 
-STAMP_PATH="$(release_test_stamp_path "$REPO")"
-rm -f "$STAMP_PATH"
-
 # No stamp → do not skip
 assert_false "no stamp means run tests" \
     release_should_skip_unit_tests "$REPO" 0
 
-release_test_stamp_write "$REPO" "$BASE"
-assert_eq "$(release_test_stamp_read_commit "$REPO")" "$BASE" "stamp stores commit"
+release_test_stamp_write "$BASE"
+assert_eq "$(release_test_stamp_read_commit)" "$BASE" "stamp stores bare commit hash"
+assert_eq "$(cat "$RELEASE_TEST_STAMP_FILE")" "$BASE" "stamp file content is only the hash"
 
 # Same commit, clean tree → skip
 assert_true "clean tree at stamped commit skips tests" \
@@ -119,21 +125,14 @@ assert_false "code commit after stamp forces re-run" \
     release_should_skip_unit_tests "$REPO" 0
 
 # Force flag → run even when docs-only
-release_test_stamp_write "$REPO" "$(git -C "$REPO" rev-parse HEAD)"
+release_test_stamp_write "$(git -C "$REPO" rev-parse HEAD)"
 echo 'doc' >> "$REPO/README.md"
 assert_false "--force-tests ignores stamp" \
     release_should_skip_unit_tests "$REPO" 1
 
 # Invalid commit in stamp → run
-printf 'commit=deadbeefdeadbeefdeadbeefdeadbeefdeadbeef\nrepo=%s\n' "$REPO" > "$STAMP_PATH"
+printf 'deadbeefdeadbeefdeadbeefdeadbeefdeadbeef\n' > "$RELEASE_TEST_STAMP_FILE"
 assert_false "invalid stamp commit forces re-run" \
-    release_should_skip_unit_tests "$REPO" 0
-
-# Wrong repo path in stamp → run
-release_test_stamp_write "$REPO" "$(git -C "$REPO" rev-parse HEAD)"
-# corrupt repo= line
-sed -i.bak 's|^repo=.*|repo=/tmp/other-repo|' "$STAMP_PATH"
-assert_false "stamp for different repo forces re-run" \
     release_should_skip_unit_tests "$REPO" 0
 
 # --- CLI wiring smoke (help) ---
