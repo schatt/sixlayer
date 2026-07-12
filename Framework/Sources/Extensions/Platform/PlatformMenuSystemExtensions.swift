@@ -27,11 +27,15 @@ public extension View {
     func platformMenu<MenuItems: View>(
         @ViewBuilder content: () -> MenuItems
     ) -> some View {
+        #if os(iOS) || os(macOS)
         Menu {
             content()
         } label: {
             self
         }
+        #else
+        self
+        #endif
     }
 
     /// Platform menu with menu items and label.
@@ -59,11 +63,15 @@ public extension View {
         label: Label,
         @ViewBuilder content: () -> MenuItems
     ) -> some View {
+        #if os(iOS) || os(macOS)
         Menu {
             content()
         } label: {
             label
         }
+        #else
+        label
+        #endif
     }
 
     /// Platform menu with menu items and title.
@@ -91,11 +99,15 @@ public extension View {
         title: String,
         @ViewBuilder content: () -> MenuItems
     ) -> some View {
+        #if os(iOS) || os(macOS)
         Menu {
             content()
         } label: {
             Text(title)
         }
+        #else
+        Text(title)
+        #endif
     }
 }
 
