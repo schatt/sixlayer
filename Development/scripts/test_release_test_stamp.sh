@@ -78,8 +78,12 @@ assert_true "README.md is docs-only" release_is_docs_only_path "README.md"
 assert_true "Development/RELEASE_v8.3.0.md is docs-only" release_is_docs_only_path "Development/RELEASE_v8.3.0.md"
 assert_true "Development/AI_AGENT_v8.3.0.md is docs-only" release_is_docs_only_path "Development/AI_AGENT_v8.3.0.md"
 assert_true "Framework/docs/foo.md is docs-only" release_is_docs_only_path "Framework/docs/foo.md"
+assert_true "Package.swift is docs-only for release prep" release_is_docs_only_path "Package.swift"
+assert_true "project.pbxproj is docs-only for release prep" release_is_docs_only_path "SixLayerFramework.xcodeproj/project.pbxproj"
+assert_true "release-process.sh is docs-only for release prep" release_is_docs_only_path "Development/scripts/release-process.sh"
+assert_true "release_test_stamp.sh is docs-only for release prep" release_is_docs_only_path "Development/scripts/lib/release_test_stamp.sh"
+assert_true "test_release_test_stamp.sh is docs-only for release prep" release_is_docs_only_path "Development/scripts/test_release_test_stamp.sh"
 assert_false "Framework/Sources/foo.swift is not docs-only" release_is_docs_only_path "Framework/Sources/foo.swift"
-assert_false "Package.swift is not docs-only" release_is_docs_only_path "Package.swift"
 assert_false "project.yml is not docs-only" release_is_docs_only_path "project.yml"
 
 # --- single fixed stamp path ---

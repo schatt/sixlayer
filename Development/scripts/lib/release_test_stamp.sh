@@ -12,10 +12,12 @@ release_test_stamp_path() {
 }
 
 # True (0) when path is documentation/metadata-only for release re-runs.
+# Includes release-prep metadata (version comments, xcodegen output, release scripts).
 release_is_docs_only_path() {
     local p="$1"
     case "$p" in
         README.md|\
+        Package.swift|\
         Framework/README.md|\
         Framework/Examples/README.md|\
         Framework/docs/*|\
@@ -26,6 +28,11 @@ release_is_docs_only_path() {
         Development/PROJECT_STATUS.md|\
         Development/ROADMAP.md|\
         Development/scripts/ISSUE_TRACKING_GUIDE.md|\
+        Development/scripts/release-process.sh|\
+        Development/scripts/lib/release_test_stamp.sh|\
+        Development/scripts/test_release_*.sh|\
+        SixLayerFramework.xcodeproj/project.pbxproj|\
+        SixLayerFramework.xcodeproj/xcshareddata/xcschemes/*|\
         PROJECT_RULES.md|\
         MANDATORY_TESTING_RULES.md|\
         .cursor/*|\
