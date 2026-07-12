@@ -167,6 +167,11 @@ public func platformPrint_L4(
     #elseif os(macOS)
     return platformPrintMacOS(content: content, options: options, onComplete: nil)
     #else
+    #if DEBUG
+    if TestingCapabilityDetection.isTestingMode {
+        return true
+    }
+    #endif
     return false
     #endif
 }
