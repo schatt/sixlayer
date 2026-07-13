@@ -49,7 +49,8 @@ struct DetailViewCategoryBAuditView: View {
                 Text("Category B Detail Coverage")
                     .font(.title2)
                     .bold()
-                    .accessibilityIdentifier("Category B Detail Coverage")
+                    .exactNamed("category-b-detail-host-root")
+                    .accessibilityLabel("Category B Detail Coverage")
 
                 Text("Default IntelligentDetailView")
                     .font(.headline)
