@@ -27,9 +27,8 @@ extension XCUIApplication {
         // This allows the app to skip slow initialization paths
         launchEnvironment = ["XCUI_TESTING": "1"]
     }
-    
 
-        /// Swipe down on the software keyboard when present so the next `Form` row can scroll above the
+    /// Swipe down on the software keyboard when present so the next `Form` row can scroll above the
     /// keyboard and accept first responder (Issue #150 / iOS 26 UITest flakes; Refs #261).
     func xcuiDismissSoftwareKeyboardIfPresent() {
         #if os(iOS)
