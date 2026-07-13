@@ -73,6 +73,8 @@ struct TestAppContentView: View {
     private let openLayer4OverlayAccessibility = ProcessInfo.processInfo.arguments.contains("-OpenLayer4OverlayAccessibility")
     /// When true, app opens directly to Layer 3 examples (launch arg -OpenLayer3Examples). Refs #316.
     private let openLayer3Examples = ProcessInfo.processInfo.arguments.contains("-OpenLayer3Examples")
+    /// When true, app opens directly to Layer 2 examples (launch arg -OpenLayer2Examples). Refs #348 / #316.
+    private let openLayer2Examples = ProcessInfo.processInfo.arguments.contains("-OpenLayer2Examples")
     /// Deep-link one Layer 1 category: `-OpenLayer1Category=Data-Presentation` (etc). Refs #316.
     private let openLayer1CategoryArg: String? = {
         guard let raw = ProcessInfo.processInfo.arguments
@@ -202,6 +204,10 @@ struct TestAppContentView: View {
             } else if openLayer4Examples {
                 NavigationStack {
                     Layer4ContractOnlyView()
+                }
+            } else if openLayer2Examples {
+                NavigationStack {
+                    Layer2ExamplesView()
                 }
             } else if openLayer3Examples {
                 NavigationStack {
