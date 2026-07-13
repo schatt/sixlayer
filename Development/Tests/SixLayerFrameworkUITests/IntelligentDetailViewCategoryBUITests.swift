@@ -74,10 +74,16 @@ final class IntelligentDetailViewCategoryBUITests: XCTestCase {
     }
 
     func testCategoryB_customFieldView_showsCustomMarker() throws {
-        let byId = app.elementMatchingExactIdentifier(Host.customFieldIdentifier)
+        // Prefer literal exactNamed; also accept UITest-prefixed identifiers via CONTAINS (one query).
+        let pred = NSPredicate(
+            format: "identifier == %@ OR identifier CONTAINS[c] %@",
+            Host.customFieldIdentifier,
+            Host.customFieldIdentifier
+        )
+        let byId = app.descendants(matching: .any).matching(pred).firstMatch
         XCTAssertTrue(
             byId.waitForExistence(timeout: 2.0),
-            "Custom field should expose exact accessibility identifier \(Host.customFieldIdentifier)"
+            "Custom field should expose accessibility identifier containing \(Host.customFieldIdentifier)"
         )
         XCTAssertTrue(
             byId.xcuiAccessibleText.contains(Copy.customFieldPrefix),
