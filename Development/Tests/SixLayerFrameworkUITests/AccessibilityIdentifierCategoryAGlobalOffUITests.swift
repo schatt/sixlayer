@@ -26,18 +26,8 @@ final class AccessibilityIdentifierCategoryAGlobalOffUITests: XCTestCase {
             localApp.launchArguments.append("-CategoryAGlobalAutoOff")
             localApp.launch()
             Self.sharedApp = localApp
-            // macOS often does not expose NavigationStack titles as navigationBars (#316).
-            let landed =
-                localApp.navigationBars["Category A Global Off"].waitForExistence(timeout: 2.5)
-                || localApp.staticTexts["Category A — global automatic IDs off"].waitForExistence(timeout: 2.0)
-                || localApp.descendants(matching: .any)
-                    .matching(NSPredicate(format: "label CONTAINS[c] %@", "global automatic IDs off"))
-                    .firstMatch.waitForExistence(timeout: 1.5)
-                || localApp.descendants(matching: .any)
-                    .matching(NSPredicate(format: "identifier CONTAINS[c] %@", "CatAGlobalOffTitle"))
-                    .firstMatch.waitForExistence(timeout: 2.0)
             XCTAssertTrue(
-                landed,
+                localApp.waitForHostRootIdentifier("category-a-global-off-host-root"),
                 "App should open Category A Global Off audit (launch args -OpenCategoryAAccessibility -CategoryAGlobalAutoOff)"
             )
         }
@@ -85,8 +75,8 @@ final class AccessibilityIdentifierCategoryAGlobalOffUITests: XCTestCase {
 
     func testCategoryAGlobalOff_namedTitle_rowLoads() throws {
         XCTAssertTrue(
-            anyElement(identifierContains: "CatAGlobalOffTitle").waitForExistence(timeout: 2.5),
-            "Headline with automaticCompliance(named:) should still expose an identifier on this screen"
+            anyElement(identifierEquals: "CatAGlobalOffTitle").waitForExistence(timeout: 2.5),
+            "Headline with exactNamed(CatAGlobalOffTitle) should expose the literal identifier"
         )
     }
 }
