@@ -74,20 +74,11 @@ final class IntelligentDetailViewCategoryBUITests: XCTestCase {
     }
 
     func testCategoryB_customFieldView_showsCustomMarker() throws {
-        // Prefer literal exactNamed; also accept UITest-prefixed identifiers via CONTAINS (one query).
-        let pred = NSPredicate(
-            format: "identifier == %@ OR identifier CONTAINS[c] %@",
-            Host.customFieldIdentifier,
-            Host.customFieldIdentifier
-        )
-        let byId = app.descendants(matching: .any).matching(pred).firstMatch
-        XCTAssertTrue(
-            byId.waitForExistence(timeout: 2.0),
-            "Custom field should expose accessibility identifier containing \(Host.customFieldIdentifier)"
-        )
-        XCTAssertTrue(
-            byId.xcuiAccessibleText.contains(Copy.customFieldPrefix),
-            "Custom field identifier should expose marker text; got '\(byId.xcuiAccessibleText)'"
+        // IntelligentDetailView reparents customFieldView; literal ids are unreliable here.
+        // Assert visible marker text with the single-predicate helper (#348).
+        assertAccessibleTextExists(
+            Copy.customFieldPrefix,
+            "Custom field rendering should expose the custom marker text"
         )
     }
 
