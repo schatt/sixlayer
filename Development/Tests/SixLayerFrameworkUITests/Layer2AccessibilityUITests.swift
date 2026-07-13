@@ -38,8 +38,7 @@ final class Layer2AccessibilityUITests: XCTestCase {
             instance.app = localApp
 
             XCTAssertTrue(
-                localApp.descendants(matching: .any)[Host.rootIdentifier]
-                    .firstMatch.waitForExistence(timeout: 2.5),
+                localApp.waitForHostRootIdentifier(Host.rootIdentifier),
                 "App should open Layer 2 Examples (\(Host.openArg))"
             )
         }
