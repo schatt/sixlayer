@@ -374,20 +374,11 @@ extension XCUIElement {
 extension XCUIApplication {
     /// Wait for a deep-linked host's stable root accessibility identifier (#348 / #316).
     /// Prefer this over navigationBar / staticText OR ladders — hosts must expose the marker.
+    /// Uses ``XCUIElement/elementMatchingExactIdentifier(_:)`` (inherited; do not redeclare it here —
+    /// XCUIApplication subclasses XCUIElement and cannot override non-@objc extension methods).
     @discardableResult
     func waitForHostRootIdentifier(_ identifier: String, timeout: TimeInterval = 2.5) -> Bool {
         elementMatchingExactIdentifier(identifier).waitForExistence(timeout: timeout)
-    }
-
-    /// Exact accessibility-identifier query at app scope (single `.any` slot — no type ladder).
-    func elementMatchingExactIdentifier(_ identifier: String) -> XCUIElement {
-        descendants(matching: .any)[identifier].firstMatch
-    }
-
-    /// Wait for an exact accessibility identifier at app scope.
-    func waitForExactIdentifier(_ identifier: String, timeout: TimeInterval = 2.0) -> XCUIElement? {
-        let element = elementMatchingExactIdentifier(identifier)
-        return element.waitForExistence(timeout: timeout) ? element : nil
     }
 
     /// Runs compatibility-oriented checks on the **current** screen only (Issue #180).
