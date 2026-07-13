@@ -1331,12 +1331,17 @@ public struct TestingCapabilityDetection {
     /// Whether we're currently in testing mode
     public static var isTestingMode: Bool {
         #if DEBUG
-        // Check for XCTest environment variables
         let environment = ProcessInfo.processInfo.environment
-        return environment["XCTestConfigurationFilePath"] != nil ||
-               environment["XCTestSessionIdentifier"] != nil ||
-               environment["XCTestBundlePath"] != nil ||
-               NSClassFromString("XCTestCase") != nil
+        if environment["XCTestConfigurationFilePath"] != nil ||
+           environment["XCTestSessionIdentifier"] != nil ||
+           environment["XCTestBundlePath"] != nil ||
+           NSClassFromString("XCTestCase") != nil {
+            return true
+        }
+        if NSClassFromString("Testing.Test") != nil {
+            return true
+        }
+        return false
         #else
         return false
         #endif

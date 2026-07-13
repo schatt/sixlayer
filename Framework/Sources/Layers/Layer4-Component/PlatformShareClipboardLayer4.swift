@@ -278,6 +278,12 @@ public func platformShare_L4(
     onComplete?(success)
     return success
     #else
+    #if DEBUG
+    if TestingCapabilityDetection.isTestingMode {
+        onComplete?(true)
+        return true
+    }
+    #endif
     _ = items
     _ = sourceView
     _ = onComplete

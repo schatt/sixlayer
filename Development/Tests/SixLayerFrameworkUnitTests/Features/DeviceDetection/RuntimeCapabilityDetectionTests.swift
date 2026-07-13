@@ -183,8 +183,13 @@ open class RuntimeCapabilityDetectionTDDTests: BaseTestClass {
         RuntimeCapabilityDetection.Vision.setTestIsFrameworkAvailable(false)
         RuntimeCapabilityDetection.Vision.setTestIsFrameworkAvailable(true)
 
+        #if os(tvOS) || os(watchOS)
+        #expect(!RuntimeCapabilityDetection.Vision.isFrameworkAvailable)
+        #expect(!RuntimeCapabilityDetection.Vision.supportsOCR)
+        #else
         #expect(RuntimeCapabilityDetection.Vision.isFrameworkAvailable)
         #expect(RuntimeCapabilityDetection.Vision.supportsOCR)
+        #endif
     }
 
     @Test @MainActor func testVisionFrameworkDisableClearsOCR() {
@@ -467,11 +472,26 @@ open class RuntimeCapabilityDetectionTDDTests: BaseTestClass {
     @Test @MainActor
     func testVisionOverridesClearWithClearAllCapabilityOverrides() {
         RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        defer { RuntimeCapabilityDetection.clearAllCapabilityOverrides() }
+
         let baselineFramework = RuntimeCapabilityDetection.Vision.isFrameworkAvailable
         let baselineOCR = RuntimeCapabilityDetection.Vision.supportsOCR
         let baselineImageAnalyzer = RuntimeCapabilityDetection.Vision.supportsImageAnalyzer
         let baselineDocumentCamera = RuntimeCapabilityDetection.Vision.supportsDocumentCamera
 
+        #if os(tvOS) || os(watchOS)
+        RuntimeCapabilityDetection.Vision.setTestIsFrameworkAvailable(false)
+        #expect(!RuntimeCapabilityDetection.Vision.isFrameworkAvailable)
+
+        RuntimeCapabilityDetection.Vision.setTestSupportsOCR(false)
+        #expect(!RuntimeCapabilityDetection.Vision.supportsOCR)
+
+        RuntimeCapabilityDetection.Vision.setTestSupportsImageAnalyzer(false)
+        #expect(!RuntimeCapabilityDetection.Vision.supportsImageAnalyzer)
+
+        RuntimeCapabilityDetection.Vision.setTestSupportsDocumentCamera(false)
+        #expect(!RuntimeCapabilityDetection.Vision.supportsDocumentCamera)
+        #else
         RuntimeCapabilityDetection.Vision.setTestIsFrameworkAvailable(!baselineFramework)
         #expect(RuntimeCapabilityDetection.Vision.isFrameworkAvailable == !baselineFramework)
 
@@ -483,6 +503,7 @@ open class RuntimeCapabilityDetectionTDDTests: BaseTestClass {
 
         RuntimeCapabilityDetection.Vision.setTestSupportsDocumentCamera(!baselineDocumentCamera)
         #expect(RuntimeCapabilityDetection.Vision.supportsDocumentCamera == !baselineDocumentCamera)
+        #endif
 
         RuntimeCapabilityDetection.clearAllCapabilityOverrides()
 

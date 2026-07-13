@@ -83,6 +83,14 @@ public struct ExportActionPayload: @unchecked Sendable {
 }
 
 enum ExportActionResolution {
+    static var platformSupportsImperativePrint: Bool {
+        #if os(iOS) || os(macOS)
+        return true
+        #else
+        return false
+        #endif
+    }
+
     static func enabledActions(
         payload: ExportActionPayload,
         options: ExportActionOptions
@@ -91,7 +99,9 @@ enum ExportActionResolution {
         if options.showsShare {
             actions.append(.share)
         }
-        if options.showsPrint, resolvePrintContent(payload: payload) != nil {
+        if options.showsPrint,
+           platformSupportsImperativePrint,
+           resolvePrintContent(payload: payload) != nil {
             actions.append(.print)
         }
         return actions
