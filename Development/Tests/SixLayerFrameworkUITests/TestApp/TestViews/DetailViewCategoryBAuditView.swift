@@ -70,9 +70,9 @@ struct DetailViewCategoryBAuditView: View {
                         // Explicit a11y surface for macOS XCUI (#316) — framework wrappers can leave label empty.
                         Text("Custom Field: \(fieldName) = \(value)")
                             .accessibilityElement(children: .ignore)
-                            .exactNamed("category-b-custom-field")
                             .accessibilityLabel("Custom Field: \(fieldName) = \(value)")
                             .accessibilityValue("Custom Field: \(fieldName) = \(value)")
+                            .exactNamed("category-b-custom-field")
                     }
                 )
 
