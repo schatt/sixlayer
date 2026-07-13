@@ -1,6 +1,6 @@
 # UI Test Strategy (supersedes one-launch consolidation draft)
 
-**Status:** Historical “one launch + navigate everywhere” plan is **superseded** by #316 / #348.
+**Status:** Historical “one launch + navigate everywhere” plan is **superseded** by #316 / #348 / #351.
 
 ## North star
 
@@ -8,7 +8,8 @@ The TestApp exists only to exercise the framework. XCUITests should:
 
 1. **Deep-link** via launch arguments (`-Open…`, optional `-*Section=`).
 2. **Land** on an **exact** host-root accessibility identifier (`exactNamed("…-host-root")`).
-3. **Assert** via exact identifiers (or a single exact text predicate) — **not** menu scroll discovery, type-slot query ladders, or sequential navBar/staticText/CONTAINS OR waits.
+3. **Assert** via exact identifiers (or a **single** framework-emitted-id CONTAINS query when the production API prefixes ids) — **not** menu scroll discovery, scroll-host cascades, type-slot query ladders, or sequential navBar/staticText/CONTAINS OR waits.
+4. **Mount short hosts** — if content is off-screen, add a section launch arg; do not swipe to find it.
 
 Do **not** add URL-scheme routing unless a future need appears; launch args already isolate XCUITest runs.
 
@@ -18,13 +19,14 @@ Do **not** add URL-scheme routing unless a future need appears; launch args alre
 |---------|----------------|
 | TestKit `UITestContractElementResolver` / `contractResolutionOrder` | Product API for consumers — keep. |
 | `SixLayerUITestNavigator` Back / smoke host | Proves navigator API on `-OpenUITestContractSmokeHost` only. |
-| Form/table scroll helpers (`xcuiSwipe…`) | Interaction with tall forms (#261), **not** discovery of which screen to open. |
+| `xcuiDismissSoftwareKeyboardIfPresent` / `xcuiTapToBecomeFirstResponder` | Focus/keyboard interaction on Form fields (#150), not discovery. |
 
 ## Removed / do not revive
 
-- `navigateToLayerExamples` / `navigateBackToLaunch` / `findElement` type cascades in suite helpers.
+- `navigateToLayerExamples` / `navigateBackToLaunch` / `findElement` type cascades.
+- Form/table multi-host swipe ladders (`xcuiSwipeScrollHosts*`, `xcuiPrimaryScrollHost`).
 - Launch-page browse + scroll-as-discovery to reach Layer N examples.
-- Stale Phase-1 design of one shared app launch with in-suite menu navigation.
+- Dual exact\|\|CONTAINS assert ladders for the same contract string.
 
 ## Layer coverage checklist
 
@@ -41,4 +43,4 @@ Do **not** add URL-scheme routing unless a future need appears; launch args alre
 
 ## Wall-clock note
 
-After menu navigation is gone, remaining time is mostly **process relaunch** (intentional for parallel isolation) and real interactions — not query ladders.
+After menu navigation and scroll discovery are gone, remaining time is mostly **process relaunch** (intentional for parallel isolation) and real interactions.
