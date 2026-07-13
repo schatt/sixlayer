@@ -6,8 +6,8 @@
 //  These utilities help reduce test execution time by optimizing app launch,
 //  element queries, and accessibility hierarchy snapshots.
 //
-//  #348: Prefer launch-arg deep links + exact accessibility identifiers.
-//  Do not use menu scroll-as-discovery to reach Layer N examples (#316).
+//  #348/#351: Prefer launch-arg deep links + exact accessibility identifiers.
+//  No scroll-as-discovery / scroll-host query ladders — mount the section via launch args.
 //  Type-slot query ladders belong in TestKit's UITestContractElementResolver — not here.
 //
 
@@ -50,127 +50,7 @@ extension XCUIApplication {
         launch()
     }
 
-    // MARK: - Issue #193 — Form / table scroll hosts
-
-    /// iOS `Form` is backed by a table; swiping the first `scrollView` often does not scroll form rows.
-    /// When multiple `tables` exist, `firstMatch` is often a nested list (e.g. L4 overlay split), not the root `Form` — use the last table.
-    /// When multiple `scrollViews` exist (e.g. navigation chrome + content), prefer the last scroll view for the main list.
-    func xcuiPrimaryScrollHost() -> XCUIElement {
-        let tbls = tables
-        if tbls.count > 1 {
-            return tbls.element(boundBy: tbls.count - 1)
-        }
-        if tbls.firstMatch.exists { return tbls.firstMatch }
-        let svs = scrollViews
-        if svs.count > 1 {
-            return svs.element(boundBy: svs.count - 1)
-        }
-        if svs.firstMatch.exists { return svs.firstMatch }
-        return windows.firstMatch
-    }
-
-    /// Scroll the primary content up: prefers table(s); when two tables exist, swipes both outer and inner; otherwise swipes `xcuiPrimaryScrollHost()`.
-    func xcuiSwipeScrollHostsUp() {
-        xcuiSwipePrimaryContent(up: true)
-    }
-
-    /// Mirror of ``xcuiSwipeScrollHostsUp()`` for scrolling toward the top of Form/table content (e.g. `ensureContractRoot`).
-    func xcuiSwipeScrollHostsDown() {
-        xcuiSwipePrimaryContent(up: false)
-    }
-
-    /// iOS 26 SwiftUI `Form` often reports `tables.count == 0` while `tables.firstMatch` exists; window swipes do not move rows (#261).
-    /// macOS often exposes collapsed/non-hittable `ScrollView` hosts (height ~12); swiping them throws
-    /// "Unable to find hit point" (#316) — only swipe hittable hosts with a usable frame, else window-drag.
-    private func xcuiSwipePrimaryContent(up: Bool) {
-        /// Returns true when a real swipe was performed on a hittable host.
-        func swipeIfHittable(_ element: XCUIElement) -> Bool {
-            guard element.exists else { return false }
-            let frame = element.frame
-            // Collapsed / off-layout hosts are not safe to swipe (macOS XCUI #316).
-            guard frame.width > 20, frame.height > 20 else { return false }
-            guard element.isHittable else { return false }
-            if up { element.swipeUp() } else { element.swipeDown() }
-            return true
-        }
-
-        let tbls = tables
-        let tableCount = tbls.count
-        if tableCount > 1 {
-            let outer = swipeIfHittable(tbls.element(boundBy: tableCount - 1))
-            let inner = swipeIfHittable(tbls.element(boundBy: 0))
-            if outer || inner { return }
-            xcuiDragScrollContent(up: up)
-            return
-        }
-        if tableCount == 1 {
-            if swipeIfHittable(tbls.element(boundBy: 0)) { return }
-            xcuiDragScrollContent(up: up)
-            return
-        }
-
-        let cols = collectionViews
-        let collectionCount = cols.count
-        // Root `Form` is usually the outermost list; a lone CollectionView is often overlay split (#261).
-        if collectionCount > 1 {
-            if swipeIfHittable(cols.element(boundBy: collectionCount - 1)) { return }
-            xcuiDragScrollContent(up: up)
-            return
-        }
-        if collectionCount == 1 {
-            if tbls.element(boundBy: 0).exists, swipeIfHittable(tbls.element(boundBy: 0)) {
-                return
-            }
-            xcuiDragScrollContent(up: up)
-            return
-        }
-
-        let svs = scrollViews
-        let scrollCount = svs.count
-        if scrollCount > 1 {
-            // Prefer the last scroll view, but skip collapsed/non-hittable macOS hosts (#316).
-            for index in stride(from: scrollCount - 1, through: 0, by: -1) {
-                if swipeIfHittable(svs.element(boundBy: index)) { return }
-            }
-            xcuiDragScrollContent(up: up)
-            return
-        }
-        if scrollCount == 1 {
-            if swipeIfHittable(svs.element(boundBy: 0)) { return }
-            xcuiDragScrollContent(up: up)
-            return
-        }
-
-        // `count == 0`: latent hosts — prefer table/outer collection before overlay inner lists.
-        let latentHosts: [XCUIElement] = [
-            tbls.element(boundBy: 0),
-            tbls.element(boundBy: 1),
-            cols.element(boundBy: 1),
-            cols.element(boundBy: 0),
-            svs.element(boundBy: 1),
-            svs.element(boundBy: 0),
-            tbls.firstMatch,
-            cols.firstMatch,
-            svs.firstMatch,
-        ]
-        for host in latentHosts {
-            if swipeIfHittable(host) { return }
-        }
-        xcuiDragScrollContent(up: up)
-    }
-
-    /// Coordinate drag when element `swipeUp`/`swipeDown` hits Window and does not move Form rows (#261).
-    private func xcuiDragScrollContent(up: Bool) {
-        let win = windows.firstMatch
-        guard win.exists else { return }
-        let startY: CGFloat = up ? 0.78 : 0.22
-        let endY: CGFloat = up ? 0.28 : 0.72
-        let start = win.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: startY))
-        let end = win.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: endY))
-        start.press(forDuration: 0.05, thenDragTo: end)
-    }
-
-    /// Swipe down on the software keyboard when present so the next `Form` row can scroll above the
+        /// Swipe down on the software keyboard when present so the next `Form` row can scroll above the
     /// keyboard and accept first responder (Issue #150 / iOS 26 UITest flakes; Refs #261).
     func xcuiDismissSoftwareKeyboardIfPresent() {
         #if os(iOS)
@@ -188,20 +68,6 @@ extension XCUIApplication {
 // MARK: - XCUIElement Extensions
 
 extension XCUIElement {
-    /// Fast wait for existence with shorter default timeout
-    /// Use this for elements that should exist immediately after app is ready
-    /// - Parameter timeout: Maximum time to wait (default: 0.5 seconds)
-    /// - Returns: true if element exists, false if timeout
-    func waitForExistenceFast(timeout: TimeInterval = 0.5) -> Bool {
-        return waitForExistence(timeout: timeout)
-    }
-    
-    /// Check if element exists without waiting
-    /// Use this before waitForExistence to avoid unnecessary waits
-    /// - Returns: true if element exists immediately
-    var existsImmediately: Bool {
-        return exists
-    }
 
     /// Best-effort visible/accessible string for XCUI assertions (#316).
     /// macOS SwiftUI often leaves `label` empty for `Text` that also has an accessibilityIdentifier;
@@ -213,20 +79,6 @@ extension XCUIElement {
         return ""
     }
 
-    /// Wait for this element to become not hittable (e.g. menu/popover dismissed).
-    /// Polls until the element is not hittable or timeout. Use after tapping a menu option to ensure the menu is gone before the next interaction.
-    /// - Parameter timeout: Maximum time to wait (default: 3.0 seconds)
-    /// - Returns: true if element became not hittable (or no longer exists), false if timeout
-    func waitForNotHittable(timeout: TimeInterval = 3.0) -> Bool {
-        let deadline = Date().addingTimeInterval(timeout)
-        while Date() < deadline {
-            if !exists || !isHittable {
-                return true
-            }
-            Thread.sleep(forTimeInterval: 0.1)
-        }
-        return !exists || !isHittable
-    }
 
     /// Tap to become first responder; uses a coordinate tap when `Form` chrome clips hittability.
     /// On iOS, secure fields often need a second tap before `typeText` receives keyboard focus (#150 / iOS 26).
@@ -527,23 +379,6 @@ extension XCUIApplication {
         }
     }
 
-}
-
-extension XCUIApplication {
-    /// Select a segment by exact accessibility identifier, else by button label (no type-slot ladder).
-    /// Hosts should stamp stable ids on segments when used from UITests (#348).
-    /// - Parameter segmentName: Accessibility identifier or visible label of the segment
-    /// - Returns: true if segment was found and selected
-    func selectPickerSegment(_ segmentName: String) -> Bool {
-        if let byId = waitForExactIdentifier(segmentName, timeout: 1.0) {
-            byId.tap()
-            return true
-        }
-        let segmentButton = buttons[segmentName]
-        guard segmentButton.waitForExistence(timeout: 1.0) else { return false }
-        segmentButton.tap()
-        return true
-    }
 }
 
 // MARK: - Performance Logging
