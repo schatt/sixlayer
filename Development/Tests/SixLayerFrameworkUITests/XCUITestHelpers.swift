@@ -13,9 +13,6 @@
 
 import XCTest
 
-private enum XCUITestFailFast {
-    static let quickWait: TimeInterval = 0.3
-}
 
 // MARK: - XCUIApplication Extensions
 
@@ -31,24 +28,6 @@ extension XCUIApplication {
         launchEnvironment = ["XCUI_TESTING": "1"]
     }
     
-    /// Wait for app to be ready: look for a single known text on the launch page (Issue #180).
-    /// - Parameter timeout: Maximum time to wait (default: 2.5 seconds; fail fast when launch list is wrong)
-    /// - Returns: true if the text appears, false if timeout
-    func waitForReady(timeout: TimeInterval = 2.5) -> Bool {
-        let deadline = Date().addingTimeInterval(timeout)
-        while Date() < deadline {
-            if staticTexts["UI Test Views"].exists { return true }
-            RunLoop.current.run(until: Date().addingTimeInterval(XCUITestFailFast.quickWait))
-        }
-        return false
-    }
-    
-    /// Launch app with performance optimizations
-    /// Configures app for fast testing and launches it
-    func launchWithOptimizations() {
-        configureForFastTesting()
-        launch()
-    }
 
         /// Swipe down on the software keyboard when present so the next `Form` row can scroll above the
     /// keyboard and accept first responder (Issue #150 / iOS 26 UITest flakes; Refs #261).
