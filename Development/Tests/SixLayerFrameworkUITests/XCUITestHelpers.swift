@@ -15,9 +15,6 @@ import XCTest
 
 private enum XCUITestFailFast {
     static let quickWait: TimeInterval = 0.3
-    static let mediumWait: TimeInterval = 0.75
-    static let launchReadyWait: TimeInterval = 2.0
-    static let maxScrollAttempts = 5
 }
 
 // MARK: - XCUIApplication Extensions
