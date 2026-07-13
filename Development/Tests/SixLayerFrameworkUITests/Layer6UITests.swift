@@ -29,8 +29,7 @@ final class Layer6UITests: XCTestCase {
         XCTAssertTrue(localApp.wait(for: .runningForeground, timeout: Self.rootReadyTimeout),
                       "App should reach foreground")
         XCTAssertTrue(
-            localApp.navigationBars["Layer 6 Examples"].waitForExistence(timeout: Self.rootReadyTimeout)
-                || localApp.staticTexts["Layer 6 Examples"].waitForExistence(timeout: Self.quickWait),
+            localApp.waitForHostRootIdentifier("layer6-examples-host-root", timeout: Self.rootReadyTimeout),
             "App should open on Layer 6 Examples (launch arg)"
         )
     }
