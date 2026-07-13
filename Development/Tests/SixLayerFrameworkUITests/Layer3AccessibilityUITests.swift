@@ -21,6 +21,7 @@ import XCTest
 
 /// XCUITest tests for Layer 3 accessibility features
 /// Verifies all 7 Layer 3 functions have example views with complete accessibility support
+/// #348 / #316: deep-link via `-OpenLayer3Examples`; land on `layer3-examples-host-root`.
 @MainActor
 final class Layer3AccessibilityUITests: XCTestCase {
     var app: XCUIApplication!
@@ -31,23 +32,19 @@ final class Layer3AccessibilityUITests: XCTestCase {
         // Add UI interruption monitors to dismiss system dialogs quickly
         addDefaultUIInterruptionMonitor()
 
-        // Launch the test app directly on Layer 3 examples (macOS back/nav from launch is unreliable #316).
+        // Launch directly on Layer 3 examples (#316 / #348).
         nonisolated(unsafe) let instance = self
         MainActor.assumeIsolated {
-            var localApp: XCUIApplication!
-            localApp = XCUIApplication()
+            let localApp = XCUIApplication()
             localApp.configureForFastTesting()
             localApp.launchArguments.append("-OpenLayer3Examples")
             localApp.launch()
             instance.app = localApp
-            
-            let landed =
-                localApp.navigationBars["Layer 3 Examples"].waitForExistence(timeout: 2.5)
-                || localApp.staticTexts["Layer 3 Examples"].waitForExistence(timeout: 2.0)
-                || localApp.descendants(matching: .any)
-                    .matching(NSPredicate(format: "identifier CONTAINS[c] %@", "GeneralOCRStrategyExample"))
-                    .firstMatch.waitForExistence(timeout: 2.0)
-            XCTAssertTrue(landed, "App should open Layer 3 Examples (-OpenLayer3Examples)")
+
+            XCTAssertTrue(
+                localApp.waitForHostRootIdentifier("layer3-examples-host-root"),
+                "App should open Layer 3 Examples (-OpenLayer3Examples)"
+            )
         }
     }
     
@@ -59,12 +56,6 @@ final class Layer3AccessibilityUITests: XCTestCase {
     }
     
     // MARK: - Helper Methods
-    
-    /// Ensure we are on Layer 3 examples (deep-linked in setUp).
-    @MainActor
-    private func navigateToLayer3Examples() throws {
-        // Already on Layer 3 via -OpenLayer3Examples; keep helper for call-site clarity.
-    }
     
     /// Verify an element has accessibility identifier
     @MainActor
@@ -99,9 +90,7 @@ final class Layer3AccessibilityUITests: XCTestCase {
     @MainActor
     func testOCRStrategyExampleViews_AccessibilityIdentifiers() throws {
         // Given: Navigate to Layer 3 examples
-        try navigateToLayer3Examples()
-        
-        // When: Query for example view elements
+                // When: Query for example view elements
         // Then: All should have accessibility identifiers
         
         // Test General OCR Strategy Example
@@ -196,9 +185,7 @@ final class Layer3AccessibilityUITests: XCTestCase {
     @MainActor
     func testOCRStrategyExampleViews_AccessibilityLabels() throws {
         // Given: Navigate to Layer 3 examples
-        try navigateToLayer3Examples()
-        
-        // When: Query for interactive elements
+                // When: Query for interactive elements
         // Then: All should have accessibility labels
         
         let buttons = app.buttons.allElementsBoundByIndex
@@ -215,9 +202,7 @@ final class Layer3AccessibilityUITests: XCTestCase {
     @MainActor
     func testOCRStrategyExampleViews_AccessibilityTraits() throws {
         // Given: Navigate to Layer 3 examples
-        try navigateToLayer3Examples()
-        
-        // When: Query for buttons
+                // When: Query for buttons
         // Then: All should have correct button traits
         
         let buttons = app.buttons.allElementsBoundByIndex
@@ -233,9 +218,7 @@ final class Layer3AccessibilityUITests: XCTestCase {
     @MainActor
     func testAllLayer3ExampleViews_VoiceOverCompatible() throws {
         // Given: Navigate to Layer 3 examples
-        try navigateToLayer3Examples()
-        
-        // When: Query for interactive example buttons (skip empty macOS chrome #316)
+                // When: Query for interactive example buttons (skip empty macOS chrome #316)
         // Then: Content buttons should be discoverable and readable by VoiceOver
         
         let buttons = app.buttons.allElementsBoundByIndex
@@ -266,9 +249,7 @@ final class Layer3AccessibilityUITests: XCTestCase {
     @MainActor
     func testAllLayer3ExampleViews_SwitchControlCompatible() throws {
         // Given: Navigate to Layer 3 examples
-        try navigateToLayer3Examples()
-        
-        // When: Query for interactive example buttons (skip empty macOS chrome #316)
+                // When: Query for interactive example buttons (skip empty macOS chrome #316)
         // Then: Content buttons should have correct traits for Switch Control
         
         let buttons = app.buttons.allElementsBoundByIndex
