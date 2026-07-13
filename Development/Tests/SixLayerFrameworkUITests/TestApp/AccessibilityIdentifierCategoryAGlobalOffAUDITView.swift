@@ -17,11 +17,18 @@ struct AccessibilityIdentifierCategoryAGlobalOffAUDITView: View {
             platformVStack(alignment: .leading, spacing: 24) {
                 // Do not wrap in accessibilityElement(children: .ignore) — that drops the
                 // named identifier from the XCUI tree on macOS (#316).
+                // Exact land marker (#348) — separate from named title so XCUI does not need OR ladders.
+                Text("Category A Global Off host")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .exactNamed("category-a-global-off-host-root")
+                    .accessibilityLabel("Category A Global Off host")
+
                 Text("Category A — global automatic IDs off")
                     .font(.headline)
                     .accessibilityLabel("Category A — global automatic IDs off")
                     .accessibilityValue("Category A — global automatic IDs off")
-                    .automaticCompliance(named: "CatAGlobalOffTitle")
+                    .exactNamed("CatAGlobalOffTitle")
 
                 sectionCaption("basicAutomaticCompliance (auto ID suppressed when global off)")
                 platformText("Auto suppressed")

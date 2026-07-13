@@ -20,7 +20,8 @@ struct IdentifierEdgeCaseTestView: View {
             platformVStack(spacing: 24) {
                 platformText("Identifier Edge Case Test")
                     .font(.headline)
-                    .automaticCompliance()
+                    .exactNamed("identifier-edge-case-host-root")
+                    .accessibilityLabel("Identifier Edge Case Test")
 
                 platformButton("Back to Main") {
                     if let action = onBackToMain { action() } else { dismiss() }

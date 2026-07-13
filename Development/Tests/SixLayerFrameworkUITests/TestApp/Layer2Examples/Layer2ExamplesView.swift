@@ -5,6 +5,8 @@
 //  Examples of Layer 2 layout decision functions
 //  Issue #165
 //
+//  Deep-link: `-OpenLayer2Examples` lands on this view with `layer2-examples-host-root` (#348 / #316).
+//
 
 import SwiftUI
 import SixLayerFramework
@@ -13,12 +15,20 @@ struct Layer2ExamplesView: View {
     var body: some View {
         ScrollView {
             platformVStack(alignment: .leading, spacing: 24) {
+                // Exact XCUI land marker for `-OpenLayer2Examples` (#348).
+                // Use exactNamed so UITest integration does not rewrite the id; keep it
+                // outside automaticCompliance so a parent combine does not hide it.
+                Text("Layer 2 Examples")
+                    .font(.headline)
+                    .exactNamed("layer2-examples-host-root")
+                    .accessibilityLabel("Layer 2 Examples")
+
                 ExampleSection(title: "OCR Layout Decisions") {
                     OCRLayoutExamples()
                 }
+                .automaticCompliance(named: "Layer2ExamplesView")
             }
             .padding()
-            .automaticCompliance(named: "Layer2ExamplesView")
         }
         .platformFrame()
         .navigationTitle("Layer 2 Examples")

@@ -8,6 +8,8 @@
 //  Form and detail use separate launch arguments so macOS does not depend on popping NavigationLink
 //  (back affordance is inconsistent under XCUI).
 //
+//  #348: exact-id queries only — no findElement type ladder.
+//
 
 import XCTest
 
@@ -69,14 +71,8 @@ final class PlatformToolbarAccessibilityUITests: XCTestCase {
         file: StaticString = #filePath,
         line: UInt = #line
     ) {
-        let found = app.findElement(
-            byIdentifier: identifier,
-            primaryType: .button,
-            secondaryTypes: [.staticText, .cell, .other, .any],
-            timeout: 2.0
-        )
         XCTAssertNotNil(
-            found,
+            app.waitForExactIdentifier(identifier, timeout: 2.0),
             "Expected an element with accessibility identifier '\(identifier)' in the XCUI hierarchy",
             file: file,
             line: line

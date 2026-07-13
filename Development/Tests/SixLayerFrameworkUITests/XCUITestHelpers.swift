@@ -4,16 +4,17 @@
 //
 //  Performance optimization helpers for XCUITest
 //  These utilities help reduce test execution time by optimizing app launch,
-//  element queries, and accessibility hierarchy snapshots
+//  element queries, and accessibility hierarchy snapshots.
+//
+//  #348: Prefer launch-arg deep links + exact accessibility identifiers.
+//  Do not use menu scroll-as-discovery to reach Layer N examples (#316).
+//  Type-slot query ladders belong in TestKit's UITestContractElementResolver — not here.
 //
 
 import XCTest
 
 private enum XCUITestFailFast {
     static let quickWait: TimeInterval = 0.3
-    static let mediumWait: TimeInterval = 0.75
-    static let launchReadyWait: TimeInterval = 2.0
-    static let maxScrollAttempts = 5
 }
 
 // MARK: - XCUIApplication Extensions
@@ -262,39 +263,17 @@ extension XCUIElement {
 // MARK: - Accessibility Identifier Helpers
 
 extension XCUIElement {
-    /// Find an element by accessibility identifier within this element, trying multiple query types
-    /// - Parameters:
-    ///   - identifier: The accessibility identifier to search for
-    ///   - primaryType: Primary element type to try first (default: .other)
-    ///   - secondaryTypes: Additional element types to try if primary fails
-    ///   - timeout: Maximum time to wait for each query type
-    /// - Returns: The found element, or nil if not found
-    /// - Note: Includes .cell so List/Form rows on iOS (exposed as cells) are findable by identifier.
-    func findElement(byIdentifier identifier: String, 
-                    primaryType: XCUIElement.ElementType = .other,
-                    secondaryTypes: [XCUIElement.ElementType] = [.button, .cell, .staticText, .any],
-                    timeout: TimeInterval = 1.0) -> XCUIElement? {
-        // Strategy 1: Try primary type first (most common case)
-        let primaryElement = descendants(matching: primaryType)[identifier]
-        if primaryElement.waitForExistence(timeout: timeout) {
-            return primaryElement
-        }
-        
-        // Strategy 2: Try secondary types (adapts to platform differences)
-        for elementType in secondaryTypes {
-            let element = descendants(matching: elementType)[identifier]
-            if element.waitForExistence(timeout: 0.5) {
-                return element
-            }
-        }
-        
-        // Strategy 3: Try any element as last resort (catches edge cases)
-        let anyElement = descendants(matching: .any)[identifier]
-        if anyElement.waitForExistence(timeout: 0.3) {
-            return anyElement
-        }
-        
-        return nil
+    /// Exact accessibility-identifier query under this element (single `.any` slot — no type ladder).
+    /// Prefer host contracts that expose a stable id (#348 / #316).
+    func elementMatchingExactIdentifier(_ identifier: String) -> XCUIElement {
+        descendants(matching: .any)[identifier].firstMatch
+    }
+
+    /// Wait for an exact accessibility identifier under this element.
+    /// - Returns: the element if it appeared within `timeout`, else `nil`
+    func waitForExactIdentifier(_ identifier: String, timeout: TimeInterval = 2.0) -> XCUIElement? {
+        let element = elementMatchingExactIdentifier(identifier)
+        return element.waitForExistence(timeout: timeout) ? element : nil
     }
 }
 
@@ -393,117 +372,18 @@ extension XCUIElement {
 }
 
 extension XCUIApplication {
-    /// Find a launch-page list entry by identifier (iOS List rows may be .cell, not .button).
-    func findLaunchPageEntry(identifier: String) -> XCUIElement {
-        findElement(byIdentifier: identifier,
-                    primaryType: .button,
-                    secondaryTypes: [.link, .cell, .staticText, .other, .any])
-            ?? buttons[identifier]
-    }
-
-    /// Navigate back to the launch page (e.g. after another test left the app on a subpage). Taps back/nav until "UI Test Views" appears.
-    /// - Parameter timeout: Maximum time to wait for launch page (default 2.5; bounded back navigation)
-    /// - Returns: true if launch page is visible (staticTexts["UI Test Views"] exists)
-    func navigateBackToLaunch(timeout: TimeInterval = 2.5) -> Bool {
-        if staticTexts["UI Test Views"].waitForExistence(timeout: XCUITestFailFast.quickWait) { return true }
-        let deadline = Date().addingTimeInterval(timeout)
-        while Date() < deadline {
-            if buttons["UI Test Views"].waitForExistence(timeout: XCUITestFailFast.quickWait) {
-                buttons["UI Test Views"].tap()
-                return staticTexts["UI Test Views"].waitForExistence(timeout: XCUITestFailFast.mediumWait)
-            }
-            if navigationBars.buttons.firstMatch.waitForExistence(timeout: XCUITestFailFast.quickWait) {
-                navigationBars.buttons.firstMatch.tap()
-            } else if buttons["Back"].waitForExistence(timeout: XCUITestFailFast.quickWait) {
-                buttons["Back"].tap()
-            } else {
-                break
-            }
-            if staticTexts["UI Test Views"].waitForExistence(timeout: XCUITestFailFast.mediumWait) { return true }
-        }
-        return staticTexts["UI Test Views"].waitForExistence(timeout: XCUITestFailFast.quickWait)
-    }
-
-    /// Navigate from the launch page to a "Layer N Examples" screen by tapping the given link.
-    /// Use for Layer 2, 3, 5, 6 examples (shared pattern: ensure launch → find link → tap → wait for nav bar and content).
-    /// - Parameters:
-    ///   - linkIdentifier: Accessibility identifier of the launch-page link (e.g. "layer2-examples-link").
-    ///   - navigationBarTitle: Title of the destination navigation bar (e.g. "Layer 2 Examples").
-    ///   - linkLabel: Optional visible label to tap if identifier lookup fails (e.g. "Layer 4 Component Examples").
-    /// - Returns: true if navigation succeeded (nav bar and list content visible).
-    func navigateToLayerExamples(linkIdentifier: String, navigationBarTitle: String, linkLabel: String? = nil) -> Bool {
-        func layerExamplesDestinationReached() -> Bool {
-            let navBarExists = navigationBars[navigationBarTitle].waitForExistence(timeout: XCUITestFailFast.mediumWait)
-            let contentExists = buttons.firstMatch.waitForExistence(timeout: XCUITestFailFast.quickWait)
-                || staticTexts.firstMatch.waitForExistence(timeout: XCUITestFailFast.quickWait)
-                || cells.firstMatch.waitForExistence(timeout: XCUITestFailFast.quickWait)
-            if navBarExists && contentExists { return true }
-            if staticTexts[navigationBarTitle].waitForExistence(timeout: XCUITestFailFast.quickWait) && contentExists { return true }
-            return false
-        }
-
-        /// Prefer `links[visibleTitle]` for reliable navigation; row nodes may be `.cell` / `.button` by OS.
-        /// Scroll with `xcuiSwipeScrollHostsUp()` so root `Form` / list tables move (Issue #193).
-        let navigationLinkTitle: String? = linkLabel ?? {
-            switch linkIdentifier {
-            case "layer2-examples-link": return "Layer 2 Layout Examples"
-            case "layer3-examples-link": return "Layer 3 Strategy Examples"
-            case "layer4-examples-link": return "Layer 4 Component Examples"
-            case "layer5-examples-link": return "Layer 5 Optimization Examples"
-            case "layer6-examples-link": return "Layer 6 System Examples"
-            default: return nil
-            }
-        }()
-
-        _ = navigateBackToLaunch(timeout: XCUITestFailFast.launchReadyWait)
-        guard waitForReady(timeout: XCUITestFailFast.launchReadyWait) else { return false }
-
-        if let title = navigationLinkTitle {
-            for _ in 0..<XCUITestFailFast.maxScrollAttempts {
-                let rowLink = links[title].firstMatch
-                if rowLink.waitForExistence(timeout: XCUITestFailFast.quickWait) && rowLink.isHittable {
-                    rowLink.tap()
-                    return layerExamplesDestinationReached()
-                }
-                xcuiSwipeScrollHostsUp()
-            }
-        }
-
-        // Fallback: identifier-based (callers on unusual rows or when link query fails)
-        if linkIdentifier.contains("layer4") || linkIdentifier.contains("layer5") || linkIdentifier.contains("layer6") {
-            for _ in 0..<5 {
-                xcuiSwipeScrollHostsUp()
-                let found = findLaunchPageEntry(identifier: linkIdentifier)
-                if found.waitForExistence(timeout: XCUITestFailFast.quickWait) && found.isHittable { break }
-            }
-        }
-        var link = findLaunchPageEntry(identifier: linkIdentifier)
-        if !link.waitForExistence(timeout: XCUITestFailFast.mediumWait), let label = navigationLinkTitle {
-            link = links[label].firstMatch
-            if !link.exists { link = buttons[label].firstMatch }
-            if !link.exists { link = staticTexts[label].firstMatch }
-            if !link.exists { link = cells[label].firstMatch }
-        }
-        var attempts = 0
-        while !link.waitForExistence(timeout: XCUITestFailFast.quickWait), attempts < 3 {
-            xcuiSwipeScrollHostsUp()
-            attempts += 1
-            link = findLaunchPageEntry(identifier: linkIdentifier)
-            if !link.waitForExistence(timeout: XCUITestFailFast.quickWait), let label = navigationLinkTitle {
-                link = links[label].firstMatch
-                if !link.exists { link = buttons[label].firstMatch }
-                if !link.exists { link = staticTexts[label].firstMatch }
-                if !link.exists { link = cells[label].firstMatch }
-            }
-        }
-        guard link.waitForExistence(timeout: XCUITestFailFast.mediumWait) else { return false }
-        link.tap()
-        return layerExamplesDestinationReached()
+    /// Wait for a deep-linked host's stable root accessibility identifier (#348 / #316).
+    /// Prefer this over navigationBar / staticText OR ladders — hosts must expose the marker.
+    /// Uses ``XCUIElement/elementMatchingExactIdentifier(_:)`` (inherited; do not redeclare it here —
+    /// XCUIApplication subclasses XCUIElement and cannot override non-@objc extension methods).
+    @discardableResult
+    func waitForHostRootIdentifier(_ identifier: String, timeout: TimeInterval = 2.5) -> Bool {
+        elementMatchingExactIdentifier(identifier).waitForExistence(timeout: timeout)
     }
 
     /// Runs compatibility-oriented checks on the **current** screen only (Issue #180).
     ///
-    /// Call after navigating to a subview; do **not** use on the bare launch list. Waits are implicit via
+    /// Call after deep-linking to a host; do **not** use on the bare launch list. Waits are implicit via
     /// `exists` / `waitForExistence` at call sites before sweeping.
     ///
     /// One pass per query axis (`buttons`, `textFields`, `switches`, `sliders`, `staticTexts`). For each element,
@@ -650,111 +530,19 @@ extension XCUIApplication {
 }
 
 extension XCUIApplication {
-    /// Select a segment in the segmented picker (handles platform differences)
-    /// Uses platform-specific strategies based on how segmented pickers are exposed
-    /// - Parameter segmentName: Name of the segment to select (e.g., "Text", "Button")
-    /// - Returns: true if segment was found and selected, false otherwise
+    /// Select a segment by exact accessibility identifier, else by button label (no type-slot ladder).
+    /// Hosts should stamp stable ids on segments when used from UITests (#348).
+    /// - Parameter segmentName: Accessibility identifier or visible label of the segment
+    /// - Returns: true if segment was found and selected
     func selectPickerSegment(_ segmentName: String) -> Bool {
-        // First, try to find by accessibility identifier (works if segments have identifiers)
-        // This is the most reliable method when segments have explicit identifiers
-        if let segmentElement = findElement(byIdentifier: segmentName,
-                                           primaryType: .button,
-                                           secondaryTypes: [.staticText, .any]) {
-            segmentElement.tap()
+        if let byId = waitForExactIdentifier(segmentName, timeout: 1.0) {
+            byId.tap()
             return true
         }
-        
-        #if os(iOS)
-        // On iOS, segmented picker exposes segments as buttons directly
         let segmentButton = buttons[segmentName]
-        if segmentButton.waitForExistence(timeout: 1.0) {
-            segmentButton.tap()
-            return true
-        }
-        return false
-        
-        #elseif os(tvOS)
-        // On tvOS, segmented picker exposes segments as buttons (similar to iOS)
-        let segmentButton = buttons[segmentName]
-        if segmentButton.waitForExistence(timeout: 1.0) {
-            segmentButton.tap()
-            return true
-        }
-        return false
-        
-        #elseif os(watchOS)
-        // On watchOS, segmented picker exposes segments as buttons (similar to iOS)
-        let segmentButton = buttons[segmentName]
-        if segmentButton.waitForExistence(timeout: 1.0) {
-            segmentButton.tap()
-            return true
-        }
-        return false
-        
-        #elseif os(visionOS)
-        // On visionOS, segmented picker exposes segments as buttons (similar to iOS)
-        let segmentButton = buttons[segmentName]
-        if segmentButton.waitForExistence(timeout: 1.0) {
-            segmentButton.tap()
-            return true
-        }
-        return false
-        
-        #elseif os(macOS)
-        // On macOS, try to find within SegmentedControl or Picker
-        // Try SegmentedControl first
-        let segmentedControl = segmentedControls.firstMatch
-        if segmentedControl.waitForExistence(timeout: 1.0) {
-            // Try to find segment by identifier within the segmented control
-            if let segmentElement = segmentedControl.findElement(byIdentifier: segmentName,
-                                                                primaryType: .button,
-                                                                secondaryTypes: [.staticText, .any]) {
-                segmentElement.tap()
-                return true
-            }
-            
-            // Fallback: try by label
-            let segmentButton = segmentedControl.buttons[segmentName]
-            if segmentButton.waitForExistence(timeout: 0.5) {
-                segmentButton.tap()
-                return true
-            }
-        }
-        
-        // Try Picker
-        let picker = pickers.firstMatch
-        if picker.waitForExistence(timeout: 1.0) {
-            // Try to find segment by identifier within the picker
-            if let segmentElement = picker.findElement(byIdentifier: segmentName,
-                                                      primaryType: .button,
-                                                      secondaryTypes: [.staticText, .any]) {
-                segmentElement.tap()
-                return true
-            }
-            
-            // Fallback: try by label
-            let segmentButton = picker.buttons[segmentName]
-            if segmentButton.waitForExistence(timeout: 0.5) {
-                segmentButton.tap()
-                return true
-            }
-        }
-        
-        // Try app-level buttons (segments might be at app level)
-        let appLevelButton = buttons[segmentName]
-        if appLevelButton.waitForExistence(timeout: 0.5) {
-            appLevelButton.tap()
-            return true
-        }
-        
-        // If nothing works, segments are not accessible
-        return false
-        
-        #else
-        // Unsupported platform
-        print("ERROR: selectPickerSegment not implemented for this platform")
-        return false
-        #endif
+        guard segmentButton.waitForExistence(timeout: 1.0) else { return false }
+        segmentButton.tap()
+        return true
     }
 }
 

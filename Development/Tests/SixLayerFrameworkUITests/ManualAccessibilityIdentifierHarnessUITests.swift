@@ -35,15 +35,8 @@ final class ManualAccessibilityIdentifierHarnessUITests: XCTestCase {
             localApp.launchArguments.append("-OpenLayer4IdentifierEdgeCase")
             localApp.launch()
             instance.app = localApp
-            // macOS often does not expose NavigationStack titles as navigationBars (#316).
-            let landed =
-                localApp.navigationBars["Identifier Edge Case"].waitForExistence(timeout: 2.5)
-                || localApp.staticTexts["Identifier Edge Case Test"].waitForExistence(timeout: 2.0)
-                || localApp.descendants(matching: .any)
-                    .matching(NSPredicate(format: "identifier CONTAINS[c] %@", "manual-override-id"))
-                    .firstMatch.waitForExistence(timeout: 2.0)
             XCTAssertTrue(
-                landed,
+                localApp.waitForHostRootIdentifier("identifier-edge-case-host-root"),
                 "Test app should open Identifier Edge Case (-OpenLayer4IdentifierEdgeCase)"
             )
         }
