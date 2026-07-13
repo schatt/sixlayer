@@ -22,7 +22,6 @@ final class IntelligentDetailViewCategoryBUITests: XCTestCase {
 
     private enum Host {
         static let rootIdentifier = "category-b-detail-host-root"
-        static let customFieldIdentifier = "category-b-custom-field"
     }
 
     var app: XCUIApplication!
