@@ -5,6 +5,8 @@
 //  Examples of Layer 2 layout decision functions
 //  Issue #165
 //
+//  Deep-link: `-OpenLayer2Examples` lands on this view with `layer2-examples-host-root` (#348 / #316).
+//
 
 import SwiftUI
 import SixLayerFramework
@@ -13,6 +15,12 @@ struct Layer2ExamplesView: View {
     var body: some View {
         ScrollView {
             platformVStack(alignment: .leading, spacing: 24) {
+                // Exact XCUI land marker for `-OpenLayer2Examples` (macOS may omit nav bar title).
+                Text("Layer 2 Examples")
+                    .font(.headline)
+                    .accessibilityIdentifier("layer2-examples-host-root")
+                    .accessibilityLabel("Layer 2 Examples")
+
                 ExampleSection(title: "OCR Layout Decisions") {
                     OCRLayoutExamples()
                 }
