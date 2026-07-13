@@ -25,21 +25,26 @@ Red must show the **new/changed test(s) execute and fail for the right reason** 
 - Run against a stub/wrong branch/intentionally incorrect implementation until the assertion fails; then implement green.
 - A local-only wrong expectation for one failing run, reverted before commit. **Do not** leave inverted/fake expectations in the tree as the "test".
 
+**Not required — rewriting an existing test:**
+- When you **rewrite or migrate** an existing test that already established coverage (same behavior under observation; e.g. deep-link setup instead of menu navigation, helper swap, cleanup), do **not** stage a new deliberate-red by withholding production or inventing a compile/land break. The prior red for that coverage is the red; implement the rewrite and verify **green**.
+- Still require a deliberate red when the rewrite **changes what is asserted** or adds **new** observations that never failed for the right reason.
+
 **Not sufficient:**
-- Compile errors in unrelated code.
-- Green on the first run with no proof that wrong production would trip the test.
+- Compile failures of any kind (including the new/changed tests, missing stubs, or unrelated code) — **compile reds do not count**.
+- Green on the first run of **new** coverage with no proof that wrong production would trip the test.
 
 ## Required Evidence
 
-- **Red:** at least one run where the relevant test(s) **fail at runtime** (assertion/XCTest failure) — not a compile failure or unrelated red.
-- **GitHub issue red log** (MANDATORY when the change maps to a numbered GitHub issue): post red evidence on the primary issue **immediately after** the deliberate failing run — **before** green implementation and **not** deferred to the end of the session. Must include **UTC ISO 8601 timestamp**, **how tests were run** (scheme/target, MCP tool or `dbs-build`/`xcodebuild`/`swift test`, destination/simulator), and **failing test id(s) + short verbatim excerpt** (one screenful). Use `gh issue comment <N> --body-file <path>` per [github-issue-workflow.mdc](mdc:.cursor/rules/github-issue-workflow.mdc).
-  - Scope: pure chores/docs with no issue may omit.
+- **Red:** at least one run where the relevant test(s) **fail at runtime** (assertion/XCTest failure) — not a compile failure or unrelated red. **Omit** for pure rewrites of existing coverage (see above); green (+ refactor) still required.
+- **GitHub issue red log** (MANDATORY when the change maps to a numbered GitHub issue **and** a deliberate red was required): post red evidence on the primary issue **immediately after** the deliberate failing run — **before** green implementation and **not** deferred to the end of the session. Must include **UTC ISO 8601 timestamp**, **how tests were run** (scheme/target, MCP tool or `dbs-build`/`xcodebuild`/`swift test`, destination/simulator), and **failing test id(s) + short verbatim excerpt** (one screenful). Use `gh issue comment <N> --body-file <path>` per [github-issue-workflow.mdc](mdc:.cursor/rules/github-issue-workflow.mdc).
+  - Scope: pure chores/docs with no issue may omit; pure existing-test rewrites omit red log.
 - **Green:** post a passing-run comment on the issue **when** that run completes (same session timing rule as red); do not batch green/red together after the fact.
 - **Refactor:** record a passing run after the refactor pass (post to the issue when that run completes if you are logging evidence there).
 
 ## Guardrails
 
-- Don't skip red.
-- Don't treat compile-only failure as red.
+- Don't skip red for **new** coverage or **changed assertions**.
+- Don't treat compile-only failure as red (ever).
+- Don't invent a red when only rewriting an existing test's harness/setup — verify green.
 - Don't treat green-only as done — refactor + post-refactor run required.
 - Don't merge or close work with failing tests.
