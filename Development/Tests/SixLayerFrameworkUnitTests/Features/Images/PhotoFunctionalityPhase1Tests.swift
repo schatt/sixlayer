@@ -111,9 +111,9 @@ open class PhotoFunctionalityPhase1Tests: BaseTestClass {
         let compressedData = originalImage.compressed(for: purpose, quality: 0.8)
         
         // Then: Compressed data should be returned on platforms that support JPEG encoding today.
-        // tvOS historically omitted—keep explicit matrix so failures stay actionable (#241).
-        #if os(iOS) || os(macOS) || os(visionOS) || os(watchOS)
-        #expect(compressedData != nil, "Compressed data should be returned on iOS/macOS/visionOS/watchOS")
+        // Production `compressed()` includes tvOS (#241/#318).
+        #if os(iOS) || os(macOS) || os(tvOS) || os(visionOS) || os(watchOS)
+        #expect(compressedData != nil, "Compressed data should be returned on iOS/macOS/tvOS/visionOS/watchOS")
         #expect((compressedData?.count ?? 0) > 0, "Compressed data should not be empty")
         #else
         #expect(compressedData == nil, "compressed() is not implemented for this platform (see #241)")
