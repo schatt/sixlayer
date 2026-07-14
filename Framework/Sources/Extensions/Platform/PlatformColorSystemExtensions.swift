@@ -111,16 +111,14 @@ public enum ColorName: String, CaseIterable {
 public extension Color {
 
     /// Direct system background color
-    /// iOS/tvOS/visionOS: systemBackground; macOS: windowBackgroundColor
-    /// watchOS: `UIColor.systemBackground` is not in the same shape as iOS (see `ShapeStyleSystem`; platform-color policy #276);
-    /// use a dark canvas so `platformLabel` (`.primary` foreground) contrasts with `platformBackground`.
-    /// tvOS previously fell through to `Color.primary`, so label and background were identical (#318).
+    /// iOS/visionOS: systemBackground; macOS: windowBackgroundColor
+    /// watchOS/tvOS: UIKit system background APIs are unavailable — dark canvas so labels contrast (#276/#318).
     static var systemBackground: Color {
-        #if os(iOS) || os(tvOS) || os(visionOS)
+        #if os(iOS) || os(visionOS)
         return Color(.systemBackground)
         #elseif os(macOS)
         return Color(.windowBackgroundColor)
-        #elseif os(watchOS)
+        #elseif os(watchOS) || os(tvOS)
         return Color.black
         #else
         return Color.primary
@@ -140,36 +138,43 @@ public extension Color {
     }
 
     /// Platform secondary background color
-    /// iOS/tvOS/visionOS: secondarySystemBackground; macOS: controlBackgroundColor
+    /// iOS/visionOS: secondarySystemBackground; macOS: controlBackgroundColor
+    /// tvOS: elevated dark fill (system secondary backgrounds unavailable).
     static var platformSecondaryBackground: Color {
-        #if os(iOS) || os(tvOS) || os(visionOS)
+        #if os(iOS) || os(visionOS)
         return Color(.secondarySystemBackground)
         #elseif os(macOS)
         return Color(.controlBackgroundColor)
+        #elseif os(tvOS)
+        return Color(white: 0.12)
         #else
         return Color.secondary
         #endif
     }
 
     /// Platform tertiary background color
-    /// iOS/tvOS/visionOS: tertiarySystemBackground; macOS: textBackgroundColor
+    /// iOS/visionOS: tertiarySystemBackground; macOS: textBackgroundColor
     static var platformTertiaryBackground: Color {
-        #if os(iOS) || os(tvOS) || os(visionOS)
+        #if os(iOS) || os(visionOS)
         return Color(.tertiarySystemBackground)
         #elseif os(macOS)
         return Color(.textBackgroundColor)
+        #elseif os(tvOS)
+        return Color(white: 0.18)
         #else
         return Color.gray.opacity(0.1)
         #endif
     }
 
     /// Platform grouped background color
-    /// iOS/tvOS/visionOS: systemGroupedBackground; macOS: controlBackgroundColor
+    /// iOS/visionOS: systemGroupedBackground; macOS: controlBackgroundColor
     static var platformGroupedBackground: Color {
-        #if os(iOS) || os(tvOS) || os(visionOS)
+        #if os(iOS) || os(visionOS)
         return Color(.systemGroupedBackground)
         #elseif os(macOS)
         return Color(.controlBackgroundColor)
+        #elseif os(tvOS)
+        return Color(white: 0.08)
         #else
         return Color.secondary
         #endif
