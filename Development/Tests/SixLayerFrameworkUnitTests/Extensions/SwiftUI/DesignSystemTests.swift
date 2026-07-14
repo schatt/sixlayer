@@ -128,8 +128,8 @@ class DesignSystemTests: XCTestCase {
 
         // Test component states
         let states = designSystem.componentStates()
-        // Corner radius is platform-specific: iOS uses 8; macOS/watchOS/tvOS use 6 (`VisualDesignSystem`).
-        #if os(macOS) || os(watchOS) || os(tvOS)
+        // Corner radius is platform-specific: iOS uses 8; macOS/watchOS/tvOS/visionOS use 6 (`VisualDesignSystem`).
+        #if os(macOS) || os(watchOS) || os(tvOS) || os(visionOS)
         XCTAssertEqual(states.cornerRadius.sm, 6)
         #else
         XCTAssertEqual(states.cornerRadius.sm, 8)
