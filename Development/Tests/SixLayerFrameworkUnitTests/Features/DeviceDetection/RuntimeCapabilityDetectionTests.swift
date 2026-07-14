@@ -183,7 +183,8 @@ open class RuntimeCapabilityDetectionTDDTests: BaseTestClass {
         RuntimeCapabilityDetection.Vision.setTestIsFrameworkAvailable(false)
         RuntimeCapabilityDetection.Vision.setTestIsFrameworkAvailable(true)
 
-        #if os(tvOS) || os(watchOS)
+        #if os(watchOS)
+        // watchOS does not ship Vision; overrides cannot invent it (#233/#318).
         #expect(!RuntimeCapabilityDetection.Vision.isFrameworkAvailable)
         #expect(!RuntimeCapabilityDetection.Vision.supportsOCR)
         #else
