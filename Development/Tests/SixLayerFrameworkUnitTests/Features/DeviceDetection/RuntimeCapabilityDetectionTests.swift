@@ -480,7 +480,8 @@ open class RuntimeCapabilityDetectionTDDTests: BaseTestClass {
         let baselineImageAnalyzer = RuntimeCapabilityDetection.Vision.supportsImageAnalyzer
         let baselineDocumentCamera = RuntimeCapabilityDetection.Vision.supportsDocumentCamera
 
-        #if os(tvOS) || os(watchOS)
+        #if os(watchOS)
+        // watchOS cannot enable Vision via overrides; exercise the force-false path only.
         RuntimeCapabilityDetection.Vision.setTestIsFrameworkAvailable(false)
         #expect(!RuntimeCapabilityDetection.Vision.isFrameworkAvailable)
 
