@@ -49,9 +49,16 @@ open class PlatformExportActionsLayer4Tests: BaseTestClass {
         let pdfURL = try makeTemporaryFile(named: "report.pdf", contents: minimalPDFData())
         let payload = makePayload(fileURL: pdfURL)
 
+        // Print is iOS/macOS-only; tvOS/watchOS/visionOS stay share-only so no chooser (#300/#318).
+        #if os(iOS) || os(macOS)
         #expect(
             ExportActionResolution.showsChooser(payload: payload, options: .init()) == true
         )
+        #else
+        #expect(
+            ExportActionResolution.showsChooser(payload: payload, options: .init()) == false
+        )
+        #endif
     }
 
     @Test func testResolvePrintContent_usesExplicitPrintContent() {
