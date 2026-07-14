@@ -58,7 +58,7 @@ struct CapabilityCombinationValidationTests {
         RuntimeCapabilityDetection.Vision.setTestIsFrameworkAvailable(false)
         RuntimeCapabilityDetection.Vision.setTestIsFrameworkAvailable(true)
 
-        #if os(tvOS) || os(watchOS)
+        #if os(watchOS)
         #expect(!RuntimeCapabilityDetection.Vision.isFrameworkAvailable)
         #expect(!RuntimeCapabilityDetection.Vision.supportsOCR)
         #else

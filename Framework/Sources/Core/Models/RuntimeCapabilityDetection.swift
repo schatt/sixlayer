@@ -605,7 +605,10 @@ public struct RuntimeCapabilityDetection {
         // Vision framework not available on watchOS
         return false
         #elseif os(tvOS)
-        // Vision framework not available on tvOS
+        // Vision ships on tvOS 11+ (aligned with `isVisionFrameworkAvailable()` / #237 / #318).
+        if #available(tvOS 11.0, *) {
+            return true
+        }
         return false
         #elseif os(visionOS)
         if #available(visionOS 1.0, *) {

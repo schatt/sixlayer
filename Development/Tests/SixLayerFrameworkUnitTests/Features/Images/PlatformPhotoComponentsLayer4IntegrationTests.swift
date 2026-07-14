@@ -25,7 +25,7 @@ import Testing
 //
 
 import SwiftUI
-#if os(iOS) || os(watchOS)
+#if os(iOS) || os(tvOS) || os(watchOS)
 import UIKit
 #elseif os(macOS)
 import AppKit
@@ -269,7 +269,7 @@ open class PlatformPhotoComponentsLayer4IntegrationTests: BaseTestClass {
     /// Raster helper for `PlatformImage` fixtures (uses framework `Color` for fill).
     private func createTestPlatformImage() -> PlatformImage {
         // Create a simple test image for unit testing
-        #if os(iOS) || os(visionOS)
+        #if os(iOS) || os(tvOS) || os(visionOS)
         let size = CGSize(width: 100, height: 100)
         let renderer = UIGraphicsImageRenderer(size: size)
         let uiImage = renderer.image { context in
@@ -304,7 +304,7 @@ open class PlatformPhotoComponentsLayer4IntegrationTests: BaseTestClass {
     }
     
     private func createRealImageData() -> Data {
-        #if os(iOS) || os(visionOS)
+        #if os(iOS) || os(tvOS) || os(visionOS)
         let size = CGSize(width: 200, height: 200)
         let renderer = UIGraphicsImageRenderer(size: size)
         let uiImage = renderer.image { context in
