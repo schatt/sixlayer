@@ -233,21 +233,24 @@ public struct PlatformToolbarActionsContent: ToolbarContent {
             for: actions.map(\.descriptor),
             capacity: capacity
         )
+        let visibleIDs: [String]
+        let overflowIDs: [String]
+        switch plan {
+        case .inline(let ids):
+            visibleIDs = ids
+            overflowIDs = []
+        case .inlinePlusOverflowMenu(let visible, let overflow):
+            visibleIDs = visible
+            overflowIDs = overflow
+        }
 
         ToolbarItemGroup(placement: placement) {
-            switch plan {
-            case .inline(let visibleIDs):
-                ForEach(visibleIDs, id: \.self) { id in
-                    if let item = byID[id] {
-                        toolbarActionButton(item)
-                    }
+            ForEach(visibleIDs, id: \.self) { id in
+                if let item = byID[id] {
+                    toolbarActionButton(item)
                 }
-            case .inlinePlusOverflowMenu(let visibleIDs, let overflowIDs):
-                ForEach(visibleIDs, id: \.self) { id in
-                    if let item = byID[id] {
-                        toolbarActionButton(item)
-                    }
-                }
+            }
+            if !overflowIDs.isEmpty {
                 Image(systemName: overflowSystemImage)
                     .accessibilityLabel(Text(overflowTitle))
                     .platformMenu {
