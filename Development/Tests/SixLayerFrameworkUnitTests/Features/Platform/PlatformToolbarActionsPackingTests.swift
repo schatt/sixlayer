@@ -162,4 +162,80 @@ struct PlatformToolbarActionsPackingTests {
             #expect(capacity.maxVisible == 1)
         }
     }
+
+    // MARK: - Partition (descriptor buckets)
+
+    @Test func testPartition_overCapacity_matchesPackOrder() {
+        let actions = [
+            action("a", priority: 0),
+            action("b", priority: 1),
+            action("c", priority: 2),
+            action("d", priority: 3)
+        ]
+        let partitioned = PlatformToolbarActionsPacker.partition(
+            actions,
+            capacity: PlatformToolbarActionsCapacity(maxVisible: 2)
+        )
+        #expect(partitioned.visible.map(\.id) == ["a", "b"])
+        #expect(partitioned.overflow.map(\.id) == ["c", "d"])
+        #expect(partitioned.visible.map(\.label) == ["a", "b"])
+    }
+
+    // MARK: - Render plan (L4 chrome)
+
+    @Test func testRenderPlan_withMenuSupport_usesOverflowMenuWhenOverCapacity() {
+        let actions = [
+            action("a", priority: 0),
+            action("b", priority: 1),
+            action("c", priority: 2)
+        ]
+        let plan = PlatformToolbarActionsPacker.renderPlan(
+            for: actions,
+            capacity: PlatformToolbarActionsCapacity(maxVisible: 2),
+            supportsOverflowMenu: true
+        )
+        #expect(
+            plan == .inlinePlusOverflowMenu(
+                visibleIDs: ["a", "b"],
+                overflowIDs: ["c"]
+            )
+        )
+    }
+
+    @Test func testRenderPlan_withMenuSupport_inlineOnlyWhenUnderCapacity() {
+        let actions = [action("a"), action("b")]
+        let plan = PlatformToolbarActionsPacker.renderPlan(
+            for: actions,
+            capacity: PlatformToolbarActionsCapacity(maxVisible: 3),
+            supportsOverflowMenu: true
+        )
+        #expect(plan == .inline(visibleIDs: ["a", "b"]))
+    }
+
+    @Test func testRenderPlan_withoutMenuSupport_omitsOverflowIDs() {
+        // watch/tv/vision: no platformMenu — keep packed visible only; do not fake Menu.
+        let actions = [
+            action("a", priority: 0),
+            action("b", priority: 1),
+            action("c", priority: 2)
+        ]
+        let plan = PlatformToolbarActionsPacker.renderPlan(
+            for: actions,
+            capacity: PlatformToolbarActionsCapacity(maxVisible: 1),
+            supportsOverflowMenu: false
+        )
+        #expect(plan == .inline(visibleIDs: ["a"]))
+        if case .inlinePlusOverflowMenu = plan {
+            Issue.record("Must not emit overflow menu plan when Menu unsupported")
+        }
+    }
+
+    @Test func testSupportsOverflowMenu_matchesHostPlatform() {
+        switch SixLayerPlatform.current {
+        case .iOS, .macOS:
+            #expect(PlatformToolbarActionsPacker.supportsOverflowMenu == true)
+        case .watchOS, .tvOS, .visionOS:
+            #expect(PlatformToolbarActionsPacker.supportsOverflowMenu == false)
+        }
+    }
 }
