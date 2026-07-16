@@ -228,25 +228,9 @@ public struct PlatformToolbarActionsContent: ToolbarContent {
     }
 
     public var body: some ToolbarContent {
-        let byID = Dictionary(uniqueKeysWithValues: actions.map { ($0.id, $0) })
-        let plan = PlatformToolbarActionsPacker.renderPlan(
-            for: actions.map(\.descriptor),
-            capacity: capacity
-        )
-        let visibleIDs: [String]
-        let overflowIDs: [String]
-        switch plan {
-        case .inline(let ids):
-            visibleIDs = ids
-            overflowIDs = []
-        case .inlinePlusOverflowMenu(let visible, let overflow):
-            visibleIDs = visible
-            overflowIDs = overflow
-        }
-
         ToolbarItemGroup(placement: placement) {
             ForEach(visibleIDs, id: \.self) { id in
-                if let item = byID[id] {
+                if let item = actionsByID[id] {
                     toolbarActionButton(item)
                 }
             }
@@ -255,13 +239,42 @@ public struct PlatformToolbarActionsContent: ToolbarContent {
                     .accessibilityLabel(Text(overflowTitle))
                     .platformMenu {
                         ForEach(overflowIDs, id: \.self) { id in
-                            if let item = byID[id] {
+                            if let item = actionsByID[id] {
                                 toolbarActionButton(item)
                             }
                         }
                     }
             }
         }
+    }
+
+    private var actionsByID: [String: PlatformToolbarActionItem] {
+        Dictionary(uniqueKeysWithValues: actions.map { ($0.id, $0) })
+    }
+
+    private var visibleIDs: [String] {
+        switch renderPlan {
+        case .inline(let ids):
+            return ids
+        case .inlinePlusOverflowMenu(let visible, _):
+            return visible
+        }
+    }
+
+    private var overflowIDs: [String] {
+        switch renderPlan {
+        case .inline:
+            return []
+        case .inlinePlusOverflowMenu(_, let overflow):
+            return overflow
+        }
+    }
+
+    private var renderPlan: PlatformToolbarActionsRenderPlan {
+        PlatformToolbarActionsPacker.renderPlan(
+            for: actions.map(\.descriptor),
+            capacity: capacity
+        )
     }
 
     @ViewBuilder
