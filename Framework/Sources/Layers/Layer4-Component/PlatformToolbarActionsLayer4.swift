@@ -39,8 +39,16 @@ public struct PlatformToolbarActionsCapacity: Sendable, Equatable {
 
     /// Host-platform default density. Does not use system toolbar `…` collapse.
     public static var platformDefault: PlatformToolbarActionsCapacity {
-        // Deliberately wrong for TDD red — corrected in green (#352).
-        PlatformToolbarActionsCapacity(maxVisible: 0)
+        switch SixLayerPlatform.current {
+        case .iOS:
+            return PlatformToolbarActionsCapacity(maxVisible: 2)
+        case .macOS:
+            return PlatformToolbarActionsCapacity(maxVisible: 4)
+        case .tvOS, .visionOS:
+            return PlatformToolbarActionsCapacity(maxVisible: 3)
+        case .watchOS:
+            return PlatformToolbarActionsCapacity(maxVisible: 1)
+        }
     }
 }
 
@@ -63,15 +71,41 @@ public struct PlatformToolbarActionsPackResult: Sendable, Equatable {
 public enum PlatformToolbarActionsPacker {
     /// Packs `actions` into visible and overflow ID lists.
     ///
-    /// **Stub (TDD red):** returns everything as visible and nothing in overflow.
+    /// Pinned actions (`overflowEligible == false`) always stay visible. Remaining
+    /// slots (after pins) go to overflow-eligible actions ordered by ascending
+    /// priority, then input order. Overflow preserves that same relative order.
     public static func pack(
         _ actions: [PlatformToolbarActionDescriptor],
         capacity: PlatformToolbarActionsCapacity
     ) -> PlatformToolbarActionsPackResult {
-        _ = capacity
+        let indexed = actions.enumerated().map { (index: $0.offset, action: $0.element) }
+
+        func byPriorityThenInput(
+            _ lhs: (index: Int, action: PlatformToolbarActionDescriptor),
+            _ rhs: (index: Int, action: PlatformToolbarActionDescriptor)
+        ) -> Bool {
+            if lhs.action.priority != rhs.action.priority {
+                return lhs.action.priority < rhs.action.priority
+            }
+            return lhs.index < rhs.index
+        }
+
+        let pinned = indexed
+            .filter { !$0.action.overflowEligible }
+            .sorted(by: byPriorityThenInput)
+        let overflowable = indexed
+            .filter { $0.action.overflowEligible }
+            .sorted(by: byPriorityThenInput)
+
+        let overflowableSlots = max(0, capacity.maxVisible - pinned.count)
+        let visibleOverflowable = Array(overflowable.prefix(overflowableSlots))
+        let overflow = Array(overflowable.dropFirst(overflowableSlots))
+
+        let visibleIDs = (pinned + visibleOverflowable).map(\.action.id)
+        let overflowIDs = overflow.map(\.action.id)
         return PlatformToolbarActionsPackResult(
-            visibleIDs: actions.map(\.id),
-            overflowIDs: []
+            visibleIDs: visibleIDs,
+            overflowIDs: overflowIDs
         )
     }
 }
