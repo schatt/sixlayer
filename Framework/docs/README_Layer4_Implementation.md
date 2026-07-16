@@ -29,6 +29,9 @@ Layer 4 is organized into multiple files, each focusing on a specific component 
 ### **System Actions & Clipboard**
 *`Shared/Views/Extensions/PlatformShareClipboardLayer4.swift`*
 
+### **Toolbar Action Packing**
+*`Framework/Sources/Layers/Layer4-Component/PlatformToolbarActionsLayer4.swift`* — capacity/priority packing with `platformMenu` overflow ([#352](https://github.com/schatt/sixlayer/issues/352)). See [PlatformToolbarActionsLayer4Guide.md](PlatformToolbarActionsLayer4Guide.md).
+
 ## 🎯 Purpose
 
 Create the actual UI components with platform-adaptive behavior, implementing the decisions and strategies from previous layers.
