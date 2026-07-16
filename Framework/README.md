@@ -360,6 +360,8 @@ See the [Platform-Specific Patterns Guide](docs/platform-specific-patterns.md#pl
 
 See the [Platform Print Layer 4 Guide](Framework/docs/PlatformPrintLayer4Guide.md) for complete documentation.
 
+See the [Platform Toolbar Actions Packing Guide](Framework/docs/PlatformToolbarActionsLayer4Guide.md) for space-aware toolbar packing (`platformToolbarActions_L4`, #352).
+
 ### Automatic Data Binding for IntelligentFormView
 - **Automatic DataBinder creation**: `DataBinder` is automatically created when generating forms (opt-out available)
 - **Real-time model updates**: Form field changes automatically update bound models via `dataBinder.updateField()`
