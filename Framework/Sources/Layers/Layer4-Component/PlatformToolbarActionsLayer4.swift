@@ -1,4 +1,5 @@
 import Foundation
+import SwiftUI
 
 // MARK: - Platform Toolbar Actions Packing (Issue #352)
 
@@ -114,4 +115,128 @@ public enum PlatformToolbarActionsPacker {
         }
         return lhs.index < rhs.index
     }
+
+    /// Whether this host can present overflow via ``View/platformMenu``.
+    /// iOS and macOS: yes. watchOS / tvOS / visionOS: no (label passthrough only).
+    public static var supportsOverflowMenu: Bool {
+        // Deliberately wrong for TDD red — corrected in green (#352).
+        false
+    }
+
+    /// Partitions descriptors into visible vs overflow buckets (same policy as ``pack``).
+    ///
+    /// **Stub (TDD red):** everything visible, nothing in overflow.
+    public static func partition(
+        _ actions: [PlatformToolbarActionDescriptor],
+        capacity: PlatformToolbarActionsCapacity
+    ) -> (visible: [PlatformToolbarActionDescriptor], overflow: [PlatformToolbarActionDescriptor]) {
+        _ = capacity
+        return (actions, [])
+    }
+
+    /// Resolves how L4 should render packed actions on the current (or declared) chrome.
+    ///
+    /// **Stub (TDD red):** always inline-only with every action ID.
+    public static func renderPlan(
+        for actions: [PlatformToolbarActionDescriptor],
+        capacity: PlatformToolbarActionsCapacity,
+        supportsOverflowMenu: Bool = PlatformToolbarActionsPacker.supportsOverflowMenu
+    ) -> PlatformToolbarActionsRenderPlan {
+        _ = capacity
+        _ = supportsOverflowMenu
+        return .inline(visibleIDs: actions.map(\.id))
+    }
+}
+
+/// How ``platformToolbarActions_L4`` should present packed toolbar actions.
+public enum PlatformToolbarActionsRenderPlan: Sendable, Equatable {
+    /// Only these IDs appear as toolbar controls; any packed overflow is omitted.
+    case inline(visibleIDs: [String])
+    /// Visible IDs as toolbar controls; overflow IDs inside a `platformMenu`.
+    case inlinePlusOverflowMenu(visibleIDs: [String], overflowIDs: [String])
+}
+
+/// Interactive toolbar action for ``platformToolbarActions_L4``.
+public struct PlatformToolbarActionItem: Identifiable {
+    public let id: String
+    public var priority: Int
+    public var overflowEligible: Bool
+    public var label: String
+    public var systemImage: String?
+    public let action: () -> Void
+
+    public init(
+        id: String,
+        priority: Int = 0,
+        overflowEligible: Bool = true,
+        label: String,
+        systemImage: String? = nil,
+        action: @escaping () -> Void
+    ) {
+        self.id = id
+        self.priority = priority
+        self.overflowEligible = overflowEligible
+        self.label = label
+        self.systemImage = systemImage
+        self.action = action
+    }
+
+    public var descriptor: PlatformToolbarActionDescriptor {
+        PlatformToolbarActionDescriptor(
+            id: id,
+            priority: priority,
+            overflowEligible: overflowEligible,
+            label: label,
+            systemImage: systemImage
+        )
+    }
+}
+
+/// L4 toolbar content: keep-K inline actions; remainder in ``View/platformMenu`` when supported.
+///
+/// **Stub (TDD red):** empty toolbar group (does not render packed actions).
+public struct PlatformToolbarActionsContent: ToolbarContent {
+    private let actions: [PlatformToolbarActionItem]
+    private let capacity: PlatformToolbarActionsCapacity
+    private let overflowTitle: String
+    private let overflowSystemImage: String
+    private let placement: ToolbarItemPlacement
+
+    public init(
+        actions: [PlatformToolbarActionItem],
+        capacity: PlatformToolbarActionsCapacity = .platformDefault,
+        overflowTitle: String = "More",
+        overflowSystemImage: String = "ellipsis",
+        placement: ToolbarItemPlacement = .automatic
+    ) {
+        self.actions = actions
+        self.capacity = capacity
+        self.overflowTitle = overflowTitle
+        self.overflowSystemImage = overflowSystemImage
+        self.placement = placement
+    }
+
+    public var body: some ToolbarContent {
+        ToolbarItemGroup(placement: placement) {
+            EmptyView()
+        }
+    }
+}
+
+/// Space-aware toolbar actions (Issue #352). Uses packing policy + `platformMenu` for overflow.
+@MainActor
+public func platformToolbarActions_L4(
+    _ actions: [PlatformToolbarActionItem],
+    capacity: PlatformToolbarActionsCapacity = .platformDefault,
+    overflowTitle: String = "More",
+    overflowSystemImage: String = "ellipsis",
+    placement: ToolbarItemPlacement = .automatic
+) -> some ToolbarContent {
+    PlatformToolbarActionsContent(
+        actions: actions,
+        capacity: capacity,
+        overflowTitle: overflowTitle,
+        overflowSystemImage: overflowSystemImage,
+        placement: placement
+    )
 }
