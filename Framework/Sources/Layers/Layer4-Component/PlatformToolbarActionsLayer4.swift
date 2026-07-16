@@ -71,41 +71,47 @@ public struct PlatformToolbarActionsPackResult: Sendable, Equatable {
 public enum PlatformToolbarActionsPacker {
     /// Packs `actions` into visible and overflow ID lists.
     ///
-    /// Pinned actions (`overflowEligible == false`) always stay visible. Remaining
-    /// slots (after pins) go to overflow-eligible actions ordered by ascending
-    /// priority, then input order. Overflow preserves that same relative order.
+    /// Visible order is all pinned actions first (priority, then input order), then
+    /// overflow-eligible actions that fit remaining slots under the same ordering.
+    /// Pinned actions (`overflowEligible == false`) never enter overflow, even when
+    /// that exceeds ``PlatformToolbarActionsCapacity/maxVisible``.
     public static func pack(
         _ actions: [PlatformToolbarActionDescriptor],
         capacity: PlatformToolbarActionsCapacity
     ) -> PlatformToolbarActionsPackResult {
-        let indexed = actions.enumerated().map { (index: $0.offset, action: $0.element) }
+        typealias Indexed = (index: Int, action: PlatformToolbarActionDescriptor)
 
-        func byPriorityThenInput(
-            _ lhs: (index: Int, action: PlatformToolbarActionDescriptor),
-            _ rhs: (index: Int, action: PlatformToolbarActionDescriptor)
-        ) -> Bool {
-            if lhs.action.priority != rhs.action.priority {
-                return lhs.action.priority < rhs.action.priority
+        var pinned: [Indexed] = []
+        var overflowable: [Indexed] = []
+        for (index, action) in actions.enumerated() {
+            if action.overflowEligible {
+                overflowable.append((index, action))
+            } else {
+                pinned.append((index, action))
             }
-            return lhs.index < rhs.index
         }
 
-        let pinned = indexed
-            .filter { !$0.action.overflowEligible }
-            .sorted(by: byPriorityThenInput)
-        let overflowable = indexed
-            .filter { $0.action.overflowEligible }
-            .sorted(by: byPriorityThenInput)
+        pinned.sort(by: Self.byPriorityThenInput)
+        overflowable.sort(by: Self.byPriorityThenInput)
 
-        let overflowableSlots = max(0, capacity.maxVisible - pinned.count)
-        let visibleOverflowable = Array(overflowable.prefix(overflowableSlots))
-        let overflow = Array(overflowable.dropFirst(overflowableSlots))
+        let maxVisible = max(0, capacity.maxVisible)
+        let overflowableSlots = max(0, maxVisible - pinned.count)
+        let visibleOverflowable = overflowable.prefix(overflowableSlots)
+        let overflow = overflowable.dropFirst(overflowableSlots)
 
-        let visibleIDs = (pinned + visibleOverflowable).map(\.action.id)
-        let overflowIDs = overflow.map(\.action.id)
         return PlatformToolbarActionsPackResult(
-            visibleIDs: visibleIDs,
-            overflowIDs: overflowIDs
+            visibleIDs: (pinned + visibleOverflowable).map(\.action.id),
+            overflowIDs: overflow.map(\.action.id)
         )
+    }
+
+    private static func byPriorityThenInput(
+        _ lhs: (index: Int, action: PlatformToolbarActionDescriptor),
+        _ rhs: (index: Int, action: PlatformToolbarActionDescriptor)
+    ) -> Bool {
+        if lhs.action.priority != rhs.action.priority {
+            return lhs.action.priority < rhs.action.priority
+        }
+        return lhs.index < rhs.index
     }
 }
