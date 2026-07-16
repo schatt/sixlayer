@@ -119,32 +119,42 @@ public enum PlatformToolbarActionsPacker {
     /// Whether this host can present overflow via ``View/platformMenu``.
     /// iOS and macOS: yes. watchOS / tvOS / visionOS: no (label passthrough only).
     public static var supportsOverflowMenu: Bool {
-        // Deliberately wrong for TDD red — corrected in green (#352).
-        false
+        switch SixLayerPlatform.current {
+        case .iOS, .macOS:
+            return true
+        case .watchOS, .tvOS, .visionOS:
+            return false
+        }
     }
 
     /// Partitions descriptors into visible vs overflow buckets (same policy as ``pack``).
-    ///
-    /// **Stub (TDD red):** everything visible, nothing in overflow.
     public static func partition(
         _ actions: [PlatformToolbarActionDescriptor],
         capacity: PlatformToolbarActionsCapacity
     ) -> (visible: [PlatformToolbarActionDescriptor], overflow: [PlatformToolbarActionDescriptor]) {
-        _ = capacity
-        return (actions, [])
+        let packed = pack(actions, capacity: capacity)
+        let byID = Dictionary(uniqueKeysWithValues: actions.map { ($0.id, $0) })
+        let visible = packed.visibleIDs.compactMap { byID[$0] }
+        let overflow = packed.overflowIDs.compactMap { byID[$0] }
+        return (visible, overflow)
     }
 
     /// Resolves how L4 should render packed actions on the current (or declared) chrome.
     ///
-    /// **Stub (TDD red):** always inline-only with every action ID.
+    /// When `supportsOverflowMenu` is false, overflow IDs are omitted (no fake Menu).
     public static func renderPlan(
         for actions: [PlatformToolbarActionDescriptor],
         capacity: PlatformToolbarActionsCapacity,
         supportsOverflowMenu: Bool = PlatformToolbarActionsPacker.supportsOverflowMenu
     ) -> PlatformToolbarActionsRenderPlan {
-        _ = capacity
-        _ = supportsOverflowMenu
-        return .inline(visibleIDs: actions.map(\.id))
+        let packed = pack(actions, capacity: capacity)
+        if supportsOverflowMenu, packed.showsOverflowMenu {
+            return .inlinePlusOverflowMenu(
+                visibleIDs: packed.visibleIDs,
+                overflowIDs: packed.overflowIDs
+            )
+        }
+        return .inline(visibleIDs: packed.visibleIDs)
     }
 }
 
@@ -194,7 +204,8 @@ public struct PlatformToolbarActionItem: Identifiable {
 
 /// L4 toolbar content: keep-K inline actions; remainder in ``View/platformMenu`` when supported.
 ///
-/// **Stub (TDD red):** empty toolbar group (does not render packed actions).
+/// Does **not** rely on system toolbar fold-into-`…`. Overflow uses explicit `platformMenu`
+/// on iOS/macOS; on platforms without Menu, only the packed visible bucket is shown.
 public struct PlatformToolbarActionsContent: ToolbarContent {
     private let actions: [PlatformToolbarActionItem]
     private let capacity: PlatformToolbarActionsCapacity
@@ -217,8 +228,45 @@ public struct PlatformToolbarActionsContent: ToolbarContent {
     }
 
     public var body: some ToolbarContent {
+        let byID = Dictionary(uniqueKeysWithValues: actions.map { ($0.id, $0) })
+        let plan = PlatformToolbarActionsPacker.renderPlan(
+            for: actions.map(\.descriptor),
+            capacity: capacity
+        )
+
         ToolbarItemGroup(placement: placement) {
-            EmptyView()
+            switch plan {
+            case .inline(let visibleIDs):
+                ForEach(visibleIDs, id: \.self) { id in
+                    if let item = byID[id] {
+                        toolbarActionButton(item)
+                    }
+                }
+            case .inlinePlusOverflowMenu(let visibleIDs, let overflowIDs):
+                ForEach(visibleIDs, id: \.self) { id in
+                    if let item = byID[id] {
+                        toolbarActionButton(item)
+                    }
+                }
+                Image(systemName: overflowSystemImage)
+                    .accessibilityLabel(Text(overflowTitle))
+                    .platformMenu {
+                        ForEach(overflowIDs, id: \.self) { id in
+                            if let item = byID[id] {
+                                toolbarActionButton(item)
+                            }
+                        }
+                    }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func toolbarActionButton(_ item: PlatformToolbarActionItem) -> some View {
+        if let systemImage = item.systemImage {
+            Button(item.label, systemImage: systemImage, action: item.action)
+        } else {
+            Button(item.label, action: item.action)
         }
     }
 }
