@@ -1,12 +1,21 @@
 # 🚀 Six-Layer Framework Release History
 
-## 📍 **Current Release: v8.2.1** 🔧
+## 📍 **Current Release: v8.3.0** 🔧
 
-**Release Date**: July 12, 2026
-**Status**: Patch release
-**Previous Release**: v8.2.0 - Minor release
-**Note**: Xcode 27 beta compile fix — remove dead `#available` gates inside `@ViewBuilder` (#340).
+**Release Date**: TBD (prep)
+**Status**: Minor release (prep)
+**Previous Release**: v8.2.1 - Patch release
+**Note**: Toolbar action packing (#352); tvOS/watchOS/visionOS AllTests runtime (#318–#320).
 **Next Release**: TBD
+
+---
+
+## 🎯 **v8.3.0 - Toolbar packing and platform AllTests runtime** (TBD)
+
+### **What's in v8.3.0:**
+- Minor release (#352, #318–#320). See [RELEASE_v8.3.0.md](RELEASE_v8.3.0.md) for details.
+
+**See [RELEASE_v8.3.0.md](RELEASE_v8.3.0.md) for complete release notes.**
 
 ---
 
