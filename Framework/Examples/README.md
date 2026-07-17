@@ -1,6 +1,6 @@
 # SixLayer Framework Examples
 
-**Version**: v8.2.1
+**Version**: v8.3.0
 
 ## Overview
 
