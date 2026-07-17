@@ -1,5 +1,5 @@
 // swift-tools-version: 6.0
-// SixLayerFramework v8.2.1 - Patch: Xcode 27 dead #available / TupleContent compile fix (#340)
+// SixLayerFramework v8.3.0 - Minor: toolbar packing (#352); platform AllTests runtime (#318–#320)
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
