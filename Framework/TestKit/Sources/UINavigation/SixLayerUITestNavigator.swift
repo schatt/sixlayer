@@ -97,7 +97,7 @@ public final class SixLayerUITestNavigator: @unchecked Sendable {
         let quick = max(0.05, stepTimeout / 2)
 
         // macOS SwiftUI stacks often surface "Back" at app or window scope before bar index 0 matches
-        // (see `navigateBackToLaunch` in the framework UI test helpers).
+        // Prefer deep-linked hosts for Layer N examples (#348); this Back path is for smoke-host journeys only.
         let searchRoots: [XCUIElement] = [application, application.windows.firstMatch]
         for root in searchRoots {
             let back = root.buttons["Back"]

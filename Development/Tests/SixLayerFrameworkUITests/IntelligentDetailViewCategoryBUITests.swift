@@ -5,18 +5,23 @@
 //  Issue #198: Category B UI backfill for IntelligentDetailView visible content.
 //  Content must be in the accessibility tree at launch — do not scroll to find it (#316).
 //
+//  #348: land on exact host-root; single-predicate text presence (no sequential OR wait ladder).
+//
 
 import XCTest
 
 @MainActor
 final class IntelligentDetailViewCategoryBUITests: XCTestCase {
     private enum Copy {
-        static let coverageTitle = "Category B Detail Coverage"
         static let defaultTitle = "Category B Item"
         static let defaultSubtitle = "Category B Subtitle"
         static let customFieldPrefix = "Custom Field:"
         static let nilTitle = "Nil Item"
         static let nilDescription = "Nil Description"
+    }
+
+    private enum Host {
+        static let rootIdentifier = "category-b-detail-host-root"
     }
 
     var app: XCUIApplication!
@@ -34,7 +39,7 @@ final class IntelligentDetailViewCategoryBUITests: XCTestCase {
             instance.app = localApp
 
             XCTAssertTrue(
-                localApp.staticTexts[Copy.coverageTitle].waitForExistence(timeout: 2.5),
+                localApp.waitForHostRootIdentifier(Host.rootIdentifier),
                 "Category B host should appear with -OpenDetailViewCategoryB"
             )
         }
@@ -47,23 +52,17 @@ final class IntelligentDetailViewCategoryBUITests: XCTestCase {
         }
     }
 
-    /// True when any a11y node exposes `text` via label, exact value, or title (no scrolling).
-    /// Avoids app-wide `value CONTAINS` — that query can hang for minutes on macOS (#316).
+    /// One XCUI query for exact text in label/value/title — avoids sequential wait ladders (#348 / #316).
     @MainActor
     private func assertAccessibleTextExists(_ text: String, timeout: TimeInterval = 2.0, _ message: String) {
-        if app.staticTexts[text].waitForExistence(timeout: timeout) {
-            return
-        }
-        let labelPred = NSPredicate(format: "label CONTAINS[c] %@", text)
-        if app.descendants(matching: .staticText).matching(labelPred).firstMatch.waitForExistence(timeout: timeout) {
-            return
-        }
-        if app.descendants(matching: .other).matching(labelPred).firstMatch.waitForExistence(timeout: timeout) {
-            return
-        }
-        let exactPred = NSPredicate(format: "value == %@ OR title == %@", text, text)
+        // Exact substring match in one query — IntelligentDetailView demotes labels on macOS (#316);
+        // avoid sequential wait ladders (#348). Keep strings short/known to limit CONTAINS cost.
+        let pred = NSPredicate(
+            format: "label CONTAINS[c] %@ OR value CONTAINS[c] %@ OR title CONTAINS[c] %@",
+            text, text, text
+        )
         XCTAssertTrue(
-            app.descendants(matching: .any).matching(exactPred).firstMatch.waitForExistence(timeout: timeout),
+            app.descendants(matching: .any).matching(pred).firstMatch.waitForExistence(timeout: timeout),
             message
         )
     }
@@ -74,14 +73,8 @@ final class IntelligentDetailViewCategoryBUITests: XCTestCase {
     }
 
     func testCategoryB_customFieldView_showsCustomMarker() throws {
-        let byId = app.descendants(matching: .any)["category-b-custom-field"]
-        if byId.waitForExistence(timeout: 2.0) {
-            XCTAssertTrue(
-                byId.xcuiAccessibleText.contains(Copy.customFieldPrefix),
-                "Custom field identifier should expose marker text; got '\(byId.xcuiAccessibleText)'"
-            )
-            return
-        }
+        // IntelligentDetailView reparents customFieldView; literal ids are unreliable here.
+        // Assert visible marker text with the single-predicate helper (#348).
         assertAccessibleTextExists(
             Copy.customFieldPrefix,
             "Custom field rendering should expose the custom marker text"

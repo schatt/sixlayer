@@ -24,7 +24,7 @@ import Testing
 //
 
 import SwiftUI
-#if os(iOS) || os(watchOS)
+#if os(iOS) || os(tvOS) || os(watchOS)
 import UIKit
 #elseif os(macOS)
 import AppKit
@@ -226,7 +226,7 @@ open class PlatformImageArchitectureTests: BaseTestClass {
     
     /// Raster fixture for JPEG encode tests (uses platform graphics APIs intentionally).
     private func createTestImageData() -> Data {
-        #if os(iOS) || os(visionOS)
+        #if os(iOS) || os(tvOS) || os(visionOS)
         let size = CGSize(width: 100, height: 100)
         let renderer = UIGraphicsImageRenderer(size: size)
         let uiImage = renderer.image { context in

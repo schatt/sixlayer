@@ -187,11 +187,12 @@ open class PlatformLogicTests: BaseTestClass {
         let hasVision = isVisionFrameworkAvailable()
 
         // THEN: Vision availability should be correct for current platform
+        // tvOS ships Vision (#237); watchOS does not.
         switch currentPlatform {
-        case .iOS, .macOS, .visionOS:
+        case .iOS, .macOS, .tvOS, .visionOS:
             #expect(hasVision, "\(currentPlatform) should have Vision framework")
 
-        case .watchOS, .tvOS:
+        case .watchOS:
             #expect(!hasVision, "\(currentPlatform) should not have Vision framework")
         }
     }
@@ -204,11 +205,12 @@ open class PlatformLogicTests: BaseTestClass {
         let hasOCR = isVisionOCRAvailable()
 
         // THEN: OCR availability should be correct for current platform
+        // OCR follows framework availability (`isVisionOCRAvailable` / #318).
         switch currentPlatform {
-        case .iOS, .macOS, .visionOS:
+        case .iOS, .macOS, .tvOS, .visionOS:
             #expect(hasOCR, "\(currentPlatform) should have OCR")
 
-        case .watchOS, .tvOS:
+        case .watchOS:
             #expect(!hasOCR, "\(currentPlatform) should not have OCR")
         }
     }

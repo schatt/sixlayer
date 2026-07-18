@@ -60,3 +60,7 @@ test_output.log
 
 # Python bytecode (Cursor hook scripts)
 .cursor/hooks/__pycache__/
+# Cursor agent hook ephemerals (must not dirty the working tree)
+.cursor/hooks/dirty-guard.json
+.cursor/hooks/dirty-guard.lock
+.cursor/hooks/worktree-activity.json

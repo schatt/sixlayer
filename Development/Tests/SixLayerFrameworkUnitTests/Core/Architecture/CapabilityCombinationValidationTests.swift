@@ -8,7 +8,7 @@ struct CapabilityCombinationValidationTests {
 
     @Test("AssistiveTouch enable cascades to touch on iOS")
     func testAssistiveTouchEnableCascadesToTouchOnIOS() async throws {
-        #if os(iOS)
+        #if os(iOS) || os(watchOS)
         RuntimeCapabilityDetection.clearAllCapabilityOverrides()
         defer { RuntimeCapabilityDetection.clearAllCapabilityOverrides() }
 
@@ -58,7 +58,7 @@ struct CapabilityCombinationValidationTests {
         RuntimeCapabilityDetection.Vision.setTestIsFrameworkAvailable(false)
         RuntimeCapabilityDetection.Vision.setTestIsFrameworkAvailable(true)
 
-        #if os(tvOS) || os(watchOS)
+        #if os(watchOS)
         #expect(!RuntimeCapabilityDetection.Vision.isFrameworkAvailable)
         #expect(!RuntimeCapabilityDetection.Vision.supportsOCR)
         #else

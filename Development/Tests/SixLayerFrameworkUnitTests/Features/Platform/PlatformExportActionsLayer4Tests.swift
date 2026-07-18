@@ -29,7 +29,11 @@ open class PlatformExportActionsLayer4Tests: BaseTestClass {
 
         let actions = ExportActionResolution.enabledActions(payload: payload, options: .init())
 
+        #if os(iOS) || os(macOS)
         #expect(actions == [.share, .print])
+        #else
+        #expect(actions == [.share])
+        #endif
     }
 
     @Test func testShowsChooser_falseWhenOnlyShareEnabled() throws {
@@ -45,9 +49,16 @@ open class PlatformExportActionsLayer4Tests: BaseTestClass {
         let pdfURL = try makeTemporaryFile(named: "report.pdf", contents: minimalPDFData())
         let payload = makePayload(fileURL: pdfURL)
 
+        // Print is iOS/macOS-only; tvOS/watchOS/visionOS stay share-only so no chooser (#300/#318).
+        #if os(iOS) || os(macOS)
         #expect(
             ExportActionResolution.showsChooser(payload: payload, options: .init()) == true
         )
+        #else
+        #expect(
+            ExportActionResolution.showsChooser(payload: payload, options: .init()) == false
+        )
+        #endif
     }
 
     @Test func testResolvePrintContent_usesExplicitPrintContent() {
@@ -129,11 +140,15 @@ open class PlatformExportActionsLayer4Tests: BaseTestClass {
 
         let result = platformExportActions_L4(payload: payload, options: options)
 
+        #if os(iOS) || os(macOS)
         if case .printed(let success)? = result {
             #expect(success == true)
         } else {
             Issue.record("Print-only export should fast-path to .printed, got \(String(describing: result))")
         }
+        #else
+        #expect(result == nil, "Print-only export is unavailable on this platform")
+        #endif
     }
 
     @Test @MainActor func testImperativeExportActions_nilWhenNoEnabledActions() throws {

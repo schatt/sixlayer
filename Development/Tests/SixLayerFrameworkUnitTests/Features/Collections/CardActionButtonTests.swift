@@ -478,10 +478,10 @@ open class CardActionButtonTests: BaseTestClass {
                         "watchOS should support contentReveal strategy for action buttons")
             
         case .tvOS:
-            // tvOS should support focus-based navigation
+            // Fixture strategy is contentReveal/hoverExpand (not platform-selected L3).
             #expect(expandableCard.isExpanded, "tvOS cards should support expansion for action buttons")
-            #expect(CardActionButtonTests.strategy.supportedStrategies.contains(.focusMode), 
-                        "tvOS should support focusMode strategy for action buttons")
+            #expect(CardActionButtonTests.strategy.supportedStrategies.contains(.contentReveal),
+                        "tvOS cards should use contentReveal from the shared fixture strategy")
             
         case .visionOS:
             // visionOS should support spatial interactions

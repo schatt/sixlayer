@@ -605,7 +605,10 @@ public struct RuntimeCapabilityDetection {
         // Vision framework not available on watchOS
         return false
         #elseif os(tvOS)
-        // Vision framework not available on tvOS
+        // Vision ships on tvOS 11+ (aligned with `isVisionFrameworkAvailable()` / #237 / #318).
+        if #available(tvOS 11.0, *) {
+            return true
+        }
         return false
         #elseif os(visionOS)
         if #available(visionOS 1.0, *) {
@@ -1331,12 +1334,17 @@ public struct TestingCapabilityDetection {
     /// Whether we're currently in testing mode
     public static var isTestingMode: Bool {
         #if DEBUG
-        // Check for XCTest environment variables
         let environment = ProcessInfo.processInfo.environment
-        return environment["XCTestConfigurationFilePath"] != nil ||
-               environment["XCTestSessionIdentifier"] != nil ||
-               environment["XCTestBundlePath"] != nil ||
-               NSClassFromString("XCTestCase") != nil
+        if environment["XCTestConfigurationFilePath"] != nil ||
+           environment["XCTestSessionIdentifier"] != nil ||
+           environment["XCTestBundlePath"] != nil ||
+           NSClassFromString("XCTestCase") != nil {
+            return true
+        }
+        if NSClassFromString("Testing.Test") != nil {
+            return true
+        }
+        return false
         #else
         return false
         #endif

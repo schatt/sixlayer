@@ -144,10 +144,10 @@ final class Layer4UITests: XCTestCase {
 
     @MainActor
     private func waitForStaticTextInForeground(_ text: String, timeout: TimeInterval) -> Bool {
+        // Host stamps exact accessibilityIdentifier matching the contract string (#351).
         let deadline = Date().addingTimeInterval(timeout)
         while Date() < deadline {
             if element(matchingIdentifier: text).exists { return true }
-            if app.staticTexts[text].exists { return true }
             RunLoop.current.run(until: Date().addingTimeInterval(0.05))
         }
         return false
@@ -169,7 +169,6 @@ final class Layer4UITests: XCTestCase {
         let deadline = Date().addingTimeInterval(timeout)
         while Date() < deadline {
             if element(matchingIdentifier: "L4NavDestinationContent").exists { return true }
-            if app.staticTexts["L4NavDestinationContent"].exists { return true }
             RunLoop.current.run(until: Date().addingTimeInterval(0.05))
         }
         return false
@@ -635,13 +634,11 @@ final class Layer4UITests: XCTestCase {
     @MainActor
     func testL4_platformCloudKitAccountStatus_L4() throws {
         launchL4Contract(section: "system")
-        let containsId = app.descendants(matching: .any)
+        // Framework may prefix; one CONTAINS query — not exact||CONTAINS ladder (#351).
+        let el = app.descendants(matching: .any)
             .matching(NSPredicate(format: "identifier CONTAINS[c] %@", "platformCloudKitAccountStatus_L4"))
             .firstMatch
-        XCTAssertTrue(
-            containsId.exists || element(matchingIdentifier: "platformCloudKitAccountStatus_L4").exists,
-            "platformCloudKitAccountStatus_L4: view must expose contract a11y identifier"
-        )
+        XCTAssertTrue(el.exists, "platformCloudKitAccountStatus_L4: view must expose contract a11y identifier")
     }
 
     @MainActor
@@ -656,12 +653,10 @@ final class Layer4UITests: XCTestCase {
     @MainActor
     func testL4_platformCloudKitSyncButton_L4() throws {
         launchL4Contract(section: "system")
-        let exactId = element(matchingIdentifier: "platformCloudKitSyncButton_L4")
-        let containsId = app.descendants(matching: .any)
+        let el = app.descendants(matching: .any)
             .matching(NSPredicate(format: "identifier CONTAINS[c] %@", "platformCloudKitSyncButton_L4"))
             .firstMatch
-        XCTAssertTrue(exactId.exists || containsId.exists,
-                      "platformCloudKitSyncButton_L4: button must expose contract a11y identifier")
+        XCTAssertTrue(el.exists, "platformCloudKitSyncButton_L4: button must expose contract a11y identifier")
     }
 
     @MainActor
@@ -681,8 +676,7 @@ final class Layer4UITests: XCTestCase {
         XCTAssertTrue(openControl.exists, "platformPhotoPicker_L4: L4ContractPhotoPickerOpen must exist")
         tapByNormalizedCenter(openControl)
         XCTAssertTrue(
-            element(matchingIdentifier: "platformPhotoPicker_L4").exists
-                || waitForIdentifier("platformPhotoPicker_L4", timeout: 2.0),
+            waitForIdentifier("platformPhotoPicker_L4", timeout: 2.0),
             "platformPhotoPicker_L4: picker subtree must expose contract a11y identifier"
         )
         let cancel = app.buttons["Cancel"].firstMatch

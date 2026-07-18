@@ -13,12 +13,18 @@ struct Layer3ExamplesView: View {
     var body: some View {
         ScrollView {
             platformVStack(alignment: .leading, spacing: 24) {
+                // Exact XCUI land marker for `-OpenLayer3Examples` (#348 / #316).
+                Text("Layer 3 Examples")
+                    .font(.headline)
+                    .exactNamed("layer3-examples-host-root")
+                    .accessibilityLabel("Layer 3 Examples")
+
                 ExampleSection(title: "OCR Strategy Selection") {
                     OCRStrategyExamples()
                 }
+                .automaticCompliance(named: "Layer3ExamplesView")
             }
             .padding()
-            .automaticCompliance(named: "Layer3ExamplesView")
         }
         .platformFrame()
         .navigationTitle("Layer 3 Examples")

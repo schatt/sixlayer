@@ -80,15 +80,11 @@ open class AccessibilityStateSimulationTests: BaseTestClass {
         // Given: Platform-specific configuration with accessibility overrides
         let platform = SixLayerPlatform.current
         
-        // Set accessibility capability overrides based on platform.
-        // Fix #237: earlier this branch set setTestAssistiveTouch(false) for
-        // watchOS/tvOS/visionOS and then asserted supportsAssistiveTouch == true
-        // below — a self-contradiction that failed on the tvOS test build.
-        // Drive the override from the same expectation the assertions use:
-        // AssistiveTouch is expected on iOS/watchOS/tvOS/visionOS and NOT on macOS.
+        // Drive AssistiveTouch override from platform support matrix:
+        // tvOS/macOS/visionOS do not ship AssistiveTouch (`SixLayerPlatform.supportsAssistiveTouch`).
         RuntimeCapabilityDetection.setTestVoiceOver(true)
         RuntimeCapabilityDetection.setTestSwitchControl(true)
-        RuntimeCapabilityDetection.setTestAssistiveTouch(platform != .macOS)
+        RuntimeCapabilityDetection.setTestAssistiveTouch(platform.supportsAssistiveTouch)
         
         let config = getCardExpansionAccessibilityConfig()
         
@@ -119,20 +115,20 @@ open class AccessibilityStateSimulationTests: BaseTestClass {
             #expect(config.focusManagement, "watchOS should support focus management")
             
         case .tvOS:
-            // tvOS should support focus-based navigation
+            // tvOS: focus navigation yes; AssistiveTouch is iPhone/Watch-only (#318).
             #expect(config.supportsVoiceOver, "tvOS should support VoiceOver")
             #expect(config.supportsSwitchControl, "tvOS should support Switch Control")
-            #expect(config.supportsAssistiveTouch, "tvOS should support AssistiveTouch")
+            #expect(!config.supportsAssistiveTouch, "tvOS should not support AssistiveTouch")
             #expect(config.supportsReduceMotion, "tvOS should support reduced motion")
             #expect(config.supportsHighContrast, "tvOS should support high contrast")
             #expect(config.supportsDynamicType, "tvOS should support dynamic type")
             #expect(config.focusManagement, "tvOS should support focus management")
             
         case .visionOS:
-            // visionOS should support spatial accessibility
+            // visionOS: spatial a11y yes; AssistiveTouch is not available on this platform.
             #expect(config.supportsVoiceOver, "visionOS should support VoiceOver")
             #expect(config.supportsSwitchControl, "visionOS should support Switch Control")
-            #expect(config.supportsAssistiveTouch, "visionOS should support AssistiveTouch")
+            #expect(!config.supportsAssistiveTouch, "visionOS should not support AssistiveTouch")
             #expect(config.supportsReduceMotion, "visionOS should support reduced motion")
             #expect(config.supportsHighContrast, "visionOS should support high contrast")
             #expect(config.supportsDynamicType, "visionOS should support dynamic type")
