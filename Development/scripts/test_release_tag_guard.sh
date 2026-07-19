@@ -85,7 +85,7 @@ assert_exit_zero() {
     fi
 }
 
-echo "=== test_release_tag_guard (#356) ==="
+echo "=== test_release_tag_guard (#356, #357) ==="
 
 if [ ! -f "$LIB" ]; then
     echo "❌ library missing: $LIB"
