@@ -459,7 +459,7 @@ targets:
 
   # UI tests - watchOS (same test sources; no TestApp for watchOS)
   # Note: XCUITest .tap() is unavailable on watchOS; touch-based helpers excluded.
-  # watchOS-native UI tests tracked under epic #233 / issue #241.
+  # Not in SLF-watchOS-AllTests until a host + watchOS-native tests exist (#354, epic #233 / #219).
   SixLayerFrameworkUITests_watchOS:
     type: bundle.ui-testing
     platform: watchOS
@@ -902,8 +902,7 @@ schemes:
         - name: SixLayerFrameworkExternalIntegrationTests_watchOS
           parallelizable: true
           randomExecutionOrder: true
-      # UITests excluded by default due to ViewInspector Swift 6 issues
-      # Uncomment when ViewInspector is fixed:
+      # UITests omitted — same gate as SLF-watchOS-AllTests (#354): no watchOS host / native XCUITests yet.
       # - name: SixLayerFrameworkUITests_watchOS
       #   parallelizable: true
       #   randomExecutionOrder: true
@@ -917,12 +916,14 @@ schemes:
         - name: SixLayerFrameworkUnitTests_watchOS
           parallelizable: true
           randomExecutionOrder: true
-        - name: SixLayerFrameworkUITests_watchOS
-          parallelizable: true
-          randomExecutionOrder: true
         - name: SixLayerFrameworkExternalIntegrationTests_watchOS
           parallelizable: true
           randomExecutionOrder: true
+      # UITests intentionally omitted (#354): SixLayerFrameworkUITests_watchOS has no TestApp /
+      # TEST_TARGET_NAME and excludes all *UITests.swift (touch/.tap() not valid on watchOS), so
+      # AllTests only tried to install/bootstrap an empty xctrunner. Re-add when watchOS-native
+      # XCUITests + host app exist (epic #233 / coverage #219). Prefer watchOS 26.5 destinations;
+      # 27.0 Series 11 has been observed to fail xctest bootstrap before connection.
 
   SLF-watchOS-UnitTests:
     build:
