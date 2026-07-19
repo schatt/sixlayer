@@ -82,6 +82,7 @@ assert_true "Package.swift is docs-only for release prep" release_is_docs_only_p
 assert_true "project.pbxproj is docs-only for release prep" release_is_docs_only_path "SixLayerFramework.xcodeproj/project.pbxproj"
 assert_true "release-process.sh is docs-only for release prep" release_is_docs_only_path "Development/scripts/release-process.sh"
 assert_true "release_test_stamp.sh is docs-only for release prep" release_is_docs_only_path "Development/scripts/lib/release_test_stamp.sh"
+assert_true "release_tag_guard.sh is docs-only for release prep" release_is_docs_only_path "Development/scripts/lib/release_tag_guard.sh"
 assert_true "test_release_test_stamp.sh is docs-only for release prep" release_is_docs_only_path "Development/scripts/test_release_test_stamp.sh"
 assert_false "Framework/Sources/foo.swift is not docs-only" release_is_docs_only_path "Framework/Sources/foo.swift"
 assert_false "project.yml is not docs-only" release_is_docs_only_path "project.yml"
