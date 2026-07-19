@@ -32,6 +32,8 @@ set -e
 RELEASE_PROCESS_SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=lib/release_test_stamp.sh
 source "${RELEASE_PROCESS_SCRIPT_DIR}/lib/release_test_stamp.sh"
+# shellcheck source=lib/release_tag_guard.sh
+source "${RELEASE_PROCESS_SCRIPT_DIR}/lib/release_tag_guard.sh"
 
 # -----------------------------------------------------------------------------
 # Per-run logging: capture the entire release process output in /tmp
@@ -328,6 +330,17 @@ fi
 # Allow explicit version with or without a leading "v" (e.g. 7.5.12 or v7.5.12)
 if [[ -n "$VERSION" ]] && [[ "$VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
     VERSION="${VERSION#v}"
+fi
+
+# Fail fast when the release tag already exists (local or remote). Docs-only
+# mode still validates historical release docs for existing versions, so warn only.
+if release_tag_exists "$(release_tag_name_for_version "$VERSION")"; then
+    if [ "$DOCS_ONLY" -eq 1 ]; then
+        echo "⚠️  Release tag v$VERSION already exists (docs-only: continuing validation)."
+    else
+        release_abort_if_tag_exists "$VERSION"
+        exit 1
+    fi
 fi
 
 # Initialize error tracking
