@@ -334,13 +334,12 @@ fi
 
 # Fail fast when the release tag already exists (local or remote). Docs-only
 # mode still validates historical release docs for existing versions, so warn only.
-if release_tag_exists "$(release_tag_name_for_version "$VERSION")"; then
-    if [ "$DOCS_ONLY" -eq 1 ]; then
+if [ "$DOCS_ONLY" -eq 1 ]; then
+    if release_tag_exists "$(release_tag_name_for_version "$VERSION")"; then
         echo "⚠️  Release tag v$VERSION already exists (docs-only: continuing validation)."
-    else
-        release_abort_if_tag_exists "$VERSION"
-        exit 1
     fi
+else
+    release_abort_if_tag_exists "$VERSION"
 fi
 
 # Initialize error tracking
