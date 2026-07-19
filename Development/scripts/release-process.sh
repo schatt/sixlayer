@@ -332,16 +332,6 @@ if [[ -n "$VERSION" ]] && [[ "$VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
     VERSION="${VERSION#v}"
 fi
 
-# Fail fast when the release tag already exists (local or remote). Docs-only
-# mode still validates historical release docs for existing versions, so warn only.
-if [ "$DOCS_ONLY" -eq 1 ]; then
-    if release_tag_exists "$(release_tag_name_for_version "$VERSION")"; then
-        echo "⚠️  Release tag v$VERSION already exists (docs-only: continuing validation)."
-    fi
-else
-    release_abort_if_tag_exists "$VERSION"
-fi
-
 # Initialize error tracking
 ERRORS_FOUND=0
 ERROR_MESSAGES=""
@@ -420,8 +410,22 @@ if [ "$DOCS_ONLY" -eq 1 ]; then
     echo "📄 Docs-only mode (--docs): skipping unit tests and release (tag/merge/push/GitHub Release)"
 fi
 
-# Step 1: Regenerate Xcode project
-echo "📋 Step 1: Ensuring Xcode project is up to date..."
+# Step 1: Release tag must not already exist (local or remote). Docs-only warns
+# and continues so historical release docs can still be validated.
+echo "📋 Step 1: Checking release tag v$VERSION does not already exist..."
+if [ "$DOCS_ONLY" -eq 1 ]; then
+    if release_tag_exists "$(release_tag_name_for_version "$VERSION")"; then
+        echo "⚠️  Release tag v$VERSION already exists (docs-only: continuing validation)."
+    else
+        echo "✅ Release tag v$VERSION is available"
+    fi
+else
+    release_abort_if_tag_exists "$VERSION"
+    echo "✅ Release tag v$VERSION is available"
+fi
+
+# Step 2: Regenerate Xcode project
+echo "📋 Step 2: Ensuring Xcode project is up to date..."
 if command -v xcodegen &> /dev/null; then
     echo "🔧 Regenerating Xcode project with xcodegen..."
     if xcodegen -c; then
@@ -434,7 +438,7 @@ else
     echo "⚠️  xcodegen not available, skipping project regeneration"
 fi
 
-# Step 2: Run tests (unit tests only per platform — no UI tests, no ViewInspector, no AllTests)
+# Step 3: Run tests (unit tests only per platform — no UI tests, no ViewInspector, no AllTests)
 # Skipped in --docs mode, or when a valid last-pass stamp shows only docs-only changes since then.
 MACOS_TESTS_FAILED=0
 IOS_TESTS_FAILED=0
@@ -442,15 +446,15 @@ MACOS_XCRESULT=""
 IOS_XCRESULT=""
 TESTS_SKIPPED_STAMP=0
 if [ "$DOCS_ONLY" -eq 1 ]; then
-    echo "📋 Step 2: Skipping unit tests (--docs)"
+    echo "📋 Step 3: Skipping unit tests (--docs)"
 elif release_should_skip_unit_tests "$REPO_ROOT" "$FORCE_TESTS"; then
     STAMPED_COMMIT="$(release_test_stamp_read_commit)"
     TESTS_SKIPPED_STAMP=1
-    echo "📋 Step 2: Skipping unit tests (no code changes since last pass at $STAMPED_COMMIT)"
+    echo "📋 Step 3: Skipping unit tests (no code changes since last pass at $STAMPED_COMMIT)"
     echo "   Stamp: $(release_test_stamp_path)"
     echo "   Use --force-tests to run anyway."
 else
-    echo "📋 Step 2: Running unit test suite (macOS + iOS unit tests only)..."
+    echo "📋 Step 3: Running unit test suite (macOS + iOS unit tests only)..."
 
     # Write structured test bundles for triage when the release gate fails (ignored via build/)
     RELEASE_TEST_STAMP=$(date -u +"%Y%m%dT%H%M%SZ")

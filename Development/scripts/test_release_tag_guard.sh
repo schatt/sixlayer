@@ -5,6 +5,8 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LIB="${SCRIPT_DIR}/lib/release_tag_guard.sh"
+RELEASE_SCRIPT="${SCRIPT_DIR}/release-process.sh"
+ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 PASS=0
 FAIL=0
 
@@ -83,7 +85,7 @@ assert_exit_zero() {
     fi
 }
 
-echo "=== test_release_tag_guard (#356) ==="
+echo "=== test_release_tag_guard (#356, #357) ==="
 
 if [ ! -f "$LIB" ]; then
     echo "❌ library missing: $LIB"
@@ -147,6 +149,31 @@ RC=$?
 set -e
 assert_exit_nonzero "$RC" "abort helper rejects remote-only tag"
 assert_contains "$OUT" "already exists" "remote abort message says already exists"
+
+# --- release-process.sh: tag check is Step 1 (Refs #357) ---
+cd "$ROOT"
+EXISTING_TAG="$(git tag 2>/dev/null | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -n 1 || true)"
+if [ -n "$EXISTING_TAG" ]; then
+    EXISTING_VERSION="${EXISTING_TAG#v}"
+    set +e
+    SCRIPT_OUT="$("$RELEASE_SCRIPT" --release patch "$EXISTING_VERSION" 2>&1)"
+    SCRIPT_RC=$?
+    set -e
+    assert_exit_nonzero "$SCRIPT_RC" "release-process aborts when tag already exists"
+    assert_contains "$SCRIPT_OUT" "Starting release process for v${EXISTING_VERSION}" \
+        "start banner runs before tag Step 1"
+    assert_contains "$SCRIPT_OUT" "Step 1:" "tag existence is labeled Step 1"
+    assert_contains "$SCRIPT_OUT" "already exists" "Step 1 reports tag already exists"
+    if printf '%s' "$SCRIPT_OUT" | grep -Fq "Step 1: Ensuring Xcode project"; then
+        echo "❌ xcodegen must not remain Step 1 when tag check is first"
+        FAIL=$((FAIL + 1))
+    else
+        echo "✅ xcodegen is not Step 1"
+        PASS=$((PASS + 1))
+    fi
+else
+    echo "⚠️  No local semver tags; skipping release-process Step 1 ordering checks"
+fi
 
 echo ""
 echo "Results: $PASS passed, $FAIL failed"
