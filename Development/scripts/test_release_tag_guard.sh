@@ -112,48 +112,41 @@ git -C "$REPO" push -q origin HEAD:main
 assert_eq "$(release_tag_name_for_version "8.3.0")" "v8.3.0" "version without v becomes v8.3.0"
 assert_eq "$(release_tag_name_for_version "v8.3.0")" "v8.3.0" "version with v stays v8.3.0"
 
+cd "$REPO"
+
 # --- local absence ---
-(
-    cd "$REPO"
-    assert_false "missing local tag is absent" release_tag_exists_local "v9.9.9"
-    assert_false "missing tag is absent overall" release_tag_exists "v9.9.9"
-    set +e
-    OUT="$(release_abort_if_tag_exists "9.9.9" 2>&1)"
-    RC=$?
-    set -e
-    assert_exit_zero "$RC" "abort helper allows missing tag"
-)
+assert_false "missing local tag is absent" release_tag_exists_local "v9.9.9"
+assert_false "missing tag is absent overall" release_tag_exists "v9.9.9"
+set +e
+OUT="$(release_abort_if_tag_exists "9.9.9" 2>&1)"
+RC=$?
+set -e
+assert_exit_zero "$RC" "abort helper allows missing tag"
 
 # --- local presence ---
-git -C "$REPO" tag -a "v8.3.0" -m "Release v8.3.0"
-(
-    cd "$REPO"
-    assert_true "local tag v8.3.0 exists" release_tag_exists_local "v8.3.0"
-    assert_true "existing local tag is detected overall" release_tag_exists "v8.3.0"
-    set +e
-    OUT="$(release_abort_if_tag_exists "8.3.0" 2>&1)"
-    RC=$?
-    set -e
-    assert_exit_nonzero "$RC" "abort helper rejects existing local tag"
-    assert_contains "$OUT" "v8.3.0" "abort message names the tag"
-    assert_contains "$OUT" "already exists" "abort message says already exists"
-)
+git tag -a "v8.3.0" -m "Release v8.3.0"
+assert_true "local tag v8.3.0 exists" release_tag_exists_local "v8.3.0"
+assert_true "existing local tag is detected overall" release_tag_exists "v8.3.0"
+set +e
+OUT="$(release_abort_if_tag_exists "8.3.0" 2>&1)"
+RC=$?
+set -e
+assert_exit_nonzero "$RC" "abort helper rejects existing local tag"
+assert_contains "$OUT" "v8.3.0" "abort message names the tag"
+assert_contains "$OUT" "already exists" "abort message says already exists"
 
 # --- remote-only presence (no local tag) ---
-git -C "$REPO" push -q origin "v8.3.0"
-git -C "$REPO" tag -d "v8.3.0" >/dev/null
-(
-    cd "$REPO"
-    assert_false "deleted local tag is absent locally" release_tag_exists_local "v8.3.0"
-    assert_true "remote tag is detected" release_tag_exists_on_remotes "v8.3.0"
-    assert_true "remote-only tag is detected overall" release_tag_exists "v8.3.0"
-    set +e
-    OUT="$(release_abort_if_tag_exists "8.3.0" 2>&1)"
-    RC=$?
-    set -e
-    assert_exit_nonzero "$RC" "abort helper rejects remote-only tag"
-    assert_contains "$OUT" "already exists" "remote abort message says already exists"
-)
+git push -q origin "v8.3.0"
+git tag -d "v8.3.0" >/dev/null
+assert_false "deleted local tag is absent locally" release_tag_exists_local "v8.3.0"
+assert_true "remote tag is detected" release_tag_exists_on_remotes "v8.3.0"
+assert_true "remote-only tag is detected overall" release_tag_exists "v8.3.0"
+set +e
+OUT="$(release_abort_if_tag_exists "8.3.0" 2>&1)"
+RC=$?
+set -e
+assert_exit_nonzero "$RC" "abort helper rejects remote-only tag"
+assert_contains "$OUT" "already exists" "remote abort message says already exists"
 
 echo ""
 echo "Results: $PASS passed, $FAIL failed"
