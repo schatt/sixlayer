@@ -57,6 +57,7 @@ final class Layer1AccessibilityUITests: XCTestCase {
             let marker: String
             switch section {
             case "items": marker = "L1_Section_Items"
+            case "emptyItems": marker = "L1_Section_EmptyItems"
             case "responsiveCard": marker = "L1_Section_ResponsiveCard"
             case "navStack": marker = "L1_Section_NavStack"
             case "appNav": marker = "L1_Section_AppNav"
@@ -270,6 +271,24 @@ final class Layer1AccessibilityUITests: XCTestCase {
         assertSingleTappableCard(
             title: "Card Title",
             elementName: "platformResponsiveCard_L1 card"
+        )
+    }
+
+    // MARK: - Empty collection hint a11y ids (#359)
+
+    /// Presentation-hint empty-state identifiers must remain queryable under
+    /// `platformPresentItemCollection_L1` (not collapsed into the collection surface id).
+    @MainActor
+    func testEmptyItemCollection_hintAccessibilityIdentifiersRemainQueryable() throws {
+        launchLayer1Category("Data Presentation", section: "emptyItems")
+        assertExactIdentifierExists("L1_Section_EmptyItems", context: "Empty item collection host")
+        assertExactIdentifierExists(
+            EmptyItemCollectionHintIdentifierExamples.emptyStateTitleAccessibilityIdentifier,
+            context: "emptyStateTitleAccessibilityIdentifier"
+        )
+        assertExactIdentifierExists(
+            EmptyItemCollectionHintIdentifierExamples.createButtonAccessibilityIdentifier,
+            context: "createButtonAccessibilityIdentifier"
         )
     }
 }
