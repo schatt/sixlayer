@@ -13,7 +13,7 @@ import SixLayerFramework
 
 /// Examples of data presentation functions for Layer 1
 struct Layer1DataPresentationExamples: View {
-    /// `-L1Section=items|numeric|form|modal|media|hierarchical|temporal|content|settings|responsiveCard`
+    /// `-L1Section=items|emptyItems|numeric|form|modal|media|hierarchical|temporal|content|settings|responsiveCard`
     private var focusedSection: String? {
         guard let raw = ProcessInfo.processInfo.arguments
             .first(where: { $0.hasPrefix("-L1Section=") })?
@@ -58,6 +58,16 @@ struct Layer1DataPresentationExamples: View {
                 .accessibilityIdentifier("L1_Section_Items")
             ExampleSection(title: "Item Collection") {
                 ItemCollectionExamples(compactHost: focusedSection != nil)
+            }
+        }
+
+        if shows("emptyItems") {
+            Text("L1_Section_EmptyItems")
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+                .accessibilityIdentifier("L1_Section_EmptyItems")
+            ExampleSection(title: "Empty Item Collection (hint a11y ids)") {
+                EmptyItemCollectionHintIdentifierExamples()
             }
         }
 
@@ -158,6 +168,59 @@ struct ItemCollectionExamples: View {
                 }
             )
             .frame(height: compactHost ? 360 : 200)
+        }
+        .padding()
+        .background(Color.platformSecondaryBackground)
+        .cornerRadius(8)
+    }
+}
+
+// MARK: - Empty Item Collection (hint a11y ids) — #359
+
+/// Empty `platformPresentItemCollection_L1` with presentation-hint empty-state identifiers.
+/// XCUITest contract: hinted title + create-button ids must remain queryable (not collapsed into
+/// `platformPresentItemCollection_L1.View`). Refs #359 / CarManager #757.
+struct EmptyItemCollectionHintIdentifierExamples: View {
+    struct EmptyItem: Identifiable {
+        let id = UUID()
+        let name: String
+    }
+
+    static let emptyStateTitleAccessibilityIdentifier =
+        "SixLayer.uitest.collectionEmpty.EmptyStateTitle"
+    static let createButtonAccessibilityIdentifier =
+        "SixLayer.uitest.collectionEmpty.EmptyStateCreateButton"
+
+    let hints = PresentationHints(
+        dataType: .generic,
+        presentationPreference: .list,
+        complexity: .simple,
+        customPreferences: [
+            "emptyTitle": "No Items Yet",
+            "emptyMessage": "Add your first item to get started.",
+            "createButtonTitle": "Add Item",
+            "emptyStateTitleAccessibilityIdentifier": emptyStateTitleAccessibilityIdentifier,
+            "createButtonAccessibilityIdentifier": createButtonAccessibilityIdentifier
+        ]
+    )
+
+    var body: some View {
+        platformVStack(alignment: .leading, spacing: 12) {
+            Text("Empty Item Collection (hint ids)")
+                .font(.headline)
+
+            platformPresentItemCollection_L1(
+                items: [EmptyItem](),
+                hints: hints,
+                onCreateItem: {
+                    print("Create item tapped")
+                },
+                onItemSelected: { _ in },
+                customItemView: { item in
+                    Text(item.name)
+                }
+            )
+            .frame(height: 280)
         }
         .padding()
         .background(Color.platformSecondaryBackground)
