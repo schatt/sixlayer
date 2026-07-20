@@ -278,16 +278,17 @@ final class Layer1AccessibilityUITests: XCTestCase {
 
     /// Presentation-hint empty-state identifiers must remain queryable under
     /// `platformPresentItemCollection_L1` (not collapsed into the collection surface id).
+    /// Ids must match `EmptyItemCollectionHintIdentifierExamples` in the TestApp harness.
     @MainActor
     func testEmptyItemCollection_hintAccessibilityIdentifiersRemainQueryable() throws {
         launchLayer1Category("Data Presentation", section: "emptyItems")
         assertExactIdentifierExists("L1_Section_EmptyItems", context: "Empty item collection host")
         assertExactIdentifierExists(
-            EmptyItemCollectionHintIdentifierExamples.emptyStateTitleAccessibilityIdentifier,
+            "SixLayer.uitest.collectionEmpty.EmptyStateTitle",
             context: "emptyStateTitleAccessibilityIdentifier"
         )
         assertExactIdentifierExists(
-            EmptyItemCollectionHintIdentifierExamples.createButtonAccessibilityIdentifier,
+            "SixLayer.uitest.collectionEmpty.EmptyStateCreateButton",
             context: "createButtonAccessibilityIdentifier"
         )
     }
