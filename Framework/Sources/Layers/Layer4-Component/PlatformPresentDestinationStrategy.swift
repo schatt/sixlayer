@@ -19,12 +19,11 @@ internal enum PlatformPresentDestinationStrategy: Equatable, Sendable {
     /// - iOS: navigation push
     /// - macOS and other platforms: sheet (macOS split-view detail often has no working push host)
     internal static func resolve(platform: SixLayerPlatform) -> PlatformPresentDestinationStrategy {
-        // Deliberately inverted for TDD red (#358) — correct in the green commit.
         switch platform {
         case .iOS:
-            return .sheet
-        case .macOS, .tvOS, .watchOS, .visionOS:
             return .navigationDestination
+        case .macOS, .tvOS, .watchOS, .visionOS:
+            return .sheet
         }
     }
 }
