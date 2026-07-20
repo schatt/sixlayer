@@ -1228,6 +1228,22 @@ internal func slfShouldApplyAccessibilityContainForBasicCompliance(
     return true
 }
 
+/// When empty-state presentation hints supply explicit a11y ids, skip the named
+/// `platformPresentItemCollection_L1` / `GenericItemCollectionView` wrapper so those
+/// child ids remain queryable in XCUITest instead of collapsing into the collection
+/// surface id (`….platformPresentItemCollection_L1.View`). Refs #359 / CarManager #757.
+internal func slfShouldPreferEmptyStateHintAccessibilityIdentifiers(
+    _ hints: PresentationHints
+) -> Bool {
+    let prefs = hints.customPreferences
+    func nonEmpty(_ key: String) -> Bool {
+        guard let raw = prefs[key] else { return false }
+        return !raw.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+    return nonEmpty("createButtonAccessibilityIdentifier")
+        || nonEmpty("emptyStateTitleAccessibilityIdentifier")
+}
+
 /// Basic automatic compliance modifier - applies only identifier and label, no HIG features
 /// TDD GREEN PHASE: Implementation complete
 public struct BasicAutomaticComplianceModifier: ViewModifier {
