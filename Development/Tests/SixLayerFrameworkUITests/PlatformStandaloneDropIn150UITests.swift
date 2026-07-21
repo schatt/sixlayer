@@ -11,9 +11,6 @@
 //
 
 import XCTest
-#if os(iOS)
-import UIKit
-#endif
 
 /// XCUITest for Issue #150 — binding propagation and user interaction on `StandaloneDropIn150HostView`.
 @MainActor
@@ -130,17 +127,19 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
         target.xcuiTapToBecomeFirstResponder()
         #if os(iOS)
         if target.elementType == .secureTextField {
-            // iOS 26 SecureField often refuses typeText focus after another field; paste on the leaf (#368).
-            UIPasteboard.general.string = text
-            target.press(forDuration: 1.2)
-            let paste = app.menuItems["Paste"]
+            // iOS 26 Form SecureFields often lack Paste menus and need repeated taps for focus (#368).
+            let deadline = Date().addingTimeInterval(3.0)
+            while !target.hasKeyboardFocus && Date() < deadline {
+                target.tap()
+                RunLoop.current.run(until: Date().addingTimeInterval(0.2))
+            }
             XCTAssertTrue(
-                paste.waitForExistence(timeout: 2.0),
-                "Paste menu should appear on SecureField leaf '\(target.identifier)'",
+                target.hasKeyboardFocus,
+                "SecureField '\(target.identifier)' should have keyboard focus before typeText",
                 file: file,
                 line: line
             )
-            paste.tap()
+            target.typeText(text)
             return
         }
         _ = app.keyboards.firstMatch.waitForExistence(timeout: 1.0)
