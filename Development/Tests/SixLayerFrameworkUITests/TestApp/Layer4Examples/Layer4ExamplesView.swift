@@ -1363,6 +1363,8 @@ struct Layer4ContractOnlyView: View {
 
 #if os(iOS) || os(macOS)
 /// XCUITest contract surface for `platformPhotoPicker_L4`; native pickers hide generated a11y ids (#317).
+/// Exact id must stay `platformPhotoPicker_L4` — do not chain `.automaticCompliance(named:)` after it
+/// (that overwrites with `SixLayer.main.ui.platformPhotoPicker_L4.View` and breaks Layer4UITests; #368).
 private struct L4PhotoPickerContractHost: View {
     let onDismiss: () -> Void
 
@@ -1375,7 +1377,6 @@ private struct L4PhotoPickerContractHost: View {
         .padding()
         .accessibilityIdentifier("platformPhotoPicker_L4")
         .accessibilityLabel("platformPhotoPicker_L4")
-        .automaticCompliance(named: "platformPhotoPicker_L4")
     }
 }
 #endif
