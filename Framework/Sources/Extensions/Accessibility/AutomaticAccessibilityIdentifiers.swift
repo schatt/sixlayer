@@ -610,8 +610,13 @@ public struct NamedModifier: ViewModifier {
                 capturedNamespace: capturedNamespace,
                 capturedGlobalPrefix: capturedGlobalPrefix
             )
-        // Apply identifier directly to content (no wrapper view!)
-        return content.accessibilityIdentifier(newId)
+        // Apply identifier on content, then `.contain` so nested hint/manual ids stay
+        // queryable (same lesson as BasicAutomaticComplianceModifier named rows —
+        // #172 / #197). Without `.contain`, a parent id collapses empty-state children
+        // (#360 / CarManager #757).
+        return content
+            .accessibilityIdentifier(newId)
+            .accessibilityElement(children: .contain)
     }
     
     private static func generateNamedAccessibilityIdentifier(
