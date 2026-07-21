@@ -60,6 +60,8 @@ struct StandaloneDropIn150HostView: View {
                         SixLayerFramework.platformTextField("SD150_Integration_Name", text: $integrationName)
                             .exactNamed("SD150_Integration_Name")
                         SixLayerFramework.platformSecureField("SD150_Integration_Password", text: $integrationPassword)
+                            // Avoid iOS strong-password UI which blocks XCUITest SecureField focus (#368).
+                            .textContentType(.oneTimeCode)
                             .exactNamed("SD150_Integration_Password")
                         SixLayerFramework.platformToggle("SD150_Integration_Toggle", isOn: $integrationOn)
                             .exactNamed("SD150_Integration_Toggle")
@@ -94,6 +96,7 @@ struct StandaloneDropIn150HostView: View {
                 if shows("secure") {
                     Section {
                         SixLayerFramework.platformSecureField("SD150_SecureField", text: $secureValue)
+                            .textContentType(.oneTimeCode)
                             .exactNamed("SD150_SecureField")
                         if showBindingMirrors {
                             bindingMirror(id: "SD150_Mirror_S", text: "SD150_Mirror_S:\(secureValue)")

@@ -672,13 +672,14 @@ final class Layer4UITests: XCTestCase {
     @MainActor
     func testL4_platformPhotoPicker_L4() throws {
         launchL4Contract(section: "system")
-        let openControl = element(matchingIdentifier: "L4ContractPhotoPickerOpen")
-        XCTAssertTrue(openControl.exists, "platformPhotoPicker_L4: L4ContractPhotoPickerOpen must exist")
-        tapByNormalizedCenter(openControl)
-        XCTAssertTrue(
-            waitForIdentifier("platformPhotoPicker_L4", timeout: 2.0),
-            "platformPhotoPicker_L4: picker subtree must expose contract a11y identifier"
+        // Host mounts under -UITesting without requiring Button/@State (iOS 26 Form; #368).
+        assertExactIdentifierExists(
+            "platformPhotoPicker_L4",
+            message: "platformPhotoPicker_L4: picker subtree must expose contract a11y identifier",
+            nearbyHint: "photoPicker"
         )
+        XCTAssertTrue(element(matchingIdentifier: "L4ContractPhotoPickerOpen").exists,
+                      "platformPhotoPicker_L4: L4ContractPhotoPickerOpen must remain available")
         let cancel = app.buttons["Cancel"].firstMatch
         if cancel.exists { cancel.tap() }
         XCTAssertTrue(element(matchingIdentifier: "L4ContractPhotoPickerOpen").exists,
