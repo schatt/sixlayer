@@ -1,9 +1,9 @@
 # SixLayer Framework v8.3.3 Release Documentation
 
-**Release Date**: TBD (prep)  
+**Release Date**: July 21, 2026  
 **Release Type**: Patch  
 **Previous Release**: v8.3.2  
-**Status**: Prep
+**Status**: Released
 
 ---
 

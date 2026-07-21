@@ -2,15 +2,15 @@
 
 ## 📍 **Current Release: v8.3.3** 🔧
 
-**Release Date**: TBD (prep)
-**Status**: Patch release (prep)
+**Release Date**: July 21, 2026
+**Status**: Patch release
 **Previous Release**: v8.3.2 - Patch release
 **Note**: ExactNamedModifier host-sentinel (#364).
 **Next Release**: TBD
 
 ---
 
-## 🎯 **v8.3.3 - ExactNamed host-sentinel parity** (TBD)
+## 🎯 **v8.3.3 - ExactNamed host-sentinel parity** (July 21, 2026)
 
 ### **What's in v8.3.3:**
 - Patch release (#364). See [RELEASE_v8.3.3.md](RELEASE_v8.3.3.md) for details.
