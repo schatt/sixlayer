@@ -57,18 +57,6 @@
             testExecutionOrdering = "random">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "7A78E091DD776FDB4D585F97"
-               BuildableName = "SixLayerFrameworkUITests_tvOS.xctest"
-               BlueprintName = "SixLayerFrameworkUITests_tvOS"
-               ReferencedContainer = "container:SixLayerFramework.xcodeproj">
-            </BuildableReference>
-         </TestableReference>
-         <TestableReference
-            skipped = "NO"
-            parallelizable = "YES"
-            testExecutionOrdering = "random">
-            <BuildableReference
-               BuildableIdentifier = "primary"
                BlueprintIdentifier = "FE2D3D438B9D5E433A37967D"
                BuildableName = "SixLayerFrameworkExternalIntegrationTests_tvOS.xctest"
                BlueprintName = "SixLayerFrameworkExternalIntegrationTests_tvOS"

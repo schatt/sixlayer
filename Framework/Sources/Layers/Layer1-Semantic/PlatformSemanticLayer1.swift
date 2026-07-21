@@ -116,6 +116,64 @@ public enum ValidationRuleType: String, CaseIterable {
 /// - Returns: A view that presents the collection with appropriate layout and actions
 /// - SeeAlso: `README_Layer1_Semantic.md` for detailed callback documentation and examples
 /// Note: Requires @MainActor because it creates a View struct
+
+/// Collection-root a11y: skip named `platformPresentItemCollection_L1` compliance when the
+/// collection is empty and hints supply empty-state identifiers, so those child ids remain
+/// queryable in XCUITest (#359).
+@MainActor
+@ViewBuilder
+fileprivate func platformPresentItemCollectionAccessibilityRoot<Content: View>(
+    itemsEmpty: Bool,
+    hints: PresentationHints,
+    applyEnvironmentName: Bool = true,
+    @ViewBuilder content: () -> Content
+) -> some View {
+    let preferEmptyHints = itemsEmpty && slfShouldPreferEmptyStateHintAccessibilityIdentifiers(hints)
+    if applyEnvironmentName {
+        if preferEmptyHints {
+            content()
+                .environment(\.accessibilityIdentifierName, "platformPresentItemCollection_L1")
+        } else {
+            content()
+                .environment(\.accessibilityIdentifierName, "platformPresentItemCollection_L1")
+                .automaticCompliance(identifierName: "platformPresentItemCollection_L1")
+        }
+    } else if preferEmptyHints {
+        content()
+    } else {
+        content()
+            .automaticCompliance(identifierName: "platformPresentItemCollection_L1")
+    }
+}
+
+/// Skips ``automaticCompliance(named:)`` when empty-state hint ids should win (#359).
+private struct OptionalNamedAutomaticComplianceModifier: ViewModifier {
+    let componentName: String
+    let enabled: Bool
+
+    func body(content: Content) -> some View {
+        if enabled {
+            content.automaticCompliance(named: componentName)
+        } else {
+            content
+        }
+    }
+}
+
+/// Skips anonymous ``automaticCompliance()`` when empty-state hint ids should win
+/// under destination wrappers such as `.named` (#360).
+private struct OptionalAnonymousAutomaticComplianceModifier: ViewModifier {
+    let enabled: Bool
+
+    func body(content: Content) -> some View {
+        if enabled {
+            content.automaticCompliance()
+        } else {
+            content
+        }
+    }
+}
+
 @MainActor
 public func platformPresentItemCollection_L1<Item: Identifiable>(
     items: [Item],
@@ -127,16 +185,22 @@ public func platformPresentItemCollection_L1<Item: Identifiable>(
 ) -> some View {
     // Generic implementation that uses hints to guide decisions
     // This function doesn't know about specific business logic
-    return GenericItemCollectionView(
-        items: items, 
-        hints: hints, 
-        onCreateItem: onCreateItem,
-        onItemSelected: onItemSelected,
-        onItemDeleted: onItemDeleted,
-        onItemEdited: onItemEdited
-    )
     // Issue #245: stable collection root via `identifierName` (not an anonymous wrapper over arbitrary content).
-    .automaticCompliance(identifierName: "platformPresentItemCollection_L1")
+    // Issue #359: empty + hint ids → skip named wrapper so empty-state child ids win.
+    return platformPresentItemCollectionAccessibilityRoot(
+        itemsEmpty: items.isEmpty,
+        hints: hints,
+        applyEnvironmentName: false
+    ) {
+        GenericItemCollectionView(
+            items: items,
+            hints: hints,
+            onCreateItem: onCreateItem,
+            onItemSelected: onItemSelected,
+            onItemDeleted: onItemDeleted,
+            onItemEdited: onItemEdited
+        )
+    }
 }
 
 /// Generic function for presenting numeric data
@@ -960,17 +1024,20 @@ public func platformPresentItemCollection_L1<Item: Identifiable>(
     // Process extensible hints and merge custom data
     let processedHints = processExtensibleHints(hints, into: basicHints)
     
-    return GenericItemCollectionView(
-        items: items, 
-        hints: processedHints, 
-        onCreateItem: onCreateItem,
-        onItemSelected: onItemSelected,
-        onItemDeleted: onItemDeleted,
-        onItemEdited: onItemEdited
-    )
-    .environment(\.extensibleHints, hints.extensibleHints)
-    .environment(\.accessibilityIdentifierName, "platformPresentItemCollection_L1")
-    .automaticCompliance(identifierName: "platformPresentItemCollection_L1")
+    return platformPresentItemCollectionAccessibilityRoot(
+        itemsEmpty: items.isEmpty,
+        hints: processedHints
+    ) {
+        GenericItemCollectionView(
+            items: items,
+            hints: processedHints,
+            onCreateItem: onCreateItem,
+            onItemSelected: onItemSelected,
+            onItemDeleted: onItemDeleted,
+            onItemEdited: onItemEdited
+        )
+        .environment(\.extensibleHints, hints.extensibleHints)
+    }
 }
 
 // MARK: - Custom View Support Overloads
@@ -1007,17 +1074,20 @@ public func platformPresentItemCollection_L1<Item: Identifiable>(
     onItemEdited: ((Item) -> Void)? = nil,
     @ViewBuilder customItemView: @escaping (Item) -> some View
 ) -> some View {
-    return CustomItemCollectionView(
-        items: items,
-        hints: hints,
-        onCreateItem: onCreateItem,
-        onItemSelected: onItemSelected,
-        onItemDeleted: onItemDeleted,
-        onItemEdited: onItemEdited,
-        customItemView: customItemView
-    )
-    .environment(\.accessibilityIdentifierName, "platformPresentItemCollection_L1")
-    .automaticCompliance(identifierName: "platformPresentItemCollection_L1")
+    return platformPresentItemCollectionAccessibilityRoot(
+        itemsEmpty: items.isEmpty,
+        hints: hints
+    ) {
+        CustomItemCollectionView(
+            items: items,
+            hints: hints,
+            onCreateItem: onCreateItem,
+            onItemSelected: onItemSelected,
+            onItemDeleted: onItemDeleted,
+            onItemEdited: onItemEdited,
+            customItemView: customItemView
+        )
+    }
 }
 
 /// Generic function for presenting any collection of identifiable items with custom views and enhanced hints
@@ -1044,18 +1114,21 @@ public func platformPresentItemCollection_L1<Item: Identifiable>(
     // Process extensible hints and merge custom data
     let processedHints = processExtensibleHints(hints, into: basicHints)
     
-    return CustomItemCollectionView(
-        items: items,
-        hints: processedHints,
-        onCreateItem: onCreateItem,
-        onItemSelected: onItemSelected,
-        onItemDeleted: onItemDeleted,
-        onItemEdited: onItemEdited,
-        customItemView: customItemView
-    )
-    .environment(\.extensibleHints, hints.extensibleHints)
-    .environment(\.accessibilityIdentifierName, "platformPresentItemCollection_L1")
-    .automaticCompliance(identifierName: "platformPresentItemCollection_L1")
+    return platformPresentItemCollectionAccessibilityRoot(
+        itemsEmpty: items.isEmpty,
+        hints: processedHints
+    ) {
+        CustomItemCollectionView(
+            items: items,
+            hints: processedHints,
+            onCreateItem: onCreateItem,
+            onItemSelected: onItemSelected,
+            onItemDeleted: onItemDeleted,
+            onItemEdited: onItemEdited,
+            customItemView: customItemView
+        )
+        .environment(\.extensibleHints, hints.extensibleHints)
+    }
 }
 
 /// Generic function for presenting any collection of identifiable items with custom views for all actions
@@ -1071,17 +1144,20 @@ public func platformPresentItemCollection_L1<Item: Identifiable>(
     customCreateView: (() -> some View)? = nil,
     customEditView: ((Item) -> some View)? = nil
 ) -> some View {
-    return CustomItemCollectionView(
-        items: items,
-        hints: hints,
-        onCreateItem: onCreateItem,
-        onItemSelected: onItemSelected,
-        onItemDeleted: onItemDeleted,
-        onItemEdited: onItemEdited,
-        customItemView: customItemView
-    )
-    .environment(\.accessibilityIdentifierName, "platformPresentItemCollection_L1")
-    .automaticCompliance(identifierName: "platformPresentItemCollection_L1")
+    return platformPresentItemCollectionAccessibilityRoot(
+        itemsEmpty: items.isEmpty,
+        hints: hints
+    ) {
+        CustomItemCollectionView(
+            items: items,
+            hints: hints,
+            onCreateItem: onCreateItem,
+            onItemSelected: onItemSelected,
+            onItemDeleted: onItemDeleted,
+            onItemEdited: onItemEdited,
+            customItemView: customItemView
+        )
+    }
 }
 
 /// Generic function for presenting numeric data with enhanced hints
@@ -1762,7 +1838,12 @@ public struct GenericItemCollectionView<Item: Identifiable>: View {
         }
         .appleHIGCompliant()
         .automaticAccessibility()
-        .automaticCompliance(named: "GenericItemCollectionView")
+        .modifier(
+            OptionalNamedAutomaticComplianceModifier(
+                componentName: "GenericItemCollectionView",
+                enabled: !(items.isEmpty && slfShouldPreferEmptyStateHintAccessibilityIdentifiers(hints))
+            )
+        )
         .platformPatterns()
         .visualConsistency()
     }
@@ -1826,7 +1907,14 @@ public struct CollectionEmptyStateView: View {
         }
         .padding(32)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .automaticCompliance()
+        // Prefer explicit empty-state hint ids over anonymous compliance. An outer
+        // `.named` / container `accessibilityIdentifier` otherwise collapses those
+        // child ids (bisect step1, #360 / CarManager #757) — same prefer-hints rule as #359.
+        .modifier(
+            OptionalAnonymousAutomaticComplianceModifier(
+                enabled: !slfShouldPreferEmptyStateHintAccessibilityIdentifiers(hints)
+            )
+        )
     }
     
     private var emptyStateIcon: String {
@@ -2094,10 +2182,14 @@ public struct CollectionEmptyStateView: View {
 
 extension View {
     /// Applies `accessibilityIdentifier` only when `identifier` is non-nil and non-empty.
+    /// Forces a leaf accessibility element so an outer `.named` / container id cannot
+    /// overwrite the hint id in the XCUI tree (#360).
     @ViewBuilder
     internal func sixLayerOptionalAccessibilityIdentifier(_ identifier: String?) -> some View {
         if let identifier, !identifier.isEmpty {
-            self.accessibilityIdentifier(identifier)
+            self
+                .accessibilityElement(children: .ignore)
+                .accessibilityIdentifier(identifier)
         } else {
             self
         }

@@ -654,4 +654,53 @@ open class BasicAutomaticComplianceLogicTests: BaseTestClass {
             )
         )
     }
+
+    // MARK: - Empty-state hint a11y ids (#359)
+
+    @Test @MainActor func testPreferEmptyStateHintIds_trueWhenCreateButtonIdPresent() {
+        let hints = PresentationHints(
+            dataType: .generic,
+            presentationPreference: .list,
+            complexity: .simple,
+            customPreferences: [
+                "createButtonAccessibilityIdentifier": "App.Empty.Create"
+            ]
+        )
+        #expect(slfShouldPreferEmptyStateHintAccessibilityIdentifiers(hints))
+    }
+
+    @Test @MainActor func testPreferEmptyStateHintIds_trueWhenTitleIdPresent() {
+        let hints = PresentationHints(
+            dataType: .generic,
+            presentationPreference: .list,
+            complexity: .simple,
+            customPreferences: [
+                "emptyStateTitleAccessibilityIdentifier": "App.Empty.Title"
+            ]
+        )
+        #expect(slfShouldPreferEmptyStateHintAccessibilityIdentifiers(hints))
+    }
+
+    @Test @MainActor func testPreferEmptyStateHintIds_falseWhenIdsMissingOrBlank() {
+        let missing = PresentationHints(
+            dataType: .generic,
+            presentationPreference: .list,
+            complexity: .simple,
+            customPreferences: [
+                "createButtonTitle": "Add"
+            ]
+        )
+        #expect(!slfShouldPreferEmptyStateHintAccessibilityIdentifiers(missing))
+
+        let blank = PresentationHints(
+            dataType: .generic,
+            presentationPreference: .list,
+            complexity: .simple,
+            customPreferences: [
+                "createButtonAccessibilityIdentifier": "   ",
+                "emptyStateTitleAccessibilityIdentifier": ""
+            ]
+        )
+        #expect(!slfShouldPreferEmptyStateHintAccessibilityIdentifiers(blank))
+    }
 }

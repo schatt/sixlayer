@@ -57,18 +57,6 @@
             testExecutionOrdering = "random">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "1DF0E8BA49092C22FD760132"
-               BuildableName = "SixLayerFrameworkUITests_watchOS.xctest"
-               BlueprintName = "SixLayerFrameworkUITests_watchOS"
-               ReferencedContainer = "container:SixLayerFramework.xcodeproj">
-            </BuildableReference>
-         </TestableReference>
-         <TestableReference
-            skipped = "NO"
-            parallelizable = "YES"
-            testExecutionOrdering = "random">
-            <BuildableReference
-               BuildableIdentifier = "primary"
                BlueprintIdentifier = "B66C6368DD6DB3EFA18474C3"
                BuildableName = "SixLayerFrameworkExternalIntegrationTests_watchOS.xctest"
                BlueprintName = "SixLayerFrameworkExternalIntegrationTests_watchOS"

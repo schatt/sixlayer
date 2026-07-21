@@ -30,6 +30,7 @@ release_is_docs_only_path() {
         Development/scripts/ISSUE_TRACKING_GUIDE.md|\
         Development/scripts/release-process.sh|\
         Development/scripts/lib/release_test_stamp.sh|\
+        Development/scripts/lib/release_tag_guard.sh|\
         Development/scripts/test_release_*.sh|\
         SixLayerFramework.xcodeproj/project.pbxproj|\
         SixLayerFramework.xcodeproj/xcshareddata/xcschemes/*|\

@@ -28,10 +28,9 @@ extension UIView {
     /// Cross-platform label text for hosted hierarchy probes (Issue #315 macOS lane).
     var hostedAccessibilityLabelText: String { accessibilityLabel ?? "" }
     /// Cross-platform value text for hosted hierarchy probes (Issue #315 macOS lane).
+    /// UIKit's `accessibilityValue` is already `String?` (unlike AppKit's `Any?`).
     var hostedAccessibilityValueText: String {
-        if let stringValue = accessibilityValue as? String { return stringValue }
-        guard let value = accessibilityValue else { return "" }
-        return String(describing: value)
+        accessibilityValue ?? ""
     }
 }
 #endif

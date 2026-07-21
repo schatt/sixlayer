@@ -172,6 +172,38 @@ open class Layer4ViewExtensionTests: BaseTestClass {
                 }
         }
     }
+
+    // MARK: - platformPresentDestination_L4 Tests (#358)
+
+    @Test @MainActor func testPlatformPresentDestination_isPresented() async {
+        let isPresented = Binding<Bool>(get: { false }, set: { _ in })
+        assertLayoutChromeDualPath(
+            anchorName: "Layer4DualPathPresentDestinationIsPresented",
+            context: "platformPresentDestination_L4(isPresented:)"
+        ) {
+            Text("Content")
+                .platformPresentDestination_L4(isPresented: isPresented) {
+                    Text("Presented Destination")
+                }
+        }
+    }
+
+    @Test @MainActor func testPlatformPresentDestination_item() async {
+        struct TestItem: Identifiable, Hashable {
+            let id = UUID()
+        }
+
+        let item = Binding<TestItem?>(get: { nil }, set: { _ in })
+        assertLayoutChromeDualPath(
+            anchorName: "Layer4DualPathPresentDestinationItem",
+            context: "platformPresentDestination_L4(item:)"
+        ) {
+            Text("Content")
+                .platformPresentDestination_L4(item: item) { _ in
+                    Text("Presented Item Destination")
+                }
+        }
+    }
     
     // MARK: - platformNavigationButton Tests
     
