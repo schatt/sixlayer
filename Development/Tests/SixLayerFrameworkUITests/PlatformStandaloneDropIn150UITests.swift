@@ -127,28 +127,40 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
         target.xcuiTapToBecomeFirstResponder()
         #if os(iOS)
         if target.elementType == .secureTextField {
-            // iOS 26 Form SecureFields often need repeated taps before typeText accepts input (#368).
-            let deadline = Date().addingTimeInterval(3.0)
-            var focused = false
-            while !focused && Date() < deadline {
-                target.tap()
-                RunLoop.current.run(until: Date().addingTimeInterval(0.2))
-                focused = (target.value(forKey: "hasKeyboardFocus") as? Bool) == true
-                    || app.keyboards.firstMatch.exists
-            }
-            XCTAssertTrue(
-                focused,
-                "SecureField '\(target.identifier)' should accept keyboard focus before typeText",
-                file: file,
-                line: line
-            )
-            target.typeText(text)
+            typeIntoFocusedSecureField(target, text, file: file, line: line)
             return
         }
         _ = app.keyboards.firstMatch.waitForExistence(timeout: 1.0)
         #endif
         target.typeText(text)
     }
+
+    #if os(iOS)
+    /// iOS 26 Form SecureFields often need repeated taps before `typeText` accepts input (#368).
+    @MainActor
+    private func typeIntoFocusedSecureField(
+        _ target: XCUIElement,
+        _ text: String,
+        file: StaticString,
+        line: UInt
+    ) {
+        let deadline = Date().addingTimeInterval(3.0)
+        var focused = false
+        while !focused && Date() < deadline {
+            target.tap()
+            RunLoop.current.run(until: Date().addingTimeInterval(0.2))
+            focused = (target.value(forKey: "hasKeyboardFocus") as? Bool) == true
+                || app.keyboards.firstMatch.exists
+        }
+        XCTAssertTrue(
+            focused,
+            "SecureField '\(target.identifier)' should accept keyboard focus before typeText",
+            file: file,
+            line: line
+        )
+        target.typeText(text)
+    }
+    #endif
 
     // MARK: - Tests
 
