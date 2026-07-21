@@ -1101,18 +1101,17 @@ struct Layer4ContractOnlyView: View {
             Text("Photo Picker Contract")
                 .font(.caption)
                 .foregroundColor(.secondary)
-            // Under -UITesting, replace the open control with the contract host so the exact
-            // id sits where XCUITest already found the button (Form may not expose off-screen inserts; #317/#368).
-            if isXCUITestHost && l4ContractShowPhotoPicker {
+            Button("L4ContractPhotoPickerOpen") {
+                l4ContractShowPhotoPicker = true
+            }
+            .accessibilityIdentifier("L4ContractPhotoPickerOpen")
+            .accessibilityLabel("L4ContractPhotoPickerOpen")
+            // Under -UITesting always mount the contract host. Relying on the Button to flip
+            // @State is unreliable in iOS 26 Form rows (open control stays; host never appears; #317/#368).
+            if isXCUITestHost {
                 L4PhotoPickerContractHost {
                     l4ContractShowPhotoPicker = false
                 }
-            } else {
-                Button("L4ContractPhotoPickerOpen") {
-                    l4ContractShowPhotoPicker = true
-                }
-                .accessibilityIdentifier("L4ContractPhotoPickerOpen")
-                .accessibilityLabel("L4ContractPhotoPickerOpen")
             }
             #endif
             Text("Photo Display")
