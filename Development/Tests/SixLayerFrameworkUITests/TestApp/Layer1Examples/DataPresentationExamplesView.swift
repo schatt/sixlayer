@@ -13,7 +13,7 @@ import SixLayerFramework
 
 /// Examples of data presentation functions for Layer 1
 struct Layer1DataPresentationExamples: View {
-    /// `-L1Section=items|emptyItems|numeric|form|modal|media|hierarchical|temporal|content|settings|responsiveCard`
+    /// `-L1Section=items|emptyItems|emptyWrap1|emptyWrap2|emptyWrap3|emptyWrap4|numeric|form|modal|media|hierarchical|temporal|content|settings|responsiveCard`
     private var focusedSection: String? {
         guard let raw = ProcessInfo.processInfo.arguments
             .first(where: { $0.hasPrefix("-L1Section=") })?
@@ -68,6 +68,46 @@ struct Layer1DataPresentationExamples: View {
                 .accessibilityIdentifier("L1_Section_EmptyItems")
             ExampleSection(title: "Empty Item Collection (hint a11y ids)") {
                 EmptyItemCollectionHintIdentifierExamples()
+            }
+        }
+
+        if shows("emptyWrap1") {
+            Text("L1_Section_EmptyWrap1")
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+                .accessibilityIdentifier("L1_Section_EmptyWrap1")
+            ExampleSection(title: "Empty + .named (#360)") {
+                EmptyStateWrapperBisectNamedExamples()
+            }
+        }
+
+        if shows("emptyWrap2") {
+            Text("L1_Section_EmptyWrap2")
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+                .accessibilityIdentifier("L1_Section_EmptyWrap2")
+            ExampleSection(title: "Empty + .named + nav title (#360)") {
+                EmptyStateWrapperBisectNavTitleExamples()
+            }
+        }
+
+        if shows("emptyWrap3") {
+            Text("L1_Section_EmptyWrap3")
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+                .accessibilityIdentifier("L1_Section_EmptyWrap3")
+            ExampleSection(title: "Empty + named + nav + outer scrollHost (#360)") {
+                EmptyStateWrapperBisectOuterScrollHostExamples()
+            }
+        }
+
+        if shows("emptyWrap4") {
+            Text("L1_Section_EmptyWrap4")
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+                .accessibilityIdentifier("L1_Section_EmptyWrap4")
+            ExampleSection(title: "Empty + named + nav + scrollHost + contain (#360)") {
+                EmptyStateWrapperBisectOuterContainExamples()
             }
         }
 
