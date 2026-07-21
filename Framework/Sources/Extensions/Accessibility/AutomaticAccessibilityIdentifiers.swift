@@ -692,7 +692,7 @@ public struct NamedModifier: ViewModifier {
 // MARK: - Exact Named Component Modifier
 
 /// Modifier that applies exact accessibility identifiers without framework additions.
-/// GREEN PHASE: Produces truly minimal identifiers - just the exact name provided.
+/// Produces truly minimal identifiers — just the exact name provided.
 /// Attaches via host sentinel (same as ``NamedModifier``) so container use does not
 /// overwrite nested child contract ids (#364 / #360).
 public struct ExactNamedModifier: ViewModifier {
@@ -702,13 +702,11 @@ public struct ExactNamedModifier: ViewModifier {
     public func body(content: Content) -> some View {
         let config = AccessibilityIdentifierConfig.resolvedForIdentifierGeneration(environment: envAccessibilityIdentifierConfig)
         let capturedEnableDebugLogging = config.enableDebugLogging
-        
-        // Compute once
-            let exactId = Self.generateExactNamedAccessibilityIdentifier(
-                config: config,
-                name: name,
-                capturedEnableDebugLogging: capturedEnableDebugLogging
-            )
+        let exactId = Self.generateExactNamedAccessibilityIdentifier(
+            config: config,
+            name: name,
+            capturedEnableDebugLogging: capturedEnableDebugLogging
+        )
         // Do **not** put `accessibilityIdentifier` on the content container itself:
         // same overwrite class as `.named` (#360) when `.exactNamed` wraps a surface
         // that owns nested EmptyState* / row contract ids (#364). Attach via host sentinel.
@@ -716,15 +714,12 @@ public struct ExactNamedModifier: ViewModifier {
     }
     
     private static func generateExactNamedAccessibilityIdentifier(
-            config: AccessibilityIdentifierConfig,
-            name: String,
-            capturedEnableDebugLogging: Bool
-        ) -> String {
-        // .exactNamed() should ALWAYS apply when explicitly called, regardless of global settings
-        // This is an explicit modifier call - user intent is clear
-        // No guard needed - always apply when modifier is explicitly used
-        
-        // GREEN PHASE: Return ONLY the exact name - no framework additions
+        config: AccessibilityIdentifierConfig,
+        name: String,
+        capturedEnableDebugLogging: Bool
+    ) -> String {
+        // .exactNamed() should ALWAYS apply when explicitly called, regardless of global settings.
+        // Return ONLY the exact name — no framework additions.
         let exactIdentifier = name
         
         let msg = "🔍 EXACT NAMED MODIFIER DEBUG: Generated exact identifier '\(exactIdentifier)' for name '\(name)'"
@@ -1109,7 +1104,8 @@ public extension View {
     /// Container/host accessibility identifier that remains queryable without overwriting
     /// nested child identifiers (empty-state hints, row contracts, etc.).
     /// Prefer this over raw `accessibilityIdentifier` on destination roots, scroll hosts,
-    /// and similar wrappers (#360 / CarManager #757).
+    /// and similar wrappers. ``View/named(_:)`` and ``View/exactNamed(_:)`` use this
+    /// pattern (#360 / #364 / CarManager #757).
     func accessibilityHostIdentifier(_ identifier: String) -> some View {
         self.background {
             Color.clear
