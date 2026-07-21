@@ -282,8 +282,13 @@ public extension View {
     }
     
 
-    /// Platform-conditional navigation destination hook
-    /// iOS: forwards to .navigationDestination; macOS: no-op passthrough
+    /// Push-only navigation destination hook.
+    ///
+    /// - **iOS 17+:** forwards to `navigationDestination(item:)`.
+    /// - **macOS / other:** **no-op passthrough** — does not present content. Prefer
+    ///   ``platformPresentDestination_L4(item:onDismiss:destination:)`` when one call site
+    ///   must present on both platforms (push on iOS, sheet elsewhere). See #358.
+    ///
     /// Layer 4: Component Implementation
     @ViewBuilder
     func platformNavigationDestination_L4<Item: Identifiable & Hashable, Destination: View>(
@@ -301,7 +306,63 @@ public extension View {
         self
         #endif
     }
-    
+
+    /// Cross-platform destination presentation (#358).
+    ///
+    /// - **iOS:** `navigationDestination(isPresented:)` (push); older iOS falls back to sheet.
+    /// - **macOS / other:** `platformSheet_L4` (modal).
+    ///
+    /// Prefer this over `platformNavigationDestination_L4` when presentation must work on macOS
+    /// (where push is often a silent no-op in split-view detail).
+    @ViewBuilder
+    func platformPresentDestination_L4<Destination: View>(
+        isPresented: Binding<Bool>,
+        onDismiss: (() -> Void)? = nil,
+        @ViewBuilder destination: @escaping () -> Destination
+    ) -> some View {
+        switch PlatformPresentDestinationStrategy.resolve(platform: .current) {
+        case .navigationDestination:
+            #if os(iOS)
+            if #available(iOS 16.0, *) {
+                self.navigationDestination(isPresented: isPresented) {
+                    destination()
+                }
+            } else {
+                self.platformSheet_L4(isPresented: isPresented, onDismiss: onDismiss, content: destination)
+            }
+            #else
+            self.platformSheet_L4(isPresented: isPresented, onDismiss: onDismiss, content: destination)
+            #endif
+        case .sheet:
+            self.platformSheet_L4(isPresented: isPresented, onDismiss: onDismiss, content: destination)
+        }
+    }
+
+    /// Cross-platform destination presentation with an optional item (#358).
+    ///
+    /// - **iOS 17+:** `navigationDestination(item:)`; earlier iOS uses sheet.
+    /// - **macOS / other:** `platformSheet_L4` (modal).
+    @ViewBuilder
+    func platformPresentDestination_L4<Item: Identifiable & Hashable, Destination: View>(
+        item: Binding<Item?>,
+        onDismiss: (() -> Void)? = nil,
+        @ViewBuilder destination: @escaping (Item) -> Destination
+    ) -> some View {
+        switch PlatformPresentDestinationStrategy.resolve(platform: .current) {
+        case .navigationDestination:
+            #if os(iOS)
+            if #available(iOS 17.0, *) {
+                self.navigationDestination(item: item, destination: destination)
+            } else {
+                self.platformSheet_L4(item: item, onDismiss: onDismiss, content: destination)
+            }
+            #else
+            self.platformSheet_L4(item: item, onDismiss: onDismiss, content: destination)
+            #endif
+        case .sheet:
+            self.platformSheet_L4(item: item, onDismiss: onDismiss, content: destination)
+        }
+    }
 
     /// Platform-specific navigation button with consistent styling and accessibility
     /// Layer 4: Component Implementation
