@@ -1,16 +1,25 @@
 # 🚀 Six-Layer Framework Release History
 
-## 📍 **Current Release: v8.3.0** 🔧
+## 📍 **Current Release: v8.3.2** 🔧
 
 **Release Date**: TBD (prep)
-**Status**: Minor release (prep)
-**Previous Release**: v8.2.1 - Patch release
-**Note**: Toolbar action packing (#352); tvOS/watchOS/visionOS AllTests runtime (#318–#320).
+**Status**: Patch release (prep)
+**Previous Release**: v8.3.0 - Minor release
+**Note**: Empty-state host-sentinel a11y (#359/#360); platformPresentDestination_L4 (#358). v8.3.1 skipped (release-script tooling only).
 **Next Release**: TBD
 
 ---
 
-## 🎯 **v8.3.0 - Toolbar packing and platform AllTests runtime** (TBD)
+## 🎯 **v8.3.2 - Empty-state a11y host sentinel and present destination** (TBD)
+
+### **What's in v8.3.2:**
+- Patch release (#358–#360). See [RELEASE_v8.3.2.md](RELEASE_v8.3.2.md) for details.
+
+**See [RELEASE_v8.3.2.md](RELEASE_v8.3.2.md) for complete release notes.**
+
+---
+
+## 🎯 **v8.3.0 - Toolbar packing and platform AllTests runtime** (July 18, 2026)
 
 ### **What's in v8.3.0:**
 - Minor release (#352, #318–#320). See [RELEASE_v8.3.0.md](RELEASE_v8.3.0.md) for details.
