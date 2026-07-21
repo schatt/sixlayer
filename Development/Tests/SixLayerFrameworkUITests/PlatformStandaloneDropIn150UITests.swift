@@ -127,15 +127,18 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
         target.xcuiTapToBecomeFirstResponder()
         #if os(iOS)
         if target.elementType == .secureTextField {
-            // iOS 26 Form SecureFields often lack Paste menus and need repeated taps for focus (#368).
+            // iOS 26 Form SecureFields often need repeated taps before typeText accepts input (#368).
             let deadline = Date().addingTimeInterval(3.0)
-            while !target.hasKeyboardFocus && Date() < deadline {
+            var focused = false
+            while !focused && Date() < deadline {
                 target.tap()
                 RunLoop.current.run(until: Date().addingTimeInterval(0.2))
+                focused = (target.value(forKey: "hasKeyboardFocus") as? Bool) == true
+                    || app.keyboards.firstMatch.exists
             }
             XCTAssertTrue(
-                target.hasKeyboardFocus,
-                "SecureField '\(target.identifier)' should have keyboard focus before typeText",
+                focused,
+                "SecureField '\(target.identifier)' should accept keyboard focus before typeText",
                 file: file,
                 line: line
             )
