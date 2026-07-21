@@ -75,13 +75,15 @@ struct BarcodeScanningExamples: View {
 
 private struct ExampleSection<Content: View>: View {
     let title: String
-    @ViewBuilder let content: Content
+    let content: () -> Content
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        platformVStack(alignment: .leading, spacing: 16) {
             Text(title)
                 .font(.title2)
-            content
+                .bold()
+
+            content()
         }
     }
 }
