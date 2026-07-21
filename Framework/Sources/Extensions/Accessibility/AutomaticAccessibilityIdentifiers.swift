@@ -612,15 +612,8 @@ public struct NamedModifier: ViewModifier {
             )
         // Do **not** put `accessibilityIdentifier` on the content container itself:
         // on current SwiftUI/XCUI, that overwrites nested empty-state hint ids even
-        // with `.contain` / leaf `.ignore` (bisect step1, #360). Attach the named
-        // id on a background sentinel so the host remains queryable without owning
-        // the child accessibility tree.
-        return content
-            .background {
-                Color.clear
-                    .accessibilityIdentifier(newId)
-                    .accessibilityElement(children: .ignore)
-            }
+        // with `.contain` / leaf `.ignore` (bisect step1, #360). Attach via host sentinel.
+        return content.accessibilityHostIdentifier(newId)
     }
     
     private static func generateNamedAccessibilityIdentifier(
@@ -1112,6 +1105,18 @@ public extension View {
     func exactNamed(_ name: String) -> some View {
         self.modifier(ExactNamedModifier(name: name))
     }
+
+    /// Container/host accessibility identifier that remains queryable without overwriting
+    /// nested child identifiers (empty-state hints, row contracts, etc.).
+    /// Prefer this over raw `accessibilityIdentifier` on destination roots, scroll hosts,
+    /// and similar wrappers (#360 / CarManager #757).
+    func accessibilityHostIdentifier(_ identifier: String) -> some View {
+        self.background {
+            Color.clear
+                .accessibilityIdentifier(identifier)
+                .accessibilityElement(children: .ignore)
+        }
+    }
 }
 
 // MARK: - Automatic Accessibility Identifier Modifier
@@ -1141,12 +1146,19 @@ public extension View {
 
 /// Applies .accessibilityIdentifier only when non-nil. Used so BasicAutomaticComplianceModifier
 /// can always return the same view structure (Group + combine) and optionally apply an identifier.
+/// When `attachAsHostSentinel` is true (navigation Header destinations, #360), attach via
+/// ``View/accessibilityHostIdentifier(_:)`` so nested child ids are not overwritten.
 private struct OptionalIdentifierModifier: ViewModifier {
     let identifier: String?
+    var attachAsHostSentinel: Bool = false
 
     func body(content: Content) -> some View {
         if let identifier = identifier {
-            content.accessibilityIdentifier(identifier)
+            if attachAsHostSentinel {
+                content.accessibilityHostIdentifier(identifier)
+            } else {
+                content.accessibilityIdentifier(identifier)
+            }
         } else {
             content
         }
@@ -1522,7 +1534,10 @@ public struct BasicAutomaticComplianceModifier: ViewModifier {
         let contentWithValue = applyAccessibilityValueIfNeeded(to: contentWithTraits)
         let contentWithSortPriority = applyAccessibilitySortPriorityIfNeeded(to: contentWithValue)
         return Group { contentWithSortPriority }
-            .modifier(OptionalIdentifierModifier(identifier: identifier))
+            .modifier(OptionalIdentifierModifier(
+                identifier: identifier,
+                attachAsHostSentinel: isNavigationHeaderCompliance
+            ))
             .modifier(OptionalAccessibilityContainModifier(
                 applyContain: slfShouldApplyAccessibilityContainForBasicCompliance(
                     identifierName: storedIdentifierName,
