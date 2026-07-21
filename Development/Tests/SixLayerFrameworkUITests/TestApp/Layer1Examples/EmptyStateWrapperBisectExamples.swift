@@ -102,7 +102,7 @@ struct EmptyStateWrapperBisectOuterScrollHostExamples: View {
         .cornerRadius(8)
         .platformNavigationTitle_L4("All Vehicles")
         .platformNavigationTitleDisplayMode_L4(.large)
-        .accessibilityIdentifier(EmptyStateWrapperBisectIDs.scrollHost)
+        .accessibilityHostIdentifier(EmptyStateWrapperBisectIDs.scrollHost)
     }
 }
 
@@ -121,7 +121,7 @@ struct EmptyStateWrapperBisectOuterContainExamples: View {
         .cornerRadius(8)
         .platformNavigationTitle_L4("All Vehicles")
         .platformNavigationTitleDisplayMode_L4(.large)
-        .accessibilityIdentifier(EmptyStateWrapperBisectIDs.scrollHost)
+        .accessibilityHostIdentifier(EmptyStateWrapperBisectIDs.scrollHost)
         .accessibilityElement(children: .contain)
     }
 }
