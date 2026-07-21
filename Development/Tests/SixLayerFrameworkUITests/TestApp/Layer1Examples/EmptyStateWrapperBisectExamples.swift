@@ -37,6 +37,7 @@ private let bisectEmptyHints = PresentationHints(
 )
 
 /// Empty collection surface shared by all ladder steps.
+@MainActor
 @ViewBuilder
 private func emptyCollectionWithHintIds() -> some View {
     platformPresentItemCollection_L1(
