@@ -610,11 +610,17 @@ public struct NamedModifier: ViewModifier {
                 capturedNamespace: capturedNamespace,
                 capturedGlobalPrefix: capturedGlobalPrefix
             )
-        // Match BasicAutomaticComplianceModifier named-row pattern: Group + id + `.contain`
-        // so nested empty-state hint ids stay distinct (#360 / #172 / #197).
-        return Group { content }
-            .accessibilityIdentifier(newId)
-            .accessibilityElement(children: .contain)
+        // Do **not** put `accessibilityIdentifier` on the content container itself:
+        // on current SwiftUI/XCUI, that overwrites nested empty-state hint ids even
+        // with `.contain` / leaf `.ignore` (bisect step1, #360). Attach the named
+        // id on a background sentinel so the host remains queryable without owning
+        // the child accessibility tree.
+        return content
+            .background {
+                Color.clear
+                    .accessibilityIdentifier(newId)
+                    .accessibilityElement(children: .ignore)
+            }
     }
     
     private static func generateNamedAccessibilityIdentifier(
