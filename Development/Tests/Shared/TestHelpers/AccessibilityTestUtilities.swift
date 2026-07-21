@@ -53,10 +53,13 @@ extension NSView {
 /// Host a SwiftUI view and return the platform root view for inspection.
 /// CRITICAL: The hosting controller is retained in static storage to prevent crashes
 /// when the view is accessed after the function returns.
-/// 
-/// WARNING: This function can hang if the view contains NavigationStack/NavigationView
-/// or complex hierarchies like GenericContentView in test environments without proper window hierarchy.
-/// The hang occurs when accessing `hosting.view` - a synchronous UIKit/AppKit call that cannot be timed out.
+///
+/// **Forbidden in unit/VI:** do not pass views that wrap `NavigationStack` / `NavigationView`
+/// (or otherwise require a full window navigation hierarchy). Accessing `hosting.view` can hang
+/// indefinitely with no timeout. Use XCUI (`Layer4UITests`, Layer1 navigation hosts) instead. Refs #369.
+///
+/// WARNING: Complex hierarchies (e.g. GenericContentView) in environments without a proper window
+/// hierarchy can also hang on `hosting.view`.
 /// 
 
 /// Get accessibility identifier: direct typed inspection when possible, then platform/AnyView fallback.

@@ -278,35 +278,31 @@ open class CapabilityAwareFunctionTests: BaseTestClass {
     /// BUSINESS PURPOSE: Vision framework functions provide OCR processing and image analysis capabilities
     /// TESTING SCOPE: Vision framework availability, OCR processing, image analysis
     /// METHODOLOGY: Test both enabled and disabled Vision framework states
-    @Test @MainActor func testVisionFrameworkDependentFunctions() {
+    @Test @MainActor func testVisionFrameworkDependentFunctions() async {
         let supportsVision = isVisionFrameworkAvailable()
         
         if supportsVision {
-            testVisionFunctionsEnabled()
+            await testVisionFunctionsEnabled()
         } else {
-            testVisionFunctionsDisabled()
+            await testVisionFunctionsDisabled()
         }
     }
     
     /// BUSINESS PURPOSE: Vision framework functions enable OCR text extraction and image processing when available
-    /// TESTING SCOPE: Vision framework availability, OCR processing, image analysis
-    /// METHODOLOGY: Test Vision framework enabled state with actual OCR processing
-    @Test @MainActor func testVisionFunctionsEnabled() {
+    /// TESTING SCOPE: Vision framework availability; empty-image fail-fast (no live Vision — #367 / #366)
+    /// METHODOLOGY: Assert availability, then await processImage on an empty PlatformImage
+    @Test @MainActor func testVisionFunctionsEnabled() async {
         // Vision is not surfaced for OCR on watchOS in this stack; the disabled-path suite covers it.
         #if os(watchOS)
         #expect(Bool(true), "Vision enabled-path checks run on platforms with Vision OCR support")
         return
         #endif
-        // Vision framework should be available
-        #expect(isVisionFrameworkAvailable(), 
+        #expect(isVisionFrameworkAvailable(),
                      "Vision framework should be available when enabled")
-        
-        // OCR should be available
-        #expect(isVisionOCRAvailable(), 
+        #expect(isVisionOCRAvailable(),
                      "OCR should be available when Vision framework is enabled")
-        
-        // Vision functions should not crash
-        let testImage = PlatformImage()
+
+        let service = OCRService()
         let context = OCRContext(
             textTypes: [.general],
             language: .english,
@@ -317,43 +313,33 @@ open class CapabilityAwareFunctionTests: BaseTestClass {
             supportedLanguages: [.english],
             processingMode: .standard
         )
-        
-        // Test that Vision functions can be called without crashing
-        let service = OCRService()
-        Task {
-            do {
-                let _ = try await service.processImage(
-                    testImage,
-                    context: context,
-                    strategy: strategy
-                )
-            } catch {
-                // Expected for test images
-            }
+        // Empty image → invalidImage before Vision (do not fire-and-forget live OCR)
+        do {
+            _ = try await service.processImage(PlatformImage(), context: context, strategy: strategy)
+            Issue.record("Expected OCRError.invalidImage for empty PlatformImage()")
+        } catch OCRError.invalidImage {
+            // expected
+        } catch {
+            Issue.record("Expected OCRError.invalidImage, got \(error)")
         }
     }
     
     /// BUSINESS PURPOSE: Vision framework functions provide fallback behavior when Vision framework is unavailable
-    /// TESTING SCOPE: Vision framework availability, OCR processing, image analysis
-    /// METHODOLOGY: Test Vision framework disabled state with graceful fallback handling
-    @Test @MainActor func testVisionFunctionsDisabled() {
+    /// TESTING SCOPE: Vision framework unavailable → processImage fails without hanging
+    /// METHODOLOGY: Await processImage; expect OCRError.visionUnavailable (no fire-and-forget Task)
+    @Test @MainActor func testVisionFunctionsDisabled() async {
         // If Vision is available on this platform/SDK, skip strict disabled assertions
         guard !isVisionFrameworkAvailable() else {
-            // Validate that availability implies OCR availability relationship
             #expect(isVisionOCRAvailable() == true, "OCR availability should align with Vision framework availability when enabled")
             return
         }
         
-        // Vision framework should not be available
-        #expect(!isVisionFrameworkAvailable(), 
+        #expect(!isVisionFrameworkAvailable(),
                       "Vision framework should not be available when disabled")
-        
-        // OCR should not be available
-        #expect(!isVisionOCRAvailable(), 
+        #expect(!isVisionOCRAvailable(),
                       "OCR should not be available when Vision framework is disabled")
         
-        // Vision functions should still be callable but return fallback behavior
-        let testImage = PlatformImage()
+        let service = OCRService()
         let context = OCRContext(
             textTypes: [.general],
             language: .english,
@@ -364,22 +350,13 @@ open class CapabilityAwareFunctionTests: BaseTestClass {
             supportedLanguages: [.english],
             processingMode: .standard
         )
-        
-        // Test that Vision functions handle disabled state gracefully
-        let service = OCRService()
-        Task {
-            do {
-                let _ = try await service.processImage(
-                    testImage,
-                    context: context,
-                    strategy: strategy
-                )
-                // Should provide fallback result when Vision is disabled
-                #expect(Bool(true), "Should provide fallback result when Vision is disabled")  // result is non-optional
-            } catch {
-                // Should handle error gracefully when Vision is disabled
-                #expect(Bool(true), "Should handle error gracefully when Vision is disabled")  // error is non-optional
-            }
+        do {
+            _ = try await service.processImage(PlatformImage(), context: context, strategy: strategy)
+            Issue.record("Expected OCRError.visionUnavailable when Vision is unavailable")
+        } catch OCRError.visionUnavailable {
+            // expected
+        } catch {
+            Issue.record("Expected OCRError.visionUnavailable, got \(error)")
         }
     }
     
@@ -475,11 +452,11 @@ open class CapabilityAwareFunctionTests: BaseTestClass {
     /// BUSINESS PURPOSE: Comprehensive capability testing validates all capability-dependent functions work correctly together
     /// TESTING SCOPE: All capability-dependent functions, cross-platform consistency
     /// METHODOLOGY: Test all capability-dependent functions in sequence
-    @Test @MainActor func testAllCapabilityDependentFunctions() {
+    @Test @MainActor func testAllCapabilityDependentFunctions() async {
         // Test all capability-dependent functions
         testTouchDependentFunctions()
         testHoverDependentFunctions()
-        testVisionFrameworkDependentFunctions()
+        await testVisionFrameworkDependentFunctions()
         testAccessibilityDependentFunctions()
         testColorEncodingDependentFunctions()
     }
