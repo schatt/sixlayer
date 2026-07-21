@@ -52,48 +52,41 @@ open class VisionSafetyTests: BaseTestClass {
         }
     }
     
-    @Test func testOCRFallbackBehavior() {
-        // Given: OCR context and image
+    @Test func testOCRFallbackBehavior() async {
+        // Given: OCR context
         let context = OCRContext(
             textTypes: [.general],
             language: .english,
             confidenceThreshold: 0.8
         )
-        let image = PlatformImage()
-        
+
         // When: Testing OCR availability
         let isOCRAvailable = isVisionOCRAvailable()
-        
+
         // Then: OCR availability should be deterministic
         if isOCRAvailable {
             #expect(isOCRAvailable, "OCR should be available when Vision framework is present")
         } else {
             #expect(!isOCRAvailable, "OCR should not be available when Vision framework is not present")
         }
-        
-        // Test that fallback behavior is handled gracefully
+
+        // Fail-fast empty image — do not fire-and-forget live Vision (#367)
         let service = OCRService()
-        
-        // Just verify the function can be called without crashing
-        Task {
-            do {
-                let _ = try await service.processImage(
-                    image,
-                    context: context,
-                    strategy: OCRStrategy(
-                        supportedTextTypes: [.general],
-                        supportedLanguages: [.english],
-                        processingMode: .standard,
-                        requiresNeuralEngine: false,
-                        estimatedProcessingTime: 1.0
-                    )
-                )
-            } catch {
-                // Expected for test images - this is the fallback behavior
-            }
+        let strategy = OCRStrategy(
+            supportedTextTypes: [.general],
+            supportedLanguages: [.english],
+            processingMode: .standard,
+            requiresNeuralEngine: false,
+            estimatedProcessingTime: 1.0
+        )
+        do {
+            _ = try await service.processImage(PlatformImage(), context: context, strategy: strategy)
+            Issue.record("Expected OCRError for empty PlatformImage()")
+        } catch is OCRError {
+            // invalidImage or visionUnavailable depending on host
+        } catch {
+            Issue.record("Expected OCRError, got \(error)")
         }
-        
-        // Don't wait for async completion - just verify the function can be called
     }
     
     @Test func testVisionFrameworkVersionCheck() {
@@ -123,47 +116,38 @@ open class VisionSafetyTests: BaseTestClass {
         #endif
     }
     
-    @Test func testOCRErrorHandling() {
-        // Given: Invalid image for OCR
+    @Test func testOCRErrorHandling() async {
+        // Given: Invalid (empty) image for OCR
         let context = OCRContext(
             textTypes: [.general],
             language: .english,
             confidenceThreshold: 0.8
         )
-        
-        // When: Testing OCR error handling
+
         let isOCRAvailable = isVisionOCRAvailable()
-        
-        // Then: OCR availability should be deterministic
         if isOCRAvailable {
             #expect(isOCRAvailable, "OCR should be available when Vision framework is present")
         } else {
             #expect(!isOCRAvailable, "OCR should not be available when Vision framework is not present")
         }
-        
-        // Test that error handling works gracefully
+
+        // Await empty-image path — no fire-and-forget Task (#367)
         let service = OCRService()
-        
-        // Just verify the function can be called without crashing
-        Task {
-            do {
-                let _ = try await service.processImage(
-                    PlatformImage(), // Invalid image
-                    context: context,
-                    strategy: OCRStrategy(
-                        supportedTextTypes: [.general],
-                        supportedLanguages: [.english],
-                        processingMode: .standard,
-                        requiresNeuralEngine: false,
-                        estimatedProcessingTime: 1.0
-                    )
-                )
-            } catch {
-                // Expected for invalid images - this is the error handling behavior
-            }
+        let strategy = OCRStrategy(
+            supportedTextTypes: [.general],
+            supportedLanguages: [.english],
+            processingMode: .standard,
+            requiresNeuralEngine: false,
+            estimatedProcessingTime: 1.0
+        )
+        do {
+            _ = try await service.processImage(PlatformImage(), context: context, strategy: strategy)
+            Issue.record("Expected OCRError for empty PlatformImage()")
+        } catch is OCRError {
+            // expected
+        } catch {
+            Issue.record("Expected OCRError, got \(error)")
         }
-        
-        // Don't wait for async completion - just verify the function can be called
     }
     
     @Test func testPlatformSpecificVisionAvailability() {
