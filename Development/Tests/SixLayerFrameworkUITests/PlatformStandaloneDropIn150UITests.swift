@@ -11,6 +11,9 @@
 //
 
 import XCTest
+#if os(iOS)
+import UIKit
+#endif
 
 /// XCUITest for Issue #150 — binding propagation and user interaction on `StandaloneDropIn150HostView`.
 @MainActor
@@ -120,9 +123,26 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
         XCTAssertTrue(field.exists, "Field should exist before typing", file: file, line: line)
         let target = editableControl(near: field)
         XCTAssertTrue(target.exists, "Editable control near '\(field.identifier)' should exist", file: file, line: line)
+        #if os(iOS)
+        // Blur any prior field so SecureField can take first responder in a Form (#368).
+        app.xcuiDismissSoftwareKeyboardIfPresent()
+        #endif
         target.xcuiTapToBecomeFirstResponder()
         #if os(iOS)
-        // Software keyboard is often hidden when Connect Hardware Keyboard is on; typeText still works (#368).
+        if target.elementType == .secureTextField {
+            // iOS 26 SecureField often refuses typeText focus after another field; paste on the leaf (#368).
+            UIPasteboard.general.string = text
+            target.press(forDuration: 1.2)
+            let paste = app.menuItems["Paste"]
+            XCTAssertTrue(
+                paste.waitForExistence(timeout: 2.0),
+                "Paste menu should appear on SecureField leaf '\(target.identifier)'",
+                file: file,
+                line: line
+            )
+            paste.tap()
+            return
+        }
         _ = app.keyboards.firstMatch.waitForExistence(timeout: 1.0)
         #endif
         target.typeText(text)
