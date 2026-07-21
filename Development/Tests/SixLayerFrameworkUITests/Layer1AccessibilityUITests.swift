@@ -59,6 +59,7 @@ final class Layer1AccessibilityUITests: XCTestCase {
             case "items": marker = "L1_Section_Items"
             case "emptyItems": marker = "L1_Section_EmptyItems"
             case "emptyWrap1": marker = "L1_Section_EmptyWrap1"
+            case "emptyWrapExact1": marker = "L1_Section_EmptyWrapExact1"
             case "emptyWrap2": marker = "L1_Section_EmptyWrap2"
             case "emptyWrap3": marker = "L1_Section_EmptyWrap3"
             case "emptyWrap4": marker = "L1_Section_EmptyWrap4"
@@ -318,6 +319,13 @@ final class Layer1AccessibilityUITests: XCTestCase {
     @MainActor
     func testEmptyStateWrapperBisect_step1_named_hintIdsRemainQueryable() throws {
         assertEmptyStateHintIdsQueryable(section: "emptyWrap1", sectionMarker: "L1_Section_EmptyWrap1")
+    }
+
+    /// Mirror of emptyWrap1 with `.exactNamed` on the collection container (#364).
+    /// Nested EmptyState* hint ids must remain queryable (host-sentinel parity with `.named`).
+    @MainActor
+    func testEmptyStateWrapperBisect_exactNamed_hintIdsRemainQueryable() throws {
+        assertEmptyStateHintIdsQueryable(section: "emptyWrapExact1", sectionMarker: "L1_Section_EmptyWrapExact1")
     }
 
     @MainActor
