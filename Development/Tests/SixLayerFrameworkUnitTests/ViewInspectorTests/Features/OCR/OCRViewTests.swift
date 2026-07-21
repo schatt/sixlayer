@@ -59,8 +59,10 @@ open class OCRServiceTests: BaseTestClass {
         do {
             _ = try await service.processImage(testImage, context: context, strategy: strategy)
             Issue.record("Expected OCRError.invalidImage for an empty platform image")
+        } catch OCRError.invalidImage {
+            // Fast fail path — no Vision
         } catch let error as OCRError {
-            #expect(error == .invalidImage, "Empty image should fail as invalidImage, got \(error)")
+            Issue.record("Empty image should fail as invalidImage, got \(error)")
         } catch {
             Issue.record("OCR errors should be OCRError types, got \(error)")
         }
