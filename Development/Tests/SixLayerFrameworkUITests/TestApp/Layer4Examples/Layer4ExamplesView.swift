@@ -1101,15 +1101,18 @@ struct Layer4ContractOnlyView: View {
             Text("Photo Picker Contract")
                 .font(.caption)
                 .foregroundColor(.secondary)
-            Button("L4ContractPhotoPickerOpen") {
-                l4ContractShowPhotoPicker = true
-            }
-            .accessibilityIdentifier("L4ContractPhotoPickerOpen")
-            .accessibilityLabel("L4ContractPhotoPickerOpen")
+            // Under -UITesting, replace the open control with the contract host so the exact
+            // id sits where XCUITest already found the button (Form may not expose off-screen inserts; #317/#368).
             if isXCUITestHost && l4ContractShowPhotoPicker {
                 L4PhotoPickerContractHost {
                     l4ContractShowPhotoPicker = false
                 }
+            } else {
+                Button("L4ContractPhotoPickerOpen") {
+                    l4ContractShowPhotoPicker = true
+                }
+                .accessibilityIdentifier("L4ContractPhotoPickerOpen")
+                .accessibilityLabel("L4ContractPhotoPickerOpen")
             }
             #endif
             Text("Photo Display")
@@ -1363,8 +1366,7 @@ struct Layer4ContractOnlyView: View {
 
 #if os(iOS) || os(macOS)
 /// XCUITest contract surface for `platformPhotoPicker_L4`; native pickers hide generated a11y ids (#317).
-/// Exact id must stay `platformPhotoPicker_L4` — do not chain `.automaticCompliance(named:)` after it
-/// (that overwrites with `SixLayer.main.ui.platformPhotoPicker_L4.View` and breaks Layer4UITests; #368).
+/// Use `exactNamed` (host sentinel) so the contract id stays queryable without overwriting children (#364/#368).
 private struct L4PhotoPickerContractHost: View {
     let onDismiss: () -> Void
 
@@ -1375,8 +1377,8 @@ private struct L4PhotoPickerContractHost: View {
                 .accessibilityIdentifier("SixLayer.main.ui.platformPhotoPicker_L4.cancel")
         }
         .padding()
-        .accessibilityIdentifier("platformPhotoPicker_L4")
         .accessibilityLabel("platformPhotoPicker_L4")
+        .exactNamed("platformPhotoPicker_L4")
     }
 }
 #endif
