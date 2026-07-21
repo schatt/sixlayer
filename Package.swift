@@ -1,5 +1,5 @@
 // swift-tools-version: 6.0
-// SixLayerFramework v8.3.2 - Patch: empty-state host-sentinel a11y (#359/#360); platformPresentDestination_L4 (#358)
+// SixLayerFramework v8.3.3 - Patch: ExactNamedModifier host-sentinel (#364)
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
