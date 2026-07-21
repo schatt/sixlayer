@@ -66,37 +66,15 @@ open class CapabilityMatrixTests: BaseTestClass {
                 let isVisionAvailable = RuntimeCapabilityDetection.Vision.isFrameworkAvailable
 
                 // OCR should only be available if Vision is available (logical dependency)
-                #expect(isOCRAvailable == isVisionAvailable, 
+                #expect(isOCRAvailable == isVisionAvailable,
                              "OCR availability should match Vision framework availability")
 
-                if isOCRAvailable {
-                    // When OCR is available, the framework should allow OCR operations
-                    let testImage = PlatformImage()
-                    let context = OCRContext(
-                        textTypes: [.general],
-                        language: .english,
-                        confidenceThreshold: 0.8
-                    )
-                    let strategy = OCRStrategy(
-                        supportedTextTypes: [.general],
-                        supportedLanguages: [.english],
-                        processingMode: .standard
-                    )
-
-                    // Test that OCR functions can be called without crashing
-                    let service = OCRService()
-                    Task {
-                        do {
-                            let _ = try await service.processImage(
-                                testImage,
-                                context: context,
-                                strategy: strategy
-                            )
-                        } catch {
-                            // Expected for test images - the important thing is it doesn't crash
-                        }
-                    }
-                }
+                // Do not spawn fire-and-forget live Vision OCR (#367 / #366).
+                // Matrix asserts capability wiring; empty-image OCRError is covered in VisionSafety /
+                // CapabilityAwareFunctionTests.
+                let service = OCRService()
+                #expect(service.isAvailable == isOCRAvailable,
+                             "OCRService.isAvailable should match RuntimeCapabilityDetection OCR support")
             }
         ),
         

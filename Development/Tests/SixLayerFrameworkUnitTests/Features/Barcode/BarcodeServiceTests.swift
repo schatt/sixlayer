@@ -80,14 +80,9 @@ open class BarcodeServiceTests: BaseTestClass {
     // MARK: - Barcode Detection Tests
     
     @Test func testBarcodeDetectionWithInvalidImage() async throws {
-        // TDD: BarcodeService should handle invalid images gracefully
-        // 1. Should throw appropriate error for invalid image
-        // 2. Should not crash on invalid input
-        // 3. Should provide meaningful error message
-        
+        // TDD: BarcodeService should handle invalid images gracefully (fail fast, no Vision)
         let service = BarcodeService()
-        
-        // Create an invalid image (empty or too small)
+
         #if os(iOS)
         let invalidImage = PlatformImage(uiImage: UIImage())
         #elseif os(macOS)
@@ -95,55 +90,33 @@ open class BarcodeServiceTests: BaseTestClass {
         #else
         let invalidImage = PlatformImage()
         #endif
-        
+
         let context = BarcodeContext(
             supportedBarcodeTypes: [.qrCode, .code128],
             confidenceThreshold: 0.8
         )
-        
-        // Should throw error for invalid image
+
         do {
             _ = try await service.processImage(invalidImage, context: context)
-            #expect(Bool(false), "Should throw error for invalid image")
+            Issue.record("Should throw BarcodeError.invalidImage for empty platform image")
+        } catch BarcodeError.invalidImage {
+            // expected — empty image never reaches Vision (#367)
+        } catch BarcodeError.visionUnavailable {
+            // acceptable on hosts without Vision barcode support
         } catch {
-            // Expected - should throw BarcodeError.invalidImage
-            #expect(error is BarcodeError, "Should throw BarcodeError")
+            Issue.record("Expected BarcodeError.invalidImage (or visionUnavailable), got \(error)")
         }
     }
     
     @Test func testBarcodeDetectionWithNoBarcodeFound() async throws {
-        // TDD: BarcodeService should handle images without barcodes
-        // 1. Should return result with empty barcodes array
-        // 2. Should not throw error (no barcode is a valid result)
-        // 3. Should indicate no barcodes found in result
-        
-        let service = BarcodeService()
-        
-        // Create a simple test image without barcodes
-        // Note: In real implementation, we'd need actual test images
-        // For now, we test the error handling path
-        #if os(iOS)
-        let testImage = PlatformImage(uiImage: UIImage())
-        #elseif os(macOS)
-        let testImage = PlatformImage(nsImage: NSImage())
-        #else
-        let testImage = PlatformImage()
-        #endif
-        
-        let context = BarcodeContext(
-            supportedBarcodeTypes: [.qrCode, .code128],
-            confidenceThreshold: 0.8
-        )
-        
-        // Should handle gracefully (either return empty result or throw appropriate error)
-        do {
-            let result = try await service.processImage(testImage, context: context)
-            // If no error, result should indicate no barcodes found
-            #expect(result.barcodes.isEmpty || result.barcodes.count >= 0, "Result should handle no barcodes found")
-        } catch {
-            // If error thrown, should be appropriate error type
-            #expect(error is BarcodeError, "Should throw BarcodeError if error occurs")
-        }
+        // Empty images cannot exercise "no barcode found" without a valid CGImage, and a
+        // placeholder bitmap would enter live Vision (#367 / #366). Assert the empty-result
+        // model instead of calling processImage on real pixels.
+        let empty = BarcodeResult(barcodes: [], confidence: 0, processingTime: 0)
+        #expect(empty.barcodes.isEmpty, "Empty scan result should have no barcodes")
+        #expect(!empty.hasBarcodes, "hasBarcodes should be false when barcodes is empty")
+        #expect(empty.filtered(by: .qrCode).isEmpty)
+        #expect(empty.filtered(by: 0.8).barcodes.isEmpty)
     }
     
     // MARK: - Barcode Type Support Tests
