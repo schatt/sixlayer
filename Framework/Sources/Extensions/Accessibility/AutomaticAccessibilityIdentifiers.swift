@@ -691,8 +691,10 @@ public struct NamedModifier: ViewModifier {
 
 // MARK: - Exact Named Component Modifier
 
-/// Modifier that applies exact accessibility identifiers without framework additions
-/// GREEN PHASE: Produces truly minimal identifiers - just the exact name provided
+/// Modifier that applies exact accessibility identifiers without framework additions.
+/// GREEN PHASE: Produces truly minimal identifiers - just the exact name provided.
+/// Attaches via host sentinel (same as ``NamedModifier``) so container use does not
+/// overwrite nested child contract ids (#364 / #360).
 public struct ExactNamedModifier: ViewModifier {
     let name: String
     @Environment(\.accessibilityIdentifierConfig) private var envAccessibilityIdentifierConfig
@@ -707,8 +709,10 @@ public struct ExactNamedModifier: ViewModifier {
                 name: name,
                 capturedEnableDebugLogging: capturedEnableDebugLogging
             )
-        // Apply exact identifier directly to content (no wrapper view!)
-        return content.accessibilityIdentifier(exactId)
+        // Do **not** put `accessibilityIdentifier` on the content container itself:
+        // same overwrite class as `.named` (#360) when `.exactNamed` wraps a surface
+        // that owns nested EmptyState* / row contract ids (#364). Attach via host sentinel.
+        return content.accessibilityHostIdentifier(exactId)
     }
     
     private static func generateExactNamedAccessibilityIdentifier(
@@ -740,12 +744,6 @@ public struct ExactNamedModifier: ViewModifier {
         
         return exactIdentifier
     }
-    
-    // Apply exact identifier directly to content (no wrapper view!)
-    // Note: We removed explicit identifier tracking - identifiers are applied directly
-    // This fixes Issue #159 - identifier now applies directly to the Button
-    // The exactId is returned from generateExactNamedAccessibilityIdentifier above
-    // and applied in the body method
 }
 
 // MARK: - Test-only (same algorithms as modifiers; UIHosting/ViewInspector often skip modifier bodies in unit tests)
@@ -1100,8 +1098,10 @@ public extension View {
         self.modifier(NamedModifier(name: name))
     }
     
-    /// Apply an exact named accessibility identifier to a view
-    /// GREEN PHASE: Produces truly minimal identifiers without framework additions
+    /// Apply an exact named accessibility identifier to a view.
+    /// Produces a truly minimal identifier (the exact name, no framework prefix/hierarchy).
+    /// Uses the host-sentinel pattern (``accessibilityHostIdentifier``) so applying this
+    /// to a container does not overwrite nested child accessibility identifiers (#364).
     func exactNamed(_ name: String) -> some View {
         self.modifier(ExactNamedModifier(name: name))
     }
