@@ -2,15 +2,15 @@
 
 ## 📍 **Current Release: v8.3.2** 🔧
 
-**Release Date**: TBD (prep)
-**Status**: Patch release (prep)
+**Release Date**: July 21, 2026
+**Status**: Patch release
 **Previous Release**: v8.3.0 - Minor release
 **Note**: Empty-state host-sentinel a11y (#359/#360); platformPresentDestination_L4 (#358). v8.3.1 skipped (release-script tooling only).
 **Next Release**: TBD
 
 ---
 
-## 🎯 **v8.3.2 - Empty-state a11y host sentinel and present destination** (TBD)
+## 🎯 **v8.3.2 - Empty-state a11y host sentinel and present destination** (July 21, 2026)
 
 ### **What's in v8.3.2:**
 - Patch release (#358–#360). See [RELEASE_v8.3.2.md](RELEASE_v8.3.2.md) for details.

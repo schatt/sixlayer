@@ -1,9 +1,9 @@
 # SixLayer Framework v8.3.2 Release Documentation
 
-**Release Date**: TBD (prep)  
+**Release Date**: July 21, 2026  
 **Release Type**: Patch  
 **Previous Release**: v8.3.0  
-**Status**: Prep
+**Status**: Released
 
 > **Note:** Milestone **8.3.1** held release-script tag-guard work only (#356, #357) and was **not** tagged. Those tooling changes ship here with the product fixes below.
 
