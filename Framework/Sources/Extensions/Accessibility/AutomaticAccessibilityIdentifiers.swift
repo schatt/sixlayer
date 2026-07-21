@@ -610,11 +610,9 @@ public struct NamedModifier: ViewModifier {
                 capturedNamespace: capturedNamespace,
                 capturedGlobalPrefix: capturedGlobalPrefix
             )
-        // Apply identifier on content, then `.contain` so nested hint/manual ids stay
-        // queryable (same lesson as BasicAutomaticComplianceModifier named rows —
-        // #172 / #197). Without `.contain`, a parent id collapses empty-state children
-        // (#360 / CarManager #757).
-        return content
+        // Match BasicAutomaticComplianceModifier named-row pattern: Group + id + `.contain`
+        // so nested empty-state hint ids stay distinct (#360 / #172 / #197).
+        return Group { content }
             .accessibilityIdentifier(newId)
             .accessibilityElement(children: .contain)
     }
