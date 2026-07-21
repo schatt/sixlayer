@@ -160,6 +160,20 @@ private struct OptionalNamedAutomaticComplianceModifier: ViewModifier {
     }
 }
 
+/// Skips anonymous ``automaticCompliance()`` when empty-state hint ids should win
+/// under destination wrappers such as `.named` (#360).
+private struct OptionalAnonymousAutomaticComplianceModifier: ViewModifier {
+    let enabled: Bool
+
+    func body(content: Content) -> some View {
+        if enabled {
+            content.automaticCompliance()
+        } else {
+            content
+        }
+    }
+}
+
 @MainActor
 public func platformPresentItemCollection_L1<Item: Identifiable>(
     items: [Item],
@@ -1893,7 +1907,14 @@ public struct CollectionEmptyStateView: View {
         }
         .padding(32)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .automaticCompliance()
+        // Prefer explicit empty-state hint ids over anonymous compliance. An outer
+        // `.named` / container `accessibilityIdentifier` otherwise collapses those
+        // child ids (bisect step1, #360 / CarManager #757) — same prefer-hints rule as #359.
+        .modifier(
+            OptionalAnonymousAutomaticComplianceModifier(
+                enabled: !slfShouldPreferEmptyStateHintAccessibilityIdentifiers(hints)
+            )
+        )
     }
     
     private var emptyStateIcon: String {
@@ -2161,10 +2182,14 @@ public struct CollectionEmptyStateView: View {
 
 extension View {
     /// Applies `accessibilityIdentifier` only when `identifier` is non-nil and non-empty.
+    /// Forces a leaf accessibility element so an outer `.named` / container id cannot
+    /// overwrite the hint id in the XCUI tree (#360).
     @ViewBuilder
     internal func sixLayerOptionalAccessibilityIdentifier(_ identifier: String?) -> some View {
         if let identifier, !identifier.isEmpty {
-            self.accessibilityIdentifier(identifier)
+            self
+                .accessibilityElement(children: .ignore)
+                .accessibilityIdentifier(identifier)
         } else {
             self
         }

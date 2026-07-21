@@ -58,6 +58,10 @@ final class Layer1AccessibilityUITests: XCTestCase {
             switch section {
             case "items": marker = "L1_Section_Items"
             case "emptyItems": marker = "L1_Section_EmptyItems"
+            case "emptyWrap1": marker = "L1_Section_EmptyWrap1"
+            case "emptyWrap2": marker = "L1_Section_EmptyWrap2"
+            case "emptyWrap3": marker = "L1_Section_EmptyWrap3"
+            case "emptyWrap4": marker = "L1_Section_EmptyWrap4"
             case "responsiveCard": marker = "L1_Section_ResponsiveCard"
             case "navStack": marker = "L1_Section_NavStack"
             case "appNav": marker = "L1_Section_AppNav"
@@ -291,5 +295,43 @@ final class Layer1AccessibilityUITests: XCTestCase {
             "SixLayer.uitest.collectionEmpty.EmptyStateCreateButton",
             context: "createButtonAccessibilityIdentifier"
         )
+    }
+
+    // MARK: - Empty-state destination wrapper bisect (#360 / CarManager #757)
+
+    /// Asserts hint empty-state ids after launching a wrapper-ladder section.
+    /// Ids must match `EmptyStateWrapperBisectIDs` in the TestApp harness.
+    @MainActor
+    private func assertEmptyStateHintIdsQueryable(section: String, sectionMarker: String) {
+        launchLayer1Category("Data Presentation", section: section)
+        assertExactIdentifierExists(sectionMarker, context: "\(section) host")
+        assertExactIdentifierExists(
+            "SixLayer.uitest.collectionEmpty.EmptyStateTitle",
+            context: "\(section) emptyStateTitleAccessibilityIdentifier"
+        )
+        assertExactIdentifierExists(
+            "SixLayer.uitest.collectionEmpty.EmptyStateCreateButton",
+            context: "\(section) createButtonAccessibilityIdentifier"
+        )
+    }
+
+    @MainActor
+    func testEmptyStateWrapperBisect_step1_named_hintIdsRemainQueryable() throws {
+        assertEmptyStateHintIdsQueryable(section: "emptyWrap1", sectionMarker: "L1_Section_EmptyWrap1")
+    }
+
+    @MainActor
+    func testEmptyStateWrapperBisect_step2_namedPlusNavTitle_hintIdsRemainQueryable() throws {
+        assertEmptyStateHintIdsQueryable(section: "emptyWrap2", sectionMarker: "L1_Section_EmptyWrap2")
+    }
+
+    @MainActor
+    func testEmptyStateWrapperBisect_step3_outerScrollHost_hintIdsRemainQueryable() throws {
+        assertEmptyStateHintIdsQueryable(section: "emptyWrap3", sectionMarker: "L1_Section_EmptyWrap3")
+    }
+
+    @MainActor
+    func testEmptyStateWrapperBisect_step4_outerContain_hintIdsRemainQueryable() throws {
+        assertEmptyStateHintIdsQueryable(section: "emptyWrap4", sectionMarker: "L1_Section_EmptyWrap4")
     }
 }
