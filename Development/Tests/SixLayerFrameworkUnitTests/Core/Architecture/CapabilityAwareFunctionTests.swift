@@ -452,11 +452,11 @@ open class CapabilityAwareFunctionTests: BaseTestClass {
     /// BUSINESS PURPOSE: Comprehensive capability testing validates all capability-dependent functions work correctly together
     /// TESTING SCOPE: All capability-dependent functions, cross-platform consistency
     /// METHODOLOGY: Test all capability-dependent functions in sequence
-    @Test @MainActor func testAllCapabilityDependentFunctions() {
+    @Test @MainActor func testAllCapabilityDependentFunctions() async {
         // Test all capability-dependent functions
         testTouchDependentFunctions()
         testHoverDependentFunctions()
-        testVisionFrameworkDependentFunctions()
+        await testVisionFrameworkDependentFunctions()
         testAccessibilityDependentFunctions()
         testColorEncodingDependentFunctions()
     }
