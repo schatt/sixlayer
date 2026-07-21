@@ -2182,10 +2182,14 @@ public struct CollectionEmptyStateView: View {
 
 extension View {
     /// Applies `accessibilityIdentifier` only when `identifier` is non-nil and non-empty.
+    /// Forces a leaf accessibility element so an outer `.named` / container id cannot
+    /// overwrite the hint id in the XCUI tree (#360).
     @ViewBuilder
     internal func sixLayerOptionalAccessibilityIdentifier(_ identifier: String?) -> some View {
         if let identifier, !identifier.isEmpty {
-            self.accessibilityIdentifier(identifier)
+            self
+                .accessibilityElement(children: .ignore)
+                .accessibilityIdentifier(identifier)
         } else {
             self
         }
