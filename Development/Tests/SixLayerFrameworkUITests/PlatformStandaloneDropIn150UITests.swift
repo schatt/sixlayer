@@ -11,9 +11,6 @@
 //
 
 import XCTest
-#if os(iOS)
-import UIKit
-#endif
 
 /// XCUITest for Issue #150 — binding propagation and user interaction on `StandaloneDropIn150HostView`.
 @MainActor
@@ -102,19 +99,6 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
         #endif
         field.typeText(text)
     }
-
-    #if os(iOS)
-    @MainActor
-    private func pasteIntoField(_ field: XCUIElement, _ text: String, file: StaticString = #filePath, line: UInt = #line) {
-        XCTAssertTrue(field.exists, "Field should exist before paste", file: file, line: line)
-        field.xcuiTapToBecomeFirstResponder()
-        UIPasteboard.general.string = text
-        field.press(forDuration: 1.2)
-        let paste = app.menuItems["Paste"]
-        XCTAssertTrue(paste.exists, "Paste menu item should appear", file: file, line: line)
-        paste.tap()
-    }
-    #endif
 
     // MARK: - Tests
 
@@ -215,13 +199,12 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
         let toggle = element(exactIdentifier: "SD150_Integration_Toggle")
         XCTAssertTrue(name.exists, "SD150_Integration_Name should exist")
         XCTAssertTrue(pass.exists, "SD150_Integration_Password should exist")
-        #if os(iOS)
-        pasteIntoField(name, "Pat")
-        focusAndType(pass, "secret")
-        app.xcuiDismissSoftwareKeyboardIfPresent()
-        #else
+        // `exactNamed` exposes a host-sentinel `.other` (#364); long-press Paste menus do not
+        // appear on that node (iOS 26). Use the same typeText path as other SD150 tests (#368).
         focusAndType(name, "Pat")
         focusAndType(pass, "secret")
+        #if os(iOS)
+        app.xcuiDismissSoftwareKeyboardIfPresent()
         #endif
         assertBindingMirrorContains("SD150_Mirror_IN", "Pat")
         assertBindingMirrorContains("SD150_Mirror_IN", "secret")
