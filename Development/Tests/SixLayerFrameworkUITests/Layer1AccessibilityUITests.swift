@@ -199,6 +199,10 @@ final class Layer1AccessibilityUITests: XCTestCase {
         case "Data Analysis":
             assertIdentifierContains("platformAnalyzeDataFrame_L1", context: "Data Analysis")
 
+        case "Barcode":
+            assertExactIdentifierExists("L1_Section_BarcodeScanning", context: "Barcode scanning section")
+            assertExactIdentifierExists("L1_Barcode_NoTestImage", context: "Barcode host without auto Vision scan")
+
         default:
             XCTFail("Unknown Layer1 category: \(category)")
         }
@@ -253,6 +257,13 @@ final class Layer1AccessibilityUITests: XCTestCase {
     func testLayer1_dataAnalysis_accessibilitySurfaces() throws {
         launchLayer1Category("Data Analysis")
         assertCategorySurfaces("Data Analysis")
+    }
+
+    @MainActor
+    func testLayer1_barcode_accessibilitySurfaces() throws {
+        // Thin land only — do not mount platformScanBarcode_L1 (.task Vision hang). Refs #369.
+        launchLayer1Category("Barcode")
+        assertCategorySurfaces("Barcode")
     }
 
     // MARK: - Card components (Issue #191)

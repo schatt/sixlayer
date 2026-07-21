@@ -395,41 +395,6 @@ open class BarcodeScanningUITests: BaseTestClass {
         #expect(emptyResult.hasBarcodes == false, "Empty result should have no barcodes")
     }
     
-    // MARK: - Layer 1 Semantic Function Tests
-    
-    @Test @MainActor func testPlatformScanBarcodeL1Function() async {
-        initializeTestConfig()
-        // TDD: platformScanBarcode_L1 should provide semantic barcode scanning interface
-        // 1. Should return a SwiftUI view
-        // 2. Should accept image and context
-        // 3. Should call onResult callback with barcode result
-        
-        // Note: We test the function signature and type, not the actual processing
-        // The view has a .task modifier that starts processing automatically,
-        // which can cause tests to hang. We verify the function exists and returns a view.
-        
-        let testImage = PlatformImage()
-        let context = BarcodeContext(
-            supportedBarcodeTypes: [.qrCode, .code128],
-            confidenceThreshold: 0.8
-        )
-        
-        // Verify function exists and can be called without hanging
-        // We don't host the view because it has .task that auto-starts processing
-        _ = platformScanBarcode_L1(
-            image: testImage,
-            context: context,
-            onResult: { _ in }
-        )
-        
-        // Just verify the function compiles and returns a view type
-        // Don't host the view to avoid triggering .task which hangs tests
-        #expect(Bool(true), "platformScanBarcode_L1 should return a view type")
-        
-        // Note: Actual barcode scanning would require real image processing
-        // This test verifies the interface is available and callable
-    }
-    
     // MARK: - Accessibility Tests
     
     @Test @MainActor func testBarcodeButtonHasAccessibilityLabels() async {
