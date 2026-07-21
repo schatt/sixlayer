@@ -675,9 +675,11 @@ final class Layer4UITests: XCTestCase {
         let openControl = element(matchingIdentifier: "L4ContractPhotoPickerOpen")
         XCTAssertTrue(openControl.exists, "platformPhotoPicker_L4: L4ContractPhotoPickerOpen must exist")
         tapByNormalizedCenter(openControl)
-        XCTAssertTrue(
-            waitForIdentifier("platformPhotoPicker_L4", timeout: 2.0),
-            "platformPhotoPicker_L4: picker subtree must expose contract a11y identifier"
+        _ = waitForIdentifier("platformPhotoPicker_L4", timeout: 2.5)
+        assertExactIdentifierExists(
+            "platformPhotoPicker_L4",
+            message: "platformPhotoPicker_L4: picker subtree must expose contract a11y identifier",
+            nearbyHint: "photoPicker"
         )
         let cancel = app.buttons["Cancel"].firstMatch
         if cancel.exists { cancel.tap() }
