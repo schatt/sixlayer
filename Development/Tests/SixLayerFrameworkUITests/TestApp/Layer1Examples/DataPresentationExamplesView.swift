@@ -13,7 +13,7 @@ import SixLayerFramework
 
 /// Examples of data presentation functions for Layer 1
 struct Layer1DataPresentationExamples: View {
-    /// `-L1Section=items|emptyItems|emptyWrap1|emptyWrap2|emptyWrap3|emptyWrap4|numeric|form|modal|media|hierarchical|temporal|content|settings|responsiveCard`
+    /// `-L1Section=items|emptyItems|emptyWrap1|emptyWrapExact1|emptyWrap2|emptyWrap3|emptyWrap4|numeric|form|modal|media|hierarchical|temporal|content|settings|responsiveCard`
     private var focusedSection: String? {
         guard let raw = ProcessInfo.processInfo.arguments
             .first(where: { $0.hasPrefix("-L1Section=") })?
@@ -78,6 +78,16 @@ struct Layer1DataPresentationExamples: View {
                 .accessibilityIdentifier("L1_Section_EmptyWrap1")
             ExampleSection(title: "Empty + .named (#360)") {
                 EmptyStateWrapperBisectNamedExamples()
+            }
+        }
+
+        if shows("emptyWrapExact1") {
+            Text("L1_Section_EmptyWrapExact1")
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+                .accessibilityIdentifier("L1_Section_EmptyWrapExact1")
+            ExampleSection(title: "Empty + .exactNamed (#364)") {
+                EmptyStateWrapperBisectExactNamedExamples()
             }
         }
 
