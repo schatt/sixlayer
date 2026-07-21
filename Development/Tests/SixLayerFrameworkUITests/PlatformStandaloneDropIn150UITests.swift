@@ -90,14 +90,42 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
         )
     }
 
+    /// Resolve the editable leaf when `field` is an `exactNamed` host sentinel (`.other`, #364).
+    /// The sentinel is a background sibling, not a parent of the TextField/SecureField/TextEditor.
+    @MainActor
+    private func editableControl(near hostOrField: XCUIElement) -> XCUIElement {
+        switch hostOrField.elementType {
+        case .textField, .secureTextField, .textView:
+            return hostOrField
+        default:
+            break
+        }
+        let token = hostOrField.identifier
+        guard !token.isEmpty else { return hostOrField }
+        let predicate = NSPredicate(
+            format: "identifier CONTAINS[c] %@ OR label CONTAINS[c] %@ OR placeholderValue CONTAINS[c] %@",
+            token, token, token
+        )
+        let textField = app.descendants(matching: .textField).matching(predicate).firstMatch
+        if textField.exists { return textField }
+        let secure = app.descendants(matching: .secureTextField).matching(predicate).firstMatch
+        if secure.exists { return secure }
+        let editor = app.descendants(matching: .textView).matching(predicate).firstMatch
+        if editor.exists { return editor }
+        return hostOrField
+    }
+
     @MainActor
     private func focusAndType(_ field: XCUIElement, _ text: String, file: StaticString = #filePath, line: UInt = #line) {
         XCTAssertTrue(field.exists, "Field should exist before typing", file: file, line: line)
-        field.xcuiTapToBecomeFirstResponder()
+        let target = editableControl(near: field)
+        XCTAssertTrue(target.exists, "Editable control near '\(field.identifier)' should exist", file: file, line: line)
+        target.xcuiTapToBecomeFirstResponder()
         #if os(iOS)
-        XCTAssertTrue(app.keyboards.firstMatch.exists, "Software keyboard should be visible before typeText", file: file, line: line)
+        // Software keyboard is often hidden when Connect Hardware Keyboard is on; typeText still works (#368).
+        _ = app.keyboards.firstMatch.waitForExistence(timeout: 1.0)
         #endif
-        field.typeText(text)
+        target.typeText(text)
     }
 
     // MARK: - Tests
@@ -184,7 +212,7 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
         let field = element(exactIdentifier: "SD150_TextField")
         XCTAssertTrue(field.exists, "SD150_TextField should exist")
         focusAndType(field, "a")
-        field.typeText("b")
+        editableControl(near: field).typeText("b")
         assertBindingMirrorContains("SD150_Mirror_T", "ab")
         #else
         throw XCTSkip("Issue #150 host UI tests require iOS or macOS TestApp")
