@@ -16,6 +16,8 @@ enum EmptyStateWrapperBisectIDs {
     static let createButton = "SixLayer.uitest.collectionEmpty.EmptyStateCreateButton"
     static let scrollHost = "SixLayer.uitest.collectionEmpty.scrollHost"
     static let namedComponent = "EmptyStateWrapperBisectHost"
+    /// Container id for `.exactNamed` overwrite proof (#364) — exact string, no framework prefix.
+    static let exactNamedComponent = "EmptyStateWrapperBisectExactHost"
 }
 
 private struct BisectEmptyItem: Identifiable {
@@ -62,6 +64,24 @@ struct EmptyStateWrapperBisectNamedExamples: View {
                 .font(.headline)
             emptyCollectionWithHintIds()
                 .named(EmptyStateWrapperBisectIDs.namedComponent)
+        }
+        .padding()
+        .background(Color.platformSecondaryBackground)
+        .cornerRadius(8)
+    }
+}
+
+// MARK: - ExactNamed container mirror of step 1 (#364)
+
+/// Same empty+hints surface as step 1, but wrapped with `.exactNamed` on the collection
+/// container. Proves nested hint ids stay queryable (host-sentinel parity with `.named`).
+struct EmptyStateWrapperBisectExactNamedExamples: View {
+    var body: some View {
+        platformVStack(alignment: .leading, spacing: 12) {
+            Text("Empty + hint ids + .exactNamed")
+                .font(.headline)
+            emptyCollectionWithHintIds()
+                .exactNamed(EmptyStateWrapperBisectIDs.exactNamedComponent)
         }
         .padding()
         .background(Color.platformSecondaryBackground)
