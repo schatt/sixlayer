@@ -2,7 +2,7 @@
 
 **Purpose**: Track planned upcoming work and future enhancements.  
 **Last Updated**: July 21, 2026  
-**Current Release**: v8.3.2
+**Current Release**: v8.3.3
 
 > **Note**: This roadmap tracks planned work. For active todos, see [`todos.md`](../todos.md). For release history, see [`RELEASES.md`](RELEASES.md).
 
@@ -10,7 +10,7 @@
 
 ## 📍 **Current Status**
 
-**Last Release**: v8.3.2 (prep on `next` — empty-state a11y #359/#360, present destination #358)
+**Last Release**: v8.3.3 (prep on `next` — ExactNamed host-sentinel #364)
 **Current Phase**: Patch Release
 **Next Phase**: Continue framework evolution and stability improvements
 
