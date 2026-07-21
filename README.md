@@ -27,7 +27,7 @@ Navigate to the `Framework/` directory and use it as a Swift Package:
 ```swift
 // In your Package.swift
 dependencies: [
-    .package(url: "https://github.com/schatt/sixlayer.git", from: "8.3.2")
+    .package(url: "https://github.com/schatt/sixlayer.git", from: "8.3.3")
 ]
 ```
 
@@ -41,9 +41,12 @@ dependencies: [
 
 The framework is distributed as a Swift Package from the `Framework/` directory. This ensures that only the essential framework code is included when other projects consume it.
 
-## 🆕 Latest Release: v8.3.2
+## 🆕 Latest Release: v8.3.3
 
 ### **Patch release**
+🔧 **Patch**: `.exactNamed` host-sentinel parity with `.named` (#364). See [RELEASE_v8.3.3.md](Development/RELEASE_v8.3.3.md).
+
+### **Previous Release: v8.3.2 - Patch release**
 🔧 **Patch**: Empty-state host-sentinel a11y (`accessibilityHostIdentifier`, #359/#360); `platformPresentDestination_L4` (#358). See [RELEASE_v8.3.2.md](Development/RELEASE_v8.3.2.md).
 
 ### **Previous Release: v8.3.0 - Minor release**
@@ -298,8 +301,8 @@ These guides contain critical information about the Layer 1 Semantic Intent phil
 
 ## 📋 Current Status
 
-**Version**: v8.3.2 (Patch)
-**Phase**: Patch release
+**Version**: v8.3.3 (Patch)
+**Phase**: Patch release (prep)
 **Next**: TBD
 
 ## 🤝 Contributing
