@@ -71,7 +71,7 @@ final class Layer4UITests: XCTestCase {
             app = existing
             let headerId = Self.l4SectionHeaderId(section)
             XCTAssertTrue(
-                element(matchingIdentifier: headerId).exists,
+                element(matchingIdentifier: headerId).waitForExistence(timeout: 8.0),
                 "L4 section '\(headerId)' should still exist (reused launch, -L4Section=\(section))"
             )
             return
@@ -90,15 +90,15 @@ final class Layer4UITests: XCTestCase {
         localApp.launchArguments.append("-OpenLayer4Examples")
         localApp.launchArguments.append("-L4Section=\(section)")
         localApp.launch()
-        Self.sharedApp = localApp
-        Self.sharedLaunchKey = key
         app = localApp
         XCTAssertEqual(localApp.state, .runningForeground, "L4 contract host should be foreground after launch")
         let headerId = Self.l4SectionHeaderId(section)
         XCTAssertTrue(
-            element(matchingIdentifier: headerId).exists,
+            element(matchingIdentifier: headerId).waitForExistence(timeout: 8.0),
             "L4 section '\(headerId)' should exist at launch (-L4Section=\(section))"
         )
+        Self.sharedApp = localApp
+        Self.sharedLaunchKey = key
     }
 
     @MainActor
@@ -128,7 +128,7 @@ final class Layer4UITests: XCTestCase {
                 tapByNormalizedCenter(closeSidebar)
             }
             XCTAssertTrue(
-                element(matchingIdentifier: "L4OverlayShowSidebar").exists,
+                element(matchingIdentifier: "L4OverlayShowSidebar").waitForExistence(timeout: 8.0),
                 "L4OverlayShowSidebar should exist (reused overlay host)"
             )
             return
@@ -146,14 +146,14 @@ final class Layer4UITests: XCTestCase {
         localApp.launchArguments.removeAll(where: { $0 == "-SkipAnimations" })
         localApp.launchArguments.append("-OpenLayer4OverlayAccessibility")
         localApp.launch()
-        Self.sharedApp = localApp
-        Self.sharedLaunchKey = key
         app = localApp
         XCTAssertEqual(localApp.state, .runningForeground, "Overlay host should be foreground after launch")
         XCTAssertTrue(
-            element(matchingIdentifier: "L4OverlayShowSidebar").exists,
+            element(matchingIdentifier: "L4OverlayShowSidebar").waitForExistence(timeout: 8.0),
             "L4OverlayShowSidebar should exist at launch (-OpenLayer4OverlayAccessibility)"
         )
+        Self.sharedApp = localApp
+        Self.sharedLaunchKey = key
     }
 
     @MainActor
