@@ -20,23 +20,29 @@ final class AccessibilityIdentifierCategoryAUITests: XCTestCase {
         continueAfterFailure = false
         addDefaultUIInterruptionMonitor()
 
-        if let existing = Self.sharedApp, existing.state == .runningForeground {
-            app = existing
-            return
-        }
+        nonisolated(unsafe) let instance = self
+        MainActor.assumeIsolated {
+            if let existing = Self.sharedApp, existing.state == .runningForeground {
+                instance.app = existing
+                return
+            }
 
-        let localApp = XCUIApplication()
-        localApp.configureForFastTesting()
-        // Full audit host — all sections mounted (no `-CatASection=`). Refs #374 / #316.
-        localApp.launchArguments.append("-OpenCategoryAAccessibility")
-        localApp.launch()
-        Self.sharedApp = localApp
-        app = localApp
-        XCTAssertEqual(localApp.state, .runningForeground, "CatA host should be foreground")
-        XCTAssertTrue(
-            element(matchingIdentifier: "CatA_Section_Title").waitForExistence(timeout: 2.5),
-            "CatA full host should expose CatA_Section_Title at launch (-OpenCategoryAAccessibility)"
-        )
+            let localApp = XCUIApplication()
+            localApp.configureForFastTesting()
+            // Full audit host — all sections mounted (no `-CatASection=`). Refs #374 / #316.
+            localApp.launchArguments.append("-OpenCategoryAAccessibility")
+            localApp.launch()
+            Self.sharedApp = localApp
+            instance.app = localApp
+            XCTAssertEqual(localApp.state, .runningForeground, "CatA host should be foreground")
+            XCTAssertTrue(
+                localApp.descendants(matching: .any)
+                    .matching(NSPredicate(format: "identifier == %@", "CatA_Section_Title"))
+                    .firstMatch
+                    .waitForExistence(timeout: 2.5),
+                "CatA full host should expose CatA_Section_Title at launch (-OpenCategoryAAccessibility)"
+            )
+        }
     }
 
     nonisolated override func tearDownWithError() throws {
