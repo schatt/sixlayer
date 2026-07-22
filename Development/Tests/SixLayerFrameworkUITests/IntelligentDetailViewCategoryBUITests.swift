@@ -74,13 +74,17 @@ final class IntelligentDetailViewCategoryBUITests: XCTestCase {
         super.tearDown()
     }
 
-    /// One XCUI query for exact text in label/value/title — avoids sequential wait ladders (#348 / #316).
+    /// One XCUI query for exact text — avoid broad CONTAINS over all descendants on macOS
+    /// (snapshot evaluation can hang for minutes — #370).
     @MainActor
     private func assertAccessibleTextExists(_ text: String, timeout: TimeInterval = 2.0, _ message: String) {
-        // Exact substring match in one query — IntelligentDetailView demotes labels on macOS (#316);
-        // avoid sequential wait ladders (#348). Keep strings short/known to limit CONTAINS cost.
+        // Prefer staticTexts exact match; IntelligentDetailView demotes labels on macOS (#316).
+        let staticMatch = app.staticTexts[text].firstMatch
+        if staticMatch.waitForExistence(timeout: timeout) {
+            return
+        }
         let pred = NSPredicate(
-            format: "label CONTAINS[c] %@ OR value CONTAINS[c] %@ OR title CONTAINS[c] %@",
+            format: "label ==[c] %@ OR value ==[c] %@ OR title ==[c] %@",
             text, text, text
         )
         XCTAssertTrue(
