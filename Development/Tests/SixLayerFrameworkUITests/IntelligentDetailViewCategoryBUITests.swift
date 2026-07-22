@@ -38,17 +38,23 @@ final class IntelligentDetailViewCategoryBUITests: XCTestCase {
                 instance.app = existing
                 return
             }
+            if let running = Self.sharedApp, running.state != .notRunning {
+                running.terminate()
+                _ = running.wait(for: .notRunning, timeout: 5)
+            }
+            Self.sharedApp = nil
+
             let localApp = XCUIApplication()
             localApp.configureForFastTesting()
             localApp.launchArguments.append("-OpenDetailViewCategoryB")
             localApp.launch()
-            Self.sharedApp = localApp
             instance.app = localApp
 
             XCTAssertTrue(
                 localApp.waitForHostRootIdentifier(Host.rootIdentifier),
                 "Category B host should appear with -OpenDetailViewCategoryB"
             )
+            Self.sharedApp = localApp
         }
     }
 
