@@ -41,17 +41,23 @@ final class Layer3AccessibilityUITests: XCTestCase {
                 instance.app = existing
                 return
             }
+            if let running = Self.sharedApp, running.state != .notRunning {
+                running.terminate()
+                _ = running.wait(for: .notRunning, timeout: 5)
+            }
+            Self.sharedApp = nil
+
             let localApp = XCUIApplication()
             localApp.configureForFastTesting()
             localApp.launchArguments.append("-OpenLayer3Examples")
             localApp.launch()
-            Self.sharedApp = localApp
             instance.app = localApp
 
             XCTAssertTrue(
                 localApp.waitForHostRootIdentifier("layer3-examples-host-root"),
                 "App should open Layer 3 Examples (-OpenLayer3Examples)"
             )
+            Self.sharedApp = localApp
         }
     }
     

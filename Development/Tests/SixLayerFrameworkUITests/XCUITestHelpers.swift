@@ -204,11 +204,14 @@ extension XCUIElement {
 extension XCUIApplication {
     /// Wait for a deep-linked host's stable root accessibility identifier (#348 / #316).
     /// Prefer this over navigationBar / staticText OR ladders — hosts must expose the marker.
-    /// Uses ``XCUIElement/elementMatchingExactIdentifier(_:)`` (inherited; do not redeclare it here —
-    /// XCUIApplication subclasses XCUIElement and cannot override non-@objc extension methods).
+    /// Uses an exact `identifier ==` predicate (same as CatA section waits) — the
+    /// `descendants[identifier]` subscript alone has been a weaker first-paint signal on macOS (#370).
     @discardableResult
-    func waitForHostRootIdentifier(_ identifier: String, timeout: TimeInterval = 2.5) -> Bool {
-        elementMatchingExactIdentifier(identifier).waitForExistence(timeout: timeout)
+    func waitForHostRootIdentifier(_ identifier: String, timeout: TimeInterval = 8.0) -> Bool {
+        descendants(matching: .any)
+            .matching(NSPredicate(format: "identifier == %@", identifier))
+            .firstMatch
+            .waitForExistence(timeout: timeout)
     }
 
     /// Runs compatibility-oriented checks on the **current** screen only (Issue #180).

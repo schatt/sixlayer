@@ -19,18 +19,36 @@ final class AccessibilityIdentifierCategoryAGlobalOffUITests: XCTestCase {
         addDefaultUIInterruptionMonitor()
 
         MainActor.assumeIsolated {
-            guard Self.sharedApp == nil else { return }
+            if let existing = Self.sharedApp, existing.state == .runningForeground {
+                return
+            }
+            if let running = Self.sharedApp, running.state != .notRunning {
+                running.terminate()
+                _ = running.wait(for: .notRunning, timeout: 5)
+            }
+            Self.sharedApp = nil
+
             let localApp = XCUIApplication()
             localApp.configureForFastTesting()
             localApp.launchArguments.append("-OpenCategoryAAccessibility")
             localApp.launchArguments.append("-CategoryAGlobalAutoOff")
             localApp.launch()
-            Self.sharedApp = localApp
             XCTAssertTrue(
-                localApp.waitForHostRootIdentifier("category-a-global-off-host-root"),
+                localApp.waitForHostRootIdentifier("category-a-global-off-host-root", timeout: 8.0),
                 "App should open Category A Global Off audit (launch args -OpenCategoryAAccessibility -CategoryAGlobalAutoOff)"
             )
+            // Assign only after host land succeeds — poisoned sharedApp skips relaunch (#370).
+            Self.sharedApp = localApp
         }
+    }
+
+    override class func tearDown() {
+        if let running = sharedApp, running.state != .notRunning {
+            running.terminate()
+            _ = running.wait(for: .notRunning, timeout: 5)
+        }
+        sharedApp = nil
+        super.tearDown()
     }
 
     private func anyElement(identifierContains substring: String) -> XCUIElement {

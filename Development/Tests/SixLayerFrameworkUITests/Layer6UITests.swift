@@ -14,7 +14,7 @@ import XCTest
 /// Uses launch argument -OpenLayer6Examples. One app launch for the suite (#373).
 @MainActor
 final class Layer6UITests: XCTestCase {
-    private nonisolated static let rootReadyTimeout: TimeInterval = 3.0
+    private nonisolated static let rootReadyTimeout: TimeInterval = 8.0
     private nonisolated static let quickWait: TimeInterval = 0.5
     nonisolated(unsafe) private var app: XCUIApplication!
 
@@ -29,11 +29,16 @@ final class Layer6UITests: XCTestCase {
             return
         }
 
+        if let running = Self.sharedApp, running.state != .notRunning {
+            running.terminate()
+            _ = running.wait(for: .notRunning, timeout: 5.0)
+        }
+        Self.sharedApp = nil
+
         let localApp = XCUIApplication()
         localApp.configureForFastTesting()
         localApp.launchArguments.append("-OpenLayer6Examples")
         localApp.launch()
-        Self.sharedApp = localApp
         app = localApp
         XCTAssertTrue(localApp.wait(for: .runningForeground, timeout: Self.rootReadyTimeout),
                       "App should reach foreground")
@@ -41,6 +46,7 @@ final class Layer6UITests: XCTestCase {
             localApp.waitForHostRootIdentifier("layer6-examples-host-root", timeout: Self.rootReadyTimeout),
             "App should open on Layer 6 Examples (launch arg)"
         )
+        Self.sharedApp = localApp
     }
 
     nonisolated override func tearDownWithError() throws {

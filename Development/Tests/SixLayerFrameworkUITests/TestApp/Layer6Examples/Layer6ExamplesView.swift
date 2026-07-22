@@ -264,11 +264,8 @@ struct Layer6CrossPlatformOnlyView: View {
     var body: some View {
         ScrollView {
             platformVStack(alignment: .leading, spacing: 24) {
-                // Exact XCUI land marker for `-OpenLayer6Examples` (#348 / #316).
-                Text("Layer 6 Examples")
-                    .font(.headline)
-                    .exactNamed("layer6-examples-host-root")
-                    .accessibilityLabel("Layer 6 Examples")
+                // Leaf land marker for `-OpenLayer6Examples` (#348 / #370).
+                uiTestHostLandMarker("layer6-examples-host-root", title: "Layer 6 Examples")
 
                 ExampleSection(title: "L6 modifier contract") {
                     L6ModifierContractSection(optimizationManager: optimizationManager)

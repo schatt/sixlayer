@@ -16,7 +16,6 @@ final class IntelligentDetailViewCategoryBUITests: XCTestCase {
     private enum Copy {
         static let defaultTitle = "Category B Item"
         static let defaultSubtitle = "Category B Subtitle"
-        static let customFieldPrefix = "Custom Field:"
         static let nilTitle = "Nil Item"
         static let nilDescription = "Nil Description"
     }
@@ -38,17 +37,23 @@ final class IntelligentDetailViewCategoryBUITests: XCTestCase {
                 instance.app = existing
                 return
             }
+            if let running = Self.sharedApp, running.state != .notRunning {
+                running.terminate()
+                _ = running.wait(for: .notRunning, timeout: 5)
+            }
+            Self.sharedApp = nil
+
             let localApp = XCUIApplication()
             localApp.configureForFastTesting()
             localApp.launchArguments.append("-OpenDetailViewCategoryB")
             localApp.launch()
-            Self.sharedApp = localApp
             instance.app = localApp
 
             XCTAssertTrue(
                 localApp.waitForHostRootIdentifier(Host.rootIdentifier),
                 "Category B host should appear with -OpenDetailViewCategoryB"
             )
+            Self.sharedApp = localApp
         }
     }
 
@@ -68,17 +73,19 @@ final class IntelligentDetailViewCategoryBUITests: XCTestCase {
         super.tearDown()
     }
 
-    /// One XCUI query for exact text in label/value/title — avoids sequential wait ladders (#348 / #316).
+    /// Prefer staticTexts with CONTAINS — avoid all-descendants CONTAINS (macOS snapshot hang #370).
     @MainActor
     private func assertAccessibleTextExists(_ text: String, timeout: TimeInterval = 2.0, _ message: String) {
-        // Exact substring match in one query — IntelligentDetailView demotes labels on macOS (#316);
-        // avoid sequential wait ladders (#348). Keep strings short/known to limit CONTAINS cost.
-        let pred = NSPredicate(
-            format: "label CONTAINS[c] %@ OR value CONTAINS[c] %@ OR title CONTAINS[c] %@",
-            text, text, text
+        let exact = app.staticTexts[text].firstMatch
+        if exact.waitForExistence(timeout: min(timeout, 1.0)) {
+            return
+        }
+        let contains = NSPredicate(
+            format: "label CONTAINS[c] %@ OR value CONTAINS[c] %@",
+            text, text
         )
         XCTAssertTrue(
-            app.descendants(matching: .any).matching(pred).firstMatch.waitForExistence(timeout: timeout),
+            app.staticTexts.matching(contains).firstMatch.waitForExistence(timeout: timeout),
             message
         )
     }
@@ -89,11 +96,16 @@ final class IntelligentDetailViewCategoryBUITests: XCTestCase {
     }
 
     func testCategoryB_customFieldView_showsCustomMarker() throws {
-        // IntelligentDetailView reparents customFieldView; literal ids are unreliable here.
-        // Assert visible marker text with the single-predicate helper (#348).
-        assertAccessibleTextExists(
-            Copy.customFieldPrefix,
-            "Custom field rendering should expose the custom marker text"
+        // IntelligentDetailView + automaticCompliance can demote customFieldView out of
+        // staticTexts on macOS; scoped all-descendants CONTAINS for this unique prefix is
+        // OK (broad CONTAINS on common titles hung — #370).
+        let pred = NSPredicate(
+            format: "label CONTAINS[c] %@ OR value CONTAINS[c] %@ OR identifier == %@",
+            "Custom Field:", "Custom Field:", "category-b-custom-field"
+        )
+        XCTAssertTrue(
+            app.descendants(matching: .any).matching(pred).firstMatch.waitForExistence(timeout: 8.0),
+            "Custom field rendering should expose 'Custom Field:' (label/value) or category-b-custom-field"
         )
     }
 

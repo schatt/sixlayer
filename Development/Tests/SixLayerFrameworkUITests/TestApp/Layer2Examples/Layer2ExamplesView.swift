@@ -15,13 +15,8 @@ struct Layer2ExamplesView: View {
     var body: some View {
         ScrollView {
             platformVStack(alignment: .leading, spacing: 24) {
-                // Exact XCUI land marker for `-OpenLayer2Examples` (#348).
-                // Use exactNamed so UITest integration does not rewrite the id; keep it
-                // outside automaticCompliance so a parent combine does not hide it.
-                Text("Layer 2 Examples")
-                    .font(.headline)
-                    .exactNamed("layer2-examples-host-root")
-                    .accessibilityLabel("Layer 2 Examples")
+                // Leaf land marker for `-OpenLayer2Examples` (#348 / #370).
+                uiTestHostLandMarker("layer2-examples-host-root", title: "Layer 2 Examples")
 
                 ExampleSection(title: "OCR Layout Decisions") {
                     OCRLayoutExamples()
