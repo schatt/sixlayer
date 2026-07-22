@@ -275,11 +275,13 @@ public struct VoiceOverEnabledView<Content: View>: View {
     }
     
     public var body: some View {
+        // Do not wrap with `.accessibilityElement(children: .contain)` or a fixed
+        // `.accessibilityLabel` — those collapse/replace the content's a11y identity and
+        // make outer `.exactNamed` host-sentinel ids unreadable via XCUI (`identifier` empty)
+        // while still matching the query (#371 / #364). Inject VO manager + compliance only,
+        // same shape as `keyboardNavigable` / `highContrastEnabled`.
         content()
             .environmentObject(voiceOverManager)
-            .accessibilityElement(children: .contain)
-            .accessibilityLabel("Enhanced accessibility view")
-            .accessibilityHint("This view has enhanced VoiceOver support")
             .automaticCompliance(identifierName: "voiceOverEnabled", identifierElementType: "View")
     }
 }
