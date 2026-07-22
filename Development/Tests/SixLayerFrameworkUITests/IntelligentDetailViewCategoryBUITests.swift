@@ -16,7 +16,6 @@ final class IntelligentDetailViewCategoryBUITests: XCTestCase {
     private enum Copy {
         static let defaultTitle = "Category B Item"
         static let defaultSubtitle = "Category B Subtitle"
-        static let customFieldPrefix = "Custom Field:"
         static let nilTitle = "Nil Item"
         static let nilDescription = "Nil Description"
     }
@@ -97,11 +96,14 @@ final class IntelligentDetailViewCategoryBUITests: XCTestCase {
     }
 
     func testCategoryB_customFieldView_showsCustomMarker() throws {
-        // IntelligentDetailView reparents customFieldView; literal ids are unreliable here.
-        // Assert visible marker text with the single-predicate helper (#348).
-        assertAccessibleTextExists(
-            Copy.customFieldPrefix,
-            "Custom field rendering should expose the custom marker text"
+        // IntelligentDetailView reparents customFieldView; assert the host's exactNamed land
+        // (text CONTAINS on staticTexts is unreliable for this reparented row on macOS — #316 / #370).
+        XCTAssertTrue(
+            app.descendants(matching: .any)
+                .matching(NSPredicate(format: "identifier == %@", "category-b-custom-field"))
+                .firstMatch
+                .waitForExistence(timeout: 8.0),
+            "Custom field rendering should expose exactNamed(category-b-custom-field)"
         )
     }
 
