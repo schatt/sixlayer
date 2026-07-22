@@ -37,17 +37,23 @@ final class Layer2AccessibilityUITests: XCTestCase {
                 instance.app = existing
                 return
             }
+            if let running = Self.sharedApp, running.state != .notRunning {
+                running.terminate()
+                _ = running.wait(for: .notRunning, timeout: 5)
+            }
+            Self.sharedApp = nil
+
             let localApp = XCUIApplication()
             localApp.configureForFastTesting()
             localApp.launchArguments.append(Host.openArg)
             localApp.launch()
-            Self.sharedApp = localApp
             instance.app = localApp
 
             XCTAssertTrue(
                 localApp.waitForHostRootIdentifier(Host.rootIdentifier),
                 "App should open Layer 2 Examples (\(Host.openArg))"
             )
+            Self.sharedApp = localApp
         }
     }
 
