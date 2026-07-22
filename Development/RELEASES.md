@@ -2,15 +2,15 @@
 
 ## 📍 **Current Release: v8.3.4** 🔧
 
-**Release Date**: TBD (prep)
-**Status**: Patch release (prep)
+**Release Date**: July 22, 2026
+**Status**: Patch release
 **Previous Release**: v8.3.3 - Patch release
 **Note**: XCUI host-land / one-launch sessions; Vision hang footguns (#366–#374).
 **Next Release**: TBD
 
 ---
 
-## 🎯 **v8.3.4 - XCUI reliability and Vision hang footguns** (TBD)
+## 🎯 **v8.3.4 - XCUI reliability and Vision hang footguns** (July 22, 2026)
 
 ### **What's in v8.3.4:**
 - Patch release (#366–#374). See [RELEASE_v8.3.4.md](RELEASE_v8.3.4.md) for details.
