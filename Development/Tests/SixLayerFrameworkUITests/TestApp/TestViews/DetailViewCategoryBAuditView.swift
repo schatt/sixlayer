@@ -46,11 +46,8 @@ struct DetailViewCategoryBAuditView: View {
     var body: some View {
         platformScrollViewContainer {
             platformVStack(alignment: .leading, spacing: 24) {
-                Text("Category B Detail Coverage")
-                    .font(.title2)
-                    .bold()
-                    .exactNamed("category-b-detail-host-root")
-                    .accessibilityLabel("Category B Detail Coverage")
+                // Leaf land marker (#370) — not exactNamed host-sentinel.
+                uiTestHostLandMarker("category-b-detail-host-root", title: "Category B Detail Coverage")
 
                 Text("Default IntelligentDetailView")
                     .font(.headline)
