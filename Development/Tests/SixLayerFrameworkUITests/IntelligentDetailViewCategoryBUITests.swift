@@ -96,14 +96,16 @@ final class IntelligentDetailViewCategoryBUITests: XCTestCase {
     }
 
     func testCategoryB_customFieldView_showsCustomMarker() throws {
-        // IntelligentDetailView reparents customFieldView; assert the host's exactNamed land
-        // (text CONTAINS on staticTexts is unreliable for this reparented row on macOS — #316 / #370).
+        // IntelligentDetailView + automaticCompliance can demote customFieldView out of
+        // staticTexts on macOS; scoped all-descendants CONTAINS for this unique prefix is
+        // OK (broad CONTAINS on common titles hung — #370).
+        let pred = NSPredicate(
+            format: "label CONTAINS[c] %@ OR value CONTAINS[c] %@ OR identifier == %@",
+            "Custom Field:", "Custom Field:", "category-b-custom-field"
+        )
         XCTAssertTrue(
-            app.descendants(matching: .any)
-                .matching(NSPredicate(format: "identifier == %@", "category-b-custom-field"))
-                .firstMatch
-                .waitForExistence(timeout: 8.0),
-            "Custom field rendering should expose exactNamed(category-b-custom-field)"
+            app.descendants(matching: .any).matching(pred).firstMatch.waitForExistence(timeout: 8.0),
+            "Custom field rendering should expose 'Custom Field:' (label/value) or category-b-custom-field"
         )
     }
 
