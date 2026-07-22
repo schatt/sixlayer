@@ -26,8 +26,10 @@ public enum PlatformContainerStructureAssertions {
     @MainActor
     public static func containsForm<V: View>(_ view: V) -> Bool {
         #if canImport(ViewInspector)
-        if let found = withInspectedView(AnyView(view), perform: { inspected in
-            inspected.findAll(ViewType.Form.self).isEmpty ? nil : true
+        // Successful inspection must decide here (including empty → false). Only fall through
+        // to UIKit when inspection itself fails (e.g. ViewInspector not usable for the view).
+        if let found = withInspectedView(AnyView(view), perform: { inspected -> Bool? in
+            !inspected.findAll(ViewType.Form.self).isEmpty
         }) {
             return found
         }
@@ -43,8 +45,8 @@ public enum PlatformContainerStructureAssertions {
     @MainActor
     public static func containsSection<V: View>(_ view: V) -> Bool {
         #if canImport(ViewInspector)
-        if let found = withInspectedView(AnyView(view), perform: { inspected in
-            inspected.findAll(ViewType.Section.self).isEmpty ? nil : true
+        if let found = withInspectedView(AnyView(view), perform: { inspected -> Bool? in
+            !inspected.findAll(ViewType.Section.self).isEmpty
         }) {
             return found
         }
@@ -63,7 +65,7 @@ public enum PlatformContainerStructureAssertions {
         if let result = withInspectedView(AnyView(view), perform: { inspected -> Bool? in
             let hasSection = !inspected.findAll(ViewType.Section.self).isEmpty
             let hasVStack = !inspected.findAll(ViewType.VStack.self).isEmpty
-            return (!hasSection && hasVStack) ? true : nil
+            return !hasSection && hasVStack
         }) {
             return result
         }
