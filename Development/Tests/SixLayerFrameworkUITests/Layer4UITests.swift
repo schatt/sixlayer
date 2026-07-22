@@ -91,7 +91,13 @@ final class Layer4UITests: XCTestCase {
         localApp.launchArguments.append("-L4Section=\(section)")
         localApp.launch()
         app = localApp
-        XCTAssertEqual(localApp.state, .runningForeground, "L4 contract host should be foreground after launch")
+        #if os(macOS)
+        localApp.activate()
+        #endif
+        XCTAssertTrue(
+            localApp.wait(for: .runningForeground, timeout: 8.0),
+            "L4 contract host should be foreground after launch"
+        )
         let headerId = Self.l4SectionHeaderId(section)
         XCTAssertTrue(
             element(matchingIdentifier: headerId).waitForExistence(timeout: 8.0),
@@ -147,7 +153,13 @@ final class Layer4UITests: XCTestCase {
         localApp.launchArguments.append("-OpenLayer4OverlayAccessibility")
         localApp.launch()
         app = localApp
-        XCTAssertEqual(localApp.state, .runningForeground, "Overlay host should be foreground after launch")
+        #if os(macOS)
+        localApp.activate()
+        #endif
+        XCTAssertTrue(
+            localApp.wait(for: .runningForeground, timeout: 8.0),
+            "Overlay host should be foreground after launch"
+        )
         XCTAssertTrue(
             element(matchingIdentifier: "L4OverlayShowSidebar").waitForExistence(timeout: 8.0),
             "L4OverlayShowSidebar should exist at launch (-OpenLayer4OverlayAccessibility)"
