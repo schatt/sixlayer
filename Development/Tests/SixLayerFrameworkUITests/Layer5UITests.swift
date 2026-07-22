@@ -16,7 +16,7 @@ import XCTest
 /// Uses launch argument -OpenLayer5Accessibility. One app launch for the suite (#373).
 @MainActor
 final class Layer5UITests: XCTestCase {
-    private nonisolated static let rootReadyTimeout: TimeInterval = 3.0
+    private nonisolated static let rootReadyTimeout: TimeInterval = 8.0
     private nonisolated static let quickWait: TimeInterval = 0.5
     nonisolated(unsafe) private var app: XCUIApplication!
 
@@ -31,11 +31,16 @@ final class Layer5UITests: XCTestCase {
             return
         }
 
+        if let running = Self.sharedApp, running.state != .notRunning {
+            running.terminate()
+            _ = running.wait(for: .notRunning, timeout: 5.0)
+        }
+        Self.sharedApp = nil
+
         let localApp = XCUIApplication()
         localApp.configureForFastTesting()
         localApp.launchArguments.append("-OpenLayer5Accessibility")
         localApp.launch()
-        Self.sharedApp = localApp
         app = localApp
         XCTAssertTrue(localApp.wait(for: .runningForeground, timeout: Self.rootReadyTimeout),
                       "App should reach foreground")
@@ -43,6 +48,8 @@ final class Layer5UITests: XCTestCase {
             localApp.waitForHostRootIdentifier("layer5-examples-host-root", timeout: Self.rootReadyTimeout),
             "App should open on Layer 5 Examples (launch arg)"
         )
+        // Assign only after host land succeeds (#370).
+        Self.sharedApp = localApp
     }
 
     nonisolated override func tearDownWithError() throws {
