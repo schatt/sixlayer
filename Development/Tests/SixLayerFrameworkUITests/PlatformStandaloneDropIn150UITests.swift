@@ -74,7 +74,13 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
         localApp.launchArguments.append("-SD150Section=\(section)")
         localApp.launch()
         app = localApp
-        XCTAssertEqual(localApp.state, .runningForeground, "SD150 host should be foreground after launch")
+        #if os(macOS)
+        localApp.activate()
+        #endif
+        XCTAssertTrue(
+            localApp.wait(for: .runningForeground, timeout: 8.0),
+            "SD150 host should be foreground after launch"
+        )
 
         let sectionId = Self.sectionIdentifier(section)
         XCTAssertTrue(
