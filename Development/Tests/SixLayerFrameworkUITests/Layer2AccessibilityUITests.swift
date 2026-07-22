@@ -6,6 +6,7 @@
 //  Implements Issue #167: Complete accessibility for Layer 2 platform* methods
 //
 //  #348 / #316: deep-link via `-OpenLayer2Examples` — no launch-menu navigation.
+//  #374: one shared app process for the class (same launch args every method).
 //
 //  Note: Layer 2 functions return data structures (OCRLayout), not Views.
 //  We test the example views that use these functions.
@@ -24,6 +25,7 @@ final class Layer2AccessibilityUITests: XCTestCase {
     }
 
     var app: XCUIApplication!
+    private static var sharedApp: XCUIApplication?
 
     nonisolated override func setUpWithError() throws {
         continueAfterFailure = false
@@ -31,10 +33,15 @@ final class Layer2AccessibilityUITests: XCTestCase {
 
         nonisolated(unsafe) let instance = self
         MainActor.assumeIsolated {
+            if let existing = Self.sharedApp, existing.state == .runningForeground {
+                instance.app = existing
+                return
+            }
             let localApp = XCUIApplication()
             localApp.configureForFastTesting()
             localApp.launchArguments.append(Host.openArg)
             localApp.launch()
+            Self.sharedApp = localApp
             instance.app = localApp
 
             XCTAssertTrue(
@@ -49,6 +56,15 @@ final class Layer2AccessibilityUITests: XCTestCase {
         MainActor.assumeIsolated {
             instance.app = nil
         }
+    }
+
+    override class func tearDown() {
+        if let running = sharedApp, running.state != .notRunning {
+            running.terminate()
+            _ = running.wait(for: .notRunning, timeout: 5)
+        }
+        sharedApp = nil
+        super.tearDown()
     }
 
     @MainActor
