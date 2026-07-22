@@ -65,9 +65,12 @@ final class Layer4UITests: XCTestCase {
     @MainActor
     private func launchL4Contract(section: String) {
         let key = "OpenLayer4Examples|L4Section=\(section)|noSkipAnimations"
-        if let existing = Self.sharedApp,
-           existing.state == .runningForeground,
-           Self.sharedLaunchKey == key {
+        // Navigation tests push destinations and leave the section land off-screen — always
+        // fresh launch for that section (single path; no try-reuse-then-relaunch ladder) (#370).
+        let canReuse = section != "navigation"
+            && Self.sharedApp?.state == .runningForeground
+            && Self.sharedLaunchKey == key
+        if canReuse, let existing = Self.sharedApp {
             app = existing
             let headerId = Self.l4SectionHeaderId(section)
             XCTAssertTrue(
