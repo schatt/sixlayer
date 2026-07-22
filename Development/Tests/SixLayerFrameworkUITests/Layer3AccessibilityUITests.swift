@@ -22,9 +22,11 @@ import XCTest
 /// XCUITest tests for Layer 3 accessibility features
 /// Verifies all 7 Layer 3 functions have example views with complete accessibility support
 /// #348 / #316: deep-link via `-OpenLayer3Examples`; land on `layer3-examples-host-root`.
+/// #374: one shared app process for the class.
 @MainActor
 final class Layer3AccessibilityUITests: XCTestCase {
     var app: XCUIApplication!
+    private static var sharedApp: XCUIApplication?
     
     nonisolated override func setUpWithError() throws {
         continueAfterFailure = false
@@ -32,13 +34,18 @@ final class Layer3AccessibilityUITests: XCTestCase {
         // Add UI interruption monitors to dismiss system dialogs quickly
         addDefaultUIInterruptionMonitor()
 
-        // Launch directly on Layer 3 examples (#316 / #348).
+        // Launch directly on Layer 3 examples (#316 / #348); reuse session (#374).
         nonisolated(unsafe) let instance = self
         MainActor.assumeIsolated {
+            if let existing = Self.sharedApp, existing.state == .runningForeground {
+                instance.app = existing
+                return
+            }
             let localApp = XCUIApplication()
             localApp.configureForFastTesting()
             localApp.launchArguments.append("-OpenLayer3Examples")
             localApp.launch()
+            Self.sharedApp = localApp
             instance.app = localApp
 
             XCTAssertTrue(
@@ -53,6 +60,15 @@ final class Layer3AccessibilityUITests: XCTestCase {
         MainActor.assumeIsolated {
             instance.app = nil
         }
+    }
+
+    override class func tearDown() {
+        if let running = sharedApp, running.state != .notRunning {
+            running.terminate()
+            _ = running.wait(for: .notRunning, timeout: 5)
+        }
+        sharedApp = nil
+        super.tearDown()
     }
     
     // MARK: - Helper Methods
