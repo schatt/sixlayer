@@ -4,7 +4,9 @@
 //
 //  Issue #197: Category A — accessibility identifier scenarios assertable via XCUITest
 //  (unicode, nested named, manual-only, special chars, long names).
-//  #316: `-OpenCategoryAAccessibility` + `-CatASection=…`; no sharedApp; no scroll discovery.
+//  #316: deep-link via `-OpenCategoryAAccessibility` (no launch-menu navigation).
+//  #374: one full-host launch (no per-test `-CatASection=`); assert exact/CONTAINS ids only —
+//  no scroll-as-discovery.
 //
 
 import XCTest
@@ -12,58 +14,49 @@ import XCTest
 @MainActor
 final class AccessibilityIdentifierCategoryAUITests: XCTestCase {
     nonisolated(unsafe) private var app: XCUIApplication!
+    nonisolated(unsafe) private static var sharedApp: XCUIApplication?
 
     nonisolated override func setUpWithError() throws {
         continueAfterFailure = false
         addDefaultUIInterruptionMonitor()
-        // No launch — each test deep-links its section (#316).
+
+        nonisolated(unsafe) let instance = self
+        MainActor.assumeIsolated {
+            if let existing = Self.sharedApp, existing.state == .runningForeground {
+                instance.app = existing
+                return
+            }
+
+            let localApp = XCUIApplication()
+            localApp.configureForFastTesting()
+            // Full audit host — all sections mounted (no `-CatASection=`). Refs #374 / #316.
+            localApp.launchArguments.append("-OpenCategoryAAccessibility")
+            localApp.launch()
+            Self.sharedApp = localApp
+            instance.app = localApp
+            XCTAssertEqual(localApp.state, .runningForeground, "CatA host should be foreground")
+            XCTAssertTrue(
+                localApp.descendants(matching: .any)
+                    .matching(NSPredicate(format: "identifier == %@", "CatA_Section_Title"))
+                    .firstMatch
+                    .waitForExistence(timeout: 2.5),
+                "CatA full host should expose CatA_Section_Title at launch (-OpenCategoryAAccessibility)"
+            )
+        }
     }
 
     nonisolated override func tearDownWithError() throws {
-        if let running = app, running.state != .notRunning {
-            running.terminate()
-            _ = running.wait(for: .notRunning, timeout: 5)
-        }
         app = nil
         try super.tearDownWithError()
     }
 
-    private static func sectionMarkerId(_ section: String) -> String {
-        switch section {
-        case "title": return "CatA_Section_Title"
-        case "label": return "CatA_Section_Label"
-        case "wrapper": return "CatA_Section_Wrapper"
-        case "unicode": return "CatA_Section_Unicode"
-        case "nested": return "CatA_Section_Nested"
-        case "manual": return "CatA_Section_Manual"
-        case "special": return "CatA_Section_Special"
-        case "long": return "CatA_Section_Long"
-        case "exact": return "CatA_Section_Exact"
-        case "empty": return "CatA_Section_Empty"
-        case "mid": return "CatA_Section_Mid"
-        case "disable": return "CatA_Section_Disable"
-        default:
-            preconditionFailure("Unknown CatA section: \(section)")
-        }
-    }
-
-    @MainActor
-    private func launchCatA(section: String) {
-        if let running = app, running.state != .notRunning {
+    override class func tearDown() {
+        if let running = sharedApp, running.state != .notRunning {
             running.terminate()
+            _ = running.wait(for: .notRunning, timeout: 5)
         }
-        let localApp = XCUIApplication()
-        localApp.configureForFastTesting()
-        localApp.launchArguments.append("-OpenCategoryAAccessibility")
-        localApp.launchArguments.append("-CatASection=\(section)")
-        localApp.launch()
-        app = localApp
-        XCTAssertEqual(localApp.state, .runningForeground, "CatA host should be foreground")
-        let marker = Self.sectionMarkerId(section)
-        XCTAssertTrue(
-            element(matchingIdentifier: marker).exists,
-            "CatA section '\(marker)' should exist at launch (-CatASection=\(section))"
-        )
+        sharedApp = nil
+        super.tearDown()
     }
 
     @MainActor
@@ -88,8 +81,16 @@ final class AccessibilityIdentifierCategoryAUITests: XCTestCase {
         )
     }
 
+    @MainActor
+    private func assertSectionPresent(_ sectionMarker: String) {
+        XCTAssertTrue(
+            element(matchingIdentifier: sectionMarker).exists,
+            "CatA full host should expose section marker '\(sectionMarker)'"
+        )
+    }
+
     func testCategoryA_unicodeText_hasAccessibilityIdentifier() throws {
-        launchCatA(section: "unicode")
+        assertSectionPresent("CatA_Section_Unicode")
         XCTAssertTrue(
             anyElement(identifierContains: "CatAUnicodeText").exists,
             "Unicode identifier name should appear in runtime accessibility identifier (Category A)"
@@ -97,7 +98,7 @@ final class AccessibilityIdentifierCategoryAUITests: XCTestCase {
     }
 
     func testCategoryA_nestedNamed_outerAndInner_haveIdentifiers() throws {
-        launchCatA(section: "nested")
+        assertSectionPresent("CatA_Section_Nested")
         XCTAssertTrue(
             anyElement(identifierContains: "CatANestedOuter").exists,
             "Outer named component should contribute to identifier"
@@ -109,15 +110,15 @@ final class AccessibilityIdentifierCategoryAUITests: XCTestCase {
     }
 
     func testCategoryA_manualOnlyStaticText_exactIdentifier() throws {
-        launchCatA(section: "manual")
+        assertSectionPresent("CatA_Section_Manual")
         XCTAssertTrue(
             anyElement(identifierContains: "CatA_ManualOnly_StaticText").exists,
-            "Manual-only id (platformButton id:) should appear at section launch"
+            "Manual-only id (platformButton id:) should appear on full CatA host"
         )
     }
 
     func testCategoryA_specialCharsInLabel_hasIdentifier() throws {
-        launchCatA(section: "special")
+        assertSectionPresent("CatA_Section_Special")
         XCTAssertTrue(
             anyElement(identifierContains: "CatASpecialChars").exists,
             "Special characters in label should still yield a stable identifier substring"
@@ -125,7 +126,7 @@ final class AccessibilityIdentifierCategoryAUITests: XCTestCase {
     }
 
     func testCategoryA_longIdentifierName_hasStablePrefixInIdentifier() throws {
-        launchCatA(section: "long")
+        assertSectionPresent("CatA_Section_Long")
         XCTAssertTrue(
             anyElement(identifierContains: "CatALong").exists,
             "Long identifier name should be represented in accessibility identifier (sanitized prefix)"
@@ -133,7 +134,7 @@ final class AccessibilityIdentifierCategoryAUITests: XCTestCase {
     }
 
     func testCategoryA_auditTitle_namedComponent() throws {
-        launchCatA(section: "title")
+        assertSectionPresent("CatA_Section_Title")
         XCTAssertTrue(
             anyElement(identifierContains: "CatAAuditTitle").exists,
             "Headline named title should expose identifier for UITest"
@@ -141,7 +142,7 @@ final class AccessibilityIdentifierCategoryAUITests: XCTestCase {
     }
 
     func testCategoryA_exactNamed_minimalIdentifier() throws {
-        launchCatA(section: "exact")
+        assertSectionPresent("CatA_Section_Exact")
         XCTAssertTrue(
             element(matchingIdentifier: "CatAExactNamed").exists,
             "exactNamed should set identifier to the literal name (no SixLayer prefix)"
@@ -149,7 +150,7 @@ final class AccessibilityIdentifierCategoryAUITests: XCTestCase {
     }
 
     func testCategoryA_accessibilityLabel_parameter_surfacesInLabel() throws {
-        launchCatA(section: "label")
+        assertSectionPresent("CatA_Section_Label")
         let el = anyElement(identifierContains: "CatALabelAndId")
         XCTAssertTrue(el.exists, "identifier should still include CatALabelAndId when accessibilityLabel is set")
         let text = el.xcuiAccessibleText
@@ -160,7 +161,7 @@ final class AccessibilityIdentifierCategoryAUITests: XCTestCase {
     }
 
     func testCategoryA_manualOnOuterGroup_overridesWrapper() throws {
-        launchCatA(section: "wrapper")
+        assertSectionPresent("CatA_Section_Wrapper")
         XCTAssertTrue(
             anyElement(identifierContains: "CatAManualWinsOnOuter").exists,
             "outer Group accessibilityIdentifier should be findable (manual override on wrapper)"
@@ -168,7 +169,7 @@ final class AccessibilityIdentifierCategoryAUITests: XCTestCase {
     }
 
     func testCategoryA_emptyIdentifierName_sanitizedLabelInIdentifier() throws {
-        launchCatA(section: "empty")
+        assertSectionPresent("CatA_Section_Empty")
         XCTAssertTrue(
             anyElement(identifierContains: "empty-name-row").exists,
             "Empty identifierName should still include sanitized identifierLabel in generated identifier"
@@ -176,7 +177,7 @@ final class AccessibilityIdentifierCategoryAUITests: XCTestCase {
     }
 
     func testCategoryA_midHierarchy_autoSiblingAndOptOut_identifiersPresent() throws {
-        launchCatA(section: "mid")
+        assertSectionPresent("CatA_Section_Mid")
         XCTAssertTrue(
             anyElement(identifierContains: "CatAMidAutoSibling").exists,
             "Named basicAutomaticCompliance row should expose identifier substring"
@@ -188,7 +189,7 @@ final class AccessibilityIdentifierCategoryAUITests: XCTestCase {
     }
 
     func testCategoryA_disableAutomatic_localSubtree_skipsBasicAutomaticIdentifier() throws {
-        launchCatA(section: "disable")
+        assertSectionPresent("CatA_Section_Disable")
         XCTAssertTrue(
             anyElement(identifierContains: "CatADisableMid_AutoPresent").exists,
             "Row outside disable wrapper should still expose basicAutomaticCompliance identifier"
