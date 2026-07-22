@@ -11,6 +11,7 @@ This document provides guidance for AI assistants working with the SixLayer Fram
 ## 📚 Version-Specific Guides
 
 ### Latest Versions (Recommended)
+- **v8.3.4** — Patch release: XCUI host-land / one-launch sessions; Vision hang footguns (#366–#374) (see [RELEASE_v8.3.4.md](RELEASE_v8.3.4.md))
 - **v8.3.3** — Patch release: ExactNamedModifier host-sentinel (#364) (see [RELEASE_v8.3.3.md](RELEASE_v8.3.3.md))
 - **v8.3.2** — Patch release: empty-state host-sentinel a11y (#359/#360); `platformPresentDestination_L4` (#358) (see [RELEASE_v8.3.2.md](RELEASE_v8.3.2.md))
 - **v8.3.0** — Minor release: toolbar action packing (#352); tvOS/watchOS/visionOS AllTests runtime (#318–#320) (see [RELEASE_v8.3.0.md](RELEASE_v8.3.0.md))

@@ -1,12 +1,21 @@
 # 🚀 Six-Layer Framework Release History
 
-## 📍 **Current Release: v8.3.3** 🔧
+## 📍 **Current Release: v8.3.4** 🔧
 
-**Release Date**: July 21, 2026
-**Status**: Patch release
-**Previous Release**: v8.3.2 - Patch release
-**Note**: ExactNamedModifier host-sentinel (#364).
+**Release Date**: TBD (prep)
+**Status**: Patch release (prep)
+**Previous Release**: v8.3.3 - Patch release
+**Note**: XCUI host-land / one-launch sessions; Vision hang footguns (#366–#374).
 **Next Release**: TBD
+
+---
+
+## 🎯 **v8.3.4 - XCUI reliability and Vision hang footguns** (TBD)
+
+### **What's in v8.3.4:**
+- Patch release (#366–#374). See [RELEASE_v8.3.4.md](RELEASE_v8.3.4.md) for details.
+
+**See [RELEASE_v8.3.4.md](RELEASE_v8.3.4.md) for complete release notes.**
 
 ---
 
