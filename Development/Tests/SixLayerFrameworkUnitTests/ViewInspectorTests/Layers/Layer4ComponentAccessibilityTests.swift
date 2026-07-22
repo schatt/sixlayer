@@ -269,12 +269,10 @@ open class Layer4ComponentAccessibilityTests: BaseTestClass {
         #expect(hostedView != nil, "platformSheet with nil item binding should still create view")
     }
     
-    // NOTE: testPlatformNavigationGeneratesAccessibilityIdentifiers moved to UI tests
-    // NavigationStack/NavigationView cannot be reliably tested in unit tests because:
-    // 1. ViewInspector's inspect() hangs indefinitely on NavigationStack/NavigationView
-    // 2. hostRootPlatformView()'s layoutIfNeeded() hangs when hosting NavigationStack/NavigationView
-    // 3. Navigation views require a proper window/view hierarchy to initialize correctly
-    // See: Development/Tests/SixLayerFrameworkUITests/Features/Navigation/NavigationLayer4Tests.swift
+    // NOTE: Do not host/inspect NavigationStack/NavigationView in unit/VI — they hang
+    // (ViewInspector + hosting.view / layoutIfNeeded). Navigation Layer 4 behavior coverage:
+    // `Layer4UITests` + TestApp Layer4/L1 navigation hosts. Do not reintroduce
+    // `hostRootPlatformView` / `inspect()` of stack wrappers here. Refs #369.
     
     @Test @MainActor func testPlatformCardGridGeneratesAccessibilityIdentifiers() async {
         // Given: Test card items

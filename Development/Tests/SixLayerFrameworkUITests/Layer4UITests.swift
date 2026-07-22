@@ -5,30 +5,43 @@
 //  Layer 4 (Component) UI tests: one test method per L4 component.
 //  #316: deep-link via `-OpenLayer4Examples` + `-L4Section=…` (or overlay-only host).
 //  No scroll-as-discovery; exact accessibilityIdentifier queries; `.exists` (fail-fast).
+//  #372: reuse the app process when the deep-link launch-arg key matches the previous test
+//  (XCTestCase is per-method — session is static). Relaunch only when the key changes.
 //
 
 import XCTest
 @testable import SixLayerFramework
 
 /// Layer 4 component tests: one test per L4 API. Contract = full contract (behavior, structure, a11y).
-/// Each test launches its own `XCUIApplication` so parallel/random ordering stays isolated.
+/// Deep-link launch args isolate hosts; process is reused across methods that share the same key (#372).
 @MainActor
 final class Layer4UITests: XCTestCase {
     nonisolated(unsafe) private var app: XCUIApplication!
 
+    /// Per-process session (instances are per test method).
+    nonisolated(unsafe) private static var sharedApp: XCUIApplication?
+    nonisolated(unsafe) private static var sharedLaunchKey: String?
+
     nonisolated override func setUpWithError() throws {
         continueAfterFailure = false
         addDefaultUIInterruptionMonitor()
-        // No launch here — each test deep-links its section (#316).
+        // No launch here — each test deep-links its section (#316); may reuse session (#372).
     }
 
     nonisolated override func tearDownWithError() throws {
-        if let runningApp = app, runningApp.state != .notRunning {
-            runningApp.terminate()
-            _ = runningApp.wait(for: .notRunning, timeout: 5)
-        }
+        // Keep shared session alive for the next method with the same launch key (#372).
         app = nil
         try super.tearDownWithError()
+    }
+
+    override class func tearDown() {
+        if let running = sharedApp, running.state != .notRunning {
+            running.terminate()
+            _ = running.wait(for: .notRunning, timeout: 5)
+        }
+        sharedApp = nil
+        sharedLaunchKey = nil
+        super.tearDown()
     }
 
     private static func l4ContractIdentifier(sanitizedName: String, elementType: String) -> String {
@@ -51,9 +64,29 @@ final class Layer4UITests: XCTestCase {
 
     @MainActor
     private func launchL4Contract(section: String) {
-        if let running = app, running.state != .notRunning {
-            running.terminate()
+        let key = "OpenLayer4Examples|L4Section=\(section)|noSkipAnimations"
+        // Navigation tests push destinations and leave the section land off-screen — always
+        // fresh launch for that section (single path; no try-reuse-then-relaunch ladder) (#370).
+        let canReuse = section != "navigation"
+            && Self.sharedApp?.state == .runningForeground
+            && Self.sharedLaunchKey == key
+        if canReuse, let existing = Self.sharedApp {
+            app = existing
+            let headerId = Self.l4SectionHeaderId(section)
+            XCTAssertTrue(
+                element(matchingIdentifier: headerId).waitForExistence(timeout: 8.0),
+                "L4 section '\(headerId)' should still exist (reused launch, -L4Section=\(section))"
+            )
+            return
         }
+
+        if let running = Self.sharedApp, running.state != .notRunning {
+            running.terminate()
+            _ = running.wait(for: .notRunning, timeout: 5)
+        }
+        Self.sharedApp = nil
+        Self.sharedLaunchKey = nil
+
         let localApp = XCUIApplication()
         localApp.configureForFastTesting()
         localApp.launchArguments.removeAll(where: { $0 == "-SkipAnimations" })
@@ -61,12 +94,20 @@ final class Layer4UITests: XCTestCase {
         localApp.launchArguments.append("-L4Section=\(section)")
         localApp.launch()
         app = localApp
-        XCTAssertEqual(localApp.state, .runningForeground, "L4 contract host should be foreground after launch")
+        #if os(macOS)
+        localApp.activate()
+        #endif
+        XCTAssertTrue(
+            localApp.wait(for: .runningForeground, timeout: 8.0),
+            "L4 contract host should be foreground after launch"
+        )
         let headerId = Self.l4SectionHeaderId(section)
         XCTAssertTrue(
-            element(matchingIdentifier: headerId).exists,
+            element(matchingIdentifier: headerId).waitForExistence(timeout: 8.0),
             "L4 section '\(headerId)' should exist at launch (-L4Section=\(section))"
         )
+        Self.sharedApp = localApp
+        Self.sharedLaunchKey = key
     }
 
     @MainActor
@@ -85,20 +126,49 @@ final class Layer4UITests: XCTestCase {
 
     @MainActor
     private func launchOverlayAccessibilityHost() {
-        if let running = app, running.state != .notRunning {
-            running.terminate()
+        let key = "OpenLayer4OverlayAccessibility|noSkipAnimations"
+        if let existing = Self.sharedApp,
+           existing.state == .runningForeground,
+           Self.sharedLaunchKey == key {
+            app = existing
+            // Prior overlay tests may leave the sidebar open — reset to dismissed.
+            let closeSidebar = element(matchingIdentifier: "L4OverlayCloseSidebar")
+            if closeSidebar.exists {
+                tapByNormalizedCenter(closeSidebar)
+            }
+            XCTAssertTrue(
+                element(matchingIdentifier: "L4OverlayShowSidebar").waitForExistence(timeout: 8.0),
+                "L4OverlayShowSidebar should exist (reused overlay host)"
+            )
+            return
         }
+
+        if let running = Self.sharedApp, running.state != .notRunning {
+            running.terminate()
+            _ = running.wait(for: .notRunning, timeout: 5)
+        }
+        Self.sharedApp = nil
+        Self.sharedLaunchKey = nil
+
         let localApp = XCUIApplication()
         localApp.configureForFastTesting()
         localApp.launchArguments.removeAll(where: { $0 == "-SkipAnimations" })
         localApp.launchArguments.append("-OpenLayer4OverlayAccessibility")
         localApp.launch()
         app = localApp
-        XCTAssertEqual(localApp.state, .runningForeground, "Overlay host should be foreground after launch")
+        #if os(macOS)
+        localApp.activate()
+        #endif
         XCTAssertTrue(
-            element(matchingIdentifier: "L4OverlayShowSidebar").exists,
+            localApp.wait(for: .runningForeground, timeout: 8.0),
+            "Overlay host should be foreground after launch"
+        )
+        XCTAssertTrue(
+            element(matchingIdentifier: "L4OverlayShowSidebar").waitForExistence(timeout: 8.0),
             "L4OverlayShowSidebar should exist at launch (-OpenLayer4OverlayAccessibility)"
         )
+        Self.sharedApp = localApp
+        Self.sharedLaunchKey = key
     }
 
     @MainActor
@@ -672,13 +742,14 @@ final class Layer4UITests: XCTestCase {
     @MainActor
     func testL4_platformPhotoPicker_L4() throws {
         launchL4Contract(section: "system")
-        let openControl = element(matchingIdentifier: "L4ContractPhotoPickerOpen")
-        XCTAssertTrue(openControl.exists, "platformPhotoPicker_L4: L4ContractPhotoPickerOpen must exist")
-        tapByNormalizedCenter(openControl)
-        XCTAssertTrue(
-            waitForIdentifier("platformPhotoPicker_L4", timeout: 2.0),
-            "platformPhotoPicker_L4: picker subtree must expose contract a11y identifier"
+        // Host mounts under -UITesting without requiring Button/@State (iOS 26 Form; #368).
+        assertExactIdentifierExists(
+            "platformPhotoPicker_L4",
+            message: "platformPhotoPicker_L4: picker subtree must expose contract a11y identifier",
+            nearbyHint: "photoPicker"
         )
+        XCTAssertTrue(element(matchingIdentifier: "L4ContractPhotoPickerOpen").exists,
+                      "platformPhotoPicker_L4: L4ContractPhotoPickerOpen must remain available")
         let cancel = app.buttons["Cancel"].firstMatch
         if cancel.exists { cancel.tap() }
         XCTAssertTrue(element(matchingIdentifier: "L4ContractPhotoPickerOpen").exists,

@@ -7,6 +7,7 @@
 //
 //  #316: deep-link via `-OpenLayer1Category=…` + optional `-L1Section=…` —
 //  no UI Test Views home, no swipe discovery, no OR-fallback query chains.
+//  #372: reuse the app process when category/section launch-arg key matches.
 //
 
 import XCTest
@@ -17,19 +18,29 @@ import XCTest
 final class Layer1AccessibilityUITests: XCTestCase {
     nonisolated(unsafe) private var app: XCUIApplication!
 
+    nonisolated(unsafe) private static var sharedApp: XCUIApplication?
+    nonisolated(unsafe) private static var sharedLaunchKey: String?
+
     nonisolated override func setUpWithError() throws {
         continueAfterFailure = false
         addDefaultUIInterruptionMonitor()
-        // No launch — each test deep-links its category (#316).
+        // No launch — each test deep-links its category (#316); may reuse session (#372).
     }
 
     nonisolated override func tearDownWithError() throws {
-        if let running = app, running.state != .notRunning {
+        // Keep shared session alive for the next method with the same launch key (#372).
+        app = nil
+        try super.tearDownWithError()
+    }
+
+    override class func tearDown() {
+        if let running = sharedApp, running.state != .notRunning {
             running.terminate()
             _ = running.wait(for: .notRunning, timeout: 5)
         }
-        app = nil
-        try super.tearDownWithError()
+        sharedApp = nil
+        sharedLaunchKey = nil
+        super.tearDown()
     }
 
     private static func categoryArg(_ categoryName: String) -> String {
@@ -38,51 +49,86 @@ final class Layer1AccessibilityUITests: XCTestCase {
 
     @MainActor
     private func launchLayer1Category(_ categoryName: String, section: String? = nil) {
-        if let running = app, running.state != .notRunning {
-            running.terminate()
+        let categoryKey = Self.categoryArg(categoryName)
+        let key: String
+        if let section {
+            key = "OpenLayer1Category=\(categoryKey)|L1Section=\(section)"
+        } else {
+            key = "OpenLayer1Category=\(categoryKey)"
         }
+
+        if let existing = Self.sharedApp,
+           existing.state == .runningForeground,
+           Self.sharedLaunchKey == key {
+            app = existing
+            if let section {
+                assertSectionMarker(section, categoryName: categoryName, reused: true)
+            } else {
+                assertCategoryMarker(categoryName, reused: true)
+            }
+            return
+        }
+
+        if let running = Self.sharedApp, running.state != .notRunning {
+            running.terminate()
+            _ = running.wait(for: .notRunning, timeout: 5)
+        }
+        Self.sharedApp = nil
+        Self.sharedLaunchKey = nil
+
         let localApp = XCUIApplication()
         localApp.configureForFastTesting()
-        localApp.launchArguments.append("-OpenLayer1Category=\(Self.categoryArg(categoryName))")
+        localApp.launchArguments.append("-OpenLayer1Category=\(categoryKey)")
         if let section {
             localApp.launchArguments.append("-L1Section=\(section)")
         }
         localApp.launch()
+        Self.sharedApp = localApp
+        Self.sharedLaunchKey = key
         app = localApp
         XCTAssertEqual(localApp.state, .runningForeground, "Layer1 host should be foreground")
 
-        // Prefer section marker when deep-linked — nav titles are unreliable under parallel
-        // macOS UITest launches for heavier Data Presentation hosts (#316).
         if let section {
-            let marker: String
-            switch section {
-            case "items": marker = "L1_Section_Items"
-            case "emptyItems": marker = "L1_Section_EmptyItems"
-            case "emptyWrap1": marker = "L1_Section_EmptyWrap1"
-            case "emptyWrapExact1": marker = "L1_Section_EmptyWrapExact1"
-            case "emptyWrap2": marker = "L1_Section_EmptyWrap2"
-            case "emptyWrap3": marker = "L1_Section_EmptyWrap3"
-            case "emptyWrap4": marker = "L1_Section_EmptyWrap4"
-            case "responsiveCard": marker = "L1_Section_ResponsiveCard"
-            case "navStack": marker = "L1_Section_NavStack"
-            case "appNav": marker = "L1_Section_AppNav"
-            default: marker = "L1_Section_\(section)"
-            }
-            let el = app.descendants(matching: .any)
-                .matching(NSPredicate(format: "identifier == %@", marker))
-                .firstMatch
-            XCTAssertTrue(
-                el.waitForExistence(timeout: 2),
-                "Layer1 section marker '\(marker)' should exist at launch (-OpenLayer1Category=\(Self.categoryArg(categoryName)) -L1Section=\(section))"
-            )
-            return
+            assertSectionMarker(section, categoryName: categoryName, reused: false)
+        } else {
+            assertCategoryMarker(categoryName, reused: false)
         }
+    }
 
+    @MainActor
+    private func assertSectionMarker(_ section: String, categoryName: String, reused: Bool) {
+        let marker: String
+        switch section {
+        case "items": marker = "L1_Section_Items"
+        case "emptyItems": marker = "L1_Section_EmptyItems"
+        case "emptyWrap1": marker = "L1_Section_EmptyWrap1"
+        case "emptyWrapExact1": marker = "L1_Section_EmptyWrapExact1"
+        case "emptyWrap2": marker = "L1_Section_EmptyWrap2"
+        case "emptyWrap3": marker = "L1_Section_EmptyWrap3"
+        case "emptyWrap4": marker = "L1_Section_EmptyWrap4"
+        case "responsiveCard": marker = "L1_Section_ResponsiveCard"
+        case "navStack": marker = "L1_Section_NavStack"
+        case "appNav": marker = "L1_Section_AppNav"
+        default: marker = "L1_Section_\(section)"
+        }
+        let el = app.descendants(matching: .any)
+            .matching(NSPredicate(format: "identifier == %@", marker))
+            .firstMatch
+        let reuseNote = reused ? " (reused launch)" : ""
+        XCTAssertTrue(
+            el.waitForExistence(timeout: reused ? 0.5 : 2),
+            "Layer1 section marker '\(marker)' should exist\(reuseNote) (-OpenLayer1Category=\(Self.categoryArg(categoryName)) -L1Section=\(section))"
+        )
+    }
+
+    @MainActor
+    private func assertCategoryMarker(_ categoryName: String, reused: Bool) {
         let categoryMarker = "L1_Category_\(Self.categoryArg(categoryName))"
         let markerEl = app.descendants(matching: .any)
             .matching(NSPredicate(format: "identifier == %@", categoryMarker))
             .firstMatch
-        if markerEl.waitForExistence(timeout: 2) { return }
+        let timeout: TimeInterval = reused ? 0.5 : 2
+        if markerEl.waitForExistence(timeout: timeout) { return }
         let anyWithId = app.descendants(matching: .any)
             .matching(NSPredicate(format: "identifier != %@", ""))
         let sampleLimit = min(anyWithId.count, 30)
@@ -91,8 +137,9 @@ final class Layer1AccessibilityUITests: XCTestCase {
             let value = anyWithId.element(boundBy: i).identifier
             if !value.isEmpty { samples.append(value) }
         }
+        let reuseNote = reused ? " (reused launch)" : ""
         XCTFail(
-            "Layer1 category marker '\(categoryMarker)' should exist at launch (-OpenLayer1Category=\(Self.categoryArg(categoryName))). Sample ids: \(samples)"
+            "Layer1 category marker '\(categoryMarker)' should exist\(reuseNote) (-OpenLayer1Category=\(Self.categoryArg(categoryName))). Sample ids: \(samples)"
         )
     }
 
@@ -199,6 +246,10 @@ final class Layer1AccessibilityUITests: XCTestCase {
         case "Data Analysis":
             assertIdentifierContains("platformAnalyzeDataFrame_L1", context: "Data Analysis")
 
+        case "Barcode":
+            assertExactIdentifierExists("L1_Section_BarcodeScanning", context: "Barcode scanning section")
+            assertExactIdentifierExists("L1_Barcode_NoTestImage", context: "Barcode host without auto Vision scan")
+
         default:
             XCTFail("Unknown Layer1 category: \(category)")
         }
@@ -253,6 +304,13 @@ final class Layer1AccessibilityUITests: XCTestCase {
     func testLayer1_dataAnalysis_accessibilitySurfaces() throws {
         launchLayer1Category("Data Analysis")
         assertCategorySurfaces("Data Analysis")
+    }
+
+    @MainActor
+    func testLayer1_barcode_accessibilitySurfaces() throws {
+        // Thin land only — do not mount platformScanBarcode_L1 (.task Vision hang). Refs #369.
+        launchLayer1Category("Barcode")
+        assertCategorySurfaces("Barcode")
     }
 
     // MARK: - Card components (Issue #191)

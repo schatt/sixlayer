@@ -417,11 +417,8 @@ struct Layer5AccessibilityOnlyView: View {
     var body: some View {
         ScrollView {
             platformVStack(alignment: .leading, spacing: 24) {
-                // Exact XCUI land marker for `-OpenLayer5Accessibility` (#348 / #316).
-                Text("Layer 5 Examples")
-                    .font(.headline)
-                    .exactNamed("layer5-examples-host-root")
-                    .accessibilityLabel("Layer 5 Examples")
+                // Leaf land marker for `-OpenLayer5Accessibility` (#348 / #370).
+                uiTestHostLandMarker("layer5-examples-host-root", title: "Layer 5 Examples")
 
                 // L5 modifier contract: plain elements with only the L5 modifier (no platformButton etc.)
                 // Stamp exactNamed after modifiers so XCUI can wait on one identifier (no label OR ladder).

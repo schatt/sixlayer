@@ -1106,7 +1106,9 @@ struct Layer4ContractOnlyView: View {
             }
             .accessibilityIdentifier("L4ContractPhotoPickerOpen")
             .accessibilityLabel("L4ContractPhotoPickerOpen")
-            if isXCUITestHost && l4ContractShowPhotoPicker {
+            // Under -UITesting always mount the contract host. Relying on the Button to flip
+            // @State is unreliable in iOS 26 Form rows (open control stays; host never appears; #317/#368).
+            if isXCUITestHost {
                 L4PhotoPickerContractHost {
                     l4ContractShowPhotoPicker = false
                 }
@@ -1363,6 +1365,7 @@ struct Layer4ContractOnlyView: View {
 
 #if os(iOS) || os(macOS)
 /// XCUITest contract surface for `platformPhotoPicker_L4`; native pickers hide generated a11y ids (#317).
+/// Use `exactNamed` (host sentinel) so the contract id stays queryable without overwriting children (#364/#368).
 private struct L4PhotoPickerContractHost: View {
     let onDismiss: () -> Void
 
@@ -1373,9 +1376,8 @@ private struct L4PhotoPickerContractHost: View {
                 .accessibilityIdentifier("SixLayer.main.ui.platformPhotoPicker_L4.cancel")
         }
         .padding()
-        .accessibilityIdentifier("platformPhotoPicker_L4")
         .accessibilityLabel("platformPhotoPicker_L4")
-        .automaticCompliance(named: "platformPhotoPicker_L4")
+        .exactNamed("platformPhotoPicker_L4")
     }
 }
 #endif

@@ -3,7 +3,7 @@
 //  SixLayerFrameworkUITests
 //
 //  Issue #200: Category D UI backfill for OCR disambiguation and overlay outcomes.
-//  Strict TDD: add tests first; host should fail until TestApp support exists.
+//  #373: one shared app process for the class (same launch args every method).
 //
 
 import XCTest
@@ -22,6 +22,7 @@ final class OCRCategoryDUITests: XCTestCase {
     }
 
     var app: XCUIApplication!
+    private static var sharedApp: XCUIApplication?
 
     nonisolated override func setUpWithError() throws {
         continueAfterFailure = false
@@ -29,10 +30,15 @@ final class OCRCategoryDUITests: XCTestCase {
 
         nonisolated(unsafe) let instance = self
         MainActor.assumeIsolated {
+            if let existing = Self.sharedApp, existing.state == .runningForeground {
+                instance.app = existing
+                return
+            }
             let localApp = XCUIApplication()
             localApp.configureForFastTesting()
             localApp.launchArguments.append("-OpenOCRCategoryD")
             localApp.launch()
+            Self.sharedApp = localApp
             instance.app = localApp
 
             XCTAssertTrue(
@@ -47,6 +53,15 @@ final class OCRCategoryDUITests: XCTestCase {
         MainActor.assumeIsolated {
             instance.app = nil
         }
+    }
+
+    override class func tearDown() {
+        if let running = sharedApp, running.state != .notRunning {
+            running.terminate()
+            _ = running.wait(for: .notRunning, timeout: 5)
+        }
+        sharedApp = nil
+        super.tearDown()
     }
 
     @MainActor

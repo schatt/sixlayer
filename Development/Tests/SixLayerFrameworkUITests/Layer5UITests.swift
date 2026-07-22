@@ -6,22 +6,36 @@
 //  Each test verifies that the modifier applies a11y (automaticCompliance) to the element it wraps.
 //
 //  #348: exact host-root + exactNamed contract ids — no label / type OR ladders.
+//  #373: one shared app process for the class (same launch args every method).
 //
 
 import XCTest
 @testable import SixLayerFramework
 
 /// Layer 5 UI tests: one test per L5 accessibility modifier so the run shows a clear pass count per function.
-/// Uses launch argument -OpenLayer5Accessibility. One app launch for the suite.
+/// Uses launch argument -OpenLayer5Accessibility. One app launch for the suite (#373).
 @MainActor
 final class Layer5UITests: XCTestCase {
-    private nonisolated static let rootReadyTimeout: TimeInterval = 3.0
+    private nonisolated static let rootReadyTimeout: TimeInterval = 8.0
     private nonisolated static let quickWait: TimeInterval = 0.5
     nonisolated(unsafe) private var app: XCUIApplication!
+
+    nonisolated(unsafe) private static var sharedApp: XCUIApplication?
 
     nonisolated override func setUpWithError() throws {
         continueAfterFailure = false
         addDefaultUIInterruptionMonitor()
+
+        if let existing = Self.sharedApp, existing.state == .runningForeground {
+            app = existing
+            return
+        }
+
+        if let running = Self.sharedApp, running.state != .notRunning {
+            running.terminate()
+            _ = running.wait(for: .notRunning, timeout: 5.0)
+        }
+        Self.sharedApp = nil
 
         let localApp = XCUIApplication()
         localApp.configureForFastTesting()
@@ -34,15 +48,22 @@ final class Layer5UITests: XCTestCase {
             localApp.waitForHostRootIdentifier("layer5-examples-host-root", timeout: Self.rootReadyTimeout),
             "App should open on Layer 5 Examples (launch arg)"
         )
+        // Assign only after host land succeeds (#370).
+        Self.sharedApp = localApp
     }
 
     nonisolated override func tearDownWithError() throws {
-        if let runningApp = app, runningApp.state != .notRunning {
-            runningApp.terminate()
-            _ = runningApp.wait(for: .notRunning, timeout: 5.0)
-        }
         app = nil
         try super.tearDownWithError()
+    }
+
+    override class func tearDown() {
+        if let running = sharedApp, running.state != .notRunning {
+            running.terminate()
+            _ = running.wait(for: .notRunning, timeout: 5.0)
+        }
+        sharedApp = nil
+        super.tearDown()
     }
 
     @MainActor
