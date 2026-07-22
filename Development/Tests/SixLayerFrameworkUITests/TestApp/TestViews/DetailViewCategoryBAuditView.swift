@@ -65,11 +65,13 @@ struct DetailViewCategoryBAuditView: View {
                     showEditButton: false,
                     customFieldView: { fieldName, value, _ in
                         // Explicit a11y surface for macOS XCUI (#316) — framework wrappers can leave label empty.
+                        // Direct identifier (not only exactNamed host-sentinel) — IntelligentDetailView
+                        // reparenting can drop Color.clear/Text sentinels from the XCUI tree (#370).
                         Text("Custom Field: \(fieldName) = \(value)")
                             .accessibilityElement(children: .ignore)
+                            .accessibilityIdentifier("category-b-custom-field")
                             .accessibilityLabel("Custom Field: \(fieldName) = \(value)")
                             .accessibilityValue("Custom Field: \(fieldName) = \(value)")
-                            .exactNamed("category-b-custom-field")
                     }
                 )
 
