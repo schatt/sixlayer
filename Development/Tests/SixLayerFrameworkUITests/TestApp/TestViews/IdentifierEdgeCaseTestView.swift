@@ -18,10 +18,8 @@ struct IdentifierEdgeCaseTestView: View {
     var body: some View {
         platformScrollViewContainer {
             platformVStack(spacing: 24) {
-                platformText("Identifier Edge Case Test")
-                    .font(.headline)
-                    .exactNamed("identifier-edge-case-host-root")
-                    .accessibilityLabel("Identifier Edge Case Test")
+                // Leaf land marker (#370) — not exactNamed host-sentinel.
+                uiTestHostLandMarker("identifier-edge-case-host-root", title: "Identifier Edge Case Test")
 
                 platformButton("Back to Main") {
                     if let action = onBackToMain { action() } else { dismiss() }
