@@ -5,30 +5,43 @@
 //  Layer 4 (Component) UI tests: one test method per L4 component.
 //  #316: deep-link via `-OpenLayer4Examples` + `-L4Section=…` (or overlay-only host).
 //  No scroll-as-discovery; exact accessibilityIdentifier queries; `.exists` (fail-fast).
+//  #372: reuse the app process when the deep-link launch-arg key matches the previous test
+//  (XCTestCase is per-method — session is static). Relaunch only when the key changes.
 //
 
 import XCTest
 @testable import SixLayerFramework
 
 /// Layer 4 component tests: one test per L4 API. Contract = full contract (behavior, structure, a11y).
-/// Each test launches its own `XCUIApplication` so parallel/random ordering stays isolated.
+/// Deep-link launch args isolate hosts; process is reused across methods that share the same key (#372).
 @MainActor
 final class Layer4UITests: XCTestCase {
     nonisolated(unsafe) private var app: XCUIApplication!
 
+    /// Per-process session (instances are per test method).
+    nonisolated(unsafe) private static var sharedApp: XCUIApplication?
+    nonisolated(unsafe) private static var sharedLaunchKey: String?
+
     nonisolated override func setUpWithError() throws {
         continueAfterFailure = false
         addDefaultUIInterruptionMonitor()
-        // No launch here — each test deep-links its section (#316).
+        // No launch here — each test deep-links its section (#316); may reuse session (#372).
     }
 
     nonisolated override func tearDownWithError() throws {
-        if let runningApp = app, runningApp.state != .notRunning {
-            runningApp.terminate()
-            _ = runningApp.wait(for: .notRunning, timeout: 5)
-        }
+        // Keep shared session alive for the next method with the same launch key (#372).
         app = nil
         try super.tearDownWithError()
+    }
+
+    override class func tearDown() {
+        if let running = sharedApp, running.state != .notRunning {
+            running.terminate()
+            _ = running.wait(for: .notRunning, timeout: 5)
+        }
+        sharedApp = nil
+        sharedLaunchKey = nil
+        super.tearDown()
     }
 
     private static func l4ContractIdentifier(sanitizedName: String, elementType: String) -> String {
@@ -51,15 +64,34 @@ final class Layer4UITests: XCTestCase {
 
     @MainActor
     private func launchL4Contract(section: String) {
-        if let running = app, running.state != .notRunning {
-            running.terminate()
+        let key = "OpenLayer4Examples|L4Section=\(section)|noSkipAnimations"
+        if let existing = Self.sharedApp,
+           existing.state == .runningForeground,
+           Self.sharedLaunchKey == key {
+            app = existing
+            let headerId = Self.l4SectionHeaderId(section)
+            XCTAssertTrue(
+                element(matchingIdentifier: headerId).exists,
+                "L4 section '\(headerId)' should still exist (reused launch, -L4Section=\(section))"
+            )
+            return
         }
+
+        if let running = Self.sharedApp, running.state != .notRunning {
+            running.terminate()
+            _ = running.wait(for: .notRunning, timeout: 5)
+        }
+        Self.sharedApp = nil
+        Self.sharedLaunchKey = nil
+
         let localApp = XCUIApplication()
         localApp.configureForFastTesting()
         localApp.launchArguments.removeAll(where: { $0 == "-SkipAnimations" })
         localApp.launchArguments.append("-OpenLayer4Examples")
         localApp.launchArguments.append("-L4Section=\(section)")
         localApp.launch()
+        Self.sharedApp = localApp
+        Self.sharedLaunchKey = key
         app = localApp
         XCTAssertEqual(localApp.state, .runningForeground, "L4 contract host should be foreground after launch")
         let headerId = Self.l4SectionHeaderId(section)
@@ -85,14 +117,37 @@ final class Layer4UITests: XCTestCase {
 
     @MainActor
     private func launchOverlayAccessibilityHost() {
-        if let running = app, running.state != .notRunning {
-            running.terminate()
+        let key = "OpenLayer4OverlayAccessibility|noSkipAnimations"
+        if let existing = Self.sharedApp,
+           existing.state == .runningForeground,
+           Self.sharedLaunchKey == key {
+            app = existing
+            // Prior overlay tests may leave the sidebar open — reset to dismissed.
+            let closeSidebar = element(matchingIdentifier: "L4OverlayCloseSidebar")
+            if closeSidebar.exists {
+                tapByNormalizedCenter(closeSidebar)
+            }
+            XCTAssertTrue(
+                element(matchingIdentifier: "L4OverlayShowSidebar").exists,
+                "L4OverlayShowSidebar should exist (reused overlay host)"
+            )
+            return
         }
+
+        if let running = Self.sharedApp, running.state != .notRunning {
+            running.terminate()
+            _ = running.wait(for: .notRunning, timeout: 5)
+        }
+        Self.sharedApp = nil
+        Self.sharedLaunchKey = nil
+
         let localApp = XCUIApplication()
         localApp.configureForFastTesting()
         localApp.launchArguments.removeAll(where: { $0 == "-SkipAnimations" })
         localApp.launchArguments.append("-OpenLayer4OverlayAccessibility")
         localApp.launch()
+        Self.sharedApp = localApp
+        Self.sharedLaunchKey = key
         app = localApp
         XCTAssertEqual(localApp.state, .runningForeground, "Overlay host should be foreground after launch")
         XCTAssertTrue(
