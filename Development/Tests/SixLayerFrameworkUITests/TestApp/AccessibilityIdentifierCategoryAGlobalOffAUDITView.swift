@@ -15,14 +15,8 @@ struct AccessibilityIdentifierCategoryAGlobalOffAUDITView: View {
     var body: some View {
         platformScrollViewContainer {
             platformVStack(alignment: .leading, spacing: 24) {
-                // Do not wrap in accessibilityElement(children: .ignore) — that drops the
-                // named identifier from the XCUI tree on macOS (#316).
-                // Exact land marker (#348) — separate from named title so XCUI does not need OR ladders.
-                Text("Category A Global Off host")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .exactNamed("category-a-global-off-host-root")
-                    .accessibilityLabel("Category A Global Off host")
+                // Leaf land marker (#370) — not exactNamed host-sentinel (macOS first-paint XCUI wait).
+                uiTestHostLandMarker("category-a-global-off-host-root", title: "Category A Global Off host")
 
                 Text("Category A — global automatic IDs off")
                     .font(.headline)
