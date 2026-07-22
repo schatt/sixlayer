@@ -6,6 +6,7 @@
 //  Content must be in the accessibility tree at launch — do not scroll to find it (#316).
 //
 //  #348: land on exact host-root; single-predicate text presence (no sequential OR wait ladder).
+//  #374: one shared app process for the class (same launch args every method).
 //
 
 import XCTest
@@ -25,6 +26,7 @@ final class IntelligentDetailViewCategoryBUITests: XCTestCase {
     }
 
     var app: XCUIApplication!
+    private static var sharedApp: XCUIApplication?
 
     nonisolated override func setUpWithError() throws {
         continueAfterFailure = false
@@ -32,10 +34,15 @@ final class IntelligentDetailViewCategoryBUITests: XCTestCase {
 
         nonisolated(unsafe) let instance = self
         MainActor.assumeIsolated {
+            if let existing = Self.sharedApp, existing.state == .runningForeground {
+                instance.app = existing
+                return
+            }
             let localApp = XCUIApplication()
             localApp.configureForFastTesting()
             localApp.launchArguments.append("-OpenDetailViewCategoryB")
             localApp.launch()
+            Self.sharedApp = localApp
             instance.app = localApp
 
             XCTAssertTrue(
@@ -50,6 +57,15 @@ final class IntelligentDetailViewCategoryBUITests: XCTestCase {
         MainActor.assumeIsolated {
             instance.app = nil
         }
+    }
+
+    override class func tearDown() {
+        if let running = sharedApp, running.state != .notRunning {
+            running.terminate()
+            _ = running.wait(for: .notRunning, timeout: 5)
+        }
+        sharedApp = nil
+        super.tearDown()
     }
 
     /// One XCUI query for exact text in label/value/title — avoids sequential wait ladders (#348 / #316).
