@@ -29,11 +29,12 @@ struct CategoryEOneOffAuditView: View {
                 Text("Explicit enable for plain SwiftUI")
                     .font(.headline)
 
-                // This row keeps an explicit stable identifier for XCUI lookup
-                // while also exercising explicit enable for plain SwiftUI content.
+                // Leaf contract id: use `accessibilityIdentifier` (not `.exactNamed` host-sentinel).
+                // Host-sentinel is for containers (#364); on macOS XCUI the Color.clear sentinel
+                // behind a Button is often not queryable, which made this row look "missing" (#371).
                 Button("Category E Explicit Enable Row") {}
                     .enableGlobalAutomaticCompliance()
-                    .exactNamed("category-e-explicit-enable-row")
+                    .accessibilityIdentifier("category-e-explicit-enable-row")
 
                 Divider()
 
