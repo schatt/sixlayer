@@ -54,7 +54,7 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
             app = existing
             let sectionId = Self.sectionIdentifier(section)
             XCTAssertTrue(
-                element(exactIdentifier: sectionId).exists,
+                element(exactIdentifier: sectionId).waitForExistence(timeout: 8.0),
                 "SD150 host section '\(sectionId)' should exist (reused launch, -SD150Section=\(section))"
             )
             return
@@ -73,16 +73,16 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
         localApp.launchArguments.append("-OpenStandaloneDropIn150")
         localApp.launchArguments.append("-SD150Section=\(section)")
         localApp.launch()
-        Self.sharedApp = localApp
-        Self.sharedLaunchKey = key
         app = localApp
         XCTAssertEqual(localApp.state, .runningForeground, "SD150 host should be foreground after launch")
 
         let sectionId = Self.sectionIdentifier(section)
         XCTAssertTrue(
-            element(exactIdentifier: sectionId).exists,
+            element(exactIdentifier: sectionId).waitForExistence(timeout: 8.0),
             "SD150 host section '\(sectionId)' should exist at launch (-SD150Section=\(section))"
         )
+        Self.sharedApp = localApp
+        Self.sharedLaunchKey = key
     }
 
     private static func sectionIdentifier(_ section: String) -> String {
