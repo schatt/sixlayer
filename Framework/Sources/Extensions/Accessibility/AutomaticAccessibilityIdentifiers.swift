@@ -1107,11 +1107,26 @@ public extension View {
     /// and similar wrappers. ``View/named(_:)`` and ``View/exactNamed(_:)`` use this
     /// pattern (#360 / #364 / CarManager #757).
     func accessibilityHostIdentifier(_ identifier: String) -> some View {
+        #if os(macOS)
+        // `Color.clear` + `.accessibilityElement(children: .ignore)` is frequently absent from
+        // the macOS XCUI tree (GlobalOff / SD150 / first-paint host waits — #370). Use a 1pt
+        // leaf Text sentinel instead; keep iOS on Color.clear (proven for #360/#364).
+        self.background(alignment: .topLeading) {
+            Text(verbatim: identifier)
+                .font(.system(size: 1))
+                .foregroundStyle(.clear)
+                .frame(width: 1, height: 1)
+                .accessibilityIdentifier(identifier)
+                .accessibilityLabel(identifier)
+                .allowsHitTesting(false)
+        }
+        #else
         self.background {
             Color.clear
                 .accessibilityIdentifier(identifier)
                 .accessibilityElement(children: .ignore)
         }
+        #endif
     }
 }
 
