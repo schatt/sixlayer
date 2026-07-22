@@ -107,6 +107,16 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
     }
 
     @MainActor
+    private func assertExactIdentifierExists(_ id: String, timeout: TimeInterval = 8.0, file: StaticString = #filePath, line: UInt = #line) {
+        XCTAssertTrue(
+            element(exactIdentifier: id).waitForExistence(timeout: timeout),
+            "\(id) should exist",
+            file: file,
+            line: line
+        )
+    }
+
+    @MainActor
     private func assertBindingMirrorContains(
         _ mirrorId: String,
         _ substring: String,
@@ -201,8 +211,8 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
     func test150_platformTextField_typingUpdatesBinding() throws {
         #if os(iOS) || os(macOS)
         launchSD150Host(section: "text")
+        assertExactIdentifierExists("SD150_TextField")
         let field = element(exactIdentifier: "SD150_TextField")
-        XCTAssertTrue(field.exists, "SD150_TextField should exist")
         focusAndType(field, "Hello150")
         assertBindingMirrorContains("SD150_Mirror_T", "Hello150")
         #else
@@ -213,8 +223,8 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
     func test150_platformTextField_verticalAxis_typingUpdatesBinding() throws {
         #if os(iOS) || os(macOS)
         launchSD150Host(section: "text")
+        assertExactIdentifierExists("SD150_AxisField")
         let field = element(exactIdentifier: "SD150_AxisField")
-        XCTAssertTrue(field.exists, "SD150_AxisField should exist")
         focusAndType(field, "AxisX")
         assertBindingMirrorContains("SD150_Mirror_A", "AxisX")
         #else
@@ -225,8 +235,8 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
     func test150_platformSecureField_typingUpdatesBinding() throws {
         #if os(iOS) || os(macOS)
         launchSD150Host(section: "secure")
+        assertExactIdentifierExists("SD150_SecureField")
         let field = element(exactIdentifier: "SD150_SecureField")
-        XCTAssertTrue(field.exists, "SD150_SecureField should exist")
         focusAndType(field, "hunter2")
         assertBindingMirrorContains("SD150_Mirror_S", "hunter2")
         #else
@@ -238,8 +248,8 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
         #if os(iOS) || os(macOS)
         launchSD150Host(section: "toggle")
         assertBindingMirrorContains("SD150_Mirror_G", "0")
+        assertExactIdentifierExists("SD150_Toggle")
         let toggle = element(exactIdentifier: "SD150_Toggle")
-        XCTAssertTrue(toggle.exists, "SD150_Toggle should exist")
         toggle.xcuiTapToBecomeFirstResponder()
         assertBindingMirrorContains("SD150_Mirror_G", "1")
         #else
@@ -250,8 +260,8 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
     func test150_platformTextEditor_prefillAndAdditionalTyping() throws {
         #if os(iOS) || os(macOS)
         launchSD150Host(section: "editor")
+        assertExactIdentifierExists("SD150_EditorPrompt")
         let editor = element(exactIdentifier: "SD150_EditorPrompt")
-        XCTAssertTrue(editor.exists, "SD150_EditorPrompt should exist")
         assertBindingMirrorContains("SD150_Mirror_E", "PrefillSeed")
         focusAndType(editor, "More")
         assertBindingMirrorContains("SD150_Mirror_E", "PrefillSeed")
@@ -266,8 +276,8 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
         launchSD150Host(section: "long")
         // Mirror assert only checks the first 32 characters — avoid typing 220 (#373 / #370).
         let long = String(repeating: "Z", count: 40)
+        assertExactIdentifierExists("SD150_LongField")
         let field = element(exactIdentifier: "SD150_LongField")
-        XCTAssertTrue(field.exists, "SD150_LongField should exist")
         focusAndType(field, long)
         assertBindingMirrorContains("SD150_Mirror_L", String(repeating: "Z", count: 32))
         #else
@@ -278,8 +288,8 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
     func test150_rapidSequentialTyping_appends() throws {
         #if os(iOS) || os(macOS)
         launchSD150Host(section: "text")
+        assertExactIdentifierExists("SD150_TextField")
         let field = element(exactIdentifier: "SD150_TextField")
-        XCTAssertTrue(field.exists, "SD150_TextField should exist")
         focusAndType(field, "a")
         editableControl(near: field).typeText("b")
         assertBindingMirrorContains("SD150_Mirror_T", "ab")
@@ -291,11 +301,11 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
     func test150_platformForm_integrationMultipleControls() throws {
         #if os(iOS) || os(macOS)
         launchSD150Host(section: "integration")
+        assertExactIdentifierExists("SD150_Integration_Name")
+        assertExactIdentifierExists("SD150_Integration_Password")
         let name = element(exactIdentifier: "SD150_Integration_Name")
         let pass = element(exactIdentifier: "SD150_Integration_Password")
         let toggle = element(exactIdentifier: "SD150_Integration_Toggle")
-        XCTAssertTrue(name.exists, "SD150_Integration_Name should exist")
-        XCTAssertTrue(pass.exists, "SD150_Integration_Password should exist")
         // `exactNamed` exposes a host-sentinel `.other` (#364); long-press Paste menus do not
         // appear on that node (iOS 26). Use the same typeText path as other SD150 tests (#368).
         focusAndType(name, "Pat")
@@ -305,7 +315,7 @@ final class PlatformStandaloneDropIn150UITests: XCTestCase {
         #endif
         assertBindingMirrorContains("SD150_Mirror_IN", "Pat")
         assertBindingMirrorContains("SD150_Mirror_IN", "secret")
-        XCTAssertTrue(toggle.exists, "SD150_Integration_Toggle should exist")
+        assertExactIdentifierExists("SD150_Integration_Toggle")
         toggle.xcuiTapToBecomeFirstResponder()
         #else
         throw XCTSkip("Issue #150 host UI tests require iOS or macOS TestApp")
