@@ -77,6 +77,13 @@ public enum PlatformContainerStructureAssertions {
         #endif
     }
 
+    /// Cheap hostability smoke: ViewInspector when linked, else UIKit hosting (#219).
+    /// Deliberate stub for red — always false until green implementation.
+    @MainActor
+    public static func isHostable<V: View>(_ view: V) -> Bool {
+        false
+    }
+
     // MARK: - UIKit fallback (tvOS/visionOS and when ViewInspector traversal fails)
 
     #if canImport(UIKit) && !os(watchOS)
