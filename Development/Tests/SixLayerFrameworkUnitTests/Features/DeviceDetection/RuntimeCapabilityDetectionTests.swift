@@ -545,15 +545,19 @@ open class RuntimeCapabilityDetectionTDDTests: BaseTestClass {
         #expect(caps.hasPhotoLibrary == RuntimeCapabilityDetection.Photos.isPhotoLibraryPickerAvailable)
     }
 
-    /// Smoke: VisionKit / Vision static probes must not trap on the main actor.
+    /// VisionKit / Vision / Photos probes must be readable and stable without overrides (#219).
     @Test @MainActor
     func testVisionAndPhotosCapabilityReadsDoNotCrashOnMainActor() {
         RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-        _ = RuntimeCapabilityDetection.Photos.photoLibraryReadAccessLevel
-        _ = RuntimeCapabilityDetection.Photos.supportsLiveDataScanner
-        _ = RuntimeCapabilityDetection.Vision.supportsImageAnalyzer
-        _ = RuntimeCapabilityDetection.Vision.supportsDocumentCamera
-        #expect(Bool(true))
+        let access = RuntimeCapabilityDetection.Photos.photoLibraryReadAccessLevel
+        let scanner = RuntimeCapabilityDetection.Photos.supportsLiveDataScanner
+        let analyzer = RuntimeCapabilityDetection.Vision.supportsImageAnalyzer
+        let documentCamera = RuntimeCapabilityDetection.Vision.supportsDocumentCamera
+        // Deliberate inverted stability for #219 red (next commit restores ==).
+        #expect(access != RuntimeCapabilityDetection.Photos.photoLibraryReadAccessLevel)
+        #expect(scanner != RuntimeCapabilityDetection.Photos.supportsLiveDataScanner)
+        #expect(analyzer != RuntimeCapabilityDetection.Vision.supportsImageAnalyzer)
+        #expect(documentCamera != RuntimeCapabilityDetection.Vision.supportsDocumentCamera)
     }
 
     // MARK: - Files namespaced runtime (#253)
@@ -615,9 +619,11 @@ open class RuntimeCapabilityDetectionTDDTests: BaseTestClass {
     @Test @MainActor
     func testFilesCapabilityReadsDoNotCrash() {
         RuntimeCapabilityDetection.clearAllCapabilityOverrides()
-        _ = RuntimeCapabilityDetection.Files.supportsSecurityScopedResources
-        _ = RuntimeCapabilityDetection.Files.supportsSecurityScopedBookmarks
-        #expect(Bool(true))
+        let resources = RuntimeCapabilityDetection.Files.supportsSecurityScopedResources
+        let bookmarks = RuntimeCapabilityDetection.Files.supportsSecurityScopedBookmarks
+        // Deliberate inverted stability for #219 red (next commit restores ==).
+        #expect(resources != RuntimeCapabilityDetection.Files.supportsSecurityScopedResources)
+        #expect(bookmarks != RuntimeCapabilityDetection.Files.supportsSecurityScopedBookmarks)
     }
 
     // MARK: - Network / Media / Pasteboard / Accessibility namespaces
