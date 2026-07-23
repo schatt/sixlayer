@@ -4,6 +4,7 @@
 //
 //  Tests for optional badgeContent in card components
 //  Issue #144 - Color Resolution System from Hints Files
+//  Issue #219 - hostability smoke instead of #expect(true) no-ops
 //
 
 import Testing
@@ -13,7 +14,7 @@ import SwiftUI
 #endif
 @testable import SixLayerFramework
 
-@Suite("Card Badge Content")
+@Suite("Card Badge Content", HostedViewTestIsolationTrait())
 struct CardBadgeContentTests {
     
     struct TestItem: Identifiable, CardDisplayable {
@@ -29,7 +30,6 @@ struct CardBadgeContentTests {
     
     #if canImport(SwiftUI)
     @Test @MainActor func testExpandableCardWithBadgeContent() async throws {
-        // Given: Item and hints with badge content
         let hints = PresentationHints()
         let item = TestItem(title: "Test Item", category: "Work")
         
@@ -48,8 +48,7 @@ struct CardBadgeContentTests {
             animationDuration: 0.3
         )
         
-        // When: Creating card with badge content
-        let _ = ExpandableCardComponent(
+        let card = ExpandableCardComponent(
             item: item,
             layoutDecision: layoutDecision,
             strategy: strategy,
@@ -68,12 +67,11 @@ struct CardBadgeContentTests {
             }
         )
         
-        // Then: Card should be created with badge content
-        #expect(true)
+        // Deliberate red (#219): inverted until hostability smoke is proven
+        #expect(!PlatformContainerStructureAssertions.isHostable(card))
     }
     
     @Test @MainActor func testSimpleCardWithBadgeContent() async throws {
-        // Given: Item and hints
         let hints = PresentationHints()
         let item = TestItem(title: "Test Item", category: "Personal")
         
@@ -85,8 +83,7 @@ struct CardBadgeContentTests {
             padding: 16
         )
         
-        // When: Creating card with badge content
-        let _ = SimpleCardComponent(
+        let card = SimpleCardComponent(
             item: item,
             layoutDecision: layoutDecision,
             hints: hints,
@@ -99,17 +96,14 @@ struct CardBadgeContentTests {
             }
         )
         
-        // Then: Card should be created with badge content
-        #expect(true)
+        #expect(!PlatformContainerStructureAssertions.isHostable(card))
     }
     
     @Test @MainActor func testListCardWithBadgeContent() async throws {
-        // Given: Item and hints
         let hints = PresentationHints()
         let item = TestItem(title: "Test Item", category: "Shopping")
         
-        // When: Creating card with badge content
-        let _ = ListCardComponent(
+        let card = ListCardComponent(
             item: item,
             hints: hints,
             badgeContent: { item in
@@ -121,12 +115,10 @@ struct CardBadgeContentTests {
             }
         )
         
-        // Then: Card should be created with badge content
-        #expect(true)
+        #expect(!PlatformContainerStructureAssertions.isHostable(card))
     }
     
     @Test @MainActor func testCardWithoutBadgeContent() async throws {
-        // Given: Item and hints without badge content
         let hints = PresentationHints()
         let item = TestItem(title: "Test Item", category: "Work")
         
@@ -138,18 +130,14 @@ struct CardBadgeContentTests {
             padding: 16
         )
         
-        // When: Creating card without badge content (nil)
-        _ = SimpleCardComponent(
+        let card = SimpleCardComponent(
             item: item,
             layoutDecision: layoutDecision,
             hints: hints,
             badgeContent: nil
         )
         
-        // Then: Card should be created normally (backward compatible)
-        // Card is non-optional, so it exists if we reach here
-        #expect(true)
+        #expect(!PlatformContainerStructureAssertions.isHostable(card))
     }
     #endif
 }
-
