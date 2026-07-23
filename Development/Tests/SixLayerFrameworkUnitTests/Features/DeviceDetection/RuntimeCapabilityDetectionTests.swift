@@ -553,11 +553,10 @@ open class RuntimeCapabilityDetectionTDDTests: BaseTestClass {
         let scanner = RuntimeCapabilityDetection.Photos.supportsLiveDataScanner
         let analyzer = RuntimeCapabilityDetection.Vision.supportsImageAnalyzer
         let documentCamera = RuntimeCapabilityDetection.Vision.supportsDocumentCamera
-        // Deliberate inverted stability for #219 red (next commit restores ==).
-        #expect(access != RuntimeCapabilityDetection.Photos.photoLibraryReadAccessLevel)
-        #expect(scanner != RuntimeCapabilityDetection.Photos.supportsLiveDataScanner)
-        #expect(analyzer != RuntimeCapabilityDetection.Vision.supportsImageAnalyzer)
-        #expect(documentCamera != RuntimeCapabilityDetection.Vision.supportsDocumentCamera)
+        #expect(access == RuntimeCapabilityDetection.Photos.photoLibraryReadAccessLevel)
+        #expect(scanner == RuntimeCapabilityDetection.Photos.supportsLiveDataScanner)
+        #expect(analyzer == RuntimeCapabilityDetection.Vision.supportsImageAnalyzer)
+        #expect(documentCamera == RuntimeCapabilityDetection.Vision.supportsDocumentCamera)
     }
 
     // MARK: - Files namespaced runtime (#253)
@@ -621,9 +620,8 @@ open class RuntimeCapabilityDetectionTDDTests: BaseTestClass {
         RuntimeCapabilityDetection.clearAllCapabilityOverrides()
         let resources = RuntimeCapabilityDetection.Files.supportsSecurityScopedResources
         let bookmarks = RuntimeCapabilityDetection.Files.supportsSecurityScopedBookmarks
-        // Deliberate inverted stability for #219 red (next commit restores ==).
-        #expect(resources != RuntimeCapabilityDetection.Files.supportsSecurityScopedResources)
-        #expect(bookmarks != RuntimeCapabilityDetection.Files.supportsSecurityScopedBookmarks)
+        #expect(resources == RuntimeCapabilityDetection.Files.supportsSecurityScopedResources)
+        #expect(bookmarks == RuntimeCapabilityDetection.Files.supportsSecurityScopedBookmarks)
     }
 
     // MARK: - Network / Media / Pasteboard / Accessibility namespaces
