@@ -34,6 +34,7 @@ public enum PlatformContainerStructureAssertions {
             return found
         }
         #endif
+        if typeNameContains(view, token: "Form<") { return true }
         #if canImport(UIKit) && !os(watchOS)
         return hostedSubtreeIndicatesSwiftUIForm(view)
         #else
@@ -51,6 +52,7 @@ public enum PlatformContainerStructureAssertions {
             return found
         }
         #endif
+        if typeNameContains(view, token: "Section<") { return true }
         #if canImport(UIKit) && !os(watchOS)
         return hostedSubtreeIndicatesSwiftUISection(view)
         #else
@@ -70,6 +72,9 @@ public enum PlatformContainerStructureAssertions {
             return result
         }
         #endif
+        let name = String(describing: type(of: view))
+        if name.contains("Section<") { return false }
+        if name.contains("VStack<") { return true }
         #if canImport(UIKit) && !os(watchOS)
         return hostedSubtreeIndicatesInsetVStackWithoutSection(view)
         #else
@@ -90,6 +95,10 @@ public enum PlatformContainerStructureAssertions {
         #else
         return false
         #endif
+    }
+
+    private static func typeNameContains<V: View>(_ view: V, token: String) -> Bool {
+        String(describing: type(of: view)).contains(token)
     }
 
     // MARK: - UIKit fallback (tvOS/visionOS and when ViewInspector traversal fails)
