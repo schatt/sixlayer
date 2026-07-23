@@ -169,13 +169,25 @@ public enum PlatformTypographyTestAssertions {
 
     #if !os(iOS) && !os(macOS)
     public static func assertAltPlatformDynamicTypeContract() {
-        // Deliberate stub for #219 red: fail until green implementation.
-        #expect(Bool(false), "stub: alt-platform Dynamic Type contract not implemented")
+        assertAccessibilityScaleFactorExceedsLarge()
+        assertPolicyFloorsArePositive(for: policyForCurrentPlatform())
+        assertAllTextStylesResolveUsableFonts()
     }
 
     public static func assertAltPlatformTypographyTokensHonorScaleFactor() {
-        // Deliberate stub for #219 red: fail until green implementation.
-        #expect(Bool(false), "stub: alt-platform typography token scale-factor contract not implemented")
+        assertTypographySettingsScaleFactorDiffers()
+        let largeSettings = AccessibilitySettings(dynamicType: true, preferredContentSize: .large)
+        let accessibilitySettings = AccessibilitySettings(
+            dynamicType: true,
+            preferredContentSize: .accessibilityExtraLarge
+        )
+        let largeTokens = SixLayerDesignSystem.typographyTokens(for: .light, accessibility: largeSettings)
+        let accessibilityTokens = SixLayerDesignSystem.typographyTokens(
+            for: .light,
+            accessibility: accessibilitySettings
+        )
+        _ = Text("Large").font(largeTokens.body)
+        _ = Text("Accessibility").font(accessibilityTokens.body)
     }
     #endif
 }
