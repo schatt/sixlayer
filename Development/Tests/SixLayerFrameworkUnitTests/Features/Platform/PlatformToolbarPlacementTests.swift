@@ -91,30 +91,39 @@ open class PlatformToolbarPlacementTests: BaseTestClass {
         #endif
     }
     
+    /// Deliberate wrong expect for TDD red (#219); flipped in green commit.
+    private static var deliberateRedWrongPlacement: ToolbarItemPlacement {
+        #if os(iOS)
+        return .automatic
+        #else
+        return .bottomBar
+        #endif
+    }
+    
     @Test @MainActor func testConfirmationActionPlacement_MatchesPlatformContract() {
         let placement = EmptyView().platformConfirmationActionPlacement()
-        // Deliberate red (#219): invert until unified platform contract is proven
-        #expect(placement != Self.expectedConfirmationPlacement)
+        // Deliberate red (#219): wrong placement until contract is proven
+        #expect(placement == Self.deliberateRedWrongPlacement)
     }
     
     @Test @MainActor func testCancellationActionPlacement_MatchesPlatformContract() {
         let placement = EmptyView().platformCancellationActionPlacement()
-        #expect(placement != Self.expectedCancellationPlacement)
+        #expect(placement == Self.deliberateRedWrongPlacement)
     }
     
     @Test @MainActor func testPrimaryActionPlacement_MatchesPlatformContract() {
         let placement = EmptyView().platformPrimaryActionPlacement()
-        #expect(placement != Self.expectedPrimaryPlacement)
+        #expect(placement == Self.deliberateRedWrongPlacement)
     }
     
     @Test @MainActor func testSecondaryActionPlacement_MatchesPlatformContract() {
         let placement = EmptyView().platformSecondaryActionPlacement()
-        #expect(placement != Self.expectedSecondaryPlacement)
+        #expect(placement == Self.deliberateRedWrongPlacement)
     }
     
     @Test @MainActor func testBottomBarPlacement_MatchesPlatformContract() {
         let placement = platformBottomBarPlacement()
-        #expect(placement != Self.expectedBottomBarPlacement)
+        #expect(placement == Self.deliberateRedWrongPlacement)
     }
     
     @Test @MainActor func testPlacementFunctions_ReturnCorrectType() {
