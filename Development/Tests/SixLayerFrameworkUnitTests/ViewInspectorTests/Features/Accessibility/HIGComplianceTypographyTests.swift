@@ -5,7 +5,7 @@ import Testing
 //  SixLayerFrameworkTests
 //
 //  Validates automatic HIG compliance typography: Dynamic Type range, platform
-//  minimum readable floors, and sub-minimum custom size clamping (#302).
+//  minimum readable floors, and sub-minimum custom size clamping (#302, #219).
 //
 
 import SwiftUI
@@ -53,49 +53,17 @@ open class HIGComplianceTypographyTests: BaseTestClass {
     }
     #endif
 
-    #if os(iOS) || os(macOS)
-    private func resolvedBodyPointSize(
-        contentSize: SixLayerContentSizeCategory,
-        policy: HIGMinimumTypographyPolicy? = nil
-    ) -> CGFloat {
-        let resolver = DynamicFontResolver(
-            defaultContentSize: contentSize,
-            minimumTypographyPolicy: policy
-        )
-        #if os(iOS)
-        return resolver.uiFont(for: .body, contentSize: contentSize).pointSize
-        #elseif os(macOS)
-        return resolver.nsFont(for: .body, contentSize: contentSize).pointSize
-        #endif
-    }
-
-    private func resolvedCustomPointSize(
-        designSize: CGFloat,
-        contentSize: SixLayerContentSizeCategory,
-        policy: HIGMinimumTypographyPolicy
-    ) -> CGFloat {
-        let resolver = DynamicFontResolver(
-            defaultContentSize: contentSize,
-            minimumTypographyPolicy: policy
-        )
-        #if os(iOS)
-        return resolver.uiFontForScaledSystem(
-            designSize: designSize,
-            relativeTo: .body,
-            contentSize: contentSize
-        ).pointSize
-        #elseif os(macOS)
-        return resolver.nsFontForScaledSystem(
-            designSize: designSize,
-            relativeTo: .body,
-            contentSize: contentSize
-        ).pointSize
-        #endif
-    }
-    #endif
-
     private func currentPolicy() -> HIGMinimumTypographyPolicy {
-        HIGMinimumTypographyPolicy(platform: SixLayerPlatform.current)
+        PlatformTypographyTestAssertions.policyForCurrentPlatform()
+    }
+
+    @MainActor
+    private func assertHostedTypographyScalesOrAltContract() {
+        #if os(iOS) || os(macOS)
+        PlatformTypographyTestAssertions.assertBodyPointSizeScalesUpToAccessibilityExtraLarge()
+        #else
+        PlatformTypographyTestAssertions.assertAltPlatformDynamicTypeContract()
+        #endif
     }
 
     // MARK: - Dynamic Type Support Tests
@@ -110,17 +78,8 @@ open class HIGComplianceTypographyTests: BaseTestClass {
             dynamicTypeSize: .accessibility3,
             description: "Body text at accessibility3"
         )
-        let atLarge = resolvedBodyPointSize(contentSize: .large)
-        let atAccessibility = resolvedBodyPointSize(contentSize: .accessibilityExtraLarge)
-        #expect(
-            atAccessibility > atLarge,
-            "Body text under automatic compliance should scale up at accessibility sizes"
-        )
-        #else
-        let resolver = DynamicFontResolver()
-        _ = resolver.font(for: .body, contentSize: .accessibilityExtraLarge)
-        #expect(Bool(true), "Non-UIKit lane uses resolver Dynamic Type contract")
         #endif
+        assertHostedTypographyScalesOrAltContract()
     }
 
     @Test @MainActor func testButtonTextSupportsDynamicType() async {
@@ -132,12 +91,8 @@ open class HIGComplianceTypographyTests: BaseTestClass {
             dynamicTypeSize: .accessibility3,
             description: "Button at accessibility3"
         )
-        let atLarge = resolvedBodyPointSize(contentSize: .large)
-        let atAccessibility = resolvedBodyPointSize(contentSize: .accessibilityExtraLarge)
-        #expect(atAccessibility > atLarge, "Button text should scale with Dynamic Type")
-        #else
-        #expect(Bool(true))
         #endif
+        assertHostedTypographyScalesOrAltContract()
     }
 
     @Test @MainActor func testLabelSupportsDynamicType() async {
@@ -149,12 +104,8 @@ open class HIGComplianceTypographyTests: BaseTestClass {
             dynamicTypeSize: .accessibility3,
             description: "Label at accessibility3"
         )
-        let atLarge = resolvedBodyPointSize(contentSize: .large)
-        let atAccessibility = resolvedBodyPointSize(contentSize: .accessibilityExtraLarge)
-        #expect(atAccessibility > atLarge, "Label text should scale with Dynamic Type")
-        #else
-        #expect(Bool(true))
         #endif
+        assertHostedTypographyScalesOrAltContract()
     }
 
     // MARK: - Accessibility Size Range Tests
@@ -166,15 +117,13 @@ open class HIGComplianceTypographyTests: BaseTestClass {
         )
         #if os(iOS) || os(macOS)
         let policy = currentPolicy()
-        let atLarge = resolvedBodyPointSize(contentSize: .large)
-        let atAccessibility = resolvedBodyPointSize(contentSize: .accessibilityExtraLarge)
+        PlatformTypographyTestAssertions.assertBodyPointSizeScalesUpToAccessibilityExtraLarge(policy: policy)
         #expect(
-            atAccessibility > atLarge,
-            "Body should remain readable and larger at accessibilityExtraLarge"
+            PlatformTypographyTestAssertions.resolvedBodyPointSize(contentSize: .large, policy: policy)
+                >= policy.minimumReadableBodyPointSize
         )
-        #expect(atLarge >= policy.minimumReadableBodyPointSize)
         #else
-        #expect(Bool(true))
+        PlatformTypographyTestAssertions.assertAltPlatformDynamicTypeContract()
         #endif
     }
 
@@ -183,42 +132,34 @@ open class HIGComplianceTypographyTests: BaseTestClass {
     @Test func testBodyTextMeetsMinimumSizeRequirements() {
         let policy = currentPolicy()
         #if os(iOS) || os(macOS)
-        let bodySize = resolvedBodyPointSize(contentSize: .large)
+        let bodySize = PlatformTypographyTestAssertions.resolvedBodyPointSize(contentSize: .large, policy: policy)
         #expect(
             bodySize >= policy.minimumReadableBodyPointSize,
             "Body at .large should meet \(policy.platform) minimum \(policy.minimumReadableBodyPointSize)pt"
         )
         #else
-        #expect(policy.minimumReadableBodyPointSize > 0)
+        PlatformTypographyTestAssertions.assertPolicyFloorsArePositive(for: policy)
         #endif
     }
 
     @Test func testCaptionTextMeetsMinimumSizeRequirements() {
         let policy = currentPolicy()
         #if os(iOS) || os(macOS)
-        let resolver = DynamicFontResolver(defaultContentSize: .large)
-        #if os(iOS)
-        let captionSize = resolver.uiFont(for: .caption1, contentSize: .large).pointSize
-        #elseif os(macOS)
-        let captionSize = resolver.nsFont(for: .caption1, contentSize: .large).pointSize
-        #endif
+        let captionSize = PlatformTypographyTestAssertions.resolvedStylePointSize(.caption1, contentSize: .large)
         #expect(
             captionSize >= policy.minimumReadableCaptionPointSize,
             "Caption at .large should meet \(policy.platform) minimum \(policy.minimumReadableCaptionPointSize)pt"
         )
         #else
-        #expect(policy.minimumReadableCaptionPointSize > 0)
+        PlatformTypographyTestAssertions.assertPolicyFloorsArePositive(for: policy)
         #endif
     }
 
     @Test func testCustomFontSizeEnforcedMinimum() {
         let policy = currentPolicy()
-        #expect(
-            policy.clampedDesignSize(10, relativeTo: .body) >= policy.minimumReadableBodyPointSize,
-            "Policy should escalate 10pt body-relative design size to readable floor"
-        )
+        PlatformTypographyTestAssertions.assertClampedDesignSizeMeetsFloor(10, relativeTo: .body, policy: policy)
         #if os(iOS) || os(macOS)
-        let clampedSize = resolvedCustomPointSize(
+        let clampedSize = PlatformTypographyTestAssertions.resolvedCustomPointSize(
             designSize: 10,
             contentSize: .large,
             policy: policy
@@ -234,7 +175,7 @@ open class HIGComplianceTypographyTests: BaseTestClass {
             "10pt on \(policy.platform) should clamp to body floor"
         )
         #else
-        #expect(Bool(true))
+        #expect(policy.clampedDesignSize(10, relativeTo: .body) == policy.minimumReadableBodyPointSize)
         #endif
     }
 
@@ -246,22 +187,15 @@ open class HIGComplianceTypographyTests: BaseTestClass {
             .largeTitle, .title1, .headline, .body, .caption1
         ]
         #if os(iOS) || os(macOS)
-        let resolver = DynamicFontResolver(defaultContentSize: .large)
         for style in styles {
-            #if os(iOS)
-            let pointSize = resolver.uiFont(for: style, contentSize: .large).pointSize
-            #elseif os(macOS)
-            let pointSize = resolver.nsFont(for: style, contentSize: .large).pointSize
-            #endif
+            let pointSize = PlatformTypographyTestAssertions.resolvedStylePointSize(style, contentSize: .large)
             #expect(
                 pointSize >= policy.minimumReadablePointSize(for: style),
                 "\(style) should meet readable floor on \(policy.platform)"
             )
         }
         #else
-        for style in styles {
-            #expect(policy.minimumReadablePointSize(for: style) > 0)
-        }
+        PlatformTypographyTestAssertions.assertPolicyFloorsArePositive(for: policy)
         #endif
     }
 
@@ -269,12 +203,9 @@ open class HIGComplianceTypographyTests: BaseTestClass {
 
     @Test func testDynamicTypeOnBothPlatforms() {
         #if os(iOS) || os(macOS)
-        let atLarge = resolvedBodyPointSize(contentSize: .large)
-        let atAccessibility = resolvedBodyPointSize(contentSize: .accessibilityExtraLarge)
-        #expect(atAccessibility > atLarge, "Dynamic Type should increase body size on hosted platform")
+        PlatformTypographyTestAssertions.assertBodyPointSizeScalesUpToAccessibilityExtraLarge()
         #else
-        let policy = currentPolicy()
-        #expect(policy.minimumReadableBodyPointSize > 0)
+        PlatformTypographyTestAssertions.assertAltPlatformDynamicTypeContract()
         #endif
     }
 }

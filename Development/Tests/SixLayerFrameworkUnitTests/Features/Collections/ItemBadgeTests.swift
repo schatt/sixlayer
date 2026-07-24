@@ -4,6 +4,7 @@
 //
 //  Tests for ItemBadge component
 //  Issue #144 - Color Resolution System from Hints Files
+//  Issue #219 - hostability smoke instead of Bool(true) no-ops
 //
 
 import Testing
@@ -13,7 +14,7 @@ import SwiftUI
 #endif
 @testable import SixLayerFramework
 
-@Suite("Item Badge Component")
+@Suite("Item Badge Component", HostedViewTestIsolationTrait())
 struct ItemBadgeTests {
     
     struct TestCategory: Identifiable, CardDisplayable {
@@ -30,7 +31,6 @@ struct ItemBadgeTests {
     
     #if canImport(SwiftUI)
     @Test @MainActor func testItemBadgeDefaultStyle() async throws {
-        // Given: Item with color from hints
         let hints = PresentationHints(
             itemColorProvider: { item in
                 if let category = item as? TestCategory, category.color == "blue" {
@@ -39,24 +39,17 @@ struct ItemBadgeTests {
                 return nil
             }
         )
-        
         let category = TestCategory(name: "Work", icon: "briefcase.fill", color: "blue")
-        
-        // When: Creating badge with default style
-        let _ = ItemBadge(
+        let badge = ItemBadge(
             item: category,
             icon: category.icon,
             text: category.name,
             hints: hints
         )
-        
-        // Then: Badge should be created (visual testing would require ViewInspector)
-        // For now, we verify the component compiles and can be instantiated
-        #expect(true) // Component exists
+        #expect(PlatformContainerStructureAssertions.isHostable(badge))
     }
     
     @Test @MainActor func testItemBadgeOutlineStyle() async throws {
-        // Given: Item with color
         let hints = PresentationHints(
             itemColorProvider: { item in
                 if item is TestCategory {
@@ -65,24 +58,18 @@ struct ItemBadgeTests {
                 return nil
             }
         )
-        
         let category = TestCategory(name: "Personal", icon: "person.fill", color: "green")
-        
-        // When: Creating badge with outline style
-        let _ = ItemBadge(
+        let badge = ItemBadge(
             item: category,
             icon: category.icon,
             text: category.name,
             style: .outline,
             hints: hints
         )
-        
-        // Then: Badge should be created
-        #expect(true)
+        #expect(PlatformContainerStructureAssertions.isHostable(badge))
     }
     
     @Test @MainActor func testItemBadgeSubtleStyle() async throws {
-        // Given: Item with color
         let hints = PresentationHints(
             itemColorProvider: { item in
                 if item is TestCategory {
@@ -91,24 +78,18 @@ struct ItemBadgeTests {
                 return nil
             }
         )
-        
         let category = TestCategory(name: "Shopping", icon: "cart.fill", color: "orange")
-        
-        // When: Creating badge with subtle style
-        let _ = ItemBadge(
+        let badge = ItemBadge(
             item: category,
             icon: category.icon,
             text: category.name,
             style: .subtle,
             hints: hints
         )
-        
-        // Then: Badge should be created
-        #expect(true)
+        #expect(PlatformContainerStructureAssertions.isHostable(badge))
     }
     
     @Test @MainActor func testItemBadgeIconOnlyStyle() async throws {
-        // Given: Item with color
         let hints = PresentationHints(
             itemColorProvider: { item in
                 if item is TestCategory {
@@ -117,23 +98,17 @@ struct ItemBadgeTests {
                 return nil
             }
         )
-        
         let category = TestCategory(name: "Travel", icon: "airplane", color: "purple")
-        
-        // When: Creating badge with icon only style
-        let _ = ItemBadge(
+        let badge = ItemBadge(
             item: category,
             icon: category.icon,
             style: .iconOnly,
             hints: hints
         )
-        
-        // Then: Badge should be created
-        #expect(true)
+        #expect(PlatformContainerStructureAssertions.isHostable(badge))
     }
     
     @Test @MainActor func testItemBadgeUsesColorFromHints() async throws {
-        // Given: Hints with itemColorProvider
         let hints = PresentationHints(
             itemColorProvider: { item in
                 if let category = item as? TestCategory, category.color == "red" {
@@ -142,42 +117,28 @@ struct ItemBadgeTests {
                 return nil
             }
         )
-        
         let category = TestCategory(name: "Urgent", icon: "exclamationmark.triangle.fill", color: "red")
-        
-        // When: Creating badge
-        _ = ItemBadge(
+        let badge = ItemBadge(
             item: category,
             icon: category.icon,
             text: category.name,
             hints: hints
         )
-        
-        // Then: Badge should use color from hints
-        // Note: Visual verification would require ViewInspector
-        // For now, we verify the component uses hints
-        #expect(true)
+        #expect(PlatformContainerStructureAssertions.isHostable(badge))
     }
     
     @Test @MainActor func testItemBadgeFallsBackToDefaultColor() async throws {
-        // Given: Hints with default color but no itemColorProvider
         let hints = PresentationHints(
             defaultColor: .gray
         )
-        
         let category = TestCategory(name: "Unknown", icon: "questionmark", color: nil)
-        
-        // When: Creating badge
-        _ = ItemBadge(
+        let badge = ItemBadge(
             item: category,
             icon: category.icon,
             text: category.name,
             hints: hints
         )
-        
-        // Then: Badge should use default color
-        #expect(true)
+        #expect(PlatformContainerStructureAssertions.isHostable(badge))
     }
     #endif
 }
-
