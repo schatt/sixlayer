@@ -67,8 +67,7 @@ struct CardBadgeContentTests {
             }
         )
         
-        // Deliberate red (#219): inverted until hostability smoke is proven
-        #expect(!PlatformContainerStructureAssertions.isHostable(card))
+        #expect(PlatformContainerStructureAssertions.isHostable(card))
     }
     
     @Test @MainActor func testSimpleCardWithBadgeContent() async throws {
@@ -96,7 +95,7 @@ struct CardBadgeContentTests {
             }
         )
         
-        #expect(!PlatformContainerStructureAssertions.isHostable(card))
+        #expect(PlatformContainerStructureAssertions.isHostable(card))
     }
     
     @Test @MainActor func testListCardWithBadgeContent() async throws {
@@ -115,7 +114,7 @@ struct CardBadgeContentTests {
             }
         )
         
-        #expect(!PlatformContainerStructureAssertions.isHostable(card))
+        #expect(PlatformContainerStructureAssertions.isHostable(card))
     }
     
     @Test @MainActor func testCardWithoutBadgeContent() async throws {
@@ -137,7 +136,7 @@ struct CardBadgeContentTests {
             badgeContent: nil
         )
         
-        #expect(!PlatformContainerStructureAssertions.isHostable(card))
+        #expect(PlatformContainerStructureAssertions.isHostable(card))
     }
     #endif
 }
