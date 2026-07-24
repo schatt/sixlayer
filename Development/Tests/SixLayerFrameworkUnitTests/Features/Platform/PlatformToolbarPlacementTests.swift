@@ -98,28 +98,42 @@ open class PlatformToolbarPlacementTests: BaseTestClass {
     
     @Test @MainActor func testConfirmationActionPlacement_MatchesPlatformContract() {
         let placement = EmptyView().platformConfirmationActionPlacement()
-        // Deliberate red (#219): wrong description until contract is proven
-        #expect(Self.placementDescription(placement) == "deliberate-red-wrong-placement")
+        #expect(
+            Self.placementDescription(placement)
+                == Self.placementDescription(Self.expectedConfirmationPlacement)
+        )
     }
     
     @Test @MainActor func testCancellationActionPlacement_MatchesPlatformContract() {
         let placement = EmptyView().platformCancellationActionPlacement()
-        #expect(Self.placementDescription(placement) == "deliberate-red-wrong-placement")
+        #expect(
+            Self.placementDescription(placement)
+                == Self.placementDescription(Self.expectedCancellationPlacement)
+        )
     }
     
     @Test @MainActor func testPrimaryActionPlacement_MatchesPlatformContract() {
         let placement = EmptyView().platformPrimaryActionPlacement()
-        #expect(Self.placementDescription(placement) == "deliberate-red-wrong-placement")
+        #expect(
+            Self.placementDescription(placement)
+                == Self.placementDescription(Self.expectedPrimaryPlacement)
+        )
     }
     
     @Test @MainActor func testSecondaryActionPlacement_MatchesPlatformContract() {
         let placement = EmptyView().platformSecondaryActionPlacement()
-        #expect(Self.placementDescription(placement) == "deliberate-red-wrong-placement")
+        #expect(
+            Self.placementDescription(placement)
+                == Self.placementDescription(Self.expectedSecondaryPlacement)
+        )
     }
     
     @Test @MainActor func testBottomBarPlacement_MatchesPlatformContract() {
         let placement = platformBottomBarPlacement()
-        #expect(Self.placementDescription(placement) == "deliberate-red-wrong-placement")
+        #expect(
+            Self.placementDescription(placement)
+                == Self.placementDescription(Self.expectedBottomBarPlacement)
+        )
     }
     
     @Test @MainActor func testPlacementFunctions_ReturnCorrectType() {
