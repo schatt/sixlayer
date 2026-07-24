@@ -11,10 +11,15 @@ import SwiftUI
 //  item placement across iOS, macOS, watchOS, tvOS, and visionOS platforms.
 //
 //  Issue #219 — one test per API with real platform-branch expects (no Bool(true) else no-ops).
+//  ToolbarItemPlacement is not Equatable on all SDKs; compare via String(describing:).
 //
 
 @Suite("Platform Toolbar Placement Helpers", HostedViewTestIsolationTrait())
 open class PlatformToolbarPlacementTests: BaseTestClass {
+    
+    private static func placementDescription(_ placement: ToolbarItemPlacement) -> String {
+        String(describing: placement)
+    }
     
     /// Expected confirmation placement for the compile-time platform.
     private static var expectedConfirmationPlacement: ToolbarItemPlacement {
@@ -91,39 +96,30 @@ open class PlatformToolbarPlacementTests: BaseTestClass {
         #endif
     }
     
-    /// Deliberate wrong expect for TDD red (#219); flipped in green commit.
-    private static var deliberateRedWrongPlacement: ToolbarItemPlacement {
-        #if os(iOS)
-        return .automatic
-        #else
-        return .bottomBar
-        #endif
-    }
-    
     @Test @MainActor func testConfirmationActionPlacement_MatchesPlatformContract() {
         let placement = EmptyView().platformConfirmationActionPlacement()
-        // Deliberate red (#219): wrong placement until contract is proven
-        #expect(placement == Self.deliberateRedWrongPlacement)
+        // Deliberate red (#219): wrong description until contract is proven
+        #expect(Self.placementDescription(placement) == "deliberate-red-wrong-placement")
     }
     
     @Test @MainActor func testCancellationActionPlacement_MatchesPlatformContract() {
         let placement = EmptyView().platformCancellationActionPlacement()
-        #expect(placement == Self.deliberateRedWrongPlacement)
+        #expect(Self.placementDescription(placement) == "deliberate-red-wrong-placement")
     }
     
     @Test @MainActor func testPrimaryActionPlacement_MatchesPlatformContract() {
         let placement = EmptyView().platformPrimaryActionPlacement()
-        #expect(placement == Self.deliberateRedWrongPlacement)
+        #expect(Self.placementDescription(placement) == "deliberate-red-wrong-placement")
     }
     
     @Test @MainActor func testSecondaryActionPlacement_MatchesPlatformContract() {
         let placement = EmptyView().platformSecondaryActionPlacement()
-        #expect(placement == Self.deliberateRedWrongPlacement)
+        #expect(Self.placementDescription(placement) == "deliberate-red-wrong-placement")
     }
     
     @Test @MainActor func testBottomBarPlacement_MatchesPlatformContract() {
         let placement = platformBottomBarPlacement()
-        #expect(placement == Self.deliberateRedWrongPlacement)
+        #expect(Self.placementDescription(placement) == "deliberate-red-wrong-placement")
     }
     
     @Test @MainActor func testPlacementFunctions_ReturnCorrectType() {
