@@ -44,7 +44,7 @@ public struct OCROverlaySheetModifier: ViewModifier {
             .platformSheet_L4(
                 isPresented: $isPresented,
                 onDismiss: nil,
-                detents: [.large],
+                sizes: [.large],
                 dragIndicator: .automatic
             ) {
                 sheetContent
