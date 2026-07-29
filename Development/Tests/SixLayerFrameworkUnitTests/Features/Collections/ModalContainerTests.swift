@@ -20,13 +20,13 @@ open class ModalContainerTests: BaseTestClass {
     public func createTestModalStrategy(
         presentationType: ModalPresentationType = .sheet,
         sizing: ModalSizing = .medium,
-        detents: [SheetDetent] = [.medium],
+        sizes: [PlatformPresentationSize] = [.medium],
         platformOptimizations: [ModalPlatform: ModalConstraint] = [:]
     ) -> ModalStrategy {
         return ModalStrategy(
             presentationType: presentationType,
             sizing: sizing,
-            detents: detents,
+            sizes: detents,
             platformOptimizations: platformOptimizations
         )
     }
@@ -50,7 +50,7 @@ open class ModalContainerTests: BaseTestClass {
         let strategy = createTestModalStrategy(
             presentationType: .sheet,
             sizing: .medium,
-            detents: [.medium]
+            sizes: [.medium]
         )
         
         // When: Creating modal container
@@ -64,7 +64,7 @@ open class ModalContainerTests: BaseTestClass {
         let strategy = createTestModalStrategy(
             presentationType: .popover,
             sizing: .small,
-            detents: [.small]
+            sizes: [.small]
         )
         
         // When: Creating modal container
@@ -78,7 +78,7 @@ open class ModalContainerTests: BaseTestClass {
         let strategy = createTestModalStrategy(
             presentationType: .fullScreen,
             sizing: .large,
-            detents: [.large]
+            sizes: [.large]
         )
         
         // When: Creating modal container
@@ -93,7 +93,7 @@ open class ModalContainerTests: BaseTestClass {
         let strategy = createTestModalStrategy(
             presentationType: .custom,
             sizing: .custom,
-            detents: [.custom(height: 400)]
+            sizes: [.exact(width: 400, height: 400)]
         )
         
         // When: Creating modal container
@@ -125,31 +125,31 @@ open class ModalContainerTests: BaseTestClass {
         #expect(Bool(true), "Custom container should be created")  // customContainer is non-optional
     }
     
-    @Test @MainActor func testPlatformModalContainer_Form_L4_MultipleDetents() {
-        // Given: Strategy with multiple detents
+    @Test @MainActor func testPlatformModalContainer_Form_L4_MultipleSizes() {
+        // Given: Strategy with multiple sizes
         let strategy = createTestModalStrategy(
-            detents: [.small, .medium, .large]
+            sizes: [.small, .medium, .large]
         )
         
         // When: Creating modal container
         _ = platformModalContainer_Form_L4(strategy: strategy)
         
-        // Then: Should create container with multiple detents
-        #expect(Bool(true), "Container with multiple detents should be created")
+        // Then: Should create container with multiple sizes
+        #expect(Bool(true), "Container with multiple sizes should be created")
     }
     
-    @Test @MainActor func testPlatformModalContainer_Form_L4_CustomDetent() {
-        // Given: Strategy with custom detent
+    @Test @MainActor func testPlatformModalContainer_Form_L4_ExactSize() {
+        // Given: Strategy with exact size
         let customHeight: CGFloat = 500
         let strategy = createTestModalStrategy(
-            detents: [.custom(height: customHeight)]
+            sizes: [.exact(width: customHeight, height: customHeight)]
         )
         
         // When: Creating modal container
         _ = platformModalContainer_Form_L4(strategy: strategy)
         
-        // Then: Should create container with custom detent
-        #expect(Bool(true), "Container with custom detent should be created")
+        // Then: Should create container with exact size
+        #expect(Bool(true), "Container with exact size should be created")
     }
     
     // MARK: - Platform Optimization Tests
@@ -282,33 +282,33 @@ open class ModalContainerTests: BaseTestClass {
         }
     }
     
-    @Test @MainActor func testPlatformModalContainer_Form_L4_AllDetentTypes() {
-        // Given: All detent types
-        let detentTypes: [SheetDetent] = [
-            .small, .medium, .large, .custom(height: 300)
+    @Test @MainActor func testPlatformModalContainer_Form_L4_AllSizeTypes() {
+        // Given: All size types
+        let detentTypes: [PlatformPresentationSize] = [
+            .small, .medium, .large, .exact(width: 300, height: 300)
         ]
         
-        // When: Creating containers for each detent type
+        // When: Creating containers for each size type
         for detent in detentTypes {
-            let strategy = createTestModalStrategy(detents: [detent])
+            let strategy = createTestModalStrategy(sizes: [detent])
             _ = platformModalContainer_Form_L4(strategy: strategy)
             
-            // Then: Should create container for each detent type
-            #expect(Bool(true), "Container should be created for detent: \(detent)")
+            // Then: Should create container for each size type
+            #expect(Bool(true), "Container should be created for size: \(detent)")
         }
     }
     
     // MARK: - Edge Cases and Error Handling
     
-    @Test @MainActor func testPlatformModalContainer_Form_L4_EmptyDetents() {
-        // Given: Strategy with empty detents
-        let strategy = createTestModalStrategy(detents: [])
+    @Test @MainActor func testPlatformModalContainer_Form_L4_EmptySizes() {
+        // Given: Strategy with empty sizes
+        let strategy = createTestModalStrategy(sizes: [])
         
         // When: Creating modal container
         _ = platformModalContainer_Form_L4(strategy: strategy)
         
-        // Then: Should handle empty detents gracefully
-        #expect(Bool(true), "Container should handle empty detents gracefully")
+        // Then: Should handle empty sizes gracefully
+        #expect(Bool(true), "Container should handle empty sizes gracefully")
     }
     
     @Test @MainActor func testPlatformModalContainer_Form_L4_EmptyPlatformOptimizations() {
@@ -322,21 +322,21 @@ open class ModalContainerTests: BaseTestClass {
         #expect(Bool(true), "Container should handle empty platform optimizations gracefully")
     }
     
-    @Test @MainActor func testPlatformModalContainer_Form_L4_MultipleCustomDetents() {
-        // Given: Strategy with multiple custom detents
+    @Test @MainActor func testPlatformModalContainer_Form_L4_MultipleExactSizes() {
+        // Given: Strategy with multiple exact sizes
         let strategy = createTestModalStrategy(
-            detents: [
-                .custom(height: 200),
-                .custom(height: 400),
-                .custom(height: 600)
+            sizes: [
+                .exact(width: 200, height: 200),
+                .exact(width: 400, height: 400),
+                .exact(width: 600, height: 600)
             ]
         )
         
         // When: Creating modal container
         _ = platformModalContainer_Form_L4(strategy: strategy)
         
-        // Then: Should handle multiple custom detents
-        #expect(Bool(true), "Container should handle multiple custom detents")
+        // Then: Should handle multiple exact sizes
+        #expect(Bool(true), "Container should handle multiple exact sizes")
     }
     
     @Test @MainActor func testPlatformModalContainer_Form_L4_ExtremeConstraints() {
@@ -445,7 +445,7 @@ open class ModalContainerTests: BaseTestClass {
         return ModalStrategy(
             presentationType: .sheet,
             sizing: .medium,
-            detents: [.medium, .large],
+            sizes: [.medium, .large],
             platformOptimizations: platformOptimizations
         )
     }
