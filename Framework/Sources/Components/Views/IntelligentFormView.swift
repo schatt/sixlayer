@@ -1176,11 +1176,12 @@ private struct PackedIntelligentFormFieldsLayout<T, CustomField: View>: View {
             spacing: spacing,
             maxItemsPerRow: maxItemsPerRow
         )
+        let columnWidths = FieldLayoutAligner.columnMaxWidths(rows: rows)
 
         platformVStackContainer(spacing: spacing) {
             ForEach(Array(rows.enumerated()), id: \.offset) { _, row in
                 platformHStackContainer(alignment: .top, spacing: spacing) {
-                    ForEach(row, id: \.id) { item in
+                    ForEach(Array(row.enumerated()), id: \.element.id) { column, item in
                         if let field = fieldByName[item.id] {
                             IntelligentFormView.generateFieldView(
                                 field: field,
@@ -1190,7 +1191,10 @@ private struct PackedIntelligentFormFieldsLayout<T, CustomField: View>: View {
                                 customFieldView: customFieldView,
                                 fieldHints: fieldHints
                             )
-                            .frame(maxWidth: item.preferredWidth, alignment: .leading)
+                            .frame(
+                                maxWidth: alignedWidth(column: column, item: item, columnWidths: columnWidths),
+                                alignment: .leading
+                            )
                         }
                     }
                     Spacer(minLength: 0)
@@ -1210,6 +1214,17 @@ private struct PackedIntelligentFormFieldsLayout<T, CustomField: View>: View {
                 availableWidth = width
             }
         }
+    }
+
+    private func alignedWidth(
+        column: Int,
+        item: FieldLayoutPackItem,
+        columnWidths: [CGFloat]
+    ) -> CGFloat? {
+        if column < columnWidths.count, columnWidths[column] > 0 {
+            return columnWidths[column]
+        }
+        return item.preferredWidth
     }
 }
 
