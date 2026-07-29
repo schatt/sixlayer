@@ -16,21 +16,20 @@ import SwiftUI
 ///   - Typically used for tool palettes, contextual menus, or quick actions
 ///
 /// **When to Use**: Quick actions, contextual information, tool palettes, secondary controls
-/// **Size**: Small to medium (typically 200-400 points wide)
+/// **Size**: Defaults to `.small` via `PlatformPresentationSize` (#384)
 ///
 /// ### Sheets
 /// **Semantic Purpose**: Modal presentation for focused tasks or detailed content
-/// - **iOS**: 
-///   - **iPhone**: Full-screen modal (default) or half-sheet with detents (iOS 16+)
-///   - **iPad**: Centered modal window (can be resized)
+/// - **iOS**:
+///   - **iPhone**: Full-screen modal (default) or half-sheet; `sizes` project to `PresentationDetent` snap heights
+///   - **iPad**: Centered modal; clamped min width **and** height (Split View / Stage Manager)
 ///   - Supports drag-to-dismiss gestures
 /// - **macOS**: Modal window (not full-screen)
-///   - Appears as a centered window with minimum size constraints
+///   - `sizes` become clamped min width/height (no detents on macOS)
 ///   - User can move/resize the window
-///   - More window-like than iOS sheets
 ///
 /// **When to Use**: Forms, detail views, editing interfaces, multi-step workflows
-/// **Size**: Medium to large (typically 400-800+ points)
+/// **Size**: Defaults to `[.large]` via `PlatformPresentationSize` (#384)
 ///
 /// ## Platform Mapping
 ///
@@ -76,7 +75,7 @@ import SwiftUI
 public extension View {
     
     /// Unified popover presentation helper
-    /// 
+    ///
     /// **Cross-Platform Behavior:**
     /// - **iOS (iPad)**: Floating panel with arrow, dismisses on outside tap
     /// - **iOS (iPhone)**: Automatically converted to full-screen sheet by SwiftUI
@@ -88,30 +87,37 @@ public extension View {
     ///   - isPresented: Binding to control popover presentation
     ///   - attachmentAnchor: Point where popover attaches (default: .point(.center))
     ///   - arrowEdge: Edge where arrow appears (default: .top)
+    ///   - sizes: Presentation size hints (default: `[.small]`). Clamped min frame on all platforms.
     ///   - content: View builder for popover content
     /// - Returns: View with popover modifier applied
+    @MainActor
     @ViewBuilder
     func platformPopover_L4<Content: View>(
         isPresented: Binding<Bool>,
         attachmentAnchor: PopoverAttachmentAnchor = .point(.center),
         arrowEdge: Edge = .top,
+        sizes: [PlatformPresentationSize] = [.small],
         @ViewBuilder content: @escaping () -> Content
     ) -> some View {
         #if os(iOS)
         self.popover(
             isPresented: isPresented,
             attachmentAnchor: attachmentAnchor,
-            arrowEdge: arrowEdge,
-            content: content
-        )
+            arrowEdge: arrowEdge
+        ) {
+            content()
+                .platformPresentationFrame(sizes: sizes)
+        }
         .automaticCompliance(named: "platformPopover_L4")
         #elseif os(macOS)
         self.popover(
             isPresented: isPresented,
             attachmentAnchor: attachmentAnchor,
-            arrowEdge: arrowEdge,
-            content: content
-        )
+            arrowEdge: arrowEdge
+        ) {
+            content()
+                .platformPresentationFrame(sizes: sizes)
+        }
         .automaticCompliance(named: "platformPopover_L4")
         #else
         // `.popover` SwiftUI API is unavailable on tvOS (#237); use full-screen sheet-style at call sites instead.
@@ -122,29 +128,26 @@ public extension View {
     /// Unified sheet presentation helper
     ///
     /// **Cross-Platform Behavior:**
-    /// - **iOS (iPhone)**: Full-screen modal (default) or half-sheet with detents (iOS 16+)
+    /// - **iOS (iPhone)**: `sizes` project to `PresentationDetent` snap heights (iOS 16+)
     ///   - Supports drag-to-dismiss gestures
-    ///   - Can use `.medium` or `.large` detents for partial screen coverage
-    /// - **iOS (iPad)**: Centered modal window (can be resized)
-    /// - **macOS**: Modal window (not full-screen)
-    ///   - Minimum size: 400x300 points
-    ///   - User can move and resize the window
-    ///   - Detents parameter is ignored (macOS doesn't support detents)
+    /// - **iOS (iPad)**: Clamped min width and height for multitasking windows
+    /// - **macOS**: Modal window with clamped min frame from the same `sizes` (no detents)
     ///
     /// **Use For**: Forms, detail views, editing interfaces, multi-step workflows
     ///
     /// - Parameters:
     ///   - isPresented: Binding to control sheet presentation
     ///   - onDismiss: Optional callback when this sheet is dismissed. For nested sheets, do only local cleanup here so it does not propagate to the parent (see file-level "Nested Sheets" docs).
-    ///   - detents: Presentation detents for iOS (default: [.large]). Ignored on macOS.
+    ///   - sizes: Cross-platform size hints (default: `[.large]`). iOS also projects these to presentation detents.
     ///   - dragIndicator: Whether to show drag indicator (iOS only, ignored on macOS)
     ///   - content: View builder for sheet content
     /// - Returns: View with sheet modifier applied
+    @MainActor
     @ViewBuilder
     func platformSheet_L4<Content: View>(
         isPresented: Binding<Bool>,
         onDismiss: (() -> Void)? = nil,
-        detents: Set<PresentationDetent> = [.large],
+        sizes: [PlatformPresentationSize] = [.large],
         dragIndicator: Visibility = .automatic,
         @ViewBuilder content: @escaping () -> Content
     ) -> some View {
@@ -153,21 +156,29 @@ public extension View {
             // Plain `sheet` + detents on the presented root. ZStack/compliance pins correlated with
             // XCUITest seeing `Sheet` but no child nodes on iOS 26 (#193). Named sheet compliance was
             // flattening when chained on the same root as real content; omit until a non-invasive anchor exists.
+            let detents = PlatformPresentationSizeResolver.presentationDetents(for: sizes)
             self.sheet(isPresented: isPresented, onDismiss: onDismiss) {
                 content()
+                    .platformPresentationFrame(sizes: sizes)
                     .presentationDetents(detents)
                     .presentationDragIndicator(dragIndicator)
             }
         } else {
-            self.sheet(isPresented: isPresented, onDismiss: onDismiss, content: content)
+            self.sheet(isPresented: isPresented, onDismiss: onDismiss) {
+                content()
+                    .platformPresentationFrame(sizes: sizes)
+            }
         }
         #elseif os(macOS)
         self.sheet(isPresented: isPresented, onDismiss: onDismiss) {
             content()
-                .frame(minWidth: 400, minHeight: 300)
+                .platformPresentationFrame(sizes: sizes)
         }
         #else
-        self.sheet(isPresented: isPresented, onDismiss: onDismiss, content: content)
+        self.sheet(isPresented: isPresented, onDismiss: onDismiss) {
+            content()
+                .platformPresentationFrame(sizes: sizes)
+        }
         #endif
     }
     
@@ -175,36 +186,44 @@ public extension View {
     /// - Parameters:
     ///   - item: Optional item binding for sheet presentation
     ///   - onDismiss: Optional callback when this sheet is dismissed. For nested sheets, do only local cleanup here so it does not propagate to the parent.
-    ///   - detents: Presentation detents for iOS (default: [.large])
+    ///   - sizes: Cross-platform size hints (default: `[.large]`). iOS also projects these to presentation detents.
     ///   - dragIndicator: Whether to show drag indicator (iOS only)
     ///   - content: View builder for sheet content
     /// - Returns: View with sheet modifier applied
+    @MainActor
     @ViewBuilder
     func platformSheet_L4<Item: Identifiable, Content: View>(
         item: Binding<Item?>,
         onDismiss: (() -> Void)? = nil,
-        detents: Set<PresentationDetent> = [.large],
+        sizes: [PlatformPresentationSize] = [.large],
         dragIndicator: Visibility = .automatic,
         @ViewBuilder content: @escaping (Item) -> Content
     ) -> some View {
         #if os(iOS)
         if #available(iOS 16.0, *) {
+            let detents = PlatformPresentationSizeResolver.presentationDetents(for: sizes)
             self.sheet(item: item, onDismiss: onDismiss) { item in
                 content(item)
+                    .platformPresentationFrame(sizes: sizes)
                     .presentationDetents(detents)
                     .presentationDragIndicator(dragIndicator)
             }
         } else {
-            self.sheet(item: item, onDismiss: onDismiss, content: content)
+            self.sheet(item: item, onDismiss: onDismiss) { item in
+                content(item)
+                    .platformPresentationFrame(sizes: sizes)
+            }
         }
         #elseif os(macOS)
         self.sheet(item: item, onDismiss: onDismiss) { item in
             content(item)
-                .frame(minWidth: 400, minHeight: 300)
+                .platformPresentationFrame(sizes: sizes)
         }
         #else
-        self.sheet(item: item, onDismiss: onDismiss, content: content)
+        self.sheet(item: item, onDismiss: onDismiss) { item in
+            content(item)
+                .platformPresentationFrame(sizes: sizes)
+        }
         #endif
     }
 }
-
