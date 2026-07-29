@@ -638,16 +638,19 @@ public extension View {
     ///
     /// - Parameters:
     ///   - isPresented: Binding to control sheet presentation
-    ///   - detents: Platform-specific presentation detents (iOS only)
+    ///   - sizes: Cross-platform size hints (default: `[.large]`). Accepts `.small`,
+    ///     `.medium`, `.large`, and `.exact(width:height:)`. Multi-value arrays become
+    ///     iOS detent stop points; the largest size is the clamped min frame on all platforms (#384).
     ///   - onDismiss: Optional callback when sheet is dismissed
     ///   - content: The sheet content
     /// - Returns: A view with platform-specific sheet presentation
     ///
     /// ## Usage Example
     /// ```swift
+    /// // Presets (any combination). Largest wins for min frame; all project to iOS detents.
     /// .platformSheet(
     ///     isPresented: $showingSheet,
-    ///     detents: [.medium, .large],
+    ///     sizes: [.small, .medium, .large],
     ///     onDismiss: { print("Sheet dismissed") }
     /// ) {
     ///     VStack {
@@ -656,10 +659,16 @@ public extension View {
     ///     }
     ///     .navigationTitle("Sheet Title")
     /// }
+    ///
+    /// // Exact width + height (clamped on iOS multitasking and macOS):
+    /// .platformSheet(isPresented: $showingSheet, sizes: [.exact(width: 900, height: 700)]) {
+    ///     DetailForm()
+    /// }
     /// ```
+    @MainActor
     func platformSheet<SheetContent: View>(
         isPresented: Binding<Bool>,
-        detents: [PlatformPresentationDetent] = [.large],
+        sizes: [PlatformPresentationSize] = [.large],
         onDismiss: (() -> Void)? = nil,
         @ViewBuilder content: @escaping () -> SheetContent
     ) -> some View {
@@ -667,53 +676,28 @@ public extension View {
         return self.sheet(isPresented: isPresented, onDismiss: onDismiss) {
             Group {
                 if #available(iOS 16.0, *) {
-                    // Use NavigationStack on iOS 16+
                     NavigationStack {
                         content()
                     }
                 } else {
-                    // Fallback to NavigationView for iOS 15 and earlier
                     NavigationView {
                         content()
                     }
                 }
             }
-            .platformPresentationDetents(detents)
-            .deviceAwareFrame() // Layer 4: Device-aware sizing for iPad vs iPhone
+            .platformPresentationFrame(sizes: sizes)
+            .platformPresentationDetents(fromSizes: sizes)
+            .deviceAwareFrame()
         }
         #elseif os(macOS)
-        // Compute desired macOS sheet size outside the ViewBuilder closure
-        let hasLarge = detents.contains { detent in
-            if case .large = detent { return true } else { return false }
-        }
-        let hasMedium = detents.contains { detent in
-            if case .medium = detent { return true } else { return false }
-        }
-        let customHeights: [CGFloat] = detents.compactMap { detent in
-            if case .custom(let h) = detent { return h } else { return nil }
-        }
-        let minWidth: CGFloat
-        let minHeight: CGFloat
-        if let maxCustom = customHeights.max() {
-            minWidth = max(800, min(1400, maxCustom * 1.0))
-            minHeight = max(640, min(1100, maxCustom))
-        } else if hasLarge {
-            minWidth = 1024
-            minHeight = 800
-        } else if hasMedium {
-            minWidth = 820
-            minHeight = 640
-        } else {
-            minWidth = 820
-            minHeight = 640
-        }
         return self.sheet(isPresented: isPresented, onDismiss: onDismiss) {
             content()
-                .frame(minWidth: minWidth, minHeight: minHeight)
+                .platformPresentationFrame(sizes: sizes)
         }
         #else
         return self.sheet(isPresented: isPresented, onDismiss: onDismiss) {
             content()
+                .platformPresentationFrame(sizes: sizes)
         }
         #endif
     }
@@ -723,7 +707,8 @@ public extension View {
     ///
     /// - Parameters:
     ///   - item: Optional item binding for sheet presentation (sheet presents when item is non-nil)
-    ///   - detents: Platform-specific presentation detents (iOS only)
+    ///   - sizes: Cross-platform size hints (default: `[.large]`). Accepts `.small`, `.medium`,
+    ///     `.large`, and `.exact(width:height:)` (#384).
     ///   - onDismiss: Optional callback when sheet is dismissed
     ///   - content: The sheet content builder that receives the item
     /// - Returns: A view with platform-specific sheet presentation
@@ -739,6 +724,7 @@ public extension View {
     ///
     /// .platformSheet(
     ///     item: $selectedItem,
+    ///     sizes: [.medium, .exact(width: 960, height: 720)],
     ///     onDismiss: { print("Sheet dismissed") }
     /// ) { item in
     ///     VStack {
@@ -748,9 +734,10 @@ public extension View {
     ///     .navigationTitle("Edit Item")
     /// }
     /// ```
+    @MainActor
     func platformSheet<Item: Identifiable, SheetContent: View>(
         item: Binding<Item?>,
-        detents: [PlatformPresentationDetent] = [.large],
+        sizes: [PlatformPresentationSize] = [.large],
         onDismiss: (() -> Void)? = nil,
         @ViewBuilder content: @escaping (Item) -> SheetContent
     ) -> some View {
@@ -758,52 +745,29 @@ public extension View {
         return self.sheet(item: item, onDismiss: onDismiss) { item in
             Group {
                 if #available(iOS 16.0, *) {
-                    // Use NavigationStack on iOS 16+
                     NavigationStack {
                         content(item)
                     }
                 } else {
-                    // Fallback to NavigationView for iOS 15 and earlier
                     NavigationView {
                         content(item)
                     }
                 }
             }
-            .platformPresentationDetents(detents)
-            .deviceAwareFrame() // Layer 4: Device-aware sizing for iPad vs iPhone
+            .platformPresentationFrame(sizes: sizes)
+            .platformPresentationDetents(fromSizes: sizes)
+            .deviceAwareFrame()
         }
         #elseif os(macOS)
-        // Compute desired macOS sheet size outside the ViewBuilder closure
-        let hasLarge = detents.contains { detent in
-            if case .large = detent { return true } else { return false }
-        }
-        let hasMedium = detents.contains { detent in
-            if case .medium = detent { return true } else { return false }
-        }
-        let customHeights: [CGFloat] = detents.compactMap { detent in
-            if case .custom(let h) = detent { return h } else { return nil }
-        }
-        let minWidth: CGFloat
-        let minHeight: CGFloat
-        if let maxCustom = customHeights.max() {
-            minWidth = max(800, min(1400, maxCustom * 1.0))
-            minHeight = max(640, min(1100, maxCustom))
-        } else if hasLarge {
-            minWidth = 1024
-            minHeight = 800
-        } else if hasMedium {
-            minWidth = 820
-            minHeight = 640
-        } else {
-            minWidth = 820
-            minHeight = 640
-        }
         return self.sheet(item: item, onDismiss: onDismiss) { item in
             content(item)
-                .frame(minWidth: minWidth, minHeight: minHeight)
+                .platformPresentationFrame(sizes: sizes)
         }
         #else
-        return self.sheet(item: item, onDismiss: onDismiss, content: content)
+        return self.sheet(item: item, onDismiss: onDismiss) { item in
+            content(item)
+                .platformPresentationFrame(sizes: sizes)
+        }
         #endif
     }
 
@@ -824,18 +788,19 @@ public extension View {
     // Note: `if` function is already defined in PlatformExtensions.swift
 
     /// Platform-adaptive sheet presentation with intelligent sizing
-    /// Automatically calculates appropriate dimensions based on content analysis
-    /// Provides optimal sizing for iPad, iPhone, and macOS
+    /// Automatically calculates appropriate dimensions based on content analysis,
+    /// then raises the floor to at least the resolved `sizes` hint (#384).
     ///
     /// - Parameters:
     ///   - isPresented: Binding to control sheet presentation
-    ///   - detents: Array of presentation detents for iOS (defaults to large)
+    ///   - sizes: Size floor / iOS detent projection (default: `[.large]`).
+    ///     Accepts `.small`, `.medium`, `.large`, `.exact(width:height:)`.
     ///   - content: The sheet content view
     /// - Returns: A view with platform-adaptive sheet presentation
     ///
     /// ## Usage Example
     /// ```swift
-    /// .platformAdaptiveSheet(isPresented: $showingSheet, detents: [.medium, .large]) {
+    /// .platformAdaptiveSheet(isPresented: $showingSheet, sizes: [.small, .medium]) {
     ///     VStack {
     ///         Text("Sheet Content")
     ///         Button("Dismiss") { showingSheet = false }
@@ -843,39 +808,39 @@ public extension View {
     ///     .navigationTitle("Sheet Title")
     /// }
     /// ```
+    @MainActor
     func platformAdaptiveSheet<SheetContent: View>(
         isPresented: Binding<Bool>,
-        detents: [PlatformPresentationDetent] = [.large],
+        sizes: [PlatformPresentationSize] = [.large],
         @ViewBuilder content: @escaping () -> SheetContent
     ) -> some View {
         #if os(iOS)
-        // iOS: Use detents with intelligent device-aware sizing
         return self.sheet(isPresented: isPresented) {
             Group {
                 if #available(iOS 16.0, *) {
-                    // Use NavigationStack on iOS 16+
                     NavigationStack {
                         content()
                     }
                 } else {
-                    // Fallback to NavigationView for iOS 15 and earlier
                     NavigationView {
                         content()
                     }
                 }
             }
-            .platformPresentationDetents(detents)
-            .deviceAwareFrame() // Layer 4: Device-aware sizing for iPad vs iPhone
+            .platformPresentationFrame(sizes: sizes)
+            .platformPresentationDetents(fromSizes: sizes)
+            .deviceAwareFrame()
         }
         #elseif os(macOS)
-        // macOS: Use content-aware adaptive sizing
         return self.sheet(isPresented: isPresented) {
             content()
-                .platformAdaptiveFrame() // Uses content analysis for optimal sizing
+                .platformAdaptiveFrame()
+                .platformPresentationFrame(sizes: sizes)
         }
         #else
         return self.sheet(isPresented: isPresented) {
             content()
+                .platformPresentationFrame(sizes: sizes)
         }
         #endif
     }
@@ -2556,10 +2521,13 @@ public extension View {
 
 
     /// Platform-specific export sheet
-    /// iOS: Wraps in NavigationStack with detents; macOS: Returns content directly
+    /// Defaults to `[.medium, .large]` so iOS keeps medium↔large drag stops; override with
+    /// `.small` / `.exact` as needed (#384).
+    @MainActor
     @ViewBuilder
     func platformExportSheet<Content: View>(
         isPresented: Binding<Bool>,
+        sizes: [PlatformPresentationSize] = [.medium, .large],
         @ViewBuilder content: @escaping () -> Content
     ) -> some View {
         #if os(iOS)
@@ -2568,25 +2536,30 @@ public extension View {
                 NavigationStack {
                     content()
                 }
-                .platformPresentationDetents([.medium, .large])
+                .platformPresentationFrame(sizes: sizes)
+                .platformPresentationDetents(fromSizes: sizes)
             }
         } else {
             self.sheet(isPresented: isPresented) {
                 content()
+                    .platformPresentationFrame(sizes: sizes)
             }
         }
         #else
         self.sheet(isPresented: isPresented) {
             content()
+                .platformPresentationFrame(sizes: sizes)
         }
         #endif
     }
 
     /// Platform-specific help sheet
-    /// iOS: Wraps in NavigationStack; macOS: Returns content directly
+    /// Defaults to `[.large]`; pass `.small` / `.medium` / `.exact` to override (#384).
+    @MainActor
     @ViewBuilder
     func platformHelpSheet<Content: View>(
         isPresented: Binding<Bool>,
+        sizes: [PlatformPresentationSize] = [.large],
         @ViewBuilder content: @escaping () -> Content
     ) -> some View {
         #if os(iOS)
@@ -2595,15 +2568,19 @@ public extension View {
                 NavigationStack {
                     content()
                 }
+                .platformPresentationFrame(sizes: sizes)
+                .platformPresentationDetents(fromSizes: sizes)
             }
         } else {
             self.sheet(isPresented: isPresented) {
                 content()
+                    .platformPresentationFrame(sizes: sizes)
             }
         }
         #else
         self.sheet(isPresented: isPresented) {
             content()
+                .platformPresentationFrame(sizes: sizes)
         }
         #endif
     }
@@ -2611,17 +2588,10 @@ public extension View {
 
 
     /// Platform-specific frame sizing for detail views
-    /// iOS: No frame constraints; macOS: Sets minimum width and height
+    /// Uses shared presentation size clamp (`exact` 800×600 preserves prior intent) (#384).
+    @MainActor
     func platformDetailViewFrame() -> some View {
-        #if os(macOS)
-        let clampedWidth = PlatformFrameHelpers.clampFrameSize(800, dimension: .width)
-        let clampedHeight = PlatformFrameHelpers.clampFrameSize(600, dimension: .height)
-        return self.frame(minWidth: clampedWidth, minHeight: clampedHeight)
-        #else
-        // iOS and other platforms: Apply max constraints for safety
-        let maxSize = PlatformFrameHelpers.getMaxFrameSize()
-        return self.frame(maxWidth: maxSize.width, maxHeight: maxSize.height)
-        #endif
+        self.platformPresentationFrame(sizes: [.exact(width: 800, height: 600)])
     }
 
 
@@ -2920,24 +2890,22 @@ public func platformOpenSettings(openURL: OpenURLAction) -> Bool {
     func platformModalContainer_Form_L4(
     strategy: ModalStrategy
 ) -> some View {
-    // Hardcoded for now, will become intelligent later
-    // Implement the modal container based on the strategy
-    // Convert SheetDetent to PlatformPresentationDetent
-    let platformDetents: [PlatformPresentationDetent] = strategy.detents.map { detent in
+    // Convert SheetDetent → PlatformPresentationSize (#384)
+    let sizes: [PlatformPresentationSize] = strategy.detents.map { detent in
         switch detent {
         case .small:
-            return .medium // Map small to medium for compatibility
+            return .small
         case .medium:
             return .medium
         case .large:
             return .large
         case .custom(let height):
-            return .custom(height)
+            return .exact(width: height, height: height)
         }
     }
     
     return EmptyView()
-        .platformSheet(isPresented: .constant(true), detents: platformDetents) {
+        .platformSheet(isPresented: .constant(true), sizes: sizes.isEmpty ? [.large] : sizes) {
             EmptyView()
         }
 }
