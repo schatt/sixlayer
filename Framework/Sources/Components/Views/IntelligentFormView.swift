@@ -692,21 +692,18 @@ Text(i18n.localizedString(for: "SixLayerFramework.form.title"))
         customFieldView: @escaping (String, Any, FieldType) -> some View,
         fieldHints: [String: FieldDisplayHints] = [:]
     ) -> some View {
-        platformVStackContainer(spacing: 16) {
-            // Prefer explicit important fields first (e.g., title/name), avoid alphabetic-by-type
-            let visibleFields = filterHiddenFields(analysis.fields, hints: fieldHints)
-            let orderedFields = orderFieldsByPriority(visibleFields)
-            ForEach(orderedFields, id: \.name) { field in
-                generateFieldView(
-                    field: field,
-                    initialData: initialData,
-                    dataBinder: dataBinder,
-                    inputHandlingManager: inputHandlingManager,
-                    customFieldView: customFieldView,
-                    fieldHints: fieldHints
-                )
-            }
-        }
+        let visibleFields = filterHiddenFields(analysis.fields, hints: fieldHints)
+        let orderedFields = orderFieldsByPriority(visibleFields)
+        return PackedIntelligentFormFieldsLayout(
+            fields: orderedFields,
+            initialData: initialData,
+            dataBinder: dataBinder,
+            inputHandlingManager: inputHandlingManager,
+            customFieldView: customFieldView,
+            fieldHints: fieldHints,
+            spacing: 16,
+            maxItemsPerRow: 4
+        )
     }
     
     /// Generate horizontal field layout (side-by-side fields)
@@ -718,22 +715,17 @@ Text(i18n.localizedString(for: "SixLayerFramework.form.title"))
         customFieldView: @escaping (String, Any, FieldType) -> some View,
         fieldHints: [String: FieldDisplayHints] = [:]
     ) -> some View {
-        LazyVGrid(columns: [
-            GridItem(.flexible()),
-            GridItem(.flexible())
-        ], spacing: 16) {
-            let orderedFields = orderFieldsByPriority(analysis.fields)
-            ForEach(orderedFields, id: \.name) { field in
-                generateFieldView(
-                    field: field,
-                    initialData: initialData,
-                    dataBinder: dataBinder,
-                    inputHandlingManager: inputHandlingManager,
-                    customFieldView: customFieldView,
-                    fieldHints: fieldHints
-                )
-            }
-        }
+        let orderedFields = orderFieldsByPriority(filterHiddenFields(analysis.fields, hints: fieldHints))
+        return PackedIntelligentFormFieldsLayout(
+            fields: orderedFields,
+            initialData: initialData,
+            dataBinder: dataBinder,
+            inputHandlingManager: inputHandlingManager,
+            customFieldView: customFieldView,
+            fieldHints: fieldHints,
+            spacing: 16,
+            maxItemsPerRow: 2
+        )
     }
     
     /// Generate grid field layout
@@ -746,20 +738,17 @@ Text(i18n.localizedString(for: "SixLayerFramework.form.title"))
         fieldHints: [String: FieldDisplayHints] = [:]
     ) -> some View {
         let visibleFields = filterHiddenFields(analysis.fields, hints: fieldHints)
-        let columns = min(3, max(1, Int(sqrt(Double(visibleFields.count)))))
-        return LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: columns), spacing: 16) {
-            let orderedFields = orderFieldsByPriority(visibleFields)
-            ForEach(orderedFields, id: \.name) { field in
-                generateFieldView(
-                    field: field,
-                    initialData: initialData,
-                    dataBinder: dataBinder,
-                    inputHandlingManager: inputHandlingManager,
-                    customFieldView: customFieldView,
-                    fieldHints: fieldHints
-                )
-            }
-        }
+        let orderedFields = orderFieldsByPriority(visibleFields)
+        return PackedIntelligentFormFieldsLayout(
+            fields: orderedFields,
+            initialData: initialData,
+            dataBinder: dataBinder,
+            inputHandlingManager: inputHandlingManager,
+            customFieldView: customFieldView,
+            fieldHints: fieldHints,
+            spacing: 16,
+            maxItemsPerRow: 3
+        )
     }
     
     /// Generate adaptive field layout based on content
@@ -835,7 +824,7 @@ Text(i18n.localizedString(for: "SixLayerFramework.form.title"))
     }
     
     /// Generate individual field view using our platform extensions
-    private static func generateFieldView<T>(
+    fileprivate static func generateFieldView<T>(
         field: DataField,
         initialData: T?,
         dataBinder: DataBinder<T>?,
@@ -897,6 +886,10 @@ Text(i18n.localizedString(for: "SixLayerFramework.form.title"))
                     .foregroundColor(Color.platformSecondaryLabel)
             }
         }
+        .frame(
+            maxWidth: field.preferredLayoutWidth(hints: fieldHints[field.name]),
+            alignment: .leading
+        )
         .padding(.vertical, 4)
     }
 
@@ -1149,6 +1142,74 @@ Text(i18n.localizedString(for: "SixLayerFramework.form.title"))
         }
         
         return descriptions.isEmpty ? nil : descriptions.joined(separator: " • ")
+    }
+}
+
+// MARK: - Packed IntelligentForm field layout (#385)
+
+private struct IntelligentFormSectionAvailableWidthKey: PreferenceKey {
+    static let defaultValue: CGFloat = 390
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = nextValue()
+    }
+}
+
+/// Width-aware, run-aware packing for IntelligentFormView layouts.
+@MainActor
+private struct PackedIntelligentFormFieldsLayout<T, CustomField: View>: View {
+    let fields: [DataField]
+    let initialData: T?
+    let dataBinder: DataBinder<T>?
+    let inputHandlingManager: InputHandlingManager?
+    let customFieldView: (String, Any, FieldType) -> CustomField
+    let fieldHints: [String: FieldDisplayHints]
+    let spacing: CGFloat
+    let maxItemsPerRow: Int
+    @State private var availableWidth: CGFloat = 390
+
+    var body: some View {
+        let fieldByName = Dictionary(uniqueKeysWithValues: fields.map { ($0.name, $0) })
+        let packItems = fields.map { $0.layoutPackItem(hints: fieldHints[$0.name]) }
+        let rows = FieldLayoutPacker.pack(
+            packItems,
+            availableWidth: availableWidth,
+            spacing: spacing,
+            maxItemsPerRow: maxItemsPerRow
+        )
+
+        platformVStackContainer(spacing: spacing) {
+            ForEach(Array(rows.enumerated()), id: \.offset) { _, row in
+                platformHStackContainer(alignment: .top, spacing: spacing) {
+                    ForEach(row, id: \.id) { item in
+                        if let field = fieldByName[item.id] {
+                            IntelligentFormView.generateFieldView(
+                                field: field,
+                                initialData: initialData,
+                                dataBinder: dataBinder,
+                                inputHandlingManager: inputHandlingManager,
+                                customFieldView: customFieldView,
+                                fieldHints: fieldHints
+                            )
+                            .frame(maxWidth: item.preferredWidth, alignment: .leading)
+                        }
+                    }
+                    Spacer(minLength: 0)
+                }
+            }
+        }
+        .background(
+            GeometryReader { proxy in
+                Color.clear.preference(
+                    key: IntelligentFormSectionAvailableWidthKey.self,
+                    value: proxy.size.width
+                )
+            }
+        )
+        .onPreferenceChange(IntelligentFormSectionAvailableWidthKey.self) { width in
+            if width > 0 {
+                availableWidth = width
+            }
+        }
     }
 }
 
