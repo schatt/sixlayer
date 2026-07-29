@@ -65,11 +65,10 @@ public enum FieldDisplayWidthResolver {
             uncapped = numeric
         } else if hints.isNarrow {
             uncapped = bands.narrow
+        } else if hints.isMedium {
+            uncapped = bands.medium
         } else if hints.isWide {
             uncapped = bands.wide
-        } else if let displayWidth = hints.displayWidth,
-                  displayWidth.lowercased() == "medium" {
-            uncapped = bands.medium
         } else if let expectedLength = hints.expectedLength, expectedLength > 0 {
             uncapped = CGFloat(expectedLength) * characterWidth + horizontalPadding
         } else {
