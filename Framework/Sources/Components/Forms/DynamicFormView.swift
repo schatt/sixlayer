@@ -704,7 +704,7 @@ private struct DynamicFormSectionAvailableWidthKey: PreferenceKey {
 private struct PackedDynamicFormFieldsLayout: View {
     let fields: [DynamicFormField]
     @ObservedObject var formState: DynamicFormState
-    let layoutStyle: LayoutStyle
+    let layoutStyle: FieldLayout
     @State private var availableWidth: CGFloat = 390
 
     private var spacing: CGFloat {
