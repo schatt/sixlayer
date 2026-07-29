@@ -733,18 +733,22 @@ private struct PackedDynamicFormFieldsLayout: View {
             spacing: spacing,
             maxItemsPerRow: maxItemsPerRow
         )
+        let columnWidths = FieldLayoutAligner.columnMaxWidths(rows: rows)
 
         platformVStackContainer(spacing: spacing) {
             ForEach(Array(rows.enumerated()), id: \.offset) { _, row in
                 platformHStackContainer(alignment: .top, spacing: spacing) {
-                    ForEach(row, id: \.id) { item in
+                    ForEach(Array(row.enumerated()), id: \.element.id) { column, item in
                         if let field = fieldById[item.id] {
                             DynamicFormFieldView(
                                 field: field,
                                 formState: formState,
                                 sortPriority: 10.0 + Double(orderIndex[field.id] ?? 0)
                             )
-                            .frame(maxWidth: item.preferredWidth, alignment: .leading)
+                            .frame(
+                                maxWidth: alignedWidth(column: column, item: item, columnWidths: columnWidths),
+                                alignment: .leading
+                            )
                             .transition(.opacity)
                         }
                     }
@@ -765,6 +769,17 @@ private struct PackedDynamicFormFieldsLayout: View {
                 availableWidth = width
             }
         }
+    }
+
+    private func alignedWidth(
+        column: Int,
+        item: FieldLayoutPackItem,
+        columnWidths: [CGFloat]
+    ) -> CGFloat? {
+        if column < columnWidths.count, columnWidths[column] > 0 {
+            return columnWidths[column]
+        }
+        return item.preferredWidth
     }
 }
 
