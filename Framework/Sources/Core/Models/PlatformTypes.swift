@@ -1240,9 +1240,10 @@ public struct FieldDisplayHints: Sendable {
         return displayWidth?.lowercased() == "narrow"
     }
     
-    /// Determine if display width is medium
+    /// Determine if display width is explicitly medium.
+    /// Nil `displayWidth` means no band preference (fall through to `expectedLength` or flexible width) — not medium (#385).
     public var isMedium: Bool {
-        return displayWidth?.lowercased() == "medium" || displayWidth == nil
+        return displayWidth?.lowercased() == "medium"
     }
     
     /// Determine if display width is wide
