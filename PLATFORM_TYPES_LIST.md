@@ -99,7 +99,7 @@ Complete list of all `Platform*` types in the SixLayer Framework codebase, organ
 64. **`PlatformColorCardExamples`** (struct, View)
 65. **`PlatformAnyShapeStyle`** (struct, ShapeStyle)
 66. **`PlatformAnimation`** (enum)
-65. **`PlatformToolbarPlacement`** (enum)
+67. **`PlatformToolbarPlacement`** (enum)
 
 ---
 
