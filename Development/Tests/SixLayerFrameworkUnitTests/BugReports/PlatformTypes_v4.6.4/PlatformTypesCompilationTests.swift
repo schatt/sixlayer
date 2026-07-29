@@ -359,29 +359,29 @@ struct PlatformTypesCompilationTests {
         let decision = ModalLayoutDecision(
             presentationType: .sheet,
             sizing: .medium,
-            detents: [.small, .medium, .large],
+            sizes: [.small, .medium, .large],
             platformConstraints: [:]
         )
         #expect(decision.presentationType == .sheet)
         #expect(decision.sizing == .medium)
-        #expect(decision.detents.count == 3)
-        // Note: SheetDetent doesn't conform to Equatable, so we can't use contains
+        #expect(decision.sizes.count == 3)
+        #expect(decision.sizes.contains(.small))
+        #expect(decision.sizes.contains(.medium))
+        #expect(decision.sizes.contains(.large))
         #expect(decision.platformConstraints.isEmpty)
     }
     
-    @Test @MainActor func testSheetDetentCompilation() {
-        // Verify SheetDetent enum compiles and is accessible
-        let allDetents = SheetDetent.allCases
-        #expect(!allDetents.isEmpty)
-        // Note: SheetDetent doesn't conform to Equatable, so we can't use contains
-        // We can verify the count and that it's not empty
+    @Test @MainActor func testPlatformPresentationSizeCompilation() {
+        // Verify PlatformPresentationSize cases compile and are accessible (#384)
+        let presets: [PlatformPresentationSize] = [.small, .medium, .large]
+        #expect(presets.count == 3)
         
-        // Test custom detent
-        let customDetent = SheetDetent.custom(height: 200)
-        if case .custom(let height) = customDetent {
+        let exact = PlatformPresentationSize.exact(width: 200, height: 200)
+        if case .exact(let width, let height) = exact {
+            #expect(width == 200)
             #expect(height == 200)
         } else {
-            Issue.record("Custom detent should have height 200")
+            Issue.record("Exact size should carry width and height 200")
         }
     }
     
@@ -737,7 +737,7 @@ struct PlatformTypesCompilationTests {
         let modalDecision = ModalLayoutDecision(
             presentationType: .sheet,
             sizing: .medium,
-            detents: [.small, .medium],
+            sizes: [.small, .medium],
             platformConstraints: [:]
         )
         
