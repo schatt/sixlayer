@@ -356,6 +356,23 @@ public extension View {
         #endif
     }
 
+    /// Apply iOS presentation detents projected from `PlatformPresentationSize` hints (#384).
+    /// No-op on non-iOS platforms. Accepts `.small`, `.medium`, `.large`, `.exact`.
+    @ViewBuilder
+    func platformPresentationDetents(fromSizes sizes: [PlatformPresentationSize]) -> some View {
+        #if os(iOS)
+        if #available(iOS 16.0, *) {
+            self.presentationDetents(
+                PlatformPresentationSizeResolver.presentationDetents(for: sizes)
+            )
+        } else {
+            self
+        }
+        #else
+        self
+        #endif
+    }
+
     // MARK: - Toolbar Configuration
 
     /// Platform-specific toolbar for form views with save/cancel actions
