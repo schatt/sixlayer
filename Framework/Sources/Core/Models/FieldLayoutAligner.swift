@@ -23,9 +23,16 @@ public enum FieldLayoutAligner {
     /// Index `i` is the max of `preferredWidth` (treating `nil` as 0) for items at column `i`
     /// in every row. Uneven rows contribute only for columns they contain.
     public static func columnMaxWidths(rows: [[FieldLayoutPackItem]]) -> [CGFloat] {
-        // DELIBERATE RED stub (#385)
-        _ = rows
-        return []
+        let columnCount = rows.map(\.count).max() ?? 0
+        guard columnCount > 0 else { return [] }
+
+        return (0..<columnCount).map { column in
+            rows.reduce(CGFloat(0)) { partial, row in
+                guard column < row.count else { return partial }
+                let width = row[column].preferredWidth ?? 0
+                return max(partial, width)
+            }
+        }
     }
 
     /// Shared leading inset for controls when labels sit beside them.
@@ -37,8 +44,12 @@ public enum FieldLayoutAligner {
         labelControlSpacing: CGFloat,
         arrangement: FieldLabelControlArrangement
     ) -> CGFloat {
-        // DELIBERATE RED stub (#385)
-        _ = (labelWidths, labelControlSpacing, arrangement)
-        return -1
+        switch arrangement {
+        case .labelAbove:
+            return 0
+        case .labelLeading:
+            guard let maxLabel = labelWidths.max() else { return 0 }
+            return maxLabel + labelControlSpacing
+        }
     }
 }
