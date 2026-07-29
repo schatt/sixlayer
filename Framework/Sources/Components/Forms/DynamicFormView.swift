@@ -693,7 +693,7 @@ public struct DynamicFormSectionView: View {
 // MARK: - Packed section field layout (#385)
 
 private struct DynamicFormSectionAvailableWidthKey: PreferenceKey {
-    static var defaultValue: CGFloat = 390
+    static let defaultValue: CGFloat = 390
     static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
         value = nextValue()
     }
