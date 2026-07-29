@@ -336,11 +336,13 @@ public extension View {
         #endif
     }
 
-    /// Platform-specific presentation detents using custom enum (iOS only)
-    /// Provides a more convenient way to specify presentation detents
+    /// Platform-specific presentation detents using legacy `PlatformPresentationDetent` (iOS only).
     ///
-    /// - Parameter detents: Array of platform-specific presentation detents
+    /// - Warning: Prefer ``platformPresentationDetents(fromSizes:)`` with
+    ///   ``PlatformPresentationSize`` (`.small` / `.medium` / `.large` / `.exact`).
+    /// - Parameter detents: Legacy medium/large/custom(height) array (no `.small`)
     /// - Returns: A view with platform-specific presentation detents
+    @available(*, deprecated, message: "Use platformPresentationDetents(fromSizes:) with PlatformPresentationSize")
     func platformPresentationDetents(_ detents: [PlatformPresentationDetent]) -> some View {
         #if os(iOS)
         if #available(iOS 16.0, *) {
