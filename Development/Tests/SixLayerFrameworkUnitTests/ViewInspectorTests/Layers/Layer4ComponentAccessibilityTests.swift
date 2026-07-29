@@ -179,9 +179,9 @@ open class Layer4ComponentAccessibilityTests: BaseTestClass {
         #expect(hostedView != nil, "platformSheet with nil onDismiss should render")
     }
     
-    @Test @MainActor func testPlatformSheetWithOnDismissAndDetents() async {
+    @Test @MainActor func testPlatformSheetWithOnDismissAndSizes() async {
         initializeTestConfig()
-        // Given: Sheet with both onDismiss and detents
+        // Given: Sheet with both onDismiss and sizes (.small/.medium/.large/.exact)
                 let onDismiss = {
             ()
         }
@@ -190,7 +190,7 @@ open class Layer4ComponentAccessibilityTests: BaseTestClass {
         let sheet = Text("Content")
             .platformSheet(
                 isPresented: .constant(true),
-                detents: [.medium, .large],
+                sizes: [.small, .medium, .large],
                 onDismiss: onDismiss
             ) {
                 Text("Sheet Content")
@@ -198,7 +198,7 @@ open class Layer4ComponentAccessibilityTests: BaseTestClass {
         
         // Then: Sheet should be created successfully
         let hostedView = hostRootPlatformView(sheet)
-        #expect(hostedView != nil, "platformSheet with onDismiss and detents should render")
+        #expect(hostedView != nil, "platformSheet with onDismiss and sizes should render")
     }
     
     // MARK: - platformSheet Item-Based Overload Tests (TDD - RED Phase)
