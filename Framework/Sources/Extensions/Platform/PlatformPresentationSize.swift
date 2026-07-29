@@ -122,3 +122,14 @@ public enum PlatformPresentationSizeResolver {
     }
     #endif
 }
+
+// MARK: - View helpers
+
+public extension View {
+    /// Apply clamped min width/height from presentation size hints (#384).
+    @MainActor
+    func platformPresentationFrame(sizes: [PlatformPresentationSize]) -> some View {
+        let minSize = PlatformPresentationSizeResolver.clampedMinSize(for: sizes)
+        return self.frame(minWidth: minSize.width, minHeight: minSize.height)
+    }
+}
