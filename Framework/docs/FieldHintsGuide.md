@@ -532,18 +532,6 @@ When the framework lays out a list of fields:
 - Cap items per row (~3–4); consistent spacing; section boundaries win
 - Do not force a balanced `N×M` grid for neatness when widths/runs say otherwise
 
-### Numeric Widths (examples)
-
-You can specify exact widths:
-
-```json
-{
-  "customField": {
-    "displayWidth": "250"
-  }
-}
-```
-
 ## Complete Example
 
 ### 1. Create Your Data Model
