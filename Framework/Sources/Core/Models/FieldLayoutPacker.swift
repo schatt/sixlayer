@@ -36,15 +36,73 @@ public struct FieldLayoutPackItem: Identifiable, Sendable, Equatable {
 
 /// Pure packer: author order, width-aware rows, same-type runs, tall/wide isolation.
 public enum FieldLayoutPacker {
-    /// Packs `items` into rows. Does not reorder globally by kind.
+    /// Packs `items` into rows without reordering.
+    ///
+    /// Rules:
+    /// - Preserve author order
+    /// - Keep contiguous same-`kind` runs together (never glue run tail to a different kind)
+    /// - `tall` and `wideFlex` always occupy their own row
+    /// - Respect `availableWidth`, `spacing`, and `maxItemsPerRow`
     public static func pack(
         _ items: [FieldLayoutPackItem],
         availableWidth: CGFloat,
         spacing: CGFloat,
         maxItemsPerRow: Int
     ) -> [[FieldLayoutPackItem]] {
-        // DELIBERATE RED stub (#385): one field per row — wrong until green.
-        _ = (availableWidth, spacing, maxItemsPerRow)
-        return items.map { [$0] }
+        var rows: [[FieldLayoutPackItem]] = []
+        var index = 0
+        let maxPerRow = max(1, maxItemsPerRow)
+
+        while index < items.count {
+            let item = items[index]
+
+            if item.kind == .tall || item.kind == .wideFlex {
+                rows.append([item])
+                index += 1
+                continue
+            }
+
+            // Flexible (nil preferred): alone on a row; do not merge into a multi-field strip.
+            if item.preferredWidth == nil {
+                rows.append([item])
+                index += 1
+                continue
+            }
+
+            var row: [FieldLayoutPackItem] = []
+            var usedWidth: CGFloat = 0
+            let runKind = item.kind
+
+            while index < items.count {
+                let candidate = items[index]
+                guard candidate.kind == runKind else { break }
+                guard candidate.kind != .tall, candidate.kind != .wideFlex else { break }
+
+                guard let width = candidate.preferredWidth else {
+                    // Next in run is flexible — flush current row first; flexible handled next iteration.
+                    break
+                }
+
+                if row.isEmpty {
+                    row.append(candidate)
+                    usedWidth = width
+                    index += 1
+                    continue
+                }
+
+                if row.count >= maxPerRow { break }
+                if usedWidth + spacing + width > availableWidth { break }
+
+                row.append(candidate)
+                usedWidth += spacing + width
+                index += 1
+            }
+
+            if !row.isEmpty {
+                rows.append(row)
+            }
+        }
+
+        return rows
     }
 }
