@@ -15,9 +15,19 @@ import AppKit
 
 /// Cross-platform intent for how large a presented surface should be.
 ///
-/// - Important: Prefer this over raw SwiftUI `PresentationDetent`. Detents are an
-///   iOS-only projection used for sheet snap heights; macOS and iPad multitasking
+/// Cases: ``small``, ``medium``, ``large``, ``exact(width:height:)``.
+///
+/// - Important: Prefer this over raw SwiftUI `PresentationDetent` and over
+///   deprecated `PlatformPresentationDetent`. Detents are an iOS-only
+///   projection used for sheet snap heights; macOS and iPad multitasking
 ///   use clamped min width and height from the same size hint.
+///
+/// | Case | Unclamped min | iOS detent projection |
+/// |------|---------------|------------------------|
+/// | `.small` | 400×300 | `.medium` |
+/// | `.medium` | 820×640 | `.medium` |
+/// | `.large` | 1024×800 | `.large` |
+/// | `.exact(w,h)` | w×h | `.height(h)` (+ width via frame) |
 public enum PlatformPresentationSize: Sendable, Equatable {
     case small
     case medium
