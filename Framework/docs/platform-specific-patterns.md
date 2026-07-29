@@ -258,22 +258,46 @@ List {
 
 ### Sheet and Alert Modifiers
 
-#### `platformSheet<SheetContent: View>(isPresented: Binding<Bool>, detents: [PlatformPresentationDetent], @ViewBuilder content: () -> SheetContent)`
+#### `platformSheet<SheetContent: View>(isPresented: Binding<Bool>, sizes: [PlatformPresentationSize], @ViewBuilder content: () -> SheetContent)`
 
-Provides consistent sheet presentation across platforms.
+Provides consistent sheet presentation across platforms using `PlatformPresentationSize` (#384).
+
+**Size hints** (not raw SwiftUI detents):
+
+| Hint | Unclamped min | iOS detent projection | Frame |
+|------|---------------|----------------------|--------|
+| `.small` | 400×300 | `.medium` | clamped min width/height |
+| `.medium` | 820×640 | `.medium` | clamped min width/height |
+| `.large` | 1024×800 | `.large` | clamped min width/height |
+| `.exact(w,h)` | w×h | `.height(h)` (+ width via frame) | clamped min width/height |
+
+Multi-value arrays (e.g. `[.small, .medium, .large]`) become multiple iOS detent stops; the **largest** size is the clamped min frame on iOS (including iPad multitasking) and macOS. Detents are an iOS-only projection — macOS has no detents; it uses the clamped min frame from the same `sizes`.
 
 ```swift
 VStack {
     Text("Main Content")
 }
-.platformSheet(isPresented: $showingSheet, detents: [.medium, .large]) {
+.platformSheet(
+    isPresented: $showingSheet,
+    sizes: [.small, .medium, .large]
+) {
     VStack {
         Text("Sheet Content")
         Button("Dismiss") { showingSheet = false }
     }
     .navigationTitle("Sheet Title")
 }
+
+// Exact width + height (clamped on all platforms):
+.platformSheet(
+    isPresented: $showingExact,
+    sizes: [.exact(width: 900, height: 700)]
+) {
+    DetailForm()
+}
 ```
+
+Related L4 APIs: `platformSheet_L4(..., sizes:)`, `platformPopover_L4(..., sizes:)` (default `[.small]`), `platformExportSheet(..., sizes:)` (default `[.medium, .large]`), `platformHelpSheet(..., sizes:)` (default `[.large]`). System alerts are not sized by `PlatformPresentationSize`.
 
 #### `platformAlert(isPresented: Binding<Bool>, title: String, message: String?, primaryButton: Alert.Button, secondaryButton: Alert.Button?)`
 
@@ -499,7 +523,7 @@ For views that are presented as sheets.
 ```swift
 struct MySheetView: PlatformSheetView {
     let isPresented: Binding<Bool>
-    let detents: [PlatformPresentationDetent]
+    let sizes: [PlatformPresentationSize]
     
     @ViewBuilder
     func buildForiOS() -> some View {
@@ -518,7 +542,7 @@ struct MySheetView: PlatformSheetView {
             Text("macOS Sheet Content")
             Button("Dismiss") { isPresented.wrappedValue = false }
         }
-        .frame(minWidth: 400, minHeight: 300)
+        .platformPresentationFrame(sizes: sizes)
     }
 }
 ```

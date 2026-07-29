@@ -178,23 +178,23 @@ public struct AdaptiveUIPatterns {
             case .ios:
                 if #available(iOS 16.0, *) {
                     content
-                        .presentationDetents([.medium, .large])
+                        .platformPresentationFrame(sizes: [.medium, .large])
+                        .platformPresentationDetents(fromSizes: [.medium, .large])
                         .presentationDragIndicator(.visible)
                 } else {
                     content
+                        .platformPresentationFrame(sizes: [.medium, .large])
                 }
             case .macOS:
                 content
-                    .frame(minWidth: 400, minHeight: 300)
-                    .frame(maxWidth: 600, maxHeight: 500)
+                    .platformPresentationFrame(sizes: [.small])
             case .watchOS:
                 content
             case .tvOS:
                 content
             case .visionOS:
                 content
-                    .frame(minWidth: 500, minHeight: 400)
-                    .frame(maxWidth: 800, maxHeight: 600)
+                    .platformPresentationFrame(sizes: [.medium])
             }
         }
         
@@ -606,20 +606,23 @@ public struct ListContext: Sendable {
 // MARK: - View Extensions
 
 public extension View {
-    /// Apply adaptive modal styling
+    /// Apply adaptive modal styling using `PlatformPresentationSize` (#384).
+    /// Defaults to `[.medium, .large]` on iOS (drag stops) and `[.small]` on macOS.
+    @MainActor
     func adaptiveModal() -> some View {
         #if os(iOS)
         if #available(iOS 16.0, *) {
             return self
-                .presentationDetents([.medium, .large])
+                .platformPresentationFrame(sizes: [.medium, .large])
+                .platformPresentationDetents(fromSizes: [.medium, .large])
                 .presentationDragIndicator(.visible)
         } else {
             return self
+                .platformPresentationFrame(sizes: [.medium, .large])
         }
         #elseif os(macOS)
         return self
-            .frame(minWidth: 400, minHeight: 300)
-            .frame(maxWidth: 600, maxHeight: 500)
+            .platformPresentationFrame(sizes: [.small])
         #else
         return self
         #endif
