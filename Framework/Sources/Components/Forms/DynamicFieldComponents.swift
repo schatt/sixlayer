@@ -85,7 +85,19 @@ public struct CustomFieldView: View {
                 DynamicCustomField(field: field, formState: formState)
             }
         }
+        // Field layout claim from FieldDisplayHints (#385) — production path, not only L1.
+        .frame(maxWidth: preferredFieldWidth, alignment: .leading)
         .automaticComplianceForDynamicFormField(field)
+    }
+
+    /// Preferred horizontal field claim from hints (numeric → band → expectedLength).
+    private var preferredFieldWidth: CGFloat? {
+        FieldDisplayWidthResolver.preferredWidth(
+            hints: field.displayHints,
+            characterWidth: 9,
+            horizontalPadding: 16,
+            bands: FieldDisplayWidthPlatformBands.forPlatform(SixLayerPlatform.current)
+        )
     }
 }
 
