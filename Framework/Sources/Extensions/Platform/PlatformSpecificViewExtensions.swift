@@ -2909,22 +2909,10 @@ public func platformOpenSettings(openURL: OpenURLAction) -> Bool {
     func platformModalContainer_Form_L4(
     strategy: ModalStrategy
 ) -> some View {
-    // Convert SheetDetent → PlatformPresentationSize (#384)
-    let sizes: [PlatformPresentationSize] = strategy.detents.map { detent in
-        switch detent {
-        case .small:
-            return .small
-        case .medium:
-            return .medium
-        case .large:
-            return .large
-        case .custom(let height):
-            return .exact(width: height, height: height)
-        }
-    }
-    
+    // sizes flow from Layer 3 ModalStrategy → platformSheet (#384)
+    let sizes = strategy.sizes.isEmpty ? [PlatformPresentationSize.large] : strategy.sizes
     return EmptyView()
-        .platformSheet(isPresented: .constant(true), sizes: sizes.isEmpty ? [.large] : sizes) {
+        .platformSheet(isPresented: .constant(true), sizes: sizes) {
             EmptyView()
         }
 }
