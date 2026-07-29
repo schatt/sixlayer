@@ -26,7 +26,7 @@ open class ModalContainerTests: BaseTestClass {
         return ModalStrategy(
             presentationType: presentationType,
             sizing: sizing,
-            sizes: detents,
+            sizes: sizes,
             platformOptimizations: platformOptimizations
         )
     }
