@@ -2341,6 +2341,8 @@ public struct GenericFormView: View {
                                 .background(Color.platformSecondaryBackground)
                         }
                     }
+                    .frame(maxWidth: field.preferredLayoutWidth(), alignment: .leading)
+                    .applyFieldHints(field.displayHints)
                     .padding(.vertical, 4)
                 }
             }
