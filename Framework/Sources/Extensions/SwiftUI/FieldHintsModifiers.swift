@@ -12,46 +12,36 @@ import SwiftUI
 /// Modifier that applies field-level display hints to views
 public struct FieldHintsModifier: ViewModifier {
     let fieldHints: FieldDisplayHints?
-    
+
+    /// Approximate average character width for `expectedLength` when no font metrics are injected.
+    private static let defaultCharacterWidth: CGFloat = 9
+    private static let defaultHorizontalPadding: CGFloat = 16
+
     public init(_ fieldHints: FieldDisplayHints?) {
         self.fieldHints = fieldHints
     }
-    
+
     public func body(content: Content) -> some View {
         content
-            .frame(width: displayWidth, alignment: .leading)
+            .frame(maxWidth: preferredWidth, alignment: .leading)
             .overlay(alignment: .trailing) {
                 if showCharacterCounter {
                     CharacterCounterOverlay()
                 }
             }
     }
-    
+
     // MARK: - Private Computed Properties
-    
-    private var displayWidth: CGFloat? {
-        guard let fieldHints = fieldHints else { return nil }
-        
-        // Try to get specific numeric width
-        if let width = fieldHints.displayWidthValue() {
-            return width
-        }
-        
-        // Use semantic widths
-        if fieldHints.isNarrow {
-            return 150  // Narrow fields
-        } else if fieldHints.isWide {
-            return 400  // Wide fields
-        }
-        
-        // Medium or default width
-        if fieldHints.displayWidth != nil {
-            return 200  // Medium fields
-        }
-        
-        return nil  // No specific width constraint
+
+    private var preferredWidth: CGFloat? {
+        FieldDisplayWidthResolver.preferredWidth(
+            hints: fieldHints,
+            characterWidth: Self.defaultCharacterWidth,
+            horizontalPadding: Self.defaultHorizontalPadding,
+            bands: FieldDisplayWidthPlatformBands.forPlatform(SixLayerPlatform.current)
+        )
     }
-    
+
     private var showCharacterCounter: Bool {
         return fieldHints?.showCharacterCounter ?? false
     }
@@ -62,7 +52,7 @@ public struct FieldHintsModifier: ViewModifier {
 /// Overlay view that displays character count
 private struct CharacterCounterOverlay: View {
     @Environment(\.fieldTextContent) var textContent
-    
+
     var body: some View {
         if let text = textContent {
             Text("\(text.count)")
@@ -95,5 +85,3 @@ public extension View {
         modifier(FieldHintsModifier(hints))
     }
 }
-
-
