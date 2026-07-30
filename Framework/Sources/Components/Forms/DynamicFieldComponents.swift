@@ -94,8 +94,8 @@ public struct CustomFieldView: View {
     private var preferredFieldWidth: CGFloat? {
         FieldDisplayWidthResolver.preferredWidth(
             hints: field.displayHints,
-            characterWidth: 9,
-            horizontalPadding: 16,
+            characterWidth: FieldDisplayCharacterMetrics.averageCharacterWidth(),
+            horizontalPadding: FieldDisplayCharacterMetrics.defaultHorizontalPadding,
             bands: FieldDisplayWidthPlatformBands.forPlatform(SixLayerPlatform.current)
         )
     }
