@@ -13,10 +13,6 @@ import SwiftUI
 public struct FieldHintsModifier: ViewModifier {
     let fieldHints: FieldDisplayHints?
 
-    /// Approximate average character width for `expectedLength` when no font metrics are injected.
-    private static let defaultCharacterWidth: CGFloat = 9
-    private static let defaultHorizontalPadding: CGFloat = 16
-
     public init(_ fieldHints: FieldDisplayHints?) {
         self.fieldHints = fieldHints
     }
@@ -36,8 +32,8 @@ public struct FieldHintsModifier: ViewModifier {
     private var preferredWidth: CGFloat? {
         FieldDisplayWidthResolver.preferredWidth(
             hints: fieldHints,
-            characterWidth: Self.defaultCharacterWidth,
-            horizontalPadding: Self.defaultHorizontalPadding,
+            characterWidth: FieldDisplayCharacterMetrics.averageCharacterWidth(),
+            horizontalPadding: FieldDisplayCharacterMetrics.defaultHorizontalPadding,
             bands: FieldDisplayWidthPlatformBands.forPlatform(SixLayerPlatform.current)
         )
     }
