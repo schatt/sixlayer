@@ -24,29 +24,32 @@ final class Layer6UITests: XCTestCase {
         continueAfterFailure = false
         addDefaultUIInterruptionMonitor()
 
-        if let existing = Self.sharedApp, existing.state == .runningForeground {
-            app = existing
-            return
-        }
+        nonisolated(unsafe) let instance = self
+        MainActor.assumeIsolated {
+            if let existing = Self.sharedApp, existing.state == .runningForeground {
+                instance.app = existing
+                return
+            }
 
-        if let running = Self.sharedApp, running.state != .notRunning {
-            running.terminate()
-            _ = running.wait(for: .notRunning, timeout: 5.0)
-        }
-        Self.sharedApp = nil
+            if let running = Self.sharedApp, running.state != .notRunning {
+                running.terminate()
+                _ = running.wait(for: .notRunning, timeout: 5.0)
+            }
+            Self.sharedApp = nil
 
-        let localApp = XCUIApplication()
-        localApp.configureForFastTesting()
-        localApp.launchArguments.append("-OpenLayer6Examples")
-        localApp.launch()
-        app = localApp
-        XCTAssertTrue(localApp.wait(for: .runningForeground, timeout: Self.rootReadyTimeout),
-                      "App should reach foreground")
-        XCTAssertTrue(
-            localApp.waitForHostRootIdentifier("layer6-examples-host-root", timeout: Self.rootReadyTimeout),
-            "App should open on Layer 6 Examples (launch arg)"
-        )
-        Self.sharedApp = localApp
+            let localApp = XCUIApplication()
+            localApp.configureForFastTesting()
+            localApp.launchArguments.append("-OpenLayer6Examples")
+            localApp.launch()
+            instance.app = localApp
+            XCTAssertTrue(localApp.wait(for: .runningForeground, timeout: Self.rootReadyTimeout),
+                          "App should reach foreground")
+            XCTAssertTrue(
+                localApp.waitForHostRootIdentifier("layer6-examples-host-root", timeout: Self.rootReadyTimeout),
+                "App should open on Layer 6 Examples (launch arg)"
+            )
+            Self.sharedApp = localApp
+        }
     }
 
     nonisolated override func tearDownWithError() throws {
@@ -55,11 +58,13 @@ final class Layer6UITests: XCTestCase {
     }
 
     override class func tearDown() {
-        if let running = sharedApp, running.state != .notRunning {
-            running.terminate()
-            _ = running.wait(for: .notRunning, timeout: 5.0)
+        MainActor.assumeIsolated {
+            if let running = sharedApp, running.state != .notRunning {
+                running.terminate()
+                _ = running.wait(for: .notRunning, timeout: 5.0)
+            }
+            sharedApp = nil
         }
-        sharedApp = nil
         super.tearDown()
     }
 
