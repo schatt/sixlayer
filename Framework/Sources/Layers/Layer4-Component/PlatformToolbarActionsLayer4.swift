@@ -205,9 +205,7 @@ public struct PlatformToolbarActionItem: Identifiable {
 /// Visible + overflow chrome for packing (Issue #352).
 ///
 /// Separated from ``PlatformToolbarActionsContent`` so ViewInspector can observe
-/// overflow without traversing opaque toolbar content.
-///
-/// **Stub (TDD red):** overflow items render as plain labels (no `platformMenu` / Menu).
+/// overflow without traversing opaque toolbar content. Overflow uses ``platformMenu``.
 public struct PlatformToolbarActionsChrome: View {
     public let visible: [PlatformToolbarActionItem]
     public let overflow: [PlatformToolbarActionItem]
@@ -231,13 +229,14 @@ public struct PlatformToolbarActionsChrome: View {
             ForEach(visible) { item in
                 toolbarActionButton(item)
             }
-            // Deliberate stub: no platformMenu — ViewInspector must fail to find Menu.
             if !overflow.isEmpty {
                 Image(systemName: overflowSystemImage)
                     .accessibilityLabel(Text(overflowTitle))
-                ForEach(overflow) { item in
-                    Text(item.label)
-                }
+                    .platformMenu {
+                        ForEach(overflow) { item in
+                            toolbarActionButton(item)
+                        }
+                    }
             }
         }
     }
