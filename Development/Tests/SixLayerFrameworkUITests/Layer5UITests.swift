@@ -26,30 +26,33 @@ final class Layer5UITests: XCTestCase {
         continueAfterFailure = false
         addDefaultUIInterruptionMonitor()
 
-        if let existing = Self.sharedApp, existing.state == .runningForeground {
-            app = existing
-            return
-        }
+        nonisolated(unsafe) let instance = self
+        MainActor.assumeIsolated {
+            if let existing = Self.sharedApp, existing.state == .runningForeground {
+                instance.app = existing
+                return
+            }
 
-        if let running = Self.sharedApp, running.state != .notRunning {
-            running.terminate()
-            _ = running.wait(for: .notRunning, timeout: 5.0)
-        }
-        Self.sharedApp = nil
+            if let running = Self.sharedApp, running.state != .notRunning {
+                running.terminate()
+                _ = running.wait(for: .notRunning, timeout: 5.0)
+            }
+            Self.sharedApp = nil
 
-        let localApp = XCUIApplication()
-        localApp.configureForFastTesting()
-        localApp.launchArguments.append("-OpenLayer5Accessibility")
-        localApp.launch()
-        app = localApp
-        XCTAssertTrue(localApp.wait(for: .runningForeground, timeout: Self.rootReadyTimeout),
-                      "App should reach foreground")
-        XCTAssertTrue(
-            localApp.waitForHostRootIdentifier("layer5-examples-host-root", timeout: Self.rootReadyTimeout),
-            "App should open on Layer 5 Examples (launch arg)"
-        )
-        // Assign only after host land succeeds (#370).
-        Self.sharedApp = localApp
+            let localApp = XCUIApplication()
+            localApp.configureForFastTesting()
+            localApp.launchArguments.append("-OpenLayer5Accessibility")
+            localApp.launch()
+            instance.app = localApp
+            XCTAssertTrue(localApp.wait(for: .runningForeground, timeout: Self.rootReadyTimeout),
+                          "App should reach foreground")
+            XCTAssertTrue(
+                localApp.waitForHostRootIdentifier("layer5-examples-host-root", timeout: Self.rootReadyTimeout),
+                "App should open on Layer 5 Examples (launch arg)"
+            )
+            // Assign only after host land succeeds (#370).
+            Self.sharedApp = localApp
+        }
     }
 
     nonisolated override func tearDownWithError() throws {
