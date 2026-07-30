@@ -43,11 +43,13 @@ public enum FieldLayoutPackedSection {
             spacing: spacing,
             maxItemsPerRow: maxItemsPerRow
         )
-        // Deliberate wrong inset for #385 red evidence — replaced in green.
         return FieldLayoutPackedSectionPlan(
             rows: rows,
             columnWidths: FieldLayoutAligner.columnMaxWidths(rows: rows),
-            controlLeadingInset: 99
+            controlLeadingInset: FieldLayoutAligner.packedFormControlLeadingInset(
+                labelWidths: labelWidths,
+                labelControlSpacing: labelControlSpacing
+            )
         )
     }
 }
