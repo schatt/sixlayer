@@ -616,13 +616,8 @@ Text(i18n.localizedString(for: "SixLayerFramework.form.title"))
         _ layout: FieldLayout,
         provided: [String: FieldDisplayHints]
     ) -> [String: FieldDisplayHints] {
-        // Deliberate stub: mirrors prior generateFormContent `.grid` omission (returns empty).
-        switch layout {
-        case .grid:
-            return [:]
-        default:
-            return provided
-        }
+        _ = layout
+        return provided
     }
     
     /// Generate the main form content using our platform extensions
