@@ -22,26 +22,33 @@ v8.3.5 is a **patch** release focused on:
 
 ### **FieldDisplayHints layout (#385)**
 
+Framework-owned form surfaces now resolve preferred field width and pack/align controls from `FieldDisplayHints` instead of ignoring or hard-coding layout:
+
 - Width resolution: numeric → named band (platform table) → `expectedLength` × font metrics → flex; always `min(preferred, availableWidth)`.
 - Pack preserves author order; same-type runs; tall/wideFlex isolated; checkbox/toggle stay intrinsic within claim.
-- `PresentationHints.fieldHints[id]` wins over field `displayHints`.
-- Shared production path: `FieldLayoutPackedSection.plan` (+ `packedFormControlLeadingInset`).
-- APIs: `FieldDisplayWidthResolver`, `FieldLayoutPacker`, `FieldLayoutAligner`, `FieldLayoutPackedSection` / `FieldLayoutPackedSectionPlan`, `FieldLayoutControlSizing`, `PresentationHints.resolvedFieldDisplayHints`.
+- Size is the field slot; controls do not stretch beyond claim when marked intrinsic.
+- `PresentationHints.fieldHints[id]` wins over field `displayHints` when both are present.
+- Shared production path: `FieldLayoutPackedSection.plan` (+ `packedFormControlLeadingInset`, currently 0 for label-above).
+- Surfaces wired: DynamicForm, IntelligentForm, GenericForm/ModalForm (including DataField / CustomFieldView paths).
+- APIs: `FieldDisplayWidthResolver`, `FieldLayoutPacker`, `FieldLayoutAligner`, `FieldLayoutPackedSection` / `FieldLayoutPackedSectionPlan`, `FieldLayoutControlSizing`, `PresentationHints.resolvedFieldDisplayHints`, plus layout-pack bridges on `DynamicFormField` / `DataField`.
+- Docs: FieldHintsGuide / FieldHintsCompleteGuide / AI_AGENT_v4.8.0 named width bands aligned to the platform table.
 
 ### **PlatformPresentationSize (#384, #386)**
 
-- Cross-platform sheet/popover sizing via `PlatformPresentationSize`.
-- Remaining 400×300-style hard-coded frames routed through the shared API.
+- Introduces unified cross-platform presentation sizing via `PlatformPresentationSize` (`.small` / `.medium` / `.large` / `.exact(width:height:)`).
+- Wired through L4 sheets/popovers, extension sheets, UIPatterns, and Layer 3 modal layout decisions.
+- Follow-up (#386) routes remaining hard-coded 400×300-style frames through the shared API so sheet/popover chrome stays consistent.
 
 ### **Toolbar overflow Menu (#352)**
 
-- Overflow path in `PlatformToolbarActionsChrome` wired through `platformMenu`.
-- ViewInspector coverage for toolbar packing overflow Menu.
+- Completes space-aware toolbar action packing: overflow path in `PlatformToolbarActionsChrome` uses `platformMenu` (SwiftUI `Menu` on iOS).
+- Adds ViewInspector coverage for toolbar packing overflow Menu so packing behavior is observed without relying only on XCUI.
 
 ### **UITest / TestKit MainActor (#387)**
 
-- `@MainActor` / `MainActor.assumeIsolated` for XCUI setUp/tearDown and TestKit navigators/resolvers.
-- Related compile/deprecation cleanup in the UITest lane.
+- Clears Swift 6 / Xcode MainActor isolation and deprecation warnings in TestApp hosts, SixLayerFrameworkUITests, and SixLayerTestKit.
+- Applies `@MainActor` / `MainActor.assumeIsolated` for XCUI setUp/tearDown and TestKit navigators/resolvers.
+- Keeps production API unchanged; scope is test/host compile hygiene.
 
 ---
 
