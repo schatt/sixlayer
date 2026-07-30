@@ -27,8 +27,8 @@ public extension DataField {
     /// Preferred width claim from hints using the shared resolver.
     func preferredLayoutWidth(
         hints: FieldDisplayHints?,
-        characterWidth: CGFloat = 9,
-        horizontalPadding: CGFloat = 16,
+        characterWidth: CGFloat = FieldDisplayCharacterMetrics.averageCharacterWidth(),
+        horizontalPadding: CGFloat = FieldDisplayCharacterMetrics.defaultHorizontalPadding,
         bands: FieldDisplayWidthPlatformBands = .forPlatform(SixLayerPlatform.current),
         availableWidth: CGFloat? = nil
     ) -> CGFloat? {
