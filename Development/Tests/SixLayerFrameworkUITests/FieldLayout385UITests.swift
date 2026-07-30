@@ -10,7 +10,7 @@ import XCTest
 
 @MainActor
 final class FieldLayout385UITests: XCTestCase {
-    private var app: XCUIApplication!
+    private nonisolated(unsafe) var app: XCUIApplication!
 
     nonisolated override func setUpWithError() throws {
         continueAfterFailure = false
