@@ -612,7 +612,7 @@ Text(i18n.localizedString(for: "SixLayerFramework.form.title"))
 
     /// Hints map passed into every field-layout generator.
     /// Must preserve caller hints for ``FieldLayout/grid`` (GitHub #385) — do not fall back to `[:]`.
-    static func fieldHintsForLayout(
+    nonisolated static func fieldHintsForLayout(
         _ layout: FieldLayout,
         provided: [String: FieldDisplayHints]
     ) -> [String: FieldDisplayHints] {
