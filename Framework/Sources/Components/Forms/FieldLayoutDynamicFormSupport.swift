@@ -42,18 +42,19 @@ public extension DynamicFormField {
     }
 
     /// Packer input for this field.
-    /// Deliberate stub: ignores `hints` override and `availableWidth` (red until green).
     func layoutPackItem(
         hints: FieldDisplayHints? = nil,
         bands: FieldDisplayWidthPlatformBands = .forPlatform(SixLayerPlatform.current),
         availableWidth: CGFloat? = nil
     ) -> FieldLayoutPackItem {
-        _ = hints
-        _ = availableWidth
-        return FieldLayoutPackItem(
+        FieldLayoutPackItem(
             id: id,
             kind: layoutPackKind,
-            preferredWidth: preferredLayoutWidth(bands: bands)
+            preferredWidth: preferredLayoutWidth(
+                hints: hints,
+                bands: bands,
+                availableWidth: availableWidth
+            )
         )
     }
 }
