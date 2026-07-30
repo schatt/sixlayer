@@ -18,6 +18,23 @@ public enum FieldLabelControlArrangement: String, Sendable, Equatable {
 
 /// Pure alignment helpers for framework-owned field layouts.
 public enum FieldLayoutAligner {
+    /// Arrangement used by current packed form chrome (label stacked above the control).
+    /// Label-leading chrome should switch this and supply measured `labelWidths`.
+    public static let packedFormFieldArrangement: FieldLabelControlArrangement = .labelAbove
+
+    /// Leading padding applied to each packed field for ``packedFormFieldArrangement``.
+    /// Today always `0` (label-above); kept on the production path so label-leading can plug in.
+    public static func packedFormControlLeadingInset(
+        labelWidths: [CGFloat] = [],
+        labelControlSpacing: CGFloat = 8
+    ) -> CGFloat {
+        sharedControlLeadingInset(
+            labelWidths: labelWidths,
+            labelControlSpacing: labelControlSpacing,
+            arrangement: packedFormFieldArrangement
+        )
+    }
+
     /// Per-column max preferred width across packed rows so peer columns line up.
     ///
     /// Index `i` is the max of `preferredWidth` (treating `nil` as 0) for items at column `i`
