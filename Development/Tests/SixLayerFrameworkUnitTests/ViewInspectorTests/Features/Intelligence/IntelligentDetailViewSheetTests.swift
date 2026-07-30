@@ -151,7 +151,7 @@ struct IntelligentDetailViewSheetTests {
         
         // Verify the view compiles and can be inspected with frame constraints
         #if canImport(ViewInspector)
-        if let inspector = try? AnyView(detailView).inspect() {
+        if (try? AnyView(detailView).inspect()) != nil {
             // If we can inspect with frame constraints, the view respects them
             #expect(Bool(true), "platformDetailView should accept frame constraints for sheet sizing")
         } else {
@@ -180,7 +180,7 @@ struct IntelligentDetailViewSheetTests {
         
         // Verify NavigationStack + platformDetailView works
         #if canImport(ViewInspector)
-        if let inspector = try? AnyView(sheetContent).inspect() {
+        if (try? AnyView(sheetContent).inspect()) != nil {
             #expect(Bool(true), "platformDetailView should work with NavigationStack in sheets")
         } else {
             Issue.record("platformDetailView should work in NavigationStack")
@@ -200,20 +200,16 @@ struct IntelligentDetailViewSheetTests {
         let textData: [String: String] = ["name": "Test"]
         
         // All should work in sheet context - verify they can be inspected
-        do {
-            let taskDetail = IntelligentDetailView.platformDetailView(for: task)
-            let _ = try? AnyView(taskDetail).inspect()
+        let taskDetail = IntelligentDetailView.platformDetailView(for: task)
+        let _ = try? AnyView(taskDetail).inspect()
 
-            let numericDetail = IntelligentDetailView.platformDetailView(for: numericData)
-            let _ = try? AnyView(numericDetail).inspect()
+        let numericDetail = IntelligentDetailView.platformDetailView(for: numericData)
+        let _ = try? AnyView(numericDetail).inspect()
 
-            let textDetail = IntelligentDetailView.platformDetailView(for: textData)
-            let _ = try? AnyView(textDetail).inspect()
+        let textDetail = IntelligentDetailView.platformDetailView(for: textData)
+        let _ = try? AnyView(textDetail).inspect()
 
-            #expect(Bool(true), "platformDetailView should work with different data types in sheets")
-        } catch {
-            Issue.record("platformDetailView should work with different data types")
-        }
+        #expect(Bool(true), "platformDetailView should work with different data types in sheets")
     }
     
     /// Verify that platformDetailView generates accessibility identifiers in sheet context
