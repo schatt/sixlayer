@@ -1349,5 +1349,16 @@ public struct PresentationHints: Sendable {
     public func hasHints(forFieldId fieldId: String) -> Bool {
         return fieldHints[fieldId] != nil
     }
+
+    /// Resolve display hints for a form field id (GitHub #385).
+    /// Presentation-level `fieldHints` win over the field's own display hints.
+    /// Deliberate stub: ignores presentation map (red until green).
+    public func resolvedFieldDisplayHints(
+        fieldId: String,
+        fieldDisplayHints: FieldDisplayHints?
+    ) -> FieldDisplayHints? {
+        _ = fieldId
+        return fieldDisplayHints
+    }
 }
 
