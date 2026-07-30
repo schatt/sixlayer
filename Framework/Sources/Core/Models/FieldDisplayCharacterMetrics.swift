@@ -19,6 +19,9 @@ public enum FieldDisplayCharacterMetrics {
     /// Horizontal padding added when sizing from `expectedLength`.
     public static let defaultHorizontalPadding: CGFloat = 16
 
+    /// Sample used to estimate average glyph advance for proportional fonts.
+    private static let sample = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+
     /// Approximate average character width for a text style at a content size.
     ///
     /// Uses ``DynamicFontResolver`` platform fonts and measures a representative
@@ -27,8 +30,21 @@ public enum FieldDisplayCharacterMetrics {
         textStyle: SixLayerTextStyle = .body,
         contentSize: SixLayerContentSizeCategory = .large
     ) -> CGFloat {
-        // DELIBERATE RED stub (#385)
-        _ = (textStyle, contentSize)
-        return 0
+        let resolver = DynamicFontResolver(defaultContentSize: contentSize)
+        #if os(iOS)
+        let font = resolver.uiFont(for: textStyle, contentSize: contentSize)
+        let attributes: [NSAttributedString.Key: Any] = [.font: font]
+        let size = (sample as NSString).size(withAttributes: attributes)
+        return max(size.width / CGFloat(sample.count), 1)
+        #elseif os(macOS)
+        let font = resolver.nsFont(for: textStyle, contentSize: contentSize)
+        let attributes: [NSAttributedString.Key: Any] = [.font: font]
+        let size = (sample as NSString).size(withAttributes: attributes)
+        return max(size.width / CGFloat(sample.count), 1)
+        #else
+        _ = (resolver, textStyle)
+        // Fallback when platform font metrics are unavailable.
+        return 9
+        #endif
     }
 }
