@@ -85,15 +85,9 @@ public final class WindowRenderingTestHelper {
     public func findAccessibilityElement(by identifier: String, in window: NSWindow) -> Any? {
         // Start from the hosting controller's view if available, otherwise use contentView
         // SwiftUI views are hosted in NSHostingController, so we need to search from there
-        let rootView: NSView?
-        if let hostingController = window.contentViewController,
-           hostingController.view != nil {
-            // Use the hosting controller's view (this is where SwiftUI views are rendered)
-            rootView = hostingController.view
-        } else {
-            // Fall back to contentView if no hosting controller
-            rootView = window.contentView
-        }
+        // Prefer the hosting controller's view (where SwiftUI renders); fall back to contentView.
+        // `NSViewController.view` is non-optional, so do not nil-check it.
+        let rootView: NSView? = window.contentViewController.map(\.view) ?? window.contentView
         
         guard let windowElement = rootView else {
             return nil
@@ -135,13 +129,12 @@ public final class WindowRenderingTestHelper {
                 }
             }
             
-            // Check NSAccessibility protocol
-            if let accessibilityElement = element as? NSAccessibilityElement {
-                if let accessibilityId = accessibilityElement.accessibilityIdentifier() as? String,
-                   !accessibilityId.isEmpty,
-                   accessibilityId == identifier {
-                    return true
-                }
+            // Check NSAccessibility protocol (`accessibilityIdentifier()` is already `String?`)
+            if let accessibilityElement = element as? NSAccessibilityElement,
+               let accessibilityId = accessibilityElement.accessibilityIdentifier(),
+               !accessibilityId.isEmpty,
+               accessibilityId == identifier {
+                return true
             }
             
             // Also try accessing via NSAccessibility protocol directly using dynamic method invocation
@@ -187,11 +180,10 @@ public final class WindowRenderingTestHelper {
                 }
             }
             
-            if let accessibilityElement = element as? NSAccessibilityElement {
-                if let accessibilityId = accessibilityElement.accessibilityIdentifier() as? String,
-                   !accessibilityId.isEmpty {
-                    allIdentifiers.append("NSAccessibilityElement: \(accessibilityId)")
-                }
+            if let accessibilityElement = element as? NSAccessibilityElement,
+               let accessibilityId = accessibilityElement.accessibilityIdentifier(),
+               !accessibilityId.isEmpty {
+                allIdentifiers.append("NSAccessibilityElement: \(accessibilityId)")
             }
             
             // Also check via dynamic method invocation
@@ -220,33 +212,24 @@ public final class WindowRenderingTestHelper {
             var accessibilityChildren: [Any] = []
             
             if let view = element as? NSView {
-                // Try unignored children first (more reliable for SwiftUI)
+                // Prefer unignored children (more reliable for SwiftUI); else raw children.
                 if let children = view.accessibilityChildren() {
-                    let unignoredChildren = NSAccessibility.unignoredChildren(from: children)
-                    if let unignoredArray = unignoredChildren as? [Any] {
-                        accessibilityChildren.append(contentsOf: unignoredArray)
-                    }
-                } else if let children = view.accessibilityChildren() as? [Any] {
-                    accessibilityChildren.append(contentsOf: children)
+                    accessibilityChildren.append(
+                        contentsOf: NSAccessibility.unignoredChildren(from: children)
+                    )
                 }
-                // Also try navigation order children
-                if let navChildren = view.accessibilityChildrenInNavigationOrder() as? [Any] {
+                if let navChildren = view.accessibilityChildrenInNavigationOrder() {
                     accessibilityChildren.append(contentsOf: navChildren)
                 }
             }
             
             if let accessibilityElement = element as? NSAccessibilityElement {
-                // Try unignored children first
                 if let children = accessibilityElement.accessibilityChildren() {
-                    let unignoredChildren = NSAccessibility.unignoredChildren(from: children)
-                    if let unignoredArray = unignoredChildren as? [Any] {
-                        accessibilityChildren.append(contentsOf: unignoredArray)
-                    }
-                } else if let children = accessibilityElement.accessibilityChildren() as? [Any] {
-                    accessibilityChildren.append(contentsOf: children)
+                    accessibilityChildren.append(
+                        contentsOf: NSAccessibility.unignoredChildren(from: children)
+                    )
                 }
-                // Also try navigation order children
-                if let navChildren = accessibilityElement.accessibilityChildrenInNavigationOrder() as? [Any] {
+                if let navChildren = accessibilityElement.accessibilityChildrenInNavigationOrder() {
                     accessibilityChildren.append(contentsOf: navChildren)
                 }
             }
@@ -283,9 +266,7 @@ public final class WindowRenderingTestHelper {
             
             // Additional debug: Try to find ANY accessibility element and print its properties
             print("DEBUG: Attempting to dump accessibility hierarchy...")
-            if let rootView = windowElement as? NSView {
-                dumpAccessibilityHierarchy(from: rootView, depth: 0, maxDepth: 3)
-            }
+            dumpAccessibilityHierarchy(from: windowElement, depth: 0, maxDepth: 3)
         }
         
         return result
@@ -309,16 +290,13 @@ public final class WindowRenderingTestHelper {
         
         // Check accessibility children
         if let children = view.accessibilityChildren() {
-            let unignored = NSAccessibility.unignoredChildren(from: children)
-            if let childrenArray = unignored as? [Any] {
-                for child in childrenArray {
-                    if let childView = child as? NSView {
-                        dumpAccessibilityHierarchy(from: childView, depth: depth + 1, maxDepth: maxDepth)
-                    } else if let childElement = child as? NSAccessibilityElement {
-                        let childId = childElement.accessibilityIdentifier() as? String ?? ""
-                        let childType = String(describing: type(of: childElement))
-                        print("\(indent)  \(childType): identifier='\(childId)'")
-                    }
+            for child in NSAccessibility.unignoredChildren(from: children) {
+                if let childView = child as? NSView {
+                    dumpAccessibilityHierarchy(from: childView, depth: depth + 1, maxDepth: maxDepth)
+                } else if let childElement = child as? NSAccessibilityElement {
+                    let childId = childElement.accessibilityIdentifier() ?? ""
+                    let childType = String(describing: type(of: childElement))
+                    print("\(indent)  \(childType): identifier='\(childId)'")
                 }
             }
         }
