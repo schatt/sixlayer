@@ -8218,7 +8218,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     @Test @MainActor func testFieldComponentFunctionality() async {
         self.initializeTestConfig()
-        await self.runWithTaskLocalConfig {
+        self.runWithTaskLocalConfig {
             guard let config = self.testConfig else {
                 Issue.record("testConfig is nil")
                 return
