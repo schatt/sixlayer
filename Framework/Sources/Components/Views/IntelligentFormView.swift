@@ -609,6 +609,21 @@ Text(i18n.localizedString(for: "SixLayerFramework.form.title"))
             validation: validation
         )
     }
+
+    /// Hints map passed into every field-layout generator.
+    /// Must preserve caller hints for ``FieldLayout/grid`` (GitHub #385) — do not fall back to `[:]`.
+    static func fieldHintsForLayout(
+        _ layout: FieldLayout,
+        provided: [String: FieldDisplayHints]
+    ) -> [String: FieldDisplayHints] {
+        // Deliberate stub: mirrors prior generateFormContent `.grid` omission (returns empty).
+        switch layout {
+        case .grid:
+            return [:]
+        default:
+            return provided
+        }
+    }
     
     /// Generate the main form content using our platform extensions
     private static func generateFormContent<T>(
@@ -629,7 +644,7 @@ Text(i18n.localizedString(for: "SixLayerFramework.form.title"))
                     dataBinder: dataBinder,
                     inputHandlingManager: inputHandlingManager,
                     customFieldView: customFieldView,
-                    fieldHints: fieldHints
+                    fieldHints: Self.fieldHintsForLayout(.vertical, provided: fieldHints)
                 )
                 
             case .horizontal:
@@ -639,7 +654,7 @@ Text(i18n.localizedString(for: "SixLayerFramework.form.title"))
                     dataBinder: dataBinder,
                     inputHandlingManager: inputHandlingManager,
                     customFieldView: customFieldView,
-                    fieldHints: fieldHints
+                    fieldHints: Self.fieldHintsForLayout(.horizontal, provided: fieldHints)
                 )
                 
             case .grid:
@@ -648,7 +663,8 @@ Text(i18n.localizedString(for: "SixLayerFramework.form.title"))
                     initialData: initialData,
                     dataBinder: dataBinder,
                     inputHandlingManager: inputHandlingManager,
-                    customFieldView: customFieldView
+                    customFieldView: customFieldView,
+                    fieldHints: Self.fieldHintsForLayout(.grid, provided: fieldHints)
                 )
                 
             case .adaptive:
@@ -659,7 +675,7 @@ Text(i18n.localizedString(for: "SixLayerFramework.form.title"))
                     inputHandlingManager: inputHandlingManager,
                     customFieldView: customFieldView,
                     formStrategy: formStrategy,
-                    fieldHints: fieldHints
+                    fieldHints: Self.fieldHintsForLayout(.adaptive, provided: fieldHints)
                 )
                 
             case .compact, .standard, .spacious:
