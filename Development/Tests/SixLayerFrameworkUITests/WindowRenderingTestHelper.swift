@@ -85,15 +85,7 @@ public final class WindowRenderingTestHelper {
     public func findAccessibilityElement(by identifier: String, in window: NSWindow) -> Any? {
         // Start from the hosting controller's view if available, otherwise use contentView
         // SwiftUI views are hosted in NSHostingController, so we need to search from there
-        let rootView: NSView?
-        if let hostingController = window.contentViewController,
-           hostingController.view != nil {
-            // Use the hosting controller's view (this is where SwiftUI views are rendered)
-            rootView = hostingController.view
-        } else {
-            // Fall back to contentView if no hosting controller
-            rootView = window.contentView
-        }
+        let rootView: NSView? = window.contentViewController?.view ?? window.contentView
         
         guard let windowElement = rootView else {
             return nil
@@ -137,7 +129,7 @@ public final class WindowRenderingTestHelper {
             
             // Check NSAccessibility protocol
             if let accessibilityElement = element as? NSAccessibilityElement {
-                if let accessibilityId = accessibilityElement.accessibilityIdentifier() as? String,
+                if let accessibilityId = accessibilityElement.accessibilityIdentifier(),
                    !accessibilityId.isEmpty,
                    accessibilityId == identifier {
                     return true
@@ -188,7 +180,7 @@ public final class WindowRenderingTestHelper {
             }
             
             if let accessibilityElement = element as? NSAccessibilityElement {
-                if let accessibilityId = accessibilityElement.accessibilityIdentifier() as? String,
+                if let accessibilityId = accessibilityElement.accessibilityIdentifier(),
                    !accessibilityId.isEmpty {
                     allIdentifiers.append("NSAccessibilityElement: \(accessibilityId)")
                 }
@@ -223,15 +215,11 @@ public final class WindowRenderingTestHelper {
                 // Try unignored children first (more reliable for SwiftUI)
                 if let children = view.accessibilityChildren() {
                     let unignoredChildren = NSAccessibility.unignoredChildren(from: children)
-                    if let unignoredArray = unignoredChildren as? [Any] {
-                        accessibilityChildren.append(contentsOf: unignoredArray)
-                    }
-                } else if let children = view.accessibilityChildren() as? [Any] {
-                    accessibilityChildren.append(contentsOf: children)
+                    accessibilityChildren.append(contentsOf: unignoredChildren)
                 }
                 // Also try navigation order children
-                if let navChildren = view.accessibilityChildrenInNavigationOrder() as? [Any] {
-                    accessibilityChildren.append(contentsOf: navChildren)
+                if let navChildren = view.accessibilityChildrenInNavigationOrder() {
+                    accessibilityChildren.append(contentsOf: navChildren.map { $0 as Any })
                 }
             }
             
@@ -239,15 +227,11 @@ public final class WindowRenderingTestHelper {
                 // Try unignored children first
                 if let children = accessibilityElement.accessibilityChildren() {
                     let unignoredChildren = NSAccessibility.unignoredChildren(from: children)
-                    if let unignoredArray = unignoredChildren as? [Any] {
-                        accessibilityChildren.append(contentsOf: unignoredArray)
-                    }
-                } else if let children = accessibilityElement.accessibilityChildren() as? [Any] {
-                    accessibilityChildren.append(contentsOf: children)
+                    accessibilityChildren.append(contentsOf: unignoredChildren)
                 }
                 // Also try navigation order children
-                if let navChildren = accessibilityElement.accessibilityChildrenInNavigationOrder() as? [Any] {
-                    accessibilityChildren.append(contentsOf: navChildren)
+                if let navChildren = accessibilityElement.accessibilityChildrenInNavigationOrder() {
+                    accessibilityChildren.append(contentsOf: navChildren.map { $0 as Any })
                 }
             }
             
@@ -283,9 +267,7 @@ public final class WindowRenderingTestHelper {
             
             // Additional debug: Try to find ANY accessibility element and print its properties
             print("DEBUG: Attempting to dump accessibility hierarchy...")
-            if let rootView = windowElement as? NSView {
-                dumpAccessibilityHierarchy(from: rootView, depth: 0, maxDepth: 3)
-            }
+            dumpAccessibilityHierarchy(from: windowElement, depth: 0, maxDepth: 3)
         }
         
         return result
@@ -310,15 +292,13 @@ public final class WindowRenderingTestHelper {
         // Check accessibility children
         if let children = view.accessibilityChildren() {
             let unignored = NSAccessibility.unignoredChildren(from: children)
-            if let childrenArray = unignored as? [Any] {
-                for child in childrenArray {
-                    if let childView = child as? NSView {
-                        dumpAccessibilityHierarchy(from: childView, depth: depth + 1, maxDepth: maxDepth)
-                    } else if let childElement = child as? NSAccessibilityElement {
-                        let childId = childElement.accessibilityIdentifier() as? String ?? ""
-                        let childType = String(describing: type(of: childElement))
-                        print("\(indent)  \(childType): identifier='\(childId)'")
-                    }
+            for child in unignored {
+                if let childView = child as? NSView {
+                    dumpAccessibilityHierarchy(from: childView, depth: depth + 1, maxDepth: maxDepth)
+                } else if let childElement = child as? NSAccessibilityElement {
+                    let childId = childElement.accessibilityIdentifier() ?? ""
+                    let childType = String(describing: type(of: childElement))
+                    print("\(indent)  \(childType): identifier='\(childId)'")
                 }
             }
         }
