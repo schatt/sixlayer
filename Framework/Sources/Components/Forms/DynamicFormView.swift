@@ -727,16 +727,16 @@ private struct PackedDynamicFormFieldsLayout: View {
         let orderIndex = Dictionary(uniqueKeysWithValues: fields.enumerated().map { ($0.element.id, $0.offset) })
         let fieldById = Dictionary(uniqueKeysWithValues: fields.map { ($0.id, $0) })
         let packItems = fields.map { $0.layoutPackItem(availableWidth: availableWidth) }
-        let rows = FieldLayoutPacker.pack(
-            packItems,
+        let plan = FieldLayoutPackedSection.plan(
+            items: packItems,
             availableWidth: availableWidth,
             spacing: spacing,
             maxItemsPerRow: maxItemsPerRow
         )
-        let columnWidths = FieldLayoutAligner.columnMaxWidths(rows: rows)
+        let columnWidths = plan.columnWidths
 
         platformVStackContainer(spacing: spacing) {
-            ForEach(Array(rows.enumerated()), id: \.offset) { _, row in
+            ForEach(Array(plan.rows.enumerated()), id: \.offset) { _, row in
                 platformHStackContainer(alignment: .top, spacing: spacing) {
                     ForEach(Array(row.enumerated()), id: \.element.id) { column, item in
                         if let field = fieldById[item.id] {
@@ -749,6 +749,7 @@ private struct PackedDynamicFormFieldsLayout: View {
                                 maxWidth: alignedWidth(column: column, item: item, columnWidths: columnWidths),
                                 alignment: .leading
                             )
+                            .padding(.leading, plan.controlLeadingInset)
                             .transition(.opacity)
                         }
                     }
