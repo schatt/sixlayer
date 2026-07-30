@@ -113,7 +113,7 @@ public class TestEnvironment {
     /// Create a test environment with mock services
     @MainActor
     public static func createTestEnvironment(with testKit: SixLayerTestKit) -> EnvironmentValues {
-        var environment = EnvironmentValues()
+        let environment = EnvironmentValues()
 
         // Note: internationalizationService is not available as an environment value
         // Mock services should be injected directly into views/components being tested
