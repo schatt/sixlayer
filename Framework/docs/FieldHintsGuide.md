@@ -470,7 +470,25 @@ With the hints file above, `sizeUnit` will render as a picker with labels, while
 
 ## Display Width Guidelines
 
-Framework-owned field layouts (**DynamicForm**, **IntelligentFormView**, Layer 1 / `applyFieldHints`, and any other framework field chrome) honor `FieldDisplayHints` for preferred width and packing. Ignoring these hints in a framework-owned layout is a bug.
+Framework-owned field layouts honor `FieldDisplayHints` for preferred width, packing, and alignment. Ignoring these hints in a framework-owned layout is a bug.
+
+**Multi-field (shared packer + aligner):**
+
+| Surface | Path |
+|---------|------|
+| DynamicForm | `DynamicFormSectionView` → `PackedDynamicFormFieldsLayout` |
+| IntelligentFormView | vertical / horizontal / **grid** / adaptive → `PackedIntelligentFormFieldsLayout` |
+| GenericFormView / ModalFormView / `platformPresentModalForm_L1` | `PackedGenericFormFieldsLayout` |
+| `platformPresentFormData_L1` | `AsyncFormView` → DynamicForm |
+
+**Single-field chrome (width via `applyFieldHints`):**
+
+- `platformFormField(label:displayHints:content:)`
+- `iOSTouchFormField(..., displayHints:)`
+- `macOSDesktopFormField(..., displayHints:)`
+- `CustomFieldView` / Dynamic\*Field preferred-width defaults
+
+Read-only detail rows (`IntelligentDetailView`) are not form packing surfaces.
 
 ### Resolution order (preferred field claim)
 
