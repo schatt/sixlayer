@@ -35,6 +35,7 @@ public enum UITestContractElementResolver {
     ///   - slots: Fallback sequence; defaults to ``UITestContractXCUIQuerySlot/contractResolutionOrder``.
     ///   - configuration: Per-slot wait budget (see ``UITestContractElementResolverConfiguration``).
     /// - Returns: First matching element, or `nil` if no slot produced a matching element in time.
+    @MainActor
     public static func findFirstExisting(
         under root: XCUIElement,
         elementId: UITestElementId,

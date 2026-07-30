@@ -10,7 +10,8 @@
 import XCTest
 
 /// Thin XCUI primitives composed over ``UITestContractElementResolver`` and contract identifiers (#229).
-public final class SixLayerUITestNavigator: @unchecked Sendable {
+@MainActor
+public final class SixLayerUITestNavigator {
     private let application: XCUIApplication
     private let resolverConfiguration: UITestContractElementResolverConfiguration
     private let findFirstExisting: (XCUIElement, UITestElementId, UITestContractElementResolverConfiguration) -> XCUIElement?
