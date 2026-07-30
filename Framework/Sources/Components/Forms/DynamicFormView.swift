@@ -726,7 +726,7 @@ private struct PackedDynamicFormFieldsLayout: View {
     var body: some View {
         let orderIndex = Dictionary(uniqueKeysWithValues: fields.enumerated().map { ($0.element.id, $0.offset) })
         let fieldById = Dictionary(uniqueKeysWithValues: fields.map { ($0.id, $0) })
-        let packItems = fields.map { $0.layoutPackItem() }
+        let packItems = fields.map { $0.layoutPackItem(availableWidth: availableWidth) }
         let rows = FieldLayoutPacker.pack(
             packItems,
             availableWidth: availableWidth,
