@@ -26,13 +26,14 @@ public extension DynamicFormField {
 
     /// Preferred width claim from ``FieldDisplayHints`` using the shared resolver.
     func preferredLayoutWidth(
+        hints: FieldDisplayHints? = nil,
         characterWidth: CGFloat = FieldDisplayCharacterMetrics.averageCharacterWidth(),
         horizontalPadding: CGFloat = FieldDisplayCharacterMetrics.defaultHorizontalPadding,
         bands: FieldDisplayWidthPlatformBands = .forPlatform(SixLayerPlatform.current),
         availableWidth: CGFloat? = nil
     ) -> CGFloat? {
         FieldDisplayWidthResolver.preferredWidth(
-            hints: displayHints,
+            hints: hints ?? displayHints,
             characterWidth: characterWidth,
             horizontalPadding: horizontalPadding,
             bands: bands,
@@ -41,10 +42,15 @@ public extension DynamicFormField {
     }
 
     /// Packer input for this field.
+    /// Deliberate stub: ignores `hints` override and `availableWidth` (red until green).
     func layoutPackItem(
-        bands: FieldDisplayWidthPlatformBands = .forPlatform(SixLayerPlatform.current)
+        hints: FieldDisplayHints? = nil,
+        bands: FieldDisplayWidthPlatformBands = .forPlatform(SixLayerPlatform.current),
+        availableWidth: CGFloat? = nil
     ) -> FieldLayoutPackItem {
-        FieldLayoutPackItem(
+        _ = hints
+        _ = availableWidth
+        return FieldLayoutPackItem(
             id: id,
             kind: layoutPackKind,
             preferredWidth: preferredLayoutWidth(bands: bands)
