@@ -12,6 +12,7 @@ Space-aware toolbar packing owns **density** across platforms. It keeps up to *K
 |-----|------|
 | `platformMenu` ([#321](https://github.com/schatt/sixlayer/issues/321)) | Small Menu primitive (`Menu { } label: { }` on iOS/macOS; label passthrough elsewhere) |
 | `platformToolbarActions_L4` / `PlatformToolbarActionsPacker` (#352) | Capacity + priority packing that *uses* `platformMenu` for overflow |
+| `PlatformToolbarActionsChrome` | Inspectable visible + overflow chrome used inside `PlatformToolbarActionsContent` (ViewInspector can observe Menu; toolbar content itself is opaque) |
 | System toolbar `…` collapse | Opaque, placement-dependent OS behavior — **not** used here |
 
 Use bare `platformMenu` when you already know you want a Menu. Use packing when you want declared capacity and priority to decide what stays inline.
@@ -57,4 +58,5 @@ let plan = PlatformToolbarActionsPacker.renderPlan(for: descriptors, capacity: .
 
 ## Tests
 
-`PlatformToolbarActionsPackingTests` — capacity math, pins, platform defaults, partition, render plans (Menu vs no-Menu).
+- `PlatformToolbarActionsPackingTests` — capacity math, pins, platform defaults, partition, render plans (Menu vs no-Menu).
+- `PlatformToolbarActionsLayer4Tests` (ViewInspector lane) — overflow chrome exposes SwiftUI `Menu` / button labels via `platformMenu`.
