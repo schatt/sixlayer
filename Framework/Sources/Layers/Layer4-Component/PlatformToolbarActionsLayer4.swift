@@ -202,6 +202,55 @@ public struct PlatformToolbarActionItem: Identifiable {
     }
 }
 
+/// Visible + overflow chrome for packing (Issue #352).
+///
+/// Separated from ``PlatformToolbarActionsContent`` so ViewInspector can observe
+/// overflow without traversing opaque toolbar content. Overflow uses ``platformMenu``.
+public struct PlatformToolbarActionsChrome: View {
+    public let visible: [PlatformToolbarActionItem]
+    public let overflow: [PlatformToolbarActionItem]
+    public let overflowTitle: String
+    public let overflowSystemImage: String
+
+    public init(
+        visible: [PlatformToolbarActionItem],
+        overflow: [PlatformToolbarActionItem],
+        overflowTitle: String = "More",
+        overflowSystemImage: String = "ellipsis"
+    ) {
+        self.visible = visible
+        self.overflow = overflow
+        self.overflowTitle = overflowTitle
+        self.overflowSystemImage = overflowSystemImage
+    }
+
+    public var body: some View {
+        HStack(spacing: 12) {
+            ForEach(visible) { item in
+                toolbarActionButton(item)
+            }
+            if !overflow.isEmpty {
+                Image(systemName: overflowSystemImage)
+                    .accessibilityLabel(Text(overflowTitle))
+                    .platformMenu {
+                        ForEach(overflow) { item in
+                            toolbarActionButton(item)
+                        }
+                    }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func toolbarActionButton(_ item: PlatformToolbarActionItem) -> some View {
+        if let systemImage = item.systemImage {
+            Button(item.label, systemImage: systemImage, action: item.action)
+        } else {
+            Button(item.label, action: item.action)
+        }
+    }
+}
+
 /// L4 toolbar content: keep-K inline actions; remainder in ``View/platformMenu`` when supported.
 ///
 /// Does **not** rely on system toolbar fold-into-`…`. Overflow uses explicit `platformMenu`
@@ -229,22 +278,12 @@ public struct PlatformToolbarActionsContent: ToolbarContent {
 
     public var body: some ToolbarContent {
         ToolbarItemGroup(placement: placement) {
-            ForEach(visibleIDs, id: \.self) { id in
-                if let item = actionsByID[id] {
-                    toolbarActionButton(item)
-                }
-            }
-            if !overflowIDs.isEmpty {
-                Image(systemName: overflowSystemImage)
-                    .accessibilityLabel(Text(overflowTitle))
-                    .platformMenu {
-                        ForEach(overflowIDs, id: \.self) { id in
-                            if let item = actionsByID[id] {
-                                toolbarActionButton(item)
-                            }
-                        }
-                    }
-            }
+            PlatformToolbarActionsChrome(
+                visible: visibleIDs.compactMap { actionsByID[$0] },
+                overflow: overflowIDs.compactMap { actionsByID[$0] },
+                overflowTitle: overflowTitle,
+                overflowSystemImage: overflowSystemImage
+            )
         }
     }
 
@@ -275,15 +314,6 @@ public struct PlatformToolbarActionsContent: ToolbarContent {
             for: actions.map(\.descriptor),
             capacity: capacity
         )
-    }
-
-    @ViewBuilder
-    private func toolbarActionButton(_ item: PlatformToolbarActionItem) -> some View {
-        if let systemImage = item.systemImage {
-            Button(item.label, systemImage: systemImage, action: item.action)
-        } else {
-            Button(item.label, action: item.action)
-        }
     }
 }
 

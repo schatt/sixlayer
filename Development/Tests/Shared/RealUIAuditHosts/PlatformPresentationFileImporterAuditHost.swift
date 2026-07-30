@@ -23,7 +23,7 @@ struct PlatformPresentationFileImporterAuditHost: View {
                     .font(.headline)
                     .accessibilityIdentifier("platform-pres-file-audit-title")
 
-                platformText("platformPresentationDetents([PlatformPresentationDetent])")
+                platformText("platformPresentationDetents(fromSizes:)")
                     .font(.subheadline)
                     .foregroundColor(.secondary)
                 platformButton(label: "Open typed detents sheet", id: "platform-pres-typed-sheet-open") {
@@ -38,7 +38,7 @@ struct PlatformPresentationFileImporterAuditHost: View {
                         }
                     }
                     .padding()
-                    .platformPresentationDetents([.medium, .large])
+                    .platformPresentationDetents(fromSizes: [.medium, .large])
                     .accessibilityIdentifier("platform-pres-typed-sheet-root")
                 }
 

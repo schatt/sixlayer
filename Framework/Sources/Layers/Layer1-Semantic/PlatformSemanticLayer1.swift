@@ -2334,7 +2334,7 @@ public struct ModalFormView: View {
             
             Spacer()
         }
-        .frame(minWidth: 400, minHeight: 300)
+        .platformPresentationFrame(sizes: [.small])
         .background(Color.platformBackground)
         .automaticCompliance(named: "ModalFormView")
     }
