@@ -199,15 +199,15 @@ struct IntelligentDetailViewSheetTests {
         let numericData: [String: Double] = ["value": 42.0]
         let textData: [String: String] = ["name": "Test"]
         
-        // All should work in sheet context - verify they can be inspected
+        // All should work in sheet context - verify they can be inspected (`try?` does not throw)
         let taskDetail = IntelligentDetailView.platformDetailView(for: task)
-        let _ = try? AnyView(taskDetail).inspect()
+        _ = try? AnyView(taskDetail).inspect()
 
         let numericDetail = IntelligentDetailView.platformDetailView(for: numericData)
-        let _ = try? AnyView(numericDetail).inspect()
+        _ = try? AnyView(numericDetail).inspect()
 
         let textDetail = IntelligentDetailView.platformDetailView(for: textData)
-        let _ = try? AnyView(textDetail).inspect()
+        _ = try? AnyView(textDetail).inspect()
 
         #expect(Bool(true), "platformDetailView should work with different data types in sheets")
     }

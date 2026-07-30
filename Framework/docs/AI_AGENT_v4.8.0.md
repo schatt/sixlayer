@@ -158,10 +158,14 @@ DynamicFormField(
 
 ### Display Width Guidelines
 
-- **narrow** (~150pt): Postal codes, codes, short fields
-- **medium** (~200pt): Usernames, standard fields
-- **wide** (~400pt): Names, emails, addresses, descriptions
-- **numeric**: Exact width in points (e.g., `"250"`)
+Bands are semantic; points differ by platform:
+
+- **narrow** (iOS 120 / macOS 150): Postal codes, codes, short fields
+- **medium** (iOS 180 / macOS 200): Usernames, standard fields
+- **wide** (iOS 320 / macOS 400): Names, emails, addresses, descriptions
+- **numeric**: Exact width in points (e.g., `"250"`), still capped to available width
+
+Omitted `displayWidth` is not medium — fall through to `expectedLength` or flexible.
 
 ## ⚠️ Critical Guidelines
 

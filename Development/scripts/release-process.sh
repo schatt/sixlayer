@@ -19,9 +19,11 @@
 #              Mutually exclusive with --release.
 #   --force-tests  Ignore the /tmp last-pass stamp and always run unit tests (not needed with --docs).
 #
-# Test skip stamp: after a green macOS+iOS unit-test gate, HEAD is written to
-# /tmp/sixlayer-release-tests-passed (bare commit hash). Later runs skip tests when
-# every change since that commit is docs-only. See lib/release_test_stamp.sh.
+# Test skip stamp: after each platform's unit tests pass, that platform is
+# recorded for HEAD in /tmp/sixlayer-release-tests-passed. Full Step-3 skip
+# (docs-only since stamp) requires both platforms green. A retry can skip
+# only platforms already recorded. See lib/release_test_stamp.sh (#390).
+# Legacy stamps without platform fields count as both green.
 #
 # Version suggestion (when VERSION is omitted): latest local semver tag vX.Y.Z, then
 # Package.swift, then README.md. Removed tags are not visible; pass an explicit version
@@ -439,7 +441,8 @@ else
 fi
 
 # Step 3: Run tests (unit tests only per platform — no UI tests, no ViewInspector, no AllTests)
-# Skipped in --docs mode, or when a valid last-pass stamp shows only docs-only changes since then.
+# Skipped in --docs mode, or when a valid last-pass stamp shows only docs-only changes since then
+# and both platforms are green. Partial stamps skip only the platforms already passed (#390).
 MACOS_TESTS_FAILED=0
 IOS_TESTS_FAILED=0
 MACOS_XCRESULT=""
@@ -466,42 +469,57 @@ else
 
     # Run both platform unit tests even if one fails (cross-platform signal). Do not exit here:
     # remaining release checks still run so test + documentation failures appear together at the end.
+    # Record each platform as it passes so a cancel/hang mid-iOS keeps the macOS pass (#390).
 
-    echo "🧪 Running macOS unit tests (SLF-macOS-UnitTests)..."
-    # Note: do NOT use -quiet here so that any failures print detailed diagnostics
-    if ! xcodebuild test \
-        -project SixLayerFramework.xcodeproj \
-        -scheme SLF-macOS-UnitTests \
-        -destination "platform=macOS,arch=arm64" \
-        -resultBundlePath "$MACOS_XCRESULT" \
-        -quiet; then
-        MACOS_TESTS_FAILED=1
-        log_error "macOS unit tests failed."
+    PASS_COMMIT="$(git -C "$REPO_ROOT" rev-parse HEAD)"
+
+    if release_should_skip_platform_unit_tests "$REPO_ROOT" "$FORCE_TESTS" macos; then
+        echo "⏭️  Skipping macOS unit tests (already passed at stamped commit)"
     else
-        echo "✅ macOS unit tests passed"
-    fi
-
-    echo "🧪 Running iOS unit tests on Simulator (SLF-iOS-UnitTests)..."
-    echo "🧹 Pruning unavailable iOS Simulators..."
-    xcrun simctl delete unavailable 2>/dev/null || true
-    IOS_SIM_NAME="${SLF_IOS_TEST_SIMULATOR:-iPhone 17 Pro Max}"
-    if ! xcrun simctl list devices available | grep -q "${IOS_SIM_NAME} ("; then
-        IOS_RUNTIME=$(xcrun simctl list runtimes available -j | python3 -c "import json,sys; rs=[r for r in json.load(sys.stdin).get('runtimes',[]) if r.get('isAvailable') and 'iOS' in r.get('name','')]; print(sorted(rs,key=lambda r:r.get('version',''))[-1]['identifier'] if rs else '')")
-        if [ -n "$IOS_RUNTIME" ]; then
-            echo "📱 Creating iOS Simulator: ${IOS_SIM_NAME} (${IOS_RUNTIME})"
-            xcrun simctl create "$IOS_SIM_NAME" com.apple.CoreSimulator.SimDeviceType.iPhone-16-Pro "$IOS_RUNTIME" >/dev/null 2>&1 || true
+        echo "🧪 Running macOS unit tests (SLF-macOS-UnitTests)..."
+        # Note: do NOT use -quiet here so that any failures print detailed diagnostics
+        if ! rtk xcodebuild test \
+            -project SixLayerFramework.xcodeproj \
+            -scheme SLF-macOS-UnitTests \
+            -destination "platform=macOS,arch=arm64" \
+            -resultBundlePath "$MACOS_XCRESULT" \
+            -quiet; then
+            MACOS_TESTS_FAILED=1
+            log_error "macOS unit tests failed."
+        else
+            echo "✅ macOS unit tests passed"
+            release_test_stamp_record_platform_pass "$PASS_COMMIT" macos
+            echo "💾 Recorded macOS unit-test pass at $PASS_COMMIT → $(release_test_stamp_path)"
         fi
     fi
-    if ! xcodebuild test \
-        -project SixLayerFramework.xcodeproj \
-        -scheme SLF-iOS-UnitTests \
-        -destination "platform=iOS Simulator,name=${IOS_SIM_NAME}" \
-        -resultBundlePath "$IOS_XCRESULT" \
-        -quiet; then
-        IOS_TESTS_FAILED=1
-        log_error "iOS unit tests failed."
+
+    if release_should_skip_platform_unit_tests "$REPO_ROOT" "$FORCE_TESTS" ios; then
+        echo "⏭️  Skipping iOS unit tests (already passed at stamped commit)"
     else
-        echo "✅ iOS unit tests passed"
+        echo "🧪 Running iOS unit tests on Simulator (SLF-iOS-UnitTests)..."
+        echo "🧹 Pruning unavailable iOS Simulators..."
+        xcrun simctl delete unavailable 2>/dev/null || true
+        IOS_SIM_NAME="${SLF_IOS_TEST_SIMULATOR:-iPhone 17 Pro Max}"
+        if ! xcrun simctl list devices available | grep -q "${IOS_SIM_NAME} ("; then
+            IOS_RUNTIME=$(xcrun simctl list runtimes available -j | python3 -c "import json,sys; rs=[r for r in json.load(sys.stdin).get('runtimes',[]) if r.get('isAvailable') and 'iOS' in r.get('name','')]; print(sorted(rs,key=lambda r:r.get('version',''))[-1]['identifier'] if rs else '')")
+            if [ -n "$IOS_RUNTIME" ]; then
+                echo "📱 Creating iOS Simulator: ${IOS_SIM_NAME} (${IOS_RUNTIME})"
+                xcrun simctl create "$IOS_SIM_NAME" com.apple.CoreSimulator.SimDeviceType.iPhone-16-Pro "$IOS_RUNTIME" >/dev/null 2>&1 || true
+            fi
+        fi
+        if ! rtk xcodebuild test \
+            -project SixLayerFramework.xcodeproj \
+            -scheme SLF-iOS-UnitTests \
+            -destination "platform=iOS Simulator,name=${IOS_SIM_NAME}" \
+            -resultBundlePath "$IOS_XCRESULT" \
+            -quiet; then
+            IOS_TESTS_FAILED=1
+            log_error "iOS unit tests failed."
+        else
+            echo "✅ iOS unit tests passed"
+            release_test_stamp_record_platform_pass "$PASS_COMMIT" ios
+            echo "💾 Recorded iOS unit-test pass at $PASS_COMMIT → $(release_test_stamp_path)"
+        fi
     fi
 
     # Release gate runs unit tests only (SLF-*-UnitTests). UI/ViewInspector/AllTests are not run here.
@@ -510,12 +528,17 @@ else
         echo "📎 macOS xcresult: $MACOS_XCRESULT" >&2
         echo "📎 iOS xcresult:   $IOS_XCRESULT" >&2
         echo "💡 Inspect: xcrun xcresulttool get test-results summary --path <path>" >&2
-    else
+        if release_test_stamp_both_platforms_passed 2>/dev/null; then
+            :
+        else
+            echo "📎 Partial stamp retained for platforms that already passed; retry will skip those." >&2
+        fi
+    elif release_test_stamp_both_platforms_passed; then
         echo "✅ Unit test suite validation passed (macOS + iOS unit tests only)"
-        PASS_COMMIT="$(git -C "$REPO_ROOT" rev-parse HEAD)"
-        release_test_stamp_write "$PASS_COMMIT"
-        echo "💾 Recorded unit-test gate pass at $PASS_COMMIT → $(release_test_stamp_path)"
+        echo "💾 Unit-test gate complete at $PASS_COMMIT → $(release_test_stamp_path)"
         echo "   (tests only — stamp is written even if later doc checks fail)"
+    else
+        echo "⚠️  Unit test gate incomplete (unexpected missing platform stamp)." >&2
     fi
 fi
 

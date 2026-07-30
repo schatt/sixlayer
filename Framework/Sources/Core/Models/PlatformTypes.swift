@@ -1240,9 +1240,10 @@ public struct FieldDisplayHints: Sendable {
         return displayWidth?.lowercased() == "narrow"
     }
     
-    /// Determine if display width is medium
+    /// Determine if display width is explicitly medium.
+    /// Nil `displayWidth` means no band preference (fall through to `expectedLength` or flexible width) — not medium (#385).
     public var isMedium: Bool {
-        return displayWidth?.lowercased() == "medium" || displayWidth == nil
+        return displayWidth?.lowercased() == "medium"
     }
     
     /// Determine if display width is wide
@@ -1347,6 +1348,15 @@ public struct PresentationHints: Sendable {
     /// Check if hints exist for a specific field
     public func hasHints(forFieldId fieldId: String) -> Bool {
         return fieldHints[fieldId] != nil
+    }
+
+    /// Resolve display hints for a form field id (GitHub #385).
+    /// Presentation-level `fieldHints` win over the field's own display hints.
+    public func resolvedFieldDisplayHints(
+        fieldId: String,
+        fieldDisplayHints: FieldDisplayHints?
+    ) -> FieldDisplayHints? {
+        fieldHints[fieldId] ?? fieldDisplayHints
     }
 }
 

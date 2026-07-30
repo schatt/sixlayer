@@ -195,9 +195,10 @@ open class DynamicFormViewTests: BaseTestClass {
             cancelButtonText: "Cancel"
         )
 
+        var submittedData: [String: Any]? = nil
         let view = DynamicFormView(
             configuration: configuration,
-            onSubmit: { _ in }
+            onSubmit: { data in submittedData = data }
         )
 
         // Should render proper form structure
@@ -213,6 +214,7 @@ open class DynamicFormViewTests: BaseTestClass {
         #else
         // View is created successfully (non-optional parameter), so test passes
         #endif
+        #expect(submittedData == nil, "onSubmit should not fire during construction/inspection")
     }
 
     /// Issue #224: `formHeaderVisibility: .hidden` must not render configuration title/description as inline header (strict TDD hosted layer).
@@ -2193,9 +2195,6 @@ open class DynamicFormViewTests: BaseTestClass {
             configuration: configuration,
             onSubmit: { _ in }
         )
-        
-        // Verify view was created successfully
-        #expect(Bool(true), "View should be created successfully")
     }
 
     @Test @MainActor func testDynamicFormViewAppliesHintsFromMetadataWhenModelNameProvided() async throws {
@@ -2259,8 +2258,6 @@ open class DynamicFormViewTests: BaseTestClass {
             configuration: configuration,
             onSubmit: { _ in }
         )
-        
-        #expect(Bool(true), "View should be created successfully with hints applied")
     }
     
     @Test @MainActor func testDynamicFormViewAppliesCalculationHints() async throws {
@@ -2321,8 +2318,6 @@ open class DynamicFormViewTests: BaseTestClass {
             configuration: configuration,
             onSubmit: { _ in }
         )
-        
-        #expect(Bool(true), "View should be created successfully with calculation hints")
     }
     
     @Test @MainActor func testDynamicFormViewHandlesMissingHintsFile() async {
@@ -2367,8 +2362,6 @@ open class DynamicFormViewTests: BaseTestClass {
             configuration: configuration,
             onSubmit: { _ in }
         )
-        
-        #expect(Bool(true), "View should be created successfully even without hints file")
     }
     
     @Test @MainActor func testDynamicFormViewAppliesHintsToMultipleSections() async throws {
@@ -2444,8 +2437,6 @@ open class DynamicFormViewTests: BaseTestClass {
             configuration: configuration,
             onSubmit: { _ in }
         )
-        
-        #expect(Bool(true), "View should be created successfully with hints in multiple sections")
     }
     
     // MARK: - Entity Creation Tests (Issue #92)
@@ -2482,8 +2473,7 @@ open class DynamicFormViewTests: BaseTestClass {
                 name: "TestModel",
                 managedObjectModel: model
             )
-            
-            _ = container.viewContext
+            #expect(!container.viewContext.hasChanges, "Fresh test context should have no pending changes")
             
             // Create hints file for User entity
             let hintsJSON: [String: Any] = [
@@ -2519,25 +2509,27 @@ open class DynamicFormViewTests: BaseTestClass {
                 modelName: uniqueModelName
             )
             
-            // WHEN: Form is constructed with entity-creation callbacks wired
+            var submittedValues: [String: Any]? = nil
+            var createdEntity: Any? = nil
+            
+            // WHEN: Form is constructed with callbacks wired
             _ = DynamicFormView(
                 configuration: configuration,
-                onSubmit: { _ in },
-                onEntityCreated: { _ in }
+                onSubmit: { values in
+                    submittedValues = values
+                },
+                onEntityCreated: { entity in
+                    createdEntity = entity
+                }
             )
             
-            // Simulate form submission by accessing formState and calling handleSubmit
-            // Note: In a real scenario, user would fill form and click submit
-            // For testing, we'll directly set values and trigger submit
             let formState = DynamicFormState(configuration: configuration)
             formState.setValue("John Doe", for: "name")
             formState.setValue("john@example.com", for: "email")
             
-            // Manually trigger entity creation (simulating submit button press)
-            // We need to access the private handleSubmit, so we'll test via the view's environment
-            // Actually, we can test by creating a test view that exposes the submit handler
-            
-            // For now, verify the view can be created and configuration is correct
+            // Construction alone must not fire submit/entity callbacks
+            #expect(submittedValues == nil, "onSubmit should not fire until form is submitted")
+            #expect(createdEntity == nil, "onEntityCreated should not fire until form is submitted")
             #expect(configuration.modelName == uniqueModelName, "Configuration should have modelName")
             
             cleanupTestEnvironment()
@@ -2586,7 +2578,7 @@ open class DynamicFormViewTests: BaseTestClass {
                 }
             )
             
-            // THEN: View should be created (onSubmit will be called on actual submit)
+            // THEN: Construction must not invoke callbacks
             #expect(!onSubmitCalled, "onSubmit should not be called until form is submitted")
             #expect(!onEntityCreatedCalled, "onEntityCreated should not be called until form is submitted")
             
@@ -2618,15 +2610,24 @@ open class DynamicFormViewTests: BaseTestClass {
                 // modelName is nil by default
             )
             
-            // WHEN: Form is created without modelName
+            var onSubmitCalled = false
+            var onEntityCreatedCalled = false
+            
+            // WHEN: Form is created
             _ = DynamicFormView(
                 configuration: configuration,
-                onSubmit: { _ in },
-                onEntityCreated: { _ in }
+                onSubmit: { _ in
+                    onSubmitCalled = true
+                },
+                onEntityCreated: { _ in
+                    onEntityCreatedCalled = true
+                }
             )
             
-            // THEN: View should be created successfully
+            // THEN: Construction succeeds; callbacks stay quiet until submit
             #expect(configuration.modelName == nil, "Configuration should have nil modelName")
+            #expect(!onSubmitCalled, "onSubmit should not be called until form is submitted")
+            #expect(!onEntityCreatedCalled, "onEntityCreated should not be called until form is submitted")
             
             cleanupTestEnvironment()
         }

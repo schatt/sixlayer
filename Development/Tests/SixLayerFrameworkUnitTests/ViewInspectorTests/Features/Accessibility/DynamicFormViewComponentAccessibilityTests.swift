@@ -462,11 +462,10 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
         // Should render proper selection UI
         #if canImport(ViewInspector)
         if let inspected = try? AnyView(view).inspect() {
-            let vStacks = (try? inspected.findAll(ViewType.VStack.self)) ?? []
+            let vStacks = inspected.findAll(ViewType.VStack.self)
             if let vStack = vStacks.first {
                 #expect(vStack.count >= 2, "Should have label and Picker")
 
-                // Look for text content anywhere in the VStack
                 let textElements = vStack.findAll(ViewType.Text.self)
                 let hasExpectedLabel = textElements.contains { text in
                     if let textContent = try? text.string() {
@@ -477,11 +476,8 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
                 #expect(hasExpectedLabel, "Should contain label text 'Country'")
             }
 
-            // Should have accessibility identifier
-            // TODO: ViewInspector Detection Issue - VERIFIED: DynamicSelectField DOES have .automaticCompliance() 
+            // TODO: ViewInspector Detection Issue - VERIFIED: DynamicSelectField DOES have .automaticCompliance()
             // modifier applied in Framework/Sources/Components/Forms/DynamicSelectField.swift:53.
-            // The test needs to be updated to handle ViewInspector's inability to detect these modifiers reliably.
-            #if canImport(ViewInspector)
             let hasAccessibilityID = testComponentComplianceSinglePlatform(
                 view,
                 expectedPattern: "SixLayer.main.ui.*DynamicSelectField.*",
@@ -489,12 +485,7 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
                 componentName: "DynamicSelectField"
             )
             #expect(hasAccessibilityID, "Should generate accessibility identifier ")
-            #else
-            // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-            // The modifier IS present in the code, but ViewInspector can't detect it on macOS
-            #endif
 
-            // Form state should contain the selected value
             let selectValue: String? = formState.getValue(for: "test-select-field")
             #expect(selectValue == "USA", "Form state should contain selected value")
         } else {
@@ -777,9 +768,6 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
         // Verify error count is correct (3 total errors)
         #expect(formState.errorCount == 3, "Should have 3 validation errors")
         #expect(formState.hasValidationErrors, "Should have validation errors")
-        
-        // View should be created successfully
-        #expect(Bool(true), "FormValidationSummary should be created with multiple errors")
     }
     
     // MARK: - ScrollViewReader Wrapper Tests

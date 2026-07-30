@@ -12,46 +12,52 @@ import SwiftUI
 /// Modifier that applies field-level display hints to views
 public struct FieldHintsModifier: ViewModifier {
     let fieldHints: FieldDisplayHints?
-    
-    public init(_ fieldHints: FieldDisplayHints?) {
+    let controlSizing: FieldLayoutControlSizing
+    let availableWidth: CGFloat?
+
+    public init(
+        _ fieldHints: FieldDisplayHints?,
+        controlSizing: FieldLayoutControlSizing = .fillClaim,
+        availableWidth: CGFloat? = nil
+    ) {
         self.fieldHints = fieldHints
+        self.controlSizing = controlSizing
+        self.availableWidth = availableWidth
     }
-    
+
     public func body(content: Content) -> some View {
-        content
-            .frame(width: displayWidth, alignment: .leading)
+        sized(content)
             .overlay(alignment: .trailing) {
                 if showCharacterCounter {
                     CharacterCounterOverlay()
                 }
             }
     }
-    
-    // MARK: - Private Computed Properties
-    
-    private var displayWidth: CGFloat? {
-        guard let fieldHints = fieldHints else { return nil }
-        
-        // Try to get specific numeric width
-        if let width = fieldHints.displayWidthValue() {
-            return width
+
+    @ViewBuilder
+    private func sized(_ content: Content) -> some View {
+        switch controlSizing {
+        case .fillClaim:
+            content.frame(maxWidth: preferredWidth, alignment: .leading)
+        case .intrinsicWithinClaim:
+            content
+                .fixedSize(horizontal: true, vertical: false)
+                .frame(maxWidth: preferredWidth, alignment: .leading)
         }
-        
-        // Use semantic widths
-        if fieldHints.isNarrow {
-            return 150  // Narrow fields
-        } else if fieldHints.isWide {
-            return 400  // Wide fields
-        }
-        
-        // Medium or default width
-        if fieldHints.displayWidth != nil {
-            return 200  // Medium fields
-        }
-        
-        return nil  // No specific width constraint
     }
-    
+
+    // MARK: - Private Computed Properties
+
+    private var preferredWidth: CGFloat? {
+        FieldDisplayWidthResolver.preferredWidth(
+            hints: fieldHints,
+            characterWidth: FieldDisplayCharacterMetrics.averageCharacterWidth(),
+            horizontalPadding: FieldDisplayCharacterMetrics.defaultHorizontalPadding,
+            bands: FieldDisplayWidthPlatformBands.forPlatform(SixLayerPlatform.current),
+            availableWidth: availableWidth
+        )
+    }
+
     private var showCharacterCounter: Bool {
         return fieldHints?.showCharacterCounter ?? false
     }
@@ -62,7 +68,7 @@ public struct FieldHintsModifier: ViewModifier {
 /// Overlay view that displays character count
 private struct CharacterCounterOverlay: View {
     @Environment(\.fieldTextContent) var textContent
-    
+
     var body: some View {
         if let text = textContent {
             Text("\(text.count)")
@@ -90,10 +96,16 @@ public extension EnvironmentValues {
 // MARK: - View Extensions
 
 public extension View {
-    /// Apply field-level display hints to a view
-    func applyFieldHints(_ hints: FieldDisplayHints?) -> some View {
-        modifier(FieldHintsModifier(hints))
+    /// Apply field-level display hints to a view.
+    /// - Parameters:
+    ///   - hints: Field display hints (width, counters, etc.)
+    ///   - controlSizing: Whether the control fills the claim or stays intrinsic (#385)
+    ///   - availableWidth: Optional container cap for preferred width
+    func applyFieldHints(
+        _ hints: FieldDisplayHints?,
+        controlSizing: FieldLayoutControlSizing = .fillClaim,
+        availableWidth: CGFloat? = nil
+    ) -> some View {
+        modifier(FieldHintsModifier(hints, controlSizing: controlSizing, availableWidth: availableWidth))
     }
 }
-
-

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Unit tests for release-process test-pass stamp / docs-only skip (#342, #343).
+# Unit tests for release-process test-pass stamp / docs-only skip (#342, #343, #390).
 
 set -euo pipefail
 
@@ -59,7 +59,7 @@ assert_contains() {
     fi
 }
 
-echo "=== test_release_test_stamp (#346) ==="
+echo "=== test_release_test_stamp (#346, #390) ==="
 
 if [ ! -f "$LIB" ]; then
     echo "❌ library missing: $LIB"
@@ -113,6 +113,9 @@ release_test_stamp_write "$BASE"
 assert_eq "$(release_test_stamp_read_commit)" "$BASE" "stamp stores commit hash"
 assert_eq "$(release_test_stamp_read_release_completed)" "0" "stamp marks release not completed on test pass"
 assert_contains "$(cat "$RELEASE_TEST_STAMP_FILE")" "commit=$BASE" "stamp file uses commit= metadata"
+assert_eq "$(release_test_stamp_read_platform_passed macos)" "1" "full write marks macos passed"
+assert_eq "$(release_test_stamp_read_platform_passed ios)" "1" "full write marks ios passed"
+assert_true "full write means both platforms passed" release_test_stamp_both_platforms_passed
 
 # Same commit, clean tree → skip
 assert_true "clean tree at stamped commit skips tests" \
@@ -185,7 +188,91 @@ assert_contains "$COMPLETE_OUT" "Release from this gate: completed successfully"
 printf '%s\n' "$BASE" > "$RELEASE_TEST_STAMP_FILE"
 assert_true "legacy bare-hash stamp still skips on docs-only delta" \
     release_should_skip_unit_tests "$REPO" 0
+assert_eq "$(release_test_stamp_read_platform_passed macos)" "1" "legacy bare-hash counts as macos passed"
+assert_eq "$(release_test_stamp_read_platform_passed ios)" "1" "legacy bare-hash counts as ios passed"
 assert_contains "$STATUS_NONE" "would run (no prior test-pass stamp)" "status shows run when no stamp"
+
+# --- per-platform gate (#390) ---
+rm -f "$RELEASE_TEST_STAMP_FILE"
+git -C "$REPO" reset --hard "$BASE" >/dev/null
+
+release_test_stamp_record_platform_pass "$BASE" macos
+assert_eq "$(release_test_stamp_read_platform_passed macos)" "1" "record macos sets macos_passed"
+assert_eq "$(release_test_stamp_read_platform_passed ios)" "0" "record macos leaves ios pending"
+assert_false "macos-only stamp does not skip full unit-test step" \
+    release_should_skip_unit_tests "$REPO" 0
+assert_true "macos-only stamp skips macos platform on retry" \
+    release_should_skip_platform_unit_tests "$REPO" 0 macos
+assert_false "macos-only stamp still runs ios platform" \
+    release_should_skip_platform_unit_tests "$REPO" 0 ios
+
+PARTIAL_STATUS="$(release_print_unit_test_stamp_status "$REPO" 0)"
+assert_contains "$PARTIAL_STATUS" "partial platform gate" "status shows partial platform gate"
+assert_contains "$PARTIAL_STATUS" "macOS: would skip" "status shows macos skip on partial"
+assert_contains "$PARTIAL_STATUS" "iOS: would run" "status shows ios run on partial"
+assert_contains "$PARTIAL_STATUS" "Platforms: macos=pass ios=pending" "status shows platform line"
+
+release_test_stamp_record_platform_pass "$BASE" ios
+assert_eq "$(release_test_stamp_read_platform_passed ios)" "1" "record ios sets ios_passed"
+assert_true "both platforms recorded skips full unit-test step" \
+    release_should_skip_unit_tests "$REPO" 0
+assert_true "both platforms recorded skips macos" \
+    release_should_skip_platform_unit_tests "$REPO" 0 macos
+assert_true "both platforms recorded skips ios" \
+    release_should_skip_platform_unit_tests "$REPO" 0 ios
+
+# Docs-only after macos-only: still skip macos, run ios, no full skip
+rm -f "$RELEASE_TEST_STAMP_FILE"
+release_test_stamp_record_platform_pass "$BASE" macos
+echo 'docs after partial' >> "$REPO/README.md"
+assert_false "docs-only after macos-only does not full-skip" \
+    release_should_skip_unit_tests "$REPO" 0
+assert_true "docs-only after macos-only still skips macos" \
+    release_should_skip_platform_unit_tests "$REPO" 0 macos
+assert_false "docs-only after macos-only still runs ios" \
+    release_should_skip_platform_unit_tests "$REPO" 0 ios
+git -C "$REPO" checkout -q -- README.md
+
+# Code change after macos-only invalidates platform skip
+echo 'code after partial' >> "$REPO/Framework/Sources/A.swift"
+assert_false "code after macos-only forces macos re-run" \
+    release_should_skip_platform_unit_tests "$REPO" 0 macos
+git -C "$REPO" checkout -q -- Framework/Sources/A.swift
+
+# New commit when recording resets the other platform
+release_test_stamp_record_platform_pass "$BASE" macos
+release_test_stamp_record_platform_pass "$BASE" ios
+echo 'new code' >> "$REPO/Framework/Sources/A.swift"
+git -C "$REPO" add Framework/Sources/A.swift
+git -C "$REPO" commit -qm "code for platform reset"
+NEW_HEAD="$(git -C "$REPO" rev-parse HEAD)"
+release_test_stamp_record_platform_pass "$NEW_HEAD" macos
+assert_eq "$(release_test_stamp_read_commit)" "$NEW_HEAD" "platform record moves stamp to new commit"
+assert_eq "$(release_test_stamp_read_platform_passed macos)" "1" "new commit macos recorded"
+assert_eq "$(release_test_stamp_read_platform_passed ios)" "0" "new commit resets ios"
+assert_false "new commit macos-only does not full-skip" \
+    release_should_skip_unit_tests "$REPO" 0
+
+# --force-tests ignores partial platform skip
+assert_false "--force-tests ignores macos platform skip" \
+    release_should_skip_platform_unit_tests "$REPO" 1 macos
+
+# mark_release_complete preserves platform fields
+release_test_stamp_record_platform_pass "$NEW_HEAD" ios
+release_test_stamp_mark_release_complete
+assert_eq "$(release_test_stamp_read_release_completed)" "1" "mark complete after platforms"
+assert_eq "$(release_test_stamp_read_platform_passed macos)" "1" "mark complete keeps macos"
+assert_eq "$(release_test_stamp_read_platform_passed ios)" "1" "mark complete keeps ios"
+
+# Legacy commit= metadata without platform keys still counts as both
+cat > "$RELEASE_TEST_STAMP_FILE" <<EOF
+commit=${BASE}
+recorded_at=2026-01-01T00:00:00Z
+release_completed=0
+EOF
+git -C "$REPO" reset --hard "$BASE" >/dev/null
+assert_true "legacy commit= stamp without platform keys full-skips" \
+    release_should_skip_unit_tests "$REPO" 0
 
 # --- CLI wiring smoke (help) ---
 HELP_OUT="$("${SCRIPT_DIR}/release-process.sh" --help 2>&1 || true)"

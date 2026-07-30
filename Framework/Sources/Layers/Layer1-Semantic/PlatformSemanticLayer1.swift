@@ -1389,212 +1389,6 @@ private struct AsyncFormView: View {
     }
 }
 
-/// Helper function to create a simple **preview** field view for ``DynamicFormField`` used in Layer 1
-/// accessibility / compliance tooling.
-///
-/// **Important:** Controls here use fixed bindings (e.g. `.constant`) and do **not** read or write
-/// ``DynamicFormState``. They are intentionally non-mutative placeholders so the harness can inspect
-/// labels, traits, and layout—not a substitute for ``DynamicFormView`` / ``CustomFieldView`` in real forms.
-/// See GitHub #267.
-@ViewBuilder
-@MainActor
-private func createSimpleFieldView(for field: DynamicFormField, hints: PresentationHints, loadedHints: [String: FieldDisplayHints] = [:]) -> some View {
-    // First try loaded hints from .hints file, then fall back to field's own metadata
-    let fieldHints = loadedHints[field.id] ?? field.displayHints
-    
-    platformVStackContainer(alignment: .leading, spacing: 8) {
-        Text(field.label)
-            .font(.subheadline)
-            .fontWeight(.medium)
-        
-        // Handle text fields using cross-platform text content type
-        if let textContentType = field.textContentType {
-            // Cross-platform exhaustive switch - same behavior on all platforms
-            switch textContentType {
-            case .emailAddress, .password, .telephoneNumber, .URL, .oneTimeCode, .name, .username, .newPassword, .postalCode, .creditCardNumber, .fullStreetAddress, .jobTitle, .organizationName, .givenName, .familyName, .middleName, .namePrefix, .nameSuffix, .addressState, .countryName, .streetAddressLine1, .streetAddressLine2, .addressCity, .addressCityAndState, .sublocality, .location:
-                TextField(field.placeholder ?? "Enter \(field.label)", text: .constant(field.defaultValue ?? ""))
-                    .l1SemanticTextFieldBorderStyle()
-                    .applyFieldHints(fieldHints)
-                    .automaticCompliance(
-                        identifierElementType: "TextField",
-                        accessibilityLabel: field.label  // Issue #156: Parameter-based approach
-                    )
-                    .platformTextContentType(textContentType)
-            }
-        }
-        // Handle UI components using our custom DynamicContentType
-        else if let contentType = field.contentType {
-            switch contentType {
-            case .number, .decimal, .integer:
-                TextField(field.placeholder ?? "Enter \(field.label)", value: .constant(0), format: .number)
-                    .l1SemanticTextFieldBorderStyle()
-                    .automaticCompliance(
-                        identifierElementType: "TextField",
-                        accessibilityLabel: field.label  // Issue #156: Parameter-based approach
-                    )
-            case .stepper:
-                EmptyView().platformStepperInput(
-                    label: field.label,
-                    value: Binding.constant(0.0),
-                    in: 0...100,
-                    step: 1.0
-                )
-                .automaticComplianceForDynamicFormField(
-                    field,
-                    identifierElementType: "Stepper",
-                    accessibilityLabel: field.label  // Issue #156: Parameter-based approach
-                )
-            case .textarea, .richtext:
-                Group {
-                    #if os(tvOS)
-                    EmptyView().platformTextEditor(
-                        text: .constant(field.defaultValue ?? ""),
-                        prompt: field.placeholder
-                    )
-                    #elseif os(watchOS)
-                    TextField(field.placeholder ?? "", text: .constant(field.defaultValue ?? ""), axis: .vertical)
-                        .lineLimit(4...12)
-                    #else
-                    TextEditor(text: .constant(field.defaultValue ?? ""))
-                    #endif
-                }
-                    .frame(minHeight: 80)
-                    .applyFieldHints(fieldHints)
-                    .automaticCompliance(
-                        identifierElementType: "TextEditor",
-                        accessibilityLabel: field.label  // Issue #156: Parameter-based approach
-                    )
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 8)
-                            .stroke(Color.gray.opacity(0.3), lineWidth: 1)
-                    )
-            case .toggle, .boolean:
-                Toggle(field.label, isOn: .constant(false))
-                    .automaticComplianceForDynamicFormField(
-                        field,
-                        identifierElementType: "Toggle",
-                        accessibilityLabel: field.label  // Issue #156: Parameter-based approach
-                    )
-            case .select:
-                // Use platformPicker helper to automatically apply accessibility (Issue #163)
-                if let options = field.options, !options.isEmpty {
-                    Group {
-                        #if os(watchOS)
-                        platformPicker(
-                            label: field.label,
-                            selection: Binding.constant(""),
-                            options: options,
-                            pickerName: "Layer1SelectField"
-                        )
-                        #else
-                        platformPicker(
-                            label: field.label,
-                            selection: Binding.constant(""),
-                            options: options,
-                            pickerName: "Layer1SelectField",
-                            style: MenuPickerStyle()
-                        )
-                        #endif
-                    }
-                    .automaticCompliance(
-                        identifierElementType: "Picker",
-                        accessibilityLabel: field.label  // Issue #156: Parameter-based approach
-                    )
-                } else {
-                    let i18n = InternationalizationService()
-                    Text(field.placeholder ?? i18n.placeholderSelectOption())
-                        .foregroundColor(.secondary)
-                }
-            case .date:
-                let i18n = InternationalizationService()
-                EmptyView().platformDateInput(selection: .constant(Date()), label: field.placeholder ?? i18n.placeholderSelectDate())
-                    .automaticComplianceForDynamicFormField(
-                        field,
-                        identifierElementType: "DatePicker",
-                        accessibilityLabel: field.label  // Issue #156: Parameter-based approach
-                    )
-            case .multiDate, .dateRange:
-                // Use DatePicker as fallback for Layer1 (MultiDatePicker requires iOS 16+)
-                let i18n = InternationalizationService()
-                EmptyView().platformDateInput(selection: .constant(Date()), label: field.placeholder ?? i18n.placeholderSelectDates())
-                    .automaticComplianceForDynamicFormField(
-                        field,
-                        identifierElementType: "DatePicker",
-                        accessibilityLabel: field.label  // Issue #156: Parameter-based approach
-                    )
-            case .time:
-                let i18n = InternationalizationService()
-                EmptyView().platformTimeInput(selection: .constant(Date()), label: field.placeholder ?? i18n.placeholderSelectTime())
-                    .automaticComplianceForDynamicFormField(
-                        field,
-                        identifierElementType: "DatePicker",
-                        accessibilityLabel: field.label  // Issue #156: Parameter-based approach
-                    )
-            case .color:
-                Group {
-                    #if os(watchOS)
-                    WatchOSHexWheelPicker(
-                        label: field.label,
-                        hex: .constant(WatchOSFormPresetHexColor.normalizedHex(for: field.defaultValue ?? WatchOSFormPresetHexColor.blue.rawValue))
-                    )
-                    .selfLabelingControl(label: field.label)
-                    #else
-                    EmptyView().platformColorInput(label: field.label, selection: .constant(.blue))
-                    #endif
-                }
-                    .automaticComplianceForDynamicFormField(
-                        field,
-                        identifierElementType: "ColorPicker",
-                        accessibilityLabel: field.label  // Issue #156: Parameter-based approach
-                    )
-            case .range:
-                EmptyView().platformRangeInput(value: Binding.constant(0.5), in: 0...1)
-                    .automaticComplianceForDynamicFormField(
-                        field,
-                        identifierElementType: "Slider",
-                        accessibilityLabel: field.label  // Issue #156: Parameter-based approach
-                    )
-            case .display:
-                // Package platforms are iOS 17+ / macOS 15+ — LabeledContent is unconditional.
-                // Dead `#available(iOS 16/macOS 13)` gates inside @ViewBuilder trip Xcode 27
-                // ContentBuilder / TupleContent diagnostics (#340; cf. CarManager #679).
-                LabeledContent(field.label) {
-                    Text(field.defaultValue ?? "—")
-                        .foregroundColor(.secondary)
-                }
-            case .gauge:
-                // Gauge fields use Gauge component or fallback ProgressView
-                let min = Double(field.metadata?["min"] ?? "0") ?? 0.0
-                let max = Double(field.metadata?["max"] ?? "100") ?? 100.0
-                let value = Double(field.defaultValue ?? "0") ?? 0.0
-                EmptyView().platformGaugeInput(
-                    value: value,
-                    min: min,
-                    max: max,
-                    label: field.metadata?["gaugeLabel"],
-                    style: field.metadata?["gaugeStyle"]
-                )
-            case .multiselect, .radio, .checkbox, .file, .image, .datetime, .array, .data, .custom, .text, .email, .password, .phone, .url, .autocomplete, .enum:
-                TextField(field.placeholder ?? "Enter \(field.label)", text: .constant(field.defaultValue ?? ""))
-                    .l1SemanticTextFieldBorderStyle()
-                    .automaticCompliance(
-                        identifierElementType: "TextField",
-                        accessibilityLabel: field.label  // Issue #156: Parameter-based approach
-                    )
-            }
-        }
-        // Fallback for fields with neither textContentType nor contentType
-        else {
-            TextField(field.placeholder ?? "Enter \(field.label)", text: .constant(field.defaultValue ?? ""))
-                .l1SemanticTextFieldBorderStyle()
-                .automaticCompliance(
-                    identifierElementType: "TextField",
-                    accessibilityLabel: field.label  // Issue #156: Parameter-based approach
-                )
-        }
-    }
-}
-
 /// Generic function for presenting media data with enhanced hints
 @MainActor
 public func platformPresentMediaData_L1(
@@ -2262,92 +2056,183 @@ public struct GenericFormView: View {
                 validation: .deferred
             ),
             content: {
-                ForEach(fields, id: \.id) { field in
-                    platformVStackContainer(alignment: .leading, spacing: 8) {
-                        Text(field.label)
-                            .font(.body)
-                            .fontWeight(.medium)
-                            .foregroundColor(Color.platformLabel)
-                        
-                        // Use platform-specific field styling based on field type
-                        if let textContentType = field.textContentType {
-                            // Handle text fields using OS UITextContentType
-                            TextField(field.placeholder ?? "Enter \(field.label)", text: .constant(""))
-                                .l1SemanticTextFieldBorderStyle()
-                                .background(Color.platformSecondaryBackground)
-                                .platformTextContentType(textContentType)
-                        } else if let contentType = field.contentType {
-                            // Handle UI components using our custom DynamicContentType
-                            switch contentType {
-                            case .text, .email, .password:
-                                TextField(field.placeholder ?? "Enter \(field.label)", text: .constant(""))
-                                    .l1SemanticTextFieldBorderStyle()
-                                    .background(Color.platformSecondaryBackground)
-                            case .number, .integer:
-                                TextField(field.placeholder ?? "Enter \(field.label)", value: .constant(0), format: .number)
-                                    .l1SemanticTextFieldBorderStyle()
-                                    .background(Color.platformSecondaryBackground)
-                            case .textarea:
-                                Group {
-                                    #if os(tvOS)
-                                    EmptyView().platformTextEditor(text: .constant(""), prompt: field.placeholder)
-                                    #elseif os(watchOS)
-                                    TextField(field.placeholder ?? "", text: .constant(""), axis: .vertical)
-                                        .lineLimit(4...12)
-                                    #else
-                                    platformTextEditor(text: .constant(""), prompt: field.placeholder)
-                                    #endif
-                                }
-                                    .frame(minHeight: 80)
-                                    .background(Color.platformSecondaryBackground)
-                                    .cornerRadius(8)
-                            case .toggle, .boolean:
-                                Toggle(field.label, isOn: .constant(false))
-                            case .select:
-                                // Use platformPicker helper to automatically apply accessibility (Issue #163)
-                                if let options = field.options, !options.isEmpty {
-                                    Group {
-                                        #if os(watchOS)
-                                        platformPicker(
-                                            label: field.label,
-                                            selection: .constant(""),
-                                            options: options,
-                                            pickerName: "GenericFormSelectField"
-                                        )
-                                        #else
-                                        platformPicker(
-                                            label: field.label,
-                                            selection: .constant(""),
-                                            options: options,
-                                            pickerName: "GenericFormSelectField",
-                                            style: MenuPickerStyle()
-                                        )
-                                        #endif
-                                    }
-                                } else {
-                                    // Fallback if no options
-                                    Text("No options available")
-                                        .foregroundColor(.secondary)
-                                }
-                            default:
-                                TextField(field.placeholder ?? "Enter \(field.label)", text: .constant(""))
-                                    .l1SemanticTextFieldBorderStyle()
-                                    .background(Color.platformSecondaryBackground)
-                            }
-                        } else {
-                            // Fallback for fields with neither textContentType nor contentType
-                            TextField(field.placeholder ?? "Enter \(field.label)", text: .constant(""))
-                                .l1SemanticTextFieldBorderStyle()
-                                .background(Color.platformSecondaryBackground)
-                        }
-                    }
-                    .padding(.vertical, 4)
-                }
+                PackedGenericFormFieldsLayout(
+                    fields: fields,
+                    presentationFieldHints: hints.fieldHints
+                )
             }
         )
         // Issue #245 / gh-243: caller-defined fields are arbitrary content; use identifierName shell.
         .environment(\.accessibilityIdentifierName, "GenericFormView")
         .automaticCompliance(identifierName: "GenericFormView")
+    }
+}
+
+// MARK: - Packed GenericFormView fields (#385)
+
+private struct GenericFormSectionAvailableWidthKey: PreferenceKey {
+    static let defaultValue: CGFloat = 390
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = nextValue()
+    }
+}
+
+@MainActor
+private struct PackedGenericFormFieldsLayout: View {
+    let fields: [DynamicFormField]
+    var presentationFieldHints: [String: FieldDisplayHints] = [:]
+    @State private var availableWidth: CGFloat = 390
+    private let spacing: CGFloat = 16
+    private let maxItemsPerRow = 4
+
+    private func resolvedHints(for field: DynamicFormField) -> FieldDisplayHints? {
+        presentationFieldHints[field.id] ?? field.displayHints
+    }
+
+    var body: some View {
+        let fieldById = Dictionary(uniqueKeysWithValues: fields.map { ($0.id, $0) })
+        let packItems = fields.map {
+            $0.layoutPackItem(
+                hints: resolvedHints(for: $0),
+                availableWidth: availableWidth
+            )
+        }
+        let plan = FieldLayoutPackedSection.plan(
+            items: packItems,
+            availableWidth: availableWidth,
+            spacing: spacing,
+            maxItemsPerRow: maxItemsPerRow
+        )
+        let columnWidths = plan.columnWidths
+
+        platformVStackContainer(spacing: spacing) {
+            ForEach(Array(plan.rows.enumerated()), id: \.offset) { _, row in
+                platformHStackContainer(alignment: .top, spacing: spacing) {
+                    ForEach(Array(row.enumerated()), id: \.element.id) { column, item in
+                        if let field = fieldById[item.id] {
+                            let hints = resolvedHints(for: field)
+                            GenericFormFieldChrome(field: field)
+                                .frame(
+                                    maxWidth: alignedWidth(column: column, item: item, columnWidths: columnWidths),
+                                    alignment: .leading
+                                )
+                                .padding(.leading, plan.controlLeadingInset)
+                                .applyFieldHints(
+                                    hints,
+                                    controlSizing: FieldLayoutControlSizing.forPackKind(field.layoutPackKind),
+                                    availableWidth: availableWidth
+                                )
+                        }
+                    }
+                    Spacer(minLength: 0)
+                }
+            }
+        }
+        .background(
+            GeometryReader { proxy in
+                Color.clear.preference(
+                    key: GenericFormSectionAvailableWidthKey.self,
+                    value: proxy.size.width
+                )
+            }
+        )
+        .onPreferenceChange(GenericFormSectionAvailableWidthKey.self) { width in
+            if width > 0 {
+                availableWidth = width
+            }
+        }
+    }
+
+    private func alignedWidth(
+        column: Int,
+        item: FieldLayoutPackItem,
+        columnWidths: [CGFloat]
+    ) -> CGFloat? {
+        if column < columnWidths.count, columnWidths[column] > 0 {
+            return columnWidths[column]
+        }
+        return item.preferredWidth
+    }
+}
+
+@MainActor
+private struct GenericFormFieldChrome: View {
+    let field: DynamicFormField
+
+    var body: some View {
+        platformVStackContainer(alignment: .leading, spacing: 8) {
+            Text(field.label)
+                .font(.body)
+                .fontWeight(.medium)
+                .foregroundColor(Color.platformLabel)
+
+            if let textContentType = field.textContentType {
+                TextField(field.placeholder ?? "Enter \(field.label)", text: .constant(""))
+                    .l1SemanticTextFieldBorderStyle()
+                    .background(Color.platformSecondaryBackground)
+                    .platformTextContentType(textContentType)
+            } else if let contentType = field.contentType {
+                switch contentType {
+                case .text, .email, .password:
+                    TextField(field.placeholder ?? "Enter \(field.label)", text: .constant(""))
+                        .l1SemanticTextFieldBorderStyle()
+                        .background(Color.platformSecondaryBackground)
+                case .number, .integer:
+                    TextField(field.placeholder ?? "Enter \(field.label)", value: .constant(0), format: .number)
+                        .l1SemanticTextFieldBorderStyle()
+                        .background(Color.platformSecondaryBackground)
+                case .textarea:
+                    Group {
+                        #if os(tvOS)
+                        EmptyView().platformTextEditor(text: .constant(""), prompt: field.placeholder)
+                        #elseif os(watchOS)
+                        TextField(field.placeholder ?? "", text: .constant(""), axis: .vertical)
+                            .lineLimit(4...12)
+                        #else
+                        platformTextEditor(text: .constant(""), prompt: field.placeholder)
+                        #endif
+                    }
+                    .frame(minHeight: 80)
+                    .background(Color.platformSecondaryBackground)
+                    .cornerRadius(8)
+                case .toggle, .boolean, .checkbox:
+                    Toggle(field.label, isOn: .constant(false))
+                case .select:
+                    if let options = field.options, !options.isEmpty {
+                        Group {
+                            #if os(watchOS)
+                            platformPicker(
+                                label: field.label,
+                                selection: .constant(""),
+                                options: options,
+                                pickerName: "GenericFormSelectField"
+                            )
+                            #else
+                            platformPicker(
+                                label: field.label,
+                                selection: .constant(""),
+                                options: options,
+                                pickerName: "GenericFormSelectField",
+                                style: MenuPickerStyle()
+                            )
+                            #endif
+                        }
+                    } else {
+                        Text("No options available")
+                            .foregroundColor(.secondary)
+                    }
+                default:
+                    TextField(field.placeholder ?? "Enter \(field.label)", text: .constant(""))
+                        .l1SemanticTextFieldBorderStyle()
+                        .background(Color.platformSecondaryBackground)
+                }
+            } else {
+                TextField(field.placeholder ?? "Enter \(field.label)", text: .constant(""))
+                    .l1SemanticTextFieldBorderStyle()
+                    .background(Color.platformSecondaryBackground)
+            }
+        }
+        .padding(.vertical, 4)
     }
 }
 
@@ -2408,6 +2293,18 @@ public struct ModalFormView: View {
     let formType: DataTypeHint
     let context: PresentationContext
     let hints: PresentationHints
+
+    public init(
+        fields: [DynamicFormField],
+        formType: DataTypeHint,
+        context: PresentationContext,
+        hints: PresentationHints
+    ) {
+        self.fields = fields
+        self.formType = formType
+        self.context = context
+        self.hints = hints
+    }
     
     public var body: some View {
         platformVStackContainer(spacing: 16) {
@@ -2426,14 +2323,13 @@ public struct ModalFormView: View {
             .padding(.horizontal)
             .padding(.top)
             
-            // Form content
+            // Form content — shared packer / aligner (#385)
             ScrollView {
-                platformVStackContainer(spacing: 16) {
-                    ForEach(fields, id: \.id) { field in
-                        createFieldView(for: field)
-                    }
-                }
-                .padding(.horizontal)
+                PackedGenericFormFieldsLayout(
+                    fields: fields,
+                    presentationFieldHints: hints.fieldHints
+                )
+                    .padding(.horizontal)
             }
             
             Spacer()
@@ -2443,327 +2339,6 @@ public struct ModalFormView: View {
         .automaticCompliance(named: "ModalFormView")
     }
     
-    /// Layer 1 **preview** field chrome (fixed `.constant` bindings); not backed by ``DynamicFormState`` — see ``createSimpleFieldView`` / #267.
-    @ViewBuilder
-    @MainActor
-    private func createFieldView(for field: DynamicFormField) -> some View {
-        platformVStackContainer(alignment: .leading, spacing: 8) {
-            Text(field.label)
-                .font(.subheadline)
-                .fontWeight(.medium)
-            
-            if let textContentType = field.textContentType {
-                // Handle text fields using OS UITextContentType
-                TextField(field.placeholder ?? "Enter text", text: .constant(""))
-                    .l1SemanticTextFieldBorderStyle()
-                    .automaticCompliance(
-                        identifierElementType: "TextField",
-                        accessibilityLabel: field.label  // Issue #156: Parameter-based approach
-                    )
-                    .platformTextContentType(textContentType)
-            } else if let contentType = field.contentType {
-                // Handle UI components using our custom DynamicContentType
-                switch contentType {
-                case .text:
-                    TextField(field.placeholder ?? "Enter text", text: .constant(""))
-                        .l1SemanticTextFieldBorderStyle()
-                        .automaticCompliance(
-                            identifierElementType: "TextField",
-                            accessibilityLabel: field.label  // Issue #156: Parameter-based approach
-                        )
-                case .email:
-                    TextField(field.placeholder ?? "Enter email", text: .constant(""))
-                        .l1SemanticTextFieldBorderStyle()
-                        .automaticCompliance(
-                            identifierElementType: "TextField",
-                            accessibilityLabel: field.label  // Issue #156: Parameter-based approach
-                        )
-                case .password:
-                    SecureField(field.placeholder ?? "Enter password", text: .constant(""))
-                        .l1SemanticTextFieldBorderStyle()
-                        .automaticCompliance(
-                            identifierElementType: "SecureField",
-                            accessibilityLabel: field.label  // Issue #156: Parameter-based approach
-                        )
-                case .number, .decimal:
-                    TextField(field.placeholder ?? "Enter number", text: .constant(""))
-                        .l1SemanticTextFieldBorderStyle()
-                        .automaticCompliance(
-                            identifierElementType: "TextField",
-                            accessibilityLabel: field.label  // Issue #156: Parameter-based approach
-                        )
-                case .date:
-                    let i18n = InternationalizationService()
-                    platformDateInput(selection: .constant(Date()), label: field.placeholder ?? i18n.placeholderSelectDate())
-                        .automaticCompliance(
-                            identifierElementType: "DatePicker",
-                            accessibilityLabel: field.label  // Issue #156: Parameter-based approach
-                        )
-                case .multiDate, .dateRange:
-                    // Use DatePicker as fallback for Layer1 (MultiDatePicker requires iOS 16+)
-                    let i18n = InternationalizationService()
-                    platformDateInput(selection: .constant(Date()), label: field.placeholder ?? i18n.placeholderSelectDates())
-                        .automaticCompliance(
-                            identifierElementType: "DatePicker",
-                            accessibilityLabel: field.label  // Issue #156: Parameter-based approach
-                        )
-                case .select:
-                    // Use platformPicker helper to automatically apply accessibility (Issue #163)
-                    if let options = field.options, !options.isEmpty {
-                        Group {
-                            #if os(watchOS)
-                            platformPicker(
-                                label: field.label,
-                                selection: .constant(""),
-                                options: options,
-                                pickerName: "Layer1SelectField"
-                            )
-                            #else
-                            platformPicker(
-                                label: field.label,
-                                selection: .constant(""),
-                                options: options,
-                                pickerName: "Layer1SelectField",
-                                style: MenuPickerStyle()
-                            )
-                            #endif
-                        }
-                        .automaticCompliance(
-                            identifierElementType: "Picker",
-                            accessibilityLabel: field.label  // Issue #156: Parameter-based approach
-                        )
-                    } else {
-                        let i18n = InternationalizationService()
-                        Text(field.placeholder ?? i18n.placeholderSelectOption())
-                            .foregroundColor(.secondary)
-                    }
-                case .textarea:
-                    Group {
-                        #if os(tvOS)
-                        EmptyView().platformTextEditor(text: .constant(""), prompt: field.placeholder)
-                        #elseif os(watchOS)
-                        TextField(field.placeholder ?? "", text: .constant(""), axis: .vertical)
-                            .lineLimit(4...12)
-                        #else
-                        platformTextEditor(text: .constant(""), prompt: field.placeholder)
-                        #endif
-                    }
-                        .frame(minHeight: 80)
-                        .automaticCompliance(
-                            identifierElementType: "TextEditor",
-                            accessibilityLabel: field.label  // Issue #156: Parameter-based approach
-                        )
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 8)
-                                .stroke(Color.gray.opacity(0.3), lineWidth: 1)
-                        )
-                case .checkbox:
-                    Toggle(field.placeholder ?? "Toggle", isOn: .constant(false))
-                        .automaticCompliance(
-                            identifierElementType: "Toggle",
-                            accessibilityLabel: field.label  // Issue #156: Parameter-based approach
-                        )
-                case .radio:
-                    platformVStackContainer(alignment: .leading) {
-                        Text(field.label)
-                            .font(.subheadline)
-                            .fontWeight(.medium)
-                        
-                        if let options = field.options {
-                            ForEach(options, id: \.self) { option in
-                                HStack {
-                                    Button(action: {
-                                        // TODO: Update field value when DynamicFormState is implemented
-                                    }) {
-                                        Image(systemName: "circle")
-                                            .foregroundColor(.gray)
-                                    }
-                                    .automaticCompliance(
-                                        identifierElementType: "Button",
-                                        accessibilityLabel: "\(field.label): \(option)"  // Issue #156: Parameter-based approach
-                                    )
-                                    Text(option)
-                                }
-                            }
-                        }
-                    }
-                    .automaticCompliance(
-                        identifierElementType: "View",
-                        accessibilityLabel: field.label  // Issue #156: Parameter-based approach
-                    )
-                case .phone:
-                    TextField(field.placeholder ?? "Enter phone", text: .constant(""))
-                        .l1SemanticTextFieldBorderStyle()
-                        .automaticCompliance(
-                            identifierElementType: "TextField",
-                            accessibilityLabel: field.label  // Issue #156: Parameter-based approach
-                        )
-                case .time:
-                    let i18n = InternationalizationService()
-                    platformTimeInput(selection: .constant(Date()), label: field.placeholder ?? i18n.placeholderSelectTime())
-                        .automaticCompliance(
-                            identifierElementType: "DatePicker",
-                            accessibilityLabel: field.label  // Issue #156: Parameter-based approach
-                        )
-                case .datetime:
-                    let i18n = InternationalizationService()
-                    platformDateTimeInput(selection: .constant(Date()), label: field.placeholder ?? i18n.placeholderSelectDateTime())
-                        .automaticCompliance(
-                            identifierElementType: "DatePicker",
-                            accessibilityLabel: field.label  // Issue #156: Parameter-based approach
-                        )
-                case .multiselect:
-                    Text("Multi-select field: \(field.label)")
-                        .foregroundColor(.secondary)
-                        .automaticCompliance(
-                            identifierElementType: "View",
-                            accessibilityLabel: field.label  // Issue #156: Parameter-based approach
-                        )
-                case .file:
-                    Text("File upload field: \(field.label)")
-                        .foregroundColor(.secondary)
-                        .automaticCompliance(
-                            identifierElementType: "View",
-                            accessibilityLabel: field.label  // Issue #156: Parameter-based approach
-                        )
-                case .url:
-                    TextField(field.placeholder ?? "Enter URL", text: .constant(""))
-                        .l1SemanticTextFieldBorderStyle()
-                        .automaticCompliance(
-                            identifierElementType: "TextField",
-                            accessibilityLabel: field.label  // Issue #156: Parameter-based approach
-                        )
-                case .color:
-                    Text("Color picker field: \(field.label)")
-                        .foregroundColor(.secondary)
-                        .automaticCompliance(
-                            identifierElementType: "View",
-                            accessibilityLabel: field.label  // Issue #156: Parameter-based approach
-                        )
-                case .range:
-                    Text("Range field: \(field.label)")
-                        .foregroundColor(.secondary)
-                        .automaticCompliance(
-                            identifierElementType: "View",
-                            accessibilityLabel: field.label  // Issue #156: Parameter-based approach
-                        )
-                case .toggle, .boolean:
-                    Toggle(field.placeholder ?? "Toggle", isOn: .constant(false))
-                case .richtext:
-                    Text("Rich text field: \(field.label)")
-                        .foregroundColor(.secondary)
-                case .autocomplete:
-                    Text("Autocomplete field: \(field.label)")
-                        .foregroundColor(.secondary)
-                        .automaticCompliance(
-                            identifierElementType: "View",
-                            accessibilityLabel: field.label  // Issue #156: Parameter-based approach
-                        )
-                case .integer:
-                    TextField(field.placeholder ?? "Enter integer", text: .constant(""))
-                        .l1SemanticTextFieldBorderStyle()
-                        .automaticCompliance(
-                            identifierElementType: "TextField",
-                            accessibilityLabel: field.label  // Issue #156: Parameter-based approach
-                        )
-                case .image:
-                    Text("Image field: \(field.label)")
-                        .foregroundColor(.secondary)
-                        .automaticCompliance(
-                            identifierElementType: "View",
-                            accessibilityLabel: field.label  // Issue #156: Parameter-based approach
-                        )
-                case .array:
-                    Text("Array field: \(field.label)")
-                        .foregroundColor(.secondary)
-                        .automaticCompliance(
-                            identifierElementType: "View",
-                            accessibilityLabel: field.label  // Issue #156: Parameter-based approach
-                        )
-                case .data:
-                    Text("Data field: \(field.label)")
-                        .foregroundColor(.secondary)
-                        .automaticCompliance(
-                            identifierElementType: "View",
-                            accessibilityLabel: field.label  // Issue #156: Parameter-based approach
-                        )
-                case .custom:
-                    Text("Custom field: \(field.label)")
-                        .foregroundColor(.secondary)
-                        .automaticCompliance(
-                        identifierElementType: "View",
-                        accessibilityLabel: field.label  // Issue #156: Parameter-based approach
-                    )
-                case .display:
-                    // Package platforms are iOS 17+ / macOS 15+ — LabeledContent is unconditional (#340).
-                    LabeledContent(field.label) {
-                        Text(field.defaultValue ?? "—")
-                            .foregroundColor(.secondary)
-                    }
-                case .gauge:
-                    // Gauge fields use Gauge component or fallback ProgressView
-                    let min = Double(field.metadata?["min"] ?? "0") ?? 0.0
-                    let max = Double(field.metadata?["max"] ?? "100") ?? 100.0
-                    let value = Double(field.defaultValue ?? "0") ?? 0.0
-                    platformGaugeInput(
-                        value: value,
-                        min: min,
-                        max: max,
-                        label: field.metadata?["gaugeLabel"],
-                        style: field.metadata?["gaugeStyle"]
-                    )
-                case .stepper:
-                    platformStepperInput(
-                        label: field.label,
-                        value: .constant(0.0),
-                        in: 0...100,
-                        step: 1.0
-                    )
-                case .enum:
-                    let i18n = InternationalizationService()
-                    // Use platformPicker helper to automatically apply accessibility (Issue #163)
-                    if let options = field.options, !options.isEmpty {
-                        Group {
-                            #if os(watchOS)
-                            platformPicker(
-                                label: field.label,
-                                selection: .constant(""),
-                                options: options,
-                                pickerName: "GenericFormEnumField"
-                            )
-                            #else
-                            platformPicker(
-                                label: field.label,
-                                selection: .constant(""),
-                                options: options,
-                                pickerName: "GenericFormEnumField",
-                                style: MenuPickerStyle()
-                            )
-                            #endif
-                        }
-                        .automaticCompliance(
-                            identifierElementType: "View",
-                            accessibilityLabel: field.label  // Issue #156: Parameter-based approach
-                        )
-                    } else {
-                        // Fallback if no options
-                        let placeholderText = field.placeholder ?? i18n.localizedString(for: "SixLayerFramework.form.placeholder.selectOption")
-                        Text(placeholderText)
-                            .foregroundColor(.secondary)
-                    }
-                }
-            } else {
-                // Fallback for fields with neither textContentType nor contentType
-                TextField(field.placeholder ?? "Enter text", text: .constant(""))
-                    .l1SemanticTextFieldBorderStyle()
-                    .automaticCompliance(
-                        identifierElementType: "View",
-                        accessibilityLabel: field.label  // Issue #156: Parameter-based approach
-                    )
-            }
-        }
-        .automaticCompliance()
-    }
 }
 
 /// Simple form view that creates forms from generic form fields

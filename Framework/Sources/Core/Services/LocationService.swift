@@ -144,8 +144,13 @@ public final class LocationService: NSObject, LocationServiceProtocol, CLLocatio
             // In test mode, use a shorter timeout to prevent test hangs
             let timeoutNanoseconds: UInt64 = Self.isTestMode ? 1_000_000_000 : 30_000_000_000 // 1 second in tests, 30 seconds in production
             
+            // Non-throwing Task: sleep cancellation must not become an ignored unstructured error.
             Task {
-                try await Task.sleep(nanoseconds: timeoutNanoseconds)
+                do {
+                    try await Task.sleep(nanoseconds: timeoutNanoseconds)
+                } catch {
+                    return
+                }
                 if let continuation = self.authorizationContinuation {
                     self.authorizationContinuation = nil
                     continuation.resume(throwing: LocationServiceError.authorizationTimeout)
@@ -216,8 +221,13 @@ public final class LocationService: NSObject, LocationServiceProtocol, CLLocatio
             // In test mode, use a shorter timeout to prevent test hangs
             let timeoutNanoseconds: UInt64 = Self.isTestMode ? 1_000_000_000 : 10_000_000_000 // 1 second in tests, 10 seconds in production
             
+            // Non-throwing Task: sleep cancellation must not become an ignored unstructured error.
             Task {
-                try await Task.sleep(nanoseconds: timeoutNanoseconds)
+                do {
+                    try await Task.sleep(nanoseconds: timeoutNanoseconds)
+                } catch {
+                    return
+                }
                 if let continuation = self.locationContinuation {
                     self.locationContinuation = nil
                     continuation.resume(throwing: LocationServiceError.locationTimeout)
