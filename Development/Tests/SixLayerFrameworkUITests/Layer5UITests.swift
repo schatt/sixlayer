@@ -58,11 +58,13 @@ final class Layer5UITests: XCTestCase {
     }
 
     override class func tearDown() {
-        if let running = sharedApp, running.state != .notRunning {
-            running.terminate()
-            _ = running.wait(for: .notRunning, timeout: 5.0)
+        MainActor.assumeIsolated {
+            if let running = sharedApp, running.state != .notRunning {
+                running.terminate()
+                _ = running.wait(for: .notRunning, timeout: 5.0)
+            }
+            sharedApp = nil
         }
-        sharedApp = nil
         super.tearDown()
     }
 
