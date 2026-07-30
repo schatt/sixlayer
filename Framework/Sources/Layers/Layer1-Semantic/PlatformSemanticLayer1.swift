@@ -2262,94 +2262,164 @@ public struct GenericFormView: View {
                 validation: .deferred
             ),
             content: {
-                ForEach(fields, id: \.id) { field in
-                    platformVStackContainer(alignment: .leading, spacing: 8) {
-                        Text(field.label)
-                            .font(.body)
-                            .fontWeight(.medium)
-                            .foregroundColor(Color.platformLabel)
-                        
-                        // Use platform-specific field styling based on field type
-                        if let textContentType = field.textContentType {
-                            // Handle text fields using OS UITextContentType
-                            TextField(field.placeholder ?? "Enter \(field.label)", text: .constant(""))
-                                .l1SemanticTextFieldBorderStyle()
-                                .background(Color.platformSecondaryBackground)
-                                .platformTextContentType(textContentType)
-                        } else if let contentType = field.contentType {
-                            // Handle UI components using our custom DynamicContentType
-                            switch contentType {
-                            case .text, .email, .password:
-                                TextField(field.placeholder ?? "Enter \(field.label)", text: .constant(""))
-                                    .l1SemanticTextFieldBorderStyle()
-                                    .background(Color.platformSecondaryBackground)
-                            case .number, .integer:
-                                TextField(field.placeholder ?? "Enter \(field.label)", value: .constant(0), format: .number)
-                                    .l1SemanticTextFieldBorderStyle()
-                                    .background(Color.platformSecondaryBackground)
-                            case .textarea:
-                                Group {
-                                    #if os(tvOS)
-                                    EmptyView().platformTextEditor(text: .constant(""), prompt: field.placeholder)
-                                    #elseif os(watchOS)
-                                    TextField(field.placeholder ?? "", text: .constant(""), axis: .vertical)
-                                        .lineLimit(4...12)
-                                    #else
-                                    platformTextEditor(text: .constant(""), prompt: field.placeholder)
-                                    #endif
-                                }
-                                    .frame(minHeight: 80)
-                                    .background(Color.platformSecondaryBackground)
-                                    .cornerRadius(8)
-                            case .toggle, .boolean:
-                                Toggle(field.label, isOn: .constant(false))
-                            case .select:
-                                // Use platformPicker helper to automatically apply accessibility (Issue #163)
-                                if let options = field.options, !options.isEmpty {
-                                    Group {
-                                        #if os(watchOS)
-                                        platformPicker(
-                                            label: field.label,
-                                            selection: .constant(""),
-                                            options: options,
-                                            pickerName: "GenericFormSelectField"
-                                        )
-                                        #else
-                                        platformPicker(
-                                            label: field.label,
-                                            selection: .constant(""),
-                                            options: options,
-                                            pickerName: "GenericFormSelectField",
-                                            style: MenuPickerStyle()
-                                        )
-                                        #endif
-                                    }
-                                } else {
-                                    // Fallback if no options
-                                    Text("No options available")
-                                        .foregroundColor(.secondary)
-                                }
-                            default:
-                                TextField(field.placeholder ?? "Enter \(field.label)", text: .constant(""))
-                                    .l1SemanticTextFieldBorderStyle()
-                                    .background(Color.platformSecondaryBackground)
-                            }
-                        } else {
-                            // Fallback for fields with neither textContentType nor contentType
-                            TextField(field.placeholder ?? "Enter \(field.label)", text: .constant(""))
-                                .l1SemanticTextFieldBorderStyle()
-                                .background(Color.platformSecondaryBackground)
-                        }
-                    }
-                    .frame(maxWidth: field.preferredLayoutWidth(), alignment: .leading)
-                    .applyFieldHints(field.displayHints)
-                    .padding(.vertical, 4)
-                }
+                PackedGenericFormFieldsLayout(fields: fields)
             }
         )
         // Issue #245 / gh-243: caller-defined fields are arbitrary content; use identifierName shell.
         .environment(\.accessibilityIdentifierName, "GenericFormView")
         .automaticCompliance(identifierName: "GenericFormView")
+    }
+}
+
+// MARK: - Packed GenericFormView fields (#385)
+
+private struct GenericFormSectionAvailableWidthKey: PreferenceKey {
+    static let defaultValue: CGFloat = 390
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = nextValue()
+    }
+}
+
+@MainActor
+private struct PackedGenericFormFieldsLayout: View {
+    let fields: [DynamicFormField]
+    @State private var availableWidth: CGFloat = 390
+    private let spacing: CGFloat = 16
+    private let maxItemsPerRow = 4
+
+    var body: some View {
+        let fieldById = Dictionary(uniqueKeysWithValues: fields.map { ($0.id, $0) })
+        let packItems = fields.map { $0.layoutPackItem() }
+        let rows = FieldLayoutPacker.pack(
+            packItems,
+            availableWidth: availableWidth,
+            spacing: spacing,
+            maxItemsPerRow: maxItemsPerRow
+        )
+        let columnWidths = FieldLayoutAligner.columnMaxWidths(rows: rows)
+
+        platformVStackContainer(spacing: spacing) {
+            ForEach(Array(rows.enumerated()), id: \.offset) { _, row in
+                platformHStackContainer(alignment: .top, spacing: spacing) {
+                    ForEach(Array(row.enumerated()), id: \.element.id) { column, item in
+                        if let field = fieldById[item.id] {
+                            GenericFormFieldChrome(field: field)
+                                .frame(
+                                    maxWidth: alignedWidth(column: column, item: item, columnWidths: columnWidths),
+                                    alignment: .leading
+                                )
+                                .applyFieldHints(field.displayHints)
+                        }
+                    }
+                    Spacer(minLength: 0)
+                }
+            }
+        }
+        .background(
+            GeometryReader { proxy in
+                Color.clear.preference(
+                    key: GenericFormSectionAvailableWidthKey.self,
+                    value: proxy.size.width
+                )
+            }
+        )
+        .onPreferenceChange(GenericFormSectionAvailableWidthKey.self) { width in
+            if width > 0 {
+                availableWidth = width
+            }
+        }
+    }
+
+    private func alignedWidth(
+        column: Int,
+        item: FieldLayoutPackItem,
+        columnWidths: [CGFloat]
+    ) -> CGFloat? {
+        if column < columnWidths.count, columnWidths[column] > 0 {
+            return columnWidths[column]
+        }
+        return item.preferredWidth
+    }
+}
+
+@MainActor
+private struct GenericFormFieldChrome: View {
+    let field: DynamicFormField
+
+    var body: some View {
+        platformVStackContainer(alignment: .leading, spacing: 8) {
+            Text(field.label)
+                .font(.body)
+                .fontWeight(.medium)
+                .foregroundColor(Color.platformLabel)
+
+            if let textContentType = field.textContentType {
+                TextField(field.placeholder ?? "Enter \(field.label)", text: .constant(""))
+                    .l1SemanticTextFieldBorderStyle()
+                    .background(Color.platformSecondaryBackground)
+                    .platformTextContentType(textContentType)
+            } else if let contentType = field.contentType {
+                switch contentType {
+                case .text, .email, .password:
+                    TextField(field.placeholder ?? "Enter \(field.label)", text: .constant(""))
+                        .l1SemanticTextFieldBorderStyle()
+                        .background(Color.platformSecondaryBackground)
+                case .number, .integer:
+                    TextField(field.placeholder ?? "Enter \(field.label)", value: .constant(0), format: .number)
+                        .l1SemanticTextFieldBorderStyle()
+                        .background(Color.platformSecondaryBackground)
+                case .textarea:
+                    Group {
+                        #if os(tvOS)
+                        EmptyView().platformTextEditor(text: .constant(""), prompt: field.placeholder)
+                        #elseif os(watchOS)
+                        TextField(field.placeholder ?? "", text: .constant(""), axis: .vertical)
+                            .lineLimit(4...12)
+                        #else
+                        platformTextEditor(text: .constant(""), prompt: field.placeholder)
+                        #endif
+                    }
+                    .frame(minHeight: 80)
+                    .background(Color.platformSecondaryBackground)
+                    .cornerRadius(8)
+                case .toggle, .boolean:
+                    Toggle(field.label, isOn: .constant(false))
+                case .select:
+                    if let options = field.options, !options.isEmpty {
+                        Group {
+                            #if os(watchOS)
+                            platformPicker(
+                                label: field.label,
+                                selection: .constant(""),
+                                options: options,
+                                pickerName: "GenericFormSelectField"
+                            )
+                            #else
+                            platformPicker(
+                                label: field.label,
+                                selection: .constant(""),
+                                options: options,
+                                pickerName: "GenericFormSelectField",
+                                style: MenuPickerStyle()
+                            )
+                            #endif
+                        }
+                    } else {
+                        Text("No options available")
+                            .foregroundColor(.secondary)
+                    }
+                default:
+                    TextField(field.placeholder ?? "Enter \(field.label)", text: .constant(""))
+                        .l1SemanticTextFieldBorderStyle()
+                        .background(Color.platformSecondaryBackground)
+                }
+            } else {
+                TextField(field.placeholder ?? "Enter \(field.label)", text: .constant(""))
+                    .l1SemanticTextFieldBorderStyle()
+                    .background(Color.platformSecondaryBackground)
+            }
+        }
+        .padding(.vertical, 4)
     }
 }
 
