@@ -98,7 +98,12 @@ struct FieldLayoutBridgeTests {
             context: .dashboard,
             fieldHints: ["zip": FieldDisplayHints(displayWidth: "narrow")]
         )
-        #expect(hints.resolvedFieldDisplayHints(for: field)?.displayWidth == "narrow")
+        #expect(
+            hints.resolvedFieldDisplayHints(
+                fieldId: field.id,
+                fieldDisplayHints: field.displayHints
+            )?.displayWidth == "narrow"
+        )
     }
 
     @Test func presentationHints_resolvedFieldDisplayHints_fallsBackToFieldMetadata() {
@@ -114,7 +119,12 @@ struct FieldLayoutBridgeTests {
             complexity: .moderate,
             context: .dashboard
         )
-        #expect(hints.resolvedFieldDisplayHints(for: field)?.displayWidth == "medium")
+        #expect(
+            hints.resolvedFieldDisplayHints(
+                fieldId: field.id,
+                fieldDisplayHints: field.displayHints
+            )?.displayWidth == "medium"
+        )
     }
 
     @Test func dataField_booleanMapsToCheckboxKind() {
