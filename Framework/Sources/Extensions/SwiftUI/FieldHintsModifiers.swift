@@ -12,19 +12,38 @@ import SwiftUI
 /// Modifier that applies field-level display hints to views
 public struct FieldHintsModifier: ViewModifier {
     let fieldHints: FieldDisplayHints?
+    let controlSizing: FieldLayoutControlSizing
+    let availableWidth: CGFloat?
 
-    public init(_ fieldHints: FieldDisplayHints?) {
+    public init(
+        _ fieldHints: FieldDisplayHints?,
+        controlSizing: FieldLayoutControlSizing = .fillClaim,
+        availableWidth: CGFloat? = nil
+    ) {
         self.fieldHints = fieldHints
+        self.controlSizing = controlSizing
+        self.availableWidth = availableWidth
     }
 
     public func body(content: Content) -> some View {
-        content
-            .frame(maxWidth: preferredWidth, alignment: .leading)
+        sized(content)
             .overlay(alignment: .trailing) {
                 if showCharacterCounter {
                     CharacterCounterOverlay()
                 }
             }
+    }
+
+    @ViewBuilder
+    private func sized(_ content: Content) -> some View {
+        switch controlSizing {
+        case .fillClaim:
+            content.frame(maxWidth: preferredWidth, alignment: .leading)
+        case .intrinsicWithinClaim:
+            content
+                .fixedSize(horizontal: true, vertical: false)
+                .frame(maxWidth: preferredWidth, alignment: .leading)
+        }
     }
 
     // MARK: - Private Computed Properties
@@ -34,7 +53,8 @@ public struct FieldHintsModifier: ViewModifier {
             hints: fieldHints,
             characterWidth: FieldDisplayCharacterMetrics.averageCharacterWidth(),
             horizontalPadding: FieldDisplayCharacterMetrics.defaultHorizontalPadding,
-            bands: FieldDisplayWidthPlatformBands.forPlatform(SixLayerPlatform.current)
+            bands: FieldDisplayWidthPlatformBands.forPlatform(SixLayerPlatform.current),
+            availableWidth: availableWidth
         )
     }
 
@@ -76,8 +96,16 @@ public extension EnvironmentValues {
 // MARK: - View Extensions
 
 public extension View {
-    /// Apply field-level display hints to a view
-    func applyFieldHints(_ hints: FieldDisplayHints?) -> some View {
-        modifier(FieldHintsModifier(hints))
+    /// Apply field-level display hints to a view.
+    /// - Parameters:
+    ///   - hints: Field display hints (width, counters, etc.)
+    ///   - controlSizing: Whether the control fills the claim or stays intrinsic (#385)
+    ///   - availableWidth: Optional container cap for preferred width
+    func applyFieldHints(
+        _ hints: FieldDisplayHints?,
+        controlSizing: FieldLayoutControlSizing = .fillClaim,
+        availableWidth: CGFloat? = nil
+    ) -> some View {
+        modifier(FieldHintsModifier(hints, controlSizing: controlSizing, availableWidth: availableWidth))
     }
 }
