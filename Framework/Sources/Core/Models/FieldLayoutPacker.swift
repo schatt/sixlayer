@@ -20,6 +20,20 @@ public enum FieldLayoutPackKind: String, Sendable, Equatable {
     case wideFlex
 }
 
+/// How a control sits inside its preferred-width field claim (GitHub #385).
+public enum FieldLayoutControlSizing: String, Sendable, Equatable {
+    /// Text-like controls fill the preferred-width slot.
+    case fillClaim
+    /// Intrinsic controls (checkbox / toggle) stay content-sized within the claim.
+    case intrinsicWithinClaim
+
+    /// Deliberate stub: always fill — checkbox case red until green.
+    public static func forPackKind(_ kind: FieldLayoutPackKind) -> FieldLayoutControlSizing {
+        _ = kind
+        return .fillClaim
+    }
+}
+
 /// One field participating in section packing.
 public struct FieldLayoutPackItem: Identifiable, Sendable, Equatable {
     public let id: String
