@@ -53,6 +53,70 @@ struct FieldLayoutBridgeTests {
         #expect(field.layoutPackItem(bands: bands).preferredWidth == 150)
     }
 
+    @Test func dynamicFormField_layoutPackItem_capsPreferredWidthToAvailableWidth() {
+        let field = DynamicFormField(
+            id: "email",
+            contentType: .email,
+            label: "Email",
+            metadata: ["displayWidth": "wide"]
+        )
+        let bands = FieldDisplayWidthPlatformBands(narrow: 120, medium: 180, wide: 320)
+        let item = field.layoutPackItem(bands: bands, availableWidth: 200)
+        #expect(item.preferredWidth == 200)
+    }
+
+    @Test func dynamicFormField_layoutPackItem_usesOverrideHintsOverFieldMetadata() {
+        let field = DynamicFormField(
+            id: "zip",
+            contentType: .text,
+            label: "ZIP",
+            metadata: ["displayWidth": "wide"]
+        )
+        let bands = FieldDisplayWidthPlatformBands(narrow: 120, medium: 180, wide: 320)
+        let override = FieldDisplayHints(displayWidth: "narrow")
+        let item = field.layoutPackItem(hints: override, bands: bands)
+        #expect(item.preferredWidth == 120)
+    }
+
+    @Test func controlSizing_checkboxKindKeepsIntrinsicWithinClaim() {
+        #expect(FieldLayoutControlSizing.forPackKind(.checkbox) == .intrinsicWithinClaim)
+        #expect(FieldLayoutControlSizing.forPackKind(.compact) == .fillClaim)
+        #expect(FieldLayoutControlSizing.forPackKind(.tall) == .fillClaim)
+    }
+
+    @Test func presentationHints_resolvedFieldDisplayHints_prefersPresentationMap() {
+        let field = DynamicFormField(
+            id: "zip",
+            contentType: .text,
+            label: "ZIP",
+            metadata: ["displayWidth": "wide"]
+        )
+        let hints = PresentationHints(
+            dataType: .generic,
+            presentationPreference: .automatic,
+            complexity: .moderate,
+            context: .dashboard,
+            fieldHints: ["zip": FieldDisplayHints(displayWidth: "narrow")]
+        )
+        #expect(hints.resolvedFieldDisplayHints(for: field)?.displayWidth == "narrow")
+    }
+
+    @Test func presentationHints_resolvedFieldDisplayHints_fallsBackToFieldMetadata() {
+        let field = DynamicFormField(
+            id: "zip",
+            contentType: .text,
+            label: "ZIP",
+            metadata: ["displayWidth": "medium"]
+        )
+        let hints = PresentationHints(
+            dataType: .generic,
+            presentationPreference: .automatic,
+            complexity: .moderate,
+            context: .dashboard
+        )
+        #expect(hints.resolvedFieldDisplayHints(for: field)?.displayWidth == "medium")
+    }
+
     @Test func dataField_booleanMapsToCheckboxKind() {
         let field = DataField(name: "active", type: .boolean)
         #expect(field.layoutPackKind(hints: nil) == .checkbox)
