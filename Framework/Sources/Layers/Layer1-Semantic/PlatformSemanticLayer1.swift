@@ -2480,6 +2480,18 @@ public struct ModalFormView: View {
     let formType: DataTypeHint
     let context: PresentationContext
     let hints: PresentationHints
+
+    public init(
+        fields: [DynamicFormField],
+        formType: DataTypeHint,
+        context: PresentationContext,
+        hints: PresentationHints
+    ) {
+        self.fields = fields
+        self.formType = formType
+        self.context = context
+        self.hints = hints
+    }
     
     public var body: some View {
         platformVStackContainer(spacing: 16) {
