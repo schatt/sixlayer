@@ -1184,16 +1184,16 @@ private struct PackedIntelligentFormFieldsLayout<T, CustomField: View>: View {
         let packItems = fields.map {
             $0.layoutPackItem(hints: fieldHints[$0.name], availableWidth: availableWidth)
         }
-        let rows = FieldLayoutPacker.pack(
-            packItems,
+        let plan = FieldLayoutPackedSection.plan(
+            items: packItems,
             availableWidth: availableWidth,
             spacing: spacing,
             maxItemsPerRow: maxItemsPerRow
         )
-        let columnWidths = FieldLayoutAligner.columnMaxWidths(rows: rows)
+        let columnWidths = plan.columnWidths
 
         platformVStackContainer(spacing: spacing) {
-            ForEach(Array(rows.enumerated()), id: \.offset) { _, row in
+            ForEach(Array(plan.rows.enumerated()), id: \.offset) { _, row in
                 platformHStackContainer(alignment: .top, spacing: spacing) {
                     ForEach(Array(row.enumerated()), id: \.element.id) { column, item in
                         if let field = fieldByName[item.id] {
@@ -1209,6 +1209,7 @@ private struct PackedIntelligentFormFieldsLayout<T, CustomField: View>: View {
                                 maxWidth: alignedWidth(column: column, item: item, columnWidths: columnWidths),
                                 alignment: .leading
                             )
+                            .padding(.leading, plan.controlLeadingInset)
                         }
                     }
                     Spacer(minLength: 0)
