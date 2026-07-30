@@ -81,7 +81,7 @@ open class Layer3ComponentAccessibilityTests: BaseTestClass {
         let modalLayoutDecision = ModalLayoutDecision(
             presentationType: .sheet,
             sizing: .medium,
-            detents: [],
+            sizes: [],
             platformConstraints: [:]
         )
         

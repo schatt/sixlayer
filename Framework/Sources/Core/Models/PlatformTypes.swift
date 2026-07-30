@@ -568,23 +568,46 @@ public enum FieldLayout: String, CaseIterable, Sendable {
 public struct ModalLayoutDecision {
     public let presentationType: ModalPresentationType
     public let sizing: ModalSizing
-    public let detents: [SheetDetent]
+    /// Cross-platform presentation size hints (#384). Prefer over legacy sheet detents.
+    public let sizes: [PlatformPresentationSize]
     public let platformConstraints: [ModalPlatform: ModalConstraint]
     
     public init(
         presentationType: ModalPresentationType,
         sizing: ModalSizing,
-        detents: [SheetDetent] = [],
+        sizes: [PlatformPresentationSize] = [],
         platformConstraints: [ModalPlatform: ModalConstraint] = [:]
     ) {
         self.presentationType = presentationType
         self.sizing = sizing
-        self.detents = detents
+        self.sizes = sizes
         self.platformConstraints = platformConstraints
+    }
+
+    @available(*, deprecated, message: "Use init(..., sizes: [PlatformPresentationSize]) instead of detents")
+    public init(
+        presentationType: ModalPresentationType,
+        sizing: ModalSizing,
+        detents: [SheetDetent],
+        platformConstraints: [ModalPlatform: ModalConstraint] = [:]
+    ) {
+        self.presentationType = presentationType
+        self.sizing = sizing
+        self.sizes = detents.map(\.asPresentationSize)
+        self.platformConstraints = platformConstraints
+    }
+
+    @available(*, deprecated, renamed: "sizes")
+    public var detents: [SheetDetent] {
+        sizes.map { SheetDetent($0) }
     }
 }
 
-/// Represents sheet detents for modal presentations
+/// Legacy sheet detent vocabulary for modal layout decisions.
+///
+/// - Warning: Prefer ``PlatformPresentationSize`` (`.small` / `.medium` / `.large` /
+///   `.exact(width:height:)`). Height-only ``custom(height:)`` is lossy versus exact 2D sizes (#384).
+@available(*, deprecated, message: "Use PlatformPresentationSize (.small/.medium/.large/.exact) instead of SheetDetent")
 public enum SheetDetent: CaseIterable {
     case small
     case medium
@@ -592,7 +615,25 @@ public enum SheetDetent: CaseIterable {
     case custom(height: CGFloat)
     
     public static var allCases: [SheetDetent] {
-        return [.small, .medium, .large, .custom(height: 300)] // Default height for custom
+        return [.small, .medium, .large, .custom(height: 300)]
+    }
+
+    public var asPresentationSize: PlatformPresentationSize {
+        switch self {
+        case .small: return .small
+        case .medium: return .medium
+        case .large: return .large
+        case .custom(let height): return .exact(width: height, height: height)
+        }
+    }
+
+    public init(_ size: PlatformPresentationSize) {
+        switch size {
+        case .small: self = .small
+        case .medium: self = .medium
+        case .large: self = .large
+        case .exact(_, let height): self = .custom(height: height)
+        }
     }
 }
 
@@ -1199,9 +1240,10 @@ public struct FieldDisplayHints: Sendable {
         return displayWidth?.lowercased() == "narrow"
     }
     
-    /// Determine if display width is medium
+    /// Determine if display width is explicitly medium.
+    /// Nil `displayWidth` means no band preference (fall through to `expectedLength` or flexible width) — not medium (#385).
     public var isMedium: Bool {
-        return displayWidth?.lowercased() == "medium" || displayWidth == nil
+        return displayWidth?.lowercased() == "medium"
     }
     
     /// Determine if display width is wide
@@ -1306,6 +1348,15 @@ public struct PresentationHints: Sendable {
     /// Check if hints exist for a specific field
     public func hasHints(forFieldId fieldId: String) -> Bool {
         return fieldHints[fieldId] != nil
+    }
+
+    /// Resolve display hints for a form field id (GitHub #385).
+    /// Presentation-level `fieldHints` win over the field's own display hints.
+    public func resolvedFieldDisplayHints(
+        fieldId: String,
+        fieldDisplayHints: FieldDisplayHints?
+    ) -> FieldDisplayHints? {
+        fieldHints[fieldId] ?? fieldDisplayHints
     }
 }
 

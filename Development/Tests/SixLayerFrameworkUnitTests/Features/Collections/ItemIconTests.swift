@@ -4,6 +4,7 @@
 //
 //  Tests for ItemIcon component
 //  Issue #144 - Color Resolution System from Hints Files
+//  Issue #219 - hostability smoke instead of Bool(true) no-ops
 //
 
 import Testing
@@ -13,7 +14,7 @@ import SwiftUI
 #endif
 @testable import SixLayerFramework
 
-@Suite("Item Icon Component")
+@Suite("Item Icon Component", HostedViewTestIsolationTrait())
 struct ItemIconTests {
     
     struct TestDocument: Identifiable, CardDisplayable {
@@ -30,7 +31,6 @@ struct ItemIconTests {
     
     #if canImport(SwiftUI)
     @Test @MainActor func testItemIconUsesColorFromHints() async throws {
-        // Given: Hints with itemColorProvider based on file extension
         let hints = PresentationHints(
             itemColorProvider: { item in
                 if let doc = item as? TestDocument {
@@ -44,68 +44,47 @@ struct ItemIconTests {
                 return nil
             }
         )
-        
         let pdfDoc = TestDocument(name: "Report.pdf", iconName: "doc.fill", fileExtension: "pdf")
-        
-        // When: Creating icon
-        let _ = ItemIcon(
+        let icon = ItemIcon(
             item: pdfDoc,
             iconName: pdfDoc.iconName,
             hints: hints
         )
-        
-        // Then: Icon should be created with color from hints
-        #expect(true)
+        #expect(PlatformContainerStructureAssertions.isHostable(icon))
     }
     
     @Test @MainActor func testItemIconDefaultSize() async throws {
-        // Given: Item with hints
         let hints = PresentationHints(defaultColor: .blue)
         let doc = TestDocument(name: "Document.pdf", iconName: "doc.fill", fileExtension: "pdf")
-        
-        // When: Creating icon without specifying size
-        _ = ItemIcon(
+        let icon = ItemIcon(
             item: doc,
             iconName: doc.iconName,
             hints: hints
         )
-        
-        // Then: Icon should use default size
-        #expect(true)
+        #expect(PlatformContainerStructureAssertions.isHostable(icon))
     }
     
     @Test @MainActor func testItemIconCustomSize() async throws {
-        // Given: Item with hints
         let hints = PresentationHints(defaultColor: .green)
         let doc = TestDocument(name: "Image.jpg", iconName: "photo.fill", fileExtension: "jpg")
-        
-        // When: Creating icon with custom size
-        _ = ItemIcon(
+        let icon = ItemIcon(
             item: doc,
             iconName: doc.iconName,
             size: 32,
             hints: hints
         )
-        
-        // Then: Icon should use custom size
-        #expect(true)
+        #expect(PlatformContainerStructureAssertions.isHostable(icon))
     }
     
     @Test @MainActor func testItemIconFallsBackToDefaultColor() async throws {
-        // Given: Hints with default color but no itemColorProvider
         let hints = PresentationHints(defaultColor: .gray)
         let doc = TestDocument(name: "File.unknown", iconName: "doc.fill", fileExtension: "unknown")
-        
-        // When: Creating icon
-        _ = ItemIcon(
+        let icon = ItemIcon(
             item: doc,
             iconName: doc.iconName,
             hints: hints
         )
-        
-        // Then: Icon should use default color
-        #expect(true)
+        #expect(PlatformContainerStructureAssertions.isHostable(icon))
     }
     #endif
 }
-

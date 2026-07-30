@@ -1,12 +1,21 @@
 # 🚀 Six-Layer Framework Release History
 
-## 📍 **Current Release: v8.3.4** 🔧
+## 📍 **Current Release: v8.3.5** 🔧
 
-**Release Date**: July 22, 2026
+**Release Date**: July 30, 2026
 **Status**: Patch release
-**Previous Release**: v8.3.3 - Patch release
-**Note**: XCUI host-land / one-launch sessions; Vision hang footguns (#366–#374).
+**Previous Release**: v8.3.4 - Patch release
+**Note**: FieldDisplayHints form layout (#385); PlatformPresentationSize (#384/#386); toolbar Menu (#352); UITest MainActor (#387).
 **Next Release**: TBD
+
+---
+
+## 🎯 **v8.3.5 - Field layout, presentation size, and UITest MainActor** (July 30, 2026)
+
+### **What's in v8.3.5:**
+- Patch release (#352, #384–#387). See [RELEASE_v8.3.5.md](RELEASE_v8.3.5.md) for details.
+
+**See [RELEASE_v8.3.5.md](RELEASE_v8.3.5.md) for complete release notes.**
 
 ---
 

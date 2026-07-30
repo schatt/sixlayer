@@ -90,9 +90,9 @@ Create the actual UI components with platform-adaptive behavior, implementing th
 ### **Modal Components**
 
 #### **Sheets**
-- `platformSheet(isPresented:content:)` - Platform-adaptive sheet presentation
-- `platformSheet_L4(isPresented:content:)` - Enhanced sheet with detents support (iOS 16+)
-
+- `platformSheet(isPresented:sizes:content:)` - Platform-adaptive sheet with `PlatformPresentationSize` (`.small` / `.medium` / `.large` / `.exact`)
+- `platformSheet_L4(isPresented:sizes:content:)` - L4 sheet; `sizes` project to iOS detents and clamped min frames on all platforms (#384)
+- `platformPopover_L4(isPresented:sizes:content:)` - L4 popover; defaults to `[.small]`
 #### **Alerts**
 - `platformAlert(isPresented:content:)` - Platform-adaptive alert presentation
 

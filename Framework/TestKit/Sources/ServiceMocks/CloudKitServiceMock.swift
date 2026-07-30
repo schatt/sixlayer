@@ -142,8 +142,8 @@ public class CloudKitServiceMock: CloudKitServiceDelegate {
 
             // Return mock results
             let mockRecords = [
-                CKRecord(recordType: query.recordType ?? "MockRecord", recordID: CKRecord.ID(recordName: "mock1")),
-                CKRecord(recordType: query.recordType ?? "MockRecord", recordID: CKRecord.ID(recordName: "mock2"))
+                CKRecord(recordType: query.recordType, recordID: CKRecord.ID(recordName: "mock1")),
+                CKRecord(recordType: query.recordType, recordID: CKRecord.ID(recordName: "mock2"))
             ]
 
             guard let result = mockRecords as? T else {

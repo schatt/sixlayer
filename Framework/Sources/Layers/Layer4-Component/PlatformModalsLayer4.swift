@@ -10,11 +10,12 @@ public extension View {
     /// Platform-specific sheet presentation with consistent styling
     /// Provides standardized sheet appearance across platforms
     ///
-    /// **Note**: For new code, prefer `platformSheet_L4()` which provides additional features
-    /// like detents support (iOS 16+) and better cross-platform documentation.
-    /// This function is maintained for backward compatibility.
+    /// **Note**: For new code, prefer `platformSheet_L4()` which provides
+    /// `PlatformPresentationSize` sizing (#384) and better cross-platform documentation.
+    /// This function is maintained for backward compatibility (defaults to `[.large]`).
     ///
-    /// - SeeAlso: `platformSheet_L4()` for enhanced sheet presentation with detents support
+    /// - SeeAlso: `platformSheet_L4()` for enhanced sheet presentation with size hints
+    @MainActor
     func platformSheet<SheetContent: View>(
         isPresented: Binding<Bool>,
         onDismiss: (() -> Void)? = nil,
@@ -24,7 +25,7 @@ public extension View {
         return self.platformSheet_L4(
             isPresented: isPresented,
             onDismiss: onDismiss,
-            detents: [.large],
+            sizes: [.large],
             dragIndicator: .automatic,
             content: content
         )

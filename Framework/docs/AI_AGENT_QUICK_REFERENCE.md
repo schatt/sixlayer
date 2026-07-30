@@ -217,12 +217,13 @@ struct MyApp: App {
 }
 
 // ✅ Modal windows - Layer 4 (use as component)
-platformSheet_L4(isPresented: $showModal) {
+// sizes: .small / .medium / .large / .exact(width:height:) — default [.large]
+platformSheet_L4(isPresented: $showModal, sizes: [.large]) {
     ModalContentView()
 }
 
-// ✅ Popover - Layer 4 (use as component)
-platformPopover_L4(isPresented: $showPopover) {
+// ✅ Popover - Layer 4 (use as component); default sizes: [.small]
+platformPopover_L4(isPresented: $showPopover, sizes: [.small]) {
     PopoverContentView()
 }
 
@@ -243,12 +244,13 @@ platformPresentContent_L1(
 ### Layer 4 Components (Use as Building Blocks)
 ```swift
 // ✅ Sheet presentation - Layer 4
-platformSheet_L4(isPresented: $showSheet) {
+// Prefer explicit sizes: .small / .medium / .large / .exact(width:height:)
+platformSheet_L4(isPresented: $showSheet, sizes: [.large]) {
     SheetContent()
 }
 
-// ✅ Popover - Layer 4
-platformPopover_L4(isPresented: $showPopover) {
+// ✅ Popover - Layer 4 (default sizes: [.small])
+platformPopover_L4(isPresented: $showPopover, sizes: [.small]) {
     PopoverContent()
 }
 
@@ -310,7 +312,8 @@ Layer 4 (Implementation) → Layer 5 (Optimization) → Layer 6 (Platform)
   - Framework decides HOW to implement it
   
 - **Layer 4 (Component Implementation)**: Can be used as components when building custom views
-  - `platformSheet_L4()`, `platformPopover_L4()`, `platformNavigation_L4()`, etc.
+  - `platformSheet_L4(..., sizes:)`, `platformPopover_L4(..., sizes:)`, `platformNavigation_L4()`, etc.
+    - Size vocabulary: `.small` / `.medium` / `.large` / `.exact(width:height:)` (#384)
   - Use when you need specific components or building custom UI
   
 **As an AI agent**: Prefer Layer 1 for data presentation. Use Layer 4 functions as components when building custom views or when you need specific UI components.
@@ -338,7 +341,7 @@ struct CustomView: View {
         VStack {
             Button("Show Sheet") { showSheet = true }
         }
-        .platformSheet_L4(isPresented: $showSheet) {
+        .platformSheet_L4(isPresented: $showSheet, sizes: [.large]) {
             SheetContent()
         }
     }

@@ -85,6 +85,11 @@ public struct CustomFieldView: View {
                 DynamicCustomField(field: field, formState: formState)
             }
         }
+        // Field layout claim from FieldDisplayHints (#385) — production path, not only L1.
+        .applyFieldHints(
+            field.displayHints,
+            controlSizing: FieldLayoutControlSizing.forPackKind(field.layoutPackKind)
+        )
         .automaticComplianceForDynamicFormField(field)
     }
 }

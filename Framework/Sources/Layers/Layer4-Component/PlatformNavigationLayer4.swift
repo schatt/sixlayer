@@ -860,7 +860,7 @@ public extension View {
         }
         #elseif os(macOS)
         sidebarContent
-            .frame(minWidth: 400, minHeight: 300)
+            .platformPresentationFrame(sizes: [.small])
         #else
         sidebarContent
         #endif

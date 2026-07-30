@@ -91,6 +91,7 @@ public struct iOSTouchFormField: View {
     private let label: String
     private let placeholder: String
     @Binding private var text: String
+    private let displayHints: FieldDisplayHints?
     #if os(iOS)
     private let keyboardType: UIKeyboardType
     #endif
@@ -100,22 +101,26 @@ public struct iOSTouchFormField: View {
         label: String,
         placeholder: String,
         text: Binding<String>,
-        keyboardType: UIKeyboardType = .default
+        keyboardType: UIKeyboardType = .default,
+        displayHints: FieldDisplayHints? = nil
     ) {
         self.label = label
         self.placeholder = placeholder
         self._text = text
         self.keyboardType = keyboardType
+        self.displayHints = displayHints
     }
     #else
     public init(
         label: String,
         placeholder: String,
-        text: Binding<String>
+        text: Binding<String>,
+        displayHints: FieldDisplayHints? = nil
     ) {
         self.label = label
         self.placeholder = placeholder
         self._text = text
+        self.displayHints = displayHints
     }
     #endif
     
@@ -140,6 +145,7 @@ public struct iOSTouchFormField: View {
                 .font(.body)
                 .dynamicTypeSize(.large...(.accessibility3))
         }
+        .applyFieldHints(displayHints)
         .automaticCompliance(named: "iOSTouchFormField")
     }
 }

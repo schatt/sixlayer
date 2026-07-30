@@ -682,93 +682,105 @@ public struct DynamicFormSectionView: View {
     
     @ViewBuilder
     private var fieldLayoutView: some View {
-        let layoutStyle = section.layoutStyle ?? .vertical // Default to vertical
-        
+        PackedDynamicFormFieldsLayout(
+            fields: visibleFields,
+            formState: formState,
+            layoutStyle: section.layoutStyle ?? .vertical
+        )
+    }
+}
+
+// MARK: - Packed section field layout (#385)
+
+private struct DynamicFormSectionAvailableWidthKey: PreferenceKey {
+    static let defaultValue: CGFloat = 390
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = nextValue()
+    }
+}
+
+/// Width-aware, run-aware packing for DynamicForm sections.
+@MainActor
+private struct PackedDynamicFormFieldsLayout: View {
+    let fields: [DynamicFormField]
+    @ObservedObject var formState: DynamicFormState
+    let layoutStyle: FieldLayout
+    @State private var availableWidth: CGFloat = 390
+
+    private var spacing: CGFloat {
         switch layoutStyle {
-        case .vertical, .standard, .compact, .spacious:
-            // Vertical stack (default)
-            platformVStackContainer(spacing: 16) {
-                ForEach(Array(visibleFields.enumerated()), id: \.element.id) { index, field in
-                    DynamicFormFieldView(
-                        field: field,
-                        formState: formState,
-                        sortPriority: 10.0 + Double(index)  // Issue #165: Sequential priority starting at 10.0
-                    )
-                    .transition(.opacity)
-                }
-            }
-            
-        case .horizontal:
-            // Horizontal layout (2 columns)
-            LazyVGrid(columns: [
-                GridItem(.flexible()),
-                GridItem(.flexible())
-            ], spacing: 16) {
-                ForEach(Array(visibleFields.enumerated()), id: \.element.id) { index, field in
-                    DynamicFormFieldView(
-                        field: field,
-                        formState: formState,
-                        sortPriority: 10.0 + Double(index)  // Issue #165: Sequential priority starting at 10.0
-                    )
-                    .transition(.opacity)
-                }
-            }
-            
-        case .grid:
-            // Grid layout (adaptive columns)
-            let columns = min(3, max(1, Int(sqrt(Double(visibleFields.count)))))
-            LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: columns), spacing: 16) {
-                ForEach(Array(visibleFields.enumerated()), id: \.element.id) { index, field in
-                    DynamicFormFieldView(
-                        field: field,
-                        formState: formState,
-                        sortPriority: 10.0 + Double(index)  // Issue #165: Sequential priority starting at 10.0
-                    )
-                    .transition(.opacity)
-                }
-            }
-            
-        case .adaptive:
-            // Adaptive: choose layout based on field count
-            if visibleFields.count <= 4 {
-                platformVStackContainer(spacing: 16) {
-                    ForEach(Array(visibleFields.enumerated()), id: \.element.id) { index, field in
-                        DynamicFormFieldView(
-                            field: field,
-                            formState: formState,
-                            sortPriority: 10.0 + Double(index)  // Issue #165: Sequential priority starting at 10.0
-                        )
-                        .transition(.opacity)
+        case .compact: return 8
+        case .spacious: return 24
+        default: return 16
+        }
+    }
+
+    private var maxItemsPerRow: Int {
+        switch layoutStyle {
+        case .horizontal: return 2
+        case .grid: return 3
+        default: return 4
+        }
+    }
+
+    var body: some View {
+        let orderIndex = Dictionary(uniqueKeysWithValues: fields.enumerated().map { ($0.element.id, $0.offset) })
+        let fieldById = Dictionary(uniqueKeysWithValues: fields.map { ($0.id, $0) })
+        let packItems = fields.map { $0.layoutPackItem(availableWidth: availableWidth) }
+        let plan = FieldLayoutPackedSection.plan(
+            items: packItems,
+            availableWidth: availableWidth,
+            spacing: spacing,
+            maxItemsPerRow: maxItemsPerRow
+        )
+        let columnWidths = plan.columnWidths
+
+        platformVStackContainer(spacing: spacing) {
+            ForEach(Array(plan.rows.enumerated()), id: \.offset) { _, row in
+                platformHStackContainer(alignment: .top, spacing: spacing) {
+                    ForEach(Array(row.enumerated()), id: \.element.id) { column, item in
+                        if let field = fieldById[item.id] {
+                            DynamicFormFieldView(
+                                field: field,
+                                formState: formState,
+                                sortPriority: 10.0 + Double(orderIndex[field.id] ?? 0)
+                            )
+                            .frame(
+                                maxWidth: alignedWidth(column: column, item: item, columnWidths: columnWidths),
+                                alignment: .leading
+                            )
+                            .padding(.leading, plan.controlLeadingInset)
+                            .transition(.opacity)
+                        }
                     }
-                }
-            } else if visibleFields.count <= 8 {
-                LazyVGrid(columns: [
-                    GridItem(.flexible()),
-                    GridItem(.flexible())
-                ], spacing: 16) {
-                    ForEach(Array(visibleFields.enumerated()), id: \.element.id) { index, field in
-                        DynamicFormFieldView(
-                            field: field,
-                            formState: formState,
-                            sortPriority: 10.0 + Double(index)  // Issue #165: Sequential priority starting at 10.0
-                        )
-                        .transition(.opacity)
-                    }
-                }
-            } else {
-                let columns = min(3, max(1, Int(sqrt(Double(visibleFields.count)))))
-                LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: columns), spacing: 16) {
-                    ForEach(Array(visibleFields.enumerated()), id: \.element.id) { index, field in
-                        DynamicFormFieldView(
-                            field: field,
-                            formState: formState,
-                            sortPriority: 10.0 + Double(index)  // Issue #165: Sequential priority starting at 10.0
-                        )
-                        .transition(.opacity)
-                    }
+                    Spacer(minLength: 0)
                 }
             }
         }
+        .background(
+            GeometryReader { proxy in
+                Color.clear.preference(
+                    key: DynamicFormSectionAvailableWidthKey.self,
+                    value: proxy.size.width
+                )
+            }
+        )
+        .onPreferenceChange(DynamicFormSectionAvailableWidthKey.self) { width in
+            if width > 0 {
+                availableWidth = width
+            }
+        }
+    }
+
+    private func alignedWidth(
+        column: Int,
+        item: FieldLayoutPackItem,
+        columnWidths: [CGFloat]
+    ) -> CGFloat? {
+        if column < columnWidths.count, columnWidths[column] > 0 {
+            return columnWidths[column]
+        }
+        return item.preferredWidth
     }
 }
 

@@ -44,7 +44,12 @@ public enum PlatformTitleDisplayMode {
     #endif
 }
 
-// Platform-specific presentation detents for iOS
+/// Legacy iOS presentation-detent wrapper.
+///
+/// - Warning: Prefer ``PlatformPresentationSize`` (`.small` / `.medium` / `.large` /
+///   `.exact(width:height:)`) on sheet and popover APIs (#384). Detents are an iOS-only
+///   projection of those size hints; this enum has no `.small` and height-only `.custom`.
+@available(*, deprecated, message: "Use PlatformPresentationSize (.small/.medium/.large/.exact) instead of PlatformPresentationDetent")
 public enum PlatformPresentationDetent {
     case medium
     case large
@@ -60,6 +65,18 @@ public enum PlatformPresentationDetent {
         }
     }
     #endif
+
+    /// Bridge to the preferred size vocabulary (height-only custom → square exact).
+    public var asPresentationSize: PlatformPresentationSize {
+        switch self {
+        case .medium:
+            return .medium
+        case .large:
+            return .large
+        case .custom(let height):
+            return .exact(width: height, height: height)
+        }
+    }
 }
 
 public struct PlatformTabItem: Identifiable, Hashable {
@@ -72,5 +89,3 @@ public struct PlatformTabItem: Identifiable, Hashable {
         self.systemImage = systemImage
     }
 }
-
-

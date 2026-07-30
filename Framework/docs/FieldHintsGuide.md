@@ -470,15 +470,50 @@ With the hints file above, `sizeUnit` will render as a picker with labels, while
 
 ## Display Width Guidelines
 
-### Named Widths
+Framework-owned field layouts honor `FieldDisplayHints` for preferred width, packing, and alignment. Ignoring these hints in a framework-owned layout is a bug.
 
-- **`narrow`**: ~150 points (e.g., postal code, phone extension)
-- **`medium`**: ~200 points (e.g., username, city)
-- **`wide`**: ~400 points (e.g., full name, email, address)
+**Multi-field (shared packer + aligner):**
 
-### Numeric Widths
+| Surface | Path |
+|---------|------|
+| DynamicForm | `DynamicFormSectionView` → `PackedDynamicFormFieldsLayout` |
+| IntelligentFormView | vertical / horizontal / **grid** / adaptive → `PackedIntelligentFormFieldsLayout` |
+| GenericFormView / ModalFormView / `platformPresentModalForm_L1` | `PackedGenericFormFieldsLayout` |
+| `platformPresentFormData_L1` | `AsyncFormView` → DynamicForm |
 
-You can specify exact widths:
+**Single-field chrome (width via `applyFieldHints`):**
+
+- `platformFormField(label:displayHints:content:)`
+- `iOSTouchFormField(..., displayHints:)`
+- `macOSDesktopFormField(..., displayHints:)`
+- `CustomFieldView` / Dynamic\*Field preferred-width defaults
+
+Read-only detail rows (`IntelligentDetailView`) are not form packing surfaces.
+
+### Resolution order (preferred field claim)
+
+1. Numeric `displayWidth` (e.g. `"250"`) → exact points  
+2. Named band `narrow` / `medium` / `wide` → platform band table (below)  
+3. `expectedLength` → about N characters × **control font metrics** (`FieldDisplayCharacterMetrics` via ``DynamicFontResolver`` body style, Dynamic Type aware) + padding  
+4. Otherwise → flexible **within the window** (still capped by container; not free to overflow the screen)
+
+Always: `effective = min(preferred, availableWidth)` when a preferred width is set.
+
+`displayWidth` omitted is **not** medium — it means no band preference (fall through to `expectedLength` or flexible).
+
+### Named widths (author vocabulary)
+
+Bands are semantic. Point values differ by platform:
+
+| Band | iOS / touch | macOS / pointer | Typical use |
+|------|-------------|-----------------|-------------|
+| `narrow` | 120 | 150 | postal code, extension |
+| `medium` | 180 | 200 | username, city |
+| `wide` | 320 | 400 | email, address |
+
+Other platforms currently follow the iOS (compact) table. Document any future platform differences here.
+
+### Numeric widths
 
 ```json
 {
@@ -487,6 +522,40 @@ You can specify exact widths:
   }
 }
 ```
+
+Numeric values are still capped to available container width.
+
+### `expectedLength` vs `maxLength`
+
+| Key | Role |
+|-----|------|
+| `expectedLength` | **Layout** — size the field for about N characters |
+| `maxLength` | **Validation** — reject input beyond N (counters / rules) |
+| `displayWidth` | **Layout** — preferred horizontal field claim |
+
+Do **not** invent a parallel layout `maxWidth` hint.
+
+### Field vs control
+
+Hints apply to the **field’s layout claim** (how much horizontal space the field takes). The interactive **control** lives inside that slot: text-like controls fill the slot (`FieldLayoutControlSizing.fillClaim`); checkboxes/toggles stay content-sized inside the claim (`intrinsicWithinClaim`) and do not stretch to invent a wide hit target.
+
+Preferred width claims are capped with measured container `availableWidth` when packing (and optionally via `applyFieldHints(..., availableWidth:)`).
+
+### Hint sources (Modal / Generic)
+
+`PresentationHints.fieldHints[fieldId]` wins over the field’s own `displayHints` / metadata. Use presentation-level hints when constructing `ModalFormView` / `GenericFormView` without putting width on each field.
+
+### Packing rules (sections)
+
+When the framework lays out a list of fields:
+
+- **Order:** DynamicForm packs **section field order**. IntelligentFormView packs the **effective author order** after its priority / order-rules pass (`orderFieldsByPriority` / `orderRulesProvider`) — assigning priorities *is* how authors express order there, not raw Mirror/file order.
+- Width-aware rows; wrap when the next field does not fit
+- Keep **contiguous same-type runs** together — never orphan `check, check, check, note` into `[check][check]` / `[check][note]`
+- Isolate tall / multi-line and wide-flex fields on their own row
+- Cap items per row (~3–4); consistent spacing; section boundaries win
+- Do not force a balanced `N×M` grid for neatness when widths/runs say otherwise
+- **Alignment:** packed rows use `FieldLayoutPackedSection.plan` (`FieldLayoutAligner.columnMaxWidths` + `packedFormControlLeadingInset`). Label-above chrome (current) uses inset `0`; label-leading chrome uses `max(labelWidths) + spacing` via `sharedControlLeadingInset`.
 
 ## Complete Example
 

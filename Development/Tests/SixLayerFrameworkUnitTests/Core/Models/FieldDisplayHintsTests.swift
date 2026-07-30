@@ -64,6 +64,14 @@ struct FieldDisplayHintsTests {
         #expect(hints.isMedium == false)
         #expect(hints.isWide == true)
     }
+
+    @Test func testDisplayWidthNilIsNotMedium() {
+        // #385: nil displayWidth means no band preference, not medium.
+        let hints = FieldDisplayHints()
+        #expect(hints.isNarrow == false)
+        #expect(hints.isMedium == false)
+        #expect(hints.isWide == false)
+    }
     
     @Test func testDisplayWidthNumericValue() {
         let hints = FieldDisplayHints(displayWidth: "250")
