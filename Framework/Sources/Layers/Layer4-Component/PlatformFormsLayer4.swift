@@ -212,42 +212,34 @@ public extension View {
                 .foregroundColor(.secondary)
         }
         #else
-        if #available(iOS 16.0, macOS 13.0, *) {
-            if style == "circular" {
-                Gauge(value: value, in: range) {
-                    if let label {
-                        Text(label)
-                    }
-                } currentValueLabel: {
-                    Text("\(Int(value))")
-                } minimumValueLabel: {
-                    Text("\(Int(min))")
-                } maximumValueLabel: {
-                    Text("\(Int(max))")
+        // Deployment targets are iOS 17+ / macOS 15+; Gauge is unconditionally available.
+        // Avoid `if #available` inside @ViewBuilder (no buildLimitedAvailability).
+        if style == "circular" {
+            Gauge(value: value, in: range) {
+                if let label {
+                    Text(label)
                 }
-                .gaugeStyle(.accessoryCircularCapacity)
-            } else {
-                Gauge(value: value, in: range) {
-                    if let label {
-                        Text(label)
-                    }
-                } currentValueLabel: {
-                    Text("\(Int(value))")
-                } minimumValueLabel: {
-                    Text("\(Int(min))")
-                } maximumValueLabel: {
-                    Text("\(Int(max))")
-                }
-                .gaugeStyle(.linearCapacity)
+            } currentValueLabel: {
+                Text("\(Int(value))")
+            } minimumValueLabel: {
+                Text("\(Int(min))")
+            } maximumValueLabel: {
+                Text("\(Int(max))")
             }
+            .gaugeStyle(.accessoryCircularCapacity)
         } else {
-            platformVStackContainer(alignment: .leading) {
-                ProgressView(value: value, total: max)
-                    .progressViewStyle(.linear)
-                Text("\(Int(value)) / \(Int(max))")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+            Gauge(value: value, in: range) {
+                if let label {
+                    Text(label)
+                }
+            } currentValueLabel: {
+                Text("\(Int(value))")
+            } minimumValueLabel: {
+                Text("\(Int(min))")
+            } maximumValueLabel: {
+                Text("\(Int(max))")
             }
+            .gaugeStyle(.linearCapacity)
         }
         #endif
     }
