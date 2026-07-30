@@ -467,11 +467,15 @@ Fields within a section are displayed **in the order specified in the `fields` a
 
 ### Named Widths
 
-| Width | Points | Use Cases |
-|-------|--------|-----------|
-| `narrow` | ~150 | Postal codes, phone extensions, short codes |
-| `medium` | ~200 | Usernames, cities, short names |
-| `wide` | ~400 | Full names, emails, addresses, descriptions |
+Bands are semantic. Point values differ by platform (same table as [FieldHintsGuide](FieldHintsGuide.md)):
+
+| Band | iOS / touch | macOS / pointer | Typical use |
+|------|-------------|-----------------|-------------|
+| `narrow` | 120 | 150 | postal code, extension |
+| `medium` | 180 | 200 | username, city |
+| `wide` | 320 | 400 | email, address |
+
+Other platforms currently follow the iOS (compact) table. `displayWidth` omitted is **not** medium — fall through to `expectedLength` or flexible. Preferred widths are always capped with `min(preferred, availableWidth)`.
 
 ### Numeric Widths
 

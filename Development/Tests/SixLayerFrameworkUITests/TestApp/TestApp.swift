@@ -62,6 +62,8 @@ struct TestAppContentView: View {
     private let openUITestContractSmokeHost = ProcessInfo.processInfo.arguments.contains("-OpenUITestContractSmokeHost")
     /// When true, app opens to Issue #150 standalone `platform*` drop-in binding / interaction host (launch arg -OpenStandaloneDropIn150).
     private let openStandaloneDropIn150 = ProcessInfo.processInfo.arguments.contains("-OpenStandaloneDropIn150")
+    /// When true, app opens to Issue #385 ModalFormView packing / checkbox alignment host (launch arg -OpenFieldLayout385).
+    private let openFieldLayout385 = ProcessInfo.processInfo.arguments.contains("-OpenFieldLayout385")
     /// Deep links for ``AccessibilityCompatibilityUITests`` — open a single test host without launch-page navigation (Issue #180).
     private let openAccessibilityCompatibilityControlTest = ProcessInfo.processInfo.arguments.contains("-OpenAccessibilityCompatibilityControlTest")
     private let openAccessibilityCompatibilityTextTest = ProcessInfo.processInfo.arguments.contains("-OpenAccessibilityCompatibilityTextTest")
@@ -165,6 +167,8 @@ struct TestAppContentView: View {
                 UITestContractSmokeHostView()
             } else if openStandaloneDropIn150 {
                 StandaloneDropIn150HostView()
+            } else if openFieldLayout385 {
+                FieldLayout385HostView()
             } else if openAccessibilityCompatibilityControlTest {
                 NavigationStack {
                     ControlTestView(onBackToMain: {})

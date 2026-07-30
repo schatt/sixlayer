@@ -114,15 +114,18 @@ public struct macOSDesktopFormField: View {
     private let label: String
     private let placeholder: String
     @Binding private var text: String
+    private let displayHints: FieldDisplayHints?
     
     public init(
         label: String,
         placeholder: String,
-        text: Binding<String>
+        text: Binding<String>,
+        displayHints: FieldDisplayHints? = nil
     ) {
         self.label = label
         self.placeholder = placeholder
         self._text = text
+        self.displayHints = displayHints
     }
     
     public var body: some View {
@@ -136,6 +139,7 @@ public struct macOSDesktopFormField: View {
                 .frame(height: 32) // macOS standard height
                 .font(.body)
         }
+        .applyFieldHints(displayHints)
         .automaticCompliance(named: "macOSDesktopFormField")
     }
 }

@@ -12,9 +12,11 @@ public extension View {
     // to avoid ambiguity with multiple overloads. Use those instead.
     
     /// Platform-specific form field with consistent styling
-    /// Provides standardized form field appearance across platforms
+    /// Provides standardized form field appearance across platforms.
+    /// Optional ``FieldDisplayHints`` honor preferred width via the shared resolver (#385).
     func platformFormField<Content: View>(
         label: String? = nil,
+        displayHints: FieldDisplayHints? = nil,
         @ViewBuilder content: () -> Content
     ) -> some View {
         platformVStackContainer(alignment: .leading, spacing: 8) {
@@ -26,6 +28,7 @@ public extension View {
             content()
         }
         .padding(.vertical, 4)
+        .applyFieldHints(displayHints)
         .environment(\.accessibilityIdentifierLabel, label ?? "") // TDD GREEN: Pass label to identifier generation
         .automaticCompliance(named: "platformFormField")
     }
