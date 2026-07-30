@@ -27,10 +27,14 @@ public enum FieldLayoutControlSizing: String, Sendable, Equatable {
     /// Intrinsic controls (checkbox / toggle) stay content-sized within the claim.
     case intrinsicWithinClaim
 
-    /// Deliberate stub: always fill — checkbox case red until green.
+    /// Maps pack kind → how the control fills its preferred-width claim.
     public static func forPackKind(_ kind: FieldLayoutPackKind) -> FieldLayoutControlSizing {
-        _ = kind
-        return .fillClaim
+        switch kind {
+        case .checkbox:
+            return .intrinsicWithinClaim
+        case .compact, .tall, .wideFlex:
+            return .fillClaim
+        }
     }
 }
 
