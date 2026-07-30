@@ -537,13 +537,19 @@ Do **not** invent a parallel layout `maxWidth` hint.
 
 ### Field vs control
 
-Hints apply to the **field’s layout claim** (how much horizontal space the field takes). The interactive **control** lives inside that slot: text-like controls fill the slot; checkboxes/toggles stay content-sized and do not stretch to invent a wide hit target.
+Hints apply to the **field’s layout claim** (how much horizontal space the field takes). The interactive **control** lives inside that slot: text-like controls fill the slot (`FieldLayoutControlSizing.fillClaim`); checkboxes/toggles stay content-sized inside the claim (`intrinsicWithinClaim`) and do not stretch to invent a wide hit target.
+
+Preferred width claims are capped with measured container `availableWidth` when packing (and optionally via `applyFieldHints(..., availableWidth:)`).
+
+### Hint sources (Modal / Generic)
+
+`PresentationHints.fieldHints[fieldId]` wins over the field’s own `displayHints` / metadata. Use presentation-level hints when constructing `ModalFormView` / `GenericFormView` without putting width on each field.
 
 ### Packing rules (sections)
 
 When the framework lays out a list of fields:
 
-- Pack in **author order** (no global sort by control type)
+- **Order:** DynamicForm packs **section field order**. IntelligentFormView packs the **effective author order** after its priority / order-rules pass (`orderFieldsByPriority` / `orderRulesProvider`) — assigning priorities *is* how authors express order there, not raw Mirror/file order.
 - Width-aware rows; wrap when the next field does not fit
 - Keep **contiguous same-type runs** together — never orphan `check, check, check, note` into `[check][check]` / `[check][note]`
 - Isolate tall / multi-line and wide-flex fields on their own row
