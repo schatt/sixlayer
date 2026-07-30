@@ -44,12 +44,17 @@ public extension DataField {
     /// Packer input for this introspection field.
     func layoutPackItem(
         hints: FieldDisplayHints?,
-        bands: FieldDisplayWidthPlatformBands = .forPlatform(SixLayerPlatform.current)
+        bands: FieldDisplayWidthPlatformBands = .forPlatform(SixLayerPlatform.current),
+        availableWidth: CGFloat? = nil
     ) -> FieldLayoutPackItem {
         FieldLayoutPackItem(
             id: name,
             kind: layoutPackKind(hints: hints),
-            preferredWidth: preferredLayoutWidth(hints: hints, bands: bands)
+            preferredWidth: preferredLayoutWidth(
+                hints: hints,
+                bands: bands,
+                availableWidth: availableWidth
+            )
         )
     }
 }
