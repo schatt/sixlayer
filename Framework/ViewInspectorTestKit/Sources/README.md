@@ -34,7 +34,7 @@ import SwiftUI
 import ViewInspector
 import SixLayerViewInspectorTestKit
 
-private struct SettingsRow: View, Inspectable {
+private struct SettingsRow: View {
     var body: some View {
         HStack { Text("Title") }
     }
@@ -69,5 +69,7 @@ Follow SixLayer issue [#178](https://github.com/schatt/sixlayer/issues/178):
 ## Related
 
 - [#326](https://github.com/schatt/sixlayer/issues/326) — ViewInspector 0.10.x typed inspect API
+- [#328](https://github.com/schatt/sixlayer/issues/328) — Remove deprecated `Inspectable` conformances (0.10+)
+- [#388](https://github.com/schatt/sixlayer/issues/388) — Leftover smoke-test / README `Inspectable` cleanup
 - [#178](https://github.com/schatt/sixlayer/issues/178) — ViewInspector policy in SixLayer tests
 - `SixLayerTestKit` — service mocks, UI test navigation contract (no ViewInspector)
