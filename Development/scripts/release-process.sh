@@ -469,7 +469,7 @@ else
 
     echo "🧪 Running macOS unit tests (SLF-macOS-UnitTests)..."
     # Note: do NOT use -quiet here so that any failures print detailed diagnostics
-    if ! xcodebuild test \
+    if ! rtk xcodebuild test \
         -project SixLayerFramework.xcodeproj \
         -scheme SLF-macOS-UnitTests \
         -destination "platform=macOS,arch=arm64" \
@@ -492,7 +492,7 @@ else
             xcrun simctl create "$IOS_SIM_NAME" com.apple.CoreSimulator.SimDeviceType.iPhone-16-Pro "$IOS_RUNTIME" >/dev/null 2>&1 || true
         fi
     fi
-    if ! xcodebuild test \
+    if ! rtk xcodebuild test \
         -project SixLayerFramework.xcodeproj \
         -scheme SLF-iOS-UnitTests \
         -destination "platform=iOS Simulator,name=${IOS_SIM_NAME}" \
