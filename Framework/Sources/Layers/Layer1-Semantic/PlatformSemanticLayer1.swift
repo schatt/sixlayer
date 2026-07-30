@@ -2056,7 +2056,10 @@ public struct GenericFormView: View {
                 validation: .deferred
             ),
             content: {
-                PackedGenericFormFieldsLayout(fields: fields)
+                PackedGenericFormFieldsLayout(
+                    fields: fields,
+                    presentationFieldHints: hints.fieldHints
+                )
             }
         )
         // Issue #245 / gh-243: caller-defined fields are arbitrary content; use identifierName shell.
@@ -2077,13 +2080,23 @@ private struct GenericFormSectionAvailableWidthKey: PreferenceKey {
 @MainActor
 private struct PackedGenericFormFieldsLayout: View {
     let fields: [DynamicFormField]
+    var presentationFieldHints: [String: FieldDisplayHints] = [:]
     @State private var availableWidth: CGFloat = 390
     private let spacing: CGFloat = 16
     private let maxItemsPerRow = 4
 
+    private func resolvedHints(for field: DynamicFormField) -> FieldDisplayHints? {
+        presentationFieldHints[field.id] ?? field.displayHints
+    }
+
     var body: some View {
         let fieldById = Dictionary(uniqueKeysWithValues: fields.map { ($0.id, $0) })
-        let packItems = fields.map { $0.layoutPackItem() }
+        let packItems = fields.map {
+            $0.layoutPackItem(
+                hints: resolvedHints(for: $0),
+                availableWidth: availableWidth
+            )
+        }
         let rows = FieldLayoutPacker.pack(
             packItems,
             availableWidth: availableWidth,
@@ -2097,12 +2110,17 @@ private struct PackedGenericFormFieldsLayout: View {
                 platformHStackContainer(alignment: .top, spacing: spacing) {
                     ForEach(Array(row.enumerated()), id: \.element.id) { column, item in
                         if let field = fieldById[item.id] {
+                            let hints = resolvedHints(for: field)
                             GenericFormFieldChrome(field: field)
                                 .frame(
                                     maxWidth: alignedWidth(column: column, item: item, columnWidths: columnWidths),
                                     alignment: .leading
                                 )
-                                .applyFieldHints(field.displayHints)
+                                .applyFieldHints(
+                                    hints,
+                                    controlSizing: FieldLayoutControlSizing.forPackKind(field.layoutPackKind),
+                                    availableWidth: availableWidth
+                                )
                         }
                     }
                     Spacer(minLength: 0)
@@ -2306,7 +2324,10 @@ public struct ModalFormView: View {
             
             // Form content — shared packer / aligner (#385)
             ScrollView {
-                PackedGenericFormFieldsLayout(fields: fields)
+                PackedGenericFormFieldsLayout(
+                    fields: fields,
+                    presentationFieldHints: hints.fieldHints
+                )
                     .padding(.horizontal)
             }
             
