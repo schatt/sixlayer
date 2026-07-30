@@ -476,7 +476,7 @@ Framework-owned field layouts (**DynamicForm**, **IntelligentFormView**, Layer 1
 
 1. Numeric `displayWidth` (e.g. `"250"`) → exact points  
 2. Named band `narrow` / `medium` / `wide` → platform band table (below)  
-3. `expectedLength` → about N characters × control font metrics (+ padding)  
+3. `expectedLength` → about N characters × **control font metrics** (`FieldDisplayCharacterMetrics` via ``DynamicFontResolver`` body style, Dynamic Type aware) + padding  
 4. Otherwise → flexible **within the window** (still capped by container; not free to overflow the screen)
 
 Always: `effective = min(preferred, availableWidth)` when a preferred width is set.
