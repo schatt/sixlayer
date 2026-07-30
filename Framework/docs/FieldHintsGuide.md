@@ -555,7 +555,7 @@ When the framework lays out a list of fields:
 - Isolate tall / multi-line and wide-flex fields on their own row
 - Cap items per row (~3–4); consistent spacing; section boundaries win
 - Do not force a balanced `N×M` grid for neatness when widths/runs say otherwise
-- **Alignment:** packed rows use per-column max preferred width (`FieldLayoutAligner.columnMaxWidths`) so peer columns share a leading edge; label-above chrome uses inset `0`, label-leading chrome uses `max(labelWidths) + spacing`
+- **Alignment:** packed rows use `FieldLayoutPackedSection.plan` (`FieldLayoutAligner.columnMaxWidths` + `packedFormControlLeadingInset`). Label-above chrome (current) uses inset `0`; label-leading chrome uses `max(labelWidths) + spacing` via `sharedControlLeadingInset`.
 
 ## Complete Example
 
