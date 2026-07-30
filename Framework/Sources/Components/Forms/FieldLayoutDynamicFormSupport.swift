@@ -26,8 +26,8 @@ public extension DynamicFormField {
 
     /// Preferred width claim from ``FieldDisplayHints`` using the shared resolver.
     func preferredLayoutWidth(
-        characterWidth: CGFloat = 9,
-        horizontalPadding: CGFloat = 16,
+        characterWidth: CGFloat = FieldDisplayCharacterMetrics.averageCharacterWidth(),
+        horizontalPadding: CGFloat = FieldDisplayCharacterMetrics.defaultHorizontalPadding,
         bands: FieldDisplayWidthPlatformBands = .forPlatform(SixLayerPlatform.current),
         availableWidth: CGFloat? = nil
     ) -> CGFloat? {
