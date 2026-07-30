@@ -1162,10 +1162,10 @@ open class DynamicFieldComponentsTests: BaseTestClass {
         formState.initializeField(field)
 
         let fieldView = DynamicURLField(field: field, formState: formState)
-        let view = fieldView.enableGlobalAutomaticCompliance()
+        _ = fieldView.enableGlobalAutomaticCompliance()
 
         #if canImport(ViewInspector)
-        withFieldHierarchy(fieldView) { _ in
+        _ = withFieldHierarchy(fieldView) { _ in
             let links = findAllInFieldHierarchy(fieldView, ViewInspector.ViewType.Link.self)
             let textFields = findAllInFieldHierarchy(fieldView, ViewInspector.ViewType.TextField.self)
             #expect(!links.isEmpty, "Read-only URL field with valid URL should use Link component")
@@ -1205,7 +1205,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
         _ = fieldView.enableGlobalAutomaticCompliance()
 
         #if canImport(ViewInspector)
-        withFieldHierarchy(fieldView) { _ in
+        _ = withFieldHierarchy(fieldView) { _ in
             let links = findAllInFieldHierarchy(fieldView, ViewInspector.ViewType.Link.self)
             let allTexts = findAllInFieldHierarchy(fieldView, ViewInspector.ViewType.Text.self)
             #expect(links.isEmpty, "Invalid URL should not use Link component")
@@ -1243,7 +1243,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
         _ = fieldView.enableGlobalAutomaticCompliance()
 
         #if canImport(ViewInspector)
-        withFieldHierarchy(fieldView) { _ in
+        _ = withFieldHierarchy(fieldView) { _ in
             let textFields = findAllInFieldHierarchy(fieldView, ViewInspector.ViewType.TextField.self)
             let allTexts = findAllInFieldHierarchy(fieldView, ViewInspector.ViewType.Text.self)
             let hasURLLikeText = allTexts.contains { text in
@@ -1284,7 +1284,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
         _ = fieldView.enableGlobalAutomaticCompliance()
 
         #if canImport(ViewInspector)
-        withFieldHierarchy(fieldView) { _ in
+        _ = withFieldHierarchy(fieldView) { _ in
             let links = findAllInFieldHierarchy(fieldView, ViewInspector.ViewType.Link.self)
             let textFields = findAllInFieldHierarchy(fieldView, ViewInspector.ViewType.TextField.self)
             #expect(!links.isEmpty, "Display-only URL field should use Link component")
@@ -1323,7 +1323,7 @@ open class DynamicFieldComponentsTests: BaseTestClass {
         _ = fieldView.enableGlobalAutomaticCompliance()
 
         #if canImport(ViewInspector)
-        withFieldHierarchy(fieldView) { _ in
+        _ = withFieldHierarchy(fieldView) { _ in
             let texts = findAllInFieldHierarchy(fieldView, ViewInspector.ViewType.Text.self)
             let allTexts = texts.compactMap { try? $0.string() }
             let hasPlaceholder = allTexts.contains { $0 == "—" || $0.trimmingCharacters(in: .whitespaces) == "—" }
