@@ -182,7 +182,7 @@ public struct AppleHIGComplianceExamples {
             }
             .appleHIGCompliant()
         }
-        .frame(minWidth: 400, minHeight: 300)
+        .platformPresentationFrame(sizes: [.small])
     }
 }
 
