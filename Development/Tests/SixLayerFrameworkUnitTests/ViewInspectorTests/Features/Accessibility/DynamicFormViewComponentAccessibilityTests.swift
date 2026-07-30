@@ -462,7 +462,7 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
         // Should render proper selection UI
         #if canImport(ViewInspector)
         if let inspected = try? AnyView(view).inspect() {
-            let vStacks = (try? inspected.findAll(ViewType.VStack.self)) ?? []
+            let vStacks = inspected.findAll(ViewType.VStack.self)
             if let vStack = vStacks.first {
                 #expect(vStack.count >= 2, "Should have label and Picker")
 
