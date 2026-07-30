@@ -896,9 +896,11 @@ Text(i18n.localizedString(for: "SixLayerFramework.form.title"))
                     .foregroundColor(Color.platformSecondaryLabel)
             }
         }
-        .frame(
-            maxWidth: field.preferredLayoutWidth(hints: fieldHints[field.name]),
-            alignment: .leading
+        .applyFieldHints(
+            fieldHints[field.name],
+            controlSizing: FieldLayoutControlSizing.forPackKind(
+                field.layoutPackKind(hints: fieldHints[field.name])
+            )
         )
         .padding(.vertical, 4)
     }
@@ -1179,7 +1181,9 @@ private struct PackedIntelligentFormFieldsLayout<T, CustomField: View>: View {
 
     var body: some View {
         let fieldByName = Dictionary(uniqueKeysWithValues: fields.map { ($0.name, $0) })
-        let packItems = fields.map { $0.layoutPackItem(hints: fieldHints[$0.name]) }
+        let packItems = fields.map {
+            $0.layoutPackItem(hints: fieldHints[$0.name], availableWidth: availableWidth)
+        }
         let rows = FieldLayoutPacker.pack(
             packItems,
             availableWidth: availableWidth,
