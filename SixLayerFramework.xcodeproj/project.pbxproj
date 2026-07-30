@@ -6875,14 +6875,7 @@
 			path = API;
 			sourceTree = "<group>";
 		};
-		"TEMP_CFBEC8F3-166C-47C3-8236-1E4FBF0BCEA6" /* Shared */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = Shared;
-			sourceTree = "<group>";
-		};
-		"TEMP_D8BE21DE-89BF-40E4-8131-B85B2B3E7AE9" /* Utilities */ = {
+		"TEMP_5E77D479-50C1-4156-B7DD-D14948A90EC4" /* Utilities */ = {
 			isa = PBXGroup;
 			children = (
 			);
