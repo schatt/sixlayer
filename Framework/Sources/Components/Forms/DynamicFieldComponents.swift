@@ -86,18 +86,11 @@ public struct CustomFieldView: View {
             }
         }
         // Field layout claim from FieldDisplayHints (#385) — production path, not only L1.
-        .frame(maxWidth: preferredFieldWidth, alignment: .leading)
-        .automaticComplianceForDynamicFormField(field)
-    }
-
-    /// Preferred horizontal field claim from hints (numeric → band → expectedLength).
-    private var preferredFieldWidth: CGFloat? {
-        FieldDisplayWidthResolver.preferredWidth(
-            hints: field.displayHints,
-            characterWidth: FieldDisplayCharacterMetrics.averageCharacterWidth(),
-            horizontalPadding: FieldDisplayCharacterMetrics.defaultHorizontalPadding,
-            bands: FieldDisplayWidthPlatformBands.forPlatform(SixLayerPlatform.current)
+        .applyFieldHints(
+            field.displayHints,
+            controlSizing: FieldLayoutControlSizing.forPackKind(field.layoutPackKind)
         )
+        .automaticComplianceForDynamicFormField(field)
     }
 }
 
