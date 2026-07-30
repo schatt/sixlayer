@@ -42,16 +42,16 @@ open class PlatformPresentationFileImporterExtensionsTests: BaseTestClass {
     }
 
     @Test @MainActor func testPlatformPresentationDetentsTypedMediumLargeNamedCompliance() async {
-        assertLayoutChromeDualPath(anchorName: "PlatformPresDetentsTypedML", context: "platformPresentationDetents typed") {
+        assertLayoutChromeDualPath(anchorName: "PlatformPresDetentsTypedML", context: "platformPresentationDetents fromSizes") {
             Text("Detents typed ML")
-                .platformPresentationDetents([.medium, .large])
+                .platformPresentationDetents(fromSizes: [.medium, .large])
         }
     }
 
     @Test @MainActor func testPlatformPresentationDetentsTypedCustomNamedCompliance() async {
-        assertLayoutChromeDualPath(anchorName: "PlatformPresDetentsTypedCustom", context: "platformPresentationDetents typed custom") {
+        assertLayoutChromeDualPath(anchorName: "PlatformPresDetentsTypedCustom", context: "platformPresentationDetents fromSizes exact") {
             Text("Detents typed custom")
-                .platformPresentationDetents([.custom(140)])
+                .platformPresentationDetents(fromSizes: [.exact(width: 140, height: 140)])
         }
     }
 
