@@ -103,6 +103,7 @@ open class PlatformListNavigationExtensionsTests: BaseTestClass {
         expectAccessibilityCompliance(view, componentName: "platformNavigationSheetButton")
     }
 
+    #if os(macOS)
     @Test @MainActor func testPlatformNavigationSheetButtonPhoneOrDetailOnlyRendersOnMacHost() async {
         let view = Text("Host").platformNavigationSheetButton(
             action: {},
@@ -112,6 +113,7 @@ open class PlatformListNavigationExtensionsTests: BaseTestClass {
         )
         expectAccessibilityCompliance(view, componentName: "platformNavigationSheetButton")
     }
+    #endif
 
     @Test @MainActor func testPlatformAppNavigationSheetToolbarLeadingRenders() async {
         @State var showingSheet = false
