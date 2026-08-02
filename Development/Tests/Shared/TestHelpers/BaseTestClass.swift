@@ -291,21 +291,41 @@ open class BaseTestClass {
     }
 
     #else
+    // No ViewInspector (tvOS/visionOS unit): observe hostability, not Bool(true) theater (#382).
+    // Text/image content still needs VI or XCUI — hostability is the cheap truthful floor here.
     @MainActor
     open func verifyViewContainsText(_ view: some View, expectedText: String, testName: String) {
-        #expect(Bool(true), "View created for \(testName) (ViewInspector not available)")
+        // Deliberate inverted hostability for #382 red — revert to isHostable for green.
+        #expect(
+            !PlatformContainerStructureAssertions.isHostable(view),
+            "Deliberate red #382: hostability contract for \(testName) (text '\(expectedText)' needs VI/XCUI)"
+        )
     }
     @MainActor
     open func verifyViewContainsImage(_ view: some View, testName: String) {
-        #expect(Bool(true), "View created for \(testName) (ViewInspector not available)")
+        #expect(
+            !PlatformContainerStructureAssertions.isHostable(view),
+            "Deliberate red #382: hostability contract for \(testName) (image content needs VI/XCUI)"
+        )
     }
     @MainActor
     open func verifyViewContainsAnyText(_ view: some View, testName: String) {
-        #expect(Bool(true), "View created for \(testName) (ViewInspector not available)")
+        #expect(
+            !PlatformContainerStructureAssertions.isHostable(view),
+            "Deliberate red #382: hostability contract for \(testName)"
+        )
     }
     @MainActor
     open func verifyViewContainsAtLeastOneVStack(_ view: some View, testName: String) {
-        #expect(Bool(true), "View created for \(testName) (ViewInspector not available)")
+        #expect(
+            !PlatformContainerStructureAssertions.isHostable(view),
+            "Deliberate red #382: hostability contract for \(testName)"
+        )
+        let typeName = String(describing: type(of: view))
+        #expect(
+            typeName.contains("VStack"),
+            "View type should include VStack for \(testName), got: \(typeName)"
+        )
     }
     @MainActor
     open func tryWithFirstVStack(
@@ -314,7 +334,11 @@ open class BaseTestClass {
         minChildren: Int? = nil,
         body: (Any) -> Void
     ) {
-        #expect(Bool(true), "View created for \(testName) (ViewInspector not available)")
+        #expect(
+            !PlatformContainerStructureAssertions.isHostable(view),
+            "Deliberate red #382: hostability contract for \(testName)"
+        )
+        // Do not invoke body without an inspectable VStack.
     }
     #endif
     
