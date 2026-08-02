@@ -257,8 +257,52 @@ public func getAccessibilityIdentifierForTest<V: View>(view: V, hostedRoot: Any?
         if let button = try? inspected.button(), let id = try? button.accessibilityIdentifier(), !id.isEmpty { return id }
     }
     #endif
-    guard let root = hostedRoot else { return nil }
-    return firstAccessibilityIdentifier(inHosted: root)
+
+    // Secondary lanes without ViewInspector (#395): hosted + synthesis + debug-log.
+    return accessibilityIdentifierWithoutViewInspector(view: view, hostedRoot: hostedRoot)
+}
+
+/// ID observation when ViewInspector is unavailable (tvOS/visionOS unit) or VI signals were empty (#395).
+@MainActor
+private func accessibilityIdentifierWithoutViewInspector<V: View>(view: V, hostedRoot: Any?) -> String? {
+    var candidates: [String] = []
+    if let root = hostedRoot {
+        candidates.append(contentsOf: findAllAccessibilityIdentifiersFromPlatformView(root))
+        if let id = firstAccessibilityIdentifier(inHosted: root), !id.isEmpty {
+            candidates.append(id)
+        }
+    }
+    if let cfg = AccessibilityIdentifierConfig.currentTaskLocalConfig {
+        candidates.append(
+            contentsOf: AccessibilityTestUtilities.testingSyntheticAutomaticComplianceIdentifiers(
+                view: view,
+                config: cfg
+            )
+        )
+        candidates.append(
+            contentsOf: AccessibilityTestUtilities.parsedIdentifiersFromConfigDebugLog(config: cfg)
+        )
+    }
+
+    var seen = Set<String>()
+    let unique = candidates.filter { id in
+        guard !id.isEmpty else { return false }
+        return seen.insert(id).inserted
+    }
+    guard !unique.isEmpty else { return nil }
+
+    let anchors = AccessibilityTestUtilities.harnessIdentifierAnchorNames(in: view as Any)
+    for anchor in anchors.reversed() {
+        if let match = unique.first(where: { $0.localizedCaseInsensitiveContains(anchor) }) {
+            return match
+        }
+    }
+    return unique.max { lhs, rhs in
+        let lhsDepth = lhs.split(separator: ".").count
+        let rhsDepth = rhs.split(separator: ".").count
+        if lhsDepth != rhsDepth { return lhsDepth < rhsDepth }
+        return lhs.count < rhs.count
+    }
 }
 
 /// Get accessibility label: modifier parameter, typed inspection, hosted hierarchy, then AnyView recursion (#314 / #178).
