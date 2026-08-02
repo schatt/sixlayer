@@ -292,34 +292,33 @@ open class BaseTestClass {
 
     #else
     // No ViewInspector (tvOS/visionOS unit): observe hostability, not Bool(true) theater (#382).
-    // Text/image content still needs VI or XCUI — hostability is the cheap truthful floor here.
+    // Text/image *content* still needs VI or XCUI (#393 / #392) — hostability is the cheap truthful floor.
     @MainActor
     open func verifyViewContainsText(_ view: some View, expectedText: String, testName: String) {
-        // Deliberate inverted hostability for #382 red — revert to isHostable for green.
         #expect(
-            !PlatformContainerStructureAssertions.isHostable(view),
-            "Deliberate red #382: hostability contract for \(testName) (text '\(expectedText)' needs VI/XCUI)"
+            PlatformContainerStructureAssertions.isHostable(view),
+            "View should be hostable for \(testName); text '\(expectedText)' needs VI/XCUI (#393/#392)"
         )
     }
     @MainActor
     open func verifyViewContainsImage(_ view: some View, testName: String) {
         #expect(
-            !PlatformContainerStructureAssertions.isHostable(view),
-            "Deliberate red #382: hostability contract for \(testName) (image content needs VI/XCUI)"
+            PlatformContainerStructureAssertions.isHostable(view),
+            "View should be hostable for \(testName); image content needs VI/XCUI (#393/#392)"
         )
     }
     @MainActor
     open func verifyViewContainsAnyText(_ view: some View, testName: String) {
         #expect(
-            !PlatformContainerStructureAssertions.isHostable(view),
-            "Deliberate red #382: hostability contract for \(testName)"
+            PlatformContainerStructureAssertions.isHostable(view),
+            "View should be hostable for \(testName); text content needs VI/XCUI (#393/#392)"
         )
     }
     @MainActor
     open func verifyViewContainsAtLeastOneVStack(_ view: some View, testName: String) {
         #expect(
-            !PlatformContainerStructureAssertions.isHostable(view),
-            "Deliberate red #382: hostability contract for \(testName)"
+            PlatformContainerStructureAssertions.isHostable(view),
+            "View should be hostable for \(testName) without ViewInspector (#382)"
         )
         let typeName = String(describing: type(of: view))
         #expect(
@@ -335,8 +334,8 @@ open class BaseTestClass {
         body: (Any) -> Void
     ) {
         #expect(
-            !PlatformContainerStructureAssertions.isHostable(view),
-            "Deliberate red #382: hostability contract for \(testName)"
+            PlatformContainerStructureAssertions.isHostable(view),
+            "View should be hostable for \(testName) without ViewInspector (#382)"
         )
         // Do not invoke body without an inspectable VStack.
     }
