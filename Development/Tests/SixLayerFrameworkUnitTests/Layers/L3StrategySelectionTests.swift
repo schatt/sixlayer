@@ -12,7 +12,7 @@ import SwiftUI
 @testable import SixLayerFramework
 
 /// NOTE: Not marked @MainActor on class to allow parallel execution
-@Suite("L Strategy Selection")
+@Suite("L Strategy Selection", HostedViewTestIsolationTrait())
 open class L3StrategySelectionTests: BaseTestClass {
     
     // MARK: - Test Data Helpers (test isolation - each test creates fresh data)
@@ -109,9 +109,11 @@ open class L3StrategySelectionTests: BaseTestClass {
             deviceType: .mac,
             contentComplexity: complexity
         )
-        // Test that the strategy can be used to create a functional view
-        _ = createTestViewWithCardLayoutStrategy(macStrategy)
-        #expect(Bool(true), "Should be able to create view with mac card layout strategy")
+        let macView = createTestViewWithCardLayoutStrategy(macStrategy)
+        // Deliberate inverted hostability for #382 red
+        #expect(!PlatformContainerStructureAssertions.isHostable(macView), "Deliberate red #382: mac card layout view hostable")
+        #expect(macStrategy.columns > 0, "Mac strategy should have columns")
+        #expect(!macStrategy.reasoning.isEmpty, "Mac strategy should provide reasoning")
     }
     
     @Test @MainActor func testSelectCardLayoutStrategy_L3_WithDifferentComplexityLevels() {
@@ -119,32 +121,17 @@ open class L3StrategySelectionTests: BaseTestClass {
         let screenWidth: CGFloat = 375
         let deviceType = DeviceType.phone
         
-        // Test simple complexity
-        _ = selectCardLayoutStrategy_L3(
-            contentCount: contentCount,
-            screenWidth: screenWidth,
-            deviceType: deviceType,
-            contentComplexity: .simple
-        )
-        #expect(Bool(true), "Simple complexity should return a strategy")
-        
-        // Test moderate complexity
-        _ = selectCardLayoutStrategy_L3(
-            contentCount: contentCount,
-            screenWidth: screenWidth,
-            deviceType: deviceType,
-            contentComplexity: .moderate
-        )
-        #expect(Bool(true), "Moderate complexity should return a strategy")
-        
-        // Test complex complexity
-        _ = selectCardLayoutStrategy_L3(
-            contentCount: contentCount,
-            screenWidth: screenWidth,
-            deviceType: deviceType,
-            contentComplexity: .complex
-        )
-        #expect(Bool(true), "Complex complexity should return a strategy")
+        for complexity in [ContentComplexity.simple, .moderate, .complex] {
+            let strategy = selectCardLayoutStrategy_L3(
+                contentCount: contentCount,
+                screenWidth: screenWidth,
+                deviceType: deviceType,
+                contentComplexity: complexity
+            )
+            // Deliberate inverted columns for #382 red
+            #expect(strategy.columns <= 0, "Deliberate red #382: \(complexity) strategy columns")
+            #expect(!strategy.reasoning.isEmpty, "\(complexity) strategy should provide reasoning")
+        }
     }
     
     // MARK: - chooseGridStrategy Tests
@@ -295,10 +282,12 @@ open class L3StrategySelectionTests: BaseTestClass {
         )
         
         // When
-        _ = selectFormStrategy_AddFuelView_L3(layout: layout)
+        let strategy = selectFormStrategy_AddFuelView_L3(layout: layout)
         
         // Then
-        #expect(Bool(true), "selectFormStrategy_AddFuelView_L3 should return a strategy")  // strategy is non-optional
+        #expect(strategy.containerType == layout.containerType, "Form strategy should use layout container type")
+        #expect(strategy.fieldLayout == layout.fieldLayout, "Form strategy should use layout field layout")
+        #expect(strategy.validation == layout.validation, "Form strategy should use layout validation")
     }
     
     @Test @MainActor func testSelectModalStrategy_Form_L3() {
@@ -309,10 +298,11 @@ open class L3StrategySelectionTests: BaseTestClass {
         )
         
         // When
-        _ = selectModalStrategy_Form_L3(layout: layout)
+        let strategy = selectModalStrategy_Form_L3(layout: layout)
         
         // Then
-        #expect(Bool(true), "selectModalStrategy_Form_L3 should return a strategy")  // strategy is non-optional
+        #expect(strategy.presentationType == layout.presentationType, "Modal strategy should match presentation type")
+        #expect(strategy.sizing == layout.sizing, "Modal strategy should match sizing")
     }
     
     // MARK: - OCR Strategy Tests
@@ -387,41 +377,12 @@ open class L3StrategySelectionTests: BaseTestClass {
     
     @Test @MainActor func testPlatformOCRStrategy_L3_WithDifferentPlatforms() {
         let textTypes = [TextType.general]
-        
-        // Test iOS
-        _ = platformOCRStrategy_L3(
-            textTypes: textTypes,
-            platform: .iOS
-        )
-        #expect(Bool(true), "iOS platform should return a strategy")
-        
-        // Test macOS
-        _ = platformOCRStrategy_L3(
-            textTypes: textTypes,
-            platform: .macOS
-        )
-        #expect(Bool(true), "macOS platform should return a strategy")
-        
-        // Test watchOS
-        _ = platformOCRStrategy_L3(
-            textTypes: textTypes,
-            platform: .watchOS
-        )
-        #expect(Bool(true), "watchOS platform should return a strategy")
-        
-        // Test tvOS
-        _ = platformOCRStrategy_L3(
-            textTypes: textTypes,
-            platform: .tvOS
-        )
-        #expect(Bool(true), "tvOS platform should return a strategy")
-        
-        // Test visionOS
-        _ = platformOCRStrategy_L3(
-            textTypes: textTypes,
-            platform: .visionOS
-        )
-        #expect(Bool(true), "visionOS platform should return a strategy")
+        for platform in [SixLayerPlatform.iOS, .macOS, .watchOS, .tvOS, .visionOS] {
+            let strategy = platformOCRStrategy_L3(textTypes: textTypes, platform: platform)
+            #expect(!strategy.supportedTextTypes.isEmpty, "\(platform) should support text types")
+            #expect(!strategy.supportedLanguages.isEmpty, "\(platform) should support languages")
+            #expect(strategy.estimatedProcessingTime > 0, "\(platform) should have positive processing time")
+        }
     }
     
     @Test @MainActor func testPlatformDocumentOCRStrategy_L3() {
@@ -593,39 +554,21 @@ open class L3StrategySelectionTests: BaseTestClass {
     
     @Test @MainActor func testSelectCardExpansionStrategy_L3_WithDifferentDeviceTypes() {
         let contentCount = 10
-        let screenWidth: CGFloat = 375
         let interactionStyle = InteractionStyle.interactive
         let contentDensity = ContentDensity.balanced
-        
-        // Test phone
-        _ = selectCardExpansionStrategy_L3(
-            contentCount: contentCount,
-            screenWidth: screenWidth,
-            deviceType: .phone,
-            interactionStyle: interactionStyle,
-            contentDensity: contentDensity
-        )
-        #expect(Bool(true), "Phone device type should return a strategy")
-        
-        // Test pad
-        _ = selectCardExpansionStrategy_L3(
-            contentCount: contentCount,
-            screenWidth: 768,
-            deviceType: .pad,
-            interactionStyle: interactionStyle,
-            contentDensity: contentDensity
-        )
-        #expect(Bool(true), "Pad device type should return a strategy")
-        
-        // Test mac
-        _ = selectCardExpansionStrategy_L3(
-            contentCount: contentCount,
-            screenWidth: 1024,
-            deviceType: .mac,
-            interactionStyle: interactionStyle,
-            contentDensity: contentDensity
-        )
-        #expect(Bool(true), "Mac device type should return a strategy")
+        let cases: [(DeviceType, CGFloat)] = [(.phone, 375), (.pad, 768), (.mac, 1024)]
+        for (deviceType, screenWidth) in cases {
+            let strategy = selectCardExpansionStrategy_L3(
+                contentCount: contentCount,
+                screenWidth: screenWidth,
+                deviceType: deviceType,
+                interactionStyle: interactionStyle,
+                contentDensity: contentDensity
+            )
+            #expect(!strategy.supportedStrategies.isEmpty, "\(deviceType) should support expansion strategies")
+            #expect(strategy.primaryStrategy != .none, "\(deviceType) primary strategy should not be none")
+            #expect(strategy.expansionScale > 0, "\(deviceType) should have positive expansion scale")
+        }
     }
     
     @Test @MainActor func testSelectCardExpansionStrategy_L3_WithDifferentContentDensities() {
@@ -633,36 +576,18 @@ open class L3StrategySelectionTests: BaseTestClass {
         let screenWidth: CGFloat = 375
         let deviceType = DeviceType.phone
         let interactionStyle = InteractionStyle.interactive
-        
-        // Test dense density
-        _ = selectCardExpansionStrategy_L3(
-            contentCount: contentCount,
-            screenWidth: screenWidth,
-            deviceType: deviceType,
-            interactionStyle: interactionStyle,
-            contentDensity: .dense
-        )
-        #expect(Bool(true), "Dense density should return a strategy")
-        
-        // Test balanced density
-        _ = selectCardExpansionStrategy_L3(
-            contentCount: contentCount,
-            screenWidth: screenWidth,
-            deviceType: deviceType,
-            interactionStyle: interactionStyle,
-            contentDensity: .balanced
-        )
-        #expect(Bool(true), "Balanced density should return a strategy")
-        
-        // Test spacious density
-        _ = selectCardExpansionStrategy_L3(
-            contentCount: contentCount,
-            screenWidth: screenWidth,
-            deviceType: deviceType,
-            interactionStyle: interactionStyle,
-            contentDensity: .spacious
-        )
-        #expect(Bool(true), "Spacious density should return a strategy")
+        for density in [ContentDensity.dense, .balanced, .spacious] {
+            let strategy = selectCardExpansionStrategy_L3(
+                contentCount: contentCount,
+                screenWidth: screenWidth,
+                deviceType: deviceType,
+                interactionStyle: interactionStyle,
+                contentDensity: density
+            )
+            #expect(!strategy.supportedStrategies.isEmpty, "\(density) should support expansion strategies")
+            #expect(strategy.primaryStrategy != .none, "\(density) primary strategy should not be none")
+            #expect(strategy.expansionScale > 0, "\(density) should have positive expansion scale")
+        }
     }
     
     // MARK: - Photo Strategy Tests
