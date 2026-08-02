@@ -1735,7 +1735,6 @@ public enum AccessibilityTestUtilities {
             )
         }
         guard hasAnonymous, identifiers.isEmpty else { return identifiers }
-        #if canImport(ViewInspector)
         guard let params = inferredInteractiveControlParameters(from: view) else { return identifiers }
         let generated = generateAccessibilityIdentifier(
             config: config,
@@ -1754,7 +1753,6 @@ public enum AccessibilityTestUtilities {
             emptyFallback: "main.ui.element"
         )
         appendSyntheticIdentifier(generated, to: &identifiers, seen: &seen)
-        #endif
         return identifiers
     }
 
@@ -1779,38 +1777,109 @@ public enum AccessibilityTestUtilities {
         }
     }
 
-    #if canImport(ViewInspector)
+    /// Prefer ViewInspector when available; Mirror walks the value tree on secondary unit lanes (#395).
     @MainActor
     private static func inferredInteractiveControlParameters<V: View>(
         from view: V
     ) -> (elementType: String, label: String?)? {
-        guard let inspected = try? AnyView(view).inspect() else { return nil }
-        if let button = try? inspected.find(ViewInspector.ViewType.Button.self) {
-            let label = buttonLabelText(from: button)
-            return ("Button", label)
+        #if canImport(ViewInspector)
+        if let inspected = try? AnyView(view).inspect() {
+            if let button = try? inspected.find(ViewInspector.ViewType.Button.self) {
+                return ("Button", buttonLabelText(from: button))
+            }
+            if let _ = try? inspected.find(ViewInspector.ViewType.Link.self) {
+                return ("Link", nil)
+            }
+            if let _ = try? inspected.find(ViewInspector.ViewType.TextField.self) {
+                return ("TextField", nil)
+            }
+            if let _ = try? inspected.find(ViewInspector.ViewType.SecureField.self) {
+                return ("SecureField", nil)
+            }
+            if let _ = try? inspected.find(ViewInspector.ViewType.Toggle.self) {
+                return ("Toggle", nil)
+            }
+            if let _ = try? inspected.find(ViewInspector.ViewType.Image.self) {
+                return ("Image", nil)
+            }
+            if let text = try? inspected.find(ViewInspector.ViewType.Text.self) {
+                let label = (try? text.string()).flatMap { $0.isEmpty ? nil : $0 }
+                return ("Text", label)
+            }
         }
-        if let _ = try? inspected.find(ViewInspector.ViewType.Link.self) {
-            return ("Link", nil)
+        #endif
+        return inferredInteractiveControlParametersFromMirror(in: view)
+    }
+
+    @MainActor
+    private static func inferredInteractiveControlParametersFromMirror(
+        in value: Any,
+        remainingDepth: Int = 12
+    ) -> (elementType: String, label: String?)? {
+        guard remainingDepth >= 0 else { return nil }
+        let typeName = String(describing: Swift.type(of: value))
+        if let elementType = interactiveElementTypeName(fromTypeName: typeName) {
+            return (elementType, mirrorTextLabel(in: value, remainingDepth: min(4, remainingDepth)))
         }
-        if let _ = try? inspected.find(ViewInspector.ViewType.TextField.self) {
-            return ("TextField", nil)
-        }
-        if let _ = try? inspected.find(ViewInspector.ViewType.SecureField.self) {
-            return ("SecureField", nil)
-        }
-        if let _ = try? inspected.find(ViewInspector.ViewType.Toggle.self) {
-            return ("Toggle", nil)
-        }
-        if let _ = try? inspected.find(ViewInspector.ViewType.Image.self) {
-            return ("Image", nil)
-        }
-        if let text = try? inspected.find(ViewInspector.ViewType.Text.self) {
-            let label = (try? text.string()).flatMap { $0.isEmpty ? nil : $0 }
-            return ("Text", label)
+        let mirror = Mirror(reflecting: value)
+        for child in mirror.children {
+            if let found = inferredInteractiveControlParametersFromMirror(
+                in: child.value,
+                remainingDepth: remainingDepth - 1
+            ) {
+                return found
+            }
         }
         return nil
     }
 
+    private static func interactiveElementTypeName(fromTypeName typeName: String) -> String? {
+        // Prefer generic control shapes (`Button<…>`) so `ButtonStyleConfiguration` is not a hit.
+        let ordered: [(needle: String, elementType: String)] = [
+            ("SecureField<", "SecureField"),
+            ("TextField<", "TextField"),
+            ("Toggle<", "Toggle"),
+            ("Button<", "Button"),
+            ("Link<", "Link"),
+        ]
+        for candidate in ordered where typeName.contains(candidate.needle) {
+            return candidate.elementType
+        }
+        if typeName == "Image" || typeName.hasPrefix("Image<") {
+            return "Image"
+        }
+        if typeName == "Text" || typeName.hasPrefix("Text<") {
+            return "Text"
+        }
+        return nil
+    }
+
+    @MainActor
+    private static func mirrorTextLabel(in value: Any, remainingDepth: Int) -> String? {
+        guard remainingDepth >= 0 else { return nil }
+        let typeName = String(describing: Swift.type(of: value))
+        if typeName == "Text" || typeName.hasPrefix("Text<") {
+            let mirror = Mirror(reflecting: value)
+            for child in mirror.children {
+                if let string = child.value as? String, !string.isEmpty {
+                    return string
+                }
+                if let attributed = child.value as? AttributedString {
+                    let plain = String(attributed.characters)
+                    if !plain.isEmpty { return plain }
+                }
+            }
+        }
+        let mirror = Mirror(reflecting: value)
+        for child in mirror.children {
+            if let label = mirrorTextLabel(in: child.value, remainingDepth: remainingDepth - 1) {
+                return label
+            }
+        }
+        return nil
+    }
+
+    #if canImport(ViewInspector)
     @MainActor
     private static func buttonLabelText(
         from button: ViewInspector.InspectableView<ViewInspector.ViewType.Button>
