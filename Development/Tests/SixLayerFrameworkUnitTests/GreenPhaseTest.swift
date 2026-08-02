@@ -25,10 +25,9 @@ open class GreenPhaseTest: BaseTestClass {
             )
         )
 
-        // Deliberate inverted hostability for #382 red — flip to isHostable for green.
         #expect(
-            !PlatformContainerStructureAssertions.isHostable(view),
-            "Deliberate red #382: collection L1 view should be hostable"
+            PlatformContainerStructureAssertions.isHostable(view),
+            "platformPresentItemCollection_L1 view should be hostable (#382)"
         )
     }
 
