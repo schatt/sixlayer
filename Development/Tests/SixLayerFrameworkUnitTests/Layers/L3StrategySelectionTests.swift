@@ -129,7 +129,8 @@ open class L3StrategySelectionTests: BaseTestClass {
                 deviceType: deviceType,
                 contentComplexity: complexity
             )
-            #expect(strategy.columns > 0, "\(complexity) strategy should have columns")
+            // Deliberate inverted columns for #382 red (Slice 3)
+            #expect(strategy.columns <= 0, "Deliberate red #382: \(complexity) strategy columns")
             #expect(!strategy.reasoning.isEmpty, "\(complexity) strategy should provide reasoning")
         }
     }
