@@ -1,5 +1,5 @@
 ---
-description: GitHub issue workflow — wip branch for all issue-linked work, --body-file comments, TDD red on issue, closure sequence.
+description: GitHub issue workflow — wip branch for all issue-linked work, Taska comments by default, TDD red on issue, closure sequence.
 globs: **/*
 alwaysApply: true
 ---
@@ -24,21 +24,23 @@ Dedicated issue worktrees are **temporary local checkouts** — used across mach
 
 ## Comment posting — MANDATORY
 
-- **Always** use `gh issue comment <N> --body-file <path>` (or a heredoc with a quoted delimiter). **Never** use inline `--body "..."` — shells interpret backticks/`$` inside double quotes.
-- Use the same **`--body-file`** + **`COMMENT_FILE`** pattern for `gh issue edit <N> --body-file <path>` when updating the issue description.
-- Applies any time a comment contains backticks, code blocks, special shell characters, or multi-line formatting (which is almost always).
+- **Default: Taska MCP** (`user-taska` → `add_comment`) for issue comments. Resolve `repo_id` via `list_repos` (sixlayer → that repo’s id). Pass the full Markdown in `body` (Taska supports Markdown; no shell quoting hazards).
+- **Also prefer Taska** for other issue mutations when the tool exists (`update_issue`, `set_issue_state`, `create_issue`, etc.).
+- **Fallback — `gh`:** only if Taska is unavailable (`needsAuth`, error, or not running). Then use `gh issue comment <N> --body-file <path>` (or a heredoc with a quoted delimiter). **Never** use inline `gh … --body "..."` — shells interpret backticks/`$` inside double quotes.
+- For `gh issue edit <N>` fallback, use the same **`--body-file`** + **`COMMENT_FILE`** pattern.
 
-## Reusable body file (avoid delete prompts)
+## Reusable body file (gh fallback only)
 
-- Use **one stable path per Cursor host process** under `/tmp`, so the agent **overwrites** the same file for each `gh issue comment` instead of creating and deleting unique paths (which can trigger repeated “remove file?” prompts).
+- When using the `gh` fallback, use **one stable path per Cursor host process** under `/tmp`, so the agent **overwrites** the same file instead of creating and deleting unique paths (which can trigger repeated “remove file?” prompts).
 - **Path:** `/tmp/cursor-gh-issue-comment-${CURSOR_PID}.md`
   - Prefer **`CURSOR_PID`** when the Cursor host sets it for the agent terminal.
   - If **`CURSOR_PID` is unset**, fall back to **`$$`** (current shell PID): `COMMENT_FILE="/tmp/cursor-gh-issue-comment-${CURSOR_PID:-$$}.md"`
 - **Do not delete** that file after posting unless it contains secrets you must clear; the next comment overwrites it.
+- Taska comments do **not** need this file — pass Markdown directly to `add_comment`.
 
 ## When comments go on the issue (source of truth)
 
-GitHub is the durable record: **post each comment in the same step as the event it documents** — immediately after the failing run (red), immediately after the passing run you are recording (green/refactor), not batched at the end of the session. Do not defer `gh issue comment` until work is “all done”; that falsifies the timeline and undermines the issue as audit trail.
+GitHub is the durable record: **post each comment in the same step as the event it documents** — immediately after the failing run (red), immediately after the passing run you are recording (green/refactor), not batched at the end of the session. Do not defer comments until work is “all done”; that falsifies the timeline and undermines the issue as audit trail. Prefer Taska `add_comment`; `gh` only if Taska is down.
 
 ## TDD red-phase log on the issue (MANDATORY when issue-driven)
 
@@ -48,7 +50,7 @@ When work maps to a GitHub issue, post the **deliberately red** test evidence to
 - **How tests were run** — scheme/target, MCP tool or CLI, destination/simulator.
 - **Failing test id(s) + short verbatim excerpt** (one screenful at most) — assertion + `file:line`. Don't paste full runs; reference a local log path instead.
 
-Build the comment in the **reusable body file** under `/tmp` (see above); red excerpts almost always contain backticks, `$`, or paths—unsafe for inline `gh` `--body`. Run `gh issue comment <N> --body-file <path>`; **do not** delete that file by default (reuse next time).
+Post via Taska `add_comment` with the full Markdown body (safe for backticks/`$`/paths). If falling back to `gh`, build the comment in the **reusable body file** under `/tmp` and use `--body-file` — never inline `gh --body "..."`.
 
 See [strict-tdd-definition.mdc](mdc:.cursor/rules/strict-tdd-definition.mdc) → Required Evidence → GitHub issue red log.
 
@@ -65,13 +67,13 @@ When issue-linked work used a **`wip/<issue-slug>`** branch (often in a **temp w
 2. **Merge `wip/...` into `next`** in the primary clone with **`git merge --no-ff`** (never fast-forward — see [no-fast-forward-merges.mdc](mdc:.cursor/rules/no-fast-forward-merges.mdc)), push `next` (`git push all next` or repo convention).
 3. **Rename branch** `wip/<slug>` → **`done/<slug>`** (same history), **`git push all done/<slug>`**, then **`git push all --delete wip/<slug>`** on remotes that still carry the old name (retain history on `done/`, same issue — do not silently drop unpushed commits).
 4. **`git worktree remove <path>`** for the dedicated worktree.
-5. **Then** finalize GitHub state: **`gh issue edit`** replaces the issue body with the **Final Record** (mandatory section below). Add a **`gh issue comment`** (same `--body-file` hygiene) documenting steps 1–4: merge SHAs, `next`/`done/` tips, **worktree path removed**, pushes. **`gh issue close --reason completed`**. **Order:** edits and comment **before** close (close last). If the issue was closed early by mistake, **reopen**, post the closure comment, then close again.
+5. **Then** finalize GitHub state: replace the issue body with the **Final Record** (mandatory section below) via Taska `update_issue` (or `gh issue edit --body-file` fallback). Add a comment (Taska `add_comment` / `gh` fallback) documenting steps 1–4: merge SHAs, `next`/`done/` tips, **worktree path removed**, pushes. Close via Taska `set_issue_state` (or `gh issue close --reason completed`). **Order:** edits and comment **before** close (close last). If the issue was closed early by mistake, **reopen**, post the closure comment, then close again.
 
 If production work used **`wip/`** + **`next`** but you close before step 5, the audit trail diverges from the integration-line record — avoid that.
 
 ## Final record rewrite before close (MANDATORY)
 
-When an issue is ready to close, run `gh issue edit <N> --body-file <path>` and replace the body with a concise final record that includes:
+When an issue is ready to close, replace the body with a concise final record (Taska `update_issue`, or `gh issue edit <N> --body-file` fallback) that includes:
 
 - **Scope** — what was in/out of scope.
 - **Decisions** — key trade-offs and rationale.
@@ -105,6 +107,10 @@ Prefer this structure:
 ```
 
 ## Pattern
+
+**Default (Taska):** `list_repos` → `add_comment` / `update_issue` / `set_issue_state` with Markdown `body`.
+
+**Fallback (`gh`) when Taska is unavailable:**
 
 ```bash
 COMMENT_FILE="/tmp/cursor-gh-issue-comment-${CURSOR_PID:-$$}.md"
