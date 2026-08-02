@@ -479,9 +479,10 @@ targets:
     dependencies:
       - target: SixLayerFramework_watchOS
 
-  # UI tests - visionOS (same test sources; no TestApp for visionOS)
-  # UI tests - visionOS: XCUITest APIs used by current tests are iOS-specific;
-  # current tests excluded until visionOS-native UI tests are designed (tracked under #233/#241).
+  # UI tests - visionOS (same test sources; no TestApp for visionOS).
+  # Current *UITests.swift / XCUITestHelpers are iOS-touch-based and excluded here.
+  # Not in SLF-visionOS-AllTests until a host + visionOS-native tests exist (epic #233 / #219; #382 hygiene).
+  # (Historical "ViewInspector Swift 6" exclusion comments were incorrect — UITests ≠ ViewInspector.)
   SixLayerFrameworkUITests_visionOS:
     type: bundle.ui-testing
     platform: visionOS
@@ -948,8 +949,7 @@ schemes:
         - name: SixLayerFrameworkExternalIntegrationTests_visionOS
           parallelizable: true
           randomExecutionOrder: true
-      # UITests excluded by default due to ViewInspector Swift 6 issues
-      # Uncomment when ViewInspector is fixed:
+      # UITests omitted — same gate as SLF-visionOS-AllTests: no visionOS host / native XCUITests yet.
       # - name: SixLayerFrameworkUITests_visionOS
       #   parallelizable: true
       #   randomExecutionOrder: true
@@ -963,12 +963,13 @@ schemes:
         - name: SixLayerFrameworkUnitTests_visionOS
           parallelizable: true
           randomExecutionOrder: true
-        - name: SixLayerFrameworkUITests_visionOS
-          parallelizable: true
-          randomExecutionOrder: true
         - name: SixLayerFrameworkExternalIntegrationTests_visionOS
           parallelizable: true
           randomExecutionOrder: true
+      # UITests intentionally omitted (#382 hygiene; align with #353/#354): SixLayerFrameworkUITests_visionOS
+      # has no TestApp / TEST_TARGET_NAME and excludes all *UITests.swift, so AllTests would only install
+      # an empty xctrunner. Re-add when visionOS-native XCUITests + host app exist (epic #233 / #219).
+      # Removed stale "ViewInspector Swift 6" rationale — that conflated UITests with ViewInspector.
 
   SLF-visionOS-UnitTests:
     build:
