@@ -437,7 +437,7 @@ targets:
   # UI tests - tvOS (same test sources; no TestApp for tvOS)
   # Note: XCUITest .tap() is unavailable on tvOS (uses focus/remote model, not touch).
   # All *UITests.swift files and XCUITestHelpers.swift are iOS-touch-based and excluded here.
-  # Not in SLF-tvOS-AllTests until a host + tvOS-native tests exist (#353, epic #233 / #219).
+  # Not in SLF-tvOS-AllTests until host + tvOS-native XCUI exist — tracked by #393 (#353 omit; #382 hygiene).
   SixLayerFrameworkUITests_tvOS:
     type: bundle.ui-testing
     platform: tvOS
@@ -459,7 +459,7 @@ targets:
 
   # UI tests - watchOS (same test sources; no TestApp for watchOS)
   # Note: XCUITest .tap() is unavailable on watchOS; touch-based helpers excluded.
-  # Not in SLF-watchOS-AllTests until a host + watchOS-native tests exist (#354, epic #233 / #219).
+  # Not in SLF-watchOS-AllTests until host + watchOS-native XCUI exist — tracked by #394 (#354 omit; #382 hygiene).
   SixLayerFrameworkUITests_watchOS:
     type: bundle.ui-testing
     platform: watchOS
@@ -878,7 +878,7 @@ schemes:
       # UITests intentionally omitted (#353): SixLayerFrameworkUITests_tvOS has no TestApp /
       # TEST_TARGET_NAME and excludes all *UITests.swift (touch/.tap() not valid on tvOS), so
       # AllTests only tried to install an empty xctrunner → FrontBoard NotFound. Re-add when
-      # tvOS-native XCUITests + host app exist (epic #233 / coverage #219).
+      # tvOS-native XCUITests + host app exist — tracked by #393 (epic #233).
 
   SLF-tvOS-UnitTests:
     build:
@@ -923,7 +923,7 @@ schemes:
       # UITests intentionally omitted (#354): SixLayerFrameworkUITests_watchOS has no TestApp /
       # TEST_TARGET_NAME and excludes all *UITests.swift (touch/.tap() not valid on watchOS), so
       # AllTests only tried to install/bootstrap an empty xctrunner. Re-add when watchOS-native
-      # XCUITests + host app exist (epic #233 / coverage #219). Prefer watchOS 26.5 destinations;
+      # XCUITests + host app exist — tracked by #394 (epic #233). Prefer watchOS 26.5 destinations;
       # 27.0 Series 11 has been observed to fail xctest bootstrap before connection.
 
   SLF-watchOS-UnitTests:
