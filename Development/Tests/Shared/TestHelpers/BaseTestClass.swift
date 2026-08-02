@@ -294,31 +294,43 @@ open class BaseTestClass {
     // No ViewInspector (tvOS/visionOS unit): observe hostability, not Bool(true) theater (#382).
     // Text/image *content* still needs VI or XCUI (#393 / #392) — hostability is the cheap truthful floor.
     @MainActor
-    open func verifyViewContainsText(_ view: some View, expectedText: String, testName: String) {
+    private func expectHostableWithoutViewInspector(_ view: some View, testName: String, detail: String) {
         #expect(
             PlatformContainerStructureAssertions.isHostable(view),
-            "View should be hostable for \(testName); text '\(expectedText)' needs VI/XCUI (#393/#392)"
+            "View should be hostable for \(testName); \(detail)"
+        )
+    }
+
+    @MainActor
+    open func verifyViewContainsText(_ view: some View, expectedText: String, testName: String) {
+        expectHostableWithoutViewInspector(
+            view,
+            testName: testName,
+            detail: "text '\(expectedText)' needs VI/XCUI (#393/#392)"
         )
     }
     @MainActor
     open func verifyViewContainsImage(_ view: some View, testName: String) {
-        #expect(
-            PlatformContainerStructureAssertions.isHostable(view),
-            "View should be hostable for \(testName); image content needs VI/XCUI (#393/#392)"
+        expectHostableWithoutViewInspector(
+            view,
+            testName: testName,
+            detail: "image content needs VI/XCUI (#393/#392)"
         )
     }
     @MainActor
     open func verifyViewContainsAnyText(_ view: some View, testName: String) {
-        #expect(
-            PlatformContainerStructureAssertions.isHostable(view),
-            "View should be hostable for \(testName); text content needs VI/XCUI (#393/#392)"
+        expectHostableWithoutViewInspector(
+            view,
+            testName: testName,
+            detail: "text content needs VI/XCUI (#393/#392)"
         )
     }
     @MainActor
     open func verifyViewContainsAtLeastOneVStack(_ view: some View, testName: String) {
-        #expect(
-            PlatformContainerStructureAssertions.isHostable(view),
-            "View should be hostable for \(testName) without ViewInspector (#382)"
+        expectHostableWithoutViewInspector(
+            view,
+            testName: testName,
+            detail: "VStack structure without ViewInspector (#382)"
         )
         let typeName = String(describing: type(of: view))
         #expect(
@@ -333,9 +345,10 @@ open class BaseTestClass {
         minChildren: Int? = nil,
         body: (Any) -> Void
     ) {
-        #expect(
-            PlatformContainerStructureAssertions.isHostable(view),
-            "View should be hostable for \(testName) without ViewInspector (#382)"
+        expectHostableWithoutViewInspector(
+            view,
+            testName: testName,
+            detail: "no inspectable VStack body without ViewInspector (#382)"
         )
         // Do not invoke body without an inspectable VStack.
     }
