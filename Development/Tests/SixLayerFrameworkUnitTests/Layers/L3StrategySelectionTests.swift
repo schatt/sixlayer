@@ -37,13 +37,9 @@ open class L3StrategySelectionTests: BaseTestClass {
             contentComplexity: complexity
         )
         
-        // Then: Should return a strategy that can be used functionally
-        // strategy is a non-optional struct, so it exists if we reach here
-        
-        // Test that the strategy can be used to create a functional view
+        // Creation must not trap; property asserts below are the contract.
         _ = createTestViewWithCardLayoutStrategy(strategy)
-        // testView is a non-optional View, so it exists if we reach here
-        
+
         #expect(strategy.columns > 0, "Should have at least 1 column")
         #expect(strategy.spacing > 0, "Should have positive spacing")
         #expect(!strategy.reasoning.isEmpty, "Should provide reasoning")
@@ -63,14 +59,10 @@ open class L3StrategySelectionTests: BaseTestClass {
             deviceType: deviceType,
             contentComplexity: complexity
         )
-        
-        // Then: Should return a strategy that can be used functionally
-        // strategy is a non-optional struct, so it exists if we reach here
-        
-        // Test that the strategy can be used to create a functional view
+
+        // Creation must not trap; property asserts below are the contract.
         _ = createTestViewWithCardLayoutStrategy(strategy)
-        // testView is a non-optional View, so it exists if we reach here
-        
+
         #expect(strategy.columns > 1, "Should have multiple columns for large content")
         #expect(strategy.spacing > 0, "Should have positive spacing")
         #expect(!strategy.reasoning.isEmpty, "Should provide reasoning")
@@ -80,39 +72,30 @@ open class L3StrategySelectionTests: BaseTestClass {
         let contentCount = 10
         let complexity = ContentComplexity.moderate
         
-        // Test phone
         let phoneStrategy = selectCardLayoutStrategy_L3(
             contentCount: contentCount,
             screenWidth: 375,
             deviceType: .phone,
             contentComplexity: complexity
         )
-        // Test that the strategy can be used to create a functional view
+        // Creation must not trap; do not claim isHostable for wrapped layout views without VI.
         _ = createTestViewWithCardLayoutStrategy(phoneStrategy)
-        // phoneTestView is a non-optional View, so it exists if we reach here
-        
-        // Test pad
+
         let padStrategy = selectCardLayoutStrategy_L3(
             contentCount: contentCount,
             screenWidth: 768,
             deviceType: .pad,
             contentComplexity: complexity
         )
-        // Test that the strategy can be used to create a functional view
         _ = createTestViewWithCardLayoutStrategy(padStrategy)
-        // padTestView is a non-optional View, so it exists if we reach here
-        
-        // Test mac
+
         let macStrategy = selectCardLayoutStrategy_L3(
             contentCount: contentCount,
             screenWidth: 1024,
             deviceType: .mac,
             contentComplexity: complexity
         )
-        let macView = createTestViewWithCardLayoutStrategy(macStrategy)
-        // Creation must not trap; strategy contract is the truthful observation on tvOS
-        // (isHostable is false for this wrapped layout view without VI — do not claim hostability).
-        _ = macView
+        _ = createTestViewWithCardLayoutStrategy(macStrategy)
         #expect(macStrategy.columns > 0, "Mac strategy should have columns")
         #expect(!macStrategy.reasoning.isEmpty, "Mac strategy should provide reasoning")
     }
