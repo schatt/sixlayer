@@ -8,8 +8,10 @@ open class PlatformAnimationReduceMotionTests: BaseTestClass {
 
     @MainActor
     private func verifyViewIsHostable<V: View>(_ view: V, description: String) {
-        _ = hostRootPlatformView(view)
-        #expect(Bool(true), "\(description) should be hostable")
+        #expect(
+            PlatformContainerStructureAssertions.isHostable(view),
+            "\(description) should be hostable"
+        )
     }
 
     @Test @MainActor func testPlatformAnimationHostsWithReduceMotionOverride() async {
