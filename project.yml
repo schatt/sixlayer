@@ -437,7 +437,7 @@ targets:
   # UI tests - tvOS (same test sources; no TestApp for tvOS)
   # Note: XCUITest .tap() is unavailable on tvOS (uses focus/remote model, not touch).
   # All *UITests.swift files and XCUITestHelpers.swift are iOS-touch-based and excluded here.
-  # Not in SLF-tvOS-AllTests until a host + tvOS-native tests exist (#353, epic #233 / #219).
+  # Not in SLF-tvOS-AllTests until host + tvOS-native XCUI exist — tracked by #393 (#353 omit; #382 hygiene).
   SixLayerFrameworkUITests_tvOS:
     type: bundle.ui-testing
     platform: tvOS
@@ -459,7 +459,7 @@ targets:
 
   # UI tests - watchOS (same test sources; no TestApp for watchOS)
   # Note: XCUITest .tap() is unavailable on watchOS; touch-based helpers excluded.
-  # Not in SLF-watchOS-AllTests until a host + watchOS-native tests exist (#354, epic #233 / #219).
+  # Not in SLF-watchOS-AllTests until host + watchOS-native XCUI exist — tracked by #394 (#354 omit; #382 hygiene).
   SixLayerFrameworkUITests_watchOS:
     type: bundle.ui-testing
     platform: watchOS
@@ -479,9 +479,10 @@ targets:
     dependencies:
       - target: SixLayerFramework_watchOS
 
-  # UI tests - visionOS (same test sources; no TestApp for visionOS)
-  # UI tests - visionOS: XCUITest APIs used by current tests are iOS-specific;
-  # current tests excluded until visionOS-native UI tests are designed (tracked under #233/#241).
+  # UI tests - visionOS (same test sources; no TestApp for visionOS).
+  # Current *UITests.swift / XCUITestHelpers are iOS-touch-based and excluded here.
+  # Not in SLF-visionOS-AllTests until host + visionOS-native XCUI exist — tracked by #392 (#382 hygiene).
+  # (Historical "ViewInspector Swift 6" exclusion comments were incorrect — UITests ≠ ViewInspector.)
   SixLayerFrameworkUITests_visionOS:
     type: bundle.ui-testing
     platform: visionOS
@@ -877,7 +878,7 @@ schemes:
       # UITests intentionally omitted (#353): SixLayerFrameworkUITests_tvOS has no TestApp /
       # TEST_TARGET_NAME and excludes all *UITests.swift (touch/.tap() not valid on tvOS), so
       # AllTests only tried to install an empty xctrunner → FrontBoard NotFound. Re-add when
-      # tvOS-native XCUITests + host app exist (epic #233 / coverage #219).
+      # tvOS-native XCUITests + host app exist — tracked by #393 (epic #233).
 
   SLF-tvOS-UnitTests:
     build:
@@ -922,7 +923,7 @@ schemes:
       # UITests intentionally omitted (#354): SixLayerFrameworkUITests_watchOS has no TestApp /
       # TEST_TARGET_NAME and excludes all *UITests.swift (touch/.tap() not valid on watchOS), so
       # AllTests only tried to install/bootstrap an empty xctrunner. Re-add when watchOS-native
-      # XCUITests + host app exist (epic #233 / coverage #219). Prefer watchOS 26.5 destinations;
+      # XCUITests + host app exist — tracked by #394 (epic #233). Prefer watchOS 26.5 destinations;
       # 27.0 Series 11 has been observed to fail xctest bootstrap before connection.
 
   SLF-watchOS-UnitTests:
@@ -948,8 +949,7 @@ schemes:
         - name: SixLayerFrameworkExternalIntegrationTests_visionOS
           parallelizable: true
           randomExecutionOrder: true
-      # UITests excluded by default due to ViewInspector Swift 6 issues
-      # Uncomment when ViewInspector is fixed:
+      # UITests omitted — same gate as SLF-visionOS-AllTests / #392: no visionOS host / native XCUITests yet.
       # - name: SixLayerFrameworkUITests_visionOS
       #   parallelizable: true
       #   randomExecutionOrder: true
@@ -963,12 +963,13 @@ schemes:
         - name: SixLayerFrameworkUnitTests_visionOS
           parallelizable: true
           randomExecutionOrder: true
-        - name: SixLayerFrameworkUITests_visionOS
-          parallelizable: true
-          randomExecutionOrder: true
         - name: SixLayerFrameworkExternalIntegrationTests_visionOS
           parallelizable: true
           randomExecutionOrder: true
+      # UITests intentionally omitted (#382 hygiene; align with #353/#354): SixLayerFrameworkUITests_visionOS
+      # has no TestApp / TEST_TARGET_NAME and excludes all *UITests.swift, so AllTests would only install
+      # an empty xctrunner. Re-add when #392 delivers visionOS-native XCUITests + host app.
+      # Removed stale "ViewInspector Swift 6" rationale — that conflated UITests with ViewInspector.
 
   SLF-visionOS-UnitTests:
     build:
