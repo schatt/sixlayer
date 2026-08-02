@@ -95,10 +95,16 @@ open class HIGComplianceHoverTests: BaseTestClass {
             initializeTestConfig()
         runWithTaskLocalConfig {
             // GIVEN: Interactive view with automatic compliance
+            // `onHover` is unavailable on tvOS/watchOS; keep the compliance observation shared.
+            #if os(iOS) || os(macOS) || os(visionOS)
             let view = Text("Pointer Interaction Test")
                 .onHover { _ in }
                 .automaticCompliance()
-            
+            #else
+            let view = Text("Pointer Interaction Test")
+                .automaticCompliance()
+            #endif
+
             // WHEN: View is created on a hover-capable platform
             // THEN: Pointer interactions should work correctly
             // RED PHASE: This will fail until pointer interaction support is implemented
