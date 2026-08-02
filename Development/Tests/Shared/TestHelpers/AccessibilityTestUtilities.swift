@@ -1556,7 +1556,7 @@ public enum AccessibilityTestUtilities {
         return false
     }
 
-    #if canImport(ViewInspector)
+    // Mirror-based synthesis is available without ViewInspector (#395 secondary unit lanes).
     private struct AutomaticComplianceModifierSnapshot {
         var identifierName: String?
         var identifierElementType: String?
@@ -1735,6 +1735,7 @@ public enum AccessibilityTestUtilities {
             )
         }
         guard hasAnonymous, identifiers.isEmpty else { return identifiers }
+        #if canImport(ViewInspector)
         guard let params = inferredInteractiveControlParameters(from: view) else { return identifiers }
         let generated = generateAccessibilityIdentifier(
             config: config,
@@ -1753,6 +1754,7 @@ public enum AccessibilityTestUtilities {
             emptyFallback: "main.ui.element"
         )
         appendSyntheticIdentifier(generated, to: &identifiers, seen: &seen)
+        #endif
         return identifiers
     }
 
@@ -1777,6 +1779,7 @@ public enum AccessibilityTestUtilities {
         }
     }
 
+    #if canImport(ViewInspector)
     @MainActor
     private static func inferredInteractiveControlParameters<V: View>(
         from view: V
@@ -1816,16 +1819,6 @@ public enum AccessibilityTestUtilities {
             return text
         }
         return nil
-    }
-    #else
-    @MainActor
-    private static func syntheticAutomaticComplianceIdentifiers<V: View>(
-        view: V,
-        config: AccessibilityIdentifierConfig
-    ) -> [String] {
-        _ = view
-        _ = config
-        return []
     }
     #endif
 
