@@ -4,21 +4,21 @@ import SwiftUI
 
 /// Proves BaseTestClass non-ViewInspector fallbacks observe hostability (Issue #382).
 /// Compiles on all unit lanes; the `#else` stubs are what run when ViewInspector is not linked (tvOS/visionOS).
+/// NOTE: Not marked @MainActor on class — parallel-safe; methods use `@Test @MainActor`.
 @Suite("BaseTestClass hostability fallback", HostedViewTestIsolationTrait())
-@MainActor
-final class BaseTestClassHostabilityFallbackTests: BaseTestClass {
+open class BaseTestClassHostabilityFallbackTests: BaseTestClass {
 
-    @Test func verifyViewContainsAtLeastOneVStack_requiresHostableVStack() {
+    @Test @MainActor func verifyViewContainsAtLeastOneVStack_requiresHostableVStack() {
         let view = VStack { Text("382-hostability") }
         verifyViewContainsAtLeastOneVStack(view, testName: "382-vstack-hostability")
     }
 
-    @Test func verifyViewContainsText_requiresHostableView() {
+    @Test @MainActor func verifyViewContainsText_requiresHostableView() {
         let view = Text("382-text-hostability")
         verifyViewContainsText(view, expectedText: "382-text-hostability", testName: "382-text-hostability")
     }
 
-    @Test func tryWithFirstVStack_requiresHostableViewWithoutInvokingBody() {
+    @Test @MainActor func tryWithFirstVStack_requiresHostableViewWithoutInvokingBody() {
         let view = VStack { Text("382-try-vstack") }
         var bodyInvoked = false
         tryWithFirstVStack(view, testName: "382-try-vstack") { _ in
