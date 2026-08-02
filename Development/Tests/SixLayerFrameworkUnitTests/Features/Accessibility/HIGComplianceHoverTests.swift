@@ -144,8 +144,13 @@ open class HIGComplianceHoverTests: BaseTestClass {
                 case .macOS, .visionOS:
                     #expect(passed, "\(phase) on \(platform): compliant button on hover-capable host (hover=\(effectiveHover))")
                 case .watchOS, .tvOS:
-                    #expect(passed, "\(phase) on \(platform): compliant button without hover (hover=\(effectiveHover))")
-                    #expect(!effectiveHover, "\(phase) on \(platform): host should not report hover")
+                    #expect(passed, "\(phase) on \(platform): compliant button (hover=\(effectiveHover))")
+                    // Native hosts report no hover; the "enabled" phase asserts the test override works.
+                    if phase == "enabled" {
+                        #expect(effectiveHover, "\(phase) on \(platform): setTestHover(true) should report hover")
+                    } else {
+                        #expect(!effectiveHover, "\(phase) on \(platform): host/override should not report hover")
+                    }
                 }
             }
 
