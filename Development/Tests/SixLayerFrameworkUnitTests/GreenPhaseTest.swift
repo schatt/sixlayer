@@ -2,8 +2,8 @@ import Testing
 import SwiftUI
 @testable import SixLayerFramework
 
-/// Basic smoke coverage previously padded with Bool(true) theater (#382).
-@Suite("Green Phase Tests", HostedViewTestIsolationTrait())
+/// Basic collection L1 + data-structure smokes (#382; formerly Bool(true) theater).
+@Suite("Basic Collection And Data Smokes", HostedViewTestIsolationTrait())
 /// NOTE: Not marked @MainActor on class to allow parallel execution
 open class GreenPhaseTest: BaseTestClass {
 
