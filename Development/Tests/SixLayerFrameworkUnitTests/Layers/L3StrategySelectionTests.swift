@@ -251,7 +251,6 @@ open class L3StrategySelectionTests: BaseTestClass {
                 contentComplexity: complexity
             )
             
-            // type is non-optional, so just verify it's a valid enum case
             #expect(ResponsiveType.allCases.contains(behavior.type), "Device type \(deviceType) should return valid responsive type")
             #expect(!behavior.breakpoints.isEmpty || behavior.type == .fixed, "Non-fixed behaviors should have breakpoints")
         }
@@ -842,9 +841,7 @@ open class L3StrategySelectionTests: BaseTestClass {
             contentDensity: contentDensity
         )
 
-        // Then: Should return correct data structure
-        // primaryStrategy is non-optional, verified at compile time
-        let _ = result.primaryStrategy
+        // Then: Layer 3 returns a data structure (not a view)
         #expect(result.animationDuration >= 0, "Should have non-negative duration")
         #expect(result.expansionScale > 0, "Should have positive expansion scale")
 
