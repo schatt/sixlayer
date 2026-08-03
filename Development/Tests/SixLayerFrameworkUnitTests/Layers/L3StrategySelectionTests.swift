@@ -548,10 +548,9 @@ open class L3StrategySelectionTests: BaseTestClass {
                 interactionStyle: interactionStyle,
                 contentDensity: contentDensity
             )
-            // Deliberate inverted expansion contracts for #382 red
-            #expect(strategy.supportedStrategies.isEmpty, "Deliberate red #382: \(deviceType) expansion strategies")
-            #expect(strategy.primaryStrategy == .none, "Deliberate red #382: \(deviceType) primary not none")
-            #expect(strategy.expansionScale <= 0, "Deliberate red #382: \(deviceType) expansion scale")
+            #expect(!strategy.supportedStrategies.isEmpty, "\(deviceType) should support expansion strategies")
+            #expect(strategy.primaryStrategy != .none, "\(deviceType) primary strategy should not be none")
+            #expect(strategy.expansionScale > 0, "\(deviceType) should have positive expansion scale")
         }
     }
     
@@ -568,10 +567,9 @@ open class L3StrategySelectionTests: BaseTestClass {
                 interactionStyle: interactionStyle,
                 contentDensity: density
             )
-            // Deliberate inverted expansion contracts for #382 red
-            #expect(strategy.supportedStrategies.isEmpty, "Deliberate red #382: \(density) expansion strategies")
-            #expect(strategy.primaryStrategy == .none, "Deliberate red #382: \(density) primary not none")
-            #expect(strategy.expansionScale <= 0, "Deliberate red #382: \(density) expansion scale")
+            #expect(!strategy.supportedStrategies.isEmpty, "\(density) should support expansion strategies")
+            #expect(strategy.primaryStrategy != .none, "\(density) primary strategy should not be none")
+            #expect(strategy.expansionScale > 0, "\(density) should have positive expansion scale")
         }
     }
     
