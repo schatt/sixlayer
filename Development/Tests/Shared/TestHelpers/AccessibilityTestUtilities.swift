@@ -263,6 +263,9 @@ public func getAccessibilityIdentifierForTest<V: View>(view: V, hostedRoot: Any?
 }
 
 /// ID observation when ViewInspector is unavailable (tvOS/visionOS unit) or VI signals were empty (#395).
+/// Order: hosted platform IDs → Mirror/synthetic recovery → debug log.
+/// Mirror/synthetic can pass when the hosted tree is empty; treat that as harness recovery,
+/// not proof that XCUITest would see the same identifier.
 @MainActor
 private func accessibilityIdentifierWithoutViewInspector<V: View>(view: V, hostedRoot: Any?) -> String? {
     var candidates: [String] = []
