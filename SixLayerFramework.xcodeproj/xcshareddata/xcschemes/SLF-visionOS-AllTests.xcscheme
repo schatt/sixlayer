@@ -57,18 +57,6 @@
             testExecutionOrdering = "random">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "00F2F339FB87EE78B96E537C"
-               BuildableName = "SixLayerFrameworkUITests_visionOS.xctest"
-               BlueprintName = "SixLayerFrameworkUITests_visionOS"
-               ReferencedContainer = "container:SixLayerFramework.xcodeproj">
-            </BuildableReference>
-         </TestableReference>
-         <TestableReference
-            skipped = "NO"
-            parallelizable = "YES"
-            testExecutionOrdering = "random">
-            <BuildableReference
-               BuildableIdentifier = "primary"
                BlueprintIdentifier = "6C9062455876D118D544087A"
                BuildableName = "SixLayerFrameworkExternalIntegrationTests_visionOS.xctest"
                BlueprintName = "SixLayerFrameworkExternalIntegrationTests_visionOS"

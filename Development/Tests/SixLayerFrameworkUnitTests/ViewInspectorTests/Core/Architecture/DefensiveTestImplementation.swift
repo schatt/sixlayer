@@ -54,9 +54,3 @@ enum TestError: Error, CustomStringConvertible {
         }
     }
 }
-
-/// Sample data for testing
-@MainActor
-private let sampleData: [TestDataItem] = [
-    TestDataItem(title: "Test Item", subtitle: "Subtitle", description: "Description", value: 42, isActive: true)
-]
