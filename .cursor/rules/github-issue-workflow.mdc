@@ -1,5 +1,5 @@
 ---
-description: GitHub issue workflow — wip branch for all issue-linked work, --body-file comments, TDD red on issue, closure sequence.
+description: GitHub issue workflow — wip branch for all issue-linked work, TDD red on issue, closure sequence.
 globs: **/*
 alwaysApply: true
 ---
@@ -17,28 +17,18 @@ alwaysApply: true
 
 Dedicated issue worktrees are **temporary local checkouts** — used across machines and **wiped on machine reset**. They are **not** durable storage; **git remotes are**.
 
-- **After every edit** in a worktree: commit per [commit-after-every-edit.mdc](mdc:.cursor/rules/commit-after-every-edit.mdc) (one commit per file, with `project.yml` + XcodeGen exception).
-- **Before ending a turn or pausing work:** working tree **clean** and **`wip/` branch pushed** (`git push all`) — same bar as [git-push-practices.mdc](mdc:.cursor/rules/git-push-practices.mdc). **Done = pushed** applies inside worktrees too.
+- **After every action** (action = edit or script that makes changes) in a worktree: commit per [commit-after-every-edit.mdc](mdc:.cursor/rules/commit-after-every-edit.mdc) (one commit per action, with `project.yml` + XcodeGen exception).
+- **Before ending a turn or pausing work:** working tree **clean** and **`wip/` branch pushed** (`rtk git push all`) — same bar as [git-push-practices.mdc](mdc:.cursor/rules/git-push-practices.mdc). **Done = pushed** applies inside worktrees too.
 - **Do not** leave uncommitted changes or unpushed commits in a temp worktree expecting to “pick up later on this machine.”
-- **Before `git worktree remove`:** confirm the branch is pushed and any merge/rename closure steps are complete (see **Worklist closure** below).
+- **Before `rtk git worktree remove`:** confirm the branch is pushed and any merge/rename closure steps are complete (see **Worklist closure** below).
 
 ## Comment posting — MANDATORY
 
-- **Always** use `gh issue comment <N> --body-file <path>` (or a heredoc with a quoted delimiter). **Never** use inline `--body "..."` — shells interpret backticks/`$` inside double quotes.
-- Use the same **`--body-file`** + **`COMMENT_FILE`** pattern for `gh issue edit <N> --body-file <path>` when updating the issue description.
-- Applies any time a comment contains backticks, code blocks, special shell characters, or multi-line formatting (which is almost always).
-
-## Reusable body file (avoid delete prompts)
-
-- Use **one stable path per Cursor host process** under `/tmp`, so the agent **overwrites** the same file for each `gh issue comment` instead of creating and deleting unique paths (which can trigger repeated “remove file?” prompts).
-- **Path:** `/tmp/cursor-gh-issue-comment-${CURSOR_PID}.md`
-  - Prefer **`CURSOR_PID`** when the Cursor host sets it for the agent terminal.
-  - If **`CURSOR_PID` is unset**, fall back to **`$$`** (current shell PID): `COMMENT_FILE="/tmp/cursor-gh-issue-comment-${CURSOR_PID:-$$}.md"`
-- **Do not delete** that file after posting unless it contains secrets you must clear; the next comment overwrites it.
+- use taska for github issue work (if available). If NOT available, use `rtk gh issue comment <N> --body-file <path>` (or a heredoc with a quoted delimiter). **Never** use inline `--body "..."` — shells interpret backticks/`$` inside double quotes. Use the same **`--body-file`** + **`COMMENT_FILE`** pattern for `rtk gh issue edit <N> --body-file <path>` when updating the issue description.
 
 ## When comments go on the issue (source of truth)
 
-GitHub is the durable record: **post each comment in the same step as the event it documents** — immediately after the failing run (red), immediately after the passing run you are recording (green/refactor), not batched at the end of the session. Do not defer `gh issue comment` until work is “all done”; that falsifies the timeline and undermines the issue as audit trail.
+GitHub is the durable record: **post each comment in the same step as the event it documents** — immediately after the failing run (red), immediately after the passing run you are recording (green/refactor), not batched at the end of the session. Do not defer taska/`rtk gh issue comment` until work is “all done”; that falsifies the timeline and undermines the issue as audit trail.
 
 ## TDD red-phase log on the issue (MANDATORY when issue-driven)
 
@@ -48,7 +38,7 @@ When work maps to a GitHub issue, post the **deliberately red** test evidence to
 - **How tests were run** — scheme/target, MCP tool or CLI, destination/simulator.
 - **Failing test id(s) + short verbatim excerpt** (one screenful at most) — assertion + `file:line`. Don't paste full runs; reference a local log path instead.
 
-Build the comment in the **reusable body file** under `/tmp` (see above); red excerpts almost always contain backticks, `$`, or paths—unsafe for inline `gh` `--body`. Run `gh issue comment <N> --body-file <path>`; **do not** delete that file by default (reuse next time).
+If not using taska, build the comment in the **reusable body file** under `/tmp` (see above); red excerpts almost always contain backticks, `$`, or paths—unsafe for inline `rtk gh` `--body`. Run `gh issue comment <N> --body-file <path>`; **do not** delete that file by default (reuse next time).
 
 See [strict-tdd-definition.mdc](mdc:.cursor/rules/strict-tdd-definition.mdc) → Required Evidence → GitHub issue red log.
 
@@ -105,7 +95,8 @@ Prefer this structure:
 ```
 
 ## Pattern
-
+USE taska mcp.
+If not available, do this:
 ```bash
 COMMENT_FILE="/tmp/cursor-gh-issue-comment-${CURSOR_PID:-$$}.md"
 
