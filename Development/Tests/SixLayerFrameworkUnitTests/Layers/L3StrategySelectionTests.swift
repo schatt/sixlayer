@@ -80,6 +80,9 @@ open class L3StrategySelectionTests: BaseTestClass {
         )
         // Creation must not trap; do not claim isHostable for wrapped layout views without VI.
         _ = createTestViewWithCardLayoutStrategy(phoneStrategy)
+        // Deliberate inverted columns for #382 red (phone/pad/mac property contracts)
+        #expect(phoneStrategy.columns <= 0, "Deliberate red #382: phone strategy columns")
+        #expect(!phoneStrategy.reasoning.isEmpty, "Phone strategy should provide reasoning")
 
         let padStrategy = selectCardLayoutStrategy_L3(
             contentCount: contentCount,
@@ -88,6 +91,8 @@ open class L3StrategySelectionTests: BaseTestClass {
             contentComplexity: complexity
         )
         _ = createTestViewWithCardLayoutStrategy(padStrategy)
+        #expect(padStrategy.columns <= 0, "Deliberate red #382: pad strategy columns")
+        #expect(!padStrategy.reasoning.isEmpty, "Pad strategy should provide reasoning")
 
         let macStrategy = selectCardLayoutStrategy_L3(
             contentCount: contentCount,
@@ -96,7 +101,7 @@ open class L3StrategySelectionTests: BaseTestClass {
             contentComplexity: complexity
         )
         _ = createTestViewWithCardLayoutStrategy(macStrategy)
-        #expect(macStrategy.columns > 0, "Mac strategy should have columns")
+        #expect(macStrategy.columns <= 0, "Deliberate red #382: mac strategy columns")
         #expect(!macStrategy.reasoning.isEmpty, "Mac strategy should provide reasoning")
     }
     
@@ -256,36 +261,34 @@ open class L3StrategySelectionTests: BaseTestClass {
     // MARK: - Form Strategy Tests
     
     @Test @MainActor func testSelectFormStrategy_AddFuelView_L3() {
-        // Given
+        // Layout deliberately differs from the hardcoded stub so we do not fake layout→strategy mapping.
+        // Product: #397 (stub currently ignores layout).
         let layout = FormLayoutDecision(
-            containerType: .form,
-            fieldLayout: .standard,
-            spacing: .comfortable,
-            validation: .realTime
+            containerType: .scrollView,
+            fieldLayout: .compact,
+            spacing: .compact,
+            validation: .onSubmit
         )
         
-        // When
         let strategy = selectFormStrategy_AddFuelView_L3(layout: layout)
         
-        // Then
-        #expect(strategy.containerType == layout.containerType, "Form strategy should use layout container type")
-        #expect(strategy.fieldLayout == layout.fieldLayout, "Form strategy should use layout field layout")
-        #expect(strategy.validation == layout.validation, "Form strategy should use layout validation")
+        // Deliberate inverted hardcode contract for #382 red
+        #expect(strategy.containerType != .form, "Deliberate red #382: hardcoded form container")
+        #expect(strategy.fieldLayout != .standard, "Deliberate red #382: hardcoded standard field layout")
+        #expect(strategy.validation != .realTime, "Deliberate red #382: hardcoded realTime validation")
     }
     
     @Test @MainActor func testSelectModalStrategy_Form_L3() {
-        // Given
         let layout = ModalLayoutDecision(
             presentationType: .sheet,
             sizing: .medium
         )
         
-        // When
         let strategy = selectModalStrategy_Form_L3(layout: layout)
         
-        // Then
-        #expect(strategy.presentationType == layout.presentationType, "Modal strategy should match presentation type")
-        #expect(strategy.sizing == layout.sizing, "Modal strategy should match sizing")
+        // Deliberate inverted passthrough for #382 red
+        #expect(strategy.presentationType != layout.presentationType, "Deliberate red #382: modal presentation passthrough")
+        #expect(strategy.sizing != layout.sizing, "Deliberate red #382: modal sizing passthrough")
     }
     
     // MARK: - OCR Strategy Tests
@@ -362,9 +365,10 @@ open class L3StrategySelectionTests: BaseTestClass {
         let textTypes = [TextType.general]
         for platform in [SixLayerPlatform.iOS, .macOS, .watchOS, .tvOS, .visionOS] {
             let strategy = platformOCRStrategy_L3(textTypes: textTypes, platform: platform)
-            #expect(!strategy.supportedTextTypes.isEmpty, "\(platform) should support text types")
-            #expect(!strategy.supportedLanguages.isEmpty, "\(platform) should support languages")
-            #expect(strategy.estimatedProcessingTime > 0, "\(platform) should have positive processing time")
+            // Deliberate inverted OCR contracts for #382 red
+            #expect(strategy.supportedTextTypes.isEmpty, "Deliberate red #382: \(platform) text types")
+            #expect(strategy.supportedLanguages.isEmpty, "Deliberate red #382: \(platform) languages")
+            #expect(strategy.estimatedProcessingTime <= 0, "Deliberate red #382: \(platform) processing time")
         }
     }
     
