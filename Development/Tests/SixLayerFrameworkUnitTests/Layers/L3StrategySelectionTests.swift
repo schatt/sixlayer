@@ -80,8 +80,7 @@ open class L3StrategySelectionTests: BaseTestClass {
         )
         // Creation must not trap; do not claim isHostable for wrapped layout views without VI.
         _ = createTestViewWithCardLayoutStrategy(phoneStrategy)
-        // Deliberate inverted columns for #382 red (phone/pad/mac property contracts)
-        #expect(phoneStrategy.columns <= 0, "Deliberate red #382: phone strategy columns")
+        #expect(phoneStrategy.columns > 0, "Phone strategy should have columns")
         #expect(!phoneStrategy.reasoning.isEmpty, "Phone strategy should provide reasoning")
 
         let padStrategy = selectCardLayoutStrategy_L3(
@@ -91,7 +90,7 @@ open class L3StrategySelectionTests: BaseTestClass {
             contentComplexity: complexity
         )
         _ = createTestViewWithCardLayoutStrategy(padStrategy)
-        #expect(padStrategy.columns <= 0, "Deliberate red #382: pad strategy columns")
+        #expect(padStrategy.columns > 0, "Pad strategy should have columns")
         #expect(!padStrategy.reasoning.isEmpty, "Pad strategy should provide reasoning")
 
         let macStrategy = selectCardLayoutStrategy_L3(
@@ -101,7 +100,7 @@ open class L3StrategySelectionTests: BaseTestClass {
             contentComplexity: complexity
         )
         _ = createTestViewWithCardLayoutStrategy(macStrategy)
-        #expect(macStrategy.columns <= 0, "Deliberate red #382: mac strategy columns")
+        #expect(macStrategy.columns > 0, "Mac strategy should have columns")
         #expect(!macStrategy.reasoning.isEmpty, "Mac strategy should provide reasoning")
     }
     
@@ -272,10 +271,10 @@ open class L3StrategySelectionTests: BaseTestClass {
         
         let strategy = selectFormStrategy_AddFuelView_L3(layout: layout)
         
-        // Deliberate inverted hardcode contract for #382 red
-        #expect(strategy.containerType != .form, "Deliberate red #382: hardcoded form container")
-        #expect(strategy.fieldLayout != .standard, "Deliberate red #382: hardcoded standard field layout")
-        #expect(strategy.validation != .realTime, "Deliberate red #382: hardcoded realTime validation")
+        // Current stub hardcodes .form/.standard/.realTime and ignores layout (#397).
+        #expect(strategy.containerType == .form, "Hardcoded stub returns .form (ignores layout; see #397)")
+        #expect(strategy.fieldLayout == .standard, "Hardcoded stub returns .standard field layout (see #397)")
+        #expect(strategy.validation == .realTime, "Hardcoded stub returns .realTime validation (see #397)")
     }
     
     @Test @MainActor func testSelectModalStrategy_Form_L3() {
@@ -286,9 +285,8 @@ open class L3StrategySelectionTests: BaseTestClass {
         
         let strategy = selectModalStrategy_Form_L3(layout: layout)
         
-        // Deliberate inverted passthrough for #382 red
-        #expect(strategy.presentationType != layout.presentationType, "Deliberate red #382: modal presentation passthrough")
-        #expect(strategy.sizing != layout.sizing, "Deliberate red #382: modal sizing passthrough")
+        #expect(strategy.presentationType == layout.presentationType, "Modal strategy should match presentation type")
+        #expect(strategy.sizing == layout.sizing, "Modal strategy should match sizing")
     }
     
     // MARK: - OCR Strategy Tests
@@ -365,10 +363,9 @@ open class L3StrategySelectionTests: BaseTestClass {
         let textTypes = [TextType.general]
         for platform in [SixLayerPlatform.iOS, .macOS, .watchOS, .tvOS, .visionOS] {
             let strategy = platformOCRStrategy_L3(textTypes: textTypes, platform: platform)
-            // Deliberate inverted OCR contracts for #382 red
-            #expect(strategy.supportedTextTypes.isEmpty, "Deliberate red #382: \(platform) text types")
-            #expect(strategy.supportedLanguages.isEmpty, "Deliberate red #382: \(platform) languages")
-            #expect(strategy.estimatedProcessingTime <= 0, "Deliberate red #382: \(platform) processing time")
+            #expect(!strategy.supportedTextTypes.isEmpty, "\(platform) should support text types")
+            #expect(!strategy.supportedLanguages.isEmpty, "\(platform) should support languages")
+            #expect(strategy.estimatedProcessingTime > 0, "\(platform) should have positive processing time")
         }
     }
     
