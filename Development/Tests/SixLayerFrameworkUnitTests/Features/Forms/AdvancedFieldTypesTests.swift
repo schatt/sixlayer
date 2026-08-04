@@ -785,7 +785,9 @@ open class AdvancedFieldTypesTests: BaseTestClass {
         #expect(!PlatformContainerStructureAssertions.isHostable(richTextComponent), "Deliberate red #382: richTextComponent hostable")
         #expect(!PlatformContainerStructureAssertions.isHostable(autocompleteComponent), "Deliberate red #382: autocompleteComponent hostable")
         #expect(!PlatformContainerStructureAssertions.isHostable(fileUploadComponent), "Deliberate red #382: fileUploadComponent hostable")
-        #expect(formState.configuration.id == "testForm", "Form state should carry test configuration id")
+        formState.setValue("shared", for: "richText")
+        // Deliberate inverted form-state contract for #382 red
+        #expect(formState.getValue(for: "richText") as String? != "shared", "Deliberate red #382: shared form state value")
     }
     
     // MARK: - Accessibility Tests
