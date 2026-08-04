@@ -57,25 +57,85 @@ def version_key(v: str):
             parts.append(int(piece))
     return parts
 
-matches = []
-for rt in data.get("runtimes", []):
-    if not rt.get("isAvailable"):
-        continue
+def family_ok(rt) -> bool:
     name = rt.get("name") or ""
-    # visionOS runtimes may still use xrOS in identifier; name uses visionOS.
+    ident = (rt.get("identifier") or "").lower()
     if family == "visionOS":
-        token_ok = ("visionOS" in name) or ("xrOS" in name) or ("xros" in (rt.get("identifier") or "").lower())
-    else:
-        token_ok = family in name
-    if not token_ok:
-        continue
-    matches.append(rt)
+        return ("visionOS" in name) or ("xrOS" in name) or ("xros" in ident)
+    return family in name
 
+matches = [rt for rt in data.get("runtimes", []) if rt.get("isAvailable") and family_ok(rt)]
 if not matches:
     sys.exit(0)
-
 matches.sort(key=lambda rt: version_key(str(rt.get("version") or "")), reverse=True)
 print(matches[0].get("identifier") or "")
+PY
+}
+
+# Pick runtime + device type for simctl create.
+# Prefer newest runtime that supports preferred_device_type; else newest runtime's
+# first supported type. Prints: runtime_id<TAB>device_type_id
+# Args: runtimes JSON, platform family, preferred device type id
+ensure_ci_sim_pick_create_pair() {
+    local runtimes_json="$1"
+    local platform_family="$2"
+    local preferred_device_type="$3"
+    ENSURE_CI_SIM_RUNTIMES_JSON="$runtimes_json" \
+    ENSURE_CI_SIM_PLATFORM_FAMILY="$platform_family" \
+    ENSURE_CI_SIM_PREFERRED_DEVICE_TYPE="$preferred_device_type" \
+    python3 - <<'PY'
+import json, os, re, sys
+
+raw = os.environ.get("ENSURE_CI_SIM_RUNTIMES_JSON", "")
+family = os.environ.get("ENSURE_CI_SIM_PLATFORM_FAMILY", "")
+preferred = os.environ.get("ENSURE_CI_SIM_PREFERRED_DEVICE_TYPE", "")
+try:
+    data = json.loads(raw)
+except json.JSONDecodeError:
+    sys.exit(0)
+
+def version_key(v: str):
+    parts = []
+    for piece in re.split(r"[^\d]+", v or ""):
+        if piece.isdigit():
+            parts.append(int(piece))
+    return parts
+
+def family_ok(rt) -> bool:
+    name = rt.get("name") or ""
+    ident = (rt.get("identifier") or "").lower()
+    if family == "visionOS":
+        return ("visionOS" in name) or ("xrOS" in name) or ("xros" in ident)
+    return family in name
+
+def supported_ids(rt):
+    out = []
+    for item in rt.get("supportedDeviceTypes") or []:
+        ident = item.get("identifier") if isinstance(item, dict) else None
+        if ident:
+            out.append(ident)
+    return out
+
+matches = [rt for rt in data.get("runtimes", []) if rt.get("isAvailable") and family_ok(rt)]
+if not matches:
+    sys.exit(0)
+matches.sort(key=lambda rt: version_key(str(rt.get("version") or "")), reverse=True)
+
+for rt in matches:
+    ids = supported_ids(rt)
+    if preferred and preferred in ids:
+        print(f"{rt.get('identifier')}\t{preferred}")
+        sys.exit(0)
+
+# Preferred type unsupported everywhere — newest runtime + first supported type.
+newest = matches[0]
+ids = supported_ids(newest)
+if not ids:
+    # No supportedDeviceTypes metadata: still return newest + preferred for best-effort create.
+    if preferred:
+        print(f"{newest.get('identifier')}\t{preferred}")
+    sys.exit(0)
+print(f"{newest.get('identifier')}\t{ids[0]}")
 PY
 }
 
@@ -107,6 +167,41 @@ for _runtime, devices in (data.get("devices") or {}).items():
 PY
 }
 
+# First available device for a platform family. Prints: name<TAB>udid
+# Args: devices JSON, platform family
+ensure_ci_sim_any_device_for_family() {
+    local devices_json="$1"
+    local platform_family="$2"
+    ENSURE_CI_SIM_DEVICES_JSON="$devices_json" ENSURE_CI_SIM_PLATFORM_FAMILY="$platform_family" python3 - <<'PY'
+import json, os, sys
+
+raw = os.environ.get("ENSURE_CI_SIM_DEVICES_JSON", "")
+family = os.environ.get("ENSURE_CI_SIM_PLATFORM_FAMILY", "")
+try:
+    data = json.loads(raw)
+except json.JSONDecodeError:
+    sys.exit(0)
+
+def runtime_ok(runtime_key: str) -> bool:
+    key = runtime_key.lower()
+    if family == "visionOS":
+        return ("visionos" in key) or ("xros" in key)
+    return family.lower() in key
+
+for runtime_key, devices in (data.get("devices") or {}).items():
+    if not runtime_ok(runtime_key):
+        continue
+    for device in devices or []:
+        if device.get("isAvailable") is False:
+            continue
+        name = device.get("name") or ""
+        udid = device.get("udid") or ""
+        if name and udid:
+            print(f"{name}\t{udid}")
+            sys.exit(0)
+PY
+}
+
 ensure_ci_sim_destination_specifier() {
     local platform_family="$1"
     local name="$2"
@@ -116,16 +211,7 @@ ensure_ci_sim_destination_specifier() {
     printf '%s\n' "platform=${label},name=${name},id=${udid}"
 }
 
-# Stub — wrong until green (Refs #399 deliberate red for create-pair / family fallback).
-ensure_ci_sim_pick_create_pair() {
-    printf '%s\n' ""
-}
-
-ensure_ci_sim_any_device_for_family() {
-    printf '%s\n' ""
-}
-
-# Ensure a named simulator exists; print destination specifier on stdout.
+# Ensure a simulator exists; print destination specifier on stdout.
 # Args: platform_family [name] [device_type]
 ensure_ci_sim_resolve_destination() {
     local platform_family="$1"
@@ -147,7 +233,7 @@ ensure_ci_sim_resolve_destination() {
     xcrun simctl list devices >/dev/null 2>&1 || true
     xcrun simctl delete unavailable >/dev/null 2>&1 || true
 
-    local devices_json udid
+    local devices_json udid pair runtime create_type fallback
     local attempt
     for attempt in 1 2 3 4 5; do
         devices_json="$(xcrun simctl list devices -j 2>/dev/null || true)"
@@ -157,18 +243,33 @@ ensure_ci_sim_resolve_destination() {
             return 0
         fi
 
-        local runtimes_json runtime
+        # Prefer any already-created device for this family (e.g. Apple TV 4K).
+        fallback="$(ensure_ci_sim_any_device_for_family "$devices_json" "$platform_family")"
+        if [[ -n "$fallback" ]]; then
+            local fb_name fb_udid
+            fb_name="${fallback%%$'\t'*}"
+            fb_udid="${fallback#*$'\t'}"
+            echo "ensure_ci_sim_resolve_destination: preferred '${name}' missing; using '${fb_name}'" >&2
+            ensure_ci_sim_destination_specifier "$platform_family" "$fb_name" "$fb_udid"
+            return 0
+        fi
+
+        local runtimes_json
         runtimes_json="$(xcrun simctl list runtimes available -j 2>/dev/null || true)"
-        runtime="$(ensure_ci_sim_pick_runtime_identifier "$runtimes_json" "$platform_family")"
-        if [[ -z "$runtime" ]]; then
-            echo "ensure_ci_sim_resolve_destination: no available ${platform_family} runtime (attempt ${attempt})" >&2
+        pair="$(ensure_ci_sim_pick_create_pair "$runtimes_json" "$platform_family" "$device_type")"
+        if [[ -z "$pair" ]]; then
+            echo "ensure_ci_sim_resolve_destination: no available ${platform_family} runtime/type (attempt ${attempt})" >&2
             sleep 2
             continue
         fi
+        runtime="${pair%%$'\t'*}"
+        create_type="${pair#*$'\t'}"
 
-        echo "ensure_ci_sim_resolve_destination: creating ${name} (${device_type}, ${runtime})" >&2
-        if ! xcrun simctl create "$name" "$device_type" "$runtime" >/dev/null 2>&1; then
+        echo "ensure_ci_sim_resolve_destination: creating ${name} (${create_type}, ${runtime})" >&2
+        if ! xcrun simctl create "$name" "$create_type" "$runtime" >/dev/null 2>&1; then
             echo "ensure_ci_sim_resolve_destination: simctl create failed (attempt ${attempt})" >&2
+            # If preferred type cannot be created under preferred name, try creating under
+            # a unique name using the create_type's short leaf (still usable via family fallback next loop).
             sleep 2
             continue
         fi
