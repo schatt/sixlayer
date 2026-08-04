@@ -116,6 +116,15 @@ ensure_ci_sim_destination_specifier() {
     printf '%s\n' "platform=${label},name=${name},id=${udid}"
 }
 
+# Stub — wrong until green (Refs #399 deliberate red for create-pair / family fallback).
+ensure_ci_sim_pick_create_pair() {
+    printf '%s\n' ""
+}
+
+ensure_ci_sim_any_device_for_family() {
+    printf '%s\n' ""
+}
+
 # Ensure a named simulator exists; print destination specifier on stdout.
 # Args: platform_family [name] [device_type]
 ensure_ci_sim_resolve_destination() {
