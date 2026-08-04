@@ -62,25 +62,34 @@ FIXTURE_RUNTIMES='{
       "name": "tvOS 26.5",
       "identifier": "com.apple.CoreSimulator.SimRuntime.tvOS-26-5",
       "isAvailable": true,
-      "version": "26.5"
+      "version": "26.5",
+      "supportedDeviceTypes": [
+        {"identifier": "com.apple.CoreSimulator.SimDeviceType.Apple-TV-1080p"},
+        {"identifier": "com.apple.CoreSimulator.SimDeviceType.Apple-TV-4K-3rd-generation-1080p"}
+      ]
     },
     {
       "name": "tvOS 27.0",
       "identifier": "com.apple.CoreSimulator.SimRuntime.tvOS-27-0",
       "isAvailable": true,
-      "version": "27.0"
+      "version": "27.0",
+      "supportedDeviceTypes": [
+        {"identifier": "com.apple.CoreSimulator.SimDeviceType.Apple-TV-4K-3rd-generation-1080p"}
+      ]
     },
     {
       "name": "iOS 27.0",
       "identifier": "com.apple.CoreSimulator.SimRuntime.iOS-27-0",
       "isAvailable": true,
-      "version": "27.0"
+      "version": "27.0",
+      "supportedDeviceTypes": []
     },
     {
       "name": "watchOS 27.0",
       "identifier": "com.apple.CoreSimulator.SimRuntime.watchOS-27-0",
       "isAvailable": false,
-      "version": "27.0"
+      "version": "27.0",
+      "supportedDeviceTypes": []
     }
   ]
 }'
@@ -90,6 +99,14 @@ assert_eq "$got" "com.apple.CoreSimulator.SimRuntime.tvOS-27-0" "pick newest ava
 
 got="$(ensure_ci_sim_pick_runtime_identifier "$FIXTURE_RUNTIMES" "watchOS")"
 assert_eq "$got" "" "unavailable watchOS runtime yields empty"
+
+got="$(ensure_ci_sim_pick_create_pair "$FIXTURE_RUNTIMES" "tvOS" "com.apple.CoreSimulator.SimDeviceType.Apple-TV-1080p")"
+assert_eq "$got" $'com.apple.CoreSimulator.SimRuntime.tvOS-26-5\tcom.apple.CoreSimulator.SimDeviceType.Apple-TV-1080p' \
+  "create pair prefers compatible older runtime for classic Apple TV"
+
+got="$(ensure_ci_sim_pick_create_pair "$FIXTURE_RUNTIMES" "tvOS" "com.apple.CoreSimulator.SimDeviceType.Missing-Type")"
+assert_eq "$got" $'com.apple.CoreSimulator.SimRuntime.tvOS-27-0\tcom.apple.CoreSimulator.SimDeviceType.Apple-TV-4K-3rd-generation-1080p' \
+  "create pair falls back to newest runtime first supported type"
 
 FIXTURE_DEVICES='{
   "devices": {
@@ -120,6 +137,30 @@ FIXTURE_DEVICES='{
 
 got="$(ensure_ci_sim_udid_for_name "$FIXTURE_DEVICES" "Apple TV")"
 assert_eq "$got" "AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE" "prefer available UDID for exact name"
+
+got="$(ensure_ci_sim_any_device_for_family "$FIXTURE_DEVICES" "tvOS")"
+assert_eq "$got" $'Apple TV\tAAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE' \
+  "family fallback returns first available tvOS device"
+
+FIXTURE_DEVICES_NO_PREFERRED='{
+  "devices": {
+    "com.apple.CoreSimulator.SimRuntime.tvOS-27-0": [
+      {
+        "udid": "11111111-2222-3333-4444-555555555555",
+        "name": "Apple TV 4K (3rd generation)",
+        "isAvailable": true,
+        "state": "Shutdown"
+      }
+    ]
+  }
+}'
+
+got="$(ensure_ci_sim_udid_for_name "$FIXTURE_DEVICES_NO_PREFERRED" "Apple TV")"
+assert_eq "$got" "" "missing preferred name yields empty"
+
+got="$(ensure_ci_sim_any_device_for_family "$FIXTURE_DEVICES_NO_PREFERRED" "tvOS")"
+assert_eq "$got" $'Apple TV 4K (3rd generation)\t11111111-2222-3333-4444-555555555555' \
+  "family fallback finds 4K when classic Apple TV absent"
 
 got="$(ensure_ci_sim_destination_specifier "tvOS" "Apple TV" "AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE")"
 assert_eq "$got" "platform=tvOS Simulator,name=Apple TV,id=AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE" \
