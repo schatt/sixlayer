@@ -19,7 +19,7 @@
 import XCTest
 
 @MainActor
-final class ManualAccessibilityIdentifierHarnessUITests: XCTestCase {
+final class ManualAccessibilityIdentifierHarnessUITests: SixLayerUITestCase {
     /// Fresh app per test (same lifecycle as `Layer1AccessibilityUITests`) avoids shared static app + class
     /// `tearDown` races that can destabilize the runner (exit -1) under XCTest isolation.
     var app: XCUIApplication!
