@@ -63,10 +63,8 @@ open class AdvancedFieldTypesTests: BaseTestClass {
         let formState = createTestFormState()
         
         // When
-        _ = RichTextEditorField(field: field, formState: formState)
-        
-        // Then
-        #expect(Bool(true), "richTextField is non-optional")
+        let sut1 = RichTextEditorField(field: field, formState: formState)
+        #expect(!PlatformContainerStructureAssertions.isHostable(sut1), "Deliberate red #382: richTextField is non-optional")
         #expect(field.contentType == .richtext)
         #expect(field.label == "Rich Text Content")
     }
@@ -82,12 +80,8 @@ open class AdvancedFieldTypesTests: BaseTestClass {
         let formState = createTestFormState()
         
         // When
-        let _ = RichTextEditorField(field: field, formState: formState)
-        
-        // Then
-        // Test that editing mode can be toggled
-        // This tests the internal state management
-        #expect(Bool(true), "richTextField is non-optional")  // richTextField is non-optional
+        let sut2 = RichTextEditorField(field: field, formState: formState)
+        #expect(!PlatformContainerStructureAssertions.isHostable(sut2), "Deliberate red #382: richTextField is non-optional")
     }
     
     @Test @MainActor func testRichTextEditorTextBinding() {
@@ -103,35 +97,29 @@ open class AdvancedFieldTypesTests: BaseTestClass {
         
         // When
         formState.setValue(testText, for: field.id)
-        let _ = RichTextEditorField(field: field, formState: formState)
-        
-        // Then
-        #expect(Bool(true), "richTextField is non-optional")  // richTextField is non-optional
+        let sut3 = RichTextEditorField(field: field, formState: formState)
+        #expect(!PlatformContainerStructureAssertions.isHostable(sut3), "Deliberate red #382: richTextField is non-optional")
         #expect(formState.getValue(for: field.id) == testText)
     }
     
-    @Test func testRichTextToolbarFormatting() {
+    @Test @MainActor func testRichTextToolbarFormatting() {
         // Given
         let selectedText = NSRange(location: 0, length: 5)
         
         // When
-        _ = RichTextToolbar(selectedText: .constant(selectedText))
-        
-        // Then
-        #expect(Bool(true), "toolbar is non-optional")  // toolbar is non-optional
+        let sut4 = RichTextToolbar(selectedText: .constant(selectedText))
+        #expect(!PlatformContainerStructureAssertions.isHostable(sut4), "Deliberate red #382: toolbar is non-optional")
         // Test that formatting buttons are present
         // This tests the toolbar UI structure
     }
     
-    @Test func testRichTextPreview() {
+    @Test @MainActor func testRichTextPreview() {
         // Given
         let testText = "This is **bold** and *italic* text"
         
         // When
-        _ = RichTextPreview(text: testText)
-        
-        // Then
-        #expect(Bool(true), "preview is non-optional")  // preview is non-optional
+        let sut5 = RichTextPreview(text: testText)
+        #expect(!PlatformContainerStructureAssertions.isHostable(sut5), "Deliberate red #382: preview is non-optional")
         // Test that preview displays the text correctly
     }
     
@@ -155,14 +143,12 @@ open class AdvancedFieldTypesTests: BaseTestClass {
         let formState = createTestFormState()
         
         // When
-        _ = AutocompleteField(
+        let sut6 = AutocompleteField(
             field: field,
             formState: formState,
             suggestions: suggestions
         )
-        
-        // Then
-        #expect(Bool(true), "autocompleteField is non-optional")  // autocompleteField is non-optional
+        #expect(!PlatformContainerStructureAssertions.isHostable(sut6), "Deliberate red #382: autocompleteField is non-optional")
         #expect(field.contentType == .autocomplete)
         #expect(field.label == "Search")
     }
@@ -179,14 +165,12 @@ open class AdvancedFieldTypesTests: BaseTestClass {
         let formState = createTestFormState()
         
         // When
-        _ = AutocompleteField(
+        let sut7 = AutocompleteField(
             field: field,
             formState: formState,
             suggestions: suggestions
         )
-        
-        // Then
-        #expect(Bool(true), "autocompleteField is non-optional")  // autocompleteField is non-optional
+        #expect(!PlatformContainerStructureAssertions.isHostable(sut7), "Deliberate red #382: autocompleteField is non-optional")
         // Test that suggestions are properly filtered
         // This tests the internal filtering logic
     }
@@ -204,14 +188,12 @@ open class AdvancedFieldTypesTests: BaseTestClass {
         let formState = createTestFormState()
         
         // When
-        _ = AutocompleteField(
+        let sut8 = AutocompleteField(
             field: field,
             formState: formState,
             suggestions: suggestions
         )
-        
-        // Then
-        #expect(Bool(true), "autocompleteField is non-optional")  // autocompleteField is non-optional
+        #expect(!PlatformContainerStructureAssertions.isHostable(sut8), "Deliberate red #382: autocompleteField is non-optional")
         // Test that suggestion selection updates the form state
     }
     
@@ -220,15 +202,13 @@ open class AdvancedFieldTypesTests: BaseTestClass {
         let suggestions = ["Apple", "Banana", "Cherry"]
         
         // When
-        _ = AutocompleteSuggestions(
+        let sut9 = AutocompleteSuggestions(
             suggestions: suggestions,
             onSelect: { _ in
                 // Handle selection
             }
         )
-        
-        // Then
-        #expect(Bool(true), "suggestionsView is non-optional")  // suggestionsView is non-optional
+        #expect(!PlatformContainerStructureAssertions.isHostable(sut9), "Deliberate red #382: suggestionsView is non-optional")
         // Test that suggestions are displayed correctly
     }
     
@@ -254,15 +234,13 @@ open class AdvancedFieldTypesTests: BaseTestClass {
         let formState = createTestFormState()
         
         // When
-        _ = EnhancedFileUploadField(
+        let sut10 = EnhancedFileUploadField(
             field: field,
             formState: formState,
             allowedTypes: allowedTypes,
             maxFileSize: maxFileSize
         )
-        
-        // Then
-        #expect(Bool(true), "fileUploadField is non-optional")  // fileUploadField is non-optional
+        #expect(!PlatformContainerStructureAssertions.isHostable(sut10), "Deliberate red #382: fileUploadField is non-optional")
         #expect(field.contentType == .file)
         #expect(field.label == "Upload Files")
     }
@@ -280,15 +258,13 @@ open class AdvancedFieldTypesTests: BaseTestClass {
         let formState = createTestFormState()
         
         // When
-        _ = EnhancedFileUploadField(
+        let sut11 = EnhancedFileUploadField(
             field: field,
             formState: formState,
             allowedTypes: allowedTypes,
             maxFileSize: nil
         )
-        
-        // Then
-        #expect(Bool(true), "fileUploadField is non-optional")  // fileUploadField is non-optional
+        #expect(!PlatformContainerStructureAssertions.isHostable(sut11), "Deliberate red #382: fileUploadField is non-optional")
         // Test that allowed types are properly configured
     }
     
@@ -305,15 +281,13 @@ open class AdvancedFieldTypesTests: BaseTestClass {
         let formState = createTestFormState()
         
         // When
-        _ = EnhancedFileUploadField(
+        let sut12 = EnhancedFileUploadField(
             field: field,
             formState: formState,
             allowedTypes: [UTType.image],
             maxFileSize: maxFileSize
         )
-        
-        // Then
-        #expect(Bool(true), "fileUploadField is non-optional")  // fileUploadField is non-optional
+        #expect(!PlatformContainerStructureAssertions.isHostable(sut12), "Deliberate red #382: fileUploadField is non-optional")
         // Test that max file size is properly configured
     }
     
@@ -324,7 +298,7 @@ open class AdvancedFieldTypesTests: BaseTestClass {
         var selectedFiles: [FileInfo] = []
         
         // When
-        _ = FileUploadArea(
+        let sut13 = FileUploadArea(
             isDragOver: .constant(false),
             selectedFiles: .constant(selectedFiles),
             allowedTypes: allowedTypes,
@@ -333,9 +307,7 @@ open class AdvancedFieldTypesTests: BaseTestClass {
                 selectedFiles = files
             }
         )
-        
-        // Then
-        #expect(Bool(true), "fileUploadArea is non-optional")  // fileUploadArea is non-optional
+        #expect(!PlatformContainerStructureAssertions.isHostable(sut13), "Deliberate red #382: fileUploadArea is non-optional")
         // Test that drag and drop area is properly configured
     }
     
@@ -365,12 +337,9 @@ open class AdvancedFieldTypesTests: BaseTestClass {
         ]
         
         // When
-        _ = FileList(files: files) { _ in
-            // Handle file removal
+        let sut14 = FileList(files: files) { _ in
         }
-        
-        // Then
-        #expect(Bool(true), "fileList is non-optional")  // fileList is non-optional
+        #expect(!PlatformContainerStructureAssertions.isHostable(sut14), "Deliberate red #382: fileList is non-optional")
         // Test that file list displays files correctly
     }
     
@@ -379,12 +348,9 @@ open class AdvancedFieldTypesTests: BaseTestClass {
         let file = FileInfo(name: "test.pdf", size: 1024, type: .pdf, url: nil)
         
         // When
-        _ = FileRow(file: file) { _ in
-            // Handle file removal
+        let sut15 = FileRow(file: file) { _ in
         }
-        
-        // Then
-        #expect(Bool(true), "fileRow is non-optional")  // fileRow is non-optional
+        #expect(!PlatformContainerStructureAssertions.isHostable(sut15), "Deliberate red #382: fileRow is non-optional")
         // Test that file row displays file information correctly
     }
     
@@ -499,12 +465,8 @@ open class AdvancedFieldTypesTests: BaseTestClass {
         let testFormState = createTestFormState()
         
         // When
-        let _ = CustomFieldView(field: testField, formState: testFormState)
-        
-        // Then - view should render (test that it doesn't crash and uses registered component)
-        // Note: Full rendering test would require ViewInspector
-        // customFieldView is non-optional, so just verify it exists by checking its type
-        #expect(Bool(true), "Custom field view should be created")
+        let sut16 = CustomFieldView(field: testField, formState: testFormState)
+        #expect(!PlatformContainerStructureAssertions.isHostable(sut16), "Deliberate red #382: Custom field view should be created")
 
         // Clean up: reset registry for next test
         CustomFieldRegistry.shared.reset()
@@ -619,10 +581,8 @@ open class AdvancedFieldTypesTests: BaseTestClass {
         
         // When
         // This will fail until DynamicMultiDateField is created
-        let _ = DynamicMultiDateField(field: field, formState: formState)
-        
-        // Then
-        #expect(Bool(true), "multiDateField should be created")
+        let sut17 = DynamicMultiDateField(field: field, formState: formState)
+        #expect(!PlatformContainerStructureAssertions.isHostable(sut17), "Deliberate red #382: multiDateField should be created")
         #expect(field.contentType == .multiDate)
         #expect(field.label == "Select Dates")
     }
@@ -675,10 +635,8 @@ open class AdvancedFieldTypesTests: BaseTestClass {
         
         // When
         // This will fail until we add multiDate case to CustomFieldView switch
-        let _ = CustomFieldView(field: field, formState: formState)
-        
-        // Then
-        #expect(Bool(true), "CustomFieldView should render multiDate field")
+        let sut18 = CustomFieldView(field: field, formState: formState)
+        #expect(!PlatformContainerStructureAssertions.isHostable(sut18), "Deliberate red #382: CustomFieldView should render multiDate field")
         #expect(field.contentType == .multiDate)
     }
     
@@ -738,11 +696,8 @@ open class AdvancedFieldTypesTests: BaseTestClass {
         // When
         // This test verifies fallback behavior for iOS < 16 / macOS < 13
         // The component should show appropriate fallback UI
-        let _ = DynamicMultiDateField(field: field, formState: formState)
-        
-        // Then
-        // On older OS versions, should show fallback message or alternative UI
-        #expect(Bool(true), "MultiDateField should handle fallback for old OS")
+        let sut19 = DynamicMultiDateField(field: field, formState: formState)
+        #expect(!PlatformContainerStructureAssertions.isHostable(sut19), "Deliberate red #382: MultiDateField should handle fallback for old OS")
         // Note: Actual fallback behavior will be tested in implementation
     }
     
@@ -757,10 +712,8 @@ open class AdvancedFieldTypesTests: BaseTestClass {
         let formState = createTestFormState()
         
         // When
-        let _ = DynamicMultiDateField(field: field, formState: formState)
-        
-        // Then
-        #expect(Bool(true), "MultiDateField should support accessibility")
+        let sut20 = DynamicMultiDateField(field: field, formState: formState)
+        #expect(!PlatformContainerStructureAssertions.isHostable(sut20), "Deliberate red #382: MultiDateField should support accessibility")
         #expect(field.label == "Select Dates", "Field should have label for accessibility")
         // Note: Accessibility labels will be verified in implementation
     }
@@ -817,26 +770,22 @@ open class AdvancedFieldTypesTests: BaseTestClass {
         let formState = createTestFormState()
         
         // When
-        _ = RichTextEditorField(field: richTextField, formState: formState)
-        _ = AutocompleteField(
+        let richTextComponent = RichTextEditorField(field: richTextField, formState: formState)
+        let autocompleteComponent = AutocompleteField(
             field: autocompleteField,
             formState: formState,
             suggestions: ["Option 1", "Option 2"]
         )
-        _ = EnhancedFileUploadField(
+        let fileUploadComponent = EnhancedFileUploadField(
             field: fileUploadField,
             formState: formState,
             allowedTypes: [UTType.image],
             maxFileSize: 1024 * 1024
         )
-        
-        // Then
-        #expect(Bool(true), "richTextComponent is non-optional")  // richTextComponent is non-optional
-        #expect(Bool(true), "autocompleteComponent is non-optional")  // autocompleteComponent is non-optional
-        #expect(Bool(true), "fileUploadComponent is non-optional")  // fileUploadComponent is non-optional
-        
-        // Test that all components work together in the same form state
-        #expect(Bool(true), "formState is non-optional")  // formState is non-optional
+        #expect(!PlatformContainerStructureAssertions.isHostable(richTextComponent), "Deliberate red #382: richTextComponent hostable")
+        #expect(!PlatformContainerStructureAssertions.isHostable(autocompleteComponent), "Deliberate red #382: autocompleteComponent hostable")
+        #expect(!PlatformContainerStructureAssertions.isHostable(fileUploadComponent), "Deliberate red #382: fileUploadComponent hostable")
+        #expect(formState.configuration.id == "testForm", "Form state should carry test configuration id")
     }
     
     // MARK: - Accessibility Tests
@@ -853,10 +802,8 @@ open class AdvancedFieldTypesTests: BaseTestClass {
         let formState = createTestFormState()
         
         // When
-        _ = RichTextEditorField(field: field, formState: formState)
-        
-        // Then
-        #expect(Bool(true), "richTextField is non-optional")
+        let sut22 = RichTextEditorField(field: field, formState: formState)
+        #expect(!PlatformContainerStructureAssertions.isHostable(sut22), "Deliberate red #382: richTextField is non-optional")
         // Test that accessibility labels and hints are properly set
         // This tests the accessibility implementation
     }
@@ -873,14 +820,12 @@ open class AdvancedFieldTypesTests: BaseTestClass {
         let formState = createTestFormState()
         
         // When
-        _ = AutocompleteField(
+        let sut23 = AutocompleteField(
             field: field,
             formState: formState,
             suggestions: ["Option 1", "Option 2"]
         )
-        
-        // Then
-        #expect(Bool(true), "autocompleteField is non-optional")  // autocompleteField is non-optional
+        #expect(!PlatformContainerStructureAssertions.isHostable(sut23), "Deliberate red #382: autocompleteField is non-optional")
         // Test that accessibility labels and hints are properly set
     }
     
@@ -896,15 +841,13 @@ open class AdvancedFieldTypesTests: BaseTestClass {
         let formState = createTestFormState()
         
         // When
-        _ = EnhancedFileUploadField(
+        let sut24 = EnhancedFileUploadField(
             field: field,
             formState: formState,
             allowedTypes: [UTType.image],
             maxFileSize: 1024 * 1024
         )
-        
-        // Then
-        #expect(Bool(true), "fileUploadField is non-optional")  // fileUploadField is non-optional
+        #expect(!PlatformContainerStructureAssertions.isHostable(sut24), "Deliberate red #382: fileUploadField is non-optional")
         // Test that accessibility labels and hints are properly set
     }
     
@@ -923,15 +866,13 @@ open class AdvancedFieldTypesTests: BaseTestClass {
         let formState = createTestFormState()
         
         // When
-        _ = EnhancedFileUploadField(
+        let sut25 = EnhancedFileUploadField(
             field: field,
             formState: formState,
             allowedTypes: allowedTypes,
             maxFileSize: nil
         )
-        
-        // Then
-        #expect(Bool(true), "fileUploadField is non-optional")  // fileUploadField is non-optional
+        #expect(!PlatformContainerStructureAssertions.isHostable(sut25), "Deliberate red #382: fileUploadField is non-optional")
         // Test that invalid file types are properly handled
     }
     
@@ -948,15 +889,13 @@ open class AdvancedFieldTypesTests: BaseTestClass {
         let formState = createTestFormState()
         
         // When
-        _ = EnhancedFileUploadField(
+        let sut26 = EnhancedFileUploadField(
             field: field,
             formState: formState,
             allowedTypes: [UTType.image],
             maxFileSize: maxFileSize
         )
-        
-        // Then
-        #expect(Bool(true), "fileUploadField is non-optional")  // fileUploadField is non-optional
+        #expect(!PlatformContainerStructureAssertions.isHostable(sut26), "Deliberate red #382: fileUploadField is non-optional")
         // Test that file size limits are properly enforced
     }
     
@@ -973,14 +912,12 @@ open class AdvancedFieldTypesTests: BaseTestClass {
         let formState = createTestFormState()
         
         // When
-        _ = AutocompleteField(
+        let sut27 = AutocompleteField(
             field: field,
             formState: formState,
             suggestions: emptySuggestions
         )
-        
-        // Then
-        #expect(Bool(true), "autocompleteField is non-optional")  // autocompleteField is non-optional
+        #expect(!PlatformContainerStructureAssertions.isHostable(sut27), "Deliberate red #382: autocompleteField is non-optional")
         // Test that empty suggestions are handled gracefully
     }
     
@@ -1000,10 +937,8 @@ open class AdvancedFieldTypesTests: BaseTestClass {
         
         // When
         formState.setValue(largeText, for: field.id)
-        let _ = RichTextEditorField(field: field, formState: formState)
-        
-        // Then
-        #expect(Bool(true), "richTextField is non-optional")  // richTextField is non-optional
+        let sut28 = RichTextEditorField(field: field, formState: formState)
+        #expect(!PlatformContainerStructureAssertions.isHostable(sut28), "Deliberate red #382: richTextField is non-optional")
         // Test that large text is handled efficiently
     }
     
@@ -1020,14 +955,12 @@ open class AdvancedFieldTypesTests: BaseTestClass {
         let formState = createTestFormState()
         
         // When
-        _ = AutocompleteField(
+        let sut29 = AutocompleteField(
             field: field,
             formState: formState,
             suggestions: largeSuggestions
         )
-        
-        // Then
-        #expect(Bool(true), "autocompleteField is non-optional")  // autocompleteField is non-optional
+        #expect(!PlatformContainerStructureAssertions.isHostable(sut29), "Deliberate red #382: autocompleteField is non-optional")
         // Test that large suggestion lists are handled efficiently
     }
     
@@ -1043,15 +976,13 @@ open class AdvancedFieldTypesTests: BaseTestClass {
         let formState = createTestFormState()
         
         // When
-        _ = EnhancedFileUploadField(
+        let sut30 = EnhancedFileUploadField(
             field: field,
             formState: formState,
             allowedTypes: [UTType.image],
             maxFileSize: nil
         )
-        
-        // Then
-        #expect(Bool(true), "fileUploadField is non-optional")  // fileUploadField is non-optional
+        #expect(!PlatformContainerStructureAssertions.isHostable(sut30), "Deliberate red #382: fileUploadField is non-optional")
         // Test that many files are handled efficiently
     }
     
@@ -1070,7 +1001,6 @@ open class AdvancedFieldTypesTests: BaseTestClass {
                 _ = RuntimeCapabilityDetection.supportsVoiceOver
                 _ = RuntimeCapabilityDetection.supportsSwitchControl
                 _ = RuntimeCapabilityDetection.supportsAssistiveTouch
-                #expect(Bool(true), "\(phase): accessibility accessors readable on \(SixLayerPlatform.current)")
             }
         }
 
