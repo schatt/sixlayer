@@ -13,7 +13,7 @@ import XCTest
 /// Layer 6 UI tests: one test per L6 function so the run shows a clear pass count per function.
 /// Uses launch argument -OpenLayer6Examples. One app launch for the suite (#373).
 @MainActor
-final class Layer6UITests: XCTestCase {
+final class Layer6UITests: SixLayerUITestCase {
     private nonisolated static let rootReadyTimeout: TimeInterval = 8.0
     private nonisolated static let quickWait: TimeInterval = 0.5
     nonisolated(unsafe) private var app: XCUIApplication!
