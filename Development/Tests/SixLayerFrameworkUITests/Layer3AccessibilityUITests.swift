@@ -24,7 +24,7 @@ import XCTest
 /// #348 / #316: deep-link via `-OpenLayer3Examples`; land on `layer3-examples-host-root`.
 /// #374: one shared app process for the class.
 @MainActor
-final class Layer3AccessibilityUITests: XCTestCase {
+final class Layer3AccessibilityUITests: SixLayerUITestCase {
     var app: XCUIApplication!
     private static var sharedApp: XCUIApplication?
     

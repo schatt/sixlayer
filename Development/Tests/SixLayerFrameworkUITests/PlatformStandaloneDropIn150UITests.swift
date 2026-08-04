@@ -15,7 +15,7 @@ import XCTest
 
 /// XCUITest for Issue #150 — binding propagation and user interaction on `StandaloneDropIn150HostView`.
 @MainActor
-final class PlatformStandaloneDropIn150UITests: XCTestCase {
+final class PlatformStandaloneDropIn150UITests: SixLayerUITestCase {
     private nonisolated(unsafe) var app: XCUIApplication!
 
     nonisolated(unsafe) private static var sharedApp: XCUIApplication?

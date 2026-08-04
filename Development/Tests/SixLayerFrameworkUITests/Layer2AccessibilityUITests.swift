@@ -18,7 +18,7 @@ import XCTest
 /// XCUITest tests for Layer 2 accessibility features
 /// Verifies all 4 Layer 2 functions have example views with complete accessibility support
 @MainActor
-final class Layer2AccessibilityUITests: XCTestCase {
+final class Layer2AccessibilityUITests: SixLayerUITestCase {
     private enum Host {
         static let openArg = "-OpenLayer2Examples"
         static let rootIdentifier = "layer2-examples-host-root"

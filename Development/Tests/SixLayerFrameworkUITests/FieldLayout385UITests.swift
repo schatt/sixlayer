@@ -9,7 +9,7 @@
 import XCTest
 
 @MainActor
-final class FieldLayout385UITests: XCTestCase {
+final class FieldLayout385UITests: SixLayerUITestCase {
     private nonisolated(unsafe) var app: XCUIApplication!
 
     nonisolated override func setUpWithError() throws {
