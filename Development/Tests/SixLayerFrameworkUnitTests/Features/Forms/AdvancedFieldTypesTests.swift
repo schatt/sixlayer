@@ -18,7 +18,7 @@ import UniformTypeIdentifiers
  * METHODOLOGY: Field initialization and binding tests on the current host; capability
  * tri-state for a11y axes where fields branch on RuntimeCapabilityDetection (#251).
  */
-@Suite("Advanced Field Types", DefaultRuntimeCapabilityIsolationTrait())
+@Suite("Advanced Field Types", DefaultRuntimeCapabilityIsolationTrait(), HostedViewTestIsolationTrait())
 open class AdvancedFieldTypesTests: BaseTestClass {
 
     // MARK: - Test Setup/Teardown
