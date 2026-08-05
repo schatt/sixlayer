@@ -65,7 +65,7 @@ open class AdvancedFieldTypesTests: BaseTestClass {
         // When
         let sut1 = RichTextEditorField(field: field, formState: formState)
         let sut1TypeName = String(describing: type(of: sut1))
-        #expect(sut1TypeName.contains("RichTextEditorField") == false, "Deliberate red #382: RichTextEditorField (actual: \(sut1TypeName))")
+        #expect(sut1TypeName.contains("RichTextEditorField"), "RichTextEditorField should be constructed (type: \(sut1TypeName))")
         #expect(field.contentType == .richtext)
         #expect(field.label == "Rich Text Content")
     }
@@ -83,7 +83,7 @@ open class AdvancedFieldTypesTests: BaseTestClass {
         // When
         let sut2 = RichTextEditorField(field: field, formState: formState)
         let sut2TypeName = String(describing: type(of: sut2))
-        #expect(sut2TypeName.contains("RichTextEditorField") == false, "Deliberate red #382: RichTextEditorField (actual: \(sut2TypeName))")
+        #expect(sut2TypeName.contains("RichTextEditorField"), "RichTextEditorField should be constructed (type: \(sut2TypeName))")
     }
     
     @Test @MainActor func testRichTextEditorTextBinding() {
@@ -101,7 +101,7 @@ open class AdvancedFieldTypesTests: BaseTestClass {
         formState.setValue(testText, for: field.id)
         let sut3 = RichTextEditorField(field: field, formState: formState)
         let sut3TypeName = String(describing: type(of: sut3))
-        #expect(sut3TypeName.contains("RichTextEditorField") == false, "Deliberate red #382: RichTextEditorField (actual: \(sut3TypeName))")
+        #expect(sut3TypeName.contains("RichTextEditorField"), "RichTextEditorField should be constructed (type: \(sut3TypeName))")
         #expect(formState.getValue(for: field.id) == testText)
     }
     
@@ -112,7 +112,7 @@ open class AdvancedFieldTypesTests: BaseTestClass {
         // When
         let sut4 = RichTextToolbar(selectedText: .constant(selectedText))
         let sut4TypeName = String(describing: type(of: sut4))
-        #expect(sut4TypeName.contains("RichTextToolbar") == false, "Deliberate red #382: RichTextToolbar (actual: \(sut4TypeName))")
+        #expect(sut4TypeName.contains("RichTextToolbar"), "RichTextToolbar should be constructed (type: \(sut4TypeName))")
         // Test that formatting buttons are present
         // This tests the toolbar UI structure
     }
@@ -124,7 +124,7 @@ open class AdvancedFieldTypesTests: BaseTestClass {
         // When
         let sut5 = RichTextPreview(text: testText)
         let sut5TypeName = String(describing: type(of: sut5))
-        #expect(sut5TypeName.contains("RichTextPreview") == false, "Deliberate red #382: RichTextPreview (actual: \(sut5TypeName))")
+        #expect(sut5TypeName.contains("RichTextPreview"), "RichTextPreview should be constructed (type: \(sut5TypeName))")
         // Test that preview displays the text correctly
     }
     
@@ -154,7 +154,7 @@ open class AdvancedFieldTypesTests: BaseTestClass {
             suggestions: suggestions
         )
         let sut6TypeName = String(describing: type(of: sut6))
-        #expect(sut6TypeName.contains("AutocompleteField") == false, "Deliberate red #382: AutocompleteField (actual: \(sut6TypeName))")
+        #expect(sut6TypeName.contains("AutocompleteField"), "AutocompleteField should be constructed (type: \(sut6TypeName))")
         #expect(field.contentType == .autocomplete)
         #expect(field.label == "Search")
     }
@@ -177,7 +177,7 @@ open class AdvancedFieldTypesTests: BaseTestClass {
             suggestions: suggestions
         )
         let sut7TypeName = String(describing: type(of: sut7))
-        #expect(sut7TypeName.contains("AutocompleteField") == false, "Deliberate red #382: AutocompleteField (actual: \(sut7TypeName))")
+        #expect(sut7TypeName.contains("AutocompleteField"), "AutocompleteField should be constructed (type: \(sut7TypeName))")
         // Test that suggestions are properly filtered
         // This tests the internal filtering logic
     }
@@ -201,7 +201,7 @@ open class AdvancedFieldTypesTests: BaseTestClass {
             suggestions: suggestions
         )
         let sut8TypeName = String(describing: type(of: sut8))
-        #expect(sut8TypeName.contains("AutocompleteField") == false, "Deliberate red #382: AutocompleteField (actual: \(sut8TypeName))")
+        #expect(sut8TypeName.contains("AutocompleteField"), "AutocompleteField should be constructed (type: \(sut8TypeName))")
         // Test that suggestion selection updates the form state
     }
     
@@ -217,7 +217,7 @@ open class AdvancedFieldTypesTests: BaseTestClass {
             }
         )
         let sut9TypeName = String(describing: type(of: sut9))
-        #expect(sut9TypeName.contains("AutocompleteSuggestions") == false, "Deliberate red #382: AutocompleteSuggestions (actual: \(sut9TypeName))")
+        #expect(sut9TypeName.contains("AutocompleteSuggestions"), "AutocompleteSuggestions should be constructed (type: \(sut9TypeName))")
         // Test that suggestions are displayed correctly
     }
     
@@ -250,7 +250,7 @@ open class AdvancedFieldTypesTests: BaseTestClass {
             maxFileSize: maxFileSize
         )
         let sut10TypeName = String(describing: type(of: sut10))
-        #expect(sut10TypeName.contains("EnhancedFileUploadField") == false, "Deliberate red #382: EnhancedFileUploadField (actual: \(sut10TypeName))")
+        #expect(sut10TypeName.contains("EnhancedFileUploadField"), "EnhancedFileUploadField should be constructed (type: \(sut10TypeName))")
         #expect(field.contentType == .file)
         #expect(field.label == "Upload Files")
     }
@@ -275,7 +275,7 @@ open class AdvancedFieldTypesTests: BaseTestClass {
             maxFileSize: nil
         )
         let sut11TypeName = String(describing: type(of: sut11))
-        #expect(sut11TypeName.contains("EnhancedFileUploadField") == false, "Deliberate red #382: EnhancedFileUploadField (actual: \(sut11TypeName))")
+        #expect(sut11TypeName.contains("EnhancedFileUploadField"), "EnhancedFileUploadField should be constructed (type: \(sut11TypeName))")
         // Test that allowed types are properly configured
     }
     
@@ -299,7 +299,7 @@ open class AdvancedFieldTypesTests: BaseTestClass {
             maxFileSize: maxFileSize
         )
         let sut12TypeName = String(describing: type(of: sut12))
-        #expect(sut12TypeName.contains("EnhancedFileUploadField") == false, "Deliberate red #382: EnhancedFileUploadField (actual: \(sut12TypeName))")
+        #expect(sut12TypeName.contains("EnhancedFileUploadField"), "EnhancedFileUploadField should be constructed (type: \(sut12TypeName))")
         // Test that max file size is properly configured
     }
     
@@ -320,7 +320,7 @@ open class AdvancedFieldTypesTests: BaseTestClass {
             }
         )
         let sut13TypeName = String(describing: type(of: sut13))
-        #expect(sut13TypeName.contains("FileUploadArea") == false, "Deliberate red #382: FileUploadArea (actual: \(sut13TypeName))")
+        #expect(sut13TypeName.contains("FileUploadArea"), "FileUploadArea should be constructed (type: \(sut13TypeName))")
         // Test that drag and drop area is properly configured
     }
     
@@ -353,7 +353,7 @@ open class AdvancedFieldTypesTests: BaseTestClass {
         let sut14 = FileList(files: files) { _ in
         }
         let sut14TypeName = String(describing: type(of: sut14))
-        #expect(sut14TypeName.contains("FileList") == false, "Deliberate red #382: FileList (actual: \(sut14TypeName))")
+        #expect(sut14TypeName.contains("FileList"), "FileList should be constructed (type: \(sut14TypeName))")
         // Test that file list displays files correctly
     }
     
@@ -365,7 +365,7 @@ open class AdvancedFieldTypesTests: BaseTestClass {
         let sut15 = FileRow(file: file) { _ in
         }
         let sut15TypeName = String(describing: type(of: sut15))
-        #expect(sut15TypeName.contains("FileRow") == false, "Deliberate red #382: FileRow (actual: \(sut15TypeName))")
+        #expect(sut15TypeName.contains("FileRow"), "FileRow should be constructed (type: \(sut15TypeName))")
         // Test that file row displays file information correctly
     }
     
@@ -482,7 +482,7 @@ open class AdvancedFieldTypesTests: BaseTestClass {
         // When
         let sut16 = CustomFieldView(field: testField, formState: testFormState)
         let sut16TypeName = String(describing: type(of: sut16))
-        #expect(sut16TypeName.contains("CustomFieldView") == false, "Deliberate red #382: CustomFieldView (actual: \(sut16TypeName))")
+        #expect(sut16TypeName.contains("CustomFieldView"), "CustomFieldView should be constructed (type: \(sut16TypeName))")
 
         // Clean up: reset registry for next test
         CustomFieldRegistry.shared.reset()
@@ -599,7 +599,7 @@ open class AdvancedFieldTypesTests: BaseTestClass {
         // This will fail until DynamicMultiDateField is created
         let sut17 = DynamicMultiDateField(field: field, formState: formState)
         let sut17TypeName = String(describing: type(of: sut17))
-        #expect(sut17TypeName.contains("DynamicMultiDateField") == false, "Deliberate red #382: DynamicMultiDateField (actual: \(sut17TypeName))")
+        #expect(sut17TypeName.contains("DynamicMultiDateField"), "DynamicMultiDateField should be constructed (type: \(sut17TypeName))")
         #expect(field.contentType == .multiDate)
         #expect(field.label == "Select Dates")
     }
@@ -654,7 +654,7 @@ open class AdvancedFieldTypesTests: BaseTestClass {
         // This will fail until we add multiDate case to CustomFieldView switch
         let sut18 = CustomFieldView(field: field, formState: formState)
         let sut18TypeName = String(describing: type(of: sut18))
-        #expect(sut18TypeName.contains("CustomFieldView") == false, "Deliberate red #382: CustomFieldView (actual: \(sut18TypeName))")
+        #expect(sut18TypeName.contains("CustomFieldView"), "CustomFieldView should be constructed (type: \(sut18TypeName))")
         #expect(field.contentType == .multiDate)
     }
     
@@ -716,7 +716,7 @@ open class AdvancedFieldTypesTests: BaseTestClass {
         // The component should show appropriate fallback UI
         let sut19 = DynamicMultiDateField(field: field, formState: formState)
         let sut19TypeName = String(describing: type(of: sut19))
-        #expect(sut19TypeName.contains("DynamicMultiDateField") == false, "Deliberate red #382: DynamicMultiDateField (actual: \(sut19TypeName))")
+        #expect(sut19TypeName.contains("DynamicMultiDateField"), "DynamicMultiDateField should be constructed (type: \(sut19TypeName))")
         // Note: Actual fallback behavior will be tested in implementation
     }
     
@@ -733,7 +733,7 @@ open class AdvancedFieldTypesTests: BaseTestClass {
         // When
         let sut20 = DynamicMultiDateField(field: field, formState: formState)
         let sut20TypeName = String(describing: type(of: sut20))
-        #expect(sut20TypeName.contains("DynamicMultiDateField") == false, "Deliberate red #382: DynamicMultiDateField (actual: \(sut20TypeName))")
+        #expect(sut20TypeName.contains("DynamicMultiDateField"), "DynamicMultiDateField should be constructed (type: \(sut20TypeName))")
         #expect(field.label == "Select Dates", "Field should have label for accessibility")
         // Note: Accessibility labels will be verified in implementation
     }
@@ -803,14 +803,14 @@ open class AdvancedFieldTypesTests: BaseTestClass {
             maxFileSize: 1024 * 1024
         )
         let richTextComponentTypeName = String(describing: type(of: richTextComponent))
-        #expect(richTextComponentTypeName.contains("RichTextEditorField") == false, "Deliberate red #382: RichTextEditorField (actual: \(richTextComponentTypeName))")
+        #expect(richTextComponentTypeName.contains("RichTextEditorField"), "RichTextEditorField should be constructed (type: \(richTextComponentTypeName))")
         let autocompleteComponentTypeName = String(describing: type(of: autocompleteComponent))
-        #expect(autocompleteComponentTypeName.contains("AutocompleteField") == false, "Deliberate red #382: AutocompleteField (actual: \(autocompleteComponentTypeName))")
+        #expect(autocompleteComponentTypeName.contains("AutocompleteField"), "AutocompleteField should be constructed (type: \(autocompleteComponentTypeName))")
         let fileUploadComponentTypeName = String(describing: type(of: fileUploadComponent))
-        #expect(fileUploadComponentTypeName.contains("EnhancedFileUploadField") == false, "Deliberate red #382: EnhancedFileUploadField (actual: \(fileUploadComponentTypeName))")
+        #expect(fileUploadComponentTypeName.contains("EnhancedFileUploadField"), "EnhancedFileUploadField should be constructed (type: \(fileUploadComponentTypeName))")
         formState.setValue("shared", for: "richText")
         // Deliberate inverted form-state contract for #382 red
-        #expect(formState.getValue(for: "richText") as String? != "shared", "Deliberate red #382: shared form state value")
+        #expect(formState.getValue(for: "richText") as String? == "shared", "Shared form state should store values across components")
     }
     
     // MARK: - Accessibility Tests
@@ -829,7 +829,7 @@ open class AdvancedFieldTypesTests: BaseTestClass {
         // When
         let sut22 = RichTextEditorField(field: field, formState: formState)
         let sut22TypeName = String(describing: type(of: sut22))
-        #expect(sut22TypeName.contains("RichTextEditorField") == false, "Deliberate red #382: RichTextEditorField (actual: \(sut22TypeName))")
+        #expect(sut22TypeName.contains("RichTextEditorField"), "RichTextEditorField should be constructed (type: \(sut22TypeName))")
         // Test that accessibility labels and hints are properly set
         // This tests the accessibility implementation
     }
@@ -852,7 +852,7 @@ open class AdvancedFieldTypesTests: BaseTestClass {
             suggestions: ["Option 1", "Option 2"]
         )
         let sut23TypeName = String(describing: type(of: sut23))
-        #expect(sut23TypeName.contains("AutocompleteField") == false, "Deliberate red #382: AutocompleteField (actual: \(sut23TypeName))")
+        #expect(sut23TypeName.contains("AutocompleteField"), "AutocompleteField should be constructed (type: \(sut23TypeName))")
         // Test that accessibility labels and hints are properly set
     }
     
@@ -875,7 +875,7 @@ open class AdvancedFieldTypesTests: BaseTestClass {
             maxFileSize: 1024 * 1024
         )
         let sut24TypeName = String(describing: type(of: sut24))
-        #expect(sut24TypeName.contains("EnhancedFileUploadField") == false, "Deliberate red #382: EnhancedFileUploadField (actual: \(sut24TypeName))")
+        #expect(sut24TypeName.contains("EnhancedFileUploadField"), "EnhancedFileUploadField should be constructed (type: \(sut24TypeName))")
         // Test that accessibility labels and hints are properly set
     }
     
@@ -901,7 +901,7 @@ open class AdvancedFieldTypesTests: BaseTestClass {
             maxFileSize: nil
         )
         let sut25TypeName = String(describing: type(of: sut25))
-        #expect(sut25TypeName.contains("EnhancedFileUploadField") == false, "Deliberate red #382: EnhancedFileUploadField (actual: \(sut25TypeName))")
+        #expect(sut25TypeName.contains("EnhancedFileUploadField"), "EnhancedFileUploadField should be constructed (type: \(sut25TypeName))")
         // Test that invalid file types are properly handled
     }
     
@@ -925,7 +925,7 @@ open class AdvancedFieldTypesTests: BaseTestClass {
             maxFileSize: maxFileSize
         )
         let sut26TypeName = String(describing: type(of: sut26))
-        #expect(sut26TypeName.contains("EnhancedFileUploadField") == false, "Deliberate red #382: EnhancedFileUploadField (actual: \(sut26TypeName))")
+        #expect(sut26TypeName.contains("EnhancedFileUploadField"), "EnhancedFileUploadField should be constructed (type: \(sut26TypeName))")
         // Test that file size limits are properly enforced
     }
     
@@ -948,7 +948,7 @@ open class AdvancedFieldTypesTests: BaseTestClass {
             suggestions: emptySuggestions
         )
         let sut27TypeName = String(describing: type(of: sut27))
-        #expect(sut27TypeName.contains("AutocompleteField") == false, "Deliberate red #382: AutocompleteField (actual: \(sut27TypeName))")
+        #expect(sut27TypeName.contains("AutocompleteField"), "AutocompleteField should be constructed (type: \(sut27TypeName))")
         // Test that empty suggestions are handled gracefully
     }
     
@@ -970,7 +970,7 @@ open class AdvancedFieldTypesTests: BaseTestClass {
         formState.setValue(largeText, for: field.id)
         let sut28 = RichTextEditorField(field: field, formState: formState)
         let sut28TypeName = String(describing: type(of: sut28))
-        #expect(sut28TypeName.contains("RichTextEditorField") == false, "Deliberate red #382: RichTextEditorField (actual: \(sut28TypeName))")
+        #expect(sut28TypeName.contains("RichTextEditorField"), "RichTextEditorField should be constructed (type: \(sut28TypeName))")
         // Test that large text is handled efficiently
     }
     
@@ -993,7 +993,7 @@ open class AdvancedFieldTypesTests: BaseTestClass {
             suggestions: largeSuggestions
         )
         let sut29TypeName = String(describing: type(of: sut29))
-        #expect(sut29TypeName.contains("AutocompleteField") == false, "Deliberate red #382: AutocompleteField (actual: \(sut29TypeName))")
+        #expect(sut29TypeName.contains("AutocompleteField"), "AutocompleteField should be constructed (type: \(sut29TypeName))")
         // Test that large suggestion lists are handled efficiently
     }
     
@@ -1016,7 +1016,7 @@ open class AdvancedFieldTypesTests: BaseTestClass {
             maxFileSize: nil
         )
         let sut30TypeName = String(describing: type(of: sut30))
-        #expect(sut30TypeName.contains("EnhancedFileUploadField") == false, "Deliberate red #382: EnhancedFileUploadField (actual: \(sut30TypeName))")
+        #expect(sut30TypeName.contains("EnhancedFileUploadField"), "EnhancedFileUploadField should be constructed (type: \(sut30TypeName))")
         // Test that many files are handled efficiently
     }
     
