@@ -643,7 +643,7 @@ open class AdvancedFieldTypesTests: BaseTestClass {
         #expect(field.label == "Select Dates")
     
         #expect(sut17.field.id == field.id)
-        #expect(sut17.field.contentType == .multidate)
+        #expect(sut17.field.contentType == .multiDate)
         expectHostableRed(sut17, "DynamicMultiDateField")
     }
     
@@ -760,7 +760,7 @@ open class AdvancedFieldTypesTests: BaseTestClass {
         let sut19 = DynamicMultiDateField(field: field, formState: formState)
         // Note: Actual fallback behavior will be tested in implementation
     
-        #expect(sut19.field.contentType == .multidate)
+        #expect(sut19.field.contentType == .multiDate)
         expectHostableRed(sut19, "DynamicMultiDateField fallback")
     }
     
