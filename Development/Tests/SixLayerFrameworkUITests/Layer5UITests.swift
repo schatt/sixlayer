@@ -15,7 +15,7 @@ import XCTest
 /// Layer 5 UI tests: one test per L5 accessibility modifier so the run shows a clear pass count per function.
 /// Uses launch argument -OpenLayer5Accessibility. One app launch for the suite (#373).
 @MainActor
-final class Layer5UITests: XCTestCase {
+final class Layer5UITests: SixLayerUITestCase {
     private nonisolated static let rootReadyTimeout: TimeInterval = 8.0
     private nonisolated static let quickWait: TimeInterval = 0.5
     nonisolated(unsafe) private var app: XCUIApplication!

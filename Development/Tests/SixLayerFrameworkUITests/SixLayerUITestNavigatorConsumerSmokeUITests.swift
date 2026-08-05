@@ -10,7 +10,7 @@ import XCTest
 import SixLayerTestKit
 
 @MainActor
-final class SixLayerUITestNavigatorConsumerSmokeUITests: XCTestCase {
+final class SixLayerUITestNavigatorConsumerSmokeUITests: SixLayerUITestCase {
 
     private var app: XCUIApplication!
 

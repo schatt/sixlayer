@@ -9,7 +9,7 @@
 import XCTest
 
 @MainActor
-final class AccessibilityIdentifierCategoryEUITests: XCTestCase {
+final class AccessibilityIdentifierCategoryEUITests: SixLayerUITestCase {
     private enum IDs {
         static let hostTitle = "Category E One-Off Coverage"
         static let explicitEnableRow = "category-e-explicit-enable-row"

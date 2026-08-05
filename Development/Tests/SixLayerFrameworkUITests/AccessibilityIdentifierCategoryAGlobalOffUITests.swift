@@ -10,7 +10,7 @@
 import XCTest
 
 @MainActor
-final class AccessibilityIdentifierCategoryAGlobalOffUITests: XCTestCase {
+final class AccessibilityIdentifierCategoryAGlobalOffUITests: SixLayerUITestCase {
     private static var sharedApp: XCUIApplication?
     private var app: XCUIApplication! { Self.sharedApp! }
 

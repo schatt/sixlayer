@@ -10,7 +10,7 @@ import XCTest
 
 /// Per-test launch with ``DeepLink`` args; ``runAccessibilityCompatibilitySweep`` on the current screen only.
 @MainActor
-final class AccessibilityCompatibilityUITests: XCTestCase {
+final class AccessibilityCompatibilityUITests: SixLayerUITestCase {
 
     private enum DeepLink: String {
         case control = "-OpenAccessibilityCompatibilityControlTest"

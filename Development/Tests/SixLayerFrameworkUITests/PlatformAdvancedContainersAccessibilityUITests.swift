@@ -8,7 +8,7 @@
 import XCTest
 
 @MainActor
-final class PlatformAdvancedContainersAccessibilityUITests: XCTestCase {
+final class PlatformAdvancedContainersAccessibilityUITests: SixLayerUITestCase {
     private static let quickWait: TimeInterval = 0.5
     private static let rootReadyTimeout: TimeInterval = 2.0
     private enum IDs {

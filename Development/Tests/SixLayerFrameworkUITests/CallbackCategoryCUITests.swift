@@ -9,7 +9,7 @@
 import XCTest
 
 @MainActor
-final class CallbackCategoryCUITests: XCTestCase {
+final class CallbackCategoryCUITests: SixLayerUITestCase {
     private enum IDs {
         static let hostTitle = "Category C Callback Coverage"
         static let formStateText = "category-c-form-state-text"
