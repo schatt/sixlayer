@@ -507,22 +507,22 @@ open class AdvancedFieldTypesTests: BaseTestClass {
             }
         }
 
-        CustomFieldRegistry.shared.register("slider") { field, formState in
+        // Registry keys off contentType.rawValue ("custom"), not metadata (#403 tracks richer keys).
+        CustomFieldRegistry.shared.register("custom") { field, formState in
             SliderField(field: field, formState: formState)
         }
         
         let testField = DynamicFormField(
             id: "slider",
             contentType: .custom,
-            label: "Test Slider",
-            metadata: ["customFieldType": "slider"]
+            label: "Test Slider"
         )
         let testFormState = createTestFormState()
         
         // When
         let sut16 = CustomFieldView(field: testField, formState: testFormState)
         let created = CustomFieldRegistry.shared.createComponent(for: testField, formState: testFormState)
-        #expect(created is SliderField, "Registry must create SliderField for customFieldType=slider")
+        #expect(created is SliderField, "Registry must create SliderField for contentType.custom")
         expectHostableRed(sut16, "CustomFieldView")
 
         // Clean up: reset registry for next test
