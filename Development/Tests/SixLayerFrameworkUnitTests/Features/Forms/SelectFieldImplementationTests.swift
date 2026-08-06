@@ -67,7 +67,7 @@ open class SelectFieldImplementationTests: BaseTestClass {
         let sut = DynamicSelectField(field: field, formState: formState)
         
         // Then: View should be created successfully
-        Self.expectViewSubjectTypeContains(sut, rootViewName: "__NotDynamicSelectField__")
+        Self.expectViewSubjectTypeContains(sut, rootViewName: "DynamicSelectField")
     }
     
     @Test @MainActor func testDynamicSelectFieldShowsOptions() {
@@ -79,7 +79,7 @@ open class SelectFieldImplementationTests: BaseTestClass {
         let sut = DynamicSelectField(field: field, formState: formState)
         
         // Then: View should be created successfully
-        Self.expectViewSubjectTypeContains(sut, rootViewName: "__NotDynamicSelectField__")
+        Self.expectViewSubjectTypeContains(sut, rootViewName: "DynamicSelectField")
         #expect(field.options?.count ?? 0 == 4)
     }
     
@@ -92,7 +92,7 @@ open class SelectFieldImplementationTests: BaseTestClass {
         let sut = DynamicSelectField(field: field, formState: formState)
         
         // Then: View should be created successfully
-        Self.expectViewSubjectTypeContains(sut, rootViewName: "__NotDynamicSelectField__")
+        Self.expectViewSubjectTypeContains(sut, rootViewName: "DynamicSelectField")
     }
     
     // MARK: - Generic Select Field Tests
@@ -115,7 +115,7 @@ open class SelectFieldImplementationTests: BaseTestClass {
         }
         
         // Then: View should be created successfully
-        Self.expectViewSubjectTypeContains(sut, rootViewName: "__NotVStack__")
+        Self.expectViewSubjectTypeContains(sut, rootViewName: "VStack")
     }
     
     @Test @MainActor func testGenericSelectFieldShowsOptions() {
@@ -136,7 +136,7 @@ open class SelectFieldImplementationTests: BaseTestClass {
         }
         
         // Then: View should be created successfully
-        Self.expectViewSubjectTypeContains(sut, rootViewName: "__NotVStack__")
+        Self.expectViewSubjectTypeContains(sut, rootViewName: "VStack")
         #expect(field.options?.count ?? 0 == 4)
     }
     
@@ -174,7 +174,7 @@ open class SelectFieldImplementationTests: BaseTestClass {
         }
         
         // Then: View should be created successfully
-        Self.expectViewSubjectTypeContains(sut, rootViewName: "__NotVStack__")
+        Self.expectViewSubjectTypeContains(sut, rootViewName: "VStack")
     }
     
     // MARK: - Platform Semantic Layer Tests
@@ -201,7 +201,7 @@ open class SelectFieldImplementationTests: BaseTestClass {
         }
         
         // Then: View should be created successfully
-        Self.expectViewSubjectTypeContains(sut, rootViewName: "__NotVStack__")
+        Self.expectViewSubjectTypeContains(sut, rootViewName: "VStack")
     }
     
     // MARK: - Radio Button Tests
@@ -232,7 +232,7 @@ open class SelectFieldImplementationTests: BaseTestClass {
         }
         
         // Then: View should be created successfully
-        Self.expectViewSubjectTypeContains(sut, rootViewName: "__NotVStack__")
+        Self.expectViewSubjectTypeContains(sut, rootViewName: "VStack")
     }
     
     // MARK: - Edge Case Tests
@@ -252,7 +252,7 @@ open class SelectFieldImplementationTests: BaseTestClass {
         let sut = DynamicSelectField(field: field, formState: formState)
         
         // Then: View should be created successfully
-        Self.expectViewSubjectTypeContains(sut, rootViewName: "__NotDynamicSelectField__")
+        Self.expectViewSubjectTypeContains(sut, rootViewName: "DynamicSelectField")
     }
     
     @Test @MainActor func testSelectFieldWithSingleOption() {
@@ -270,7 +270,7 @@ open class SelectFieldImplementationTests: BaseTestClass {
         let sut = DynamicSelectField(field: field, formState: formState)
         
         // Then: View should be created successfully
-        Self.expectViewSubjectTypeContains(sut, rootViewName: "__NotDynamicSelectField__")
+        Self.expectViewSubjectTypeContains(sut, rootViewName: "DynamicSelectField")
     }
     
     @Test @MainActor func testSelectFieldWithManyOptions() {
@@ -289,7 +289,7 @@ open class SelectFieldImplementationTests: BaseTestClass {
         let sut = DynamicSelectField(field: field, formState: formState)
         
         // Then: View should be created successfully
-        Self.expectViewSubjectTypeContains(sut, rootViewName: "__NotDynamicSelectField__")
+        Self.expectViewSubjectTypeContains(sut, rootViewName: "DynamicSelectField")
     }
     
     // MARK: - Accessibility Tests
@@ -305,7 +305,7 @@ open class SelectFieldImplementationTests: BaseTestClass {
             .accessibilityHint("Choose an option from the dropdown")
         
         // Then: View should be created successfully
-        Self.expectViewSubjectTypeContains(sut, rootViewName: "__NotDynamicSelectField__")
+        Self.expectViewSubjectTypeContains(sut, rootViewName: "DynamicSelectField")
     }
     
     // MARK: - Data Binding Tests
@@ -328,7 +328,7 @@ open class SelectFieldImplementationTests: BaseTestClass {
         .pickerStyleMenuOrWheelForUnitTests()
         
         // Then: View should be created successfully
-        Self.expectViewSubjectTypeContains(sut, rootViewName: "__NotPicker__")
+        Self.expectViewSubjectTypeContains(sut, rootViewName: "Picker")
     }
     
     // MARK: - Validation Tests
@@ -350,6 +350,6 @@ open class SelectFieldImplementationTests: BaseTestClass {
         }
         
         // Then: View should be created successfully
-        Self.expectViewSubjectTypeContains(sut, rootViewName: "__NotDynamicSelectField__")
+        Self.expectViewSubjectTypeContains(sut, rootViewName: "DynamicSelectField")
     }
 }
