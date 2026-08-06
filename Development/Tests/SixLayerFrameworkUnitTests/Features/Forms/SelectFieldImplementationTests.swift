@@ -64,10 +64,10 @@ open class SelectFieldImplementationTests: BaseTestClass {
         let field = selectField
         
         // When: Creating dynamic select field
-        _ = DynamicSelectField(field: field, formState: formState)
+        let sut = DynamicSelectField(field: field, formState: formState)
         
         // Then: View should be created successfully
-        #expect(Bool(true), "view is non-optional")  // view is non-optional
+        Self.expectViewSubjectTypeContains(sut, rootViewName: "__NotDynamicSelectField__")
     }
     
     @Test @MainActor func testDynamicSelectFieldShowsOptions() {
@@ -76,10 +76,10 @@ open class SelectFieldImplementationTests: BaseTestClass {
         let field = selectField
         
         // When: Creating dynamic select field
-        _ = DynamicSelectField(field: field, formState: formState)
+        let sut = DynamicSelectField(field: field, formState: formState)
         
         // Then: View should be created successfully
-        #expect(Bool(true), "view is non-optional")  // view is non-optional
+        Self.expectViewSubjectTypeContains(sut, rootViewName: "__NotDynamicSelectField__")
         #expect(field.options?.count ?? 0 == 4)
     }
     
@@ -89,10 +89,10 @@ open class SelectFieldImplementationTests: BaseTestClass {
         let field = selectField
         
         // When: Creating dynamic select field
-        _ = DynamicSelectField(field: field, formState: formState)
+        let sut = DynamicSelectField(field: field, formState: formState)
         
         // Then: View should be created successfully
-        #expect(Bool(true), "view is non-optional")  // view is non-optional
+        Self.expectViewSubjectTypeContains(sut, rootViewName: "__NotDynamicSelectField__")
     }
     
     // MARK: - Generic Select Field Tests
@@ -103,7 +103,7 @@ open class SelectFieldImplementationTests: BaseTestClass {
         let field = dynamicSelectField
         
         // When: Creating generic select field view
-        _ = platformVStackContainer {
+        let sut = platformVStackContainer {
             Text(field.label)
             Picker(field.placeholder ?? "Select option", selection: .constant(field.defaultValue ?? "")) {
                 Text("Select an option").tag("")
@@ -115,7 +115,7 @@ open class SelectFieldImplementationTests: BaseTestClass {
         }
         
         // Then: View should be created successfully
-        #expect(Bool(true), "view is non-optional")  // view is non-optional
+        Self.expectViewSubjectTypeContains(sut, rootViewName: "__NotVStack__")
     }
     
     @Test @MainActor func testGenericSelectFieldShowsOptions() {
@@ -124,7 +124,7 @@ open class SelectFieldImplementationTests: BaseTestClass {
         let field = dynamicSelectField
         
         // When: Creating generic select field view
-        _ = platformVStackContainer {
+        let sut = platformVStackContainer {
             Text(field.label)
             Picker(field.placeholder ?? "Select option", selection: .constant(field.defaultValue ?? "")) {
                 Text("Select an option").tag("")
@@ -136,7 +136,7 @@ open class SelectFieldImplementationTests: BaseTestClass {
         }
         
         // Then: View should be created successfully
-        #expect(Bool(true), "view is non-optional")  // view is non-optional
+        Self.expectViewSubjectTypeContains(sut, rootViewName: "__NotVStack__")
         #expect(field.options?.count ?? 0 == 4)
     }
     
@@ -158,7 +158,7 @@ open class SelectFieldImplementationTests: BaseTestClass {
         
         // When: Creating theming integration select field
         // This should be interactive, not just text display
-        _ = platformVStackContainer {
+        let sut = platformVStackContainer {
             Text(field.label)
                 .font(typography.body)
             
@@ -174,7 +174,7 @@ open class SelectFieldImplementationTests: BaseTestClass {
         }
         
         // Then: View should be created successfully
-        #expect(Bool(true), "view is non-optional")  // view is non-optional
+        Self.expectViewSubjectTypeContains(sut, rootViewName: "__NotVStack__")
     }
     
     // MARK: - Platform Semantic Layer Tests
@@ -186,7 +186,7 @@ open class SelectFieldImplementationTests: BaseTestClass {
         
         // When: Creating platform semantic layer select field
         // This should be interactive, not just text display
-        _ = VStack(alignment: .leading, spacing: 8) {
+        let sut = VStack(alignment: .leading, spacing: 8) {
             Text(field.label)
                 .font(.subheadline)
                 .fontWeight(.medium)
@@ -201,7 +201,7 @@ open class SelectFieldImplementationTests: BaseTestClass {
         }
         
         // Then: View should be created successfully
-        #expect(Bool(true), "view is non-optional")  // view is non-optional
+        Self.expectViewSubjectTypeContains(sut, rootViewName: "__NotVStack__")
     }
     
     // MARK: - Radio Button Tests
@@ -213,7 +213,7 @@ open class SelectFieldImplementationTests: BaseTestClass {
         nonisolated(unsafe) var selectedOption = ""
         
         // When: Creating radio button group
-        _ = VStack(alignment: .leading) {
+        let sut = VStack(alignment: .leading) {
             Text("Choose Option")
                 .font(.subheadline)
                 .fontWeight(.medium)
@@ -232,7 +232,7 @@ open class SelectFieldImplementationTests: BaseTestClass {
         }
         
         // Then: View should be created successfully
-        #expect(Bool(true), "view is non-optional")  // view is non-optional
+        Self.expectViewSubjectTypeContains(sut, rootViewName: "__NotVStack__")
     }
     
     // MARK: - Edge Case Tests
@@ -249,10 +249,10 @@ open class SelectFieldImplementationTests: BaseTestClass {
         )
         
         // When: Creating select field with no options
-        _ = DynamicSelectField(field: field, formState: formState)
+        let sut = DynamicSelectField(field: field, formState: formState)
         
         // Then: View should be created successfully
-        #expect(Bool(true), "view is non-optional")  // view is non-optional
+        Self.expectViewSubjectTypeContains(sut, rootViewName: "__NotDynamicSelectField__")
     }
     
     @Test @MainActor func testSelectFieldWithSingleOption() {
@@ -267,10 +267,10 @@ open class SelectFieldImplementationTests: BaseTestClass {
         )
         
         // When: Creating select field with single option
-        _ = DynamicSelectField(field: field, formState: formState)
+        let sut = DynamicSelectField(field: field, formState: formState)
         
         // Then: View should be created successfully
-        #expect(Bool(true), "view is non-optional")  // view is non-optional
+        Self.expectViewSubjectTypeContains(sut, rootViewName: "__NotDynamicSelectField__")
     }
     
     @Test @MainActor func testSelectFieldWithManyOptions() {
@@ -286,10 +286,10 @@ open class SelectFieldImplementationTests: BaseTestClass {
         )
         
         // When: Creating select field with many options
-        _ = DynamicSelectField(field: field, formState: formState)
+        let sut = DynamicSelectField(field: field, formState: formState)
         
         // Then: View should be created successfully
-        #expect(Bool(true), "view is non-optional")  // view is non-optional
+        Self.expectViewSubjectTypeContains(sut, rootViewName: "__NotDynamicSelectField__")
     }
     
     // MARK: - Accessibility Tests
@@ -300,12 +300,12 @@ open class SelectFieldImplementationTests: BaseTestClass {
         let field = selectField
         
         // When: Creating select field with accessibility
-        _ = DynamicSelectField(field: field, formState: formState)
+        let sut = DynamicSelectField(field: field, formState: formState)
             .accessibilityLabel(field.label)
             .accessibilityHint("Choose an option from the dropdown")
         
         // Then: View should be created successfully
-        #expect(Bool(true), "view is non-optional")  // view is non-optional
+        Self.expectViewSubjectTypeContains(sut, rootViewName: "__NotDynamicSelectField__")
     }
     
     // MARK: - Data Binding Tests
@@ -317,7 +317,7 @@ open class SelectFieldImplementationTests: BaseTestClass {
         var selectedValue = ""
         
         // When: Creating select field with binding
-        _ = Picker(field.label, selection: Binding(
+        let sut = Picker(field.label, selection: Binding(
             get: { selectedValue },
             set: { selectedValue = $0 })) {
             Text("Select an option").tag("")
@@ -328,7 +328,7 @@ open class SelectFieldImplementationTests: BaseTestClass {
         .pickerStyleMenuOrWheelForUnitTests()
         
         // Then: View should be created successfully
-        #expect(Bool(true), "view is non-optional")  // view is non-optional
+        Self.expectViewSubjectTypeContains(sut, rootViewName: "__NotPicker__")
     }
     
     // MARK: - Validation Tests
@@ -339,7 +339,7 @@ open class SelectFieldImplementationTests: BaseTestClass {
         let field = selectField
         
         // When: Creating select field with validation
-        _ = platformVStackContainer {
+        let sut = platformVStackContainer {
             DynamicSelectField(field: field, formState: formState)
             
             if field.isRequired && (formState.getValue(for: field.id) as String? ?? "").isEmpty {
@@ -350,6 +350,6 @@ open class SelectFieldImplementationTests: BaseTestClass {
         }
         
         // Then: View should be created successfully
-        #expect(Bool(true), "view is non-optional")  // view is non-optional
+        Self.expectViewSubjectTypeContains(sut, rootViewName: "__NotDynamicSelectField__")
     }
 }
