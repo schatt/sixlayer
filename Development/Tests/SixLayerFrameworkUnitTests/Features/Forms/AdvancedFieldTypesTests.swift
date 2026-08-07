@@ -47,11 +47,10 @@ open class AdvancedFieldTypesTests: BaseTestClass {
     }
 
     @MainActor
-    private func expectHostableRed<V: View>(_ view: V, _ label: String) {
-        // Deliberate inverted hostability for #382 red — flip to isHostable for green.
+    private func expectHostable<V: View>(_ view: V, _ label: String) {
         #expect(
-            !PlatformContainerStructureAssertions.isHostable(view),
-            "Deliberate red #382: \(label) should be hostable"
+            PlatformContainerStructureAssertions.isHostable(view),
+            "\(label) should be hostable (#382)"
         )
     }
 
@@ -80,7 +79,7 @@ open class AdvancedFieldTypesTests: BaseTestClass {
     
         #expect(sut1.field.id == "richText")
         #expect(sut1.field.contentType == .richtext)
-        expectHostableRed(sut1, "RichTextEditorField")
+        expectHostable(sut1, "RichTextEditorField")
     }
     
     @Test @MainActor func testRichTextEditorFieldEditingMode() {
@@ -98,7 +97,7 @@ open class AdvancedFieldTypesTests: BaseTestClass {
     
         // Editing-mode toggle is @State; unit layer observes hostability + field wiring (#403 for VI).
         #expect(sut2.field.id == "richText")
-        expectHostableRed(sut2, "RichTextEditorField editing mode")
+        expectHostable(sut2, "RichTextEditorField editing mode")
     }
     
     @Test @MainActor func testRichTextEditorTextBinding() {
@@ -118,7 +117,7 @@ open class AdvancedFieldTypesTests: BaseTestClass {
         #expect(formState.getValue(for: field.id) == testText)
     
         #expect(sut3.field.id == "richText")
-        expectHostableRed(sut3, "RichTextEditorField binding")
+        expectHostable(sut3, "RichTextEditorField binding")
     }
     
     @Test @MainActor func testRichTextToolbarFormatting() {
@@ -131,7 +130,7 @@ open class AdvancedFieldTypesTests: BaseTestClass {
         // This tests the toolbar UI structure
     
         // Format actions are product placeholders; hostability is the unit-layer floor (#403).
-        expectHostableRed(sut4, "RichTextToolbar")
+        expectHostable(sut4, "RichTextToolbar")
     }
     
     @Test @MainActor func testRichTextPreview() {
@@ -143,7 +142,7 @@ open class AdvancedFieldTypesTests: BaseTestClass {
         // Test that preview displays the text correctly
     
         #expect(sut5.text == "This is **bold** and *italic* text")
-        expectHostableRed(sut5, "RichTextPreview")
+        expectHostable(sut5, "RichTextPreview")
     }
     
     // MARK: - Autocomplete Field Tests
@@ -176,7 +175,7 @@ open class AdvancedFieldTypesTests: BaseTestClass {
     
         #expect(sut6.field.id == "autocomplete")
         #expect(sut6.suggestions == ["Apple", "Banana", "Cherry", "Date", "Elderberry"])
-        expectHostableRed(sut6, "AutocompleteField")
+        expectHostable(sut6, "AutocompleteField")
     }
     
     @Test @MainActor func testAutocompleteFieldSuggestionFiltering() {
@@ -201,8 +200,8 @@ open class AdvancedFieldTypesTests: BaseTestClass {
     
         #expect(sut7.suggestions.count == 5)
         let filtered = AutocompleteSuggestionFiltering.filtered(suggestions: sut7.suggestions, query: "ap")
-        #expect(filtered == ["Apple"], "Deliberate red #382: filter 'ap' → Apple (stub returns [])")
-        expectHostableRed(sut7, "AutocompleteField filtering")
+        #expect(filtered == ["Apple"], "filter 'ap' should prefer Apple")
+        expectHostable(sut7, "AutocompleteField filtering")
     }
     
     @Test @MainActor func testAutocompleteFieldSuggestionSelection() {
@@ -227,7 +226,7 @@ open class AdvancedFieldTypesTests: BaseTestClass {
     
         // Selection UI needs VI/XCUI (#403); unit observes suggestions + hostability.
         #expect(sut8.suggestions.contains("Apple"))
-        expectHostableRed(sut8, "AutocompleteField selection")
+        expectHostable(sut8, "AutocompleteField selection")
     }
     
     @Test @MainActor func testAutocompleteSuggestionsDisplay() {
@@ -243,8 +242,8 @@ open class AdvancedFieldTypesTests: BaseTestClass {
         )
         // Test that suggestions are displayed correctly
     
-        #expect(sut9.suggestions == ["Apple", "Apricot", "Avocado"])
-        expectHostableRed(sut9, "AutocompleteSuggestions")
+        #expect(sut9.suggestions == suggestions)
+        expectHostable(sut9, "AutocompleteSuggestions")
     }
     
     // MARK: - File Upload Field Tests
@@ -281,7 +280,7 @@ open class AdvancedFieldTypesTests: BaseTestClass {
         #expect(sut10.field.contentType == .file)
         #expect(sut10.allowedTypes == allowedTypes)
         #expect(sut10.maxFileSize == maxFileSize)
-        expectHostableRed(sut10, "EnhancedFileUploadField")
+        expectHostable(sut10, "EnhancedFileUploadField")
     }
     
     @Test @MainActor func testFileUploadFieldAllowedTypes() {
@@ -307,7 +306,7 @@ open class AdvancedFieldTypesTests: BaseTestClass {
     
         #expect(sut11.allowedTypes == allowedTypes, "allowedTypes must be retained on the field")
         #expect(sut11.maxFileSize == nil)
-        expectHostableRed(sut11, "EnhancedFileUploadField allowedTypes")
+        expectHostable(sut11, "EnhancedFileUploadField allowedTypes")
     }
     
     @Test @MainActor func testFileUploadFieldMaxFileSize() {
@@ -333,7 +332,7 @@ open class AdvancedFieldTypesTests: BaseTestClass {
     
         #expect(sut12.maxFileSize == maxFileSize)
         #expect(sut12.allowedTypes == [UTType.image])
-        expectHostableRed(sut12, "EnhancedFileUploadField maxFileSize")
+        expectHostable(sut12, "EnhancedFileUploadField maxFileSize")
     }
     
     @Test @MainActor func testFileUploadAreaDragAndDrop() {
@@ -357,7 +356,7 @@ open class AdvancedFieldTypesTests: BaseTestClass {
         // Drop handling is a product placeholder (#403); unit observes configuration + hostability.
         #expect(sut13.allowedTypes == allowedTypes)
         #expect(sut13.maxFileSize == maxFileSize)
-        expectHostableRed(sut13, "FileUploadArea")
+        expectHostable(sut13, "FileUploadArea")
     }
     
     @Test func testFileInfoCreation() {
@@ -392,7 +391,7 @@ open class AdvancedFieldTypesTests: BaseTestClass {
     
         #expect(sut14.files.count == 2)
         #expect(sut14.files[0].name == "test1.pdf")
-        expectHostableRed(sut14, "FileList")
+        expectHostable(sut14, "FileList")
     }
     
     @Test @MainActor func testFileRowDisplay() {
@@ -406,7 +405,7 @@ open class AdvancedFieldTypesTests: BaseTestClass {
     
         #expect(sut15.file.name == "test.pdf")
         #expect(sut15.file.size == 1024)
-        expectHostableRed(sut15, "FileRow")
+        expectHostable(sut15, "FileRow")
     }
     
     // MARK: - Custom Field Component Tests
@@ -523,7 +522,7 @@ open class AdvancedFieldTypesTests: BaseTestClass {
         let sut16 = CustomFieldView(field: testField, formState: testFormState)
         let created = CustomFieldRegistry.shared.createComponent(for: testField, formState: testFormState)
         #expect(created is SliderField, "Registry must create SliderField for contentType.custom")
-        expectHostableRed(sut16, "CustomFieldView")
+        expectHostable(sut16, "CustomFieldView")
 
         // Clean up: reset registry for next test
         CustomFieldRegistry.shared.reset()
@@ -644,7 +643,7 @@ open class AdvancedFieldTypesTests: BaseTestClass {
     
         #expect(sut17.field.id == field.id)
         #expect(sut17.field.contentType == .multiDate)
-        expectHostableRed(sut17, "DynamicMultiDateField")
+        expectHostable(sut17, "DynamicMultiDateField")
     }
     
     @Test @MainActor func testMultiDateFieldStoresDatesAsArray() {
@@ -698,7 +697,7 @@ open class AdvancedFieldTypesTests: BaseTestClass {
         let sut18 = CustomFieldView(field: field, formState: formState)
         #expect(field.contentType == .multiDate)
     
-        expectHostableRed(sut18, "CustomFieldView multi-date")
+        expectHostable(sut18, "CustomFieldView multi-date")
     }
     
     @Test @MainActor func testDateRangeFieldInitialization() {
@@ -761,7 +760,7 @@ open class AdvancedFieldTypesTests: BaseTestClass {
         // Note: Actual fallback behavior will be tested in implementation
     
         #expect(sut19.field.contentType == .multiDate)
-        expectHostableRed(sut19, "DynamicMultiDateField fallback")
+        expectHostable(sut19, "DynamicMultiDateField fallback")
     }
     
     @Test @MainActor func testMultiDateFieldAccessibility() {
@@ -781,7 +780,7 @@ open class AdvancedFieldTypesTests: BaseTestClass {
     
         // View-tree a11y needs VI (#403); unit observes field + hostability.
         #expect(sut20.field.label == field.label)
-        expectHostableRed(sut20, "DynamicMultiDateField a11y")
+        expectHostable(sut20, "DynamicMultiDateField a11y")
     }
     
     @Test @MainActor func testMultiDateFieldIntegrationWithFormState() {
@@ -849,14 +848,13 @@ open class AdvancedFieldTypesTests: BaseTestClass {
             maxFileSize: 1024 * 1024
         )
         formState.setValue("shared", for: "richText")
-        // Deliberate inverted form-state contract for #382 red
         #expect(formState.getValue(for: "richText") as String? == "shared", "Shared form state should store values across components")
     
         #expect(richTextComponent.field.id == "richText")
         #expect(autocompleteComponent.suggestions == ["Option 1", "Option 2"])
         #expect(fileUploadComponent.allowedTypes == [UTType.image])
-        #expect(fileUploadComponent.maxFileSize == 1024 * 1024)
-        expectHostableRed(richTextComponent, "integration RichTextEditorField")
+        #expect(fileUploadComponent.maxFileSize == Int64(1_048_576))
+        expectHostable(richTextComponent, "integration RichTextEditorField")
     }
     
     // MARK: - Accessibility Tests
@@ -879,7 +877,7 @@ open class AdvancedFieldTypesTests: BaseTestClass {
     
         // Labels/hints on tree need VI (#403).
         #expect(sut22.field.label == "Rich Text Content")
-        expectHostableRed(sut22, "RichTextEditorField a11y")
+        expectHostable(sut22, "RichTextEditorField a11y")
     }
     
     @Test @MainActor func testAutocompleteFieldAccessibility() {
@@ -902,7 +900,7 @@ open class AdvancedFieldTypesTests: BaseTestClass {
         // Test that accessibility labels and hints are properly set
     
         #expect(sut23.suggestions.count == 2)
-        expectHostableRed(sut23, "AutocompleteField a11y")
+        expectHostable(sut23, "AutocompleteField a11y")
     }
     
     @Test @MainActor func testFileUploadFieldAccessibility() {
@@ -926,7 +924,7 @@ open class AdvancedFieldTypesTests: BaseTestClass {
         // Test that accessibility labels and hints are properly set
     
         #expect(sut24.allowedTypes == [UTType.image])
-        expectHostableRed(sut24, "EnhancedFileUploadField a11y")
+        expectHostable(sut24, "EnhancedFileUploadField a11y")
     }
     
     // MARK: - Error Handling Tests
@@ -954,7 +952,7 @@ open class AdvancedFieldTypesTests: BaseTestClass {
     
         // Rejection logic not implemented (#403); unit observes allow-list config.
         #expect(sut25.allowedTypes == [UTType.image])
-        expectHostableRed(sut25, "EnhancedFileUploadField invalid type config")
+        expectHostable(sut25, "EnhancedFileUploadField invalid type config")
     }
     
     @Test @MainActor func testFileUploadFieldFileSizeExceeded() {
@@ -980,7 +978,7 @@ open class AdvancedFieldTypesTests: BaseTestClass {
     
         // Enforcement not implemented (#403); unit observes maxFileSize config.
         #expect(sut26.maxFileSize == maxFileSize)
-        expectHostableRed(sut26, "EnhancedFileUploadField size config")
+        expectHostable(sut26, "EnhancedFileUploadField size config")
     }
     
     @Test @MainActor func testAutocompleteFieldEmptySuggestions() {
@@ -1005,7 +1003,7 @@ open class AdvancedFieldTypesTests: BaseTestClass {
     
         #expect(sut27.suggestions.isEmpty)
         #expect(AutocompleteSuggestionFiltering.filtered(suggestions: [], query: "x").isEmpty)
-        expectHostableRed(sut27, "AutocompleteField empty suggestions")
+        expectHostable(sut27, "AutocompleteField empty suggestions")
     }
     
     // MARK: - Performance Tests
@@ -1028,7 +1026,7 @@ open class AdvancedFieldTypesTests: BaseTestClass {
         // Test that large text is handled efficiently
     
         #expect(formState.getValue(for: field.id) as String? == largeText)
-        expectHostableRed(sut28, "RichTextEditorField large text")
+        expectHostable(sut28, "RichTextEditorField large text")
     }
     
     @Test @MainActor func testAutocompleteFieldPerformance() {
@@ -1053,8 +1051,8 @@ open class AdvancedFieldTypesTests: BaseTestClass {
     
         #expect(sut29.suggestions.count == 1000)
         let filtered = AutocompleteSuggestionFiltering.filtered(suggestions: largeSuggestions, query: "Option 1")
-        #expect(filtered.first == "Option 1", "Deliberate red #382: large list filter (stub returns [])")
-        expectHostableRed(sut29, "AutocompleteField large suggestions")
+        #expect(filtered.first == "Option 1", "large list filter should surface Option 1 first")
+        expectHostable(sut29, "AutocompleteField large suggestions")
     }
     
     @Test @MainActor func testFileUploadFieldPerformance() {
@@ -1078,7 +1076,7 @@ open class AdvancedFieldTypesTests: BaseTestClass {
         // Test that many files are handled efficiently
     
         #expect(sut30.field.id == "files")
-        expectHostableRed(sut30, "EnhancedFileUploadField many files")
+        expectHostable(sut30, "EnhancedFileUploadField many files")
     }
     
     // MARK: - Accessibility Behavior Tests
