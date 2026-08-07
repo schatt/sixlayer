@@ -15,8 +15,10 @@ import UniformTypeIdentifiers
  * and performance across all advanced field types. Includes platform-specific behavior testing and mock
  * capability detection for comprehensive validation.
  * 
- * METHODOLOGY: Field initialization and binding tests on the current host; capability
- * tri-state for a11y axes where fields branch on RuntimeCapabilityDetection (#251).
+ * METHODOLOGY: Unit-layer contracts — stored field/config props, formState round-trips,
+ * AutocompleteSuggestionFiltering, and isHostable (with HostedViewTestIsolationTrait).
+ * Editing-mode / drop / tree a11y interaction claims defer to #403 (VI/XCUI).
+ * Capability tri-state for a11y axes where fields branch on RuntimeCapabilityDetection (#251).
  */
 @Suite("Advanced Field Types", DefaultRuntimeCapabilityIsolationTrait(), HostedViewTestIsolationTrait())
 open class AdvancedFieldTypesTests: BaseTestClass {
@@ -126,8 +128,6 @@ open class AdvancedFieldTypesTests: BaseTestClass {
         
         // When
         let sut4 = RichTextToolbar(selectedText: .constant(selectedText))
-        // Test that formatting buttons are present
-        // This tests the toolbar UI structure
     
         // Format actions are product placeholders; hostability is the unit-layer floor (#403).
         expectHostable(sut4, "RichTextToolbar")
@@ -139,7 +139,6 @@ open class AdvancedFieldTypesTests: BaseTestClass {
         
         // When
         let sut5 = RichTextPreview(text: testText)
-        // Test that preview displays the text correctly
     
         #expect(sut5.text == "This is **bold** and *italic* text")
         expectHostable(sut5, "RichTextPreview")
@@ -195,8 +194,6 @@ open class AdvancedFieldTypesTests: BaseTestClass {
             formState: formState,
             suggestions: suggestions
         )
-        // Test that suggestions are properly filtered
-        // This tests the internal filtering logic
     
         #expect(sut7.suggestions.count == 5)
         let filtered = AutocompleteSuggestionFiltering.filtered(suggestions: sut7.suggestions, query: "ap")
@@ -222,7 +219,6 @@ open class AdvancedFieldTypesTests: BaseTestClass {
             formState: formState,
             suggestions: suggestions
         )
-        // Test that suggestion selection updates the form state
     
         // Selection UI needs VI/XCUI (#403); unit observes suggestions + hostability.
         #expect(sut8.suggestions.contains("Apple"))
@@ -240,7 +236,6 @@ open class AdvancedFieldTypesTests: BaseTestClass {
                 // Handle selection
             }
         )
-        // Test that suggestions are displayed correctly
     
         #expect(sut9.suggestions == suggestions)
         expectHostable(sut9, "AutocompleteSuggestions")
@@ -302,7 +297,6 @@ open class AdvancedFieldTypesTests: BaseTestClass {
             allowedTypes: allowedTypes,
             maxFileSize: nil
         )
-        // Test that allowed types are properly configured
     
         #expect(sut11.allowedTypes == allowedTypes, "allowedTypes must be retained on the field")
         #expect(sut11.maxFileSize == nil)
@@ -328,7 +322,6 @@ open class AdvancedFieldTypesTests: BaseTestClass {
             allowedTypes: [UTType.image],
             maxFileSize: maxFileSize
         )
-        // Test that max file size is properly configured
     
         #expect(sut12.maxFileSize == maxFileSize)
         #expect(sut12.allowedTypes == [UTType.image])
@@ -351,7 +344,6 @@ open class AdvancedFieldTypesTests: BaseTestClass {
                 selectedFiles = files
             }
         )
-        // Test that drag and drop area is properly configured
     
         // Drop handling is a product placeholder (#403); unit observes configuration + hostability.
         #expect(sut13.allowedTypes == allowedTypes)
@@ -387,7 +379,6 @@ open class AdvancedFieldTypesTests: BaseTestClass {
         // When
         let sut14 = FileList(files: files) { _ in
         }
-        // Test that file list displays files correctly
     
         #expect(sut14.files.count == 2)
         #expect(sut14.files[0].name == "test1.pdf")
@@ -401,7 +392,6 @@ open class AdvancedFieldTypesTests: BaseTestClass {
         // When
         let sut15 = FileRow(file: file) { _ in
         }
-        // Test that file row displays file information correctly
     
         #expect(sut15.file.name == "test.pdf")
         #expect(sut15.file.size == 1024)
@@ -462,8 +452,6 @@ open class AdvancedFieldTypesTests: BaseTestClass {
         // Then
         let isRegistered = registry.isRegistered("custom")
         #expect(isRegistered)
-
-        // Test that factory actually creates the component
         let testField = DynamicFormField(
             id: "test",
             contentType: .custom,
@@ -872,8 +860,6 @@ open class AdvancedFieldTypesTests: BaseTestClass {
         
         // When
         let sut22 = RichTextEditorField(field: field, formState: formState)
-        // Test that accessibility labels and hints are properly set
-        // This tests the accessibility implementation
     
         // Labels/hints on tree need VI (#403).
         #expect(sut22.field.label == "Rich Text Content")
@@ -897,7 +883,6 @@ open class AdvancedFieldTypesTests: BaseTestClass {
             formState: formState,
             suggestions: ["Option 1", "Option 2"]
         )
-        // Test that accessibility labels and hints are properly set
     
         #expect(sut23.suggestions.count == 2)
         expectHostable(sut23, "AutocompleteField a11y")
@@ -921,7 +906,6 @@ open class AdvancedFieldTypesTests: BaseTestClass {
             allowedTypes: [UTType.image],
             maxFileSize: 1024 * 1024
         )
-        // Test that accessibility labels and hints are properly set
     
         #expect(sut24.allowedTypes == [UTType.image])
         expectHostable(sut24, "EnhancedFileUploadField a11y")
@@ -948,7 +932,6 @@ open class AdvancedFieldTypesTests: BaseTestClass {
             allowedTypes: allowedTypes,
             maxFileSize: nil
         )
-        // Test that invalid file types are properly handled
     
         // Rejection logic not implemented (#403); unit observes allow-list config.
         #expect(sut25.allowedTypes == [UTType.image])
@@ -974,7 +957,6 @@ open class AdvancedFieldTypesTests: BaseTestClass {
             allowedTypes: [UTType.image],
             maxFileSize: maxFileSize
         )
-        // Test that file size limits are properly enforced
     
         // Enforcement not implemented (#403); unit observes maxFileSize config.
         #expect(sut26.maxFileSize == maxFileSize)
@@ -999,7 +981,6 @@ open class AdvancedFieldTypesTests: BaseTestClass {
             formState: formState,
             suggestions: emptySuggestions
         )
-        // Test that empty suggestions are handled gracefully
     
         #expect(sut27.suggestions.isEmpty)
         #expect(AutocompleteSuggestionFiltering.filtered(suggestions: [], query: "x").isEmpty)
@@ -1023,7 +1004,6 @@ open class AdvancedFieldTypesTests: BaseTestClass {
         // When
         formState.setValue(largeText, for: field.id)
         let sut28 = RichTextEditorField(field: field, formState: formState)
-        // Test that large text is handled efficiently
     
         #expect(formState.getValue(for: field.id) as String? == largeText)
         expectHostable(sut28, "RichTextEditorField large text")
@@ -1047,7 +1027,6 @@ open class AdvancedFieldTypesTests: BaseTestClass {
             formState: formState,
             suggestions: largeSuggestions
         )
-        // Test that large suggestion lists are handled efficiently
     
         #expect(sut29.suggestions.count == 1000)
         let filtered = AutocompleteSuggestionFiltering.filtered(suggestions: largeSuggestions, query: "Option 1")
@@ -1073,7 +1052,6 @@ open class AdvancedFieldTypesTests: BaseTestClass {
             allowedTypes: [UTType.image],
             maxFileSize: nil
         )
-        // Test that many files are handled efficiently
     
         #expect(sut30.field.id == "files")
         expectHostable(sut30, "EnhancedFileUploadField many files")
@@ -1136,15 +1114,11 @@ open class AdvancedFieldTypesTests: BaseTestClass {
         )
 
         let _ = DynamicFormState(configuration: DynamicFormConfiguration(id: "test", title: "Test Form"))
-
-        // Test that field types provide accessibility labels
         // Verify the field has proper configuration for VoiceOver
         #expect(field.id == "testField", "Field should have correct ID")
         #expect(field.label == "Test Field", "Field should have correct label")
         #expect(field.contentType == .text, "Field should have correct content type")
         #expect(RuntimeCapabilityDetection.supportsVoiceOver, "VoiceOver should be enabled")
-
-        // Test that form state is properly configured
         // formState is a non-optional class instance, so it exists if we reach here
 
         // Reset for next test
@@ -1167,15 +1141,11 @@ open class AdvancedFieldTypesTests: BaseTestClass {
         )
 
         let _ = DynamicFormState(configuration: DynamicFormConfiguration(id: "test", title: "Test Form"))
-
-        // Test that field types support keyboard navigation
         // Verify the field has proper configuration for Switch Control
         #expect(field.id == "testField", "Field should have correct ID")
         #expect(field.label == "Test Field", "Field should have correct label")
         #expect(field.contentType == .text, "Field should have correct content type")
         #expect(RuntimeCapabilityDetection.supportsSwitchControl, "Switch Control should be enabled")
-
-        // Test that form state is properly configured
         // formState is a non-optional class instance, so it exists if we reach here
 
         // Reset for next test
@@ -1198,8 +1168,6 @@ open class AdvancedFieldTypesTests: BaseTestClass {
         )
 
         let _ = DynamicFormState(configuration: DynamicFormConfiguration(id: "test", title: "Test Form"))
-
-        // Test that field types support gesture recognition
         // Verify the field has proper configuration for AssistiveTouch
         #expect(field.id == "testField", "Field should have correct ID")
         #expect(field.label == "Test Field", "Field should have correct label")
@@ -1208,8 +1176,6 @@ open class AdvancedFieldTypesTests: BaseTestClass {
             RuntimeCapabilityDetection.supportsAssistiveTouch
                 == PlatformTestUtilities.expectedAssistiveTouchAfterTestOverride(true)
         )
-
-        // Test that form state is properly configured
         // formState is a non-optional class instance, so it exists if we reach here
 
         // Reset for next test
@@ -1232,8 +1198,6 @@ open class AdvancedFieldTypesTests: BaseTestClass {
             RuntimeCapabilityDetection.supportsAssistiveTouch
                 == PlatformTestUtilities.expectedAssistiveTouchAfterTestOverride(true)
         )
-
-        // Test that field types handle multiple capabilities
         // Note: In a real implementation, these would check actual combined behavior
         // For now, we verify the capability detection works correctly for all capabilities
 
