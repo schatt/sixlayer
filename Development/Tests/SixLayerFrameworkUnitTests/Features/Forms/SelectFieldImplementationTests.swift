@@ -39,11 +39,10 @@ open class SelectFieldImplementationTests: BaseTestClass {
     }
 
     @MainActor
-    private func expectHostableRed<V: View>(_ view: V, _ label: String) {
-        // Deliberate inverted hostability for #382 red — flip to isHostable for green.
+    private func expectHostable<V: View>(_ view: V, _ label: String) {
         #expect(
-            !PlatformContainerStructureAssertions.isHostable(view),
-            "Deliberate red #382: \(label) should be hostable"
+            PlatformContainerStructureAssertions.isHostable(view),
+            "\(label) should be hostable (#382)"
         )
     }
 
@@ -59,7 +58,7 @@ open class SelectFieldImplementationTests: BaseTestClass {
         #expect(sut.field.contentType == .select)
         #expect(sut.field.label == "Choose Option")
         #expect(sut.field.isRequired == true)
-        expectHostableRed(sut, "DynamicSelectField")
+        expectHostable(sut, "DynamicSelectField")
     }
 
     @Test @MainActor func testDynamicSelectFieldRetainsOptions() {
@@ -69,7 +68,7 @@ open class SelectFieldImplementationTests: BaseTestClass {
         let sut = DynamicSelectField(field: field, formState: formState)
 
         #expect(sut.field.options == ["Option 1", "Option 2", "Option 3", "Option 4"])
-        expectHostableRed(sut, "DynamicSelectField options")
+        expectHostable(sut, "DynamicSelectField options")
     }
 
     @Test @MainActor func testDynamicSelectFieldFormStateBinding() {
@@ -81,7 +80,7 @@ open class SelectFieldImplementationTests: BaseTestClass {
 
         #expect(formState.getValue(for: field.id) as String? == "Option 2")
         #expect(sut.field.id == field.id)
-        expectHostableRed(sut, "DynamicSelectField binding")
+        expectHostable(sut, "DynamicSelectField binding")
     }
 
     @Test @MainActor func testDynamicSelectFieldEmptyOptions() {
@@ -97,7 +96,7 @@ open class SelectFieldImplementationTests: BaseTestClass {
         let sut = DynamicSelectField(field: field, formState: formState)
 
         #expect(sut.field.options?.isEmpty == true)
-        expectHostableRed(sut, "DynamicSelectField empty options")
+        expectHostable(sut, "DynamicSelectField empty options")
     }
 
     @Test @MainActor func testDynamicSelectFieldSingleOption() {
@@ -113,7 +112,7 @@ open class SelectFieldImplementationTests: BaseTestClass {
         let sut = DynamicSelectField(field: field, formState: formState)
 
         #expect(sut.field.options == ["Only Option"])
-        expectHostableRed(sut, "DynamicSelectField single option")
+        expectHostable(sut, "DynamicSelectField single option")
     }
 
     @Test @MainActor func testDynamicSelectFieldManyOptions() {
@@ -130,7 +129,7 @@ open class SelectFieldImplementationTests: BaseTestClass {
         let sut = DynamicSelectField(field: field, formState: formState)
 
         #expect(sut.field.options?.count == 50)
-        expectHostableRed(sut, "DynamicSelectField many options")
+        expectHostable(sut, "DynamicSelectField many options")
     }
 
     @Test @MainActor func testDynamicSelectFieldRequiredEmptyValue() {
@@ -141,7 +140,7 @@ open class SelectFieldImplementationTests: BaseTestClass {
 
         #expect(sut.field.isRequired == true)
         #expect((formState.getValue(for: field.id) as String? ?? "").isEmpty)
-        expectHostableRed(sut, "DynamicSelectField required empty")
+        expectHostable(sut, "DynamicSelectField required empty")
     }
 
     @Test @MainActor func testDynamicSelectFieldAccessibilityWiring() {
@@ -152,7 +151,7 @@ open class SelectFieldImplementationTests: BaseTestClass {
         let sut = DynamicSelectField(field: field, formState: formState)
 
         #expect(sut.field.label == "Choose Option")
-        expectHostableRed(sut, "DynamicSelectField a11y")
+        expectHostable(sut, "DynamicSelectField a11y")
     }
 
     // MARK: - DynamicRadioField
@@ -170,7 +169,7 @@ open class SelectFieldImplementationTests: BaseTestClass {
 
         #expect(sut.field.contentType == .radio)
         #expect(sut.field.options == ["Option A", "Option B", "Option C"])
-        expectHostableRed(sut, "DynamicRadioField")
+        expectHostable(sut, "DynamicRadioField")
     }
 
     @Test @MainActor func testDynamicRadioFieldFormStateBinding() {
@@ -186,6 +185,6 @@ open class SelectFieldImplementationTests: BaseTestClass {
         let sut = DynamicRadioField(field: field, formState: formState)
 
         #expect(formState.getValue(for: field.id) as String? == "Option B")
-        expectHostableRed(sut, "DynamicRadioField binding")
+        expectHostable(sut, "DynamicRadioField binding")
     }
 }
