@@ -257,11 +257,25 @@ public struct RichTextPreview: View {
 /// Pure filtering for ``AutocompleteField`` suggestions (unit-testable; #382 / #403).
 public enum AutocompleteSuggestionFiltering {
     /// Returns case-insensitive substring/prefix matches, prefix matches first, then alphabetical.
-    /// Deliberate red stub for #382: always empty until green implementation lands.
     public static func filtered(suggestions: [String], query: String) -> [String] {
-        _ = suggestions
-        _ = query
-        return []
+        guard !query.isEmpty else { return [] }
+        let queryLower = query.lowercased()
+        return suggestions
+            .filter { suggestion in
+                suggestion.localizedCaseInsensitiveContains(query)
+                    || suggestion.lowercased().hasPrefix(queryLower)
+            }
+            .sorted { suggestion1, suggestion2 in
+                let s1Lower = suggestion1.lowercased()
+                let s2Lower = suggestion2.lowercased()
+                if s1Lower.hasPrefix(queryLower) && !s2Lower.hasPrefix(queryLower) {
+                    return true
+                }
+                if !s1Lower.hasPrefix(queryLower) && s2Lower.hasPrefix(queryLower) {
+                    return false
+                }
+                return suggestion1 < suggestion2
+            }
     }
 }
 
