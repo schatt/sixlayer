@@ -1,355 +1,198 @@
 import Testing
-
-
 import SwiftUI
 @testable import SixLayerFramework
 
-private extension View {
-    /// `MenuPickerStyle` is unavailable on watchOS; use wheel in tests there.
-    func selectFieldImplementationTestPickerStyle() -> some View {
-        #if os(watchOS)
-        self.pickerStyle(.wheel)
-        #else
-        self.pickerStyle(.menu)
-        #endif
-    }
-}
-
-/// Tests for Select Field Implementation
-/// Tests that select fields are properly implemented with interactive Picker components
-/// NOTE: Not marked @MainActor on class to allow parallel execution
-@Suite("Select Field Implementation")
+/**
+ * BUSINESS PURPOSE: Select / radio fields render interactive pickers from DynamicFormField options
+ * and bind chosen values through DynamicFormState.
+ *
+ * TESTING SCOPE: Field wiring, options cardinality, formState round-trip, hostability.
+ * Picker chrome / a11y tree interaction → #403 (VI/XCUI).
+ *
+ * METHODOLOGY: Unit-layer contracts on DynamicSelectField / DynamicRadioField — not type-name
+ * theater or ad-hoc Picker trees built only inside the test (#382).
+ */
+@Suite("Select Field Implementation", HostedViewTestIsolationTrait())
 open class SelectFieldImplementationTests: BaseTestClass {
-    
-    // MARK: - Test Data
-    
-    private var selectField: DynamicFormField {
+
+
+    @MainActor
+    private func makeFormState() -> DynamicFormState {
+        DynamicFormState(
+            configuration: DynamicFormConfiguration(
+                id: "test-form",
+                title: "Test Form",
+                sections: []
+            )
+        )
+    }
+
+    @MainActor
+    private func expectHostable<V: View>(_ view: V, _ label: String) {
+        #expect(
+            PlatformContainerStructureAssertions.isHostable(view),
+            "\(label) should be hostable (#382)"
+        )
+    }
+
+    @MainActor
+    private func makeSelectField(
+        id: String = "test-select",
+        label: String = "Choose Option",
+        placeholder: String = "Select an option",
+        isRequired: Bool = true,
+        options: [String] = ["Option 1", "Option 2", "Option 3", "Option 4"]
+    ) -> DynamicFormField {
         DynamicFormField(
-            id: "test-select",
+            id: id,
             contentType: .select,
-            label: "Choose Option",
-            placeholder: "Select an option",
-            isRequired: true,
-            options: ["Option 1", "Option 2", "Option 3", "Option 4"],
+            label: label,
+            placeholder: placeholder,
+            isRequired: isRequired,
+            options: options,
             defaultValue: ""
         )
     }
-    
-    private var dynamicSelectField: DynamicFormField {
-        DynamicFormField(
-            id: "choose_option",
-            contentType: .select,
-            label: "Choose Option",
-            placeholder: "Select an option",
-            isRequired: true,
-            options: ["Option 1", "Option 2", "Option 3", "Option 4"]
-        )
-    }
-    
+
     @MainActor
-    private var formState: DynamicFormState {
-        let configuration = DynamicFormConfiguration(
-            id: "test-form",
-            title: "Test Form",
-            sections: []
+    private func makeRadioField(
+        options: [String] = ["Option A", "Option B", "Option C"]
+    ) -> DynamicFormField {
+        DynamicFormField(
+            id: "radio",
+            contentType: .radio,
+            label: "Choose Option",
+            options: options
         )
-        return DynamicFormState(configuration: configuration)
     }
-    
-    // MARK: - Dynamic Select Field Tests
-    
-    @Test @MainActor func testDynamicSelectFieldHasPicker() {
+
+    // MARK: - DynamicSelectField
+
+    @Test @MainActor func testDynamicSelectFieldWiresFieldAndHosts() {
         initializeTestConfig()
-        // Given: Dynamic select field
-        let field = selectField
-        
-        // When: Creating dynamic select field
-        _ = DynamicSelectField(field: field, formState: formState)
-        
-        // Then: View should be created successfully
-        #expect(Bool(true), "view is non-optional")  // view is non-optional
+        let field = makeSelectField()
+        let formState = makeFormState()
+        let sut = DynamicSelectField(field: field, formState: formState)
+
+        #expect(sut.field.id == "test-select")
+        #expect(sut.field.contentType == .select)
+        #expect(sut.field.label == "Choose Option")
+        #expect(sut.field.isRequired == true)
+        expectHostable(sut, "DynamicSelectField")
     }
-    
-    @Test @MainActor func testDynamicSelectFieldShowsOptions() {
+
+    @Test @MainActor func testDynamicSelectFieldRetainsOptions() {
         initializeTestConfig()
-        // Given: Dynamic select field with options
-        let field = selectField
-        
-        // When: Creating dynamic select field
-        _ = DynamicSelectField(field: field, formState: formState)
-        
-        // Then: View should be created successfully
-        #expect(Bool(true), "view is non-optional")  // view is non-optional
-        #expect(field.options?.count ?? 0 == 4)
+        let field = makeSelectField()
+        let formState = makeFormState()
+        let sut = DynamicSelectField(field: field, formState: formState)
+
+        #expect(sut.field.options == ["Option 1", "Option 2", "Option 3", "Option 4"])
+        expectHostable(sut, "DynamicSelectField options")
     }
-    
-    @Test @MainActor func testDynamicSelectFieldHasDefaultSelection() {
+
+    @Test @MainActor func testDynamicSelectFieldFormStateBinding() {
         initializeTestConfig()
-        // Given: Dynamic select field with default selection
-        let field = selectField
-        
-        // When: Creating dynamic select field
-        _ = DynamicSelectField(field: field, formState: formState)
-        
-        // Then: View should be created successfully
-        #expect(Bool(true), "view is non-optional")  // view is non-optional
+        let field = makeSelectField()
+        let formState = makeFormState()
+        formState.setValue("Option 2", for: field.id)
+        let sut = DynamicSelectField(field: field, formState: formState)
+
+        #expect(formState.getValue(for: field.id) as String? == "Option 2")
+        #expect(sut.field.id == field.id)
+        expectHostable(sut, "DynamicSelectField binding")
     }
-    
-    // MARK: - Generic Select Field Tests
-    
-    @Test @MainActor func testGenericSelectFieldHasPicker() {
+
+    @Test @MainActor func testDynamicSelectFieldEmptyOptions() {
         initializeTestConfig()
-        // Given: Generic select field
-        let field = dynamicSelectField
-        
-        // When: Creating generic select field view
-        _ = platformVStackContainer {
-            Text(field.label)
-            Picker(field.placeholder ?? "Select option", selection: .constant(field.defaultValue ?? "")) {
-                Text("Select an option").tag("")
-                ForEach(field.options ?? [], id: \.self) { option in
-                    Text(option).tag(option)
-                }
-            }
-            .pickerStyleMenuOrWheelForUnitTests()
-        }
-        
-        // Then: View should be created successfully
-        #expect(Bool(true), "view is non-optional")  // view is non-optional
-    }
-    
-    @Test @MainActor func testGenericSelectFieldShowsOptions() {
-        initializeTestConfig()
-        // Given: Generic select field with options
-        let field = dynamicSelectField
-        
-        // When: Creating generic select field view
-        _ = platformVStackContainer {
-            Text(field.label)
-            Picker(field.placeholder ?? "Select option", selection: .constant(field.defaultValue ?? "")) {
-                Text("Select an option").tag("")
-                ForEach(field.options ?? [], id: \.self) { option in
-                    Text(option).tag(option)
-                }
-            }
-            .pickerStyleMenuOrWheelForUnitTests()
-        }
-        
-        // Then: View should be created successfully
-        #expect(Bool(true), "view is non-optional")  // view is non-optional
-        #expect(field.options?.count ?? 0 == 4)
-    }
-    
-    // MARK: - Theming Integration Tests
-    
-    @Test @MainActor func testThemingIntegrationSelectFieldShouldBeInteractive() {
-        initializeTestConfig()
-        // Given: Theming integration select field
-        let field = selectField
-        let formData: [String: Any] = [:]
-        let colors = ColorScheme.light
-        let typography = TypographySystem(
-            platform: .ios,
-            accessibility: AccessibilitySettings()
-        )
-        
-        // Verify colors are properly configured
-        #expect(colors == ColorScheme.light, "Colors should be light scheme")
-        
-        // When: Creating theming integration select field
-        // This should be interactive, not just text display
-        _ = platformVStackContainer {
-            Text(field.label)
-                .font(typography.body)
-            
-            Picker(field.placeholder ?? "Select option", selection: Binding(
-                get: { formData[field.id] as? String ?? "" },
-                set: { _ in })) {
-                Text("Select an option").tag("")
-                ForEach(field.options ?? [], id: \.self) { option in
-                    Text(option).tag(option)
-                }
-            }
-            .pickerStyleMenuOrWheelForUnitTests()
-        }
-        
-        // Then: View should be created successfully
-        #expect(Bool(true), "view is non-optional")  // view is non-optional
-    }
-    
-    // MARK: - Platform Semantic Layer Tests
-    
-    @Test @MainActor func testPlatformSemanticLayerSelectFieldShouldBeInteractive() {
-        initializeTestConfig()
-        // Given: Platform semantic layer select field
-        let field = dynamicSelectField
-        
-        // When: Creating platform semantic layer select field
-        // This should be interactive, not just text display
-        _ = VStack(alignment: .leading, spacing: 8) {
-            Text(field.label)
-                .font(.subheadline)
-                .fontWeight(.medium)
-            
-            Picker(field.placeholder ?? "Select option", selection: .constant(field.defaultValue ?? "")) {
-                Text("Select an option").tag("")
-                ForEach(field.options ?? [], id: \.self) { option in
-                    Text(option).tag(option)
-                }
-            }
-            .pickerStyleMenuOrWheelForUnitTests()
-        }
-        
-        // Then: View should be created successfully
-        #expect(Bool(true), "view is non-optional")  // view is non-optional
-    }
-    
-    // MARK: - Radio Button Tests
-    
-    @Test @MainActor func testRadioButtonGroupImplementation() {
-        initializeTestConfig()
-        // Given: Radio button group
-        let options = ["Option A", "Option B", "Option C"]
-        nonisolated(unsafe) var selectedOption = ""
-        
-        // When: Creating radio button group
-        _ = VStack(alignment: .leading) {
-            Text("Choose Option")
-                .font(.subheadline)
-                .fontWeight(.medium)
-            
-            ForEach(options, id: \.self) { option in
-                platformHStackContainer {
-                    Button(action: {
-                        selectedOption = option
-                    }) {
-                        Image(systemName: selectedOption == option ? "largecircle.fill.circle" : "circle")
-                            .foregroundColor(selectedOption == option ? .blue : .gray)
-                    }
-                    Text(option)
-                }
-            }
-        }
-        
-        // Then: View should be created successfully
-        #expect(Bool(true), "view is non-optional")  // view is non-optional
-    }
-    
-    // MARK: - Edge Case Tests
-    
-    @Test @MainActor func testSelectFieldWithNoOptions() {
-        initializeTestConfig()
-        // Given: Select field with no options
-        let field = DynamicFormField(
+        let field = makeSelectField(
             id: "empty-select",
-            contentType: .select,
             label: "Empty Select",
             placeholder: "No options available",
+            isRequired: false,
             options: []
         )
-        
-        // When: Creating select field with no options
-        _ = DynamicSelectField(field: field, formState: formState)
-        
-        // Then: View should be created successfully
-        #expect(Bool(true), "view is non-optional")  // view is non-optional
+        let formState = makeFormState()
+        let sut = DynamicSelectField(field: field, formState: formState)
+
+        #expect(sut.field.options?.isEmpty == true)
+        expectHostable(sut, "DynamicSelectField empty options")
     }
-    
-    @Test @MainActor func testSelectFieldWithSingleOption() {
+
+    @Test @MainActor func testDynamicSelectFieldSingleOption() {
         initializeTestConfig()
-        // Given: Select field with single option
-        let field = DynamicFormField(
+        let field = makeSelectField(
             id: "single-select",
-            contentType: .select,
             label: "Single Option",
             placeholder: "Only one choice",
             options: ["Only Option"]
         )
-        
-        // When: Creating select field with single option
-        _ = DynamicSelectField(field: field, formState: formState)
-        
-        // Then: View should be created successfully
-        #expect(Bool(true), "view is non-optional")  // view is non-optional
+        let formState = makeFormState()
+        let sut = DynamicSelectField(field: field, formState: formState)
+
+        #expect(sut.field.options == ["Only Option"])
+        expectHostable(sut, "DynamicSelectField single option")
     }
-    
-    @Test @MainActor func testSelectFieldWithManyOptions() {
+
+    @Test @MainActor func testDynamicSelectFieldManyOptions() {
         initializeTestConfig()
-        // Given: Select field with many options
         let manyOptions = (1...50).map { "Option \($0)" }
-        let field = DynamicFormField(
+        let field = makeSelectField(
             id: "many-select",
-            contentType: .select,
             label: "Many Options",
             placeholder: "Choose from many options",
             options: manyOptions
         )
-        
-        // When: Creating select field with many options
-        _ = DynamicSelectField(field: field, formState: formState)
-        
-        // Then: View should be created successfully
-        #expect(Bool(true), "view is non-optional")  // view is non-optional
+        let formState = makeFormState()
+        let sut = DynamicSelectField(field: field, formState: formState)
+
+        #expect(sut.field.options?.count == 50)
+        expectHostable(sut, "DynamicSelectField many options")
     }
-    
-    // MARK: - Accessibility Tests
-    
-    @Test @MainActor func testSelectFieldAccessibility() {
+
+    @Test @MainActor func testDynamicSelectFieldRequiredEmptyValue() {
         initializeTestConfig()
-        // Given: Select field with accessibility considerations
-        let field = selectField
-        
-        // When: Creating select field with accessibility
-        _ = DynamicSelectField(field: field, formState: formState)
-            .accessibilityLabel(field.label)
-            .accessibilityHint("Choose an option from the dropdown")
-        
-        // Then: View should be created successfully
-        #expect(Bool(true), "view is non-optional")  // view is non-optional
+        let field = makeSelectField()
+        let formState = makeFormState()
+        let sut = DynamicSelectField(field: field, formState: formState)
+
+        #expect(sut.field.isRequired == true)
+        #expect((formState.getValue(for: field.id) as String? ?? "").isEmpty)
+        expectHostable(sut, "DynamicSelectField required empty")
     }
-    
-    // MARK: - Data Binding Tests
-    
-    @Test @MainActor func testSelectFieldDataBinding() {
+
+    @Test @MainActor func testDynamicSelectFieldAccessibilityWiring() {
         initializeTestConfig()
-        // Given: Select field with data binding
-        let field = selectField
-        var selectedValue = ""
-        
-        // When: Creating select field with binding
-        _ = Picker(field.label, selection: Binding(
-            get: { selectedValue },
-            set: { selectedValue = $0 })) {
-            Text("Select an option").tag("")
-            ForEach(field.options ?? [], id: \.self) { option in
-                Text(option).tag(option)
-            }
-        }
-        .pickerStyleMenuOrWheelForUnitTests()
-        
-        // Then: View should be created successfully
-        #expect(Bool(true), "view is non-optional")  // view is non-optional
+        // Label/hint tree observation needs VI (#403); unit observes field label + hostability.
+        let field = makeSelectField()
+        let formState = makeFormState()
+        let sut = DynamicSelectField(field: field, formState: formState)
+
+        #expect(sut.field.label == "Choose Option")
+        expectHostable(sut, "DynamicSelectField a11y")
     }
-    
-    // MARK: - Validation Tests
-    
-    @Test @MainActor func testSelectFieldValidation() {
+
+    // MARK: - DynamicRadioField
+
+    @Test @MainActor func testDynamicRadioFieldWiresOptions() {
         initializeTestConfig()
-        // Given: Required select field
-        let field = selectField
-        
-        // When: Creating select field with validation
-        _ = platformVStackContainer {
-            DynamicSelectField(field: field, formState: formState)
-            
-            if field.isRequired && (formState.getValue(for: field.id) as String? ?? "").isEmpty {
-                Text("This field is required")
-                    .font(.caption)
-                    .foregroundColor(.red)
-            }
-        }
-        
-        // Then: View should be created successfully
-        #expect(Bool(true), "view is non-optional")  // view is non-optional
+        let field = makeRadioField()
+        let formState = makeFormState()
+        let sut = DynamicRadioField(field: field, formState: formState)
+
+        #expect(sut.field.contentType == .radio)
+        #expect(sut.field.options == ["Option A", "Option B", "Option C"])
+        expectHostable(sut, "DynamicRadioField")
+    }
+
+    @Test @MainActor func testDynamicRadioFieldFormStateBinding() {
+        initializeTestConfig()
+        let field = makeRadioField()
+        let formState = makeFormState()
+        formState.setValue("Option B", for: field.id)
+        let sut = DynamicRadioField(field: field, formState: formState)
+
+        #expect(formState.getValue(for: field.id) as String? == "Option B")
+        expectHostable(sut, "DynamicRadioField binding")
     }
 }
