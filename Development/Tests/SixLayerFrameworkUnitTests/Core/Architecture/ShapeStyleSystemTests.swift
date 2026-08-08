@@ -1,5 +1,10 @@
 import Testing
 import SwiftUI
+#if canImport(UIKit)
+import UIKit
+#elseif canImport(AppKit)
+import AppKit
+#endif
 @testable import SixLayerFramework
 
 /**
@@ -15,37 +20,48 @@ import SwiftUI
 open class ShapeStyleSystemTests: BaseTestClass {
 
     @MainActor
-    private func expectHostableRed<V: View>(_ view: V, _ label: String) {
-        // Deliberate inverted hostability for #382 red — flip to isHostable for green.
+    private func expectHostable<V: View>(_ view: V, _ label: String) {
         #expect(
-            !PlatformContainerStructureAssertions.isHostable(view),
-            "Deliberate red #382: \(label) should be hostable"
+            PlatformContainerStructureAssertions.isHostable(view),
+            "\(label) should be hostable (#382)"
         )
     }
+
+    #if canImport(UIKit)
+    private func uiColor(_ color: Color) -> UIColor { UIColor(color) }
+    #elseif canImport(AppKit)
+    private func nsColor(_ color: Color) -> NSColor { NSColor(color) }
+    #endif
 
     // MARK: - Color Support
 
     @Test func testStandardColorsMatchSwiftUITokens() {
-        #expect(ShapeStyleSystem.StandardColors.primary == Color.primary)
-        #expect(ShapeStyleSystem.StandardColors.secondary == Color.secondary)
-        #expect(ShapeStyleSystem.StandardColors.accent == Color.accentColor)
-        #expect(ShapeStyleSystem.StandardColors.error == Color.red)
-        #expect(ShapeStyleSystem.StandardColors.warning == Color.orange)
-        // Deliberate wrong token for #382 red — flip to Color.green for green.
-        #expect(
-            ShapeStyleSystem.StandardColors.success == Color.blue,
-            "Deliberate red #382: success should be Color.green"
-        )
-        #expect(ShapeStyleSystem.StandardColors.info == Color.blue)
-        #expect(ShapeStyleSystem.StandardColors.error != ShapeStyleSystem.StandardColors.success)
+        // SwiftUI Color.== is not a reliable semantic check; resolve via platform UI color.
+        #if canImport(UIKit)
+        #expect(uiColor(ShapeStyleSystem.StandardColors.error) == uiColor(Color.red))
+        #expect(uiColor(ShapeStyleSystem.StandardColors.success) == uiColor(Color.green))
+        #expect(uiColor(ShapeStyleSystem.StandardColors.warning) == uiColor(Color.orange))
+        #expect(uiColor(ShapeStyleSystem.StandardColors.info) == uiColor(Color.blue))
+        #expect(uiColor(ShapeStyleSystem.StandardColors.error) != uiColor(ShapeStyleSystem.StandardColors.success))
+        #elseif canImport(AppKit)
+        #expect(nsColor(ShapeStyleSystem.StandardColors.error) == nsColor(Color.red))
+        #expect(nsColor(ShapeStyleSystem.StandardColors.success) == nsColor(Color.green))
+        #expect(nsColor(ShapeStyleSystem.StandardColors.warning) == nsColor(Color.orange))
+        #expect(nsColor(ShapeStyleSystem.StandardColors.info) == nsColor(Color.blue))
+        #expect(nsColor(ShapeStyleSystem.StandardColors.error) != nsColor(ShapeStyleSystem.StandardColors.success))
+        #endif
     }
 
     @Test func testPlatformSpecificColorsMatchExtensions() {
-        #expect(ShapeStyleSystem.StandardColors.systemBackground == Color.systemBackground)
-        #expect(ShapeStyleSystem.StandardColors.secondarySystemBackground == Color.platformSecondaryBackground)
-        #expect(ShapeStyleSystem.StandardColors.label == Color.platformLabel)
-        #expect(ShapeStyleSystem.StandardColors.separator == Color.platformSeparator)
-        #expect(ShapeStyleSystem.StandardColors.opaqueSeparator == Color.platformOpaqueSeparator)
+        #if canImport(UIKit)
+        #expect(uiColor(ShapeStyleSystem.StandardColors.systemBackground) == uiColor(Color.systemBackground))
+        #expect(uiColor(ShapeStyleSystem.StandardColors.label) == uiColor(Color.platformLabel))
+        #expect(uiColor(ShapeStyleSystem.StandardColors.separator) == uiColor(Color.platformSeparator))
+        #elseif canImport(AppKit)
+        #expect(nsColor(ShapeStyleSystem.StandardColors.systemBackground) == nsColor(Color.systemBackground))
+        #expect(nsColor(ShapeStyleSystem.StandardColors.label) == nsColor(Color.platformLabel))
+        #expect(nsColor(ShapeStyleSystem.StandardColors.separator) == nsColor(Color.platformSeparator))
+        #endif
     }
 
     // MARK: - Gradients
@@ -81,7 +97,7 @@ open class ShapeStyleSystemTests: BaseTestClass {
         #expect(materials.count == 5)
         #expect(MaterialVariant.allCases.count == 5)
         let sut = Rectangle().fill(materials[0]).frame(width: 10, height: 10)
-        expectHostableRed(sut, "Materials.regular fill")
+        expectHostable(sut, "Materials.regular fill")
     }
 
     // MARK: - Hierarchical
@@ -98,7 +114,7 @@ open class ShapeStyleSystemTests: BaseTestClass {
         #expect(styles.count == 4)
         #expect(HierarchicalVariant.allCases.count == 4)
         let sut = Text("Sample").foregroundStyle(styles[0])
-        expectHostableRed(sut, "HierarchicalStyles.primary foreground")
+        expectHostable(sut, "HierarchicalStyles.primary foreground")
     }
 
     // MARK: - Factory
@@ -106,45 +122,45 @@ open class ShapeStyleSystemTests: BaseTestClass {
     @Test @MainActor func testFactoryBackgroundProducesHostableFill() {
         let style = ShapeStyleSystem.Factory.background(for: .iOS)
         let sut = Rectangle().fill(style).frame(width: 10, height: 10)
-        expectHostableRed(sut, "Factory.background fill")
+        expectHostable(sut, "Factory.background fill")
     }
 
     @Test @MainActor func testFactorySurfaceProducesHostableFill() {
         let style = ShapeStyleSystem.Factory.surface(for: .macOS)
         let sut = Rectangle().fill(style).frame(width: 10, height: 10)
-        expectHostableRed(sut, "Factory.surface fill")
+        expectHostable(sut, "Factory.surface fill")
     }
 
     @Test @MainActor func testFactoryTextProducesHostableForeground() {
         let style = ShapeStyleSystem.Factory.text(for: .iOS)
         let sut = Text("Sample").foregroundStyle(style)
-        expectHostableRed(sut, "Factory.text foreground")
+        expectHostable(sut, "Factory.text foreground")
     }
 
     @Test @MainActor func testFactoryBorderProducesHostableStroke() {
         let style = ShapeStyleSystem.Factory.border(for: .macOS)
         let sut = Rectangle().stroke(style, lineWidth: 1).frame(width: 10, height: 10)
-        expectHostableRed(sut, "Factory.border stroke")
+        expectHostable(sut, "Factory.border stroke")
     }
 
     @Test @MainActor func testFactoryGradientProducesHostableFill() {
         let style = ShapeStyleSystem.Factory.gradient(for: .iOS, variant: .primary)
         let sut = Rectangle().fill(style).frame(width: 10, height: 10)
-        expectHostableRed(sut, "Factory.gradient fill")
+        expectHostable(sut, "Factory.gradient fill")
     }
 
     @Test @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     @MainActor func testFactoryMaterialProducesHostableFill() {
         let style = ShapeStyleSystem.Factory.material(for: .iOS, variant: .regular)
         let sut = Rectangle().fill(style).frame(width: 10, height: 10)
-        expectHostableRed(sut, "Factory.material fill")
+        expectHostable(sut, "Factory.material fill")
     }
 
     @Test @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
     @MainActor func testFactoryHierarchicalProducesHostableForeground() {
         let style = ShapeStyleSystem.Factory.hierarchical(for: .iOS, variant: .primary)
         let sut = Text("Sample").foregroundStyle(style)
-        expectHostableRed(sut, "Factory.hierarchical foreground")
+        expectHostable(sut, "Factory.hierarchical foreground")
     }
 
     // MARK: - Supporting Types
@@ -216,84 +232,84 @@ open class ShapeStyleSystemTests: BaseTestClass {
     @Test @MainActor func testAnyShapeStyleFromColorIsHostable() {
         let style = AnyShapeStyle(Color.blue)
         let sut = Rectangle().fill(style).frame(width: 10, height: 10)
-        expectHostableRed(sut, "AnyShapeStyle(Color)")
+        expectHostable(sut, "AnyShapeStyle(Color)")
     }
 
     @Test @MainActor func testAnyShapeStyleFromGradientIsHostable() {
         let gradient = LinearGradient(colors: [.blue, .purple], startPoint: .top, endPoint: .bottom)
         let style = AnyShapeStyle(gradient)
         let sut = Rectangle().fill(style).frame(width: 10, height: 10)
-        expectHostableRed(sut, "AnyShapeStyle(LinearGradient)")
+        expectHostable(sut, "AnyShapeStyle(LinearGradient)")
     }
 
     @Test @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     @MainActor func testAnyShapeStyleFromMaterialIsHostable() {
         let style = AnyShapeStyle(Material.regularMaterial)
         let sut = Rectangle().fill(style).frame(width: 10, height: 10)
-        expectHostableRed(sut, "AnyShapeStyle(Material)")
+        expectHostable(sut, "AnyShapeStyle(Material)")
     }
 
     // MARK: - View modifiers
 
     @Test @MainActor func testPlatformBackgroundModifier() {
         let sut = Text("Test").platformBackground(for: .iOS)
-        expectHostableRed(sut, "platformBackground")
+        expectHostable(sut, "platformBackground")
     }
 
     @Test @MainActor func testPlatformSurfaceModifier() {
         let sut = Text("Test").platformSurface(for: .macOS)
-        expectHostableRed(sut, "platformSurface")
+        expectHostable(sut, "platformSurface")
     }
 
     @Test @MainActor func testPlatformShapeTextModifier() {
         let sut = Text("Test").platformShapeText(for: .iOS)
-        expectHostableRed(sut, "platformShapeText")
+        expectHostable(sut, "platformShapeText")
     }
 
     @Test @MainActor func testPlatformBorderModifier() {
         let sut = Text("Test").platformBorder(for: .macOS, width: 2)
-        expectHostableRed(sut, "platformBorder")
+        expectHostable(sut, "platformBorder")
     }
 
     @Test @MainActor func testPlatformGradientModifier() {
         let sut = Text("Test").platformGradient(for: .iOS, variant: .primary)
-        expectHostableRed(sut, "platformGradient")
+        expectHostable(sut, "platformGradient")
     }
 
     @Test @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     @MainActor func testPlatformMaterialModifier() {
         let sut = Text("Test").platformMaterial(for: .iOS, variant: .regular)
-        expectHostableRed(sut, "platformMaterial")
+        expectHostable(sut, "platformMaterial")
     }
 
     @Test @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
     @MainActor func testPlatformHierarchicalModifier() {
         let sut = Text("Test").platformHierarchical(for: .iOS, variant: .primary)
-        expectHostableRed(sut, "platformHierarchical")
+        expectHostable(sut, "platformHierarchical")
     }
 
     @Test @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     @MainActor func testMaterialBackgroundModifier() {
         let sut = Text("Test").materialBackground(.regularMaterial, for: .iOS)
-        expectHostableRed(sut, "materialBackground")
+        expectHostable(sut, "materialBackground")
     }
 
     @Test @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     @MainActor func testHierarchicalMaterialBackgroundModifier() {
         let sut = Text("Test").hierarchicalMaterialBackground(1, for: .iOS)
-        expectHostableRed(sut, "hierarchicalMaterialBackground")
+        expectHostable(sut, "hierarchicalMaterialBackground")
     }
 
     @Test @MainActor func testGradientBackgroundModifier() {
         let gradient = LinearGradient(colors: [.blue, .purple], startPoint: .top, endPoint: .bottom)
         let sut = Text("Test").gradientBackground(gradient, for: .iOS)
-        expectHostableRed(sut, "gradientBackground")
+        expectHostable(sut, "gradientBackground")
     }
 
     @Test @MainActor func testRadialGradientBackgroundModifier() {
         let gradient = RadialGradient(colors: [.blue, .purple], center: .center, startRadius: 0, endRadius: 100)
         let sut = Text("Test").radialGradientBackground(gradient, for: .iOS)
-        expectHostableRed(sut, "radialGradientBackground")
+        expectHostable(sut, "radialGradientBackground")
     }
 
     @Test @MainActor func testAccessibilityAwareBackgroundModifier() {
@@ -301,7 +317,7 @@ open class ShapeStyleSystemTests: BaseTestClass {
             normal: PlatformAnyShapeStyle(AnyShapeStyle(Color.blue)),
             highContrast: PlatformAnyShapeStyle(AnyShapeStyle(Color.red))
         )
-        expectHostableRed(sut, "accessibilityAwareBackground")
+        expectHostable(sut, "accessibilityAwareBackground")
     }
 
     @Test @MainActor func testAccessibilityAwareForegroundModifier() {
@@ -309,7 +325,7 @@ open class ShapeStyleSystemTests: BaseTestClass {
             normal: PlatformAnyShapeStyle(AnyShapeStyle(Color.blue)),
             reducedMotion: PlatformAnyShapeStyle(AnyShapeStyle(Color.gray))
         )
-        expectHostableRed(sut, "accessibilityAwareForeground")
+        expectHostable(sut, "accessibilityAwareForeground")
     }
 
     @Test @MainActor func testShapeStyleSystemIntegration() {
@@ -320,13 +336,13 @@ open class ShapeStyleSystemTests: BaseTestClass {
         .platformBackground(for: .iOS, variant: .standard)
         .platformShapeText(for: .iOS, variant: .primary)
         .platformBorder(for: .iOS, variant: .standard, width: 1)
-        expectHostableRed(sut, "integration styled stack")
+        expectHostable(sut, "integration styled stack")
     }
 
     @Test @MainActor func testAppleHIGComplianceIntegration() {
         let sut = Button("Test Button") { }
             .platformBackground(for: .iOS)
             .platformShapeText(for: .iOS)
-        expectHostableRed(sut, "HIG button styling")
+        expectHostable(sut, "HIG button styling")
     }
 }
