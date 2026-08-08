@@ -50,41 +50,55 @@ open class ShapeStyleSystemTests: BaseTestClass {
 
     // MARK: - Gradients
 
-    @Test func testGradientsAreLinearGradients() {
-        let gradients: [LinearGradient] = [
+    @Test func testGradientsExposeExpectedVariants() {
+        // focus is RadialGradient; others are LinearGradient — bind by concrete type.
+        let linear: [LinearGradient] = [
             ShapeStyleSystem.Gradients.primary,
             ShapeStyleSystem.Gradients.secondary,
             ShapeStyleSystem.Gradients.background,
             ShapeStyleSystem.Gradients.success,
             ShapeStyleSystem.Gradients.warning,
-            ShapeStyleSystem.Gradients.error,
-            ShapeStyleSystem.Gradients.focus
+            ShapeStyleSystem.Gradients.error
         ]
-        #expect(gradients.count == 7)
+        let focus: RadialGradient = ShapeStyleSystem.Gradients.focus
+        _ = focus
+        #expect(linear.count == 6)
         #expect(GradientVariant.allCases.count == 7)
     }
 
     // MARK: - Materials
 
     @Test @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-    func testMaterialsMatchSwiftUIMaterials() {
-        #expect(ShapeStyleSystem.Materials.regular == Material.regularMaterial)
-        #expect(ShapeStyleSystem.Materials.thick == Material.thickMaterial)
-        #expect(ShapeStyleSystem.Materials.thin == Material.thinMaterial)
-        #expect(ShapeStyleSystem.Materials.ultraThin == Material.ultraThinMaterial)
-        #expect(ShapeStyleSystem.Materials.ultraThick == Material.ultraThickMaterial)
+    @MainActor func testMaterialsProduceHostableFills() {
+        // Material is not Equatable; observe factory variants + hostability.
+        let materials: [Material] = [
+            ShapeStyleSystem.Materials.regular,
+            ShapeStyleSystem.Materials.thick,
+            ShapeStyleSystem.Materials.thin,
+            ShapeStyleSystem.Materials.ultraThin,
+            ShapeStyleSystem.Materials.ultraThick
+        ]
+        #expect(materials.count == 5)
         #expect(MaterialVariant.allCases.count == 5)
+        let sut = Rectangle().fill(materials[0]).frame(width: 10, height: 10)
+        expectHostableRed(sut, "Materials.regular fill")
     }
 
     // MARK: - Hierarchical
 
     @Test @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
-    func testHierarchicalStylesMatchSwiftUI() {
-        #expect(ShapeStyleSystem.HierarchicalStyles.primary == HierarchicalShapeStyle.primary)
-        #expect(ShapeStyleSystem.HierarchicalStyles.secondary == HierarchicalShapeStyle.secondary)
-        #expect(ShapeStyleSystem.HierarchicalStyles.tertiary == HierarchicalShapeStyle.tertiary)
-        #expect(ShapeStyleSystem.HierarchicalStyles.quaternary == HierarchicalShapeStyle.quaternary)
+    @MainActor func testHierarchicalStylesProduceHostableForeground() {
+        // HierarchicalShapeStyle is not Equatable; bind concrete types + host.
+        let styles: [HierarchicalShapeStyle] = [
+            ShapeStyleSystem.HierarchicalStyles.primary,
+            ShapeStyleSystem.HierarchicalStyles.secondary,
+            ShapeStyleSystem.HierarchicalStyles.tertiary,
+            ShapeStyleSystem.HierarchicalStyles.quaternary
+        ]
+        #expect(styles.count == 4)
         #expect(HierarchicalVariant.allCases.count == 4)
+        let sut = Text("Sample").foregroundStyle(styles[0])
+        expectHostableRed(sut, "HierarchicalStyles.primary foreground")
     }
 
     // MARK: - Factory
