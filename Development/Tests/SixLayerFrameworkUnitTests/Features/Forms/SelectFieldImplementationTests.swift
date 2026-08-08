@@ -15,17 +15,6 @@ import SwiftUI
 @Suite("Select Field Implementation", HostedViewTestIsolationTrait())
 open class SelectFieldImplementationTests: BaseTestClass {
 
-    private var selectField: DynamicFormField {
-        DynamicFormField(
-            id: "test-select",
-            contentType: .select,
-            label: "Choose Option",
-            placeholder: "Select an option",
-            isRequired: true,
-            options: ["Option 1", "Option 2", "Option 3", "Option 4"],
-            defaultValue: ""
-        )
-    }
 
     @MainActor
     private func makeFormState() -> DynamicFormState {
@@ -46,11 +35,42 @@ open class SelectFieldImplementationTests: BaseTestClass {
         )
     }
 
+    @MainActor
+    private func makeSelectField(
+        id: String = "test-select",
+        label: String = "Choose Option",
+        placeholder: String = "Select an option",
+        isRequired: Bool = true,
+        options: [String] = ["Option 1", "Option 2", "Option 3", "Option 4"]
+    ) -> DynamicFormField {
+        DynamicFormField(
+            id: id,
+            contentType: .select,
+            label: label,
+            placeholder: placeholder,
+            isRequired: isRequired,
+            options: options,
+            defaultValue: ""
+        )
+    }
+
+    @MainActor
+    private func makeRadioField(
+        options: [String] = ["Option A", "Option B", "Option C"]
+    ) -> DynamicFormField {
+        DynamicFormField(
+            id: "radio",
+            contentType: .radio,
+            label: "Choose Option",
+            options: options
+        )
+    }
+
     // MARK: - DynamicSelectField
 
     @Test @MainActor func testDynamicSelectFieldWiresFieldAndHosts() {
         initializeTestConfig()
-        let field = selectField
+        let field = makeSelectField()
         let formState = makeFormState()
         let sut = DynamicSelectField(field: field, formState: formState)
 
@@ -63,7 +83,7 @@ open class SelectFieldImplementationTests: BaseTestClass {
 
     @Test @MainActor func testDynamicSelectFieldRetainsOptions() {
         initializeTestConfig()
-        let field = selectField
+        let field = makeSelectField()
         let formState = makeFormState()
         let sut = DynamicSelectField(field: field, formState: formState)
 
@@ -73,7 +93,7 @@ open class SelectFieldImplementationTests: BaseTestClass {
 
     @Test @MainActor func testDynamicSelectFieldFormStateBinding() {
         initializeTestConfig()
-        let field = selectField
+        let field = makeSelectField()
         let formState = makeFormState()
         formState.setValue("Option 2", for: field.id)
         let sut = DynamicSelectField(field: field, formState: formState)
@@ -85,11 +105,11 @@ open class SelectFieldImplementationTests: BaseTestClass {
 
     @Test @MainActor func testDynamicSelectFieldEmptyOptions() {
         initializeTestConfig()
-        let field = DynamicFormField(
+        let field = makeSelectField(
             id: "empty-select",
-            contentType: .select,
             label: "Empty Select",
             placeholder: "No options available",
+            isRequired: false,
             options: []
         )
         let formState = makeFormState()
@@ -101,9 +121,8 @@ open class SelectFieldImplementationTests: BaseTestClass {
 
     @Test @MainActor func testDynamicSelectFieldSingleOption() {
         initializeTestConfig()
-        let field = DynamicFormField(
+        let field = makeSelectField(
             id: "single-select",
-            contentType: .select,
             label: "Single Option",
             placeholder: "Only one choice",
             options: ["Only Option"]
@@ -118,9 +137,8 @@ open class SelectFieldImplementationTests: BaseTestClass {
     @Test @MainActor func testDynamicSelectFieldManyOptions() {
         initializeTestConfig()
         let manyOptions = (1...50).map { "Option \($0)" }
-        let field = DynamicFormField(
+        let field = makeSelectField(
             id: "many-select",
-            contentType: .select,
             label: "Many Options",
             placeholder: "Choose from many options",
             options: manyOptions
@@ -134,7 +152,7 @@ open class SelectFieldImplementationTests: BaseTestClass {
 
     @Test @MainActor func testDynamicSelectFieldRequiredEmptyValue() {
         initializeTestConfig()
-        let field = selectField
+        let field = makeSelectField()
         let formState = makeFormState()
         let sut = DynamicSelectField(field: field, formState: formState)
 
@@ -146,7 +164,7 @@ open class SelectFieldImplementationTests: BaseTestClass {
     @Test @MainActor func testDynamicSelectFieldAccessibilityWiring() {
         initializeTestConfig()
         // Label/hint tree observation needs VI (#403); unit observes field label + hostability.
-        let field = selectField
+        let field = makeSelectField()
         let formState = makeFormState()
         let sut = DynamicSelectField(field: field, formState: formState)
 
@@ -158,12 +176,7 @@ open class SelectFieldImplementationTests: BaseTestClass {
 
     @Test @MainActor func testDynamicRadioFieldWiresOptions() {
         initializeTestConfig()
-        let field = DynamicFormField(
-            id: "radio",
-            contentType: .radio,
-            label: "Choose Option",
-            options: ["Option A", "Option B", "Option C"]
-        )
+        let field = makeRadioField()
         let formState = makeFormState()
         let sut = DynamicRadioField(field: field, formState: formState)
 
@@ -174,12 +187,7 @@ open class SelectFieldImplementationTests: BaseTestClass {
 
     @Test @MainActor func testDynamicRadioFieldFormStateBinding() {
         initializeTestConfig()
-        let field = DynamicFormField(
-            id: "radio",
-            contentType: .radio,
-            label: "Choose Option",
-            options: ["Option A", "Option B", "Option C"]
-        )
+        let field = makeRadioField()
         let formState = makeFormState()
         formState.setValue("Option B", for: field.id)
         let sut = DynamicRadioField(field: field, formState: formState)
