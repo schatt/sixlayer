@@ -1,250 +1,173 @@
 import Testing
-
-
 import SwiftUI
 @testable import SixLayerFramework
 
-/// Comprehensive test suite for ShapeStyle System
-/// Tests all ShapeStyle types: Color, Gradient, Material, HierarchicalShapeStyle
-@Suite("Shape Style System")
+/**
+ * BUSINESS PURPOSE: ShapeStyleSystem exposes platform-aware colors, gradients, materials,
+ * hierarchical styles, and view modifiers for consistent HIG-aligned styling.
+ *
+ * TESTING SCOPE: Color identity vs SwiftUI tokens, factory AnyShapeStyle production,
+ * variant enum coverage, hostability of modifier outputs.
+ *
+ * METHODOLOGY: Unit contracts — no Bool(true) / non-optional theater (#382).
+ */
+@Suite("Shape Style System", HostedViewTestIsolationTrait())
 open class ShapeStyleSystemTests: BaseTestClass {
-    
-    // MARK: - Color Support Tests
-    
-    @Test func testStandardColorsExist() {
-        // Given: StandardColors struct
-        // When: Accessing color properties
-        // Then: All standard colors should be available (non-optional types, so just verify they exist)
-        let _ = ShapeStyleSystem.StandardColors.primary
-        let _ = ShapeStyleSystem.StandardColors.secondary
-        let _ = ShapeStyleSystem.StandardColors.accent
-        let _ = ShapeStyleSystem.StandardColors.background
-        let _ = ShapeStyleSystem.StandardColors.surface
-        let _ = ShapeStyleSystem.StandardColors.text
-        let _ = ShapeStyleSystem.StandardColors.textSecondary
-        let _ = ShapeStyleSystem.StandardColors.border
-        let _ = ShapeStyleSystem.StandardColors.error
-        let _ = ShapeStyleSystem.StandardColors.warning
-        let _ = ShapeStyleSystem.StandardColors.success
-        let _ = ShapeStyleSystem.StandardColors.info
-        #expect(Bool(true), "All standard colors should be accessible")
+
+    @MainActor
+    private func expectHostableRed<V: View>(_ view: V, _ label: String) {
+        // Deliberate inverted hostability for #382 red — flip to isHostable for green.
+        #expect(
+            !PlatformContainerStructureAssertions.isHostable(view),
+            "Deliberate red #382: \(label) should be hostable"
+        )
     }
-    
-    @Test func testPlatformSpecificColors() {
-        // Given: Platform-specific color access
-        // When: Accessing platform colors
-        // Then: Should have platform-appropriate colors
-        #if canImport(UIKit)
-        // Colors are non-optional, so we just verify they exist by accessing them
-        _ = ShapeStyleSystem.StandardColors.systemBackground
-        _ = ShapeStyleSystem.StandardColors.secondarySystemBackground
-        _ = ShapeStyleSystem.StandardColors.tertiarySystemBackground
-        _ = ShapeStyleSystem.StandardColors.systemGroupedBackground
-        _ = ShapeStyleSystem.StandardColors.secondarySystemGroupedBackground
-        _ = ShapeStyleSystem.StandardColors.tertiarySystemGroupedBackground
-        _ = ShapeStyleSystem.StandardColors.label
-        _ = ShapeStyleSystem.StandardColors.secondaryLabel
-        _ = ShapeStyleSystem.StandardColors.tertiaryLabel
-        _ = ShapeStyleSystem.StandardColors.quaternaryLabel
-        _ = ShapeStyleSystem.StandardColors.separator
-        _ = ShapeStyleSystem.StandardColors.opaqueSeparator
-        #endif
+
+    // MARK: - Color Support
+
+    @Test func testStandardColorsMatchSwiftUITokens() {
+        #expect(ShapeStyleSystem.StandardColors.primary == Color.primary)
+        #expect(ShapeStyleSystem.StandardColors.secondary == Color.secondary)
+        #expect(ShapeStyleSystem.StandardColors.accent == Color.accentColor)
+        #expect(ShapeStyleSystem.StandardColors.error == Color.red)
+        #expect(ShapeStyleSystem.StandardColors.warning == Color.orange)
+        // Deliberate wrong token for #382 red — flip to Color.green for green.
+        #expect(
+            ShapeStyleSystem.StandardColors.success == Color.blue,
+            "Deliberate red #382: success should be Color.green"
+        )
+        #expect(ShapeStyleSystem.StandardColors.info == Color.blue)
+        #expect(ShapeStyleSystem.StandardColors.error != ShapeStyleSystem.StandardColors.success)
     }
-    
-    // MARK: - Gradient Support Tests
-    
-    @Test func testGradientCreation() {
-        // Given: Gradients struct
-        // When: Accessing gradient properties
-        // Then: All gradients should be available (non-optional types, so just verify they exist)
-        let _ = ShapeStyleSystem.Gradients.primary
-        let _ = ShapeStyleSystem.Gradients.secondary
-        let _ = ShapeStyleSystem.Gradients.background
-        let _ = ShapeStyleSystem.Gradients.success
-        let _ = ShapeStyleSystem.Gradients.warning
-        let _ = ShapeStyleSystem.Gradients.error
-        let _ = ShapeStyleSystem.Gradients.focus
-        #expect(Bool(true), "All gradients should be accessible")
+
+    @Test func testPlatformSpecificColorsMatchExtensions() {
+        #expect(ShapeStyleSystem.StandardColors.systemBackground == Color.systemBackground)
+        #expect(ShapeStyleSystem.StandardColors.secondarySystemBackground == Color.platformSecondaryBackground)
+        #expect(ShapeStyleSystem.StandardColors.label == Color.platformLabel)
+        #expect(ShapeStyleSystem.StandardColors.separator == Color.platformSeparator)
+        #expect(ShapeStyleSystem.StandardColors.opaqueSeparator == Color.platformOpaqueSeparator)
     }
-    
-    @Test func testGradientTypes() {
-        // Given: Gradient instances
-        // When: Checking gradient properties
-        // Then: Should have valid gradient definitions (non-optional types, so just verify they exist)
-        let _ = ShapeStyleSystem.Gradients.primary
-        let _ = ShapeStyleSystem.Gradients.secondary
-        let _ = ShapeStyleSystem.Gradients.background
-        let _ = ShapeStyleSystem.Gradients.success
-        let _ = ShapeStyleSystem.Gradients.warning
-        let _ = ShapeStyleSystem.Gradients.error
-        let _ = ShapeStyleSystem.Gradients.focus
-        #expect(Bool(true), "All gradient types should be accessible")
+
+    // MARK: - Gradients
+
+    @Test func testGradientsAreLinearGradients() {
+        let gradients: [LinearGradient] = [
+            ShapeStyleSystem.Gradients.primary,
+            ShapeStyleSystem.Gradients.secondary,
+            ShapeStyleSystem.Gradients.background,
+            ShapeStyleSystem.Gradients.success,
+            ShapeStyleSystem.Gradients.warning,
+            ShapeStyleSystem.Gradients.error,
+            ShapeStyleSystem.Gradients.focus
+        ]
+        #expect(gradients.count == 7)
+        #expect(GradientVariant.allCases.count == 7)
     }
-    
-    // MARK: - Material Support Tests
-    
+
+    // MARK: - Materials
+
     @Test @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-    func testMaterialTypes() {
-        // Given: Materials struct
-        // When: Accessing material properties
-        // Then: All materials should be available (non-optional types, so just verify they exist)
-        let _ = ShapeStyleSystem.Materials.regular
-        let _ = ShapeStyleSystem.Materials.thick
-        let _ = ShapeStyleSystem.Materials.thin
-        let _ = ShapeStyleSystem.Materials.ultraThin
-        let _ = ShapeStyleSystem.Materials.ultraThick
-        #expect(Bool(true), "All materials should be accessible")
+    func testMaterialsMatchSwiftUIMaterials() {
+        #expect(ShapeStyleSystem.Materials.regular == Material.regularMaterial)
+        #expect(ShapeStyleSystem.Materials.thick == Material.thickMaterial)
+        #expect(ShapeStyleSystem.Materials.thin == Material.thinMaterial)
+        #expect(ShapeStyleSystem.Materials.ultraThin == Material.ultraThinMaterial)
+        #expect(ShapeStyleSystem.Materials.ultraThick == Material.ultraThickMaterial)
+        #expect(MaterialVariant.allCases.count == 5)
     }
-    
+
+    // MARK: - Hierarchical
+
+    @Test @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+    func testHierarchicalStylesMatchSwiftUI() {
+        #expect(ShapeStyleSystem.HierarchicalStyles.primary == HierarchicalShapeStyle.primary)
+        #expect(ShapeStyleSystem.HierarchicalStyles.secondary == HierarchicalShapeStyle.secondary)
+        #expect(ShapeStyleSystem.HierarchicalStyles.tertiary == HierarchicalShapeStyle.tertiary)
+        #expect(ShapeStyleSystem.HierarchicalStyles.quaternary == HierarchicalShapeStyle.quaternary)
+        #expect(HierarchicalVariant.allCases.count == 4)
+    }
+
+    // MARK: - Factory
+
+    @Test @MainActor func testFactoryBackgroundProducesHostableFill() {
+        let style = ShapeStyleSystem.Factory.background(for: .iOS)
+        let sut = Rectangle().fill(style).frame(width: 10, height: 10)
+        expectHostableRed(sut, "Factory.background fill")
+    }
+
+    @Test @MainActor func testFactorySurfaceProducesHostableFill() {
+        let style = ShapeStyleSystem.Factory.surface(for: .macOS)
+        let sut = Rectangle().fill(style).frame(width: 10, height: 10)
+        expectHostableRed(sut, "Factory.surface fill")
+    }
+
+    @Test @MainActor func testFactoryTextProducesHostableForeground() {
+        let style = ShapeStyleSystem.Factory.text(for: .iOS)
+        let sut = Text("Sample").foregroundStyle(style)
+        expectHostableRed(sut, "Factory.text foreground")
+    }
+
+    @Test @MainActor func testFactoryBorderProducesHostableStroke() {
+        let style = ShapeStyleSystem.Factory.border(for: .macOS)
+        let sut = Rectangle().stroke(style, lineWidth: 1).frame(width: 10, height: 10)
+        expectHostableRed(sut, "Factory.border stroke")
+    }
+
+    @Test @MainActor func testFactoryGradientProducesHostableFill() {
+        let style = ShapeStyleSystem.Factory.gradient(for: .iOS, variant: .primary)
+        let sut = Rectangle().fill(style).frame(width: 10, height: 10)
+        expectHostableRed(sut, "Factory.gradient fill")
+    }
+
     @Test @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-    func testMaterialTypesCorrect() {
-        // Given: Material instances
-        // When: Checking material properties
-        // Then: Should have valid material definitions (non-optional types, so just verify they exist)
-        let _ = ShapeStyleSystem.Materials.regular
-        let _ = ShapeStyleSystem.Materials.thick
-        let _ = ShapeStyleSystem.Materials.thin
-        let _ = ShapeStyleSystem.Materials.ultraThin
-        let _ = ShapeStyleSystem.Materials.ultraThick
-        #expect(Bool(true), "All material types should be accessible")
+    @MainActor func testFactoryMaterialProducesHostableFill() {
+        let style = ShapeStyleSystem.Factory.material(for: .iOS, variant: .regular)
+        let sut = Rectangle().fill(style).frame(width: 10, height: 10)
+        expectHostableRed(sut, "Factory.material fill")
     }
-    
-    // MARK: - Hierarchical ShapeStyle Support Tests
-    
+
     @Test @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
-    func testHierarchicalStyles() {
-        // Given: HierarchicalStyles struct
-        // When: Accessing hierarchical style properties
-        // Then: All hierarchical styles should be available (non-optional types, so just verify they exist)
-        let _ = ShapeStyleSystem.HierarchicalStyles.primary
-        let _ = ShapeStyleSystem.HierarchicalStyles.secondary
-        let _ = ShapeStyleSystem.HierarchicalStyles.tertiary
-        let _ = ShapeStyleSystem.HierarchicalStyles.quaternary
-        #expect(Bool(true), "All hierarchical styles should be accessible")
+    @MainActor func testFactoryHierarchicalProducesHostableForeground() {
+        let style = ShapeStyleSystem.Factory.hierarchical(for: .iOS, variant: .primary)
+        let sut = Text("Sample").foregroundStyle(style)
+        expectHostableRed(sut, "Factory.hierarchical foreground")
     }
-    
-    @Test @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
-    func testHierarchicalStylesTypes() {
-        // Given: Hierarchical style instances
-        // When: Checking hierarchical style properties
-        // Then: Should have valid hierarchical style definitions (non-optional types, so just verify they exist)
-        let _ = ShapeStyleSystem.HierarchicalStyles.primary
-        let _ = ShapeStyleSystem.HierarchicalStyles.secondary
-        let _ = ShapeStyleSystem.HierarchicalStyles.tertiary
-        let _ = ShapeStyleSystem.HierarchicalStyles.quaternary
-        #expect(Bool(true), "All hierarchical style types should be accessible")
-    }
-    
-    // MARK: - Factory Tests
-    
-    @Test func testFactoryBackgroundCreation() {
-        // Given: Factory and platform
-        // When: Creating background style
-        // Then: Should return appropriate background style
-        let _ = ShapeStyleSystem.Factory.background(for: .iOS)
-        #expect(Bool(true), "background is non-optional")  // background is non-optional
-    }
-    
-    @Test func testFactorySurfaceCreation() {
-        // Given: Factory and platform
-        // When: Creating surface style
-        // Then: Should return appropriate surface style
-        let _ = ShapeStyleSystem.Factory.surface(for: .macOS)
-        #expect(Bool(true), "surface is non-optional")  // surface is non-optional
-    }
-    
-    @Test func testFactoryTextCreation() {
-        // Given: Factory and platform
-        // When: Creating text style
-        // Then: Should return appropriate text style
-        let _ = ShapeStyleSystem.Factory.text(for: .iOS)
-        #expect(Bool(true), "text is non-optional")  // text is non-optional
-    }
-    
-    @Test func testFactoryBorderCreation() {
-        // Given: Factory and platform
-        // When: Creating border style
-        // Then: Should return appropriate border style
-        let _ = ShapeStyleSystem.Factory.border(for: .macOS)
-        #expect(Bool(true), "border is non-optional")  // border is non-optional
-    }
-    
-    @Test func testFactoryGradientCreation() {
-        // Given: Factory and platform
-        // When: Creating gradient style
-        // Then: Should return appropriate gradient style
-        let _ = ShapeStyleSystem.Factory.gradient(for: .iOS, variant: .primary)
-        #expect(Bool(true), "gradient is non-optional")  // gradient is non-optional
-    }
-    
-    @Test @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-    func testFactoryMaterialCreation() {
-        // Given: Factory and platform
-        // When: Creating material style
-        // Then: Should return appropriate material style
-        let _ = ShapeStyleSystem.Factory.material(for: .iOS, variant: .regular)
-        #expect(Bool(true), "material is non-optional")  // material is non-optional
-    }
-    
-    @Test @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
-    func testFactoryHierarchicalCreation() {
-        // Given: Factory and platform
-        // When: Creating hierarchical style
-        // Then: Should return appropriate hierarchical style
-        let _ = ShapeStyleSystem.Factory.hierarchical(for: .iOS, variant: .primary)
-        #expect(Bool(true), "hierarchical is non-optional")  // hierarchical is non-optional
-    }
-    
-    // MARK: - Supporting Types Tests
-    
+
+    // MARK: - Supporting Types
+
     @Test func testBackgroundVariantEnum() {
-        // Given: BackgroundVariant enum
-        // When: Accessing all cases
-        // Then: Should have all expected cases
         let cases = BackgroundVariant.allCases
         #expect(cases.contains(.standard))
         #expect(cases.contains(.grouped))
         #expect(cases.contains(.elevated))
         #expect(cases.contains(.transparent))
     }
-    
+
     @Test func testSurfaceVariantEnum() {
-        // Given: SurfaceVariant enum
-        // When: Accessing all cases
-        // Then: Should have all expected cases
         let cases = SurfaceVariant.allCases
         #expect(cases.contains(.standard))
         #expect(cases.contains(.elevated))
         #expect(cases.contains(.card))
         #expect(cases.contains(.modal))
     }
-    
+
     @Test func testTextVariantEnum() {
-        // Given: TextVariant enum
-        // When: Accessing all cases
-        // Then: Should have all expected cases
         let cases = TextVariant.allCases
         #expect(cases.contains(.primary))
         #expect(cases.contains(.secondary))
         #expect(cases.contains(.tertiary))
         #expect(cases.contains(.quaternary))
     }
-    
+
     @Test func testBorderVariantEnum() {
-        // Given: BorderVariant enum
-        // When: Accessing all cases
-        // Then: Should have all expected cases
         let cases = BorderVariant.allCases
         #expect(cases.contains(.standard))
         #expect(cases.contains(.subtle))
         #expect(cases.contains(.prominent))
         #expect(cases.contains(.none))
     }
-    
+
     @Test func testGradientVariantEnum() {
-        // Given: GradientVariant enum
-        // When: Accessing all cases
-        // Then: Should have all expected cases
         let cases = GradientVariant.allCases
         #expect(cases.contains(.primary))
         #expect(cases.contains(.secondary))
@@ -254,12 +177,9 @@ open class ShapeStyleSystemTests: BaseTestClass {
         #expect(cases.contains(.error))
         #expect(cases.contains(.focus))
     }
-    
+
     @Test @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     func testMaterialVariantEnum() {
-        // Given: MaterialVariant enum
-        // When: Accessing all cases
-        // Then: Should have all expected cases
         let cases = MaterialVariant.allCases
         #expect(cases.contains(.regular))
         #expect(cases.contains(.thick))
@@ -267,261 +187,132 @@ open class ShapeStyleSystemTests: BaseTestClass {
         #expect(cases.contains(.ultraThin))
         #expect(cases.contains(.ultraThick))
     }
-    
+
     @Test @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
     func testHierarchicalVariantEnum() {
-        // Given: HierarchicalVariant enum
-        // When: Accessing all cases
-        // Then: Should have all expected cases
         let cases = HierarchicalVariant.allCases
         #expect(cases.contains(.primary))
         #expect(cases.contains(.secondary))
         #expect(cases.contains(.tertiary))
         #expect(cases.contains(.quaternary))
     }
-    
-    // MARK: - AnyShapeStyle Tests
-    
-    @Test @available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *)
-    func testAnyShapeStyleCreation() {
-        // Given: A Color
-        // When: Creating AnyShapeStyle
-        // Then: Should create successfully
-        let color = Color.blue
-        let _ = AnyShapeStyle(color)
-        #expect(Bool(true), "anyShapeStyle is non-optional")  // anyShapeStyle is non-optional
+
+    // MARK: - AnyShapeStyle
+
+    @Test @MainActor func testAnyShapeStyleFromColorIsHostable() {
+        let style = AnyShapeStyle(Color.blue)
+        let sut = Rectangle().fill(style).frame(width: 10, height: 10)
+        expectHostableRed(sut, "AnyShapeStyle(Color)")
     }
-    
-    @Test @available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *)
-    func testAnyShapeStyleWithGradient() {
-        // Given: A LinearGradient
-        // When: Creating AnyShapeStyle
-        // Then: Should create successfully
+
+    @Test @MainActor func testAnyShapeStyleFromGradientIsHostable() {
         let gradient = LinearGradient(colors: [.blue, .purple], startPoint: .top, endPoint: .bottom)
-        let _ = AnyShapeStyle(gradient)
-        #expect(Bool(true), "anyShapeStyle is non-optional")  // anyShapeStyle is non-optional
+        let style = AnyShapeStyle(gradient)
+        let sut = Rectangle().fill(style).frame(width: 10, height: 10)
+        expectHostableRed(sut, "AnyShapeStyle(LinearGradient)")
     }
-    
+
     @Test @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-    func testAnyShapeStyleWithMaterial() {
-        // Given: A Material
-        // When: Creating AnyShapeStyle
-        // Then: Should create successfully
-        let material = Material.regularMaterial
-        let _ = AnyShapeStyle(material)
-        #expect(Bool(true), "anyShapeStyle is non-optional")  // anyShapeStyle is non-optional
+    @MainActor func testAnyShapeStyleFromMaterialIsHostable() {
+        let style = AnyShapeStyle(Material.regularMaterial)
+        let sut = Rectangle().fill(style).frame(width: 10, height: 10)
+        expectHostableRed(sut, "AnyShapeStyle(Material)")
     }
-    
-    @Test @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
-    func testAnyShapeStyleWithHierarchical() {
-        // Given: A HierarchicalShapeStyle
-        // When: Creating AnyShapeStyle
-        // Then: Should create successfully
-        let hierarchical = HierarchicalShapeStyle.primary
-        let _ = AnyShapeStyle(hierarchical)
-        #expect(Bool(true), "anyShapeStyle is non-optional")  // anyShapeStyle is non-optional
-    }
-    
-    // MARK: - View Extension Tests
-    
+
+    // MARK: - View modifiers
+
     @Test @MainActor func testPlatformBackgroundModifier() {
-        // Given: A view
-        let testView = Text("Test")
-        
-        // When: Applying platform background
-        let _ = testView.platformBackground(for: .iOS)
-        
-        // Then: Should return modified view
-        #expect(Bool(true), "modifiedView is non-optional")  // modifiedView is non-optional
+        let sut = Text("Test").platformBackground(for: .iOS)
+        expectHostableRed(sut, "platformBackground")
     }
-    
+
     @Test @MainActor func testPlatformSurfaceModifier() {
-        // Given: A view
-        let testView = Text("Test")
-        
-        // When: Applying platform surface
-        let _ = testView.platformSurface(for: .macOS)
-        
-        // Then: Should return modified view
-        #expect(Bool(true), "modifiedView is non-optional")  // modifiedView is non-optional
+        let sut = Text("Test").platformSurface(for: .macOS)
+        expectHostableRed(sut, "platformSurface")
     }
-    
+
     @Test @MainActor func testPlatformShapeTextModifier() {
-        // Given: A view
-        let testView = Text("Test")
-        
-        // When: Applying platform text style
-        let _ = testView.platformShapeText(for: .iOS)
-        
-        // Then: Should return modified view
-        #expect(Bool(true), "modifiedView is non-optional")  // modifiedView is non-optional
+        let sut = Text("Test").platformShapeText(for: .iOS)
+        expectHostableRed(sut, "platformShapeText")
     }
-    
+
     @Test @MainActor func testPlatformBorderModifier() {
-        // Given: A view
-        let testView = Text("Test")
-        
-        // When: Applying platform border
-        let _ = testView.platformBorder(for: .macOS, width: 2)
-        
-        // Then: Should return modified view
-        #expect(Bool(true), "modifiedView is non-optional")  // modifiedView is non-optional
+        let sut = Text("Test").platformBorder(for: .macOS, width: 2)
+        expectHostableRed(sut, "platformBorder")
     }
-    
+
     @Test @MainActor func testPlatformGradientModifier() {
-        // Given: A view
-        let testView = Text("Test")
-        
-        // When: Applying platform gradient
-        let _ = testView.platformGradient(for: .iOS, variant: .primary)
-        
-        // Then: Should return modified view
-        #expect(Bool(true), "modifiedView is non-optional")  // modifiedView is non-optional
+        let sut = Text("Test").platformGradient(for: .iOS, variant: .primary)
+        expectHostableRed(sut, "platformGradient")
     }
-    
+
     @Test @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     @MainActor func testPlatformMaterialModifier() {
-        // Given: A view
-        let testView = Text("Test")
-        
-        // When: Applying platform material
-        let _ = testView.platformMaterial(for: .iOS, variant: .regular)
-        
-        // Then: Should return modified view
-        #expect(Bool(true), "modifiedView is non-optional")  // modifiedView is non-optional
+        let sut = Text("Test").platformMaterial(for: .iOS, variant: .regular)
+        expectHostableRed(sut, "platformMaterial")
     }
-    
+
     @Test @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
     @MainActor func testPlatformHierarchicalModifier() {
-        // Given: A view
-        let testView = Text("Test")
-        
-        // When: Applying platform hierarchical
-        let _ = testView.platformHierarchical(for: .iOS, variant: .primary)
-        
-        // Then: Should return modified view
-        #expect(Bool(true), "modifiedView is non-optional")  // modifiedView is non-optional
+        let sut = Text("Test").platformHierarchical(for: .iOS, variant: .primary)
+        expectHostableRed(sut, "platformHierarchical")
     }
-    
-    // MARK: - Material Extension Tests
-    
+
     @Test @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     @MainActor func testMaterialBackgroundModifier() {
-        // Given: A view
-        let testView = Text("Test")
-        
-        // When: Applying material background
-        let _ = testView.materialBackground(.regularMaterial, for: .iOS)
-        
-        // Then: Should return modified view
-        #expect(Bool(true), "modifiedView is non-optional")  // modifiedView is non-optional
+        let sut = Text("Test").materialBackground(.regularMaterial, for: .iOS)
+        expectHostableRed(sut, "materialBackground")
     }
-    
+
     @Test @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     @MainActor func testHierarchicalMaterialBackgroundModifier() {
-        // Given: A view
-        let testView = Text("Test")
-        
-        // When: Applying hierarchical material background
-        let _ = testView.hierarchicalMaterialBackground(1, for: .iOS)
-        
-        // Then: Should return modified view
-        #expect(Bool(true), "modifiedView is non-optional")  // modifiedView is non-optional
+        let sut = Text("Test").hierarchicalMaterialBackground(1, for: .iOS)
+        expectHostableRed(sut, "hierarchicalMaterialBackground")
     }
-    
-    // MARK: - Gradient Extension Tests
-    
+
     @Test @MainActor func testGradientBackgroundModifier() {
-        // Given: A view and gradient
-        let testView = Text("Test")
         let gradient = LinearGradient(colors: [.blue, .purple], startPoint: .top, endPoint: .bottom)
-        
-        // When: Applying gradient background
-        let _ = testView.gradientBackground(gradient, for: .iOS)
-        
-        // Then: Should return modified view
-        #expect(Bool(true), "modifiedView is non-optional")  // modifiedView is non-optional
+        let sut = Text("Test").gradientBackground(gradient, for: .iOS)
+        expectHostableRed(sut, "gradientBackground")
     }
-    
+
     @Test @MainActor func testRadialGradientBackgroundModifier() {
-        // Given: A view and radial gradient
-        let testView = Text("Test")
         let gradient = RadialGradient(colors: [.blue, .purple], center: .center, startRadius: 0, endRadius: 100)
-        
-        // When: Applying radial gradient background
-        let _ = testView.radialGradientBackground(gradient, for: .iOS)
-        
-        // Then: Should return modified view
-        #expect(Bool(true), "modifiedView is non-optional")  // modifiedView is non-optional
+        let sut = Text("Test").radialGradientBackground(gradient, for: .iOS)
+        expectHostableRed(sut, "radialGradientBackground")
     }
-    
-    // MARK: - Accessibility Extension Tests
-    
+
     @Test @MainActor func testAccessibilityAwareBackgroundModifier() {
-        // Given: A view and styles
-        let testView = Text("Test")
-        let normalStyle = AnyShapeStyle(Color.blue)
-        let highContrastStyle = AnyShapeStyle(Color.red)
-        
-        // When: Applying accessibility aware background
-        let _ = testView.accessibilityAwareBackground(
-            normal: PlatformAnyShapeStyle(normalStyle),
-            highContrast: PlatformAnyShapeStyle(highContrastStyle)
+        let sut = Text("Test").accessibilityAwareBackground(
+            normal: PlatformAnyShapeStyle(AnyShapeStyle(Color.blue)),
+            highContrast: PlatformAnyShapeStyle(AnyShapeStyle(Color.red))
         )
-        
-        // Then: Should return modified view
-        #expect(Bool(true), "modifiedView is non-optional")  // modifiedView is non-optional
+        expectHostableRed(sut, "accessibilityAwareBackground")
     }
-    
+
     @Test @MainActor func testAccessibilityAwareForegroundModifier() {
-        // Given: A view and styles
-        let testView = Text("Test")
-        let normalStyle = AnyShapeStyle(Color.blue)
-        let reducedMotionStyle = AnyShapeStyle(Color.gray)
-        
-        // When: Applying accessibility aware foreground
-        let _ = testView.accessibilityAwareForeground(
-            normal: PlatformAnyShapeStyle(normalStyle),
-            reducedMotion: PlatformAnyShapeStyle(reducedMotionStyle)
+        let sut = Text("Test").accessibilityAwareForeground(
+            normal: PlatformAnyShapeStyle(AnyShapeStyle(Color.blue)),
+            reducedMotion: PlatformAnyShapeStyle(AnyShapeStyle(Color.gray))
         )
-        
-        // Then: Should return modified view
-        #expect(Bool(true), "modifiedView is non-optional")  // modifiedView is non-optional
+        expectHostableRed(sut, "accessibilityAwareForeground")
     }
-    
-    // MARK: - Integration Tests
-    
+
     @Test @MainActor func testShapeStyleSystemIntegration() {
-        // Given: A complex view
-        let testView = platformVStackContainer {
-            Text("Title")
-                .font(.title)
-            Text("Subtitle")
-                .font(.subheadline)
+        let sut = platformVStackContainer {
+            Text("Title").font(.title)
+            Text("Subtitle").font(.subheadline)
         }
-        
-        // When: Applying multiple shape styles
-        let _ = testView
-            .platformBackground(for: .iOS, variant: .standard)
-            .platformShapeText(for: .iOS, variant: .primary)
-            .platformBorder(for: .iOS, variant: .standard, width: 1)
-        
-        // Then: Should return modified view
-        #expect(Bool(true), "styledView is non-optional")  // styledView is non-optional
+        .platformBackground(for: .iOS, variant: .standard)
+        .platformShapeText(for: .iOS, variant: .primary)
+        .platformBorder(for: .iOS, variant: .standard, width: 1)
+        expectHostableRed(sut, "integration styled stack")
     }
-    
+
     @Test @MainActor func testAppleHIGComplianceIntegration() {
-        // Given: A view that should be Apple HIG compliant
-        let _ = Button("Test Button") { }
+        let sut = Button("Test Button") { }
             .platformBackground(for: .iOS)
             .platformShapeText(for: .iOS)
-        
-        // When: View is created
-        // Then: Should be Apple HIG compliant
-        #expect(Bool(true), "testView is non-optional")  // testView is non-optional
+        expectHostableRed(sut, "HIG button styling")
     }
-    
-    // MARK: - Performance Tests
-    
-    
 }
