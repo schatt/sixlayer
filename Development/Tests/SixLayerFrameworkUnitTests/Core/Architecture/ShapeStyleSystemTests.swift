@@ -76,8 +76,7 @@ open class ShapeStyleSystemTests: BaseTestClass {
             ShapeStyleSystem.Gradients.warning,
             ShapeStyleSystem.Gradients.error
         ]
-        let focus: RadialGradient = ShapeStyleSystem.Gradients.focus
-        _ = focus
+        let _: RadialGradient = ShapeStyleSystem.Gradients.focus
         #expect(linear.count == 6)
         #expect(GradientVariant.allCases.count == 7)
     }
