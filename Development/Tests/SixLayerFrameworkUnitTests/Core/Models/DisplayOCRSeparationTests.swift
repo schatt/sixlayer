@@ -184,9 +184,6 @@ struct DisplayOCRSeparationTests {
     // MARK: - Helpers
 
     private func hasOCRScanAction(_ field: DynamicFormField) -> Bool {
-        field.effectiveActions.contains { action in
-            String(describing: type(of: action)).contains("OCR")
-                || String(describing: action).lowercased().contains("ocr")
-        }
+        field.effectiveActions.contains { $0.id == "ocr-scan" }
     }
 }
