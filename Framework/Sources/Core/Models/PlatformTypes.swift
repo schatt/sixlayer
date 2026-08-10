@@ -1159,6 +1159,15 @@ public struct FieldDisplayHints: Sendable {
     
     /// OCR hints for field identification (language-specific, resolved from hints file)
     public let ocrHints: [String]?
+
+    /// Optional override for batch / document OCR eligibility when applying hints.
+    /// `nil` means no opinion (leave ``DynamicFormField/supportsOCR`` unchanged).
+    /// Presence of ``ocrHints`` must not imply this is `true` (Issue #404).
+    public let supportsOCR: Bool?
+
+    /// Optional override for per-field Scan accessory when applying hints.
+    /// `nil` means no opinion (leave ``DynamicFormField/displayOCR`` unchanged).
+    public let displayOCR: Bool?
     
     /// Calculation groups for computing field values
     public let calculationGroups: [CalculationGroup]?
@@ -1197,6 +1206,8 @@ public struct FieldDisplayHints: Sendable {
         expectedRange: ValueRange? = nil,
         metadata: [String: String] = [:],
         ocrHints: [String]? = nil,
+        supportsOCR: Bool? = nil,
+        displayOCR: Bool? = nil,
         calculationGroups: [CalculationGroup]? = nil,
         inputType: String? = nil,
         pickerOptions: [PickerOption]? = nil,
@@ -1215,6 +1226,8 @@ public struct FieldDisplayHints: Sendable {
         self.expectedRange = expectedRange
         self.metadata = metadata
         self.ocrHints = ocrHints
+        self.supportsOCR = supportsOCR
+        self.displayOCR = displayOCR
         self.calculationGroups = calculationGroups
         self.inputType = inputType
         self.pickerOptions = pickerOptions
