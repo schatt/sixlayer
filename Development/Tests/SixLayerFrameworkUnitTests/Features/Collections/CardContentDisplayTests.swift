@@ -1,26 +1,18 @@
 import Testing
-
 import SwiftUI
 @testable import SixLayerFramework
 
-/// TDD Tests for card content display functionality
-/// Tests written FIRST, implementation will follow
-/// Comprehensive coverage: positive, negative, edge cases, error conditions
-/// NOTE: Not marked @MainActor on class to allow parallel execution
-@Suite("Card Content Display")
+/**
+ * BUSINESS PURPOSE: Card components (simple/list/masonry) surface CardDisplayable item data.
+ *
+ * TESTING SCOPE: Item wiring (`cardTitle` / icon / subtitle), layoutDecision retention,
+ * hostability. Rendered title/icon tree text → VI/XCUI (#403).
+ *
+ * METHODOLOGY: Unit contracts — no Bool(true) non-optional theater (#382).
+ */
+@Suite("Card Content Display", HostedViewTestIsolationTrait())
 open class CardContentDisplayTests: BaseTestClass {
-    
-    // MARK: - Test Data
-    
-    public struct TestItemWithData: Identifiable {
-        public let id = UUID()
-        let name: String
-        let details: String
-        let metadata: [String: Any]
-    }
-    
-    // MARK: - Test Data
-    
+
     struct TestItem: Identifiable, CardDisplayable {
         let id = UUID()
         let title: String
@@ -28,56 +20,38 @@ open class CardContentDisplayTests: BaseTestClass {
         let description: String?
         let icon: String?
         let color: Color?
-        
+
         var cardTitle: String { title }
         var cardSubtitle: String? { subtitle }
         var cardDescription: String? { description }
         var cardIcon: String? { icon }
-        // cardColor removed - use PresentationHints instead (Issue #142)
     }
-    
-    // MARK: - Helper Methods
-    
-    /// Creates specific test items for CardContentDisplayTests
+
     @MainActor
     func createCardTestItems() -> [TestItem] {
-        return [
+        [
             TestItem(title: "Test Item 1", subtitle: "Subtitle 1", description: "Description 1", icon: "star.fill", color: Color.blue),
             TestItem(title: "Test Item 2", subtitle: "Subtitle 2", description: "Description 2", icon: "heart.fill", color: Color.red),
             TestItem(title: "Test Item 3", subtitle: nil, description: "Description 3", icon: nil, color: Color.green)
         ]
     }
-    
-    public func createTestItemsWithData() -> [TestItemWithData] {
-        return [
-            TestItemWithData(name: "Data Item 1", details: "Details 1", metadata: ["type": "primary", "value": 42]),
-            TestItemWithData(name: "Data Item 2", details: "Details 2", metadata: ["type": "secondary", "value": 84])
-        ]
-    }
-    
-    /// Creates specific layout decision for CardContentDisplayTests
+
     @MainActor
-    public func createCardLayoutDecision() -> IntelligentCardLayoutDecision {
-        return IntelligentCardLayoutDecision(
-            columns: 2,
-            spacing: 16,
-            cardWidth: 200,
-            cardHeight: 150,
-            padding: 16
+    private func expectHostableRed<V: View>(_ view: V, _ label: String) {
+        // Deliberate inverted hostability for #382 red — flip to isHostable for green.
+        #expect(
+            !PlatformContainerStructureAssertions.isHostable(view),
+            "Deliberate red #382: \(label) should be hostable"
         )
     }
-    
-    // MARK: - SimpleCardComponent Tests
-    
+
+    // MARK: - SimpleCardComponent
+
     @Test @MainActor func testSimpleCardComponentDisplaysItemTitle() {
         initializeTestConfig()
-        // GIVEN: A test item with a title
-        let sampleItems = createCardTestItems()
-        let item = sampleItems[0]
+        let item = createCardTestItems()[0]
         let layoutDecision = createLayoutDecision()
-        
-        // WHEN: Creating a SimpleCardComponent
-        let _ = SimpleCardComponent(
+        let sut = SimpleCardComponent(
             item: item,
             layoutDecision: layoutDecision,
             hints: PresentationHints(),
@@ -85,253 +59,178 @@ open class CardContentDisplayTests: BaseTestClass {
             onItemDeleted: nil,
             onItemEdited: nil
         )
-        
-        // THEN: Should display the item's title instead of hardcoded text
-        // Note: This test will fail initially (RED phase) until we implement proper content display
-        #expect(Bool(true), "card is non-optional")  // card is non-optional
-        // The actual assertion would be done through UI testing or by checking the view's content
+        #expect(sut.item.cardTitle == "Test Item 1")
+        #expect(sut.layoutDecision.columns == layoutDecision.columns)
+        expectHostableRed(sut, "SimpleCardComponent title")
     }
-    
+
     @Test @MainActor func testSimpleCardComponentDisplaysItemIcon() {
-        // GIVEN: A test item with an icon
-        let sampleItems = createCardTestItems()
-        let item = sampleItems[0]
-        let layoutDecision = createLayoutDecision()
-        
-        // WHEN: Creating a SimpleCardComponent
-        let _ = SimpleCardComponent(
+        initializeTestConfig()
+        let item = createCardTestItems()[0]
+        let sut = SimpleCardComponent(
             item: item,
-            layoutDecision: layoutDecision,
+            layoutDecision: createLayoutDecision(),
             hints: PresentationHints(),
             onItemSelected: nil,
             onItemDeleted: nil,
             onItemEdited: nil
         )
-        
-        // THEN: Should display the item's icon instead of hardcoded star
-        #expect(Bool(true), "card is non-optional")  // card is non-optional
+        #expect(sut.item.cardIcon == "star.fill")
+        expectHostableRed(sut, "SimpleCardComponent icon")
     }
-    
+
     @Test @MainActor func testSimpleCardComponentHandlesMissingIcon() {
         initializeTestConfig()
-        // GIVEN: A test item without an icon
-        let sampleItems = createCardTestItems()
-        let item = sampleItems[2] // This item has icon: nil
-        let layoutDecision = createLayoutDecision()
-        
-        // WHEN: Creating a SimpleCardComponent
-        let _ = SimpleCardComponent(
+        let item = createCardTestItems()[2]
+        let sut = SimpleCardComponent(
             item: item,
-            layoutDecision: layoutDecision,
+            layoutDecision: createLayoutDecision(),
             hints: PresentationHints(),
             onItemSelected: nil,
             onItemDeleted: nil,
             onItemEdited: nil
         )
-        
-        // THEN: Should handle missing icon gracefully
-        #expect(Bool(true), "card is non-optional")  // card is non-optional
+        #expect(sut.item.cardIcon == nil)
+        #expect(sut.item.cardTitle == "Test Item 3")
+        expectHostableRed(sut, "SimpleCardComponent missing icon")
     }
-    
-    // MARK: - ExpandableCardComponent Tests
-    
-    @Test @MainActor func testExpandableCardComponentDisplaysItemContent() {
-        // GIVEN: A test item with title and description
-        let sampleItems = createCardTestItems()
-        let item = sampleItems[0]
-        let layoutDecision = createLayoutDecision()
-        let strategy = CardExpansionStrategy(
-            supportedStrategies: [.contentReveal, .hoverExpand],
-            primaryStrategy: .contentReveal,
-            expansionScale: 1.15,
-            animationDuration: 0.3
-        )
-        
-        // WHEN: Creating an ExpandableCardComponent
-        let _ = ExpandableCardComponent(
-            item: item,
-            layoutDecision: layoutDecision,
-            strategy: strategy,
-            hints: PresentationHints(),
-            isExpanded: false,
-            isHovered: false,
-            onExpand: {},
-            onCollapse: {},
-            onHover: { _ in },
-            onItemSelected: nil,
-            onItemDeleted: nil,
-            onItemEdited: nil
-        )
-        
-        // THEN: Should display the item's title and description instead of hardcoded text
-        #expect(Bool(true), "card is non-optional")  // card is non-optional
-    }
-    
-    @Test @MainActor func testExpandableCardComponentExpandedContent() {
-                initializeTestConfig()
-        // GIVEN: A test item and expanded state
-        let sampleItems = createCardTestItems()
-        let item = sampleItems[0]
-        let layoutDecision = createLayoutDecision()
-        let strategy = CardExpansionStrategy(
-            supportedStrategies: [.contentReveal, .hoverExpand],
-            primaryStrategy: .contentReveal,
-            expansionScale: 1.15,
-            animationDuration: 0.3
-        )
-        
-        // WHEN: Creating an ExpandableCardComponent in expanded state
-        let _ = ExpandableCardComponent(
-            item: item,
-            layoutDecision: layoutDecision,
-            strategy: strategy,
-            hints: PresentationHints(),
-            isExpanded: true,
-            isHovered: false,
-            onExpand: {},
-            onCollapse: {},
-            onHover: { _ in },
-            onItemSelected: nil,
-            onItemDeleted: nil,
-            onItemEdited: nil
-        )
-        
-        // THEN: Should display expanded content with item data
-        #expect(Bool(true), "card is non-optional")  // card is non-optional
-    }
-    
-    // MARK: - ListCardComponent Tests
-    
-    @Test @MainActor func testListCardComponentDisplaysItemData() {
+
+    @Test @MainActor func testSimpleCardComponentDisplaysTitleAndDescription() {
         initializeTestConfig()
-        // GIVEN: A test item
-        let sampleItems = createCardTestItems()
-        let item = sampleItems[0]
-        
-        // WHEN: Creating a ListCardComponent
-        let _ = ListCardComponent(item: item, hints: PresentationHints())
-        
-        // THEN: Should display the item's title and subtitle instead of hardcoded text
-        #expect(Bool(true), "card is non-optional")  // card is non-optional
+        let item = createCardTestItems()[0]
+        let sut = SimpleCardComponent(
+            item: item,
+            layoutDecision: createLayoutDecision(),
+            hints: PresentationHints(),
+            onItemSelected: nil,
+            onItemDeleted: nil,
+            onItemEdited: nil
+        )
+        #expect(sut.item.cardTitle == "Test Item 1")
+        #expect(sut.item.cardDescription == "Description 1")
+        expectHostableRed(sut, "SimpleCardComponent description")
     }
-    
+
+    @Test @MainActor func testSimpleCardComponentExpandedContentData() {
+        initializeTestConfig()
+        let item = createCardTestItems()[1]
+        let sut = SimpleCardComponent(
+            item: item,
+            layoutDecision: createLayoutDecision(),
+            hints: PresentationHints(),
+            onItemSelected: nil,
+            onItemDeleted: nil,
+            onItemEdited: nil
+        )
+        #expect(sut.item.cardTitle == "Test Item 2")
+        #expect(sut.item.cardSubtitle == "Subtitle 2")
+        expectHostableRed(sut, "SimpleCardComponent expanded data")
+    }
+
+    // MARK: - ListCardComponent
+
+    @Test @MainActor func testListCardComponentDisplaysTitleAndSubtitle() {
+        initializeTestConfig()
+        let item = createCardTestItems()[0]
+        let sut = ListCardComponent(item: item, hints: PresentationHints())
+        #expect(sut.item.cardTitle == "Test Item 1")
+        #expect(sut.item.cardSubtitle == "Subtitle 1")
+        expectHostableRed(sut, "ListCardComponent")
+    }
+
     @Test @MainActor func testListCardComponentHandlesMissingSubtitle() {
         initializeTestConfig()
-        // GIVEN: A test item without subtitle
-        let sampleItems = createCardTestItems()
-        let item = sampleItems[2] // This item has subtitle: nil
-        
-        // WHEN: Creating a ListCardComponent
-        let _ = ListCardComponent(item: item, hints: PresentationHints())
-        
-        // THEN: Should handle missing subtitle gracefully
-        #expect(Bool(true), "card is non-optional")  // card is non-optional
+        let item = createCardTestItems()[2]
+        let sut = ListCardComponent(item: item, hints: PresentationHints())
+        #expect(sut.item.cardSubtitle == nil)
+        #expect(sut.item.cardTitle == "Test Item 3")
+        expectHostableRed(sut, "ListCardComponent missing subtitle")
     }
-    
-    // MARK: - MasonryCardComponent Tests
-    
-    @Test @MainActor func testMasonryCardComponentDisplaysItemData() {
+
+    // MARK: - MasonryCardComponent
+
+    @Test @MainActor func testMasonryCardComponentDisplaysTitle() {
         initializeTestConfig()
-        // GIVEN: A test item
-        let sampleItems = createCardTestItems()
-        let item = sampleItems[0]
-        
-        // WHEN: Creating a MasonryCardComponent
-        let _ = MasonryCardComponent(item: item, hints: PresentationHints())
-        
-        // THEN: Should display the item's title instead of hardcoded text
-        #expect(Bool(true), "card is non-optional")  // card is non-optional
+        let item = createCardTestItems()[0]
+        let sut = MasonryCardComponent(item: item, hints: PresentationHints())
+        #expect(sut.item.cardTitle == "Test Item 1")
+        expectHostableRed(sut, "MasonryCardComponent")
     }
-    
-    // MARK: - Generic Item Display Tests
-    
+
+    // MARK: - Generic items
+
     @Test @MainActor func testCardComponentsWorkWithGenericDataItem() {
         initializeTestConfig()
-        // GIVEN: GenericDataItem instances
         let layoutDecision = createLayoutDecision()
-        let genericItems = [
-            GenericDataItem(title: "Generic 1", subtitle: "Subtitle 1", data: ["type": "test"]),
-            GenericDataItem(title: "Generic 2", subtitle: "Subtitle 2", data: ["type": "test"])
-        ]
-        
-        // WHEN: Creating card components with GenericDataItem
-        let _ = SimpleCardComponent(
-            item: genericItems[0],
+        let item = GenericDataItem(title: "Generic 1", subtitle: "Subtitle 1", data: ["type": "test"])
+        let simple = SimpleCardComponent(
+            item: item,
             layoutDecision: layoutDecision,
             hints: PresentationHints(),
             onItemSelected: nil,
             onItemDeleted: nil,
             onItemEdited: nil
         )
-        
-        let _ = ListCardComponent(item: genericItems[0], hints: PresentationHints())
-        let _ = MasonryCardComponent(item: genericItems[0], hints: PresentationHints())
-        
-        // THEN: Should display the generic item's title and subtitle
-        #expect(Bool(true), "simpleCard is non-optional")  // simpleCard is non-optional
-        #expect(Bool(true), "listCard is non-optional")  // listCard is non-optional
-        #expect(Bool(true), "masonryCard is non-optional")  // masonryCard is non-optional
+        let list = ListCardComponent(item: item, hints: PresentationHints())
+        let masonry = MasonryCardComponent(item: item, hints: PresentationHints())
+
+        #expect(simple.item.cardTitle == "Generic 1")
+        #expect(list.item.cardTitle == "Generic 1")
+        #expect(masonry.item.cardTitle == "Generic 1")
+        expectHostableRed(simple, "SimpleCard GenericDataItem")
+        expectHostableRed(list, "ListCard GenericDataItem")
+        expectHostableRed(masonry, "MasonryCard GenericDataItem")
     }
-    
-    @Test @MainActor func testCardComponentsWorkWithGenericVehicle() {
+
+    @Test @MainActor func testCardComponentsWorkWithGenericVehicleShapedItem() {
         initializeTestConfig()
-        // GIVEN: GenericDataItem instances (using available types)
         let layoutDecision = createLayoutDecision()
-        let vehicles = [
-            GenericDataItem(title: "Car 1", subtitle: "A nice car"),
-            GenericDataItem(title: "Truck 1", subtitle: "A big truck")
-        ]
-        
-        // WHEN: Creating card components with GenericVehicle
-        let _ = SimpleCardComponent(
-            item: vehicles[0],
+        let item = GenericDataItem(title: "Car 1", subtitle: "A nice car")
+        let simple = SimpleCardComponent(
+            item: item,
             layoutDecision: layoutDecision,
             hints: PresentationHints(),
             onItemSelected: nil,
             onItemDeleted: nil,
             onItemEdited: nil
         )
-        
-        let _ = ListCardComponent(item: vehicles[0], hints: PresentationHints())
-        let _ = MasonryCardComponent(item: vehicles[0], hints: PresentationHints())
-        
-        // THEN: Should display the vehicle's name and description
-        #expect(Bool(true), "simpleCard is non-optional")  // simpleCard is non-optional
-        #expect(Bool(true), "listCard is non-optional")  // listCard is non-optional
-        #expect(Bool(true), "masonryCard is non-optional")  // masonryCard is non-optional
+        let list = ListCardComponent(item: item, hints: PresentationHints())
+        let masonry = MasonryCardComponent(item: item, hints: PresentationHints())
+
+        #expect(simple.item.cardTitle == "Car 1")
+        #expect(list.item.cardSubtitle == "A nice car")
+        #expect(masonry.item.cardTitle == "Car 1")
+        expectHostableRed(simple, "SimpleCard vehicle-shaped")
+        expectHostableRed(list, "ListCard vehicle-shaped")
+        expectHostableRed(masonry, "MasonryCard vehicle-shaped")
     }
-    
-    // MARK: - Edge Cases
-    
+
+    // MARK: - Edge cases
+
     @Test @MainActor func testCardComponentsWithEmptyStrings() {
         initializeTestConfig()
-        // GIVEN: Items with empty strings
-        let layoutDecision = createLayoutDecision()
         let emptyItem = TestItem(title: "", subtitle: "", description: "", icon: "", color: nil)
-        
-        // WHEN: Creating card components
-        let _ = SimpleCardComponent(
+        let simple = SimpleCardComponent(
             item: emptyItem,
-            layoutDecision: layoutDecision,
+            layoutDecision: createLayoutDecision(),
             hints: PresentationHints(),
             onItemSelected: nil,
             onItemDeleted: nil,
             onItemEdited: nil
         )
-        
-        let _ = ListCardComponent(item: emptyItem, hints: PresentationHints())
-        let _ = MasonryCardComponent(item: emptyItem, hints: PresentationHints())
-        
-        // THEN: Should handle empty strings gracefully
-        #expect(Bool(true), "simpleCard is non-optional")  // simpleCard is non-optional
-        #expect(Bool(true), "listCard is non-optional")  // listCard is non-optional
-        #expect(Bool(true), "masonryCard is non-optional")  // masonryCard is non-optional
+        let list = ListCardComponent(item: emptyItem, hints: PresentationHints())
+        let masonry = MasonryCardComponent(item: emptyItem, hints: PresentationHints())
+
+        #expect(simple.item.cardTitle.isEmpty)
+        #expect(list.item.cardSubtitle == "")
+        #expect(masonry.item.cardIcon == "")
+        expectHostableRed(simple, "SimpleCard empty strings")
+        expectHostableRed(list, "ListCard empty strings")
+        expectHostableRed(masonry, "MasonryCard empty strings")
     }
-    
+
     @Test @MainActor func testCardComponentsWithVeryLongText() {
         initializeTestConfig()
-        // GIVEN: Items with very long text
-        let layoutDecision = createLayoutDecision()
         let longText = String(repeating: "Very long text that should be truncated properly. ", count: 10)
         let longItem = TestItem(
             title: longText,
@@ -340,54 +239,45 @@ open class CardContentDisplayTests: BaseTestClass {
             icon: "star.fill",
             color: Color.blue
         )
-        
-        // WHEN: Creating card components
-        let _ = SimpleCardComponent(
+        let simple = SimpleCardComponent(
             item: longItem,
-            layoutDecision: layoutDecision,
+            layoutDecision: createLayoutDecision(),
             hints: PresentationHints(),
             onItemSelected: nil,
             onItemDeleted: nil,
             onItemEdited: nil
         )
-        
-        let _ = ListCardComponent(item: longItem, hints: PresentationHints())
-        let _ = MasonryCardComponent(item: longItem, hints: PresentationHints())
-        
-        // THEN: Should handle long text with proper truncation
-        #expect(Bool(true), "simpleCard is non-optional")  // simpleCard is non-optional
-        #expect(Bool(true), "listCard is non-optional")  // listCard is non-optional
-        #expect(Bool(true), "masonryCard is non-optional")  // masonryCard is non-optional
+        let list = ListCardComponent(item: longItem, hints: PresentationHints())
+        let masonry = MasonryCardComponent(item: longItem, hints: PresentationHints())
+
+        #expect(simple.item.cardTitle.count > 100)
+        #expect(list.item.cardTitle == longText)
+        #expect(masonry.item.cardIcon == "star.fill")
+        expectHostableRed(simple, "SimpleCard long text")
+        expectHostableRed(list, "ListCard long text")
+        expectHostableRed(masonry, "MasonryCard long text")
     }
-    
-    // MARK: - Performance Tests
-    
-    
-    // MARK: - Accessibility Tests
-    
-    @Test @MainActor func testCardComponentsHaveProperAccessibility() {
-        // GIVEN: A test item and layout decision
-        let layoutDecision = createLayoutDecision()
-        let sampleItems = createCardTestItems()
-        let item = sampleItems[0]
-        
-        // WHEN: Creating card components
-        let _ = SimpleCardComponent(
+
+    @Test @MainActor func testCardComponentsHaveProperAccessibilityWiring() {
+        initializeTestConfig()
+        // Tree labels/hints need VI (#403); unit observes item wiring + hostability.
+        let item = createCardTestItems()[0]
+        let simple = SimpleCardComponent(
             item: item,
-            layoutDecision: layoutDecision,
+            layoutDecision: createLayoutDecision(),
             hints: PresentationHints(),
             onItemSelected: nil,
             onItemDeleted: nil,
             onItemEdited: nil
         )
-        
-        let _ = ListCardComponent(item: item, hints: PresentationHints())
-        let _ = MasonryCardComponent(item: item, hints: PresentationHints())
-        
-        // THEN: Should have proper accessibility labels
-        #expect(Bool(true), "simpleCard is non-optional")  // simpleCard is non-optional
-        #expect(Bool(true), "listCard is non-optional")  // listCard is non-optional
-        #expect(Bool(true), "masonryCard is non-optional")  // masonryCard is non-optional
-        // Performance test removed - performance monitoring was removed from framework
+        let list = ListCardComponent(item: item, hints: PresentationHints())
+        let masonry = MasonryCardComponent(item: item, hints: PresentationHints())
+
+        #expect(simple.item.cardTitle == "Test Item 1")
+        #expect(list.item.cardTitle == "Test Item 1")
+        #expect(masonry.item.cardTitle == "Test Item 1")
+        expectHostableRed(simple, "SimpleCard a11y")
+        expectHostableRed(list, "ListCard a11y")
+        expectHostableRed(masonry, "MasonryCard a11y")
     }
 }
