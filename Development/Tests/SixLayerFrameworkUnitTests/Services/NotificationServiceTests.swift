@@ -15,6 +15,16 @@ import Foundation
 /// NOTE: Not marked @MainActor on class to allow parallel execution
 @Suite("Notification Service")
 open class NotificationServiceTests: BaseTestClass {
+
+    /// Cancel APIs are UN-center no-ops in unit-test env; observe published-state invariance.
+    @MainActor
+    private func expectCancelLeavesPublishedStateIntact(_ mutate: (NotificationService) -> Void) {
+        let service = NotificationService()
+        let badgeBefore = service.badgeCount
+        mutate(service)
+        #expect(service.badgeCount == badgeBefore)
+        #expect(service.lastError == nil)
+    }
     
     // MARK: - Service Initialization Tests
     
@@ -288,30 +298,15 @@ open class NotificationServiceTests: BaseTestClass {
     }
     
     @Test @MainActor func testNotificationServiceCanCancelNotification() async {
-        // Given: NotificationService (cancel is a no-op on UN center in test env)
-        let service = NotificationService()
-        let identifier = "test-notification"
-        let badgeBefore = service.badgeCount
-        
-        // When: Cancelling a notification
-        service.cancelNotification(identifier: identifier)
-        
-        // Then: published state is unchanged (safe, side-effect-free on service properties)
-        #expect(service.badgeCount == badgeBefore)
-        #expect(service.lastError == nil)
+        expectCancelLeavesPublishedStateIntact { service in
+            service.cancelNotification(identifier: "test-notification")
+        }
     }
     
     @Test @MainActor func testNotificationServiceCanCancelAllNotifications() async {
-        // Given: NotificationService
-        let service = NotificationService()
-        let badgeBefore = service.badgeCount
-        
-        // When: Cancelling all notifications
-        service.cancelAllNotifications()
-        
-        // Then: published state is unchanged
-        #expect(service.badgeCount == badgeBefore)
-        #expect(service.lastError == nil)
+        expectCancelLeavesPublishedStateIntact { service in
+            service.cancelAllNotifications()
+        }
     }
     
     // MARK: - Sound Preferences Tests
