@@ -477,7 +477,14 @@ else
         echo "⏭️  Skipping macOS unit tests (already passed at stamped commit)"
     else
         echo "🧪 Running macOS unit tests (SLF-macOS-UnitTests)..."
-        # Note: do NOT use -quiet here so that any failures print detailed diagnostics
+        # Clean default DerivedData products first so a prior incomplete .xctest cannot
+        # fail load with "executable couldn’t be located" (#405). No custom -derivedDataPath.
+        echo "🧹 Cleaning macOS build products (default DerivedData)..."
+        rtk xcodebuild clean \
+            -project SixLayerFramework.xcodeproj \
+            -scheme SLF-macOS-UnitTests \
+            -destination "platform=macOS,arch=arm64" \
+            -quiet
         if ! rtk xcodebuild test \
             -project SixLayerFramework.xcodeproj \
             -scheme SLF-macOS-UnitTests \
@@ -507,6 +514,13 @@ else
                 xcrun simctl create "$IOS_SIM_NAME" com.apple.CoreSimulator.SimDeviceType.iPhone-16-Pro "$IOS_RUNTIME" >/dev/null 2>&1 || true
             fi
         fi
+        # Clean default DerivedData products before test (#405). No custom -derivedDataPath.
+        echo "🧹 Cleaning iOS build products (default DerivedData)..."
+        rtk xcodebuild clean \
+            -project SixLayerFramework.xcodeproj \
+            -scheme SLF-iOS-UnitTests \
+            -destination "platform=iOS Simulator,name=${IOS_SIM_NAME}" \
+            -quiet
         if ! rtk xcodebuild test \
             -project SixLayerFramework.xcodeproj \
             -scheme SLF-iOS-UnitTests \
