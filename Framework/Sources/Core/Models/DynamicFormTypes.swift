@@ -212,7 +212,11 @@ public struct DynamicFormField: Identifiable {
     public let metadata: [String: String]?
 
     // OCR Configuration
-    public let supportsOCR: Bool // Whether this field can use OCR for input
+    /// Whether this field is a batch / document OCR fill target (`getOCREnabledFields`).
+    public let supportsOCR: Bool
+    /// Whether to show the per-field Scan with OCR accessory (`effectiveActions`).
+    /// When omitted at init, defaults to the same value as ``supportsOCR`` (Issue #404).
+    public let displayOCR: Bool
     public let ocrHint: String? // Hint for OCR processing (e.g., "expect phone number", "expect address")
     public let ocrValidationTypes: [TextType]? // Expected OCR text types for validation
     public let ocrFieldIdentifier: String? // Unique identifier for mapping OCR results to specific fields
@@ -268,6 +272,7 @@ public struct DynamicFormField: Identifiable {
         defaultValue: String? = nil,
         metadata: [String: String]? = nil,
         supportsOCR: Bool = false,
+        displayOCR: Bool? = nil,
         ocrHint: String? = nil,
         ocrValidationTypes: [TextType]? = nil,
         ocrFieldIdentifier: String? = nil,
@@ -300,6 +305,7 @@ public struct DynamicFormField: Identifiable {
         self.defaultValue = defaultValue
         self.metadata = metadata
         self.supportsOCR = supportsOCR
+        self.displayOCR = displayOCR ?? supportsOCR
         self.ocrHint = ocrHint
         self.ocrValidationTypes = ocrValidationTypes
         self.ocrFieldIdentifier = ocrFieldIdentifier
@@ -426,6 +432,7 @@ public struct DynamicFormField: Identifiable {
         self.defaultValue = value
         self.metadata = nil
         self.supportsOCR = false
+        self.displayOCR = false
         self.ocrHint = nil
         self.ocrValidationTypes = nil
         self.ocrFieldIdentifier = nil
