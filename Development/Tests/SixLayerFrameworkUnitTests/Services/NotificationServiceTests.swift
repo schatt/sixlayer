@@ -154,8 +154,8 @@ open class NotificationServiceTests: BaseTestClass {
         // When: Trying to update badge
         try service.updateBadge(5)
         
-        // Deliberate red (#382): expect count to update — production early-returns when disabled.
-        #expect(service.badgeCount == 5)
+        // Then: Early-return leaves badgeCount at 0; no error recorded
+        #expect(service.badgeCount == 0)
         #expect(service.lastError == nil)
     }
     
@@ -275,8 +275,8 @@ open class NotificationServiceTests: BaseTestClass {
         // Given: NotificationService in unit-test env (permission forced to .notDetermined)
         let service = NotificationService()
         
-        // Deliberate red (#382): wrong expected error — production throws .permissionDenied.
-        #expect(throws: NotificationServiceError.schedulingFailed) {
+        // Then: schedule requires authorized/provisional — unit env always denies
+        #expect(throws: NotificationServiceError.permissionDenied) {
             try service.scheduleLocalNotification(
                 identifier: "test-notification",
                 title: "Test Title",
@@ -284,32 +284,34 @@ open class NotificationServiceTests: BaseTestClass {
                 date: Date().addingTimeInterval(60)
             )
         }
-        #expect(service.lastError as? NotificationServiceError == .schedulingFailed)
+        #expect(service.lastError as? NotificationServiceError == .permissionDenied)
     }
     
     @Test @MainActor func testNotificationServiceCanCancelNotification() async {
         // Given: NotificationService (cancel is a no-op on UN center in test env)
         let service = NotificationService()
         let identifier = "test-notification"
+        let badgeBefore = service.badgeCount
         
         // When: Cancelling a notification
         service.cancelNotification(identifier: identifier)
         
-        // Deliberate red (#382): invent badge/error side effects cancel does not produce.
-        #expect(service.badgeCount == 1)
-        #expect(service.lastError != nil)
+        // Then: published state is unchanged (safe, side-effect-free on service properties)
+        #expect(service.badgeCount == badgeBefore)
+        #expect(service.lastError == nil)
     }
     
     @Test @MainActor func testNotificationServiceCanCancelAllNotifications() async {
         // Given: NotificationService
         let service = NotificationService()
+        let badgeBefore = service.badgeCount
         
         // When: Cancelling all notifications
         service.cancelAllNotifications()
         
-        // Deliberate red (#382): invent badge/error side effects cancel-all does not produce.
-        #expect(service.badgeCount == 1)
-        #expect(service.lastError != nil)
+        // Then: published state is unchanged
+        #expect(service.badgeCount == badgeBefore)
+        #expect(service.lastError == nil)
     }
     
     // MARK: - Sound Preferences Tests
