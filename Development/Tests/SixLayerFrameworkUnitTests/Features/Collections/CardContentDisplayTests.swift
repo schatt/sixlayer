@@ -44,6 +44,30 @@ open class CardContentDisplayTests: BaseTestClass {
         )
     }
 
+    @MainActor
+    private func makeSimpleCard(_ item: TestItem) -> SimpleCardComponent<TestItem> {
+        SimpleCardComponent(
+            item: item,
+            layoutDecision: createLayoutDecision(),
+            hints: PresentationHints(),
+            onItemSelected: nil,
+            onItemDeleted: nil,
+            onItemEdited: nil
+        )
+    }
+
+    @MainActor
+    private func makeSimpleCard(_ item: GenericDataItem) -> SimpleCardComponent<GenericDataItem> {
+        SimpleCardComponent(
+            item: item,
+            layoutDecision: createLayoutDecision(),
+            hints: PresentationHints(),
+            onItemSelected: nil,
+            onItemDeleted: nil,
+            onItemEdited: nil
+        )
+    }
+
     // MARK: - SimpleCardComponent
 
     @Test @MainActor func testSimpleCardComponentDisplaysItemTitle() {
@@ -65,30 +89,14 @@ open class CardContentDisplayTests: BaseTestClass {
 
     @Test @MainActor func testSimpleCardComponentDisplaysItemIcon() {
         initializeTestConfig()
-        let item = createCardTestItems()[0]
-        let sut = SimpleCardComponent(
-            item: item,
-            layoutDecision: createLayoutDecision(),
-            hints: PresentationHints(),
-            onItemSelected: nil,
-            onItemDeleted: nil,
-            onItemEdited: nil
-        )
+        let sut = makeSimpleCard(createCardTestItems()[0])
         #expect(sut.item.cardIcon == "star.fill")
         expectHostable(sut, "SimpleCardComponent icon")
     }
 
     @Test @MainActor func testSimpleCardComponentHandlesMissingIcon() {
         initializeTestConfig()
-        let item = createCardTestItems()[2]
-        let sut = SimpleCardComponent(
-            item: item,
-            layoutDecision: createLayoutDecision(),
-            hints: PresentationHints(),
-            onItemSelected: nil,
-            onItemDeleted: nil,
-            onItemEdited: nil
-        )
+        let sut = makeSimpleCard(createCardTestItems()[2])
         #expect(sut.item.cardIcon == nil)
         #expect(sut.item.cardTitle == "Test Item 3")
         expectHostable(sut, "SimpleCardComponent missing icon")
@@ -96,15 +104,7 @@ open class CardContentDisplayTests: BaseTestClass {
 
     @Test @MainActor func testSimpleCardComponentDisplaysTitleAndDescription() {
         initializeTestConfig()
-        let item = createCardTestItems()[0]
-        let sut = SimpleCardComponent(
-            item: item,
-            layoutDecision: createLayoutDecision(),
-            hints: PresentationHints(),
-            onItemSelected: nil,
-            onItemDeleted: nil,
-            onItemEdited: nil
-        )
+        let sut = makeSimpleCard(createCardTestItems()[0])
         #expect(sut.item.cardTitle == "Test Item 1")
         #expect(sut.item.cardDescription == "Description 1")
         expectHostable(sut, "SimpleCardComponent description")
@@ -112,15 +112,7 @@ open class CardContentDisplayTests: BaseTestClass {
 
     @Test @MainActor func testSimpleCardComponentExpandedContentData() {
         initializeTestConfig()
-        let item = createCardTestItems()[1]
-        let sut = SimpleCardComponent(
-            item: item,
-            layoutDecision: createLayoutDecision(),
-            hints: PresentationHints(),
-            onItemSelected: nil,
-            onItemDeleted: nil,
-            onItemEdited: nil
-        )
+        let sut = makeSimpleCard(createCardTestItems()[1])
         #expect(sut.item.cardTitle == "Test Item 2")
         #expect(sut.item.cardSubtitle == "Subtitle 2")
         expectHostable(sut, "SimpleCardComponent expanded data")
@@ -160,16 +152,8 @@ open class CardContentDisplayTests: BaseTestClass {
 
     @Test @MainActor func testCardComponentsWorkWithGenericDataItem() {
         initializeTestConfig()
-        let layoutDecision = createLayoutDecision()
         let item = GenericDataItem(title: "Generic 1", subtitle: "Subtitle 1", data: ["type": "test"])
-        let simple = SimpleCardComponent(
-            item: item,
-            layoutDecision: layoutDecision,
-            hints: PresentationHints(),
-            onItemSelected: nil,
-            onItemDeleted: nil,
-            onItemEdited: nil
-        )
+        let simple = makeSimpleCard(item)
         let list = ListCardComponent(item: item, hints: PresentationHints())
         let masonry = MasonryCardComponent(item: item, hints: PresentationHints())
 
@@ -183,16 +167,8 @@ open class CardContentDisplayTests: BaseTestClass {
 
     @Test @MainActor func testCardComponentsWorkWithGenericVehicleShapedItem() {
         initializeTestConfig()
-        let layoutDecision = createLayoutDecision()
         let item = GenericDataItem(title: "Car 1", subtitle: "A nice car")
-        let simple = SimpleCardComponent(
-            item: item,
-            layoutDecision: layoutDecision,
-            hints: PresentationHints(),
-            onItemSelected: nil,
-            onItemDeleted: nil,
-            onItemEdited: nil
-        )
+        let simple = makeSimpleCard(item)
         let list = ListCardComponent(item: item, hints: PresentationHints())
         let masonry = MasonryCardComponent(item: item, hints: PresentationHints())
 
@@ -209,14 +185,7 @@ open class CardContentDisplayTests: BaseTestClass {
     @Test @MainActor func testCardComponentsWithEmptyStrings() {
         initializeTestConfig()
         let emptyItem = TestItem(title: "", subtitle: "", description: "", icon: "", color: nil)
-        let simple = SimpleCardComponent(
-            item: emptyItem,
-            layoutDecision: createLayoutDecision(),
-            hints: PresentationHints(),
-            onItemSelected: nil,
-            onItemDeleted: nil,
-            onItemEdited: nil
-        )
+        let simple = makeSimpleCard(emptyItem)
         let list = ListCardComponent(item: emptyItem, hints: PresentationHints())
         let masonry = MasonryCardComponent(item: emptyItem, hints: PresentationHints())
 
@@ -238,14 +207,7 @@ open class CardContentDisplayTests: BaseTestClass {
             icon: "star.fill",
             color: Color.blue
         )
-        let simple = SimpleCardComponent(
-            item: longItem,
-            layoutDecision: createLayoutDecision(),
-            hints: PresentationHints(),
-            onItemSelected: nil,
-            onItemDeleted: nil,
-            onItemEdited: nil
-        )
+        let simple = makeSimpleCard(longItem)
         let list = ListCardComponent(item: longItem, hints: PresentationHints())
         let masonry = MasonryCardComponent(item: longItem, hints: PresentationHints())
 
@@ -261,14 +223,7 @@ open class CardContentDisplayTests: BaseTestClass {
         initializeTestConfig()
         // Tree labels/hints need VI (#403); unit observes item wiring + hostability.
         let item = createCardTestItems()[0]
-        let simple = SimpleCardComponent(
-            item: item,
-            layoutDecision: createLayoutDecision(),
-            hints: PresentationHints(),
-            onItemSelected: nil,
-            onItemDeleted: nil,
-            onItemEdited: nil
-        )
+        let simple = makeSimpleCard(item)
         let list = ListCardComponent(item: item, hints: PresentationHints())
         let masonry = MasonryCardComponent(item: item, hints: PresentationHints())
 
