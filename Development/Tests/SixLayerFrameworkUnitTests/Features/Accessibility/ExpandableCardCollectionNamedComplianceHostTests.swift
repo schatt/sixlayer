@@ -47,7 +47,7 @@ open class ExpandableCardCollectionNamedComplianceHostTests: BaseTestClass {
         )
         #expect(hostedRoot != nil, "Hosting ExpandableCardCollectionView under HIG must not trap (#406)")
 
-        let debugLog = config.getDebugLog().joined(separator: "\n")
+        let debugLog = config.getDebugLog()
         #expect(
             debugLog.contains("ExpandableCardCollectionView"),
             "Named compliance for ExpandableCardCollectionView should run during host (#406); log=\(debugLog.prefix(500))"
