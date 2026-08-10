@@ -64,8 +64,7 @@ struct FieldHintsLoaderTests {
 
         let hints = field.displayHints
 
-        // Deliberate red (#382): invert presence — production returns non-nil from metadata.
-        #expect(hints == nil, "displayHints should be present when metadata is set")
+        #expect(hints != nil, "displayHints should be present when metadata is set")
         #expect(hints?.expectedLength == 20)
         #expect(hints?.displayWidth == "medium")
         #expect(hints?.maxLength == 50)
@@ -97,8 +96,7 @@ struct FieldHintsLoaderTests {
 
         let hints = field.displayHints
 
-        // Deliberate red (#382): invert presence.
-        #expect(hints == nil, "displayHints should be present when metadata is set")
+        #expect(hints != nil, "displayHints should be present when metadata is set")
         #expect(hints?.displayWidth == "wide")
         #expect(hints?.showCharacterCounter == false)
         #expect(hints?.expectedLength == nil)
@@ -136,10 +134,16 @@ struct FieldHintsLoaderTests {
 
         let result = FileBasedDataHintsLoader().loadHintsResult(for: uniqueModelName)
 
-        // Deliberate red (#382): wrong section count / field-hint absence.
-        #expect(result.sectionLayouts.count == 0)
-        #expect(result.fieldHints["username"] == nil)
-        #expect(result.sectionLayouts.first?.id == "details")
+        #expect(result.sectionLayouts.count == 2)
+        #expect(result.sectionLayouts[0].id == "basic-info")
+        #expect(result.sectionLayouts[0].title == "Basic Information")
+        #expect(result.sectionLayouts[0].fieldIds == ["name", "email", "phone"])
+        #expect(result.sectionLayouts[0].layoutStyle == .horizontal)
+        #expect(result.sectionLayouts[1].id == "details")
+        #expect(result.sectionLayouts[1].title == "Details")
+        #expect(result.sectionLayouts[1].fieldIds == ["bio", "address"])
+        #expect(result.sectionLayouts[1].layoutStyle == .vertical)
+        #expect(result.fieldHints["username"]?.displayWidth == "medium")
     }
 
     /// BUSINESS PURPOSE: Validate SectionBuilder handles missing fields gracefully
@@ -193,9 +197,7 @@ struct FieldHintsLoaderTests {
 
         let result = FileBasedDataHintsLoader().loadHintsResult(for: uniqueModelName)
 
-        // Deliberate red (#382): expect title-less section kept (production skips it).
-        #expect(result.sectionLayouts.count == 1)
-        #expect(result.sectionLayouts.first?.id == "basic-info")
+        #expect(result.sectionLayouts.isEmpty, "Sections without title must be skipped")
     }
 
     /// BUSINESS PURPOSE: Validate hints parser maintains field order from hints
@@ -218,9 +220,8 @@ struct FieldHintsLoaderTests {
 
         let result = FileBasedDataHintsLoader().loadHintsResult(for: uniqueModelName)
 
-        // Deliberate red (#382): inverted field order.
         #expect(result.sectionLayouts.count == 1)
-        #expect(result.sectionLayouts[0].fieldIds == ["phone", "email", "name"])
+        #expect(result.sectionLayouts[0].fieldIds == ["name", "email", "phone"])
     }
 
     /// BUSINESS PURPOSE: Validate hints parser handles backward compatibility
@@ -242,9 +243,9 @@ struct FieldHintsLoaderTests {
 
         let result = FileBasedDataHintsLoader().loadHintsResult(for: uniqueModelName)
 
-        // Deliberate red (#382): invent a section; wrong field width.
-        #expect(result.sectionLayouts.count == 1)
-        #expect(result.fieldHints["username"]?.displayWidth == "wide")
-        #expect(result.fieldHints["email"]?.displayWidth == "medium")
+        #expect(result.sectionLayouts.isEmpty, "Legacy files without _sections yield no layouts")
+        #expect(result.fieldHints["username"]?.displayWidth == "medium")
+        #expect(result.fieldHints["username"]?.expectedLength == 20)
+        #expect(result.fieldHints["email"]?.displayWidth == "wide")
     }
 }
