@@ -15,6 +15,16 @@ import Foundation
 /// NOTE: Not marked @MainActor on class to allow parallel execution
 @Suite("Notification Service")
 open class NotificationServiceTests: BaseTestClass {
+
+    /// Cancel APIs are UN-center no-ops in unit-test env; observe published-state invariance.
+    @MainActor
+    private func expectCancelLeavesPublishedStateIntact(_ mutate: (NotificationService) -> Void) {
+        let service = NotificationService()
+        let badgeBefore = service.badgeCount
+        mutate(service)
+        #expect(service.badgeCount == badgeBefore)
+        #expect(service.lastError == nil)
+    }
     
     // MARK: - Service Initialization Tests
     
@@ -154,9 +164,9 @@ open class NotificationServiceTests: BaseTestClass {
         // When: Trying to update badge
         try service.updateBadge(5)
         
-        // Then: Should not throw (but may not actually update)
-        // The service should handle this gracefully
-        #expect(Bool(true))
+        // Then: Early-return leaves badgeCount at 0; no error recorded
+        #expect(service.badgeCount == 0)
+        #expect(service.lastError == nil)
     }
     
     // MARK: - Do Not Disturb Tests
@@ -272,49 +282,31 @@ open class NotificationServiceTests: BaseTestClass {
     // MARK: - Notification Scheduling Tests
     
     @Test @MainActor func testNotificationServiceCanScheduleLocalNotification() async throws {
-        // Given: NotificationService
-        // Note: This test may fail if permissions are not granted
-        // In a real scenario, we'd mock the permission status
+        // Given: NotificationService in unit-test env (permission forced to .notDetermined)
         let service = NotificationService()
         
-        // When: Trying to schedule a notification
-        // Note: This will fail if permissions aren't granted, which is expected
-        do {
+        // Then: schedule requires authorized/provisional — unit env always denies
+        #expect(throws: NotificationServiceError.permissionDenied) {
             try service.scheduleLocalNotification(
                 identifier: "test-notification",
                 title: "Test Title",
                 body: "Test Body",
                 date: Date().addingTimeInterval(60)
             )
-            // If we get here, scheduling succeeded
-            #expect(Bool(true))
-        } catch {
-            // If permission is denied, that's also a valid test result
-            #expect(error is NotificationServiceError)
         }
+        #expect(service.lastError as? NotificationServiceError == .permissionDenied)
     }
     
     @Test @MainActor func testNotificationServiceCanCancelNotification() async {
-        // Given: NotificationService
-        let service = NotificationService()
-        let identifier = "test-notification"
-        
-        // When: Cancelling a notification
-        service.cancelNotification(identifier: identifier)
-        
-        // Then: Should not throw (cancellation is always safe)
-        #expect(Bool(true))
+        expectCancelLeavesPublishedStateIntact { service in
+            service.cancelNotification(identifier: "test-notification")
+        }
     }
     
     @Test @MainActor func testNotificationServiceCanCancelAllNotifications() async {
-        // Given: NotificationService
-        let service = NotificationService()
-        
-        // When: Cancelling all notifications
-        service.cancelAllNotifications()
-        
-        // Then: Should not throw
-        #expect(Bool(true))
+        expectCancelLeavesPublishedStateIntact { service in
+            service.cancelAllNotifications()
+        }
     }
     
     // MARK: - Sound Preferences Tests
