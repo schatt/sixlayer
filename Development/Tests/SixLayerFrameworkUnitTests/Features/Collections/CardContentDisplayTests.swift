@@ -37,11 +37,10 @@ open class CardContentDisplayTests: BaseTestClass {
     }
 
     @MainActor
-    private func expectHostableRed<V: View>(_ view: V, _ label: String) {
-        // Deliberate inverted hostability for #382 red — flip to isHostable for green.
+    private func expectHostable<V: View>(_ view: V, _ label: String) {
         #expect(
-            !PlatformContainerStructureAssertions.isHostable(view),
-            "Deliberate red #382: \(label) should be hostable"
+            PlatformContainerStructureAssertions.isHostable(view),
+            "\(label) should be hostable (#382)"
         )
     }
 
@@ -61,7 +60,7 @@ open class CardContentDisplayTests: BaseTestClass {
         )
         #expect(sut.item.cardTitle == "Test Item 1")
         #expect(sut.layoutDecision.columns == layoutDecision.columns)
-        expectHostableRed(sut, "SimpleCardComponent title")
+        expectHostable(sut, "SimpleCardComponent title")
     }
 
     @Test @MainActor func testSimpleCardComponentDisplaysItemIcon() {
@@ -76,7 +75,7 @@ open class CardContentDisplayTests: BaseTestClass {
             onItemEdited: nil
         )
         #expect(sut.item.cardIcon == "star.fill")
-        expectHostableRed(sut, "SimpleCardComponent icon")
+        expectHostable(sut, "SimpleCardComponent icon")
     }
 
     @Test @MainActor func testSimpleCardComponentHandlesMissingIcon() {
@@ -92,7 +91,7 @@ open class CardContentDisplayTests: BaseTestClass {
         )
         #expect(sut.item.cardIcon == nil)
         #expect(sut.item.cardTitle == "Test Item 3")
-        expectHostableRed(sut, "SimpleCardComponent missing icon")
+        expectHostable(sut, "SimpleCardComponent missing icon")
     }
 
     @Test @MainActor func testSimpleCardComponentDisplaysTitleAndDescription() {
@@ -108,7 +107,7 @@ open class CardContentDisplayTests: BaseTestClass {
         )
         #expect(sut.item.cardTitle == "Test Item 1")
         #expect(sut.item.cardDescription == "Description 1")
-        expectHostableRed(sut, "SimpleCardComponent description")
+        expectHostable(sut, "SimpleCardComponent description")
     }
 
     @Test @MainActor func testSimpleCardComponentExpandedContentData() {
@@ -124,7 +123,7 @@ open class CardContentDisplayTests: BaseTestClass {
         )
         #expect(sut.item.cardTitle == "Test Item 2")
         #expect(sut.item.cardSubtitle == "Subtitle 2")
-        expectHostableRed(sut, "SimpleCardComponent expanded data")
+        expectHostable(sut, "SimpleCardComponent expanded data")
     }
 
     // MARK: - ListCardComponent
@@ -135,7 +134,7 @@ open class CardContentDisplayTests: BaseTestClass {
         let sut = ListCardComponent(item: item, hints: PresentationHints())
         #expect(sut.item.cardTitle == "Test Item 1")
         #expect(sut.item.cardSubtitle == "Subtitle 1")
-        expectHostableRed(sut, "ListCardComponent")
+        expectHostable(sut, "ListCardComponent")
     }
 
     @Test @MainActor func testListCardComponentHandlesMissingSubtitle() {
@@ -144,7 +143,7 @@ open class CardContentDisplayTests: BaseTestClass {
         let sut = ListCardComponent(item: item, hints: PresentationHints())
         #expect(sut.item.cardSubtitle == nil)
         #expect(sut.item.cardTitle == "Test Item 3")
-        expectHostableRed(sut, "ListCardComponent missing subtitle")
+        expectHostable(sut, "ListCardComponent missing subtitle")
     }
 
     // MARK: - MasonryCardComponent
@@ -154,7 +153,7 @@ open class CardContentDisplayTests: BaseTestClass {
         let item = createCardTestItems()[0]
         let sut = MasonryCardComponent(item: item, hints: PresentationHints())
         #expect(sut.item.cardTitle == "Test Item 1")
-        expectHostableRed(sut, "MasonryCardComponent")
+        expectHostable(sut, "MasonryCardComponent")
     }
 
     // MARK: - Generic items
@@ -177,9 +176,9 @@ open class CardContentDisplayTests: BaseTestClass {
         #expect(simple.item.cardTitle == "Generic 1")
         #expect(list.item.cardTitle == "Generic 1")
         #expect(masonry.item.cardTitle == "Generic 1")
-        expectHostableRed(simple, "SimpleCard GenericDataItem")
-        expectHostableRed(list, "ListCard GenericDataItem")
-        expectHostableRed(masonry, "MasonryCard GenericDataItem")
+        expectHostable(simple, "SimpleCard GenericDataItem")
+        expectHostable(list, "ListCard GenericDataItem")
+        expectHostable(masonry, "MasonryCard GenericDataItem")
     }
 
     @Test @MainActor func testCardComponentsWorkWithGenericVehicleShapedItem() {
@@ -200,9 +199,9 @@ open class CardContentDisplayTests: BaseTestClass {
         #expect(simple.item.cardTitle == "Car 1")
         #expect(list.item.cardSubtitle == "A nice car")
         #expect(masonry.item.cardTitle == "Car 1")
-        expectHostableRed(simple, "SimpleCard vehicle-shaped")
-        expectHostableRed(list, "ListCard vehicle-shaped")
-        expectHostableRed(masonry, "MasonryCard vehicle-shaped")
+        expectHostable(simple, "SimpleCard vehicle-shaped")
+        expectHostable(list, "ListCard vehicle-shaped")
+        expectHostable(masonry, "MasonryCard vehicle-shaped")
     }
 
     // MARK: - Edge cases
@@ -224,9 +223,9 @@ open class CardContentDisplayTests: BaseTestClass {
         #expect(simple.item.cardTitle.isEmpty)
         #expect(list.item.cardSubtitle == "")
         #expect(masonry.item.cardIcon == "")
-        expectHostableRed(simple, "SimpleCard empty strings")
-        expectHostableRed(list, "ListCard empty strings")
-        expectHostableRed(masonry, "MasonryCard empty strings")
+        expectHostable(simple, "SimpleCard empty strings")
+        expectHostable(list, "ListCard empty strings")
+        expectHostable(masonry, "MasonryCard empty strings")
     }
 
     @Test @MainActor func testCardComponentsWithVeryLongText() {
@@ -253,9 +252,9 @@ open class CardContentDisplayTests: BaseTestClass {
         #expect(simple.item.cardTitle.count > 100)
         #expect(list.item.cardTitle == longText)
         #expect(masonry.item.cardIcon == "star.fill")
-        expectHostableRed(simple, "SimpleCard long text")
-        expectHostableRed(list, "ListCard long text")
-        expectHostableRed(masonry, "MasonryCard long text")
+        expectHostable(simple, "SimpleCard long text")
+        expectHostable(list, "ListCard long text")
+        expectHostable(masonry, "MasonryCard long text")
     }
 
     @Test @MainActor func testCardComponentsHaveProperAccessibilityWiring() {
@@ -276,8 +275,8 @@ open class CardContentDisplayTests: BaseTestClass {
         #expect(simple.item.cardTitle == "Test Item 1")
         #expect(list.item.cardTitle == "Test Item 1")
         #expect(masonry.item.cardTitle == "Test Item 1")
-        expectHostableRed(simple, "SimpleCard a11y")
-        expectHostableRed(list, "ListCard a11y")
-        expectHostableRed(masonry, "MasonryCard a11y")
+        expectHostable(simple, "SimpleCard a11y")
+        expectHostable(list, "ListCard a11y")
+        expectHostable(masonry, "MasonryCard a11y")
     }
 }
