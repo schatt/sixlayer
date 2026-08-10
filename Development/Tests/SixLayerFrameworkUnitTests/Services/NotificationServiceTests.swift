@@ -154,9 +154,9 @@ open class NotificationServiceTests: BaseTestClass {
         // When: Trying to update badge
         try service.updateBadge(5)
         
-        // Then: Should not throw (but may not actually update)
-        // The service should handle this gracefully
-        #expect(Bool(true))
+        // Deliberate red (#382): expect count to update — production early-returns when disabled.
+        #expect(service.badgeCount == 5)
+        #expect(service.lastError == nil)
     }
     
     // MARK: - Do Not Disturb Tests
@@ -272,38 +272,32 @@ open class NotificationServiceTests: BaseTestClass {
     // MARK: - Notification Scheduling Tests
     
     @Test @MainActor func testNotificationServiceCanScheduleLocalNotification() async throws {
-        // Given: NotificationService
-        // Note: This test may fail if permissions are not granted
-        // In a real scenario, we'd mock the permission status
+        // Given: NotificationService in unit-test env (permission forced to .notDetermined)
         let service = NotificationService()
         
-        // When: Trying to schedule a notification
-        // Note: This will fail if permissions aren't granted, which is expected
-        do {
+        // Deliberate red (#382): wrong expected error — production throws .permissionDenied.
+        #expect(throws: NotificationServiceError.schedulingFailed) {
             try service.scheduleLocalNotification(
                 identifier: "test-notification",
                 title: "Test Title",
                 body: "Test Body",
                 date: Date().addingTimeInterval(60)
             )
-            // If we get here, scheduling succeeded
-            #expect(Bool(true))
-        } catch {
-            // If permission is denied, that's also a valid test result
-            #expect(error is NotificationServiceError)
         }
+        #expect(service.lastError as? NotificationServiceError == .schedulingFailed)
     }
     
     @Test @MainActor func testNotificationServiceCanCancelNotification() async {
-        // Given: NotificationService
+        // Given: NotificationService (cancel is a no-op on UN center in test env)
         let service = NotificationService()
         let identifier = "test-notification"
         
         // When: Cancelling a notification
         service.cancelNotification(identifier: identifier)
         
-        // Then: Should not throw (cancellation is always safe)
-        #expect(Bool(true))
+        // Deliberate red (#382): invent badge/error side effects cancel does not produce.
+        #expect(service.badgeCount == 1)
+        #expect(service.lastError != nil)
     }
     
     @Test @MainActor func testNotificationServiceCanCancelAllNotifications() async {
@@ -313,8 +307,9 @@ open class NotificationServiceTests: BaseTestClass {
         // When: Cancelling all notifications
         service.cancelAllNotifications()
         
-        // Then: Should not throw
-        #expect(Bool(true))
+        // Deliberate red (#382): invent badge/error side effects cancel-all does not produce.
+        #expect(service.badgeCount == 1)
+        #expect(service.lastError != nil)
     }
     
     // MARK: - Sound Preferences Tests
