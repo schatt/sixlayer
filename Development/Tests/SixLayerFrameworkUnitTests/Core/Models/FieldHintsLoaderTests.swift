@@ -12,8 +12,12 @@ import Foundation
 @Suite("Field Hints Loader")
 struct FieldHintsLoaderTests {
 
-    /// Write a unique `.hints` file under Documents/Hints for `FileBasedDataHintsLoader`.
-    private func writeHintsFile(modelName: String, json: [String: Any]) throws -> (fileURL: URL, uniqueModelName: String) {
+    /// Write a unique `.hints` file under Documents/Hints, run `body`, then delete the file.
+    private func withHintsResult<T>(
+        modelName: String,
+        json: [String: Any],
+        _ body: (DataHintsResult) throws -> T
+    ) throws -> T {
         let fileManager = FileManager.default
         guard let documentsURL = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first else {
             throw NSError(domain: "TestError", code: 1, userInfo: [NSLocalizedDescriptionKey: "No documents directory"])
@@ -24,7 +28,8 @@ struct FieldHintsLoaderTests {
         let testFile = hintsDir.appendingPathComponent("\(uniqueModelName).hints")
         let data = try JSONSerialization.data(withJSONObject: json, options: .prettyPrinted)
         try data.write(to: testFile, options: .atomic)
-        return (testFile, uniqueModelName)
+        defer { try? fileManager.removeItem(at: testFile) }
+        return try body(FileBasedDataHintsLoader().loadHintsResult(for: uniqueModelName))
     }
 
     // MARK: - JSON Parsing
@@ -129,21 +134,18 @@ struct FieldHintsLoaderTests {
             ]
         ]
 
-        let (fileURL, uniqueModelName) = try writeHintsFile(modelName: "FieldHintsLoader_sections", json: json)
-        defer { try? FileManager.default.removeItem(at: fileURL) }
-
-        let result = FileBasedDataHintsLoader().loadHintsResult(for: uniqueModelName)
-
-        #expect(result.sectionLayouts.count == 2)
-        #expect(result.sectionLayouts[0].id == "basic-info")
-        #expect(result.sectionLayouts[0].title == "Basic Information")
-        #expect(result.sectionLayouts[0].fieldIds == ["name", "email", "phone"])
-        #expect(result.sectionLayouts[0].layoutStyle == .horizontal)
-        #expect(result.sectionLayouts[1].id == "details")
-        #expect(result.sectionLayouts[1].title == "Details")
-        #expect(result.sectionLayouts[1].fieldIds == ["bio", "address"])
-        #expect(result.sectionLayouts[1].layoutStyle == .vertical)
-        #expect(result.fieldHints["username"]?.displayWidth == "medium")
+        try withHintsResult(modelName: "FieldHintsLoader_sections", json: json) { result in
+            #expect(result.sectionLayouts.count == 2)
+            #expect(result.sectionLayouts[0].id == "basic-info")
+            #expect(result.sectionLayouts[0].title == "Basic Information")
+            #expect(result.sectionLayouts[0].fieldIds == ["name", "email", "phone"])
+            #expect(result.sectionLayouts[0].layoutStyle == .horizontal)
+            #expect(result.sectionLayouts[1].id == "details")
+            #expect(result.sectionLayouts[1].title == "Details")
+            #expect(result.sectionLayouts[1].fieldIds == ["bio", "address"])
+            #expect(result.sectionLayouts[1].layoutStyle == .vertical)
+            #expect(result.fieldHints["username"]?.displayWidth == "medium")
+        }
     }
 
     /// BUSINESS PURPOSE: Validate SectionBuilder handles missing fields gracefully
@@ -192,12 +194,9 @@ struct FieldHintsLoaderTests {
             ]
         ]
 
-        let (fileURL, uniqueModelName) = try writeHintsFile(modelName: "FieldHintsLoader_noTitle", json: json)
-        defer { try? FileManager.default.removeItem(at: fileURL) }
-
-        let result = FileBasedDataHintsLoader().loadHintsResult(for: uniqueModelName)
-
-        #expect(result.sectionLayouts.isEmpty, "Sections without title must be skipped")
+        try withHintsResult(modelName: "FieldHintsLoader_noTitle", json: json) { result in
+            #expect(result.sectionLayouts.isEmpty, "Sections without title must be skipped")
+        }
     }
 
     /// BUSINESS PURPOSE: Validate hints parser maintains field order from hints
@@ -215,13 +214,10 @@ struct FieldHintsLoaderTests {
             ]
         ]
 
-        let (fileURL, uniqueModelName) = try writeHintsFile(modelName: "FieldHintsLoader_order", json: json)
-        defer { try? FileManager.default.removeItem(at: fileURL) }
-
-        let result = FileBasedDataHintsLoader().loadHintsResult(for: uniqueModelName)
-
-        #expect(result.sectionLayouts.count == 1)
-        #expect(result.sectionLayouts[0].fieldIds == ["name", "email", "phone"])
+        try withHintsResult(modelName: "FieldHintsLoader_order", json: json) { result in
+            #expect(result.sectionLayouts.count == 1)
+            #expect(result.sectionLayouts[0].fieldIds == ["name", "email", "phone"])
+        }
     }
 
     /// BUSINESS PURPOSE: Validate hints parser handles backward compatibility
@@ -238,14 +234,11 @@ struct FieldHintsLoaderTests {
             ]
         ]
 
-        let (fileURL, uniqueModelName) = try writeHintsFile(modelName: "FieldHintsLoader_compat", json: json)
-        defer { try? FileManager.default.removeItem(at: fileURL) }
-
-        let result = FileBasedDataHintsLoader().loadHintsResult(for: uniqueModelName)
-
-        #expect(result.sectionLayouts.isEmpty, "Legacy files without _sections yield no layouts")
-        #expect(result.fieldHints["username"]?.displayWidth == "medium")
-        #expect(result.fieldHints["username"]?.expectedLength == 20)
-        #expect(result.fieldHints["email"]?.displayWidth == "wide")
+        try withHintsResult(modelName: "FieldHintsLoader_compat", json: json) { result in
+            #expect(result.sectionLayouts.isEmpty, "Legacy files without _sections yield no layouts")
+            #expect(result.fieldHints["username"]?.displayWidth == "medium")
+            #expect(result.fieldHints["username"]?.expectedLength == 20)
+            #expect(result.fieldHints["email"]?.displayWidth == "wide")
+        }
     }
 }
