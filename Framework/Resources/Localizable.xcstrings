@@ -272,6 +272,12 @@
     "Array" : {
 
     },
+    "Array field: %@" : {
+
+    },
+    "Autocomplete field: %@" : {
+
+    },
     "Available Features" : {
 
     },
@@ -323,6 +329,9 @@
     "Close sidebar" : {
 
     },
+    "Color picker field: %@" : {
+
+    },
     "Columns:" : {
 
     },
@@ -348,6 +357,12 @@
 
     },
     "Custom field not registered: %@" : {
+
+    },
+    "Custom field: %@" : {
+
+    },
+    "Data field: %@" : {
 
     },
     "Data organization and categorization" : {
@@ -419,6 +434,9 @@
     "File picker requires iOS 14 or later" : {
 
     },
+    "File upload field: %@" : {
+
+    },
     "Form Examples" : {
 
     },
@@ -453,6 +471,9 @@
 
     },
     "Hierarchical Data" : {
+
+    },
+    "Image field: %@" : {
 
     },
     "Inset Grouped" : {
@@ -522,6 +543,9 @@
 
     },
     "Modals" : {
+
+    },
+    "Multi-select field: %@" : {
 
     },
     "Multiple date selection requires iOS 16+" : {
@@ -666,6 +690,9 @@
     "Quaternary Label" : {
 
     },
+    "Range field: %@" : {
+
+    },
     "Ready for OCR (Fallback)" : {
 
     },
@@ -679,6 +706,9 @@
 
     },
     "Recommended Approach:" : {
+
+    },
+    "Rich text field: %@" : {
 
     },
     "Root items: %@" : {
