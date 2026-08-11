@@ -17,6 +17,8 @@ This is especially valuable for:
 ### **OCR Hints Array**
 Each field can specify an array of keywords that help identify it in OCR text.
 
+**`ocrHints` ≠ Scan accessory (Issue #404).** Keywords are for extraction only. Batch fill eligibility is ``supportsOCR``; the per-field Scan button is ``displayOCR`` (defaults to the same value as `supportsOCR` when omitted). `applying(hints:)` never flips those flags just because `ocrHints` is present. Optional hints-file keys `"supportsOCR"` / `"displayOCR"` override when set.
+
 ### **Keyword Matching**
 The OCR system uses these hints to:
 - **Prioritize** text regions that match field keywords
@@ -37,8 +39,21 @@ let fuelField = DynamicFormField(
     id: "fuel_quantity",
     contentType: .number,
     label: "Fuel Quantity",
-    supportsOCR: true,
+    supportsOCR: true, // batch / receipt fill target
+    // displayOCR defaults to true when supportsOCR is true
     ocrHints: ["gallons", "gal", "fuel quantity", "liters", "litres"]
+)
+```
+
+### **Batch fill without Scan button**
+```swift
+let stationField = DynamicFormField(
+    id: "station",
+    contentType: .text,
+    label: "Station",
+    supportsOCR: true,
+    displayOCR: false, // map / custom trailingView only
+    ocrHints: ["station", "fuel stop"]
 )
 ```
 
