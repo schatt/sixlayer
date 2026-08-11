@@ -17,7 +17,7 @@ This is especially valuable for:
 ### **OCR Hints Array**
 Each field can specify an array of keywords that help identify it in OCR text.
 
-**`ocrHints` ≠ Scan accessory (Issue #404).** Keywords are for extraction only. Batch fill eligibility is ``supportsOCR``; the per-field Scan button is ``displayOCR`` (defaults to the same value as `supportsOCR` when omitted). `applying(hints:)` never flips those flags just because `ocrHints` is present. Optional hints-file keys `"supportsOCR"` / `"displayOCR"` override when set.
+**`ocrHints` ≠ Scan accessory (Issue #404).** Keywords are for extraction only. Batch fill eligibility is ``supportsOCR``; the per-field Scan button is ``displayOCR`` (defaults to the same value as `supportsOCR` when omitted). `applying(hints:)` never flips those flags just because `ocrHints` is present. Optional hints-file keys `"supportsOCR"` / `"displayOCR"` override when set. The same rule applies to ``calculationGroups`` vs ``isCalculated`` (optional hints-file `"isCalculated"`).
 
 ### **Keyword Matching**
 The OCR system uses these hints to:
