@@ -293,10 +293,11 @@ struct FieldHintsOCRExtensionTests {
         )
         field = field.applying(hints: hints)
         
-        // Then: Field should have OCR hints
+        // Then: Field should have OCR hints for extraction; flags unchanged (Issue #404)
         #expect(field.ocrHints?.count == 2)
         #expect(field.ocrHints?.contains("gallons") == true)
-        #expect(field.supportsOCR == true) // Should be enabled when OCR hints present
+        #expect(field.supportsOCR == false)
+        #expect(field.displayOCR == false)
     }
     
     @Test func testApplyCalculationGroupsToDynamicFormField() {
@@ -348,10 +349,11 @@ struct FieldHintsOCRExtensionTests {
         )
         field = field.applying(hints: hints)
         
-        // Then: Field should have both
+        // Then: Field should have both; ocrHints do not enable OCR flags (Issue #404)
         #expect(field.ocrHints?.count == 2)
         #expect(field.calculationGroups?.count == 1)
-        #expect(field.supportsOCR == true)
+        #expect(field.supportsOCR == false)
+        #expect(field.displayOCR == false)
         #expect(field.isCalculated == true)
     }
     
