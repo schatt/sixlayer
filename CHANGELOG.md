@@ -1,5 +1,20 @@
 # Changelog
 
+## v8.3.6 - TBD
+
+### ✨ Added
+- **`DynamicFormField.displayOCR`**: independent Scan-accessory flag (defaults to match `supportsOCR` when omitted). Optional hints-file `"supportsOCR"` / `"displayOCR"` / `"isCalculated"` (#404).
+
+### 🐛 Fixed
+- **`applying(hints:)` / OCR flags**: `ocrHints` no longer force `supportsOCR=true`. Batch fill stays on `supportsOCR`; Scan accessory keys off `displayOCR` (#404).
+- **`applying(hints:)` / calculated fields**: `calculationGroups` no longer force `isCalculated=true` (#404).
+
+### 📚 Documentation
+- **Migration:** consumers that relied on inference must set flags explicitly (code or hints). See [`Development/RELEASE_v8.3.6.md`](Development/RELEASE_v8.3.6.md).
+- Full notes: [`Development/RELEASE_v8.3.6.md`](Development/RELEASE_v8.3.6.md), index [`Development/RELEASES.md`](Development/RELEASES.md).
+
+---
+
 ## v8.1.1 - macOS/iPad resize, adaptive sidebar, and ViewInspector reliability (TBD)
 
 ### ✨ Added
@@ -22,8 +37,6 @@
 - **Layer 4 production APIs** (print, export, open URL, register, share, photo picker): removed XCUITest side-effect stubs; UITest contracts mount in test host (#315).
 
 ### 🐛 Fixed
-- **`applying(hints:)` / OCR flags**: `ocrHints` no longer force `supportsOCR=true`. Added ``DynamicFormField/displayOCR`` (Scan accessory; defaults to match `supportsOCR` when omitted). Batch fill stays on `supportsOCR`; optional hints-file `supportsOCR` / `displayOCR` override when present (#404).
-- **`applying(hints:)` / calculated fields**: `calculationGroups` no longer force `isCalculated=true`; optional hints-file `isCalculated` overrides when present (#404).
 - **macOS ViewInspector lane (`SLF-macOS-ViewInspectorTests`)**: green under parallel execution — stale capability overrides no longer leak across `@MainActor` tests (#315).
 
 ### 📚 Documentation
