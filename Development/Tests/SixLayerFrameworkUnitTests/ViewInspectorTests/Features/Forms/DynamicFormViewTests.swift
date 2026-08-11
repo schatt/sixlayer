@@ -2263,13 +2263,12 @@ open class DynamicFormViewTests: BaseTestClass {
     
     @Test @MainActor func testDynamicFormViewAppliesCalculationHints() async throws {
         initializeTestConfig()
-        // TDD: DynamicFormView should apply calculation hints from .hints files
-        // 1. Calculation hints should enable isCalculated on fields
-        // 2. Calculation groups should be applied to fields
+        // Calculation groups merge from .hints; isCalculated only when explicitly set (Issue #404)
 
         // Create a hints file with calculation hints
         let hintsJSON: [String: Any] = [
             "total": [
+                "isCalculated": true,
                 "calculationGroups": [
                     [
                         "id": "price_calc",
