@@ -470,7 +470,9 @@ public struct AutomaticComplianceModifier: ViewModifier {
 /// This is used by the .automaticCompliance(named:) helper
 /// 
 /// NOTE: No singleton observer needed - modifier reads config directly from task-local/injected/shared
-/// This eliminates singleton access overhead and improves test isolation
+/// This eliminates singleton access overhead and improves test isolation.
+/// Identifier attaches via ``View/accessibilityHostIdentifier(_:)`` (host sentinel), matching
+/// ``NamedModifier`` / ``ExactNamedModifier`` (#360 / #364 / #406).
 public struct NamedAutomaticComplianceModifier: ViewModifier {
     let componentName: String
     let accessibilityLabel: String?  // NEW: Accessibility label for VoiceOver (Issue #154)
@@ -527,10 +529,11 @@ public struct NamedAutomaticComplianceModifier: ViewModifier {
             fflush(stdout)
             config.addDebugLogEntry(debugMsg, enabled: capturedEnableDebugLogging)
         }
-        // Apply identifier and accessibility label directly to content (no wrapper view!)
-        // This fixes Issue #159 - identifier now applies directly to the Button
-        // Issue #154: Also apply accessibility label if provided (localized and formatted)
-        // Issue #158: Log missing localization keys in debug mode
+        // Attach via host sentinel — same pattern as ``NamedModifier`` / ``ExactNamedModifier``
+        // (#360 / #364). Direct `accessibilityIdentifier` on container content
+        // (e.g. ExpandableCardCollectionView's GeometryReader/LazyVGrid) can trap under
+        // iOS 27 sim with `unsafeBitCast` size mismatch during the HIG + named-compliance
+        // stack (#406). VoiceOver label (Issue #154) still applies on the content wrapper.
         @ViewBuilder
         func applyAccessibilityLabelIfNeeded<V: View>(to view: V) -> some View {
             if let label = accessibilityLabel, !label.isEmpty {
@@ -546,7 +549,7 @@ public struct NamedAutomaticComplianceModifier: ViewModifier {
                 view
             }
         }
-        return applyAccessibilityLabelIfNeeded(to: content.accessibilityIdentifier(identifier))
+        return applyAccessibilityLabelIfNeeded(to: content.accessibilityHostIdentifier(identifier))
     }
     
     // Note: Not @MainActor - this function only does string manipulation and config access
