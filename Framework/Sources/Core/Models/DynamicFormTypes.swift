@@ -582,7 +582,7 @@ public struct DynamicFormField: Identifiable {
     }
     
     /// Get effective actions for this field
-    /// Returns explicit fieldAction if set, otherwise converts supportsOCR/supportsBarcodeScanning flags to actions
+    /// Returns explicit fieldAction if set, otherwise converts displayOCR/supportsBarcodeScanning flags to actions
     /// This ensures backward compatibility while supporting the new action system
     @MainActor
     public var effectiveActions: [any FieldAction] {
@@ -594,7 +594,8 @@ public struct DynamicFormField: Identifiable {
         // Otherwise, convert flags to actions for backward compatibility
         var actions: [any FieldAction] = []
         
-        if supportsOCR {
+        // Scan accessory keys off displayOCR (independent of batch eligibility; Issue #404)
+        if displayOCR {
             let ocrAction = BuiltInFieldAction.ocrScan(
                 hint: ocrHint,
                 validationTypes: ocrValidationTypes
@@ -616,6 +617,9 @@ public struct DynamicFormField: Identifiable {
     /// Apply hints to this field, creating a new field with updated properties
     /// - Parameter hints: The hints to apply
     /// - Returns: A new field with hints applied
+    ///
+    /// ``FieldDisplayHints/ocrHints`` merges extraction keywords only and never flips
+    /// ``supportsOCR`` or ``displayOCR``. Optional hints flags override when non-nil (Issue #404).
     public func applying(hints: FieldDisplayHints) -> DynamicFormField {
         let merged = Self.mergingFieldDisplayHints(hints, into: self)
         return DynamicFormField(
@@ -630,7 +634,8 @@ public struct DynamicFormField: Identifiable {
             options: merged.options,
             defaultValue: merged.defaultValue,
             metadata: merged.metadata,
-            supportsOCR: hints.ocrHints != nil ? true : merged.supportsOCR,
+            supportsOCR: hints.supportsOCR ?? merged.supportsOCR,
+            displayOCR: hints.displayOCR ?? merged.displayOCR,
             ocrHint: merged.ocrHint,
             ocrValidationTypes: merged.ocrValidationTypes,
             ocrFieldIdentifier: merged.ocrFieldIdentifier,
@@ -716,6 +721,7 @@ public struct DynamicFormField: Identifiable {
             defaultValue: defaultString,
             metadata: finalMeta,
             supportsOCR: field.supportsOCR,
+            displayOCR: field.displayOCR,
             ocrHint: field.ocrHint,
             ocrValidationTypes: field.ocrValidationTypes,
             ocrFieldIdentifier: field.ocrFieldIdentifier,
