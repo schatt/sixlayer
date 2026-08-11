@@ -363,7 +363,7 @@ public final class FileBasedDataHintsLoader: DataHintsLoader, @unchecked Sendabl
                     if !["expectedLength", "displayWidth", "showCharacterCounter", "maxLength", "minLength", 
                          "expectedRange", "ocrHints", "calculationGroups", "inputType", "options",
                          "fieldType", "isOptional", "isArray", "defaultValue", "isHidden", "isEditable",
-                         "supportsOCR", "displayOCR"].contains(propKey) &&
+                         "supportsOCR", "displayOCR", "isCalculated"].contains(propKey) &&
                        !propKey.hasPrefix("ocrHints.") {
                         if let stringValue = propValue as? String {
                             metadata[propKey] = stringValue
@@ -380,6 +380,7 @@ public final class FileBasedDataHintsLoader: DataHintsLoader, @unchecked Sendabl
                 
                 // Parse calculation groups
                 let calculationGroups = parseCalculationGroups(from: properties)
+                let isCalculated = parseOptionalBool(from: properties, key: "isCalculated")
                 
                 // Parse input type and picker options
                 let inputType = properties["inputType"] as? String
@@ -411,6 +412,7 @@ public final class FileBasedDataHintsLoader: DataHintsLoader, @unchecked Sendabl
                     supportsOCR: supportsOCR,
                     displayOCR: displayOCR,
                     calculationGroups: calculationGroups,
+                    isCalculated: isCalculated,
                     inputType: inputType,
                     pickerOptions: pickerOptions,
                     isHidden: isHidden,
