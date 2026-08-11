@@ -22,6 +22,7 @@
 - **Layer 4 production APIs** (print, export, open URL, register, share, photo picker): removed XCUITest side-effect stubs; UITest contracts mount in test host (#315).
 
 ### 🐛 Fixed
+- **`applying(hints:)` / OCR flags**: `ocrHints` no longer force `supportsOCR=true`. Added ``DynamicFormField/displayOCR`` (Scan accessory; defaults to match `supportsOCR` when omitted). Batch fill stays on `supportsOCR`; optional hints-file `supportsOCR` / `displayOCR` override when present (#404).
 - **macOS ViewInspector lane (`SLF-macOS-ViewInspectorTests`)**: green under parallel execution — stale capability overrides no longer leak across `@MainActor` tests (#315).
 
 ### 📚 Documentation
