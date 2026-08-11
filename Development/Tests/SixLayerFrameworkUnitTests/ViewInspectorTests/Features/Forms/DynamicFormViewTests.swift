@@ -2173,7 +2173,8 @@ open class DynamicFormViewTests: BaseTestClass {
         // Verify hints were applied to username field
         let updatedUsernameField = effectiveConfiguration.sections.first?.fields.first { $0.id == "username" }
         #expect(updatedUsernameField != nil, "Username field should exist")
-        #expect(updatedUsernameField?.supportsOCR == true, "Username field should support OCR after hints applied")
+        #expect(updatedUsernameField?.supportsOCR == false, "ocrHints must not enable supportsOCR (Issue #404)")
+        #expect(updatedUsernameField?.displayOCR == false, "ocrHints must not enable displayOCR (Issue #404)")
         #expect(updatedUsernameField?.ocrHints?.count == 3, "Username field should have 3 OCR hints")
         #expect(updatedUsernameField?.ocrHints?.contains("username") == true, "Should contain 'username' hint")
         #expect(updatedUsernameField?.ocrHints?.contains("user name") == true, "Should contain 'user name' hint")
@@ -2181,7 +2182,7 @@ open class DynamicFormViewTests: BaseTestClass {
         // Verify hints were applied to email field
         let updatedEmailField = effectiveConfiguration.sections.first?.fields.first { $0.id == "email" }
         #expect(updatedEmailField != nil, "Email field should exist")
-        #expect(updatedEmailField?.supportsOCR == true, "Email field should support OCR after hints applied")
+        #expect(updatedEmailField?.supportsOCR == false, "ocrHints must not enable supportsOCR (Issue #404)")
         #expect(updatedEmailField?.ocrHints?.count == 3, "Email field should have 3 OCR hints")
         
         // Verify field without hints remains unchanged
@@ -2249,8 +2250,8 @@ open class DynamicFormViewTests: BaseTestClass {
         #expect(updatedField?.metadata?["displayWidth"] == "narrow", "Metadata should be preserved")
         #expect(updatedField?.metadata?["maxLength"] == "50", "Metadata should be preserved")
         
-        // Verify OCR hints from file are applied
-        #expect(updatedField?.supportsOCR == true, "Field should support OCR after hints applied")
+        // Verify OCR hints from file are applied without flipping OCR flags (Issue #404)
+        #expect(updatedField?.supportsOCR == false, "ocrHints must not enable supportsOCR (Issue #404)")
         #expect(updatedField?.ocrHints?.count == 3, "Field should have 3 OCR hints from file")
         
         // Verify DynamicFormView can be created
@@ -2420,16 +2421,16 @@ open class DynamicFormViewTests: BaseTestClass {
         let firstNameField = section1Fields.first { $0.id == "firstName" }
         let lastNameField = section1Fields.first { $0.id == "lastName" }
         
-        #expect(firstNameField?.supportsOCR == true, "First name field should support OCR")
+        #expect(firstNameField?.supportsOCR == false, "ocrHints must not enable supportsOCR (Issue #404)")
         #expect(firstNameField?.ocrHints?.count == 2, "First name should have 2 OCR hints")
-        #expect(lastNameField?.supportsOCR == true, "Last name field should support OCR")
+        #expect(lastNameField?.supportsOCR == false, "ocrHints must not enable supportsOCR (Issue #404)")
         #expect(lastNameField?.ocrHints?.count == 3, "Last name should have 3 OCR hints")
         
         // Verify hints applied to section 2 fields
         let section2Fields = effectiveConfiguration.sections.first { $0.id == "section2" }?.fields ?? []
         let emailField = section2Fields.first { $0.id == "email" }
         
-        #expect(emailField?.supportsOCR == true, "Email field should support OCR")
+        #expect(emailField?.supportsOCR == false, "ocrHints must not enable supportsOCR (Issue #404)")
         #expect(emailField?.ocrHints?.count == 2, "Email should have 2 OCR hints")
         
         // Verify DynamicFormView can be created
