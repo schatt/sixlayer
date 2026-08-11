@@ -293,10 +293,69 @@ struct FieldHintsOCRExtensionTests {
         )
         field = field.applying(hints: hints)
         
-        // Then: Field should have OCR hints
+        // Then: Field should have OCR hints for extraction; flags unchanged (Issue #404)
         #expect(field.ocrHints?.count == 2)
         #expect(field.ocrHints?.contains("gallons") == true)
-        #expect(field.supportsOCR == true) // Should be enabled when OCR hints present
+        #expect(field.supportsOCR == false)
+        #expect(field.displayOCR == false)
+    }
+
+    @Test func testParseSupportsOCRAndDisplayOCRFromHintsFile() async throws {
+        let modelName = "FuelReceipt_testParseSupportsOCRAndDisplayOCR"
+        let json: [String: Any] = [
+            "station": [
+                "ocrHints": ["station", "fuel stop"],
+                "supportsOCR": true,
+                "displayOCR": false
+            ],
+            "notes": [
+                "ocrHints": ["notes"],
+                "supportsOCR": false,
+                "displayOCR": true
+            ]
+        ]
+        let (testFile, uniqueModelName) = try writeHintsFile(modelName: modelName, json: json)
+        defer { try? FileManager.default.removeItem(at: testFile) }
+
+        let result = createTestLoader().loadHintsResult(for: uniqueModelName)
+        let station = result.fieldHints["station"]
+        #expect(station?.ocrHints == ["station", "fuel stop"])
+        #expect(station?.supportsOCR == true)
+        #expect(station?.displayOCR == false)
+
+        let notes = result.fieldHints["notes"]
+        #expect(notes?.supportsOCR == false)
+        #expect(notes?.displayOCR == true)
+    }
+
+    @Test func testApplyHintsFileOCRFlagsWithoutInferringFromOCRHintsAlone() async throws {
+        let modelName = "FuelReceipt_testApplyHintsFileOCRFlags"
+        let json: [String: Any] = [
+            "station": [
+                "ocrHints": ["station"],
+                "supportsOCR": true,
+                "displayOCR": false
+            ],
+            "gallons": [
+                "ocrHints": ["gallons", "gal"]
+            ]
+        ]
+        let (testFile, uniqueModelName) = try writeHintsFile(modelName: modelName, json: json)
+        defer { try? FileManager.default.removeItem(at: testFile) }
+
+        let result = createTestLoader().loadHintsResult(for: uniqueModelName)
+
+        let station = DynamicFormField(id: "station", contentType: .text, label: "Station")
+            .applying(hints: result.fieldHints["station"]!)
+        #expect(station.ocrHints == ["station"])
+        #expect(station.supportsOCR == true)
+        #expect(station.displayOCR == false)
+
+        let gallons = DynamicFormField(id: "gallons", contentType: .number, label: "Gallons")
+            .applying(hints: result.fieldHints["gallons"]!)
+        #expect(gallons.ocrHints == ["gallons", "gal"])
+        #expect(gallons.supportsOCR == false)
+        #expect(gallons.displayOCR == false)
     }
     
     @Test func testApplyCalculationGroupsToDynamicFormField() {
@@ -320,10 +379,31 @@ struct FieldHintsOCRExtensionTests {
         )
         field = field.applying(hints: hints)
         
-        // Then: Field should have calculation groups
+        // Then: Groups merge; calculationGroups must not force isCalculated (Issue #404 follow-through)
         #expect(field.calculationGroups?.count == 1)
         #expect(field.calculationGroups?.first?.id == "multiply")
-        #expect(field.isCalculated == true) // Should be enabled when calculation groups present
+        #expect(field.isCalculated == false)
+    }
+
+    @Test func testApplyHintsCanSetIsCalculatedWhenPresent() {
+        let calculationGroup = CalculationGroup(
+            id: "multiply",
+            formula: "total = price * quantity",
+            dependentFields: ["price", "quantity"],
+            priority: 1
+        )
+        let hints = FieldDisplayHints(
+            calculationGroups: [calculationGroup],
+            isCalculated: true
+        )
+        let field = DynamicFormField(
+            id: "total",
+            contentType: .number,
+            label: "Total"
+        ).applying(hints: hints)
+
+        #expect(field.calculationGroups?.count == 1)
+        #expect(field.isCalculated == true)
     }
     
     @Test func testApplyBothOCRAndCalculationGroupsToField() {
@@ -348,11 +428,12 @@ struct FieldHintsOCRExtensionTests {
         )
         field = field.applying(hints: hints)
         
-        // Then: Field should have both
+        // Then: Field should have both; ocrHints do not enable OCR flags (Issue #404)
         #expect(field.ocrHints?.count == 2)
         #expect(field.calculationGroups?.count == 1)
-        #expect(field.supportsOCR == true)
-        #expect(field.isCalculated == true)
+        #expect(field.supportsOCR == false)
+        #expect(field.displayOCR == false)
+        #expect(field.isCalculated == false)
     }
     
     // MARK: - Internationalization Tests

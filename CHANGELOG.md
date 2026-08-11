@@ -1,5 +1,20 @@
 # Changelog
 
+## v8.3.6 - TBD
+
+### ✨ Added
+- **`DynamicFormField.displayOCR`**: independent Scan-accessory flag (defaults to match `supportsOCR` when omitted). Optional hints-file `"supportsOCR"` / `"displayOCR"` / `"isCalculated"` (#404).
+
+### 🐛 Fixed
+- **`applying(hints:)` / OCR flags**: `ocrHints` no longer force `supportsOCR=true`. Batch fill stays on `supportsOCR`; Scan accessory keys off `displayOCR` (#404).
+- **`applying(hints:)` / calculated fields**: `calculationGroups` no longer force `isCalculated=true` (#404).
+
+### 📚 Documentation
+- **Migration:** consumers that relied on inference must set flags explicitly (code or hints). See [`Development/RELEASE_v8.3.6.md`](Development/RELEASE_v8.3.6.md).
+- Full notes: [`Development/RELEASE_v8.3.6.md`](Development/RELEASE_v8.3.6.md), index [`Development/RELEASES.md`](Development/RELEASES.md).
+
+---
+
 ## v8.1.1 - macOS/iPad resize, adaptive sidebar, and ViewInspector reliability (TBD)
 
 ### ✨ Added
