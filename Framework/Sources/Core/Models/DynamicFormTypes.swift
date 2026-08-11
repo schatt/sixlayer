@@ -1092,7 +1092,8 @@ public struct DynamicFormConfiguration: Identifiable {
     }
 
     /// Get all OCR-enabled fields in the form for batch processing
-    /// - Returns: Array of fields that support OCR
+    /// - Returns: Fields with ``DynamicFormField/supportsOCR`` (batch fill targets).
+    ///   Independent of ``DynamicFormField/displayOCR`` (per-field Scan accessory; Issue #404).
     public func getOCREnabledFields() -> [DynamicFormField] {
         return sections.flatMap { $0.fields }.filter { $0.supportsOCR }
     }
