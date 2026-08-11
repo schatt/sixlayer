@@ -619,7 +619,8 @@ public struct DynamicFormField: Identifiable {
     /// - Returns: A new field with hints applied
     ///
     /// ``FieldDisplayHints/ocrHints`` merges extraction keywords only and never flips
-    /// ``supportsOCR`` or ``displayOCR``. Optional hints flags override when non-nil (Issue #404).
+    /// ``supportsOCR`` or ``displayOCR``. ``calculationGroups`` likewise never flips
+    /// ``isCalculated``. Optional hints flags override when non-nil (Issue #404).
     public func applying(hints: FieldDisplayHints) -> DynamicFormField {
         let merged = Self.mergingFieldDisplayHints(hints, into: self)
         return DynamicFormField(
@@ -645,7 +646,7 @@ public struct DynamicFormField: Identifiable {
             barcodeHint: merged.barcodeHint,
             supportedBarcodeTypes: merged.supportedBarcodeTypes,
             barcodeFieldIdentifier: merged.barcodeFieldIdentifier,
-            isCalculated: hints.calculationGroups != nil ? true : merged.isCalculated,
+            isCalculated: hints.isCalculated ?? merged.isCalculated,
             calculationFormula: merged.calculationFormula,
             calculationDependencies: merged.calculationDependencies,
             calculationGroups: hints.calculationGroups ?? merged.calculationGroups,
