@@ -64,37 +64,6 @@ extension NSView {
 
 /// Get accessibility identifier: direct typed inspection when possible, then platform/AnyView fallback.
 #if canImport(ViewInspector)
-/// First non-empty accessibility identifier on the inspected node (no `findAll`).
-/// `#408`: ViewInspector `findAll` descends into `GeometryReader.view()`, which
-/// `unsafeBitCast`s `GeometryProxy` at a fixed 48/52-byte size and SIGTRAPs on
-/// iOS 27 Simulator (layout is 68+). Prefer hosted platform collection instead.
-@MainActor
-private func firstAccessibilityIdentifierInInspected(_ inspected: ViewInspector.InspectableView<ViewInspector.ViewType.ClassifiedView>) -> String? {
-    if let id = try? inspected.accessibilityIdentifier(), !id.isEmpty { return id }
-    if let button = try? inspected.button(), let id = try? button.accessibilityIdentifier(), !id.isEmpty {
-        return id
-    }
-    return nil
-}
-
-/// Collect accessibility identifiers from inspected view (current node and one level of anyView + button).
-/// `#408`: no `findAll` — that walk traps on GeometryReader under iOS 27.
-@MainActor
-private func allAccessibilityIdentifiersInInspected(_ inspected: ViewInspector.InspectableView<ViewInspector.ViewType.ClassifiedView>) -> [String] {
-    var ids: [String] = []
-    if let id = try? inspected.accessibilityIdentifier(), !id.isEmpty { ids.append(id) }
-    if let button = try? inspected.button(), let id = try? button.accessibilityIdentifier(), !id.isEmpty {
-        ids.append(id)
-    }
-    // One level deeper: AnyView unwrap (modifier often wraps content in ModifiedContent + AnyView)
-    guard let inner = try? inspected.anyView() else { return ids }
-    if let id = try? inner.accessibilityIdentifier(), !id.isEmpty { ids.append(id) }
-    if let button = try? inner.button(), let id = try? button.accessibilityIdentifier(), !id.isEmpty {
-        ids.append(id)
-    }
-    return ids
-}
-
 /// Collect accessibility identifiers from the inspected node only.
 /// `#315` avoided overlapping per-type `findAll`; `#408` drops `findAll(ClassifiedView)`
 /// entirely because GeometryReader inspection SIGTRAPs on iOS 27. Hosted platform
@@ -102,22 +71,6 @@ private func allAccessibilityIdentifiersInInspected(_ inspected: ViewInspector.I
 @MainActor
 private func allAccessibilityIdentifiersInInspectedRecursive(
     _ inspected: ViewInspector.InspectableView<ViewInspector.ViewType.ClassifiedView>
-) -> [String] {
-    var ids: [String] = []
-    var seen = Set<String>()
-    func collect(_ id: String?) {
-        guard let id, !id.isEmpty, seen.insert(id).inserted else { return }
-        ids.append(id)
-    }
-    collect(try? inspected.accessibilityIdentifier())
-    return ids
-}
-
-/// Collect accessibility identifiers from a directly inspected view (no AnyView wrap).
-/// Use with a directly inspected concrete view type (Issue 178). No `findAll` (#408).
-@MainActor
-private func allAccessibilityIdentifiersFromTypedInspectable<V: View>(
-    _ inspected: ViewInspector.InspectableView<ViewInspector.ViewType.View<V>>
 ) -> [String] {
     var ids: [String] = []
     var seen = Set<String>()
