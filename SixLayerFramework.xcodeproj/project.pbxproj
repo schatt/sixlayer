@@ -7023,7 +7023,7 @@
 			path = API;
 			sourceTree = "<group>";
 		};
-		"TEMP_701EDE44-A758-4F08-8142-66D3EE632AAC" /* Utilities */ = {
+		"TEMP_B943B80F-6E01-4095-A98E-30CA99BCFA7E" /* Utilities */ = {
 			isa = PBXGroup;
 			children = (
 			);
@@ -13890,8 +13890,8 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/nalexn/ViewInspector";
 			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 0.10.0;
+				branch = 0.10.4;
+				kind = branch;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
