@@ -1,6 +1,6 @@
 # Changelog
 
-## v8.3.6 - TBD
+## v8.3.6 - August 11, 2026
 
 ### ✨ Added
 - **`DynamicFormField.displayOCR`**: independent Scan-accessory flag (defaults to match `supportsOCR` when omitted). Optional hints-file `"supportsOCR"` / `"displayOCR"` / `"isCalculated"` (#404).
@@ -8,6 +8,9 @@
 ### 🐛 Fixed
 - **`applying(hints:)` / OCR flags**: `ocrHints` no longer force `supportsOCR=true`. Batch fill stays on `supportsOCR`; Scan accessory keys off `displayOCR` (#404).
 - **`applying(hints:)` / calculated fields**: `calculationGroups` no longer force `isCalculated=true` (#404).
+- **NamedAutomaticCompliance host sentinel**: `unsafeBitCast` crash on ExpandableCardCollectionView under iOS 27 (#406).
+- **iOS unit-gate GeometryProxy SIGTRAP**: hosted a11y helpers skip ViewInspector `findAll` into `GeometryReader`; ViewInspector pinned to `0.10.4` (#408).
+- **macOS release-gate xctest load**: remove `xcodebuild clean` before unit tests on Xcode 27 (FB24278669, #409).
 
 ### 📚 Documentation
 - **Migration:** consumers that relied on inference must set flags explicitly (code or hints). See [`Development/RELEASE_v8.3.6.md`](Development/RELEASE_v8.3.6.md).
