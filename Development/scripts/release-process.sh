@@ -352,19 +352,15 @@ release_run_platform_unit_tests() {
     local scheme="$1"
     local destination="$2"
     local xcresult="$3"
-
-    rtk xcodebuild build-for-testing \
-        -project SixLayerFramework.xcodeproj \
-        -scheme "$scheme" \
-        -destination "$destination" \
-        -quiet || return 1
-
-    rtk xcodebuild test-without-building \
-        -project SixLayerFramework.xcodeproj \
-        -scheme "$scheme" \
-        -destination "$destination" \
-        -resultBundlePath "$xcresult" \
+    local -a common=(
+        -project SixLayerFramework.xcodeproj
+        -scheme "$scheme"
+        -destination "$destination"
         -quiet
+    )
+
+    rtk xcodebuild build-for-testing "${common[@]}" || return 1
+    rtk xcodebuild test-without-building "${common[@]}" -resultBundlePath "$xcresult"
 }
 
 # Open an .xcresult in Xcode after a failed test gate (local workflow).
