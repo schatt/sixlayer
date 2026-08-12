@@ -64,37 +64,41 @@ extension NSView {
 
 /// Get accessibility identifier: direct typed inspection when possible, then platform/AnyView fallback.
 #if canImport(ViewInspector)
-/// Recursively find first non-empty accessibility identifier in ViewInspector hierarchy (for iOS when platform returns nil).
+/// First non-empty accessibility identifier on the inspected node (no `findAll`).
+/// `#408`: ViewInspector `findAll` descends into `GeometryReader.view()`, which
+/// `unsafeBitCast`s `GeometryProxy` at a fixed 48/52-byte size and SIGTRAPs on
+/// iOS 27 Simulator (layout is 68+). Prefer hosted platform collection instead.
 @MainActor
 private func firstAccessibilityIdentifierInInspected(_ inspected: ViewInspector.InspectableView<ViewInspector.ViewType.ClassifiedView>) -> String? {
     if let id = try? inspected.accessibilityIdentifier(), !id.isEmpty { return id }
-    let buttons = inspected.findAll(ViewInspector.ViewType.Button.self)
-    for button in buttons {
-        if let id = try? button.accessibilityIdentifier(), !id.isEmpty { return id }
+    if let button = try? inspected.button(), let id = try? button.accessibilityIdentifier(), !id.isEmpty {
+        return id
     }
     return nil
 }
 
-/// Collect accessibility identifiers from inspected view (current node and one level of anyView + buttons).
+/// Collect accessibility identifiers from inspected view (current node and one level of anyView + button).
+/// `#408`: no `findAll` — that walk traps on GeometryReader under iOS 27.
 @MainActor
 private func allAccessibilityIdentifiersInInspected(_ inspected: ViewInspector.InspectableView<ViewInspector.ViewType.ClassifiedView>) -> [String] {
     var ids: [String] = []
     if let id = try? inspected.accessibilityIdentifier(), !id.isEmpty { ids.append(id) }
-    for button in inspected.findAll(ViewInspector.ViewType.Button.self) {
-        if let id = try? button.accessibilityIdentifier(), !id.isEmpty { ids.append(id) }
+    if let button = try? inspected.button(), let id = try? button.accessibilityIdentifier(), !id.isEmpty {
+        ids.append(id)
     }
     // One level deeper: AnyView unwrap (modifier often wraps content in ModifiedContent + AnyView)
     guard let inner = try? inspected.anyView() else { return ids }
     if let id = try? inner.accessibilityIdentifier(), !id.isEmpty { ids.append(id) }
-    for button in inner.findAll(ViewInspector.ViewType.Button.self) {
-        if let id = try? button.accessibilityIdentifier(), !id.isEmpty { ids.append(id) }
+    if let button = try? inner.button(), let id = try? button.accessibilityIdentifier(), !id.isEmpty {
+        ids.append(id)
     }
     return ids
 }
 
-/// Collect all accessibility identifiers from the full ViewInspector hierarchy.
-/// Single `ClassifiedView` walk — overlapping per-type `findAll` calls each recurse the full tree
-/// and explode CPU/memory under parallel `@MainActor` tests (#315).
+/// Collect accessibility identifiers from the inspected node only.
+/// `#315` avoided overlapping per-type `findAll`; `#408` drops `findAll(ClassifiedView)`
+/// entirely because GeometryReader inspection SIGTRAPs on iOS 27. Hosted platform
+/// IDs are the cheapest truthful path.
 @MainActor
 private func allAccessibilityIdentifiersInInspectedRecursive(
     _ inspected: ViewInspector.InspectableView<ViewInspector.ViewType.ClassifiedView>
@@ -106,14 +110,11 @@ private func allAccessibilityIdentifiersInInspectedRecursive(
         ids.append(id)
     }
     collect(try? inspected.accessibilityIdentifier())
-    for node in inspected.findAll(ViewInspector.ViewType.ClassifiedView.self, where: { _ in true }) {
-        collect(try? node.accessibilityIdentifier())
-    }
     return ids
 }
 
 /// Collect accessibility identifiers from a directly inspected view (no AnyView wrap).
-/// Use with a directly inspected concrete view type (Issue 178).
+/// Use with a directly inspected concrete view type (Issue 178). No `findAll` (#408).
 @MainActor
 private func allAccessibilityIdentifiersFromTypedInspectable<V: View>(
     _ inspected: ViewInspector.InspectableView<ViewInspector.ViewType.View<V>>
@@ -125,9 +126,6 @@ private func allAccessibilityIdentifiersFromTypedInspectable<V: View>(
         ids.append(id)
     }
     collect(try? inspected.accessibilityIdentifier())
-    for node in inspected.findAll(ViewInspector.ViewType.ClassifiedView.self, where: { _ in true }) {
-        collect(try? node.accessibilityIdentifier())
-    }
     return ids
 }
 #endif
@@ -196,7 +194,9 @@ private func collectAccessibilityIdentifierCandidateBucketsForTest<V: View>(
     if let root = hostedRoot {
         buckets.hosted = findAllAccessibilityIdentifiersFromPlatformView(root)
     }
-    if let inspected = try? AnyView(view).inspect() {
+    // Prefer hosted IDs; skip ViewInspector tree walk when the platform view already
+    // observed identifiers (#408 — GeometryReader findAll SIGTRAP on iOS 27).
+    if buckets.hosted.isEmpty, let inspected = try? AnyView(view).inspect() {
         buckets.inspected = allAccessibilityIdentifiersInInspectedRecursive(inspected)
     }
     if let cfg = AccessibilityIdentifierConfig.currentTaskLocalConfig {
@@ -214,15 +214,12 @@ private func collectAccessibilityIdentifierCandidateBucketsForTest<V: View>(
 }
 #endif
 
-/// Merge typed inspection, hosted UIKit, ViewInspector recursion, synthesis, and debug-log candidates (#314 / #178).
+/// Merge hosted UIKit, current-node ViewInspector, synthesis, and debug-log candidates (#314 / #178 / #408).
+/// Hosted platform IDs first — ViewInspector descendant search (`find`/`findAll`/`button()`)
+/// SIGTRAPs on iOS 27 when the tree contains `GeometryReader` (#408).
 @MainActor
 public func getAccessibilityIdentifierForTest<V: View>(view: V, hostedRoot: Any? = nil) -> String? {
     #if canImport(ViewInspector)
-    if let inspected = inspectView(view) {
-        if let id = try? inspected.accessibilityIdentifier(), !id.isEmpty { return id }
-        if let button = try? inspected.button(), let id = try? button.accessibilityIdentifier(), !id.isEmpty { return id }
-    }
-
     let buckets = collectAccessibilityIdentifierCandidateBucketsForTest(view: view, hostedRoot: hostedRoot)
     let scoped = buckets.hosted + buckets.inspected + buckets.synthesized
     if let preferred = preferredAccessibilityIdentifierFromCandidates(scoped, view: view) {
@@ -247,14 +244,11 @@ public func getAccessibilityIdentifierForTest<V: View>(view: V, hostedRoot: Any?
             return id
         }
     }
-    if let inspected = try? AnyView(view).inspect() {
-        if let id = firstAccessibilityIdentifierInInspected(inspected) { return id }
-        if let inner = try? inspected.anyView() {
-            if let id = try? inner.accessibilityIdentifier(), !id.isEmpty { return id }
-            if let button = try? inner.button(), let id = try? button.accessibilityIdentifier(), !id.isEmpty { return id }
-        }
-        if let id = try? inspected.accessibilityIdentifier(), !id.isEmpty { return id }
-        if let button = try? inspected.button(), let id = try? button.accessibilityIdentifier(), !id.isEmpty { return id }
+    if let inspected = inspectView(view), let id = try? inspected.accessibilityIdentifier(), !id.isEmpty {
+        return id
+    }
+    if let inspected = try? AnyView(view).inspect(), let id = try? inspected.accessibilityIdentifier(), !id.isEmpty {
+        return id
     }
     #endif
 
@@ -393,20 +387,7 @@ private func firstAccessibilityLabelInInspectedRecursive(
             return labelText
         }
     }
-    for node in inspected.findAll(ViewInspector.ViewType.ClassifiedView.self, where: { _ in true }) {
-        if let label = labelFrom(node) { return label }
-    }
-    for button in inspected.findAll(ViewInspector.ViewType.Button.self) {
-        if let labelView = try? button.labelView().find(ViewInspector.ViewType.Text.self),
-           let labelText = try? labelView.string(), !labelText.isEmpty {
-            return labelText
-        }
-    }
-    for text in inspected.findAll(ViewInspector.ViewType.Text.self) {
-        if let labelText = try? text.string(), !labelText.isEmpty {
-            return labelText
-        }
-    }
+    // #408: no findAll — GeometryReader descendant search SIGTRAPs on iOS 27.
     return nil
 }
 #endif
@@ -1256,8 +1237,9 @@ public enum AccessibilityTestUtilities {
     }
     
     #if canImport(ViewInspector)
-    /// Non-empty accessibility identifiers from a deep ViewInspector walk (ClassifiedView, AnyView, stacks, buttons).
-    /// Shallow `inspect().button()` often misses `exactNamed` / manual `.accessibilityIdentifier` on modified content.
+    /// Non-empty accessibility identifiers from the inspected root (no `findAll`, #408).
+    /// Shallow `inspect().button()` often misses `exactNamed` / manual `.accessibilityIdentifier` on modified content;
+    /// prefer hosted platform collection for those.
     @MainActor
     public static func allAccessibilityIdentifiersFromViewInspector<V: View>(_ view: V) -> [String] {
         guard let inspected = try? AnyView(view).inspect() else { return [] }
@@ -1994,20 +1976,21 @@ public enum AccessibilityTestUtilities {
     ) -> String? {
         #if canImport(ViewInspector)
         do {
+            // Current-node only (#408): `button()` / `findAll` descendant search SIGTRAPs
+            // when ViewInspector materializes GeometryReader's GeometryProxy on iOS 27.
             let inspected = try AnyView(view).inspect()
-            if let inner = try? inspected.anyView() {
-                if let directID = try? inner.accessibilityIdentifier(), !directID.isEmpty { return directID }
-                if let button = try? inner.button(), let buttonID = try? button.accessibilityIdentifier(), !buttonID.isEmpty { return buttonID }
+            if let inner = try? inspected.anyView(),
+               let directID = try? inner.accessibilityIdentifier(), !directID.isEmpty {
+                return directID
             }
             if let directID = try? inspected.accessibilityIdentifier(), !directID.isEmpty { return directID }
-            if let button = try? inspected.button(), let buttonID = try? button.accessibilityIdentifier(), !buttonID.isEmpty { return buttonID }
-            let deepIDs = allAccessibilityIdentifiersFromViewInspector(view)
+            let rootIDs = allAccessibilityIdentifiersFromViewInspector(view)
             let namespace = AccessibilityIdentifierConfig.currentTaskLocalConfig?.namespace ?? "SixLayer"
             let manualPrefix = namespace + "."
-            if let manualID = deepIDs.first(where: { !$0.hasPrefix(manualPrefix) }) {
+            if let manualID = rootIDs.first(where: { !$0.hasPrefix(manualPrefix) }) {
                 return manualID
             }
-            if let preferred = preferredAccessibilityIdentifierFromCandidates(deepIDs, view: view) {
+            if let preferred = preferredAccessibilityIdentifierFromCandidates(rootIDs, view: view) {
                 return preferred
             }
             if let syntheticID = syntheticModifierIdentifierFromView(view), !syntheticID.isEmpty { return syntheticID }
