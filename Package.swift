@@ -1,5 +1,5 @@
 // swift-tools-version: 6.0
-// SixLayerFramework v8.3.5 - Patch: Field layout, presentation size, toolbar Menu, UITest MainActor (#352, #384–#387)
+// SixLayerFramework v8.3.6 - Patch: displayOCR, named host sentinel, iOS GeometryProxy SIGTRAP (#404, #406, #408)
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
