@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# Asserts release-process.sh uses build-for-testing then test-without-building
-# for the macOS/iOS unit gate (Xcode 27 .xctest load race; #410 / FB24278669).
+# Asserts release-process.sh unit gate uses a single `rtk xcodebuild test`
+# (revert of the #410 build-for-testing / test-without-building split; #411).
 #
-# Refs #410
+# Refs #411
 
 set -euo pipefail
 
@@ -39,7 +39,7 @@ assert_not_contains() {
     fi
 }
 
-echo "=== test_release_process_build_for_testing (#410) ==="
+echo "=== test_release_process_unit_gate (#411) ==="
 
 if [ ! -f "$RELEASE_SCRIPT" ]; then
     echo "❌ release-process.sh missing at $RELEASE_SCRIPT"
@@ -48,7 +48,6 @@ fi
 
 SRC="$(cat "$RELEASE_SCRIPT")"
 
-# Unit-gate body: look for the macOS SLF-macOS-UnitTests invocation block.
 MACOS_BLOCK="$(
     awk '
       /Running macOS unit tests \(SLF-macOS-UnitTests\)/ {capture=1}
@@ -65,18 +64,19 @@ IOS_BLOCK="$(
     ' "$RELEASE_SCRIPT"
 )"
 
-assert_contains "$MACOS_BLOCK" "build-for-testing" "macOS unit gate uses build-for-testing"
-assert_contains "$MACOS_BLOCK" "test-without-building" "macOS unit gate uses test-without-building"
-assert_not_contains "$MACOS_BLOCK" "xcodebuild test " "macOS unit gate does not use bare xcodebuild test"
-assert_not_contains "$MACOS_BLOCK" "rtk xcodebuild test " "macOS unit gate does not use bare rtk xcodebuild test"
+assert_contains "$MACOS_BLOCK" "rtk xcodebuild test" "macOS unit gate uses rtk xcodebuild test"
+assert_not_contains "$MACOS_BLOCK" "build-for-testing" "macOS unit gate does not use build-for-testing"
+assert_not_contains "$MACOS_BLOCK" "test-without-building" "macOS unit gate does not use test-without-building"
+assert_not_contains "$MACOS_BLOCK" "release_run_platform_unit_tests" "macOS unit gate does not call helper"
 
-assert_contains "$IOS_BLOCK" "build-for-testing" "iOS unit gate uses build-for-testing"
-assert_contains "$IOS_BLOCK" "test-without-building" "iOS unit gate uses test-without-building"
-assert_not_contains "$IOS_BLOCK" "xcodebuild test " "iOS unit gate does not use bare xcodebuild test"
-assert_not_contains "$IOS_BLOCK" "rtk xcodebuild test " "iOS unit gate does not use bare rtk xcodebuild test"
+assert_contains "$IOS_BLOCK" "rtk xcodebuild test" "iOS unit gate uses rtk xcodebuild test"
+assert_not_contains "$IOS_BLOCK" "build-for-testing" "iOS unit gate does not use build-for-testing"
+assert_not_contains "$IOS_BLOCK" "test-without-building" "iOS unit gate does not use test-without-building"
+assert_not_contains "$IOS_BLOCK" "release_run_platform_unit_tests" "iOS unit gate does not call helper"
 
+assert_not_contains "$SRC" "release_run_platform_unit_tests() {" "helper function is removed"
 assert_contains "$SRC" "FB24278669" "script still references Apple Feedback FB24278669"
-assert_contains "$SRC" "#410" "script references issue #410"
+assert_contains "$SRC" "#411" "script references issue #411"
 
 echo ""
 echo "Passed: $PASS  Failed: $FAIL"
