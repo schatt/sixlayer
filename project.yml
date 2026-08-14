@@ -218,8 +218,7 @@ targets:
           - "**/README.md"
           - "**/CoreDataTestingGuide.md"
           - "ViewInspectorTests/**/CoreDataTestingGuide.md"
-          - "ViewInspectorTests/**"  # Temporarily exclude ViewInspector tests
-          - "Utilities/Debug/EnvironmentVariableDebugTests.swift"  # Uses ViewInspector
+          - "ViewInspectorTests/**"  # Exclude ViewInspector tests - they have their own scheme
     settings:
       PRODUCT_BUNDLE_IDENTIFIER: com.sixlayer.framework.unit-tests
       SWIFT_VERSION: "6.0"
@@ -295,7 +294,6 @@ targets:
           - "**/CoreDataTestingGuide.md"
           - "ViewInspectorTests/**/CoreDataTestingGuide.md"
           - "ViewInspectorTests/**"  # Exclude ViewInspector tests - they have their own scheme
-          - "Utilities/Debug/EnvironmentVariableDebugTests.swift"  # Uses ViewInspector
     settings:
       PRODUCT_BUNDLE_IDENTIFIER: com.sixlayer.framework.unit-tests
       SWIFT_VERSION: "6.0"
@@ -323,7 +321,6 @@ targets:
           - "**/CoreDataTestingGuide.md"
           - "ViewInspectorTests/**/CoreDataTestingGuide.md"
           - "ViewInspectorTests/**"  # Exclude ViewInspector tests - they have their own scheme
-          - "Utilities/Debug/EnvironmentVariableDebugTests.swift"  # ViewInspector debug; match iOS/macOS unit (#248)
     settings:
       PRODUCT_BUNDLE_IDENTIFIER: com.sixlayer.framework.unit-tests
       SWIFT_VERSION: "6.0"
@@ -347,8 +344,6 @@ targets:
           - "**/CoreDataTestingGuide.md"
           - "ViewInspectorTests/**/CoreDataTestingGuide.md"
           - "ViewInspectorTests/**"  # Exclude ViewInspector tests - they have their own scheme
-          - "Utilities/Debug/EnvironmentVariableDebugTests.swift"  # ViewInspector debug; match iOS/macOS unit (#248)
-          - "Layers/Layer4-Component/Layer4SemanticAccessibilityCriterionTests.swift"  # UIKit UIView hosting a11y traversal; watchOS has no UIHostingController (#233)
     settings:
       PRODUCT_BUNDLE_IDENTIFIER: com.sixlayer.framework.unit-tests
       SWIFT_VERSION: "6.0"
@@ -375,7 +370,6 @@ targets:
           - "**/CoreDataTestingGuide.md"
           - "ViewInspectorTests/**/CoreDataTestingGuide.md"
           - "ViewInspectorTests/**"  # Exclude ViewInspector tests - they have their own scheme
-          - "Utilities/Debug/EnvironmentVariableDebugTests.swift"  # ViewInspector debug; match iOS/macOS unit (#248)
     settings:
       PRODUCT_BUNDLE_IDENTIFIER: com.sixlayer.framework.unit-tests
       SWIFT_VERSION: "6.0"
