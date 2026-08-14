@@ -480,7 +480,7 @@ else
         echo "🧪 Running macOS unit tests (SLF-macOS-UnitTests)..."
         # Do not `xcodebuild clean` before test: on Xcode 27 (FB24278669 / #409) clean+test
         # races and fails to load the .xctest executable. Incremental test is sufficient.
-        # Single `xcodebuild test` (not build-for-testing / test-without-building; #411).
+        # Single `xcodebuild test` (#411; do not split the unit-gate invoke).
         if ! rtk xcodebuild test \
             -project SixLayerFramework.xcodeproj \
             -scheme SLF-macOS-UnitTests \
@@ -511,7 +511,7 @@ else
             fi
         fi
         # Do not `xcodebuild clean` before test (same Xcode 27 race as macOS; #409 / FB24278669).
-        # Single `xcodebuild test` (not build-for-testing / test-without-building; #411).
+        # Single `xcodebuild test` (#411; do not split the unit-gate invoke).
         if ! rtk xcodebuild test \
             -project SixLayerFramework.xcodeproj \
             -scheme SLF-iOS-UnitTests \
