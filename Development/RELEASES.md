@@ -13,7 +13,7 @@
 ## 🎯 **v8.3.6 - displayOCR, host sentinel, and iOS GeometryProxy SIGTRAP** (August 11, 2026)
 
 ### **What's in v8.3.6:**
-- Patch release (#371, #381, #386, #388–#391, #395, #400, #404–#409). See [RELEASE_v8.3.6.md](RELEASE_v8.3.6.md) for details.
+- Patch release (#371, #381, #386, #388–#391, #395, #400, #404–#409, #411–#413). See [RELEASE_v8.3.6.md](RELEASE_v8.3.6.md) for details.
 
 **See [RELEASE_v8.3.6.md](RELEASE_v8.3.6.md) for complete release notes.**
 

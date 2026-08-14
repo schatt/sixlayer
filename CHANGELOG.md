@@ -11,6 +11,9 @@
 - **NamedAutomaticCompliance host sentinel**: `unsafeBitCast` crash on ExpandableCardCollectionView under iOS 27 (#406).
 - **iOS unit-gate GeometryProxy SIGTRAP**: hosted a11y helpers skip ViewInspector `findAll` into `GeometryReader`; ViewInspector pinned to `0.10.4` (#408).
 - **macOS release-gate xctest load**: remove `xcodebuild clean` before unit tests on Xcode 27 (FB24278669, #409).
+- **Release unit gate invoke**: keep a single `xcodebuild test` (#411).
+- **Unit lane hosting**: hosted / ViewInspector tests excluded from `SLF-*-UnitTests` (#412).
+- **Release iOS sim prune**: do not `simctl delete unavailable` before unit tests (#413).
 
 ### 📚 Documentation
 - **Migration:** consumers that relied on inference must set flags explicitly (code or hints). See [`Development/RELEASE_v8.3.6.md`](Development/RELEASE_v8.3.6.md).
