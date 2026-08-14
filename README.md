@@ -44,7 +44,7 @@ The framework is distributed as a Swift Package from the `Framework/` directory.
 ## 🆕 Latest Release: v8.3.6
 
 ### **Patch release**
-🔧 **Patch**: `displayOCR` / stop inferring OCR flags from hints (#404); named compliance host sentinel (#406); iOS GeometryProxy SIGTRAP in ViewInspector walks (#408); test-lane and release-script hygiene (#381, #395, #400, #405, #409). See [RELEASE_v8.3.6.md](Development/RELEASE_v8.3.6.md).
+🔧 **Patch**: `displayOCR` / stop inferring OCR flags from hints (#404); named compliance host sentinel (#406); iOS GeometryProxy SIGTRAP in ViewInspector walks (#408); test-lane and release-script hygiene (#381, #395, #400, #405, #409, #411–#413). See [RELEASE_v8.3.6.md](Development/RELEASE_v8.3.6.md).
 
 ### **Previous Release: v8.3.5 - Patch release**
 🔧 **Patch**: FieldDisplayHints form layout (#385); PlatformPresentationSize (#384/#386); toolbar overflow Menu (#352); UITest MainActor (#387). See [RELEASE_v8.3.5.md](Development/RELEASE_v8.3.5.md).
