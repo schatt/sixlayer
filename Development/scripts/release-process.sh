@@ -345,24 +345,6 @@ log_error() {
 }
 
 
-# Run platform unit tests as build-for-testing then test-without-building.
-# Xcode 27 can race a single `xcodebuild test` and fail to load the macOS
-# .xctest executable even without clean (FB24278669 / #409 / #410).
-release_run_platform_unit_tests() {
-    local scheme="$1"
-    local destination="$2"
-    local xcresult="$3"
-    local -a common=(
-        -project SixLayerFramework.xcodeproj
-        -scheme "$scheme"
-        -destination "$destination"
-        -quiet
-    )
-
-    rtk xcodebuild build-for-testing "${common[@]}" || return 1
-    rtk xcodebuild test-without-building "${common[@]}" -resultBundlePath "$xcresult"
-}
-
 # Open an .xcresult in Xcode after a failed test gate (local workflow).
 # Skip when CI is set (typical macOS runners) or when RELEASE_SKIP_OPEN_XCRESULT=1 (SSH / automation).
 maybe_open_xcresult() {
@@ -498,12 +480,13 @@ else
         echo "🧪 Running macOS unit tests (SLF-macOS-UnitTests)..."
         # Do not `xcodebuild clean` before test: on Xcode 27 (FB24278669 / #409) clean+test
         # races and fails to load the .xctest executable. Incremental test is sufficient.
-        # Also avoid bare `xcodebuild test`: split into build-for-testing then
-        # test-without-building (#410 / FB24278669).
-        if ! release_run_platform_unit_tests \
-            SLF-macOS-UnitTests \
-            "platform=macOS,arch=arm64" \
-            "$MACOS_XCRESULT"; then
+        # Single `xcodebuild test` (not build-for-testing / test-without-building; #411).
+        if ! rtk xcodebuild test \
+            -project SixLayerFramework.xcodeproj \
+            -scheme SLF-macOS-UnitTests \
+            -destination "platform=macOS,arch=arm64" \
+            -resultBundlePath "$MACOS_XCRESULT" \
+            -quiet; then
             MACOS_TESTS_FAILED=1
             log_error "macOS unit tests failed."
         else
@@ -528,11 +511,13 @@ else
             fi
         fi
         # Do not `xcodebuild clean` before test (same Xcode 27 race as macOS; #409 / FB24278669).
-        # Split into build-for-testing then test-without-building (#410 / FB24278669).
-        if ! release_run_platform_unit_tests \
-            SLF-iOS-UnitTests \
-            "platform=iOS Simulator,name=${IOS_SIM_NAME}" \
-            "$IOS_XCRESULT"; then
+        # Single `xcodebuild test` (not build-for-testing / test-without-building; #411).
+        if ! rtk xcodebuild test \
+            -project SixLayerFramework.xcodeproj \
+            -scheme SLF-iOS-UnitTests \
+            -destination "platform=iOS Simulator,name=${IOS_SIM_NAME}" \
+            -resultBundlePath "$IOS_XCRESULT" \
+            -quiet; then
             IOS_TESTS_FAILED=1
             log_error "iOS unit tests failed."
         else
