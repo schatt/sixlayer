@@ -485,8 +485,7 @@ else
             -project SixLayerFramework.xcodeproj \
             -scheme SLF-macOS-UnitTests \
             -destination "platform=macOS,arch=arm64" \
-            -resultBundlePath "$MACOS_XCRESULT" \
-            -quiet; then
+            -resultBundlePath "$MACOS_XCRESULT"; then
             MACOS_TESTS_FAILED=1
             log_error "macOS unit tests failed."
         else
@@ -516,8 +515,7 @@ else
             -project SixLayerFramework.xcodeproj \
             -scheme SLF-iOS-UnitTests \
             -destination "platform=iOS Simulator,name=${IOS_SIM_NAME}" \
-            -resultBundlePath "$IOS_XCRESULT" \
-            -quiet; then
+            -resultBundlePath "$IOS_XCRESULT"; then
             IOS_TESTS_FAILED=1
             log_error "iOS unit tests failed."
         else
