@@ -75,6 +75,11 @@ rm -f "$RELEASE_TEST_STAMP_FILE"
 
 # --- path classification ---
 assert_true "README.md is docs-only" release_is_docs_only_path "README.md"
+assert_true "CHANGELOG.md is docs-only" release_is_docs_only_path "CHANGELOG.md"
+assert_true "LICENSE is docs-only" release_is_docs_only_path "LICENSE"
+assert_true "root RELEASE_NOTES_v*.md is docs-only" release_is_docs_only_path "RELEASE_NOTES_v7.4.0.md"
+assert_true "Development/docs/*.md is docs-only" release_is_docs_only_path "Development/docs/README_OCROverlayTesting.md"
+assert_true "nested TestKit README.md is docs-only" release_is_docs_only_path "Framework/TestKit/Sources/README.md"
 assert_true "Development/RELEASE_v8.3.0.md is docs-only" release_is_docs_only_path "Development/RELEASE_v8.3.0.md"
 assert_true "Development/AI_AGENT_v8.3.0.md is docs-only" release_is_docs_only_path "Development/AI_AGENT_v8.3.0.md"
 assert_true "Framework/docs/foo.md is docs-only" release_is_docs_only_path "Framework/docs/foo.md"
