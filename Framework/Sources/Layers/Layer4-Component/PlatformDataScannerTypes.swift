@@ -18,9 +18,10 @@ import VisionKit
 
 /// Errors surfaced by the live data scanner session (Issue #252).
 public enum PlatformDataScannerError: Error, Sendable, Equatable {
-    /// No live `DataScannerViewController` is attached yet (e.g. before appear or after teardown).
+    /// No live scanner is attached yet (e.g. before appear, after teardown, or on a platform where VisionKit never attaches).
     case scannerNotAttached
-    /// The current OS / build does not support the VisionKit live scanner.
+    /// Unused. Gate live-scanner UI on ``RuntimeCapabilityDetection/Photos/supportsLiveDataScanner`` instead (Issue #418).
+    @available(*, deprecated, message: "Gate on RuntimeCapabilityDetection.Photos.supportsLiveDataScanner; session methods throw scannerNotAttached when nothing is attached.")
     case platformUnsupported
 }
 
@@ -127,7 +128,7 @@ public final class PlatformDataScannerSessionController: Sendable {
             return
         }
         #endif
-        throw PlatformDataScannerError.platformUnsupported
+        throw PlatformDataScannerError.scannerNotAttached
     }
 
     /// Stops VisionKit scanning when a controller is attached.
@@ -153,7 +154,7 @@ public final class PlatformDataScannerSessionController: Sendable {
             return PlatformImage(image)
         }
         #endif
-        throw PlatformDataScannerError.platformUnsupported
+        throw PlatformDataScannerError.scannerNotAttached
     }
 }
 
