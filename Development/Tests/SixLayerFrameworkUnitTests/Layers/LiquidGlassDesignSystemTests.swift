@@ -322,10 +322,10 @@ struct LiquidGlassDesignSystemTests {
         let material = liquidGlassSystem.createMaterial(.primary)
         
         // When
-        _ = material.generateReflection(for: CGSize(width: 1000, height: 1000))
+        let reflection = material.generateReflection(for: CGSize(width: 1000, height: 1000))
         
         // Then
-        #expect(Bool(true), "reflection is non-optional")  // reflection is non-optional
+        #expect(reflection.size == .zero, "performance reflection should match requested size")
     }
     
     @MainActor
@@ -365,11 +365,11 @@ struct LiquidGlassDesignSystemTests {
         let material = liquidGlassSystem.createMaterial(.primary)
         
         // When
-        _ = material.generateReflection(for: CGSize(width: 100, height: 100))
+        let reflection = material.generateReflection(for: CGSize(width: 100, height: 100))
         
         // Then
         #expect(material.isTranslucent) // Should be accessible
-        #expect(Bool(true), "reflection is non-optional")  // reflection is non-optional
+        #expect(reflection.size == .zero, "accessibility reflection should match requested size")
     }
     
     @MainActor
@@ -432,10 +432,7 @@ struct LiquidGlassDesignSystemTests {
         // Given & When
         let system = LiquidGlassDesignSystem.shared
         for feature in LiquidGlassFeature.allCases {
-            _ = system.getFallbackBehavior(for: feature)
-            
-            // Then
-            #expect(Bool(true), "Feature \(feature.rawValue) should have a fallback behavior")  // fallbackBehavior is non-optional
+            #expect(system.getFallbackBehavior(for: feature) == nil, "Feature \(feature.rawValue) should have a fallback behavior")
         }
     }
 }
