@@ -429,20 +429,15 @@ struct LiquidGlassDesignSystemTests {
         
         // Given & When
         let system = LiquidGlassDesignSystem.shared
+        let expected: [LiquidGlassFeature: String] = [
+            .materials: "Use standard background colors",
+            .floatingControls: "Use standard button controls",
+            .contextualMenus: "Use standard context menus",
+            .adaptiveWallpapers: "Use static wallpapers",
+            .dynamicReflections: "Use standard shadows"
+        ]
         for feature in LiquidGlassFeature.allCases {
-            let behavior = system.getFallbackBehavior(for: feature)
-            switch feature {
-            case .materials:
-                #expect(behavior == "Use standard background colors")
-            case .floatingControls:
-                #expect(behavior == "Use standard button controls")
-            case .contextualMenus:
-                #expect(behavior == "Use standard context menus")
-            case .adaptiveWallpapers:
-                #expect(behavior == "Use static wallpapers")
-            case .dynamicReflections:
-                #expect(behavior == "Use standard shadows")
-            }
+            #expect(system.getFallbackBehavior(for: feature) == expected[feature])
         }
     }
 }
