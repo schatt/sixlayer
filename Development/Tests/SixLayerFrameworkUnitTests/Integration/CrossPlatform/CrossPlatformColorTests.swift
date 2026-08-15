@@ -40,12 +40,18 @@ import SwiftUI
 @Suite("Cross Platform Color")
 open class CrossPlatformColorTests: BaseTestClass {
     
+    /// SwiftUI `Color` Equatable is vacuous in this suite (`== Color.clear` and
+    /// `!= Color.clear` both pass). Encodeability is the observable contract.
+    private func expectEncodesToNonEmptyData(_ color: Color, name: String) throws {
+        #if os(iOS) || os(macOS)
+        let encoded = try platformColorEncode(color)
+        #expect(!encoded.isEmpty, "\(name) should encode to non-empty data")
+        #endif
+    }
+    
     // MARK: - Cross-Platform Color Tests
     
     @Test func testCrossPlatformColorsAreAvailable() throws {
-        // SwiftUI Color Equatable is vacuous here (`== Color.clear` and `!= Color.clear`
-        // both pass), so observe encodeability instead.
-        #if os(iOS) || os(macOS)
         let colors: [(String, Color)] = [
             ("cardBackground", .cardBackground),
             ("secondaryBackground", .secondaryBackground),
@@ -56,64 +62,38 @@ open class CrossPlatformColorTests: BaseTestClass {
             ("secondaryLabel", .secondaryLabel)
         ]
         for (name, color) in colors {
-            let encoded = try platformColorEncode(color)
-            #expect(!encoded.isEmpty, "\(name) should encode to non-empty data")
+            try expectEncodesToNonEmptyData(color, name: name)
         }
-        #endif
     }
     
     @Test func testCardBackgroundColorIsCrossPlatform() throws {
-        // Test that cardBackground works on both platforms
-        // Color Equatable is vacuous in this suite; encodeability is the contract.
-        #if os(iOS) || os(macOS)
-        let encoded = try platformColorEncode(Color.cardBackground)
-        #expect(!encoded.isEmpty, "cardBackground should encode to non-empty data")
-        #endif
+        try expectEncodesToNonEmptyData(.cardBackground, name: "cardBackground")
     }
     
     @Test func testSecondaryBackgroundColorIsCrossPlatform() throws {
-        #if os(iOS) || os(macOS)
-        let encoded = try platformColorEncode(Color.secondaryBackground)
-        #expect(!encoded.isEmpty, "secondaryBackground should encode to non-empty data")
-        #endif
+        try expectEncodesToNonEmptyData(.secondaryBackground, name: "secondaryBackground")
     }
     
     @Test func testPrimaryBackgroundColorIsCrossPlatform() throws {
-        #if os(iOS) || os(macOS)
-        let encoded = try platformColorEncode(Color.primaryBackground)
-        #expect(!encoded.isEmpty, "primaryBackground should encode to non-empty data")
-        #endif
+        try expectEncodesToNonEmptyData(.primaryBackground, name: "primaryBackground")
     }
     
     @Test func testGroupedBackgroundColorIsCrossPlatform() throws {
-        #if os(iOS) || os(macOS)
-        let encoded = try platformColorEncode(Color.groupedBackground)
-        #expect(!encoded.isEmpty, "groupedBackground should encode to non-empty data")
-        #endif
+        try expectEncodesToNonEmptyData(.groupedBackground, name: "groupedBackground")
     }
     
     @Test func testSeparatorColorIsCrossPlatform() throws {
-        #if os(iOS) || os(macOS)
-        let encoded = try platformColorEncode(Color.separator)
-        #expect(!encoded.isEmpty, "separator should encode to non-empty data")
-        #endif
+        try expectEncodesToNonEmptyData(.separator, name: "separator")
     }
     
     @Test func testLabelColorsAreCrossPlatform() throws {
-        #if os(iOS) || os(macOS)
-        let labelEncoded = try platformColorEncode(Color.label)
-        let secondaryEncoded = try platformColorEncode(Color.secondaryLabel)
-        #expect(!labelEncoded.isEmpty, "label should encode to non-empty data")
-        #expect(!secondaryEncoded.isEmpty, "secondaryLabel should encode to non-empty data")
-        #endif
+        try expectEncodesToNonEmptyData(.label, name: "label")
+        try expectEncodesToNonEmptyData(.secondaryLabel, name: "secondaryLabel")
     }
     
     // MARK: - Business Purpose Tests
     
     @Test func testCrossPlatformColorsEnableConsistentUI() throws {
-        // Test that our cross-platform colors provide consistent UI behavior
-        // This is the business purpose: ensuring the framework works on both platforms
-        
         let colors = [
             Color.cardBackground,
             Color.secondaryBackground,
@@ -121,21 +101,13 @@ open class CrossPlatformColorTests: BaseTestClass {
             Color.groupedBackground
         ]
         
-        // All colors should be valid and usable
         for color in colors {
-            #if os(iOS) || os(macOS)
-            let encoded = try platformColorEncode(color)
-            #expect(!encoded.isEmpty, "framework background color should encode to non-empty data")
-            #endif
-            // Verify color can be used in SwiftUI views
+            try expectEncodesToNonEmptyData(color, name: "framework background color")
             let _ = Rectangle().fill(color)
         }
     }
     
     @Test @MainActor func testCrossPlatformColorsSupportFrameworkGoals() throws {
-        // Test that our color system supports the framework's cross-platform goals
-        // Business purpose: enabling developers to write once, run everywhere
-        
         let testColors = [
             ("cardBackground", Color.cardBackground),
             ("secondaryBackground", Color.secondaryBackground),
@@ -144,19 +116,13 @@ open class CrossPlatformColorTests: BaseTestClass {
         ]
         
         for (name, color) in testColors {
-            // Each color should be usable in a real UI context
             _ = platformVStackContainer {
                 Rectangle()
                     .fill(color)
                     .frame(width: 100, height: 100)
             }
             
-            #if os(iOS) || os(macOS)
-            let encoded = try platformColorEncode(color)
-            #expect(!encoded.isEmpty, "\(name) should encode to non-empty data")
-            #endif
-            
-            // Verify the color name is descriptive and meaningful
+            try expectEncodesToNonEmptyData(color, name: name)
             #expect(name.contains("Background"), "Color name should be descriptive: \(name)")
         }
     }
