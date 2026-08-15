@@ -359,8 +359,9 @@ open class PlatformTypesAPISignatureTests: BaseTestClass {
             }
             Issue.record("Should have thrown an error")
         } catch {
-            // Expected - error should be propagated
-            #expect(Bool(true))
+            let nsError = error as NSError
+            #expect(nsError.domain == "test")
+            #expect(nsError.code == 1)
         }
     }
     
@@ -447,8 +448,7 @@ open class PlatformTypesAPISignatureTests: BaseTestClass {
             _ = platformSecurityScopedRemoveBookmark(key: testKey)
         }
         
-        // Test should complete without crashing
-        #expect(Bool(true))
+        #expect(platformSecurityScopedHasBookmark(key: testKey) == false)
     }
     #else
     @Test func testPlatformSecurityScopedRestoreReturnsNilOnNonMacOS() {
