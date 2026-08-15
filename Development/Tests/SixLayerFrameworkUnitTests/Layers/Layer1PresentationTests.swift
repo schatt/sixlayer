@@ -97,8 +97,6 @@ open class Layer1PresentationTests: BaseTestClass {
         ))
         
         // Then: Should return a view (AsyncFormView is the actual implementation)
-        #expect(Bool(true), "view is non-optional")  // view is non-optional
-        
         BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "AsyncFormView")
     }
     
@@ -118,8 +116,6 @@ open class Layer1PresentationTests: BaseTestClass {
         ))
         
         // Then: Should return a view even with empty fields (AsyncFormView is the actual implementation)
-        #expect(Bool(true), "view is non-optional")  // view is non-optional
-        
         BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "AsyncFormView")
     }
     
@@ -144,9 +140,6 @@ open class Layer1PresentationTests: BaseTestClass {
         let complexView = platformPresentFormData_L1(fields: testFields, hints: enhancedHints(from: complexHints))
         
         // Then: Both should return SimpleFormView
-        #expect(Bool(true), "simpleView is non-optional")  // simpleView is non-optional
-        #expect(Bool(true), "complexView is non-optional")  // complexView is non-optional
-        
         BaseTestClass.expectViewSubjectTypeContains(simpleView, rootViewName: "AsyncFormView")
         BaseTestClass.expectViewSubjectTypeContains(complexView, rootViewName: "AsyncFormView")
     }
@@ -172,9 +165,6 @@ open class Layer1PresentationTests: BaseTestClass {
         let textView = platformPresentFormData_L1(fields: testFields, hints: enhancedHints(from: textHints))
         
         // Then: Both should return SimpleFormView
-        #expect(Bool(true), "formView is non-optional")  // formView is non-optional
-        #expect(Bool(true), "textView is non-optional")  // textView is non-optional
-        
         BaseTestClass.expectViewSubjectTypeContains(formView, rootViewName: "AsyncFormView")
         BaseTestClass.expectViewSubjectTypeContains(textView, rootViewName: "AsyncFormView")
     }
@@ -190,8 +180,6 @@ open class Layer1PresentationTests: BaseTestClass {
         let view = platformPresentModalForm_L1(formType: formType, context: context)
         
         // Then: Should return a ModalFormView
-        #expect(Bool(true), "view is non-optional")  // view is non-optional
-        
         BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "ModalFormView")
     }
     
@@ -227,8 +215,6 @@ open class Layer1PresentationTests: BaseTestClass {
             let view = platformPresentModalForm_L1(formType: formType, context: context)
             
             // Then: Should return a ModalFormView for each context
-            #expect(Bool(true), "Should handle context: \(context)")  // view is non-optional
-            
             BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "ModalFormView")
         }
     }
@@ -251,8 +237,6 @@ open class Layer1PresentationTests: BaseTestClass {
             let view = platformPresentModalForm_L1(formType: formType, context: .form)
             
             // Then: Should return a ModalFormView
-            #expect(Bool(true), "Should handle form type: \(formType)")  // view is non-optional
-            
             BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "ModalFormView")
             
             // Note: We can't easily test the internal field count without accessing private properties
@@ -279,8 +263,6 @@ open class Layer1PresentationTests: BaseTestClass {
         let view = platformPresentFormData_L1(fields: largeFieldSet, hints: enhancedHints(from: hints))
         
         // Then: Should handle large field sets gracefully
-        #expect(Bool(true), "view is non-optional")  // view is non-optional
-        
         BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "AsyncFormView")
     }
     
@@ -308,8 +290,6 @@ open class Layer1PresentationTests: BaseTestClass {
         let view = platformPresentFormData_L1(fields: specialFields, hints: enhancedHints(from: hints))
         
         // Then: Should handle special characters gracefully
-        #expect(Bool(true), "view is non-optional")  // view is non-optional
-        
         BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "AsyncFormView")
     }
     
@@ -322,8 +302,6 @@ open class Layer1PresentationTests: BaseTestClass {
         let view = platformPresentModalForm_L1(formType: formType, context: context)
         
         // Then: Should return a ModalFormView (falls back to generic form)
-        #expect(Bool(true), "view is non-optional")  // view is non-optional
-        
         BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "ModalFormView")
     }
     
@@ -347,8 +325,6 @@ open class Layer1PresentationTests: BaseTestClass {
         let view = platformPresentFormData_L1(fields: testFields, hints: enhancedHints(from: comprehensiveHints))
         
         // Then: Should return a view (AsyncFormView is the actual implementation)
-        #expect(Bool(true), "view is non-optional")  // view is non-optional
-        
         BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "AsyncFormView")
     }
     
@@ -361,8 +337,6 @@ open class Layer1PresentationTests: BaseTestClass {
         let view = platformPresentModalForm_L1(formType: formType, context: context)
         
         // Then: Should return a ModalFormView
-        #expect(Bool(true), "view is non-optional")  // view is non-optional
-        
         BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "ModalFormView")
     }
     
