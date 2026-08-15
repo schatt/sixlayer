@@ -4,9 +4,10 @@
 //
 //  VisionKit `DataScannerViewController` hosting for Issue #252 (iOS only).
 //  Availability: `RuntimeCapabilityDetection.Photos.supportsLiveDataScanner` (#253).
+//  Mac Catalyst: `DataScannerViewController` is unavailable (#415); this file is excluded.
 //
 
-#if os(iOS)
+#if os(iOS) && !targetEnvironment(macCatalyst)
 import SwiftUI
 import UIKit
 import Vision
@@ -321,5 +322,5 @@ struct PlatformDataScannerLiveSwiftUIView: View {
 }
 
 #endif
-#endif // os(iOS)
+#endif // os(iOS) && !targetEnvironment(macCatalyst)
 
