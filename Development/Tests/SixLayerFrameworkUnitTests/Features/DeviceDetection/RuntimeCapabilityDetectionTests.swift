@@ -559,6 +559,21 @@ open class RuntimeCapabilityDetectionTDDTests: BaseTestClass {
         #expect(documentCamera == RuntimeCapabilityDetection.Vision.supportsDocumentCamera)
     }
 
+    /// VisionKit live scanner and document camera APIs are unavailable in Mac Catalyst (#415).
+    #if targetEnvironment(macCatalyst)
+    @Test @MainActor
+    func testLiveDataScannerIsUnsupportedOnMacCatalystWithoutOverride() {
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        #expect(!RuntimeCapabilityDetection.Photos.supportsLiveDataScanner)
+    }
+
+    @Test @MainActor
+    func testDocumentCameraIsUnsupportedOnMacCatalystWithoutOverride() {
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        #expect(!RuntimeCapabilityDetection.Vision.supportsDocumentCamera)
+    }
+    #endif
+
     // MARK: - Files namespaced runtime (#253)
 
     @available(*, deprecated, message: "Legacy forwarder compatibility coverage.")
