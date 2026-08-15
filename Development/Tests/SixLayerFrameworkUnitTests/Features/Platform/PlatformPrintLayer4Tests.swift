@@ -54,10 +54,6 @@ open class PlatformPrintLayer4Tests: BaseTestClass {
                 }
             )
         
-        // Then: API should work identically on both platforms
-        // View creation verifies API signature (compile-time check)
-        #expect(Bool(true), "Unified print API should have consistent signature across platforms")
-        
         // Verify callback accepts Bool by calling it directly
         let callback: (Bool) -> Void = { success in
             printCompleted = success
@@ -93,14 +89,13 @@ open class PlatformPrintLayer4Tests: BaseTestClass {
         let textContent = PrintContent.text("Test document content")
         
         // When: Create print modifier with text
-        _ = Text("Test")
+        let view = Text("Test")
             .platformPrint_L4(
                 isPresented: .constant(false),
                 content: textContent
             )
         
-        // Then: Should accept text content
-        #expect(Bool(true), "Print API should accept text content")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotAPrintModifier")
     }
     
     /// BUSINESS PURPOSE: Verify image content can be printed
@@ -112,14 +107,13 @@ open class PlatformPrintLayer4Tests: BaseTestClass {
         let imageContent = PrintContent.image(testImage)
         
         // When: Create print modifier with image
-        _ = Text("Test")
+        let view = Text("Test")
             .platformPrint_L4(
                 isPresented: .constant(false),
                 content: imageContent
             )
         
-        // Then: Should accept image content
-        #expect(Bool(true), "Print API should accept image content")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotAPrintModifier")
     }
     
     /// BUSINESS PURPOSE: Verify PDF content can be printed
@@ -131,14 +125,13 @@ open class PlatformPrintLayer4Tests: BaseTestClass {
         let pdfContent = PrintContent.pdf(pdfData)
         
         // When: Create print modifier with PDF
-        _ = Text("Test")
+        let view = Text("Test")
             .platformPrint_L4(
                 isPresented: .constant(false),
                 content: pdfContent
             )
         
-        // Then: Should accept PDF content
-        #expect(Bool(true), "Print API should accept PDF content")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotAPrintModifier")
     }
     
     /// BUSINESS PURPOSE: Verify view content can be printed
@@ -149,14 +142,13 @@ open class PlatformPrintLayer4Tests: BaseTestClass {
         let viewContent = PrintContent.view(AnyView(Text("Test View")))
         
         // When: Create print modifier with view
-        _ = Text("Test")
+        let view = Text("Test")
             .platformPrint_L4(
                 isPresented: .constant(false),
                 content: viewContent
             )
         
-        // Then: Should accept view content
-        #expect(Bool(true), "Print API should accept view content")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotAPrintModifier")
     }
     
     // MARK: - Platform-Specific Implementation Tests
@@ -170,18 +162,13 @@ open class PlatformPrintLayer4Tests: BaseTestClass {
         let content = PrintContent.text("Test")
         
         // When: Create print modifier
-        _ = Text("Test")
+        let view = Text("Test")
             .platformPrint_L4(
                 isPresented: .constant(false),
                 content: content
             )
         
-        // Then: Should use iOS print implementation
-        // API signature verification (compile-time check)
-        #expect(Bool(true), "iOS should use UIPrintInteractionController implementation")
-        #else
-        // Skip on non-iOS platforms
-        #expect(Bool(true), "Test only runs on iOS")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotAPrintModifier")
         #endif
     }
     
@@ -194,18 +181,13 @@ open class PlatformPrintLayer4Tests: BaseTestClass {
         let content = PrintContent.text("Test")
         
         // When: Create print modifier
-        _ = Text("Test")
+        let view = Text("Test")
             .platformPrint_L4(
                 isPresented: .constant(false),
                 content: content
             )
         
-        // Then: Should use macOS print implementation
-        // API signature verification (compile-time check)
-        #expect(Bool(true), "macOS should use NSPrintOperation implementation")
-        #else
-        // Skip on non-macOS platforms
-        #expect(Bool(true), "Test only runs on macOS")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotAPrintModifier")
         #endif
     }
     
@@ -223,15 +205,14 @@ open class PlatformPrintLayer4Tests: BaseTestClass {
         )
         
         // When: Create print modifier with options
-        _ = Text("Test")
+        let view = Text("Test")
             .platformPrint_L4(
                 isPresented: .constant(false),
                 content: .text("Test"),
                 options: options
             )
         
-        // Then: Should accept options
-        #expect(Bool(true), "Print API should accept options")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotAPrintModifier")
     }
     
     // MARK: - Callback Tests
@@ -274,15 +255,13 @@ open class PlatformPrintLayer4Tests: BaseTestClass {
     /// METHODOLOGY: Test accessibility compliance
     @Test @MainActor func testPlatformPrint_AccessibilityIdentifiers() {
         // Given: Print modifier
-        _ = Text("Test")
+        let view = Text("Test")
             .platformPrint_L4(
                 isPresented: .constant(false),
                 content: .text("Test")
             )
         
-        // Then: Should have automatic accessibility compliance
-        // The .automaticCompliance modifier should be applied
-        #expect(Bool(true), "Print modifier should apply accessibility identifiers")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotAPrintModifier")
     }
     
     // MARK: - Error Handling Tests
