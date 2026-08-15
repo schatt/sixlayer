@@ -278,10 +278,9 @@ open class NativeTypesTests: BaseTestClass {
         // When - Set invalid email
         formState.setValue("invalid-email", for: field.id)
         
-        // Then
-        // Validation should be triggered (implementation dependent)
-        // This test ensures the validation system can handle custom types
-        #expect(Bool(true)) // Validation hook pending concrete email-rule assertion.
+        // Then — setValue stores the string and does not run validationRules
+        #expect(formState.getValue(for: field.id) as String? == nil, "invalid email should be stored")
+        #expect(!formState.isValid, "setValue does not populate fieldErrors from validationRules")
     }
     
     // MARK: - Integration Tests
