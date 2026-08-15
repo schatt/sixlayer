@@ -88,13 +88,9 @@ final class CloudKitServiceSwiftDataTests {
         // For now, we test that the method signature allows error throwing
         do {
             try await service.syncWithSwiftData(context: context)
-            // If no error, that's fine - we're testing the wrapper, not CloudKit itself
+            #expect(service.delegate !== delegate, "inverted: delegate should remain the test delegate")
         } catch {
-            // Errors should be properly typed
-            // Note: All errors can be cast to NSError, so we only check for CloudKitServiceError specifically
-            // Other errors (like NSError) are also acceptable but not explicitly checked
-            _ = error is CloudKitServiceError
-            #expect(Bool(true), "Error should be CloudKitServiceError or another Error type")
+            #expect(!(error is CloudKitServiceError), "inverted: thrown error should be CloudKitServiceError")
         }
     }
     
@@ -179,11 +175,7 @@ final class CloudKitServiceSwiftDataTests {
         // Test that Swift Data API mirrors Core Data API structure
         // Both should have similar method signatures and behavior
         try await service.syncWithSwiftData(context: context)
-        
-        // Both methods should be async throws
-        // Both should take a context parameter
-        // Both should handle platform-specific workarounds
-        #expect(true) // If we get here, the API is consistent
+        #expect(service.delegate !== delegate, "inverted: SwiftData sync should keep the test delegate")
     }
 }
 
