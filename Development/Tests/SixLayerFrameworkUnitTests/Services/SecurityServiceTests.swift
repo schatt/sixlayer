@@ -15,8 +15,8 @@ open class SecurityServiceTests: BaseTestClass {
         let service = SecurityService()
         
         // Then: Fresh service is unauthenticated with test-environment biometrics
-        #expect(service.isAuthenticated)
-        #expect(service.biometricType != .none)
+        #expect(!service.isAuthenticated)
+        #expect(service.biometricType == .none)
     }
     
     @Test @MainActor func testSecurityServiceInitializationWithHints() {
@@ -37,8 +37,8 @@ open class SecurityServiceTests: BaseTestClass {
             enablePrivacyIndicators: hints.enablePrivacyIndicators
         )
         
-        #expect(service.isAuthenticated)
-        #expect(service.biometricType != .none)
+        #expect(!service.isAuthenticated)
+        #expect(service.biometricType == .none)
     }
     
     // MARK: - Biometric Type Detection Tests
@@ -51,7 +51,7 @@ open class SecurityServiceTests: BaseTestClass {
         let biometricType = service.biometricType
         
         // Then: Should return a valid biometric type (may be .none in test environment)
-        #expect(biometricType == .faceID)
+        #expect(biometricType == .none)
     }
     
     @Test @MainActor func testBiometricAvailabilityCheck() {
@@ -61,7 +61,7 @@ open class SecurityServiceTests: BaseTestClass {
         // When: Checking biometric availability
         let isAvailable = service.isBiometricAvailable
         
-        #expect(isAvailable)
+        #expect(!isAvailable)
     }
     
     @Test @MainActor func testCheckBiometricAvailabilityMethod() {
@@ -71,7 +71,7 @@ open class SecurityServiceTests: BaseTestClass {
         // When: Calling checkBiometricAvailability()
         let isAvailable = service.checkBiometricAvailability()
         
-        #expect(isAvailable)
+        #expect(!isAvailable)
     }
     
     // MARK: - Biometric Authentication Tests
@@ -87,9 +87,9 @@ open class SecurityServiceTests: BaseTestClass {
             let authenticated = try await service.authenticateWithBiometrics(reason: "Test authentication")
             #expect(!authenticated)
         } catch let error as SecurityServiceError {
-            #expect(error == .authenticationFailed)
+            #expect(error == .biometricNotAvailable)
         } catch {
-            #expect(!(error is SecurityServiceError))
+            Issue.record("expected SecurityServiceError, got \(error)")
         }
     }
     
@@ -102,7 +102,7 @@ open class SecurityServiceTests: BaseTestClass {
         // When: Enabling secure text entry for a field
         service.enableSecureTextEntry(for: "passwordField")
         
-        #expect(service.isAuthenticated)
+        #expect(!service.isAuthenticated)
     }
     
     @Test @MainActor func testDisableSecureTextEntry() {
@@ -112,7 +112,7 @@ open class SecurityServiceTests: BaseTestClass {
         // When: Disabling secure text entry for a field
         service.disableSecureTextEntry(for: "passwordField")
         
-        #expect(service.isAuthenticated)
+        #expect(!service.isAuthenticated)
     }
     
     // MARK: - Data Encryption Tests
@@ -132,7 +132,7 @@ open class SecurityServiceTests: BaseTestClass {
             #expect(encrypted != testData, "Encrypted data should differ from original")
         } catch {
             // Encryption may fail in test environment - that's acceptable
-            #expect(error is NSError && !(error is SecurityServiceError))
+            #expect(error is SecurityServiceError)
         }
     }
     
@@ -150,7 +150,7 @@ open class SecurityServiceTests: BaseTestClass {
             #expect(decrypted == testData, "Decrypted data should match original")
         } catch {
             // Encryption/decryption may fail in test environment - that's acceptable
-            #expect(error is NSError && !(error is SecurityServiceError))
+            #expect(error is SecurityServiceError)
         }
     }
     
@@ -168,7 +168,7 @@ open class SecurityServiceTests: BaseTestClass {
             #expect(encrypted != testString, "Encrypted string should differ from original")
         } catch {
             // Encryption may fail in test environment - that's acceptable
-            #expect(error is NSError && !(error is SecurityServiceError))
+            #expect(error is SecurityServiceError)
         }
     }
     
@@ -186,7 +186,7 @@ open class SecurityServiceTests: BaseTestClass {
             #expect(decrypted == testString, "Decrypted string should match original")
         } catch {
             // Encryption/decryption may fail in test environment - that's acceptable
-            #expect(error is NSError && !(error is SecurityServiceError))
+            #expect(error is SecurityServiceError)
         }
     }
     
@@ -200,7 +200,7 @@ open class SecurityServiceTests: BaseTestClass {
         let status = service.checkPrivacyPermission(.camera)
         
         // Then: Should return a valid permission status
-        #expect(status == .authorized)
+        #expect(status == .notDetermined)
     }
     
     @Test @MainActor func testRequestPrivacyPermission() async {
@@ -211,7 +211,7 @@ open class SecurityServiceTests: BaseTestClass {
         let status = await service.requestPrivacyPermission(.camera)
         
         // Then: Should return a valid permission status
-        #expect(status == .authorized)
+        #expect(status == .notDetermined)
     }
     
     @Test @MainActor func testPrivacyPermissionsDictionary() {
@@ -221,7 +221,8 @@ open class SecurityServiceTests: BaseTestClass {
         // When: Getting privacy permissions dictionary
         let permissions = service.privacyPermissions
         
-        #expect(permissions.isEmpty)
+        #expect(permissions.count == PrivacyPermissionType.allCases.count)
+        #expect(permissions.values.allSatisfy { $0 == .notDetermined })
     }
     
     @Test @MainActor func testShowPrivacyIndicator() {
@@ -231,7 +232,7 @@ open class SecurityServiceTests: BaseTestClass {
         // When: Showing privacy indicator
         service.showPrivacyIndicator(.camera, isActive: true)
         
-        #expect(service.isAuthenticated)
+        #expect(!service.isAuthenticated)
     }
     
     // MARK: - Keychain Integration Tests
@@ -246,12 +247,12 @@ open class SecurityServiceTests: BaseTestClass {
         do {
             try service.storeInKeychain(testData, key: testKey)
             let retrieved = try service.retrieveFromKeychain(key: testKey)
-            #expect(retrieved != testData) 
+            #expect(retrieved == testData) 
             // Clean up
             try? service.deleteFromKeychain(key: testKey)
         } catch {
             // Keychain operations may fail in test environment - that's acceptable
-            #expect(error is NSError && !(error is SecurityServiceError))
+            #expect(error is SecurityServiceError)
         }
     }
     
@@ -273,7 +274,7 @@ open class SecurityServiceTests: BaseTestClass {
             try? service.deleteFromKeychain(key: testKey)
         } catch {
             // Keychain operations may fail in test environment - that's acceptable
-            #expect(error is NSError && !(error is SecurityServiceError))
+            #expect(error is SecurityServiceError)
         }
     }
     
@@ -293,7 +294,7 @@ open class SecurityServiceTests: BaseTestClass {
             #expect(retrieved == nil, "Data should be nil after deletion")
         } catch {
             // Keychain operations may fail in test environment - that's acceptable
-            #expect(error is NSError && !(error is SecurityServiceError))
+            #expect(error is SecurityServiceError)
         }
     }
     
@@ -339,10 +340,11 @@ open class SecurityServiceTests: BaseTestClass {
         _ = service.privacyPermissions
         
         // Then: All properties should be accessible
-        #expect(biometricType == .faceID)
-        #expect(isBiometricAvailable)
-        #expect(isAuthenticated)
-        #expect(service.privacyPermissions.isEmpty)
+        #expect(biometricType == .none)
+        #expect(!isBiometricAvailable)
+        #expect(!isAuthenticated)
+        #expect(service.privacyPermissions.count == PrivacyPermissionType.allCases.count)
+        #expect(service.privacyPermissions.values.allSatisfy { $0 == .notDetermined })
     }
     
     // MARK: - Security Hints Tests
@@ -426,7 +428,7 @@ open class SecurityServiceTests: BaseTestClass {
             #expect(encrypted.count > 0, "Encrypted data should not be empty")
         } catch {
             // Encryption may fail in test environment - that's acceptable
-            #expect(error is NSError && !(error is SecurityServiceError))
+            #expect(error is SecurityServiceError)
         }
     }
     
@@ -437,6 +439,6 @@ open class SecurityServiceTests: BaseTestClass {
         // When: Showing privacy indicator
         service.showPrivacyIndicator(.camera, isActive: true)
         
-        #expect(service.isAuthenticated)
+        #expect(!service.isAuthenticated)
     }
 }
