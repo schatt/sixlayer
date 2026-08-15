@@ -105,7 +105,6 @@ open class PlatformColorEncodeTests: BaseTestClass {
                 let encodedData = try platformColorEncode(color)
                 
                 // Then: Should successfully encode
-                #expect(Bool(true), "Should encode \(name) successfully")  // encodedData is non-optional
                 #expect(!encodedData.isEmpty, "Encoded data should not be empty for \(name)")
                 
             } catch {
@@ -130,7 +129,6 @@ open class PlatformColorEncodeTests: BaseTestClass {
                 let encodedData = try platformColorEncode(color)
                 
                 // Then: Should successfully encode
-                #expect(Bool(true), "Should encode color with alpha \(expectedAlpha) successfully")  // encodedData is non-optional
                 #expect(!encodedData.isEmpty, "Encoded data should not be empty")
                 
             } catch {
@@ -150,7 +148,6 @@ open class PlatformColorEncodeTests: BaseTestClass {
             let encodedData = try platformColorEncode(color)
             
             // Then: Should work on current platform
-            #expect(Bool(true), "Should encode color on current platform")  // encodedData is non-optional
             #expect(!encodedData.isEmpty, "Encoded data should not be empty")
             
             // Verify platform-specific encoding
@@ -181,7 +178,7 @@ open class PlatformColorEncodeTests: BaseTestClass {
         for color in edgeCaseColors {
             do {
                 let encoded = try platformColorEncode(color)
-                #expect(encoded.isEmpty, "edge-case color should encode to non-empty data")
+                #expect(!encoded.isEmpty, "edge-case color should encode to non-empty data")
                 
             } catch {
                 // Edge cases might throw errors, which is acceptable
@@ -200,7 +197,7 @@ open class PlatformColorEncodeTests: BaseTestClass {
         do {
             let encodedData = try platformColorEncode(originalColor)
             _ = try platformColorDecode(encodedData)
-            #expect(encodedData.isEmpty, "round-trip encode should produce non-empty data")
+            #expect(!encodedData.isEmpty, "round-trip encode should produce non-empty data")
             
             // Note: Exact color matching might be difficult due to platform differences
             // We'll verify the data was encoded and decoded successfully
