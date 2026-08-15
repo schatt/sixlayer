@@ -99,8 +99,8 @@ open class L2LayoutDecisionTests: BaseTestClass {
             screenWidth: 375,
             deviceType: .phone
         )
-        #expect(simpleDecision.columns == 0)
-        #expect(simpleDecision.reasoning.isEmpty)
+        #expect(simpleDecision.columns > 0)
+        #expect(!simpleDecision.reasoning.isEmpty)
         
         // Test moderate complexity
         let moderateHints = PresentationHints(
@@ -115,8 +115,8 @@ open class L2LayoutDecisionTests: BaseTestClass {
             screenWidth: 375,
             deviceType: .phone
         )
-        #expect(moderateDecision.columns == 0)
-        #expect(moderateDecision.reasoning.isEmpty)
+        #expect(moderateDecision.columns > 0)
+        #expect(!moderateDecision.reasoning.isEmpty)
         
         // Test complex complexity
         let complexHints = PresentationHints(
@@ -131,8 +131,8 @@ open class L2LayoutDecisionTests: BaseTestClass {
             screenWidth: 375,
             deviceType: .phone
         )
-        #expect(complexDecision.columns == 0)
-        #expect(complexDecision.reasoning.isEmpty)
+        #expect(complexDecision.columns > 0)
+        #expect(!complexDecision.reasoning.isEmpty)
     }
     
     @Test @MainActor func testDetermineOptimalLayout_L2_WithDifferentDeviceTypes() {
@@ -145,7 +145,7 @@ open class L2LayoutDecisionTests: BaseTestClass {
             screenWidth: 375,
             deviceType: .phone
         )
-        #expect(phoneDecision.columns == 0)
+        #expect(phoneDecision.columns > 0)
         
         // Test pad
         let padDecision = determineOptimalLayout_L2(
@@ -154,7 +154,7 @@ open class L2LayoutDecisionTests: BaseTestClass {
             screenWidth: 768,
             deviceType: .pad
         )
-        #expect(padDecision.columns == 0)
+        #expect(padDecision.columns > 0)
         
         // Test mac
         let macDecision = determineOptimalLayout_L2(
@@ -163,7 +163,7 @@ open class L2LayoutDecisionTests: BaseTestClass {
             screenWidth: 1024,
             deviceType: .mac
         )
-        #expect(macDecision.columns == 0)
+        #expect(macDecision.columns > 0)
     }
     
     // MARK: - Form Layout Decision Tests
@@ -259,7 +259,7 @@ open class L2LayoutDecisionTests: BaseTestClass {
             deviceType: .phone,
             contentComplexity: complexity
         )
-        #expect(phoneDecision.columns == 0)
+        #expect(phoneDecision.columns == 1)
         
         // Test pad
         let padDecision = determineOptimalCardLayout_L2(
@@ -268,7 +268,7 @@ open class L2LayoutDecisionTests: BaseTestClass {
             deviceType: .pad,
             contentComplexity: complexity
         )
-        #expect(padDecision.columns == 0)
+        #expect(padDecision.columns == 2)
         
         // Test mac
         let macDecision = determineOptimalCardLayout_L2(
@@ -277,7 +277,7 @@ open class L2LayoutDecisionTests: BaseTestClass {
             deviceType: .mac,
             contentComplexity: complexity
         )
-        #expect(macDecision.columns == 0)
+        #expect(macDecision.columns == 3)
     }
     
     // MARK: - Intelligent Card Layout Decision Tests
@@ -548,7 +548,7 @@ open class L2LayoutDecisionTests: BaseTestClass {
         let strategy = determinePhotoCaptureStrategy_L2(purpose: purpose, context: context)
         
         // Then
-        #expect(strategy == .photoLibrary)
+        #expect(strategy == .camera)
     }
     
     @Test @MainActor func testDeterminePhotoCaptureStrategy_L2_WithFuelReceipt() {
@@ -560,7 +560,7 @@ open class L2LayoutDecisionTests: BaseTestClass {
         let strategy = determinePhotoCaptureStrategy_L2(purpose: purpose, context: context)
         
         // Then
-        #expect(strategy == .photoLibrary)
+        #expect(strategy == .camera)
     }
     
     // MARK: - Performance Tests
