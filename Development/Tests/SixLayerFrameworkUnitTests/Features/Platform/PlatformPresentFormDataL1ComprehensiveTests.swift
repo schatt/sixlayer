@@ -179,7 +179,7 @@ open class PlatformPresentFormDataL1ComprehensiveTests: BaseTestClass {
         ]
 
         // When: Creating form presentation
-        _ = platformPresentFormData_L1(fields: fieldsWithOptions, hints: EnhancedPresentationHints(
+        let view = platformPresentFormData_L1(fields: fieldsWithOptions, hints: EnhancedPresentationHints(
             dataType: standardHints.dataType,
             presentationPreference: standardHints.presentationPreference,
             complexity: standardHints.complexity,
@@ -188,8 +188,7 @@ open class PlatformPresentFormDataL1ComprehensiveTests: BaseTestClass {
             extensibleHints: []
         ))
 
-        // Then: Should handle option-based fields correctly
-        #expect(Bool(true), "view is non-optional")  // view is non-optional
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "AsyncFormView")
     }
 
     @Test @MainActor func testPlatformPresentFormData_L1_MultiValueFields() {
@@ -206,7 +205,7 @@ open class PlatformPresentFormDataL1ComprehensiveTests: BaseTestClass {
         ]
 
         // When: Creating form presentation
-        _ = platformPresentFormData_L1(fields: multiValueFields, hints: EnhancedPresentationHints(
+        let view = platformPresentFormData_L1(fields: multiValueFields, hints: EnhancedPresentationHints(
             dataType: standardHints.dataType,
             presentationPreference: standardHints.presentationPreference,
             complexity: standardHints.complexity,
@@ -215,8 +214,7 @@ open class PlatformPresentFormDataL1ComprehensiveTests: BaseTestClass {
             extensibleHints: []
         ))
 
-        // Then: Should handle multi-value fields
-        #expect(Bool(true), "view is non-optional")  // view is non-optional
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "AsyncFormView")
     }
 
     // MARK: - Enhanced Hints Tests
@@ -256,8 +254,6 @@ open class PlatformPresentFormDataL1ComprehensiveTests: BaseTestClass {
         let view = platformPresentFormData_L1(fields: fields, hints: enhancedHints)
 
         // Then: Should create view with enhanced hints support
-        #expect(Bool(true), "Should create view with enhanced hints")  // view is non-optional
-
         BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "AsyncFormView")
     }
 
@@ -294,7 +290,6 @@ open class PlatformPresentFormDataL1ComprehensiveTests: BaseTestClass {
         _ = platformPresentFormData_L1(fields: fields, hints: enhancedHints)
 
         // Then: Should process all extensible hints
-        #expect(Bool(true), "view is non-optional")  // view is non-optional
         #expect(enhancedHints.extensibleHints.count == 2, 
                       "Should have 2 extensible hints")
     }
@@ -341,8 +336,6 @@ open class PlatformPresentFormDataL1ComprehensiveTests: BaseTestClass {
             let view = platformPresentFormData_L1(fields: crossPlatformFields, hints: PlatformPresentFormDataL1ComprehensiveTests.enhancedHints(from: hints))
 
             // Then: Should work across all platforms
-            #expect(Bool(true), "Should work with context: \(context)")  // view is non-optional
-
             BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "AsyncFormView")
         }
     }
@@ -358,7 +351,7 @@ open class PlatformPresentFormDataL1ComprehensiveTests: BaseTestClass {
         ]
 
         // When: Creating form presentation
-        _ = platformPresentFormData_L1(fields: keyboardTestFields, hints: EnhancedPresentationHints(
+        let view = platformPresentFormData_L1(fields: keyboardTestFields, hints: EnhancedPresentationHints(
             dataType: standardHints.dataType,
             presentationPreference: standardHints.presentationPreference,
             complexity: standardHints.complexity,
@@ -367,8 +360,7 @@ open class PlatformPresentFormDataL1ComprehensiveTests: BaseTestClass {
             extensibleHints: []
         ))
 
-        // Then: Should handle platform-specific keyboard types
-        #expect(Bool(true), "view is non-optional")  // view is non-optional
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "AsyncFormView")
     }
 
     // MARK: - Performance Tests
@@ -397,9 +389,6 @@ open class PlatformPresentFormDataL1ComprehensiveTests: BaseTestClass {
         let view = platformPresentFormData_L1(fields: largeFields, hints: PlatformPresentFormDataL1ComprehensiveTests.enhancedHints(from: complexHints))
 
         // Then: Should handle large inputs without crashing
-        #expect(Bool(true), "view is non-optional")  // view is non-optional
-
-        // Verify view type
         BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "AsyncFormView")
     }
 
@@ -503,10 +492,8 @@ open class PlatformPresentFormDataL1ComprehensiveTests: BaseTestClass {
         ]
 
         // When: Creating form with special characters
-        _ = platformPresentFormData_L1(fields: specialCharFields, hints: PlatformPresentFormDataL1ComprehensiveTests.enhancedHints(from: standardHints))
-
-        // Then: Should handle special characters correctly
-        #expect(Bool(true), "view is non-optional")  // view is non-optional
+        let view = platformPresentFormData_L1(fields: specialCharFields, hints: PlatformPresentFormDataL1ComprehensiveTests.enhancedHints(from: standardHints))
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "AsyncFormView")
 
         // Verify all fields have special character content
         for field in specialCharFields {
@@ -534,11 +521,9 @@ open class PlatformPresentFormDataL1ComprehensiveTests: BaseTestClass {
         ]
 
         // When: Testing all hint combinations
-        for (index, hints) in hintCombinations.enumerated() {
-            _ = platformPresentFormData_L1(fields: fields, hints: PlatformPresentFormDataL1ComprehensiveTests.enhancedHints(from: hints))
-
-            // Then: Each combination should work
-            #expect(Bool(true), "Hint combination \(index) should work")  // view is non-optional
+        for hints in hintCombinations {
+            let view = platformPresentFormData_L1(fields: fields, hints: PlatformPresentFormDataL1ComprehensiveTests.enhancedHints(from: hints))
+            BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "AsyncFormView")
         }
     }
 
@@ -568,7 +553,6 @@ open class PlatformPresentFormDataL1ComprehensiveTests: BaseTestClass {
         _ = platformPresentFormData_L1(fields: fields, hints: PlatformPresentFormDataL1ComprehensiveTests.enhancedHints(from: hintsWithPreferences))
 
         // Then: Should integrate custom preferences
-        #expect(Bool(true), "view is non-optional")  // view is non-optional
         #expect(hintsWithPreferences.customPreferences.count == 5, 
                       "Should have 5 custom preferences")
     }
@@ -616,9 +600,6 @@ open class PlatformPresentFormDataL1ComprehensiveTests: BaseTestClass {
         _ = platformPresentFormData_L1(fields: accessibilityFields, hints: PlatformPresentFormDataL1ComprehensiveTests.enhancedHints(from: accessibilityHints))
 
         // Then: Should support accessibility
-        #expect(Bool(true), "view is non-optional")  // view is non-optional
-
-        // Verify accessibility considerations
         let requiredFields = accessibilityFields.filter { $0.isRequired }
         #expect(requiredFields.count == 2, "Should have 2 required fields for accessibility")
 
@@ -649,8 +630,6 @@ open class PlatformPresentFormDataL1ComprehensiveTests: BaseTestClass {
         let view = platformPresentFormData_L1(fields: problematicFields, hints: PlatformPresentFormDataL1ComprehensiveTests.enhancedHints(from: standardHints))
 
         // Then: Should handle errors gracefully and still create view
-        #expect(Bool(true), "Should handle problematic data gracefully")  // view is non-optional
-
         BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "AsyncFormView")
     }
 
