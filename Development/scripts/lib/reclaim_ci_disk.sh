@@ -9,11 +9,11 @@ reclaim_ci_disk_is_clone_device_name() {
     [[ "$name" =~ ^Clone[[:space:]]+[0-9]+[[:space:]]+of[[:space:]].+ ]]
 }
 
-# Print one UDID per line for devices named "Clone N of …".
-reclaim_ci_disk_clone_udids_from_devices_json() {
+# Print name<TAB>udid for every device in `simctl list devices -j` JSON.
+reclaim_ci_disk_device_name_udids_from_json() {
     local devices_json="$1"
     RECLAIM_CI_DISK_DEVICES_JSON="$devices_json" python3 - <<'PY'
-import json, os, re, sys
+import json, os, sys
 
 raw = os.environ.get("RECLAIM_CI_DISK_DEVICES_JSON", "")
 try:
@@ -21,7 +21,6 @@ try:
 except json.JSONDecodeError:
     sys.exit(0)
 
-clone_re = re.compile(r"^Clone\s+[0-9]+\s+of\s+.+$")
 devices = data.get("devices") or {}
 if not isinstance(devices, dict):
     sys.exit(0)
@@ -32,11 +31,23 @@ for entries in devices.values():
     for device in entries:
         if not isinstance(device, dict):
             continue
-        name = device.get("name") or ""
+        name = (device.get("name") or "").replace("\t", " ").replace("\n", " ")
         udid = device.get("udid") or ""
-        if udid and clone_re.match(name):
-            print(udid)
+        if udid:
+            print(f"{name}\t{udid}")
 PY
+}
+
+# Print one UDID per line for devices named "Clone N of …".
+reclaim_ci_disk_clone_udids_from_devices_json() {
+    local devices_json="$1"
+    local name udid
+    while IFS=$'\t' read -r name udid; do
+        [[ -z "$udid" ]] && continue
+        if reclaim_ci_disk_is_clone_device_name "$name"; then
+            printf '%s\n' "$udid"
+        fi
+    done < <(reclaim_ci_disk_device_name_udids_from_json "$devices_json")
 }
 
 # Print one `xcrun simctl delete <udid>` per UDID. Never emits `delete unavailable`.
