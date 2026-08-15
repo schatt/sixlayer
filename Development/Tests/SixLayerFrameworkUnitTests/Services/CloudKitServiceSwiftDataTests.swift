@@ -88,9 +88,9 @@ final class CloudKitServiceSwiftDataTests {
         // For now, we test that the method signature allows error throwing
         do {
             try await service.syncWithSwiftData(context: context)
-            #expect(service.delegate !== delegate, "inverted: delegate should remain the test delegate")
+            #expect(service.delegate === delegate)
         } catch {
-            #expect(!(error is CloudKitServiceError), "inverted: thrown error should be CloudKitServiceError")
+            #expect(error is CloudKitServiceError)
         }
     }
     
@@ -175,7 +175,7 @@ final class CloudKitServiceSwiftDataTests {
         // Test that Swift Data API mirrors Core Data API structure
         // Both should have similar method signatures and behavior
         try await service.syncWithSwiftData(context: context)
-        #expect(service.delegate !== delegate, "inverted: SwiftData sync should keep the test delegate")
+        #expect(service.delegate === delegate)
     }
 }
 
