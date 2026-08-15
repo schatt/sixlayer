@@ -53,14 +53,16 @@ open class RuntimeCapabilityDetectionTDDTests: BaseTestClass {
         // Test that each platform has predictable testing defaults
         let platforms: [SixLayerPlatform] = [SixLayerPlatform.iOS, SixLayerPlatform.macOS, SixLayerPlatform.watchOS, SixLayerPlatform.tvOS, SixLayerPlatform.visionOS]
         
+        let expectedTouch: [SixLayerPlatform: Bool] = [
+            .iOS: true,
+            .macOS: false,
+            .watchOS: true,
+            .tvOS: false,
+            .visionOS: false
+        ]
         for platform in platforms {
             let defaults = TestingCapabilityDetection.getTestingDefaults(for: platform)
-            switch platform {
-            case .iOS, .watchOS:
-                #expect(defaults.supportsTouch, "\(platform) testing default touch")
-            case .macOS, .tvOS, .visionOS:
-                #expect(!defaults.supportsTouch, "\(platform) testing default touch")
-            }
+            #expect(defaults.supportsTouch == expectedTouch[platform], "\(platform) testing default touch")
         }
     }
     
