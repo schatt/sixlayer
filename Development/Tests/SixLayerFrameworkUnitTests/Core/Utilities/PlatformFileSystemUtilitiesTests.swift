@@ -135,11 +135,11 @@ struct PlatformFileSystemUtilitiesTests {
         
         do {
             _ = try validateDirectoryAccessThrowing(at: nonExistent)
-            #expect(Bool(false), "Should have thrown doesNotExist error")
+            Issue.record("Should have thrown doesNotExist error")
         } catch DirectoryValidationError.doesNotExist {
             // Expected
         } catch {
-            #expect(Bool(false), "Unexpected error: \(error)")
+            Issue.record("Unexpected error: \(error)")
         }
     }
     
@@ -155,11 +155,11 @@ struct PlatformFileSystemUtilitiesTests {
         
         do {
             _ = try validateDirectoryAccessThrowing(at: testFile)
-            #expect(Bool(false), "Should have thrown notADirectory error")
+            Issue.record("Should have thrown notADirectory error")
         } catch DirectoryValidationError.notADirectory {
             // Expected
         } catch {
-            #expect(Bool(false), "Unexpected error: \(error)")
+            Issue.record("Unexpected error: \(error)")
         }
     }
     
@@ -553,7 +553,7 @@ struct PlatformFileSystemUtilitiesTests {
         } catch PlatformFileSystemError.directoryNotFound {
             // Expected - container not configured
         } catch {
-            #expect(Bool(false), "Unexpected error: \(error)")
+            Issue.record("Unexpected error: \(error)")
         }
     }
     
