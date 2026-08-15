@@ -93,13 +93,14 @@ open class L2LayoutDecisionTests: BaseTestClass {
             complexity: .simple,
             context: .dashboard
         )
-        _ = determineOptimalLayout_L2(
+        let simpleDecision = determineOptimalLayout_L2(
             items: createSampleItems(),
             hints: simpleHints,
             screenWidth: 375,
             deviceType: .phone
         )
-        // simpleDecision is a non-optional struct, so it exists if we reach here
+        #expect(simpleDecision.columns > 0)
+        #expect(!simpleDecision.reasoning.isEmpty)
         
         // Test moderate complexity
         let moderateHints = PresentationHints(
@@ -108,13 +109,14 @@ open class L2LayoutDecisionTests: BaseTestClass {
             complexity: .moderate,
             context: .browse
         )
-        _ = determineOptimalLayout_L2(
+        let moderateDecision = determineOptimalLayout_L2(
             items: createSampleItems(),
             hints: moderateHints,
             screenWidth: 375,
             deviceType: .phone
         )
-        #expect(Bool(true), "Moderate complexity should return a decision")
+        #expect(moderateDecision.columns > 0)
+        #expect(!moderateDecision.reasoning.isEmpty)
         
         // Test complex complexity
         let complexHints = PresentationHints(
@@ -123,44 +125,45 @@ open class L2LayoutDecisionTests: BaseTestClass {
             complexity: .complex,
             context: .detail
         )
-        _ = determineOptimalLayout_L2(
+        let complexDecision = determineOptimalLayout_L2(
             items: createSampleItems(),
             hints: complexHints,
             screenWidth: 375,
             deviceType: .phone
         )
-        #expect(Bool(true), "Complex complexity should return a decision")
+        #expect(complexDecision.columns > 0)
+        #expect(!complexDecision.reasoning.isEmpty)
     }
     
     @Test @MainActor func testDetermineOptimalLayout_L2_WithDifferentDeviceTypes() {
         let hints = PresentationHints()
         
         // Test phone
-        _ = determineOptimalLayout_L2(
+        let phoneDecision = determineOptimalLayout_L2(
             items: createSampleItems(),
             hints: hints,
             screenWidth: 375,
             deviceType: .phone
         )
-        #expect(Bool(true), "Phone device type should return a decision")
+        #expect(phoneDecision.columns > 0)
         
         // Test pad
-        _ = determineOptimalLayout_L2(
+        let padDecision = determineOptimalLayout_L2(
             items: createSampleItems(),
             hints: hints,
             screenWidth: 768,
             deviceType: .pad
         )
-        #expect(Bool(true), "Pad device type should return a decision")
+        #expect(padDecision.columns > 0)
         
         // Test mac
-        _ = determineOptimalLayout_L2(
+        let macDecision = determineOptimalLayout_L2(
             items: createSampleItems(),
             hints: hints,
             screenWidth: 1024,
             deviceType: .mac
         )
-        #expect(Bool(true), "Mac device type should return a decision")
+        #expect(macDecision.columns > 0)
     }
     
     // MARK: - Form Layout Decision Tests
@@ -250,31 +253,31 @@ open class L2LayoutDecisionTests: BaseTestClass {
         let complexity = ContentComplexity.moderate
         
         // Test phone
-        _ = determineOptimalCardLayout_L2(
+        let phoneDecision = determineOptimalCardLayout_L2(
             contentCount: contentCount,
             screenWidth: 375,
             deviceType: .phone,
             contentComplexity: complexity
         )
-        #expect(Bool(true), "Phone device type should return a decision")
+        #expect(phoneDecision.columns == 1)
         
         // Test pad
-        _ = determineOptimalCardLayout_L2(
+        let padDecision = determineOptimalCardLayout_L2(
             contentCount: contentCount,
             screenWidth: 768,
             deviceType: .pad,
             contentComplexity: complexity
         )
-        #expect(Bool(true), "Pad device type should return a decision")
+        #expect(padDecision.columns == 2)
         
         // Test mac
-        _ = determineOptimalCardLayout_L2(
+        let macDecision = determineOptimalCardLayout_L2(
             contentCount: contentCount,
             screenWidth: 1024,
             deviceType: .mac,
             contentComplexity: complexity
         )
-        #expect(Bool(true), "Mac device type should return a decision")
+        #expect(macDecision.columns == 3)
     }
     
     // MARK: - Intelligent Card Layout Decision Tests
@@ -374,7 +377,6 @@ open class L2LayoutDecisionTests: BaseTestClass {
         let layout = platformOCRLayout_L2(context: context)
         
         // Then
-        #expect(Bool(true), "platformOCRLayout_L2 should return a layout")  // layout is non-optional
         #expect(layout.maxImageSize.width > 0, "Should have positive max image width")
         #expect(layout.maxImageSize.height > 0, "Should have positive max image height")
         #expect(layout.recommendedImageSize.width > 0, "Should have positive recommended image width")
@@ -393,7 +395,6 @@ open class L2LayoutDecisionTests: BaseTestClass {
         )
         
         // Then
-        #expect(Bool(true), "platformDocumentOCRLayout_L2 should return a layout")  // layout is non-optional
         #expect(layout.maxImageSize.width > 0, "Should have positive max image width")
         #expect(layout.maxImageSize.height > 0, "Should have positive max image height")
     }
@@ -406,7 +407,6 @@ open class L2LayoutDecisionTests: BaseTestClass {
         let layout = platformReceiptOCRLayout_L2(context: context)
         
         // Then
-        #expect(Bool(true), "platformReceiptOCRLayout_L2 should return a layout")  // layout is non-optional
         #expect(layout.maxImageSize.width > 0, "Should have positive max image width")
         #expect(layout.maxImageSize.height > 0, "Should have positive max image height")
     }
@@ -419,7 +419,6 @@ open class L2LayoutDecisionTests: BaseTestClass {
         let layout = platformBusinessCardOCRLayout_L2(context: context)
         
         // Then
-        #expect(Bool(true), "platformBusinessCardOCRLayout_L2 should return a layout")  // layout is non-optional
         #expect(layout.maxImageSize.width > 0, "Should have positive max image width")
         #expect(layout.maxImageSize.height > 0, "Should have positive max image height")
     }
@@ -546,10 +545,10 @@ open class L2LayoutDecisionTests: BaseTestClass {
         let context = createSamplePhotoContext()
         
         // When
-        _ = determinePhotoCaptureStrategy_L2(purpose: purpose, context: context)
+        let strategy = determinePhotoCaptureStrategy_L2(purpose: purpose, context: context)
         
         // Then
-        #expect(Bool(true), "determinePhotoCaptureStrategy_L2 should return a strategy")
+        #expect(strategy == .camera)
     }
     
     @Test @MainActor func testDeterminePhotoCaptureStrategy_L2_WithFuelReceipt() {
@@ -558,10 +557,10 @@ open class L2LayoutDecisionTests: BaseTestClass {
         let context = createSamplePhotoContext()
         
         // When
-        _ = determinePhotoCaptureStrategy_L2(purpose: purpose, context: context)
+        let strategy = determinePhotoCaptureStrategy_L2(purpose: purpose, context: context)
         
         // Then
-        #expect(Bool(true), "determinePhotoCaptureStrategy_L2 should return a strategy")
+        #expect(strategy == .camera)
     }
     
     // MARK: - Performance Tests
