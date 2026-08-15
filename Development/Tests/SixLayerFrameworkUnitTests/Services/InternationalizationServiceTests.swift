@@ -15,8 +15,8 @@ open class InternationalizationServiceTests: BaseTestClass {
         // Given & When: Creating the service
         let service = InternationalizationService()
         
-        #expect(service.currentLanguage().isEmpty)
-        #expect(service.supportedLanguages().isEmpty)
+        #expect(!service.currentLanguage().isEmpty)
+        #expect(service.supportedLanguages().contains("en"))
     }
     
     // MARK: - Localization Tests
@@ -515,7 +515,7 @@ open class InternationalizationServiceTests: BaseTestClass {
         
         // Then: Should handle gracefully
         // Note: Empty key returns empty string from NSLocalizedString
-        #expect(!emptyKey.isEmpty, "Empty key should be handled (may return empty or key)")
+        #expect(emptyKey.isEmpty, "Empty key returns empty string from NSLocalizedString")
         #expect(specialCharsKey == "key.with.special@chars#123", "Invalid key should return key itself")
     }
     
