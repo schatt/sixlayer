@@ -278,9 +278,9 @@ open class NativeTypesTests: BaseTestClass {
         // When - Set invalid email
         formState.setValue("invalid-email", for: field.id)
         
-        // Then — setValue stores the string and does not run validationRules
-        #expect(formState.getValue(for: field.id) as String? == nil, "invalid email should be stored")
-        #expect(!formState.isValid, "setValue does not populate fieldErrors from validationRules")
+        // setValue stores the string and does not run validationRules (no fieldErrors).
+        #expect(formState.getValue(for: field.id) as String? == "invalid-email")
+        #expect(formState.isValid, "setValue does not populate fieldErrors from validationRules")
     }
     
     // MARK: - Integration Tests
