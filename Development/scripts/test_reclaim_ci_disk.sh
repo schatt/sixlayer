@@ -1,25 +1,13 @@
 #!/usr/bin/env bash
-# Unit tests for reclaim-ci-disk (#416).
+# Unit tests for reclaim-ci-disk (#416, #417).
 
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LIB="${SCRIPT_DIR}/lib/reclaim_ci_disk.sh"
+CLI="${SCRIPT_DIR}/reclaim-ci-disk.sh"
 PASS=0
 FAIL=0
-
-assert_eq() {
-    local got="$1" want="$2" label="$3"
-    if [ "$got" = "$want" ]; then
-        echo "✅ $label"
-        PASS=$((PASS + 1))
-    else
-        echo "❌ $label"
-        echo "   got:  $got"
-        echo "   want: $want"
-        FAIL=$((FAIL + 1))
-    fi
-}
 
 assert_true() {
     local label="$1"
@@ -49,44 +37,23 @@ if [[ ! -f "$LIB" ]]; then
     echo "❌ missing lib: $LIB"
     exit 1
 fi
+if [[ ! -f "$CLI" ]]; then
+    echo "❌ missing CLI: $CLI"
+    exit 1
+fi
 
 # shellcheck source=lib/reclaim_ci_disk.sh
 source "$LIB"
 
-assert_true "Clone 1 of iPhone 17 Pro Max is a clone name" \
-    reclaim_ci_disk_is_clone_device_name "Clone 1 of iPhone 17 Pro Max"
-assert_true "Clone 2 of Apple TV is a clone name" \
-    reclaim_ci_disk_is_clone_device_name "Clone 2 of Apple TV"
-assert_false "base iPhone 17 Pro Max is not a clone name" \
-    reclaim_ci_disk_is_clone_device_name "iPhone 17 Pro Max"
-assert_false "Clone without index is not a clone name" \
-    reclaim_ci_disk_is_clone_device_name "Clone of iPhone 17 Pro Max"
-assert_false "empty name is not a clone name" \
-    reclaim_ci_disk_is_clone_device_name ""
-
-FIXTURE_DEVICES='{
-  "devices": {
-    "com.apple.CoreSimulator.SimRuntime.iOS-26-0": [
-      {"udid": "BASE-IPHONE", "name": "iPhone 17 Pro Max", "state": "Shutdown"},
-      {"udid": "CLONE-1", "name": "Clone 1 of iPhone 17 Pro Max", "state": "Booted"},
-      {"udid": "CLONE-2", "name": "Clone 2 of iPhone 17 Pro Max", "state": "Shutdown"}
-    ],
-    "com.apple.CoreSimulator.SimRuntime.tvOS-26-0": [
-      {"udid": "BASE-TV", "name": "Apple TV", "state": "Shutdown"},
-      {"udid": "CLONE-TV", "name": "Clone 1 of Apple TV", "state": "Shutdown"}
-    ]
-  }
-}'
-
-got="$(reclaim_ci_disk_clone_udids_from_devices_json "$FIXTURE_DEVICES" | LC_ALL=C sort | tr '\n' ' ')"
-assert_eq "$got" "CLONE-1 CLONE-2 CLONE-TV " "clone UDID list excludes base simulators"
-
-got="$(reclaim_ci_disk_simctl_delete_commands_from_udids $'CLONE-1\nCLONE-2')"
-assert_eq "$got" $'xcrun simctl delete CLONE-1\nxcrun simctl delete CLONE-2' \
-    "delete commands are per-UDID simctl delete (not delete unavailable)"
-
-assert_false "planned commands do not prune unavailable" \
-    bash -c 'printf "%s" "$1" | grep -Fq "delete unavailable"' _ "$got"
+# Mini is shared with CarManager; never simctl-delete/shutdown devices (#417).
+assert_false "CLI does not invoke xcrun simctl delete" \
+    grep -Fq 'xcrun simctl delete' "$CLI"
+assert_false "CLI does not invoke xcrun simctl shutdown" \
+    grep -Fq 'xcrun simctl shutdown' "$CLI"
+assert_false "lib does not emit xcrun simctl delete" \
+    grep -Fq 'xcrun simctl delete' "$LIB"
+assert_false "lib does not invoke xcrun simctl shutdown" \
+    grep -Fq 'xcrun simctl shutdown' "$LIB"
 
 WORKDIR="$(mktemp -d "${TMPDIR:-/tmp}/reclaim-ci-disk-test.XXXXXX")"
 cleanup() { rm -rf "$WORKDIR"; }
