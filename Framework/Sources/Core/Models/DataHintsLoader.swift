@@ -980,8 +980,22 @@ public enum FormSectionResolution {
         layoutSpec: LayoutSpec?,
         hintsResult: DataHintsResult?
     ) -> [DynamicFormSection] {
-        // Deliberately empty until #382 DynamicForm placeholders are replaced (red).
-        return []
+        if let explicitSpec = layoutSpec {
+            return explicitSpec.sections
+        }
+        if let hintsResult, !hintsResult.sectionLayouts.isEmpty {
+            return SectionBuilder.buildSections(
+                from: hintsResult.sectionLayouts,
+                matching: fields
+            )
+        }
+        return [
+            DynamicFormSection(
+                id: "default",
+                title: "Form Fields",
+                fields: fields
+            )
+        ]
     }
 }
 
