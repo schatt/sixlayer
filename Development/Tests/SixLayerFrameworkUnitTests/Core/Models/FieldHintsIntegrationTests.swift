@@ -45,13 +45,13 @@ struct FieldHintsIntegrationTests {
         
         // Load using model name (will look for bundle first, won't find it)
         // This test verifies structure works
-        _ = loader.loadHints(for: "TestModel")
+        let loaded = loader.loadHints(for: "TestModel")
         
         // Clean up
         try? FileManager.default.removeItem(at: testFile)
         
-        // Verify we got something (might be empty if bundle lookup failed, but structure is valid)
-        #expect(Bool(true), "loaded is non-optional")  // loaded is non-optional
+        // Temp file is not on the loader search path (bundle / documents); TestModel is absent.
+        #expect(!loaded.isEmpty, "TestModel hints are not in the test bundle")
     }
     
     @Test func testFieldHintsCompleteExample() {
