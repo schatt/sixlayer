@@ -114,6 +114,14 @@ public final class PlatformDataScannerSessionController: Sendable {
     internal func attachLiveScanner(_ controller: DataScannerViewController) {
         liveScannerViewController = controller
     }
+
+    @available(iOS 16.0, *)
+    private func attachedLiveScanner() throws -> DataScannerViewController {
+        guard let controller = liveScannerViewController as? DataScannerViewController else {
+            throw PlatformDataScannerError.scannerNotAttached
+        }
+        return controller
+    }
     #endif
 
     /// Starts VisionKit scanning when a controller is attached (Issue #252).
@@ -121,10 +129,7 @@ public final class PlatformDataScannerSessionController: Sendable {
     public func startScanning() throws {
         #if os(iOS) && !targetEnvironment(macCatalyst) && canImport(VisionKit)
         if #available(iOS 16.0, *) {
-            guard let controller = liveScannerViewController as? DataScannerViewController else {
-                throw PlatformDataScannerError.scannerNotAttached
-            }
-            try controller.startScanning()
+            try attachedLiveScanner().startScanning()
             return
         }
         #endif
@@ -136,8 +141,9 @@ public final class PlatformDataScannerSessionController: Sendable {
     public func stopScanning() {
         #if os(iOS) && !targetEnvironment(macCatalyst) && canImport(VisionKit)
         if #available(iOS 16.0, *) {
-            guard let controller = liveScannerViewController as? DataScannerViewController else { return }
-            controller.stopScanning()
+            if let scanner = try? attachedLiveScanner() {
+                scanner.stopScanning()
+            }
         }
         #endif
     }
@@ -147,10 +153,7 @@ public final class PlatformDataScannerSessionController: Sendable {
     public func capturePhoto() async throws -> PlatformImage {
         #if os(iOS) && !targetEnvironment(macCatalyst) && canImport(VisionKit)
         if #available(iOS 16.0, *) {
-            guard let controller = liveScannerViewController as? DataScannerViewController else {
-                throw PlatformDataScannerError.scannerNotAttached
-            }
-            let image = try await controller.capturePhoto()
+            let image = try await attachedLiveScanner().capturePhoto()
             return PlatformImage(image)
         }
         #endif
