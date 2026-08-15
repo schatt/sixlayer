@@ -9,7 +9,7 @@
 import XCTest
 
 @MainActor
-final class OCRCategoryDUITests: XCTestCase {
+final class OCRCategoryDUITests: SixLayerUITestCase {
     private enum IDs {
         static let hostTitle = "Category D OCR Coverage"
         static let disambiguationPrompt = "category-d-disambiguation-prompt"

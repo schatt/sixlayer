@@ -214,6 +214,7 @@ open class DynamicFormViewTests: BaseTestClass {
         #else
         // View is created successfully (non-optional parameter), so test passes
         #endif
+        #expect(submittedData == nil, "onSubmit should not fire during construction/inspection")
     }
 
     /// Issue #224: `formHeaderVisibility: .hidden` must not render configuration title/description as inline header (strict TDD hosted layer).
@@ -2172,7 +2173,8 @@ open class DynamicFormViewTests: BaseTestClass {
         // Verify hints were applied to username field
         let updatedUsernameField = effectiveConfiguration.sections.first?.fields.first { $0.id == "username" }
         #expect(updatedUsernameField != nil, "Username field should exist")
-        #expect(updatedUsernameField?.supportsOCR == true, "Username field should support OCR after hints applied")
+        #expect(updatedUsernameField?.supportsOCR == false, "ocrHints must not enable supportsOCR (Issue #404)")
+        #expect(updatedUsernameField?.displayOCR == false, "ocrHints must not enable displayOCR (Issue #404)")
         #expect(updatedUsernameField?.ocrHints?.count == 3, "Username field should have 3 OCR hints")
         #expect(updatedUsernameField?.ocrHints?.contains("username") == true, "Should contain 'username' hint")
         #expect(updatedUsernameField?.ocrHints?.contains("user name") == true, "Should contain 'user name' hint")
@@ -2180,7 +2182,7 @@ open class DynamicFormViewTests: BaseTestClass {
         // Verify hints were applied to email field
         let updatedEmailField = effectiveConfiguration.sections.first?.fields.first { $0.id == "email" }
         #expect(updatedEmailField != nil, "Email field should exist")
-        #expect(updatedEmailField?.supportsOCR == true, "Email field should support OCR after hints applied")
+        #expect(updatedEmailField?.supportsOCR == false, "ocrHints must not enable supportsOCR (Issue #404)")
         #expect(updatedEmailField?.ocrHints?.count == 3, "Email field should have 3 OCR hints")
         
         // Verify field without hints remains unchanged
@@ -2190,13 +2192,10 @@ open class DynamicFormViewTests: BaseTestClass {
         #expect(updatedPasswordField?.ocrHints == nil, "Password field should have nil OCR hints")
         
         // Verify DynamicFormView can be created with this configuration
-        let view = DynamicFormView(
+        _ = DynamicFormView(
             configuration: configuration,
             onSubmit: { _ in }
         )
-        
-        // Verify view was created successfully
-        #expect(Bool(true), "View should be created successfully")
     }
 
     @Test @MainActor func testDynamicFormViewAppliesHintsFromMetadataWhenModelNameProvided() async throws {
@@ -2251,28 +2250,25 @@ open class DynamicFormViewTests: BaseTestClass {
         #expect(updatedField?.metadata?["displayWidth"] == "narrow", "Metadata should be preserved")
         #expect(updatedField?.metadata?["maxLength"] == "50", "Metadata should be preserved")
         
-        // Verify OCR hints from file are applied
-        #expect(updatedField?.supportsOCR == true, "Field should support OCR after hints applied")
+        // Verify OCR hints from file are applied without flipping OCR flags (Issue #404)
+        #expect(updatedField?.supportsOCR == false, "ocrHints must not enable supportsOCR (Issue #404)")
         #expect(updatedField?.ocrHints?.count == 3, "Field should have 3 OCR hints from file")
         
         // Verify DynamicFormView can be created
-        let view = DynamicFormView(
+        _ = DynamicFormView(
             configuration: configuration,
             onSubmit: { _ in }
         )
-        
-        #expect(Bool(true), "View should be created successfully with hints applied")
     }
     
     @Test @MainActor func testDynamicFormViewAppliesCalculationHints() async throws {
         initializeTestConfig()
-        // TDD: DynamicFormView should apply calculation hints from .hints files
-        // 1. Calculation hints should enable isCalculated on fields
-        // 2. Calculation groups should be applied to fields
+        // Calculation groups merge from .hints; isCalculated only when explicitly set (Issue #404)
 
         // Create a hints file with calculation hints
         let hintsJSON: [String: Any] = [
             "total": [
+                "isCalculated": true,
                 "calculationGroups": [
                     [
                         "id": "price_calc",
@@ -2318,12 +2314,10 @@ open class DynamicFormViewTests: BaseTestClass {
         #expect(updatedField?.calculationGroups?.first?.id == "price_calc", "Calculation group should have correct ID")
         
         // Verify DynamicFormView can be created
-        let view = DynamicFormView(
+        _ = DynamicFormView(
             configuration: configuration,
             onSubmit: { _ in }
         )
-        
-        #expect(Bool(true), "View should be created successfully with calculation hints")
     }
     
     @Test @MainActor func testDynamicFormViewHandlesMissingHintsFile() async {
@@ -2364,12 +2358,10 @@ open class DynamicFormViewTests: BaseTestClass {
         #expect(updatedField?.ocrHints == nil, "Field should have nil OCR hints")
         
         // Verify DynamicFormView can be created
-        let view = DynamicFormView(
+        _ = DynamicFormView(
             configuration: configuration,
             onSubmit: { _ in }
         )
-        
-        #expect(Bool(true), "View should be created successfully even without hints file")
     }
     
     @Test @MainActor func testDynamicFormViewAppliesHintsToMultipleSections() async throws {
@@ -2428,25 +2420,23 @@ open class DynamicFormViewTests: BaseTestClass {
         let firstNameField = section1Fields.first { $0.id == "firstName" }
         let lastNameField = section1Fields.first { $0.id == "lastName" }
         
-        #expect(firstNameField?.supportsOCR == true, "First name field should support OCR")
+        #expect(firstNameField?.supportsOCR == false, "ocrHints must not enable supportsOCR (Issue #404)")
         #expect(firstNameField?.ocrHints?.count == 2, "First name should have 2 OCR hints")
-        #expect(lastNameField?.supportsOCR == true, "Last name field should support OCR")
+        #expect(lastNameField?.supportsOCR == false, "ocrHints must not enable supportsOCR (Issue #404)")
         #expect(lastNameField?.ocrHints?.count == 3, "Last name should have 3 OCR hints")
         
         // Verify hints applied to section 2 fields
         let section2Fields = effectiveConfiguration.sections.first { $0.id == "section2" }?.fields ?? []
         let emailField = section2Fields.first { $0.id == "email" }
         
-        #expect(emailField?.supportsOCR == true, "Email field should support OCR")
+        #expect(emailField?.supportsOCR == false, "ocrHints must not enable supportsOCR (Issue #404)")
         #expect(emailField?.ocrHints?.count == 2, "Email should have 2 OCR hints")
         
         // Verify DynamicFormView can be created
-        let view = DynamicFormView(
+        _ = DynamicFormView(
             configuration: configuration,
             onSubmit: { _ in }
         )
-        
-        #expect(Bool(true), "View should be created successfully with hints in multiple sections")
     }
     
     // MARK: - Entity Creation Tests (Issue #92)
@@ -2456,7 +2446,7 @@ open class DynamicFormViewTests: BaseTestClass {
     /// METHODOLOGY: Create form with modelName, submit form, verify entity is created
     @Test @MainActor func testDynamicFormViewCreatesCoreDataEntityOnSubmit() async throws {
         initializeTestConfig()
-        try await runWithTaskLocalConfig {
+        try runWithTaskLocalConfig {
             setupTestEnvironment()
             
             #if canImport(CoreData)
@@ -2483,8 +2473,7 @@ open class DynamicFormViewTests: BaseTestClass {
                 name: "TestModel",
                 managedObjectModel: model
             )
-            
-            let context = container.viewContext
+            #expect(!container.viewContext.hasChanges, "Fresh test context should have no pending changes")
             
             // Create hints file for User entity
             let hintsJSON: [String: Any] = [
@@ -2523,8 +2512,8 @@ open class DynamicFormViewTests: BaseTestClass {
             var submittedValues: [String: Any]? = nil
             var createdEntity: Any? = nil
             
-            // WHEN: Form is submitted with values
-            let view = DynamicFormView(
+            // WHEN: Form is constructed with callbacks wired
+            _ = DynamicFormView(
                 configuration: configuration,
                 onSubmit: { values in
                     submittedValues = values
@@ -2534,19 +2523,13 @@ open class DynamicFormViewTests: BaseTestClass {
                 }
             )
             
-            // Simulate form submission by accessing formState and calling handleSubmit
-            // Note: In a real scenario, user would fill form and click submit
-            // For testing, we'll directly set values and trigger submit
             let formState = DynamicFormState(configuration: configuration)
             formState.setValue("John Doe", for: "name")
             formState.setValue("john@example.com", for: "email")
             
-            // Manually trigger entity creation (simulating submit button press)
-            // We need to access the private handleSubmit, so we'll test via the view's environment
-            // Actually, we can test by creating a test view that exposes the submit handler
-            
-            // For now, verify the view can be created and configuration is correct
-            #expect(view is DynamicFormView, "View should be created")
+            // Construction alone must not fire submit/entity callbacks
+            #expect(submittedValues == nil, "onSubmit should not fire until form is submitted")
+            #expect(createdEntity == nil, "onEntityCreated should not fire until form is submitted")
             #expect(configuration.modelName == uniqueModelName, "Configuration should have modelName")
             
             cleanupTestEnvironment()
@@ -2562,7 +2545,7 @@ open class DynamicFormViewTests: BaseTestClass {
     /// METHODOLOGY: Create form with modelName, submit, verify both callbacks are called
     @Test @MainActor func testDynamicFormViewCallsOnSubmitEvenWhenEntityCreated() async {
         initializeTestConfig()
-        await runWithTaskLocalConfig {
+        runWithTaskLocalConfig {
             setupTestEnvironment()
             
             // GIVEN: A form configuration with modelName
@@ -2585,7 +2568,7 @@ open class DynamicFormViewTests: BaseTestClass {
             var onEntityCreatedCalled = false
             
             // WHEN: Form is created
-            let view = DynamicFormView(
+            _ = DynamicFormView(
                 configuration: configuration,
                 onSubmit: { _ in
                     onSubmitCalled = true
@@ -2595,8 +2578,7 @@ open class DynamicFormViewTests: BaseTestClass {
                 }
             )
             
-            // THEN: View should be created (onSubmit will be called on actual submit)
-            #expect(view is DynamicFormView, "View should be created")
+            // THEN: Construction must not invoke callbacks
             #expect(!onSubmitCalled, "onSubmit should not be called until form is submitted")
             #expect(!onEntityCreatedCalled, "onEntityCreated should not be called until form is submitted")
             
@@ -2609,7 +2591,7 @@ open class DynamicFormViewTests: BaseTestClass {
     /// METHODOLOGY: Create form without modelName, verify only onSubmit is called
     @Test @MainActor func testDynamicFormViewWorksWithoutModelName() async {
         initializeTestConfig()
-        await runWithTaskLocalConfig {
+        runWithTaskLocalConfig {
             setupTestEnvironment()
             
             // GIVEN: A form configuration WITHOUT modelName
@@ -2632,7 +2614,7 @@ open class DynamicFormViewTests: BaseTestClass {
             var onEntityCreatedCalled = false
             
             // WHEN: Form is created
-            let view = DynamicFormView(
+            _ = DynamicFormView(
                 configuration: configuration,
                 onSubmit: { _ in
                     onSubmitCalled = true
@@ -2642,9 +2624,10 @@ open class DynamicFormViewTests: BaseTestClass {
                 }
             )
             
-            // THEN: View should be created successfully
-            #expect(view is DynamicFormView, "View should be created without modelName")
+            // THEN: Construction succeeds; callbacks stay quiet until submit
             #expect(configuration.modelName == nil, "Configuration should have nil modelName")
+            #expect(!onSubmitCalled, "onSubmit should not be called until form is submitted")
+            #expect(!onEntityCreatedCalled, "onEntityCreated should not be called until form is submitted")
             
             cleanupTestEnvironment()
         }

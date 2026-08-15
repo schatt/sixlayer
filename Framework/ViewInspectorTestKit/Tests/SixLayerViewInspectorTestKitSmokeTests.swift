@@ -3,6 +3,7 @@
 //  SixLayerViewInspectorTestKitTests
 //
 //  Verifies the consumer test kit exports canonical ViewInspector helpers (#327).
+//  ViewInspector 0.10+ does not require Inspectable conformance (#328, #388).
 //
 
 import SwiftUI
@@ -14,7 +15,7 @@ import SixLayerViewInspectorTestKit
 @MainActor
 struct SixLayerViewInspectorTestKitSmokeTests {
 
-    private struct SampleView: View, Inspectable {
+    private struct SampleView: View {
         var body: some View {
             VStack {
                 Text("hello")
@@ -22,7 +23,7 @@ struct SixLayerViewInspectorTestKitSmokeTests {
         }
     }
 
-    @Test("inspectView returns typed hierarchy for Inspectable views")
+    @Test("inspectView returns typed hierarchy for plain View")
     func inspectViewReturnsTypedHierarchy() throws {
         let view = SampleView()
         let inspected = try #require(inspectView(view))
@@ -30,7 +31,7 @@ struct SixLayerViewInspectorTestKitSmokeTests {
         #expect(vStack.count == 1)
     }
 
-    @Test("firstVStackInView resolves VStack from Inspectable root")
+    @Test("firstVStackInView resolves VStack from View root")
     func firstVStackInViewResolvesVStack() throws {
         let view = SampleView()
         let vStack = try firstVStackInView(view, minChildren: 1)

@@ -344,6 +344,7 @@ log_error() {
     ERROR_MESSAGES="${ERROR_MESSAGES}\n❌ $1"
 }
 
+
 # Open an .xcresult in Xcode after a failed test gate (local workflow).
 # Skip when CI is set (typical macOS runners) or when RELEASE_SKIP_OPEN_XCRESULT=1 (SSH / automation).
 maybe_open_xcresult() {
@@ -477,13 +478,14 @@ else
         echo "⏭️  Skipping macOS unit tests (already passed at stamped commit)"
     else
         echo "🧪 Running macOS unit tests (SLF-macOS-UnitTests)..."
-        # Note: do NOT use -quiet here so that any failures print detailed diagnostics
+        # Do not `xcodebuild clean` before test: on Xcode 27 (FB24278669 / #409) clean+test
+        # races and fails to load the .xctest executable. Incremental test is sufficient.
+        # Single `xcodebuild test` (#411; do not split the unit-gate invoke).
         if ! rtk xcodebuild test \
             -project SixLayerFramework.xcodeproj \
             -scheme SLF-macOS-UnitTests \
             -destination "platform=macOS,arch=arm64" \
-            -resultBundlePath "$MACOS_XCRESULT" \
-            -quiet; then
+            -resultBundlePath "$MACOS_XCRESULT"; then
             MACOS_TESTS_FAILED=1
             log_error "macOS unit tests failed."
         else
@@ -497,8 +499,6 @@ else
         echo "⏭️  Skipping iOS unit tests (already passed at stamped commit)"
     else
         echo "🧪 Running iOS unit tests on Simulator (SLF-iOS-UnitTests)..."
-        echo "🧹 Pruning unavailable iOS Simulators..."
-        xcrun simctl delete unavailable 2>/dev/null || true
         IOS_SIM_NAME="${SLF_IOS_TEST_SIMULATOR:-iPhone 17 Pro Max}"
         if ! xcrun simctl list devices available | grep -q "${IOS_SIM_NAME} ("; then
             IOS_RUNTIME=$(xcrun simctl list runtimes available -j | python3 -c "import json,sys; rs=[r for r in json.load(sys.stdin).get('runtimes',[]) if r.get('isAvailable') and 'iOS' in r.get('name','')]; print(sorted(rs,key=lambda r:r.get('version',''))[-1]['identifier'] if rs else '')")
@@ -507,12 +507,13 @@ else
                 xcrun simctl create "$IOS_SIM_NAME" com.apple.CoreSimulator.SimDeviceType.iPhone-16-Pro "$IOS_RUNTIME" >/dev/null 2>&1 || true
             fi
         fi
+        # Do not `xcodebuild clean` before test (same Xcode 27 race as macOS; #409 / FB24278669).
+        # Single `xcodebuild test` (#411; do not split the unit-gate invoke).
         if ! rtk xcodebuild test \
             -project SixLayerFramework.xcodeproj \
             -scheme SLF-iOS-UnitTests \
             -destination "platform=iOS Simulator,name=${IOS_SIM_NAME}" \
-            -resultBundlePath "$IOS_XCRESULT" \
-            -quiet; then
+            -resultBundlePath "$IOS_XCRESULT"; then
             IOS_TESTS_FAILED=1
             log_error "iOS unit tests failed."
         else

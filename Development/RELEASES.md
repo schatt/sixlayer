@@ -1,12 +1,21 @@
 # 🚀 Six-Layer Framework Release History
 
-## 📍 **Current Release: v8.3.5** 🔧
+## 📍 **Current Release: v8.3.6** 🔧
 
-**Release Date**: July 30, 2026
+**Release Date**: August 11, 2026
 **Status**: Patch release
-**Previous Release**: v8.3.4 - Patch release
-**Note**: FieldDisplayHints form layout (#385); PlatformPresentationSize (#384/#386); toolbar Menu (#352); UITest MainActor (#387).
+**Previous Release**: v8.3.5 - Patch release
+**Note**: displayOCR / hints inference (#404); named host sentinel (#406); iOS GeometryProxy SIGTRAP (#408); test-lane / release-script hygiene (#381, #395, #400, #405, #409).
 **Next Release**: TBD
+
+---
+
+## 🎯 **v8.3.6 - displayOCR, host sentinel, and iOS GeometryProxy SIGTRAP** (August 11, 2026)
+
+### **What's in v8.3.6:**
+- Patch release (#371, #381, #386, #388–#391, #395, #400, #404–#409, #411–#414). See [RELEASE_v8.3.6.md](RELEASE_v8.3.6.md) for details.
+
+**See [RELEASE_v8.3.6.md](RELEASE_v8.3.6.md) for complete release notes.**
 
 ---
 

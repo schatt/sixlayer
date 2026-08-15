@@ -1159,9 +1159,23 @@ public struct FieldDisplayHints: Sendable {
     
     /// OCR hints for field identification (language-specific, resolved from hints file)
     public let ocrHints: [String]?
+
+    /// Optional override for batch / document OCR eligibility when applying hints.
+    /// `nil` means no opinion (leave ``DynamicFormField/supportsOCR`` unchanged).
+    /// Presence of ``ocrHints`` must not imply this is `true` (Issue #404).
+    public let supportsOCR: Bool?
+
+    /// Optional override for per-field Scan accessory when applying hints.
+    /// `nil` means no opinion (leave ``DynamicFormField/displayOCR`` unchanged).
+    public let displayOCR: Bool?
     
     /// Calculation groups for computing field values
     public let calculationGroups: [CalculationGroup]?
+
+    /// Optional override for calculated-field eligibility when applying hints.
+    /// `nil` means no opinion (leave ``DynamicFormField/isCalculated`` unchanged).
+    /// Presence of ``calculationGroups`` must not imply this is `true` (Issue #404).
+    public let isCalculated: Bool?
     
     /// Input type for the field: "picker", "text", etc.
     /// When "picker" is specified, the field will be rendered as a Picker instead of TextField
@@ -1197,7 +1211,10 @@ public struct FieldDisplayHints: Sendable {
         expectedRange: ValueRange? = nil,
         metadata: [String: String] = [:],
         ocrHints: [String]? = nil,
+        supportsOCR: Bool? = nil,
+        displayOCR: Bool? = nil,
         calculationGroups: [CalculationGroup]? = nil,
+        isCalculated: Bool? = nil,
         inputType: String? = nil,
         pickerOptions: [PickerOption]? = nil,
         isHidden: Bool = false,
@@ -1215,7 +1232,10 @@ public struct FieldDisplayHints: Sendable {
         self.expectedRange = expectedRange
         self.metadata = metadata
         self.ocrHints = ocrHints
+        self.supportsOCR = supportsOCR
+        self.displayOCR = displayOCR
         self.calculationGroups = calculationGroups
+        self.isCalculated = isCalculated
         self.inputType = inputType
         self.pickerOptions = pickerOptions
         self.isHidden = isHidden

@@ -362,7 +362,8 @@ public final class FileBasedDataHintsLoader: DataHintsLoader, @unchecked Sendabl
                 for (propKey, propValue) in properties {
                     if !["expectedLength", "displayWidth", "showCharacterCounter", "maxLength", "minLength", 
                          "expectedRange", "ocrHints", "calculationGroups", "inputType", "options",
-                         "fieldType", "isOptional", "isArray", "defaultValue", "isHidden", "isEditable"].contains(propKey) &&
+                         "fieldType", "isOptional", "isArray", "defaultValue", "isHidden", "isEditable",
+                         "supportsOCR", "displayOCR", "isCalculated"].contains(propKey) &&
                        !propKey.hasPrefix("ocrHints.") {
                         if let stringValue = propValue as? String {
                             metadata[propKey] = stringValue
@@ -372,9 +373,14 @@ public final class FileBasedDataHintsLoader: DataHintsLoader, @unchecked Sendabl
                 
                 // Parse OCR hints with language-specific support
                 let ocrHints = parseOCRHints(from: properties, languageCode: languageCode)
+
+                // Optional OCR eligibility / accessory overrides (Issue #404); nil = no opinion
+                let supportsOCR = parseOptionalBool(from: properties, key: "supportsOCR")
+                let displayOCR = parseOptionalBool(from: properties, key: "displayOCR")
                 
                 // Parse calculation groups
                 let calculationGroups = parseCalculationGroups(from: properties)
+                let isCalculated = parseOptionalBool(from: properties, key: "isCalculated")
                 
                 // Parse input type and picker options
                 let inputType = properties["inputType"] as? String
@@ -403,7 +409,10 @@ public final class FileBasedDataHintsLoader: DataHintsLoader, @unchecked Sendabl
                     expectedRange: expectedRange,
                     metadata: metadata,
                     ocrHints: ocrHints,
+                    supportsOCR: supportsOCR,
+                    displayOCR: displayOCR,
                     calculationGroups: calculationGroups,
+                    isCalculated: isCalculated,
                     inputType: inputType,
                     pickerOptions: pickerOptions,
                     isHidden: isHidden,
@@ -521,6 +530,28 @@ public final class FileBasedDataHintsLoader: DataHintsLoader, @unchecked Sendabl
         }
         
         return pickerOptions.isEmpty ? nil : pickerOptions
+    }
+
+    /// Parse an optional boolean from hints JSON. Absent key → nil (no opinion when applying).
+    private func parseOptionalBool(from properties: [String: Any], key: String) -> Bool? {
+        guard let value = properties[key] else { return nil }
+        if let bool = value as? Bool {
+            return bool
+        }
+        if let string = value as? String {
+            switch string.lowercased() {
+            case "true", "yes", "1":
+                return true
+            case "false", "no", "0":
+                return false
+            default:
+                return nil
+            }
+        }
+        if let number = value as? NSNumber {
+            return number.boolValue
+        }
+        return nil
     }
     
     /// Parse OCR hints with language-specific fallback: ocrHints.{language} -> ocrHints -> nil

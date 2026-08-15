@@ -252,6 +252,33 @@ public struct RichTextPreview: View {
     }
 }
 
+// MARK: - Autocomplete Suggestion Filtering
+
+/// Pure filtering for ``AutocompleteField`` suggestions (unit-testable; #382 / #403).
+public enum AutocompleteSuggestionFiltering {
+    /// Returns case-insensitive substring/prefix matches, prefix matches first, then alphabetical.
+    public static func filtered(suggestions: [String], query: String) -> [String] {
+        guard !query.isEmpty else { return [] }
+        let queryLower = query.lowercased()
+        return suggestions
+            .filter { suggestion in
+                suggestion.localizedCaseInsensitiveContains(query)
+                    || suggestion.lowercased().hasPrefix(queryLower)
+            }
+            .sorted { suggestion1, suggestion2 in
+                let s1Lower = suggestion1.lowercased()
+                let s2Lower = suggestion2.lowercased()
+                if s1Lower.hasPrefix(queryLower) && !s2Lower.hasPrefix(queryLower) {
+                    return true
+                }
+                if !s1Lower.hasPrefix(queryLower) && s2Lower.hasPrefix(queryLower) {
+                    return false
+                }
+                return suggestion1 < suggestion2
+            }
+    }
+}
+
 // MARK: - Autocomplete Field
 
 /// Autocomplete text field with suggestions
@@ -293,31 +320,11 @@ public struct AutocompleteField: View {
     }
     
     private func filterSuggestions(query: String) {
-        if query.isEmpty {
-            filteredSuggestions = []
-            showSuggestions = false
-        } else {
-            // Enhanced filtering with better matching
-            filteredSuggestions = suggestions.filter { suggestion in
-                suggestion.localizedCaseInsensitiveContains(query) ||
-                suggestion.lowercased().hasPrefix(query.lowercased())
-            }
-            .sorted { suggestion1, suggestion2 in
-                // Prioritize exact matches and prefix matches
-                let queryLower = query.lowercased()
-                let s1Lower = suggestion1.lowercased()
-                let s2Lower = suggestion2.lowercased()
-                
-                if s1Lower.hasPrefix(queryLower) && !s2Lower.hasPrefix(queryLower) {
-                    return true
-                } else if !s1Lower.hasPrefix(queryLower) && s2Lower.hasPrefix(queryLower) {
-                    return false
-                } else {
-                    return suggestion1 < suggestion2
-                }
-            }
-            showSuggestions = !filteredSuggestions.isEmpty
-        }
+        filteredSuggestions = AutocompleteSuggestionFiltering.filtered(
+            suggestions: suggestions,
+            query: query
+        )
+        showSuggestions = !filteredSuggestions.isEmpty
     }
 }
 

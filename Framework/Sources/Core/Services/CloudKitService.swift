@@ -1077,11 +1077,13 @@ public class CloudKitService: ObservableObject {
             // Use shared network status manager to prevent multiple monitors
             let statusPublisher = SharedNetworkStatusManager.shared.startMonitoring()
             
-            // Subscribe to network status changes
+            // Subscribe to network status changes.
+            // Bind weak self in the sink, then hop to a MainActor Task with a strong self
+            // so capture ownership is consistent (avoids ImplicitStrongCapture warning).
             networkStatusCancellable = statusPublisher
                 .sink { [weak self] (isAvailable: Bool) in
-                    Task { @MainActor [weak self] in
-                        guard let self = self else { return }
+                    guard let self else { return }
+                    Task { @MainActor in
                         let wasAvailable = self.isNetworkAvailable
                         self.isNetworkAvailable = isAvailable
                         

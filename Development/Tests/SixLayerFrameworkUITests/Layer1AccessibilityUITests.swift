@@ -15,7 +15,7 @@ import XCTest
 
 /// XCUITest tests for Layer 1 accessibility features.
 @MainActor
-final class Layer1AccessibilityUITests: XCTestCase {
+final class Layer1AccessibilityUITests: SixLayerUITestCase {
     nonisolated(unsafe) private var app: XCUIApplication!
 
     nonisolated(unsafe) private static var sharedApp: XCUIApplication?

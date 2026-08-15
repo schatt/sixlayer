@@ -31,7 +31,9 @@ public struct ResponsiveGrid<Content: View>: View {
         LazyVGrid(columns: columns, spacing: spacing) {
             content()
         }
-        .automaticCompliance()
+        // Named: LazyVGrid often skips child materialization without layout; anonymous
+        // shells yield no observable ID on secondary unit lanes (#395 / #245).
+        .automaticCompliance(named: "ResponsiveGrid")
     }
 }
 

@@ -15,7 +15,7 @@ import XCTest
 /// Layer 4 component tests: one test per L4 API. Contract = full contract (behavior, structure, a11y).
 /// Deep-link launch args isolate hosts; process is reused across methods that share the same key (#372).
 @MainActor
-final class Layer4UITests: XCTestCase {
+final class Layer4UITests: SixLayerUITestCase {
     nonisolated(unsafe) private var app: XCUIApplication!
 
     /// Per-process session (instances are per test method).

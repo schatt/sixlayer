@@ -9,7 +9,10 @@ import XCTest
 import SixLayerTestKit
 
 @MainActor
-final class SixLayerUITestNavigatorUITests: XCTestCase {
+final class SixLayerUITestNavigatorUITests: SixLayerUITestCase {
+    /// Pure contract helpers — never launches TestApp (#400).
+    override var usesExclusiveTestApp: Bool { false }
+
     func testBackToRoot_returnsZeroWhenMaxStepsIsZero() {
         let app = XCUIApplication()
         let navigator = SixLayerUITestNavigator(application: app)

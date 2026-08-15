@@ -350,10 +350,19 @@ open class AccessibilityIdentifierPersistenceTests: BaseTestClass {
             return id
         }
 
+        guard let config = testConfig else {
+            Issue.record("testConfig is nil")
+            return ""
+        }
+        let previousDebug = config.enableDebugLogging
+        config.enableDebugLogging = true
+        config.clearDebugLog()
+        defer { config.enableDebugLogging = previousDebug }
+
         let hostedRoot = hostRootPlatformView(
             view,
             forceLayout: true,
-            accessibilityIdentifierConfig: testConfig
+            accessibilityIdentifierConfig: config
         )
         if let id = getAccessibilityIdentifierForTest(view: view, hostedRoot: hostedRoot) {
             return id

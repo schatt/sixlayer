@@ -64,37 +64,10 @@ extension NSView {
 
 /// Get accessibility identifier: direct typed inspection when possible, then platform/AnyView fallback.
 #if canImport(ViewInspector)
-/// Recursively find first non-empty accessibility identifier in ViewInspector hierarchy (for iOS when platform returns nil).
-@MainActor
-private func firstAccessibilityIdentifierInInspected(_ inspected: ViewInspector.InspectableView<ViewInspector.ViewType.ClassifiedView>) -> String? {
-    if let id = try? inspected.accessibilityIdentifier(), !id.isEmpty { return id }
-    let buttons = inspected.findAll(ViewInspector.ViewType.Button.self)
-    for button in buttons {
-        if let id = try? button.accessibilityIdentifier(), !id.isEmpty { return id }
-    }
-    return nil
-}
-
-/// Collect accessibility identifiers from inspected view (current node and one level of anyView + buttons).
-@MainActor
-private func allAccessibilityIdentifiersInInspected(_ inspected: ViewInspector.InspectableView<ViewInspector.ViewType.ClassifiedView>) -> [String] {
-    var ids: [String] = []
-    if let id = try? inspected.accessibilityIdentifier(), !id.isEmpty { ids.append(id) }
-    for button in inspected.findAll(ViewInspector.ViewType.Button.self) {
-        if let id = try? button.accessibilityIdentifier(), !id.isEmpty { ids.append(id) }
-    }
-    // One level deeper: AnyView unwrap (modifier often wraps content in ModifiedContent + AnyView)
-    guard let inner = try? inspected.anyView() else { return ids }
-    if let id = try? inner.accessibilityIdentifier(), !id.isEmpty { ids.append(id) }
-    for button in inner.findAll(ViewInspector.ViewType.Button.self) {
-        if let id = try? button.accessibilityIdentifier(), !id.isEmpty { ids.append(id) }
-    }
-    return ids
-}
-
-/// Collect all accessibility identifiers from the full ViewInspector hierarchy.
-/// Single `ClassifiedView` walk — overlapping per-type `findAll` calls each recurse the full tree
-/// and explode CPU/memory under parallel `@MainActor` tests (#315).
+/// Collect accessibility identifiers from the inspected node only.
+/// `#315` avoided overlapping per-type `findAll`; `#408` drops `findAll(ClassifiedView)`
+/// entirely because GeometryReader inspection SIGTRAPs on iOS 27. Hosted platform
+/// IDs are the cheapest truthful path.
 @MainActor
 private func allAccessibilityIdentifiersInInspectedRecursive(
     _ inspected: ViewInspector.InspectableView<ViewInspector.ViewType.ClassifiedView>
@@ -106,28 +79,6 @@ private func allAccessibilityIdentifiersInInspectedRecursive(
         ids.append(id)
     }
     collect(try? inspected.accessibilityIdentifier())
-    for node in inspected.findAll(ViewInspector.ViewType.ClassifiedView.self, where: { _ in true }) {
-        collect(try? node.accessibilityIdentifier())
-    }
-    return ids
-}
-
-/// Collect accessibility identifiers from a directly inspected view (no AnyView wrap).
-/// Use with a directly inspected concrete view type (Issue 178).
-@MainActor
-private func allAccessibilityIdentifiersFromTypedInspectable<V: View>(
-    _ inspected: ViewInspector.InspectableView<ViewInspector.ViewType.View<V>>
-) -> [String] {
-    var ids: [String] = []
-    var seen = Set<String>()
-    func collect(_ id: String?) {
-        guard let id, !id.isEmpty, seen.insert(id).inserted else { return }
-        ids.append(id)
-    }
-    collect(try? inspected.accessibilityIdentifier())
-    for node in inspected.findAll(ViewInspector.ViewType.ClassifiedView.self, where: { _ in true }) {
-        collect(try? node.accessibilityIdentifier())
-    }
     return ids
 }
 #endif
@@ -196,7 +147,9 @@ private func collectAccessibilityIdentifierCandidateBucketsForTest<V: View>(
     if let root = hostedRoot {
         buckets.hosted = findAllAccessibilityIdentifiersFromPlatformView(root)
     }
-    if let inspected = try? AnyView(view).inspect() {
+    // Prefer hosted IDs; skip ViewInspector tree walk when the platform view already
+    // observed identifiers (#408 — GeometryReader findAll SIGTRAP on iOS 27).
+    if buckets.hosted.isEmpty, let inspected = try? AnyView(view).inspect() {
         buckets.inspected = allAccessibilityIdentifiersInInspectedRecursive(inspected)
     }
     if let cfg = AccessibilityIdentifierConfig.currentTaskLocalConfig {
@@ -214,15 +167,12 @@ private func collectAccessibilityIdentifierCandidateBucketsForTest<V: View>(
 }
 #endif
 
-/// Merge typed inspection, hosted UIKit, ViewInspector recursion, synthesis, and debug-log candidates (#314 / #178).
+/// Merge hosted UIKit, current-node ViewInspector, synthesis, and debug-log candidates (#314 / #178 / #408).
+/// Hosted platform IDs first — ViewInspector descendant search (`find`/`findAll`/`button()`)
+/// SIGTRAPs on iOS 27 when the tree contains `GeometryReader` (#408).
 @MainActor
 public func getAccessibilityIdentifierForTest<V: View>(view: V, hostedRoot: Any? = nil) -> String? {
     #if canImport(ViewInspector)
-    if let inspected = inspectView(view) {
-        if let id = try? inspected.accessibilityIdentifier(), !id.isEmpty { return id }
-        if let button = try? inspected.button(), let id = try? button.accessibilityIdentifier(), !id.isEmpty { return id }
-    }
-
     let buckets = collectAccessibilityIdentifierCandidateBucketsForTest(view: view, hostedRoot: hostedRoot)
     let scoped = buckets.hosted + buckets.inspected + buckets.synthesized
     if let preferred = preferredAccessibilityIdentifierFromCandidates(scoped, view: view) {
@@ -247,18 +197,62 @@ public func getAccessibilityIdentifierForTest<V: View>(view: V, hostedRoot: Any?
             return id
         }
     }
-    if let inspected = try? AnyView(view).inspect() {
-        if let id = firstAccessibilityIdentifierInInspected(inspected) { return id }
-        if let inner = try? inspected.anyView() {
-            if let id = try? inner.accessibilityIdentifier(), !id.isEmpty { return id }
-            if let button = try? inner.button(), let id = try? button.accessibilityIdentifier(), !id.isEmpty { return id }
-        }
-        if let id = try? inspected.accessibilityIdentifier(), !id.isEmpty { return id }
-        if let button = try? inspected.button(), let id = try? button.accessibilityIdentifier(), !id.isEmpty { return id }
+    if let inspected = inspectView(view), let id = try? inspected.accessibilityIdentifier(), !id.isEmpty {
+        return id
+    }
+    if let inspected = try? AnyView(view).inspect(), let id = try? inspected.accessibilityIdentifier(), !id.isEmpty {
+        return id
     }
     #endif
-    guard let root = hostedRoot else { return nil }
-    return firstAccessibilityIdentifier(inHosted: root)
+
+    // Secondary lanes without ViewInspector (#395): hosted + synthesis + debug-log.
+    return accessibilityIdentifierWithoutViewInspector(view: view, hostedRoot: hostedRoot)
+}
+
+/// ID observation when ViewInspector is unavailable (tvOS/visionOS unit) or VI signals were empty (#395).
+/// Order: hosted platform IDs → Mirror/synthetic recovery → debug log.
+/// Mirror/synthetic can pass when the hosted tree is empty; treat that as harness recovery,
+/// not proof that XCUITest would see the same identifier.
+@MainActor
+private func accessibilityIdentifierWithoutViewInspector<V: View>(view: V, hostedRoot: Any?) -> String? {
+    var candidates: [String] = []
+    if let root = hostedRoot {
+        candidates.append(contentsOf: findAllAccessibilityIdentifiersFromPlatformView(root))
+        if let id = firstAccessibilityIdentifier(inHosted: root), !id.isEmpty {
+            candidates.append(id)
+        }
+    }
+    if let cfg = AccessibilityIdentifierConfig.currentTaskLocalConfig {
+        candidates.append(
+            contentsOf: AccessibilityTestUtilities.testingSyntheticAutomaticComplianceIdentifiers(
+                view: view,
+                config: cfg
+            )
+        )
+        candidates.append(
+            contentsOf: AccessibilityTestUtilities.parsedIdentifiersFromConfigDebugLog(config: cfg)
+        )
+    }
+
+    var seen = Set<String>()
+    let unique = candidates.filter { id in
+        guard !id.isEmpty else { return false }
+        return seen.insert(id).inserted
+    }
+    guard !unique.isEmpty else { return nil }
+
+    let anchors = AccessibilityTestUtilities.harnessIdentifierAnchorNames(in: view as Any)
+    for anchor in anchors.reversed() {
+        if let match = unique.first(where: { $0.localizedCaseInsensitiveContains(anchor) }) {
+            return match
+        }
+    }
+    return unique.max { lhs, rhs in
+        let lhsDepth = lhs.split(separator: ".").count
+        let rhsDepth = rhs.split(separator: ".").count
+        if lhsDepth != rhsDepth { return lhsDepth < rhsDepth }
+        return lhs.count < rhs.count
+    }
 }
 
 /// Get accessibility label: modifier parameter, typed inspection, hosted hierarchy, then AnyView recursion (#314 / #178).
@@ -346,20 +340,7 @@ private func firstAccessibilityLabelInInspectedRecursive(
             return labelText
         }
     }
-    for node in inspected.findAll(ViewInspector.ViewType.ClassifiedView.self, where: { _ in true }) {
-        if let label = labelFrom(node) { return label }
-    }
-    for button in inspected.findAll(ViewInspector.ViewType.Button.self) {
-        if let labelView = try? button.labelView().find(ViewInspector.ViewType.Text.self),
-           let labelText = try? labelView.string(), !labelText.isEmpty {
-            return labelText
-        }
-    }
-    for text in inspected.findAll(ViewInspector.ViewType.Text.self) {
-        if let labelText = try? text.string(), !labelText.isEmpty {
-            return labelText
-        }
-    }
+    // #408: no findAll — GeometryReader descendant search SIGTRAPs on iOS 27.
     return nil
 }
 #endif
@@ -1209,8 +1190,9 @@ public enum AccessibilityTestUtilities {
     }
     
     #if canImport(ViewInspector)
-    /// Non-empty accessibility identifiers from a deep ViewInspector walk (ClassifiedView, AnyView, stacks, buttons).
-    /// Shallow `inspect().button()` often misses `exactNamed` / manual `.accessibilityIdentifier` on modified content.
+    /// Non-empty accessibility identifiers from the inspected root (no `findAll`, #408).
+    /// Shallow `inspect().button()` often misses `exactNamed` / manual `.accessibilityIdentifier` on modified content;
+    /// prefer hosted platform collection for those.
     @MainActor
     public static func allAccessibilityIdentifiersFromViewInspector<V: View>(_ view: V) -> [String] {
         guard let inspected = try? AnyView(view).inspect() else { return [] }
@@ -1512,7 +1494,7 @@ public enum AccessibilityTestUtilities {
         return false
     }
 
-    #if canImport(ViewInspector)
+    // Mirror-based synthesis is available without ViewInspector (#395 secondary unit lanes).
     private struct AutomaticComplianceModifierSnapshot {
         var identifierName: String?
         var identifierElementType: String?
@@ -1733,37 +1715,109 @@ public enum AccessibilityTestUtilities {
         }
     }
 
+    /// Prefer ViewInspector when available; Mirror walks the value tree on secondary unit lanes (#395).
     @MainActor
     private static func inferredInteractiveControlParameters<V: View>(
         from view: V
     ) -> (elementType: String, label: String?)? {
-        guard let inspected = try? AnyView(view).inspect() else { return nil }
-        if let button = try? inspected.find(ViewInspector.ViewType.Button.self) {
-            let label = buttonLabelText(from: button)
-            return ("Button", label)
+        #if canImport(ViewInspector)
+        if let inspected = try? AnyView(view).inspect() {
+            if let button = try? inspected.find(ViewInspector.ViewType.Button.self) {
+                return ("Button", buttonLabelText(from: button))
+            }
+            if let _ = try? inspected.find(ViewInspector.ViewType.Link.self) {
+                return ("Link", nil)
+            }
+            if let _ = try? inspected.find(ViewInspector.ViewType.TextField.self) {
+                return ("TextField", nil)
+            }
+            if let _ = try? inspected.find(ViewInspector.ViewType.SecureField.self) {
+                return ("SecureField", nil)
+            }
+            if let _ = try? inspected.find(ViewInspector.ViewType.Toggle.self) {
+                return ("Toggle", nil)
+            }
+            if let _ = try? inspected.find(ViewInspector.ViewType.Image.self) {
+                return ("Image", nil)
+            }
+            if let text = try? inspected.find(ViewInspector.ViewType.Text.self) {
+                let label = (try? text.string()).flatMap { $0.isEmpty ? nil : $0 }
+                return ("Text", label)
+            }
         }
-        if let _ = try? inspected.find(ViewInspector.ViewType.Link.self) {
-            return ("Link", nil)
+        #endif
+        return inferredInteractiveControlParametersFromMirror(in: view)
+    }
+
+    @MainActor
+    private static func inferredInteractiveControlParametersFromMirror(
+        in value: Any,
+        remainingDepth: Int = 12
+    ) -> (elementType: String, label: String?)? {
+        guard remainingDepth >= 0 else { return nil }
+        let typeName = String(describing: Swift.type(of: value))
+        if let elementType = interactiveElementTypeName(fromTypeName: typeName) {
+            return (elementType, mirrorTextLabel(in: value, remainingDepth: min(4, remainingDepth)))
         }
-        if let _ = try? inspected.find(ViewInspector.ViewType.TextField.self) {
-            return ("TextField", nil)
-        }
-        if let _ = try? inspected.find(ViewInspector.ViewType.SecureField.self) {
-            return ("SecureField", nil)
-        }
-        if let _ = try? inspected.find(ViewInspector.ViewType.Toggle.self) {
-            return ("Toggle", nil)
-        }
-        if let _ = try? inspected.find(ViewInspector.ViewType.Image.self) {
-            return ("Image", nil)
-        }
-        if let text = try? inspected.find(ViewInspector.ViewType.Text.self) {
-            let label = (try? text.string()).flatMap { $0.isEmpty ? nil : $0 }
-            return ("Text", label)
+        let mirror = Mirror(reflecting: value)
+        for child in mirror.children {
+            if let found = inferredInteractiveControlParametersFromMirror(
+                in: child.value,
+                remainingDepth: remainingDepth - 1
+            ) {
+                return found
+            }
         }
         return nil
     }
 
+    private static func interactiveElementTypeName(fromTypeName typeName: String) -> String? {
+        // Prefer generic control shapes (`Button<…>`) so `ButtonStyleConfiguration` is not a hit.
+        let ordered: [(needle: String, elementType: String)] = [
+            ("SecureField<", "SecureField"),
+            ("TextField<", "TextField"),
+            ("Toggle<", "Toggle"),
+            ("Button<", "Button"),
+            ("Link<", "Link"),
+        ]
+        for candidate in ordered where typeName.contains(candidate.needle) {
+            return candidate.elementType
+        }
+        if typeName == "Image" || typeName.hasPrefix("Image<") {
+            return "Image"
+        }
+        if typeName == "Text" || typeName.hasPrefix("Text<") {
+            return "Text"
+        }
+        return nil
+    }
+
+    @MainActor
+    private static func mirrorTextLabel(in value: Any, remainingDepth: Int) -> String? {
+        guard remainingDepth >= 0 else { return nil }
+        let typeName = String(describing: Swift.type(of: value))
+        if typeName == "Text" || typeName.hasPrefix("Text<") {
+            let mirror = Mirror(reflecting: value)
+            for child in mirror.children {
+                if let string = child.value as? String, !string.isEmpty {
+                    return string
+                }
+                if let attributed = child.value as? AttributedString {
+                    let plain = String(attributed.characters)
+                    if !plain.isEmpty { return plain }
+                }
+            }
+        }
+        let mirror = Mirror(reflecting: value)
+        for child in mirror.children {
+            if let label = mirrorTextLabel(in: child.value, remainingDepth: remainingDepth - 1) {
+                return label
+            }
+        }
+        return nil
+    }
+
+    #if canImport(ViewInspector)
     @MainActor
     private static func buttonLabelText(
         from button: ViewInspector.InspectableView<ViewInspector.ViewType.Button>
@@ -1772,16 +1826,6 @@ public enum AccessibilityTestUtilities {
             return text
         }
         return nil
-    }
-    #else
-    @MainActor
-    private static func syntheticAutomaticComplianceIdentifiers<V: View>(
-        view: V,
-        config: AccessibilityIdentifierConfig
-    ) -> [String] {
-        _ = view
-        _ = config
-        return []
     }
     #endif
 
@@ -1885,20 +1929,21 @@ public enum AccessibilityTestUtilities {
     ) -> String? {
         #if canImport(ViewInspector)
         do {
+            // Current-node only (#408): `button()` / `findAll` descendant search SIGTRAPs
+            // when ViewInspector materializes GeometryReader's GeometryProxy on iOS 27.
             let inspected = try AnyView(view).inspect()
-            if let inner = try? inspected.anyView() {
-                if let directID = try? inner.accessibilityIdentifier(), !directID.isEmpty { return directID }
-                if let button = try? inner.button(), let buttonID = try? button.accessibilityIdentifier(), !buttonID.isEmpty { return buttonID }
+            if let inner = try? inspected.anyView(),
+               let directID = try? inner.accessibilityIdentifier(), !directID.isEmpty {
+                return directID
             }
             if let directID = try? inspected.accessibilityIdentifier(), !directID.isEmpty { return directID }
-            if let button = try? inspected.button(), let buttonID = try? button.accessibilityIdentifier(), !buttonID.isEmpty { return buttonID }
-            let deepIDs = allAccessibilityIdentifiersFromViewInspector(view)
+            let rootIDs = allAccessibilityIdentifiersFromViewInspector(view)
             let namespace = AccessibilityIdentifierConfig.currentTaskLocalConfig?.namespace ?? "SixLayer"
             let manualPrefix = namespace + "."
-            if let manualID = deepIDs.first(where: { !$0.hasPrefix(manualPrefix) }) {
+            if let manualID = rootIDs.first(where: { !$0.hasPrefix(manualPrefix) }) {
                 return manualID
             }
-            if let preferred = preferredAccessibilityIdentifierFromCandidates(deepIDs, view: view) {
+            if let preferred = preferredAccessibilityIdentifierFromCandidates(rootIDs, view: view) {
                 return preferred
             }
             if let syntheticID = syntheticModifierIdentifierFromView(view), !syntheticID.isEmpty { return syntheticID }

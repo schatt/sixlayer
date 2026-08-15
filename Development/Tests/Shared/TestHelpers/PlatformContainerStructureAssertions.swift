@@ -132,6 +132,7 @@ public enum PlatformContainerStructureAssertions {
         }
     }
 
+    @MainActor
     private static func uiViewSubtree(_ view: UIView, matches: (String) -> Bool) -> Bool {
         let typeName = String(describing: type(of: view))
         if matches(typeName) { return true }

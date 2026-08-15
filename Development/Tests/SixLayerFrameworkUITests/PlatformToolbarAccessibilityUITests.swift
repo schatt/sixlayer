@@ -14,7 +14,7 @@
 import XCTest
 
 @MainActor
-final class PlatformToolbarAccessibilityUITests: XCTestCase {
+final class PlatformToolbarAccessibilityUITests: SixLayerUITestCase {
     private enum IDs {
         static let formSave = "SixLayer.tests.platformFormToolbar.save.221"
         static let formCancel = "SixLayer.tests.platformFormToolbar.cancel.221"

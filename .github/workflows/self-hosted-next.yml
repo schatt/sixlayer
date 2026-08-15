@@ -3,7 +3,8 @@
 # (unit, ViewInspector, UI, Framework). AllTests schemes remain for local use only.
 #
 # iOS + macOS matrix jobs are required. tvOS, watchOS, and visionOS AllTests are
-# informational (continue-on-error).
+# informational (continue-on-error). Secondary jobs resolve destinations via
+# Development/scripts/ensure-ci-simulator-destination.sh (create-if-missing + id=).
 #
 # Platform order in file: iOS → macOS → tvOS → visionOS → watchOS (no `needs` chain — a
 # single self-hosted runner tends to dequeue jobs in declaration order). Each job uses its
@@ -178,11 +179,13 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p build "$CI_DERIVED_DATA" "$CI_SPM_CHECKOUTS"
+          DEST="$(./Development/scripts/ensure-ci-simulator-destination.sh tvOS)"
+          echo "Using destination: $DEST"
           set -o pipefail
           xcodebuild test \
             -project SixLayerFramework.xcodeproj \
             -scheme "SLF-tvOS-AllTests" \
-            -destination 'platform=tvOS Simulator,name=Apple TV' \
+            -destination "$DEST" \
             -configuration Debug \
             -allowProvisioningUpdates \
             -derivedDataPath "$CI_DERIVED_DATA" \
@@ -227,11 +230,13 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p build "$CI_DERIVED_DATA" "$CI_SPM_CHECKOUTS"
+          DEST="$(./Development/scripts/ensure-ci-simulator-destination.sh visionOS)"
+          echo "Using destination: $DEST"
           set -o pipefail
           xcodebuild test \
             -project SixLayerFramework.xcodeproj \
             -scheme "SLF-visionOS-AllTests" \
-            -destination 'platform=visionOS Simulator,name=Apple Vision Pro' \
+            -destination "$DEST" \
             -configuration Debug \
             -allowProvisioningUpdates \
             -derivedDataPath "$CI_DERIVED_DATA" \
@@ -276,11 +281,13 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p build "$CI_DERIVED_DATA" "$CI_SPM_CHECKOUTS"
+          DEST="$(./Development/scripts/ensure-ci-simulator-destination.sh watchOS)"
+          echo "Using destination: $DEST"
           set -o pipefail
           xcodebuild test \
             -project SixLayerFramework.xcodeproj \
             -scheme "SLF-watchOS-AllTests" \
-            -destination 'platform=watchOS Simulator,name=Apple Watch Series 11 (46mm)' \
+            -destination "$DEST" \
             -configuration Debug \
             -allowProvisioningUpdates \
             -derivedDataPath "$CI_DERIVED_DATA" \

@@ -12,7 +12,7 @@
 import XCTest
 
 @MainActor
-final class IntelligentDetailViewCategoryBUITests: XCTestCase {
+final class IntelligentDetailViewCategoryBUITests: SixLayerUITestCase {
     private enum Copy {
         static let defaultTitle = "Category B Item"
         static let defaultSubtitle = "Category B Subtitle"
