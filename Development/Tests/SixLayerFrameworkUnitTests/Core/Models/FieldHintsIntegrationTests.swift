@@ -51,7 +51,7 @@ struct FieldHintsIntegrationTests {
         try? FileManager.default.removeItem(at: testFile)
         
         // Temp file is not on the loader search path (bundle / documents); TestModel is absent.
-        #expect(!loaded.isEmpty, "TestModel hints are not in the test bundle")
+        #expect(loaded.isEmpty, "TestModel hints are not in the test bundle")
     }
     
     @Test func testFieldHintsCompleteExample() {
@@ -93,8 +93,6 @@ struct FieldHintsIntegrationTests {
         // Verify hints are discovered from fields
         for field in fields {
             let hints = field.displayHints
-            #expect(Bool(true), "Hints should be discovered from field metadata")  // hints is non-optional
-            
             if field.id == "username" {
                 #expect(hints?.displayWidth == "medium")
                 #expect(hints?.expectedLength == 20)
@@ -135,7 +133,6 @@ struct FieldHintsIntegrationTests {
         
         // Verify hints can be retrieved
         let usernameHints = presentationHints.hints(forFieldId: "username")
-        #expect(Bool(true), "usernameHints is non-optional")  // usernameHints is non-optional
         #expect(usernameHints?.displayWidth == "medium")
         #expect(usernameHints?.expectedLength == 20)
     }
