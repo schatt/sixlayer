@@ -54,6 +54,7 @@ Self-hosted CI macOS UITests failed to open hosts from deep-link launch args. Sh
 - #409 removes that clean: Xcode 27 races `clean` then `test` and reports the macOS `.xctest` executable missing (FB24278669).
 - #411 keeps the unit gate as a single `rtk xcodebuild test` (do not split `build-for-testing` / `test-without-building`).
 - #413 stops `simctl delete unavailable` before iOS unit tests; still creates the named simulator if it is missing.
+- #414 treats all `*.md` (including `CHANGELOG.md`) and `LICENSE` as docs-only for the unit-test skip stamp.
 - #390 adds per-platform last-pass stamps so a retry can skip a green lane.
 
 ### **Unit lane must not host SwiftUI (#412)**
@@ -105,6 +106,7 @@ See [OCRFieldHintsGuide.md](../Framework/docs/OCRFieldHintsGuide.md).
 ## ✅ Resolved GitHub issues (v8.3.6)
 
 - **[Issue #408](https://github.com/schatt/sixlayer/issues/408)** — iOS release gate mass SIGTRAP in ViewInspector `GeometryProxy` during a11y ID recursion. Hosted collection preferred; ViewInspector `0.10.4`.
+- **[Issue #414](https://github.com/schatt/sixlayer/issues/414)** — Release unit-test skip: treat all `*.md` and `LICENSE` as docs-only (`CHANGELOG.md` was missing from the allowlist).
 - **[Issue #413](https://github.com/schatt/sixlayer/issues/413)** — Release iOS unit gate: do not prune unavailable simulators (`simctl delete unavailable`).
 - **[Issue #412](https://github.com/schatt/sixlayer/issues/412)** — Move hosted / ViewInspector tests out of the unit lane so `SLF-*-UnitTests` does not host SwiftUI.
 - **[Issue #411](https://github.com/schatt/sixlayer/issues/411)** — Release unit gate: single `xcodebuild test`; do not split `build-for-testing` / `test-without-building`.

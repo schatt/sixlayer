@@ -14,6 +14,7 @@
 - **Release unit gate invoke**: keep a single `xcodebuild test` (#411).
 - **Unit lane hosting**: hosted / ViewInspector tests excluded from `SLF-*-UnitTests` (#412).
 - **Release iOS sim prune**: do not `simctl delete unavailable` before unit tests (#413).
+- **Release docs-only skip**: all `*.md` and `LICENSE` count as docs-only (`CHANGELOG.md` was missing) (#414).
 
 ### 📚 Documentation
 - **Migration:** consumers that relied on inference must set flags explicitly (code or hints). See [`Development/RELEASE_v8.3.6.md`](Development/RELEASE_v8.3.6.md).
