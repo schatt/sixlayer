@@ -14,44 +14,13 @@ private class _FieldHintsTestBundleMarker {}
 @Suite("Field Hints Integration")
 struct FieldHintsIntegrationTests {
     
-    @Test func testLoadHintsFromTestFile() throws {
-        // Create a test hints file
-        let testHints: [String: [String: String]] = [
-            "username": [
-                "expectedLength": "20",
-                "displayWidth": "medium",
-                "maxLength": "50",
-                "minLength": "3"
-            ],
-            "email": [
-                "displayWidth": "wide",
-                "expectedLength": "30"
-            ]
-        ]
-        
-        // Create temporary file
-        let tempDir = FileManager.default.temporaryDirectory
-        let testFile = tempDir.appendingPathComponent("TestModel.hints")
-        
-        // Write JSON to file
-        let data = try JSONSerialization.data(withJSONObject: testHints, options: .prettyPrinted)
-        try data.write(to: testFile)
-        
-        // Test loading
+    @Test func testLoadHintsForUnknownModelIsEmpty() {
         let loader = FileBasedDataHintsLoader(
             fileManager: .default,
             bundle: Bundle(for: _FieldHintsTestBundleMarker.self)
         )
-        
-        // Load using model name (will look for bundle first, won't find it)
-        // This test verifies structure works
-        _ = loader.loadHints(for: "TestModel")
-        
-        // Clean up
-        try? FileManager.default.removeItem(at: testFile)
-        
-        // Verify we got something (might be empty if bundle lookup failed, but structure is valid)
-        #expect(Bool(true), "loaded is non-optional")  // loaded is non-optional
+        let loaded = loader.loadHints(for: "TestModel")
+        #expect(loaded.isEmpty, "TestModel hints are not in the test bundle")
     }
     
     @Test func testFieldHintsCompleteExample() {
@@ -93,8 +62,6 @@ struct FieldHintsIntegrationTests {
         // Verify hints are discovered from fields
         for field in fields {
             let hints = field.displayHints
-            #expect(Bool(true), "Hints should be discovered from field metadata")  // hints is non-optional
-            
             if field.id == "username" {
                 #expect(hints?.displayWidth == "medium")
                 #expect(hints?.expectedLength == 20)
@@ -135,7 +102,6 @@ struct FieldHintsIntegrationTests {
         
         // Verify hints can be retrieved
         let usernameHints = presentationHints.hints(forFieldId: "username")
-        #expect(Bool(true), "usernameHints is non-optional")  // usernameHints is non-optional
         #expect(usernameHints?.displayWidth == "medium")
         #expect(usernameHints?.expectedLength == 20)
     }
