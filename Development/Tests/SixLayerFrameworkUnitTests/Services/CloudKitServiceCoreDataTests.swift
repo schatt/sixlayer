@@ -101,13 +101,9 @@ final class CloudKitServiceCoreDataTests {
         // For now, we test that the method signature allows error throwing
         do {
             try await service.syncWithCoreData(context: context)
-            // If no error, that's fine - we're testing the wrapper, not CloudKit itself
+            #expect(service.delegate !== delegate)
         } catch {
-            // Errors should be properly typed
-            // Note: All errors can be cast to NSError, so we only check for CloudKitServiceError specifically
-            // Other errors (like NSError) are also acceptable but not explicitly checked
-            _ = error is CloudKitServiceError
-            #expect(Bool(true), "Error should be CloudKitServiceError or another Error type")
+            #expect(!(error is CloudKitServiceError))
         }
     }
     
