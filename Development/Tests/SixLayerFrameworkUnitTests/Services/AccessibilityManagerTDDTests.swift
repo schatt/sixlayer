@@ -85,7 +85,7 @@ open class AccessibilityManagerTDDTests: BaseTestClass {
         let result = manager.validateAccessibility(for: mockElement)
 
         // Should return a proper validation result
-        #expect(result == nil)
+        #expect(result != nil)
         if let validationResult = result {
             #expect(validationResult.isValid == true, "Currently stub returns valid result")
             #expect(validationResult.issues.isEmpty, "Currently stub returns no issues")
@@ -106,7 +106,7 @@ open class AccessibilityManagerTDDTests: BaseTestClass {
 
         // Get current configuration
         let config = manager.getAccessibilityConfiguration()
-        #expect(config == nil)
+        #expect(config != nil)
 
         if let config = config {
             #expect(config.enableVoiceOver == false, "VoiceOver currently stub as disabled")
