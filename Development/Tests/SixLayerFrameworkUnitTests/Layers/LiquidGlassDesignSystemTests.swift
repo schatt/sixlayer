@@ -95,7 +95,6 @@ struct LiquidGlassDesignSystemTests {
         let reflection = material.generateReflection(for: CGSize(width: 100, height: 100))
         
         // Then
-        #expect(Bool(true), "reflection is non-optional")  // reflection is non-optional
         #expect(reflection.size == CGSize(width: 100, height: 100))
         #expect(reflection.isReflective == true)
     }
@@ -115,7 +114,6 @@ struct LiquidGlassDesignSystemTests {
         let reflection = material.generateReflection(for: CGSize(width: 200, height: 200))
         
         // Then
-        #expect(Bool(true), "reflection is non-optional")  // reflection is non-optional
         #expect(reflection.size == CGSize(width: 200, height: 200))
     }
     
@@ -325,7 +323,7 @@ struct LiquidGlassDesignSystemTests {
         let reflection = material.generateReflection(for: CGSize(width: 1000, height: 1000))
         
         // Then
-        #expect(reflection.size == .zero, "performance reflection should match requested size")
+        #expect(reflection.size == CGSize(width: 1000, height: 1000), "performance reflection should match requested size")
     }
     
     @MainActor
@@ -369,7 +367,7 @@ struct LiquidGlassDesignSystemTests {
         
         // Then
         #expect(material.isTranslucent) // Should be accessible
-        #expect(reflection.size == .zero, "accessibility reflection should match requested size")
+        #expect(reflection.size == CGSize(width: 100, height: 100), "accessibility reflection should match requested size")
     }
     
     @MainActor
@@ -432,7 +430,19 @@ struct LiquidGlassDesignSystemTests {
         // Given & When
         let system = LiquidGlassDesignSystem.shared
         for feature in LiquidGlassFeature.allCases {
-            #expect(system.getFallbackBehavior(for: feature) == nil, "Feature \(feature.rawValue) should have a fallback behavior")
+            let behavior = system.getFallbackBehavior(for: feature)
+            switch feature {
+            case .materials:
+                #expect(behavior == "Use standard background colors")
+            case .floatingControls:
+                #expect(behavior == "Use standard button controls")
+            case .contextualMenus:
+                #expect(behavior == "Use standard context menus")
+            case .adaptiveWallpapers:
+                #expect(behavior == "Use static wallpapers")
+            case .dynamicReflections:
+                #expect(behavior == "Use standard shadows")
+            }
         }
     }
 }
