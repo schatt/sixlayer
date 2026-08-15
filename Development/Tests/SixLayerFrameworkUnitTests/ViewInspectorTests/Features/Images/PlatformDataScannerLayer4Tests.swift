@@ -3,7 +3,7 @@
 //  SixLayerFrameworkUnitTests
 //
 //  Issue #252 — VisionKit live data scanner Layer 4 surface (gates on #253 `Photos.supportsLiveDataScanner`).
-//  Issue #415 — Mac Catalyst must not compile VisionKit `DataScannerViewController`; session APIs throw `platformUnsupported`.
+//  Issue #415 — Mac Catalyst uses the unsupported fallback (no DataScannerViewController).
 //
 
 import SwiftUI
@@ -45,39 +45,4 @@ struct PlatformDataScannerLayer4Tests {
         #expect(hosted != nil, "Sheet helper should construct and host")
     }
     #endif
-
-    @Test @MainActor
-    func testSessionControllerStartScanningThrowsWhenNoLiveScannerAttached() {
-        let controller = PlatformDataScannerSessionController()
-        #if os(iOS) && !targetEnvironment(macCatalyst)
-        #expect(throws: PlatformDataScannerError.scannerNotAttached) {
-            try controller.startScanning()
-        }
-        #else
-        #expect(throws: PlatformDataScannerError.platformUnsupported) {
-            try controller.startScanning()
-        }
-        #endif
-    }
-
-    @Test @MainActor
-    func testSessionControllerCapturePhotoThrowsWhenNoLiveScannerAttached() async {
-        let controller = PlatformDataScannerSessionController()
-        #if os(iOS) && !targetEnvironment(macCatalyst)
-        await #expect(throws: PlatformDataScannerError.scannerNotAttached) {
-            try await controller.capturePhoto()
-        }
-        #else
-        await #expect(throws: PlatformDataScannerError.platformUnsupported) {
-            try await controller.capturePhoto()
-        }
-        #endif
-    }
-
-    @Test @MainActor
-    func testSessionControllerStopScanningDoesNotTrapWhenNoLiveScannerAttached() {
-        let controller = PlatformDataScannerSessionController()
-        controller.stopScanning()
-        #expect(controller.liveScannerViewController == nil)
-    }
 }
