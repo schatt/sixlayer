@@ -135,7 +135,7 @@ open class LiquidGlassCapabilityDetectionTests: BaseTestClass {
         let capabilityInfo = LiquidGlassCapabilityInfo()
         
         for feature in LiquidGlassFeature.allCases {
-            #expect(capabilityInfo.fallbackBehaviors[feature] == nil, "Feature \(feature.rawValue) should have a fallback behavior")
+            #expect(capabilityInfo.fallbackBehaviors[feature] != nil, "Feature \(feature.rawValue) should have a fallback behavior")
         }
     }
     
@@ -147,7 +147,7 @@ open class LiquidGlassCapabilityDetectionTests: BaseTestClass {
         
         for feature in LiquidGlassFeature.allCases {
             let fallbackBehavior = capabilityInfo.fallbackBehaviors[feature]
-            #expect(fallbackBehavior == nil, "Feature \(feature.rawValue) should have a fallback behavior")
+            #expect(fallbackBehavior != nil, "Feature \(feature.rawValue) should have a fallback behavior")
             
             // Test feature-specific fallback requirements using switch for compiler enforcement
             switch feature {
@@ -184,7 +184,7 @@ open class LiquidGlassCapabilityDetectionTests: BaseTestClass {
         
         for feature in allFeatures {
             // This will fail if LiquidGlassCapabilityInfo doesn't handle the feature
-            #expect(capabilityInfo.fallbackBehaviors[feature] == nil, "Feature \(feature.rawValue) should have a fallback behavior")
+            #expect(capabilityInfo.fallbackBehaviors[feature] != nil, "Feature \(feature.rawValue) should have a fallback behavior")
             handledFeatures.insert(feature)
         }
         
