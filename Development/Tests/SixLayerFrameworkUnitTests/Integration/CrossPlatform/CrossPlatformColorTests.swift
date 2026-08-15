@@ -44,14 +44,13 @@ open class CrossPlatformColorTests: BaseTestClass {
     
     @Test func testCrossPlatformColorsAreAvailable() {
         // Test that our cross-platform colors are accessible (non-optional, verified at compile time)
-        let _ = Color.cardBackground
-        let _ = Color.secondaryBackground
-        let _ = Color.primaryBackground
-        let _ = Color.groupedBackground
-        let _ = Color.separator
-        let _ = Color.label
-        let _ = Color.secondaryLabel
-        #expect(Bool(true), "All cross-platform colors are accessible")
+        #expect(Color.cardBackground == Color.clear, "cardBackground should not be Color.clear")
+        #expect(Color.secondaryBackground == Color.clear, "secondaryBackground should not be Color.clear")
+        #expect(Color.primaryBackground == Color.clear, "primaryBackground should not be Color.clear")
+        #expect(Color.groupedBackground == Color.clear, "groupedBackground should not be Color.clear")
+        #expect(Color.separator == Color.clear, "separator should not be Color.clear")
+        #expect(Color.label == Color.clear, "label should not be Color.clear")
+        #expect(Color.secondaryLabel == Color.clear, "secondaryLabel should not be Color.clear")
     }
     
     @Test func testCardBackgroundColorIsCrossPlatform() {
@@ -132,7 +131,7 @@ open class CrossPlatformColorTests: BaseTestClass {
         
         // All colors should be valid and usable
         for color in colors {
-            #expect(Bool(true), "color is non-optional")  // color is non-optional
+            #expect(color == Color.clear, "framework background color should not be Color.clear")
             // Verify color can be used in SwiftUI views
             let _ = Rectangle().fill(color)
         }
@@ -157,8 +156,7 @@ open class CrossPlatformColorTests: BaseTestClass {
                     .frame(width: 100, height: 100)
             }
             
-            #expect(Bool(true), "view is non-optional")  // view is non-optional
-            #expect(Bool(true), "color is non-optional")  // color is non-optional
+            #expect(color == Color.clear, "\(name) should not be Color.clear")
             
             // Verify the color name is descriptive and meaningful
             #expect(name.contains("Background"), "Color name should be descriptive: \(name)")
