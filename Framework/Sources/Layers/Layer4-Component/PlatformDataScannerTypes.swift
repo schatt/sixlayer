@@ -4,12 +4,13 @@
 //
 //  Public configuration for VisionKit live text / barcode capture (Issue #252).
 //  Cross-platform types; iOS VisionKit wiring lives in PlatformDataScannerLiveCapture_iOS.swift.
+//  Mac Catalyst excludes `DataScannerViewController` (Issue #415).
 //
 
 import Foundation
 import SwiftUI
 
-#if os(iOS) && canImport(VisionKit)
+#if os(iOS) && !targetEnvironment(macCatalyst) && canImport(VisionKit)
 import VisionKit
 #endif
 
@@ -107,7 +108,7 @@ public final class PlatformDataScannerSessionController: Sendable {
 
     public init() {}
 
-    #if os(iOS) && canImport(VisionKit)
+    #if os(iOS) && !targetEnvironment(macCatalyst) && canImport(VisionKit)
     @available(iOS 16.0, *)
     internal func attachLiveScanner(_ controller: DataScannerViewController) {
         liveScannerViewController = controller
@@ -117,7 +118,7 @@ public final class PlatformDataScannerSessionController: Sendable {
     /// Starts VisionKit scanning when a controller is attached (Issue #252).
     @MainActor
     public func startScanning() throws {
-        #if os(iOS) && canImport(VisionKit)
+        #if os(iOS) && !targetEnvironment(macCatalyst) && canImport(VisionKit)
         if #available(iOS 16.0, *) {
             guard let controller = liveScannerViewController as? DataScannerViewController else {
                 throw PlatformDataScannerError.scannerNotAttached
@@ -132,7 +133,7 @@ public final class PlatformDataScannerSessionController: Sendable {
     /// Stops VisionKit scanning when a controller is attached.
     @MainActor
     public func stopScanning() {
-        #if os(iOS) && canImport(VisionKit)
+        #if os(iOS) && !targetEnvironment(macCatalyst) && canImport(VisionKit)
         if #available(iOS 16.0, *) {
             guard let controller = liveScannerViewController as? DataScannerViewController else { return }
             controller.stopScanning()
@@ -143,7 +144,7 @@ public final class PlatformDataScannerSessionController: Sendable {
     /// Captures a high-resolution still from the active scanner (VisionKit).
     @MainActor
     public func capturePhoto() async throws -> PlatformImage {
-        #if os(iOS) && canImport(VisionKit)
+        #if os(iOS) && !targetEnvironment(macCatalyst) && canImport(VisionKit)
         if #available(iOS 16.0, *) {
             guard let controller = liveScannerViewController as? DataScannerViewController else {
                 throw PlatformDataScannerError.scannerNotAttached
