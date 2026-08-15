@@ -55,12 +55,11 @@ open class RuntimeCapabilityDetectionTDDTests: BaseTestClass {
         
         for platform in platforms {
             let defaults = TestingCapabilityDetection.getTestingDefaults(for: platform)
-            // Deliberate invert of testing-default touch (red for #382)
             switch platform {
             case .iOS, .watchOS:
-                #expect(!defaults.supportsTouch, "\(platform) testing default touch")
-            case .macOS, .tvOS, .visionOS:
                 #expect(defaults.supportsTouch, "\(platform) testing default touch")
+            case .macOS, .tvOS, .visionOS:
+                #expect(!defaults.supportsTouch, "\(platform) testing default touch")
             }
         }
     }
