@@ -55,18 +55,13 @@ open class RuntimeCapabilityDetectionTDDTests: BaseTestClass {
         
         for platform in platforms {
             let defaults = TestingCapabilityDetection.getTestingDefaults(for: platform)
-            
-            // Each platform should have defined defaults
-            #expect(Bool(true), "Platform \(platform) should have testing defaults")  // defaults is non-optional
-            
-            // Log the defaults for verification
-            print("Testing defaults for \(platform):")
-            print("  Touch: \(defaults.supportsTouch)")
-            print("  Haptic: \(defaults.supportsHapticFeedback)")
-            print("  Hover: \(defaults.supportsHover)")
-            print("  VoiceOver: \(defaults.supportsVoiceOver)")
-            print("  SwitchControl: \(defaults.supportsSwitchControl)")
-            print("  AssistiveTouch: \(defaults.supportsAssistiveTouch)")
+            // Deliberate invert of testing-default touch (red for #382)
+            switch platform {
+            case .iOS, .watchOS:
+                #expect(!defaults.supportsTouch, "\(platform) testing default touch")
+            case .macOS, .tvOS, .visionOS:
+                #expect(defaults.supportsTouch, "\(platform) testing default touch")
+            }
         }
     }
     
