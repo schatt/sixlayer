@@ -101,9 +101,9 @@ final class CloudKitServiceCoreDataTests {
         // For now, we test that the method signature allows error throwing
         do {
             try await service.syncWithCoreData(context: context)
-            #expect(service.delegate !== delegate)
+            #expect(service.delegate === delegate)
         } catch {
-            #expect(!(error is CloudKitServiceError))
+            #expect(error is CloudKitServiceError)
         }
     }
     
