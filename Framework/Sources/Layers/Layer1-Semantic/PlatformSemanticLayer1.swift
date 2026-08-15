@@ -1256,24 +1256,29 @@ private struct AsyncFormView: View {
         self.layoutSpec = layoutSpec
         
         // Step 1: If code provides hint (layoutSpec), use it synchronously
-        if let explicitSpec = layoutSpec {
-            self._resolvedSections = State(initialValue: explicitSpec.sections)
+        if layoutSpec != nil {
+            self._resolvedSections = State(initialValue: FormSectionResolution.resolve(
+                fields: fields,
+                layoutSpec: layoutSpec,
+                hintsResult: nil
+            ))
             self._isLoading = State(initialValue: false)
             return
         }
         
         // Step 2: If no code hint, try file/cache synchronously
         if let modelName = modelName,
-           let cachedHints = DataHintsRegistry.getCachedHints(for: modelName),
-           !cachedHints.sectionLayouts.isEmpty {
-            // File-based hints are cached - use them immediately without async loading
-            let sections = SectionBuilder.buildSections(
-                from: cachedHints.sectionLayouts,
-                matching: fields
+           let cachedHints = DataHintsRegistry.getCachedHints(for: modelName) {
+            let sections = FormSectionResolution.resolve(
+                fields: fields,
+                layoutSpec: nil,
+                hintsResult: cachedHints
             )
-            self._resolvedSections = State(initialValue: sections)
-            self._isLoading = State(initialValue: false)
-            return
+            if !cachedHints.sectionLayouts.isEmpty {
+                self._resolvedSections = State(initialValue: sections)
+                self._isLoading = State(initialValue: false)
+                return
+            }
         }
         
         // Step 3: If file/cache not available, will need async loading or use default
@@ -1285,9 +1290,12 @@ private struct AsyncFormView: View {
     
     // Cache initial sections to avoid recreating on every body evaluation
     private var initialSections: [DynamicFormSection]? {
-        // Precedence 1: Explicit layoutSpec takes highest priority
-        if let explicitSpec = layoutSpec {
-            return explicitSpec.sections
+        if layoutSpec != nil {
+            return FormSectionResolution.resolve(
+                fields: fields,
+                layoutSpec: layoutSpec,
+                hintsResult: nil
+            )
         }
         
         // If resolved sections are already set (from cached hints), use them
@@ -1297,7 +1305,11 @@ private struct AsyncFormView: View {
         
         // If no async work needed, return default sections immediately
         if modelName == nil {
-            return createDefaultSections()
+            return FormSectionResolution.resolve(
+                fields: fields,
+                layoutSpec: nil,
+                hintsResult: nil
+            )
         }
         
         // Need to load hints asynchronously
@@ -1318,53 +1330,30 @@ private struct AsyncFormView: View {
             } else if let sections = resolvedSections {
                 createFormView(with: sections)
             } else {
-                createFormView(with: createDefaultSections())
+                createFormView(with: FormSectionResolution.resolve(
+                    fields: fields,
+                    layoutSpec: nil,
+                    hintsResult: nil
+                ))
             }
         }
     }
-    
-    // MARK: - DRY: Default Section Creation
-    
-    private func createDefaultSections() -> [DynamicFormSection] {
-        [DynamicFormSection(
-            id: "default",
-            title: "Form Fields",
-            fields: fields
-        )]
-    }
-    
-    // MARK: - Section Resolution with Precedence (DRY)
     
     @MainActor
     private func loadSections() async {
-        // Flow: optional hint → file/cache → default
-        
-        // Step 1: If code provides hint (layoutSpec), use it
-        if let explicitSpec = layoutSpec {
-            resolvedSections = explicitSpec.sections
-            isLoading = false
-            return
-        }
-        
-        // Step 2: If no code hint, try file/cache
-        if let modelName = modelName {
-            let hintsResult = await globalDataHintsRegistry.loadHintsResult(for: modelName)
-            
-            // If file/cache has hints, use them
-            if !hintsResult.sectionLayouts.isEmpty {
-                resolvedSections = SectionBuilder.buildSections(
-                    from: hintsResult.sectionLayouts,
-                    matching: fields
-                )
-            } else {
-                // Step 3: If file/cache has nothing, use default
-                resolvedSections = createDefaultSections()
-            }
+        let hintsResult: DataHintsResult?
+        if layoutSpec != nil {
+            hintsResult = nil
+        } else if let modelName = modelName {
+            hintsResult = await globalDataHintsRegistry.loadHintsResult(for: modelName)
         } else {
-            // No modelName provided, use default
-            resolvedSections = createDefaultSections()
+            hintsResult = nil
         }
-        
+        resolvedSections = FormSectionResolution.resolve(
+            fields: fields,
+            layoutSpec: layoutSpec,
+            hintsResult: hintsResult
+        )
         isLoading = false
     }
     

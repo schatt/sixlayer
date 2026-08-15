@@ -1,4 +1,5 @@
 import Testing
+import Foundation
 
 //
 //  DynamicFormTests.swift
@@ -242,25 +243,65 @@ open class DynamicFormTests: BaseTestClass {
     /// BUSINESS PURPOSE: Validate hints are used when no explicit spec provided
     /// TESTING SCOPE: Tests that hints sections are used when LayoutSpec is nil
     /// METHODOLOGY: Create form with hints but no explicit spec, verify hints are used
-    @Test func testHintsUsedWhenNoExplicitSpec() {
-        // When no explicit spec, should use hints sections
-        
-        // When platformPresentFormData_L1 is called with modelName but no layoutSpec,
-        // it should load sections from hints file
-        // Expected: Hints sections are used
-        #expect(true) // Placeholder - will implement hints loading next
+    @Test func testHintsUsedWhenNoExplicitSpec() throws {
+        let fields = [
+            DynamicFormField(id: "name", contentType: .text, label: "Name"),
+            DynamicFormField(id: "email", contentType: .email, label: "Email")
+        ]
+        let hintsJSON: [String: Any] = [
+            "name": ["displayWidth": "medium"],
+            "email": ["displayWidth": "medium"],
+            "_sections": [
+                [
+                    "id": "hints-group",
+                    "title": "From Hints",
+                    "fields": ["name", "email"],
+                    "layoutStyle": "horizontal"
+                ]
+            ]
+        ]
+        let fileManager = FileManager.default
+        guard let documentsURL = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first else {
+            throw NSError(domain: "TestError", code: 1, userInfo: [NSLocalizedDescriptionKey: "No documents directory"])
+        }
+        let hintsDir = documentsURL.appendingPathComponent("Hints")
+        try fileManager.createDirectory(at: hintsDir, withIntermediateDirectories: true)
+        let uniqueModelName = "DynamicFormHints_\(UUID().uuidString.prefix(8))"
+        let testFile = hintsDir.appendingPathComponent("\(uniqueModelName).hints")
+        try JSONSerialization.data(withJSONObject: hintsJSON, options: .prettyPrinted).write(to: testFile, options: .atomic)
+        defer { try? fileManager.removeItem(at: testFile) }
+
+        let hintsResult = FileBasedDataHintsLoader().loadHintsResult(for: uniqueModelName)
+        let sections = FormSectionResolution.resolve(
+            fields: fields,
+            layoutSpec: nil,
+            hintsResult: hintsResult
+        )
+
+        #expect(sections.count == 1)
+        #expect(sections[0].id == "hints-group")
+        #expect(sections[0].layoutStyle == .horizontal)
+        #expect(sections[0].fields.map(\.id) == ["name", "email"])
     }
     
     /// BUSINESS PURPOSE: Validate defaults are used when no hints and no spec
     /// TESTING SCOPE: Tests that framework defaults are used when neither hints nor spec provided
-    /// METHODOLOGY: Create form without hints or spec, verify defaults are used
+    /// METHODOLOGY: Resolve sections with no model hints and no LayoutSpec
     @Test func testDefaultsUsedWhenNoHintsOrSpec() {
-        // When no hints and no spec, should use framework defaults
-        
-        // When platformPresentFormData_L1 is called without modelName and without layoutSpec,
-        // it should use framework's default layout behavior
-        // Expected: Default layout (probably vertical stack of all fields)
-        #expect(true) // Placeholder - will implement default behavior next
+        let fields = [
+            DynamicFormField(id: "name", contentType: .text, label: "Name"),
+            DynamicFormField(id: "email", contentType: .email, label: "Email")
+        ]
+        let sections = FormSectionResolution.resolve(
+            fields: fields,
+            layoutSpec: nil,
+            hintsResult: DataHintsResult()
+        )
+
+        #expect(sections.count == 1)
+        #expect(sections[0].id == "default")
+        #expect(sections[0].title == "Form Fields")
+        #expect(sections[0].fields.map(\.id) == ["name", "email"])
     }
     
     // MARK: - Dynamic Form Configuration Tests
