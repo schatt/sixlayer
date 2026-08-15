@@ -658,6 +658,7 @@ public struct RuntimeCapabilityDetection {
         }
 
         /// Document camera / scan UX (`VNDocumentCameraViewController`) when supported.
+        /// Always `false` on Mac Catalyst (API unavailable; Issue #415).
         nonisolated public static var supportsDocumentCamera: Bool {
             if let forced = testVisionSupportsDocumentCamera {
                 guard platformShipsVisionFramework, isFrameworkAvailable else { return false }
@@ -878,6 +879,7 @@ public struct RuntimeCapabilityDetection {
         }
 
         /// Live data scanner (`DataScannerViewController`); iOS 16+ when VisionKit reports supported and available.
+        /// Always `false` on Mac Catalyst (API unavailable; Issue #415).
         nonisolated public static var supportsLiveDataScanner: Bool {
             if let forced = testPhotosSupportsLiveDataScanner { return forced }
             return detectSupportsLiveDataScanner()
@@ -1087,7 +1089,7 @@ public struct RuntimeCapabilityDetection {
     }
 
     private static func detectSupportsLiveDataScanner() -> Bool {
-        #if os(iOS)
+        #if os(iOS) && !targetEnvironment(macCatalyst)
         #if canImport(VisionKit)
         if #available(iOS 16.0, *) {
             // VisionKit scanner statics are MainActor-isolated on current SDKs.
@@ -1114,7 +1116,7 @@ public struct RuntimeCapabilityDetection {
     }
 
     private static func detectSupportsDocumentCamera() -> Bool {
-        #if os(iOS)
+        #if os(iOS) && !targetEnvironment(macCatalyst)
         #if canImport(Vision)
         if #available(iOS 13.0, *) {
             return withMainActorProbe {

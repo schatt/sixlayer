@@ -142,6 +142,7 @@ public enum PlatformPhotoComponentsLayer4 {
 
     /// Inner content for the VisionKit live scanner; host may wrap in its own navigation or presentation.
     /// Uses ``RuntimeCapabilityDetection/Photos/supportsLiveDataScanner`` (#253) for gating.
+    /// Mac Catalyst uses the unsupported fallback (`DataScannerViewController` unavailable; #415).
     @ViewBuilder
     @MainActor
     public static func platformDataScannerContent_L4(
@@ -154,7 +155,7 @@ public enum PlatformPhotoComponentsLayer4 {
         onItemsRemoved: (([PlatformDataScannerTrackedItem]) -> Void)? = nil,
         onBecameUnavailable: ((Error) -> Void)? = nil
     ) -> some View {
-        #if os(iOS)
+        #if os(iOS) && !targetEnvironment(macCatalyst)
         if #available(iOS 16.0, *) {
             PlatformDataScannerLiveSwiftUIView(
                 configuration: configuration,
