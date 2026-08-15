@@ -225,7 +225,6 @@ open class DataBindingTests: BaseTestClass {
         let changeDetails = tracker.getChangeDetails(for: "name")
         
         // Verify change details
-        #expect(Bool(true), "changeDetails is non-optional")  // changeDetails is non-optional
         #expect(changeDetails?.oldValue as? String == "John")
         #expect(changeDetails?.newValue as? String == "Jane")
     }
