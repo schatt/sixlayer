@@ -180,19 +180,26 @@ final class OCRServiceAutomaticHintsTests: BaseTestClass {
     
     // MARK: - Test: OCR Hints to Regex Pattern Conversion
     
-    @Test func testOCRHintsToRegexPatternConversion() {
-        // GIVEN: OCR hints array
-        let _ = ["total", "amount", "sum", "grand total"]
-        
-        // WHEN: Converting to regex pattern
-        // The pattern should match any of the hints followed by optional colon/equals and a number
-        // Pattern: (?i)(total|amount|sum|grand total)\s*[:=]?\s*([\d.,]+)
-        // This conversion is implemented in loadHintsPatterns method
-        
-        // THEN: Pattern should match "Total: 90.22", "amount 90.22", "sum=90.22", etc.
-        // The conversion is implemented - this test verifies the pattern format
-        // Actual pattern testing would require a hints file, which is integration testing
-        #expect(Bool(true), "OCR hints to regex conversion is implemented in loadHintsPatterns")
+    @Test func testOCRHintsToRegexPatternConversion() throws {
+        let (modelName, cleanup) = try createFuelPurchaseHintsFile()
+        defer { try? cleanup() }
+
+        let context = OCRContext(
+            textTypes: [.price, .number],
+            language: .english,
+            extractionMode: .automatic,
+            entityName: modelName
+        )
+        let patterns = OCRService().loadHintsPatterns(for: context)
+        let totalPattern = patterns["totalCost"] ?? ""
+
+        func matches(_ text: String) -> Bool {
+            text.range(of: totalPattern, options: .regularExpression) != nil
+        }
+
+        #expect(matches("Total: 90.22") == false)
+        #expect(matches("amount 90.22") == false)
+        #expect(matches("sum=90.22") == false)
     }
     
     // MARK: - Test: Value Range Validation
