@@ -154,9 +154,9 @@ open class PlatformMatrixTests: BaseTestClass {
     @Test @MainActor func testVisionFrameworkAvailabilityMatrix() {
         let available = isVisionFrameworkAvailable()
         #if os(watchOS)
-        #expect(available == true, "Inverted: Vision should be unavailable on watchOS")
+        #expect(!available, "Vision is not available on watchOS")
         #else
-        #expect(available == false, "Inverted: Vision should be available on this platform")
+        #expect(available, "Vision is available on this platform")
         #endif
     }
     
