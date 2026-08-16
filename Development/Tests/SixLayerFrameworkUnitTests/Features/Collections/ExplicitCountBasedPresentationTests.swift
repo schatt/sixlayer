@@ -117,7 +117,7 @@ open class ExplicitCountBasedPresentationTests: BaseTestClass {
 
     // MARK: - Content Type Independence
 
-    /// BUSINESS PURPOSE: Verify .countBased vs dataType short-circuits (media/navigation)
+    /// BUSINESS PURPOSE: media/navigation dataTypes ignore .countBased and use platform defaults
     @Test func testCountBasedWorksWithAllContentTypes() {
         let navHints = PresentationHints(
             dataType: .navigation,
