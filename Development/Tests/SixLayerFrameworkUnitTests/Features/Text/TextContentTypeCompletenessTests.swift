@@ -31,11 +31,6 @@ open class TextContentTypeCompletenessTests: BaseTestClass {
         // Test that each UITextContentType can be converted to SixLayerTextContentType
         for uiType in uiTextContentTypes {
             let sixLayerType = SixLayerTextContentType(uiType)
-            
-            // Verify the conversion works and produces expected results
-            #expect(Bool(true), "SixLayerTextContentType should handle \(uiType)")  // sixLayerType is non-optional
-            
-            // Verify round-trip conversion works
             let backToUI = sixLayerType.uiTextContentType
             #expect(backToUI == uiType, "Round-trip conversion should preserve \(uiType)")
         }
