@@ -197,9 +197,10 @@ final class OCRServiceAutomaticHintsTests: BaseTestClass {
             text.range(of: totalPattern, options: .regularExpression) != nil
         }
 
-        #expect(matches("Total: 90.22") == false)
-        #expect(matches("amount 90.22") == false)
-        #expect(matches("sum=90.22") == false)
+        #expect(matches("amount 90.22") == true)
+        // `$` in the same field's ocrHints switches the separator to whitespace-only,
+        // so "Total: 90.22" / "sum=90.22" do not match. Product fix: #420.
+        Issue.record("Colon/equals OCR hint matches blocked when ocrHints includes $ — #420")
     }
     
     // MARK: - Test: Value Range Validation
