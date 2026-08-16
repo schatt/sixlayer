@@ -428,7 +428,7 @@ final class FormProcessingWorkflowTests: BaseTestClass {
             fields: fields,
             hints: hints
         )
-        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotAAsyncFormView")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "AsyncFormView")
         
         #expect(hints.dataType == .form, "Data type should be form on \(currentPlatform)")
         #expect(hints.presentationPreference == .form, "Preference should be form on \(currentPlatform)")
