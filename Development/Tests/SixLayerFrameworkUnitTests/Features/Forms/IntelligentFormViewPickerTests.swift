@@ -178,17 +178,11 @@ open class IntelligentFormViewPickerTests: BaseTestClass {
         }
     }
     
-    /// TDD RED PHASE: Test that picker is rendered instead of TextField when inputType is "picker"
+    /// Unit contract: picker hints make `shouldRenderAsPicker` true.
+    /// Picker vs TextField in the hosted tree is a ViewInspector/XCUI observation.
     @Test @MainActor func testPickerRenderedInsteadOfTextField() {
         initializeTestConfig()
         runWithTaskLocalConfig {
-            let testData = TestModelWithEnum(sizeUnit: "story_points", name: "Test")
-            let view = IntelligentFormView.generateForm(
-                for: TestModelWithEnum.self,
-                initialData: testData
-            )
-            BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotAIntelligentFormView")
-
             let field = DynamicFormField(
                 id: "sizeUnit",
                 contentType: .text,
@@ -198,11 +192,11 @@ open class IntelligentFormViewPickerTests: BaseTestClass {
                     "pickerOptions": #"[{"value":"story_points","label":"Story Points"}]"#
                 ]
             )
-            #expect(field.shouldRenderAsPicker == false)
+            #expect(field.shouldRenderAsPicker == true)
         }
     }
     
-    /// TDD RED PHASE: Test that picker displays labels but stores values
+    /// Unit contract: picker options keep stored values distinct from display labels.
     @Test @MainActor func testPickerDisplaysLabelsStoresValues() {
         initializeTestConfig()
         runWithTaskLocalConfig {
@@ -215,8 +209,10 @@ open class IntelligentFormViewPickerTests: BaseTestClass {
                     "pickerOptions": #"[{"value":"story_points","label":"Story Points"},{"value":"hours","label":"Hours"}]"#
                 ]
             )
-            #expect(field.pickerOptionsFromHints.first?.value == "hours")
-            #expect(field.pickerOptionsFromHints.first?.label == "Hours")
+            #expect(field.pickerOptionsFromHints.first?.value == "story_points")
+            #expect(field.pickerOptionsFromHints.first?.label == "Story Points")
+            #expect(field.pickerOptionsFromHints[1].value == "hours")
+            #expect(field.pickerOptionsFromHints[1].label == "Hours")
         }
     }
 }
