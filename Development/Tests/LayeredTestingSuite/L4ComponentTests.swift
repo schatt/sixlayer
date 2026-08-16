@@ -188,15 +188,6 @@ class L4ComponentTests: BaseTestClass {
     }
     
     // Note: Deprecated OCR component tests removed - use OCRService.processImage() instead
-    
-    @Test func testComponentErrorHandling() {
-        // Note: OCR error handling tests removed - use OCRService.processImage() with try/catch instead
-        
-        // Then
-        LayeredTestUtilities.verifyViewCreation(view, testName: "Component error handling test")
-        #expect(Bool(true), "Safe component should return a result")  // result is non-optional
-        // Error handling is tested through the callback mechanism
-    }
 }
 
 
