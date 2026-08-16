@@ -91,7 +91,7 @@ open class PhotoSemanticLayerTests: BaseTestClass {
         // When: Determining capture strategy
         let strategy = determinePhotoCaptureStrategy_L2(purpose: purpose, context: context)
         
-        // Then
+        // Then: both sources + preferredSource .both → camera
         #expect(strategy == .camera)
     }
     
@@ -154,7 +154,4 @@ open class PhotoSemanticLayerTests: BaseTestClass {
         #expect(captureStrategy == .both)
         #expect(displayStrategy == .aspectFit)
     }
-    
-    // MARK: - Helper Methods
-    
 }
