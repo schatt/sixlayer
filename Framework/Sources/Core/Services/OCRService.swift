@@ -296,8 +296,9 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
         return patterns
     }
     
-    /// Load hints file and convert ocrHints to regex patterns
-    private func loadHintsPatterns(for context: OCRContext) -> [String: String] {
+    /// Load hints file and convert ocrHints to regex patterns.
+    /// Internal so unit tests can observe hint→regex conversion (#382).
+    func loadHintsPatterns(for context: OCRContext) -> [String: String] {
         // Use entityName from context - projects specify which data model's hints to use
         // If nil, return empty patterns (developer opted out of hints-based extraction)
         guard let entityName = context.entityName else {
