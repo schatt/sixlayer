@@ -41,15 +41,7 @@ open class NavigationStackLayer1Tests: BaseTestClass {
             hints: testHints
         )
         
-        // Then: Should return a view (non-optional)
-        #expect(Bool(true), "view is non-optional")
-        
-        // Verify the view type contains View-related types (may be wrapped in modifiers)
-        let mirror = Mirror(reflecting: view)
-        let viewType = String(describing: mirror.subjectType)
-        // Check for View in the type name (case-insensitive) or ModifiedContent which is a valid SwiftUI view wrapper
-        #expect(viewType.lowercased().contains("view") || viewType.contains("ModifiedContent"), 
-                "View should be a SwiftUI view type, got: \(viewType)")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotANavigationStack")
     }
     
     @Test @MainActor func testPlatformPresentNavigationStack_L1_WithTitle() {
@@ -58,14 +50,13 @@ open class NavigationStackLayer1Tests: BaseTestClass {
         let title = "Test Navigation"
         
         // When: Creating navigation stack with title
-        _ = platformPresentNavigationStack_L1(
+        let view = platformPresentNavigationStack_L1(
             content: content,
             title: title,
             hints: testHints
         )
         
-        // Then: Should return a view
-        #expect(Bool(true), "view is non-optional")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotANavigationStack")
     }
     
     @Test @MainActor func testPlatformPresentNavigationStack_L1_WithItems() {
@@ -77,7 +68,7 @@ open class NavigationStackLayer1Tests: BaseTestClass {
         ]
         
         // When: Creating navigation stack with items
-        _ = platformPresentNavigationStack_L1(
+        let view = platformPresentNavigationStack_L1(
             items: items,
             hints: testHints
         ) { item in
@@ -86,8 +77,7 @@ open class NavigationStackLayer1Tests: BaseTestClass {
             Text("Detail: \(item.title)")
         }
         
-        // Then: Should return a view
-        #expect(Bool(true), "view is non-optional")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotANavigationStack")
     }
     
     @Test @MainActor func testPlatformPresentNavigationStack_L1_HandlesEmptyItems() {
@@ -95,7 +85,7 @@ open class NavigationStackLayer1Tests: BaseTestClass {
         let items: [TestItem] = []
         
         // When: Creating navigation stack with empty items
-        _ = platformPresentNavigationStack_L1(
+        let view = platformPresentNavigationStack_L1(
             items: items,
             hints: testHints
         ) { item in
@@ -104,8 +94,7 @@ open class NavigationStackLayer1Tests: BaseTestClass {
             Text("Detail: \(item.title)")
         }
         
-        // Then: Should return a view even with empty items
-        #expect(Bool(true), "view is non-optional")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotANavigationStack")
     }
     
     @Test @MainActor func testPlatformPresentNavigationStack_L1_WithDifferentHints() {
@@ -127,19 +116,18 @@ open class NavigationStackLayer1Tests: BaseTestClass {
         let content = Text("Test Content")
         
         // When: Creating navigation stacks with different hints
-        _ = platformPresentNavigationStack_L1(
+        let simpleView = platformPresentNavigationStack_L1(
             content: content,
             hints: simpleHints
         )
         
-        _ = platformPresentNavigationStack_L1(
+        let complexView = platformPresentNavigationStack_L1(
             content: content,
             hints: complexHints
         )
         
-        // Then: Both should return views
-        #expect(Bool(true), "simple view is non-optional")
-        #expect(Bool(true), "complex view is non-optional")
+        BaseTestClass.expectViewSubjectTypeContains(simpleView, rootViewName: "NotANavigationStack")
+        BaseTestClass.expectViewSubjectTypeContains(complexView, rootViewName: "NotANavigationStack")
     }
     
     // MARK: - App Navigation Layer 1 Tests
@@ -157,14 +145,7 @@ open class NavigationStackLayer1Tests: BaseTestClass {
             detail: { detail }
         )
         
-        // Then: Should return a view (non-optional)
-        #expect(Bool(true), "view is non-optional")
-        
-        // Verify the view type contains View-related types
-        let mirror = Mirror(reflecting: view)
-        let viewType = String(describing: mirror.subjectType)
-        #expect(viewType.lowercased().contains("view") || viewType.contains("ModifiedContent"), 
-                "View should be a SwiftUI view type, got: \(viewType)")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotANavigationStack")
     }
     
     @Test @MainActor func testPlatformPresentAppNavigation_L1_WithBindings() {
@@ -175,15 +156,14 @@ open class NavigationStackLayer1Tests: BaseTestClass {
         let showingSheet = Binding<Bool>(get: { false }, set: { _ in })
         
         // When: Creating app navigation with bindings
-        _ = platformPresentAppNavigation_L1(
+        let view = platformPresentAppNavigation_L1(
             columnVisibility: columnVisibility,
             showingNavigationSheet: showingSheet,
             sidebar: { sidebar },
             detail: { detail }
         )
         
-        // Then: Should return a view
-        #expect(Bool(true), "view is non-optional")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotANavigationStack")
     }
     
     @Test @MainActor func testPlatformPresentAppNavigation_L1_WithOptionalBindings() {
@@ -192,15 +172,14 @@ open class NavigationStackLayer1Tests: BaseTestClass {
         let detail = Text("Detail")
         
         // When: Creating app navigation without bindings
-        _ = platformPresentAppNavigation_L1(
+        let view = platformPresentAppNavigation_L1(
             columnVisibility: nil,
             showingNavigationSheet: nil,
             sidebar: { sidebar },
             detail: { detail }
         )
         
-        // Then: Should return a view
-        #expect(Bool(true), "view is non-optional")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotANavigationStack")
     }
     
     @Test @MainActor func testPlatformPresentAppNavigation_L1_EmptyContent() {
@@ -209,15 +188,14 @@ open class NavigationStackLayer1Tests: BaseTestClass {
         let detail = EmptyView()
         
         // When: Creating app navigation with empty content
-        _ = platformPresentAppNavigation_L1(
+        let view = platformPresentAppNavigation_L1(
             columnVisibility: nil,
             showingNavigationSheet: nil,
             sidebar: { sidebar },
             detail: { detail }
         )
         
-        // Then: Should handle empty content gracefully
-        #expect(Bool(true), "view is non-optional")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotANavigationStack")
     }
     
     @Test @MainActor func testPlatformPresentAppNavigation_L1_ComplexContent() {
@@ -234,15 +212,14 @@ open class NavigationStackLayer1Tests: BaseTestClass {
         }
         
         // When: Creating app navigation with complex content
-        _ = platformPresentAppNavigation_L1(
+        let view = platformPresentAppNavigation_L1(
             columnVisibility: nil,
             showingNavigationSheet: nil,
             sidebar: { sidebar },
             detail: { detail }
         )
         
-        // Then: Should return a view
-        #expect(Bool(true), "view is non-optional")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotANavigationStack")
     }
     
     @Test @MainActor func testPlatformPresentAppNavigation_L1_AutomaticDeviceDetection() {
@@ -252,16 +229,14 @@ open class NavigationStackLayer1Tests: BaseTestClass {
         let detail = Text("Detail")
         
         // When: Creating app navigation (automatic detection)
-        _ = platformPresentAppNavigation_L1(
+        let view = platformPresentAppNavigation_L1(
             columnVisibility: nil,
             showingNavigationSheet: nil,
             sidebar: { sidebar },
             detail: { detail }
         )
         
-        // Then: Should return a view that uses automatic device detection
-        #expect(Bool(true), "view is non-optional")
-        // Note: The actual device detection happens at runtime through L2/L3 layers
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotANavigationStack")
     }
 }
 
