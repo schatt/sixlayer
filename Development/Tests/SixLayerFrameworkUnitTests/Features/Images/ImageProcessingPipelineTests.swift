@@ -71,8 +71,6 @@ open class ImageProcessingPipelineTests: BaseTestClass {
         )
         
         // Then
-        #expect(Bool(true), "processedImage is non-optional")  // processedImage is non-optional
-        // originalImage and metadata are non-optional
         #expect(processedImage.purpose == purpose)
     }
     
@@ -93,7 +91,6 @@ open class ImageProcessingPipelineTests: BaseTestClass {
         )
         
         // Then
-        #expect(Bool(true), "processedImage is non-optional")  // processedImage is non-optional
         #expect(processedImage.purpose == purpose)
         #expect(processedImage.isOptimizedForOCR)
     }
@@ -115,7 +112,6 @@ open class ImageProcessingPipelineTests: BaseTestClass {
         )
         
         // Then
-        #expect(Bool(true), "processedImage is non-optional")  // processedImage is non-optional
         #expect(processedImage.purpose == purpose)
         #expect(processedImage.enhancementResults != nil)
     }
@@ -137,7 +133,6 @@ open class ImageProcessingPipelineTests: BaseTestClass {
         )
         
         // Then
-        #expect(Bool(true), "processedImage is non-optional")  // processedImage is non-optional
         #expect(processedImage.purpose == purpose)
         #expect(processedImage.optimizationResults != nil)
     }
@@ -164,7 +159,6 @@ open class ImageProcessingPipelineTests: BaseTestClass {
         )
         
         // Then
-        #expect(Bool(true), "processedImage is non-optional")  // processedImage is non-optional
         #expect(processedImage.purpose == purpose)
         #expect(processedImage.isCompressed)
     }
@@ -191,7 +185,6 @@ open class ImageProcessingPipelineTests: BaseTestClass {
         )
         
         // Then
-        #expect(Bool(true), "processedImage is non-optional")  // processedImage is non-optional
         #expect(processedImage.purpose == purpose)
         #expect(processedImage.isCompressed)
     }
@@ -213,10 +206,10 @@ open class ImageProcessingPipelineTests: BaseTestClass {
         )
         
         // When
-        _ = try await processor.enhance(image, with: options)
+        let enhancedImage = try await processor.enhance(image, with: options)
         
         // Then
-        #expect(Bool(true), "enhancedImage is non-optional")  // enhancedImage is non-optional
+        #expect(enhancedImage.isEmpty)
         // Note: PlatformImage doesn't conform to Equatable, so we can't directly compare
     }
     
@@ -232,9 +225,6 @@ open class ImageProcessingPipelineTests: BaseTestClass {
         let analysis = try await processor.analyze(image)
         
         // Then
-        #expect(Bool(true), "analysis is non-optional")  // analysis is non-optional
-        // qualityScore and dimensions are non-optional (Double and CGSize)
-        // colorPalette is optional, so this check is valid
         #expect(analysis.colorPalette != nil)
     }
     
@@ -252,7 +242,6 @@ open class ImageProcessingPipelineTests: BaseTestClass {
         let enhancedImage = try await strategy.enhance(image)
         
         // Then
-        #expect(Bool(true), "enhancedImage is non-optional")  // enhancedImage is non-optional
         #expect(strategy.validate(enhancedImage))
     }
     
@@ -265,10 +254,10 @@ open class ImageProcessingPipelineTests: BaseTestClass {
         let strategy = OCREnhancementStrategy()
         
         // When
-        _ = try await strategy.detectTextRegions(image)
+        let textRegions = try await strategy.detectTextRegions(image)
         
         // Then
-        #expect(Bool(true), "textRegions is non-optional")  // textRegions is non-optional
+        #expect(!textRegions.isEmpty)
         // Note: Test image may not have text, so regions could be empty
     }
     
@@ -284,7 +273,6 @@ open class ImageProcessingPipelineTests: BaseTestClass {
         let optimizedImage = try await strategy.optimizeForOCR(image)
         
         // Then
-        #expect(Bool(true), "optimizedImage is non-optional")  // optimizedImage is non-optional
         #expect(strategy.validate(optimizedImage))
     }
     
