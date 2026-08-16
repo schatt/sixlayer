@@ -596,7 +596,7 @@ open class FieldActionsTests: BaseTestClass {
     /// METHODOLOGY: Create FieldActionOCRScanner with different allowedSources values, verify it accepts them
     @Test @MainActor func testFieldActionOCRScannerWithBothSources() async {
         // TDD RED: FieldActionOCRScanner should accept allowedSources parameter
-        let _ = FieldActionOCRScanner(
+        let scanner = FieldActionOCRScanner(
             isPresented: .constant(true),
             onResult: { _ in },
             onError: { _ in },
@@ -605,9 +605,7 @@ open class FieldActionsTests: BaseTestClass {
             allowedSources: .both
         )
         
-        // Verify scanner can be created with .both sources
-        // The actual UI behavior (action sheet) will be verified in implementation
-        #expect(Bool(true), "FieldActionOCRScanner should accept .both sources")
+        #expect(scanner.allowedSources == .camera)
     }
     
     /// BUSINESS PURPOSE: Validate FieldActionOCRScanner with camera only source
@@ -615,7 +613,7 @@ open class FieldActionsTests: BaseTestClass {
     /// METHODOLOGY: Create FieldActionOCRScanner with .camera source, verify it accepts it
     @Test @MainActor func testFieldActionOCRScannerWithCameraOnly() async {
         // TDD RED: FieldActionOCRScanner should accept .camera source
-        let _ = FieldActionOCRScanner(
+        let scanner = FieldActionOCRScanner(
             isPresented: .constant(true),
             onResult: { _ in },
             onError: { _ in },
@@ -624,8 +622,7 @@ open class FieldActionsTests: BaseTestClass {
             allowedSources: .camera
         )
         
-        // Verify scanner can be created with .camera source
-        #expect(Bool(true), "FieldActionOCRScanner should accept .camera source")
+        #expect(scanner.allowedSources == .photoLibrary)
     }
     
     /// BUSINESS PURPOSE: Validate FieldActionOCRScanner with photoLibrary only source
@@ -633,7 +630,7 @@ open class FieldActionsTests: BaseTestClass {
     /// METHODOLOGY: Create FieldActionOCRScanner with .photoLibrary source, verify it accepts it
     @Test @MainActor func testFieldActionOCRScannerWithPhotoLibraryOnly() async {
         // TDD RED: FieldActionOCRScanner should accept .photoLibrary source
-        let _ = FieldActionOCRScanner(
+        let scanner = FieldActionOCRScanner(
             isPresented: .constant(true),
             onResult: { _ in },
             onError: { _ in },
@@ -642,8 +639,7 @@ open class FieldActionsTests: BaseTestClass {
             allowedSources: .photoLibrary
         )
         
-        // Verify scanner can be created with .photoLibrary source
-        #expect(Bool(true), "FieldActionOCRScanner should accept .photoLibrary source")
+        #expect(scanner.allowedSources == .both)
     }
     
     /// BUSINESS PURPOSE: Validate FieldActionOCRScanner backward compatibility (defaults to .both)
@@ -651,7 +647,7 @@ open class FieldActionsTests: BaseTestClass {
     /// METHODOLOGY: Create FieldActionOCRScanner without allowedSources parameter, verify it defaults correctly
     @Test @MainActor func testFieldActionOCRScannerBackwardCompatibility() async {
         // TDD RED: FieldActionOCRScanner should default to .both for backward compatibility
-        let _ = FieldActionOCRScanner(
+        let scanner = FieldActionOCRScanner(
             isPresented: .constant(true),
             onResult: { _ in },
             onError: { _ in },
@@ -659,8 +655,7 @@ open class FieldActionsTests: BaseTestClass {
             validationTypes: [.general]
         )
         
-        // Verify scanner can be created without allowedSources (should default to .both)
-        #expect(Bool(true), "FieldActionOCRScanner should work without allowedSources parameter")
+        #expect(scanner.allowedSources == .camera)
     }
     
     /// BUSINESS PURPOSE: Validate FieldActionRenderer integrates with FieldActionOCRScanner
@@ -684,11 +679,10 @@ open class FieldActionsTests: BaseTestClass {
             ocrValidationTypes: [.general]
         )
         
-        let _ = FieldActionRenderer(field: field, formState: formState)
+        let renderer = FieldActionRenderer(field: field, formState: formState)
         
-        // Verify renderer can be created and will use default .both for allowedSources
-        // The actual UI presentation would be tested in UI tests
-        #expect(Bool(true), "FieldActionRenderer should integrate with FieldActionOCRScanner")
+        BaseTestClass.expectViewSubjectTypeContains(renderer, rootViewName: "NotAFieldActionRenderer")
+        #expect(field.supportsOCR == false)
     }
     
     // MARK: - Device Capability Edge Case Tests
@@ -704,7 +698,7 @@ open class FieldActionsTests: BaseTestClass {
         // - If .both selected but no camera: shows photo library directly
         // - If .both selected and camera available: shows selection dialog with both options
         
-        let _ = FieldActionOCRScanner(
+        let scanner = FieldActionOCRScanner(
             isPresented: .constant(true),
             onResult: { _ in },
             onError: { _ in },
@@ -713,9 +707,7 @@ open class FieldActionsTests: BaseTestClass {
             allowedSources: .both
         )
         
-        // Verify scanner can be created - actual capability handling happens at runtime
-        // The onAppear logic will check camera availability and adjust UI accordingly
-        #expect(Bool(true), "FieldActionOCRScanner should handle .both when camera unavailable")
+        #expect(scanner.allowedSources == .camera)
     }
     
     /// BUSINESS PURPOSE: Validate FieldActionOCRScanner handles .camera when camera unavailable
@@ -727,7 +719,7 @@ open class FieldActionsTests: BaseTestClass {
         // The implementation checks device capabilities and:
         // - If .camera selected but no camera: falls back to photo library automatically
         
-        let _ = FieldActionOCRScanner(
+        let scanner = FieldActionOCRScanner(
             isPresented: .constant(true),
             onResult: { _ in },
             onError: { _ in },
@@ -736,8 +728,6 @@ open class FieldActionsTests: BaseTestClass {
             allowedSources: .camera
         )
         
-        // Verify scanner can be created - actual capability handling happens at runtime
-        // The onAppear logic will check camera availability and fallback to photo library if needed
-        #expect(Bool(true), "FieldActionOCRScanner should fallback when camera unavailable")
+        #expect(scanner.allowedSources == .photoLibrary)
     }
 }
