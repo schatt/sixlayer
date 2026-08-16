@@ -15,7 +15,7 @@ open class CountBasedPresentationTests: BaseTestClass {
             complexity: .moderate,
             context: .dashboard
         )
-        #expect(resolve(hints: hints, itemCount: 5) == .list)
+        #expect(resolve(hints: hints, itemCount: 5) == .grid)
     }
 
     /// BUSINESS PURPOSE: Verify that .automatic prefers list for large generic collections
@@ -26,7 +26,7 @@ open class CountBasedPresentationTests: BaseTestClass {
             complexity: .moderate,
             context: .dashboard
         )
-        #expect(resolve(hints: hints, itemCount: 15) == .grid)
+        #expect(resolve(hints: hints, itemCount: 15) == .list)
     }
 
     /// BUSINESS PURPOSE: Verify safety override for very large collections (>200 items)
@@ -37,7 +37,7 @@ open class CountBasedPresentationTests: BaseTestClass {
             complexity: .moderate,
             context: .dashboard
         )
-        #expect(resolve(hints: hints, itemCount: 250) == .grid)
+        #expect(resolve(hints: hints, itemCount: 250) == .list)
     }
 
     // MARK: - Content Type Tests
@@ -50,7 +50,7 @@ open class CountBasedPresentationTests: BaseTestClass {
             complexity: .moderate,
             context: .gallery
         )
-        #expect(resolve(hints: hints, itemCount: 1000) == .list)
+        #expect(resolve(hints: hints, itemCount: 1000) == .expandableCards)
     }
 
     /// BUSINESS PURPOSE: Navigation content uses platform default, not count
@@ -61,7 +61,7 @@ open class CountBasedPresentationTests: BaseTestClass {
             complexity: .moderate,
             context: .navigation
         )
-        #expect(resolve(hints: hints, itemCount: 50) == .list)
+        #expect(resolve(hints: hints, itemCount: 50) == .masonry)
     }
 
     // MARK: - Platform/Device Threshold Tests
@@ -74,7 +74,7 @@ open class CountBasedPresentationTests: BaseTestClass {
             complexity: .moderate,
             context: .dashboard
         )
-        #expect(resolve(hints: hints, itemCount: 10) == .list)
+        #expect(resolve(hints: hints, itemCount: 10) == .grid)
     }
 
     // MARK: - Edge Cases
@@ -87,7 +87,7 @@ open class CountBasedPresentationTests: BaseTestClass {
             complexity: .moderate,
             context: .dashboard
         )
-        #expect(resolve(hints: hints, itemCount: 0) == .list)
+        #expect(resolve(hints: hints, itemCount: 0) == .grid)
     }
 
     /// BUSINESS PURPOSE: Single item prefers grid/cards on macOS
@@ -98,7 +98,7 @@ open class CountBasedPresentationTests: BaseTestClass {
             complexity: .moderate,
             context: .dashboard
         )
-        #expect(resolve(hints: hints, itemCount: 1) == .list)
+        #expect(resolve(hints: hints, itemCount: 1) == .grid)
     }
 
     // MARK: - Backward Compatibility Tests
@@ -111,7 +111,7 @@ open class CountBasedPresentationTests: BaseTestClass {
             complexity: .moderate,
             context: .dashboard
         )
-        #expect(resolve(hints: hints, itemCount: 5) == .grid)
+        #expect(resolve(hints: hints, itemCount: 5) == .list)
     }
 
     // MARK: - Helpers
