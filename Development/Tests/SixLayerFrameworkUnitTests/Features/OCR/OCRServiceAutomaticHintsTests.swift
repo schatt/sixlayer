@@ -191,7 +191,7 @@ final class OCRServiceAutomaticHintsTests: BaseTestClass {
             entityName: modelName
         )
         let patterns = OCRService().loadHintsPatterns(for: context)
-        let totalPattern = patterns["totalCost"] ?? ""
+        let totalPattern = try #require(patterns["totalCost"])
 
         func matches(_ text: String) -> Bool {
             text.range(of: totalPattern, options: .regularExpression) != nil
