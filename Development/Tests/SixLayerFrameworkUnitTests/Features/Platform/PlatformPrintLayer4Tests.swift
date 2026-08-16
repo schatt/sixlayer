@@ -88,13 +88,7 @@ open class PlatformPrintLayer4Tests: BaseTestClass {
         // Given: Text content
         let textContent = PrintContent.text("Test document content")
         
-        // When: Create print modifier with text
-        let view = Text("Test")
-            .platformPrint_L4(
-                isPresented: .constant(false),
-                content: textContent
-            )
-        
+        let view = printModifierView(content: textContent)
         BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: expectedPrintModifierTypeName)
     }
     
@@ -106,13 +100,7 @@ open class PlatformPrintLayer4Tests: BaseTestClass {
         let testImage = createTestPlatformImage()
         let imageContent = PrintContent.image(testImage)
         
-        // When: Create print modifier with image
-        let view = Text("Test")
-            .platformPrint_L4(
-                isPresented: .constant(false),
-                content: imageContent
-            )
-        
+        let view = printModifierView(content: imageContent)
         BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: expectedPrintModifierTypeName)
     }
     
@@ -124,13 +112,7 @@ open class PlatformPrintLayer4Tests: BaseTestClass {
         let pdfData = createTestPDFData()
         let pdfContent = PrintContent.pdf(pdfData)
         
-        // When: Create print modifier with PDF
-        let view = Text("Test")
-            .platformPrint_L4(
-                isPresented: .constant(false),
-                content: pdfContent
-            )
-        
+        let view = printModifierView(content: pdfContent)
         BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: expectedPrintModifierTypeName)
     }
     
@@ -141,13 +123,7 @@ open class PlatformPrintLayer4Tests: BaseTestClass {
         // Given: View content
         let viewContent = PrintContent.view(AnyView(Text("Test View")))
         
-        // When: Create print modifier with view
-        let view = Text("Test")
-            .platformPrint_L4(
-                isPresented: .constant(false),
-                content: viewContent
-            )
-        
+        let view = printModifierView(content: viewContent)
         BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: expectedPrintModifierTypeName)
     }
     
@@ -161,13 +137,7 @@ open class PlatformPrintLayer4Tests: BaseTestClass {
         // Given: Print content
         let content = PrintContent.text("Test")
         
-        // When: Create print modifier
-        let view = Text("Test")
-            .platformPrint_L4(
-                isPresented: .constant(false),
-                content: content
-            )
-        
+        let view = printModifierView(content: content)
         BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: expectedPrintModifierTypeName)
         #endif
     }
@@ -180,13 +150,7 @@ open class PlatformPrintLayer4Tests: BaseTestClass {
         // Given: Print content
         let content = PrintContent.text("Test")
         
-        // When: Create print modifier
-        let view = Text("Test")
-            .platformPrint_L4(
-                isPresented: .constant(false),
-                content: content
-            )
-        
+        let view = printModifierView(content: content)
         BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: expectedPrintModifierTypeName)
         #endif
     }
@@ -204,14 +168,7 @@ open class PlatformPrintLayer4Tests: BaseTestClass {
             showsPageRange: true
         )
         
-        // When: Create print modifier with options
-        let view = Text("Test")
-            .platformPrint_L4(
-                isPresented: .constant(false),
-                content: .text("Test"),
-                options: options
-            )
-        
+        let view = printModifierView(content: .text("Test"), options: options)
         BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: expectedPrintModifierTypeName)
     }
     
@@ -254,13 +211,7 @@ open class PlatformPrintLayer4Tests: BaseTestClass {
     /// TESTING SCOPE: Tests that automatic accessibility identifiers are applied
     /// METHODOLOGY: Test accessibility compliance
     @Test @MainActor func testPlatformPrint_AccessibilityIdentifiers() {
-        // Given: Print modifier
-        let view = Text("Test")
-            .platformPrint_L4(
-                isPresented: .constant(false),
-                content: .text("Test")
-            )
-        
+        let view = printModifierView(content: .text("Test"))
         BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: expectedPrintModifierTypeName)
     }
     
@@ -280,6 +231,19 @@ open class PlatformPrintLayer4Tests: BaseTestClass {
     }
     
     // MARK: - Test Helpers
+    
+    @MainActor
+    private func printModifierView(
+        content: PrintContent,
+        options: PrintOptions? = nil
+    ) -> some View {
+        Text("Test")
+            .platformPrint_L4(
+                isPresented: .constant(false),
+                content: content,
+                options: options
+            )
+    }
     
     private var expectedPrintModifierTypeName: String {
         #if os(iOS)
