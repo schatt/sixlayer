@@ -22,7 +22,7 @@ open class PhotoSemanticLayerTests: BaseTestClass {
         // When: Creating semantic photo capture interface
         let view = platformPhotoCapture_L1(purpose: purpose, context: context) { _ in }
         
-        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotAPhotoCapture")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "PhotoSourceTabbedView")
     }
     
     @Test @MainActor func testPlatformPhotoSelection_L1() {
@@ -38,7 +38,7 @@ open class PhotoSemanticLayerTests: BaseTestClass {
         // When: Creating semantic photo selection interface
         let view = platformPhotoSelection_L1(purpose: purpose, context: context) { _ in }
         
-        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotAPhotoSelection")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "UnifiedImagePicker")
     }
     
     @Test @MainActor func testPlatformPhotoDisplay_L1() {
@@ -55,7 +55,7 @@ open class PhotoSemanticLayerTests: BaseTestClass {
         // When: Creating semantic photo display
         let view = platformPhotoDisplay_L1(purpose: purpose, context: context, image: testImage)
         
-        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotAPhotoDisplay")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "PhotoDisplayView")
     }
     
     // MARK: - Layer 2: Photo Layout Decision Engine Tests
@@ -92,7 +92,7 @@ open class PhotoSemanticLayerTests: BaseTestClass {
         let strategy = determinePhotoCaptureStrategy_L2(purpose: purpose, context: context)
         
         // Then
-        #expect(strategy == .photoLibrary)
+        #expect(strategy == .camera)
     }
     
     // MARK: - Layer 3: Photo Strategy Selection Tests
@@ -110,8 +110,8 @@ open class PhotoSemanticLayerTests: BaseTestClass {
         // When: Selecting capture strategy
         let strategy = selectPhotoCaptureStrategy_L3(purpose: purpose, context: context)
         
-        // Then
-        #expect(strategy == .camera)
+        // Then: both sources available → tabbed UI (#190)
+        #expect(strategy == .both)
     }
     
     @Test @MainActor func testSelectPhotoDisplayStrategy_L3() {
@@ -127,8 +127,8 @@ open class PhotoSemanticLayerTests: BaseTestClass {
         // When: Selecting display strategy
         let strategy = selectPhotoDisplayStrategy_L3(purpose: purpose, context: context)
         
-        // Then
-        #expect(strategy == .fullSize)
+        // Then: document at ~15% space utilization uses aspectFit, not fullSize
+        #expect(strategy == .aspectFit)
     }
     
     // MARK: - Integration Tests
@@ -151,8 +151,8 @@ open class PhotoSemanticLayerTests: BaseTestClass {
         // Then: All components should work together
         #expect(layout.width > 0)
         #expect(layout.height > 0)
-        #expect(captureStrategy == .camera)
-        #expect(displayStrategy == .fullSize)
+        #expect(captureStrategy == .both)
+        #expect(displayStrategy == .aspectFit)
     }
     
     // MARK: - Helper Methods
