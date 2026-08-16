@@ -40,6 +40,11 @@ final class AccessibilityWorkflowTests: BaseTestClass {
     
     // MARK: - Test Helpers
     
+    @MainActor
+    private func expectAutomaticComplianceModifier(_ view: some View) {
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "AutomaticComplianceModifier")
+    }
+
     /// Creates a test view for accessibility workflow testing
     /// - Returns: A simple test view
     func createTestView() -> some View {
@@ -77,7 +82,7 @@ final class AccessibilityWorkflowTests: BaseTestClass {
         let testView = createTestView()
         
         let enhancedView = testView.automaticCompliance()
-        BaseTestClass.expectViewSubjectTypeContains(enhancedView, rootViewName: "AutomaticComplianceModifier")
+        expectAutomaticComplianceModifier(enhancedView)
     }
     
     /// BUSINESS PURPOSE: Validate that form views are enhanced with accessibility
@@ -88,7 +93,7 @@ final class AccessibilityWorkflowTests: BaseTestClass {
         let formView = createTestFormView()
         
         let enhancedView = formView.automaticCompliance()
-        BaseTestClass.expectViewSubjectTypeContains(enhancedView, rootViewName: "AutomaticComplianceModifier")
+        expectAutomaticComplianceModifier(enhancedView)
     }
     
     // MARK: - Enhancement → Audit Workflow Tests
