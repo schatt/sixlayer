@@ -370,7 +370,6 @@ open class Layer4APISignatureTests: BaseTestClass {
         
         // Then: API should return Bool (compile-time check)
         let _: Bool = result
-        #expect(Bool(true), "platformOpenURL_L4 should return Bool")
         // Verify test environment protection works (should return true without opening)
         #expect(result == true, "platformOpenURL_L4 should return true in test environment without opening URL")
     }
@@ -453,7 +452,6 @@ open class Layer4APISignatureTests: BaseTestClass {
         let _ = platformPhotoPicker_L4(onImageSelected: callback)
         
         // Then: Callback signature should be PlatformImage (compile-time check)
-        #expect(Bool(true), "platformPhotoPicker_L4 callback should accept PlatformImage parameter")
         
         // Test callback directly to verify it works
         let testImage = PlatformImage.createPlaceholder()
@@ -475,7 +473,6 @@ open class Layer4APISignatureTests: BaseTestClass {
         let _ = platformCameraInterface_L4(onImageCaptured: callback)
         
         // Then: Callback signature should be PlatformImage (compile-time check)
-        #expect(Bool(true), "platformCameraInterface_L4 callback should accept PlatformImage parameter")
         
         // Test callback directly to verify it works
         let testImage = PlatformImage.createPlaceholder()
