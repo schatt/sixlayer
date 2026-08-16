@@ -278,7 +278,6 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
         }
         #else
         // ViewInspector not available on macOS - test passes by verifying view creation
-        #expect(Bool(true), "View should be created successfully")
         #endif
     }
     
@@ -725,7 +724,6 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
         #expect(hasAccessibilityID, "FormValidationSummary should generate accessibility identifier")
         #else
         // ViewInspector not available on macOS - test passes by verifying view creation
-        #expect(Bool(true), "View should be created successfully")
         #endif
     }
     
@@ -813,7 +811,6 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
         #else
         // ViewInspector not available on macOS - test passes by verifying view creation
         // The ScrollViewReader wrapper is verified in the implementation code
-        #expect(Bool(true), "View should be created successfully with ScrollViewReader wrapper")
         #endif
     }
 }
