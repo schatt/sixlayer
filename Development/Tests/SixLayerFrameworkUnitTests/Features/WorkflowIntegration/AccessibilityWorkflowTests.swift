@@ -40,6 +40,11 @@ final class AccessibilityWorkflowTests: BaseTestClass {
     
     // MARK: - Test Helpers
     
+    @MainActor
+    private func expectAutomaticComplianceModifier(_ view: some View) {
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "AutomaticComplianceModifier")
+    }
+
     /// Creates a test view for accessibility workflow testing
     /// - Returns: A simple test view
     func createTestView() -> some View {
@@ -74,16 +79,10 @@ final class AccessibilityWorkflowTests: BaseTestClass {
     /// METHODOLOGY: Create view, apply enhancement, verify enhancement is applied
     @Test @MainActor func testViewEnhancementWorkflow() async {
         initializeTestConfig()
-        
-        // Given: Current platform and a test view
-        let currentPlatform = SixLayerPlatform.current
         let testView = createTestView()
         
-        // When: Enhancing view with accessibility
-        let _ = testView.automaticCompliance()
-        
-        // Then: Enhancement should be applied (view should exist)
-        #expect(Bool(true), "View should be enhanced with accessibility on \(currentPlatform)")
+        let enhancedView = testView.automaticCompliance()
+        expectAutomaticComplianceModifier(enhancedView)
     }
     
     /// BUSINESS PURPOSE: Validate that form views are enhanced with accessibility
@@ -91,16 +90,10 @@ final class AccessibilityWorkflowTests: BaseTestClass {
     /// METHODOLOGY: Create form view, apply enhancement, verify
     @Test @MainActor func testFormViewEnhancementWorkflow() async {
         initializeTestConfig()
-        
-        // Given: Current platform and a form view
-        let currentPlatform = SixLayerPlatform.current
         let formView = createTestFormView()
         
-        // When: Enhancing form view with accessibility
-        let _ = formView.automaticCompliance()
-        
-        // Then: Enhancement should be applied
-        #expect(Bool(true), "Form view should be enhanced with accessibility on \(currentPlatform)")
+        let enhancedView = formView.automaticCompliance()
+        expectAutomaticComplianceModifier(enhancedView)
     }
     
     // MARK: - Enhancement → Audit Workflow Tests
