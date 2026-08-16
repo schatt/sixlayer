@@ -51,10 +51,8 @@ open class Layer4APISignatureTests: BaseTestClass {
         let callback: (PlatformImage) -> Void = { _ in }
         
         // When: Calling the API
-        let _ = platformPhotoPicker_L4(onImageSelected: callback)
-        
-        // Then: API should accept the callback (compile-time check)
-        #expect(Bool(true), "platformPhotoPicker_L4 should accept PlatformImage callback")
+        let view = platformPhotoPicker_L4(onImageSelected: callback)
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "UnifiedImagePicker")
     }
     
     /// BUSINESS PURPOSE: Verify platformCameraInterface_L4 API signature exists and works
@@ -65,57 +63,59 @@ open class Layer4APISignatureTests: BaseTestClass {
         let callback: (PlatformImage) -> Void = { _ in }
         
         // When: Calling the API
-        let _ = platformCameraInterface_L4(onImageCaptured: callback)
-        
-        // Then: API should accept the callback (compile-time check)
-        #expect(Bool(true), "platformCameraInterface_L4 should accept PlatformImage callback")
+        let view = platformCameraInterface_L4(onImageCaptured: callback)
+        #if os(macOS)
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "MacCameraView")
+        #else
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "CameraView")
+        #endif
     }
 
     #if os(iOS)
     /// BUSINESS PURPOSE: Live VisionKit data scanner API exists for Issue #252.
     @Test @MainActor func testPlatformDataScannerContent_L4_APISignature() {
-        let _ = platformDataScannerContent_L4(
+        let view = platformDataScannerContent_L4(
             configuration: PlatformDataScannerConfiguration.default,
             bannerMessage: "Hint",
             onItemTap: { _ in }
         )
-        #expect(Bool(true), "platformDataScannerContent_L4 should accept configuration and callbacks")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "PlatformDataScannerLiveSwiftUIView")
     }
 
     @Test @MainActor func testPlatformDataScannerInterface_L4_APISignature() {
         var presented = false
         let binding = Binding(get: { presented }, set: { presented = $0 })
-        let _ = platformDataScannerInterface_L4(
+        let view = platformDataScannerInterface_L4(
             isPresented: binding,
             configuration: PlatformDataScannerConfiguration.default,
             bannerMessage: "Hint",
             onItemTap: { _ in }
         )
-        #expect(Bool(true), "platformDataScannerInterface_L4 should accept presentation binding and configuration")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "AutomaticComplianceModifier")
     }
 
     @Test @MainActor func testPlatformDataScannerInterface_L4AsSheet_APISignature() {
         var presented = false
         let binding = Binding(get: { presented }, set: { presented = $0 })
-        let _ = platformDataScannerInterface_L4AsSheet(
+        let view = platformDataScannerInterface_L4AsSheet(
             isPresented: binding,
             configuration: PlatformDataScannerConfiguration.default,
             bannerMessage: "Hint",
             onItemTap: { _ in }
         )
-        #expect(Bool(true), "platformDataScannerInterface_L4AsSheet should compile")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "AutomaticComplianceModifier")
     }
 
     @Test @MainActor func testPlatformDataScannerInterface_L4AsFullScreenCover_APISignature() {
         var presented = false
         let binding = Binding(get: { presented }, set: { presented = $0 })
-        let _ = platformDataScannerInterface_L4AsFullScreenCover(
+        let view = platformDataScannerInterface_L4AsFullScreenCover(
             isPresented: binding,
             configuration: PlatformDataScannerConfiguration.default,
             bannerMessage: "Hint",
             onItemTap: { _ in }
         )
-        #expect(Bool(true), "platformDataScannerInterface_L4AsFullScreenCover should compile")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "AutomaticComplianceModifier")
     }
     #endif
     
@@ -128,10 +128,8 @@ open class Layer4APISignatureTests: BaseTestClass {
         let style = PhotoDisplayStyle.aspectFit
         
         // When: Calling the API
-        let _ = platformPhotoDisplay_L4(image: testImage, style: style)
-        
-        // Then: API should accept the parameters (compile-time check)
-        #expect(Bool(true), "platformPhotoDisplay_L4 should accept PlatformImage and PhotoDisplayStyle")
+        let view = platformPhotoDisplay_L4(image: testImage, style: style)
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "PhotoDisplayView")
     }
     
     /// BUSINESS PURPOSE: Verify platformPhotoDisplay_L4 accepts nil image
@@ -142,10 +140,8 @@ open class Layer4APISignatureTests: BaseTestClass {
         let style = PhotoDisplayStyle.aspectFit
         
         // When: Calling the API with nil image
-        let _ = platformPhotoDisplay_L4(image: nil, style: style)
-        
-        // Then: API should accept nil image (compile-time check)
-        #expect(Bool(true), "platformPhotoDisplay_L4 should accept optional PlatformImage")
+        let view = platformPhotoDisplay_L4(image: nil, style: style)
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "PlaceholderPhotoView")
     }
     
     // MARK: - Print API Tests
@@ -162,7 +158,6 @@ open class Layer4APISignatureTests: BaseTestClass {
         
         // Then: API should return Bool (compile-time check)
         let _: Bool = result
-        #expect(Bool(true), "platformPrint_L4 should return Bool")
     }
     
     /// BUSINESS PURPOSE: Verify platformPrint_L4 accepts optional options parameter
@@ -178,7 +173,6 @@ open class Layer4APISignatureTests: BaseTestClass {
         
         // Then: API should accept optional options (compile-time check)
         let _: Bool = result
-        #expect(Bool(true), "platformPrint_L4 should accept optional PrintOptions")
     }
     
     /// BUSINESS PURPOSE: Verify platformPrint_L4 accepts nil options
@@ -193,7 +187,6 @@ open class Layer4APISignatureTests: BaseTestClass {
         
         // Then: API should accept nil options (compile-time check)
         let _: Bool = result
-        #expect(Bool(true), "platformPrint_L4 should accept nil for optional PrintOptions")
     }
     
     // MARK: - OCR Components API Tests
@@ -224,7 +217,6 @@ open class Layer4APISignatureTests: BaseTestClass {
         let _: (PlatformImage, OCRContext, OCRStrategy) async throws -> OCRResult = processFunction
         
         // Then: API should accept the parameters (compile-time check)
-        #expect(Bool(true), "OCRService.processImage() should accept correct parameters")
     }
     
     // MARK: - Map Components API Tests
@@ -235,22 +227,14 @@ open class Layer4APISignatureTests: BaseTestClass {
     @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
     @Test @MainActor func testPlatformMapView_L4_WithMapContentBuilder_APISignature() {
         #if canImport(MapKit) && (os(iOS) || os(macOS))
-        // Given: Binding position and content builder
         let position = Binding<MapCameraPosition>(
             get: { MapCameraPosition.automatic },
             set: { (_: MapCameraPosition) in }
         )
-        
-        // When: Calling the API with MapContentBuilder
-        let _ = platformMapView_L4(position: position) {
+        let view = platformMapView_L4(position: position) {
             // Empty content builder
         }
-        
-        // Then: API should accept the parameters (compile-time check)
-        #expect(Bool(true), "platformMapView_L4 should accept Binding<MapCameraPosition> and MapContentBuilder")
-        #else
-        // Skip test if MapKit is not available
-        #expect(Bool(true), "MapKit not available on this platform")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "EmptyMapContent")
         #endif
     }
     
@@ -260,26 +244,18 @@ open class Layer4APISignatureTests: BaseTestClass {
     @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
     @Test @MainActor func testPlatformMapView_L4_WithAnnotations_APISignature() {
         #if canImport(MapKit) && (os(iOS) || os(macOS))
-        // Given: Binding position, annotations, and optional callback
         let position = Binding<MapCameraPosition>(
             get: { MapCameraPosition.automatic },
             set: { (_: MapCameraPosition) in }
         )
         let annotations: [MapAnnotationData] = []
         let callback: ((MapAnnotationData) -> Void)? = nil
-        
-        // When: Calling the API with annotations
-        let _ = platformMapView_L4(
+        let view = platformMapView_L4(
             position: position,
             annotations: annotations,
             onAnnotationTapped: callback
         )
-        
-        // Then: API should accept the parameters (compile-time check)
-        #expect(Bool(true), "platformMapView_L4 should accept annotations and optional callback")
-        #else
-        // Skip test if MapKit is not available
-        #expect(Bool(true), "MapKit not available on this platform")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "AutomaticComplianceModifier")
         #endif
     }
     
@@ -289,20 +265,12 @@ open class Layer4APISignatureTests: BaseTestClass {
     @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
     @Test @MainActor func testPlatformMapViewWithCurrentLocation_L4_APISignature() {
         #if canImport(MapKit) && (os(iOS) || os(macOS))
-        // Given: Location service and optional parameters
         let locationService = LocationService()
-        
-        // When: Calling the API with default parameters
-        let _ = platformMapViewWithCurrentLocation_L4(
+        let view = platformMapViewWithCurrentLocation_L4(
             locationService: locationService,
             showCurrentLocation: true
         )
-        
-        // Then: API should accept the parameters (compile-time check)
-        #expect(Bool(true), "platformMapViewWithCurrentLocation_L4 should accept LocationService and optional parameters")
-        #else
-        // Map convenience APIs not provided on tvOS/watchOS/visionOS; tracked under #241.
-        #expect(Bool(true), "platformMapViewWithCurrentLocation_L4 not available on this platform")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "MapViewWithLocationService")
         #endif
     }
     
@@ -320,7 +288,6 @@ open class Layer4APISignatureTests: BaseTestClass {
         
         // Then: API should return Bool (compile-time check)
         let _: Bool = result
-        #expect(Bool(true), "platformCopyToClipboard_L4 should return Bool")
     }
     
     /// BUSINESS PURPOSE: Verify platformCopyToClipboard_L4 accepts optional provideFeedback parameter
@@ -335,7 +302,6 @@ open class Layer4APISignatureTests: BaseTestClass {
         
         // Then: API should accept optional provideFeedback (compile-time check)
         let _: Bool = result
-        #expect(Bool(true), "platformCopyToClipboard_L4 should accept optional provideFeedback parameter")
     }
     
     /// BUSINESS PURPOSE: Verify platformCopyToClipboard_L4 accepts PlatformImage
@@ -350,7 +316,6 @@ open class Layer4APISignatureTests: BaseTestClass {
         
         // Then: API should accept PlatformImage (compile-time check)
         let _: Bool = result
-        #expect(Bool(true), "platformCopyToClipboard_L4 should accept PlatformImage content")
     }
     
     /// BUSINESS PURPOSE: Verify platformOpenURL_L4 API signature exists and works
@@ -395,7 +360,6 @@ open class Layer4APISignatureTests: BaseTestClass {
         )
         
         // Then: API should accept content (compile-time check)
-        #expect(Bool(true), "platformImplementNavigationStack_L4 should accept View content")
     }
     
     /// BUSINESS PURPOSE: Verify platformImplementNavigationStackItems_L4 API signature exists
@@ -432,7 +396,6 @@ open class Layer4APISignatureTests: BaseTestClass {
         )
         
         // Then: API should accept the parameters (compile-time check)
-        #expect(Bool(true), "platformImplementNavigationStackItems_L4 should accept items and callbacks")
     }
     
     
