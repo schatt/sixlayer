@@ -18,9 +18,10 @@ import VisionKit
 
 /// Errors surfaced by the live data scanner session (Issue #252).
 public enum PlatformDataScannerError: Error, Sendable, Equatable {
-    /// No live `DataScannerViewController` is attached yet (e.g. before appear or after teardown).
+    /// No live scanner is attached yet (e.g. before appear, after teardown, or on a platform where VisionKit never attaches).
     case scannerNotAttached
-    /// The current OS / build does not support the VisionKit live scanner.
+    /// Unused. Gate live-scanner UI on ``RuntimeCapabilityDetection/Photos/supportsLiveDataScanner`` instead (Issue #418).
+    @available(*, deprecated, message: "Gate on RuntimeCapabilityDetection.Photos.supportsLiveDataScanner; session methods throw scannerNotAttached when nothing is attached.")
     case platformUnsupported
 }
 
@@ -113,6 +114,14 @@ public final class PlatformDataScannerSessionController: Sendable {
     internal func attachLiveScanner(_ controller: DataScannerViewController) {
         liveScannerViewController = controller
     }
+
+    @available(iOS 16.0, *)
+    private func attachedLiveScanner() throws -> DataScannerViewController {
+        guard let controller = liveScannerViewController as? DataScannerViewController else {
+            throw PlatformDataScannerError.scannerNotAttached
+        }
+        return controller
+    }
     #endif
 
     /// Starts VisionKit scanning when a controller is attached (Issue #252).
@@ -120,14 +129,11 @@ public final class PlatformDataScannerSessionController: Sendable {
     public func startScanning() throws {
         #if os(iOS) && !targetEnvironment(macCatalyst) && canImport(VisionKit)
         if #available(iOS 16.0, *) {
-            guard let controller = liveScannerViewController as? DataScannerViewController else {
-                throw PlatformDataScannerError.scannerNotAttached
-            }
-            try controller.startScanning()
+            try attachedLiveScanner().startScanning()
             return
         }
         #endif
-        throw PlatformDataScannerError.platformUnsupported
+        throw PlatformDataScannerError.scannerNotAttached
     }
 
     /// Stops VisionKit scanning when a controller is attached.
@@ -135,8 +141,9 @@ public final class PlatformDataScannerSessionController: Sendable {
     public func stopScanning() {
         #if os(iOS) && !targetEnvironment(macCatalyst) && canImport(VisionKit)
         if #available(iOS 16.0, *) {
-            guard let controller = liveScannerViewController as? DataScannerViewController else { return }
-            controller.stopScanning()
+            if let scanner = try? attachedLiveScanner() {
+                scanner.stopScanning()
+            }
         }
         #endif
     }
@@ -146,14 +153,11 @@ public final class PlatformDataScannerSessionController: Sendable {
     public func capturePhoto() async throws -> PlatformImage {
         #if os(iOS) && !targetEnvironment(macCatalyst) && canImport(VisionKit)
         if #available(iOS 16.0, *) {
-            guard let controller = liveScannerViewController as? DataScannerViewController else {
-                throw PlatformDataScannerError.scannerNotAttached
-            }
-            let image = try await controller.capturePhoto()
+            let image = try await attachedLiveScanner().capturePhoto()
             return PlatformImage(image)
         }
         #endif
-        throw PlatformDataScannerError.platformUnsupported
+        throw PlatformDataScannerError.scannerNotAttached
     }
 }
 
