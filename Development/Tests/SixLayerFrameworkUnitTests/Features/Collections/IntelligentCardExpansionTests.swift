@@ -255,8 +255,8 @@ open class IntelligentCardExpansionTests: BaseTestClass {
     
     // MARK: - Layer 4 Tests: Component Implementation
     
-    @Test @MainActor func testSmartGridContainer() {
-        // Test that the smart grid container works
+    @Test @MainActor func testExpandableCardCollectionView() {
+        // Test that the L4 expandable card collection view constructs
         let container = ExpandableCardCollectionView(
             items: sampleMenuItems,
             hints: expandableHints
@@ -430,35 +430,6 @@ private struct MenuItem: Identifiable {
     let title: String
     let icon: String
     let color: Color
-}
-
-private enum DataTypeHint {
-    case featureCards
-    case collection
-    case form
-    case media
-}
-
-private enum InteractionStyle {
-    case expandable
-    case `static`
-    case interactive
-}
-
-private enum ContentDensity {
-    case dense
-    case balanced
-    case spacious
-}
-
-private struct SmartGridContainer {
-    let items: [MenuItem]
-    let hints: PresentationHints
-    
-    init(items: [MenuItem], hints: PresentationHints) {
-        self.items = items
-        self.hints = hints
-    }
 }
 
 private struct ResponsiveBreakpoints {
