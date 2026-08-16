@@ -118,7 +118,6 @@ open class BasicAutomaticComplianceTests: BaseTestClass {
             }
             #else
             // ViewInspector not available - test that views compile
-            #expect(Bool(true), "Views with compliance should compile")
             #endif
         }
     }
@@ -197,7 +196,6 @@ open class BasicAutomaticComplianceTests: BaseTestClass {
             }
             #else
             // ViewInspector not available - test that views compile
-            #expect(Bool(true), "Views with compliance should compile")
             #endif
         }
     }
@@ -230,7 +228,6 @@ open class BasicAutomaticComplianceTests: BaseTestClass {
             }
             #else
             // ViewInspector not available on this platform - verify compilation
-            #expect(Bool(true), "View with basicAutomaticCompliance should compile")
             #endif
         }
     }
@@ -264,7 +261,6 @@ open class BasicAutomaticComplianceTests: BaseTestClass {
                 Issue.record("Failed to inspect view: \(error)")
             }
             #else
-            #expect(Bool(true), "ViewInspector not available on this platform")
             #endif
         }
     }
@@ -295,7 +291,6 @@ open class BasicAutomaticComplianceTests: BaseTestClass {
                 "Interactive Button should receive automatic accessibility label when interactive-only mode is on"
             )
             #else
-            #expect(Bool(true), "ViewInspector not available on this platform")
             #endif
         }
     }
@@ -330,7 +325,6 @@ open class BasicAutomaticComplianceTests: BaseTestClass {
             }
             #else
             // ViewInspector not available - test that view compiles
-            #expect(Bool(true), "View should compile even when global auto IDs are disabled")
             #endif
         }
     }
@@ -377,7 +371,6 @@ open class BasicAutomaticComplianceTests: BaseTestClass {
             }
             #else
             // ViewInspector not available - test that views compile
-            #expect(Bool(true), "Views with labels should compile")
             #endif
         }
     }
