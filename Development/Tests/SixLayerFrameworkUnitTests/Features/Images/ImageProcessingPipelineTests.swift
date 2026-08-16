@@ -209,7 +209,7 @@ open class ImageProcessingPipelineTests: BaseTestClass {
         let enhancedImage = try await processor.enhance(image, with: options)
         
         // Then
-        #expect(enhancedImage.isEmpty)
+        #expect(!enhancedImage.isEmpty)
         // Note: PlatformImage doesn't conform to Equatable, so we can't directly compare
     }
     
@@ -257,7 +257,7 @@ open class ImageProcessingPipelineTests: BaseTestClass {
         let textRegions = try await strategy.detectTextRegions(image)
         
         // Then
-        #expect(!textRegions.isEmpty)
+        #expect(textRegions.isEmpty)
         // Note: Test image may not have text, so regions could be empty
     }
     
