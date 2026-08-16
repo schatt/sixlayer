@@ -40,6 +40,16 @@ final class OCRAccessibilityWorkflowIntegrationTests: BaseTestClass {
     
     // MARK: - Test Helpers
     
+    @MainActor
+    private func expectOCRWithVisualCorrectionWrapper(_ view: some View) {
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "OCRWithVisualCorrectionWrapper")
+    }
+
+    @MainActor
+    private func expectStructuredDataExtractionWrapper(_ view: some View) {
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "StructuredDataExtractionWrapper")
+    }
+
     /// Creates a test OCR context for workflow testing
     /// - Parameters:
     ///   - textTypes: Array of text types to extract (e.g., .price, .date, .general). Defaults to [.general] for basic text extraction.
@@ -84,8 +94,6 @@ final class OCRAccessibilityWorkflowIntegrationTests: BaseTestClass {
     @Test @MainActor func testOCRWorkflowWithAccessibilityCompliance() async {
         initializeTestConfig()
         
-        // Given: Current platform and OCR context configured for accessibility
-        let currentPlatform = SixLayerPlatform.current
         let context = createTestOCRContext(textTypes: [.price, .date, .general])
         var _: OCRResult?
         
@@ -96,17 +104,11 @@ final class OCRAccessibilityWorkflowIntegrationTests: BaseTestClass {
         ) { _ in
             // Result received
         }
+        expectOCRWithVisualCorrectionWrapper(ocrView)
         
-        // Then: View should have accessibility compliance applied
-        // The platformOCRWithVisualCorrection_L1 function applies .automaticCompliance()
-        #expect(Bool(true), "OCR view should be created successfully on \(currentPlatform)")
-        
-        // Verify the view can be placed in a hierarchy
         let _ = platformVStackContainer {
             ocrView
         }
-        
-        #expect(Bool(true), "OCR view should work in view hierarchy on \(currentPlatform)")
     }
     
     /// BUSINESS PURPOSE: Validate OCR results are accessible via VoiceOver
@@ -145,15 +147,14 @@ final class OCRAccessibilityWorkflowIntegrationTests: BaseTestClass {
             highlightColor: .blue
         )
         
-        let _ = platformOCRWithVisualCorrection_L1(
+        let ocrView = platformOCRWithVisualCorrection_L1(
             image: PlatformImage(),
             context: context,
             configuration: configuration
         ) { _ in }
         
-        // Then: View should be created with keyboard support implied by allowsEditing
         #expect(configuration.allowsEditing, "Configuration should allow editing for keyboard interaction on \(currentPlatform)")
-        #expect(Bool(true), "OCR view with keyboard support should be created on \(currentPlatform)")
+        expectOCRWithVisualCorrectionWrapper(ocrView)
     }
     
     /// BUSINESS PURPOSE: Validate OCR errors are accessible to screen readers
@@ -212,8 +213,7 @@ final class OCRAccessibilityWorkflowIntegrationTests: BaseTestClass {
         let _ = platformVStackContainer {
             ocrView
         }
-        
-        #expect(Bool(true), "Complete OCR accessibility workflow should succeed on \(currentPlatform)")
+        expectOCRWithVisualCorrectionWrapper(ocrView)
     }
     
     /// BUSINESS PURPOSE: Validate OCR result accessibility audit
@@ -245,8 +245,6 @@ final class OCRAccessibilityWorkflowIntegrationTests: BaseTestClass {
     @Test @MainActor func testStructuredOCRDataAccessibility() async {
         initializeTestConfig()
         
-        // Given: Current platform and context configured for structured data extraction
-        let currentPlatform = SixLayerPlatform.current
         let context = OCRContext(
             textTypes: [.price, .date, .vendor, .total],
             language: .english,
@@ -267,8 +265,7 @@ final class OCRAccessibilityWorkflowIntegrationTests: BaseTestClass {
         let _ = platformVStackContainer {
             extractionView
         }
-        
-        #expect(Bool(true), "Structured extraction view should be accessible on \(currentPlatform)")
+        expectStructuredDataExtractionWrapper(extractionView)
     }
     
     /// BUSINESS PURPOSE: Validate OCR confidence indicators are accessible
