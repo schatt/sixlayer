@@ -277,7 +277,6 @@ open class IntelligentCardExpansionLayer6Tests: BaseTestClass {
         let config = getCardExpansionPlatformConfig()
         
         // Then: Configuration should be valid (L6 function responsibility)
-        #expect(Bool(true), "Platform config should be created")  // config is non-optional
         // Capability flags are non-optional Bool on CardExpansionPlatformConfig
         
         // Apple HIG per platform (Issue #237). No capability overrides set in
@@ -339,7 +338,6 @@ open class IntelligentCardExpansionLayer6Tests: BaseTestClass {
         let config = getCardExpansionPerformanceConfig()
         
         // Then: Configuration should be valid (L6 function responsibility)
-        #expect(Bool(true), "Performance config should be created")  // config is non-optional
         #expect(config.maxAnimationDuration > 0, "Should have positive max animation duration")
         #expect(config.targetFrameRate > 0, "Should have positive target frame rate")
         // supportsSmoothAnimations, memoryOptimization, lazyLoading are Bool, not optional
@@ -350,7 +348,6 @@ open class IntelligentCardExpansionLayer6Tests: BaseTestClass {
         let config = getCardExpansionAccessibilityConfig()
         
         // Then: Configuration should be valid (L6 function responsibility)
-        #expect(Bool(true), "Accessibility config should be created")  // config is non-optional
         // VoiceOver / SwitchControl / AssistiveTouch flags are non-optional Bool
         #expect(config.announcementDelay >= 0, "Should have non-negative announcement delay")
     }
