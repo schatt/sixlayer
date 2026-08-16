@@ -48,12 +48,12 @@ open class Layer4PlatformImageArchitectureTests: BaseTestClass {
         var capturedImage: PlatformImage?
         var selectedImage: PlatformImage?
         
-        _ = PlatformPhotoComponentsLayer4.platformCameraInterface_L4 { image in
+        let cameraInterface = PlatformPhotoComponentsLayer4.platformCameraInterface_L4 { image in
             // image parameter should be PlatformImage, not UIImage/NSImage
             capturedImage = image
         }
         
-        _ = PlatformPhotoComponentsLayer4.platformPhotoPicker_L4 { image in
+        let photoPicker = PlatformPhotoComponentsLayer4.platformPhotoPicker_L4 { image in
             // image parameter should be PlatformImage, not UIImage/NSImage
             selectedImage = image
         }
@@ -63,14 +63,12 @@ open class Layer4PlatformImageArchitectureTests: BaseTestClass {
         _ = capturedImage
         _ = selectedImage
         
-        // Then: Callbacks should work with PlatformImage only
-        // Note: Callbacks are not executed in unit tests (only when views are actually used)
-        // We verify that the interfaces accept PlatformImage callbacks by checking they were created successfully
-        
-        // Verify interfaces were created successfully
-        // cameraInterface and photoPicker are non-optional Views, so they exist if we reach here
-        #expect(Bool(true), "Camera interface should accept PlatformImage callback")  // cameraInterface is non-optional
-        #expect(Bool(true), "Photo picker should accept PlatformImage callback")  // photoPicker is non-optional
+        #if os(macOS)
+        BaseTestClass.expectViewSubjectTypeContains(cameraInterface, rootViewName: "MacCameraView")
+        #else
+        BaseTestClass.expectViewSubjectTypeContains(cameraInterface, rootViewName: "CameraView")
+        #endif
+        BaseTestClass.expectViewSubjectTypeContains(photoPicker, rootViewName: "UnifiedImagePicker")
     }
     
     /// BUSINESS PURPOSE: Verify Layer 4 delegate methods work with PlatformImage
@@ -99,7 +97,6 @@ open class Layer4PlatformImageArchitectureTests: BaseTestClass {
         coordinator.imagePickerController(UIImagePickerController(), didFinishPickingMediaWithInfo: mockInfo)
         
         // Then: Delegate should convert UIImage to PlatformImage and call callback
-        #expect(Bool(true), "Delegate should convert UIImage to PlatformImage and call callback")  // capturedImage is non-optional
         #expect(capturedImage!.size.width > 0, "PlatformImage should have valid properties")
         #elseif os(macOS)
         // Given: macOS delegate method setup
@@ -114,7 +111,6 @@ open class Layer4PlatformImageArchitectureTests: BaseTestClass {
         coordinator.takePhoto()
         
         // Then: Delegate should work with PlatformImage
-        #expect(Bool(true), "macOS delegate should work with PlatformImage")  // capturedImage is non-optional
         #expect(capturedImage!.size.width > 0, "PlatformImage should have valid properties")
         #endif
     }
@@ -193,8 +189,8 @@ open class Layer4PlatformImageArchitectureTests: BaseTestClass {
     /// BUSINESS PURPOSE: Verify Layer 4 follows currency exchange model
     /// TESTING SCOPE: Tests that Layer 4 enforces the currency exchange architecture
     /// METHODOLOGY: Test that conversions happen at boundaries, not inside Layer 4
+    #if os(iOS) || os(macOS)
     @Test @MainActor func testLayer4FollowsCurrencyExchangeModel() {
-        #if os(iOS) || os(macOS)
         // Given: Platform-specific image types
         #if os(iOS)
         let uiImage = createTestUIImage() // 6LAYER_ALLOW: test helper creating platform-specific image
@@ -211,18 +207,15 @@ open class Layer4PlatformImageArchitectureTests: BaseTestClass {
         
         // Then: Layer 4 should only work with PlatformImage (dollars in the country)
         
-        
         // Test that Layer 4 accepts PlatformImage directly
         _ = PlatformPhotoComponentsLayer4.platformPhotoDisplay_L4(
             image: platformImage,
             style: .thumbnail
         )
         
-        // photoDisplay is non-optional View, used above
-        
         // Test that Layer 4 callbacks work with PlatformImage
         var callbackImage: PlatformImage?
-        let _ = PlatformPhotoComponentsLayer4.platformCameraInterface_L4 { image in
+        let cameraInterface = PlatformPhotoComponentsLayer4.platformCameraInterface_L4 { image in
             callbackImage = image
         }
         
@@ -230,17 +223,13 @@ open class Layer4PlatformImageArchitectureTests: BaseTestClass {
         // It verifies the callback signature accepts PlatformImage
         _ = callbackImage
         
-        // Verify callback parameter is PlatformImage
-        // Note: Callbacks are not executed in unit tests (only when views are actually used)
-        // We verify that the callback accepts PlatformImage by checking the interface was created successfully
-        // (The callback parameter type is PlatformImage, not UIImage/NSImage)
-        #expect(Bool(true), "Camera interface should accept PlatformImage callback")  // cameraInterface is non-optional
+        #if os(macOS)
+        BaseTestClass.expectViewSubjectTypeContains(cameraInterface, rootViewName: "MacCameraView")
         #else
-        // tvOS/watchOS/visionOS: test helpers and Layer 4 photo components are iOS/macOS only.
-        // Capability-aware coverage is tracked under #241.
-        #expect(Bool(true), "Layer 4 currency exchange test skipped on this platform")
+        BaseTestClass.expectViewSubjectTypeContains(cameraInterface, rootViewName: "CameraView")
         #endif
     }
+    #endif
     
     // MARK: - Test Data Helpers
     
