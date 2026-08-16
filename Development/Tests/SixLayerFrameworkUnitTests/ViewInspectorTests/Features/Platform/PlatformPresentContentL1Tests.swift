@@ -111,7 +111,6 @@ open class PlatformPresentContentL1Tests: BaseTestClass {
         // Test different number types
         let doubleContent = 42.5
         _ = platformPresentContent_L1(content: doubleContent, hints: hints)
-        #expect(Bool(true), "Should handle double values")  // doubleView is non-optional
         
         let floatContent: Float = 42.0
         _ = platformPresentContent_L1(content: floatContent, hints: hints)
