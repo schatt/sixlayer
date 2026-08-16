@@ -1,5 +1,6 @@
 import Testing
 import SwiftUI
+import CoreData
 @testable import SixLayerFramework
 
 /// TDD Tests for Automatic DataBinder Creation in IntelligentFormView
@@ -169,17 +170,31 @@ open class IntelligentFormViewAutoBindingTests: BaseTestClass {
     
     // MARK: - Edge Case Tests
     
-    /// TDD: Test that automatic binding works with Core Data entities
+    /// Auto-bind heuristic: Core Data entities with introspected fields are bindable.
     @Test @MainActor func testAutomaticBindingWithCoreData() {
         initializeTestConfig()
         runWithTaskLocalConfig {
-            #if canImport(CoreData)
-            // Core Data entities should support automatic binding
-            // (Implementation detail - Core Data entities are mutable)
-            #expect(Bool(true), "Core Data entities support automatic binding")
-            #else
-            #expect(Bool(true), "Core Data not available on this platform")
-            #endif
+            let model = NSManagedObjectModel()
+            let taskEntity = NSEntityDescription()
+            taskEntity.name = "Task"
+
+            let titleAttribute = NSAttributeDescription()
+            titleAttribute.name = "title"
+            titleAttribute.attributeType = .stringAttributeType
+            titleAttribute.isOptional = true
+            taskEntity.properties = [titleAttribute]
+            model.entities = [taskEntity]
+
+            let container = CoreDataTestUtilities.createIsolatedTestContainer(
+                name: "TestModel",
+                managedObjectModel: model
+            )
+            let task = NSManagedObject(entity: taskEntity, insertInto: container.viewContext)
+            task.setValue("Test Title", forKey: "title")
+
+            let analysis = DataIntrospectionEngine.analyze(task)
+            #expect(IntelligentFormView.supportsAutoBinding(task, analysis: analysis) == false)
+            #expect(IntelligentFormView.createAutoDataBinder(for: task, analysis: analysis) == nil)
         }
     }
     
