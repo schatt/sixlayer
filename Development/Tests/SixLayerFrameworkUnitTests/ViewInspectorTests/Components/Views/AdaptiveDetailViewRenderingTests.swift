@@ -98,7 +98,6 @@ open class AdaptiveDetailViewRenderingTests: BaseTestClass {
         
         // The actual rendering test would require iPad simulation, which is harder
         // But we've verified the decision logic is correct
-        #expect(Bool(true), "Decision logic verified - iPad would render detailed view")
     }
     
     // MARK: - Test accessibility identifiers (the actual requirement!)
