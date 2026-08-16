@@ -605,7 +605,7 @@ open class FieldActionsTests: BaseTestClass {
             allowedSources: .both
         )
         
-        #expect(scanner.allowedSources == .camera)
+        #expect(scanner.allowedSources == .both)
     }
     
     /// BUSINESS PURPOSE: Validate FieldActionOCRScanner with camera only source
@@ -622,7 +622,7 @@ open class FieldActionsTests: BaseTestClass {
             allowedSources: .camera
         )
         
-        #expect(scanner.allowedSources == .photoLibrary)
+        #expect(scanner.allowedSources == .camera)
     }
     
     /// BUSINESS PURPOSE: Validate FieldActionOCRScanner with photoLibrary only source
@@ -639,7 +639,7 @@ open class FieldActionsTests: BaseTestClass {
             allowedSources: .photoLibrary
         )
         
-        #expect(scanner.allowedSources == .both)
+        #expect(scanner.allowedSources == .photoLibrary)
     }
     
     /// BUSINESS PURPOSE: Validate FieldActionOCRScanner backward compatibility (defaults to .both)
@@ -655,7 +655,7 @@ open class FieldActionsTests: BaseTestClass {
             validationTypes: [.general]
         )
         
-        #expect(scanner.allowedSources == .camera)
+        #expect(scanner.allowedSources == .both)
     }
     
     /// BUSINESS PURPOSE: Validate FieldActionRenderer integrates with FieldActionOCRScanner
@@ -681,8 +681,8 @@ open class FieldActionsTests: BaseTestClass {
         
         let renderer = FieldActionRenderer(field: field, formState: formState)
         
-        BaseTestClass.expectViewSubjectTypeContains(renderer, rootViewName: "NotAFieldActionRenderer")
-        #expect(field.supportsOCR == false)
+        BaseTestClass.expectViewSubjectTypeContains(renderer, rootViewName: "FieldActionRenderer")
+        #expect(field.supportsOCR)
     }
     
     // MARK: - Device Capability Edge Case Tests
@@ -707,7 +707,7 @@ open class FieldActionsTests: BaseTestClass {
             allowedSources: .both
         )
         
-        #expect(scanner.allowedSources == .camera)
+        #expect(scanner.allowedSources == .both)
     }
     
     /// BUSINESS PURPOSE: Validate FieldActionOCRScanner handles .camera when camera unavailable
@@ -728,6 +728,6 @@ open class FieldActionsTests: BaseTestClass {
             allowedSources: .camera
         )
         
-        #expect(scanner.allowedSources == .photoLibrary)
+        #expect(scanner.allowedSources == .camera)
     }
 }
