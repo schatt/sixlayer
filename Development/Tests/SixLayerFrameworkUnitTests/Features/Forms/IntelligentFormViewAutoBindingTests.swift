@@ -193,6 +193,8 @@ open class IntelligentFormViewAutoBindingTests: BaseTestClass {
             task.setValue("Test Title", forKey: "title")
 
             let analysis = DataIntrospectionEngine.analyze(task)
+            // Heuristic only: non-empty introspection. KVC field binding is
+            // covered by DataBindingCoreDataTests.
             #expect(IntelligentFormView.supportsAutoBinding(task, analysis: analysis) == true)
             #expect(IntelligentFormView.createAutoDataBinder(for: task, analysis: analysis) != nil)
         }
