@@ -41,7 +41,6 @@ open class CrossPlatformNavigationTests: BaseTestClass {
             )
             #expect(hasAccessibilityID, "platformNavigation should generate accessibility identifiers on iOS")
             #else
-            #expect(Bool(true), "View created (ViewInspector not available)")
             #endif
         }
     }
@@ -64,7 +63,6 @@ open class CrossPlatformNavigationTests: BaseTestClass {
             )
             #expect(hasAccessibilityID, "platformNavigation should generate accessibility identifiers on macOS")
             #else
-            #expect(Bool(true), "View created (ViewInspector not available)")
             #endif
         }
     }
