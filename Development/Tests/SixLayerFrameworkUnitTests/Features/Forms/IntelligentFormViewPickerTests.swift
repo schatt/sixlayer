@@ -20,6 +20,18 @@ open class IntelligentFormViewPickerTests: BaseTestClass {
     
     // MARK: - Hints Parsing Tests
     
+    private func sizeUnitPickerField(optionsJSON: String) -> DynamicFormField {
+        DynamicFormField(
+            id: "sizeUnit",
+            contentType: .text,
+            label: "Size Unit",
+            metadata: [
+                "inputType": "picker",
+                "pickerOptions": optionsJSON
+            ]
+        )
+    }
+
     /// Helper to write a hints file to documents directory where loader can find it
     private func writeHintsFile(modelName: String, json: [String: Any]) throws -> (fileURL: URL, uniqueModelName: String) {
         let fileManager = FileManager.default
@@ -183,14 +195,8 @@ open class IntelligentFormViewPickerTests: BaseTestClass {
     @Test @MainActor func testPickerRenderedInsteadOfTextField() {
         initializeTestConfig()
         runWithTaskLocalConfig {
-            let field = DynamicFormField(
-                id: "sizeUnit",
-                contentType: .text,
-                label: "Size Unit",
-                metadata: [
-                    "inputType": "picker",
-                    "pickerOptions": #"[{"value":"story_points","label":"Story Points"}]"#
-                ]
+            let field = sizeUnitPickerField(
+                optionsJSON: #"[{"value":"story_points","label":"Story Points"}]"#
             )
             #expect(field.shouldRenderAsPicker == true)
         }
@@ -200,14 +206,8 @@ open class IntelligentFormViewPickerTests: BaseTestClass {
     @Test @MainActor func testPickerDisplaysLabelsStoresValues() {
         initializeTestConfig()
         runWithTaskLocalConfig {
-            let field = DynamicFormField(
-                id: "sizeUnit",
-                contentType: .text,
-                label: "Size Unit",
-                metadata: [
-                    "inputType": "picker",
-                    "pickerOptions": #"[{"value":"story_points","label":"Story Points"},{"value":"hours","label":"Hours"}]"#
-                ]
+            let field = sizeUnitPickerField(
+                optionsJSON: #"[{"value":"story_points","label":"Story Points"},{"value":"hours","label":"Hours"}]"#
             )
             #expect(field.pickerOptionsFromHints.first?.value == "story_points")
             #expect(field.pickerOptionsFromHints.first?.label == "Story Points")
