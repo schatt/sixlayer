@@ -470,7 +470,6 @@ struct LayeredTestUtilities {
     /// Verify that a view is created successfully
     static func verifyViewCreation<T: View>(_ view: T, testName: String) {
         // Basic verification that view can be created
-        #expect(Bool(true), "\(testName): View should be created successfully")  // view is non-optional
     }
     
     /// Verify that a function returns expected type
