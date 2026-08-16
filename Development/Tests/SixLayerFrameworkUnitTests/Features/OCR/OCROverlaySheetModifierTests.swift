@@ -210,6 +210,7 @@ open class OCROverlaySheetModifierTests: BaseTestClass {
     
     // MARK: - Test Helpers
     
+    @MainActor
     private func expectOCROverlaySheetModifier(_ view: some View) {
         BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "OCROverlaySheetModifier")
     }
