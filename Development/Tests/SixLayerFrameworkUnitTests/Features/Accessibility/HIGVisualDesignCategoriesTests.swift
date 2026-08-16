@@ -52,7 +52,6 @@ open class HIGVisualDesignCategoriesTests: BaseTestClass {
         // Then: Should provide custom timing function animation
         let animationSystem = HIGAnimationSystem(for: .iOS)
         _ = animationSystem.animation(for: .custom(.easeIn))
-        #expect(Bool(true), "Custom animation should be created")
     }
     
     @Test @MainActor func testPlatformAppropriateAnimationDefaults() {
