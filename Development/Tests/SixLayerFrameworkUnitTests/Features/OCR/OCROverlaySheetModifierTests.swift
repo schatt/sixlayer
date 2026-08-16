@@ -49,7 +49,7 @@ open class OCROverlaySheetModifierTests: BaseTestClass {
             ocrResult: ocrResult,
             ocrImage: ocrImage
         )
-        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotAOCROverlaySheetModifier")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "OCROverlaySheetModifier")
     }
     
     /// BUSINESS PURPOSE: Verify modifier accepts optional callbacks
@@ -85,8 +85,8 @@ open class OCROverlaySheetModifierTests: BaseTestClass {
                 // Callback executed
             }
         )
-        BaseTestClass.expectViewSubjectTypeContains(withoutCallbacks, rootViewName: "NotAOCROverlaySheetModifier")
-        BaseTestClass.expectViewSubjectTypeContains(withCallbacks, rootViewName: "NotAOCROverlaySheetModifier")
+        BaseTestClass.expectViewSubjectTypeContains(withoutCallbacks, rootViewName: "OCROverlaySheetModifier")
+        BaseTestClass.expectViewSubjectTypeContains(withCallbacks, rootViewName: "OCROverlaySheetModifier")
     }
     
     /// BUSINESS PURPOSE: Verify modifier accepts optional configuration
@@ -123,8 +123,8 @@ open class OCROverlaySheetModifierTests: BaseTestClass {
             ocrImage: ocrImage,
             configuration: customConfig
         )
-        BaseTestClass.expectViewSubjectTypeContains(withoutConfiguration, rootViewName: "NotAOCROverlaySheetModifier")
-        BaseTestClass.expectViewSubjectTypeContains(withConfiguration, rootViewName: "NotAOCROverlaySheetModifier")
+        BaseTestClass.expectViewSubjectTypeContains(withoutConfiguration, rootViewName: "OCROverlaySheetModifier")
+        BaseTestClass.expectViewSubjectTypeContains(withConfiguration, rootViewName: "OCROverlaySheetModifier")
     }
     
     // MARK: - Sheet Presentation Tests
@@ -183,7 +183,7 @@ open class OCROverlaySheetModifierTests: BaseTestClass {
             ocrResult: nil,
             ocrImage: ocrImage
         )
-        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotAOCROverlaySheetModifier")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "OCROverlaySheetModifier")
     }
     
     /// BUSINESS PURPOSE: Verify error state when image is nil
@@ -205,7 +205,7 @@ open class OCROverlaySheetModifierTests: BaseTestClass {
             ocrResult: ocrResult,
             ocrImage: nil
         )
-        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotAOCROverlaySheetModifier")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "OCROverlaySheetModifier")
     }
     
     // MARK: - Test Helpers
