@@ -35,7 +35,7 @@ open class NavigationStackLayer5Tests: BaseTestClass {
         let view = content
             .platformNavigationStackOptimizations_L5()
         
-        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotANavigationOptimization")
+        expectL5OptimizationApplied(view)
     }
     
     @Test @MainActor func testPlatformNavigationStackOptimizations_L5_WorksWithNavigationStack() {
@@ -46,7 +46,7 @@ open class NavigationStackLayer5Tests: BaseTestClass {
         let view = content
             .platformNavigationStackOptimizations_L5()
         
-        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotANavigationOptimization")
+        expectL5OptimizationApplied(view)
     }
     
     @Test @MainActor func testPlatformNavigationStackOptimizations_L5_PlatformSpecific() {
@@ -54,7 +54,7 @@ open class NavigationStackLayer5Tests: BaseTestClass {
         let view = content
             .platformNavigationStackOptimizations_L5()
         
-        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotANavigationOptimization")
+        expectL5OptimizationApplied(view)
     }
     
     @Test @MainActor func testPlatformNavigationStackOptimizations_L5_MemoryOptimization() {
@@ -65,7 +65,7 @@ open class NavigationStackLayer5Tests: BaseTestClass {
         let view = content
             .platformNavigationStackOptimizations_L5()
         
-        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotANavigationOptimization")
+        expectL5OptimizationApplied(view)
     }
     
     @Test @MainActor func testPlatformNavigationStackOptimizations_L5_StatePreservation() {
@@ -76,7 +76,7 @@ open class NavigationStackLayer5Tests: BaseTestClass {
         let view = content
             .platformNavigationStackOptimizations_L5()
         
-        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotANavigationOptimization")
+        expectL5OptimizationApplied(view)
     }
     
     @Test @MainActor func testPlatformNavigationStackOptimizations_L5_DeepNavigationStacks() {
@@ -87,6 +87,22 @@ open class NavigationStackLayer5Tests: BaseTestClass {
         let view = content
             .platformNavigationStackOptimizations_L5()
         
-        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotANavigationOptimization")
+        expectL5OptimizationApplied(view)
+    }
+    
+    @MainActor
+    private func expectL5OptimizationApplied(_ view: some View) {
+        let description = BaseTestClass.viewSubjectTypeDescription(for: view)
+        #if os(iOS) || os(macOS)
+        #expect(
+            description.contains("_TransactionModifier"),
+            "L5 should apply a transaction modifier, got: \(description)"
+        )
+        #else
+        #expect(
+            !description.contains("_TransactionModifier"),
+            "L5 is a pass-through off iOS/macOS, got: \(description)"
+        )
+        #endif
     }
 }
