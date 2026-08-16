@@ -77,7 +77,7 @@ final class AccessibilityWorkflowTests: BaseTestClass {
         let testView = createTestView()
         
         let enhancedView = testView.automaticCompliance()
-        BaseTestClass.expectViewSubjectTypeContains(enhancedView, rootViewName: "NotAAutomaticComplianceModifier")
+        BaseTestClass.expectViewSubjectTypeContains(enhancedView, rootViewName: "AutomaticComplianceModifier")
     }
     
     /// BUSINESS PURPOSE: Validate that form views are enhanced with accessibility
@@ -88,7 +88,7 @@ final class AccessibilityWorkflowTests: BaseTestClass {
         let formView = createTestFormView()
         
         let enhancedView = formView.automaticCompliance()
-        BaseTestClass.expectViewSubjectTypeContains(enhancedView, rootViewName: "NotAAutomaticComplianceModifier")
+        BaseTestClass.expectViewSubjectTypeContains(enhancedView, rootViewName: "AutomaticComplianceModifier")
     }
     
     // MARK: - Enhancement → Audit Workflow Tests
