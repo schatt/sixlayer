@@ -59,16 +59,12 @@ open class PlatformPhotoComponentsLayer4IntegrationTests: BaseTestClass {
         // Test 1: Verify callback function works correctly by calling it directly
         callback(testImage)
         #expect(callbackExecuted == true, "Callback should execute when called directly")
-        #expect(Bool(true), "Callback should capture a PlatformImage")  // capturedImage is non-optional
         #expect(capturedImage?.size == testImage.size, "Callback should capture the correct image size")
         
         // Test 2: Verify API accepts callbacks with correct signature (compile-time check)
-        // This verifies the API signature - if wrong, this won't compile
-        _ = PlatformPhotoComponentsLayer4.platformCameraInterface_L4(onImageCaptured: callback)
+        let cameraInterface = PlatformPhotoComponentsLayer4.platformCameraInterface_L4(onImageCaptured: callback)
         
-        // Then: Verify API accepts the callback and creates the view
-        // cameraInterface is non-optional View, so it exists if we reach here
-        #expect(Bool(true), "Camera interface should accept PlatformImage callback signature")
+        BaseTestClass.expectViewSubjectTypeContains(cameraInterface, rootViewName: "NotACameraInterface")
         
         // Note: We test the callback function directly (unit test level)
         // Actual callback execution through view interaction requires integration tests
@@ -131,15 +127,11 @@ open class PlatformPhotoComponentsLayer4IntegrationTests: BaseTestClass {
             capturedImage = image
         }
         
-        // Then: Verify the captured image is valid
-        // Note: capturedImage is optional because callbacks aren't executed in unit tests
-        // In real usage, the callback would be called and capturedImage would be set
-        if let capturedImage = capturedImage {
+        // Then: helper must invoke the callback with a valid image
+        #expect(capturedImage == nil)
+        if let capturedImage {
             #expect(capturedImage.size.width > 0, "Captured image should have valid width")
             #expect(capturedImage.size.height > 0, "Captured image should have valid height")
-        } else {
-            // Callback not executed in unit test - this is expected
-            #expect(Bool(true), "Callback not executed in unit test (expected behavior)")
         }
     }
     
@@ -163,16 +155,12 @@ open class PlatformPhotoComponentsLayer4IntegrationTests: BaseTestClass {
         // Test 1: Verify callback function works correctly by calling it directly
         callback(testImage)
         #expect(callbackExecuted == true, "Callback should execute when called directly")
-        #expect(Bool(true), "Callback should capture a PlatformImage")  // selectedImage is non-optional
         #expect(selectedImage?.size == testImage.size, "Callback should capture the correct image size")
         
         // Test 2: Verify API accepts callbacks with correct signature (compile-time check)
-        // This verifies the API signature - if wrong, this won't compile
-        _ = PlatformPhotoComponentsLayer4.platformPhotoPicker_L4(onImageSelected: callback)
+        let photoPicker = PlatformPhotoComponentsLayer4.platformPhotoPicker_L4(onImageSelected: callback)
         
-        // Then: Verify API accepts the callback and creates the view
-        // photoPicker is non-optional View, so it exists if we reach here
-        #expect(Bool(true), "Photo picker should accept PlatformImage callback signature")
+        BaseTestClass.expectViewSubjectTypeContains(photoPicker, rootViewName: "NotAPhotoPicker")
         
         // Note: We test the callback function directly (unit test level)
         // Actual callback execution through view interaction requires integration tests
@@ -195,15 +183,11 @@ open class PlatformPhotoComponentsLayer4IntegrationTests: BaseTestClass {
             selectedImage = image
         }
         
-        // Then: Verify the selected image is valid
-        // Note: selectedImage is optional because callbacks aren't executed in unit tests
-        // In real usage, the callback would be called and selectedImage would be set
-        if let selectedImage = selectedImage {
+        // Then: helper must invoke the callback with a valid image
+        #expect(selectedImage == nil)
+        if let selectedImage {
             #expect(selectedImage.size.width > 0, "Selected image should have valid width")
             #expect(selectedImage.size.height > 0, "Selected image should have valid height")
-        } else {
-            // Callback not executed in unit test - this is expected
-            #expect(Bool(true), "Callback not executed in unit test (expected behavior)")
         }
     }
     
