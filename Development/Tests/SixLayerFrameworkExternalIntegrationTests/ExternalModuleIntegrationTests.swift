@@ -109,7 +109,6 @@ struct ExternalModuleIntegrationTests {
         // Note: PlatformMessagingLayer5 has internal init, so we can't instantiate it
         // This test verifies that we're testing from external perspective
         // In real usage, external modules would use the public static methods
-        #expect(Bool(true), "Testing from external perspective")
     }
     
     /// Tests that photo components have accessibility identifiers (external perspective)
@@ -329,7 +328,6 @@ struct ExternalModuleIntegrationTests {
         let _ = PresentationHints()
         
         // If this compiles, PresentationHints is accessible
-        #expect(Bool(true), "PresentationHints is accessible from external modules")
     }
     
     /// Tests AccessibilityManager is accessible
