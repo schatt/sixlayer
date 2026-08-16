@@ -8,7 +8,7 @@ open class ExplicitCountBasedPresentationTests: BaseTestClass {
     // MARK: - Basic Count-Based Functionality Tests
 
     /// BUSINESS PURPOSE: Verify that .countBased uses lowCount preference when count ≤ threshold
-    @Test func testCountBasedUsesLowCountForSmallCollections() {
+    @Test @MainActor func testCountBasedUsesLowCountForSmallCollections() {
         let hints = PresentationHints(
             dataType: .generic,
             presentationPreference: .countBased(lowCount: .cards, highCount: .list, threshold: 5),
@@ -20,7 +20,7 @@ open class ExplicitCountBasedPresentationTests: BaseTestClass {
     }
 
     /// BUSINESS PURPOSE: Verify that .countBased uses highCount preference when count > threshold
-    @Test func testCountBasedUsesHighCountForLargeCollections() {
+    @Test @MainActor func testCountBasedUsesHighCountForLargeCollections() {
         let hints = PresentationHints(
             dataType: .generic,
             presentationPreference: .countBased(lowCount: .cards, highCount: .list, threshold: 5),
@@ -34,7 +34,7 @@ open class ExplicitCountBasedPresentationTests: BaseTestClass {
     // MARK: - Threshold Edge Cases
 
     /// BUSINESS PURPOSE: Verify exact threshold boundary behavior
-    @Test func testCountBasedExactThresholdUsesLowCount() {
+    @Test @MainActor func testCountBasedExactThresholdUsesLowCount() {
         let hints = PresentationHints(
             dataType: .generic,
             presentationPreference: .countBased(lowCount: .grid, highCount: .list, threshold: 5),
@@ -46,7 +46,7 @@ open class ExplicitCountBasedPresentationTests: BaseTestClass {
     }
 
     /// BUSINESS PURPOSE: Verify threshold = 0 edge case
-    @Test func testCountBasedThresholdZero() {
+    @Test @MainActor func testCountBasedThresholdZero() {
         let hints = PresentationHints(
             dataType: .generic,
             presentationPreference: .countBased(lowCount: .cards, highCount: .list, threshold: 0),
@@ -60,7 +60,7 @@ open class ExplicitCountBasedPresentationTests: BaseTestClass {
     // MARK: - Preference Type Combinations
 
     /// BUSINESS PURPOSE: Verify all basic preference types work as lowCount/highCount
-    @Test func testCountBasedPreferenceTypeMapping() {
+    @Test @MainActor func testCountBasedPreferenceTypeMapping() {
         let cardsHints = PresentationHints(
             dataType: .generic,
             presentationPreference: .countBased(lowCount: .cards, highCount: .list, threshold: 5),
@@ -97,7 +97,7 @@ open class ExplicitCountBasedPresentationTests: BaseTestClass {
     // MARK: - Nested Automatic Preference
 
     /// BUSINESS PURPOSE: Verify nested .automatic in .countBased uses count-aware logic
-    @Test func testCountBasedWithNestedAutomatic() {
+    @Test @MainActor func testCountBasedWithNestedAutomatic() {
         let lowAutoHints = PresentationHints(
             dataType: .generic,
             presentationPreference: .countBased(lowCount: .automatic, highCount: .list, threshold: 5),
@@ -118,7 +118,7 @@ open class ExplicitCountBasedPresentationTests: BaseTestClass {
     // MARK: - Content Type Independence
 
     /// BUSINESS PURPOSE: Verify .countBased vs dataType short-circuits (media/navigation)
-    @Test func testCountBasedWorksWithAllContentTypes() {
+    @Test @MainActor func testCountBasedWorksWithAllContentTypes() {
         let navHints = PresentationHints(
             dataType: .navigation,
             presentationPreference: .countBased(lowCount: .cards, highCount: .list, threshold: 5),
@@ -139,7 +139,7 @@ open class ExplicitCountBasedPresentationTests: BaseTestClass {
     // MARK: - Empty Collection Edge Case
 
     /// BUSINESS PURPOSE: Verify empty collection uses lowCount (0 ≤ threshold)
-    @Test func testCountBasedWithEmptyCollection() {
+    @Test @MainActor func testCountBasedWithEmptyCollection() {
         let hints = PresentationHints(
             dataType: .generic,
             presentationPreference: .countBased(lowCount: .cards, highCount: .list, threshold: 5),
@@ -153,7 +153,7 @@ open class ExplicitCountBasedPresentationTests: BaseTestClass {
     // MARK: - Backward Compatibility
 
     /// BUSINESS PURPOSE: Verify existing preferences still work alongside .countBased
-    @Test func testBackwardCompatibilityWithExistingPreferences() {
+    @Test @MainActor func testBackwardCompatibilityWithExistingPreferences() {
         let listHints = PresentationHints(
             dataType: .generic,
             presentationPreference: .list,
@@ -174,7 +174,7 @@ open class ExplicitCountBasedPresentationTests: BaseTestClass {
     // MARK: - Complex Nested Scenarios
 
     /// BUSINESS PURPOSE: Verify nested countBased falls back and large thresholds stay on lowCount
-    @Test func testComplexNestedCountBasedScenarios() {
+    @Test @MainActor func testComplexNestedCountBasedScenarios() {
         let nestedHints = PresentationHints(
             dataType: .generic,
             presentationPreference: .countBased(
@@ -198,6 +198,7 @@ open class ExplicitCountBasedPresentationTests: BaseTestClass {
 
     // MARK: - Helpers
 
+    @MainActor
     private func resolve(hints: PresentationHints, itemCount: Int) -> ItemCollectionPresentationStrategy {
         ItemCollectionPresentationStrategyResolver.resolve(
             hints: hints,
