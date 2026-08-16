@@ -196,7 +196,7 @@ final class CrossComponentIntegrationTests: BaseTestClass {
             }
         }
         
-        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotAAsyncFormView")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "AsyncFormView")
     }
     
     /// BUSINESS PURPOSE: Validate form validation errors are accessible
