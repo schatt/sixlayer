@@ -215,12 +215,9 @@ open class PlatformSettingsContainerLayer4Tests: BaseTestClass {
         let deviceType = DeviceType.current
         if deviceType == .phone {
             #expect(selectedCategory.wrappedValue == nil, "Selected category should be nil")
-            #expect(Bool(true), "platformSettingsContainer_L4 should show sidebar when no category selected on iPhone")
         } else {
-            #expect(Bool(true), "Test running on \(deviceType), not iPhone")
         }
         #else
-        #expect(Bool(true), "Test only runs on iOS")
         #endif
     }
     
@@ -246,12 +243,9 @@ open class PlatformSettingsContainerLayer4Tests: BaseTestClass {
         let deviceType = DeviceType.current
         if deviceType == .phone {
             #expect(selectedCategory.wrappedValue != nil, "Selected category should not be nil")
-            #expect(Bool(true), "platformSettingsContainer_L4 should show detail when category selected on iPhone")
         } else {
-            #expect(Bool(true), "Test running on \(deviceType), not iPhone")
         }
         #else
-        #expect(Bool(true), "Test only runs on iOS")
         #endif
     }
     

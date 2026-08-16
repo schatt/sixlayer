@@ -79,7 +79,6 @@ open class PhotoFunctionalityPhase1Tests: BaseTestClass {
             .resizable()
             .aspectRatio(contentMode: .fit)
         _ = hostRootPlatformView(testView.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "Resized image should work in actual views")
     }
     
     @Test @MainActor
@@ -99,7 +98,6 @@ open class PhotoFunctionalityPhase1Tests: BaseTestClass {
             .resizable()
             .aspectRatio(contentMode: .fit)
         _ = hostRootPlatformView(testView.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "Cropped image should work in actual views")
     }
     
     @Test func testPlatformImageCompression() {
@@ -360,7 +358,6 @@ open class PhotoFunctionalityPhase1Tests: BaseTestClass {
         
         // Test that the modified view can actually be hosted
         _ = hostRootPlatformView(modifiedView.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "Modified view with text field style should be hostable")
     }
     
     // MARK: - Cross-Platform Location Tests

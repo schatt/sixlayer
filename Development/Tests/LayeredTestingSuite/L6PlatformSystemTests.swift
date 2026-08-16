@@ -98,7 +98,6 @@ class L6PlatformSystemTests: BaseTestClass {
         let recommendations = manager.getPlatformRecommendations()
         
         // Then
-        #expect(Bool(true), "Should return recommendations")  // recommendations is non-optional
         #expect(recommendations is [PlatformRecommendation], "Should return array of recommendations")
     }
     */
@@ -158,7 +157,6 @@ class L6PlatformSystemTests: BaseTestClass {
         #expect(category == .performance, "Should have correct category")
         #expect(priority == .medium, "Should have correct priority")
         #expect(platform == .iOS, "Should have correct platform")
-        #expect(Bool(true), "Should have timestamp")  // timestamp is non-optional
     }
     
     @Test func testRecommendationCategory() {
@@ -245,7 +243,8 @@ class L6PlatformSystemTests: BaseTestClass {
         let optimizations = RenderingOptimizations(for: platform)
         
         // Then
-        #expect(Bool(true), "Should create rendering optimizations")  // optimizations is non-optional
+        #expect(optimizations.hardwareAcceleration, "Rendering optimizations enable hardware acceleration")
+        #expect(optimizations.metalRendering == (platform == .macOS || platform == .iOS), "Metal rendering follows iOS/macOS")
     }
     
     // MARK: - Platform UI Patterns Tests
@@ -258,7 +257,7 @@ class L6PlatformSystemTests: BaseTestClass {
         let patterns = PlatformUIPatterns(for: platform)
         
         // Then
-        #expect(Bool(true), "Should create UI patterns")  // patterns is non-optional
+        #expect(patterns.platform == platform, "UI patterns should match the requested platform")
     }
     
     // MARK: - Navigation Patterns Tests
@@ -271,7 +270,7 @@ class L6PlatformSystemTests: BaseTestClass {
         let patterns = NavigationPatterns(for: platform)
         
         // Then
-        #expect(Bool(true), "Should create navigation patterns")  // patterns is non-optional
+        #expect(patterns.platform == platform, "Navigation patterns should match the requested platform")
     }
     
     // MARK: - Interaction Patterns Tests
@@ -284,7 +283,7 @@ class L6PlatformSystemTests: BaseTestClass {
         let patterns = InteractionPatterns(for: platform)
         
         // Then
-        #expect(Bool(true), "Should create interaction patterns")  // patterns is non-optional
+        #expect(patterns.platform == platform, "Interaction patterns should match the requested platform")
     }
     
     // MARK: - Layout Patterns Tests
@@ -297,20 +296,15 @@ class L6PlatformSystemTests: BaseTestClass {
         let patterns = LayoutPatterns(for: platform)
         
         // Then
-        #expect(Bool(true), "Should create layout patterns")  // patterns is non-optional
+        #expect(patterns.platform == platform, "Layout patterns should match the requested platform")
     }
     
     // MARK: - Cross-Platform Performance Metrics Tests
     
     @Test func testCrossPlatformPerformanceMetrics() {
         // Given
-        let metrics = sampleCrossPlatformPerformanceMetrics
-        
-        // When
-        // Test that metrics can be created and accessed
-        
-        // Then
-        #expect(Bool(true), "Should create performance metrics")  // metrics is non-optional
+        let metrics = createSampleCrossPlatformPerformanceMetrics()
+        #expect(metrics.platformMetrics.count == SixLayerPlatform.allCases.count, "Metrics should include every platform")
     }
     
     // MARK: - View Extension Tests

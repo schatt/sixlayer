@@ -1046,7 +1046,6 @@ open class ViewGenerationIntegrationTests: BaseTestClass {
         let hoverInspectionResult = try? AnyView(hoverView).inspect()
         if hoverInspectionResult != nil {
             // Hover view should be inspectable
-            #expect(Bool(true), "Hover view should be inspectable")
         }
             
             // The views should be different because they represent different platforms
@@ -1084,9 +1083,7 @@ open class ViewGenerationIntegrationTests: BaseTestClass {
             }
 
             let view = createTestViewWithMockConfig(config)
-            #expect(Bool(true), "\(phase): view should be created on \(platform)")
             if let _ = try? AnyView(view).inspect() {
-                #expect(Bool(true), "\(phase): generated view should be inspectable when ViewInspector allows")
             }
         }
 

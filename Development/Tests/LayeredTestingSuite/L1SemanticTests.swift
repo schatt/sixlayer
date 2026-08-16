@@ -228,8 +228,8 @@ class L1SemanticTests: BaseTestClass {
         )
         
         // Then: Test that the view can actually be hosted
-        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "platformPresentNumericData_L1 view should be hostable")  // hostingView is non-optional
+        let wrapped = view.enableGlobalAutomaticCompliance()
+        BaseTestClass.expectViewSubjectTypeContains(wrapped, rootViewName: "AutomaticComplianceModifier")
     }
     
     @Test @MainActor
@@ -244,8 +244,8 @@ class L1SemanticTests: BaseTestClass {
         )
         
         // Then: Test that the view can actually be hosted
-        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "platformResponsiveCard_L1 view should be hostable")  // hostingView is non-optional
+        let wrapped = view.enableGlobalAutomaticCompliance()
+        BaseTestClass.expectViewSubjectTypeContains(wrapped, rootViewName: "AutomaticComplianceModifier")
     }
     
     @Test @MainActor
@@ -261,8 +261,8 @@ class L1SemanticTests: BaseTestClass {
         )
         
         // Then: Test that the view can actually be hosted
-        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "platformPresentFormData_L1 view should be hostable")  // hostingView is non-optional
+        let wrapped = view.enableGlobalAutomaticCompliance()
+        BaseTestClass.expectViewSubjectTypeContains(wrapped, rootViewName: "AutomaticComplianceModifier")
     }
     
     @Test @MainActor
@@ -278,8 +278,8 @@ class L1SemanticTests: BaseTestClass {
         )
         
         // Then: Test that the view can actually be hosted
-        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "platformPresentModalForm_L1 view should be hostable")  // hostingView is non-optional
+        let wrapped = view.enableGlobalAutomaticCompliance()
+        BaseTestClass.expectViewSubjectTypeContains(wrapped, rootViewName: "AutomaticComplianceModifier")
     }
     
     @Test @MainActor
@@ -295,8 +295,8 @@ class L1SemanticTests: BaseTestClass {
         )
         
         // Then: Test that the view can actually be hosted
-        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "platformPresentMediaData_L1 view should be hostable")  // hostingView is non-optional
+        let wrapped = view.enableGlobalAutomaticCompliance()
+        BaseTestClass.expectViewSubjectTypeContains(wrapped, rootViewName: "AutomaticComplianceModifier")
     }
     
     @Test @MainActor
@@ -312,8 +312,8 @@ class L1SemanticTests: BaseTestClass {
         )
         
         // Then: Test that the view can actually be hosted
-        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "platformPresentHierarchicalData_L1 view should be hostable")  // hostingView is non-optional
+        let wrapped = view.enableGlobalAutomaticCompliance()
+        BaseTestClass.expectViewSubjectTypeContains(wrapped, rootViewName: "AutomaticComplianceModifier")
     }
     
     @Test @MainActor
@@ -329,8 +329,8 @@ class L1SemanticTests: BaseTestClass {
         )
         
         // Then: Test that the view can actually be hosted
-        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "platformPresentTemporalData_L1 view should be hostable")  // hostingView is non-optional
+        let wrapped = view.enableGlobalAutomaticCompliance()
+        BaseTestClass.expectViewSubjectTypeContains(wrapped, rootViewName: "AutomaticComplianceModifier")
     }
     
     @Test @MainActor
@@ -346,8 +346,8 @@ class L1SemanticTests: BaseTestClass {
         )
         
         // Then: Test that the view can actually be hosted
-        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "platformPresentContent_L1 view should be hostable")  // hostingView is non-optional
+        let wrapped = view.enableGlobalAutomaticCompliance()
+        BaseTestClass.expectViewSubjectTypeContains(wrapped, rootViewName: "AutomaticComplianceModifier")
     }
     
     // MARK: - OCR Functions
@@ -366,8 +366,8 @@ class L1SemanticTests: BaseTestClass {
         )
         
         // Then: Test that the view can actually be hosted
-        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "platformOCRWithVisualCorrection_L1 view should be hostable")  // hostingView is non-optional
+        let wrapped = view.enableGlobalAutomaticCompliance()
+        BaseTestClass.expectViewSubjectTypeContains(wrapped, rootViewName: "AutomaticComplianceModifier")
     }
     
     @Test @MainActor
@@ -384,8 +384,8 @@ class L1SemanticTests: BaseTestClass {
         )
         
         // Then: Test that the view can actually be hosted
-        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "platformExtractStructuredData_L1 view should be hostable")  // hostingView is non-optional
+        let wrapped = view.enableGlobalAutomaticCompliance()
+        BaseTestClass.expectViewSubjectTypeContains(wrapped, rootViewName: "AutomaticComplianceModifier")
     }
     
     // MARK: - Photo Functions
@@ -404,8 +404,8 @@ class L1SemanticTests: BaseTestClass {
         )
         
         // Then: Test that the view can actually be hosted
-        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "platformPhotoCapture_L1 view should be hostable")  // hostingView is non-optional
+        let wrapped = view.enableGlobalAutomaticCompliance()
+        BaseTestClass.expectViewSubjectTypeContains(wrapped, rootViewName: "AutomaticComplianceModifier")
     }
     
     @Test @MainActor
@@ -422,8 +422,8 @@ class L1SemanticTests: BaseTestClass {
         )
         
         // Then: Test that the view can actually be hosted
-        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "platformPhotoSelection_L1 view should be hostable")  // hostingView is non-optional
+        let wrapped = view.enableGlobalAutomaticCompliance()
+        BaseTestClass.expectViewSubjectTypeContains(wrapped, rootViewName: "AutomaticComplianceModifier")
     }
     
     @Test @MainActor
@@ -441,8 +441,8 @@ class L1SemanticTests: BaseTestClass {
         )
         
         // Then: Test that the view can actually be hosted
-        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "platformPhotoDisplay_L1 view should be hostable")  // hostingView is non-optional
+        let wrapped = view.enableGlobalAutomaticCompliance()
+        BaseTestClass.expectViewSubjectTypeContains(wrapped, rootViewName: "AutomaticComplianceModifier")
     }
     
     // MARK: - Photo Functions with Custom Views
@@ -469,8 +469,8 @@ class L1SemanticTests: BaseTestClass {
         )
         
         // Then: Should return a view with custom wrapper
-        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "platformPhotoCapture_L1 with custom camera view should return a view")
+        let wrapped = view.enableGlobalAutomaticCompliance()
+        BaseTestClass.expectViewSubjectTypeContains(wrapped, rootViewName: "AutomaticComplianceModifier")
     }
     
     @Test @MainActor
@@ -497,8 +497,8 @@ class L1SemanticTests: BaseTestClass {
         )
         
         // Then: Should return a view with custom wrapper
-        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "platformPhotoDisplay_L1 with custom display view should return a view")
+        let wrapped = view.enableGlobalAutomaticCompliance()
+        BaseTestClass.expectViewSubjectTypeContains(wrapped, rootViewName: "AutomaticComplianceModifier")
     }
     
     // MARK: - Internationalization Functions
@@ -516,8 +516,8 @@ class L1SemanticTests: BaseTestClass {
         )
         
         // Then: Test that the view can actually be hosted
-        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "platformPresentLocalizedText_L1 view should be hostable")  // hostingView is non-optional
+        let wrapped = view.enableGlobalAutomaticCompliance()
+        BaseTestClass.expectViewSubjectTypeContains(wrapped, rootViewName: "AutomaticComplianceModifier")
     }
     
     @Test @MainActor
@@ -533,8 +533,8 @@ class L1SemanticTests: BaseTestClass {
         )
         
         // Then: Test that the view can actually be hosted
-        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "platformPresentLocalizedNumber_L1 view should be hostable")  // hostingView is non-optional
+        let wrapped = view.enableGlobalAutomaticCompliance()
+        BaseTestClass.expectViewSubjectTypeContains(wrapped, rootViewName: "AutomaticComplianceModifier")
     }
     
     @Test @MainActor
@@ -552,8 +552,8 @@ class L1SemanticTests: BaseTestClass {
         )
         
         // Then: Test that the view can actually be hosted
-        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "platformPresentLocalizedCurrency_L1 view should be hostable")  // hostingView is non-optional
+        let wrapped = view.enableGlobalAutomaticCompliance()
+        BaseTestClass.expectViewSubjectTypeContains(wrapped, rootViewName: "AutomaticComplianceModifier")
     }
     
     @Test @MainActor
@@ -569,8 +569,8 @@ class L1SemanticTests: BaseTestClass {
         )
         
         // Then: Test that the view can actually be hosted
-        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "platformPresentLocalizedDate_L1 view should be hostable")  // hostingView is non-optional
+        let wrapped = view.enableGlobalAutomaticCompliance()
+        BaseTestClass.expectViewSubjectTypeContains(wrapped, rootViewName: "AutomaticComplianceModifier")
     }
     
     @Test @MainActor
@@ -586,8 +586,8 @@ class L1SemanticTests: BaseTestClass {
         )
         
         // Then: Test that the view can actually be hosted
-        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "platformPresentLocalizedTime_L1 view should be hostable")  // hostingView is non-optional
+        let wrapped = view.enableGlobalAutomaticCompliance()
+        BaseTestClass.expectViewSubjectTypeContains(wrapped, rootViewName: "AutomaticComplianceModifier")
     }
     
     @Test @MainActor
@@ -603,8 +603,8 @@ class L1SemanticTests: BaseTestClass {
         )
         
         // Then: Test that the view can actually be hosted
-        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "platformPresentLocalizedPercentage_L1 view should be hostable")  // hostingView is non-optional
+        let wrapped = view.enableGlobalAutomaticCompliance()
+        BaseTestClass.expectViewSubjectTypeContains(wrapped, rootViewName: "AutomaticComplianceModifier")
     }
     
     @Test @MainActor
@@ -624,8 +624,8 @@ class L1SemanticTests: BaseTestClass {
         )
         
         // Then: Test that the view can actually be hosted
-        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "platformPresentLocalizedPlural_L1 view should be hostable")  // hostingView is non-optional
+        let wrapped = view.enableGlobalAutomaticCompliance()
+        BaseTestClass.expectViewSubjectTypeContains(wrapped, rootViewName: "AutomaticComplianceModifier")
     }
     
     @Test @MainActor
@@ -641,8 +641,8 @@ class L1SemanticTests: BaseTestClass {
         )
         
         // Then: Test that the view can actually be hosted
-        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "platformPresentLocalizedString_L1 view should be hostable")  // hostingView is non-optional
+        let wrapped = view.enableGlobalAutomaticCompliance()
+        BaseTestClass.expectViewSubjectTypeContains(wrapped, rootViewName: "AutomaticComplianceModifier")
     }
     
     @Test @MainActor
@@ -658,8 +658,8 @@ class L1SemanticTests: BaseTestClass {
         )
         
         // Then: Test that the view can actually be hosted
-        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "platformLocalizedTextField_L1 view should be hostable")  // hostingView is non-optional
+        let wrapped = view.enableGlobalAutomaticCompliance()
+        BaseTestClass.expectViewSubjectTypeContains(wrapped, rootViewName: "AutomaticComplianceModifier")
     }
     
     @Test @MainActor
@@ -675,8 +675,8 @@ class L1SemanticTests: BaseTestClass {
         )
         
         // Then: Test that the view can actually be hosted
-        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "platformLocalizedSecureField_L1 view should be hostable")  // hostingView is non-optional
+        let wrapped = view.enableGlobalAutomaticCompliance()
+        BaseTestClass.expectViewSubjectTypeContains(wrapped, rootViewName: "AutomaticComplianceModifier")
     }
     
     @Test @MainActor
@@ -692,8 +692,8 @@ class L1SemanticTests: BaseTestClass {
         )
         
         // Then: Test that the view can actually be hosted
-        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "platformLocalizedTextEditor_L1 view should be hostable")  // hostingView is non-optional
+        let wrapped = view.enableGlobalAutomaticCompliance()
+        BaseTestClass.expectViewSubjectTypeContains(wrapped, rootViewName: "AutomaticComplianceModifier")
     }
     
     // MARK: - DataFrame Analysis Functions
@@ -711,8 +711,8 @@ class L1SemanticTests: BaseTestClass {
         )
         
         // Then: Test that the view can actually be hosted
-        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "platformAnalyzeDataFrame_L1 view should be hostable")  // hostingView is non-optional
+        let wrapped = view.enableGlobalAutomaticCompliance()
+        BaseTestClass.expectViewSubjectTypeContains(wrapped, rootViewName: "AutomaticComplianceModifier")
     }
     
     @Test @MainActor
@@ -728,8 +728,8 @@ class L1SemanticTests: BaseTestClass {
         )
         
         // Then: Test that the view can actually be hosted
-        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "platformCompareDataFrames_L1 view should be hostable")  // hostingView is non-optional
+        let wrapped = view.enableGlobalAutomaticCompliance()
+        BaseTestClass.expectViewSubjectTypeContains(wrapped, rootViewName: "AutomaticComplianceModifier")
     }
     
     @Test @MainActor
@@ -745,8 +745,8 @@ class L1SemanticTests: BaseTestClass {
         )
         
         // Then: Test that the view can actually be hosted
-        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "platformAssessDataQuality_L1 view should be hostable")  // hostingView is non-optional
+        let wrapped = view.enableGlobalAutomaticCompliance()
+        BaseTestClass.expectViewSubjectTypeContains(wrapped, rootViewName: "AutomaticComplianceModifier")
     }
     
     // MARK: - Item Collection Functions
@@ -764,8 +764,8 @@ class L1SemanticTests: BaseTestClass {
         )
         
         // Then: Test that the view can actually be hosted
-        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "platformPresentItemCollection_L1 view should be hostable")
+        let wrapped = view.enableGlobalAutomaticCompliance()
+        BaseTestClass.expectViewSubjectTypeContains(wrapped, rootViewName: "AutomaticComplianceModifier")
     }
     
     @Test @MainActor
@@ -784,8 +784,8 @@ class L1SemanticTests: BaseTestClass {
         )
         
         // Then: Test that the view can actually be hosted
-        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "platformPresentItemCollection_L1 with customItemView should be hostable")
+        let wrapped = view.enableGlobalAutomaticCompliance()
+        BaseTestClass.expectViewSubjectTypeContains(wrapped, rootViewName: "AutomaticComplianceModifier")
     }
     
     @Test @MainActor
@@ -806,8 +806,8 @@ class L1SemanticTests: BaseTestClass {
         )
         
         // Then: Test that the view can actually be hosted
-        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "platformPresentItemCollection_L1 with enhanced hints should be hostable")
+        let wrapped = view.enableGlobalAutomaticCompliance()
+        BaseTestClass.expectViewSubjectTypeContains(wrapped, rootViewName: "AutomaticComplianceModifier")
     }
     
     @Test @MainActor
@@ -831,8 +831,8 @@ class L1SemanticTests: BaseTestClass {
         )
         
         // Then: Test that the view can actually be hosted
-        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "platformPresentItemCollection_L1 with enhanced hints and custom view should be hostable")
+        let wrapped = view.enableGlobalAutomaticCompliance()
+        BaseTestClass.expectViewSubjectTypeContains(wrapped, rootViewName: "AutomaticComplianceModifier")
     }
     
     @Test @MainActor
@@ -857,8 +857,8 @@ class L1SemanticTests: BaseTestClass {
         )
         
         // Then: Test that the view can actually be hosted
-        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "platformPresentItemCollection_L1 with full customization should be hostable")
+        let wrapped = view.enableGlobalAutomaticCompliance()
+        BaseTestClass.expectViewSubjectTypeContains(wrapped, rootViewName: "AutomaticComplianceModifier")
     }
     
     // MARK: - Navigation Functions
@@ -876,8 +876,8 @@ class L1SemanticTests: BaseTestClass {
         )
         
         // Then: Test that the view can actually be hosted
-        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "platformPresentNavigationStack_L1 view should be hostable")
+        let wrapped = view.enableGlobalAutomaticCompliance()
+        BaseTestClass.expectViewSubjectTypeContains(wrapped, rootViewName: "AutomaticComplianceModifier")
     }
     
     @Test @MainActor
@@ -899,8 +899,8 @@ class L1SemanticTests: BaseTestClass {
         )
         
         // Then: Test that the view can actually be hosted
-        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "platformPresentNavigationStack_L1 with items should be hostable")
+        let wrapped = view.enableGlobalAutomaticCompliance()
+        BaseTestClass.expectViewSubjectTypeContains(wrapped, rootViewName: "AutomaticComplianceModifier")
     }
     
     @Test @MainActor
@@ -919,8 +919,8 @@ class L1SemanticTests: BaseTestClass {
         )
         
         // Then: Test that the view can actually be hosted
-        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "platformPresentAppNavigation_L1 view should be hostable")
+        let wrapped = view.enableGlobalAutomaticCompliance()
+        BaseTestClass.expectViewSubjectTypeContains(wrapped, rootViewName: "AutomaticComplianceModifier")
     }
     
     // MARK: - OCR Disambiguation Functions
@@ -939,8 +939,8 @@ class L1SemanticTests: BaseTestClass {
         )
         
         // Then: Test that the view can actually be hosted
-        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "platformOCRWithDisambiguation_L1 view should be hostable")
+        let wrapped = view.enableGlobalAutomaticCompliance()
+        BaseTestClass.expectViewSubjectTypeContains(wrapped, rootViewName: "AutomaticComplianceModifier")
     }
     
     @Test @MainActor
@@ -959,8 +959,8 @@ class L1SemanticTests: BaseTestClass {
         )
         
         // Then: Test that the view can actually be hosted
-        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "platformOCRWithDisambiguation_L1 with configuration should be hostable")
+        let wrapped = view.enableGlobalAutomaticCompliance()
+        BaseTestClass.expectViewSubjectTypeContains(wrapped, rootViewName: "AutomaticComplianceModifier")
     }
     
     // MARK: - Barcode Functions
@@ -979,8 +979,8 @@ class L1SemanticTests: BaseTestClass {
         )
         
         // Then: Test that the view can actually be hosted
-        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "platformScanBarcode_L1 view should be hostable")
+        let wrapped = view.enableGlobalAutomaticCompliance()
+        BaseTestClass.expectViewSubjectTypeContains(wrapped, rootViewName: "AutomaticComplianceModifier")
     }
     
     // MARK: - Security Functions
@@ -997,8 +997,8 @@ class L1SemanticTests: BaseTestClass {
         )
         
         // Then: Test that the view can actually be hosted
-        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "platformPresentSecureContent_L1 view should be hostable")
+        let wrapped = view.enableGlobalAutomaticCompliance()
+        BaseTestClass.expectViewSubjectTypeContains(wrapped, rootViewName: "AutomaticComplianceModifier")
     }
     
     @Test @MainActor
@@ -1020,8 +1020,8 @@ class L1SemanticTests: BaseTestClass {
         )
         
         // Then: Test that the view can actually be hosted
-        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "platformPresentSecureTextField_L1 view should be hostable")
+        let wrapped = view.enableGlobalAutomaticCompliance()
+        BaseTestClass.expectViewSubjectTypeContains(wrapped, rootViewName: "AutomaticComplianceModifier")
     }
     
     @Test @MainActor
@@ -1037,8 +1037,8 @@ class L1SemanticTests: BaseTestClass {
         )
         
         // Then: Test that the view can actually be hosted (returns EmptyView)
-        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "platformShowPrivacyIndicator_L1 view should be hostable")
+        let wrapped = view.enableGlobalAutomaticCompliance()
+        BaseTestClass.expectViewSubjectTypeContains(wrapped, rootViewName: "AutomaticComplianceModifier")
     }
     
     // MARK: - Notification Functions
@@ -1056,8 +1056,8 @@ class L1SemanticTests: BaseTestClass {
         )
         
         // Then: Test that the view can actually be hosted
-        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "platformPresentAlert_L1 view should be hostable")
+        let wrapped = view.enableGlobalAutomaticCompliance()
+        BaseTestClass.expectViewSubjectTypeContains(wrapped, rootViewName: "AutomaticComplianceModifier")
     }
     
     // MARK: - Internationalization Functions
@@ -1074,8 +1074,8 @@ class L1SemanticTests: BaseTestClass {
         )
         
         // Then: Test that the view can actually be hosted
-        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "platformPresentLocalizedContent_L1 view should be hostable")
+        let wrapped = view.enableGlobalAutomaticCompliance()
+        BaseTestClass.expectViewSubjectTypeContains(wrapped, rootViewName: "AutomaticComplianceModifier")
     }
     
     @Test @MainActor
@@ -1090,8 +1090,8 @@ class L1SemanticTests: BaseTestClass {
         )
         
         // Then: Test that the view can actually be hosted
-        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "platformRTLContainer_L1 view should be hostable")
+        let wrapped = view.enableGlobalAutomaticCompliance()
+        BaseTestClass.expectViewSubjectTypeContains(wrapped, rootViewName: "AutomaticComplianceModifier")
     }
     
     @Test @MainActor
@@ -1111,8 +1111,8 @@ class L1SemanticTests: BaseTestClass {
         )
         
         // Then: Test that the view can actually be hosted
-        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "platformRTLHStack_L1 view should be hostable")
+        let wrapped = view.enableGlobalAutomaticCompliance()
+        BaseTestClass.expectViewSubjectTypeContains(wrapped, rootViewName: "AutomaticComplianceModifier")
     }
     
     @Test @MainActor
@@ -1132,8 +1132,8 @@ class L1SemanticTests: BaseTestClass {
         )
         
         // Then: Test that the view can actually be hosted
-        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "platformRTLVStack_L1 view should be hostable")
+        let wrapped = view.enableGlobalAutomaticCompliance()
+        BaseTestClass.expectViewSubjectTypeContains(wrapped, rootViewName: "AutomaticComplianceModifier")
     }
     
     @Test @MainActor
@@ -1152,8 +1152,8 @@ class L1SemanticTests: BaseTestClass {
         )
         
         // Then: Test that the view can actually be hosted
-        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "platformRTLZStack_L1 view should be hostable")
+        let wrapped = view.enableGlobalAutomaticCompliance()
+        BaseTestClass.expectViewSubjectTypeContains(wrapped, rootViewName: "AutomaticComplianceModifier")
     }
     
     // MARK: - Photo Functions with Custom Picker
@@ -1180,8 +1180,8 @@ class L1SemanticTests: BaseTestClass {
         )
         
         // Then: Should return a view with custom wrapper
-        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "platformPhotoSelection_L1 with custom picker view should return a view")
+        let wrapped = view.enableGlobalAutomaticCompliance()
+        BaseTestClass.expectViewSubjectTypeContains(wrapped, rootViewName: "AutomaticComplianceModifier")
     }
     
     // MARK: - Data Analysis Functions with Custom Visualization
@@ -1207,8 +1207,8 @@ class L1SemanticTests: BaseTestClass {
         )
         
         // Then: Test that the view can actually be hosted
-        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "platformAnalyzeDataFrame_L1 with custom visualization should be hostable")
+        let wrapped = view.enableGlobalAutomaticCompliance()
+        BaseTestClass.expectViewSubjectTypeContains(wrapped, rootViewName: "AutomaticComplianceModifier")
     }
     
     @Test @MainActor
@@ -1232,8 +1232,8 @@ class L1SemanticTests: BaseTestClass {
         )
         
         // Then: Test that the view can actually be hosted
-        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "platformCompareDataFrames_L1 with custom visualization should be hostable")
+        let wrapped = view.enableGlobalAutomaticCompliance()
+        BaseTestClass.expectViewSubjectTypeContains(wrapped, rootViewName: "AutomaticComplianceModifier")
     }
     
     @Test @MainActor
@@ -1257,8 +1257,8 @@ class L1SemanticTests: BaseTestClass {
         )
         
         // Then: Test that the view can actually be hosted
-        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "platformAssessDataQuality_L1 with custom visualization should be hostable")
+        let wrapped = view.enableGlobalAutomaticCompliance()
+        BaseTestClass.expectViewSubjectTypeContains(wrapped, rootViewName: "AutomaticComplianceModifier")
     }
     
     // MARK: - Basic Value Functions
@@ -1276,8 +1276,8 @@ class L1SemanticTests: BaseTestClass {
         )
         
         // Then: Test that the view can actually be hosted
-        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "platformPresentBasicValue_L1 view should be hostable")
+        let wrapped = view.enableGlobalAutomaticCompliance()
+        BaseTestClass.expectViewSubjectTypeContains(wrapped, rootViewName: "AutomaticComplianceModifier")
     }
     
     @Test @MainActor
@@ -1293,8 +1293,8 @@ class L1SemanticTests: BaseTestClass {
         )
         
         // Then: Test that the view can actually be hosted
-        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "platformPresentBasicArray_L1 view should be hostable")
+        let wrapped = view.enableGlobalAutomaticCompliance()
+        BaseTestClass.expectViewSubjectTypeContains(wrapped, rootViewName: "AutomaticComplianceModifier")
     }
     
     // MARK: - Numeric Data Overloads
@@ -1312,8 +1312,8 @@ class L1SemanticTests: BaseTestClass {
         )
         
         // Then: Test that the view can actually be hosted
-        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "platformPresentNumericData_L1 single item should be hostable")
+        let wrapped = view.enableGlobalAutomaticCompliance()
+        BaseTestClass.expectViewSubjectTypeContains(wrapped, rootViewName: "AutomaticComplianceModifier")
     }
     
     @Test @MainActor
@@ -1332,8 +1332,8 @@ class L1SemanticTests: BaseTestClass {
         )
         
         // Then: Test that the view can actually be hosted
-        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "platformPresentNumericData_L1 with customDataView should be hostable")
+        let wrapped = view.enableGlobalAutomaticCompliance()
+        BaseTestClass.expectViewSubjectTypeContains(wrapped, rootViewName: "AutomaticComplianceModifier")
     }
     
     @Test @MainActor
@@ -1357,8 +1357,8 @@ class L1SemanticTests: BaseTestClass {
         )
         
         // Then: Test that the view can actually be hosted
-        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "platformPresentNumericData_L1 with enhanced hints should be hostable")
+        let wrapped = view.enableGlobalAutomaticCompliance()
+        BaseTestClass.expectViewSubjectTypeContains(wrapped, rootViewName: "AutomaticComplianceModifier")
     }
     
     @Test @MainActor
@@ -1388,8 +1388,8 @@ class L1SemanticTests: BaseTestClass {
         )
         
         // Then: Test that the view can actually be hosted
-        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "platformPresentNumericData_L1 with full customization should be hostable")
+        let wrapped = view.enableGlobalAutomaticCompliance()
+        BaseTestClass.expectViewSubjectTypeContains(wrapped, rootViewName: "AutomaticComplianceModifier")
     }
     
     // MARK: - Form Data Overloads
@@ -1407,8 +1407,8 @@ class L1SemanticTests: BaseTestClass {
         )
         
         // Then: Test that the view can actually be hosted
-        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "platformPresentFormData_L1 single field should be hostable")
+        let wrapped = view.enableGlobalAutomaticCompliance()
+        BaseTestClass.expectViewSubjectTypeContains(wrapped, rootViewName: "AutomaticComplianceModifier")
     }
     
     // MARK: - Modal Form Overloads
@@ -1432,8 +1432,8 @@ class L1SemanticTests: BaseTestClass {
         )
         
         // Then: Test that the view can actually be hosted
-        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "platformPresentModalForm_L1 with custom container should be hostable")
+        let wrapped = view.enableGlobalAutomaticCompliance()
+        BaseTestClass.expectViewSubjectTypeContains(wrapped, rootViewName: "AutomaticComplianceModifier")
     }
     
     // MARK: - Media Data Overloads
@@ -1451,8 +1451,8 @@ class L1SemanticTests: BaseTestClass {
         )
         
         // Then: Test that the view can actually be hosted
-        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "platformPresentMediaData_L1 single item should be hostable")
+        let wrapped = view.enableGlobalAutomaticCompliance()
+        BaseTestClass.expectViewSubjectTypeContains(wrapped, rootViewName: "AutomaticComplianceModifier")
     }
     
     @Test @MainActor
@@ -1473,8 +1473,8 @@ class L1SemanticTests: BaseTestClass {
         )
         
         // Then: Test that the view can actually be hosted
-        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "platformPresentMediaData_L1 single item with enhanced hints should be hostable")
+        let wrapped = view.enableGlobalAutomaticCompliance()
+        BaseTestClass.expectViewSubjectTypeContains(wrapped, rootViewName: "AutomaticComplianceModifier")
     }
     
     @Test @MainActor
@@ -1493,8 +1493,8 @@ class L1SemanticTests: BaseTestClass {
         )
         
         // Then: Test that the view can actually be hosted
-        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "platformPresentMediaData_L1 with customMediaView should be hostable")
+        let wrapped = view.enableGlobalAutomaticCompliance()
+        BaseTestClass.expectViewSubjectTypeContains(wrapped, rootViewName: "AutomaticComplianceModifier")
     }
     
     @Test @MainActor
@@ -1518,8 +1518,8 @@ class L1SemanticTests: BaseTestClass {
         )
         
         // Then: Test that the view can actually be hosted
-        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "platformPresentMediaData_L1 with enhanced hints and custom view should be hostable")
+        let wrapped = view.enableGlobalAutomaticCompliance()
+        BaseTestClass.expectViewSubjectTypeContains(wrapped, rootViewName: "AutomaticComplianceModifier")
     }
     
     @Test @MainActor
@@ -1549,8 +1549,8 @@ class L1SemanticTests: BaseTestClass {
         )
         
         // Then: Test that the view can actually be hosted
-        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "platformPresentMediaData_L1 with full customization should be hostable")
+        let wrapped = view.enableGlobalAutomaticCompliance()
+        BaseTestClass.expectViewSubjectTypeContains(wrapped, rootViewName: "AutomaticComplianceModifier")
     }
     
     // MARK: - Hierarchical Data Overloads
@@ -1568,8 +1568,8 @@ class L1SemanticTests: BaseTestClass {
         )
         
         // Then: Test that the view can actually be hosted
-        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "platformPresentHierarchicalData_L1 single item should be hostable")
+        let wrapped = view.enableGlobalAutomaticCompliance()
+        BaseTestClass.expectViewSubjectTypeContains(wrapped, rootViewName: "AutomaticComplianceModifier")
     }
     
     @Test @MainActor
@@ -1593,8 +1593,8 @@ class L1SemanticTests: BaseTestClass {
         )
         
         // Then: Test that the view can actually be hosted
-        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "platformPresentHierarchicalData_L1 with enhanced hints should be hostable")
+        let wrapped = view.enableGlobalAutomaticCompliance()
+        BaseTestClass.expectViewSubjectTypeContains(wrapped, rootViewName: "AutomaticComplianceModifier")
     }
     
     @Test @MainActor
@@ -1624,8 +1624,8 @@ class L1SemanticTests: BaseTestClass {
         )
         
         // Then: Test that the view can actually be hosted
-        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "platformPresentHierarchicalData_L1 with full customization should be hostable")
+        let wrapped = view.enableGlobalAutomaticCompliance()
+        BaseTestClass.expectViewSubjectTypeContains(wrapped, rootViewName: "AutomaticComplianceModifier")
     }
     
     // MARK: - Temporal Data Overloads
@@ -1643,8 +1643,8 @@ class L1SemanticTests: BaseTestClass {
         )
         
         // Then: Test that the view can actually be hosted
-        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "platformPresentTemporalData_L1 single item should be hostable")
+        let wrapped = view.enableGlobalAutomaticCompliance()
+        BaseTestClass.expectViewSubjectTypeContains(wrapped, rootViewName: "AutomaticComplianceModifier")
     }
     
     @Test @MainActor
@@ -1668,8 +1668,8 @@ class L1SemanticTests: BaseTestClass {
         )
         
         // Then: Test that the view can actually be hosted
-        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "platformPresentTemporalData_L1 with enhanced hints should be hostable")
+        let wrapped = view.enableGlobalAutomaticCompliance()
+        BaseTestClass.expectViewSubjectTypeContains(wrapped, rootViewName: "AutomaticComplianceModifier")
     }
     
     @Test @MainActor
@@ -1699,8 +1699,8 @@ class L1SemanticTests: BaseTestClass {
         )
         
         // Then: Test that the view can actually be hosted
-        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "platformPresentTemporalData_L1 with full customization should be hostable")
+        let wrapped = view.enableGlobalAutomaticCompliance()
+        BaseTestClass.expectViewSubjectTypeContains(wrapped, rootViewName: "AutomaticComplianceModifier")
     }
     
     // MARK: - Settings Functions
@@ -1730,8 +1730,8 @@ class L1SemanticTests: BaseTestClass {
         )
         
         // Then: Test that the view can actually be hosted
-        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "platformPresentSettings_L1 view should be hostable")
+        let wrapped = view.enableGlobalAutomaticCompliance()
+        BaseTestClass.expectViewSubjectTypeContains(wrapped, rootViewName: "AutomaticComplianceModifier")
     }
     
     @Test @MainActor
@@ -1762,8 +1762,8 @@ class L1SemanticTests: BaseTestClass {
         )
         
         // Then: Test that the view can actually be hosted
-        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "platformPresentSettings_L1 with customSettingView should be hostable")
+        let wrapped = view.enableGlobalAutomaticCompliance()
+        BaseTestClass.expectViewSubjectTypeContains(wrapped, rootViewName: "AutomaticComplianceModifier")
     }
     
     @Test @MainActor
@@ -1799,8 +1799,8 @@ class L1SemanticTests: BaseTestClass {
         )
         
         // Then: Test that the view can actually be hosted
-        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "platformPresentSettings_L1 with enhanced hints should be hostable")
+        let wrapped = view.enableGlobalAutomaticCompliance()
+        BaseTestClass.expectViewSubjectTypeContains(wrapped, rootViewName: "AutomaticComplianceModifier")
     }
     
     // MARK: - Responsive Card Overloads
@@ -1823,8 +1823,8 @@ class L1SemanticTests: BaseTestClass {
         )
         
         // Then: Test that the view can actually be hosted
-        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "platformResponsiveCard_L1 with customCardView should be hostable")
+        let wrapped = view.enableGlobalAutomaticCompliance()
+        BaseTestClass.expectViewSubjectTypeContains(wrapped, rootViewName: "AutomaticComplianceModifier")
     }
     
     // MARK: - OCR With Visual Correction Overloads
@@ -1845,7 +1845,7 @@ class L1SemanticTests: BaseTestClass {
         )
         
         // Then: Test that the view can actually be hosted
-        let hostingView = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "platformOCRWithVisualCorrection_L1 with configuration should be hostable")
+        let wrapped = view.enableGlobalAutomaticCompliance()
+        BaseTestClass.expectViewSubjectTypeContains(wrapped, rootViewName: "AutomaticComplianceModifier")
     }
 }

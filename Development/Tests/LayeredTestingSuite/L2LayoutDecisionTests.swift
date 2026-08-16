@@ -101,7 +101,6 @@ class L2LayoutDecisionTests: BaseTestClass {
         )
         
         // Then
-        #expect(Bool(true), "Layout decision should be created")  // layoutDecision is non-optional
         #expect(layoutDecision.columns > 0, "Should have at least 1 column")
         #expect(layoutDecision.spacing > 0, "Spacing should be positive")
         #expect(layoutDecision.cardWidth > 0, "Card width should be positive")
@@ -165,7 +164,6 @@ class L2LayoutDecisionTests: BaseTestClass {
         )
         
         // Then
-        #expect(Bool(true), "OCR layout should be created")  // layout is non-optional
         #expect(layout.maxImageSize.width > 0, "Max image width should be positive")
         #expect(layout.maxImageSize.height > 0, "Max image height should be positive")
         #expect(layout.recommendedImageSize.width > 0, "Recommended image width should be positive")
@@ -186,7 +184,6 @@ class L2LayoutDecisionTests: BaseTestClass {
         )
         
         // Then
-        #expect(Bool(true), "Document OCR layout should be created")  // layout is non-optional
         #expect(layout.maxImageSize.width > 0, "Max image width should be positive")
         #expect(layout.maxImageSize.height > 0, "Max image height should be positive")
     }
@@ -203,7 +200,6 @@ class L2LayoutDecisionTests: BaseTestClass {
         )
         
         // Then
-        #expect(Bool(true), "Receipt OCR layout should be created")  // layout is non-optional
         #expect(layout.maxImageSize.width > 0, "Max image width should be positive")
         #expect(layout.maxImageSize.height > 0, "Max image height should be positive")
     }
@@ -220,7 +216,6 @@ class L2LayoutDecisionTests: BaseTestClass {
         )
         
         // Then
-        #expect(Bool(true), "Business card OCR layout should be created")  // layout is non-optional
         #expect(layout.maxImageSize.width > 0, "Max image width should be positive")
         #expect(layout.maxImageSize.height > 0, "Max image height should be positive")
     }
@@ -403,7 +398,7 @@ class L2LayoutDecisionTests: BaseTestClass {
         )
         
         // Then
-        #expect(Bool(true), "Layout decision should be created")  // layout is non-optional
+        #expect(layout.columns > 0, "Layout decision should have at least 1 column")
     }
 }
 

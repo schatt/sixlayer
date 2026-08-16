@@ -62,10 +62,8 @@ open class PlatformImageBreakingChangeDetectionTests: BaseTestClass {
         coordinator.imagePickerController(UIImagePickerController(), didFinishPickingMediaWithInfo: mockInfo)
         
         // Then: Verify the callback was executed successfully
-        #expect(Bool(true), "Delegate method should execute successfully")  // capturedImage is non-optional
         #expect(capturedImage != nil, "Captured image should be valid")
         if let image = capturedImage {
-            #expect(Bool(true), "Captured image has valid UIImage")  // uiImage is non-optional
         }
         
         #elseif os(macOS)
@@ -111,10 +109,8 @@ open class PlatformImageBreakingChangeDetectionTests: BaseTestClass {
         coordinator.imagePickerController(UIImagePickerController(), didFinishPickingMediaWithInfo: mockInfo)
         
         // Then: Verify the callback was executed successfully
-        #expect(Bool(true), "Delegate method should execute successfully")  // selectedImage is non-optional
         #expect(selectedImage != nil, "Selected image should be valid")
         if let image = selectedImage {
-            #expect(Bool(true), "Selected image has valid UIImage")  // uiImage is non-optional
         }
         
         #elseif os(macOS)
@@ -147,7 +143,6 @@ open class PlatformImageBreakingChangeDetectionTests: BaseTestClass {
         
         // Then: Verify it works (would have failed in 4.6.2)
         // platformImage is non-optional, so no nil check needed
-        #expect(Bool(true), "Implicit parameter pattern should work")
         #expect(platformImage.uiImage == uiImage, "Implicit parameter should produce correct result")
         #elseif os(macOS)
         // Given: The exact API pattern that was broken
@@ -158,7 +153,6 @@ open class PlatformImageBreakingChangeDetectionTests: BaseTestClass {
         
         // Then: Verify it works (would have failed in 4.6.2)
         // platformImage is non-optional, so no nil check needed
-        #expect(Bool(true), "Implicit parameter pattern should work")
         #expect(platformImage.nsImage == nsImage, "Implicit parameter should produce correct result")
         
         // PLATFORM TESTING NOTE:
@@ -195,8 +189,6 @@ open class PlatformImageBreakingChangeDetectionTests: BaseTestClass {
         selectedImage = PlatformImage(testUIImage) // 6LAYER_ALLOW: boundary testing PlatformImage construction from UIImage
         
         // Then: Verify the callbacks work (would have failed in 4.6.2)
-        #expect(Bool(true), "Camera callback should work")  // capturedImage is non-optional
-        #expect(Bool(true), "Photo picker callback should work")  // selectedImage is non-optional
         #expect(capturedImage!.uiImage == testUIImage, "Camera callback should produce correct result")
         #expect(selectedImage!.uiImage == testUIImage, "Photo picker callback should produce correct result")
         #elseif os(macOS)
@@ -209,8 +201,6 @@ open class PlatformImageBreakingChangeDetectionTests: BaseTestClass {
         capturedImage = PlatformImage(testNSImage) // 6LAYER_ALLOW: boundary testing PlatformImage construction from NSImage
         selectedImage = PlatformImage(testNSImage) // 6LAYER_ALLOW: boundary testing PlatformImage construction from NSImage
         
-        #expect(Bool(true), "macOS camera callback should work")  // capturedImage is non-optional
-        #expect(Bool(true), "macOS photo picker callback should work")  // selectedImage is non-optional
         #expect(capturedImage!.nsImage == testNSImage, "macOS camera callback should produce correct result")
         #expect(selectedImage!.nsImage == testNSImage, "macOS photo picker callback should produce correct result")
         #endif

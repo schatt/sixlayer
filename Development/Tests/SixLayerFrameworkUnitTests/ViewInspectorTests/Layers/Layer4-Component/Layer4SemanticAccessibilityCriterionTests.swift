@@ -66,7 +66,6 @@ open class Layer4SemanticAccessibilityCriterionTests: BaseTestClass {
         let root = hostedRoot(for: view)
         #expect(root != nil, "hosted root should exist")
         guard hostedTreeExposesSemanticSurface(root) else {
-            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
             return
         }
         let match = hostedUIKitAccessibilityTraitMatch(
@@ -86,7 +85,6 @@ open class Layer4SemanticAccessibilityCriterionTests: BaseTestClass {
         let root = hostedRoot(for: view)
         #expect(root != nil)
         guard hostedTreeExposesSemanticSurface(root) else {
-            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
             return
         }
         let byValue = hostedUIKitAccessibilityValuePresent(
@@ -115,7 +113,6 @@ open class Layer4SemanticAccessibilityCriterionTests: BaseTestClass {
         let root = hostedRoot(for: view)
         #expect(root != nil)
         guard hostedTreeExposesSemanticSurface(root) else {
-            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
             return
         }
         let informative = hostedUIKitAccessibilityHierarchyContains(root: root) { v in
@@ -136,7 +133,6 @@ open class Layer4SemanticAccessibilityCriterionTests: BaseTestClass {
         let root = hostedRoot(for: view)
         #expect(root != nil)
         guard hostedTreeExposesSemanticSurface(root) else {
-            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
             return
         }
         let informative = hostedUIKitAccessibilityHierarchyContains(root: root) { v in
@@ -160,7 +156,6 @@ open class Layer4SemanticAccessibilityCriterionTests: BaseTestClass {
         let root = hostedRoot(for: view)
         #expect(root != nil)
         guard hostedTreeExposesSemanticSurface(root) else {
-            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
             return
         }
         let ids = findAllAccessibilityIdentifiersFromPlatformView(root)
@@ -192,7 +187,6 @@ open class Layer4SemanticAccessibilityCriterionTests: BaseTestClass {
         let root = hostedRoot(for: view)
         #expect(root != nil)
         guard hostedTreeExposesSemanticSurface(root) else {
-            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
             return
         }
         let match = hostedUIKitAccessibilityHierarchyContains(root: root) { v in
@@ -218,7 +212,6 @@ open class Layer4SemanticAccessibilityCriterionTests: BaseTestClass {
         let root = hostedRoot(for: view)
         #expect(root != nil)
         guard hostedTreeExposesSemanticSurface(root) else {
-            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
             return
         }
         let match = hostedUIKitAccessibilityHierarchyContains(root: root) { v in
@@ -245,7 +238,6 @@ open class Layer4SemanticAccessibilityCriterionTests: BaseTestClass {
         let root = hostedRoot(for: view)
         #expect(root != nil)
         guard hostedTreeExposesSemanticSurface(root) else {
-            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
             return
         }
         let buttonLike = hostedUIKitAccessibilityTraitMatch(
@@ -266,7 +258,6 @@ open class Layer4SemanticAccessibilityCriterionTests: BaseTestClass {
         let root = hostedRoot(for: view)
         #expect(root != nil)
         guard hostedTreeExposesSemanticSurface(root) else {
-            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
             return
         }
         let buttonLike = hostedUIKitAccessibilityTraitMatch(
@@ -291,7 +282,6 @@ open class Layer4SemanticAccessibilityCriterionTests: BaseTestClass {
         let root = hostedRoot(for: view)
         #expect(root != nil)
         guard hostedTreeExposesSemanticSurface(root) else {
-            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
             return
         }
         let headerMatch = hostedUIKitAccessibilityTraitMatch(
@@ -320,7 +310,6 @@ open class Layer4SemanticAccessibilityCriterionTests: BaseTestClass {
         let root = hostedRoot(for: view)
         #expect(root != nil)
         guard hostedTreeExposesSemanticSurface(root) else {
-            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
             return
         }
         let headerFallback = hostedUIKitAccessibilityHierarchyContains(root: root) { v in
@@ -342,7 +331,6 @@ open class Layer4SemanticAccessibilityCriterionTests: BaseTestClass {
         let root = hostedRoot(for: wrapped)
         #expect(root != nil)
         guard hostedTreeExposesSemanticSurface(root) else {
-            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
             return
         }
         let headerOrChrome = hostedUIKitAccessibilityHierarchyContains(root: root) { v in
@@ -388,7 +376,6 @@ open class Layer4SemanticAccessibilityCriterionTests: BaseTestClass {
         let root = hostedRoot(for: view)
         #expect(root != nil)
         guard hostedTreeExposesSemanticSurface(root) else {
-            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
             return
         }
         let linkMatch = hostedUIKitAccessibilityTraitMatch(
@@ -427,7 +414,6 @@ open class Layer4SemanticAccessibilityCriterionTests: BaseTestClass {
         let root = hostedRoot(for: view)
         #expect(root != nil)
         guard hostedTreeExposesSemanticSurface(root) else {
-            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
             return
         }
         let buttonMatch = hostedUIKitAccessibilityTraitMatch(
@@ -462,7 +448,6 @@ open class Layer4SemanticAccessibilityCriterionTests: BaseTestClass {
         let root = hostedRoot(for: view)
         #expect(root != nil)
         guard hostedTreeExposesSemanticSurface(root) else {
-            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
             return
         }
         let headerFallback = hostedUIKitAccessibilityHierarchyContains(root: root) { v in
@@ -484,7 +469,6 @@ open class Layer4SemanticAccessibilityCriterionTests: BaseTestClass {
         let root = hostedRoot(for: view)
         #expect(root != nil)
         guard hostedTreeExposesSemanticSurface(root) else {
-            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
             return
         }
         let named = hostedUIKitAccessibilityHierarchyContains(root: root) { v in
@@ -512,7 +496,6 @@ open class Layer4SemanticAccessibilityCriterionTests: BaseTestClass {
         let root = hostedRoot(for: view)
         #expect(root != nil)
         guard hostedTreeExposesSemanticSurface(root) else {
-            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
             return
         }
         let innerMarked = hostedUIKitAccessibilityHierarchyContains(root: root) { v in
@@ -564,7 +547,6 @@ open class Layer4SemanticAccessibilityCriterionTests: BaseTestClass {
         let root = hostedRoot(for: view)
         #expect(root != nil)
         guard hostedTreeExposesSemanticSurface(root) else {
-            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
             return
         }
         let ids = findAllAccessibilityIdentifiersFromPlatformView(root)
@@ -598,7 +580,6 @@ open class Layer4SemanticAccessibilityCriterionTests: BaseTestClass {
         let root = hostedRoot(for: view)
         #expect(root != nil)
         guard hostedTreeExposesSemanticSurface(root) else {
-            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
             return
         }
         let ids = findAllAccessibilityIdentifiersFromPlatformView(root)
@@ -632,7 +613,6 @@ open class Layer4SemanticAccessibilityCriterionTests: BaseTestClass {
         let root = hostedRoot(for: view)
         #expect(root != nil)
         guard hostedTreeExposesSemanticSurface(root) else {
-            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
             return
         }
         let ids = findAllAccessibilityIdentifiersFromPlatformView(root)
@@ -666,7 +646,6 @@ open class Layer4SemanticAccessibilityCriterionTests: BaseTestClass {
         let root = hostedRoot(for: view)
         #expect(root != nil)
         guard hostedTreeExposesSemanticSurface(root) else {
-            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
             return
         }
         let ids = findAllAccessibilityIdentifiersFromPlatformView(root)
@@ -690,7 +669,6 @@ open class Layer4SemanticAccessibilityCriterionTests: BaseTestClass {
         let root = hostedRoot(for: view)
         #expect(root != nil)
         guard hostedTreeExposesSemanticSurface(root) else {
-            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
             return
         }
         let named = hostedUIKitAccessibilityHierarchyContains(root: root) { v in
@@ -712,7 +690,6 @@ open class Layer4SemanticAccessibilityCriterionTests: BaseTestClass {
         let root = hostedRoot(for: view)
         #expect(root != nil)
         guard hostedTreeExposesSemanticSurface(root) else {
-            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
             return
         }
         let contractId = hostedUIKitAccessibilityHierarchyContains(root: root) { v in
@@ -750,7 +727,6 @@ open class Layer4SemanticAccessibilityCriterionTests: BaseTestClass {
         let root = hostedRoot(for: view)
         #expect(root != nil)
         guard hostedTreeExposesSemanticSurface(root) else {
-            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
             return
         }
         let ids = findAllAccessibilityIdentifiersFromPlatformView(root)
@@ -759,7 +735,6 @@ open class Layer4SemanticAccessibilityCriterionTests: BaseTestClass {
         let sixLayer = ids.contains { $0.contains("SixLayer") }
             || hostedUIKitAccessibilityHierarchyContains(root: root) { ($0.accessibilityIdentifier ?? "").contains("SixLayer") }
         if contractId || sixLayer {
-            #expect(Bool(true), "platformMapView_L4 wrapper identifiers visible in hosted tree")
             return
         }
         // MKMapView often absorbs the hosted tree; wrapper ids are on Group (see PlatformMapComponentsLayer4).
@@ -793,7 +768,6 @@ open class Layer4SemanticAccessibilityCriterionTests: BaseTestClass {
         let root = hostedRoot(for: view)
         #expect(root != nil)
         guard hostedTreeExposesSemanticSurface(root) else {
-            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
             return
         }
         let ids = findAllAccessibilityIdentifiersFromPlatformView(root)
@@ -824,7 +798,6 @@ open class Layer4SemanticAccessibilityCriterionTests: BaseTestClass {
         let root = hostedRoot(for: view)
         #expect(root != nil)
         guard hostedTreeExposesSemanticSurface(root) else {
-            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
             return
         }
         let named = hostedUIKitAccessibilityHierarchyContains(root: root) { v in
@@ -849,7 +822,6 @@ open class Layer4SemanticAccessibilityCriterionTests: BaseTestClass {
         let root = hostedRoot(for: view)
         #expect(root != nil)
         guard hostedTreeExposesSemanticSurface(root) else {
-            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
             return
         }
         let named = hostedUIKitAccessibilityHierarchyContains(root: root) { v in
@@ -873,7 +845,6 @@ open class Layer4SemanticAccessibilityCriterionTests: BaseTestClass {
         let root = hostedRoot(for: view)
         #expect(root != nil)
         guard hostedTreeExposesSemanticSurface(root) else {
-            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
             return
         }
         let named = hostedUIKitAccessibilityHierarchyContains(root: root) { v in
@@ -902,7 +873,6 @@ open class Layer4SemanticAccessibilityCriterionTests: BaseTestClass {
         let root = hostedRoot(for: view)
         #expect(root != nil)
         guard hostedTreeExposesSemanticSurface(root) else {
-            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
             return
         }
         let ids = findAllAccessibilityIdentifiersFromPlatformView(root)
@@ -931,7 +901,6 @@ open class Layer4SemanticAccessibilityCriterionTests: BaseTestClass {
         let root = hostedRoot(for: view)
         #expect(root != nil)
         guard hostedTreeExposesSemanticSurface(root) else {
-            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
             return
         }
         let named = hostedUIKitAccessibilityHierarchyContains(root: root) { v in
@@ -973,7 +942,6 @@ open class Layer4SemanticAccessibilityCriterionTests: BaseTestClass {
         let root = hostedRoot(for: view)
         #expect(root != nil)
         guard hostedTreeExposesSemanticSurface(root) else {
-            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
             return
         }
         let ids = findAllAccessibilityIdentifiersFromPlatformView(root)
@@ -1017,7 +985,6 @@ open class Layer4SemanticAccessibilityCriterionTests: BaseTestClass {
         let root = hostedRoot(for: view)
         #expect(root != nil)
         guard hostedTreeExposesSemanticSurface(root) else {
-            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
             return
         }
         let ids = findAllAccessibilityIdentifiersFromPlatformView(root)
@@ -1042,7 +1009,6 @@ open class Layer4SemanticAccessibilityCriterionTests: BaseTestClass {
         let root = hostedRoot(for: view)
         #expect(root != nil)
         guard hostedTreeExposesSemanticSurface(root) else {
-            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
             return
         }
         let named = hostedUIKitAccessibilityHierarchyContains(root: root) { v in
@@ -1065,7 +1031,6 @@ open class Layer4SemanticAccessibilityCriterionTests: BaseTestClass {
         let root = hostedRoot(for: view)
         #expect(root != nil)
         guard hostedTreeExposesSemanticSurface(root) else {
-            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
             return
         }
         let named = hostedUIKitAccessibilityHierarchyContains(root: root) { v in

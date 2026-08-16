@@ -86,7 +86,6 @@ open class CollectionViewCallbackTests: BaseTestClass {
         #expect(hasCollectionShellID, "Collection L1 should expose accessibility identifiers")
         _ = selectedItems.count
         #else
-        #expect(Bool(true), "Collection view callback verified by compilation (ViewInspector not available on macOS)")
         #endif
     }
     
@@ -113,7 +112,6 @@ open class CollectionViewCallbackTests: BaseTestClass {
         #expect(hasCollectionShellID, "Collection L1 should expose accessibility identifiers")
         _ = selectedItems.count
         #else
-        #expect(Bool(true), "Collection view callback verified by compilation (ViewInspector not available on macOS)")
         #endif
     }
     
@@ -225,7 +223,6 @@ open class CollectionViewCallbackTests: BaseTestClass {
         _ = callbackInvoked
         _ = selectedItems.count
         #else
-        #expect(Bool(true), "Collection view callback verified by compilation (ViewInspector not available on macOS)")
         #endif
     }
     

@@ -117,7 +117,6 @@ class L3StrategyTests: BaseTestClass {
         )
         
         // Then
-        #expect(Bool(true), "OCR strategy should be created")  // strategy is non-optional
         #expect(strategy.supportedTextTypes == textTypes, "Strategy should support requested text types")
         #expect(!strategy.supportedLanguages.isEmpty, "Strategy should support at least one language")
         #expect(strategy.estimatedProcessingTime >= 0, "Processing time should be non-negative")
@@ -135,7 +134,6 @@ class L3StrategyTests: BaseTestClass {
         )
         
         // Then
-        #expect(Bool(true), "OCR strategy should be created")  // strategy is non-optional
         #expect(strategy.requiresNeuralEngine, "Complex text types should require neural engine")
     }
     
@@ -151,7 +149,6 @@ class L3StrategyTests: BaseTestClass {
         )
         
         // Then
-        #expect(Bool(true), "Document OCR strategy should be created")  // strategy is non-optional
         #expect(!strategy.supportedTextTypes.isEmpty, "Strategy should support text types for document")
         #expect(!strategy.supportedLanguages.isEmpty, "Strategy should support at least one language")
         #expect(strategy.estimatedProcessingTime >= 0, "Processing time should be non-negative")
@@ -167,7 +164,6 @@ class L3StrategyTests: BaseTestClass {
         )
         
         // Then
-        #expect(Bool(true), "Receipt OCR strategy should be created")  // strategy is non-optional
         #expect(strategy.supportedTextTypes.contains(.price), "Receipt strategy should support price text")
         #expect(strategy.supportedTextTypes.contains(.date), "Receipt strategy should support date text")
         #expect(strategy.supportedTextTypes.contains(.number), "Receipt strategy should support number text")
@@ -183,7 +179,6 @@ class L3StrategyTests: BaseTestClass {
         )
         
         // Then
-        #expect(Bool(true), "Business card OCR strategy should be created")  // strategy is non-optional
         #expect(strategy.supportedTextTypes.contains(.name), "Business card strategy should support name text")
         #expect(strategy.supportedTextTypes.contains(.email), "Business card strategy should support email text")
         #expect(strategy.supportedTextTypes.contains(.phone), "Business card strategy should support phone text")
@@ -199,7 +194,6 @@ class L3StrategyTests: BaseTestClass {
         )
         
         // Then
-        #expect(Bool(true), "Invoice OCR strategy should be created")  // strategy is non-optional
         #expect(strategy.supportedTextTypes.contains(.price), "Invoice strategy should support price text")
         #expect(strategy.supportedTextTypes.contains(.date), "Invoice strategy should support date text")
         #expect(strategy.supportedTextTypes.contains(.vendor), "Invoice strategy should support vendor text")
@@ -217,7 +211,6 @@ class L3StrategyTests: BaseTestClass {
         )
         
         // Then
-        #expect(Bool(true), "Optimal OCR strategy should be created")  // strategy is non-optional
         #expect(strategy.supportedTextTypes == textTypes, "Strategy should support requested text types")
         #expect(!strategy.supportedLanguages.isEmpty, "Strategy should support at least one language")
     }
@@ -234,7 +227,6 @@ class L3StrategyTests: BaseTestClass {
         )
         
         // Then
-        #expect(Bool(true), "Batch OCR strategy should be created")  // strategy is non-optional
         #expect(strategy.supportedTextTypes == textTypes, "Strategy should support requested text types")
         #expect(!strategy.supportedLanguages.isEmpty, "Strategy should support at least one language")
     }
@@ -259,7 +251,6 @@ class L3StrategyTests: BaseTestClass {
         )
         
         // Then
-        #expect(Bool(true), "Card expansion strategy should be created")  // strategy is non-optional
         #expect(!strategy.supportedStrategies.isEmpty, "Strategy should support at least one expansion method")
         #expect(strategy.expansionScale > 1.0, "Expansion scale should be greater than 1.0")
         #expect(strategy.animationDuration >= 0, "Animation duration should be non-negative")
@@ -283,7 +274,6 @@ class L3StrategyTests: BaseTestClass {
         )
         
         // Then
-        #expect(Bool(true), "Card expansion strategy should be created")  // strategy is non-optional
         #expect(strategy.primaryStrategy == .none, "Static interaction should have no expansion")
         #expect(strategy.expansionScale == 1.0, "Static interaction should have no expansion scale")
         #expect(strategy.animationDuration == 0.0, "Static interaction should have no animation")
@@ -307,7 +297,6 @@ class L3StrategyTests: BaseTestClass {
         )
         
         // Then
-        #expect(Bool(true), "Card expansion strategy should be created")  // strategy is non-optional
         #expect(strategy.supportedStrategies.contains(.contentReveal), "Phone should support content reveal")
         #expect(strategy.accessibilitySupport, "Strategy should support accessibility")
     }
@@ -330,7 +319,6 @@ class L3StrategyTests: BaseTestClass {
         )
         
         // Then
-        #expect(Bool(true), "Card expansion strategy should be created")  // strategy is non-optional
         #expect(strategy.supportedStrategies.contains(.hoverExpand), "iPad should support hover expansion")
         #expect(strategy.hapticFeedback, "iPad should support haptic feedback")
     }
@@ -513,7 +501,7 @@ class L3StrategyTests: BaseTestClass {
         )
         
         // Then
-        #expect(Bool(true), "Strategy should be created")  // strategy is non-optional
+        #expect(strategy.supportedTextTypes == textTypes, "Strategy should support requested text types")
     }
     
     @Test func testStrategySelectionEdgeCases() {
@@ -528,7 +516,6 @@ class L3StrategyTests: BaseTestClass {
         )
         
         // Then
-        #expect(Bool(true), "Strategy should handle empty text types")  // strategy is non-optional
         #expect(strategy.supportedTextTypes.isEmpty, "Empty text types should result in empty supported types")
     }
 }

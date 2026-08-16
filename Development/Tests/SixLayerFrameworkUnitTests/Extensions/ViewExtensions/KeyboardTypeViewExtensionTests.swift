@@ -97,7 +97,6 @@ open class KeyboardTypeViewExtensionTests: BaseTestClass {
         _ = testView.keyboardType(.phonePad)
 
         // Then: Should return a View (keyboard types don't apply on macOS)
-        #expect(Bool(true), "macOS keyboardType extension should return a View")
     }
     #endif
 

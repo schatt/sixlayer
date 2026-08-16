@@ -146,7 +146,6 @@ open class AccessibilityIdentifierLogicVerificationTests: BaseTestClass {
             }
             .named("AddFuelButton")
 
-            #expect(Bool(true), "The exact bug scenario should now work correctly")
 
             #expect(config.enableAutoIDs, "Auto IDs should be enabled")
             #expect(config.namespace == "SixLayer", "Namespace should be set correctly")
@@ -171,7 +170,6 @@ open class AccessibilityIdentifierLogicVerificationTests: BaseTestClass {
             _ = Text("Hello World")
                 .automaticCompliance()
 
-            #expect(Bool(true), "View should work with explicitly enabled config")
 
             #expect(config.enableAutoIDs, "Automatic IDs should be enabled (explicitly set)")
             #expect(config.namespace == "defaultApp", "Namespace should be set correctly (explicitly set)")
@@ -193,7 +191,6 @@ open class AccessibilityIdentifierLogicVerificationTests: BaseTestClass {
                 .accessibilityIdentifier(manualID)
                 .automaticCompliance()
 
-            #expect(Bool(true), "View with manual identifier should be created successfully")
 
             #expect(config.enableAutoIDs, "Automatic IDs should be enabled")
             #expect(config.namespace == "auto", "Namespace should be set correctly")
@@ -214,7 +211,6 @@ open class AccessibilityIdentifierLogicVerificationTests: BaseTestClass {
                 .disableAutomaticAccessibilityIdentifiers()
                 .automaticCompliance()
 
-            #expect(Bool(true), "View with opt-out should be created successfully")
 
             #expect(config.enableAutoIDs, "Automatic IDs should be enabled globally")
             #expect(config.namespace == "test", "Namespace should be set correctly")

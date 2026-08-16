@@ -466,7 +466,6 @@ struct ComprehensiveCapabilityTestRunner {
         
         // Test that the configuration can actually be used to create a functional view
         let _ = createTestViewWithConfig(config)
-        #expect(Bool(true), "Should be able to create functional view with config for \(platform)")  // testView is non-optional
         
         // Test that the configuration produces appropriate UI behavior
         // Always verify platform-correct minTouchTarget value (based on runtime capability detection)

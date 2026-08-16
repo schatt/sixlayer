@@ -94,7 +94,6 @@ open class CollectionEmptyStateViewTests: BaseTestClass {
         #else
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
         // The modifier IS present in the code, but ViewInspector can't detect it on macOS
-        #expect(Bool(true), "ViewInspector not available on this platform")
         #endif
     }
     

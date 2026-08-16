@@ -80,7 +80,6 @@ struct IntelligentDetailViewSheetTests {
         #else
         // ViewInspector not available on macOS - skip test gracefully
         // The view is created successfully, which is the main requirement
-        #expect(Bool(true), "platformDetailView compiles and can be created (ViewInspector not available on macOS)")
         #endif
     }
     
@@ -136,7 +135,6 @@ struct IntelligentDetailViewSheetTests {
         #else
         // ViewInspector not available on macOS - skip test gracefully
         // The view is created successfully, which is the main requirement
-        #expect(Bool(true), "platformDetailView compiles and can be created (ViewInspector not available on macOS)")
         #endif
     }
     

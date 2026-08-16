@@ -55,12 +55,10 @@ open class TestingFailureDemonstrationTests: BaseTestClass {
         
         // Then: Verify callback works correctly
         #expect(callbackExecuted == true, "Callback should execute when called directly")
-        #expect(Bool(true), "Callback should capture the PlatformImage")  // capturedImage is non-optional
         #expect(capturedImage?.size == testImage.size, "Callback should capture the correct image")
         
         // Also verify the API accepts the callback with correct signature (compile-time check)
         let _ = PlatformPhotoComponentsLayer4.platformCameraInterface_L4(onImageCaptured: callback)
-        #expect(Bool(true), "API should accept PlatformImage callback signature")
         
         // This demonstrates the improved approach:
         // 1. We test the callback function directly (unit test level)
@@ -156,7 +154,6 @@ open class TestingFailureDemonstrationTests: BaseTestClass {
         let _ = PlatformPhotoComponentsLayer4.platformCameraInterface_L4 { _ in }
         
         // This is what our current tests verify
-        #expect(Bool(true), "Current tests verify view creation")  // view is non-optional
         
         // But we NEVER test this (the actual callback execution):
         // This is the code that was broken: PlatformImage(image)
@@ -211,7 +208,6 @@ open class TestingFailureDemonstrationTests: BaseTestClass {
         #else
         // tvOS/watchOS/visionOS: PlatformImage roundtrip covered by other platform tests.
         // Graceful-degradation testing is tracked under issue #241.
-        #expect(Bool(true), "Skipped on non-iOS/macOS; see #241 for capability-aware coverage")
         #endif
     }
     

@@ -113,7 +113,6 @@ open class AccessibilityIdentifierGenerationVerificationTests: BaseTestClass {
             // Then: Test the two critical aspects
                 
             // 1. View created - The view can be instantiated successfully
-            #expect(Bool(true), "Automatic accessibility identifiers should create view successfully")  // testView is non-optional
                 
             // 2. Contains what it needs to contain - The view has the proper accessibility identifier assigned
             // TODO: ViewInspector Detection Issue - VERIFIED: Framework function (e.g., platformPresentContent_L1) DOES have .automaticCompliance() 
@@ -203,7 +202,6 @@ open class AccessibilityIdentifierGenerationVerificationTests: BaseTestClass {
                 .automaticCompliance()
                 
             // 1. View created - The view can be instantiated successfully
-            #expect(Bool(true), "View should be created even when automatic IDs are disabled")  // testView1 is non-optional
                 
             // 2. Contains what it needs to contain - The view should NOT have an automatic accessibility identifier
             // Using wrapper - when ViewInspector works on macOS, no changes needed here
@@ -221,7 +219,6 @@ open class AccessibilityIdentifierGenerationVerificationTests: BaseTestClass {
             }
             #else
             // ViewInspector not available, treat as no identifier applied
-            #expect(Bool(true), "ViewInspector not available, treating as no ID applied")
             #endif
                 
             // Test Case 2: When automatic IDs are enabled; pass identifierName so ID is generated (L1 pattern)

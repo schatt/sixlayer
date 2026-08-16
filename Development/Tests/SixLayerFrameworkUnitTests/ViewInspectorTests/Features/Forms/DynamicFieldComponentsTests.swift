@@ -324,7 +324,6 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             #if canImport(ViewInspector)
             Issue.record("DynamicRichTextField interface not found")
             #else
-            #expect(Bool(true), "DynamicRichTextField created")
             #endif
         }
         #else
@@ -576,7 +575,6 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             #if canImport(ViewInspector)
             Issue.record("DynamicAutocompleteField interface not found")
             #else
-            #expect(Bool(true), "DynamicAutocompleteField created")
             #endif
         }
 
@@ -680,7 +678,6 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             #if canImport(ViewInspector)
             Issue.record("DynamicCustomField interface not found")
             #else
-            #expect(Bool(true), "DynamicCustomField created")
             #endif
         }
 
@@ -728,7 +725,6 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             #if canImport(ViewInspector)
             Issue.record("DynamicColorField interface not found")
             #else
-            #expect(Bool(true), "DynamicColorField created")
             #endif
         }
 
@@ -1543,7 +1539,6 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
 
         // View should be created successfully
-        #expect(Bool(true), "Should handle real-time updates")
     }
 
     // MARK: - Stepper Field
@@ -1628,7 +1623,6 @@ open class DynamicFieldComponentsTests: BaseTestClass {
         }
 
         // View should be created successfully
-        #expect(Bool(true), "Should respect min/max constraints")
     }
 
     @Test @MainActor func testDynamicStepperFieldRespectsStepSize() async {
@@ -1683,7 +1677,6 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
 
         // View should be created successfully
-        #expect(Bool(true), "Should update formState")
     }
 
     @Test @MainActor func testDynamicStepperFieldUsesDefaultValuesWhenMetadataMissing() async {
@@ -1778,7 +1771,6 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
 
         // Should handle conversion
-        #expect(Bool(true), "Should handle string to double conversion")
     }
 
     @Test @MainActor func testDynamicStepperFieldUsesFieldDisplayHintsExpectedRange() async {
@@ -1828,7 +1820,6 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             #expect(doubleValue <= expectedRange.max, "Initial value should respect expectedRange max")
         }
 
-        #expect(Bool(true), "Should use expectedRange from FieldDisplayHints")
     }
 
     @Test @MainActor func testDynamicStepperFieldFallsBackToMetadataWhenNoExpectedRange() async {
@@ -1868,7 +1859,6 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             #expect(doubleValue <= 20.0, "Initial value should respect metadata max")
         }
 
-        #expect(Bool(true), "Should fall back to metadata min/max")
     }
 
     // MARK: - Multi-line TextField (Issue #89)
@@ -2000,7 +1990,6 @@ open class DynamicFieldComponentsTests: BaseTestClass {
         #expect(maxLines == 8, "Should parse maxLines from metadata")
         
         // View should be created successfully
-        #expect(Bool(true), "Should respect line limits configuration")
     }
 
     @Test @MainActor func testDynamicTextFieldUsesDefaultLineLimits() async {
@@ -2030,7 +2019,6 @@ open class DynamicFieldComponentsTests: BaseTestClass {
         #expect(field.metadata?["maxLines"] == nil, "Should not have maxLines when not specified")
         
         // View should be created successfully
-        #expect(Bool(true), "Should use default line limits")
     }
 
     @Test @MainActor func testDynamicTextFieldShowsCharacterCounterForMultiLine() async {
@@ -2125,7 +2113,6 @@ open class DynamicFieldComponentsTests: BaseTestClass {
         #expect(field.metadata?["multiLine"] != "true", "Field should not have multiLine metadata")
         
         // View should be created successfully
-        #expect(Bool(true), "Should use single-line TextField when multiLine not set")
     }
 
     @Test @MainActor func testDynamicTextFieldMultiLineWorksWithFormValidation() async {
@@ -2257,7 +2244,6 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             #expect(doubleValue <= 50.0, "Value should respect metadata max")
         }
 
-        #expect(Bool(true), "Should use min/max from metadata")
     }
 
     @Test @MainActor func testDynamicGaugeFieldDefaultsToZeroToHundredRange() async {
@@ -2290,7 +2276,6 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             #expect(doubleValue <= 100.0, "Value should respect default max (100)")
         }
 
-        #expect(Bool(true), "Should default to 0...100 range")
     }
 
     @Test @MainActor func testDynamicGaugeFieldSupportsCircularStyle() async {
@@ -2409,12 +2394,10 @@ open class DynamicFieldComponentsTests: BaseTestClass {
 
         // Should handle Double value
         let value: Double? = formState.getValue(for: "gauge")
-        #expect(Bool(true), "Should handle Double value")
         if let doubleValue = value {
             #expect(doubleValue == 75.5, "Should preserve Double value")
         }
 
-        #expect(Bool(true), "Should handle Double value")
     }
 
     @Test @MainActor func testDynamicGaugeFieldHandlesIntValue() async {
@@ -2445,12 +2428,10 @@ open class DynamicFieldComponentsTests: BaseTestClass {
 
         // Should handle Int value
         let value: Int? = formState.getValue(for: "gauge")
-        #expect(Bool(true), "Should handle Int value")
         if let intValue = value {
             #expect(intValue == 42, "Should preserve Int value")
         }
 
-        #expect(Bool(true), "Should handle Int value")
     }
 
     @Test @MainActor func testDynamicGaugeFieldHandlesStringValue() async {

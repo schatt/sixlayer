@@ -121,7 +121,6 @@ struct iCloudDriveIntegrationTests {
             #expect(iCloudURL.path.isEmpty == false, "Should return URL if iCloud is available")
         } catch PlatformFileSystemError.iCloudUnavailable {
             // Expected if iCloud is not available
-            #expect(Bool(true), "iCloud unavailable is expected in test environment")
         } catch {
             // Other errors are unexpected
             Issue.record("Unexpected error: \(error)")
@@ -141,7 +140,6 @@ struct iCloudDriveIntegrationTests {
     @Test func testGetiCloudSyncStatus_Exists() {
         // Test that function exists
         // Note: This may require actual iCloud container to test properly
-        #expect(Bool(true), "Function should exist")
     }
     
     // MARK: - Error Handling Tests

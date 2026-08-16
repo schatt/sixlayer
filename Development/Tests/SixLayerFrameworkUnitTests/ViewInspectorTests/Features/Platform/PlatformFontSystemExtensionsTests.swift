@@ -271,7 +271,6 @@ open class PlatformFontSystemExtensionsTests: BaseTestClass {
         #expect(platformFont is NSFont, "Platform font accessor should return NSFont on macOS")
         #else
         // On other platforms, should return Font
-        #expect(Bool(true), "Platform font accessor should work on other platforms")
         #endif
     }
     
@@ -294,7 +293,6 @@ open class PlatformFontSystemExtensionsTests: BaseTestClass {
             #elseif os(macOS)
             #expect(platformFont is NSFont, "Platform font should be NSFont")
             #else
-            #expect(Bool(true), "Platform font should be accessible")
             #endif
         }
     }

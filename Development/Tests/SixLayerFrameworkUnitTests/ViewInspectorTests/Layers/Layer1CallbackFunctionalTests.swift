@@ -105,7 +105,6 @@ open class Layer1CallbackFunctionalTests: BaseTestClass {
         _ = selectedItems.count
         #else
         // ViewInspector not available on macOS - test passes by verifying callback signature
-        #expect(Bool(true), "Layer 1 callback verified by compilation")
         #endif
     }
     

@@ -417,7 +417,6 @@ open class AutomaticAccessibilityIdentifierTests: BaseTestClass {
             // Test that the view can be created with accessibility identifier configuration
             #expect(testAccessibilityIdentifierConfiguration(), "Accessibility identifier configuration should be valid")
             // Test that the view works with global modifiers
-            #expect(Bool(true), "Layer 1 function should work with global modifier")
         }
     }
     

@@ -86,7 +86,6 @@ open class IntelligentFormViewComponentAccessibilityTests: BaseTestClass {
             #expect(hasAccessibilityID, "Type-only form shell should expose IntelligentFormView accessibility identifiers")
             #else
             // ViewInspector not available on macOS - test passes by verifying view creation
-            #expect(Bool(true), "View should be created successfully")
             #endif
         }
     }
@@ -127,7 +126,6 @@ open class IntelligentFormViewComponentAccessibilityTests: BaseTestClass {
             #expect(hasAccessibilityID, "Update form path should generate accessibility identifiers")
             #else
             // ViewInspector not available on macOS - test passes by verifying view creation
-            #expect(Bool(true), "View should be created successfully")
             #endif
         }
     }
@@ -206,7 +204,6 @@ open class IntelligentFormViewComponentAccessibilityTests: BaseTestClass {
             #expect(hasAccessibilityID, "IntelligentFormView should generate accessibility identifiers")
             #else
             // ViewInspector not available on macOS - test passes by verifying view creation
-            #expect(Bool(true), "View should be created successfully")
             #endif
         }
     }

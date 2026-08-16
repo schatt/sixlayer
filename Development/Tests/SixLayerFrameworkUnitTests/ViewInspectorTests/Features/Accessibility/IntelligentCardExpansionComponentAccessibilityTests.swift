@@ -221,7 +221,6 @@ open class IntelligentCardExpansionComponentAccessibilityTests: BaseTestClass {
         )
         #expect(hasSingleTappable, "ExpandableCardComponent should expose one accessibility element with label '\(cardTitle)' and button trait (Issue #191)")
         #else
-        #expect(Bool(true), "Single tappable element verification runs on iOS (UIKit) only")
         #endif
     }
     
@@ -284,7 +283,6 @@ open class IntelligentCardExpansionComponentAccessibilityTests: BaseTestClass {
         )
         #expect(hasSingleTappable, "CoverFlowCardComponent should expose one accessibility element with label '\(cardTitle)' and button trait (Issue #191)")
         #else
-        #expect(Bool(true), "Single tappable element verification runs on iOS (UIKit) only")
         #endif
     }
     
@@ -463,7 +461,6 @@ open class IntelligentCardExpansionComponentAccessibilityTests: BaseTestClass {
         )
         #expect(hasSingleTappable, "SimpleCardComponent should expose one accessibility element with label '\(cardTitle)' and button trait (Issue #191)")
         #else
-        #expect(Bool(true), "Single tappable element verification runs on iOS (UIKit) only")
         #endif
     }
     
@@ -527,7 +524,6 @@ open class IntelligentCardExpansionComponentAccessibilityTests: BaseTestClass {
         )
         #expect(hasSingleTappable, "ListCardComponent should expose one accessibility element with label '\(cardTitle)' and button trait (Issue #191)")
         #else
-        #expect(Bool(true), "Single tappable element verification runs on iOS (UIKit) only")
         #endif
     }
     
