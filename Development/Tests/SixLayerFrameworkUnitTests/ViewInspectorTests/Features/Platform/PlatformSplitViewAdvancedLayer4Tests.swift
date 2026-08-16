@@ -65,7 +65,6 @@ open class PlatformSplitViewAdvancedLayer4Tests: BaseTestClass {
         #expect(shortcut.modifiers.contains(.command), "Shortcut modifiers should be set")
         #expect(shortcut.action == .togglePane(0), "Shortcut action should be set")
         #else
-        #expect(Bool(true), "Keyboard shortcuts are macOS-only")
         #endif
     }
     
@@ -84,7 +83,6 @@ open class PlatformSplitViewAdvancedLayer4Tests: BaseTestClass {
         #expect(state.keyboardShortcuts.count == 1, "State should support keyboard shortcuts")
         #expect(state.keyboardShortcuts[0].key.character == "h", "Keyboard shortcut key should be accessible")
         #else
-        #expect(Bool(true), "Keyboard shortcuts are macOS-only")
         #endif
     }
     
@@ -123,7 +121,6 @@ open class PlatformSplitViewAdvancedLayer4Tests: BaseTestClass {
         let _: (Int, CGFloat) -> Void = { _, _ in }
         
         // Then: Should be able to configure divider callbacks
-        #expect(Bool(true), "Divider callbacks should be configurable")
     }
     
     @Test @MainActor func testPlatformSplitViewStateSupportsDividerCallbacks() async {
@@ -148,7 +145,6 @@ open class PlatformSplitViewAdvancedLayer4Tests: BaseTestClass {
         if runtimePlatform == .iOS {
             // Given: Advanced features on iOS
             // Then: Should work appropriately (may have platform-specific behavior)
-            #expect(Bool(true), "Advanced features should work on iOS")
         }
     }
     
