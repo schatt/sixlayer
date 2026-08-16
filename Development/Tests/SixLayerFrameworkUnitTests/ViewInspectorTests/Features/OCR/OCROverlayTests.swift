@@ -184,7 +184,6 @@ open class OCROverlayTests: BaseTestClass {
         let detectedRegion = overlayView.detectTappedTextRegion(at: tapPoint)
         
         // Then: Should detect correct region
-        #expect(Bool(true), "Should detect tapped text region")
         #expect(detectedRegion == testBoundingBoxes[0], "Should return correct bounding box")
     }
     
@@ -261,7 +260,6 @@ open class OCROverlayTests: BaseTestClass {
         let tappedRegion = overlayView.detectTappedTextRegion(
             at: CGPoint(x: firstRegionPixels.midX, y: firstRegionPixels.midY)
         )
-        #expect(Bool(true), "Should detect tapped region")  // tappedRegion is non-optional
         #expect(tappedRegion == testBoundingBoxes[0], "Should return correct bounding box")
     }
     
