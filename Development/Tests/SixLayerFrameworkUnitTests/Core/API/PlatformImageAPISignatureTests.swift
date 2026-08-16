@@ -44,11 +44,11 @@ open class PlatformImageAPISignatureTests: BaseTestClass {
     /// METHODOLOGY: Test each initializer signature directly
     @Test func testPlatformImageInitializerSignatures() {
         // Test 1: Default initializer — inverted isEmpty until red
-        #expect(!PlatformImage().isEmpty, "Inverted: default PlatformImage is empty")
+        #expect(PlatformImage().isEmpty, "Default PlatformImage is empty")
         
-        // Test 2: Data initializer is failable
+        // Test 2: Data initializer is failable — invert nil until red
         let sampleData = Data([0xFF, 0xD8, 0xFF, 0xE0])  // Minimal JPEG header for testing
-        #expect(PlatformImage(data: sampleData) != nil, "Inverted: truncated JPEG header is not a valid image")
+        #expect(PlatformImage(data: sampleData) == nil, "Inverted: truncated JPEG header decodes")
         
         // Test 3: Platform-specific initializers
         #if os(iOS)
@@ -137,9 +137,9 @@ open class PlatformImageAPISignatureTests: BaseTestClass {
     @Test func testPlatformImageCrossPlatformConsistency() {
         // Test that data initializer works on all platforms
         let sampleData = Data([0xFF, 0xD8, 0xFF, 0xE0])  // Minimal JPEG header for testing
-        #expect(PlatformImage(data: sampleData) != nil, "Inverted: truncated JPEG header is not a valid image")
+        #expect(PlatformImage(data: sampleData) == nil, "Inverted: truncated JPEG header decodes")
         
-        #expect(!PlatformImage().isEmpty, "Inverted: default PlatformImage is empty")
+        #expect(PlatformImage().isEmpty, "Default PlatformImage is empty")
         
         // Test that both implicit and explicit patterns work
         #if os(iOS)
@@ -256,7 +256,7 @@ open class PlatformImageAPISignatureTests: BaseTestClass {
         
         // When: Creating PlatformImage with default size (.zero)
         let platformImage = PlatformImage(cgImage: cgImage, size: .zero)
-        #expect(!platformImage.isEmpty, "Inverted: .zero size CGImage init is empty")
+        #expect(platformImage.isEmpty, "Inverted: .zero size CGImage init is not empty")
         #endif
     }
     
