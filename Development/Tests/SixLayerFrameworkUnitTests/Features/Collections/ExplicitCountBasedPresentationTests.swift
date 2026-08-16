@@ -8,7 +8,7 @@ open class ExplicitCountBasedPresentationTests: BaseTestClass {
     // MARK: - Basic Count-Based Functionality Tests
 
     /// BUSINESS PURPOSE: Verify that .countBased uses lowCount preference when count ≤ threshold
-    @Test @MainActor func testCountBasedUsesLowCountForSmallCollections() {
+    @Test func testCountBasedUsesLowCountForSmallCollections() {
         let hints = PresentationHints(
             dataType: .generic,
             presentationPreference: .countBased(lowCount: .cards, highCount: .list, threshold: 5),
@@ -16,11 +16,11 @@ open class ExplicitCountBasedPresentationTests: BaseTestClass {
             context: .dashboard
         )
 
-        #expect(resolve(hints: hints, itemCount: 3) == .list)
+        #expect(resolve(hints: hints, itemCount: 3) == .expandableCards)
     }
 
     /// BUSINESS PURPOSE: Verify that .countBased uses highCount preference when count > threshold
-    @Test @MainActor func testCountBasedUsesHighCountForLargeCollections() {
+    @Test func testCountBasedUsesHighCountForLargeCollections() {
         let hints = PresentationHints(
             dataType: .generic,
             presentationPreference: .countBased(lowCount: .cards, highCount: .list, threshold: 5),
@@ -28,13 +28,13 @@ open class ExplicitCountBasedPresentationTests: BaseTestClass {
             context: .dashboard
         )
 
-        #expect(resolve(hints: hints, itemCount: 8) == .expandableCards)
+        #expect(resolve(hints: hints, itemCount: 8) == .list)
     }
 
     // MARK: - Threshold Edge Cases
 
     /// BUSINESS PURPOSE: Verify exact threshold boundary behavior
-    @Test @MainActor func testCountBasedExactThresholdUsesLowCount() {
+    @Test func testCountBasedExactThresholdUsesLowCount() {
         let hints = PresentationHints(
             dataType: .generic,
             presentationPreference: .countBased(lowCount: .grid, highCount: .list, threshold: 5),
@@ -42,11 +42,11 @@ open class ExplicitCountBasedPresentationTests: BaseTestClass {
             context: .dashboard
         )
 
-        #expect(resolve(hints: hints, itemCount: 5) == .list)
+        #expect(resolve(hints: hints, itemCount: 5) == .grid)
     }
 
     /// BUSINESS PURPOSE: Verify threshold = 0 edge case
-    @Test @MainActor func testCountBasedThresholdZero() {
+    @Test func testCountBasedThresholdZero() {
         let hints = PresentationHints(
             dataType: .generic,
             presentationPreference: .countBased(lowCount: .cards, highCount: .list, threshold: 0),
@@ -54,20 +54,20 @@ open class ExplicitCountBasedPresentationTests: BaseTestClass {
             context: .dashboard
         )
 
-        #expect(resolve(hints: hints, itemCount: 1) == .expandableCards)
+        #expect(resolve(hints: hints, itemCount: 1) == .list)
     }
 
     // MARK: - Preference Type Combinations
 
     /// BUSINESS PURPOSE: Verify all basic preference types work as lowCount/highCount
-    @Test @MainActor func testCountBasedPreferenceTypeMapping() {
+    @Test func testCountBasedPreferenceTypeMapping() {
         let cardsHints = PresentationHints(
             dataType: .generic,
             presentationPreference: .countBased(lowCount: .cards, highCount: .list, threshold: 5),
             complexity: .moderate,
             context: .dashboard
         )
-        #expect(resolve(hints: cardsHints, itemCount: 2) == .adaptive)
+        #expect(resolve(hints: cardsHints, itemCount: 2) == .expandableCards)
 
         let gridHints = PresentationHints(
             dataType: .generic,
@@ -75,7 +75,7 @@ open class ExplicitCountBasedPresentationTests: BaseTestClass {
             complexity: .moderate,
             context: .dashboard
         )
-        #expect(resolve(hints: gridHints, itemCount: 2) == .adaptive)
+        #expect(resolve(hints: gridHints, itemCount: 2) == .grid)
 
         let masonryHints = PresentationHints(
             dataType: .generic,
@@ -83,7 +83,7 @@ open class ExplicitCountBasedPresentationTests: BaseTestClass {
             complexity: .moderate,
             context: .dashboard
         )
-        #expect(resolve(hints: masonryHints, itemCount: 2) == .adaptive)
+        #expect(resolve(hints: masonryHints, itemCount: 2) == .masonry)
 
         let coverFlowHints = PresentationHints(
             dataType: .generic,
@@ -91,20 +91,20 @@ open class ExplicitCountBasedPresentationTests: BaseTestClass {
             complexity: .moderate,
             context: .dashboard
         )
-        #expect(resolve(hints: coverFlowHints, itemCount: 2) == .adaptive)
+        #expect(resolve(hints: coverFlowHints, itemCount: 2) == .coverFlow)
     }
 
     // MARK: - Nested Automatic Preference
 
     /// BUSINESS PURPOSE: Verify nested .automatic in .countBased uses count-aware logic
-    @Test @MainActor func testCountBasedWithNestedAutomatic() {
+    @Test func testCountBasedWithNestedAutomatic() {
         let lowAutoHints = PresentationHints(
             dataType: .generic,
             presentationPreference: .countBased(lowCount: .automatic, highCount: .list, threshold: 5),
             complexity: .moderate,
             context: .dashboard
         )
-        #expect(resolve(hints: lowAutoHints, itemCount: 3) == .list)
+        #expect(resolve(hints: lowAutoHints, itemCount: 3) == .grid)
 
         let highAutoHints = PresentationHints(
             dataType: .generic,
@@ -112,20 +112,20 @@ open class ExplicitCountBasedPresentationTests: BaseTestClass {
             complexity: .moderate,
             context: .dashboard
         )
-        #expect(resolve(hints: highAutoHints, itemCount: 8) == .expandableCards)
+        #expect(resolve(hints: highAutoHints, itemCount: 8) == .grid)
     }
 
     // MARK: - Content Type Independence
 
     /// BUSINESS PURPOSE: Verify .countBased vs dataType short-circuits (media/navigation)
-    @Test @MainActor func testCountBasedWorksWithAllContentTypes() {
+    @Test func testCountBasedWorksWithAllContentTypes() {
         let navHints = PresentationHints(
             dataType: .navigation,
             presentationPreference: .countBased(lowCount: .cards, highCount: .list, threshold: 5),
             complexity: .moderate,
             context: .navigation
         )
-        #expect(resolve(hints: navHints, itemCount: 2) == .expandableCards)
+        #expect(resolve(hints: navHints, itemCount: 2) == .masonry)
 
         let mediaHints = PresentationHints(
             dataType: .media,
@@ -133,13 +133,13 @@ open class ExplicitCountBasedPresentationTests: BaseTestClass {
             complexity: .moderate,
             context: .gallery
         )
-        #expect(resolve(hints: mediaHints, itemCount: 2) == .list)
+        #expect(resolve(hints: mediaHints, itemCount: 2) == .expandableCards)
     }
 
     // MARK: - Empty Collection Edge Case
 
     /// BUSINESS PURPOSE: Verify empty collection uses lowCount (0 ≤ threshold)
-    @Test @MainActor func testCountBasedWithEmptyCollection() {
+    @Test func testCountBasedWithEmptyCollection() {
         let hints = PresentationHints(
             dataType: .generic,
             presentationPreference: .countBased(lowCount: .cards, highCount: .list, threshold: 5),
@@ -147,20 +147,20 @@ open class ExplicitCountBasedPresentationTests: BaseTestClass {
             context: .dashboard
         )
 
-        #expect(resolve(hints: hints, itemCount: 0) == .list)
+        #expect(resolve(hints: hints, itemCount: 0) == .expandableCards)
     }
 
     // MARK: - Backward Compatibility
 
     /// BUSINESS PURPOSE: Verify existing preferences still work alongside .countBased
-    @Test @MainActor func testBackwardCompatibilityWithExistingPreferences() {
+    @Test func testBackwardCompatibilityWithExistingPreferences() {
         let listHints = PresentationHints(
             dataType: .generic,
             presentationPreference: .list,
             complexity: .moderate,
             context: .dashboard
         )
-        #expect(resolve(hints: listHints, itemCount: 3) == .grid)
+        #expect(resolve(hints: listHints, itemCount: 3) == .list)
 
         let autoHints = PresentationHints(
             dataType: .generic,
@@ -168,13 +168,13 @@ open class ExplicitCountBasedPresentationTests: BaseTestClass {
             complexity: .moderate,
             context: .dashboard
         )
-        #expect(resolve(hints: autoHints, itemCount: 3) == .list)
+        #expect(resolve(hints: autoHints, itemCount: 3) == .grid)
     }
 
     // MARK: - Complex Nested Scenarios
 
     /// BUSINESS PURPOSE: Verify nested countBased falls back and large thresholds stay on lowCount
-    @Test @MainActor func testComplexNestedCountBasedScenarios() {
+    @Test func testComplexNestedCountBasedScenarios() {
         let nestedHints = PresentationHints(
             dataType: .generic,
             presentationPreference: .countBased(
@@ -185,7 +185,7 @@ open class ExplicitCountBasedPresentationTests: BaseTestClass {
             complexity: .moderate,
             context: .dashboard
         )
-        #expect(resolve(hints: nestedHints, itemCount: 2) == .list)
+        #expect(resolve(hints: nestedHints, itemCount: 2) == .adaptive)
 
         let largeThresholdHints = PresentationHints(
             dataType: .generic,
@@ -193,18 +193,18 @@ open class ExplicitCountBasedPresentationTests: BaseTestClass {
             complexity: .moderate,
             context: .dashboard
         )
-        #expect(resolve(hints: largeThresholdHints, itemCount: 10) == .list)
+        #expect(resolve(hints: largeThresholdHints, itemCount: 10) == .expandableCards)
     }
 
     // MARK: - Helpers
 
-    @MainActor
+    /// macOS/mac matrix so iOS and macOS lanes share the same countBased contract (#248).
     private func resolve(hints: PresentationHints, itemCount: Int) -> ItemCollectionPresentationStrategy {
         ItemCollectionPresentationStrategyResolver.resolve(
             hints: hints,
             itemCount: itemCount,
-            platform: SixLayerPlatform.current,
-            deviceType: DeviceType.current
+            platform: .macOS,
+            deviceType: .mac
         )
     }
 }
