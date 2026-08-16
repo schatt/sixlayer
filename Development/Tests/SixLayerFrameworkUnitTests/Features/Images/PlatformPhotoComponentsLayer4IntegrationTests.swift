@@ -133,10 +133,8 @@ open class PlatformPhotoComponentsLayer4IntegrationTests: BaseTestClass {
         
         // Then: helper must invoke the callback with a valid image
         #expect(capturedImage != nil)
-        if let capturedImage {
-            #expect(capturedImage.size.width > 0, "Captured image should have valid width")
-            #expect(capturedImage.size.height > 0, "Captured image should have valid height")
-        }
+        #expect(capturedImage?.size.width ?? 0 > 0, "Captured image should have valid width")
+        #expect(capturedImage?.size.height ?? 0 > 0, "Captured image should have valid height")
     }
     
     // MARK: - Integration Tests for Photo Picker
@@ -189,10 +187,8 @@ open class PlatformPhotoComponentsLayer4IntegrationTests: BaseTestClass {
         
         // Then: helper must invoke the callback with a valid image
         #expect(selectedImage != nil)
-        if let selectedImage {
-            #expect(selectedImage.size.width > 0, "Selected image should have valid width")
-            #expect(selectedImage.size.height > 0, "Selected image should have valid height")
-        }
+        #expect(selectedImage?.size.width ?? 0 > 0, "Selected image should have valid width")
+        #expect(selectedImage?.size.height ?? 0 > 0, "Selected image should have valid height")
     }
     
     // MARK: - Integration Tests for Photo Display
