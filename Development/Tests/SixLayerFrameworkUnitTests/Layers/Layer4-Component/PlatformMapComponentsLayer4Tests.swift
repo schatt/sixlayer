@@ -45,6 +45,11 @@ open class PlatformMapComponentsLayer4Tests: BaseTestClass {
                 // Empty map content for test
             }
             BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "EmptyMapContent")
+        }
+        #endif
+    }
+    
+    /// BUSINESS PURPOSE: Verify map component uses modern API (Annotation, not MapAnnotation)
     /// TESTING SCOPE: Tests that deprecated MapAnnotation is not used
     /// METHODOLOGY: Compile-time Annotation + lock created view subject type
     @Test @MainActor func testPlatformMapView_UsesModernAPI() {
@@ -58,6 +63,9 @@ open class PlatformMapComponentsLayer4Tests: BaseTestClass {
                 }
             }
             BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "Annotation<Text, Image>")
+        }
+        #endif
+    }
     
     /// BUSINESS PURPOSE: Verify map component can integrate with LocationService
     /// TESTING SCOPE: Tests that LocationService coordinates can be used
@@ -125,6 +133,9 @@ open class PlatformMapComponentsLayer4Tests: BaseTestClass {
             let view = PlatformMapComponentsLayer4.platformMapView_L4(position: position) {
             }
             BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "AutomaticComplianceModifier")
+        }
+        #endif
+    }
     
     /// BUSINESS PURPOSE: Verify map component integrates with LocationService
     /// TESTING SCOPE: Tests that LocationService can provide coordinates for map
