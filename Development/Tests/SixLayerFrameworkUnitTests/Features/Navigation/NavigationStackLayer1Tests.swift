@@ -41,7 +41,7 @@ open class NavigationStackLayer1Tests: BaseTestClass {
             hints: testHints
         )
         
-        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotANavigationStack")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NavigationStackWrapper")
     }
     
     @Test @MainActor func testPlatformPresentNavigationStack_L1_WithTitle() {
@@ -56,7 +56,7 @@ open class NavigationStackLayer1Tests: BaseTestClass {
             hints: testHints
         )
         
-        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotANavigationStack")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NavigationStackWrapper")
     }
     
     @Test @MainActor func testPlatformPresentNavigationStack_L1_WithItems() {
@@ -77,7 +77,7 @@ open class NavigationStackLayer1Tests: BaseTestClass {
             Text("Detail: \(item.title)")
         }
         
-        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotANavigationStack")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NavigationStackItemsWrapper")
     }
     
     @Test @MainActor func testPlatformPresentNavigationStack_L1_HandlesEmptyItems() {
@@ -94,7 +94,7 @@ open class NavigationStackLayer1Tests: BaseTestClass {
             Text("Detail: \(item.title)")
         }
         
-        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotANavigationStack")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NavigationStackItemsWrapper")
     }
     
     @Test @MainActor func testPlatformPresentNavigationStack_L1_WithDifferentHints() {
@@ -126,8 +126,8 @@ open class NavigationStackLayer1Tests: BaseTestClass {
             hints: complexHints
         )
         
-        BaseTestClass.expectViewSubjectTypeContains(simpleView, rootViewName: "NotANavigationStack")
-        BaseTestClass.expectViewSubjectTypeContains(complexView, rootViewName: "NotANavigationStack")
+        BaseTestClass.expectViewSubjectTypeContains(simpleView, rootViewName: "NavigationStackWrapper")
+        BaseTestClass.expectViewSubjectTypeContains(complexView, rootViewName: "NavigationStackWrapper")
     }
     
     // MARK: - App Navigation Layer 1 Tests
@@ -145,7 +145,7 @@ open class NavigationStackLayer1Tests: BaseTestClass {
             detail: { detail }
         )
         
-        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotANavigationStack")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "AppNavigationWrapper")
     }
     
     @Test @MainActor func testPlatformPresentAppNavigation_L1_WithBindings() {
@@ -163,7 +163,7 @@ open class NavigationStackLayer1Tests: BaseTestClass {
             detail: { detail }
         )
         
-        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotANavigationStack")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "AppNavigationWrapper")
     }
     
     @Test @MainActor func testPlatformPresentAppNavigation_L1_WithOptionalBindings() {
@@ -179,7 +179,7 @@ open class NavigationStackLayer1Tests: BaseTestClass {
             detail: { detail }
         )
         
-        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotANavigationStack")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "AppNavigationWrapper")
     }
     
     @Test @MainActor func testPlatformPresentAppNavigation_L1_EmptyContent() {
@@ -195,7 +195,7 @@ open class NavigationStackLayer1Tests: BaseTestClass {
             detail: { detail }
         )
         
-        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotANavigationStack")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "AppNavigationWrapper")
     }
     
     @Test @MainActor func testPlatformPresentAppNavigation_L1_ComplexContent() {
@@ -219,7 +219,7 @@ open class NavigationStackLayer1Tests: BaseTestClass {
             detail: { detail }
         )
         
-        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotANavigationStack")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "AppNavigationWrapper")
     }
     
     @Test @MainActor func testPlatformPresentAppNavigation_L1_AutomaticDeviceDetection() {
@@ -236,7 +236,7 @@ open class NavigationStackLayer1Tests: BaseTestClass {
             detail: { detail }
         )
         
-        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotANavigationStack")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "AppNavigationWrapper")
     }
 }
 
