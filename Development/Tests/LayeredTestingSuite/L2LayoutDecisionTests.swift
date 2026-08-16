@@ -398,7 +398,7 @@ class L2LayoutDecisionTests: BaseTestClass {
         )
         
         // Then
-        #expect(Bool(true), "Layout decision should be created")  // layout is non-optional
+        #expect(layout.columns > 0, "Layout decision should have at least 1 column")
     }
 }
 
