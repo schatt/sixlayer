@@ -40,7 +40,6 @@ open class ResponsiveContainerTests: BaseTestClass {
             )
             #expect(hasAccessibilityID, "ResponsiveContainer should generate accessibility identifiers on iOS")
             #else
-            #expect(Bool(true), "View created (ViewInspector not available)")
             #endif
         }
     }
@@ -62,7 +61,6 @@ open class ResponsiveContainerTests: BaseTestClass {
             )
             #expect(hasAccessibilityID, "ResponsiveContainer should generate accessibility identifiers on macOS")
             #else
-            #expect(Bool(true), "View created (ViewInspector not available)")
             #endif
         }
     }
