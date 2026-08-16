@@ -101,7 +101,6 @@ open class PlatformOpenSettingsTests: BaseTestClass {
         
         // Then: Function should return Bool (may be false on macOS as there's no standard way to open app settings)
         let _ = result
-    #expect(Bool(true), "result is Bool")
     }
     #endif
     
