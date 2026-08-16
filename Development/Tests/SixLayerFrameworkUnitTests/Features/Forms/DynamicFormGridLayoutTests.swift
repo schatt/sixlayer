@@ -67,10 +67,10 @@ open class DynamicFormGridLayoutTests: BaseTestClass {
         )
         
         // When: Creating section view
-        _ = DynamicFormSectionView(section: section, formState: formState)
+        let view = DynamicFormSectionView(section: section, formState: formState)
         
         // Then: Should detect grid fields
-        #expect(Bool(true), "view is non-optional")  // view is non-optional
+        expectGridLayoutView(view, named: "DynamicFormSectionView")
         // Note: We can't directly test the computed property, but we can test the behavior
     }
     
@@ -89,10 +89,10 @@ open class DynamicFormGridLayoutTests: BaseTestClass {
         )
         
         // When: Creating section view
-        _ = DynamicFormSectionView(section: section, formState: formState)
+        let view = DynamicFormSectionView(section: section, formState: formState)
         
         // Then: Should not detect grid fields
-        #expect(Bool(true), "view is non-optional")  // view is non-optional
+        expectGridLayoutView(view, named: "DynamicFormSectionView")
         // Note: We can't directly test the computed property, but we can test the behavior
     }
     
@@ -114,10 +114,10 @@ open class DynamicFormGridLayoutTests: BaseTestClass {
         )
         
         // When: Creating section view
-        _ = DynamicFormSectionView(section: section, formState: formState)
+        let view = DynamicFormSectionView(section: section, formState: formState)
         
         // Then: Should calculate 4 columns
-        #expect(Bool(true), "view is non-optional")  // view is non-optional
+        expectGridLayoutView(view, named: "DynamicFormSectionView")
         // Note: We can't directly test the computed property, but we can test the behavior
     }
     
@@ -136,10 +136,10 @@ open class DynamicFormGridLayoutTests: BaseTestClass {
         )
         
         // When: Creating section view
-        _ = DynamicFormSectionView(section: section, formState: formState)
+        let view = DynamicFormSectionView(section: section, formState: formState)
         
         // Then: Should calculate 5 columns (max value)
-        #expect(Bool(true), "view is non-optional")  // view is non-optional
+        expectGridLayoutView(view, named: "DynamicFormSectionView")
         // Note: We can't directly test the computed property, but we can test the behavior
     }
     
@@ -166,13 +166,13 @@ open class DynamicFormGridLayoutTests: BaseTestClass {
         )
         
         // When: Creating dynamic form view
-        _ = DynamicFormView(
+        let view = DynamicFormView(
             configuration: configuration,
             onSubmit: { _ in }
         )
         
         // Then: Form should be created successfully
-        #expect(Bool(true), "view is non-optional")  // view is non-optional
+        expectGridLayoutView(view, named: "DynamicFormView")
         
         // Verify configuration
         #expect(configuration.title == "Test Form")
@@ -204,13 +204,13 @@ open class DynamicFormGridLayoutTests: BaseTestClass {
         )
         
         // When: Creating dynamic form view
-        _ = DynamicFormView(
+        let view = DynamicFormView(
             configuration: configuration,
             onSubmit: { _ in }
         )
         
         // Then: Form should be created successfully
-        #expect(Bool(true), "view is non-optional")  // view is non-optional
+        expectGridLayoutView(view, named: "DynamicFormView")
         
         // Verify configuration
         #expect(configuration.sections.count == 2)
@@ -233,10 +233,10 @@ open class DynamicFormGridLayoutTests: BaseTestClass {
         )
         
         // When: Creating section view
-        _ = DynamicFormSectionView(section: section, formState: formState)
+        let view = DynamicFormSectionView(section: section, formState: formState)
         
         // Then: Should handle gracefully
-        #expect(Bool(true), "view is non-optional")  // view is non-optional
+        expectGridLayoutView(view, named: "DynamicFormSectionView")
     }
     
     @Test @MainActor func testHandlesInvalidGridColumnMetadata() {
@@ -252,10 +252,10 @@ open class DynamicFormGridLayoutTests: BaseTestClass {
         )
         
         // When: Creating section view
-        _ = DynamicFormSectionView(section: section, formState: formState)
+        let view = DynamicFormSectionView(section: section, formState: formState)
         
         // Then: Should handle gracefully
-        #expect(Bool(true), "view is non-optional")  // view is non-optional
+        expectGridLayoutView(view, named: "DynamicFormSectionView")
     }
     
     @Test @MainActor func testHandlesSingleGridField() {
@@ -271,10 +271,10 @@ open class DynamicFormGridLayoutTests: BaseTestClass {
         )
         
         // When: Creating section view
-        _ = DynamicFormSectionView(section: section, formState: formState)
+        let view = DynamicFormSectionView(section: section, formState: formState)
         
         // Then: Should handle single field
-        #expect(Bool(true), "view is non-optional")  // view is non-optional
+        expectGridLayoutView(view, named: "DynamicFormSectionView")
     }
     
     // MARK: - Real-World Scenario Tests
@@ -301,13 +301,13 @@ open class DynamicFormGridLayoutTests: BaseTestClass {
         )
         
         // When: Creating dynamic form view
-        _ = DynamicFormView(
+        let view = DynamicFormView(
             configuration: configuration,
             onSubmit: { _ in }
         )
         
         // Then: Form should be created successfully
-        #expect(Bool(true), "view is non-optional")  // view is non-optional
+        expectGridLayoutView(view, named: "DynamicFormView")
         
         // Verify all fields have gridColumn metadata
         for field in fuelFields {
@@ -317,5 +317,10 @@ open class DynamicFormGridLayoutTests: BaseTestClass {
         // Verify configuration
         #expect(configuration.sections.count == 1)
         #expect(configuration.sections.first?.fields.count == 4)
+    }
+    
+    @MainActor
+    private func expectGridLayoutView(_ view: some View, named: String) {
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: named)
     }
 }
