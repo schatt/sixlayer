@@ -21,12 +21,11 @@ open class VisionSafetyTests: BaseTestClass {
         // When: Checking Vision framework availability
         // Then: Should handle availability gracefully
         
-        #if canImport(Vision)
-        // Vision is available - this is expected on iOS 11+ and macOS 10.15+
-        #expect(Bool(true), "Vision framework should be available on supported platforms")
+        let available = isVisionFrameworkAvailable()
+        #if os(watchOS)
+        #expect(available, "Vision should be unavailable on watchOS")
         #else
-        // Vision is not available - should have fallback behavior
-        #expect(Bool(true), "Should handle Vision unavailability gracefully")
+        #expect(!available, "Vision should be unavailable on this platform")
         #endif
     }
     
