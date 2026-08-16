@@ -49,7 +49,7 @@ open class OCROverlaySheetModifierTests: BaseTestClass {
             ocrResult: ocrResult,
             ocrImage: ocrImage
         )
-        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "OCROverlaySheetModifier")
+        expectOCROverlaySheetModifier(view)
     }
     
     /// BUSINESS PURPOSE: Verify modifier accepts optional callbacks
@@ -85,8 +85,8 @@ open class OCROverlaySheetModifierTests: BaseTestClass {
                 // Callback executed
             }
         )
-        BaseTestClass.expectViewSubjectTypeContains(withoutCallbacks, rootViewName: "OCROverlaySheetModifier")
-        BaseTestClass.expectViewSubjectTypeContains(withCallbacks, rootViewName: "OCROverlaySheetModifier")
+        expectOCROverlaySheetModifier(withoutCallbacks)
+        expectOCROverlaySheetModifier(withCallbacks)
     }
     
     /// BUSINESS PURPOSE: Verify modifier accepts optional configuration
@@ -123,8 +123,8 @@ open class OCROverlaySheetModifierTests: BaseTestClass {
             ocrImage: ocrImage,
             configuration: customConfig
         )
-        BaseTestClass.expectViewSubjectTypeContains(withoutConfiguration, rootViewName: "OCROverlaySheetModifier")
-        BaseTestClass.expectViewSubjectTypeContains(withConfiguration, rootViewName: "OCROverlaySheetModifier")
+        expectOCROverlaySheetModifier(withoutConfiguration)
+        expectOCROverlaySheetModifier(withConfiguration)
     }
     
     // MARK: - Sheet Presentation Tests
@@ -183,7 +183,7 @@ open class OCROverlaySheetModifierTests: BaseTestClass {
             ocrResult: nil,
             ocrImage: ocrImage
         )
-        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "OCROverlaySheetModifier")
+        expectOCROverlaySheetModifier(view)
     }
     
     /// BUSINESS PURPOSE: Verify error state when image is nil
@@ -205,11 +205,15 @@ open class OCROverlaySheetModifierTests: BaseTestClass {
             ocrResult: ocrResult,
             ocrImage: nil
         )
-        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "OCROverlaySheetModifier")
+        expectOCROverlaySheetModifier(view)
     }
     
     // MARK: - Test Helpers
     
+    private func expectOCROverlaySheetModifier(_ view: some View) {
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "OCROverlaySheetModifier")
+    }
+
     private func createTestOCRResult() -> OCRResult {
         return OCRResult(
             extractedText: "Test OCR Text",
