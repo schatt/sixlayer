@@ -34,7 +34,6 @@ open class ComponentLabelTextAccessibilityTests: BaseTestClass {
                 "AdaptiveButton identifier should include label text 'Submit'"
             )
             #else
-            #expect(Bool(true), "AdaptiveButton implementation verified - ViewInspector not available on this platform")
             #endif
             
             cleanupTestEnvironment()
@@ -68,7 +67,6 @@ open class ComponentLabelTextAccessibilityTests: BaseTestClass {
             // TODO: ViewInspector Detection Issue - VERIFIED: AdaptiveButton DOES pass label via .environment(\.accessibilityIdentifierLabel, title)
             // Implementation is correct, ViewInspector just can't detect it
             // TODO: Temporarily passing test - implementation IS correct but ViewInspector can't detect it
-            #expect(Bool(true), "AdaptiveButton implementation verified - ViewInspector can't detect (known limitation)")
         }
 
         cleanupTestEnvironment()
@@ -101,7 +99,6 @@ open class ComponentLabelTextAccessibilityTests: BaseTestClass {
             // TODO: ViewInspector Detection Issue - VERIFIED: platformNavigationTitle DOES pass label via .environment(\.accessibilityIdentifierLabel, title)
             // Implementation is correct, ViewInspector just can't detect it
             // TODO: Temporarily passing test - implementation IS correct but ViewInspector can't detect it
-            #expect(Bool(true), "platformNavigationTitle implementation verified - ViewInspector can't detect (known limitation)")
         }
         
         cleanupTestEnvironment()
@@ -142,7 +139,6 @@ open class ComponentLabelTextAccessibilityTests: BaseTestClass {
             // TODO: ViewInspector Detection Issue - VERIFIED: platformNavigationLink_L4 DOES pass label via .environment(\.accessibilityIdentifierLabel, title)
             // Implementation is correct, ViewInspector just can't detect it
             // TODO: Temporarily passing test - implementation IS correct but ViewInspector can't detect it
-            #expect(Bool(true), "platformNavigationLink_L4 implementation verified - ViewInspector can't detect (known limitation)")
         }
         
         cleanupTestEnvironment()
@@ -182,7 +178,6 @@ open class ComponentLabelTextAccessibilityTests: BaseTestClass {
             // TODO: ViewInspector Detection Issue - VERIFIED: platformNavigationButton DOES pass label via .environment(\.accessibilityIdentifierLabel, title)
             // Implementation is correct, ViewInspector just can't detect it
             // TODO: Temporarily passing test - implementation IS correct but ViewInspector can't detect it
-            #expect(Bool(true), "platformNavigationButton implementation verified - ViewInspector can't detect (known limitation)")
         }
         
         cleanupTestEnvironment()
@@ -214,7 +209,6 @@ open class ComponentLabelTextAccessibilityTests: BaseTestClass {
             // TODO: ViewInspector Detection Issue - VERIFIED: Label sanitization IS implemented
             // Implementation is correct, ViewInspector just can't detect it
             // TODO: Temporarily passing test - implementation IS correct but ViewInspector can't detect it
-            #expect(Bool(true), "Label sanitization implementation verified - ViewInspector can't detect (known limitation)")
         }
 
         cleanupTestEnvironment()
@@ -242,7 +236,6 @@ open class ComponentLabelTextAccessibilityTests: BaseTestClass {
             // TODO: ViewInspector Detection Issue - VERIFIED: Label sanitization IS implemented
             // Implementation is correct, ViewInspector just can't detect it
             // TODO: Temporarily passing test - implementation IS correct but ViewInspector can't detect it
-            #expect(Bool(true), "Label sanitization implementation verified - ViewInspector can't detect (known limitation)")
         }
 
         cleanupTestEnvironment()
@@ -271,7 +264,6 @@ open class ComponentLabelTextAccessibilityTests: BaseTestClass {
             // TODO: ViewInspector Detection Issue - VERIFIED: Label sanitization IS implemented
             // Implementation is correct, ViewInspector just can't detect it
             // TODO: Temporarily passing test - implementation IS correct but ViewInspector can't detect it
-            #expect(Bool(true), "Label sanitization implementation verified - ViewInspector can't detect (known limitation)")
         }
 
         cleanupTestEnvironment()
@@ -314,7 +306,6 @@ open class ComponentLabelTextAccessibilityTests: BaseTestClass {
             // TODO: ViewInspector Detection Issue - VERIFIED: DynamicTextField DOES pass label via .environment(\.accessibilityIdentifierLabel, field.label)
             // Implementation is correct, ViewInspector just can't detect it
             // TODO: Temporarily passing test - implementation IS correct but ViewInspector can't detect it
-            #expect(Bool(true), "DynamicTextField implementation verified - ViewInspector can't detect (known limitation)")
         }
         cleanupTestEnvironment()
     }
@@ -353,7 +344,6 @@ open class ComponentLabelTextAccessibilityTests: BaseTestClass {
             // TODO: ViewInspector Detection Issue - VERIFIED: DynamicEmailField DOES pass label via .environment(\.accessibilityIdentifierLabel, field.label)
             // Implementation is correct, ViewInspector just can't detect it
             // TODO: Temporarily passing test - implementation IS correct but ViewInspector can't detect it
-            #expect(Bool(true), "DynamicEmailField implementation verified - ViewInspector can't detect (known limitation)")
         }
         cleanupTestEnvironment()
     }
@@ -392,7 +382,6 @@ open class ComponentLabelTextAccessibilityTests: BaseTestClass {
             // TODO: ViewInspector Detection Issue - VERIFIED: DynamicPasswordField DOES pass label via .environment(\.accessibilityIdentifierLabel, field.label)
             // Implementation is correct, ViewInspector just can't detect it
             // TODO: Temporarily passing test - implementation IS correct but ViewInspector can't detect it
-            #expect(Bool(true), "DynamicPasswordField implementation verified - ViewInspector can't detect (known limitation)")
         }
         cleanupTestEnvironment()
     }
@@ -428,7 +417,6 @@ open class ComponentLabelTextAccessibilityTests: BaseTestClass {
             // TODO: ViewInspector Detection Issue - VERIFIED: DynamicFormView DOES pass label via .environment(\.accessibilityIdentifierLabel, configuration.title)
             // Implementation is correct, ViewInspector just can't detect it
             // TODO: Temporarily passing test - implementation IS correct but ViewInspector can't detect it
-            #expect(Bool(true), "DynamicFormView implementation verified - ViewInspector can't detect (known limitation)")
         }
 
         cleanupTestEnvironment()
@@ -470,7 +458,6 @@ open class ComponentLabelTextAccessibilityTests: BaseTestClass {
             // TODO: ViewInspector Detection Issue - VERIFIED: DynamicFormSectionView DOES pass label via .environment(\.accessibilityIdentifierLabel, section.title)
             // Implementation is correct, ViewInspector just can't detect it
             // TODO: Temporarily passing test - implementation IS correct but ViewInspector can't detect it
-            #expect(Bool(true), "DynamicFormSectionView implementation verified - ViewInspector can't detect (known limitation)")
         }
         cleanupTestEnvironment()
     }
@@ -1054,7 +1041,6 @@ open class ComponentLabelTextAccessibilityTests: BaseTestClass {
             // TODO: ViewInspector Detection Issue - VERIFIED: ExpandableCardComponent DOES pass label via .environment(\.accessibilityIdentifierLabel, cardTitle)
             // Implementation is correct, ViewInspector just can't detect it
             // TODO: Temporarily passing test - implementation IS correct but ViewInspector can't detect it
-            #expect(Bool(true), "ExpandableCardComponent implementation verified - ViewInspector can't detect (known limitation)")
         }
         
         cleanupTestEnvironment()
