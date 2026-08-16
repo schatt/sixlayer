@@ -55,7 +55,6 @@ open class HIGComplianceFeaturesIssue36Tests: BaseTestClass {
     @MainActor
     private func verifyViewIsHostable<V: View>(_ view: V, description: String) {
         _ = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "\(description) should be hostable with automatic compliance")
     }
     
     /// Verifies platform-specific touch target requirements
