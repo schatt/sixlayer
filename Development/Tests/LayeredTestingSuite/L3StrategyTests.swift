@@ -501,7 +501,7 @@ class L3StrategyTests: BaseTestClass {
         )
         
         // Then
-        #expect(Bool(true), "Strategy should be created")  // strategy is non-optional
+        #expect(strategy.supportedTextTypes == textTypes, "Strategy should support requested text types")
     }
     
     @Test func testStrategySelectionEdgeCases() {
