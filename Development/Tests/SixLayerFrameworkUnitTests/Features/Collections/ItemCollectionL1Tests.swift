@@ -24,13 +24,12 @@ open class ItemCollectionL1Tests: BaseTestClass {
         let hints = PresentationHints()
         
         // When
-        _ = platformPresentItemCollection_L1(
+        let view = platformPresentItemCollection_L1(
             items: items,
             hints: hints
         )
         
-        // Then
-        // view is a non-optional View, so it exists if we reach here
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "GenericItemCollectionView")
     }
     
     @Test @MainActor func testPlatformPresentItemCollection_L1_WithEmptyItems() {
@@ -45,13 +44,12 @@ open class ItemCollectionL1Tests: BaseTestClass {
         )
         
         // When
-        _ = platformPresentItemCollection_L1(
+        let view = platformPresentItemCollection_L1(
             items: items,
             hints: hints
         )
         
-        // Then
-        #expect(Bool(true), "platformPresentItemCollection_L1 with empty items should return a view")  // view is non-optional
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "GenericItemCollectionView")
     }
     
     @Test @MainActor func testPlatformPresentItemCollection_L1_WithSingleItem() {
@@ -66,13 +64,12 @@ open class ItemCollectionL1Tests: BaseTestClass {
         )
         
         // When
-        _ = platformPresentItemCollection_L1(
+        let view = platformPresentItemCollection_L1(
             items: items,
             hints: hints
         )
         
-        // Then
-        #expect(Bool(true), "platformPresentItemCollection_L1 with single item should return a view")  // view is non-optional
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "GenericItemCollectionView")
     }
     
     @Test @MainActor func testPlatformPresentItemCollection_L1_WithManyItems() {
@@ -87,13 +84,12 @@ open class ItemCollectionL1Tests: BaseTestClass {
         )
         
         // When
-        _ = platformPresentItemCollection_L1(
+        let view = platformPresentItemCollection_L1(
             items: items,
             hints: hints
         )
         
-        // Then
-        #expect(Bool(true), "platformPresentItemCollection_L1 with many items should return a view")  // view is non-optional
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "GenericItemCollectionView")
     }
     
     // MARK: - Different Hint Types
@@ -110,13 +106,12 @@ open class ItemCollectionL1Tests: BaseTestClass {
         )
         
         // When
-        _ = platformPresentItemCollection_L1(
+        let view = platformPresentItemCollection_L1(
             items: items,
             hints: hints
         )
         
-        // Then
-        #expect(Bool(true), "platformPresentItemCollection_L1 with compact hints should return a view")  // view is non-optional
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "GenericItemCollectionView")
     }
     
     @Test @MainActor func testPlatformPresentItemCollection_L1_WithDetailedHints() {
@@ -131,13 +126,12 @@ open class ItemCollectionL1Tests: BaseTestClass {
         )
         
         // When
-        _ = platformPresentItemCollection_L1(
+        let view = platformPresentItemCollection_L1(
             items: items,
             hints: hints
         )
         
-        // Then
-        #expect(Bool(true), "platformPresentItemCollection_L1 with detailed hints should return a view")  // view is non-optional
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "GenericItemCollectionView")
     }
     
     @Test @MainActor func testPlatformPresentItemCollection_L1_WithGridHints() {
@@ -152,13 +146,12 @@ open class ItemCollectionL1Tests: BaseTestClass {
         )
         
         // When
-        _ = platformPresentItemCollection_L1(
+        let view = platformPresentItemCollection_L1(
             items: items,
             hints: hints
         )
         
-        // Then
-        #expect(Bool(true), "platformPresentItemCollection_L1 with grid hints should return a view")  // view is non-optional
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "GenericItemCollectionView")
     }
     
     @Test @MainActor func testPlatformPresentItemCollection_L1_WithListHints() {
@@ -173,13 +166,12 @@ open class ItemCollectionL1Tests: BaseTestClass {
         )
         
         // When
-        _ = platformPresentItemCollection_L1(
+        let view = platformPresentItemCollection_L1(
             items: items,
             hints: hints
         )
         
-        // Then
-        #expect(Bool(true), "platformPresentItemCollection_L1 with list hints should return a view")  // view is non-optional
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "GenericItemCollectionView")
     }
     
     
