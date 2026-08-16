@@ -60,7 +60,6 @@ open class FormCallbackFunctionalTests: BaseTestClass {
         #else
         // ViewInspector not available on macOS - test passes by verifying callback signature
         // The callback is properly defined (verified by compilation), so test passes
-        #expect(Bool(true), "Callback functionality verified by compilation (ViewInspector not available on macOS)")
         #endif
     }
     
@@ -102,7 +101,6 @@ open class FormCallbackFunctionalTests: BaseTestClass {
         #else
         // ViewInspector not available on macOS - test passes by verifying callback signature
         // The callback is properly defined (verified by compilation), so test passes
-        #expect(Bool(true), "Callback functionality verified by compilation (ViewInspector not available on macOS)")
         #endif
     }
     
@@ -141,7 +139,6 @@ open class FormCallbackFunctionalTests: BaseTestClass {
         #else
         // ViewInspector not available on macOS - test passes by verifying callback signature
         // The callback is properly defined (verified by compilation), so test passes
-        #expect(Bool(true), "Callback functionality verified by compilation (ViewInspector not available on macOS)")
         #endif
     }
     
@@ -168,8 +165,6 @@ open class FormCallbackFunctionalTests: BaseTestClass {
         )
         
         // Form view is always non-nil (it's a View, not Optional<View>)
-        #expect(Bool(true), "Form view should be accessible externally")
         #expect(callbackInvoked == false, "Callback should not be invoked before interaction")
-        #expect(Bool(true), "Callbacks can be provided by external modules")
     }
 }
