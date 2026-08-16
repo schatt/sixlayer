@@ -3,11 +3,12 @@
 //  SixLayerFrameworkTests
 //
 //  BUSINESS PURPOSE:
-//  Shared test helper for CloudKit service tests
-//  Provides a single TestCloudKitDelegate implementation to avoid redeclaration errors
+//  Shared TestCloudKitDelegate for unit and ViewInspector lanes.
+//  Lives in Shared/TestHelpers so SLF-*-ViewInspectorTests can compile
+//  Layer 4 CloudKit accessibility suites (#419).
 //
 //  USAGE:
-//  Import this file in CloudKit test files instead of declaring TestCloudKitDelegate locally
+//  Do not declare TestCloudKitDelegate in individual test files.
 //
 
 import Testing
