@@ -24,13 +24,12 @@ open class ItemCollectionL1Tests: BaseTestClass {
         let hints = PresentationHints()
         
         // When
-        _ = platformPresentItemCollection_L1(
+        let view = platformPresentItemCollection_L1(
             items: items,
             hints: hints
         )
         
-        // Then
-        // view is a non-optional View, so it exists if we reach here
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "GenericItemCollectionView")
     }
     
     @Test @MainActor func testPlatformPresentItemCollection_L1_WithEmptyItems() {
