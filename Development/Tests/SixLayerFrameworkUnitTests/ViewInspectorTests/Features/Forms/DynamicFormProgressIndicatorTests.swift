@@ -151,7 +151,6 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
         }
         #else
         // ViewInspector not available on macOS - verify view is created
-        #expect(Bool(true), "View created successfully with showProgress: false")
         #endif
     }
     
@@ -254,7 +253,6 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
                     // Look for ProgressView
                     let progressViews = indicator.findAll(ViewInspector.ViewType.ProgressView.self)
                     _ = progressViews.first
-                    #expect(Bool(true), "Progress bar should be present")
                     
                     // Verify the structure contains expected elements
                     let texts = indicator.findAll(ViewInspector.ViewType.Text.self)
@@ -268,7 +266,6 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
         }
         #else
         // ViewInspector not available on macOS - verify view is created
-        #expect(Bool(true), "View created successfully")
         #endif
     }
     
@@ -324,7 +321,6 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
         }
         #else
         // ViewInspector not available - verify view is created
-        #expect(Bool(true), "View created successfully")
         #endif
         
         // Note: Testing actual UI updates when fields are filled would require
@@ -374,7 +370,6 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
         }
         #else
         // ViewInspector not available - verify components are created
-        #expect(Bool(true), "All progress indicators created successfully")
         #endif
     }
     
@@ -404,7 +399,6 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
         }
         #else
         // ViewInspector not available on macOS - verify component is created
-        #expect(Bool(true), "Progress indicator created successfully")
         #endif
     }
     
@@ -437,7 +431,6 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
             _ = texts.first { text in
                 (try? text.string())?.contains("3 of 5") ?? false
             }
-            #expect(Bool(true), "Should display '3 of 5 fields' text that matches accessibility value")
             
             // Note: ViewInspector cannot directly read accessibilityLabel/accessibilityValue content,
             // but we verify the component structure and that modifiers are applied via identifier check
@@ -484,7 +477,6 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
         }
         #else
         // ViewInspector not available on macOS - verify indicators are created
-        #expect(Bool(true), "All progress indicators created successfully")
         #endif
     }
     
@@ -510,7 +502,6 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
         }
         #else
         // ViewInspector not available on macOS - verify component is created
-        #expect(Bool(true), "Progress indicator created successfully")
         #endif
     }
     
@@ -532,7 +523,6 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
         }
         #else
         // ViewInspector not available on macOS - verify component is created
-        #expect(Bool(true), "Progress indicator created successfully")
         #endif
     }
     
@@ -573,7 +563,6 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
         }
         #else
         // ViewInspector not available on macOS - verify component is created
-        #expect(Bool(true), "Progress indicator created successfully")
         #endif
     }
     
@@ -600,7 +589,6 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
         }
         #else
         // ViewInspector not available on macOS - verify component is created
-        #expect(Bool(true), "Progress indicator created successfully in light mode")
         #endif
     }
     
@@ -625,7 +613,6 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
         }
         #else
         // ViewInspector not available on macOS - verify component is created
-        #expect(Bool(true), "Progress indicator created successfully in dark mode")
         #endif
     }
     
@@ -681,7 +668,6 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
         }
         #else
         // ViewInspector not available on macOS - verify components are created
-        #expect(Bool(true), "All edge case progress indicators created successfully")
         #endif
     }
 }
