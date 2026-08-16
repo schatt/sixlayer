@@ -29,7 +29,6 @@ struct PlatformManagedSettingsDetailNavigationLayer4Tests {
             .platformManagedSettingsDetailNavigationStack_L4(state: holder.binding) {
                 Text("Inner")
             }
-        _ = view
-        #expect(Bool(true), "modifier should produce a view")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "_ConditionalContent")
     }
 }

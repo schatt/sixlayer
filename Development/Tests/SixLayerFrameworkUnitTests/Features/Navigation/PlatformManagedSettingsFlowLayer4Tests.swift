@@ -41,7 +41,17 @@ struct PlatformManagedSettingsFlowLayer4Tests {
                 sidebar: { Text("Sidebar") },
                 detail: { Text("Detail") }
             )
-        _ = view
-        #expect(Bool(true), "platformManagedSettingsTopLevel_L4 should produce a view")
+        #if os(macOS)
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "Layer4NestedSplitShellPresentationHost")
+        #elseif os(iOS)
+        let description = BaseTestClass.viewSubjectTypeDescription(for: view)
+        #expect(
+            description.contains("Layer4NestedSplitShellPresentationHost")
+                || description.contains("NavigationStack"),
+            "iOS settings shell should be split host or NavigationStack, got: \(description)"
+        )
+        #else
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "Text")
+        #endif
     }
 }
