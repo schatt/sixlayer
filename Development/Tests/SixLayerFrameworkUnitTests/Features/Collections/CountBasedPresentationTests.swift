@@ -79,7 +79,7 @@ open class CountBasedPresentationTests: BaseTestClass {
 
     // MARK: - Edge Cases
 
-    /// BUSINESS PURPOSE: Empty collection still resolves a strategy (does not crash)
+    /// BUSINESS PURPOSE: Empty collection still resolves grid on macOS (no distinct empty-state strategy)
     @Test func testAutomaticWithEmptyCollection() {
         let hints = PresentationHints(
             dataType: .generic,
