@@ -17,10 +17,6 @@ open class VisionSafetyTests: BaseTestClass {
     // MARK: - Vision Availability Tests
     
     @Test func testVisionFrameworkAvailability() {
-        // Given: A test environment
-        // When: Checking Vision framework availability
-        // Then: Should handle availability gracefully
-        
         let available = isVisionFrameworkAvailable()
         #if os(watchOS)
         #expect(!available, "Vision should be unavailable on watchOS")
