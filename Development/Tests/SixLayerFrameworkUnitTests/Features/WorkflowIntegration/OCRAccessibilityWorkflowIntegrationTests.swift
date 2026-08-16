@@ -40,6 +40,16 @@ final class OCRAccessibilityWorkflowIntegrationTests: BaseTestClass {
     
     // MARK: - Test Helpers
     
+    @MainActor
+    private func expectOCRWithVisualCorrectionWrapper(_ view: some View) {
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "OCRWithVisualCorrectionWrapper")
+    }
+
+    @MainActor
+    private func expectStructuredDataExtractionWrapper(_ view: some View) {
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "StructuredDataExtractionWrapper")
+    }
+
     /// Creates a test OCR context for workflow testing
     /// - Parameters:
     ///   - textTypes: Array of text types to extract (e.g., .price, .date, .general). Defaults to [.general] for basic text extraction.
@@ -94,7 +104,7 @@ final class OCRAccessibilityWorkflowIntegrationTests: BaseTestClass {
         ) { _ in
             // Result received
         }
-        BaseTestClass.expectViewSubjectTypeContains(ocrView, rootViewName: "OCRWithVisualCorrectionWrapper")
+        expectOCRWithVisualCorrectionWrapper(ocrView)
         
         let _ = platformVStackContainer {
             ocrView
@@ -144,7 +154,7 @@ final class OCRAccessibilityWorkflowIntegrationTests: BaseTestClass {
         ) { _ in }
         
         #expect(configuration.allowsEditing, "Configuration should allow editing for keyboard interaction on \(currentPlatform)")
-        BaseTestClass.expectViewSubjectTypeContains(ocrView, rootViewName: "OCRWithVisualCorrectionWrapper")
+        expectOCRWithVisualCorrectionWrapper(ocrView)
     }
     
     /// BUSINESS PURPOSE: Validate OCR errors are accessible to screen readers
@@ -203,7 +213,7 @@ final class OCRAccessibilityWorkflowIntegrationTests: BaseTestClass {
         let _ = platformVStackContainer {
             ocrView
         }
-        BaseTestClass.expectViewSubjectTypeContains(ocrView, rootViewName: "OCRWithVisualCorrectionWrapper")
+        expectOCRWithVisualCorrectionWrapper(ocrView)
     }
     
     /// BUSINESS PURPOSE: Validate OCR result accessibility audit
@@ -255,7 +265,7 @@ final class OCRAccessibilityWorkflowIntegrationTests: BaseTestClass {
         let _ = platformVStackContainer {
             extractionView
         }
-        BaseTestClass.expectViewSubjectTypeContains(extractionView, rootViewName: "StructuredDataExtractionWrapper")
+        expectStructuredDataExtractionWrapper(extractionView)
     }
     
     /// BUSINESS PURPOSE: Validate OCR confidence indicators are accessible
