@@ -40,11 +40,10 @@ open class NavigationStackLayer6Tests: BaseTestClass {
             }
         
         // When: Applying platform enhancements
-        _ = content
+        let view = content
             .platformNavigationStackEnhancements_L6()
         
-        // Then: Should return an enhanced view
-        #expect(Bool(true), "enhancedView is non-optional")
+        expectL6EnhancementApplied(view)
     }
     
     @Test @MainActor func testPlatformNavigationStackEnhancements_L6_PlatformSpecific() {
@@ -55,11 +54,10 @@ open class NavigationStackLayer6Tests: BaseTestClass {
             }
         
         // When: Applying platform enhancements
-        _ = content
+        let view = content
             .platformNavigationStackEnhancements_L6()
         
-        // Then: Should apply platform-specific enhancements
-        #expect(Bool(true), "enhancedView is non-optional")
+        expectL6EnhancementApplied(view)
     }
     
     @Test @MainActor func testPlatformNavigationStackEnhancements_L6_Accessibility() {
@@ -70,11 +68,10 @@ open class NavigationStackLayer6Tests: BaseTestClass {
             }
         
         // When: Applying accessibility enhancements
-        _ = content
+        let view = content
             .platformNavigationStackEnhancements_L6()
         
-        // Then: Should have accessibility enhancements
-        #expect(Bool(true), "enhancedView is non-optional")
+        expectL6EnhancementApplied(view)
     }
     
     @Test @MainActor func testPlatformNavigationStackEnhancements_L6_WorksWithLayer1() {
@@ -92,11 +89,26 @@ open class NavigationStackLayer6Tests: BaseTestClass {
         )
         
         // When: Applying Layer 6 enhancements
-        _ = view
+        let enhanced = view
             .platformNavigationStackEnhancements_L6()
         
-        // Then: Should work with Layer 1
-        #expect(Bool(true), "enhancedView is non-optional")
+        expectL6EnhancementApplied(enhanced)
+    }
+    
+    @MainActor
+    private func expectL6EnhancementApplied(_ view: some View) {
+        #if os(macOS)
+        for rootViewName in ["_FocusableModifier", "AccessibilityAttachmentModifier", "_FlexFrameLayout"] {
+            BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: rootViewName)
+        }
+        #elseif os(iOS)
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "AccessibilityAttachmentModifier")
+        #else
+        let description = BaseTestClass.viewSubjectTypeDescription(for: view)
+        #expect(
+            !description.contains("_FocusableModifier"),
+            "L6 is a pass-through off iOS/macOS, got: \(description)"
+        )
+        #endif
     }
 }
-
