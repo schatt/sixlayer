@@ -122,7 +122,7 @@ open class LabeledContentDisplayFieldTests: BaseTestClass {
         let view = DynamicDisplayField(field: field, formState: state)
         
         // Then: View should be created successfully
-        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotADisplayField")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "DynamicDisplayField")
         
         // Verify field configuration
         #expect(field.label == "Display Value")
@@ -146,7 +146,7 @@ open class LabeledContentDisplayFieldTests: BaseTestClass {
         let view = DynamicDisplayField(field: field, formState: state)
         
         // Then: View should be created (actual LabeledContent usage verified in UI tests)
-        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotADisplayField")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "DynamicDisplayField")
         
         // Verify value is set
         #expect(state.getValue(for: "display-field") as String? == "Test Value")
@@ -169,7 +169,7 @@ open class LabeledContentDisplayFieldTests: BaseTestClass {
         let view = DynamicDisplayField(field: field, formState: state)
         
         // Then: View should be created successfully
-        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotADisplayField")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "DynamicDisplayField")
         
         // Verify value is accessible
         #expect(state.getValue(for: "display-field") as String? == "Test Value")
@@ -288,7 +288,7 @@ open class LabeledContentDisplayFieldTests: BaseTestClass {
         let view = DynamicDisplayField(field: field, formState: state)
         
         // Then: View should be created
-        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotADisplayField")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "DynamicDisplayField")
         
         // And: valueView should be accessible
         #expect(field.valueView != nil)
@@ -311,7 +311,7 @@ open class LabeledContentDisplayFieldTests: BaseTestClass {
         let view = DynamicDisplayField(field: field, formState: state)
         
         // Then: View should be created
-        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotADisplayField")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "DynamicDisplayField")
         
         // And: valueView should be nil (default behavior)
         #expect(field.valueView == nil)
@@ -344,7 +344,7 @@ open class LabeledContentDisplayFieldTests: BaseTestClass {
         let view = DynamicDisplayField(field: field, formState: state)
         
         // Then: View should be created
-        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotADisplayField")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "DynamicDisplayField")
         // Note: capturedField and capturedFormState would be set if valueView closure is invoked, but we can't verify that in unit tests
         
         // And: Parameters should be captured when valueView is called
@@ -376,7 +376,7 @@ open class LabeledContentDisplayFieldTests: BaseTestClass {
         let view = DynamicDisplayField(field: dateField, formState: state)
         
         // Then: View should be created
-        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotADisplayField")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "DynamicDisplayField")
         
         // And: Date value should be accessible
         let dateValue: Date? = state.getValue(for: "date-field")
@@ -413,7 +413,7 @@ open class LabeledContentDisplayFieldTests: BaseTestClass {
         let view = DynamicDisplayField(field: colorField, formState: state)
         
         // Then: View should be created
-        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotADisplayField")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "DynamicDisplayField")
         
         // And: Color value should be accessible
         let colorValue: Color? = state.getValue(for: "color-field")
@@ -437,7 +437,7 @@ open class LabeledContentDisplayFieldTests: BaseTestClass {
         let view = DynamicDisplayField(field: field, formState: state)
         
         // Then: View should be created successfully
-        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotADisplayField")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "DynamicDisplayField")
         
         // And: valueView should be nil (backward compatible)
         #expect(field.valueView == nil)
@@ -475,7 +475,7 @@ open class LabeledContentDisplayFieldTests: BaseTestClass {
             onSubmit: { _ in }
         )
         
-        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotADisplayField")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "DynamicFormView")
         
         // Verify field is in configuration
         #expect(configuration.sections.first?.fields.first?.id == "display-field")
@@ -497,7 +497,7 @@ open class LabeledContentDisplayFieldTests: BaseTestClass {
         let view = DynamicDisplayField(field: field, formState: state)
         
         // Then: View should be created successfully
-        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotADisplayField")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "DynamicDisplayField")
     }
     
     // MARK: - Accessibility Tests
@@ -518,7 +518,7 @@ open class LabeledContentDisplayFieldTests: BaseTestClass {
         let view = DynamicDisplayField(field: field, formState: state)
         
         // Then: View should be created (accessibility verified in UI tests)
-        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotADisplayField")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "DynamicDisplayField")
         
         // Verify field has label
         #expect(field.label == "Display Value")
@@ -541,7 +541,7 @@ open class LabeledContentDisplayFieldTests: BaseTestClass {
         let view = DynamicDisplayField(field: field, formState: state)
         
         // Then: View should be created (accessibility verified in UI tests)
-        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotADisplayField")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "DynamicDisplayField")
         
         // Verify value is accessible
         #expect(state.getValue(for: "display-field") as String? == "Test Value")
@@ -584,7 +584,7 @@ open class LabeledContentDisplayFieldTests: BaseTestClass {
         // When: Creating CustomFieldView with display field
         let view = CustomFieldView(field: field, formState: state)
         
-        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotADisplayField")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "CustomFieldView")
         
         // Verify field configuration
         #expect(field.contentType == .display)
