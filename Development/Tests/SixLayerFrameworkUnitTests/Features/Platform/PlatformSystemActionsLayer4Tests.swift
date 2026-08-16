@@ -182,10 +182,8 @@ open class PlatformSystemActionsLayer4Tests: BaseTestClass {
         // Given: Items to share
         let items: [Any] = ["Test text", URL(string: "https://example.com")!]
         
-        let view = Text("Test")
-            .platformShare_L4(items: items, from: nil)
-        
-        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "ShareSheetItemsModifier")
+        let view = shareModifierView(items: items)
+        expectShareModifier(view)
     }
     
     /// BUSINESS PURPOSE: Verify sharing works with text items
@@ -195,10 +193,8 @@ open class PlatformSystemActionsLayer4Tests: BaseTestClass {
         // Given: Text items
         let items: [Any] = ["Test text", "Another text"]
         
-        let view = Text("Test")
-            .platformShare_L4(items: items, from: nil)
-        
-        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "ShareSheetItemsModifier")
+        let view = shareModifierView(items: items)
+        expectShareModifier(view)
     }
     
     /// BUSINESS PURPOSE: Verify sharing works with URL items
@@ -213,10 +209,8 @@ open class PlatformSystemActionsLayer4Tests: BaseTestClass {
         }
         let items: [Any] = [url1, url2]
         
-        let view = Text("Test")
-            .platformShare_L4(items: items, from: nil)
-        
-        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "ShareSheetItemsModifier")
+        let view = shareModifierView(items: items)
+        expectShareModifier(view)
     }
     
     /// BUSINESS PURPOSE: Verify sharing works with mixed items
@@ -230,10 +224,8 @@ open class PlatformSystemActionsLayer4Tests: BaseTestClass {
         }
         let items: [Any] = ["Test text", url]
         
-        let view = Text("Test")
-            .platformShare_L4(items: items, from: nil)
-        
-        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "ShareSheetItemsModifier")
+        let view = shareModifierView(items: items)
+        expectShareModifier(view)
     }
     
     /// BUSINESS PURPOSE: Verify iOS implementation uses UIActivityViewController
@@ -244,10 +236,8 @@ open class PlatformSystemActionsLayer4Tests: BaseTestClass {
         // Given: Items to share
         let items: [Any] = ["Test text"]
         
-        let view = Text("Test")
-            .platformShare_L4(items: items, from: nil)
-        
-        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "ShareSheetItemsModifier")
+        let view = shareModifierView(items: items)
+        expectShareModifier(view)
         #endif
     }
     
@@ -259,10 +249,8 @@ open class PlatformSystemActionsLayer4Tests: BaseTestClass {
         // Given: Items to share
         let items: [Any] = ["Test text"]
         
-        let view = Text("Test")
-            .platformShare_L4(items: items, from: nil)
-        
-        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "ShareSheetItemsModifier")
+        let view = shareModifierView(items: items)
+        expectShareModifier(view)
         #endif
     }
     
@@ -272,10 +260,8 @@ open class PlatformSystemActionsLayer4Tests: BaseTestClass {
     @Test @MainActor func testPlatformShare_AccessibilityIdentifiers() {
         // Given: Share modifier
         let items: [Any] = ["Test text"]
-        let view = Text("Test")
-            .platformShare_L4(items: items, from: nil)
-        
-        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "ShareSheetItemsModifier")
+        let view = shareModifierView(items: items)
+        expectShareModifier(view)
     }
     
     /// BUSINESS PURPOSE: Verify error handling for empty items array
@@ -285,10 +271,8 @@ open class PlatformSystemActionsLayer4Tests: BaseTestClass {
         // Given: Empty items array
         let items: [Any] = []
         
-        let view = Text("Test")
-            .platformShare_L4(items: items, from: nil)
-        
-        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "ShareSheetItemsModifier")
+        let view = shareModifierView(items: items)
+        expectShareModifier(view)
     }
     
     /// BUSINESS PURPOSE: Verify sourceView parameter is accepted
@@ -299,9 +283,21 @@ open class PlatformSystemActionsLayer4Tests: BaseTestClass {
         let items: [Any] = ["Test text"]
         let sourceView = Text("Source")
         
-        let view = Text("Test")
+        let view = shareModifierView(items: items, from: sourceView)
+        expectShareModifier(view)
+    }
+    
+    @MainActor
+    private func shareModifierView(
+        items: [Any],
+        from sourceView: (any View)? = nil
+    ) -> some View {
+        Text("Test")
             .platformShare_L4(items: items, from: sourceView)
-        
+    }
+    
+    @MainActor
+    private func expectShareModifier(_ view: some View) {
         BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "ShareSheetItemsModifier")
     }
 }
