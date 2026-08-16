@@ -179,7 +179,7 @@ final class CrossComponentIntegrationTests: BaseTestClass {
             complexity: .simple
         )
         
-        let _ = platformPresentFormData_L1(
+        let view = platformPresentFormData_L1(
             fields: fields,
             hints: hints
         )
@@ -196,7 +196,7 @@ final class CrossComponentIntegrationTests: BaseTestClass {
             }
         }
         
-        #expect(Bool(true), "Form should be created with accessibility on \(currentPlatform)")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotAAsyncFormView")
     }
     
     /// BUSINESS PURPOSE: Validate form validation errors are accessible
