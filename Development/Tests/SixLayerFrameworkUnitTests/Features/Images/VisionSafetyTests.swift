@@ -23,9 +23,9 @@ open class VisionSafetyTests: BaseTestClass {
         
         let available = isVisionFrameworkAvailable()
         #if os(watchOS)
-        #expect(available, "Vision should be unavailable on watchOS")
+        #expect(!available, "Vision should be unavailable on watchOS")
         #else
-        #expect(!available, "Vision should be unavailable on this platform")
+        #expect(available, "Vision should be available on this platform")
         #endif
     }
     
