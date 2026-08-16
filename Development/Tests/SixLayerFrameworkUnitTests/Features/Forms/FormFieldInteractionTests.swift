@@ -294,7 +294,7 @@ open class FormFieldInteractionTests: BaseTestClass {
             displayedComponents: [.date]
         )
         selection.wrappedValue = expected
-        #expect(fieldValueChanges[dateField.label] as? Date == Date.distantPast)
+        #expect(fieldValueChanges[dateField.label] as? Date == expected)
         #endif
     }
     
