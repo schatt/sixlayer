@@ -707,6 +707,7 @@ open class FieldActionsTests: BaseTestClass {
             allowedSources: .both
         )
         
+        // Stored config only — runtime camera fallback is not observed in this unit test.
         #expect(scanner.allowedSources == .both)
     }
     
@@ -728,6 +729,7 @@ open class FieldActionsTests: BaseTestClass {
             allowedSources: .camera
         )
         
+        // Stored config only — runtime camera fallback is not observed in this unit test.
         #expect(scanner.allowedSources == .camera)
     }
 }
