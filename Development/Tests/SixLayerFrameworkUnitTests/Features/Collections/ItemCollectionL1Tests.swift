@@ -50,7 +50,7 @@ open class ItemCollectionL1Tests: BaseTestClass {
             hints: hints
         )
         
-        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotAItemCollection")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "GenericItemCollectionView")
     }
     
     @Test @MainActor func testPlatformPresentItemCollection_L1_WithSingleItem() {
@@ -70,7 +70,7 @@ open class ItemCollectionL1Tests: BaseTestClass {
             hints: hints
         )
         
-        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotAItemCollection")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "GenericItemCollectionView")
     }
     
     @Test @MainActor func testPlatformPresentItemCollection_L1_WithManyItems() {
@@ -90,7 +90,7 @@ open class ItemCollectionL1Tests: BaseTestClass {
             hints: hints
         )
         
-        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotAItemCollection")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "GenericItemCollectionView")
     }
     
     // MARK: - Different Hint Types
@@ -112,7 +112,7 @@ open class ItemCollectionL1Tests: BaseTestClass {
             hints: hints
         )
         
-        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotAItemCollection")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "GenericItemCollectionView")
     }
     
     @Test @MainActor func testPlatformPresentItemCollection_L1_WithDetailedHints() {
@@ -132,7 +132,7 @@ open class ItemCollectionL1Tests: BaseTestClass {
             hints: hints
         )
         
-        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotAItemCollection")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "GenericItemCollectionView")
     }
     
     @Test @MainActor func testPlatformPresentItemCollection_L1_WithGridHints() {
@@ -152,7 +152,7 @@ open class ItemCollectionL1Tests: BaseTestClass {
             hints: hints
         )
         
-        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotAItemCollection")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "GenericItemCollectionView")
     }
     
     @Test @MainActor func testPlatformPresentItemCollection_L1_WithListHints() {
@@ -172,7 +172,7 @@ open class ItemCollectionL1Tests: BaseTestClass {
             hints: hints
         )
         
-        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotAItemCollection")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "GenericItemCollectionView")
     }
     
     
