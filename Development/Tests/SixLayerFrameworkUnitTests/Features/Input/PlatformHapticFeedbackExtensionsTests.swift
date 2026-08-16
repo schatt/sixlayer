@@ -146,46 +146,32 @@ open class PlatformHapticFeedbackExtensionsTests: BaseTestClass {
     /// BUSINESS PURPOSE: Validate iOS haptic feedback behavior
     /// TESTING SCOPE: Tests that iOS implementation works correctly
     /// METHODOLOGY: Test on iOS platform and verify behavior
+    #if os(iOS)
     @Test @MainActor func testIOSHapticFeedbackBehavior() {
-        #if os(iOS)
         initializeTestConfig()
         runWithTaskLocalConfig {
-            // Given: A view on iOS
             let testView = Text("Test")
-            
-            // When: Apply haptic feedback modifier
-            // Then: Should not crash and should be applicable
             #expect(throws: Never.self) {
                 let _ = testView.platformHapticFeedback(.light)
             }
         }
-        #else
-        // Skip on non-iOS platforms
-        #expect(Bool(true), "Test only runs on iOS")
-        #endif
     }
+    #endif
     
     /// BUSINESS PURPOSE: Validate macOS graceful fallback behavior
     /// TESTING SCOPE: Tests that macOS implementation gracefully handles haptics (no-op)
     /// METHODOLOGY: Test on macOS platform and verify no-op behavior
+    #if os(macOS)
     @Test @MainActor func testMacOSGracefulFallback() {
-        #if os(macOS)
         initializeTestConfig()
         runWithTaskLocalConfig {
-            // Given: A view on macOS
             let testView = Text("Test")
-            
-            // When: Apply haptic feedback modifier
-            // Then: Should not crash (graceful no-op on macOS)
             #expect(throws: Never.self) {
                 let _ = testView.platformHapticFeedback(.light)
             }
         }
-        #else
-        // Skip on non-macOS platforms
-        #expect(Bool(true), "Test only runs on macOS")
-        #endif
     }
+    #endif
     
     // MARK: - Integration Tests
     
