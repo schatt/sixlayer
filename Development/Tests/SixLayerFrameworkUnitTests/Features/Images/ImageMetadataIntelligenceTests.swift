@@ -150,7 +150,7 @@ open class ImageMetadataIntelligenceTests: BaseTestClass {
         let categorization = try await intelligence.categorizeByContent(image)
         
         // Then
-        #expect(categorization.primaryCategory == "NotACategory")
+        #expect(categorization.primaryCategory == "General")
     }
     
     /// BUSINESS PURPOSE: Validate purpose categorization functionality
@@ -165,7 +165,7 @@ open class ImageMetadataIntelligenceTests: BaseTestClass {
         let purposeCategorization = try await intelligence.categorizeByPurpose(image)
         
         // Then
-        #expect(purposeCategorization.recommendedPurpose == .ocr)
+        #expect(purposeCategorization.recommendedPurpose == .photo)
     }
     
     /// BUSINESS PURPOSE: Validate quality categorization functionality
@@ -180,7 +180,7 @@ open class ImageMetadataIntelligenceTests: BaseTestClass {
         let qualityCategorization = try await intelligence.categorizeByQuality(image)
         
         // Then
-        #expect(qualityCategorization.qualityLevel == .unusable)
+        #expect(qualityCategorization.qualityLevel == .good)
     }
     
     // MARK: - Smart Recommendations Tests
@@ -197,7 +197,7 @@ open class ImageMetadataIntelligenceTests: BaseTestClass {
         let recommendations = try await intelligence.generateOptimizationRecommendations(for: image)
         
         // Then
-        #expect(recommendations.compressionRecommendations == ["NotARecommendation"])
+        #expect(recommendations.compressionRecommendations == ["Use JPEG for smaller file size", "Consider WebP for web use"])
     }
     
     /// BUSINESS PURPOSE: Validate accessibility recommendations functionality
@@ -212,7 +212,7 @@ open class ImageMetadataIntelligenceTests: BaseTestClass {
         let recommendations = try await intelligence.generateAccessibilityRecommendations(for: image)
         
         // Then
-        #expect(recommendations.altTextSuggestions == ["NotAltText"])
+        #expect(recommendations.altTextSuggestions == ["Blue solid color image", "Test pattern"])
     }
     
     /// BUSINESS PURPOSE: Validate usage recommendations functionality
@@ -227,7 +227,7 @@ open class ImageMetadataIntelligenceTests: BaseTestClass {
         let recommendations = try await intelligence.generateUsageRecommendations(for: image)
         
         // Then
-        #expect(recommendations.recommendedUseCases == ["NotAUseCase"])
+        #expect(recommendations.recommendedUseCases == ["Background image", "UI element", "Test content"])
     }
     
     // MARK: - Metadata Analysis Tests
@@ -280,7 +280,7 @@ open class ImageMetadataIntelligenceTests: BaseTestClass {
         let textContent = try await intelligence.analyzeTextContent(image)
         
         // Then
-        #expect(textContent.hasText == true)
+        #expect(textContent.hasText == false)
         // Note: Test image may not have text content, so some values could be nil
         // XCTAssertNotNil(textContent.hasText)
         // XCTAssertNotNil(textContent.textRegions)
@@ -302,7 +302,7 @@ open class ImageMetadataIntelligenceTests: BaseTestClass {
         let metadata = try await intelligence.extractMetadata(from: image)
         
         // Then
-        #expect(metadata.dimensions == .zero)
+        #expect(metadata.dimensions == image.size)
     }
     
     /// BUSINESS PURPOSE: Validate batch processing functionality
@@ -387,7 +387,7 @@ open class ImageMetadataIntelligenceTests: BaseTestClass {
         
         // Then
         #expect(metadata.dimensions == image.size)
-        #expect(categorization.primaryCategory == "NotACategory")
-        #expect(recommendations.compressionRecommendations == ["NotARecommendation"])
+        #expect(categorization.primaryCategory == "General")
+        #expect(recommendations.compressionRecommendations == ["Use JPEG for smaller file size", "Consider WebP for web use"])
     }
 }
