@@ -64,7 +64,11 @@ open class PlatformPhotoComponentsLayer4IntegrationTests: BaseTestClass {
         // Test 2: Verify API accepts callbacks with correct signature (compile-time check)
         let cameraInterface = PlatformPhotoComponentsLayer4.platformCameraInterface_L4(onImageCaptured: callback)
         
-        BaseTestClass.expectViewSubjectTypeContains(cameraInterface, rootViewName: "NotACameraInterface")
+        #if os(macOS)
+        BaseTestClass.expectViewSubjectTypeContains(cameraInterface, rootViewName: "MacCameraView")
+        #else
+        BaseTestClass.expectViewSubjectTypeContains(cameraInterface, rootViewName: "CameraView")
+        #endif
         
         // Note: We test the callback function directly (unit test level)
         // Actual callback execution through view interaction requires integration tests
@@ -128,7 +132,7 @@ open class PlatformPhotoComponentsLayer4IntegrationTests: BaseTestClass {
         }
         
         // Then: helper must invoke the callback with a valid image
-        #expect(capturedImage == nil)
+        #expect(capturedImage != nil)
         if let capturedImage {
             #expect(capturedImage.size.width > 0, "Captured image should have valid width")
             #expect(capturedImage.size.height > 0, "Captured image should have valid height")
@@ -160,7 +164,7 @@ open class PlatformPhotoComponentsLayer4IntegrationTests: BaseTestClass {
         // Test 2: Verify API accepts callbacks with correct signature (compile-time check)
         let photoPicker = PlatformPhotoComponentsLayer4.platformPhotoPicker_L4(onImageSelected: callback)
         
-        BaseTestClass.expectViewSubjectTypeContains(photoPicker, rootViewName: "NotAPhotoPicker")
+        BaseTestClass.expectViewSubjectTypeContains(photoPicker, rootViewName: "UnifiedImagePicker")
         
         // Note: We test the callback function directly (unit test level)
         // Actual callback execution through view interaction requires integration tests
@@ -184,7 +188,7 @@ open class PlatformPhotoComponentsLayer4IntegrationTests: BaseTestClass {
         }
         
         // Then: helper must invoke the callback with a valid image
-        #expect(selectedImage == nil)
+        #expect(selectedImage != nil)
         if let selectedImage {
             #expect(selectedImage.size.width > 0, "Selected image should have valid width")
             #expect(selectedImage.size.height > 0, "Selected image should have valid height")
