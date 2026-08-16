@@ -47,10 +47,7 @@ open class UnifiedImagePickerTests: BaseTestClass {
             callbackExecuted = true
         }
         
-        // Then: API should work identically on both platforms
-        // Picker creation verifies API signature (compile-time check)
-        
-        // Verify callback accepts PlatformImage by calling it directly
+        // Then: callback accepts PlatformImage (compile-time type + runtime call)
         let testImage = createTestPlatformImage()
         let callback: (PlatformImage) -> Void = { image in
             selectedImage = image
