@@ -65,7 +65,7 @@ open class DynamicFormLabelTests: BaseTestClass {
         // When: Creating date picker field
         let view = DatePickerField(field: field, formState: formState)
         
-        expectFormFieldType(view)
+        expectFormFieldType(view, named: "DatePickerField")
         
         // Verify field configuration
         #expect(field.label == "Select Date")
@@ -84,7 +84,7 @@ open class DynamicFormLabelTests: BaseTestClass {
         // When: Creating time picker field
         let view = TimePickerField(field: field, formState: formState)
         
-        expectFormFieldType(view)
+        expectFormFieldType(view, named: "TimePickerField")
         
         // Verify field configuration
         #expect(field.label == "Select Time")
@@ -103,7 +103,7 @@ open class DynamicFormLabelTests: BaseTestClass {
         // When: Creating datetime picker field
         let view = DateTimePickerField(field: field, formState: formState)
         
-        expectFormFieldType(view)
+        expectFormFieldType(view, named: "DateTimePickerField")
         
         // Verify field configuration
         #expect(field.label == "Select Date & Time")
@@ -124,7 +124,7 @@ open class DynamicFormLabelTests: BaseTestClass {
         // When: Creating color picker field
         let view = DynamicColorField(field: field, formState: formState)
         
-        expectFormFieldType(view)
+        expectFormFieldType(view, named: "DynamicColorField")
         
         // Verify field configuration
         #expect(field.label == "Choose Color")
@@ -145,7 +145,7 @@ open class DynamicFormLabelTests: BaseTestClass {
         // When: Creating toggle field
         let view = DynamicToggleField(field: field, formState: formState)
         
-        expectFormFieldType(view)
+        expectFormFieldType(view, named: "DynamicToggleField")
         
         // Verify field configuration
         #expect(field.label == "Enable Feature")
@@ -164,7 +164,7 @@ open class DynamicFormLabelTests: BaseTestClass {
         // When: Creating checkbox field
         let view = DynamicCheckboxField(field: field, formState: formState)
         
-        expectFormFieldType(view)
+        expectFormFieldType(view, named: "DynamicCheckboxField")
         
         // Verify field configuration
         #expect(field.label == "Accept Terms")
@@ -185,7 +185,7 @@ open class DynamicFormLabelTests: BaseTestClass {
         // When: Creating textarea field
         let view = DynamicTextAreaField(field: field, formState: formState)
         
-        expectFormFieldType(view)
+        expectFormFieldType(view, named: "DynamicTextAreaField")
         
         // Verify field configuration
         #expect(field.label == "Notes")
@@ -207,7 +207,7 @@ open class DynamicFormLabelTests: BaseTestClass {
         // When: Creating select field
         let view = DynamicSelectField(field: field, formState: formState)
         
-        expectFormFieldType(view)
+        expectFormFieldType(view, named: "DynamicSelectField")
         
         // Verify field configuration
         #expect(field.label == "Choose Option")
@@ -244,7 +244,7 @@ open class DynamicFormLabelTests: BaseTestClass {
             onSubmit: { _ in }
         )
         
-        expectFormFieldType(view)
+        expectFormFieldType(view, named: "DynamicFormView")
         
         // Verify configuration
         #expect(configuration.title == "Test Form")
@@ -307,7 +307,7 @@ open class DynamicFormLabelTests: BaseTestClass {
         // When: Creating date picker field
         let view = DatePickerField(field: field, formState: formState)
         
-        expectFormFieldType(view)
+        expectFormFieldType(view, named: "DatePickerField")
         #expect(field.label == "Birth Date")
         #expect(field.description == "Required for age verification")
     }
@@ -326,7 +326,7 @@ open class DynamicFormLabelTests: BaseTestClass {
         // When: Creating toggle field
         let view = DynamicToggleField(field: field, formState: formState)
         
-        expectFormFieldType(view)
+        expectFormFieldType(view, named: "DynamicToggleField")
         #expect(field.label == "")
     }
     
@@ -343,7 +343,7 @@ open class DynamicFormLabelTests: BaseTestClass {
         // When: Creating color picker field
         let view = DynamicColorField(field: field, formState: formState)
         
-        expectFormFieldType(view)
+        expectFormFieldType(view, named: "DynamicColorField")
         #expect(field.label == longLabel)
     }
     
@@ -362,13 +362,13 @@ open class DynamicFormLabelTests: BaseTestClass {
         for field in problematicFields {
             switch field.contentType {
             case .date:
-                expectFormFieldType(DatePickerField(field: field, formState: formState))
+                expectFormFieldType(DatePickerField(field: field, formState: formState), named: "DatePickerField")
             case .color:
-                expectFormFieldType(DynamicColorField(field: field, formState: formState))
+                expectFormFieldType(DynamicColorField(field: field, formState: formState), named: "DynamicColorField")
             case .toggle:
-                expectFormFieldType(DynamicToggleField(field: field, formState: formState))
+                expectFormFieldType(DynamicToggleField(field: field, formState: formState), named: "DynamicToggleField")
             case .textarea:
-                expectFormFieldType(DynamicTextAreaField(field: field, formState: formState))
+                expectFormFieldType(DynamicTextAreaField(field: field, formState: formState), named: "DynamicTextAreaField")
             default:
                 continue
             }
@@ -376,7 +376,7 @@ open class DynamicFormLabelTests: BaseTestClass {
     }
     
     @MainActor
-    private func expectFormFieldType(_ view: some View) {
-        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotAFormField")
+    private func expectFormFieldType(_ view: some View, named: String) {
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: named)
     }
 }
