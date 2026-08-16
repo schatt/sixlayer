@@ -97,6 +97,18 @@ open class NavigationStackLayer6Tests: BaseTestClass {
     
     @MainActor
     private func expectL6EnhancementApplied(_ view: some View) {
-        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotANavigationEnhancement")
+        #if os(macOS)
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "_FocusableModifier")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "AccessibilityAttachmentModifier")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "_FlexFrameLayout")
+        #elseif os(iOS)
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "AccessibilityAttachmentModifier")
+        #else
+        let description = BaseTestClass.viewSubjectTypeDescription(for: view)
+        #expect(
+            !description.contains("_FocusableModifier"),
+            "L6 is a pass-through off iOS/macOS, got: \(description)"
+        )
+        #endif
     }
 }
