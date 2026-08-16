@@ -424,7 +424,7 @@ open class ModalContainerTests: BaseTestClass {
     
     @MainActor
     private func expectModalContainerApplied(_ view: some View) {
-        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotAModalContainer")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "SheetPresentationModifier")
     }
 
 // MARK: - Supporting Types (TDD Red Phase Stubs)
