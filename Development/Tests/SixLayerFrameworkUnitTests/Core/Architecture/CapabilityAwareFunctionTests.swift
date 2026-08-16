@@ -294,7 +294,6 @@ open class CapabilityAwareFunctionTests: BaseTestClass {
     @Test @MainActor func testVisionFunctionsEnabled() async {
         // Vision is not surfaced for OCR on watchOS in this stack; the disabled-path suite covers it.
         #if os(watchOS)
-        #expect(Bool(true), "Vision enabled-path checks run on platforms with Vision OCR support")
         return
         #endif
         #expect(isVisionFrameworkAvailable(),
@@ -435,7 +434,6 @@ open class CapabilityAwareFunctionTests: BaseTestClass {
             #expect(!encodedData.isEmpty, "Color encoding should work on iOS/macOS")
 
             let _ = try platformColorDecode(encodedData)
-            #expect(Bool(true), "Color decoding should work on iOS/macOS")
         } catch {
             Issue.record("Color encoding/decoding should work on iOS/macOS: \(error)")
         }
