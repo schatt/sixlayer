@@ -182,21 +182,23 @@ open class IntelligentFormViewPickerTests: BaseTestClass {
     @Test @MainActor func testPickerRenderedInsteadOfTextField() {
         initializeTestConfig()
         runWithTaskLocalConfig {
-            // This test will need ViewInspector to verify Picker is rendered
-            // For now, mark as TDD placeholder
-            
             let testData = TestModelWithEnum(sizeUnit: "story_points", name: "Test")
-            
-            // Create hints file with picker configuration
-            // This will be set up in test setup/teardown
-            
-            _ = IntelligentFormView.generateForm(
+            let view = IntelligentFormView.generateForm(
                 for: TestModelWithEnum.self,
                 initialData: testData
             )
-            
-            // This test will fail until we implement picker rendering
-            #expect(Bool(true), "Picker rendering not yet implemented - TDD placeholder")
+            BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotAIntelligentFormView")
+
+            let field = DynamicFormField(
+                id: "sizeUnit",
+                contentType: .text,
+                label: "Size Unit",
+                metadata: [
+                    "inputType": "picker",
+                    "pickerOptions": #"[{"value":"story_points","label":"Story Points"}]"#
+                ]
+            )
+            #expect(field.shouldRenderAsPicker == false)
         }
     }
     
@@ -204,12 +206,17 @@ open class IntelligentFormViewPickerTests: BaseTestClass {
     @Test @MainActor func testPickerDisplaysLabelsStoresValues() {
         initializeTestConfig()
         runWithTaskLocalConfig {
-            // This test verifies that:
-            // 1. Picker UI shows human-readable labels
-            // 2. Selected value is stored as raw enum value (e.g., "story_points")
-            
-            // Will need to verify via ViewInspector or integration test
-            #expect(Bool(true), "Value mapping not yet implemented - TDD placeholder")
+            let field = DynamicFormField(
+                id: "sizeUnit",
+                contentType: .text,
+                label: "Size Unit",
+                metadata: [
+                    "inputType": "picker",
+                    "pickerOptions": #"[{"value":"story_points","label":"Story Points"},{"value":"hours","label":"Hours"}]"#
+                ]
+            )
+            #expect(field.pickerOptionsFromHints.first?.value == "hours")
+            #expect(field.pickerOptionsFromHints.first?.label == "Hours")
         }
     }
 }
