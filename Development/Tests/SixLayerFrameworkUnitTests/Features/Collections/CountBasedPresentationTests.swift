@@ -1,256 +1,128 @@
 import Testing
-
-//
-//  CountBasedPresentationTests.swift
-//  SixLayerFrameworkTests
-//
-//  Tests for count-based presentation preferences (Phase 1)
-//  Tests that .automatic presentation considers item count for generic/collection content
-//
-
-import SwiftUI
 @testable import SixLayerFramework
-
-/// Test item for count-based presentation testing
-struct CountBasedTestItem: Identifiable {
-    let id: String
-    let title: String
-    
-    init(id: String, title: String) {
-        self.id = id
-        self.title = title
-    }
-}
 
 /// NOTE: Not marked @MainActor on class to allow parallel execution
 @Suite("Count-Based Presentation (Phase 1)")
 open class CountBasedPresentationTests: BaseTestClass {
-    
+
     // MARK: - Count-Aware Automatic Behavior Tests
-    
+
     /// BUSINESS PURPOSE: Verify that .automatic considers count for generic content
-    /// TESTING SCOPE: GenericItemCollectionView with .automatic preference
-    /// METHODOLOGY: Test that small collections prefer cards/grid, large collections prefer list
-    @Test @MainActor func testAutomaticPrefersGridForSmallGenericCollection() {
-        initializeTestConfig()
-        // Given: Small generic collection (≤threshold) with .automatic
-        let smallItems = createTestItems(count: 5)  // Below threshold (8 for generic)
+    @Test func testAutomaticPrefersGridForSmallGenericCollection() {
         let hints = PresentationHints(
             dataType: .generic,
             presentationPreference: .automatic,
             complexity: .moderate,
             context: .dashboard
         )
-        
-        // When: Create collection view
-        _ = GenericItemCollectionView(
-            items: smallItems,
-            hints: hints
-        )
-        
-        // Then: Should prefer grid/cards (we can't directly test strategy, but view should exist)
-        // Note: Strategy selection is private, so we verify the view is created successfully
-        // In a real scenario, we'd check which view type is used, but that's complex with SwiftUI
-        #expect(Bool(true), "Small generic collection with .automatic should create a view")
+        #expect(resolve(hints: hints, itemCount: 5) == .grid)
     }
-    
+
     /// BUSINESS PURPOSE: Verify that .automatic prefers list for large generic collections
-    @Test @MainActor func testAutomaticPrefersListForLargeGenericCollection() {
-        initializeTestConfig()
-        // Given: Large generic collection (>threshold) with .automatic
-        let largeItems = createTestItems(count: 15)  // Above threshold (8 for generic)
+    @Test func testAutomaticPrefersListForLargeGenericCollection() {
         let hints = PresentationHints(
             dataType: .generic,
             presentationPreference: .automatic,
             complexity: .moderate,
             context: .dashboard
         )
-        
-        // When: Create collection view
-        _ = GenericItemCollectionView(
-            items: largeItems,
-            hints: hints
-        )
-        
-        // Then: Should prefer list
-        #expect(Bool(true), "Large generic collection with .automatic should create a view")
+        #expect(resolve(hints: hints, itemCount: 15) == .list)
     }
-    
+
     /// BUSINESS PURPOSE: Verify safety override for very large collections (>200 items)
-    @Test @MainActor func testAutomaticForcesListForVeryLargeGenericCollection() {
-        initializeTestConfig()
-        // Given: Very large generic collection (>200 items) with .automatic
-        let veryLargeItems = createTestItems(count: 250)
+    @Test func testAutomaticForcesListForVeryLargeGenericCollection() {
         let hints = PresentationHints(
             dataType: .generic,
             presentationPreference: .automatic,
             complexity: .moderate,
             context: .dashboard
         )
-        
-        // When: Create collection view
-        _ = GenericItemCollectionView(
-            items: veryLargeItems,
-            hints: hints
-        )
-        
-        // Then: Should force list (safety override)
-        #expect(Bool(true), "Very large generic collection (>200) with .automatic should create a view")
+        #expect(resolve(hints: hints, itemCount: 250) == .list)
     }
-    
+
     // MARK: - Content Type Tests
-    
-    /// BUSINESS PURPOSE: Verify that media content ignores count for strategy
-    /// TESTING SCOPE: Media content should always use grid/masonry regardless of count
-    @Test @MainActor func testAutomaticIgnoresCountForMediaContent() {
-        initializeTestConfig()
-        // Given: Large media collection with .automatic
-        let largeMediaItems = createTestItems(count: 1000)  // Very large
+
+    /// BUSINESS PURPOSE: Media content uses platform default, not count
+    @Test func testAutomaticIgnoresCountForMediaContent() {
         let hints = PresentationHints(
             dataType: .media,
             presentationPreference: .automatic,
             complexity: .moderate,
             context: .gallery
         )
-        
-        // When: Create collection view
-        _ = GenericItemCollectionView(
-            items: largeMediaItems,
-            hints: hints
-        )
-        
-        // Then: Should still use grid/masonry (not list)
-        // Note: Media content has its own logic that returns before count check
-        #expect(Bool(true), "Media content with .automatic should create a view (strategy unchanged)")
+        #expect(resolve(hints: hints, itemCount: 1000) == .expandableCards)
     }
-    
-    /// BUSINESS PURPOSE: Verify that navigation content ignores count
-    @Test @MainActor func testAutomaticIgnoresCountForNavigationContent() {
-        initializeTestConfig()
-        // Given: Large navigation collection with .automatic
-        let largeNavItems = createTestItems(count: 50)
+
+    /// BUSINESS PURPOSE: Navigation content uses platform default, not count
+    @Test func testAutomaticIgnoresCountForNavigationContent() {
         let hints = PresentationHints(
             dataType: .navigation,
             presentationPreference: .automatic,
             complexity: .moderate,
             context: .navigation
         )
-        
-        // When: Create collection view
-        _ = GenericItemCollectionView(
-            items: largeNavItems,
-            hints: hints
-        )
-        
-        // Then: Should use navigation's own logic (not count-based)
-        #expect(Bool(true), "Navigation content with .automatic should create a view (strategy unchanged)")
+        #expect(resolve(hints: hints, itemCount: 50) == .masonry)
     }
-    
+
     // MARK: - Platform/Device Threshold Tests
-    
-    /// BUSINESS PURPOSE: Verify platform-aware thresholds (iPad should have higher threshold)
-    @Test @MainActor func testPlatformAwareThresholds() {
-        initializeTestConfig()
-        // Given: Medium collection that's above iPhone threshold but below iPad threshold
-        let mediumItems = createTestItems(count: 10)  // Above iPhone threshold (8), below iPad threshold (12)
+
+    /// BUSINESS PURPOSE: macOS generic threshold is 12 (base 8 + 4)
+    @Test func testPlatformAwareThresholds() {
         let hints = PresentationHints(
             dataType: .generic,
             presentationPreference: .automatic,
             complexity: .moderate,
             context: .dashboard
         )
-        
-        // When: Create collection view
-        _ = GenericItemCollectionView(
-            items: mediumItems,
-            hints: hints
-        )
-        
-        // Then: Should respect platform-specific threshold
-        // Note: Actual threshold depends on current device type in test environment
-        #expect(Bool(true), "Platform-aware thresholds should be applied")
+        #expect(resolve(hints: hints, itemCount: 10) == .grid)
     }
-    
+
     // MARK: - Edge Cases
-    
-    /// BUSINESS PURPOSE: Verify empty collection handling
-    @Test @MainActor func testAutomaticWithEmptyCollection() {
-        initializeTestConfig()
-        // Given: Empty collection with .automatic
-        let emptyItems: [CountBasedTestItem] = []
+
+    /// BUSINESS PURPOSE: Empty collection still resolves grid on macOS (no distinct empty-state strategy)
+    @Test func testAutomaticWithEmptyCollection() {
         let hints = PresentationHints(
             dataType: .generic,
             presentationPreference: .automatic,
             complexity: .moderate,
             context: .dashboard
         )
-        
-        // When: Create collection view
-        _ = GenericItemCollectionView(
-            items: emptyItems,
-            hints: hints
-        )
-        
-        // Then: Should show empty state (not crash)
-        #expect(Bool(true), "Empty collection with .automatic should show empty state")
+        #expect(resolve(hints: hints, itemCount: 0) == .grid)
     }
-    
-    /// BUSINESS PURPOSE: Verify single item handling
-    @Test @MainActor func testAutomaticWithSingleItem() {
-        initializeTestConfig()
-        // Given: Single item with .automatic
-        let singleItem = createTestItems(count: 1)
+
+    /// BUSINESS PURPOSE: Single item prefers grid/cards on macOS
+    @Test func testAutomaticWithSingleItem() {
         let hints = PresentationHints(
             dataType: .generic,
             presentationPreference: .automatic,
             complexity: .moderate,
             context: .dashboard
         )
-        
-        // When: Create collection view
-        _ = GenericItemCollectionView(
-            items: singleItem,
-            hints: hints
-        )
-        
-        // Then: Should handle single item (prefer cards/grid)
-        #expect(Bool(true), "Single item with .automatic should create a view")
+        #expect(resolve(hints: hints, itemCount: 1) == .grid)
     }
-    
+
     // MARK: - Backward Compatibility Tests
-    
-    /// BUSINESS PURPOSE: Verify existing explicit preferences still work
-    @Test @MainActor func testExplicitPreferencesStillWork() {
-        initializeTestConfig()
-        // Given: Collection with explicit .list preference (not .automatic)
-        let items = createTestItems(count: 5)  // Small collection
+
+    /// BUSINESS PURPOSE: Explicit .list is not count-aware
+    @Test func testExplicitPreferencesStillWork() {
         let hints = PresentationHints(
             dataType: .generic,
-            presentationPreference: .list,  // Explicit, not automatic
+            presentationPreference: .list,
             complexity: .moderate,
             context: .dashboard
         )
-        
-        // When: Create collection view
-        _ = GenericItemCollectionView(
-            items: items,
-            hints: hints
-        )
-        
-        // Then: Should respect explicit preference (not use count-based logic)
-        #expect(Bool(true), "Explicit preferences should still work (backward compatible)")
+        #expect(resolve(hints: hints, itemCount: 5) == .list)
     }
-    
-    // MARK: - Helper Methods
-    
-    private func createTestItems(count: Int) -> [CountBasedTestItem] {
-        return (1...count).map { index in
-            CountBasedTestItem(
-                id: "item\(index)",
-                title: "Test Item \(index)"
-            )
-        }
+
+    // MARK: - Helpers
+
+    /// macOS/mac matrix so both unit lanes share the same contract (#248).
+    private func resolve(hints: PresentationHints, itemCount: Int) -> ItemCollectionPresentationStrategy {
+        ItemCollectionPresentationStrategyResolver.resolve(
+            hints: hints,
+            itemCount: itemCount,
+            platform: .macOS,
+            deviceType: .mac
+        )
     }
 }
-
-
