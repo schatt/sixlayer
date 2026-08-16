@@ -95,7 +95,7 @@ open class PlatformPrintLayer4Tests: BaseTestClass {
                 content: textContent
             )
         
-        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotAPrintModifier")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: expectedPrintModifierTypeName)
     }
     
     /// BUSINESS PURPOSE: Verify image content can be printed
@@ -113,7 +113,7 @@ open class PlatformPrintLayer4Tests: BaseTestClass {
                 content: imageContent
             )
         
-        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotAPrintModifier")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: expectedPrintModifierTypeName)
     }
     
     /// BUSINESS PURPOSE: Verify PDF content can be printed
@@ -131,7 +131,7 @@ open class PlatformPrintLayer4Tests: BaseTestClass {
                 content: pdfContent
             )
         
-        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotAPrintModifier")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: expectedPrintModifierTypeName)
     }
     
     /// BUSINESS PURPOSE: Verify view content can be printed
@@ -148,7 +148,7 @@ open class PlatformPrintLayer4Tests: BaseTestClass {
                 content: viewContent
             )
         
-        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotAPrintModifier")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: expectedPrintModifierTypeName)
     }
     
     // MARK: - Platform-Specific Implementation Tests
@@ -168,7 +168,7 @@ open class PlatformPrintLayer4Tests: BaseTestClass {
                 content: content
             )
         
-        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotAPrintModifier")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: expectedPrintModifierTypeName)
         #endif
     }
     
@@ -187,7 +187,7 @@ open class PlatformPrintLayer4Tests: BaseTestClass {
                 content: content
             )
         
-        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotAPrintModifier")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: expectedPrintModifierTypeName)
         #endif
     }
     
@@ -212,7 +212,7 @@ open class PlatformPrintLayer4Tests: BaseTestClass {
                 options: options
             )
         
-        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotAPrintModifier")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: expectedPrintModifierTypeName)
     }
     
     // MARK: - Callback Tests
@@ -261,7 +261,7 @@ open class PlatformPrintLayer4Tests: BaseTestClass {
                 content: .text("Test")
             )
         
-        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotAPrintModifier")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: expectedPrintModifierTypeName)
     }
     
     // MARK: - Error Handling Tests
@@ -280,6 +280,16 @@ open class PlatformPrintLayer4Tests: BaseTestClass {
     }
     
     // MARK: - Test Helpers
+    
+    private var expectedPrintModifierTypeName: String {
+        #if os(iOS)
+        "PlatformPrintL4IOSModifier"
+        #elseif os(macOS)
+        "PlatformPrintL4MacModifier"
+        #else
+        "PlatformPrintL4UnsupportedModifier"
+        #endif
+    }
     
     private func createTestPlatformImage() -> PlatformImage {
         #if os(iOS)
