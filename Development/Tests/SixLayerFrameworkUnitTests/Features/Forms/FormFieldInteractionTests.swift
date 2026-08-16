@@ -293,6 +293,8 @@ open class FormFieldInteractionTests: BaseTestClass {
             selection: selection,
             displayedComponents: [.date]
         )
+        // Binding write into fieldValueChanges — SwiftUI DatePicker, not a
+        // SixLayer date component. tvOS DatePicker gap: #241.
         selection.wrappedValue = expected
         #expect(fieldValueChanges[dateField.label] as? Date == expected)
         #endif
