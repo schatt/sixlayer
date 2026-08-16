@@ -41,7 +41,6 @@ struct PlatformManagedSettingsFlowLayer4Tests {
                 sidebar: { Text("Sidebar") },
                 detail: { Text("Detail") }
             )
-        _ = view
-        #expect(Bool(true), "platformManagedSettingsTopLevel_L4 should produce a view")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotASettingsContainer")
     }
 }
