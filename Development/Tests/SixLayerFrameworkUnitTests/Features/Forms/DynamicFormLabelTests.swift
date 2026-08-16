@@ -63,10 +63,9 @@ open class DynamicFormLabelTests: BaseTestClass {
         )
         
         // When: Creating date picker field
-        let _ = DatePickerField(field: field, formState: formState)
+        let view = DatePickerField(field: field, formState: formState)
         
-        // Then: View should be created successfully
-        #expect(Bool(true), "view is non-optional")  // view is non-optional
+        expectFormFieldType(view, named: "DatePickerField")
         
         // Verify field configuration
         #expect(field.label == "Select Date")
@@ -83,10 +82,9 @@ open class DynamicFormLabelTests: BaseTestClass {
         )
         
         // When: Creating time picker field
-        let _ = TimePickerField(field: field, formState: formState)
+        let view = TimePickerField(field: field, formState: formState)
         
-        // Then: View should be created successfully
-        #expect(Bool(true), "view is non-optional")  // view is non-optional
+        expectFormFieldType(view, named: "TimePickerField")
         
         // Verify field configuration
         #expect(field.label == "Select Time")
@@ -103,10 +101,9 @@ open class DynamicFormLabelTests: BaseTestClass {
         )
         
         // When: Creating datetime picker field
-        let _ = DateTimePickerField(field: field, formState: formState)
+        let view = DateTimePickerField(field: field, formState: formState)
         
-        // Then: View should be created successfully
-        #expect(Bool(true), "view is non-optional")  // view is non-optional
+        expectFormFieldType(view, named: "DateTimePickerField")
         
         // Verify field configuration
         #expect(field.label == "Select Date & Time")
@@ -125,10 +122,9 @@ open class DynamicFormLabelTests: BaseTestClass {
         )
         
         // When: Creating color picker field
-        let _ = DynamicColorField(field: field, formState: formState)
+        let view = DynamicColorField(field: field, formState: formState)
         
-        // Then: View should be created successfully
-        #expect(Bool(true), "view is non-optional")  // view is non-optional
+        expectFormFieldType(view, named: "DynamicColorField")
         
         // Verify field configuration
         #expect(field.label == "Choose Color")
@@ -147,10 +143,9 @@ open class DynamicFormLabelTests: BaseTestClass {
         )
         
         // When: Creating toggle field
-        let _ = DynamicToggleField(field: field, formState: formState)
+        let view = DynamicToggleField(field: field, formState: formState)
         
-        // Then: View should be created successfully
-        #expect(Bool(true), "view is non-optional")  // view is non-optional
+        expectFormFieldType(view, named: "DynamicToggleField")
         
         // Verify field configuration
         #expect(field.label == "Enable Feature")
@@ -167,10 +162,9 @@ open class DynamicFormLabelTests: BaseTestClass {
         )
         
         // When: Creating checkbox field
-        let _ = DynamicCheckboxField(field: field, formState: formState)
+        let view = DynamicCheckboxField(field: field, formState: formState)
         
-        // Then: View should be created successfully
-        #expect(Bool(true), "view is non-optional")  // view is non-optional
+        expectFormFieldType(view, named: "DynamicCheckboxField")
         
         // Verify field configuration
         #expect(field.label == "Accept Terms")
@@ -189,10 +183,9 @@ open class DynamicFormLabelTests: BaseTestClass {
         )
         
         // When: Creating textarea field
-        let _ = DynamicTextAreaField(field: field, formState: formState)
+        let view = DynamicTextAreaField(field: field, formState: formState)
         
-        // Then: View should be created successfully
-        #expect(Bool(true), "view is non-optional")  // view is non-optional
+        expectFormFieldType(view, named: "DynamicTextAreaField")
         
         // Verify field configuration
         #expect(field.label == "Notes")
@@ -212,10 +205,9 @@ open class DynamicFormLabelTests: BaseTestClass {
         )
         
         // When: Creating select field
-        let _ = DynamicSelectField(field: field, formState: formState)
+        let view = DynamicSelectField(field: field, formState: formState)
         
-        // Then: View should be created successfully
-        #expect(Bool(true), "view is non-optional")  // view is non-optional
+        expectFormFieldType(view, named: "DynamicSelectField")
         
         // Verify field configuration
         #expect(field.label == "Choose Option")
@@ -247,13 +239,12 @@ open class DynamicFormLabelTests: BaseTestClass {
         )
         
         // When: Creating dynamic form view
-        _ = DynamicFormView(
+        let view = DynamicFormView(
             configuration: configuration,
             onSubmit: { _ in }
         )
         
-        // Then: Form should be created successfully
-        #expect(Bool(true), "view is non-optional")  // view is non-optional
+        expectFormFieldType(view, named: "DynamicFormView")
         
         // Verify configuration
         #expect(configuration.title == "Test Form")
@@ -314,10 +305,9 @@ open class DynamicFormLabelTests: BaseTestClass {
         )
         
         // When: Creating date picker field
-        let _ = DatePickerField(field: field, formState: formState)
+        let view = DatePickerField(field: field, formState: formState)
         
-        // Then: Field should be created with proper accessibility info
-        #expect(Bool(true), "view is non-optional")  // view is non-optional
+        expectFormFieldType(view, named: "DatePickerField")
         #expect(field.label == "Birth Date")
         #expect(field.description == "Required for age verification")
     }
@@ -334,10 +324,9 @@ open class DynamicFormLabelTests: BaseTestClass {
         )
         
         // When: Creating toggle field
-        let _ = DynamicToggleField(field: field, formState: formState)
+        let view = DynamicToggleField(field: field, formState: formState)
         
-        // Then: Should handle empty label gracefully
-        #expect(Bool(true), "view is non-optional")  // view is non-optional
+        expectFormFieldType(view, named: "DynamicToggleField")
         #expect(field.label == "")
     }
     
@@ -352,10 +341,9 @@ open class DynamicFormLabelTests: BaseTestClass {
         )
         
         // When: Creating color picker field
-        let _ = DynamicColorField(field: field, formState: formState)
+        let view = DynamicColorField(field: field, formState: formState)
         
-        // Then: Should handle long label gracefully
-        #expect(Bool(true), "view is non-optional")  // view is non-optional
+        expectFormFieldType(view, named: "DynamicColorField")
         #expect(field.label == longLabel)
     }
     
@@ -372,25 +360,23 @@ open class DynamicFormLabelTests: BaseTestClass {
         
         // When: Creating fields that should not have duplicate labels
         for field in problematicFields {
-            let _: AnyView
             switch field.contentType {
             case .date:
-                _ = AnyView(DatePickerField(field: field, formState: formState))
+                expectFormFieldType(DatePickerField(field: field, formState: formState), named: "DatePickerField")
             case .color:
-                _ = AnyView(DynamicColorField(field: field, formState: formState))
+                expectFormFieldType(DynamicColorField(field: field, formState: formState), named: "DynamicColorField")
             case .toggle:
-                _ = AnyView(DynamicToggleField(field: field, formState: formState))
+                expectFormFieldType(DynamicToggleField(field: field, formState: formState), named: "DynamicToggleField")
             case .textarea:
-                _ = AnyView(DynamicTextAreaField(field: field, formState: formState))
+                expectFormFieldType(DynamicTextAreaField(field: field, formState: formState), named: "DynamicTextAreaField")
             default:
                 continue
             }
-            
-            // Then: Each field should be created successfully
-            // The actual label duplication prevention is tested by the fact that
-            // our implementation uses empty titles and .labelsHidden() modifiers
-            // view is non-optional (AnyView), so this check is always true
-            #expect(Bool(true), "View should be created for \(field.contentType?.rawValue ?? "unknown")")
         }
+    }
+    
+    @MainActor
+    private func expectFormFieldType(_ view: some View, named: String) {
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: named)
     }
 }
