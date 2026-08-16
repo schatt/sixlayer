@@ -98,7 +98,6 @@ class L6PlatformSystemTests: BaseTestClass {
         let recommendations = manager.getPlatformRecommendations()
         
         // Then
-        #expect(Bool(true), "Should return recommendations")  // recommendations is non-optional
         #expect(recommendations is [PlatformRecommendation], "Should return array of recommendations")
     }
     */
@@ -158,7 +157,6 @@ class L6PlatformSystemTests: BaseTestClass {
         #expect(category == .performance, "Should have correct category")
         #expect(priority == .medium, "Should have correct priority")
         #expect(platform == .iOS, "Should have correct platform")
-        #expect(Bool(true), "Should have timestamp")  // timestamp is non-optional
     }
     
     @Test func testRecommendationCategory() {
