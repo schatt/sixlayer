@@ -92,13 +92,10 @@ open class NavigationStackLayer5Tests: BaseTestClass {
     
     @MainActor
     private func expectL5OptimizationApplied(_ view: some View) {
-        let description = BaseTestClass.viewSubjectTypeDescription(for: view)
         #if os(iOS) || os(macOS)
-        #expect(
-            description.contains("_TransactionModifier"),
-            "L5 should apply a transaction modifier, got: \(description)"
-        )
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "_TransactionModifier")
         #else
+        let description = BaseTestClass.viewSubjectTypeDescription(for: view)
         #expect(
             !description.contains("_TransactionModifier"),
             "L5 is a pass-through off iOS/macOS, got: \(description)"
