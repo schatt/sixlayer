@@ -164,7 +164,6 @@ open class EnhancedDeviceDetectionTests: BaseTestClass {
         let supportsKeyboard = PlatformDeviceCapabilities.supportsKeyboardShortcuts
         
         // Then
-        #expect(Bool(true), "deviceType is non-optional")  // deviceType is non-optional
         #if os(iOS)
         #expect(supportsHaptic)
         #expect(!supportsKeyboard)
