@@ -44,12 +44,7 @@ open class PlatformMapComponentsLayer4Tests: BaseTestClass {
             let view = PlatformMapComponentsLayer4.platformMapView_L4(position: position) {
                 // Empty map content for test
             }
-            BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotAMapL4View")
-        }
-        #endif
-    }
-    
-    /// BUSINESS PURPOSE: Verify map component uses modern API (Annotation, not MapAnnotation)
+            BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "EmptyMapContent")
     /// TESTING SCOPE: Tests that deprecated MapAnnotation is not used
     /// METHODOLOGY: Compile-time Annotation + lock created view subject type
     @Test @MainActor func testPlatformMapView_UsesModernAPI() {
@@ -62,12 +57,7 @@ open class PlatformMapComponentsLayer4Tests: BaseTestClass {
                     Image(systemName: "mappin.circle.fill")
                 }
             }
-            BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotAMapL4View")
-        }
-        #endif
-    }
-    
-    // MARK: - Location Service Integration Tests
+            BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "Annotation<Text, Image>")
     
     /// BUSINESS PURPOSE: Verify map component can integrate with LocationService
     /// TESTING SCOPE: Tests that LocationService coordinates can be used
@@ -134,12 +124,7 @@ open class PlatformMapComponentsLayer4Tests: BaseTestClass {
             let position = Binding.constant(MapCameraPosition.automatic)
             let view = PlatformMapComponentsLayer4.platformMapView_L4(position: position) {
             }
-            BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotAMapL4View")
-        }
-        #endif
-    }
-    
-    // MARK: - LocationService Integration Tests
+            BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "AutomaticComplianceModifier")
     
     /// BUSINESS PURPOSE: Verify map component integrates with LocationService
     /// TESTING SCOPE: Tests that LocationService can provide coordinates for map
@@ -152,7 +137,7 @@ open class PlatformMapComponentsLayer4Tests: BaseTestClass {
                 locationService: locationService,
                 showCurrentLocation: true
             )
-            BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotAMapL4View")
+            BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "MapViewWithLocationService")
         }
         #endif
     }
