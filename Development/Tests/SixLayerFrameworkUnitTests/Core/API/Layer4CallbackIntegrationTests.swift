@@ -373,7 +373,6 @@ open class Layer4CallbackIntegrationTests: BaseTestClass {
         }
         #else
         // Skip test if MapKit is not available
-        #expect(Bool(true), "MapKit not available on this platform")
         #endif
     }
     
