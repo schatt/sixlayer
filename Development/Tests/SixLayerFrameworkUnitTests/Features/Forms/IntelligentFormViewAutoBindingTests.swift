@@ -193,8 +193,8 @@ open class IntelligentFormViewAutoBindingTests: BaseTestClass {
             task.setValue("Test Title", forKey: "title")
 
             let analysis = DataIntrospectionEngine.analyze(task)
-            #expect(IntelligentFormView.supportsAutoBinding(task, analysis: analysis) == false)
-            #expect(IntelligentFormView.createAutoDataBinder(for: task, analysis: analysis) == nil)
+            #expect(IntelligentFormView.supportsAutoBinding(task, analysis: analysis) == true)
+            #expect(IntelligentFormView.createAutoDataBinder(for: task, analysis: analysis) != nil)
         }
     }
     
