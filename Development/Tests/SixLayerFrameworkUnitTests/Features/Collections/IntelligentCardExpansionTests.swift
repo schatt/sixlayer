@@ -50,7 +50,7 @@ open class IntelligentCardExpansionTests: BaseTestClass {
             hints: expandableHints
         )
         
-        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotAItemCollection")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "GenericItemCollectionView")
     }
     
     @Test func testExpandableHintsStructure() {
@@ -262,7 +262,7 @@ open class IntelligentCardExpansionTests: BaseTestClass {
             hints: expandableHints
         )
         
-        BaseTestClass.expectViewSubjectTypeContains(container, rootViewName: "NotASmartGrid")
+        BaseTestClass.expectViewSubjectTypeContains(container, rootViewName: "ExpandableCardCollectionView")
     }
     
     @Test @MainActor func testExpandableCardComponent() {
@@ -349,7 +349,7 @@ open class IntelligentCardExpansionTests: BaseTestClass {
             accessibilityConfig: getCardExpansionAccessibilityConfig()
         )
         
-        BaseTestClass.expectViewSubjectTypeContains(nativeView, rootViewName: "NotANativeCard")
+        BaseTestClass.expectViewSubjectTypeContains(nativeView, rootViewName: "NativeExpandableCardView")
     }
     
     @Test @MainActor func testPlatformSpecificOptimizations() {
@@ -374,7 +374,7 @@ open class IntelligentCardExpansionTests: BaseTestClass {
             hints: expandableHints
         )
         
-        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotAItemCollection")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "GenericItemCollectionView")
         
         let layoutDecision = determineIntelligentCardLayout_L2(
             contentCount: sampleMenuItems.count,
@@ -391,8 +391,8 @@ open class IntelligentCardExpansionTests: BaseTestClass {
             contentDensity: .balanced
         )
         
-        #expect(layoutDecision.columns == 0)
-        #expect(!strategy.supportedStrategies.contains(.hoverExpand))
+        #expect(layoutDecision.columns == 2)
+        #expect(strategy.supportedStrategies.contains(.hoverExpand))
     }
     
     @Test @MainActor func testPerformanceRequirements() {
@@ -413,7 +413,7 @@ open class IntelligentCardExpansionTests: BaseTestClass {
             hints: expandableHints
         )
         
-        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotAItemCollection")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "GenericItemCollectionView")
         
         // Verify that all menu items are processed
         for item in sampleMenuItems {
