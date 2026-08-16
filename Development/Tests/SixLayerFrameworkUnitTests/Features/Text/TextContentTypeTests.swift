@@ -427,6 +427,7 @@ open class TextContentTypeTests: BaseTestClass {
         
         let formState = DynamicFormState(configuration: SixLayerFramework.DynamicFormConfiguration(id: "test", title: "Test Form", description: "Test form for content type", sections: [], submitButtonText: "Submit", cancelButtonText: "Cancel"))
         let textField = DynamicFormFieldView(field: field, formState: formState)
+        // Hostability: DynamicFormFieldView is the subject type on every platform.
         BaseTestClass.expectViewSubjectTypeContains(textField, rootViewName: "DynamicFormFieldView")
         
         // Clean up
