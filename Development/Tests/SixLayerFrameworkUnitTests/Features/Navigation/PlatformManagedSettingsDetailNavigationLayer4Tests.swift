@@ -29,6 +29,6 @@ struct PlatformManagedSettingsDetailNavigationLayer4Tests {
             .platformManagedSettingsDetailNavigationStack_L4(state: holder.binding) {
                 Text("Inner")
             }
-        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotADetailNavigationStack")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "_ConditionalContent")
     }
 }
