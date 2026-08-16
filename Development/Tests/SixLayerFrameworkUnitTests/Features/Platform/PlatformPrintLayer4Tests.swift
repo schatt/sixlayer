@@ -54,10 +54,6 @@ open class PlatformPrintLayer4Tests: BaseTestClass {
                 }
             )
         
-        // Then: API should work identically on both platforms
-        // View creation verifies API signature (compile-time check)
-        #expect(Bool(true), "Unified print API should have consistent signature across platforms")
-        
         // Verify callback accepts Bool by calling it directly
         let callback: (Bool) -> Void = { success in
             printCompleted = success
@@ -92,15 +88,8 @@ open class PlatformPrintLayer4Tests: BaseTestClass {
         // Given: Text content
         let textContent = PrintContent.text("Test document content")
         
-        // When: Create print modifier with text
-        _ = Text("Test")
-            .platformPrint_L4(
-                isPresented: .constant(false),
-                content: textContent
-            )
-        
-        // Then: Should accept text content
-        #expect(Bool(true), "Print API should accept text content")
+        let view = printModifierView(content: textContent)
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: expectedPrintModifierTypeName)
     }
     
     /// BUSINESS PURPOSE: Verify image content can be printed
@@ -111,15 +100,8 @@ open class PlatformPrintLayer4Tests: BaseTestClass {
         let testImage = createTestPlatformImage()
         let imageContent = PrintContent.image(testImage)
         
-        // When: Create print modifier with image
-        _ = Text("Test")
-            .platformPrint_L4(
-                isPresented: .constant(false),
-                content: imageContent
-            )
-        
-        // Then: Should accept image content
-        #expect(Bool(true), "Print API should accept image content")
+        let view = printModifierView(content: imageContent)
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: expectedPrintModifierTypeName)
     }
     
     /// BUSINESS PURPOSE: Verify PDF content can be printed
@@ -130,15 +112,8 @@ open class PlatformPrintLayer4Tests: BaseTestClass {
         let pdfData = createTestPDFData()
         let pdfContent = PrintContent.pdf(pdfData)
         
-        // When: Create print modifier with PDF
-        _ = Text("Test")
-            .platformPrint_L4(
-                isPresented: .constant(false),
-                content: pdfContent
-            )
-        
-        // Then: Should accept PDF content
-        #expect(Bool(true), "Print API should accept PDF content")
+        let view = printModifierView(content: pdfContent)
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: expectedPrintModifierTypeName)
     }
     
     /// BUSINESS PURPOSE: Verify view content can be printed
@@ -148,15 +123,8 @@ open class PlatformPrintLayer4Tests: BaseTestClass {
         // Given: View content
         let viewContent = PrintContent.view(AnyView(Text("Test View")))
         
-        // When: Create print modifier with view
-        _ = Text("Test")
-            .platformPrint_L4(
-                isPresented: .constant(false),
-                content: viewContent
-            )
-        
-        // Then: Should accept view content
-        #expect(Bool(true), "Print API should accept view content")
+        let view = printModifierView(content: viewContent)
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: expectedPrintModifierTypeName)
     }
     
     // MARK: - Platform-Specific Implementation Tests
@@ -169,19 +137,8 @@ open class PlatformPrintLayer4Tests: BaseTestClass {
         // Given: Print content
         let content = PrintContent.text("Test")
         
-        // When: Create print modifier
-        _ = Text("Test")
-            .platformPrint_L4(
-                isPresented: .constant(false),
-                content: content
-            )
-        
-        // Then: Should use iOS print implementation
-        // API signature verification (compile-time check)
-        #expect(Bool(true), "iOS should use UIPrintInteractionController implementation")
-        #else
-        // Skip on non-iOS platforms
-        #expect(Bool(true), "Test only runs on iOS")
+        let view = printModifierView(content: content)
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: expectedPrintModifierTypeName)
         #endif
     }
     
@@ -193,19 +150,8 @@ open class PlatformPrintLayer4Tests: BaseTestClass {
         // Given: Print content
         let content = PrintContent.text("Test")
         
-        // When: Create print modifier
-        _ = Text("Test")
-            .platformPrint_L4(
-                isPresented: .constant(false),
-                content: content
-            )
-        
-        // Then: Should use macOS print implementation
-        // API signature verification (compile-time check)
-        #expect(Bool(true), "macOS should use NSPrintOperation implementation")
-        #else
-        // Skip on non-macOS platforms
-        #expect(Bool(true), "Test only runs on macOS")
+        let view = printModifierView(content: content)
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: expectedPrintModifierTypeName)
         #endif
     }
     
@@ -222,16 +168,8 @@ open class PlatformPrintLayer4Tests: BaseTestClass {
             showsPageRange: true
         )
         
-        // When: Create print modifier with options
-        _ = Text("Test")
-            .platformPrint_L4(
-                isPresented: .constant(false),
-                content: .text("Test"),
-                options: options
-            )
-        
-        // Then: Should accept options
-        #expect(Bool(true), "Print API should accept options")
+        let view = printModifierView(content: .text("Test"), options: options)
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: expectedPrintModifierTypeName)
     }
     
     // MARK: - Callback Tests
@@ -273,16 +211,8 @@ open class PlatformPrintLayer4Tests: BaseTestClass {
     /// TESTING SCOPE: Tests that automatic accessibility identifiers are applied
     /// METHODOLOGY: Test accessibility compliance
     @Test @MainActor func testPlatformPrint_AccessibilityIdentifiers() {
-        // Given: Print modifier
-        _ = Text("Test")
-            .platformPrint_L4(
-                isPresented: .constant(false),
-                content: .text("Test")
-            )
-        
-        // Then: Should have automatic accessibility compliance
-        // The .automaticCompliance modifier should be applied
-        #expect(Bool(true), "Print modifier should apply accessibility identifiers")
+        let view = printModifierView(content: .text("Test"))
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: expectedPrintModifierTypeName)
     }
     
     // MARK: - Error Handling Tests
@@ -301,6 +231,29 @@ open class PlatformPrintLayer4Tests: BaseTestClass {
     }
     
     // MARK: - Test Helpers
+    
+    @MainActor
+    private func printModifierView(
+        content: PrintContent,
+        options: PrintOptions? = nil
+    ) -> some View {
+        Text("Test")
+            .platformPrint_L4(
+                isPresented: .constant(false),
+                content: content,
+                options: options
+            )
+    }
+    
+    private var expectedPrintModifierTypeName: String {
+        #if os(iOS)
+        "PlatformPrintL4IOSModifier"
+        #elseif os(macOS)
+        "PlatformPrintL4MacModifier"
+        #else
+        "PlatformPrintL4UnsupportedModifier"
+        #endif
+    }
     
     private func createTestPlatformImage() -> PlatformImage {
         #if os(iOS)
