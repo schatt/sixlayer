@@ -424,15 +424,12 @@ final class FormProcessingWorkflowTests: BaseTestClass {
         )
         
         // When: Creating form view
-        let _ = platformPresentFormData_L1(
+        let view = platformPresentFormData_L1(
             fields: fields,
             hints: hints
         )
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotAAsyncFormView")
         
-        // Then: Form view should be created successfully
-        #expect(Bool(true), "Form view should be created with hints on \(currentPlatform)")
-        
-        // Verify hints configuration
         #expect(hints.dataType == .form, "Data type should be form on \(currentPlatform)")
         #expect(hints.presentationPreference == .form, "Preference should be form on \(currentPlatform)")
     }
