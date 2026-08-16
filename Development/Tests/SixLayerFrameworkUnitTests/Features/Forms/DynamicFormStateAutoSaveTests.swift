@@ -75,11 +75,7 @@ open class DynamicFormStateAutoSaveTests: BaseTestClass {
         let formState = DynamicFormState(configuration: config)
         
         formState.startAutoSave(interval: 1.0)
-        formState.stopAutoSave()
-        
-        // Timer should be stopped (no way to directly verify, but stop should not crash)
-        // If we get here, stop worked
-        #expect(Bool(true))
+        #expect(throws: Never.self) { formState.stopAutoSave() }
     }
     
     // MARK: - Draft Save/Load Tests
