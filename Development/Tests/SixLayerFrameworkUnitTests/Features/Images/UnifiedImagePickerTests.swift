@@ -47,11 +47,7 @@ open class UnifiedImagePickerTests: BaseTestClass {
             callbackExecuted = true
         }
         
-        // Then: API should work identically on both platforms
-        // Picker creation verifies API signature (compile-time check)
-        #expect(Bool(true), "Unified image picker should have consistent API across platforms")
-        
-        // Verify callback accepts PlatformImage by calling it directly
+        // Then: callback accepts PlatformImage (compile-time type + runtime call)
         let testImage = createTestPlatformImage()
         let callback: (PlatformImage) -> Void = { image in
             selectedImage = image
@@ -87,9 +83,6 @@ open class UnifiedImagePickerTests: BaseTestClass {
         #expect(callbackExecuted, "Callback should execute")
         #expect(receivedImage != nil, "Should receive PlatformImage")
         #expect(receivedImage?.size == testImage.size, "Should receive correct image")
-        
-        // Verify picker was created successfully (API signature check)
-        #expect(Bool(true), "Unified image picker should accept PlatformImage callback")
     }
     
     // MARK: - Platform-Specific Implementation Tests
@@ -105,9 +98,6 @@ open class UnifiedImagePickerTests: BaseTestClass {
         _ = UnifiedImagePicker { image in
             selectedImage = image
         }
-        
-        // Verify picker was created (API signature check)
-        #expect(Bool(true), "iOS image picker should be created")
         
         // When: Test system boundary conversion directly
         let placeholderImage = PlatformImage.createPlaceholder()
@@ -136,7 +126,6 @@ open class UnifiedImagePickerTests: BaseTestClass {
             // When: Picker is created
             // Then: Should use PHPickerViewController (availability check ensures this)
             // The fact that this compiles and runs on iOS 14+ verifies the availability check works
-            #expect(Bool(true), "iOS 14+ should use PHPickerViewController via availability check")
             
             // Verify picker can handle image selection (tests conversion path)
             let placeholderImage = PlatformImage.createPlaceholder()
@@ -146,8 +135,9 @@ open class UnifiedImagePickerTests: BaseTestClass {
             #expect(platformImage.uiImage.size.width > 0, "Should convert UIImage to PlatformImage")
         } else {
             // iOS 13: Should use UIImagePickerController fallback
-            let _ = UnifiedImagePicker { _ in }
-            #expect(Bool(true), "iOS 13 should use UIImagePickerController fallback")
+            #expect(throws: Never.self) {
+                _ = UnifiedImagePicker { _ in }
+            }
         }
         #endif
     }
@@ -163,9 +153,6 @@ open class UnifiedImagePickerTests: BaseTestClass {
         _ = UnifiedImagePicker { image in
             selectedImage = image
         }
-        
-        // Verify picker was created (API signature check)
-        #expect(Bool(true), "macOS image picker should be created")
         
         // When: Test system boundary conversion directly
         // Create a test image file URL
