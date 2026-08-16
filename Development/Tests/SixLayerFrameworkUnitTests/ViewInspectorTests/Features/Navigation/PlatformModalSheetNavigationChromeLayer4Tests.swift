@@ -82,7 +82,6 @@ open class PlatformModalSheetNavigationChromeLayer4Tests: BaseTestClass {
         }
         #expect(found == true, "macOS inspection should find confirmation toolbar button")
         #else
-        #expect(Bool(true), "Platform-specific toolbar check skipped on this target")
         #endif
     }
 
@@ -158,7 +157,6 @@ open class PlatformModalSheetNavigationChromeLayer4Tests: BaseTestClass {
         }
         #expect(found == true, "macOS inspection should find leading and confirmation buttons")
         #else
-        #expect(Bool(true), "Platform-specific toolbar check skipped on this target")
         #endif
     }
 
