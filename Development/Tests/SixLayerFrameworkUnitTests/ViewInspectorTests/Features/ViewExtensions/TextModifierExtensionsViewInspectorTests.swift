@@ -54,12 +54,10 @@ open class TextModifierExtensionsViewInspectorTests: BaseTestClass {
                 #expect(textValue == "Hello", "Text content should be 'Hello'")
             } catch {
                 Issue.record("Failed to inspect view: \(error)")
-                #expect(Bool(false), "View should be inspectable")
             }
             #else
             // ViewInspector not available - verify compilation
             _ = view // Ensure view is created
-            #expect(Bool(true), "ViewInspector not available, but extension should compile")
             #endif
         }
     }
@@ -89,12 +87,10 @@ open class TextModifierExtensionsViewInspectorTests: BaseTestClass {
                 #expect(textValue == "Hello", "Text content should be 'Hello'")
             } catch {
                 Issue.record("Failed to inspect view: \(error)")
-                #expect(Bool(false), "View should be inspectable")
             }
             #else
             // ViewInspector not available - verify compilation
             _ = view // Ensure view is created
-            #expect(Bool(true), "ViewInspector not available, but extension should compile")
             #endif
         }
     }
@@ -122,12 +118,10 @@ open class TextModifierExtensionsViewInspectorTests: BaseTestClass {
                 #expect(textValue == "Hello", "Text content should be 'Hello'")
             } catch {
                 Issue.record("Failed to inspect view: \(error)")
-                #expect(Bool(false), "View should be inspectable")
             }
             #else
             // ViewInspector not available - verify compilation
             _ = view // Ensure view is created
-            #expect(Bool(true), "ViewInspector not available, but extension should compile")
             #endif
         }
     }
@@ -157,12 +151,10 @@ open class TextModifierExtensionsViewInspectorTests: BaseTestClass {
                 #expect(textValue == "Hello", "Text content should be 'Hello'")
             } catch {
                 Issue.record("Failed to inspect view: \(error)")
-                #expect(Bool(false), "View should be inspectable")
             }
             #else
             // ViewInspector not available - verify compilation
             _ = view // Ensure view is created
-            #expect(Bool(true), "ViewInspector not available, but chaining should compile")
             #endif
         }
     }
@@ -197,12 +189,10 @@ open class TextModifierExtensionsViewInspectorTests: BaseTestClass {
                 #expect(try text2.string() == "B", "Second text should be 'B'")
             } catch {
                 Issue.record("Failed to inspect view: \(error)")
-                #expect(Bool(false), "View should be inspectable")
             }
             #else
             // ViewInspector not available - verify compilation
             _ = view // Ensure view is created
-            #expect(Bool(true), "ViewInspector not available, but extension should compile")
             #endif
         }
     }
