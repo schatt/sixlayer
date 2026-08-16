@@ -231,7 +231,6 @@ open class FormWizardViewTDDTests: BaseTestClass {
             #if canImport(ViewInspector)
             Issue.record("FormWizardView step information not found")
             #else
-            #expect(Bool(true), "FormWizardView created (ViewInspector not available on macOS)")
             #endif
         }
     }
@@ -270,7 +269,6 @@ open class FormWizardViewTDDTests: BaseTestClass {
         let showsAnyStep = stepTexts.contains { ["Step 1", "Step 2", "Step 3"].contains($0) }
         #expect(showsAnyStep, "Wizard with .environment(formWizardState) should build and display at least one step (injected state shows Step 2 in host)")
         #else
-        #expect(Bool(true), "View with injected wizardState builds")
         #endif
     }
 
@@ -299,7 +297,6 @@ open class FormWizardViewTDDTests: BaseTestClass {
         }
         #expect(showsStep1, "Wizard without injection should show first step (internal state)")
         #else
-        #expect(Bool(true), "FormWizardView created with internal state")
         #endif
     }
 }
