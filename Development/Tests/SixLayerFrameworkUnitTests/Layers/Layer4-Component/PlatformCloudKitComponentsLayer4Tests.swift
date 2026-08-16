@@ -18,113 +18,93 @@ final class PlatformCloudKitComponentsLayer4Tests {
     
     @Test func testPlatformCloudKitSyncStatusIdle() {
         let status = CloudKitSyncStatus.idle
-        let _ = platformCloudKitSyncStatus_L4(status: status) // View creation verified at compile time
-        #expect(Bool(true), "View should be creatable")
+        let view = platformCloudKitSyncStatus_L4(status: status)
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotACloudKitL4View")
     }
     
     @Test func testPlatformCloudKitSyncStatusSyncing() {
         let status = CloudKitSyncStatus.syncing
-        let _ = platformCloudKitSyncStatus_L4(status: status) // View creation verified at compile time
-        #expect(Bool(true), "View should be creatable")
+        let view = platformCloudKitSyncStatus_L4(status: status)
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotACloudKitL4View")
     }
     
     @Test func testPlatformCloudKitSyncStatusComplete() {
         let status = CloudKitSyncStatus.complete
-        let _ = platformCloudKitSyncStatus_L4(status: status) // View creation verified at compile time
-        #expect(Bool(true), "View should be creatable")
+        let view = platformCloudKitSyncStatus_L4(status: status)
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotACloudKitL4View")
     }
     
     @Test func testPlatformCloudKitSyncStatusError() {
         let error = NSError(domain: "test", code: 1, userInfo: [NSLocalizedDescriptionKey: "Test error"])
         let status = CloudKitSyncStatus.error(error)
-        let _ = platformCloudKitSyncStatus_L4(status: status) // View creation verified at compile time
-        #expect(Bool(true), "View should be creatable")
+        let view = platformCloudKitSyncStatus_L4(status: status)
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotACloudKitL4View")
     }
     
     // MARK: - Progress Display Tests
     
     @Test func testPlatformCloudKitProgress() {
-        let _ = platformCloudKitProgress_L4(progress: 0.5) // View creation verified at compile time
-        #expect(Bool(true), "View should be creatable")
+        let view = platformCloudKitProgress_L4(progress: 0.5)
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotACloudKitL4View")
     }
     
     @Test func testPlatformCloudKitProgressWithStatus() {
         let status = CloudKitSyncStatus.syncing
-        let _ = platformCloudKitProgress_L4(progress: 0.75, status: status) // View creation verified at compile time
-        #expect(Bool(true), "View should be creatable")
+        let view = platformCloudKitProgress_L4(progress: 0.75, status: status)
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotACloudKitL4View")
     }
     
     // MARK: - Account Status Display Tests
     
     @Test func testPlatformCloudKitAccountStatusAvailable() {
         let status = CKAccountStatus.available
-        let _ = platformCloudKitAccountStatus_L4(status: status) // View creation verified at compile time
-        #expect(Bool(true), "View should be creatable")
+        let view = platformCloudKitAccountStatus_L4(status: status)
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotACloudKitL4View")
     }
     
     @Test func testPlatformCloudKitAccountStatusNoAccount() {
         let status = CKAccountStatus.noAccount
-        let _ = platformCloudKitAccountStatus_L4(status: status) // View creation verified at compile time
-        #expect(Bool(true), "View should be creatable")
+        let view = platformCloudKitAccountStatus_L4(status: status)
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotACloudKitL4View")
     }
     
     @Test func testPlatformCloudKitAccountStatusCouldNotDetermine() {
         let status = CKAccountStatus.couldNotDetermine
-        let _ = platformCloudKitAccountStatus_L4(status: status) // View creation verified at compile time
-        #expect(Bool(true), "View should be creatable")
+        let view = platformCloudKitAccountStatus_L4(status: status)
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotACloudKitL4View")
     }
     
     // MARK: - Service Status View Tests
     
     @Test func testPlatformCloudKitServiceStatus() async {
-        // Given: A service with mock delegate
         let delegate = TestCloudKitDelegate()
         let service = CloudKitService(delegate: delegate)
-        
-        // When: Creating status view
-        let _ = platformCloudKitServiceStatus_L4(service: service) // View creation verified at compile time
-        
-        // Then: View should be created
-        #expect(Bool(true), "View should be creatable")
+        let view = platformCloudKitServiceStatus_L4(service: service)
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotACloudKitL4View")
     }
     
     // MARK: - Sync Button Tests
     
     @Test func testPlatformCloudKitSyncButton() async {
-        // Given: A service with mock delegate
         let delegate = TestCloudKitDelegate()
         let service = CloudKitService(delegate: delegate)
-        
-        // When: Creating sync button
-        let _ = platformCloudKitSyncButton_L4(service: service) // Button creation verified at compile time
-        
-        // Then: Button should be created
-        #expect(Bool(true), "Button should be creatable")
+        let view = platformCloudKitSyncButton_L4(service: service)
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotACloudKitL4View")
     }
     
     @Test func testPlatformCloudKitSyncButtonWithCustomLabel() async {
-        // Given: A service with mock delegate
         let delegate = TestCloudKitDelegate()
         let service = CloudKitService(delegate: delegate)
-        
-        // When: Creating sync button with custom label
-        let _ = platformCloudKitSyncButton_L4(service: service, label: "Sync Now") // Button creation verified at compile time
-        
-        // Then: Button should be created
-        #expect(Bool(true), "Button should be creatable")
+        let view = platformCloudKitSyncButton_L4(service: service, label: "Sync Now")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotACloudKitL4View")
     }
     
     // MARK: - Status Badge Tests
     
     @Test func testPlatformCloudKitStatusBadge() async {
-        // Given: A service with mock delegate
         let delegate = TestCloudKitDelegate()
         let service = CloudKitService(delegate: delegate)
-        
-        // When: Creating status badge
-        let _ = platformCloudKitStatusBadge_L4(service: service) // Badge creation verified at compile time
-        
-        // Then: Badge should be created
-        #expect(Bool(true), "Badge should be creatable")
+        let view = platformCloudKitStatusBadge_L4(service: service)
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotACloudKitL4View")
     }
 }
