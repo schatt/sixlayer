@@ -35,7 +35,6 @@ open class PlatformSplitViewLayer4Tests: BaseTestClass {
         
         // Then: View should be created successfully
         // View is non-optional, so if we reach here it exists
-        #expect(Bool(true), "platformVerticalSplit_L4 should create a valid view")
     }
     
     @Test @MainActor func testPlatformVerticalSplitL4WithSpacing() async {
@@ -49,7 +48,6 @@ open class PlatformSplitViewLayer4Tests: BaseTestClass {
         
         // Then: View should be created with spacing parameter
         // Spacing is applied on iOS, ignored on macOS (uses split view divider)
-        #expect(Bool(true), "platformVerticalSplit_L4 should accept spacing parameter")
     }
     
     @Test @MainActor func testPlatformVerticalSplitL4WithMultipleChildren() async {
@@ -63,7 +61,6 @@ open class PlatformSplitViewLayer4Tests: BaseTestClass {
             }
         
         // Then: View should support multiple children
-        #expect(Bool(true), "platformVerticalSplit_L4 should support multiple child views")
     }
     
     @Test @MainActor func testPlatformVerticalSplitL4GeneratesAccessibilityIdentifiers() async {
@@ -104,9 +101,7 @@ open class PlatformSplitViewLayer4Tests: BaseTestClass {
         
         // Then: Should use VSplitView on macOS (resizable split panes)
         // Note: We can't directly inspect VSplitView vs VStack, but the view should be created
-        #expect(Bool(true), "platformVerticalSplit_L4 should use VSplitView on macOS")
         #else
-        #expect(Bool(true), "Test only runs on macOS")
         #endif
     }
     
@@ -122,9 +117,7 @@ open class PlatformSplitViewLayer4Tests: BaseTestClass {
         
         // Then: Should use VStack on iOS (split views not available)
         // Note: We can't directly inspect VStack vs VSplitView, but spacing should be applied
-        #expect(Bool(true), "platformVerticalSplit_L4 should use VStack on iOS with spacing")
         #else
-        #expect(Bool(true), "Test only runs on iOS")
         #endif
     }
     
@@ -140,7 +133,6 @@ open class PlatformSplitViewLayer4Tests: BaseTestClass {
             }
         
         // Then: View should be created successfully
-        #expect(Bool(true), "platformHorizontalSplit_L4 should create a valid view")
     }
     
     @Test @MainActor func testPlatformHorizontalSplitL4WithSpacing() async {
@@ -154,7 +146,6 @@ open class PlatformSplitViewLayer4Tests: BaseTestClass {
         
         // Then: View should be created with spacing parameter
         // Spacing is applied on iOS, ignored on macOS (uses split view divider)
-        #expect(Bool(true), "platformHorizontalSplit_L4 should accept spacing parameter")
     }
     
     @Test @MainActor func testPlatformHorizontalSplitL4WithMultipleChildren() async {
@@ -168,7 +159,6 @@ open class PlatformSplitViewLayer4Tests: BaseTestClass {
             }
         
         // Then: View should support multiple children
-        #expect(Bool(true), "platformHorizontalSplit_L4 should support multiple child views")
     }
     
     @Test @MainActor func testPlatformHorizontalSplitL4GeneratesAccessibilityIdentifiers() async {
@@ -207,9 +197,7 @@ open class PlatformSplitViewLayer4Tests: BaseTestClass {
         
         // Then: Should use HSplitView on macOS (resizable split panes)
         // Note: We can't directly inspect HSplitView vs HStack, but the view should be created
-        #expect(Bool(true), "platformHorizontalSplit_L4 should use HSplitView on macOS")
         #else
-        #expect(Bool(true), "Test only runs on macOS")
         #endif
     }
     
@@ -224,9 +212,7 @@ open class PlatformSplitViewLayer4Tests: BaseTestClass {
         
         // Then: Should use HStack on iOS (split views not available)
         // Note: We can't directly inspect HStack vs HSplitView, but spacing should be applied
-        #expect(Bool(true), "platformHorizontalSplit_L4 should use HStack on iOS with spacing")
         #else
-        #expect(Bool(true), "Test only runs on iOS")
         #endif
     }
     
@@ -243,9 +229,7 @@ open class PlatformSplitViewLayer4Tests: BaseTestClass {
         
         // Then: Spacing parameter should be ignored (macOS uses split view divider)
         // View should still be created successfully
-        #expect(Bool(true), "platformVerticalSplit_L4 spacing should be ignored on macOS (uses divider)")
         #else
-        #expect(Bool(true), "Test only runs on macOS")
         #endif
     }
     
@@ -260,9 +244,7 @@ open class PlatformSplitViewLayer4Tests: BaseTestClass {
         
         // Then: Spacing parameter should be ignored (macOS uses split view divider)
         // View should still be created successfully
-        #expect(Bool(true), "platformHorizontalSplit_L4 spacing should be ignored on macOS (uses divider)")
         #else
-        #expect(Bool(true), "Test only runs on macOS")
         #endif
     }
     
@@ -277,9 +259,7 @@ open class PlatformSplitViewLayer4Tests: BaseTestClass {
         
         // Then: Spacing parameter should be applied (iOS uses VStack)
         // View should be created with spacing
-        #expect(Bool(true), "platformVerticalSplit_L4 spacing should be applied on iOS")
         #else
-        #expect(Bool(true), "Test only runs on iOS")
         #endif
     }
     
@@ -294,9 +274,7 @@ open class PlatformSplitViewLayer4Tests: BaseTestClass {
         
         // Then: Spacing parameter should be applied (iOS uses HStack)
         // View should be created with spacing
-        #expect(Bool(true), "platformHorizontalSplit_L4 spacing should be applied on iOS")
         #else
-        #expect(Bool(true), "Test only runs on iOS")
         #endif
     }
 }
