@@ -140,11 +140,9 @@ open class BarcodeScanningUITests: BaseTestClass {
             // Regular field should not have HStack with barcode button
             _ = inspected.findAll(ViewType.HStack.self)
             // Note: This might still have HStack if field supports OCR, so we check for barcode button specifically
-            #expect(Bool(true), "Regular field test - barcode button should not be present")
         }
         #else
         // ViewInspector not available on macOS - skip test gracefully
-        #expect(Bool(true), "Regular field test skipped (ViewInspector not available on macOS)")
         #endif
     }
     
