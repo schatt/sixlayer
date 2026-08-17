@@ -810,7 +810,6 @@ open class DynamicFormViewTests: BaseTestClass {
         }
         #else
         // ViewInspector not available on macOS - test passes by verifying view creation
-        #expect(Bool(true), "View should be created successfully without visible description text")
         #endif
     }
 
@@ -944,7 +943,6 @@ open class DynamicFormViewTests: BaseTestClass {
         // Then: Should generate accessibility identifiers
         // VERIFIED: DynamicFormView uses automaticCompliance(identifierName:) from form title.
         // ViewInspector limitation: Cannot reliably detect accessibility identifiers on macOS.
-        #expect(Bool(true), "DynamicFormView has automatic compliance from title (verified in code) - ViewInspector limitation on macOS")
     }
 
     // MARK: - OCR Integration Tests
