@@ -208,7 +208,6 @@ open class IntelligentFormViewTests: BaseTestClass {
                 }
 
                 // TDD RED: Should PASS - button should exist
-                #expect(Bool(true), "Update button should exist in form")
                 // TODO: After fix, add verification for visual feedback (success message, etc.)
             } else {
                 Issue.record("Could not inspect form view")
