@@ -44,9 +44,8 @@ open class EnvironmentVariableDebugTests: BaseTestClass {
                 Issue.record("testConfig is nil")
                 return
             }
-            config.enableAutoIDs = false
-            config.globalAutomaticAccessibilityIdentifiers = true
             config.enableAutoIDs = true
+            config.globalAutomaticAccessibilityIdentifiers = true
 
             let view = Button("Test") { }
                 .automaticCompliance(identifierName: "EnvVarConfigEnable")
