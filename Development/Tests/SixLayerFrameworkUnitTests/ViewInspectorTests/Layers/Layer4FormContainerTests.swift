@@ -123,7 +123,6 @@ open class Layer4FormContainerTests: BaseTestClass {
             #if canImport(ViewInspector)
             Issue.record("macOS standard container should contain VStack structure")
             #else
-            #expect(Bool(true), "Form container created")
             #endif
         }
         #endif
@@ -155,7 +154,6 @@ open class Layer4FormContainerTests: BaseTestClass {
             #if canImport(ViewInspector)
             Issue.record("iOS scroll view container should contain ScrollView structure")
             #else
-            #expect(Bool(true), "Form container created")
             #endif
         }
         #elseif os(macOS)
@@ -167,7 +165,6 @@ open class Layer4FormContainerTests: BaseTestClass {
             #if canImport(ViewInspector)
             Issue.record("macOS scroll view container should contain ScrollView structure")
             #else
-            #expect(Bool(true), "Form container created")
             #endif
         }
         #endif
