@@ -30,7 +30,6 @@ struct PlatformPhotoPickerGlobalAccessTests {
         let _ = platformPhotoPicker_L4(onImageSelected: callback)
         
         // If this compiles, the global function exists and is accessible
-        #expect(Bool(true), "platformPhotoPicker_L4 should be accessible as a global function")
     }
     
     @Test @MainActor func testPlatformCameraInterface_L4_IsAccessibleAsGlobalFunction() {
@@ -43,7 +42,6 @@ struct PlatformPhotoPickerGlobalAccessTests {
         let _ = platformCameraInterface_L4(onImageCaptured: callback)
         
         // If this compiles, the global function exists and is accessible
-        #expect(Bool(true), "platformCameraInterface_L4 should be accessible as a global function")
     }
     
     @Test @MainActor func testPlatformPhotoDisplay_L4_IsAccessibleAsGlobalFunction() {
@@ -57,7 +55,6 @@ struct PlatformPhotoPickerGlobalAccessTests {
         let _ = platformPhotoDisplay_L4(image: testImage, style: style)
         
         // If this compiles, the global function exists and is accessible
-        #expect(Bool(true), "platformPhotoDisplay_L4 should be accessible as a global function")
     }
     
     @Test @MainActor func testGlobalFunctionCallableFromExternalModule() {
@@ -66,7 +63,6 @@ struct PlatformPhotoPickerGlobalAccessTests {
         
         let callback: (PlatformImage) -> Void = { image in
             // Simulate what CarManager does
-            #expect(Bool(true), "Callback should receive a PlatformImage")  // image is non-optional
         }
         
         // These should compile when called from external modules
@@ -74,8 +70,6 @@ struct PlatformPhotoPickerGlobalAccessTests {
         let _ = platformCameraInterface_L4(onImageCaptured: callback)
         
         // Verify they return views
-        #expect(Bool(true), "platformPhotoPicker_L4 should return a view")  // photoPicker is non-optional
-        #expect(Bool(true), "platformCameraInterface_L4 should return a view")  // cameraView is non-optional
     }
 }
 
