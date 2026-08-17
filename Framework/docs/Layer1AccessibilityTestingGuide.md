@@ -8,19 +8,21 @@ This guide explains how to test accessibility features for Layer 1 `platform*_L1
 
 ### Unit Tests
 
-**Location**: `Development/Tests/LayeredTestingSuite/L1SemanticTests.swift`
+**Location**: `Development/Tests/SixLayerFrameworkUnitTests/` (these files are in XcodeGen unit / ViewInspector targets)
 
-**Coverage**: 77 tests covering all 86 Layer 1 functions
+- `ViewInspectorTests/Layers/Layer1AccessibilityTests.swift`
+- `ViewInspectorTests/Features/Platform/PlatformSemanticLayer1Tests.swift`
+- `Layers/Layer1PresentationTests.swift`
+- `Core/API/Layer1SemanticAPIPresenceTests.swift`
+
+**Coverage**: Layer 1 `platform*_L1` functions in executing test targets (accessibility, presentation, API presence). A former `LayeredTestingSuite/L1SemanticTests.swift` tree was never in `project.yml` and was removed in #402.
 
 **What They Test**:
-- Functions return hostable views
-- Views can have accessibility compliance applied
-- Basic functionality verification
+- Accessibility identifiers, labels, and compliance on L1 views
+- Presentation / semantic L1 behavior
+- API presence for core L1 entry points
 
-**Running Unit Tests**:
-```bash
-swift test --filter L1SemanticTests
-```
+**Running Unit Tests**: scheme `SLF-iOS-AllTests` for unit files; scheme `SLF-iOS-ViewInspectorTests` for ViewInspector Layer 1 files.
 
 ### UI Tests (XCUITest)
 
