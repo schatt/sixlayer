@@ -39,7 +39,6 @@ open class PhotoFunctionalityPhase1Tests: BaseTestClass {
         let platformImage = PlatformImage(data: sampleData)
         
         // Then: PlatformImage should be created successfully and be usable
-        #expect(Bool(true), "PlatformImage should be created from valid data")  // platformImage is non-optional
         
         // Test that the PlatformImage can actually be used in a view
         if let platformImage = platformImage {
@@ -47,7 +46,6 @@ open class PhotoFunctionalityPhase1Tests: BaseTestClass {
                 .resizable()
                 .aspectRatio(contentMode: .fit)
             _ = hostRootPlatformView(testView.enableGlobalAutomaticCompliance())
-            #expect(Bool(true), "PlatformImage should work in actual views")
         }
     }
     
@@ -276,7 +274,6 @@ open class PhotoFunctionalityPhase1Tests: BaseTestClass {
         
         // Test that the camera interface can actually be hosted
         _ = hostRootPlatformView(cameraInterface.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "Camera interface should be hostable")
     }
     
     @Test @MainActor
@@ -294,7 +291,6 @@ open class PhotoFunctionalityPhase1Tests: BaseTestClass {
         
         // Test that the photo picker can actually be hosted
         _ = hostRootPlatformView(photoPicker.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "Photo picker should be hostable")
     }
     
     @Test @MainActor
@@ -311,7 +307,6 @@ open class PhotoFunctionalityPhase1Tests: BaseTestClass {
         
         // Test that the photo display can actually be hosted
         _ = hostRootPlatformView(photoDisplay.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "Photo display should be hostable")
     }
     
     // MARK: - Cross-Platform Color Tests
@@ -322,7 +317,6 @@ open class PhotoFunctionalityPhase1Tests: BaseTestClass {
         // Test that platform colors can actually be used in views
         let testView = createTestViewWithPlatformSystemColors()
         _ = hostRootPlatformView(testView.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "Platform system colors should work in actual views")
     }
     
     // MARK: - Cross-Platform Keyboard Tests
@@ -341,7 +335,6 @@ open class PhotoFunctionalityPhase1Tests: BaseTestClass {
         
         // Test that the modified view can actually be hosted
         _ = hostRootPlatformView(modifiedView.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "Modified view with keyboard type should be hostable")
     }
     
     @Test @MainActor
