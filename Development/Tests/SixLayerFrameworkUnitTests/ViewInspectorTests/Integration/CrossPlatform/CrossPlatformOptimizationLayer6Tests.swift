@@ -81,7 +81,6 @@ open class CrossPlatformOptimizationLayer6Tests: BaseTestClass {
             #if canImport(ViewInspector)
             Issue.record("Failed to inspect optimized view structure")
             #else
-            #expect(Bool(true), "Optimized view created (ViewInspector not available on macOS)")
             #endif
         }
         
@@ -93,7 +92,6 @@ open class CrossPlatformOptimizationLayer6Tests: BaseTestClass {
             #if canImport(ViewInspector)
             Issue.record("Optimized view should be inspectable on current platform")
             #else
-            #expect(Bool(true), "Optimized view created (ViewInspector not available on macOS)")
             #endif
         }
     }
@@ -110,7 +108,6 @@ open class CrossPlatformOptimizationLayer6Tests: BaseTestClass {
         // Note: recommendations is an array, so it cannot be nil
         // Note: Recommendations may be empty if no platform-specific issues are detected
         // NOTE: Tests for PlatformRecommendationEngine moved to possible-features/PlatformRecommendationEngineTests.swift
-        #expect(Bool(true), "PlatformRecommendationEngine moved to possible-features/ - test disabled")
     }
     
     // MARK: - PlatformOptimizationSettings Tests
@@ -362,7 +359,6 @@ open class CrossPlatformOptimizationLayer6Tests: BaseTestClass {
             #if canImport(ViewInspector)
             Issue.record("Failed to inspect platform-optimized view structure")
             #else
-            #expect(Bool(true), "Optimized view created (ViewInspector not available on macOS)")
             #endif
         }
         
@@ -374,7 +370,6 @@ open class CrossPlatformOptimizationLayer6Tests: BaseTestClass {
             #if canImport(ViewInspector)
             Issue.record("Platform-optimized view should be inspectable on current platform")
             #else
-            #expect(Bool(true), "Optimized view created (ViewInspector not available on macOS)")
             #endif
         }
     }
@@ -399,7 +394,6 @@ open class CrossPlatformOptimizationLayer6Tests: BaseTestClass {
             #if canImport(ViewInspector)
             Issue.record("Failed to inspect performance-optimized view structure")
             #else
-            #expect(Bool(true), "Optimized view created (ViewInspector not available on macOS)")
             #endif
         }
         
@@ -411,7 +405,6 @@ open class CrossPlatformOptimizationLayer6Tests: BaseTestClass {
             #if canImport(ViewInspector)
             Issue.record("Performance-optimized view should be inspectable on current platform")
             #else
-            #expect(Bool(true), "Optimized view created (ViewInspector not available on macOS)")
             #endif
         }
     }
@@ -436,7 +429,6 @@ open class CrossPlatformOptimizationLayer6Tests: BaseTestClass {
             #if canImport(ViewInspector)
             Issue.record("Failed to inspect UI pattern-optimized view structure")
             #else
-            #expect(Bool(true), "Optimized view created (ViewInspector not available on macOS)")
             #endif
         }
         
@@ -448,7 +440,6 @@ open class CrossPlatformOptimizationLayer6Tests: BaseTestClass {
             #if canImport(ViewInspector)
             Issue.record("UI pattern-optimized view should be inspectable on current platform")
             #else
-            #expect(Bool(true), "Optimized view created (ViewInspector not available on macOS)")
             #endif
         }
     }
@@ -490,7 +481,6 @@ open class CrossPlatformOptimizationLayer6Tests: BaseTestClass {
             #if canImport(ViewInspector)
             Issue.record("Fully optimized view should be inspectable")
             #else
-            #expect(Bool(true), "Optimized view created (ViewInspector not available on macOS)")
             #endif
         }
     }
