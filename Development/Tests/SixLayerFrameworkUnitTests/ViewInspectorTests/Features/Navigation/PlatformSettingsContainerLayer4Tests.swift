@@ -42,7 +42,6 @@ open class PlatformSettingsContainerLayer4Tests: BaseTestClass {
             )
         
         // Then: View should be created successfully
-        #expect(Bool(true), "platformSettingsContainer_L4 should create a valid view")
     }
     
     @Test @MainActor func testPlatformSettingsContainer_L4_WithColumnVisibility() {
@@ -61,7 +60,6 @@ open class PlatformSettingsContainerLayer4Tests: BaseTestClass {
             )
         
         // Then: View should be created with column visibility binding
-        #expect(Bool(true), "platformSettingsContainer_L4 should accept columnVisibility parameter")
     }
     
     @Test @MainActor func testPlatformSettingsContainer_L4_WithSelectedCategory() {
@@ -80,7 +78,6 @@ open class PlatformSettingsContainerLayer4Tests: BaseTestClass {
             )
         
         // Then: View should be created with selected category binding
-        #expect(Bool(true), "platformSettingsContainer_L4 should accept selectedCategory parameter")
     }
     
     @Test @MainActor func testPlatformSettingsContainer_L4_WithAllBindings() {
@@ -101,7 +98,6 @@ open class PlatformSettingsContainerLayer4Tests: BaseTestClass {
             )
         
         // Then: View should be created with all bindings
-        #expect(Bool(true), "platformSettingsContainer_L4 should accept all binding parameters")
     }
     
     // MARK: - Device-Aware Behavior Tests
@@ -128,13 +124,10 @@ open class PlatformSettingsContainerLayer4Tests: BaseTestClass {
         // The actual device type detection happens at runtime
         let deviceType = DeviceType.current
         if deviceType == .pad {
-            #expect(Bool(true), "platformSettingsContainer_L4 should use NavigationSplitView on iPad")
         } else {
             // Not running on iPad - test passes but behavior differs
-            #expect(Bool(true), "Test running on \(deviceType), not iPad")
         }
         #else
-        #expect(Bool(true), "Test only runs on iOS")
         #endif
     }
     
@@ -159,13 +152,10 @@ open class PlatformSettingsContainerLayer4Tests: BaseTestClass {
         // but the view should be created and device detection should work
         let deviceType = DeviceType.current
         if deviceType == .phone {
-            #expect(Bool(true), "platformSettingsContainer_L4 should use NavigationStack on iPhone")
         } else {
             // Not running on iPhone - test passes but behavior differs
-            #expect(Bool(true), "Test running on \(deviceType), not iPhone")
         }
         #else
-        #expect(Bool(true), "Test only runs on iOS")
         #endif
     }
     
@@ -186,9 +176,7 @@ open class PlatformSettingsContainerLayer4Tests: BaseTestClass {
             )
         
         // Then: Should use NavigationSplitView on macOS
-        #expect(Bool(true), "platformSettingsContainer_L4 should use NavigationSplitView on macOS")
         #else
-        #expect(Bool(true), "Test only runs on macOS")
         #endif
     }
     
@@ -268,7 +256,6 @@ open class PlatformSettingsContainerLayer4Tests: BaseTestClass {
         // CRITICAL: NavigationSplitView/NavigationStack cause ViewInspector's inspect() to hang indefinitely.
         // The modifier IS applied (verified in Framework/Sources/Layers/Layer4-Component/PlatformNavigationLayer4.swift:720)
         // but cannot be tested with ViewInspector. Verify view creation succeeds.
-        #expect(Bool(true), "platformSettingsContainer_L4 creates view successfully (ViewInspector hangs on NavigationSplitView, so accessibility testing skipped)")
     }
     
     // MARK: - Complex Content Tests
@@ -297,7 +284,6 @@ open class PlatformSettingsContainerLayer4Tests: BaseTestClass {
             )
         
         // Then: Should create container with complex content
-        #expect(Bool(true), "platformSettingsContainer_L4 should handle complex content")
     }
     
     // MARK: - Edge Cases
@@ -316,7 +302,6 @@ open class PlatformSettingsContainerLayer4Tests: BaseTestClass {
             )
         
         // Then: Should handle empty content gracefully
-        #expect(Bool(true), "platformSettingsContainer_L4 should handle empty content")
     }
     
     @Test @MainActor func testPlatformSettingsContainer_L4_WithNilBindings() {
@@ -335,6 +320,5 @@ open class PlatformSettingsContainerLayer4Tests: BaseTestClass {
             )
         
         // Then: Should handle nil bindings gracefully
-        #expect(Bool(true), "platformSettingsContainer_L4 should handle nil bindings")
     }
 }
