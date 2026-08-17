@@ -1,7 +1,9 @@
 # Issue #166: Layer 1 Function Test Coverage Report
 
 **Date**: 2026-01-26  
-**Status**: Analysis Complete
+**Status**: Analysis Complete (historical #166 snapshot)
+
+**#402 (2026-08):** The `L1SemanticTests.swift` counts below describe tests that were **never in `project.yml`**. That file was removed. Use executing `SixLayerFrameworkUnitTests` L1 files for current coverage, not this report's 77-test figure.
 
 ## Summary
 
@@ -212,7 +214,7 @@
 2. **Focus on high-priority core functions first** (item collection, navigation, OCR, barcode)
 3. **Test overloads separately** - each overload should have its own test
 4. **Follow TDD principles** - write tests before implementation changes
-5. **Use consistent test patterns** - follow existing test structure in L1SemanticTests.swift
+5. **Use consistent test patterns** - follow executing `SixLayerFrameworkUnitTests` L1 tests, not the removed `L1SemanticTests.swift`
 
 ## Next Steps
 
