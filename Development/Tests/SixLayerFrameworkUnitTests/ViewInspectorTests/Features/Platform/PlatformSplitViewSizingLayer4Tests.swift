@@ -88,7 +88,6 @@ open class PlatformSplitViewSizingLayer4Tests: BaseTestClass {
             }
         
         // Then: View should be created successfully
-        #expect(Bool(true), "platformVerticalSplit_L4 should accept sizing configuration")
     }
     
     @Test @MainActor func testPlatformHorizontalSplitL4AcceptsSizingConfiguration() async {
@@ -109,7 +108,6 @@ open class PlatformSplitViewSizingLayer4Tests: BaseTestClass {
             }
         
         // Then: View should be created successfully
-        #expect(Bool(true), "platformHorizontalSplit_L4 should accept sizing configuration")
     }
     
     @Test @MainActor func testPlatformVerticalSplitL4AppliesSizingConstraintsOnMacOS() async {
@@ -131,9 +129,7 @@ open class PlatformSplitViewSizingLayer4Tests: BaseTestClass {
             }
         
         // Then: Sizing constraints should be applied (macOS uses VSplitView with frame modifiers)
-        #expect(Bool(true), "platformVerticalSplit_L4 should apply sizing constraints on macOS")
         #else
-        #expect(Bool(true), "Test only runs on macOS")
         #endif
     }
     
@@ -156,9 +152,7 @@ open class PlatformSplitViewSizingLayer4Tests: BaseTestClass {
             }
         
         // Then: Sizing constraints should be applied (macOS uses HSplitView with frame modifiers)
-        #expect(Bool(true), "platformHorizontalSplit_L4 should apply sizing constraints on macOS")
         #else
-        #expect(Bool(true), "Test only runs on macOS")
         #endif
     }
     
@@ -181,7 +175,6 @@ open class PlatformSplitViewSizingLayer4Tests: BaseTestClass {
             }
         
         // Then: Container constraints should be applied
-        #expect(Bool(true), "platformVerticalSplit_L4 should apply container constraints")
     }
     
     @Test @MainActor func testPlatformSplitViewSizingWithMultiplePanes() async {
@@ -236,9 +229,7 @@ open class PlatformSplitViewSizingLayer4Tests: BaseTestClass {
             }
         
         // Then: Should work on iOS (sizing may be applied differently than macOS)
-        #expect(Bool(true), "Sizing configuration should work on iOS")
         #else
-        #expect(Bool(true), "Test only runs on iOS")
         #endif
     }
     
@@ -261,9 +252,7 @@ open class PlatformSplitViewSizingLayer4Tests: BaseTestClass {
             }
         
         // Then: Should work on macOS (sizing applied via frame modifiers)
-        #expect(Bool(true), "Sizing configuration should work on macOS")
         #else
-        #expect(Bool(true), "Test only runs on macOS")
         #endif
     }
 }
