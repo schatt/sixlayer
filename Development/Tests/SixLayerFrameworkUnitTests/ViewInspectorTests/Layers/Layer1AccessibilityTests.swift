@@ -509,9 +509,6 @@ open class Layer1AccessibilityTests: BaseTestClass {
                 hints: PresentationHints()
             )
             
-            // Then: View should be created (view is non-optional, so this just documents the expectation)
-            // #expect(Bool(true), "platformPresentSettings_L1 should create a view")  // view is non-optional
-            
             // TDD GREEN PHASE: platformPresentSettings_L1 should generate accessibility identifiers
             let hasSpecificAccessibilityID = testComponentComplianceSinglePlatform(
                 view, 
