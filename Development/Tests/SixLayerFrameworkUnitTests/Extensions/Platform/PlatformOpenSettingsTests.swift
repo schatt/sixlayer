@@ -52,7 +52,6 @@ open class PlatformOpenSettingsTests: BaseTestClass {
         // Then: Should return a Bool (may be true or false depending on platform/capabilities)
         // result is already typed as Bool, so just verify it's accessible
         let _ = result
-        #expect(Bool(true), "platformOpenSettings should return Bool")
     }
     
     // MARK: - iOS-Specific Tests
@@ -120,7 +119,6 @@ open class PlatformOpenSettingsTests: BaseTestClass {
         
         // Then: Should return Bool on any platform
         let _ = result
-    #expect(Bool(true), "result is Bool")
     }
     
     // MARK: - Error Handling Tests
@@ -141,11 +139,8 @@ open class PlatformOpenSettingsTests: BaseTestClass {
         
         // Then: Should return Bool for all calls without crashing
         let _ = result1
-    #expect(Bool(true), "result is Bool")
         let _ = result2
-    #expect(Bool(true), "result is Bool")
         let _ = result3
-    #expect(Bool(true), "result is Bool")
     }
     
     // MARK: - Integration Tests
@@ -253,7 +248,6 @@ open class PlatformOpenSettingsTests: BaseTestClass {
         // Then: Should return Bool (error logging happens internally, we can't test it directly)
         // But we can verify the function doesn't crash and returns appropriate value
         let _ = result
-    #expect(Bool(true), "result is Bool")
         
         // Note: Actual error logging verification would require integration tests
         // or mocking the logging system, which is beyond unit test scope
