@@ -2,7 +2,7 @@
 
 **Status**: ✅ COMPLETE - All Phases Complete  
 **Created**: 2025-01-27  
-**Last Updated**: 2026-01-26  
+**Last Updated**: 2026-08-16  
 **Parent Issue**: #165
 
 ## Summary
@@ -10,7 +10,7 @@
 - **Total Layer 1 Functions**: 86 functions (counting overloads separately)
 - **Functions with `.automaticCompliance()`**: 86 functions (100% complete) ✅
 - **Functions Missing Accessibility**: 0 functions ✅
-- **Unit Tests Created**: 77 tests covering all 86 functions (89.5% coverage) ✅
+- **Unit Tests**: Executing coverage is in `Development/Tests/SixLayerFrameworkUnitTests/` (`Layer1AccessibilityTests`, `PlatformSemanticLayer1Tests`, `Layer1PresentationTests`, `Layer1SemanticAPIPresenceTests`, plus feature L1 files). The 77 tests that lived in `LayeredTestingSuite/L1SemanticTests.swift` were never in an XcodeGen target and were removed in #402.
 - **UI Tests Created**: Comprehensive XCUITest suite for accessibility verification ✅
 - **RealUI Test App Examples**: 47+ unique function examples covering all 86 functions ✅
 
@@ -232,7 +232,7 @@ These don't return Views, so they don't need accessibility modifiers:
   - [x] Medium priority: Overloads with EnhancedPresentationHints, custom views, custom containers ✅
   - [x] Low priority: RTL containers (4), simple wrappers ✅
 - [x] Create UI tests for accessibility verification (XCUITest suite) ✅
-- [x] Verify all 86 functions have at least one test (77 tests cover all functions) ✅
+- [x] Verify all 86 functions have at least one test ✅ (executing coverage in `SixLayerFrameworkUnitTests`; the 77 `L1SemanticTests` cases were never wired — removed in #402)
 - [x] Test all accessibility features (identifiers, labels, hints, traits, values) ✅
 
 ### Phase 5 (Complete):

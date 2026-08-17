@@ -326,10 +326,9 @@ platformPresentItemCollection_L1(
 
 ### Unit Tests
 
-All Layer 1 functions have unit tests in `Development/Tests/LayeredTestingSuite/L1SemanticTests.swift` that verify:
-- Functions return hostable views
-- Views can have accessibility compliance applied
-- 77 tests covering all 86 functions
+Layer 1 functions have executing unit / ViewInspector tests under `Development/Tests/SixLayerFrameworkUnitTests/` (for example `Layer1AccessibilityTests.swift`, `PlatformSemanticLayer1Tests.swift`, `Layer1PresentationTests.swift`, `Layer1SemanticAPIPresenceTests.swift`). They verify accessibility compliance and L1 presentation/API presence.
+
+A former `Development/Tests/LayeredTestingSuite/L1SemanticTests.swift` file was never in `project.yml` and was removed in #402.
 
 ### UI Tests
 
