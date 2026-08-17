@@ -35,7 +35,6 @@ open class AutomaticHIGStylingTests: BaseTestClass {
         // When: View is created with automatic compliance
         // Then: Visual design should be automatically applied
         // (Colors, spacing, typography should be applied via modifiers)
-        #expect(Bool(true), "View with automaticCompliance should have visual design applied")
     }
     
     /// BUSINESS PURPOSE: .automaticCompliance() should apply platform-specific colors
@@ -52,7 +51,6 @@ open class AutomaticHIGStylingTests: BaseTestClass {
             .automaticCompliance()
         
         // Then: Platform-specific colors should be applied
-        #expect(Bool(true), "Platform-specific colors should be applied on \(currentPlatform)")
     }
     
     // MARK: - Automatic Spacing Tests
@@ -72,7 +70,6 @@ open class AutomaticHIGStylingTests: BaseTestClass {
         
         // When: View is created with automatic compliance
         // Then: Spacing should be automatically applied following 8pt grid
-        #expect(Bool(true), "Spacing should be automatically applied following 8pt grid")
     }
     
     /// BUSINESS PURPOSE: .automaticCompliance() should apply platform-specific spacing
@@ -89,7 +86,6 @@ open class AutomaticHIGStylingTests: BaseTestClass {
             .automaticCompliance()
         
         // Then: Platform-appropriate spacing should be applied
-        #expect(Bool(true), "Platform-appropriate spacing should be applied on \(currentPlatform)")
     }
     
     // MARK: - Automatic Typography Tests
@@ -106,7 +102,6 @@ open class AutomaticHIGStylingTests: BaseTestClass {
         
         // When: View is created with automatic compliance
         // Then: Typography should be automatically applied
-        #expect(Bool(true), "Typography should be automatically applied")
     }
     
     /// BUSINESS PURPOSE: .automaticCompliance() should apply platform-specific typography
@@ -123,7 +118,6 @@ open class AutomaticHIGStylingTests: BaseTestClass {
             .automaticCompliance()
         
         // Then: Platform-appropriate typography should be applied
-        #expect(Bool(true), "Platform-appropriate typography should be applied on \(currentPlatform)")
     }
     
     // MARK: - Platform-Specific HIG Pattern Tests
@@ -137,12 +131,10 @@ open class AutomaticHIGStylingTests: BaseTestClass {
         // Test iOS patterns
         _ = Text("iOS Content")
             .automaticCompliance()
-        #expect(Bool(true), "iOS-specific patterns should be applied")
         
         // Test macOS patterns
         _ = Text("macOS Content")
             .automaticCompliance()
-        #expect(Bool(true), "macOS-specific patterns should be applied")
     }
     
     /// BUSINESS PURPOSE: Layer 1 functions should automatically apply styling without manual modifiers
@@ -159,7 +151,6 @@ open class AutomaticHIGStylingTests: BaseTestClass {
         
         // When: View is created
         // Then: Styling should be automatically applied (no manual modifiers needed)
-        #expect(Bool(true), "Layer 1 functions should automatically apply styling")
     }
     
     /// BUSINESS PURPOSE: Multiple components should all get automatic styling
@@ -173,21 +164,18 @@ open class AutomaticHIGStylingTests: BaseTestClass {
             items: [TestPatterns.TestItem(id: "1", title: "Test")],
             hints: PresentationHints()
         )
-        #expect(Bool(true), "Collection view should have automatic styling")
         
         // Test numeric data view
         _ = platformPresentNumericData_L1(
             data: [GenericNumericData(value: 42.0, label: "Value", unit: "units")],
             hints: PresentationHints()
         )
-        #expect(Bool(true), "Numeric view should have automatic styling")
         
         // Test content view
         _ = platformPresentContent_L1(
             content: "Test Content",
             hints: PresentationHints()
         )
-        #expect(Bool(true), "Content view should have automatic styling")
     }
     
     /// BUSINESS PURPOSE: Custom views should be able to opt-in to automatic styling
@@ -211,7 +199,6 @@ open class AutomaticHIGStylingTests: BaseTestClass {
             .automaticCompliance()
         
         // Then: Automatic styling should be applied
-        #expect(Bool(true), "Custom views should be able to opt-in to automatic styling")
     }
 }
 
