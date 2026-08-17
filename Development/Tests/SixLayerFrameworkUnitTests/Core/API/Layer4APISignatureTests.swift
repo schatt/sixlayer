@@ -79,7 +79,9 @@ open class Layer4APISignatureTests: BaseTestClass {
             bannerMessage: "Hint",
             onItemTap: { _ in }
         )
-        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "PlatformDataScannerLiveSwiftUIView")
+        // `if #available` + `@available` live view erases to AnyView; lock the
+        // compliance wrapper that survives (same as sibling scanner signature tests).
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "AutomaticComplianceModifier")
     }
 
     @Test @MainActor func testPlatformDataScannerInterface_L4_APISignature() {

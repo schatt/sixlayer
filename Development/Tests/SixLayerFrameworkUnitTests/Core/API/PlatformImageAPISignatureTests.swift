@@ -43,14 +43,11 @@ open class PlatformImageAPISignatureTests: BaseTestClass {
     /// TESTING SCOPE: Tests that ALL public PlatformImage initializers exist and function
     /// METHODOLOGY: Test each initializer signature directly
     @Test func testPlatformImageInitializerSignatures() {
-        // Test 1: Default initializer — inverted isEmpty until red
+        // Test 1: Default initializer
         #expect(PlatformImage().isEmpty, "Default PlatformImage is empty")
         
-        // Test 2: Data initializer is failable — invert nil until red
-        let sampleData = Data([0xFF, 0xD8, 0xFF, 0xE0])  // Minimal JPEG header for testing
-        let fromTruncatedJPEG = PlatformImage(data: sampleData)
-        #expect(fromTruncatedJPEG != nil, "Truncated JPEG header still constructs a PlatformImage")
-        #expect(fromTruncatedJPEG?.isEmpty == true, "Truncated JPEG header yields an empty image")
+        // Test 2: Data initializer is failable; truncated JPEG follows the platform decoder.
+        expectTruncatedJPEGHeaderMatchesPlatformDecoder()
         
         // Test 3: Platform-specific initializers
         #if os(iOS)
@@ -137,11 +134,8 @@ open class PlatformImageAPISignatureTests: BaseTestClass {
     /// TESTING SCOPE: Tests that API is consistent across platforms
     /// METHODOLOGY: Test API patterns work on all platforms
     @Test func testPlatformImageCrossPlatformConsistency() {
-        // Test that data initializer works on all platforms
-        let sampleData = Data([0xFF, 0xD8, 0xFF, 0xE0])  // Minimal JPEG header for testing
-        let fromTruncatedJPEG = PlatformImage(data: sampleData)
-        #expect(fromTruncatedJPEG != nil, "Truncated JPEG header still constructs a PlatformImage")
-        #expect(fromTruncatedJPEG?.isEmpty == true, "Truncated JPEG header yields an empty image")
+        // Data initializer exists on all platforms; truncated JPEG is decoder-specific.
+        expectTruncatedJPEGHeaderMatchesPlatformDecoder()
         
         #expect(PlatformImage().isEmpty, "Default PlatformImage is empty")
         
@@ -262,6 +256,18 @@ open class PlatformImageAPISignatureTests: BaseTestClass {
         let platformImage = PlatformImage(cgImage: cgImage, size: .zero)
         #expect(!platformImage.isEmpty, "CGImage init with .zero size uses CGImage dimensions")
         #expect(platformImage.size == CGSize(width: 100, height: 100), "CGImage .zero size resolves to 100×100")
+        #endif
+    }
+
+    /// `init?(data:)` forwards to UIImage/NSImage. A truncated JPEG header is not a shared contract.
+    private func expectTruncatedJPEGHeaderMatchesPlatformDecoder() {
+        let truncatedJPEGHeader = Data([0xFF, 0xD8, 0xFF, 0xE0])
+        let image = PlatformImage(data: truncatedJPEGHeader)
+        #if os(macOS)
+        #expect(image != nil, "NSImage accepts a truncated JPEG header")
+        #expect(image?.isEmpty == true, "Accepted truncated JPEG has zero size")
+        #else
+        #expect(image == nil, "UIImage rejects a truncated JPEG header")
         #endif
     }
     
