@@ -48,11 +48,12 @@ open class CapabilityMatrixTests: BaseTestClass {
             testBehavior: {
                 let platform = SixLayerPlatform.current
                 let effectiveTouch = RuntimeCapabilityDetection.supportsTouch
+                // macOS can have a touchscreen; this machine may not. Layout follows
+                // this-host runtime, not a static “platform can do touch” flag.
                 let expectedMin = PlatformTestUtilities.expectedMinTouchTarget(
                     for: platform,
                     touchDetected: effectiveTouch
                 )
-                #expect(platform.supportsTouchGestures == effectiveTouch)
                 #expect(RuntimeCapabilityDetection.minTouchTarget == expectedMin)
             }
         ),
@@ -133,9 +134,8 @@ open class CapabilityMatrixTests: BaseTestClass {
             case .iOS, .watchOS, .macOS, .tvOS, .visionOS:
                 #expect(
                     RuntimeCapabilityDetection.minTouchTarget == expectedMin,
-                    "\(phase) on \(platform): matrix minTouchTarget should match HIG"
+                    "\(phase) on \(platform): matrix minTouchTarget should match HIG for this host's effective touch"
                 )
-                #expect(platform.supportsTouchGestures == effectiveTouch)
             }
         }
 
