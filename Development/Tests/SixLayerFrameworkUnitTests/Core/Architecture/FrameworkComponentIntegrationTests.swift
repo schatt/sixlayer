@@ -24,7 +24,6 @@ open class FrameworkComponentIntegrationTests: BaseTestClass {
             contentView
         }
         
-        #expect(Bool(true), "platformPresentContent_L1 should work in view hierarchy")  // testView is non-optional
     }
     
     @Test @MainActor func testPlatformPresentBasicValueL1CanBeCreated() {
@@ -33,14 +32,12 @@ open class FrameworkComponentIntegrationTests: BaseTestClass {
         let valueView = platformPresentBasicValue_L1(value: 42, hints: PresentationHints())
         
         // Test that the component can be created and doesn't crash
-        #expect(Bool(true), "platformPresentBasicValue_L1 should be creatable")  // valueView is non-optional
         
         // Test that it can be used in a view hierarchy
         let _ = platformVStackContainer {
             valueView
         }
         
-        #expect(Bool(true), "platformPresentBasicValue_L1 should work in view hierarchy")  // testView is non-optional
     }
     
     @Test @MainActor func testPlatformPresentBasicArrayL1CanBeCreated() {
@@ -49,14 +46,12 @@ open class FrameworkComponentIntegrationTests: BaseTestClass {
         let arrayView = platformPresentBasicArray_L1(array: [1, 2, 3], hints: PresentationHints())
         
         // Test that the component can be created and doesn't crash
-        #expect(Bool(true), "platformPresentBasicArray_L1 should be creatable")  // arrayView is non-optional
         
         // Test that it can be used in a view hierarchy
         let _ = platformVStackContainer {
             arrayView
         }
         
-        #expect(Bool(true), "platformPresentBasicArray_L1 should work in view hierarchy")  // testView is non-optional
     }
     
     // MARK: - Components That Should Have .automaticAccessibility()
@@ -82,14 +77,12 @@ open class FrameworkComponentIntegrationTests: BaseTestClass {
         )
         
         // Test that the component can be created and doesn't crash
-        #expect(Bool(true), "platformPresentItemCollection_L1 should be creatable")  // collectionView is non-optional
         
         // Test that it can be used in a view hierarchy
         let _ = platformVStackContainer {
             collectionView
         }
         
-        #expect(Bool(true), "platformPresentItemCollection_L1 should work in view hierarchy")  // testView is non-optional
         print("Testing platformPresentItemCollection_L1 integration with accessibility")
     }
     
@@ -116,7 +109,6 @@ open class FrameworkComponentIntegrationTests: BaseTestClass {
             platformPresentItemCollection_L1(items: mockItems, hints: hints)
         }
         
-        #expect(Bool(true), "Multiple framework components should work together")  // testView is non-optional
     }
 }
 

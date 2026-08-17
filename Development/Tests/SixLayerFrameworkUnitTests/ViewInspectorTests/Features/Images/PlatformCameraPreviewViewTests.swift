@@ -68,7 +68,6 @@ open class PlatformCameraPreviewViewTests: BaseTestClass {
             _ = PlatformCameraPreviewView(session: session)
             // Then: View should be created successfully
             // The view should be a valid SwiftUI View
-            #expect(Bool(true), "PlatformCameraPreviewView should be creatable")
         }
     }
     
@@ -86,7 +85,6 @@ open class PlatformCameraPreviewViewTests: BaseTestClass {
             _ = PlatformCameraPreviewView(session: session, videoGravity: .resizeAspect)
             _ = PlatformCameraPreviewView(session: session, videoGravity: .resize)
             // Then: All views should be created successfully
-            #expect(Bool(true), "PlatformCameraPreviewView should accept different videoGravity values")
         }
     }
     
@@ -143,7 +141,6 @@ open class PlatformCameraPreviewViewTests: BaseTestClass {
             #if canImport(ViewInspector)
             if let _ = try? AnyView(previewView).inspect() {
                 // iOS camera preview should be inspectable
-                #expect(Bool(true), "iOS implementation should be inspectable")
             } else {
                 Issue.record("Failed to verify iOS camera preview structure")
             }
@@ -152,7 +149,6 @@ open class PlatformCameraPreviewViewTests: BaseTestClass {
             #endif
             #else
             // Not iOS - skip test
-            #expect(Bool(true), "Test only runs on iOS")
             #endif
         }
     }
@@ -174,7 +170,6 @@ open class PlatformCameraPreviewViewTests: BaseTestClass {
             #if canImport(ViewInspector)
             if let _ = try? AnyView(previewView).inspect() {
                 // macOS camera preview should be inspectable
-                #expect(Bool(true), "macOS implementation should be inspectable")
             } else {
                 Issue.record("Failed to verify macOS camera preview structure")
             }
@@ -183,7 +178,6 @@ open class PlatformCameraPreviewViewTests: BaseTestClass {
             #endif
             #else
             // Not macOS - skip test
-            #expect(Bool(true), "Test only runs on macOS")
             #endif
         }
     }
@@ -204,7 +198,6 @@ open class PlatformCameraPreviewViewTests: BaseTestClass {
             // For now, we test direct creation
             _ = PlatformCameraPreviewView(session: session)
             // Then: View should be created successfully
-            #expect(Bool(true), "PlatformCameraPreviewView should work with Layer 4 integration")
         }
     }
     
@@ -223,7 +216,6 @@ open class PlatformCameraPreviewViewTests: BaseTestClass {
             _ = PlatformCameraPreviewView(session: session)
             // Then: View should handle updates (this is a basic smoke test)
             // In a real scenario, we'd test that the preview layer updates when session changes
-            #expect(Bool(true), "PlatformCameraPreviewView should handle session updates")
         }
     }
 }

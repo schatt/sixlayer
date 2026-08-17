@@ -368,12 +368,10 @@ open class DynamicFieldComponentsTests: BaseTestClass {
         #if canImport(ViewInspector)
         if let _ = try? AnyView(view).inspect() {
             // View is inspectable - file picker interface should be present
-            #expect(Bool(true), "Should provide file picker interface")
         } else {
             #if canImport(ViewInspector)
             Issue.record("DynamicFileField interface not found")
             #else
-            #expect(Bool(true), "DynamicFileField created")
             #endif
         }
         #else
@@ -418,12 +416,10 @@ open class DynamicFieldComponentsTests: BaseTestClass {
         #if canImport(ViewInspector)
         if let _ = try? AnyView(view).inspect() {
             // View is inspectable - image picker interface should be present
-            #expect(Bool(true), "Should provide image picker interface")
         } else {
             #if canImport(ViewInspector)
             Issue.record("DynamicImageField interface not found")
             #else
-            #expect(Bool(true), "DynamicImageField created")
             #endif
         }
         #else
@@ -468,12 +464,10 @@ open class DynamicFieldComponentsTests: BaseTestClass {
         #if canImport(ViewInspector)
         if let _ = try? AnyView(view).inspect() {
             // View is inspectable - array input interface should be present
-            #expect(Bool(true), "Should provide array input interface")
         } else {
             #if canImport(ViewInspector)
             Issue.record("DynamicArrayField interface not found")
             #else
-            #expect(Bool(true), "DynamicArrayField created")
             #endif
         }
         #else
@@ -518,12 +512,10 @@ open class DynamicFieldComponentsTests: BaseTestClass {
         #if canImport(ViewInspector)
         if let _ = try? AnyView(view).inspect() {
             // View is inspectable - data input interface should be present
-            #expect(Bool(true), "Should provide data input interface")
         } else {
             #if canImport(ViewInspector)
             Issue.record("DynamicDataField interface not found")
             #else
-            #expect(Bool(true), "DynamicDataField created")
             #endif
         }
         #else
@@ -976,7 +968,6 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
 
         // Should not crash, counter should not appear or should handle gracefully
-        #expect(Bool(true), "Should handle invalid maxLength without crashing")
     }
 
     @Test @MainActor func testCharacterCounterIsAccessible() async {
@@ -1477,7 +1468,6 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
 
         // Should not crash, counter should not appear
-        #expect(Bool(true), "Should handle zero maxLength without crashing")
     }
 
     @Test @MainActor func testCharacterCounterHandlesNegativeMaxLength() async {
@@ -1502,7 +1492,6 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
 
         // Should not crash, counter should not appear (maxLength > 0 check)
-        #expect(Bool(true), "Should handle negative maxLength without crashing")
     }
 
     @Test @MainActor func testCharacterCounterUpdatesInRealTime() async {
@@ -1574,12 +1563,10 @@ open class DynamicFieldComponentsTests: BaseTestClass {
         #if canImport(ViewInspector)
         if let _ = try? AnyView(view).inspect() {
             // View is inspectable - stepper interface should be present
-            #expect(Bool(true), "Should provide stepper interface")
         } else {
             #if canImport(ViewInspector)
             Issue.record("DynamicStepperField interface not found")
             #else
-            #expect(Bool(true), "DynamicStepperField created")
             #endif
         }
         #else
@@ -1647,7 +1634,6 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
 
         // View should be created successfully
-        #expect(Bool(true), "Should respect step size")
     }
 
     @Test @MainActor func testDynamicStepperFieldUpdatesFormState() async {
@@ -1701,7 +1687,6 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
 
         // Should not crash with missing metadata
-        #expect(Bool(true), "Should handle missing metadata gracefully")
     }
 
     @Test @MainActor func testDynamicStepperFieldShowsCurrentValue() async {
@@ -2186,12 +2171,10 @@ open class DynamicFieldComponentsTests: BaseTestClass {
         #if canImport(ViewInspector)
         if let _ = try? AnyView(view).inspect() {
             // View is inspectable - gauge should be present
-            #expect(Bool(true), "Should provide gauge interface")
         } else {
             #if canImport(ViewInspector)
             Issue.record("DynamicGaugeField interface not found")
             #else
-            #expect(Bool(true), "DynamicGaugeField created")
             #endif
         }
         #else
@@ -2207,7 +2190,6 @@ open class DynamicFieldComponentsTests: BaseTestClass {
 
         // Should read value from form state
         _ = formState.getValue(for: "gauge") as String?
-        #expect(Bool(true), "Should read value from form state")
     }
 
     @Test @MainActor func testDynamicGaugeFieldUsesMinMaxFromMetadata() async {
@@ -2306,7 +2288,6 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
 
         // Should support circular style
-        #expect(Bool(true), "Should support circular gauge style")
     }
 
     @Test @MainActor func testDynamicGaugeFieldSupportsLinearStyle() async {
@@ -2337,7 +2318,6 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
 
         // Should support linear style
-        #expect(Bool(true), "Should support linear gauge style")
     }
 
     @Test @MainActor func testDynamicGaugeFieldDefaultsToLinearStyle() async {
@@ -2363,7 +2343,6 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
 
         // Should default to linear style
-        #expect(Bool(true), "Should default to linear gauge style")
     }
 
     @Test @MainActor func testDynamicGaugeFieldHandlesDoubleValue() async {
@@ -2462,7 +2441,6 @@ open class DynamicFieldComponentsTests: BaseTestClass {
 
         // Should handle String value
         _ = formState.getValue(for: "gauge") as String?
-        #expect(Bool(true), "Should handle String value")
     }
 
     @Test @MainActor func testDynamicGaugeFieldFallsBackToDefaultValue() async {
@@ -2493,7 +2471,6 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
 
         // Should fall back to defaultValue
-        #expect(Bool(true), "Should fall back to defaultValue")
     }
 
     @Test @MainActor func testDynamicGaugeFieldFallsBackToZeroWhenNoValue() async {
@@ -2523,7 +2500,6 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
 
         // Should fall back to 0.0
-        #expect(Bool(true), "Should fall back to 0.0 when no value")
     }
 
     @Test @MainActor func testDynamicGaugeFieldSupportsCustomLabel() async {
@@ -2554,7 +2530,6 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
 
         // Should support custom gauge label
-        #expect(Bool(true), "Should support custom gauge label")
     }
 
     @Test @MainActor func testDynamicGaugeFieldWorksInCustomFieldView() async {
@@ -2584,6 +2559,5 @@ open class DynamicFieldComponentsTests: BaseTestClass {
             .enableGlobalAutomaticCompliance()
 
         // Should work through CustomFieldView
-        #expect(Bool(true), "Should work through CustomFieldView")
     }
 }

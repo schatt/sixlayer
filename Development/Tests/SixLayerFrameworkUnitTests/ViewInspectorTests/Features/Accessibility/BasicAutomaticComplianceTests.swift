@@ -49,7 +49,6 @@ open class BasicAutomaticComplianceTests: BaseTestClass {
             // When: View is created with basic compliance
             // Then: Modifier should compile and apply (structure test)
             // Identifier detection is tested in UI tests where XCUITest can reliably find them
-            #expect(Bool(true), "View with basicAutomaticCompliance should compile and apply modifier")
         }
     }
     
@@ -67,7 +66,6 @@ open class BasicAutomaticComplianceTests: BaseTestClass {
             // When: View is created with basic compliance
             // Then: Modifier should compile and apply (structure test)
             // Label detection is tested in UI tests where XCUITest can reliably find them
-            #expect(Bool(true), "View with basicAutomaticCompliance should compile and apply modifier")
         }
     }
     
@@ -87,7 +85,6 @@ open class BasicAutomaticComplianceTests: BaseTestClass {
             // When: Comparing basic vs full compliance
             // Then: Basic compliance should NOT apply HIG features (touch targets, focus indicators, etc.)
             // Note: This is a structural test - we verify basic compliance doesn't call applyHIGComplianceFeatures
-            #expect(Bool(true), "Basic compliance should not apply HIG features")
         }
     }
     
@@ -401,7 +398,6 @@ open class BasicAutomaticComplianceTests: BaseTestClass {
             
             // Then: Modifier should compile and apply (structure test)
             // Sanitization verification is tested in UI tests where XCUITest can reliably find identifiers
-            #expect(Bool(true), "View with label sanitization should compile and apply modifier")
         }
     }
     
@@ -432,7 +428,6 @@ open class BasicAutomaticComplianceTests: BaseTestClass {
             // When: Identifier is generated
             // Then: Modifier should compile and apply (structure test)
             // Special character sanitization verification is tested in UI tests where XCUITest can reliably find identifiers
-            #expect(Bool(true), "View with special characters should compile and apply modifier")
         }
     }
     
@@ -452,7 +447,6 @@ open class BasicAutomaticComplianceTests: BaseTestClass {
             // Then: Should return Text (allows chaining)
             // Compile-time check: if this compiles, type is preserved
             let _ = text.bold()
-            #expect(Bool(true), "Text.basicAutomaticCompliance() should return Text type allowing .bold() chaining")
         }
     }
     
@@ -470,7 +464,6 @@ open class BasicAutomaticComplianceTests: BaseTestClass {
             // When: Text is created with basic compliance
             // Then: Modifier should compile and apply (structure test)
             // Identifier detection is tested in UI tests where XCUITest can reliably find them
-            #expect(Bool(true), "Text with basicAutomaticCompliance should compile and apply modifier")
         }
     }
     
@@ -488,7 +481,6 @@ open class BasicAutomaticComplianceTests: BaseTestClass {
             // When: Text is created with basic compliance
             // Then: Modifier should compile and apply (structure test)
             // Label detection is tested in UI tests where XCUITest can reliably find them
-            #expect(Bool(true), "Text with basicAutomaticCompliance should compile and apply modifier")
         }
     }
     
@@ -505,7 +497,6 @@ open class BasicAutomaticComplianceTests: BaseTestClass {
             
             // When: Chaining .bold() after .basicAutomaticCompliance()
             // Then: Should compile and work (type preservation)
-            #expect(Bool(true), "Text.basicAutomaticCompliance().bold() should compile and work")
         }
     }
     
@@ -522,7 +513,6 @@ open class BasicAutomaticComplianceTests: BaseTestClass {
             
             // When: Chaining .italic() after .basicAutomaticCompliance()
             // Then: Should compile and work (type preservation)
-            #expect(Bool(true), "Text.basicAutomaticCompliance().italic() should compile and work")
         }
     }
     
@@ -539,7 +529,6 @@ open class BasicAutomaticComplianceTests: BaseTestClass {
             
             // When: Chaining .font() after .basicAutomaticCompliance()
             // Then: Should compile and work (type preservation)
-            #expect(Bool(true), "Text.basicAutomaticCompliance().font(.title) should compile and work")
         }
     }
     
@@ -558,7 +547,6 @@ open class BasicAutomaticComplianceTests: BaseTestClass {
             
             // When: Chaining multiple modifiers after .basicAutomaticCompliance()
             // Then: Should compile and work (type preservation)
-            #expect(Bool(true), "Text.basicAutomaticCompliance().bold().italic().font(.title) should compile and work")
         }
     }
     
@@ -578,7 +566,6 @@ open class BasicAutomaticComplianceTests: BaseTestClass {
             // When: Using platformText with basic compliance
             // Then: Modifier should compile and apply (structure test)
             // Identifier detection is tested in UI tests where XCUITest can reliably find them
-            #expect(Bool(true), "platformText with basicAutomaticCompliance should compile and apply modifier")
         }
     }
     
@@ -595,7 +582,6 @@ open class BasicAutomaticComplianceTests: BaseTestClass {
             
             // When: Chaining .bold() after platformText().basicAutomaticCompliance()
             // Then: Should compile and work (type preservation)
-            #expect(Bool(true), "platformText().basicAutomaticCompliance().bold() should compile and work")
         }
     }
 }

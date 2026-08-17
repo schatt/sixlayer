@@ -29,10 +29,8 @@ open class CollectionEmptyStateViewTests: BaseTestClass {
         // Test: Verify view generation and accessibility
         #if canImport(ViewInspector)
         verifyViewGeneration(createCollectionEmptyStateView(), testName: "CollectionEmptyStateView on \(platform.rawValue)")
-        #expect(Bool(true), "CollectionEmptyStateView should generate correctly on \(platform.rawValue)")
         #else
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-        #expect(Bool(true), "CollectionEmptyStateView accessibility testing skipped on macOS - ViewInspector not available")
         #endif
     }
     
@@ -46,7 +44,6 @@ open class CollectionEmptyStateViewTests: BaseTestClass {
         #if canImport(ViewInspector)
         let view = createCollectionEmptyStateView()
         verifyViewGeneration(view, testName: "CollectionEmptyStateView with accessibility disabled")
-        #expect(Bool(true), "CollectionEmptyStateView should work when accessibility IDs are disabled")
         #else
         // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
         // The modifier IS present in the code, but ViewInspector can't detect it on macOS

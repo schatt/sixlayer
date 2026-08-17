@@ -462,7 +462,6 @@ struct ComprehensiveCapabilityTestRunner {
     @MainActor
     func testViewGenerationIntegration(_ config: CardExpansionPlatformConfig, platform: SixLayerPlatform) {
         // Test that the configuration is valid for view generation and actually works
-        #expect(Bool(true), "Configuration should be valid for view generation on \(platform)")  // config is non-optional
         
         // Test that the configuration can actually be used to create a functional view
         let _ = createTestViewWithConfig(config)

@@ -222,7 +222,6 @@ open class TestingFailureDemonstrationTests: BaseTestClass {
         let _ = PlatformPhotoComponentsLayer4.platformCameraInterface_L4 { _ in }
         
         // What we test: View creation
-        #expect(Bool(true), "We test view creation")  // view is non-optional
         
         // What we DON'T test: Actual functionality
         // We never test that the callback actually executes

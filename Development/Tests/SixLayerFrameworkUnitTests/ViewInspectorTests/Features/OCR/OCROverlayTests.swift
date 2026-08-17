@@ -54,7 +54,6 @@ open class OCROverlayTests: BaseTestClass {
         
         // Then: Should initialize successfully and be hostable
         _ = hostRootPlatformView(overlayView)
-        #expect(Bool(true), "OCR overlay view should be hostable")  // hostingView is non-optional
         // OCROverlayView is non-optional - no need to check for nil
     }
     
@@ -352,7 +351,6 @@ open class OCROverlayTests: BaseTestClass {
         
         // Then: Should exit editing mode without calling completion
         // Note: We can't directly test internal state, but we can test the behavior
-        #expect(Bool(true), "Cancellation should work")
     }
     
     // MARK: - Text Deletion Tests
@@ -504,7 +502,6 @@ open class OCROverlayTests: BaseTestClass {
         // When: Checking accessibility
         // Then: Should provide accessibility labels and be hostable
         _ = hostRootPlatformView(overlayView)
-        #expect(Bool(true), "OCR overlay view should be hostable with accessibility")  // hostingView is non-optional
         // Note: We can't directly test SwiftUI accessibility modifiers in unit tests,
         // but we can verify the view can be hosted and the modifiers are applied
     }
@@ -547,7 +544,6 @@ open class OCROverlayTests: BaseTestClass {
         // When: Checking VoiceOver support
         // Then: Should provide proper accessibility elements and be hostable
         _ = hostRootPlatformView(overlayView)
-        #expect(Bool(true), "OCR overlay view should be hostable with VoiceOver support")  // hostingView is non-optional
         // Note: We can't directly test SwiftUI accessibility elements in unit tests,
         // but we can verify the view can be hosted and the modifiers are applied
     }
@@ -592,7 +588,6 @@ open class OCROverlayTests: BaseTestClass {
         _ = overlayView.detectTappedTextRegion(at: tapPoint)
         
         // Then: Should handle overlap gracefully
-        #expect(Bool(true), "Should detect region despite overlap")
     }
     
     @Test @MainActor func testZeroSizeBoundingBoxes() {

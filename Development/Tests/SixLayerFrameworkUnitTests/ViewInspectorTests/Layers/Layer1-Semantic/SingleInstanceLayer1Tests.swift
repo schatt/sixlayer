@@ -45,7 +45,6 @@ open class SingleInstanceLayer1Tests: BaseTestClass {
         
         // Test that the view can be hosted (functional test)
         _ = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "Single numeric data view should be hostable")  // hostingView is non-optional
     }
     
     @Test @MainActor func testPlatformPresentNumericData_L1_SingleInstance_Consistency() {
@@ -68,8 +67,6 @@ open class SingleInstanceLayer1Tests: BaseTestClass {
         // Both should be hostable
         _ = hostRootPlatformView(singleView.enableGlobalAutomaticCompliance())
         _ = hostRootPlatformView(arrayView.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "Single instance view should be hostable")  // singleHostingView is non-optional
-        #expect(Bool(true), "Array version view should be hostable")  // arrayHostingView is non-optional
     }
     
     // MARK: - Single Instance Media Data Tests
@@ -92,7 +89,6 @@ open class SingleInstanceLayer1Tests: BaseTestClass {
         
         // Test that the view can be hosted (functional test)
         _ = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "Single media item view should be hostable")  // hostingView is non-optional
     }
     
     // MARK: - Single Instance Hierarchical Data Tests
@@ -114,7 +110,6 @@ open class SingleInstanceLayer1Tests: BaseTestClass {
         
         // Test that the view can be hosted (functional test)
         _ = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "Single hierarchical item view should be hostable")  // hostingView is non-optional
     }
     
     // MARK: - Single Instance Temporal Data Tests
@@ -136,7 +131,6 @@ open class SingleInstanceLayer1Tests: BaseTestClass {
         
         // Test that the view can be hosted (functional test)
         _ = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "Single temporal item view should be hostable")  // hostingView is non-optional
     }
     
     // MARK: - Single Instance Form Data Tests
@@ -161,7 +155,6 @@ open class SingleInstanceLayer1Tests: BaseTestClass {
         
         // Test that the view can be hosted (functional test)
         _ = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "Single form field view should be hostable")  // hostingView is non-optional
     }
     
     // MARK: - Edge Cases
@@ -200,8 +193,6 @@ open class SingleInstanceLayer1Tests: BaseTestClass {
         // Both should be hostable
         let _ = hostRootPlatformView(cardView.enableGlobalAutomaticCompliance())
         let _ = hostRootPlatformView(listView.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "Card view should be hostable")  // cardHostingView is non-optional
-        #expect(Bool(true), "List view should be hostable")  // listHostingView is non-optional
     }
 }
 

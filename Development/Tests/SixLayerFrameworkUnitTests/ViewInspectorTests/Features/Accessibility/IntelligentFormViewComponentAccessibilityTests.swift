@@ -157,7 +157,6 @@ open class IntelligentFormViewComponentAccessibilityTests: BaseTestClass {
             
             // Then: View should be created (may show ProgressView initially)
             // Once entity is created, it will use the update path which now has accessibility structure
-            #expect(Bool(true), "TypeOnlyFormWrapper should create view (may show ProgressView initially)")
             
             // Note: The actual form with accessibility identifiers will appear once entity is created
             // This happens asynchronously, so we verify the view structure is correct

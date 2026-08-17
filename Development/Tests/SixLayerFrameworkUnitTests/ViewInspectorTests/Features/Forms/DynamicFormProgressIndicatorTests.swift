@@ -93,13 +93,11 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
             try withInspectedViewThrowing(view) { inspected in
                 // Find the FormProgressIndicator by structure (ViewInspector may not find custom struct types directly)
                 let progressIndicator = findProgressIndicator(in: inspected)
-                #expect(Bool(true), "Progress indicator should be present when showProgress is true")
                 
                 // Verify it contains the expected elements
                 if let indicator = progressIndicator {
                     let progressViews = indicator.findAll(ViewInspector.ViewType.ProgressView.self)
                     _ = progressViews.first
-                    #expect(Bool(true), "Progress indicator should contain ProgressView")
                 }
             }
         } catch {
@@ -107,7 +105,6 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
         }
         #else
         // ViewInspector not available on macOS - verify view is created
-        #expect(Bool(true), "View created successfully with showProgress: true")
         #endif
     }
     
@@ -212,7 +209,6 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
         }
         #else
         // ViewInspector not available on macOS - verify view is created
-        #expect(Bool(true), "View created successfully")
         #endif
     }
     
@@ -437,7 +433,6 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
         }
         #else
         // ViewInspector not available on macOS - verify component is created
-        #expect(Bool(true), "Progress indicator created successfully")
         #endif
     }
     
@@ -628,7 +623,6 @@ open class DynamicFormProgressIndicatorTests: BaseTestClass {
         #if canImport(ViewInspector)
         tryWithFirstVStack(indicator0, testName: "Progress indicator 0 of 0 fields") { _ in }
         #else
-        #expect(Bool(true), "Progress indicator handles 0 of 0 fields")
         #endif
         
         // Test Case 2: Single field (0 of 1)

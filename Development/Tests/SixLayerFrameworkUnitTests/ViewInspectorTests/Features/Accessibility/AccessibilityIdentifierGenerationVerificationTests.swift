@@ -162,7 +162,6 @@ open class AccessibilityIdentifierGenerationVerificationTests: BaseTestClass {
             // Then: Test the two critical aspects
                 
             // 1. View created - The view can be instantiated successfully
-            #expect(Bool(true), "View with manual identifier should be created successfully")  // testView is non-optional
                 
             // 2. Contains what it needs to contain - The view has the manual accessibility identifier assigned
             // Using wrapper - when ViewInspector works on macOS, no changes needed here
@@ -230,7 +229,6 @@ open class AccessibilityIdentifierGenerationVerificationTests: BaseTestClass {
             .automaticCompliance()
                 
             // 1. View created - The view can be instantiated successfully
-            #expect(Bool(true), "View should be created when automatic IDs are enabled")  // testView2 is non-optional
                 
             // 2. Contains what it needs to contain - The view should have an automatic accessibility identifier
             // We must be able to inspect to verify presence; if we can't, we don't know it's there and must fail.

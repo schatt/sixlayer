@@ -78,7 +78,6 @@ open class PlatformImageBreakingChangeDetectionTests: BaseTestClass {
         // Simulate photo capture on macOS
         coordinator.takePhoto()
         
-        #expect(Bool(true), "macOS photo capture should work")  // capturedImage is non-optional
         #endif
     }
     
@@ -125,7 +124,6 @@ open class PlatformImageBreakingChangeDetectionTests: BaseTestClass {
         // Simulate photo selection on macOS
         coordinator.choosePhoto()
         
-        #expect(Bool(true), "macOS photo selection should work")  // selectedImage is non-optional
         #endif
     }
     
@@ -246,8 +244,6 @@ open class PlatformImageBreakingChangeDetectionTests: BaseTestClass {
         pickerCoordinator.imagePickerController(UIImagePickerController(), didFinishPickingMediaWithInfo: mockInfo) // 6LAYER_ALLOW: testing platform image picker coordinator
         
         // Then: Verify the production code works (would have failed in 4.6.2)
-        #expect(Bool(true), "Production camera code should work")  // capturedImage is non-optional
-        #expect(Bool(true), "Production photo picker code should work")  // selectedImage is non-optional
         
         #elseif os(macOS)
         // macOS equivalent test
@@ -275,8 +271,6 @@ open class PlatformImageBreakingChangeDetectionTests: BaseTestClass {
         })
         pickerCoordinator.choosePhoto()
         
-        #expect(Bool(true), "macOS production camera code should work")  // capturedImage is non-optional
-        #expect(Bool(true), "macOS production photo picker code should work")  // selectedImage is non-optional
         #endif
     }
     

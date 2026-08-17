@@ -80,7 +80,6 @@ open class MetalRenderingCrashTDDTests: BaseTestClass {
             onItemEdited: nil
         )
         
-        #expect(Bool(true), "GenericItemCollectionView should not crash")  // view is non-optional
         
         // Try to inspect the view (should not crash)
         #if canImport(ViewInspector)
@@ -127,7 +126,6 @@ open class MetalRenderingCrashTDDTests: BaseTestClass {
         .padding()
         
         // This should NOT crash - performance layer removed
-        #expect(Bool(true), "Metal rendering should not crash")  // view is non-optional
         
         // Try to inspect the view (should not crash)
         #if canImport(ViewInspector)
@@ -164,7 +162,6 @@ open class MetalRenderingCrashTDDTests: BaseTestClass {
             onItemEdited: nil
         )
         
-        #expect(Bool(true), "SimpleCardComponent should not crash")  // view is non-optional
         
         // Try to inspect the view (should not crash)
         #if canImport(ViewInspector)
@@ -202,7 +199,6 @@ open class MetalRenderingCrashTDDTests: BaseTestClass {
         // PERFORMANCE LAYER REMOVED: No more .drawingGroup(), .compositingGroup(), or Metal rendering
         // This eliminates the Metal crash bug entirely
         
-        #expect(Bool(true), "View should be created")  // view is non-optional
         
     }
 }

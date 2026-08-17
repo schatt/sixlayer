@@ -50,14 +50,10 @@ open class IntelligentCardExpansionLayer6Tests: BaseTestClass {
             Issue.record("Failed to inspect NativeExpandableCardView structure")
             #else
             // ViewInspector not available on macOS - test passes by verifying view creation
-            #expect(Bool(true), "Card view created (ViewInspector not available on macOS)")
             #endif
         }
         
         // 3. Configuration should be valid (L6 function responsibility)
-        #expect(Bool(true), "Platform config should be created")  // platformConfig is non-optional
-        #expect(Bool(true), "Performance config should be created")  // performanceConfig is non-optional
-        #expect(Bool(true), "Accessibility config should be created")  // accessibilityConfig is non-optional
     }
     
     @Test @MainActor func testNativeExpandableCardView_WithDifferentStrategies() {
@@ -78,7 +74,6 @@ open class IntelligentCardExpansionLayer6Tests: BaseTestClass {
             )
             
             // Then: Each card should be created successfully
-            #expect(Bool(true), "Card with strategy \(strategy) should be created")  // cardView is non-optional
             
             _ = try? AnyView(cardView).inspect() // Just verify it can be inspected
         }
@@ -99,13 +94,9 @@ open class IntelligentCardExpansionLayer6Tests: BaseTestClass {
         )
         
         // Verify card view is properly configured
-        #expect(Bool(true), "Card view should be created")  // NativeExpandableCardView is non-optional
         
         // When: Testing haptic feedback behavior
         // Then: Configuration should be valid (L6 function responsibility)
-        #expect(Bool(true), "Platform config should be created")  // platformConfig is non-optional
-        #expect(Bool(true), "Performance config should be created")  // performanceConfig is non-optional
-        #expect(Bool(true), "Accessibility config should be created")  // accessibilityConfig is non-optional
     }
     
     // MARK: - Platform-Specific Card View Tests
@@ -120,7 +111,6 @@ open class IntelligentCardExpansionLayer6Tests: BaseTestClass {
         // Then: Test the two critical aspects
         
         // 1. Does it return a valid structure of the kind it's supposed to?
-        #expect(Bool(true), "iOSExpandableCardView should be created successfully")  // cardView is non-optional
         
         // 2. Does that structure contain what it should?
         // TODO: ViewInspector Detection Issue - ViewInspector cannot reliably inspect card expansion views.
@@ -155,7 +145,6 @@ open class IntelligentCardExpansionLayer6Tests: BaseTestClass {
         // Then: Test the two critical aspects
         
         // 1. Does it return a valid structure of the kind it's supposed to?
-        #expect(Bool(true), "macOSExpandableCardView should be created successfully")  // cardView is non-optional
         
         // 2. Does that structure contain what it should?
         // TODO: ViewInspector Detection Issue - ViewInspector cannot reliably inspect card expansion views.
@@ -190,7 +179,6 @@ open class IntelligentCardExpansionLayer6Tests: BaseTestClass {
         // Then: Test the two critical aspects
         
         // 1. Does it return a valid structure of the kind it's supposed to?
-        #expect(Bool(true), "visionOSExpandableCardView should be created successfully")  // cardView is non-optional
         
         // 2. Does that structure contain what it should?
         // TODO: ViewInspector Detection Issue - ViewInspector cannot reliably inspect card expansion views.
@@ -226,7 +214,6 @@ open class IntelligentCardExpansionLayer6Tests: BaseTestClass {
         // Then: Test the two critical aspects
         
         // 1. Does it return a valid structure of the kind it's supposed to?
-        #expect(Bool(true), "PlatformAwareExpandableCardView should be created successfully")  // cardView is non-optional
         
         // 2. Does that structure contain what it should?
         // TODO: ViewInspector Detection Issue - ViewInspector cannot reliably inspect card expansion views.
@@ -373,8 +360,6 @@ open class IntelligentCardExpansionLayer6Tests: BaseTestClass {
         // When: Testing integration
         // Then: All cards should be created successfully
         
-        #expect(Bool(true), "Native card should be created")  // nativeCard is non-optional
-        #expect(Bool(true), "Platform-aware card should be created")  // platformAwareCard is non-optional
         
         // Test that all card types are inspectable
         #if canImport(ViewInspector)
@@ -399,7 +384,6 @@ open class IntelligentCardExpansionLayer6Tests: BaseTestClass {
         }
         
         // Then: Performance should be acceptable
-        #expect(Bool(true), "Card should be created for performance test")
         // Performance test removed - performance monitoring was removed from framework
     }
 }

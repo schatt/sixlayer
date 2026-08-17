@@ -190,7 +190,6 @@ open class Layer4BreakingChangeDetectionTests: BaseTestClass {
         
         callback(mockResult)
         
-        #expect(Bool(true), "OCR callback should accept OCRResult parameter")
     }
     
     // MARK: - Print Components Breaking Change Detection
@@ -250,7 +249,6 @@ open class Layer4BreakingChangeDetectionTests: BaseTestClass {
         )
         
         // Verify API accepts these parameters (would fail if signature changed)
-        #expect(Bool(true), "Navigation stack API should accept content, title, and strategy parameters")
     }
     
     /// BUSINESS PURPOSE: Test navigation stack item selection callback pattern
@@ -294,7 +292,6 @@ open class Layer4BreakingChangeDetectionTests: BaseTestClass {
         )
         
         // Verify API accepts these parameters (would fail if signature changed)
-        #expect(Bool(true), "Navigation stack items API should accept all required parameters")
     }
     
     // MARK: - Map Components Breaking Change Detection
@@ -334,13 +331,10 @@ open class Layer4BreakingChangeDetectionTests: BaseTestClass {
         )
         
         // Verify API accepts these parameters (would fail if signature changed)
-        #expect(Bool(true), "Map view API should accept position, annotations, and callback parameters")
         #else
         // Map convenience APIs not provided on tvOS/watchOS/visionOS; tracked under #241.
-        #expect(Bool(true), "platformMapView_L4 not available on this platform")
         #endif
         #else
-        #expect(Bool(true), "MapKit not available on this platform")
         #endif
     }
     
@@ -417,7 +411,6 @@ open class Layer4BreakingChangeDetectionTests: BaseTestClass {
         let _ = platformPhotoDisplay_L4(image: testImage, style: .aspectFit)
         
         // Verify all APIs work (would fail if signatures differ)
-        #expect(Bool(true), "All photo APIs should work consistently across platforms")
     }
     
     // MARK: - Parameter Label Breaking Change Detection
@@ -433,7 +426,6 @@ open class Layer4BreakingChangeDetectionTests: BaseTestClass {
         let _: (PlatformImage, OCRContext, OCRStrategy) async throws -> OCRResult = service.processImage
         
         // Verify parameter labels work (would fail if labels changed)
-        #expect(Bool(true), "OCRService API should accept exact parameter labels")
     }
     
     // MARK: - Return Type Breaking Change Detection
@@ -459,7 +451,6 @@ open class Layer4BreakingChangeDetectionTests: BaseTestClass {
         let _ = photoDisplay
         
         // Verify return types are correct (would fail if types changed)
-        #expect(Bool(true), "All photo APIs should return View types")
     }
     
 }

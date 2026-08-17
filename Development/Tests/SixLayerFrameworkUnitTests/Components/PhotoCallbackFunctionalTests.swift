@@ -112,8 +112,6 @@ open class PhotoCallbackFunctionalTests: BaseTestClass {
             onImageSelected: { _ in }
         )
         
-        #expect(Bool(true), "Photo picker should be accessible from external modules")  // view is non-optional
-        #expect(Bool(true), "Callback can be provided by external modules")
     }
     
     @Test @MainActor func testCameraCallbacksExternallyAccessible() async throws {
@@ -124,8 +122,6 @@ open class PhotoCallbackFunctionalTests: BaseTestClass {
             onImageCaptured: { _ in }
         )
         
-        #expect(Bool(true), "Camera interface should be accessible from external modules")  // view is non-optional
-        #expect(Bool(true), "Callback can be provided by external modules")
     }
 }
 

@@ -65,10 +65,8 @@ open class PlatformPresentationFileImporterExtensionsTests: BaseTestClass {
                     )
             }
         } else {
-            #expect(Bool(true), "iOS 16+ required for PresentationDetent Any overload probe")
         }
         #else
-        #expect(Bool(true), "PresentationDetent Any overload probe is iOS-only in this suite")
         #endif
     }
 
