@@ -57,10 +57,10 @@ All 86 Layer 1 `platform*_L1` functions now have complete accessibility support,
 - **Functions Missing Accessibility**: 0
 
 ### Tests
-- **Unit Tests**: 77 tests in `L1SemanticTests.swift`
+- **Unit Tests**: 77 tests were added in `L1SemanticTests.swift` during #166; that file was **never in an XcodeGen target**. #402 removed `Development/Tests/LayeredTestingSuite/`. Executing L1 coverage is in `SixLayerFrameworkUnitTests` (`Layer1AccessibilityTests`, `PlatformSemanticLayer1Tests`, `Layer1PresentationTests`, `Layer1SemanticAPIPresenceTests`).
 - **UI Tests**: Comprehensive XCUITest suite in `Layer1AccessibilityUITests.swift`
-- **Test Coverage**: 100% of functions have at least one test
-- **Test Status**: All tests passing ✅
+- **Test Coverage**: Layer 1 accessibility work landed in executing UI tests and RealUI examples; do not treat the orphan 77-test count as a running suite
+- **Test Status**: See executing `SixLayerFrameworkUnitTests` / UITest schemes, not `swift test --filter L1SemanticTests`
 
 ### Examples
 - **RealUI Examples**: 47+ unique function examples
@@ -109,7 +109,7 @@ All 86 Layer 1 functions now have:
 6. `Development/ISSUE_166_COMPLETION_SUMMARY.md` - This file
 
 ### Modified Files
-1. `Development/Tests/LayeredTestingSuite/L1SemanticTests.swift` - Added 48 new tests
+1. `Development/Tests/LayeredTestingSuite/L1SemanticTests.swift` - Added 48 new tests during #166 (file later removed in #402; never in a test target)
 2. `Development/Tests/SixLayerFrameworkUITests/TestApp/Layer1Examples/*.swift` - Added missing examples
 3. `Development/Tests/SixLayerFrameworkUITests/TestApp/TestApp.swift` - Added barcode category
 4. `Framework/docs/README_Layer1_Semantic.md` - Added accessibility section
