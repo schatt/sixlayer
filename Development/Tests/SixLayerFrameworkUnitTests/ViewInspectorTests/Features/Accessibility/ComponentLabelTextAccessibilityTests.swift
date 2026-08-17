@@ -907,7 +907,6 @@ open class ComponentLabelTextAccessibilityTests: BaseTestClass {
             // TODO: ViewInspector Detection Issue - VERIFIED: ListCardComponent DOES pass label via .environment(\.accessibilityIdentifierLabel, cardTitle)
             // Implementation is correct, ViewInspector just can't detect it
             // TODO: Temporarily passing test - implementation IS correct but ViewInspector can't detect it
-            #expect(Bool(true), "ListCardComponent implementation verified - ViewInspector can't detect (known limitation)")
         }
 
         cleanupTestEnvironment()
@@ -947,12 +946,10 @@ open class ComponentLabelTextAccessibilityTests: BaseTestClass {
             print("✅ GREEN: Button 2 ID: '\(button2ID)' - Implementation verified")
             
             // Note: In a real ForEach, item context would be passed via environment for unique identifiers
-            #expect(Bool(true), "AdaptiveButton implementation verified - item context needed for unique IDs in ForEach (design consideration)")
         } else {
             // TODO: ViewInspector Detection Issue - VERIFIED: AdaptiveButton DOES pass label via .environment(\.accessibilityIdentifierLabel, title)
             // Implementation is correct, ViewInspector just can't detect it
             // TODO: Temporarily passing test - implementation IS correct but ViewInspector can't detect it
-            #expect(Bool(true), "AdaptiveButton implementation verified - ViewInspector can't detect (known limitation)")
         }
 
         cleanupTestEnvironment()
@@ -1083,7 +1080,6 @@ open class ComponentLabelTextAccessibilityTests: BaseTestClass {
             print("🔴 RED: Note - Need to verify each item in ForEach gets unique identifier")
             
             // TDD RED: Should verify each item has unique identifier with item name
-            #expect(Bool(true), "Documenting requirement - ForEach items need unique identifiers")
 }
 
         cleanupTestEnvironment()
@@ -1503,7 +1499,6 @@ open class ComponentLabelTextAccessibilityTests: BaseTestClass {
             // in Framework/Sources/Layers/Layer4-Component/IntelligentCardExpansionLayer4.swift:797.
             // Implementation is correct, ViewInspector just can't detect it
             // TODO: Temporarily passing test - implementation IS correct but ViewInspector can't detect it
-            #expect(Bool(true), "SimpleCardComponent implementation verified - ViewInspector can't detect (known limitation)")
         }
         
         cleanupTestEnvironment()
@@ -1649,7 +1644,6 @@ open class ComponentLabelTextAccessibilityTests: BaseTestClass {
             print("🔴 RED: Note - Need to verify each button in tab strip gets unique identifier with item.title")
             
             // TDD RED: Should verify buttons have unique identifiers with titles
-            #expect(Bool(true), "Documenting requirement - PlatformTabStrip buttons need unique identifiers with item.title")
         }
 
         cleanupTestEnvironment()
@@ -1735,7 +1729,6 @@ open class ComponentLabelTextAccessibilityTests: BaseTestClass {
         print("🔴 RED: FileRow is used in lists of files - each row should be unique")
         
         // TDD RED: Should verify FileRow includes file.name in identifier
-        #expect(Bool(true), "Documenting requirement - FileRow needs file.name in identifier for unique rows")
         
         cleanupTestEnvironment()
     }
@@ -1773,7 +1766,6 @@ open class ComponentLabelTextAccessibilityTests: BaseTestClass {
             print("🔴 RED: Each error message should be unique: 'Email is required' vs 'Email format is invalid'")
             
             // TDD RED: Should verify error Text views include error text in identifiers
-            #expect(Bool(true), "Documenting requirement - Validation error rows need unique identifiers with error text")
 }
 
         cleanupTestEnvironment()
@@ -1810,7 +1802,6 @@ open class ComponentLabelTextAccessibilityTests: BaseTestClass {
             print("🔴 RED: Each array item (Tag1, Tag2, Tag3) should have unique identifier")
             
             // TDD RED: Should verify array items have unique identifiers
-            #expect(Bool(true), "Documenting requirement - Array field items need unique identifiers")
         }
 
         cleanupTestEnvironment()
@@ -1870,7 +1861,6 @@ open class ComponentLabelTextAccessibilityTests: BaseTestClass {
         print("🔴 RED: Settings items displayed in lists should have unique identifiers")
         
         // TDD RED: Should verify settings items include titles in identifiers
-        #expect(Bool(true), "Documenting requirement - Settings item views need item.title in identifier")
         
         cleanupTestEnvironment()
     }
@@ -2178,7 +2168,6 @@ open class ComponentLabelTextAccessibilityTests: BaseTestClass {
         print("🔴 RED: Recommendation rows displayed in ForEach should have unique identifiers")
         
         // TDD RED: Should verify VisualizationRecommendationRow includes chartType in identifier
-        #expect(Bool(true), "Documenting requirement - VisualizationRecommendationRow needs chartType in identifier for unique rows")
         
         cleanupTestEnvironment()
     }
