@@ -29,7 +29,6 @@ open class KeyboardTypeViewExtensionTests: BaseTestClass {
         _ = Text("Test").keyboardType(KeyboardType.default)
 
         // Then: Should return a View (non-optional)
-        #expect(Bool(true), "keyboardType extension should return a View")
     }
 
     /// BUSINESS PURPOSE: Validates that all KeyboardType enum cases can be passed to the extension
@@ -45,7 +44,6 @@ open class KeyboardTypeViewExtensionTests: BaseTestClass {
         // When & Then: Each enum case should work with the extension
         for keyboardType in allCases {
             _ = testView.keyboardType(keyboardType)
-            #expect(Bool(true), "keyboardType extension should accept \(keyboardType)")
         }
     }
 
@@ -76,7 +74,6 @@ open class KeyboardTypeViewExtensionTests: BaseTestClass {
         _ = testView.keyboardType(KeyboardType.decimalPad)
 
         // All should return Views (actual keyboard behavior tested via integration)
-        #expect(Bool(true), "iOS keyboardType extension should return Views for all types")
     }
     #endif
 
@@ -115,7 +112,6 @@ open class KeyboardTypeViewExtensionTests: BaseTestClass {
 
         for keyboardType in typesToTest {
             _ = testView.keyboardType(keyboardType)
-            #expect(Bool(true), "keyboardType extension should work with \(keyboardType)")
         }
     }
 
@@ -134,7 +130,6 @@ open class KeyboardTypeViewExtensionTests: BaseTestClass {
             .background(Color.blue.opacity(0.1))
 
         // Then: Should compile and create a valid view
-        #expect(Bool(true), "keyboardType should chain with other SwiftUI modifiers")
     }
 
     /// BUSINESS PURPOSE: Validates that extension works with different View types
@@ -151,7 +146,6 @@ open class KeyboardTypeViewExtensionTests: BaseTestClass {
         _ = SecureField("Enter password", text: .constant("password"))
             .keyboardType(KeyboardType.default)
 
-        #expect(Bool(true), "keyboardType should work with TextField and SecureField")
     }
 
     // MARK: - Error Handling Tests
@@ -168,7 +162,6 @@ open class KeyboardTypeViewExtensionTests: BaseTestClass {
         _ = testView.keyboardType(KeyboardType.default)
         _ = testView.keyboardType(KeyboardType.phonePad).keyboardType(KeyboardType.emailAddress)
 
-        #expect(Bool(true), "keyboardType extension should handle multiple calls gracefully")
     }
 
     // MARK: - Framework Integration Tests
@@ -184,6 +177,5 @@ open class KeyboardTypeViewExtensionTests: BaseTestClass {
             .keyboardType(KeyboardType.phonePad)
             .automaticCompliance()
 
-        #expect(Bool(true), "keyboardType should integrate with framework's automatic compliance")
     }
 }
