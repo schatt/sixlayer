@@ -281,7 +281,6 @@ open class CollectionViewCallbackTests: BaseTestClass {
         // We verify that callbacks are provided and accessible
         
         // Delete callback test completed - actual callback verification needs implementation
-        #expect(Bool(true), "ListCollectionView with onItemDeleted callback compiles and instantiates")
     }
     
     @Test @MainActor func testListCollectionViewOnItemEditedCallback() async throws {
@@ -300,8 +299,6 @@ open class CollectionViewCallbackTests: BaseTestClass {
         // ViewInspector can't simulate context menu actions
         // We verify that callbacks are provided and accessible
         
-        #expect(Bool(true), "Edit callback is accessible via context menu")
-        #expect(Bool(true), "View renders without errors")
     }
     
     @Test @MainActor func testAdaptiveCollectionViewWithCallbacks() {
