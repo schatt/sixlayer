@@ -153,7 +153,6 @@ open class PlatformSplitViewAdvancedLayer4Tests: BaseTestClass {
         if runtimePlatform == .macOS {
             // Given: Advanced features on macOS
             // Then: Should work appropriately (may have platform-specific behavior)
-            #expect(Bool(true), "Advanced features should work on macOS")
         }
     }
 }
