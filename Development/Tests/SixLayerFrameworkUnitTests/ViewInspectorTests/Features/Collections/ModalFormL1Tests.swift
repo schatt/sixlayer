@@ -309,7 +309,6 @@ open class ModalFormL1Tests: BaseTestClass {
             formType: formType,
             context: context
         )
-        #expect(Bool(true), "view is non-optional")  // view is non-optional
         // Performance test removed - performance monitoring was removed from framework
     }
     
@@ -339,7 +338,6 @@ open class ModalFormL1Tests: BaseTestClass {
         
         // Then: Should return a view with custom container
         _ = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "platformPresentModalForm_L1 with custom form container should return a view")
     }
     
     @Test @MainActor func testPlatformPresentModalForm_L1_WithCustomFormContainer_Nil() {
@@ -357,7 +355,6 @@ open class ModalFormL1Tests: BaseTestClass {
         
         // Then: Should return default view
         _ = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "platformPresentModalForm_L1 with nil custom form container should return default view")
     }
     
     @Test @MainActor func testPlatformPresentModalForm_L1_WithCustomFormContainer_DifferentFormTypes() {
@@ -378,7 +375,6 @@ open class ModalFormL1Tests: BaseTestClass {
                 }
             )
             _ = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
-            #expect(Bool(true), "platformPresentModalForm_L1 with custom container should work for \(formType)")
         }
     }
 }
