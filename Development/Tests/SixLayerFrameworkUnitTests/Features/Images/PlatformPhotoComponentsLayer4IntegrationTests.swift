@@ -64,11 +64,10 @@ open class PlatformPhotoComponentsLayer4IntegrationTests: BaseTestClass {
         // Test 2: Verify API accepts callbacks with correct signature (compile-time check)
         let cameraInterface = PlatformPhotoComponentsLayer4.platformCameraInterface_L4(onImageCaptured: callback)
         
-        #if os(macOS)
-        BaseTestClass.expectViewSubjectTypeContains(cameraInterface, rootViewName: "MacCameraView")
-        #else
-        BaseTestClass.expectViewSubjectTypeContains(cameraInterface, rootViewName: "CameraView")
-        #endif
+        BaseTestClass.expectViewSubjectTypeContains(
+            cameraInterface,
+            rootViewName: Layer4CameraInterfaceTestSupport.expectedRootViewName
+        )
         
         // Note: We test the callback function directly (unit test level)
         // Actual callback execution through view interaction requires integration tests
