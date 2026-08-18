@@ -8,13 +8,17 @@ import Testing
 /// Stub observations (`getCurrentPerformanceStrategy`, `isMacOSOptimized`, `applyMacOSOptimizations`)
 /// lock **current placeholder behavior**. Changing them is a deliberate product change, not a silent test fix.
 #if os(macOS)
+fileprivate let expectedMacOSPerformanceStrategies: [MacOSPerformanceStrategy] = [
+    .standard, .optimized, .highPerformance, .maximumPerformance
+]
+
 @Suite("MacOS Optimization Manager")
 open class MacOSOptimizationManagerTests: BaseTestClass {
 
     @Test func testMacOSPerformanceStrategyAllCasesAreCompleteAndUnique() {
         let cases = MacOSPerformanceStrategy.allCases
         #expect(
-            cases == [.standard, .optimized, .highPerformance, .maximumPerformance],
+            cases == expectedMacOSPerformanceStrategies,
             "allCases must stay complete; adding a strategy is a deliberate API change"
         )
         let raw = cases.map(\.rawValue)
