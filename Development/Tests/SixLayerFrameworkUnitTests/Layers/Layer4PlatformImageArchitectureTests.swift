@@ -63,11 +63,10 @@ open class Layer4PlatformImageArchitectureTests: BaseTestClass {
         _ = capturedImage
         _ = selectedImage
         
-        #if os(macOS)
-        BaseTestClass.expectViewSubjectTypeContains(cameraInterface, rootViewName: "MacCameraView")
-        #else
-        BaseTestClass.expectViewSubjectTypeContains(cameraInterface, rootViewName: "CameraView")
-        #endif
+        BaseTestClass.expectViewSubjectTypeContains(
+            cameraInterface,
+            rootViewName: Layer4CameraInterfaceTestSupport.expectedRootViewName
+        )
         BaseTestClass.expectViewSubjectTypeContains(photoPicker, rootViewName: "UnifiedImagePicker")
     }
     
@@ -223,11 +222,10 @@ open class Layer4PlatformImageArchitectureTests: BaseTestClass {
         // It verifies the callback signature accepts PlatformImage
         _ = callbackImage
         
-        #if os(macOS)
-        BaseTestClass.expectViewSubjectTypeContains(cameraInterface, rootViewName: "MacCameraView")
-        #else
-        BaseTestClass.expectViewSubjectTypeContains(cameraInterface, rootViewName: "CameraView")
-        #endif
+        BaseTestClass.expectViewSubjectTypeContains(
+            cameraInterface,
+            rootViewName: Layer4CameraInterfaceTestSupport.expectedRootViewName
+        )
     }
     #endif
     
