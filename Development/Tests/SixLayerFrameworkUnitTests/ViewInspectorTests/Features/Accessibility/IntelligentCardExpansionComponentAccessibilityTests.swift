@@ -43,14 +43,14 @@ open class IntelligentCardExpansionComponentAccessibilityTests: BaseTestClass {
         #endif
         #if canImport(AppKit)
         if hostedUIKitAccessibilityHierarchyContains(root: hostedRoot, predicate: { nsView in
-            let label = (nsView.accessibilityLabel() as? String) ?? ""
+            let label = nsView.accessibilityLabel() ?? ""
             let role = nsView.accessibilityRole()
             return label.contains(cardTitle) && (role == .button || role == .link)
         }) {
             return true
         }
         if hostedUIKitAccessibilityHierarchyContains(root: hostedRoot, predicate: { nsView in
-            ((nsView.accessibilityLabel() as? String) ?? "").contains(cardTitle)
+            (nsView.accessibilityLabel() ?? "").contains(cardTitle)
         }) {
             return true
         }
