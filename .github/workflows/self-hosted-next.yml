@@ -11,7 +11,9 @@
 # own `-derivedDataPath` and SPM checkout under the workspace; reclaim-ci-disk.sh removes
 # those trees plus build/*.xcresult at job start and after artifact upload (#416). It does
 # not simctl-delete devices (#417) — Mini is shared with CarManager. Start-of-job reclaim
-# is the path that survives cancel-in-progress.
+# is the path that survives cancel-in-progress. `xcodebuild test` runs through
+# xcodebuild-ci-retry.sh (#432): one retry on xctest bootstrap-only crashes; parallel
+# testing stays on.
 #
 # Runner: `runs-on: self-hosted` — add labels if your runner uses custom tags.
 name: Self-hosted (next)
@@ -94,7 +96,7 @@ jobs:
           set -euo pipefail
           mkdir -p build "$CI_DERIVED_DATA" "$CI_SPM_CHECKOUTS"
           set -o pipefail
-          xcodebuild test \
+          ./Development/scripts/xcodebuild-ci-retry.sh xcodebuild test \
             -project SixLayerFramework.xcodeproj \
             -scheme "${{ matrix.scheme }}" \
             -destination 'platform=iOS Simulator,name=iPhone 17 Pro Max' \
@@ -171,7 +173,7 @@ jobs:
           set -euo pipefail
           mkdir -p build "$CI_DERIVED_DATA" "$CI_SPM_CHECKOUTS"
           set -o pipefail
-          xcodebuild test \
+          ./Development/scripts/xcodebuild-ci-retry.sh xcodebuild test \
             -project SixLayerFramework.xcodeproj \
             -scheme "${{ matrix.scheme }}" \
             -destination 'platform=macOS,arch=arm64' \
@@ -234,7 +236,7 @@ jobs:
           DEST="$(./Development/scripts/ensure-ci-simulator-destination.sh tvOS)"
           echo "Using destination: $DEST"
           set -o pipefail
-          xcodebuild test \
+          ./Development/scripts/xcodebuild-ci-retry.sh xcodebuild test \
             -project SixLayerFramework.xcodeproj \
             -scheme "SLF-tvOS-AllTests" \
             -destination "$DEST" \
@@ -297,7 +299,7 @@ jobs:
           DEST="$(./Development/scripts/ensure-ci-simulator-destination.sh visionOS)"
           echo "Using destination: $DEST"
           set -o pipefail
-          xcodebuild test \
+          ./Development/scripts/xcodebuild-ci-retry.sh xcodebuild test \
             -project SixLayerFramework.xcodeproj \
             -scheme "SLF-visionOS-AllTests" \
             -destination "$DEST" \
@@ -360,7 +362,7 @@ jobs:
           DEST="$(./Development/scripts/ensure-ci-simulator-destination.sh watchOS)"
           echo "Using destination: $DEST"
           set -o pipefail
-          xcodebuild test \
+          ./Development/scripts/xcodebuild-ci-retry.sh xcodebuild test \
             -project SixLayerFramework.xcodeproj \
             -scheme "SLF-watchOS-AllTests" \
             -destination "$DEST" \
