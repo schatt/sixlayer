@@ -80,13 +80,14 @@ private func strategyForProcessorCount(_ processorCount: Int) -> MacOSPerformanc
 private func memoryCeiling(for physicalMemory: UInt64) -> MacOSPerformanceStrategy? {
     let fourGiB: UInt64 = 4 * 1024 * 1024 * 1024
     let eightGiB: UInt64 = 8 * 1024 * 1024 * 1024
-    if physicalMemory < fourGiB {
+    switch physicalMemory {
+    case ..<fourGiB:
         return .standard
-    }
-    if physicalMemory < eightGiB {
+    case ..<eightGiB:
         return .optimized
+    default:
+        return nil
     }
-    return nil
 }
 
 private func thermalCeiling(for thermalState: ProcessInfo.ThermalState) -> MacOSPerformanceStrategy? {
