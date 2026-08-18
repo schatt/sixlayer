@@ -77,30 +77,30 @@ private func strategyForProcessorCount(_ processorCount: Int) -> MacOSPerformanc
     }
 }
 
-private let fourGiB: UInt64 = 4 * 1024 * 1024 * 1024
-
-private func memoryCeiling(for physicalMemory: UInt64) -> MacOSPerformanceStrategy {
-    physicalMemory < fourGiB ? .optimized : .maximumPerformance
+private func memoryCeiling(for physicalMemory: UInt64) -> MacOSPerformanceStrategy? {
+    let fourGiB: UInt64 = 4 * 1024 * 1024 * 1024
+    return physicalMemory < fourGiB ? .optimized : nil
 }
 
-private func thermalCeiling(for thermalState: ProcessInfo.ThermalState) -> MacOSPerformanceStrategy {
+private func thermalCeiling(for thermalState: ProcessInfo.ThermalState) -> MacOSPerformanceStrategy? {
     switch thermalState {
     case .fair:
         return .optimized
     case .serious, .critical:
         return .standard
     case .nominal:
-        return .maximumPerformance
+        return nil
     @unknown default:
-        return .maximumPerformance
+        return nil
     }
 }
 
 private func capped(
     _ strategy: MacOSPerformanceStrategy,
-    at ceiling: MacOSPerformanceStrategy
+    at ceiling: MacOSPerformanceStrategy?
 ) -> MacOSPerformanceStrategy {
-    rank(strategy) <= rank(ceiling) ? strategy : ceiling
+    guard let ceiling else { return strategy }
+    return rank(strategy) <= rank(ceiling) ? strategy : ceiling
 }
 
 private func rank(_ strategy: MacOSPerformanceStrategy) -> Int {
