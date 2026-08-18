@@ -132,19 +132,47 @@ enum OCRLabelAnchoredExtraction {
         }
     }
     
-    /// Split `(?i)((hint…num)|(num…hint))` into separate arms so both can match without alternation overlap.
+    /// Split `(?i)(?:hint…num)|(?:num…hint)` on the top-level `|` so both arms can match without alternation overlap.
     private static func splitBidirectionalPattern(_ pattern: String) -> (hintFirst: String, numberFirst: String)? {
-        guard pattern.hasPrefix("(?i)(("), pattern.hasSuffix("))") else { return nil }
-        let innerStart = pattern.index(pattern.startIndex, offsetBy: 5)
-        let innerEnd = pattern.index(pattern.endIndex, offsetBy: -1)
-        let inner = String(pattern[innerStart..<innerEnd])
-        guard let pipeRange = inner.range(of: "|(") else { return nil }
-        let hintArm = String(inner[inner.startIndex..<pipeRange.lowerBound])
-        let numberArm = String(inner[pipeRange.lowerBound...].dropFirst())
+        guard pattern.hasPrefix("(?i)") else { return nil }
+        let body = String(pattern.dropFirst(4))
+        guard let pipe = indexOfTopLevelPipe(in: body) else { return nil }
+        let hintArm = String(body[..<pipe])
+        let numberArm = String(body[body.index(after: pipe)...])
+        guard !hintArm.isEmpty, !numberArm.isEmpty else { return nil }
         return (
             hintFirst: "(?i)" + hintArm,
             numberFirst: "(?i)" + numberArm
         )
+    }
+
+    /// `|` at parenthesis depth 0, skipping escaped characters.
+    private static func indexOfTopLevelPipe(in body: String) -> String.Index? {
+        var depth = 0
+        var escaped = false
+        var index = body.startIndex
+        while index < body.endIndex {
+            let character = body[index]
+            if escaped {
+                escaped = false
+                index = body.index(after: index)
+                continue
+            }
+            if character == "\\" {
+                escaped = true
+                index = body.index(after: index)
+                continue
+            }
+            if character == "(" {
+                depth += 1
+            } else if character == ")" {
+                depth -= 1
+            } else if character == "|", depth == 0 {
+                return index
+            }
+            index = body.index(after: index)
+        }
+        return nil
     }
     
     private static func collectMatches(
@@ -162,7 +190,10 @@ enum OCRLabelAnchoredExtraction {
             guard let numberGroupIndex = numericCaptureGroupIndex(in: match, text: text) else {
                 continue
             }
-            let hintGroupIndex = isHintFirst ? max(1, numberGroupIndex - 1) : numberGroupIndex + 1
+            let hintGroupIndex = hintCaptureGroupIndex(
+                numberGroupIndex: numberGroupIndex,
+                isHintFirst: isHintFirst
+            )
             appendCandidate(
                 fieldId: fieldId,
                 numberRange: match.range(at: numberGroupIndex),
@@ -176,6 +207,11 @@ enum OCRLabelAnchoredExtraction {
         }
     }
     
+    /// Hint is the capture immediately before the number (hint-first) or immediately after (number-first).
+    private static func hintCaptureGroupIndex(numberGroupIndex: Int, isHintFirst: Bool) -> Int {
+        isHintFirst ? max(1, numberGroupIndex - 1) : numberGroupIndex + 1
+    }
+
     /// Highest-index capture group whose value parses as a number (the OCR value).
     private static func numericCaptureGroupIndex(in match: NSTextCheckingResult, text: String) -> Int? {
         for index in stride(from: match.numberOfRanges - 1, through: 1, by: -1) {
@@ -277,7 +313,10 @@ enum OCRLabelAnchoredExtraction {
         guard let numberGroupIndex = numericCaptureGroupIndex(in: match, text: text) else {
             return nil
         }
-        let hintGroupIndex = isHintFirst ? max(1, numberGroupIndex - 1) : numberGroupIndex + 1
+        let hintGroupIndex = hintCaptureGroupIndex(
+            numberGroupIndex: numberGroupIndex,
+            isHintFirst: isHintFirst
+        )
         guard hintGroupIndex < match.numberOfRanges,
               match.range(at: hintGroupIndex).location != NSNotFound,
               let range = Range(match.range(at: hintGroupIndex), in: text) else {

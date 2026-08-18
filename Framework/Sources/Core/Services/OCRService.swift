@@ -320,22 +320,25 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
         return patterns
     }
 
-    /// Word hints use optional colon/equals; currency symbols keep optional words between symbol and number (#420).
+    /// Word hints use optional colon/equals; currency symbols allow optional space and words (#420 / #430).
+    /// Each alternative is `(hint)(?:separator)(number)` so extraction can read adjacent capture groups.
     private func regexPattern(fromOCRHints ocrHints: [String]) -> String {
         let currencySymbols: Set<String> = ["$", "€", "£", "¥"]
         let hints = ocrHints
             .sorted { $0.count > $1.count }
             .map { (raw: $0, escaped: NSRegularExpression.escapedPattern(for: $0)) }
-        let hintsGroup = hints.map(\.escaped).joined(separator: "|")
+        func separator(for raw: String) -> String {
+            currencySymbols.contains(raw)
+                ? "\\s*(?:[A-Za-z]+\\s+)*"
+                : "\\s*[:=]?\\s*"
+        }
         let hintThenNumber = hints
-            .map { hint in
-                let separator = currencySymbols.contains(hint.raw)
-                    ? "\\s+(?:[A-Za-z]+\\s+)*"
-                    : "\\s*[:=]?\\s*"
-                return "\(hint.escaped)\(separator)([\\d.,]+)"
-            }
+            .map { "(\($0.escaped))(?:\(separator(for: $0.raw)))([\\d.,]+)" }
             .joined(separator: "|")
-        return "(?i)((\(hintThenNumber))|([\\d.,]+)\\s+(\(hintsGroup)))"
+        let numberThenHint = hints
+            .map { "([\\d.,]+)(?:\(separator(for: $0.raw)))(\($0.escaped))" }
+            .joined(separator: "|")
+        return "(?i)(?:\(hintThenNumber))|(?:\(numberThenHint))"
     }
     
     private func calculateExtractionConfidence(_ structuredData: [String: String], context: OCRContext) -> Float {
