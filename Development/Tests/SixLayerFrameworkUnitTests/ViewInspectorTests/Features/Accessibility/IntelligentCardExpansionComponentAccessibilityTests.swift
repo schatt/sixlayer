@@ -21,7 +21,7 @@ import ViewInspector
 @Suite("Intelligent Card Expansion Component Accessibility", HostedViewTestIsolationTrait())
 open class IntelligentCardExpansionComponentAccessibilityTests: BaseTestClass {
 
-    /// UIKit hosting path only for this red. macOS must fail until AppKit observation is added (#398).
+    /// Hosted single-tappable card: UIKit a11y tree, AppKit a11y tree, then ViewInspector (#191 / #398).
     @MainActor
     private func cardExposesSingleTappableElement<V: View>(
         view: V,
@@ -40,6 +40,21 @@ open class IntelligentCardExpansionComponentAccessibilityTests: BaseTestClass {
         }) {
             return true
         }
+        #endif
+        #if canImport(AppKit)
+        if hostedUIKitAccessibilityHierarchyContains(root: hostedRoot, predicate: { nsView in
+            let label = (nsView.accessibilityLabel() as? String) ?? ""
+            let role = nsView.accessibilityRole()
+            return label.contains(cardTitle) && (role == .button || role == .link)
+        }) {
+            return true
+        }
+        if hostedUIKitAccessibilityHierarchyContains(root: hostedRoot, predicate: { nsView in
+            ((nsView.accessibilityLabel() as? String) ?? "").contains(cardTitle)
+        }) {
+            return true
+        }
+        #endif
         if findButtonInViewHierarchy(view, labels: [cardTitle]) != nil {
             return true
         }
@@ -67,9 +82,6 @@ open class IntelligentCardExpansionComponentAccessibilityTests: BaseTestClass {
                 exposeContentAccessibility: true
             )
         }
-        #endif
-        _ = view
-        _ = componentName
         return false
     }
 
