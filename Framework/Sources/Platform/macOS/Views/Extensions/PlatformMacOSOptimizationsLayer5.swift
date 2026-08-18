@@ -15,14 +15,8 @@ import Foundation
 /// This file contains macOS-specific optimizations and platform integrations
 /// that enhance performance and user experience on macOS.
 ///
-/// Current Status: Placeholder for future macOS-specific optimizations
-/// 
-/// Planned Features:
-/// - macOS-specific performance optimizations
-/// - Window management integrations
-/// - Menu bar optimizations
-/// - macOS accessibility enhancements
-/// - Platform-specific UI patterns
+/// Host-resource strategy selection is distinct from Layer 2 content-complexity
+/// `PerformanceStrategy`. Window / menu / a11y apply remains unspecified.
 
 /// macOS-specific performance optimization strategies
 public enum MacOSPerformanceStrategy: String, CaseIterable {
@@ -32,43 +26,74 @@ public enum MacOSPerformanceStrategy: String, CaseIterable {
     case maximumPerformance = "maximumPerformance"
 }
 
+/// Snapshot of host resources used to choose a macOS performance strategy.
+public struct MacOSOptimizationInputs: Equatable, Sendable {
+    public var processorCount: Int
+    public var physicalMemory: UInt64
+    public var thermalState: ProcessInfo.ThermalState
+
+    public init(
+        processorCount: Int,
+        physicalMemory: UInt64,
+        thermalState: ProcessInfo.ThermalState
+    ) {
+        self.processorCount = processorCount
+        self.physicalMemory = physicalMemory
+        self.thermalState = thermalState
+    }
+
+    public static func current() -> MacOSOptimizationInputs {
+        let process = ProcessInfo.processInfo
+        return MacOSOptimizationInputs(
+            processorCount: process.activeProcessorCount,
+            physicalMemory: process.physicalMemory,
+            thermalState: process.thermalState
+        )
+    }
+}
+
+/// Choose a performance strategy from host resources.
+/// Stub: always `.standard` until the mapping is implemented (#422).
+public func macOSPerformanceStrategy(for inputs: MacOSOptimizationInputs) -> MacOSPerformanceStrategy {
+    _ = inputs
+    return .standard
+}
+
 /// macOS-specific optimization manager
-/// Currently a placeholder for future macOS-specific optimizations
 @MainActor
 public class MacOSOptimizationManager: @unchecked Sendable {
-    
+
     /// Shared instance for macOS optimizations
     @MainActor
     public static let shared = MacOSOptimizationManager()
-    
-    private init() {}
-    
+
+    private let fixedInputs: MacOSOptimizationInputs?
+
+    public init(inputs: MacOSOptimizationInputs? = nil) {
+        self.fixedInputs = inputs
+    }
+
     /// Get current macOS performance strategy
-    /// Returns standard strategy for now (placeholder)
-        func getCurrentPerformanceStrategy() -> MacOSPerformanceStrategy {
+    func getCurrentPerformanceStrategy() -> MacOSPerformanceStrategy {
         return .standard
     }
-    
+
     /// Apply macOS-specific optimizations
-    /// Currently a no-op (placeholder)
-        func applyMacOSOptimizations() {
-        // TODO: Implement macOS-specific optimizations
-        // - Window management optimizations
-        // - Menu bar performance improvements
-        // - macOS accessibility enhancements
-        // - Platform-specific UI patterns
+    /// Currently a no-op (window / menu / a11y apply is unspecified)
+    func applyMacOSOptimizations() {
+        // Window management, menu bar, and a11y apply are out of scope for #422.
     }
 }
 
 /// Extension to provide macOS-specific functionality
-/// Currently minimal implementation (placeholder)
 extension MacOSOptimizationManager {
-    
-    /// Check if macOS-specific features are available
+
+    /// Whether the current strategy is an optimized path (`!= .standard`).
+    /// Stub: always `false` until derived from strategy (#422).
     public var isMacOSOptimized: Bool {
-        return false // TODO: Implement actual macOS optimization detection
+        return false
     }
-    
+
     /// Get macOS version for optimization decisions
     public var macOSVersion: String {
         return ProcessInfo.processInfo.operatingSystemVersionString
