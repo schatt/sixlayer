@@ -323,17 +323,16 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
     /// Word hints use optional colon/equals; currency symbols keep optional words between symbol and number (#420).
     private func regexPattern(fromOCRHints ocrHints: [String]) -> String {
         let currencySymbols: Set<String> = ["$", "€", "£", "¥"]
-        let sortedHints = ocrHints.sorted { $0.count > $1.count }
-        let hintsGroup = sortedHints
-            .map { NSRegularExpression.escapedPattern(for: $0) }
-            .joined(separator: "|")
-        let hintThenNumber = sortedHints
+        let hints = ocrHints
+            .sorted { $0.count > $1.count }
+            .map { (raw: $0, escaped: NSRegularExpression.escapedPattern(for: $0)) }
+        let hintsGroup = hints.map(\.escaped).joined(separator: "|")
+        let hintThenNumber = hints
             .map { hint in
-                let escaped = NSRegularExpression.escapedPattern(for: hint)
-                let separator = currencySymbols.contains(hint)
+                let separator = currencySymbols.contains(hint.raw)
                     ? "\\s+(?:[A-Za-z]+\\s+)*"
                     : "\\s*[:=]?\\s*"
-                return "\(escaped)\(separator)([\\d.,]+)"
+                return "\(hint.escaped)\(separator)([\\d.,]+)"
             }
             .joined(separator: "|")
         return "(?i)((\(hintThenNumber))|([\\d.,]+)\\s+(\(hintsGroup)))"
