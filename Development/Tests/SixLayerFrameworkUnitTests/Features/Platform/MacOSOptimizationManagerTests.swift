@@ -2,12 +2,11 @@ import Foundation
 import Testing
 @testable import SixLayerFramework
 
-/// Executing unit coverage for `MacOSOptimizationManager` / `MacOSPerformanceStrategy` (#422).
-/// macOS unit lane only; types are `#if os(macOS)` in production. Do not host views.
-///
-/// Stub observations (`getCurrentPerformanceStrategy`, `isMacOSOptimized`, `applyMacOSOptimizations`)
-/// lock **current placeholder behavior**. Changing them is a deliberate product change, not a silent test fix.
+/// Host-resource strategy coverage for `MacOSOptimizationManager` (#422).
+/// macOS unit lane only. Do not host views. Do not lock stub constants.
 #if os(macOS)
+private let gib: UInt64 = 1024 * 1024 * 1024
+
 @Suite("MacOS Optimization Manager")
 open class MacOSOptimizationManagerTests: BaseTestClass {
 
@@ -39,33 +38,98 @@ open class MacOSOptimizationManagerTests: BaseTestClass {
         )
     }
 
-    /// Current stub: always `.standard` (placeholder in production).
-    @Test @MainActor func testCurrentPerformanceStrategyIsStandardStub() {
+    @Test func testCurrentInputsMatchProcessInfoOnHost() {
+        let current = MacOSOptimizationInputs.current()
+        let process = ProcessInfo.processInfo
+        #expect(current.processorCount == process.activeProcessorCount)
+        #expect(current.physicalMemory == process.physicalMemory)
+        #expect(current.thermalState == process.thermalState)
+    }
+
+    @Test func testProcessorCountMapsToStrategyWhenNominalAndPlentyOfMemory() {
+        #expect(macOSPerformanceStrategy(for: inputs(processors: 1)) == .standard)
+        #expect(macOSPerformanceStrategy(for: inputs(processors: 2)) == .standard)
+        #expect(macOSPerformanceStrategy(for: inputs(processors: 3)) == .optimized)
+        #expect(macOSPerformanceStrategy(for: inputs(processors: 4)) == .optimized)
+        #expect(macOSPerformanceStrategy(for: inputs(processors: 5)) == .highPerformance)
+        #expect(macOSPerformanceStrategy(for: inputs(processors: 8)) == .highPerformance)
+        #expect(macOSPerformanceStrategy(for: inputs(processors: 9)) == .maximumPerformance)
+        #expect(macOSPerformanceStrategy(for: inputs(processors: 16)) == .maximumPerformance)
+    }
+
+    @Test func testLowMemoryCapsStrategyAtOptimized() {
         #expect(
-            MacOSOptimizationManager.shared.getCurrentPerformanceStrategy() == .standard,
-            "Stub currently always returns .standard; a real strategy selector is a product change"
+            macOSPerformanceStrategy(for: inputs(processors: 16, memory: 2 * gib)) == .optimized,
+            "Under 4 GiB must not exceed optimized even with many cores"
+        )
+        #expect(
+            macOSPerformanceStrategy(for: inputs(processors: 1, memory: 2 * gib)) == .standard,
+            "Low memory must not raise a standard processor mapping"
+        )
+        #expect(
+            macOSPerformanceStrategy(for: inputs(processors: 4, memory: 4 * gib)) == .optimized,
+            "Exactly 4 GiB is not under the memory cap"
         )
     }
 
-    /// Current stub: always `false` (TODO in production).
-    @Test @MainActor func testIsMacOSOptimizedIsFalseStub() {
+    @Test func testFairThermalCapsStrategyAtOptimized() {
         #expect(
-            !MacOSOptimizationManager.shared.isMacOSOptimized,
-            "Stub currently always returns false; real detection is a product change"
+            macOSPerformanceStrategy(for: inputs(processors: 16, thermal: .fair)) == .optimized
+        )
+        #expect(
+            macOSPerformanceStrategy(for: inputs(processors: 1, thermal: .fair)) == .standard
         )
     }
 
-    /// Current stub: `applyMacOSOptimizations` is a no-op.
-    @Test @MainActor func testApplyMacOSOptimizationsIsNoOpStub() {
-        let manager = MacOSOptimizationManager.shared
-        manager.applyMacOSOptimizations()
+    @Test func testSeriousAndCriticalThermalForceStandard() {
         #expect(
-            !manager.isMacOSOptimized,
-            "applyMacOSOptimizations is currently a no-op"
+            macOSPerformanceStrategy(for: inputs(processors: 16, thermal: .serious)) == .standard
         )
         #expect(
-            manager.getCurrentPerformanceStrategy() == .standard,
-            "applyMacOSOptimizations must not change the stub strategy"
+            macOSPerformanceStrategy(for: inputs(processors: 16, thermal: .critical)) == .standard
+        )
+    }
+
+    @Test func testThermalCapWinsOverHighMemoryAndCoreCount() {
+        #expect(
+            macOSPerformanceStrategy(
+                for: MacOSOptimizationInputs(
+                    processorCount: 16,
+                    physicalMemory: 64 * gib,
+                    thermalState: .critical
+                )
+            ) == .standard
+        )
+    }
+
+    @Test @MainActor func testManagerUsesInjectedInputsForStrategyAndOptimizedFlag() {
+        let fast = MacOSOptimizationManager(inputs: inputs(processors: 16))
+        #expect(fast.getCurrentPerformanceStrategy() == .maximumPerformance)
+        #expect(fast.isMacOSOptimized, "Non-standard strategy means the host is on an optimized path")
+
+        let slow = MacOSOptimizationManager(inputs: inputs(processors: 1))
+        #expect(slow.getCurrentPerformanceStrategy() == .standard)
+        #expect(!slow.isMacOSOptimized, "Standard strategy is not an optimized path")
+    }
+
+    @Test @MainActor func testInjectedManagersDoNotShareOptimizationState() {
+        let a = MacOSOptimizationManager(inputs: inputs(processors: 16))
+        let b = MacOSOptimizationManager(inputs: inputs(processors: 1))
+        #expect(a.getCurrentPerformanceStrategy() == .maximumPerformance)
+        #expect(b.getCurrentPerformanceStrategy() == .standard)
+        #expect(a.isMacOSOptimized)
+        #expect(!b.isMacOSOptimized)
+    }
+
+    private func inputs(
+        processors: Int,
+        memory: UInt64 = 16 * gib,
+        thermal: ProcessInfo.ThermalState = .nominal
+    ) -> MacOSOptimizationInputs {
+        MacOSOptimizationInputs(
+            processorCount: processors,
+            physicalMemory: memory,
+            thermalState: thermal
         )
     }
 }
