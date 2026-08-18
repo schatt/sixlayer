@@ -57,10 +57,26 @@ open class MacOSOptimizationManagerTests: BaseTestClass {
         #expect(macOSPerformanceStrategy(for: inputs(processors: 16)) == .maximumPerformance)
     }
 
-    @Test func testLowMemoryCapsStrategyAtOptimized() {
+    @Test func testMemoryBandsForceStandardThenCapOptimized() {
         #expect(
-            macOSPerformanceStrategy(for: inputs(processors: 16, memory: 2 * gib)) == .optimized,
-            "Under 4 GiB must not exceed optimized even with many cores"
+            macOSPerformanceStrategy(for: inputs(processors: 16, memory: 2 * gib)) == .standard,
+            "Under 4 GiB is standard even with many cores"
+        )
+        #expect(
+            macOSPerformanceStrategy(for: inputs(processors: 16, memory: 4 * gib - 1)) == .standard,
+            "Just under 4 GiB is still the standard band"
+        )
+        #expect(
+            macOSPerformanceStrategy(for: inputs(processors: 16, memory: 4 * gib)) == .optimized,
+            "4 GiB is below 8 GiB so the ceiling is optimized, not maximum"
+        )
+        #expect(
+            macOSPerformanceStrategy(for: inputs(processors: 16, memory: 8 * gib - 1)) == .optimized,
+            "Just under 8 GiB stays capped at optimized"
+        )
+        #expect(
+            macOSPerformanceStrategy(for: inputs(processors: 16, memory: 8 * gib)) == .maximumPerformance,
+            "Exactly 8 GiB is not under the optimized memory cap"
         )
         #expect(
             macOSPerformanceStrategy(for: inputs(processors: 1, memory: 2 * gib)) == .standard,
@@ -68,7 +84,7 @@ open class MacOSOptimizationManagerTests: BaseTestClass {
         )
         #expect(
             macOSPerformanceStrategy(for: inputs(processors: 4, memory: 4 * gib)) == .optimized,
-            "Exactly 4 GiB is not under the memory cap"
+            "4 cores at 4 GiB stay optimized (processor mapping, 8 GiB ceiling)"
         )
     }
 
