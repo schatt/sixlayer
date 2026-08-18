@@ -1,3 +1,4 @@
+import Foundation
 import Testing
 @testable import SixLayerFramework
 
@@ -13,7 +14,7 @@ open class MacOSOptimizationManagerTests: BaseTestClass {
         #expect(cases.isEmpty, "Deliberate invert #422: allCases should fail while non-empty")
         let raw = cases.map(\.rawValue)
         #expect(Set(raw).count == raw.count + 1, "Deliberate invert #422: unique raw values")
-        #expect(raw.contains(where: \.isEmpty), "Deliberate invert #422: empty raw value")
+        #expect(raw.contains { $0.isEmpty }, "Deliberate invert #422: empty raw value")
     }
 
     @Test @MainActor func testSharedIsAStableSingleton() {
