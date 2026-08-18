@@ -13,7 +13,8 @@
 # not simctl-delete devices (#417) — Mini is shared with CarManager. Start-of-job reclaim
 # is the path that survives cancel-in-progress. `xcodebuild test` runs through
 # xcodebuild-ci-retry.sh (#432): one retry on xctest bootstrap-only crashes; parallel
-# testing stays on.
+# testing stays on. Artifact upload exports NODE_EXTRA_CA_CERTS from the Gitea
+# peer cert (#432); --use-system-ca alone does not trust a cert absent from the OS store.
 #
 # Runner: `runs-on: self-hosted` — add labels if your runner uses custom tags.
 name: Self-hosted (next)
@@ -108,10 +109,17 @@ jobs:
             -maximum-concurrent-test-simulator-destinations 1 \
             -resultBundlePath "build/${{ matrix.scheme }}.xcresult"
 
+      - name: Export Gitea CA for Node artifact upload
+        if: failure()
+        run: |
+          set -euo pipefail
+          ./Development/scripts/export-gitea-node-ca.sh
+
       - name: Upload iOS test result bundle
         if: failure()
         env:
           NODE_OPTIONS: --use-system-ca
+          NODE_EXTRA_CA_CERTS: ${{ env.NODE_EXTRA_CA_CERTS }}
         uses: christopherHX/gitea-upload-artifact@v7
         with:
           name: xcresult-${{ matrix.scheme }}
@@ -184,10 +192,17 @@ jobs:
             -parallel-testing-enabled YES \
             -resultBundlePath "build/${{ matrix.scheme }}.xcresult"
 
+      - name: Export Gitea CA for Node artifact upload
+        if: failure()
+        run: |
+          set -euo pipefail
+          ./Development/scripts/export-gitea-node-ca.sh
+
       - name: Upload macOS test result bundle
         if: failure()
         env:
           NODE_OPTIONS: --use-system-ca
+          NODE_EXTRA_CA_CERTS: ${{ env.NODE_EXTRA_CA_CERTS }}
         uses: christopherHX/gitea-upload-artifact@v7
         with:
           name: xcresult-${{ matrix.scheme }}
@@ -247,10 +262,17 @@ jobs:
             -parallel-testing-enabled YES \
             -resultBundlePath "build/SLF-tvOS-AllTests.xcresult"
 
+      - name: Export Gitea CA for Node artifact upload
+        if: failure()
+        run: |
+          set -euo pipefail
+          ./Development/scripts/export-gitea-node-ca.sh
+
       - name: Upload tvOS test result bundle
         if: failure()
         env:
           NODE_OPTIONS: --use-system-ca
+          NODE_EXTRA_CA_CERTS: ${{ env.NODE_EXTRA_CA_CERTS }}
         uses: christopherHX/gitea-upload-artifact@v7
         with:
           name: xcresult-tvos
@@ -310,10 +332,17 @@ jobs:
             -parallel-testing-enabled YES \
             -resultBundlePath "build/SLF-visionOS-AllTests.xcresult"
 
+      - name: Export Gitea CA for Node artifact upload
+        if: failure()
+        run: |
+          set -euo pipefail
+          ./Development/scripts/export-gitea-node-ca.sh
+
       - name: Upload visionOS test result bundle
         if: failure()
         env:
           NODE_OPTIONS: --use-system-ca
+          NODE_EXTRA_CA_CERTS: ${{ env.NODE_EXTRA_CA_CERTS }}
         uses: christopherHX/gitea-upload-artifact@v7
         with:
           name: xcresult-visionos
@@ -373,10 +402,17 @@ jobs:
             -parallel-testing-enabled YES \
             -resultBundlePath "build/SLF-watchOS-AllTests.xcresult"
 
+      - name: Export Gitea CA for Node artifact upload
+        if: failure()
+        run: |
+          set -euo pipefail
+          ./Development/scripts/export-gitea-node-ca.sh
+
       - name: Upload watchOS test result bundle
         if: failure()
         env:
           NODE_OPTIONS: --use-system-ca
+          NODE_EXTRA_CA_CERTS: ${{ env.NODE_EXTRA_CA_CERTS }}
         uses: christopherHX/gitea-upload-artifact@v7
         with:
           name: xcresult-watchos
