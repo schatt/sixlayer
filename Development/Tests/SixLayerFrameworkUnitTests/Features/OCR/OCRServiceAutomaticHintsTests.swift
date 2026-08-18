@@ -200,8 +200,60 @@ final class OCRServiceAutomaticHintsTests: BaseTestClass {
         #expect(matches("amount 90.22") == true)
         #expect(matches("Total: 90.22") == true)
         #expect(matches("sum=90.22") == true)
-        // Currency-symbol hints still allow words between the symbol and the number.
         #expect(matches("$ This Sale 90.22") == true)
+        // #430: glued currency, reverse colon/equals, $/gal stays a word hint.
+        #expect(matches("$90.22") == true)
+        #expect(matches("90.22: total") == true)
+        #expect(matches("90.22=sum") == true)
+
+        let pricePattern = try #require(patterns["pricePerGallon"])
+        func priceMatches(_ text: String) -> Bool {
+            text.range(of: pricePattern, options: .regularExpression) != nil
+        }
+        #expect(priceMatches("$/gal: 7.22") == true)
+    }
+
+    @Test func testOCRHintsExtractCapturesHintAndValue() throws {
+        let (modelName, cleanup) = try createFuelPurchaseHintsFile()
+        defer { try? cleanup() }
+
+        let context = OCRContext(
+            textTypes: [.price, .number],
+            language: .english,
+            extractionMode: .automatic,
+            entityName: modelName
+        )
+        let patterns = OCRService().loadHintsPatterns(for: context)
+
+        let extracted = OCRLabelAnchoredExtraction.extract(
+            from: "Total: 90.22",
+            patterns: patterns,
+            recognitionLines: nil
+        )
+        #expect(extracted["totalCost"] == "90.22")
+
+        let glued = OCRLabelAnchoredExtraction.extract(
+            from: "$90.22",
+            patterns: patterns,
+            recognitionLines: nil
+        )
+        #expect(glued["totalCost"] == "90.22")
+
+        let reverse = OCRLabelAnchoredExtraction.extract(
+            from: "90.22=sum",
+            patterns: patterns,
+            recognitionLines: nil
+        )
+        #expect(reverse["totalCost"] == "90.22")
+
+        let candidates = OCRLabelAnchoredExtraction.collectCandidates(
+            in: "Total: 90.22",
+            patterns: patterns,
+            recognitionLines: nil
+        )
+        let total = try #require(candidates.first { $0.fieldId == "totalCost" })
+        #expect(total.hintLength == 5)
+        #expect(total.value == "90.22")
     }
     
     // MARK: - Test: Value Range Validation
