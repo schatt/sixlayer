@@ -43,15 +43,18 @@ xcodebuild_ci_run_with_bootstrap_retry() {
     bundle="$(xcodebuild_ci_result_bundle_path "$@" || true)"
 
     local status=0
+    local had_errexit=0
+    [[ $- == *e* ]] && had_errexit=1
     set +e
     "$@" 2>&1 | tee "$log_file"
     status="${PIPESTATUS[0]}"
-    set -e
 
     if [[ "$status" -eq 0 ]]; then
+        [[ "$had_errexit" -eq 1 ]] && set -e
         return 0
     fi
     if ! xcodebuild_ci_should_retry "$status" "$log_file"; then
+        [[ "$had_errexit" -eq 1 ]] && set -e
         return "$status"
     fi
 
@@ -60,9 +63,8 @@ xcodebuild_ci_run_with_bootstrap_retry() {
         rm -rf "$bundle"
     fi
 
-    set +e
     "$@" 2>&1 | tee "$log_file"
     status="${PIPESTATUS[0]}"
-    set -e
+    [[ "$had_errexit" -eq 1 ]] && set -e
     return "$status"
 }
