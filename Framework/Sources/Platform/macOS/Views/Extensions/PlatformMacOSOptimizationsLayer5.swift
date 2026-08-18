@@ -53,10 +53,63 @@ public struct MacOSOptimizationInputs: Equatable, Sendable {
 }
 
 /// Choose a performance strategy from host resources.
-/// Stub: always `.standard` until the mapping is implemented (#422).
+///
+/// Order: processor-count mapping, then memory cap (`< 4 GiB` → not above
+/// `.optimized`), then thermal cap (`.fair` → not above `.optimized`;
+/// `.serious` / `.critical` → `.standard`).
 public func macOSPerformanceStrategy(for inputs: MacOSOptimizationInputs) -> MacOSPerformanceStrategy {
-    _ = inputs
-    return .standard
+    var strategy = strategyForProcessorCount(inputs.processorCount)
+    strategy = capped(strategy, at: memoryCeiling(for: inputs.physicalMemory))
+    strategy = capped(strategy, at: thermalCeiling(for: inputs.thermalState))
+    return strategy
+}
+
+private func strategyForProcessorCount(_ processorCount: Int) -> MacOSPerformanceStrategy {
+    switch processorCount {
+    case ...2:
+        return .standard
+    case ...4:
+        return .optimized
+    case ...8:
+        return .highPerformance
+    default:
+        return .maximumPerformance
+    }
+}
+
+private let fourGiB: UInt64 = 4 * 1024 * 1024 * 1024
+
+private func memoryCeiling(for physicalMemory: UInt64) -> MacOSPerformanceStrategy {
+    physicalMemory < fourGiB ? .optimized : .maximumPerformance
+}
+
+private func thermalCeiling(for thermalState: ProcessInfo.ThermalState) -> MacOSPerformanceStrategy {
+    switch thermalState {
+    case .fair:
+        return .optimized
+    case .serious, .critical:
+        return .standard
+    case .nominal:
+        return .maximumPerformance
+    @unknown default:
+        return .maximumPerformance
+    }
+}
+
+private func capped(
+    _ strategy: MacOSPerformanceStrategy,
+    at ceiling: MacOSPerformanceStrategy
+) -> MacOSPerformanceStrategy {
+    rank(strategy) <= rank(ceiling) ? strategy : ceiling
+}
+
+private func rank(_ strategy: MacOSPerformanceStrategy) -> Int {
+    switch strategy {
+    case .standard: return 0
+    case .optimized: return 1
+    case .highPerformance: return 2
+    case .maximumPerformance: return 3
+    }
 }
 
 /// macOS-specific optimization manager
@@ -73,9 +126,9 @@ public class MacOSOptimizationManager: @unchecked Sendable {
         self.fixedInputs = inputs
     }
 
-    /// Get current macOS performance strategy
+    /// Get current macOS performance strategy from injected or live inputs.
     func getCurrentPerformanceStrategy() -> MacOSPerformanceStrategy {
-        return .standard
+        macOSPerformanceStrategy(for: fixedInputs ?? .current())
     }
 
     /// Apply macOS-specific optimizations
@@ -89,9 +142,8 @@ public class MacOSOptimizationManager: @unchecked Sendable {
 extension MacOSOptimizationManager {
 
     /// Whether the current strategy is an optimized path (`!= .standard`).
-    /// Stub: always `false` until derived from strategy (#422).
     public var isMacOSOptimized: Bool {
-        return false
+        getCurrentPerformanceStrategy() != .standard
     }
 
     /// Get macOS version for optimization decisions
