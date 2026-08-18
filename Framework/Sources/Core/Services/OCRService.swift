@@ -313,33 +313,29 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
         // Convert ocrHints to regex patterns
         for (fieldId, fieldHints) in hintsResult.fieldHints {
             if let ocrHints = fieldHints.ocrHints, !ocrHints.isEmpty {
-                // Create regex pattern from ocrHints
-                // Pattern supports bidirectional matching: hint before number OR number before hint
-                // This handles cases where Vision reads text in different orders
-                // Pattern: (?i)((hint1|hint2|hint3)\s*[:=]?\s*([\d.,]+)|([\d.,]+)\s+(hint1|hint2|hint3))
-                let escapedHints = ocrHints
-                    .sorted { $0.count > $1.count }
-                    .map { NSRegularExpression.escapedPattern(for: $0) }
-                let hintsGroup = escapedHints.joined(separator: "|")
-                
-                // Check if any hint is a currency symbol (needs special handling)
-                let hasCurrencySymbol = ocrHints.contains { hint in
-                    ["$", "€", "£", "¥"].contains(hint)
-                }
-                
-                // For currency symbols, allow optional text between symbol and number
-                // For other hints, require closer proximity
-                let separatorPattern = hasCurrencySymbol 
-                    ? "\\s+(?:[A-Za-z]+\\s+)*"  // Allow text like " This Sale " between $ and number
-                    : "\\s*[:=]?\\s*"  // Standard: just whitespace/colon/equals
-                
-                // Bidirectional pattern: (hint separator number) OR (number separator hint)
-                let pattern = "(?i)((\(hintsGroup))\(separatorPattern)([\\d.,]+)|([\\d.,]+)\\s+(\(hintsGroup)))"
-                patterns[fieldId] = pattern
+                patterns[fieldId] = regexPattern(fromOCRHints: ocrHints)
             }
         }
         
         return patterns
+    }
+
+    /// Word hints use optional colon/equals; currency symbols keep optional words between symbol and number (#420).
+    private func regexPattern(fromOCRHints ocrHints: [String]) -> String {
+        let currencySymbols: Set<String> = ["$", "€", "£", "¥"]
+        let hints = ocrHints
+            .sorted { $0.count > $1.count }
+            .map { (raw: $0, escaped: NSRegularExpression.escapedPattern(for: $0)) }
+        let hintsGroup = hints.map(\.escaped).joined(separator: "|")
+        let hintThenNumber = hints
+            .map { hint in
+                let separator = currencySymbols.contains(hint.raw)
+                    ? "\\s+(?:[A-Za-z]+\\s+)*"
+                    : "\\s*[:=]?\\s*"
+                return "\(hint.escaped)\(separator)([\\d.,]+)"
+            }
+            .joined(separator: "|")
+        return "(?i)((\(hintThenNumber))|([\\d.,]+)\\s+(\(hintsGroup)))"
     }
     
     private func calculateExtractionConfidence(_ structuredData: [String: String], context: OCRContext) -> Float {

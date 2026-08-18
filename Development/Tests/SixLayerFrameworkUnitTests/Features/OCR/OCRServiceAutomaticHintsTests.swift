@@ -198,11 +198,10 @@ final class OCRServiceAutomaticHintsTests: BaseTestClass {
         }
 
         #expect(matches("amount 90.22") == true)
-        // `$` in the same field's ocrHints switches the separator to whitespace-only.
-        withKnownIssue("Colon/equals OCR hint matches blocked when ocrHints includes $ — #420") {
-            #expect(matches("Total: 90.22") == true)
-            #expect(matches("sum=90.22") == true)
-        }
+        #expect(matches("Total: 90.22") == true)
+        #expect(matches("sum=90.22") == true)
+        // Currency-symbol hints still allow words between the symbol and the number.
+        #expect(matches("$ This Sale 90.22") == true)
     }
     
     // MARK: - Test: Value Range Validation
