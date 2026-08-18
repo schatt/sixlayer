@@ -17,6 +17,13 @@ open class HIGComplianceZoomTests: BaseTestClass {
     @MainActor
     private func verifyViewIsHostable<V: View>(_ view: V, description: String) {
         _ = hostRootPlatformView(view)
+        let passed = testComponentComplianceSinglePlatform(
+            view,
+            expectedPattern: "SixLayer.*ui.*",
+            platform: SixLayerPlatform.current,
+            componentName: "HIGComplianceZoom"
+        )
+        #expect(passed, "\(description)")
     }
 
     // MARK: - UI Scaling Tests

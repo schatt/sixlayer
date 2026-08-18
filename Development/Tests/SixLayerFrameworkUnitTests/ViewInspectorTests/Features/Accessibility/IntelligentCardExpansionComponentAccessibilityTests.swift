@@ -9,9 +9,7 @@ import Testing
 //
 
 import SwiftUI
-#if canImport(ViewInspector)
 import ViewInspector
-#endif
 @testable import SixLayerFramework
 
 /// NOTE: Not marked @MainActor on class to allow parallel execution
@@ -23,7 +21,7 @@ import ViewInspector
 @Suite("Intelligent Card Expansion Component Accessibility", HostedViewTestIsolationTrait())
 open class IntelligentCardExpansionComponentAccessibilityTests: BaseTestClass {
 
-    #if canImport(ViewInspector) && canImport(UIKit)
+    /// Hosted single-tappable card: UIKit a11y tree, AppKit a11y tree, then ViewInspector (#191 / #398).
     @MainActor
     private func cardExposesSingleTappableElement<V: View>(
         view: V,
@@ -33,6 +31,7 @@ open class IntelligentCardExpansionComponentAccessibilityTests: BaseTestClass {
         hostedRoot: Any?
     ) -> Bool {
         let cardTitle = CardDisplayHelper.extractTitle(from: item, hints: hints) ?? item.title
+        #if canImport(UIKit)
         if hostedViewHasAccessibilityElementWithLabelAndButtonTrait(root: hostedRoot, expectedLabel: cardTitle) {
             return true
         }
@@ -41,6 +40,21 @@ open class IntelligentCardExpansionComponentAccessibilityTests: BaseTestClass {
         }) {
             return true
         }
+        #endif
+        #if canImport(AppKit)
+        if hostedUIKitAccessibilityHierarchyContains(root: hostedRoot, predicate: { nsView in
+            let label = nsView.accessibilityLabel() ?? ""
+            let role = nsView.accessibilityRole()
+            return label.contains(cardTitle) && (role == .button || role == .link)
+        }) {
+            return true
+        }
+        if hostedUIKitAccessibilityHierarchyContains(root: hostedRoot, predicate: { nsView in
+            (nsView.accessibilityLabel() ?? "").contains(cardTitle)
+        }) {
+            return true
+        }
+        #endif
         if findButtonInViewHierarchy(view, labels: [cardTitle]) != nil {
             return true
         }
@@ -63,14 +77,13 @@ open class IntelligentCardExpansionComponentAccessibilityTests: BaseTestClass {
             return testComponentComplianceSinglePlatform(
                 view,
                 expectedPattern: "SixLayer.main.ui.*",
-                platform: SixLayerPlatform.iOS,
+                platform: SixLayerPlatform.current,
                 componentName: componentName,
                 exposeContentAccessibility: true
             )
         }
         return false
     }
-    #endif
 
     // MARK: - Sanity: minimal view with same compliance helper (diagnose 0 IDs)
 
@@ -209,7 +222,6 @@ open class IntelligentCardExpansionComponentAccessibilityTests: BaseTestClass {
             onItemDeleted: nil,
             onItemEdited: nil
         )
-        #if canImport(UIKit)
         initializeTestConfig()
         let root = runWithTaskLocalConfig { TestSetupUtilities.hostRootPlatformView(view, forceLayout: true, exposeContentAccessibility: true) }
         let hasSingleTappable = cardExposesSingleTappableElement(
@@ -220,8 +232,6 @@ open class IntelligentCardExpansionComponentAccessibilityTests: BaseTestClass {
             hostedRoot: root
         )
         #expect(hasSingleTappable, "ExpandableCardComponent should expose one accessibility element with label '\(cardTitle)' and button trait (Issue #191)")
-        #else
-        #endif
     }
     
     // MARK: - CoverFlowCollectionView Tests
@@ -271,7 +281,6 @@ open class IntelligentCardExpansionComponentAccessibilityTests: BaseTestClass {
             onItemDeleted: nil,
             onItemEdited: nil
         )
-        #if canImport(UIKit)
         initializeTestConfig()
         let root = runWithTaskLocalConfig { TestSetupUtilities.hostRootPlatformView(view, forceLayout: true, exposeContentAccessibility: true) }
         let hasSingleTappable = cardExposesSingleTappableElement(
@@ -282,8 +291,6 @@ open class IntelligentCardExpansionComponentAccessibilityTests: BaseTestClass {
             hostedRoot: root
         )
         #expect(hasSingleTappable, "CoverFlowCardComponent should expose one accessibility element with label '\(cardTitle)' and button trait (Issue #191)")
-        #else
-        #endif
     }
     
     @Test @MainActor func testCoverFlowCardComponentGeneratesAccessibilityIdentifiers() async {
@@ -449,7 +456,6 @@ open class IntelligentCardExpansionComponentAccessibilityTests: BaseTestClass {
             onItemDeleted: nil,
             onItemEdited: nil
         )
-        #if canImport(UIKit)
         initializeTestConfig()
         let root = runWithTaskLocalConfig { TestSetupUtilities.hostRootPlatformView(view, forceLayout: true, exposeContentAccessibility: true) }
         let hasSingleTappable = cardExposesSingleTappableElement(
@@ -460,8 +466,6 @@ open class IntelligentCardExpansionComponentAccessibilityTests: BaseTestClass {
             hostedRoot: root
         )
         #expect(hasSingleTappable, "SimpleCardComponent should expose one accessibility element with label '\(cardTitle)' and button trait (Issue #191)")
-        #else
-        #endif
     }
     
     @Test @MainActor func testSimpleCardComponentGeneratesAccessibilityIdentifiers() async {
@@ -512,7 +516,6 @@ open class IntelligentCardExpansionComponentAccessibilityTests: BaseTestClass {
             onItemDeleted: nil,
             onItemEdited: nil
         )
-        #if canImport(UIKit)
         initializeTestConfig()
         let root = runWithTaskLocalConfig { TestSetupUtilities.hostRootPlatformView(view, forceLayout: true, exposeContentAccessibility: true) }
         let hasSingleTappable = cardExposesSingleTappableElement(
@@ -523,8 +526,6 @@ open class IntelligentCardExpansionComponentAccessibilityTests: BaseTestClass {
             hostedRoot: root
         )
         #expect(hasSingleTappable, "ListCardComponent should expose one accessibility element with label '\(cardTitle)' and button trait (Issue #191)")
-        #else
-        #endif
     }
     
     @Test @MainActor func testListCardComponentGeneratesAccessibilityIdentifiers() async {
