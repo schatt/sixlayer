@@ -6,17 +6,14 @@
 //  Purpose: macOS-specific Layer 5 optimizations and platform integrations
 //
 
-import SwiftUI
 import Foundation
 
 #if os(macOS)
 
 /// Layer 5: Platform-Specific Optimizations for macOS
-/// This file contains macOS-specific optimizations and platform integrations
-/// that enhance performance and user experience on macOS.
 ///
 /// Host-resource strategy selection is distinct from Layer 2 content-complexity
-/// `PerformanceStrategy`. Window / menu / a11y apply remains unspecified.
+/// `PerformanceStrategy`. There is no process-global apply service.
 
 /// macOS-specific performance optimization strategies
 public enum MacOSPerformanceStrategy: String, CaseIterable {
@@ -64,6 +61,7 @@ public func macOSPerformanceStrategy(for inputs: MacOSOptimizationInputs) -> Mac
     return strategy
 }
 
+/// Processor bands: ≤2 → `.standard`; ≤4 → `.optimized`; ≤8 → `.highPerformance`; else `.maximumPerformance`.
 private func strategyForProcessorCount(_ processorCount: Int) -> MacOSPerformanceStrategy {
     switch processorCount {
     case ...2:
@@ -120,13 +118,8 @@ private func rank(_ strategy: MacOSPerformanceStrategy) -> Int {
     }
 }
 
-/// macOS-specific optimization manager
-@MainActor
-public class MacOSOptimizationManager: @unchecked Sendable {
-
-    /// Shared instance for macOS optimizations
-    @MainActor
-    public static let shared = MacOSOptimizationManager()
+/// Value wrapper over `macOSPerformanceStrategy(for:)`. Not a process-global service.
+public struct MacOSOptimizationManager: Equatable, Sendable {
 
     private let fixedInputs: MacOSOptimizationInputs?
 
@@ -134,29 +127,18 @@ public class MacOSOptimizationManager: @unchecked Sendable {
         self.fixedInputs = inputs
     }
 
-    /// Get current macOS performance strategy from injected or live inputs.
-    func getCurrentPerformanceStrategy() -> MacOSPerformanceStrategy {
+    /// Strategy from injected inputs, or live `ProcessInfo` when `inputs` is nil.
+    public func getCurrentPerformanceStrategy() -> MacOSPerformanceStrategy {
         macOSPerformanceStrategy(for: fixedInputs ?? .current())
     }
-
-    /// Apply macOS-specific optimizations
-    /// Currently a no-op (window / menu / a11y apply is unspecified)
-    func applyMacOSOptimizations() {
-        // Window management, menu bar, and a11y apply are out of scope for #422.
-    }
-}
-
-/// Extension to provide macOS-specific functionality
-extension MacOSOptimizationManager {
 
     /// Whether the current strategy is an optimized path (`!= .standard`).
     public var isMacOSOptimized: Bool {
         getCurrentPerformanceStrategy() != .standard
     }
 
-    /// Get macOS version for optimization decisions
     public var macOSVersion: String {
-        return ProcessInfo.processInfo.operatingSystemVersionString
+        ProcessInfo.processInfo.operatingSystemVersionString
     }
 }
 
