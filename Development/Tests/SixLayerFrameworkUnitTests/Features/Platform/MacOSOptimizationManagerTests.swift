@@ -21,15 +21,8 @@ open class MacOSOptimizationManagerTests: BaseTestClass {
         #expect(raw.allSatisfy { !$0.isEmpty }, "Raw values must be non-empty")
     }
 
-    @Test @MainActor func testSharedIsAStableSingleton() {
-        #expect(
-            MacOSOptimizationManager.shared === MacOSOptimizationManager.shared,
-            "shared must be a stable singleton"
-        )
-    }
-
-    @Test @MainActor func testMacOSVersionMatchesProcessInfoOnHost() {
-        let manager = MacOSOptimizationManager.shared
+    @Test func testMacOSVersionMatchesProcessInfoOnHost() {
+        let manager = MacOSOptimizationManager()
         let processVersion = ProcessInfo.processInfo.operatingSystemVersionString
         #expect(!manager.macOSVersion.isEmpty, "macOSVersion should be non-empty on the test host")
         #expect(
@@ -131,7 +124,16 @@ open class MacOSOptimizationManagerTests: BaseTestClass {
         )
     }
 
-    @Test @MainActor func testManagerUsesInjectedInputsForStrategyAndOptimizedFlag() {
+    @Test func testDefaultInitUsesLiveHostStrategy() {
+        let manager = MacOSOptimizationManager()
+        #expect(
+            manager.getCurrentPerformanceStrategy() == macOSPerformanceStrategy(for: .current()),
+            "Default init must use live ProcessInfo inputs, not a process-global singleton"
+        )
+        #expect(manager.isMacOSOptimized == (manager.getCurrentPerformanceStrategy() != .standard))
+    }
+
+    @Test func testManagerUsesInjectedInputsForStrategyAndOptimizedFlag() {
         let fast = MacOSOptimizationManager(inputs: inputs(processors: 16))
         #expect(fast.getCurrentPerformanceStrategy() == .maximumPerformance)
         #expect(fast.isMacOSOptimized, "Non-standard strategy means the host is on an optimized path")
@@ -141,7 +143,7 @@ open class MacOSOptimizationManagerTests: BaseTestClass {
         #expect(!slow.isMacOSOptimized, "Standard strategy is not an optimized path")
     }
 
-    @Test @MainActor func testInjectedManagersDoNotShareOptimizationState() {
+    @Test func testInjectedManagersDoNotShareOptimizationState() {
         let a = MacOSOptimizationManager(inputs: inputs(processors: 16))
         let b = MacOSOptimizationManager(inputs: inputs(processors: 1))
         #expect(a.getCurrentPerformanceStrategy() == .maximumPerformance)
