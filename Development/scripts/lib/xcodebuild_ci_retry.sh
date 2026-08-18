@@ -36,6 +36,11 @@ xcodebuild_ci_result_bundle_path() {
     return 1
 }
 
+_xcodebuild_ci_restore_errexit() {
+    [[ "${1:-0}" -eq 1 ]] && set -e
+    return 0
+}
+
 xcodebuild_ci_run_with_bootstrap_retry() {
     local log_file="${1:?log file required}"
     shift
@@ -50,11 +55,11 @@ xcodebuild_ci_run_with_bootstrap_retry() {
     status="${PIPESTATUS[0]}"
 
     if [[ "$status" -eq 0 ]]; then
-        [[ "$had_errexit" -eq 1 ]] && set -e
+        _xcodebuild_ci_restore_errexit "$had_errexit"
         return 0
     fi
     if ! xcodebuild_ci_should_retry "$status" "$log_file"; then
-        [[ "$had_errexit" -eq 1 ]] && set -e
+        _xcodebuild_ci_restore_errexit "$had_errexit"
         return "$status"
     fi
 
@@ -65,6 +70,6 @@ xcodebuild_ci_run_with_bootstrap_retry() {
 
     "$@" 2>&1 | tee "$log_file"
     status="${PIPESTATUS[0]}"
-    [[ "$had_errexit" -eq 1 ]] && set -e
+    _xcodebuild_ci_restore_errexit "$had_errexit"
     return "$status"
 }
