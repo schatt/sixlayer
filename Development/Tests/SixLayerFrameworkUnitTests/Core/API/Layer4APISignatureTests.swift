@@ -64,11 +64,10 @@ open class Layer4APISignatureTests: BaseTestClass {
         
         // When: Calling the API
         let view = platformCameraInterface_L4(onImageCaptured: callback)
-        #if os(macOS)
-        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "MacCameraView")
-        #else
-        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "CameraView")
-        #endif
+        BaseTestClass.expectViewSubjectTypeContains(
+            view,
+            rootViewName: Layer4CameraInterfaceTestSupport.expectedRootViewName
+        )
     }
 
     #if os(iOS)
