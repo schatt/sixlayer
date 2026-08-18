@@ -190,7 +190,10 @@ enum OCRLabelAnchoredExtraction {
             guard let numberGroupIndex = numericCaptureGroupIndex(in: match, text: text) else {
                 continue
             }
-            let hintGroupIndex = isHintFirst ? max(1, numberGroupIndex - 1) : numberGroupIndex + 1
+            let hintGroupIndex = hintCaptureGroupIndex(
+                numberGroupIndex: numberGroupIndex,
+                isHintFirst: isHintFirst
+            )
             appendCandidate(
                 fieldId: fieldId,
                 numberRange: match.range(at: numberGroupIndex),
@@ -204,6 +207,11 @@ enum OCRLabelAnchoredExtraction {
         }
     }
     
+    /// Hint is the capture immediately before the number (hint-first) or immediately after (number-first).
+    private static func hintCaptureGroupIndex(numberGroupIndex: Int, isHintFirst: Bool) -> Int {
+        isHintFirst ? max(1, numberGroupIndex - 1) : numberGroupIndex + 1
+    }
+
     /// Highest-index capture group whose value parses as a number (the OCR value).
     private static func numericCaptureGroupIndex(in match: NSTextCheckingResult, text: String) -> Int? {
         for index in stride(from: match.numberOfRanges - 1, through: 1, by: -1) {
@@ -305,7 +313,10 @@ enum OCRLabelAnchoredExtraction {
         guard let numberGroupIndex = numericCaptureGroupIndex(in: match, text: text) else {
             return nil
         }
-        let hintGroupIndex = isHintFirst ? max(1, numberGroupIndex - 1) : numberGroupIndex + 1
+        let hintGroupIndex = hintCaptureGroupIndex(
+            numberGroupIndex: numberGroupIndex,
+            isHintFirst: isHintFirst
+        )
         guard hintGroupIndex < match.numberOfRanges,
               match.range(at: hintGroupIndex).location != NSNotFound,
               let range = Range(match.range(at: hintGroupIndex), in: text) else {
