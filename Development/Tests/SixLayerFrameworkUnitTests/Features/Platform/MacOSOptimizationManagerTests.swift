@@ -83,6 +83,10 @@ open class MacOSOptimizationManagerTests: BaseTestClass {
 
     @Test func testSeriousAndCriticalThermalForceStandard() {
         #expect(
+            macOSPerformanceStrategy(for: inputs(processors: 16)) == .maximumPerformance,
+            "Baseline: 16 cores nominal must not already be standard or thermal caps are invisible"
+        )
+        #expect(
             macOSPerformanceStrategy(for: inputs(processors: 16, thermal: .serious)) == .standard
         )
         #expect(
@@ -91,6 +95,15 @@ open class MacOSOptimizationManagerTests: BaseTestClass {
     }
 
     @Test func testThermalCapWinsOverHighMemoryAndCoreCount() {
+        let unconstrained = MacOSOptimizationInputs(
+            processorCount: 16,
+            physicalMemory: 64 * gib,
+            thermalState: .nominal
+        )
+        #expect(
+            macOSPerformanceStrategy(for: unconstrained) == .maximumPerformance,
+            "Baseline: unconstrained 16-core host must map to maximum or the critical cap is invisible"
+        )
         #expect(
             macOSPerformanceStrategy(
                 for: MacOSOptimizationInputs(
