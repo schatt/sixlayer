@@ -163,10 +163,21 @@ assert_eq "$got" $'Apple TV 4K (3rd generation)\t11111111-2222-3333-4444-5555555
   "family fallback finds 4K when classic Apple TV absent"
 
 got="$(ensure_ci_sim_destination_specifier "tvOS" "Apple TV" "AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE")"
-assert_eq "$got" "platform=tvOS Simulator,name=Apple TV,id=AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE" \
-  "destination includes platform, name, and id"
+assert_eq "$got" "platform=tvOS Simulator,id=AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE" \
+  "destination is platform+id only (no name=; xcodebuild infers OS:latest from name)"
+
+if printf '%s' "$got" | grep -Fq -- "name="; then
+    echo "❌ tvOS destination must not include name="
+    echo "   got: $got"
+    FAIL=$((FAIL + 1))
+else
+    echo "✅ tvOS destination omits name="
+    PASS=$((PASS + 1))
+fi
 
 got="$(ensure_ci_sim_destination_specifier "visionOS" "Apple Vision Pro" "ABCD")"
+assert_eq "$got" "platform=visionOS Simulator,id=ABCD" \
+  "visionOS destination is platform+id only"
 assert_contains "$got" "platform=visionOS Simulator" "visionOS platform string"
 
 got="$(ensure_ci_sim_xcode_platform_label "watchOS")"

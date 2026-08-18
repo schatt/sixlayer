@@ -4,7 +4,9 @@
 # Usage:
 #   ensure-ci-simulator-destination.sh <tvOS|watchOS|visionOS|iOS> [name] [device_type]
 #
-# Prints one line: platform=… Simulator,name=…,id=…
+# Prints one line: platform=… Simulator,id=…
+# Do not include name= — xcodebuild infers OS:latest from name, which misses
+# non-latest runtimes (#429). UDID is unique.
 # Suitable for: xcodebuild test -destination "$(…/ensure-ci-simulator-destination.sh tvOS)"
 #
 # Refs #399
