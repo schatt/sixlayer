@@ -54,9 +54,9 @@ public struct MacOSOptimizationInputs: Equatable, Sendable {
 
 /// Choose a performance strategy from host resources.
 ///
-/// Order: processor-count mapping, then memory cap (`< 4 GiB` → not above
-/// `.optimized`), then thermal cap (`.fair` → not above `.optimized`;
-/// `.serious` / `.critical` → `.standard`).
+/// Order: processor-count mapping, then memory cap (`< 4 GiB` → `.standard`;
+/// `< 8 GiB` → not above `.optimized`), then thermal cap (`.fair` → not
+/// above `.optimized`; `.serious` / `.critical` → `.standard`).
 public func macOSPerformanceStrategy(for inputs: MacOSOptimizationInputs) -> MacOSPerformanceStrategy {
     var strategy = strategyForProcessorCount(inputs.processorCount)
     strategy = capped(strategy, at: memoryCeiling(for: inputs.physicalMemory))
@@ -79,7 +79,14 @@ private func strategyForProcessorCount(_ processorCount: Int) -> MacOSPerformanc
 
 private func memoryCeiling(for physicalMemory: UInt64) -> MacOSPerformanceStrategy? {
     let fourGiB: UInt64 = 4 * 1024 * 1024 * 1024
-    return physicalMemory < fourGiB ? .optimized : nil
+    let eightGiB: UInt64 = 8 * 1024 * 1024 * 1024
+    if physicalMemory < fourGiB {
+        return .standard
+    }
+    if physicalMemory < eightGiB {
+        return .optimized
+    }
+    return nil
 }
 
 private func thermalCeiling(for thermalState: ProcessInfo.ThermalState) -> MacOSPerformanceStrategy? {
