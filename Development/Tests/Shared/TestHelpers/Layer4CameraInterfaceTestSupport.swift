@@ -1,17 +1,14 @@
-@testable import SixLayerFramework
-
 /// Expected `platformCameraInterface_L4` subject-type token on **this host**.
-/// iOS/macOS wrap `CameraView` / `MacCameraView`; other platforms return
-/// `Text` + `automaticCompliance` (no camera).
+/// Mirrors the compile-time branches in `platformCameraInterface_L4`:
+/// iOS/`CameraView`, macOS/`MacCameraView`, else `Text` + `automaticCompliance`.
 enum Layer4CameraInterfaceTestSupport {
     static var expectedRootViewName: String {
-        switch SixLayerPlatform.current {
-        case .iOS:
-            return "CameraView"
-        case .macOS:
-            return "MacCameraView"
-        case .tvOS, .watchOS, .visionOS:
-            return "Text"
-        }
+        #if os(iOS)
+        return "CameraView"
+        #elseif os(macOS)
+        return "MacCameraView"
+        #else
+        return "Text"
+        #endif
     }
 }
