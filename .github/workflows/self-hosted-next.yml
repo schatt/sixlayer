@@ -11,7 +11,10 @@
 # own `-derivedDataPath` and SPM checkout under the workspace; reclaim-ci-disk.sh removes
 # those trees plus build/*.xcresult at job start and after artifact upload (#416). It does
 # not simctl-delete devices (#417) — Mini is shared with CarManager. Start-of-job reclaim
-# is the path that survives cancel-in-progress.
+# is the path that survives cancel-in-progress. `xcodebuild test` runs through
+# xcodebuild-ci-retry.sh (#432): one retry on xctest bootstrap-only crashes; parallel
+# testing stays on. Artifact upload exports NODE_EXTRA_CA_CERTS from the Gitea
+# peer cert (#432); --use-system-ca alone does not trust a cert absent from the OS store.
 #
 # Runner: `runs-on: self-hosted` — add labels if your runner uses custom tags.
 name: Self-hosted (next)
@@ -94,7 +97,7 @@ jobs:
           set -euo pipefail
           mkdir -p build "$CI_DERIVED_DATA" "$CI_SPM_CHECKOUTS"
           set -o pipefail
-          xcodebuild test \
+          ./Development/scripts/xcodebuild-ci-retry.sh xcodebuild test \
             -project SixLayerFramework.xcodeproj \
             -scheme "${{ matrix.scheme }}" \
             -destination 'platform=iOS Simulator,name=iPhone 17 Pro Max' \
@@ -106,10 +109,17 @@ jobs:
             -maximum-concurrent-test-simulator-destinations 1 \
             -resultBundlePath "build/${{ matrix.scheme }}.xcresult"
 
+      - name: Export Gitea CA for Node artifact upload
+        if: failure()
+        run: |
+          set -euo pipefail
+          ./Development/scripts/export-gitea-node-ca.sh
+
       - name: Upload iOS test result bundle
         if: failure()
         env:
           NODE_OPTIONS: --use-system-ca
+          NODE_EXTRA_CA_CERTS: ${{ env.NODE_EXTRA_CA_CERTS }}
         uses: christopherHX/gitea-upload-artifact@v7
         with:
           name: xcresult-${{ matrix.scheme }}
@@ -171,7 +181,7 @@ jobs:
           set -euo pipefail
           mkdir -p build "$CI_DERIVED_DATA" "$CI_SPM_CHECKOUTS"
           set -o pipefail
-          xcodebuild test \
+          ./Development/scripts/xcodebuild-ci-retry.sh xcodebuild test \
             -project SixLayerFramework.xcodeproj \
             -scheme "${{ matrix.scheme }}" \
             -destination 'platform=macOS,arch=arm64' \
@@ -182,10 +192,17 @@ jobs:
             -parallel-testing-enabled YES \
             -resultBundlePath "build/${{ matrix.scheme }}.xcresult"
 
+      - name: Export Gitea CA for Node artifact upload
+        if: failure()
+        run: |
+          set -euo pipefail
+          ./Development/scripts/export-gitea-node-ca.sh
+
       - name: Upload macOS test result bundle
         if: failure()
         env:
           NODE_OPTIONS: --use-system-ca
+          NODE_EXTRA_CA_CERTS: ${{ env.NODE_EXTRA_CA_CERTS }}
         uses: christopherHX/gitea-upload-artifact@v7
         with:
           name: xcresult-${{ matrix.scheme }}
@@ -234,7 +251,7 @@ jobs:
           DEST="$(./Development/scripts/ensure-ci-simulator-destination.sh tvOS)"
           echo "Using destination: $DEST"
           set -o pipefail
-          xcodebuild test \
+          ./Development/scripts/xcodebuild-ci-retry.sh xcodebuild test \
             -project SixLayerFramework.xcodeproj \
             -scheme "SLF-tvOS-AllTests" \
             -destination "$DEST" \
@@ -245,10 +262,17 @@ jobs:
             -parallel-testing-enabled YES \
             -resultBundlePath "build/SLF-tvOS-AllTests.xcresult"
 
+      - name: Export Gitea CA for Node artifact upload
+        if: failure()
+        run: |
+          set -euo pipefail
+          ./Development/scripts/export-gitea-node-ca.sh
+
       - name: Upload tvOS test result bundle
         if: failure()
         env:
           NODE_OPTIONS: --use-system-ca
+          NODE_EXTRA_CA_CERTS: ${{ env.NODE_EXTRA_CA_CERTS }}
         uses: christopherHX/gitea-upload-artifact@v7
         with:
           name: xcresult-tvos
@@ -297,7 +321,7 @@ jobs:
           DEST="$(./Development/scripts/ensure-ci-simulator-destination.sh visionOS)"
           echo "Using destination: $DEST"
           set -o pipefail
-          xcodebuild test \
+          ./Development/scripts/xcodebuild-ci-retry.sh xcodebuild test \
             -project SixLayerFramework.xcodeproj \
             -scheme "SLF-visionOS-AllTests" \
             -destination "$DEST" \
@@ -308,10 +332,17 @@ jobs:
             -parallel-testing-enabled YES \
             -resultBundlePath "build/SLF-visionOS-AllTests.xcresult"
 
+      - name: Export Gitea CA for Node artifact upload
+        if: failure()
+        run: |
+          set -euo pipefail
+          ./Development/scripts/export-gitea-node-ca.sh
+
       - name: Upload visionOS test result bundle
         if: failure()
         env:
           NODE_OPTIONS: --use-system-ca
+          NODE_EXTRA_CA_CERTS: ${{ env.NODE_EXTRA_CA_CERTS }}
         uses: christopherHX/gitea-upload-artifact@v7
         with:
           name: xcresult-visionos
@@ -360,7 +391,7 @@ jobs:
           DEST="$(./Development/scripts/ensure-ci-simulator-destination.sh watchOS)"
           echo "Using destination: $DEST"
           set -o pipefail
-          xcodebuild test \
+          ./Development/scripts/xcodebuild-ci-retry.sh xcodebuild test \
             -project SixLayerFramework.xcodeproj \
             -scheme "SLF-watchOS-AllTests" \
             -destination "$DEST" \
@@ -371,10 +402,17 @@ jobs:
             -parallel-testing-enabled YES \
             -resultBundlePath "build/SLF-watchOS-AllTests.xcresult"
 
+      - name: Export Gitea CA for Node artifact upload
+        if: failure()
+        run: |
+          set -euo pipefail
+          ./Development/scripts/export-gitea-node-ca.sh
+
       - name: Upload watchOS test result bundle
         if: failure()
         env:
           NODE_OPTIONS: --use-system-ca
+          NODE_EXTRA_CA_CERTS: ${{ env.NODE_EXTRA_CA_CERTS }}
         uses: christopherHX/gitea-upload-artifact@v7
         with:
           name: xcresult-watchos
