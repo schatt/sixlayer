@@ -332,6 +332,9 @@ targets:
       - target: SixLayerFramework_tvOS
 
   # Unit tests - watchOS
+  # No ViewInspector / TestKit dependency — same as tvOS unit tests. ViewInspector's
+  # package min is watchOS 7; SafeAreaBar uses HorizontalEdge (watchOS 8+). AllTests
+  # excludes ViewInspectorTests/**. Refs #431.
   SixLayerFrameworkUnitTests_watchOS:
     type: bundle.unit-test
     platform: watchOS
@@ -353,9 +356,6 @@ targets:
       ENABLE_TESTING_SEARCH_PATHS: YES
     dependencies:
       - target: SixLayerFramework_watchOS
-      - target: SixLayerViewInspectorTestKit_watchOS
-      - package: ViewInspector
-        product: ViewInspector
 
   # Unit tests - visionOS
   SixLayerFrameworkUnitTests_visionOS:
@@ -616,9 +616,6 @@ targets:
       ENABLE_TESTING_SEARCH_PATHS: YES
     dependencies:
       - target: SixLayerFramework_watchOS
-      - target: SixLayerViewInspectorTestKit_watchOS
-      - package: ViewInspector
-        product: ViewInspector
 
   # External integration tests - visionOS
   SixLayerFrameworkExternalIntegrationTests_visionOS:
