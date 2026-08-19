@@ -89,6 +89,11 @@ Test case 'ExampleTests/testThing()' passed on 'Clone 1 of iPhone 17 Pro Max - x
 ** TEST SUCCEEDED **
 EOF
 
+STALL_LOG="$WORKDIR/stall.log"
+cat > "$STALL_LOG" <<'EOF'
+Touch /tmp/SLFmacOSViewInspectorTests.xctest (in target 'SLFmacOSViewInspectorTests' from project 'SixLayerFramework')
+EOF
+
 assert_true "bootstrap-only log is runner bootstrap failure" \
     xcodebuild_ci_log_is_runner_bootstrap_failure "$BOOTSTRAP_LOG"
 assert_false "assertion failure log is not runner bootstrap failure" \
@@ -108,6 +113,10 @@ assert_false "nonzero + assertion failure should not retry" \
     xcodebuild_ci_should_retry 65 "$ASSERTION_LOG"
 assert_false "nonzero + mixed should not retry" \
     xcodebuild_ci_should_retry 65 "$MIXED_LOG"
+assert_true "stall exit 124 without failed on should retry" \
+    xcodebuild_ci_should_retry 124 "$STALL_LOG"
+assert_false "stall exit 124 with assertion failure should not retry" \
+    xcodebuild_ci_should_retry 124 "$ASSERTION_LOG"
 
 ATTEMPTS_FILE="$WORKDIR/attempts"
 MOCK="$WORKDIR/mock-xcodebuild"
@@ -191,6 +200,35 @@ bundle_status=$?
 set -e
 assert_eq "$bundle_status" "0" "retry wrapper removes result bundle before retry"
 assert_false "stale xcresult removed before retry" test -e "$BUNDLE"
+
+echo 0 > "$ATTEMPTS_FILE"
+HANG_MOCK="$WORKDIR/mock-hang"
+cat > "$HANG_MOCK" <<EOF
+#!/usr/bin/env bash
+n=0
+if [[ -f "$ATTEMPTS_FILE" ]]; then
+    n=\$(cat "$ATTEMPTS_FILE")
+fi
+n=\$((n + 1))
+echo "\$n" > "$ATTEMPTS_FILE"
+if [[ "\$n" -eq 1 ]]; then
+    echo "Touch /tmp/SLFmacOSViewInspectorTests.xctest (in target 'SLFmacOSViewInspectorTests' from project 'SixLayerFramework')"
+    sleep 8
+    exit 0
+fi
+echo "** TEST SUCCEEDED **"
+exit 0
+EOF
+chmod +x "$HANG_MOCK"
+
+export XCODEBUILD_CI_STALL_SECONDS=1
+set +e
+xcodebuild_ci_run_with_bootstrap_retry "$WORKDIR/hang-run.log" "$HANG_MOCK"
+hang_status=$?
+set -e
+unset XCODEBUILD_CI_STALL_SECONDS
+assert_eq "$hang_status" "0" "retry wrapper succeeds after killing a silent hang"
+assert_eq "$(cat "$ATTEMPTS_FILE")" "2" "retry wrapper invokes command twice after stall kill"
 
 echo
 echo "Passed: $PASS  Failed: $FAIL"
