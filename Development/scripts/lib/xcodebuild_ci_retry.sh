@@ -61,8 +61,7 @@ xcodebuild_ci_invoke_logged() {
     shift
     local stall="${XCODEBUILD_CI_STALL_SECONDS:-180}"
     local stall_py="${_XCODEBUILD_CI_LIB_DIR}/xcodebuild_ci_stall_run.py"
-    if [[ "$stall" =~ ^[0-9]+(\.[0-9]+)?$ ]] \
-        && awk "BEGIN { exit !($stall > 0) }" \
+    if [[ "$stall" =~ ^[1-9][0-9]*$ ]] \
         && [[ -f "$stall_py" ]] \
         && command -v python3 >/dev/null; then
         python3 "$stall_py" "$stall" "$@" 2>&1 | tee "$log_file"
