@@ -1,10 +1,15 @@
 #!/usr/bin/env python3
-"""Run a command; exit 124 if stdout/stderr stay silent for N seconds (#433)."""
+"""Run a command; exit 124 if the tee log stays unchanged for N seconds (#433).
+
+The child inherits this process's stdout (typically a pipe to `tee`). Stall
+detection watches the log file's mtime/size and never reads the child's
+stdout — Darwin EAGAIN on a non-blocking drain must not fail a green run
+(#434).
+"""
 
 from __future__ import annotations
 
 import os
-import select
 import signal
 import subprocess
 import sys
@@ -23,10 +28,18 @@ def _kill_group(proc: subprocess.Popen[bytes]) -> None:
         proc.wait()
 
 
+def _log_fingerprint(path: str) -> tuple[int, int] | None:
+    try:
+        st = os.stat(path)
+    except FileNotFoundError:
+        return None
+    return (st.st_mtime_ns, st.st_size)
+
+
 def main(argv: list[str]) -> int:
-    if len(argv) < 3:
+    if len(argv) < 4:
         sys.stderr.write(
-            "Usage: xcodebuild_ci_stall_run.py <seconds> <command> [args...]\n"
+            "Usage: xcodebuild_ci_stall_run.py <seconds> <log_file> <command> [args...]\n"
         )
         return 2
     try:
@@ -38,41 +51,35 @@ def main(argv: list[str]) -> int:
         sys.stderr.write("stall seconds must be > 0\n")
         return 2
 
+    log_file = argv[2]
     proc = subprocess.Popen(
-        argv[2:],
-        stdout=subprocess.PIPE,
+        argv[3:],
         stderr=subprocess.STDOUT,
         start_new_session=True,
-        bufsize=0,
     )
-    assert proc.stdout is not None
-    fd = proc.stdout.fileno()
-    os.set_blocking(fd, False)
-    last = time.monotonic()
+    last_fp = _log_fingerprint(log_file)
+    last_change = time.monotonic()
 
     while True:
-        ready, _, _ = select.select([fd], [], [], 0.2)
-        if ready:
-            chunk = os.read(fd, 65536)
-            if chunk:
-                os.write(sys.stdout.fileno(), chunk)
-                last = time.monotonic()
-        ended = proc.poll() is not None
-        if ended:
-            while True:
-                chunk = os.read(fd, 65536)
-                if not chunk:
-                    break
-                os.write(sys.stdout.fileno(), chunk)
+        fp = _log_fingerprint(log_file)
+        if fp != last_fp:
+            last_fp = fp
+            last_change = time.monotonic()
+
+        if proc.poll() is not None:
+            # Descendants may still hold inherited stdout; kill the session
+            # so `tee` is not stuck after the command we spawned has exited.
+            _kill_group(proc)
             return int(proc.returncode or 0)
-        if time.monotonic() - last >= stall:
-            msg = (
+        if time.monotonic() - last_change >= stall:
+            sys.stdout.write(
                 f"xcodebuild CI: no output for {int(stall)}s, "
                 f"killing process group (#433)\n"
             )
-            os.write(sys.stdout.fileno(), msg.encode())
+            sys.stdout.flush()
             _kill_group(proc)
             return 124
+        time.sleep(0.2)
 
 
 if __name__ == "__main__":

@@ -230,6 +230,56 @@ unset XCODEBUILD_CI_STALL_SECONDS
 assert_eq "$hang_status" "0" "retry wrapper succeeds after killing a silent hang"
 assert_eq "$(cat "$ATTEMPTS_FILE")" "2" "retry wrapper invokes command twice after stall kill"
 
+# #434: child exits 0 after printing while a grandchild still holds stdout.
+# The old stdout-intercept drain loop raised BlockingIOError (EAGAIN) here.
+KEEP_STDOUT="$WORKDIR/keep-stdout.py"
+cat > "$KEEP_STDOUT" <<'EOF'
+#!/usr/bin/env python3
+import os
+import sys
+import time
+
+sys.stdout.write("child-exiting\n")
+sys.stdout.flush()
+if os.fork() == 0:
+    time.sleep(2)
+    os._exit(0)
+os._exit(0)
+EOF
+chmod +x "$KEEP_STDOUT"
+
+export XCODEBUILD_CI_STALL_SECONDS=10
+set +e
+xcodebuild_ci_invoke_logged "$WORKDIR/keep-stdout.log" "$KEEP_STDOUT"
+keep_status=$?
+set -e
+unset XCODEBUILD_CI_STALL_SECONDS
+assert_eq "$keep_status" "0" \
+    "stall wrapper returns 0 when a grandchild still holds stdout after the child exits"
+assert_true "keep-stdout log captured child output" \
+    grep -q "child-exiting" "$WORKDIR/keep-stdout.log"
+
+# Heartbeat past the stall window must not be treated as a hang (#434 log-mtime).
+HEARTBEAT="$WORKDIR/heartbeat"
+cat > "$HEARTBEAT" <<'EOF'
+#!/usr/bin/env bash
+for i in 1 2 3 4 5 6; do
+    echo "tick $i"
+    sleep 0.4
+done
+exit 0
+EOF
+chmod +x "$HEARTBEAT"
+
+export XCODEBUILD_CI_STALL_SECONDS=1
+set +e
+xcodebuild_ci_invoke_logged "$WORKDIR/heartbeat.log" "$HEARTBEAT"
+heartbeat_status=$?
+set -e
+unset XCODEBUILD_CI_STALL_SECONDS
+assert_eq "$heartbeat_status" "0" \
+    "stall wrapper does not kill a command that keeps writing past the stall window"
+
 echo
 echo "Passed: $PASS  Failed: $FAIL"
 if [[ "$FAIL" -ne 0 ]]; then
