@@ -214,7 +214,7 @@ echo "\$n" > "$ATTEMPTS_FILE"
 if [[ "\$n" -eq 1 ]]; then
     echo "Touch /tmp/SLFmacOSViewInspectorTests.xctest (in target 'SLFmacOSViewInspectorTests' from project 'SixLayerFramework')"
     sleep 8
-    exit 0
+    exit 99
 fi
 echo "** TEST SUCCEEDED **"
 exit 0
