@@ -73,61 +73,58 @@ public enum RuntimeOptimization {
     public static func isOptimized(for inputs: Inputs) -> Bool {
         performanceStrategy(for: inputs) != .standard
     }
-}
 
-/// Processor bands: ≤2 → `.standard`; ≤4 → `.optimized`; ≤8 → `.highPerformance`; else `.maximumPerformance`.
-private func strategyForProcessorCount(_ processorCount: Int) -> RuntimeOptimization.Strategy {
-    switch processorCount {
-    case ...2:
-        return .standard
-    case ...4:
-        return .optimized
-    case ...8:
-        return .highPerformance
-    default:
-        return .maximumPerformance
+    /// Processor bands: ≤2 → `.standard`; ≤4 → `.optimized`; ≤8 → `.highPerformance`; else `.maximumPerformance`.
+    private static func strategyForProcessorCount(_ processorCount: Int) -> Strategy {
+        switch processorCount {
+        case ...2:
+            return .standard
+        case ...4:
+            return .optimized
+        case ...8:
+            return .highPerformance
+        default:
+            return .maximumPerformance
+        }
     }
-}
 
-private func memoryCeiling(for physicalMemory: UInt64) -> RuntimeOptimization.Strategy? {
-    let fourGiB: UInt64 = 4 * 1024 * 1024 * 1024
-    let eightGiB: UInt64 = 8 * 1024 * 1024 * 1024
-    switch physicalMemory {
-    case ..<fourGiB:
-        return .standard
-    case ..<eightGiB:
-        return .optimized
-    default:
-        return nil
+    private static func memoryCeiling(for physicalMemory: UInt64) -> Strategy? {
+        let fourGiB: UInt64 = 4 * 1024 * 1024 * 1024
+        let eightGiB: UInt64 = 8 * 1024 * 1024 * 1024
+        switch physicalMemory {
+        case ..<fourGiB:
+            return .standard
+        case ..<eightGiB:
+            return .optimized
+        default:
+            return nil
+        }
     }
-}
 
-private func thermalCeiling(for thermalState: ProcessInfo.ThermalState) -> RuntimeOptimization.Strategy? {
-    switch thermalState {
-    case .fair:
-        return .optimized
-    case .serious, .critical:
-        return .standard
-    case .nominal:
-        return nil
-    @unknown default:
-        return nil
+    private static func thermalCeiling(for thermalState: ProcessInfo.ThermalState) -> Strategy? {
+        switch thermalState {
+        case .fair:
+            return .optimized
+        case .serious, .critical:
+            return .standard
+        case .nominal:
+            return nil
+        @unknown default:
+            return nil
+        }
     }
-}
 
-private func capped(
-    _ strategy: RuntimeOptimization.Strategy,
-    at ceiling: RuntimeOptimization.Strategy?
-) -> RuntimeOptimization.Strategy {
-    guard let ceiling else { return strategy }
-    return rank(strategy) <= rank(ceiling) ? strategy : ceiling
-}
+    private static func capped(_ strategy: Strategy, at ceiling: Strategy?) -> Strategy {
+        guard let ceiling else { return strategy }
+        return rank(strategy) <= rank(ceiling) ? strategy : ceiling
+    }
 
-private func rank(_ strategy: RuntimeOptimization.Strategy) -> Int {
-    switch strategy {
-    case .standard: return 0
-    case .optimized: return 1
-    case .highPerformance: return 2
-    case .maximumPerformance: return 3
+    private static func rank(_ strategy: Strategy) -> Int {
+        switch strategy {
+        case .standard: return 0
+        case .optimized: return 1
+        case .highPerformance: return 2
+        case .maximumPerformance: return 3
+        }
     }
 }
