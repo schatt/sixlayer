@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-@testable import SixLayerFramework
+import SixLayerFramework
 
 /// Host-resource strategy coverage for `RuntimeOptimization` (#422).
 /// Shared unit sources; no hosting.
