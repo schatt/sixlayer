@@ -7,6 +7,8 @@
 # `failed on` lines. Do not disable parallel testing.
 #
 # Stall seconds: $XCODEBUILD_CI_STALL_SECONDS (default 180). 0 disables.
+# The stall watchdog watches the tee log's mtime/size; it does not read
+# xcodebuild stdout (#434).
 
 _XCODEBUILD_CI_LIB_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
@@ -64,7 +66,7 @@ xcodebuild_ci_invoke_logged() {
     if [[ "$stall" =~ ^[1-9][0-9]*$ ]] \
         && [[ -f "$stall_py" ]] \
         && command -v python3 >/dev/null; then
-        python3 "$stall_py" "$stall" "$@" 2>&1 | tee "$log_file"
+        python3 "$stall_py" "$stall" "$log_file" "$@" 2>&1 | tee "$log_file"
         return "${PIPESTATUS[0]}"
     fi
     "$@" 2>&1 | tee "$log_file"
