@@ -28,7 +28,7 @@ def _kill_group(proc: subprocess.Popen[bytes]) -> None:
         proc.wait()
 
 
-def _log_sig(path: str) -> tuple[int, int] | None:
+def _log_fingerprint(path: str) -> tuple[int, int] | None:
     try:
         st = os.stat(path)
     except FileNotFoundError:
@@ -57,14 +57,13 @@ def main(argv: list[str]) -> int:
         stderr=subprocess.STDOUT,
         start_new_session=True,
     )
-    last_sig = _log_sig(log_file)
+    last_fp = _log_fingerprint(log_file)
     last_change = time.monotonic()
 
     while True:
-        time.sleep(0.2)
-        sig = _log_sig(log_file)
-        if sig != last_sig:
-            last_sig = sig
+        fp = _log_fingerprint(log_file)
+        if fp != last_fp:
+            last_fp = fp
             last_change = time.monotonic()
 
         if proc.poll() is not None:
@@ -73,14 +72,14 @@ def main(argv: list[str]) -> int:
             _kill_group(proc)
             return int(proc.returncode or 0)
         if time.monotonic() - last_change >= stall:
-            msg = (
+            sys.stdout.write(
                 f"xcodebuild CI: no output for {int(stall)}s, "
                 f"killing process group (#433)\n"
             )
-            sys.stdout.write(msg)
             sys.stdout.flush()
             _kill_group(proc)
             return 124
+        time.sleep(0.2)
 
 
 if __name__ == "__main__":
