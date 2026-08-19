@@ -12,8 +12,9 @@
 # those trees plus build/*.xcresult at job start and after artifact upload (#416). It does
 # not simctl-delete devices (#417) — Mini is shared with CarManager. Start-of-job reclaim
 # is the path that survives cancel-in-progress. `xcodebuild test` runs through
-# xcodebuild-ci-retry.sh (#432): one retry on xctest bootstrap-only crashes; parallel
-# testing stays on. Artifact upload exports NODE_EXTRA_CA_CERTS from the Gitea
+# xcodebuild-ci-retry.sh (#432, #433): one retry on xctest bootstrap-only crashes
+# or a silent hang (default 180s without output); parallel testing stays on.
+# Artifact upload exports NODE_EXTRA_CA_CERTS from the Gitea
 # peer cert (#432); --use-system-ca alone does not trust a cert absent from the OS store.
 #
 # Runner: `runs-on: self-hosted` — add labels if your runner uses custom tags.
