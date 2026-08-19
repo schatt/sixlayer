@@ -52,9 +52,9 @@
 
 **Risk**: LOW-MEDIUM - Theme state persists, but probably doesn't break tests
 
-### 6. `MacOSOptimizationManager` (resolved #422)
-**Location**: `Framework/Sources/Platform/macOS/Views/Extensions/PlatformMacOSOptimizationsLayer5.swift`
-**Status**: Value type with optional injected `MacOSOptimizationInputs`. No `shared`. Strategy is `macOSPerformanceStrategy(for:)`.
+### 6. `MacOSOptimizationManager` (removed #422)
+**Was**: `Framework/Sources/Platform/macOS/Views/Extensions/PlatformMacOSOptimizationsLayer5.swift`
+**Now**: `RuntimeOptimization` statics in `Framework/Sources/Core/Models/RuntimeOptimization.swift`. No singleton.
 
 ### 7. `DataPresentationIntelligence.shared`
 **Location**: `Framework/Sources/Extensions/SwiftUI/DataPresentationIntelligence.swift`
