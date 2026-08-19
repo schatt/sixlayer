@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Run xcodebuild test, retrying once on xctest bootstrap-only failures (#432)
-# or a silent hang (#433, default 180s without output).
+# or a silent hang (#433, default 180s with no new tee-log bytes).
 #
 # Usage:
 #   xcodebuild-ci-retry.sh xcodebuild test [args...]
