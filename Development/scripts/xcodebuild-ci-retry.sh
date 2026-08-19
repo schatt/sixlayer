@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
-# Run xcodebuild test, retrying once on xctest bootstrap-only failures (#432).
+# Run xcodebuild test, retrying once on xctest bootstrap-only failures (#432)
+# or a silent hang (#433, default 180s without output).
 #
 # Usage:
 #   xcodebuild-ci-retry.sh xcodebuild test [args...]
 #
 # Log: $XCODEBUILD_CI_RETRY_LOG or $RUNNER_TEMP/xcodebuild-ci-retry.log
+# Stall: $XCODEBUILD_CI_STALL_SECONDS (default 180; 0 disables)
 
 set -euo pipefail
 
