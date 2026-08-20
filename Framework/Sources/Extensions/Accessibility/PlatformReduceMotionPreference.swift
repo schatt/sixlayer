@@ -11,8 +11,10 @@ import AppKit
 
 /// Framework-owned reduce-motion policy for animation APIs (GitHub #298).
 ///
-/// SwiftUI views should prefer `@Environment(\.accessibilityReduceMotion)` in modifiers;
-/// non-view code uses `isReduceMotionEnabled`, which honors `@TaskLocal` test overrides.
+/// SwiftUI modifiers on the automatic-compliance stack must not read
+/// `@Environment(\.accessibilityReduceMotion)` — `inspect()` cannot install Environment (#435).
+/// Use `isReduceMotionEnabled` (task-local then system). Other call sites that already have an
+/// environment Bool can still pass it to `effectiveReduceMotionEnabled`.
 public enum PlatformReduceMotionPreference: Sendable {
 
     /// When non-`nil`, overrides system reduce-motion reads for the current task (unit tests).
@@ -68,14 +70,10 @@ public enum PlatformReduceMotionPreference: Sendable {
 
 /// Suppresses implicit animations in this subtree when reduce motion is effective (GitHub #298).
 public struct PlatformReduceMotionSubtreeModifier: ViewModifier {
-    @Environment(\.accessibilityReduceMotion) private var accessibilityReduceMotion
-
     public init() {}
 
     public func body(content: Content) -> some View {
-        let reduceMotion = PlatformReduceMotionPreference.effectiveReduceMotionEnabled(
-            accessibilityReduceMotion: accessibilityReduceMotion
-        )
+        let reduceMotion = PlatformReduceMotionPreference.isReduceMotionEnabled
         return content.transaction { transaction in
             guard reduceMotion else { return }
             transaction.animation = nil
