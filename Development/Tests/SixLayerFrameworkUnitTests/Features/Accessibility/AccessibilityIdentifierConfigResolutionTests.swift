@@ -29,4 +29,43 @@ struct AccessibilityIdentifierConfigResolutionTests {
             #expect(resolved === AccessibilityIdentifierConfig.shared)
         }
     }
+
+    @Test @MainActor
+    func unhostedInspectionDefaultsToFalse() {
+        #expect(!AccessibilityIdentifierConfig.unhostedInspection)
+    }
+
+    @Test @MainActor
+    func withUnhostedInspectionSetsTaskLocalFlag() {
+        AccessibilityIdentifierConfig.withUnhostedInspection {
+            #expect(AccessibilityIdentifierConfig.unhostedInspection)
+        }
+        #expect(!AccessibilityIdentifierConfig.unhostedInspection)
+    }
+
+    @Test @MainActor
+    func resolvedLocalDisableHonorsEnvironmentWhenHosted() {
+        #expect(
+            AccessibilityIdentifierConfig.resolvedAutomaticIdentifiersLocallyDisabled(
+                environmentValue: true
+            )
+        )
+        #expect(
+            !AccessibilityIdentifierConfig.resolvedAutomaticIdentifiersLocallyDisabled(
+                environmentValue: false
+            )
+        )
+    }
+
+    @Test @MainActor
+    func resolvedLocalDisableIgnoresEnvironmentWhenUnhosted() {
+        AccessibilityIdentifierConfig.withUnhostedInspection {
+            #expect(
+                !AccessibilityIdentifierConfig.resolvedAutomaticIdentifiersLocallyDisabled(
+                    environmentValue: true
+                ),
+                "inspect() cannot install Environment; unhosted path must not treat disable as set"
+            )
+        }
+    }
 }
