@@ -901,14 +901,14 @@ public struct AutomaticHIGColorContrastModifier: ViewModifier {
 /// Ensures text scales with system accessibility settings
 public struct AutomaticHIGTypographyScalingModifier: ViewModifier {
     let platform: SixLayerPlatform
-    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     public func body(content: Content) -> some View {
         let policy = HIGMinimumTypographyPolicy(platform: platform)
-        // Cap upward at accessibility5 without resetting an explicit or inherited size.
-        // Custom fixed sizes should use Font.higCompliantSystem so floors apply via resolver policy.
+        // Cap upward at accessibility5. Do not read `@Environment(\.dynamicTypeSize)` to form a
+        // lower bound — inspect() cannot install Environment (#435). Inherited sizes still flow
+        // into descendants; this only constrains the maximum.
         content
-            .dynamicTypeSize(dynamicTypeSize...HIGMinimumTypographyPolicy.maximumDynamicTypeSize)
+            .dynamicTypeSize(...HIGMinimumTypographyPolicy.maximumDynamicTypeSize)
             .environment(\.higMinimumTypographyPolicy, policy)
             .dynamicFontResolver(
                 DynamicFontResolver(
