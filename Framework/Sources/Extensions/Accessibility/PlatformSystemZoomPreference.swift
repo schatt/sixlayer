@@ -1,5 +1,8 @@
 import Foundation
 import SwiftUI
+#if canImport(UIKit)
+import UIKit
+#endif
 
 /// Framework-owned system zoom / layout-scale policy for automatic HIG compliance (GitHub #303).
 ///
@@ -9,6 +12,9 @@ import SwiftUI
 /// This type covers **layout resilience** when the effective UI scale increases (Display Zoom on device,
 /// or task-local overrides in unit tests).
 public enum PlatformSystemZoomPreference: Sendable {
+
+    /// When non-`nil`, overrides ``effectiveDynamicTypeSize`` for the current task (unit tests).
+    @TaskLocal public static var testDynamicTypeSizeOverride: DynamicTypeSize?
 
     /// When non-`nil`, overrides ``layoutScaleFactor`` for the current task (unit tests).
     @TaskLocal public static var testLayoutScaleOverride: CGFloat?
@@ -52,6 +58,32 @@ public enum PlatformSystemZoomPreference: Sendable {
         try $testLayoutScaleOverride.withValue(scale, operation: body)
     }
 
+    /// Run `body` with a task-local Dynamic Type override (parallel-test safe).
+    public static func withTestDynamicTypeSize<T>(
+        _ size: DynamicTypeSize,
+        _ body: () throws -> T
+    ) rethrows -> T {
+        try $testDynamicTypeSizeOverride.withValue(size, operation: body)
+    }
+
+    /// Dynamic Type for zoom layout resilience: task-local override, then system, then `.large`.
+    /// Do not read `@Environment(\.dynamicTypeSize)` in modifiers `inspect()` will evaluate (#435).
+    public static var effectiveDynamicTypeSize: DynamicTypeSize {
+        if let testDynamicTypeSizeOverride {
+            return testDynamicTypeSizeOverride
+        }
+        return dynamicTypeSizeFromSystem
+    }
+
+    /// Process-wide Dynamic Type (Settings / trait collection). Per-view SwiftUI overrides are not visible here.
+    public static var dynamicTypeSizeFromSystem: DynamicTypeSize {
+        #if canImport(UIKit) && !os(watchOS)
+        DynamicTypeSize(UIApplication.shared.preferredContentSizeCategory) ?? .large
+        #else
+        .large
+        #endif
+    }
+
     /// Whether layout-resilience spacing should apply for the given Dynamic Type step.
     public static func requiresLayoutResilience(dynamicTypeSize: DynamicTypeSize) -> Bool {
         dynamicTypeSize.isAccessibilitySize || layoutScaleFactor > 1.0
@@ -83,13 +115,11 @@ private extension DynamicTypeSize {
 
 /// Applies layout resilience for system zoom / large accessibility content sizes (GitHub #303).
 public struct PlatformSystemZoomSubtreeModifier: ViewModifier {
-    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
-
     public init() {}
 
     public func body(content: Content) -> some View {
         let spacing = PlatformSystemZoomPreference.layoutResilienceSpacing(
-            dynamicTypeSize: dynamicTypeSize
+            dynamicTypeSize: PlatformSystemZoomPreference.effectiveDynamicTypeSize
         )
         if spacing > 0 {
             content.padding(spacing)
