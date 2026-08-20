@@ -50,8 +50,9 @@ public struct AccessibilityIdentifierLabelKey: EnvironmentKey {
     public static let defaultValue: String? = nil
 }
 
-/// Environment key for injecting AccessibilityIdentifierConfig (for testing)
-/// Allows tests to provide isolated config instances instead of using singleton
+/// Environment key for injecting AccessibilityIdentifierConfig.
+/// Kept for public ABI. Identifier generation does **not** read this key (#435);
+/// it uses `AccessibilityIdentifierConfig.resolvedForIdentifierGeneration()` (task-local then `.shared`).
 public struct AccessibilityIdentifierConfigKey: EnvironmentKey {
     public static let defaultValue: AccessibilityIdentifierConfig? = nil
 }
@@ -469,15 +470,13 @@ public struct AutomaticComplianceModifier: ViewModifier {
 /// Modifier that applies automatic accessibility identifiers with a specific component name
 /// This is used by the .automaticCompliance(named:) helper
 /// 
-/// NOTE: No singleton observer needed - modifier reads config directly from task-local/injected/shared
-/// This eliminates singleton access overhead and improves test isolation.
+/// NOTE: Config comes from `AccessibilityIdentifierConfig.resolvedForIdentifierGeneration()`
+/// (task-local then `.shared`). Do not read SwiftUI Environment for the config instance.
 /// Identifier attaches via ``View/accessibilityHostIdentifier(_:)`` (host sentinel), matching
 /// ``NamedModifier`` / ``ExactNamedModifier`` (#360 / #364 / #406).
 public struct NamedAutomaticComplianceModifier: ViewModifier {
     let componentName: String
     let accessibilityLabel: String?  // NEW: Accessibility label for VoiceOver (Issue #154)
-    /// Optional injected config (e.g. unit-test hosting) when `@TaskLocal` is not visible during SwiftUI body evaluation.
-    @Environment(\.accessibilityIdentifierConfig) private var envAccessibilityIdentifierConfig
     
     nonisolated public init(componentName: String, accessibilityLabel: String? = nil) {
         self.componentName = componentName
@@ -485,7 +484,7 @@ public struct NamedAutomaticComplianceModifier: ViewModifier {
     }
     
     public func body(content: Content) -> some View {
-        let config = AccessibilityIdentifierConfig.resolvedForIdentifierGeneration(environment: envAccessibilityIdentifierConfig)
+        let config = AccessibilityIdentifierConfig.resolvedForIdentifierGeneration()
         // CRITICAL: Capture @Published property values as local variables BEFORE any logic
         // to avoid creating SwiftUI dependencies that cause infinite recursion
         let capturedScreenContext = config.currentScreenContext
@@ -590,10 +589,9 @@ public struct NamedAutomaticComplianceModifier: ViewModifier {
 /// Modifier that allows components to be named for more specific accessibility identifiers
 public struct NamedModifier: ViewModifier {
     let name: String
-    @Environment(\.accessibilityIdentifierConfig) private var envAccessibilityIdentifierConfig
     
     public func body(content: Content) -> some View {
-        let config = AccessibilityIdentifierConfig.resolvedForIdentifierGeneration(environment: envAccessibilityIdentifierConfig)
+        let config = AccessibilityIdentifierConfig.resolvedForIdentifierGeneration()
         // Prefix removed - use config.globalPrefix instead (no environment dependency)
         let capturedScreenContext = config.currentScreenContext
         let capturedViewHierarchy = config.currentViewHierarchy
@@ -700,10 +698,9 @@ public struct NamedModifier: ViewModifier {
 /// overwrite nested child contract ids (#364 / #360).
 public struct ExactNamedModifier: ViewModifier {
     let name: String
-    @Environment(\.accessibilityIdentifierConfig) private var envAccessibilityIdentifierConfig
     
     public func body(content: Content) -> some View {
-        let config = AccessibilityIdentifierConfig.resolvedForIdentifierGeneration(environment: envAccessibilityIdentifierConfig)
+        let config = AccessibilityIdentifierConfig.resolvedForIdentifierGeneration()
         let capturedEnableDebugLogging = config.enableDebugLogging
         let exactId = Self.generateExactNamedAccessibilityIdentifier(
             config: config,
@@ -781,7 +778,6 @@ public struct ForcedAutomaticAccessibilityIdentifiersModifier: ViewModifier {
     // Hints passed as parameters (Option A) - explicit, testable, no hidden dependencies
     let identifierName: String?
     let identifierElementType: String?
-    @Environment(\.accessibilityIdentifierConfig) private var envAccessibilityIdentifierConfig
     
     public init(
         identifierName: String? = nil,
@@ -792,7 +788,7 @@ public struct ForcedAutomaticAccessibilityIdentifiersModifier: ViewModifier {
     }
     
     public func body(content: Content) -> some View {
-        let config = AccessibilityIdentifierConfig.resolvedForIdentifierGeneration(environment: envAccessibilityIdentifierConfig)
+        let config = AccessibilityIdentifierConfig.resolvedForIdentifierGeneration()
         
         // CRITICAL: Capture @Published property values as local variables BEFORE calling generateIdentifier
         // to avoid creating SwiftUI dependencies that cause infinite recursion
@@ -1290,7 +1286,6 @@ public struct BasicAutomaticComplianceModifier: ViewModifier {
     let accessibilityTraits: AccessibilityTraits?  // NEW: Accessibility traits (Issue #165)
     let accessibilityValue: String?  // NEW: Accessibility value for stateful elements (Issue #165)
     let accessibilitySortPriority: Double?  // NEW: Accessibility sort priority for reading order (Issue #165)
-    @Environment(\.accessibilityIdentifierConfig) private var envAccessibilityIdentifierConfig
     @Environment(\.automaticAccessibilityIdentifiersLocallyDisabled) private var envAutomaticAccessibilityLocallyDisabled
     
     nonisolated public init(
@@ -1333,7 +1328,7 @@ public struct BasicAutomaticComplianceModifier: ViewModifier {
         // Store the property value to ensure it's not lost during SwiftUI evaluation
         let storedIdentifierName = self.identifierName
         
-        let config = AccessibilityIdentifierConfig.resolvedForIdentifierGeneration(environment: envAccessibilityIdentifierConfig)
+        let config = AccessibilityIdentifierConfig.resolvedForIdentifierGeneration()
         // CRITICAL: Capture property values as local variables BEFORE any logic
         // to avoid creating SwiftUI dependencies that cause infinite recursion
         let capturedEnableAutoIDs = config.enableAutoIDs
