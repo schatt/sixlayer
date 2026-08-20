@@ -48,10 +48,8 @@ public final class AccessibilityIdentifierConfig: @unchecked Sendable {
     /// SwiftUI Environment is not consulted. ViewInspector `inspect()` evaluates `body` unhosted,
     /// so `@Environment(\.accessibilityIdentifierConfig)` always reads the default and floods diagnostics.
     /// Hosting rebinds `@TaskLocal` around layout (`hostRootPlatformView`).
-    ///
-    /// The unused `environment` parameter is kept temporarily so existing call sites compile; it is ignored.
     @MainActor
-    internal static func resolvedForIdentifierGeneration(environment _: AccessibilityIdentifierConfig? = nil) -> AccessibilityIdentifierConfig {
+    internal static func resolvedForIdentifierGeneration() -> AccessibilityIdentifierConfig {
         currentTaskLocalConfig ?? shared
     }
     
