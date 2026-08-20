@@ -52,6 +52,26 @@ public final class AccessibilityIdentifierConfig: @unchecked Sendable {
     internal static func resolvedForIdentifierGeneration() -> AccessibilityIdentifierConfig {
         currentTaskLocalConfig ?? shared
     }
+
+    /// When true, identifier modifiers must not instantiate `@Environment` readers.
+    /// ViewInspector `inspect()` evaluates `body` unhosted; Environment always defaults and warns (#435).
+    /// Tests set this around `inspect()`; `hostRootPlatformView` clears it around layout.
+    @TaskLocal public static var unhostedInspection: Bool = false
+
+    /// Run `operation` as an unhosted inspection (no SwiftUI Environment installed).
+    @MainActor
+    public static func withUnhostedInspection<T>(_ operation: () throws -> T) rethrows -> T {
+        try $unhostedInspection.withValue(true, operation: operation)
+    }
+
+    /// Subtree opt-out for automatic identifiers.
+    ///
+    /// Hosted views pass the Environment value. Unhosted `inspect()` must not read Environment;
+    /// this returns `false` so generation matches inspect()'s actual (default) Environment.
+    @MainActor
+    public static func resolvedAutomaticIdentifiersLocallyDisabled(environmentValue: Bool) -> Bool {
+        environmentValue
+    }
     
     /// Shared instance for global configuration (PRODUCTION ONLY)
     /// Tests use task-local config automatically via @TaskLocal - never use .shared in tests
