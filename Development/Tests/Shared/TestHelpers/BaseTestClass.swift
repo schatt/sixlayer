@@ -28,10 +28,10 @@ import ViewInspector
 ///
 /// Do **not** mutate `AccessibilityIdentifierConfig.shared` for per-test setup (parallel-unsafe).
 /// Use `initializeTestConfig()` then `runWithTaskLocalConfig { … }` so resolution matches
-/// `AccessibilityIdentifierConfig.resolvedForIdentifierGeneration` via `@TaskLocal`. When hosting
-/// SwiftUI where the task local is not visible, inject the same instance on the root with
-/// `\.accessibilityIdentifierConfig` (see `TestSetupUtilities.hostRootPlatformView`). The UI test
-/// host injects at `WindowGroup` instead of touching `shared` (`TestApp.swift`). Reading `shared`
+/// `AccessibilityIdentifierConfig.resolvedForIdentifierGeneration()` via `@TaskLocal`. When hosting
+/// SwiftUI, `hostRootPlatformView` rebinds the same instance with `@TaskLocal` around layout
+/// (not SwiftUI Environment; #435). The UI test host may still set `\.accessibilityIdentifierConfig`
+/// on `WindowGroup` for TestApp-only readers (`TestApp.swift`). Reading `shared`
 /// is acceptable; writes belong on an isolated instance (or a tiny dedicated suite that restores state).
 open class BaseTestClass {
     /// Public initializer required for Swift testing framework to instantiate test classes
