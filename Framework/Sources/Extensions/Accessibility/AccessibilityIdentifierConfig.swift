@@ -43,18 +43,22 @@ public final class AccessibilityIdentifierConfig: @unchecked Sendable {
         return taskLocalConfig
     }
     
-    /// Resolves config for identifier generation: optional injected environment (tests), then task-local, then shared.
-    /// Environment injection is required when SwiftUI evaluates bodies outside the test task (e.g. some Swift Testing / async cases where `@TaskLocal` is not visible); tests pass `\.accessibilityIdentifierConfig` from the hosting root.
+    /// Resolves config for identifier generation: task-local, then shared.
+    ///
+    /// SwiftUI Environment is not consulted. ViewInspector `inspect()` evaluates `body` unhosted,
+    /// so `@Environment(\.accessibilityIdentifierConfig)` always reads the default and floods diagnostics.
+    /// Hosting rebinds `@TaskLocal` around layout (`hostRootPlatformView`).
+    ///
+    /// The unused `environment` parameter is kept temporarily so existing call sites compile; it is ignored.
     @MainActor
-    internal static func resolvedForIdentifierGeneration(environment: AccessibilityIdentifierConfig?) -> AccessibilityIdentifierConfig {
-        if let environment = environment { return environment }
-        return currentTaskLocalConfig ?? shared
+    internal static func resolvedForIdentifierGeneration(environment _: AccessibilityIdentifierConfig? = nil) -> AccessibilityIdentifierConfig {
+        currentTaskLocalConfig ?? shared
     }
     
     /// Shared instance for global configuration (PRODUCTION ONLY)
     /// Tests use task-local config automatically via @TaskLocal - never use .shared in tests
     /// 
-    /// PARALLEL TEST SAFETY: Framework code checks `taskLocalConfig ?? injectedConfig ?? shared`
+    /// PARALLEL TEST SAFETY: Framework code checks `taskLocalConfig ?? shared`.
     /// Each test runs in its own task, so @TaskLocal provides automatic isolation.
     /// Tests that access .shared directly will cause race conditions in parallel execution.
     ///
