@@ -136,7 +136,7 @@ public enum TestSetupUtilities {
     ///   - view: The SwiftUI view to host.
     ///   - forceLayout: When true, call layoutIfNeeded() so SwiftUI applies accessibility identifiers to the UIView hierarchy. Use only for simple views (e.g. Text, Button); complex views (NavigationStack, platformPresentContent_L1) can hang.
     ///   - exposeContentAccessibility: When true, leave the hosting root as a container (isAccessibilityElement = false) so the SwiftUI content's accessibility tree is exposed for verification (e.g. single tappable element with label + button trait). Use for tests that traverse the hierarchy to assert on content a11y (Issue #191).
-    ///   - accessibilityIdentifierConfig: When set, injects `\.accessibilityIdentifierConfig` so SwiftUI bodies resolve the same instance as test harness when `@TaskLocal` is not visible (e.g. deferred UIHostingController layout). When nil, the current task-local config (if any) is injected automatically so hosting matches `runWithTaskLocalConfig` without repeating every callsite.
+    ///   - accessibilityIdentifierConfig: When set, rebinds `@TaskLocal` around hosting and layout so identifier modifiers see this instance (`resolvedForIdentifierGeneration`). When nil, uses the current task-local config if any. Does not inject SwiftUI Environment (#435).
     @MainActor
     public static func hostRootPlatformView<V: View>(
         _ view: V,
@@ -150,13 +150,7 @@ public enum TestSetupUtilities {
         // Re-bind task-local config for the whole hosting + layout window so SwiftUI modifier bodies that run
         // synchronously during layout still see the isolated test config (and debug log), not only `.shared`.
         let hostUIKitSubtree: () -> UIView? = {
-            let rootView: AnyView = {
-                if let cfg = injectedConfig {
-                    return AnyView(view.environment(\.accessibilityIdentifierConfig, cfg))
-                }
-                return AnyView(view)
-            }()
-            let hosting = UIHostingController(rootView: rootView)
+            let hosting = UIHostingController(rootView: view)
             // CRITICAL: Accessing hosting.view can hang on complex views in test environments.
             // This is a synchronous UIKit call that cannot be timed out or cancelled.
             // If this hangs, the test will hang indefinitely.
@@ -203,13 +197,7 @@ public enum TestSetupUtilities {
         // Mirror UIKit hosting: without a visible window + run loop, SwiftUI on macOS often never
         // evaluates modifier bodies, so automaticCompliance / debug logs stay empty (Layer 4 a11y tests).
         let hostAppKitSubtree: () -> NSView? = {
-            let rootView: AnyView = {
-                if let cfg = injectedConfig {
-                    return AnyView(view.environment(\.accessibilityIdentifierConfig, cfg))
-                }
-                return AnyView(view)
-            }()
-            let hosting = NSHostingController(rootView: rootView)
+            let hosting = NSHostingController(rootView: view)
             let frame = NSRect(x: -10_000, y: -10_000, width: 480, height: 640)
             let window = NSWindow(
                 contentRect: frame,
