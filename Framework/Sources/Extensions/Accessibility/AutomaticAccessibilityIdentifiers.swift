@@ -1286,8 +1286,7 @@ public struct BasicAutomaticComplianceModifier: ViewModifier {
     let accessibilityTraits: AccessibilityTraits?  // NEW: Accessibility traits (Issue #165)
     let accessibilityValue: String?  // NEW: Accessibility value for stateful elements (Issue #165)
     let accessibilitySortPriority: Double?  // NEW: Accessibility sort priority for reading order (Issue #165)
-    @Environment(\.automaticAccessibilityIdentifiersLocallyDisabled) private var envAutomaticAccessibilityLocallyDisabled
-    
+
     nonisolated public init(
         identifierName: String? = nil,
         identifierElementType: String? = nil,
@@ -1323,7 +1322,23 @@ public struct BasicAutomaticComplianceModifier: ViewModifier {
         }
     }
     
+    @ViewBuilder
     public func body(content: Content) -> some View {
+        // inspect() cannot install Environment. Do not instantiate the Environment reader
+        // on the unhosted path (#435). Hosted/production still reads subtree disable.
+        if AccessibilityIdentifierConfig.unhostedInspection {
+            applyingCompliance(
+                to: content,
+                locallyDisabled: AccessibilityIdentifierConfig.resolvedAutomaticIdentifiersLocallyDisabled(
+                    environmentValue: false
+                )
+            )
+        } else {
+            BasicAutomaticComplianceLocalDisableReader(modifier: self, content: content)
+        }
+    }
+
+    fileprivate func applyingCompliance(to content: Content, locallyDisabled: Bool) -> some View {
         // CRITICAL DEBUG: Verify identifierName is preserved in the modifier
         // Store the property value to ensure it's not lost during SwiftUI evaluation
         let storedIdentifierName = self.identifierName
@@ -1346,7 +1361,7 @@ public struct BasicAutomaticComplianceModifier: ViewModifier {
         // Logic: enableAutoIDs, global flag, and no local subtree opt-out (disableAutomaticAccessibilityIdentifiers)
         let shouldApply = capturedEnableAutoIDs
             && capturedGlobalAutomaticAccessibilityIdentifiers
-            && !envAutomaticAccessibilityLocallyDisabled
+            && !locallyDisabled
         
         // Apply identifier when automatic IDs are enabled, except for **fully anonymous** modifiers:
         // no name, type, label, or other a11y parameters. Those are structural/layout wrappers; stamping
@@ -1553,6 +1568,23 @@ public struct BasicAutomaticComplianceModifier: ViewModifier {
                     identifierElementType: self.identifierElementType
                 )
             ))
+    }
+}
+
+/// Hosted-only Environment reader for subtree identifier opt-out.
+/// Instantiated only when `unhostedInspection` is false so `inspect()` does not warn (#435).
+private struct BasicAutomaticComplianceLocalDisableReader<Content: View>: View {
+    let modifier: BasicAutomaticComplianceModifier
+    let content: Content
+    @Environment(\.automaticAccessibilityIdentifiersLocallyDisabled) private var environmentLocallyDisabled
+
+    var body: some View {
+        modifier.applyingCompliance(
+            to: content,
+            locallyDisabled: AccessibilityIdentifierConfig.resolvedAutomaticIdentifiersLocallyDisabled(
+                environmentValue: environmentLocallyDisabled
+            )
+        )
     }
 }
 
