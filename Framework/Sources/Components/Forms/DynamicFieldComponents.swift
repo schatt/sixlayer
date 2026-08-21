@@ -557,7 +557,7 @@ public struct DynamicTextField: View {
         if field.shouldRenderAsPicker {
             pickerContent(resolver: resolver, namespace: namespace)
         } else {
-            textFieldWithActions
+            textFieldWithActions(resolver: resolver, namespace: namespace)
         }
         
         // Character counter for fields with maxLength validation
@@ -598,19 +598,22 @@ public struct DynamicTextField: View {
             )
         } else {
             // Fallback to text field if no options
-            textFieldView
+            textFieldView(resolver: resolver, namespace: namespace)
         }
     }
     
     /// Text field with actions view
     @ViewBuilder
-    private var textFieldWithActions: some View {
+    private func textFieldWithActions(
+        resolver: DynamicFormFieldLocalizationResolver?,
+        namespace: String?
+    ) -> some View {
         let hasActions = !field.effectiveActions.isEmpty
         let hasTrailingView = field.trailingView != nil
         
         if hasActions || hasTrailingView {
             HStack {
-                textFieldView
+                textFieldView(resolver: resolver, namespace: namespace)
                 
                 // Render actions (unified system - Issue #95)
                 FieldActionRenderer(field: field, formState: formState)
@@ -622,31 +625,37 @@ public struct DynamicTextField: View {
             }
         } else {
             // Default text field (no actions)
-            textFieldView
+            textFieldView(resolver: resolver, namespace: namespace)
         }
     }
     
     /// Text field view with focus management (Issue #81)
     /// Supports multi-line TextField with axis parameter (iOS 16+ / macOS 13+) - Issue #89
     @ViewBuilder
-    private var textFieldView: some View {
+    private func textFieldView(
+        resolver: DynamicFormFieldLocalizationResolver?,
+        namespace: String?
+    ) -> some View {
         if field.isMultiLine {
             // Multi-line TextField support (Issue #89)
-            multiLineTextFieldView
+            multiLineTextFieldView(resolver: resolver, namespace: namespace)
         } else {
             // Single-line TextField
-            singleLineTextFieldView
+            singleLineTextFieldView(resolver: resolver, namespace: namespace)
         }
     }
     
     /// Single-line TextField view
     @ViewBuilder
-    private var singleLineTextFieldView: some View {
+    private func singleLineTextFieldView(
+        resolver: DynamicFormFieldLocalizationResolver?,
+        namespace: String?
+    ) -> some View {
         let i18n = InternationalizationService()
         let placeholderText = field.resolvedPlaceholderDisplay(
             frameworkDefault: i18n.localizedString(for: "SixLayerFramework.form.placeholder.enterText"),
-            resolver: localizationResolver,
-            namespace: localizationNamespace
+            resolver: resolver,
+            namespace: namespace
         )
         TextField(placeholderText, text: field.textBinding(formState: formState))
             .platformTextFieldStyle()
@@ -661,10 +670,13 @@ public struct DynamicTextField: View {
     /// Multi-line TextField view with axis parameter (iOS 16+ / macOS 13+)
     /// Falls back to TextEditor on older OS versions - Issue #89
     @ViewBuilder
-    private var multiLineTextFieldView: some View {
+    private func multiLineTextFieldView(
+        resolver: DynamicFormFieldLocalizationResolver?,
+        namespace: String?
+    ) -> some View {
         if supportsTextFieldAxis {
             // iOS 16+ / macOS 13+: Use TextField with axis parameter
-            multiLineTextFieldWithAxis
+            multiLineTextFieldWithAxis(resolver: resolver, namespace: namespace)
         } else {
             // Older OS versions: Fall back to TextEditor
             multiLineTextEditorFallback
@@ -684,12 +696,15 @@ public struct DynamicTextField: View {
     
     /// TextField with axis parameter for multi-line text (iOS 16+ / macOS 13+)
     @ViewBuilder
-    private var multiLineTextFieldWithAxis: some View {
+    private func multiLineTextFieldWithAxis(
+        resolver: DynamicFormFieldLocalizationResolver?,
+        namespace: String?
+    ) -> some View {
         let i18n = InternationalizationService()
         let placeholderText = field.resolvedPlaceholderDisplay(
             frameworkDefault: i18n.localizedString(for: "SixLayerFramework.form.placeholder.enterText"),
-            resolver: localizationResolver,
-            namespace: localizationNamespace
+            resolver: resolver,
+            namespace: namespace
         )
         TextField(
             placeholderText,
