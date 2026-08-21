@@ -11,9 +11,11 @@ public enum UnhostedInspection {
         AccessibilityIdentifierConfig.unhostedInspection
     }
 
-    /// Stub: always hosted so the unhosted-select test can fail for the right reason.
     public static func select<T>(unhosted: () throws -> T, hosted: () throws -> T) rethrows -> T {
-        try hosted()
+        if isActive {
+            return try unhosted()
+        }
+        return try hosted()
     }
 
     @ViewBuilder
