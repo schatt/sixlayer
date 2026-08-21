@@ -413,12 +413,9 @@ public extension View {
 struct PlatformDefaultAnimationModifier: ViewModifier {
     let animation: Animation
     let value: AnyHashable
-    @Environment(\.accessibilityReduceMotion) private var accessibilityReduceMotion
 
     func body(content: Content) -> some View {
-        let reduceMotion = PlatformReduceMotionPreference.effectiveReduceMotionEnabled(
-            accessibilityReduceMotion: accessibilityReduceMotion
-        )
+        let reduceMotion = PlatformReduceMotionPreference.isReduceMotionEnabled
         if let resolved = PlatformReduceMotionPreference.resolvedAnimation(
             animation,
             reduceMotionEnabled: reduceMotion
@@ -433,14 +430,10 @@ struct PlatformDefaultAnimationModifier: ViewModifier {
 struct PlatformOptionalAnimationModifier: ViewModifier {
     let animation: Animation?
     let value: AnyHashable
-    @Environment(\.accessibilityReduceMotion) private var accessibilityReduceMotion
 
     @ViewBuilder
     func body(content: Content) -> some View {
-        let reduceMotion = PlatformReduceMotionPreference.effectiveReduceMotionEnabled(
-            accessibilityReduceMotion: accessibilityReduceMotion
-        )
-        if reduceMotion {
+        if PlatformReduceMotionPreference.isReduceMotionEnabled {
             content.animation(.none, value: value).automaticCompliance()
         } else {
             content.animation(animation, value: value).automaticCompliance()
