@@ -285,7 +285,6 @@ struct DynamicFormFieldStandardContainer<Content: View>: View {
     let field: DynamicFormField
     let componentName: String
     private let content: () -> Content
-    @Environment(\.dynamicFormFieldResolvedDisplayLabel) private var resolvedDisplayLabel
 
     init(field: DynamicFormField, componentName: String, @ViewBuilder content: @escaping () -> Content) {
         self.field = field
@@ -294,11 +293,24 @@ struct DynamicFormFieldStandardContainer<Content: View>: View {
     }
 
     var body: some View {
+        UnhostedInspection.split(
+            unhosted: {
+                container(accessibilityLabel: field.label)
+            },
+            hosted: {
+                DynamicFormFieldResolvedDisplayLabelReader(field: field) { label in
+                    container(accessibilityLabel: label)
+                }
+            }
+        )
+    }
+
+    private func container(accessibilityLabel: String) -> some View {
         platformVStackContainer(alignment: .leading, spacing: 4) {
             content()
         }
         .padding()
-        .environment(\.accessibilityIdentifierLabel, resolvedDisplayLabel ?? field.label)
+        .environment(\.accessibilityIdentifierLabel, accessibilityLabel)
         .automaticCompliance(named: componentName)
     }
 }
@@ -493,8 +505,6 @@ public struct DynamicTextField: View {
     let field: DynamicFormField
     @ObservedObject var formState: DynamicFormState
     @FocusState private var isFocused: Bool
-    @Environment(\.dynamicFormFieldLocalizationResolver) private var localizationResolver
-    @Environment(\.dynamicFormLocalizationNamespace) private var localizationNamespace
 
     public init(field: DynamicFormField, formState: DynamicFormState) {
         self.field = field
@@ -502,8 +512,24 @@ public struct DynamicTextField: View {
     }
 
     public var body: some View {
+        UnhostedInspection.split(
+            unhosted: {
+                textFieldShell(resolver: nil, namespace: nil)
+            },
+            hosted: {
+                DynamicFormLocalizationEnvironmentReader { resolver, namespace in
+                    textFieldShell(resolver: resolver, namespace: namespace)
+                }
+            }
+        )
+    }
+
+    private func textFieldShell(
+        resolver: DynamicFormFieldLocalizationResolver?,
+        namespace: String?
+    ) -> some View {
         field.fieldContainer(content: {
-            fieldContent
+            fieldContent(resolver: resolver, namespace: namespace)
         }, componentName: "DynamicTextField")
         .onChange(of: formState.focusedFieldId) { oldValue, newValue in
             // Sync focus state with formState
@@ -521,12 +547,15 @@ public struct DynamicTextField: View {
     
     /// Field content view - extracted to simplify type checking
     @ViewBuilder
-    private var fieldContent: some View {
+    private func fieldContent(
+        resolver: DynamicFormFieldLocalizationResolver?,
+        namespace: String?
+    ) -> some View {
         field.fieldLabel()
 
         // Check if field should render as picker based on hints
         if field.shouldRenderAsPicker {
-            pickerContent
+            pickerContent(resolver: resolver, namespace: namespace)
         } else {
             textFieldWithActions
         }
@@ -537,12 +566,15 @@ public struct DynamicTextField: View {
     
     /// Picker content view
     @ViewBuilder
-    private var pickerContent: some View {
+    private func pickerContent(
+        resolver: DynamicFormFieldLocalizationResolver?,
+        namespace: String?
+    ) -> some View {
         let i18n = InternationalizationService()
         let pickerLabel = field.resolvedPlaceholderDisplay(
             frameworkDefault: i18n.placeholderSelect(),
-            resolver: localizationResolver,
-            namespace: localizationNamespace
+            resolver: resolver,
+            namespace: namespace
         )
 
         // Prefer pickerOptions from displayHints (PickerOption type) for platformPicker (no AnyView — Issue 178)
@@ -701,8 +733,6 @@ public struct DynamicEmailField: View {
     let field: DynamicFormField
     @ObservedObject var formState: DynamicFormState
     @FocusState private var isFocused: Bool
-    @Environment(\.dynamicFormFieldLocalizationResolver) private var localizationResolver
-    @Environment(\.dynamicFormLocalizationNamespace) private var localizationNamespace
 
     public init(field: DynamicFormField, formState: DynamicFormState) {
         self.field = field
@@ -710,11 +740,27 @@ public struct DynamicEmailField: View {
     }
 
     public var body: some View {
+        UnhostedInspection.split(
+            unhosted: {
+                emailFieldShell(resolver: nil, namespace: nil)
+            },
+            hosted: {
+                DynamicFormLocalizationEnvironmentReader { resolver, namespace in
+                    emailFieldShell(resolver: resolver, namespace: namespace)
+                }
+            }
+        )
+    }
+
+    private func emailFieldShell(
+        resolver: DynamicFormFieldLocalizationResolver?,
+        namespace: String?
+    ) -> some View {
         let i18n = InternationalizationService()
         let placeholderText = field.resolvedPlaceholderDisplay(
             frameworkDefault: i18n.localizedString(for: "SixLayerFramework.form.placeholder.enterEmail"),
-            resolver: localizationResolver,
-            namespace: localizationNamespace
+            resolver: resolver,
+            namespace: namespace
         )
         return field.fieldContainer(content: {
             field.fieldLabel()
@@ -747,6 +793,22 @@ public struct DynamicEmailField: View {
     }
 }
 
+/// Hosted-only Environment reader for password field localization and security (#435).
+private struct DynamicPasswordFieldEnvironmentReader<Content: View>: View {
+    @Environment(\.dynamicFormFieldLocalizationResolver) private var localizationResolver
+    @Environment(\.dynamicFormLocalizationNamespace) private var localizationNamespace
+    @Environment(\.securityService) private var securityService
+    let content: (DynamicFormFieldLocalizationResolver?, String?, SecurityService?) -> Content
+
+    init(content: @escaping (DynamicFormFieldLocalizationResolver?, String?, SecurityService?) -> Content) {
+        self.content = content
+    }
+
+    var body: some View {
+        content(localizationResolver, localizationNamespace, securityService)
+    }
+}
+
 /// Password field component
 /// TDD RED PHASE: This is a stub implementation for testing
 @MainActor
@@ -754,9 +816,6 @@ public struct DynamicPasswordField: View {
     let field: DynamicFormField
     @ObservedObject var formState: DynamicFormState
     @FocusState private var isFocused: Bool
-    @Environment(\.securityService) private var securityService
-    @Environment(\.dynamicFormFieldLocalizationResolver) private var localizationResolver
-    @Environment(\.dynamicFormLocalizationNamespace) private var localizationNamespace
 
     public init(field: DynamicFormField, formState: DynamicFormState) {
         self.field = field
@@ -764,11 +823,32 @@ public struct DynamicPasswordField: View {
     }
 
     public var body: some View {
+        UnhostedInspection.split(
+            unhosted: {
+                passwordFieldShell(resolver: nil, namespace: nil, securityService: nil)
+            },
+            hosted: {
+                DynamicPasswordFieldEnvironmentReader { resolver, namespace, securityService in
+                    passwordFieldShell(
+                        resolver: resolver,
+                        namespace: namespace,
+                        securityService: securityService
+                    )
+                }
+            }
+        )
+    }
+
+    private func passwordFieldShell(
+        resolver: DynamicFormFieldLocalizationResolver?,
+        namespace: String?,
+        securityService: SecurityService?
+    ) -> some View {
         let i18n = InternationalizationService()
         let placeholderText = field.resolvedPlaceholderDisplay(
             frameworkDefault: i18n.localizedString(for: "SixLayerFramework.form.placeholder.enterPassword"),
-            resolver: localizationResolver,
-            namespace: localizationNamespace
+            resolver: resolver,
+            namespace: namespace
         )
         return field.fieldContainer(content: {
             field.fieldLabel()
