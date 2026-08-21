@@ -1338,7 +1338,7 @@ public struct BasicAutomaticComplianceModifier: ViewModifier {
         }
     }
 
-    fileprivate func applyingCompliance<V: View>(to content: V, locallyDisabled: Bool) -> some View {
+    fileprivate func applyingCompliance<AppliedContent: View>(to content: AppliedContent, locallyDisabled: Bool) -> some View {
         // CRITICAL DEBUG: Verify identifierName is preserved in the modifier
         // Store the property value to ensure it's not lost during SwiftUI evaluation
         let storedIdentifierName = self.identifierName
