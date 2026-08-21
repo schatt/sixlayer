@@ -382,8 +382,16 @@ public struct MaterialAccessibilityEnhancedView<Content: View>: View {
     }
     
     public var body: some View {
-        content()
-            .environmentObject(materialManager)
-            .accessibilityElement(children: .combine)
+        UnhostedInspection.split(
+            unhosted: {
+                content()
+                    .accessibilityElement(children: .combine)
+            },
+            hosted: {
+                content()
+                    .environmentObject(materialManager)
+                    .accessibilityElement(children: .combine)
+            }
+        )
     }
 }
