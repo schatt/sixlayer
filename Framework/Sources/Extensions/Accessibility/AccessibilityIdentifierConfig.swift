@@ -70,7 +70,10 @@ public final class AccessibilityIdentifierConfig: @unchecked Sendable {
     /// this returns `false` so generation matches inspect()'s actual (default) Environment.
     @MainActor
     public static func resolvedAutomaticIdentifiersLocallyDisabled(environmentValue: Bool) -> Bool {
-        environmentValue
+        if unhostedInspection {
+            return false
+        }
+        return environmentValue
     }
     
     /// Shared instance for global configuration (PRODUCTION ONLY)
