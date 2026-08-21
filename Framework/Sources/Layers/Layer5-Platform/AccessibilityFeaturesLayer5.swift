@@ -245,20 +245,29 @@ public struct AccessibilityEnhancedView<Content: View>: View {
     }
     
     public var body: some View {
+        // Stable component name so hosted + debug-log compliance checks find
+        // `accessibility-enhanced` (matches `*accessibility-enhanced*` in tests; legacy macOS used `.main.element.accessibility-enhanced-*`).
+        // inspect() cannot install @StateObject; skip those wrappers on the unhosted path (#435).
         AccessibilityHostingView {
-            content()
-                .environmentObject(voiceOverManager)
-                .environmentObject(keyboardManager)
-                .environmentObject(highContrastManager)
-                .environmentObject(testingManager)
-                .onAppear {
-                    if config.enableVoiceOver {
-                        voiceOverManager.announce("View loaded", priority: .normal)
-                    }
+            UnhostedInspection.split(
+                unhosted: {
+                    content()
+                        .automaticCompliance(identifierName: "accessibility-enhanced", identifierElementType: "View")
+                },
+                hosted: {
+                    content()
+                        .environmentObject(voiceOverManager)
+                        .environmentObject(keyboardManager)
+                        .environmentObject(highContrastManager)
+                        .environmentObject(testingManager)
+                        .onAppear {
+                            if config.enableVoiceOver {
+                                voiceOverManager.announce("View loaded", priority: .normal)
+                            }
+                        }
+                        .automaticCompliance(identifierName: "accessibility-enhanced", identifierElementType: "View")
                 }
-                // Stable component name so hosted + debug-log compliance checks find
-                // `accessibility-enhanced` (matches `*accessibility-enhanced*` in tests; legacy macOS used `.main.element.accessibility-enhanced-*`).
-                .automaticCompliance(identifierName: "accessibility-enhanced", identifierElementType: "View")
+            )
         }
     }
 }
@@ -280,9 +289,17 @@ public struct VoiceOverEnabledView<Content: View>: View {
         // make outer `.exactNamed` host-sentinel ids unreadable via XCUI (`identifier` empty)
         // while still matching the query (#371 / #364). Inject VO manager + compliance only,
         // same shape as `keyboardNavigable` / `highContrastEnabled`.
-        content()
-            .environmentObject(voiceOverManager)
-            .automaticCompliance(identifierName: "voiceOverEnabled", identifierElementType: "View")
+        UnhostedInspection.split(
+            unhosted: {
+                content()
+                    .automaticCompliance(identifierName: "voiceOverEnabled", identifierElementType: "View")
+            },
+            hosted: {
+                content()
+                    .environmentObject(voiceOverManager)
+                    .automaticCompliance(identifierName: "voiceOverEnabled", identifierElementType: "View")
+            }
+        )
     }
 }
 
@@ -298,29 +315,37 @@ public struct KeyboardNavigableView<Content: View>: View {
     }
     
     public var body: some View {
-        Group {
-            #if os(watchOS)
-            content()
-                .environmentObject(keyboardManager)
-            #else
-            if #available(iOS 17.0, macOS 14.0, *) {
+        UnhostedInspection.split(
+            unhosted: {
                 content()
-                    .environmentObject(keyboardManager)
-                    .onKeyPress(.tab) {
-                        keyboardManager.moveFocus(direction: .next)
-                        return .handled
+                    .automaticCompliance(identifierName: "keyboardNavigable", identifierElementType: "View")
+            },
+            hosted: {
+                Group {
+                    #if os(watchOS)
+                    content()
+                        .environmentObject(keyboardManager)
+                    #else
+                    if #available(iOS 17.0, macOS 14.0, *) {
+                        content()
+                            .environmentObject(keyboardManager)
+                            .onKeyPress(.tab) {
+                                keyboardManager.moveFocus(direction: .next)
+                                return .handled
+                            }
+                            .onKeyPress(.tab, phases: .down) { _ in
+                                keyboardManager.moveFocus(direction: .previous)
+                                return .handled
+                            }
+                    } else {
+                        content()
+                            .environmentObject(keyboardManager)
                     }
-                    .onKeyPress(.tab, phases: .down) { _ in
-                        keyboardManager.moveFocus(direction: .previous)
-                        return .handled
-                    }
-            } else {
-                content()
-                    .environmentObject(keyboardManager)
+                    #endif
+                }
+                .automaticCompliance(identifierName: "keyboardNavigable", identifierElementType: "View")
             }
-            #endif
-        }
-        .automaticCompliance(identifierName: "keyboardNavigable", identifierElementType: "View")
+        )
     }
 }
 
@@ -336,10 +361,18 @@ public struct HighContrastEnabledView<Content: View>: View {
     }
     
     public var body: some View {
-        content()
-            .environmentObject(highContrastManager)
-            .preferredColorScheme(highContrastManager.isHighContrastEnabled ? .dark : nil)
-            .automaticCompliance(identifierName: "highContrastEnabled", identifierElementType: "View")
+        UnhostedInspection.split(
+            unhosted: {
+                content()
+                    .automaticCompliance(identifierName: "highContrastEnabled", identifierElementType: "View")
+            },
+            hosted: {
+                content()
+                    .environmentObject(highContrastManager)
+                    .preferredColorScheme(highContrastManager.isHighContrastEnabled ? .dark : nil)
+                    .automaticCompliance(identifierName: "highContrastEnabled", identifierElementType: "View")
+            }
+        )
     }
 }
 
