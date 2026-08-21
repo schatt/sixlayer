@@ -68,4 +68,21 @@ struct AccessibilityIdentifierConfigResolutionTests {
             )
         }
     }
+
+    @Test @MainActor
+    func unhostedInspectionSelectUsesHostedBranchByDefault() {
+        let selected = UnhostedInspection.select(unhosted: { "unhosted" }, hosted: { "hosted" })
+        #expect(selected == "hosted")
+    }
+
+    @Test @MainActor
+    func unhostedInspectionSelectUsesUnhostedBranchWhenInspecting() {
+        AccessibilityIdentifierConfig.withUnhostedInspection {
+            let selected = UnhostedInspection.select(unhosted: { "unhosted" }, hosted: { "hosted" })
+            #expect(
+                selected == "unhosted",
+                "inspect() cannot install Environment or StateObject; unhosted branch must run"
+            )
+        }
+    }
 }
