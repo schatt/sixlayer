@@ -117,11 +117,14 @@ private struct OCRWithVisualCorrectionWrapper: View {
     let context: OCRContext
     let configuration: OCROverlayConfiguration
     let onResult: (OCRResult) -> Void
+
+    @Environment(\.sixLayerOCRService) private var injectedOCRService
     
     @State private var isProcessing = false
     @State private var ocrResult: OCRResult?
     @State private var errorMessage: String?
     @State private var showOverlay = false
+    @State private var processingGeneration = 0
     
     init(
         image: PlatformImage,
@@ -159,9 +162,8 @@ private struct OCRWithVisualCorrectionWrapper: View {
             }
         }
         .automaticCompliance(named: "platformOCRWithVisualCorrection_L1")
-        .task {
-            // Process image when view appears
-            processImage()
+        .task(id: processingGeneration) {
+            await processImage()
         }
     }
     
@@ -201,7 +203,7 @@ private struct OCRWithVisualCorrectionWrapper: View {
                 .multilineTextAlignment(.center)
             
             Button(i18n.localizedString(for: "SixLayerFramework.button.retry")) {
-                processImage()
+                processingGeneration += 1
             }
             .buttonStyle(.borderedProminent)
         }
@@ -226,7 +228,7 @@ private struct OCRWithVisualCorrectionWrapper: View {
                 .multilineTextAlignment(.center)
             
             Button(i18n.localizedString(for: "SixLayerFramework.ocr.startOCR")) {
-                processImage()
+                processingGeneration += 1
             }
             .buttonStyle(.borderedProminent)
         }
@@ -235,39 +237,36 @@ private struct OCRWithVisualCorrectionWrapper: View {
     
     // MARK: - Processing Logic
     
-    private func processImage() {
+    private func processImage() async {
         isProcessing = true
         errorMessage = nil
         ocrResult = nil
         showOverlay = false
-        
-        Task {
-            do {
-                let service = OCRServiceFactory.create()
-                let result = try await service.processImage(
-                    image,
-                    context: context,
-                    strategy: OCRStrategy(
-                        supportedTextTypes: context.textTypes,
-                        supportedLanguages: [context.language],
-                        processingMode: .standard,
-                        requiresNeuralEngine: false,
-                        estimatedProcessingTime: 1.0
-                    )
+
+        do {
+            let service = OCRServiceFactory.resolve(injected: injectedOCRService)
+            let result = try await service.processImage(
+                image,
+                context: context,
+                strategy: OCRStrategy(
+                    supportedTextTypes: context.textTypes,
+                    supportedLanguages: [context.language],
+                    processingMode: .standard,
+                    requiresNeuralEngine: false,
+                    estimatedProcessingTime: 1.0
                 )
-                
-                await MainActor.run {
-                    self.isProcessing = false
-                    self.ocrResult = result
-                    self.showOverlay = true
-                    self.onResult(result)
-                }
-            } catch {
-                await MainActor.run {
-                    self.isProcessing = false
-                    self.errorMessage = error.localizedDescription
-                }
-            }
+            )
+            guard !Task.isCancelled else { return }
+            isProcessing = false
+            ocrResult = result
+            showOverlay = true
+            onResult(result)
+        } catch is CancellationError {
+            return
+        } catch {
+            guard !Task.isCancelled else { return }
+            isProcessing = false
+            errorMessage = error.localizedDescription
         }
     }
     
@@ -339,6 +338,8 @@ private struct StructuredDataExtractionWrapper: View {
     let image: PlatformImage
     let context: OCRContext
     let onResult: (OCRResult) -> Void
+
+    @Environment(\.sixLayerOCRService) private var injectedOCRService
     
     @State private var isProcessing = false
     @State private var progress: Double = 0.0
@@ -368,23 +369,24 @@ private struct StructuredDataExtractionWrapper: View {
             }
         }
         .automaticCompliance(named: "platformExtractStructuredData_L1")
-        .onAppear {
-            startStructuredExtraction()
+        .task {
+            await startStructuredExtraction()
         }
     }
     
-    private func startStructuredExtraction() {
+    private func startStructuredExtraction() async {
         guard !isProcessing else { return }
         
         isProcessing = true
         progress = 0.0
         error = nil
         result = nil
-        
-        Task {
-            do {
-                let service = OCRService()
-                let _ = try await service.processImage(
+
+        do {
+            let service = OCRServiceFactory.resolve(injected: injectedOCRService)
+            let structuredResult: OCRResult
+            if let concrete = service as? OCRService {
+                let _ = try await concrete.processImage(
                     image,
                     context: context,
                     strategy: OCRStrategy(
@@ -393,23 +395,31 @@ private struct StructuredDataExtractionWrapper: View {
                         processingMode: .accurate
                     )
                 )
-                
-                // Perform structured extraction
-                let structuredResult = try await service.processStructuredExtraction(image, context: context)
-                
-                await MainActor.run {
-                    self.result = structuredResult
-                    self.isProcessing = false
-                    self.progress = 1.0
-                    onResult(structuredResult)
-                }
-            } catch {
-                await MainActor.run {
-                    self.error = error
-                    self.isProcessing = false
-                    self.progress = 0.0
-                }
+                guard !Task.isCancelled else { return }
+                structuredResult = try await concrete.processStructuredExtraction(image, context: context)
+            } else {
+                structuredResult = try await service.processImage(
+                    image,
+                    context: context,
+                    strategy: OCRStrategy(
+                        supportedTextTypes: context.textTypes,
+                        supportedLanguages: [context.language],
+                        processingMode: .accurate
+                    )
+                )
             }
+            guard !Task.isCancelled else { return }
+            result = structuredResult
+            isProcessing = false
+            progress = 1.0
+            onResult(structuredResult)
+        } catch is CancellationError {
+            return
+        } catch {
+            guard !Task.isCancelled else { return }
+            self.error = error
+            isProcessing = false
+            progress = 0.0
         }
     }
 }
