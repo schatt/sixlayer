@@ -81,13 +81,7 @@ public func processOCRForTesting(
             let result = try await service.processImage(
                 image,
                 context: context,
-                strategy: OCRStrategy(
-                    supportedTextTypes: context.textTypes,
-                    supportedLanguages: [context.language],
-                    processingMode: .standard,
-                    requiresNeuralEngine: false,
-                    estimatedProcessingTime: 1.0
-                )
+                strategy: layer1OCRStrategy(context: context, processingMode: .standard)
             )
             await MainActor.run {
                 onResult(result)
@@ -248,13 +242,7 @@ private struct OCRWithVisualCorrectionWrapper: View {
             let result = try await service.processImage(
                 image,
                 context: context,
-                strategy: OCRStrategy(
-                    supportedTextTypes: context.textTypes,
-                    supportedLanguages: [context.language],
-                    processingMode: .standard,
-                    requiresNeuralEngine: false,
-                    estimatedProcessingTime: 1.0
-                )
+                strategy: layer1OCRStrategy(context: context, processingMode: .standard)
             )
             guard !Task.isCancelled else { return }
             isProcessing = false
@@ -384,16 +372,13 @@ private struct StructuredDataExtractionWrapper: View {
 
         do {
             let service = OCRServiceFactory.resolve(injected: injectedOCRService)
+            let strategy = layer1OCRStrategy(context: context, processingMode: .accurate)
             let structuredResult: OCRResult
             if let concrete = service as? OCRService {
                 let _ = try await concrete.processImage(
                     image,
                     context: context,
-                    strategy: OCRStrategy(
-                        supportedTextTypes: context.textTypes,
-                        supportedLanguages: [context.language],
-                        processingMode: .accurate
-                    )
+                    strategy: strategy
                 )
                 guard !Task.isCancelled else { return }
                 structuredResult = try await concrete.processStructuredExtraction(image, context: context)
@@ -401,11 +386,7 @@ private struct StructuredDataExtractionWrapper: View {
                 structuredResult = try await service.processImage(
                     image,
                     context: context,
-                    strategy: OCRStrategy(
-                        supportedTextTypes: context.textTypes,
-                        supportedLanguages: [context.language],
-                        processingMode: .accurate
-                    )
+                    strategy: strategy
                 )
             }
             guard !Task.isCancelled else { return }
@@ -422,4 +403,12 @@ private struct StructuredDataExtractionWrapper: View {
             progress = 0.0
         }
     }
+}
+
+private func layer1OCRStrategy(context: OCRContext, processingMode: OCRProcessingMode) -> OCRStrategy {
+    OCRStrategy(
+        supportedTextTypes: context.textTypes,
+        supportedLanguages: [context.language],
+        processingMode: processingMode
+    )
 }
