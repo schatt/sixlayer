@@ -87,6 +87,7 @@ open class OCRLayer1TaskCancellationTests: BaseTestClass {
 
         let rssAfter = currentResidentBytes()
         let growth = rssAfter > rssBefore ? rssAfter - rssBefore : 0
+        print("OCR L1 RSS #436 before=\(rssBefore) after=\(rssAfter) growth=\(growth) bytes")
         // 64 MiB bound is generous for 12 host/teardown cycles of a hanging mock (no Vision).
         // Unbounded growth would indicate leaked tasks/images, not Mini 16 GB by itself.
         #expect(
