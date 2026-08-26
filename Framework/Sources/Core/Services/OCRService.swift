@@ -1304,9 +1304,18 @@ public class MockOCRService: OCRServiceProtocol {
 /// Factory for creating OCR services
 public class OCRServiceFactory {
     
+    /// Per-task override so tests can inject a hanging or fake service without racing `.shared`.
+    /// Production leaves this `nil`. Layer 1 OCR wrappers must call ``create()`` so cancellation tests can observe in-flight work.
+    @TaskLocal public static var testOverride: (any OCRServiceProtocol)?
+    
     /// Create an OCR service instance
     public static func create() -> OCRServiceProtocol {
-        return OCRService()
+        return testOverride ?? OCRService()
+    }
+    
+    /// Prefer a SwiftUI-injected service, then the task-local override, then a real ``OCRService``.
+    public static func resolve(injected: (any OCRServiceProtocol)?) -> any OCRServiceProtocol {
+        injected ?? create()
     }
     
     /// Create a mock OCR service for testing
@@ -1316,4 +1325,16 @@ public class OCRServiceFactory {
         return MockOCRService(mockResult: result)
     }
     */
+}
+
+private struct SixLayerOCRServiceEnvironmentKey: EnvironmentKey {
+    static let defaultValue: (any OCRServiceProtocol)? = nil
+}
+
+extension EnvironmentValues {
+    /// Optional OCR service for Layer 1 wrappers. Production leaves this unset so ``OCRServiceFactory/create()`` is used.
+    public var sixLayerOCRService: (any OCRServiceProtocol)? {
+        get { self[SixLayerOCRServiceEnvironmentKey.self] }
+        set { self[SixLayerOCRServiceEnvironmentKey.self] = newValue }
+    }
 }
