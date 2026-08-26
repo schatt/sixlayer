@@ -7,23 +7,22 @@ import SwiftUI
 /// Public EnvironmentKeys stay for ABI; generation does not read them.
 @MainActor
 public enum ThemePreference {
-    /// Stub: still prefers Environment so new tests fail for the right reason.
-    public static func resolvedPlatformStyle(environmentValue: PlatformStyle) -> PlatformStyle {
-        environmentValue
+    public static func resolvedPlatformStyle(environmentValue _: PlatformStyle) -> PlatformStyle {
+        VisualDesignSystem.shared.platformStyle
     }
 
-    /// Stub: still prefers Environment so new tests fail for the right reason.
-    public static func resolvedColorSystem(environmentValue: ColorSystem) -> ColorSystem {
-        environmentValue
+    public static func resolvedColorSystem(environmentValue _: ColorSystem) -> ColorSystem {
+        ColorSystem(
+            from: VisualDesignSystem.shared.designSystem,
+            theme: VisualDesignSystem.shared.currentTheme
+        )
     }
 
-    /// Stub: still prefers Environment so new tests fail for the right reason.
-    public static func resolvedDesignTokens(environmentValue: DesignTokens.Colors) -> DesignTokens.Colors {
-        environmentValue
+    public static func resolvedDesignTokens(environmentValue _: DesignTokens.Colors) -> DesignTokens.Colors {
+        VisualDesignSystem.shared.currentColors
     }
 
-    /// Stub: still prefers Environment so new tests fail for the right reason.
-    public static func resolvedSpacingTokens(environmentValue: DesignTokens.Spacing) -> DesignTokens.Spacing {
-        environmentValue
+    public static func resolvedSpacingTokens(environmentValue _: DesignTokens.Spacing) -> DesignTokens.Spacing {
+        VisualDesignSystem.shared.currentSpacing
     }
 }
