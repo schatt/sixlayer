@@ -40,10 +40,6 @@ public struct ThemedIntelligentFormView<DataType: Codable>: View {
     let onSubmit: (DataType) -> Void
     let onCancel: () -> Void
     
-    @Environment(\.colorSystem) private var colors
-    @Environment(\.typographySystem) private var typography
-    @Environment(\.platformStyle) private var platform
-    
     public init(
         for dataType: DataType.Type,
         initialData: DataType? = nil,
@@ -424,10 +420,6 @@ public struct ThemedResponsiveCardView: View {
     let content: AnyView
     let action: (() -> Void)?
     
-    @Environment(\.colorSystem) private var colors
-    @Environment(\.typographySystem) private var typography
-    @Environment(\.platformStyle) private var platform
-    
     public init(
         title: String,
         subtitle: String? = nil,
@@ -441,6 +433,8 @@ public struct ThemedResponsiveCardView: View {
     }
     
     public var body: some View {
+        let colors = ThemePreference.colorSystem
+        let typography = ThemePreference.typographySystem
         platformVStackContainer(alignment: .leading, spacing: 12) {
             // Header
             platformVStackContainer(alignment: .leading, spacing: 4) {
@@ -481,10 +475,6 @@ public struct ThemedGenericItemCollectionView: View {
     let title: String
     let onItemTap: (Any) -> Void
     
-    @Environment(\.colorSystem) private var colors
-    @Environment(\.typographySystem) private var typography
-    @Environment(\.platformStyle) private var platform
-    
     public init(
         items: [Any],
         title: String,
@@ -496,6 +486,8 @@ public struct ThemedGenericItemCollectionView: View {
     }
     
     public var body: some View {
+        let colors = ThemePreference.colorSystem
+        let typography = ThemePreference.typographySystem
         platformVStackContainer(alignment: .leading, spacing: 12) {
             // Header
             HStack {
@@ -538,7 +530,7 @@ public struct ThemedGenericItemCollectionView: View {
     
     private var gridColumns: [GridItem] {
         // Use PlatformStrategy for platform-specific grid column count (Issue #140)
-        let columnCount = platform.sixLayerPlatform.defaultGridColumnCount
+        let columnCount = ThemePreference.platformStyle.sixLayerPlatform.defaultGridColumnCount
         return Array(repeating: GridItem(.flexible()), count: columnCount)
     }
 }
@@ -548,10 +540,6 @@ public struct ThemedGenericNumericDataView: View {
     let data: [Double]
     let title: String
     let unit: String?
-    
-    @Environment(\.colorSystem) private var colors
-    @Environment(\.typographySystem) private var typography
-    @Environment(\.platformStyle) private var platform
     
     public init(
         data: [Double],
@@ -564,6 +552,8 @@ public struct ThemedGenericNumericDataView: View {
     }
     
     public var body: some View {
+        let colors = ThemePreference.colorSystem
+        let typography = ThemePreference.typographySystem
         platformVStackContainer(alignment: .leading, spacing: 12) {
             // Header
             HStack {
