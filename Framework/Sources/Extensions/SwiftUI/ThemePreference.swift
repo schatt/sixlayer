@@ -21,4 +21,9 @@ public enum ThemePreference {
     public static func resolvedDesignTokens(environmentValue: DesignTokens.Colors) -> DesignTokens.Colors {
         environmentValue
     }
+
+    /// Stub: still prefers Environment so new tests fail for the right reason.
+    public static func resolvedSpacingTokens(environmentValue: DesignTokens.Spacing) -> DesignTokens.Spacing {
+        environmentValue
+    }
 }
