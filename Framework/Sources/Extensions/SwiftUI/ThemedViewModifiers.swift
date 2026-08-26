@@ -99,18 +99,17 @@ public struct ThemedFormStyle: ViewModifier {
 /// Themed text field style that adapts to design system
 public struct ThemedTextFieldStyle: TextFieldStyle {
     public func _body(configuration: TextField<Self._Label>) -> some View {
-        ThemedTextFieldStyled(configuration: configuration)
+        configuration.modifier(ThemedTextFieldTokenModifier())
     }
 }
 
-private struct ThemedTextFieldStyled<Label: View>: View {
-    let configuration: TextField<Label>
-
-    var body: some View {
+/// ViewModifier body is MainActor-isolated, so it can read ThemePreference without Environment.
+private struct ThemedTextFieldTokenModifier: ViewModifier {
+    func body(content: Content) -> some View {
         let colors = ThemePreference.designTokens
         let componentStates = ThemePreference.componentStates
         let spacing = ThemePreference.spacingTokens
-        configuration
+        content
             .padding(EdgeInsets(
                 top: spacing.md,
                 leading: spacing.lg,
