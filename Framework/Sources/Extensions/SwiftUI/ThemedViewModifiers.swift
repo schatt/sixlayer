@@ -99,26 +99,30 @@ public struct ThemedFormStyle: ViewModifier {
 /// Themed text field style that adapts to design system
 public struct ThemedTextFieldStyle: TextFieldStyle {
     public func _body(configuration: TextField<Self._Label>) -> some View {
+        ThemedTextFieldStyled(configuration: configuration)
+    }
+}
+
+private struct ThemedTextFieldStyled<Label: View>: View {
+    let configuration: TextField<Label>
+
+    var body: some View {
         let colors = ThemePreference.designTokens
         let componentStates = ThemePreference.componentStates
+        let spacing = ThemePreference.spacingTokens
         configuration
-            .padding(textFieldPadding)
+            .padding(EdgeInsets(
+                top: spacing.md,
+                leading: spacing.lg,
+                bottom: spacing.md,
+                trailing: spacing.lg
+            ))
             .background(colors.surface)
             .overlay(
                 RoundedRectangle(cornerRadius: componentStates.cornerRadius.sm)
                     .stroke(colors.border, lineWidth: componentStates.borderWidth.md)
             )
             .clipShape(RoundedRectangle(cornerRadius: componentStates.cornerRadius.sm))
-    }
-
-    private var textFieldPadding: EdgeInsets {
-        let spacing = ThemePreference.spacingTokens
-        return EdgeInsets(
-            top: spacing.md,
-            leading: spacing.lg,
-            bottom: spacing.md,
-            trailing: spacing.lg
-        )
     }
 }
 
