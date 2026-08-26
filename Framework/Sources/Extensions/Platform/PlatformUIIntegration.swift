@@ -16,10 +16,10 @@ public struct PlatformUIIntegration {
         let navigationStyle: NavigationStyle
         let context: NavigationContext
         
-        @Environment(\.platformStyle) private var platform
-        @Environment(\.colorSystem) private var colors
-        @Environment(\.typographySystem) private var typography
-        @Environment(\.accessibilitySettings) private var accessibility
+        private var platform: PlatformStyle { ThemePreference.platformStyle }
+        private var colors: ColorSystem { ThemePreference.colorSystem }
+        private var typography: TypographySystem { ThemePreference.typographySystem }
+        private var accessibility: AccessibilitySettings { ThemePreference.accessibilitySettings }
         
         public init(
             title: String,
@@ -116,9 +116,9 @@ public struct PlatformUIIntegration {
         let isPresented: Binding<Bool>
         let onDismiss: (() -> Void)?
         
-        @Environment(\.platformStyle) private var platform
-        @Environment(\.colorSystem) private var colors
-        @Environment(\.typographySystem) private var typography
+        private var platform: PlatformStyle { ThemePreference.platformStyle }
+        private var colors: ColorSystem { ThemePreference.colorSystem }
+        private var typography: TypographySystem { ThemePreference.typographySystem }
         
         public init(
             title: String,
@@ -191,9 +191,9 @@ public struct PlatformUIIntegration {
         let context: ListContext
         let onAdd: (() -> Void)?
         
-        @Environment(\.platformStyle) private var platform
-        @Environment(\.colorSystem) private var colors
-        @Environment(\.typographySystem) private var typography
+        private var platform: PlatformStyle { ThemePreference.platformStyle }
+        private var colors: ColorSystem { ThemePreference.colorSystem }
+        private var typography: TypographySystem { ThemePreference.typographySystem }
         
         public init(
             _ data: Data,
@@ -283,9 +283,9 @@ public struct PlatformUIIntegration {
         let onSubmit: (() -> Void)?
         let onCancel: (() -> Void)?
         
-        @Environment(\.platformStyle) private var platform
-        @Environment(\.colorSystem) private var colors
-        @Environment(\.typographySystem) private var typography
+        private var platform: PlatformStyle { ThemePreference.platformStyle }
+        private var colors: ColorSystem { ThemePreference.colorSystem }
+        private var typography: TypographySystem { ThemePreference.typographySystem }
         
         public init(
             title: String,
@@ -396,9 +396,9 @@ public struct PlatformUIIntegration {
         let action: (() -> Void)?
         let actionTitle: String?
         
-        @Environment(\.platformStyle) private var platform
-        @Environment(\.colorSystem) private var colors
-        @Environment(\.typographySystem) private var typography
+        private var platform: PlatformStyle { ThemePreference.platformStyle }
+        private var colors: ColorSystem { ThemePreference.colorSystem }
+        private var typography: TypographySystem { ThemePreference.typographySystem }
         
         public init(
             title: String? = nil,
