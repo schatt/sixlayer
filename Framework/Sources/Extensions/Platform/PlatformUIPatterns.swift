@@ -16,9 +16,7 @@ public struct AdaptiveUIPatterns {
         let navigationStyle: NavigationStyle
         let context: NavigationContext
         
-        @Environment(\.platformStyle) private var platform
-        @Environment(\.colorSystem) private var colors
-        @Environment(\.typographySystem) private var typography
+        private var platform: PlatformStyle { ThemePreference.platformStyle }
         
         public init(
             style: NavigationStyle = .adaptive,
@@ -141,8 +139,7 @@ public struct AdaptiveUIPatterns {
         let isPresented: Binding<Bool>
         let onDismiss: (() -> Void)?
         
-        @Environment(\.platformStyle) private var platform
-        @Environment(\.colorSystem) private var colors
+        private var platform: PlatformStyle { ThemePreference.platformStyle }
         
         public init(
             isPresented: Binding<Bool>,
@@ -229,9 +226,7 @@ public struct AdaptiveUIPatterns {
         let listStyle: ListStyle
         let context: ListContext
         
-        @Environment(\.platformStyle) private var platform
-        @Environment(\.colorSystem) private var colors
-        @Environment(\.typographySystem) private var typography
+        private var platform: PlatformStyle { ThemePreference.platformStyle }
         
         public init(
             _ data: Data,
@@ -371,10 +366,9 @@ public struct AdaptiveUIPatterns {
         let size: ButtonSize
         let action: () -> Void
         
-        @Environment(\.platformStyle) private var platform
-        @Environment(\.colorSystem) private var colors
-        @Environment(\.typographySystem) private var typography
-        @Environment(\.accessibilitySettings) private var accessibility
+        private var platform: PlatformStyle { ThemePreference.platformStyle }
+        private var colors: ColorSystem { ThemePreference.colorSystem }
+        private var typography: TypographySystem { ThemePreference.typographySystem }
         
         public init(
             _ title: String,
@@ -410,8 +404,8 @@ public struct AdaptiveUIPatterns {
                 .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
             }
             .buttonStyle(PlainButtonStyle())
-            .scaleEffect(accessibility.reducedMotion ? 1.0 : 0.95)
-            .animation(accessibility.reducedMotion ? nil : .easeInOut(duration: 0.1), value: false)
+            .scaleEffect(PlatformReduceMotionPreference.isReduceMotionEnabled ? 1.0 : 0.95)
+            .animation(PlatformReduceMotionPreference.isReduceMotionEnabled ? nil : .easeInOut(duration: 0.1), value: false)
             .accessibilityLabel(title)
             .accessibilityAddTraits(.isButton)
             .environment(\.accessibilityIdentifierLabel, title)
