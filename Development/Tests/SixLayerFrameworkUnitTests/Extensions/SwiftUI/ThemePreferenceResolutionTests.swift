@@ -6,7 +6,6 @@
 //  never from SwiftUI Environment (inspect() cannot install Environment; #435).
 //
 
-import SwiftUI
 import Testing
 @testable import SixLayerFramework
 
@@ -25,27 +24,17 @@ struct ThemePreferenceResolutionTests {
     }
 
     @Test @MainActor
-    func resolvedColorSystemIgnoresEnvironmentInstance() {
-        let shared = ColorSystem(
-            from: VisualDesignSystem.shared.designSystem,
-            theme: VisualDesignSystem.shared.currentTheme
-        )
-        let environment = ColorSystem(from: HighContrastDesignSystem(), theme: .dark)
-        let resolved = ThemePreference.resolvedColorSystem(environmentValue: environment)
+    func resolvedSpacingTokensIgnoreEnvironmentInstance() {
+        let shared = VisualDesignSystem.shared.currentSpacing
+        let environment = HighContrastDesignSystem().spacing()
+        let resolved = ThemePreference.resolvedSpacingTokens(environmentValue: environment)
         #expect(
-            resolved.primary == shared.primary,
-            "inspect() cannot install Environment; color system must come from VisualDesignSystem.shared"
+            resolved.md == shared.md,
+            "inspect() cannot install Environment; spacing tokens must come from VisualDesignSystem.shared"
         )
-    }
-
-    @Test @MainActor
-    func resolvedDesignTokensIgnoreEnvironmentInstance() {
-        let shared = VisualDesignSystem.shared.currentColors
-        let environment = HighContrastDesignSystem().colors(for: .dark)
-        let resolved = ThemePreference.resolvedDesignTokens(environmentValue: environment)
         #expect(
-            resolved.primary == shared.primary,
-            "inspect() cannot install Environment; design tokens must come from VisualDesignSystem.shared"
+            environment.md != shared.md,
+            "HighContrast spacing must differ from shared so this test can observe Environment being ignored"
         )
     }
 }
