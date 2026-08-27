@@ -77,3 +77,43 @@ public enum ThemePreference {
         )
     }
 }
+
+/// Hosted branch reads Environment; unhosted uses ThemePreference so inspect() does not.
+public extension UnhostedInspection {
+    @ViewBuilder
+    static func withThemeTokens<V: View>(
+        @ViewBuilder _ content: @escaping (ThemeTokens) -> V
+    ) -> some View {
+        split(
+            unhosted: { content(ThemePreference.current) },
+            hosted: { ThemeEnvironmentReader(content: content) }
+        )
+    }
+}
+
+/// Instantiated only on the hosted split so inspect() does not touch theme Environment keys.
+private struct ThemeEnvironmentReader<Content: View>: View {
+    @Environment(\.platformStyle) private var platformStyle
+    @Environment(\.colorSystem) private var colorSystem
+    @Environment(\.typographySystem) private var typographySystem
+    @Environment(\.designTokens) private var designTokens
+    @Environment(\.spacingTokens) private var spacingTokens
+    @Environment(\.componentStates) private var componentStates
+    @Environment(\.accessibilitySettings) private var accessibilitySettings
+
+    let content: (ThemeTokens) -> Content
+
+    var body: some View {
+        content(
+            ThemeTokens(
+                platformStyle: platformStyle,
+                colorSystem: colorSystem,
+                typographySystem: typographySystem,
+                designTokens: designTokens,
+                spacingTokens: spacingTokens,
+                componentStates: componentStates,
+                accessibilitySettings: accessibilitySettings
+            )
+        )
+    }
+}
