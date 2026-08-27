@@ -7,6 +7,7 @@
 //  production still reads Environment via UnhostedInspection.withThemeTokens (#435).
 //
 
+import CoreGraphics
 import Testing
 @testable import SixLayerFramework
 
