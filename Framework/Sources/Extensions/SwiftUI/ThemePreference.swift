@@ -40,7 +40,7 @@ public enum ThemePreference {
     @TaskLocal public static var testOverride: ThemeTokens?
 
     public static var current: ThemeTokens {
-        tokensFromShared
+        testOverride ?? tokensFromShared
     }
 
     public static var platformStyle: PlatformStyle { current.platformStyle }
@@ -51,13 +51,11 @@ public enum ThemePreference {
     public static var componentStates: DesignTokens.ComponentStates { current.componentStates }
     public static var accessibilitySettings: AccessibilitySettings { current.accessibilitySettings }
 
-    /// Stub: does not bind task-local so override tests fail at runtime.
     public static func withTestOverride<T>(
         _ tokens: ThemeTokens,
         _ body: () throws -> T
     ) rethrows -> T {
-        _ = tokens
-        return try body()
+        try $testOverride.withValue(tokens, operation: body)
     }
 
     private static var tokensFromShared: ThemeTokens {
