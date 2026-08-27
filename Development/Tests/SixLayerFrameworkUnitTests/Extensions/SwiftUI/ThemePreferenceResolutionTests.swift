@@ -40,9 +40,9 @@ struct ThemePreferenceResolutionTests {
     @Test @MainActor
     func withTestOverrideHonorsTaskLocalSpacing() {
         var override = ThemePreference.current
-        let sentinelMd = override.spacingTokens.md == 99 ? 97 : 99
+        let sentinelMd: CGFloat = override.spacingTokens.md == 99.0 ? 97.0 : 99.0
         override.spacingTokens = DesignTokens.Spacing(
-            xs: 1, sm: 2, md: sentinelMd, lg: 4, xl: 5, xxl: 6
+            xs: 1.0, sm: 2.0, md: sentinelMd, lg: 4.0, xl: 5.0, xxl: 6.0
         )
         ThemePreference.withTestOverride(override) {
             #expect(ThemePreference.current.spacingTokens.md == sentinelMd)
