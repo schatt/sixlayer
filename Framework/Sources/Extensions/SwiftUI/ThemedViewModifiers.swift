@@ -22,47 +22,52 @@ public enum ButtonSize: String, CaseIterable {
 /// Themed card style that adapts to platform and theme
 public struct ThemedCardStyle: ViewModifier {
     public func body(content: Content) -> some View {
-        let colors = ThemePreference.designTokens
-        let componentStates = ThemePreference.componentStates
-        content
-            .background(colors.surface)
-            .clipShape(RoundedRectangle(cornerRadius: componentStates.cornerRadius.md))
-            .overlay(
-                RoundedRectangle(cornerRadius: componentStates.cornerRadius.md)
-                    .stroke(colors.border, lineWidth: componentStates.borderWidth.sm)
-            )
-            .shadow(
-                color: componentStates.shadow.md.color,
-                radius: componentStates.shadow.md.radius,
-                x: componentStates.shadow.md.x,
-                y: componentStates.shadow.md.y
-            )
+        UnhostedInspection.withThemeTokens { tokens in
+            let colors = tokens.designTokens
+            let componentStates = tokens.componentStates
+            content
+                .background(colors.surface)
+                .clipShape(RoundedRectangle(cornerRadius: componentStates.cornerRadius.md))
+                .overlay(
+                    RoundedRectangle(cornerRadius: componentStates.cornerRadius.md)
+                        .stroke(colors.border, lineWidth: componentStates.borderWidth.sm)
+                )
+                .shadow(
+                    color: componentStates.shadow.md.color,
+                    radius: componentStates.shadow.md.radius,
+                    x: componentStates.shadow.md.x,
+                    y: componentStates.shadow.md.y
+                )
+        }
     }
 }
 
 /// Themed list style that adapts to platform
 public struct ThemedListStyle: ViewModifier {
     public func body(content: Content) -> some View {
-        let colors = ThemePreference.colorSystem
-        content
-            #if os(iOS)
-            .listStyle(.insetGrouped)
-            #elseif os(macOS)
-            .listStyle(.sidebar)
-            #else
-            .listStyle(.plain)
-            #endif
-            .modifier(ScrollContentBackgroundModifier())
-            .background(colors.background)
+        UnhostedInspection.withThemeTokens { tokens in
+            content
+                #if os(iOS)
+                .listStyle(.insetGrouped)
+                #elseif os(macOS)
+                .listStyle(.sidebar)
+                #else
+                .listStyle(.plain)
+                #endif
+                .modifier(ScrollContentBackgroundModifier())
+                .background(tokens.colorSystem.background)
+        }
     }
 }
 
 /// Themed navigation style that adapts to platform
 public struct ThemedNavigationStyle: ViewModifier {
     public func body(content: Content) -> some View {
-        content
-            .navigationViewStyle(navigationViewStyle)
-            .background(ThemePreference.colorSystem.background)
+        UnhostedInspection.withThemeTokens { tokens in
+            content
+                .navigationViewStyle(navigationViewStyle)
+                .background(tokens.colorSystem.background)
+        }
     }
 
     private var navigationViewStyle: some NavigationViewStyle {
@@ -79,19 +84,17 @@ public struct ThemedNavigationStyle: ViewModifier {
 /// Themed form style that adapts to platform
 public struct ThemedFormStyle: ViewModifier {
     public func body(content: Content) -> some View {
-        let colors = ThemePreference.colorSystem
-        let platform = ThemePreference.platformStyle
-        // Use PlatformStrategy to determine form style preference (Issue #140)
-        // Apply style directly to avoid Swift's type system limitations with `some FormStyle`
-        switch platform.sixLayerPlatform.defaultFormStylePreference {
-        case .grouped:
-            return AnyView(content
-                .formStyle(.grouped)
-                .background(colors.background))
-        case .automatic:
-            return AnyView(content
-                .formStyle(.automatic)
-                .background(colors.background))
+        UnhostedInspection.withThemeTokens { tokens in
+            switch tokens.platformStyle.sixLayerPlatform.defaultFormStylePreference {
+            case .grouped:
+                AnyView(content
+                    .formStyle(.grouped)
+                    .background(tokens.colorSystem.background))
+            case .automatic:
+                AnyView(content
+                    .formStyle(.automatic)
+                    .background(tokens.colorSystem.background))
+            }
         }
     }
 }
@@ -103,25 +106,27 @@ public struct ThemedTextFieldStyle: TextFieldStyle {
     }
 }
 
-/// ViewModifier body is MainActor-isolated, so it can read ThemePreference without Environment.
+/// ViewModifier body is MainActor-isolated; withThemeTokens skips Environment when unhosted.
 private struct ThemedTextFieldTokenModifier: ViewModifier {
     func body(content: Content) -> some View {
-        let colors = ThemePreference.designTokens
-        let componentStates = ThemePreference.componentStates
-        let spacing = ThemePreference.spacingTokens
-        content
-            .padding(EdgeInsets(
-                top: spacing.md,
-                leading: spacing.lg,
-                bottom: spacing.md,
-                trailing: spacing.lg
-            ))
-            .background(colors.surface)
-            .overlay(
-                RoundedRectangle(cornerRadius: componentStates.cornerRadius.sm)
-                    .stroke(colors.border, lineWidth: componentStates.borderWidth.md)
-            )
-            .clipShape(RoundedRectangle(cornerRadius: componentStates.cornerRadius.sm))
+        UnhostedInspection.withThemeTokens { tokens in
+            let colors = tokens.designTokens
+            let componentStates = tokens.componentStates
+            let spacing = tokens.spacingTokens
+            content
+                .padding(EdgeInsets(
+                    top: spacing.md,
+                    leading: spacing.lg,
+                    bottom: spacing.md,
+                    trailing: spacing.lg
+                ))
+                .background(colors.surface)
+                .overlay(
+                    RoundedRectangle(cornerRadius: componentStates.cornerRadius.sm)
+                        .stroke(colors.border, lineWidth: componentStates.borderWidth.md)
+                )
+                .clipShape(RoundedRectangle(cornerRadius: componentStates.cornerRadius.sm))
+        }
     }
 }
 
@@ -132,26 +137,28 @@ public struct ThemedLoadingIndicator: View {
     public init() {}
 
     public var body: some View {
-        let colors = ThemePreference.colorSystem
-        let reduceMotion = PlatformReduceMotionPreference.isReduceMotionEnabled
-        Group {
-            if reduceMotion {
-                Circle()
-                    .fill(colors.primary)
-                    .frame(width: 20, height: 20)
-            } else {
-                Circle()
-                    .trim(from: 0, to: 0.7)
-                    .stroke(colors.primary, lineWidth: 3)
-                    .frame(width: 20, height: 20)
-                    .rotationEffect(.degrees(isAnimating ? 360 : 0))
-                    .animation(.linear(duration: 1).repeatForever(autoreverses: false), value: isAnimating)
-                    .onAppear {
-                        isAnimating = true
-                    }
+        UnhostedInspection.withThemeTokens { tokens in
+            let colors = tokens.colorSystem
+            let reduceMotion = PlatformReduceMotionPreference.isReduceMotionEnabled
+            Group {
+                if reduceMotion {
+                    Circle()
+                        .fill(colors.primary)
+                        .frame(width: 20, height: 20)
+                } else {
+                    Circle()
+                        .trim(from: 0, to: 0.7)
+                        .stroke(colors.primary, lineWidth: 3)
+                        .frame(width: 20, height: 20)
+                        .rotationEffect(.degrees(isAnimating ? 360 : 0))
+                        .animation(.linear(duration: 1).repeatForever(autoreverses: false), value: isAnimating)
+                        .onAppear {
+                            isAnimating = true
+                        }
+                }
             }
+            .automaticCompliance(named: "ThemedLoadingIndicator")
         }
-        .automaticCompliance(named: "ThemedLoadingIndicator")
     }
 }
 
@@ -166,22 +173,24 @@ public struct ThemedProgressBar: View {
     }
 
     public var body: some View {
-        let colors = ThemePreference.designTokens
-        let componentStates = ThemePreference.componentStates
-        GeometryReader { geometry in
-            ZStack(alignment: .leading) {
-                RoundedRectangle(cornerRadius: componentStates.cornerRadius.sm)
-                    .fill(colors.surface)
-                    .frame(height: 4)
+        UnhostedInspection.withThemeTokens { tokens in
+            let colors = tokens.designTokens
+            let componentStates = tokens.componentStates
+            GeometryReader { geometry in
+                ZStack(alignment: .leading) {
+                    RoundedRectangle(cornerRadius: componentStates.cornerRadius.sm)
+                        .fill(colors.surface)
+                        .frame(height: 4)
 
-                RoundedRectangle(cornerRadius: componentStates.cornerRadius.sm)
-                    .fill(progressColor(colors: colors))
-                    .frame(width: geometry.size.width * progress, height: 4)
-                    .animation(.easeInOut(duration: 0.3), value: progress)
+                    RoundedRectangle(cornerRadius: componentStates.cornerRadius.sm)
+                        .fill(progressColor(colors: colors))
+                        .frame(width: geometry.size.width * progress, height: 4)
+                        .animation(.easeInOut(duration: 0.3), value: progress)
+                }
             }
+            .frame(height: 4)
+            .automaticCompliance(named: "ThemedProgressBar")
         }
-        .frame(height: 4)
-        .automaticCompliance(named: "ThemedProgressBar")
     }
 
     private func progressColor(colors: DesignTokens.Colors) -> Color {
