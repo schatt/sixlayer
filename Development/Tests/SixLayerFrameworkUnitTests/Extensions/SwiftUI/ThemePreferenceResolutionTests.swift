@@ -2,8 +2,9 @@
 //  ThemePreferenceResolutionTests.swift
 //  SixLayerFrameworkTests
 //
-//  Themed modifiers must resolve tokens from VisualDesignSystem.shared,
-//  never from SwiftUI Environment (inspect() cannot install Environment; #435).
+//  Unhosted inspect() cannot install Environment. Theme tokens come from
+//  ThemePreference (task-local then VisualDesignSystem.shared). Hosted
+//  production still reads Environment via UnhostedInspection.withThemeTokens (#435).
 //
 
 import Testing
@@ -13,28 +14,58 @@ import Testing
 struct ThemePreferenceResolutionTests {
 
     @Test @MainActor
-    func resolvedPlatformStyleIgnoresEnvironmentInstance() {
-        let shared = VisualDesignSystem.shared.platformStyle
-        let environment: PlatformStyle = shared == .tvOS ? .watchOS : .tvOS
-        let resolved = ThemePreference.resolvedPlatformStyle(environmentValue: environment)
-        #expect(
-            resolved == shared,
-            "inspect() cannot install Environment; platform style must come from VisualDesignSystem.shared"
-        )
+    func currentPlatformStyleUsesSharedWhenNoOverride() {
+        #expect(ThemePreference.current.platformStyle == VisualDesignSystem.shared.platformStyle)
     }
 
     @Test @MainActor
-    func resolvedSpacingTokensIgnoreEnvironmentInstance() {
-        let shared = VisualDesignSystem.shared.currentSpacing
-        let environment = HighContrastDesignSystem().spacing()
-        let resolved = ThemePreference.resolvedSpacingTokens(environmentValue: environment)
-        #expect(
-            resolved.md == shared.md,
-            "inspect() cannot install Environment; spacing tokens must come from VisualDesignSystem.shared"
+    func currentSpacingUsesSharedWhenNoOverride() {
+        #expect(ThemePreference.current.spacingTokens.md == VisualDesignSystem.shared.currentSpacing.md)
+    }
+
+    @Test @MainActor
+    func withTestOverrideHonorsTaskLocalPlatformStyle() {
+        var override = ThemePreference.current
+        let sentinel: PlatformStyle = override.platformStyle == .tvOS ? .watchOS : .tvOS
+        override.platformStyle = sentinel
+        ThemePreference.withTestOverride(override) {
+            #expect(
+                ThemePreference.current.platformStyle == sentinel,
+                "task-local override must isolate parallel tests from VisualDesignSystem.shared"
+            )
+        }
+        #expect(ThemePreference.current.platformStyle == VisualDesignSystem.shared.platformStyle)
+    }
+
+    @Test @MainActor
+    func withTestOverrideHonorsTaskLocalSpacing() {
+        var override = ThemePreference.current
+        let sentinelMd = override.spacingTokens.md == 99 ? 97 : 99
+        override.spacingTokens = DesignTokens.Spacing(
+            xs: 1, sm: 2, md: sentinelMd, lg: 4, xl: 5, xxl: 6
         )
-        #expect(
-            environment.md != shared.md,
-            "HighContrast spacing must differ from shared so this test can observe Environment being ignored"
-        )
+        ThemePreference.withTestOverride(override) {
+            #expect(ThemePreference.current.spacingTokens.md == sentinelMd)
+        }
+        #expect(ThemePreference.current.spacingTokens.md == VisualDesignSystem.shared.currentSpacing.md)
+    }
+
+    @Test @MainActor
+    func withThemeTokensSelectsPreferenceWhenUnhosted() {
+        var override = ThemePreference.current
+        let sentinel: PlatformStyle = override.platformStyle == .tvOS ? .watchOS : .tvOS
+        override.platformStyle = sentinel
+        AccessibilityIdentifierConfig.withUnhostedInspection {
+            ThemePreference.withTestOverride(override) {
+                let selected = UnhostedInspection.select(
+                    unhosted: { ThemePreference.current.platformStyle },
+                    hosted: { PlatformStyle.ios }
+                )
+                #expect(
+                    selected == sentinel,
+                    "inspect() must not instantiate theme Environment; unhosted uses ThemePreference"
+                )
+            }
+        }
     }
 }
