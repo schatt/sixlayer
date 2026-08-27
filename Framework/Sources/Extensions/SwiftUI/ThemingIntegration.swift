@@ -433,9 +433,10 @@ public struct ThemedResponsiveCardView: View {
     }
     
     public var body: some View {
-        let colors = ThemePreference.colorSystem
-        let typography = ThemePreference.typographySystem
-        platformVStackContainer(alignment: .leading, spacing: 12) {
+        UnhostedInspection.withThemeTokens { tokens in
+            let colors = tokens.colorSystem
+            let typography = tokens.typographySystem
+            platformVStackContainer(alignment: .leading, spacing: 12) {
             // Header
             platformVStackContainer(alignment: .leading, spacing: 4) {
                 Text(title)
@@ -466,6 +467,7 @@ public struct ThemedResponsiveCardView: View {
         .padding()
         .themedCard()
         .automaticCompliance(named: "ThemedResponsiveCardView")
+        }
     }
 }
 
@@ -486,9 +488,10 @@ public struct ThemedGenericItemCollectionView: View {
     }
     
     public var body: some View {
-        let colors = ThemePreference.colorSystem
-        let typography = ThemePreference.typographySystem
-        platformVStackContainer(alignment: .leading, spacing: 12) {
+        UnhostedInspection.withThemeTokens { tokens in
+            let colors = tokens.colorSystem
+            let typography = tokens.typographySystem
+            platformVStackContainer(alignment: .leading, spacing: 12) {
             // Header
             HStack {
                 Text(title)
@@ -502,7 +505,7 @@ public struct ThemedGenericItemCollectionView: View {
             }
             
             // Items grid
-            LazyVGrid(columns: gridColumns, spacing: 12) {
+            LazyVGrid(columns: gridColumns(for: tokens.platformStyle), spacing: 12) {
                 ForEach(Array(items.enumerated()), id: \.offset) { index, item in
                     Button(action: { onItemTap(item) }) {
                         let i18n = InternationalizationService()
@@ -526,11 +529,12 @@ public struct ThemedGenericItemCollectionView: View {
         .padding()
         .themedCard()
         .automaticCompliance(named: "ThemedGenericItemCollectionView")
+        }
     }
     
-    private var gridColumns: [GridItem] {
+    private func gridColumns(for platform: PlatformStyle) -> [GridItem] {
         // Use PlatformStrategy for platform-specific grid column count (Issue #140)
-        let columnCount = ThemePreference.platformStyle.sixLayerPlatform.defaultGridColumnCount
+        let columnCount = platform.sixLayerPlatform.defaultGridColumnCount
         return Array(repeating: GridItem(.flexible()), count: columnCount)
     }
 }
@@ -552,9 +556,10 @@ public struct ThemedGenericNumericDataView: View {
     }
     
     public var body: some View {
-        let colors = ThemePreference.colorSystem
-        let typography = ThemePreference.typographySystem
-        platformVStackContainer(alignment: .leading, spacing: 12) {
+        UnhostedInspection.withThemeTokens { tokens in
+            let colors = tokens.colorSystem
+            let typography = tokens.typographySystem
+            platformVStackContainer(alignment: .leading, spacing: 12) {
             // Header
             HStack {
                 Text(title)
@@ -595,6 +600,7 @@ public struct ThemedGenericNumericDataView: View {
         .padding()
         .themedCard()
         .automaticCompliance(named: "ThemedGenericNumericDataView")
+        }
     }
 }
 
