@@ -349,22 +349,28 @@ public struct EyeTrackingModifier: ViewModifier {
     }
     
     public func body(content: Content) -> some View {
-        content
-            .environmentObject(eyeTrackingManager)
-            .onAppear {
-                if let config = config {
-                    eyeTrackingManager.updateConfig(config)
-                }
-                eyeTrackingManager.enable()
+        UnhostedInspection.split(
+            unhosted: {
+                content.automaticCompliance(named: "EyeTrackingModifier")
+            },
+            hosted: {
+                content
+                    .environmentObject(eyeTrackingManager)
+                    .onAppear {
+                        if let config = config {
+                            eyeTrackingManager.updateConfig(config)
+                        }
+                        eyeTrackingManager.enable()
+                    }
+                    .onDisappear {
+                        eyeTrackingManager.disable()
+                    }
+                    .overlay(
+                        EyeTrackingFeedbackOverlay(manager: eyeTrackingManager)
+                    )
+                    .automaticCompliance(named: "EyeTrackingModifier")
             }
-            .onDisappear {
-                eyeTrackingManager.disable()
-            }
-            .overlay(
-                // Visual feedback overlay
-                EyeTrackingFeedbackOverlay(manager: eyeTrackingManager)
-            )
-            .automaticCompliance(named: "EyeTrackingModifier")
+        )
     }
 }
 

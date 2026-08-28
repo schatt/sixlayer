@@ -53,4 +53,12 @@ open class PlatformSystemZoomPreferenceTests: BaseTestClass {
         #expect(PlatformSystemZoomPreference.minimumReadableBodyPointSize(for: .macOS) == 13.0)
         #expect(PlatformSystemZoomPreference.minimumReadableBodyPointSize(for: .tvOS) == 24.0)
     }
+
+    /// Inspect() cannot install SwiftUI Environment. Zoom spacing must honor a task-local size (#435).
+    @Test @MainActor func testEffectiveDynamicTypeSizeHonorsTaskLocalOverride() {
+        initializeTestConfig()
+        PlatformSystemZoomPreference.withTestDynamicTypeSize(.accessibility3) {
+            #expect(PlatformSystemZoomPreference.effectiveDynamicTypeSize == .accessibility3)
+        }
+    }
 }

@@ -7,12 +7,9 @@ import SwiftUI
 public struct HIGAnimationCategoryModifier: ViewModifier {
     let category: HIGAnimationCategory
     let animationSystem: HIGAnimationSystem
-    @Environment(\.accessibilityReduceMotion) private var accessibilityReduceMotion
 
     public func body(content: Content) -> some View {
-        let reduceMotion = PlatformReduceMotionPreference.effectiveReduceMotionEnabled(
-            accessibilityReduceMotion: accessibilityReduceMotion
-        )
+        let reduceMotion = PlatformReduceMotionPreference.isReduceMotionEnabled
         return content
             .transaction { transaction in
                 if reduceMotion {

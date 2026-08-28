@@ -43,18 +43,43 @@ public final class AccessibilityIdentifierConfig: @unchecked Sendable {
         return taskLocalConfig
     }
     
-    /// Resolves config for identifier generation: optional injected environment (tests), then task-local, then shared.
-    /// Environment injection is required when SwiftUI evaluates bodies outside the test task (e.g. some Swift Testing / async cases where `@TaskLocal` is not visible); tests pass `\.accessibilityIdentifierConfig` from the hosting root.
+    /// Resolves config for identifier generation: task-local, then shared.
+    ///
+    /// SwiftUI Environment is not consulted. ViewInspector `inspect()` evaluates `body` unhosted,
+    /// so `@Environment(\.accessibilityIdentifierConfig)` always reads the default and floods diagnostics.
+    /// Hosting rebinds `@TaskLocal` around layout (`hostRootPlatformView`).
     @MainActor
-    internal static func resolvedForIdentifierGeneration(environment: AccessibilityIdentifierConfig?) -> AccessibilityIdentifierConfig {
-        if let environment = environment { return environment }
-        return currentTaskLocalConfig ?? shared
+    internal static func resolvedForIdentifierGeneration() -> AccessibilityIdentifierConfig {
+        currentTaskLocalConfig ?? shared
+    }
+
+    /// When true, identifier modifiers must not instantiate `@Environment` readers.
+    /// ViewInspector `inspect()` evaluates `body` unhosted; Environment always defaults and warns (#435).
+    /// Tests set this around `inspect()`; `hostRootPlatformView` clears it around layout.
+    @TaskLocal public static var unhostedInspection: Bool = false
+
+    /// Run `operation` as an unhosted inspection (no SwiftUI Environment installed).
+    @MainActor
+    public static func withUnhostedInspection<T>(_ operation: () throws -> T) rethrows -> T {
+        try $unhostedInspection.withValue(true, operation: operation)
+    }
+
+    /// Subtree opt-out for automatic identifiers.
+    ///
+    /// Hosted views pass the Environment value. Unhosted `inspect()` must not read Environment;
+    /// this returns `false` so generation matches inspect()'s actual (default) Environment.
+    @MainActor
+    public static func resolvedAutomaticIdentifiersLocallyDisabled(environmentValue: Bool) -> Bool {
+        if unhostedInspection {
+            return false
+        }
+        return environmentValue
     }
     
     /// Shared instance for global configuration (PRODUCTION ONLY)
     /// Tests use task-local config automatically via @TaskLocal - never use .shared in tests
     /// 
-    /// PARALLEL TEST SAFETY: Framework code checks `taskLocalConfig ?? injectedConfig ?? shared`
+    /// PARALLEL TEST SAFETY: Framework code checks `taskLocalConfig ?? shared`.
     /// Each test runs in its own task, so @TaskLocal provides automatic isolation.
     /// Tests that access .shared directly will cause race conditions in parallel execution.
     ///
