@@ -21,7 +21,7 @@ Add SixLayer as a dependency, then link the test kit from **test targets only**:
 )
 ```
 
-ViewInspector ≥ 0.10.x is resolved transitively via the test kit.
+ViewInspector ≥ 0.10.4 is resolved transitively via the test kit. Until nalexn publishes a GeometryProxy-safe tag (#439), that pin is [`schatt/ViewInspector`](https://github.com/schatt/ViewInspector) `from: "0.10.4"` (nalexn PR 421), so app consumers can version-pin SixLayer (#438).
 
 ### Xcode (local SixLayer checkout)
 
