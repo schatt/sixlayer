@@ -28,8 +28,10 @@ let package = Package(
         )
     ],
     dependencies: [
-        // Unreleased iOS 27 GeometryProxy-safe line (PR 421 / #408). Tagged 0.10.x SIGTRAPs.
-        .package(url: "https://github.com/nalexn/ViewInspector", branch: "0.10.4"),
+        // Temporary: schatt/ViewInspector 0.10.4 (nalexn PR 421 @ f110d97) so
+        // consumers can use version requirements (#438). Switch back to nalexn
+        // when they tag a GeometryProxy-safe release (#439).
+        .package(url: "https://github.com/schatt/ViewInspector", from: "0.10.4"),
     ],
     targets: [
         // Main framework target - organized into logical structure
