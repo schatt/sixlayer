@@ -45,10 +45,9 @@ settings:
 
 packages:
   ViewInspector:
-    url: https://github.com/nalexn/ViewInspector
-    # Unreleased iOS 27 GeometryProxy-safe line (PR 421). Tagged 0.10.x still
-    # unsafeBitCasts a 48/52-byte proxy and SIGTRAPs on iOS 27 Simulator (#408).
-    branch: 0.10.4
+    url: https://github.com/schatt/ViewInspector
+    # Temporary fork tag (#438): nalexn has no 0.10.4 tag; switch back in #439.
+    from: "0.10.4"
 
 targets:
   # Main framework target - supports both iOS and macOS

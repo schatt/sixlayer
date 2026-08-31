@@ -7659,7 +7659,7 @@
 			mainGroup = E7DC5B0940E3893241AFD6C4;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				12F9FBE68F97E78F15D3EBF5 /* XCRemoteSwiftPackageReference "ViewInspector" */,
+				07752719D8ECAB08AB29B39B /* XCRemoteSwiftPackageReference "ViewInspector" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 24B581D7E12CAA2F107B5C4E /* Products */;
@@ -13513,12 +13513,12 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		12F9FBE68F97E78F15D3EBF5 /* XCRemoteSwiftPackageReference "ViewInspector" */ = {
+		07752719D8ECAB08AB29B39B /* XCRemoteSwiftPackageReference "ViewInspector" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/nalexn/ViewInspector";
+			repositoryURL = "https://github.com/schatt/ViewInspector";
 			requirement = {
-				branch = 0.10.4;
-				kind = branch;
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.10.4;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
@@ -13526,57 +13526,57 @@
 /* Begin XCSwiftPackageProductDependency section */
 		0E7BD22F64F04F5035779C10 /* ViewInspector */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 12F9FBE68F97E78F15D3EBF5 /* XCRemoteSwiftPackageReference "ViewInspector" */;
+			package = 07752719D8ECAB08AB29B39B /* XCRemoteSwiftPackageReference "ViewInspector" */;
 			productName = ViewInspector;
 		};
 		225E85B918690696F3A88EAB /* ViewInspector */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 12F9FBE68F97E78F15D3EBF5 /* XCRemoteSwiftPackageReference "ViewInspector" */;
+			package = 07752719D8ECAB08AB29B39B /* XCRemoteSwiftPackageReference "ViewInspector" */;
 			productName = ViewInspector;
 		};
 		247A67DE69ED7F6EFFE03067 /* ViewInspector */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 12F9FBE68F97E78F15D3EBF5 /* XCRemoteSwiftPackageReference "ViewInspector" */;
+			package = 07752719D8ECAB08AB29B39B /* XCRemoteSwiftPackageReference "ViewInspector" */;
 			productName = ViewInspector;
 		};
 		254FF6DA9E92E0DF9C38D3BE /* ViewInspector */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 12F9FBE68F97E78F15D3EBF5 /* XCRemoteSwiftPackageReference "ViewInspector" */;
+			package = 07752719D8ECAB08AB29B39B /* XCRemoteSwiftPackageReference "ViewInspector" */;
 			productName = ViewInspector;
 		};
 		297F7DC54CE22350DA71FEE7 /* ViewInspector */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 12F9FBE68F97E78F15D3EBF5 /* XCRemoteSwiftPackageReference "ViewInspector" */;
+			package = 07752719D8ECAB08AB29B39B /* XCRemoteSwiftPackageReference "ViewInspector" */;
 			productName = ViewInspector;
 		};
 		4A26F9C43D96254A7F775F04 /* ViewInspector */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 12F9FBE68F97E78F15D3EBF5 /* XCRemoteSwiftPackageReference "ViewInspector" */;
+			package = 07752719D8ECAB08AB29B39B /* XCRemoteSwiftPackageReference "ViewInspector" */;
 			productName = ViewInspector;
 		};
 		9913622C041E94DA1100E397 /* ViewInspector */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 12F9FBE68F97E78F15D3EBF5 /* XCRemoteSwiftPackageReference "ViewInspector" */;
+			package = 07752719D8ECAB08AB29B39B /* XCRemoteSwiftPackageReference "ViewInspector" */;
 			productName = ViewInspector;
 		};
 		9AD953BF15595E218BBB715C /* ViewInspector */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 12F9FBE68F97E78F15D3EBF5 /* XCRemoteSwiftPackageReference "ViewInspector" */;
+			package = 07752719D8ECAB08AB29B39B /* XCRemoteSwiftPackageReference "ViewInspector" */;
 			productName = ViewInspector;
 		};
 		C2E51C153E3E84BD2F0FEC40 /* ViewInspector */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 12F9FBE68F97E78F15D3EBF5 /* XCRemoteSwiftPackageReference "ViewInspector" */;
+			package = 07752719D8ECAB08AB29B39B /* XCRemoteSwiftPackageReference "ViewInspector" */;
 			productName = ViewInspector;
 		};
 		E8FAB3571BEB410137D3E648 /* ViewInspector */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 12F9FBE68F97E78F15D3EBF5 /* XCRemoteSwiftPackageReference "ViewInspector" */;
+			package = 07752719D8ECAB08AB29B39B /* XCRemoteSwiftPackageReference "ViewInspector" */;
 			productName = ViewInspector;
 		};
 		ED00118C21B343B2AD0A079D /* ViewInspector */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 12F9FBE68F97E78F15D3EBF5 /* XCRemoteSwiftPackageReference "ViewInspector" */;
+			package = 07752719D8ECAB08AB29B39B /* XCRemoteSwiftPackageReference "ViewInspector" */;
 			productName = ViewInspector;
 		};
 /* End XCSwiftPackageProductDependency section */

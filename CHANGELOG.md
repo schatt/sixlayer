@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+### 🐛 Fixed
+- **SPM version pins**: ViewInspector is a versioned dependency (`schatt/ViewInspector` 0.10.4) so consumers can use `from:` on SixLayer without revision pins (#438). Switch back to nalexn when they tag a GeometryProxy-safe release (#439).
+
+---
+
 ## v8.3.6 - August 11, 2026
 
 ### ✨ Added
