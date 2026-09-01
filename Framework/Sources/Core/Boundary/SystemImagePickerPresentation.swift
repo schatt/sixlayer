@@ -38,8 +38,7 @@ func applySystemImagePickerDismissPolicy(
 ) {
     switch policy {
     case .hostManaged:
-        // STUB (#441 red): wrong — always dismisses until green implementation.
-        dismiss()
+        break
     case .dismissWhenModallyPresented:
         if presentingViewController != nil {
             dismiss()
