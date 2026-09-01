@@ -77,6 +77,14 @@ private struct ModernImagePicker: UIViewControllerRepresentable {
     let onImageSelected: (PlatformImage) -> Void
     let dismissPolicy: SystemImagePickerDismissPolicy
     
+    init(
+        onImageSelected: @escaping (PlatformImage) -> Void,
+        dismissPolicy: SystemImagePickerDismissPolicy = .default
+    ) {
+        self.onImageSelected = onImageSelected
+        self.dismissPolicy = dismissPolicy
+    }
+    
     func makeUIViewController(context: Context) -> PHPickerViewController {
         var configuration = PHPickerConfiguration()
         configuration.filter = .images
@@ -142,6 +150,14 @@ private struct ModernImagePicker: UIViewControllerRepresentable {
 private struct LegacyImagePicker: UIViewControllerRepresentable {
     let onImageSelected: (PlatformImage) -> Void
     let dismissPolicy: SystemImagePickerDismissPolicy
+    
+    init(
+        onImageSelected: @escaping (PlatformImage) -> Void,
+        dismissPolicy: SystemImagePickerDismissPolicy = .default
+    ) {
+        self.onImageSelected = onImageSelected
+        self.dismissPolicy = dismissPolicy
+    }
     
     func makeUIViewController(context: Context) -> UIImagePickerController {
         let picker = UIImagePickerController()
