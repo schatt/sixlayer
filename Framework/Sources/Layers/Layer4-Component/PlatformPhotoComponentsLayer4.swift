@@ -400,6 +400,11 @@ func resolvedCameraPickerSourceTypeForLayer4() -> UIImagePickerController.Source
     }
 }
 
+/// iOS camera picker (`UIImagePickerController`) returning ``PlatformImage``.
+///
+/// **Presentation:** Default ``SystemImagePickerDismissPolicy/hostManaged`` — does not UIKit-dismiss
+/// ancestor presentations. Embed inline (e.g. tabbed photo-first) or close SwiftUI sheets via bindings
+/// in `onImageCaptured` (GitHub #441).
 public struct CameraView: UIViewControllerRepresentable {
     let onImageCaptured: (PlatformImage) -> Void
     let onCameraAuthorizationState: ((CameraAuthorizationState) -> Void)?
