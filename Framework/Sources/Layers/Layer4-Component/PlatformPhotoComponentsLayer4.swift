@@ -404,11 +404,11 @@ func resolvedCameraPickerSourceTypeForLayer4() -> UIImagePickerController.Source
 ///
 /// Embedded `UIViewControllerRepresentable` hosts have a nil `presentingViewController`.
 /// Calling `dismiss` then walks UIKit’s presentation chain and tears down the nearest
-/// presented host (e.g. an app `fullScreenCover`). Stub returns `true` until green (#441).
+/// presented host (e.g. an app `fullScreenCover` — CarManager #1037).
 func shouldDismissSystemImagePickerAfterSelection(
     presentingViewController: UIViewController?
 ) -> Bool {
-    true
+    presentingViewController != nil
 }
 
 public struct CameraView: UIViewControllerRepresentable {
