@@ -1,8 +1,8 @@
 # 🚀 Six-Layer Framework Development Roadmap
 
 **Purpose**: Track planned upcoming work and future enhancements.  
-**Last Updated**: July 22, 2026  
-**Current Release**: v8.3.4
+**Last Updated**: September 1, 2026  
+**Current Release**: v8.3.7
 
 > **Note**: This roadmap tracks planned work. For active todos, see [`todos.md`](../todos.md). For release history, see [`RELEASES.md`](RELEASES.md).
 
@@ -10,7 +10,7 @@
 
 ## 📍 **Current Status**
 
-**Last Release**: v8.3.4 (prep on `next` — XCUI host-land / Vision hang footguns #366–#374)
+**Last Release**: v8.3.7 (prep on `next` — SPM ViewInspector pin #438; inspect-safe identifiers #435; OCR hint regex #420/#430)
 **Current Phase**: Patch Release
 **Next Phase**: Continue framework evolution and stability improvements
 
