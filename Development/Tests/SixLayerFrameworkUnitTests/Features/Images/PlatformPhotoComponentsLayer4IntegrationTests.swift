@@ -112,16 +112,7 @@ open class PlatformPhotoComponentsLayer4IntegrationTests: BaseTestClass {
         }
     }
 
-    /// BUSINESS PURPOSE: Default picker policy is host-managed — representables must not UIKit-dismiss
-    /// embedded hosts (e.g. consumer fullScreenCover / tabbed photo-first). Issue #441 / CarManager #1037.
-    /// TESTING SCOPE: `SystemImagePickerDismissPolicy` default and `applySystemImagePickerDismissPolicy`.
-    @Test func testSystemImagePickerDismissPolicy_defaultIsHostManaged() {
-        #expect(
-            SystemImagePickerDismissPolicy.default == .hostManaged,
-            "Framework pickers default to host-managed presentation (#441)"
-        )
-    }
-
+    /// BUSINESS PURPOSE: applySystemImagePickerDismissPolicy — UIKit presentation only (#441).
     @Test @MainActor func testApplySystemImagePickerDismissPolicy_hostManagedNeverDismisses() {
         var dismissCount = 0
         applySystemImagePickerDismissPolicy(
@@ -161,6 +152,16 @@ open class PlatformPhotoComponentsLayer4IntegrationTests: BaseTestClass {
         )
     }
     #endif
+
+    /// BUSINESS PURPOSE: Default picker policy is host-managed on every platform that compiles
+    /// `UnifiedImagePicker` (macOS included). Issue #442 / #441.
+    /// TESTING SCOPE: `SystemImagePickerDismissPolicy.default` — enum must not be iOS-only.
+    @Test func testSystemImagePickerDismissPolicy_defaultIsHostManaged() {
+        #expect(
+            SystemImagePickerDismissPolicy.default == .hostManaged,
+            "Framework pickers default to host-managed presentation (#441); type must exist on macOS (#442)"
+        )
+    }
     
     /// BUSINESS PURPOSE: Test camera callback with real image data
     /// TESTING SCOPE: Tests that camera callbacks work with actual image data
