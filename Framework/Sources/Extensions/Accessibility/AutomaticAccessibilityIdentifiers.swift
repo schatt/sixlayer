@@ -485,60 +485,62 @@ public struct NamedAutomaticComplianceModifier: ViewModifier {
     
     public func body(content: Content) -> some View {
         UnhostedInspection.withIdentifierConfig { config in
-            // CRITICAL: Capture @Published property values as local variables BEFORE any logic
-            // to avoid creating SwiftUI dependencies that cause infinite recursion
-            let capturedScreenContext = config.currentScreenContext
-            let capturedViewHierarchy = config.currentViewHierarchy
-            let capturedEnableUITestIntegration = config.enableUITestIntegration
-            let capturedIncludeComponentNames = config.includeComponentNames
-            let capturedIncludeElementTypes = config.includeElementTypes
-            let capturedEnableDebugLogging = config.enableDebugLogging
-            let capturedNamespace = config.namespace
-            let capturedGlobalPrefix = config.globalPrefix
-
-            // .named() should ALWAYS apply when explicitly called, regardless of global settings
-            // This is an explicit modifier call - user intent is clear
-            // No guard needed - always apply when modifier is explicitly used
-            // CRITICAL: Use captured value instead of accessing @Published property directly
-
-            // Debug logging to help diagnose identifier generation
-            if capturedEnableDebugLogging {
-                let debugMsg = "🔍 NAMED MODIFIER DEBUG: body() called for '\(componentName)' - .named() always applies when explicitly called"
-                print(debugMsg)
-                fflush(stdout)
-                config.addDebugLogEntry(debugMsg, enabled: capturedEnableDebugLogging)
-            }
-
-            // Always apply - .named() is an explicit modifier call
-            let identifier = Self.generateIdentifier(
-                config: config,
-                componentName: componentName,
-                capturedScreenContext: capturedScreenContext,
-                capturedViewHierarchy: capturedViewHierarchy,
-                capturedEnableUITestIntegration: capturedEnableUITestIntegration,
-                capturedIncludeComponentNames: capturedIncludeComponentNames,
-                capturedIncludeElementTypes: capturedIncludeElementTypes,
-                capturedEnableDebugLogging: capturedEnableDebugLogging,
-                capturedNamespace: capturedNamespace,
-                capturedGlobalPrefix: capturedGlobalPrefix
-            )
-            if capturedEnableDebugLogging {
-                let debugMsg = "🔍 NAMED MODIFIER DEBUG: Applying identifier '\(identifier)' to view '\(componentName)'"
-                print(debugMsg)
-                fflush(stdout)
-                config.addDebugLogEntry(debugMsg, enabled: capturedEnableDebugLogging)
-            }
-            // Attach via host sentinel — same pattern as ``NamedModifier`` / ``ExactNamedModifier``
-            // (#360 / #364). Direct `accessibilityIdentifier` on container content
-            // (e.g. ExpandableCardCollectionView's GeometryReader/LazyVGrid) can trap under
-            // iOS 27 sim with `unsafeBitCast` size mismatch during the HIG + named-compliance
-            // stack (#406). VoiceOver label (Issue #154) still applies on the content wrapper.
-            applyNamedAccessibilityLabelIfNeeded(
-                to: content.accessibilityHostIdentifier(identifier),
-                accessibilityLabel: accessibilityLabel,
-                componentName: componentName
-            )
+            applyingNamedAutomaticCompliance(to: content, config: config)
         }
+    }
+
+    private func applyingNamedAutomaticCompliance(
+        to content: Content,
+        config: AccessibilityIdentifierConfig
+    ) -> some View {
+        // CRITICAL: Capture @Published property values as local variables BEFORE any logic
+        // to avoid creating SwiftUI dependencies that cause infinite recursion
+        let capturedScreenContext = config.currentScreenContext
+        let capturedViewHierarchy = config.currentViewHierarchy
+        let capturedEnableUITestIntegration = config.enableUITestIntegration
+        let capturedIncludeComponentNames = config.includeComponentNames
+        let capturedIncludeElementTypes = config.includeElementTypes
+        let capturedEnableDebugLogging = config.enableDebugLogging
+        let capturedNamespace = config.namespace
+        let capturedGlobalPrefix = config.globalPrefix
+
+        // Debug logging to help diagnose identifier generation
+        if capturedEnableDebugLogging {
+            let debugMsg = "🔍 NAMED MODIFIER DEBUG: body() called for '\(componentName)' - .named() always applies when explicitly called"
+            print(debugMsg)
+            fflush(stdout)
+            config.addDebugLogEntry(debugMsg, enabled: capturedEnableDebugLogging)
+        }
+
+        // Always apply - .named() is an explicit modifier call
+        let identifier = Self.generateIdentifier(
+            config: config,
+            componentName: componentName,
+            capturedScreenContext: capturedScreenContext,
+            capturedViewHierarchy: capturedViewHierarchy,
+            capturedEnableUITestIntegration: capturedEnableUITestIntegration,
+            capturedIncludeComponentNames: capturedIncludeComponentNames,
+            capturedIncludeElementTypes: capturedIncludeElementTypes,
+            capturedEnableDebugLogging: capturedEnableDebugLogging,
+            capturedNamespace: capturedNamespace,
+            capturedGlobalPrefix: capturedGlobalPrefix
+        )
+        if capturedEnableDebugLogging {
+            let debugMsg = "🔍 NAMED MODIFIER DEBUG: Applying identifier '\(identifier)' to view '\(componentName)'"
+            print(debugMsg)
+            fflush(stdout)
+            config.addDebugLogEntry(debugMsg, enabled: capturedEnableDebugLogging)
+        }
+        // Attach via host sentinel — same pattern as ``NamedModifier`` / ``ExactNamedModifier``
+        // (#360 / #364). Direct `accessibilityIdentifier` on container content
+        // (e.g. ExpandableCardCollectionView's GeometryReader/LazyVGrid) can trap under
+        // iOS 27 sim with `unsafeBitCast` size mismatch during the HIG + named-compliance
+        // stack (#406). VoiceOver label (Issue #154) still applies on the content wrapper.
+        return applyNamedAccessibilityLabelIfNeeded(
+            to: content.accessibilityHostIdentifier(identifier),
+            accessibilityLabel: accessibilityLabel,
+            componentName: componentName
+        )
     }
     
     // Note: Not @MainActor - this function only does string manipulation and config access
@@ -799,37 +801,44 @@ public struct ForcedAutomaticAccessibilityIdentifiersModifier: ViewModifier {
     
     public func body(content: Content) -> some View {
         UnhostedInspection.withIdentifierConfig { config in
-            // CRITICAL: Capture @Published property values as local variables BEFORE calling generateIdentifier
-            // to avoid creating SwiftUI dependencies that cause infinite recursion
-            let capturedScreenContext = config.currentScreenContext
-            let capturedViewHierarchy = config.currentViewHierarchy
-            let capturedEnableUITestIntegration = config.enableUITestIntegration
-            let capturedEnableDebugLogging = config.enableDebugLogging
-            let capturedNamespace = config.namespace
-            let capturedGlobalPrefix = config.globalPrefix
-
-            if capturedEnableDebugLogging {
-                print("🔍 FORCED MODIFIER DEBUG: Always applying identifier (local override)")
-                print("🔍 FORCED MODIFIER DEBUG: identifierName = '\(identifierName ?? "nil")'")
-                print("🔍 FORCED MODIFIER DEBUG: identifierElementType = '\(identifierElementType ?? "nil")'")
-            }
-
-            let identifier = Self.generateIdentifier(
-                config: config,
-                identifierName: identifierName,
-                identifierElementType: identifierElementType,
-                capturedScreenContext: capturedScreenContext,
-                capturedViewHierarchy: capturedViewHierarchy,
-                capturedEnableUITestIntegration: capturedEnableUITestIntegration,
-                capturedNamespace: capturedNamespace,
-                capturedGlobalPrefix: capturedGlobalPrefix
-            )
-            if capturedEnableDebugLogging {
-                print("🔍 FORCED MODIFIER DEBUG: Applying identifier '\(identifier)' to view")
-            }
-
-            content.accessibilityIdentifier(identifier)
+            applyingForcedAutomaticIdentifier(to: content, config: config)
         }
+    }
+
+    private func applyingForcedAutomaticIdentifier(
+        to content: Content,
+        config: AccessibilityIdentifierConfig
+    ) -> some View {
+        // CRITICAL: Capture @Published property values as local variables BEFORE calling generateIdentifier
+        // to avoid creating SwiftUI dependencies that cause infinite recursion
+        let capturedScreenContext = config.currentScreenContext
+        let capturedViewHierarchy = config.currentViewHierarchy
+        let capturedEnableUITestIntegration = config.enableUITestIntegration
+        let capturedEnableDebugLogging = config.enableDebugLogging
+        let capturedNamespace = config.namespace
+        let capturedGlobalPrefix = config.globalPrefix
+
+        if capturedEnableDebugLogging {
+            print("🔍 FORCED MODIFIER DEBUG: Always applying identifier (local override)")
+            print("🔍 FORCED MODIFIER DEBUG: identifierName = '\(identifierName ?? "nil")'")
+            print("🔍 FORCED MODIFIER DEBUG: identifierElementType = '\(identifierElementType ?? "nil")'")
+        }
+
+        let identifier = Self.generateIdentifier(
+            config: config,
+            identifierName: identifierName,
+            identifierElementType: identifierElementType,
+            capturedScreenContext: capturedScreenContext,
+            capturedViewHierarchy: capturedViewHierarchy,
+            capturedEnableUITestIntegration: capturedEnableUITestIntegration,
+            capturedNamespace: capturedNamespace,
+            capturedGlobalPrefix: capturedGlobalPrefix
+        )
+        if capturedEnableDebugLogging {
+            print("🔍 FORCED MODIFIER DEBUG: Applying identifier '\(identifier)' to view")
+        }
+
+        return content.accessibilityIdentifier(identifier)
     }
     
     private static func generateIdentifier(
