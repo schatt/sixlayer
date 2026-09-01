@@ -1,6 +1,6 @@
 # SixLayer Framework
 
-[![Version](https://img.shields.io/badge/version-v8.3.6-blue.svg)](https://github.com/schatt/sixlayer/releases/tag/v8.3.6)
+[![Version](https://img.shields.io/badge/version-v8.3.7-blue.svg)](https://github.com/schatt/sixlayer/releases/tag/v8.3.7)
 [![Platform](https://img.shields.io/badge/platform-iOS%2016%2B%20%7C%20macOS%2013%2B-lightgrey.svg)](https://github.com/schatt/6layer)
 [![Swift](https://img.shields.io/badge/Swift-5.9+-orange.svg)](https://swift.org)
 
@@ -39,6 +39,12 @@ Layer 1: Semantic Intent → Layer 2: Layout Decision → Layer 3: Strategy Sele
 - **Extensible**: Easy to extend with custom layers and strategies
 - **Comprehensively Tested**: 800+ tests with platform-aware testing and mandatory TDD implementation
 - **DRY Architecture**: Define hints once in files, use everywhere automatically
+
+## 🆕 What's New in v8.3.7
+
+### Patch release
+
+SPM ViewInspector version pin so consumers can use `from:` (#438); inspect-safe identifier/theme config (#435); OCR hint regex (#420/#430). See [RELEASE_v8.3.7.md](../Development/RELEASE_v8.3.7.md).
 
 ## 🆕 What's New in v8.3.6
 
@@ -765,7 +771,7 @@ if let location = image?.exif.gpsLocation {
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/schatt/6layer.git", from: "7.8.2")
+    .package(url: "https://github.com/schatt/sixlayer.git", from: "8.3.7")
 ]
 ```
 
