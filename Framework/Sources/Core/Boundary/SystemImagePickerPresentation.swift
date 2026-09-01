@@ -2,19 +2,18 @@
 //  SystemImagePickerPresentation.swift
 //  SixLayerFramework
 //
-//  Presentation lifecycle for UIKit image pickers hosted in UIViewControllerRepresentable.
+//  Presentation lifecycle for system image pickers.
 //  GitHub #441 — hosts own SwiftUI sheets/covers; representables must not call UIKit dismiss by default.
+//  GitHub #442 — the policy type is cross-platform (`UnifiedImagePicker` stores it on macOS);
+//  `applySystemImagePickerDismissPolicy` stays iOS-only (UIViewController).
 //
 
 import Foundation
 
-#if os(iOS)
-import UIKit
-
-/// How a system image picker should finish its UIKit presentation after selection or cancel.
+/// How a system image picker should finish its presentation after selection or cancel.
 ///
 /// Default is ``hostManaged``: the consumer closes SwiftUI sheets, full-screen covers, or navigation
-/// via bindings or `@Environment(\\.dismiss)`. Embedded inline pickers (e.g. tabbed photo-first) must
+/// via bindings or `@Environment(\.dismiss)`. Embedded inline pickers (e.g. tabbed photo-first) must
 /// use this policy so UIKit does not walk the presentation chain and tear down ancestor hosts.
 public enum SystemImagePickerDismissPolicy: Sendable {
     /// Never call UIKit `dismiss` from the representable coordinator. The host owns presentation.
@@ -27,6 +26,9 @@ public extension SystemImagePickerDismissPolicy {
     /// Default for all framework image pickers.
     static let `default`: SystemImagePickerDismissPolicy = .hostManaged
 }
+
+#if os(iOS)
+import UIKit
 
 /// Applies ``SystemImagePickerDismissPolicy`` after selection/cancel.
 ///
