@@ -4,10 +4,10 @@
     {
       "identity" : "viewinspector",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/nalexn/ViewInspector",
+      "location" : "https://github.com/schatt/ViewInspector",
       "state" : {
-        "branch" : "0.10.4",
-        "revision" : "09f0adb36a41f3df1ce14aad55a3a142b17c9e80"
+        "revision" : "f110d97d84f7a3a2fe89b897d63c814c538f695e",
+        "version" : "0.10.4"
       }
     }
   ],
