@@ -10,7 +10,7 @@ import SwiftUI
 import Testing
 @testable import SixLayerFramework
 
-@Suite("AccessibilityIdentifierConfig resolution")
+@Suite("AccessibilityIdentifierConfig resolution", HostedViewTestIsolationTrait())
 struct AccessibilityIdentifierConfigResolutionTests {
 
     @Test @MainActor
