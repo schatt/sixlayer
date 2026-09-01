@@ -122,7 +122,7 @@ open class PlatformPhotoComponentsLayer4IntegrationTests: BaseTestClass {
         )
     }
 
-    @Test func testApplySystemImagePickerDismissPolicy_hostManagedNeverDismisses() {
+    @Test @MainActor func testApplySystemImagePickerDismissPolicy_hostManagedNeverDismisses() {
         var dismissCount = 0
         applySystemImagePickerDismissPolicy(
             .hostManaged,
@@ -148,7 +148,7 @@ open class PlatformPhotoComponentsLayer4IntegrationTests: BaseTestClass {
         )
     }
 
-    @Test func testApplySystemImagePickerDismissPolicy_dismissWhenModallyPresented_modalDismisses() {
+    @Test @MainActor func testApplySystemImagePickerDismissPolicy_dismissWhenModallyPresented_modalDismisses() {
         var dismissCount = 0
         applySystemImagePickerDismissPolicy(
             .dismissWhenModallyPresented,
