@@ -111,6 +111,20 @@ open class PlatformPhotoComponentsLayer4IntegrationTests: BaseTestClass {
             }
         }
     }
+
+    /// BUSINESS PURPOSE: Embedded representable pickers must not call dismiss — UIKit walks the
+    /// presentation chain and tears down the host (e.g. consumer fullScreenCover). Issue #441 / CarManager #1037.
+    /// TESTING SCOPE: `shouldDismissSystemImagePickerAfterSelection` both directions.
+    @Test func testShouldDismissSystemImagePicker_embeddedDoesNotDismiss_presentedDoes() {
+        #expect(
+            !shouldDismissSystemImagePickerAfterSelection(presentingViewController: nil),
+            "Embedded UIViewControllerRepresentable pickers have nil presentingViewController — must not dismiss (#441)"
+        )
+        #expect(
+            shouldDismissSystemImagePickerAfterSelection(presentingViewController: UIViewController()),
+            "Modally presented pickers must still dismiss after selection (#441)"
+        )
+    }
     #endif
     
     /// BUSINESS PURPOSE: Test camera callback with real image data
