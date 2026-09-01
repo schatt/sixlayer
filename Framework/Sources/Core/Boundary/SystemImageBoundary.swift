@@ -51,9 +51,14 @@ public class SystemImageBoundary {
 #if os(iOS)
 public struct SystemImagePicker: UIViewControllerRepresentable {
     let onImageSelected: (PlatformImage) -> Void
+    let dismissPolicy: SystemImagePickerDismissPolicy
     
-    public init(onImageSelected: @escaping (PlatformImage) -> Void) {
+    public init(
+        onImageSelected: @escaping (PlatformImage) -> Void,
+        dismissPolicy: SystemImagePickerDismissPolicy = .default
+    ) {
         self.onImageSelected = onImageSelected
+        self.dismissPolicy = dismissPolicy
     }
     
     public func makeUIViewController(context: Context) -> UIImagePickerController {
@@ -81,20 +86,33 @@ public struct SystemImagePicker: UIViewControllerRepresentable {
             if let platformImage = SystemImageBoundary.convertPickerResult(info) {
                 parent.onImageSelected(platformImage)
             }
-            if shouldDismissSystemImagePickerAfterSelection(
-                presentingViewController: picker.presentingViewController
-            ) {
-                picker.dismiss(animated: true)
-            }
+            applySystemImagePickerDismissPolicy(
+                parent.dismissPolicy,
+                presentingViewController: picker.presentingViewController,
+                dismiss: { picker.dismiss(animated: true) }
+            )
+        }
+        
+        public func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+            applySystemImagePickerDismissPolicy(
+                parent.dismissPolicy,
+                presentingViewController: picker.presentingViewController,
+                dismiss: { picker.dismiss(animated: true) }
+            )
         }
     }
 }
 
 public struct SystemCameraPicker: UIViewControllerRepresentable {
     let onImageCaptured: (PlatformImage) -> Void
+    let dismissPolicy: SystemImagePickerDismissPolicy
     
-    public init(onImageCaptured: @escaping (PlatformImage) -> Void) {
+    public init(
+        onImageCaptured: @escaping (PlatformImage) -> Void,
+        dismissPolicy: SystemImagePickerDismissPolicy = .default
+    ) {
         self.onImageCaptured = onImageCaptured
+        self.dismissPolicy = dismissPolicy
     }
     
     public func makeUIViewController(context: Context) -> UIImagePickerController {
@@ -122,11 +140,19 @@ public struct SystemCameraPicker: UIViewControllerRepresentable {
             if let platformImage = SystemImageBoundary.convertPickerResult(info) {
                 parent.onImageCaptured(platformImage)
             }
-            if shouldDismissSystemImagePickerAfterSelection(
-                presentingViewController: picker.presentingViewController
-            ) {
-                picker.dismiss(animated: true)
-            }
+            applySystemImagePickerDismissPolicy(
+                parent.dismissPolicy,
+                presentingViewController: picker.presentingViewController,
+                dismiss: { picker.dismiss(animated: true) }
+            )
+        }
+        
+        public func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+            applySystemImagePickerDismissPolicy(
+                parent.dismissPolicy,
+                presentingViewController: picker.presentingViewController,
+                dismiss: { picker.dismiss(animated: true) }
+            )
         }
     }
 }
