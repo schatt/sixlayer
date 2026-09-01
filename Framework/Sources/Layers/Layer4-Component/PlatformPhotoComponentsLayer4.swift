@@ -459,7 +459,11 @@ public struct CameraView: UIViewControllerRepresentable {
             if let image = info[.originalImage] as? UIImage {
                 parent.onImageCaptured(PlatformImage(image))  // Implicit conversion: UIImage → PlatformImage
             }
-            picker.dismiss(animated: true)
+            if shouldDismissSystemImagePickerAfterSelection(
+                presentingViewController: picker.presentingViewController
+            ) {
+                picker.dismiss(animated: true)
+            }
         }
         
         public func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
@@ -468,7 +472,11 @@ public struct CameraView: UIViewControllerRepresentable {
                 print("[SLF CameraView] imagePickerControllerDidCancel (Cancel or system dismissed picker)")
             }
             #endif
-            picker.dismiss(animated: true)
+            if shouldDismissSystemImagePickerAfterSelection(
+                presentingViewController: picker.presentingViewController
+            ) {
+                picker.dismiss(animated: true)
+            }
         }
     }
 }
@@ -567,7 +575,11 @@ private struct ModernPhotoPickerView: UIViewControllerRepresentable {
         }
         
         func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
-            picker.dismiss(animated: true)
+            if shouldDismissSystemImagePickerAfterSelection(
+                presentingViewController: picker.presentingViewController
+            ) {
+                picker.dismiss(animated: true)
+            }
             
             guard let result = results.first else {
                 return
@@ -623,7 +635,11 @@ struct LegacyPhotoPickerView: UIViewControllerRepresentable {
             if let image = info[.originalImage] as? UIImage {
                 parent.onImageSelected(PlatformImage(image))  // Implicit conversion: UIImage → PlatformImage
             }
-            picker.dismiss(animated: true)
+            if shouldDismissSystemImagePickerAfterSelection(
+                presentingViewController: picker.presentingViewController
+            ) {
+                picker.dismiss(animated: true)
+            }
         }
     }
 }
