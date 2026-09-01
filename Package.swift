@@ -1,5 +1,5 @@
 // swift-tools-version: 6.0
-// SixLayerFramework v8.3.7 - Patch: SPM ViewInspector version pin, inspect-safe identifier config (#438, #435)
+// SixLayerFramework v8.3.8 - Patch: hosted Environment identifier config, host-managed picker dismiss (#437, #441, #442)
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
