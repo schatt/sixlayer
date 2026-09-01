@@ -51,8 +51,8 @@ public struct AccessibilityIdentifierLabelKey: EnvironmentKey {
 }
 
 /// Environment key for injecting AccessibilityIdentifierConfig.
-/// Kept for public ABI. Identifier generation does **not** read this key (#435);
-/// it uses `AccessibilityIdentifierConfig.resolvedForIdentifierGeneration()` (task-local then `.shared`).
+/// Hosted generation reads this via `UnhostedInspection.withIdentifierConfig` (TestApp #247).
+/// inspect() must not instantiate this key (#435); unhosted uses task-local then `.shared`.
 public struct AccessibilityIdentifierConfigKey: EnvironmentKey {
     public static let defaultValue: AccessibilityIdentifierConfig? = nil
 }
@@ -470,8 +470,8 @@ public struct AutomaticComplianceModifier: ViewModifier {
 /// Modifier that applies automatic accessibility identifiers with a specific component name
 /// This is used by the .automaticCompliance(named:) helper
 /// 
-/// NOTE: Config comes from `AccessibilityIdentifierConfig.resolvedForIdentifierGeneration()`
-/// (task-local then `.shared`). Do not read SwiftUI Environment for the config instance.
+/// NOTE: Config comes from `UnhostedInspection.withIdentifierConfig` — Environment when hosted
+/// (TestApp #247), task-local then `.shared` when unhosted (`inspect()`, #435).
 /// Identifier attaches via ``View/accessibilityHostIdentifier(_:)`` (host sentinel), matching
 /// ``NamedModifier`` / ``ExactNamedModifier`` (#360 / #364 / #406).
 public struct NamedAutomaticComplianceModifier: ViewModifier {
@@ -484,7 +484,15 @@ public struct NamedAutomaticComplianceModifier: ViewModifier {
     }
     
     public func body(content: Content) -> some View {
-        let config = AccessibilityIdentifierConfig.resolvedForIdentifierGeneration()
+        UnhostedInspection.withIdentifierConfig { config in
+            applyingNamedAutomaticCompliance(to: content, config: config)
+        }
+    }
+
+    private func applyingNamedAutomaticCompliance(
+        to content: Content,
+        config: AccessibilityIdentifierConfig
+    ) -> some View {
         // CRITICAL: Capture @Published property values as local variables BEFORE any logic
         // to avoid creating SwiftUI dependencies that cause infinite recursion
         let capturedScreenContext = config.currentScreenContext
@@ -495,12 +503,7 @@ public struct NamedAutomaticComplianceModifier: ViewModifier {
         let capturedEnableDebugLogging = config.enableDebugLogging
         let capturedNamespace = config.namespace
         let capturedGlobalPrefix = config.globalPrefix
-        
-        // .named() should ALWAYS apply when explicitly called, regardless of global settings
-        // This is an explicit modifier call - user intent is clear
-        // No guard needed - always apply when modifier is explicitly used
-        // CRITICAL: Use captured value instead of accessing @Published property directly
-        
+
         // Debug logging to help diagnose identifier generation
         if capturedEnableDebugLogging {
             let debugMsg = "🔍 NAMED MODIFIER DEBUG: body() called for '\(componentName)' - .named() always applies when explicitly called"
@@ -508,7 +511,7 @@ public struct NamedAutomaticComplianceModifier: ViewModifier {
             fflush(stdout)
             config.addDebugLogEntry(debugMsg, enabled: capturedEnableDebugLogging)
         }
-        
+
         // Always apply - .named() is an explicit modifier call
         let identifier = Self.generateIdentifier(
             config: config,
@@ -533,22 +536,11 @@ public struct NamedAutomaticComplianceModifier: ViewModifier {
         // (e.g. ExpandableCardCollectionView's GeometryReader/LazyVGrid) can trap under
         // iOS 27 sim with `unsafeBitCast` size mismatch during the HIG + named-compliance
         // stack (#406). VoiceOver label (Issue #154) still applies on the content wrapper.
-        @ViewBuilder
-        func applyAccessibilityLabelIfNeeded<V: View>(to view: V) -> some View {
-            if let label = accessibilityLabel, !label.isEmpty {
-                // Localize and format label according to Apple HIG guidelines
-                // Pass component name as context for better logging
-                let localizedLabel = localizeAccessibilityLabel(
-                    label,
-                    context: componentName.lowercased(),
-                    elementType: "View"
-                )
-                view.accessibilityLabel(localizedLabel)
-            } else {
-                view
-            }
-        }
-        return applyAccessibilityLabelIfNeeded(to: content.accessibilityHostIdentifier(identifier))
+        return applyNamedAccessibilityLabelIfNeeded(
+            to: content.accessibilityHostIdentifier(identifier),
+            accessibilityLabel: accessibilityLabel,
+            componentName: componentName
+        )
     }
     
     // Note: Not @MainActor - this function only does string manipulation and config access
@@ -584,6 +576,24 @@ public struct NamedAutomaticComplianceModifier: ViewModifier {
     }
 }
 
+@ViewBuilder
+private func applyNamedAccessibilityLabelIfNeeded<V: View>(
+    to view: V,
+    accessibilityLabel: String?,
+    componentName: String
+) -> some View {
+    if let label = accessibilityLabel, !label.isEmpty {
+        let localizedLabel = localizeAccessibilityLabel(
+            label,
+            context: componentName.lowercased(),
+            elementType: "View"
+        )
+        view.accessibilityLabel(localizedLabel)
+    } else {
+        view
+    }
+}
+
 // MARK: - Named Component Modifier
 
 /// Modifier that allows components to be named for more specific accessibility identifiers
@@ -591,16 +601,16 @@ public struct NamedModifier: ViewModifier {
     let name: String
     
     public func body(content: Content) -> some View {
-        let config = AccessibilityIdentifierConfig.resolvedForIdentifierGeneration()
-        // Prefix removed - use config.globalPrefix instead (no environment dependency)
-        let capturedScreenContext = config.currentScreenContext
-        let capturedViewHierarchy = config.currentViewHierarchy
-        let capturedEnableUITestIntegration = config.enableUITestIntegration
-        let capturedEnableDebugLogging = config.enableDebugLogging
-        let capturedNamespace = config.namespace
-        let capturedGlobalPrefix = config.globalPrefix
-        
-        // Compute once
+        UnhostedInspection.withIdentifierConfig { config in
+            // Prefix removed - use config.globalPrefix instead (no environment dependency)
+            let capturedScreenContext = config.currentScreenContext
+            let capturedViewHierarchy = config.currentViewHierarchy
+            let capturedEnableUITestIntegration = config.enableUITestIntegration
+            let capturedEnableDebugLogging = config.enableDebugLogging
+            let capturedNamespace = config.namespace
+            let capturedGlobalPrefix = config.globalPrefix
+
+            // Compute once
             let newId = Self.generateNamedAccessibilityIdentifier(
                 config: config,
                 name: name,
@@ -611,10 +621,11 @@ public struct NamedModifier: ViewModifier {
                 capturedNamespace: capturedNamespace,
                 capturedGlobalPrefix: capturedGlobalPrefix
             )
-        // Do **not** put `accessibilityIdentifier` on the content container itself:
-        // on current SwiftUI/XCUI, that overwrites nested empty-state hint ids even
-        // with `.contain` / leaf `.ignore` (bisect step1, #360). Attach via host sentinel.
-        return content.accessibilityHostIdentifier(newId)
+            // Do **not** put `accessibilityIdentifier` on the content container itself:
+            // on current SwiftUI/XCUI, that overwrites nested empty-state hint ids even
+            // with `.contain` / leaf `.ignore` (bisect step1, #360). Attach via host sentinel.
+            content.accessibilityHostIdentifier(newId)
+        }
     }
     
     private static func generateNamedAccessibilityIdentifier(
@@ -700,17 +711,18 @@ public struct ExactNamedModifier: ViewModifier {
     let name: String
     
     public func body(content: Content) -> some View {
-        let config = AccessibilityIdentifierConfig.resolvedForIdentifierGeneration()
-        let capturedEnableDebugLogging = config.enableDebugLogging
-        let exactId = Self.generateExactNamedAccessibilityIdentifier(
-            config: config,
-            name: name,
-            capturedEnableDebugLogging: capturedEnableDebugLogging
-        )
-        // Do **not** put `accessibilityIdentifier` on the content container itself:
-        // same overwrite class as `.named` (#360) when `.exactNamed` wraps a surface
-        // that owns nested EmptyState* / row contract ids (#364). Attach via host sentinel.
-        return content.accessibilityHostIdentifier(exactId)
+        UnhostedInspection.withIdentifierConfig { config in
+            let capturedEnableDebugLogging = config.enableDebugLogging
+            let exactId = Self.generateExactNamedAccessibilityIdentifier(
+                config: config,
+                name: name,
+                capturedEnableDebugLogging: capturedEnableDebugLogging
+            )
+            // Do **not** put `accessibilityIdentifier` on the content container itself:
+            // same overwrite class as `.named` (#360) when `.exactNamed` wraps a surface
+            // that owns nested EmptyState* / row contract ids (#364). Attach via host sentinel.
+            content.accessibilityHostIdentifier(exactId)
+        }
     }
     
     private static func generateExactNamedAccessibilityIdentifier(
@@ -788,8 +800,15 @@ public struct ForcedAutomaticAccessibilityIdentifiersModifier: ViewModifier {
     }
     
     public func body(content: Content) -> some View {
-        let config = AccessibilityIdentifierConfig.resolvedForIdentifierGeneration()
-        
+        UnhostedInspection.withIdentifierConfig { config in
+            applyingForcedAutomaticIdentifier(to: content, config: config)
+        }
+    }
+
+    private func applyingForcedAutomaticIdentifier(
+        to content: Content,
+        config: AccessibilityIdentifierConfig
+    ) -> some View {
         // CRITICAL: Capture @Published property values as local variables BEFORE calling generateIdentifier
         // to avoid creating SwiftUI dependencies that cause infinite recursion
         let capturedScreenContext = config.currentScreenContext
@@ -798,27 +817,27 @@ public struct ForcedAutomaticAccessibilityIdentifiersModifier: ViewModifier {
         let capturedEnableDebugLogging = config.enableDebugLogging
         let capturedNamespace = config.namespace
         let capturedGlobalPrefix = config.globalPrefix
-        
+
         if capturedEnableDebugLogging {
             print("🔍 FORCED MODIFIER DEBUG: Always applying identifier (local override)")
             print("🔍 FORCED MODIFIER DEBUG: identifierName = '\(identifierName ?? "nil")'")
             print("🔍 FORCED MODIFIER DEBUG: identifierElementType = '\(identifierElementType ?? "nil")'")
         }
-        
-            let identifier = Self.generateIdentifier(
-                config: config,
-                identifierName: identifierName,
-                identifierElementType: identifierElementType,
-                capturedScreenContext: capturedScreenContext,
-                capturedViewHierarchy: capturedViewHierarchy,
-                capturedEnableUITestIntegration: capturedEnableUITestIntegration,
-                capturedNamespace: capturedNamespace,
-                capturedGlobalPrefix: capturedGlobalPrefix
-            )
+
+        let identifier = Self.generateIdentifier(
+            config: config,
+            identifierName: identifierName,
+            identifierElementType: identifierElementType,
+            capturedScreenContext: capturedScreenContext,
+            capturedViewHierarchy: capturedViewHierarchy,
+            capturedEnableUITestIntegration: capturedEnableUITestIntegration,
+            capturedNamespace: capturedNamespace,
+            capturedGlobalPrefix: capturedGlobalPrefix
+        )
         if capturedEnableDebugLogging {
             print("🔍 FORCED MODIFIER DEBUG: Applying identifier '\(identifier)' to view")
         }
-        
+
         return content.accessibilityIdentifier(identifier)
     }
     
@@ -1325,25 +1344,32 @@ public struct BasicAutomaticComplianceModifier: ViewModifier {
     @ViewBuilder
     public func body(content: Content) -> some View {
         // inspect() cannot install Environment. Do not instantiate the Environment reader
-        // on the unhosted path (#435). Hosted/production still reads subtree disable.
-        if AccessibilityIdentifierConfig.unhostedInspection {
-            applyingCompliance(
-                to: content,
-                locallyDisabled: AccessibilityIdentifierConfig.resolvedAutomaticIdentifiersLocallyDisabled(
-                    environmentValue: false
+        // on the unhosted path (#435). Hosted/production still reads subtree disable and config.
+        UnhostedInspection.split(
+            unhosted: {
+                applyingCompliance(
+                    to: content,
+                    locallyDisabled: AccessibilityIdentifierConfig.resolvedAutomaticIdentifiersLocallyDisabled(
+                        environmentValue: false
+                    ),
+                    config: AccessibilityIdentifierConfig.resolvedForIdentifierGeneration()
                 )
-            )
-        } else {
-            BasicAutomaticComplianceLocalDisableReader(modifier: self, content: content)
-        }
+            },
+            hosted: {
+                BasicAutomaticComplianceLocalDisableReader(modifier: self, content: content)
+            }
+        )
     }
 
-    fileprivate func applyingCompliance<AppliedContent: View>(to content: AppliedContent, locallyDisabled: Bool) -> some View {
+    fileprivate func applyingCompliance<AppliedContent: View>(
+        to content: AppliedContent,
+        locallyDisabled: Bool,
+        config: AccessibilityIdentifierConfig
+    ) -> some View {
         // CRITICAL DEBUG: Verify identifierName is preserved in the modifier
         // Store the property value to ensure it's not lost during SwiftUI evaluation
         let storedIdentifierName = self.identifierName
         
-        let config = AccessibilityIdentifierConfig.resolvedForIdentifierGeneration()
         // CRITICAL: Capture property values as local variables BEFORE any logic
         // to avoid creating SwiftUI dependencies that cause infinite recursion
         let capturedEnableAutoIDs = config.enableAutoIDs
@@ -1372,21 +1398,15 @@ public struct BasicAutomaticComplianceModifier: ViewModifier {
 
         // Generate identifier if needed
         // Call internal generateAccessibilityIdentifier directly (same as AutomaticComplianceModifier.generateIdentifier does)
-        // DEBUG: Log only when debug logging is enabled
         if capturedEnableDebugLogging {
             let debugMsg = "🔍 BASIC COMPLIANCE DEBUG: identifierName='\(storedIdentifierName ?? "nil")', identifierElementType='\(identifierElementType ?? "nil")', enableDebugLogging=\(capturedEnableDebugLogging), shouldApplyIdentifier=\(shouldApplyIdentifier)"
-            print(debugMsg)
-            NSLog("%@", debugMsg)
-            os_log("%{public}@", log: .default, type: .debug, debugMsg)
-            fflush(stdout)
-        }
-        
-        // Additional debug logging if enabled
-        if capturedEnableDebugLogging {
             let detailedMsg = "🔍 BASIC COMPLIANCE DETAILED: shouldApply=\(shouldApply), shouldApplyIdentifier=\(shouldApplyIdentifier), enableAutoIDs=\(capturedEnableAutoIDs), globalAutoIDs=\(capturedGlobalAutomaticAccessibilityIdentifiers)"
-            print(detailedMsg)
-            NSLog("%@", detailedMsg)
-            os_log("%{public}@", log: .default, type: .debug, detailedMsg)
+            for line in [debugMsg, detailedMsg] {
+                print(line)
+                NSLog("%@", line)
+                os_log("%{public}@", log: .default, type: .debug, line)
+                config.addDebugLogEntry(line, enabled: true)
+            }
             fflush(stdout)
         }
 
@@ -1571,19 +1591,21 @@ public struct BasicAutomaticComplianceModifier: ViewModifier {
     }
 }
 
-/// Hosted-only Environment reader for subtree identifier opt-out.
+/// Hosted-only Environment reader for subtree identifier opt-out and identifier config.
 /// Instantiated only when `unhostedInspection` is false so `inspect()` does not warn (#435).
 private struct BasicAutomaticComplianceLocalDisableReader<Content: View>: View {
     let modifier: BasicAutomaticComplianceModifier
     let content: Content
     @Environment(\.automaticAccessibilityIdentifiersLocallyDisabled) private var environmentLocallyDisabled
+    @Environment(\.accessibilityIdentifierConfig) private var environmentConfig
 
     var body: some View {
         modifier.applyingCompliance(
             to: content,
             locallyDisabled: AccessibilityIdentifierConfig.resolvedAutomaticIdentifiersLocallyDisabled(
                 environmentValue: environmentLocallyDisabled
-            )
+            ),
+            config: environmentConfig ?? AccessibilityIdentifierConfig.resolvedForIdentifierGeneration()
         )
     }
 }

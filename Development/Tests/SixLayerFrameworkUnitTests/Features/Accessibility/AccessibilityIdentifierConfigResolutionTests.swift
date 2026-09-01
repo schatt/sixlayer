@@ -6,10 +6,11 @@
 //  never from SwiftUI Environment (inspect() cannot install Environment; #435).
 //
 
+import SwiftUI
 import Testing
 @testable import SixLayerFramework
 
-@Suite("AccessibilityIdentifierConfig resolution")
+@Suite("AccessibilityIdentifierConfig resolution", HostedViewTestIsolationTrait())
 struct AccessibilityIdentifierConfigResolutionTests {
 
     @Test @MainActor
@@ -84,5 +85,77 @@ struct AccessibilityIdentifierConfigResolutionTests {
                 "inspect() cannot install Environment or StateObject; unhosted branch must run"
             )
         }
+    }
+
+    /// TestApp injects a non-shared config via Environment (#247). Hosted generation must use it
+    /// so XCUI sees `SixLayer.main.ui…` (#437). inspect() still must not instantiate Environment.
+    @Test @MainActor
+    func hostedIdentifierGenerationUsesEnvironmentConfigWhenTaskLocalMissing() {
+        let envConfig = TestSetupUtilities.makeIsolatedAccessibilityIdentifierConfig()
+        envConfig.namespace = "EnvNS"
+        envConfig.enableAutoIDs = true
+        envConfig.globalAutomaticAccessibilityIdentifiers = true
+        envConfig.enableUITestIntegration = true
+        envConfig.includeComponentNames = true
+        envConfig.includeElementTypes = true
+        envConfig.enableDebugLogging = true
+        envConfig.clearDebugLog()
+
+        let identifiers = AccessibilityIdentifierConfig.$taskLocalConfig.withValue(nil) {
+            let view = Text("probe")
+                .named("EnvProbe")
+                .environment(\.accessibilityIdentifierConfig, envConfig)
+            let hosted = TestSetupUtilities.hostRootPlatformView(
+                view,
+                forceLayout: true,
+                exposeContentAccessibility: true,
+                accessibilityIdentifierConfig: nil
+            )
+            return findAllAccessibilityIdentifiersFromPlatformView(hosted)
+        }
+        let log = envConfig.getDebugLog()
+
+        #expect(
+            identifiers.contains(where: { $0.contains("EnvNS") }) || log.contains("EnvNS"),
+            "Hosted views must honor Environment identifier config (TestApp #247). ids=\(identifiers) log=\(log)"
+        )
+    }
+
+    /// Category A global-off UITest (`-CategoryAGlobalAutoOff`) sets the flag on the Environment
+    /// instance, not `.shared`. Hosted `basicAutomaticCompliance` must not emit the suppressed name.
+    @Test @MainActor
+    func hostedAutomaticComplianceHonorsEnvironmentGlobalOffWhenTaskLocalMissing() {
+        let envConfig = TestSetupUtilities.makeIsolatedAccessibilityIdentifierConfig()
+        envConfig.namespace = "EnvNS"
+        envConfig.enableAutoIDs = true
+        envConfig.globalAutomaticAccessibilityIdentifiers = false
+        envConfig.enableUITestIntegration = true
+        envConfig.includeComponentNames = true
+        envConfig.includeElementTypes = true
+        envConfig.enableDebugLogging = true
+        envConfig.clearDebugLog()
+
+        let identifiers = AccessibilityIdentifierConfig.$taskLocalConfig.withValue(nil) {
+            let view = Text("probe")
+                .basicAutomaticCompliance(identifierName: "CatAAutoSuppressed")
+                .environment(\.accessibilityIdentifierConfig, envConfig)
+            let hosted = TestSetupUtilities.hostRootPlatformView(
+                view,
+                forceLayout: true,
+                exposeContentAccessibility: true,
+                accessibilityIdentifierConfig: nil
+            )
+            return findAllAccessibilityIdentifiersFromPlatformView(hosted)
+        }
+        let log = envConfig.getDebugLog()
+
+        #expect(
+            log.contains("globalAutoIDs=false"),
+            "Hosted automatic compliance must read Environment global-off (TestApp #247). log=\(log)"
+        )
+        #expect(
+            !identifiers.contains(where: { $0.contains("CatAAutoSuppressed") }),
+            "Hosted automatic compliance must not emit the suppressed name. Got \(identifiers)"
+        )
     }
 }
