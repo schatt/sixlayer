@@ -1,5 +1,21 @@
 # Changelog
 
+## v8.3.8 - September 1, 2026
+
+### ✨ Added
+- **`SystemImagePickerDismissPolicy`**: public dismiss policy for embedded system image pickers; default `hostManaged` so representables never UIKit-dismiss ancestor hosts (#441, #442).
+
+### 🐛 Fixed
+- **Hosted Environment identifier config**: restore `.environment(\.accessibilityIdentifierConfig)` on hosted modifier paths after #435 unhosted split (#437).
+- **Embedded picker dismiss**: stop CameraView/PhotoPicker/UnifiedImagePicker from UIKit-`dismiss` tearing down consumer `fullScreenCover` (#441).
+- **macOS dismiss policy compile**: expose `SystemImagePickerDismissPolicy` on macOS (#442).
+- **ViewInspector CI stall**: raise self-hosted VI job stall kill window to 600s (#437).
+
+### 📚 Documentation
+- Full notes: [`Development/RELEASE_v8.3.8.md`](Development/RELEASE_v8.3.8.md), index [`Development/RELEASES.md`](Development/RELEASES.md).
+
+---
+
 ## v8.3.7 - September 1, 2026
 
 ### 🐛 Fixed
