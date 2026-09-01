@@ -1398,24 +1398,16 @@ public struct BasicAutomaticComplianceModifier: ViewModifier {
 
         // Generate identifier if needed
         // Call internal generateAccessibilityIdentifier directly (same as AutomaticComplianceModifier.generateIdentifier does)
-        // DEBUG: Log only when debug logging is enabled
         if capturedEnableDebugLogging {
             let debugMsg = "🔍 BASIC COMPLIANCE DEBUG: identifierName='\(storedIdentifierName ?? "nil")', identifierElementType='\(identifierElementType ?? "nil")', enableDebugLogging=\(capturedEnableDebugLogging), shouldApplyIdentifier=\(shouldApplyIdentifier)"
-            print(debugMsg)
-            NSLog("%@", debugMsg)
-            os_log("%{public}@", log: .default, type: .debug, debugMsg)
-            fflush(stdout)
-            config.addDebugLogEntry(debugMsg, enabled: true)
-        }
-        
-        // Additional debug logging if enabled
-        if capturedEnableDebugLogging {
             let detailedMsg = "🔍 BASIC COMPLIANCE DETAILED: shouldApply=\(shouldApply), shouldApplyIdentifier=\(shouldApplyIdentifier), enableAutoIDs=\(capturedEnableAutoIDs), globalAutoIDs=\(capturedGlobalAutomaticAccessibilityIdentifiers)"
-            print(detailedMsg)
-            NSLog("%@", detailedMsg)
-            os_log("%{public}@", log: .default, type: .debug, detailedMsg)
+            for line in [debugMsg, detailedMsg] {
+                print(line)
+                NSLog("%@", line)
+                os_log("%{public}@", log: .default, type: .debug, line)
+                config.addDebugLogEntry(line, enabled: true)
+            }
             fflush(stdout)
-            config.addDebugLogEntry(detailedMsg, enabled: true)
         }
 
         let suppressAnonymousWrapperAccessibilityIdentifier = shouldApplyIdentifier
