@@ -400,6 +400,17 @@ func resolvedCameraPickerSourceTypeForLayer4() -> UIImagePickerController.Source
     }
 }
 
+/// Whether a system image picker should call `dismiss` after selection/cancel (GitHub #441).
+///
+/// Embedded `UIViewControllerRepresentable` hosts have a nil `presentingViewController`.
+/// Calling `dismiss` then walks UIKit’s presentation chain and tears down the nearest
+/// presented host (e.g. an app `fullScreenCover`). Stub returns `true` until green (#441).
+func shouldDismissSystemImagePickerAfterSelection(
+    presentingViewController: UIViewController?
+) -> Bool {
+    true
+}
+
 public struct CameraView: UIViewControllerRepresentable {
     let onImageCaptured: (PlatformImage) -> Void
     let onCameraAuthorizationState: ((CameraAuthorizationState) -> Void)?
