@@ -43,11 +43,11 @@ public final class AccessibilityIdentifierConfig: @unchecked Sendable {
         return taskLocalConfig
     }
     
-    /// Resolves config for identifier generation: task-local, then shared.
+    /// Resolves config for identifier generation when Environment is not available: task-local, then shared.
     ///
-    /// SwiftUI Environment is not consulted. ViewInspector `inspect()` evaluates `body` unhosted,
-    /// so `@Environment(\.accessibilityIdentifierConfig)` always reads the default and floods diagnostics.
-    /// Hosting rebinds `@TaskLocal` around layout (`hostRootPlatformView`).
+    /// Hosted views use `UnhostedInspection.withIdentifierConfig` so TestApp's Environment instance
+    /// wins (#247 / #437). ViewInspector `inspect()` must not instantiate Environment (#435);
+    /// the unhosted branch calls this helper. `hostRootPlatformView` still rebinds `@TaskLocal`.
     @MainActor
     internal static func resolvedForIdentifierGeneration() -> AccessibilityIdentifierConfig {
         currentTaskLocalConfig ?? shared
