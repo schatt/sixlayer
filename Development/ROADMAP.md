@@ -2,7 +2,7 @@
 
 **Purpose**: Track planned upcoming work and future enhancements.  
 **Last Updated**: September 1, 2026  
-**Current Release**: v8.3.7
+**Current Release**: v8.3.8
 
 > **Note**: This roadmap tracks planned work. For active todos, see [`todos.md`](../todos.md). For release history, see [`RELEASES.md`](RELEASES.md).
 
@@ -10,7 +10,7 @@
 
 ## 📍 **Current Status**
 
-**Last Release**: v8.3.7 (prep on `next` — SPM ViewInspector pin #438; inspect-safe identifiers #435; OCR hint regex #420/#430)
+**Last Release**: v8.3.8 (hosted Environment identifier config #437; host-managed picker dismiss #441/#442)
 **Current Phase**: Patch Release
 **Next Phase**: Continue framework evolution and stability improvements
 
