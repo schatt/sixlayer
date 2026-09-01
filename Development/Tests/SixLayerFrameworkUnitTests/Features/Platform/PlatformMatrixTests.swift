@@ -152,16 +152,12 @@ open class PlatformMatrixTests: BaseTestClass {
     // MARK: - Vision Framework Availability Matrix
     
     @Test @MainActor func testVisionFrameworkAvailabilityMatrix() {
-        // Test that we can detect the current platform
-        let currentPlatform = SixLayerPlatform.current
-        
-        // Vision framework availability by platform
-        switch currentPlatform {
-        case .iOS, .macOS:
-            #expect(Bool(true), "Vision should be available on \(currentPlatform)")
-        case .watchOS, .tvOS, .visionOS:
-            #expect(Bool(true), "Vision availability varies on \(currentPlatform)")
-        }
+        let available = isVisionFrameworkAvailable()
+        #if os(watchOS)
+        #expect(!available, "Vision is not available on watchOS")
+        #else
+        #expect(available, "Vision is available on this platform")
+        #endif
     }
     
     // MARK: - Performance Configuration Matrix

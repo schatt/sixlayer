@@ -53,20 +53,16 @@ open class RuntimeCapabilityDetectionTDDTests: BaseTestClass {
         // Test that each platform has predictable testing defaults
         let platforms: [SixLayerPlatform] = [SixLayerPlatform.iOS, SixLayerPlatform.macOS, SixLayerPlatform.watchOS, SixLayerPlatform.tvOS, SixLayerPlatform.visionOS]
         
+        let expectedTouch: [SixLayerPlatform: Bool] = [
+            .iOS: true,
+            .macOS: false,
+            .watchOS: true,
+            .tvOS: false,
+            .visionOS: false
+        ]
         for platform in platforms {
             let defaults = TestingCapabilityDetection.getTestingDefaults(for: platform)
-            
-            // Each platform should have defined defaults
-            #expect(Bool(true), "Platform \(platform) should have testing defaults")  // defaults is non-optional
-            
-            // Log the defaults for verification
-            print("Testing defaults for \(platform):")
-            print("  Touch: \(defaults.supportsTouch)")
-            print("  Haptic: \(defaults.supportsHapticFeedback)")
-            print("  Hover: \(defaults.supportsHover)")
-            print("  VoiceOver: \(defaults.supportsVoiceOver)")
-            print("  SwitchControl: \(defaults.supportsSwitchControl)")
-            print("  AssistiveTouch: \(defaults.supportsAssistiveTouch)")
+            #expect(defaults.supportsTouch == expectedTouch[platform], "\(platform) testing default touch")
         }
     }
     
@@ -558,6 +554,21 @@ open class RuntimeCapabilityDetectionTDDTests: BaseTestClass {
         #expect(analyzer == RuntimeCapabilityDetection.Vision.supportsImageAnalyzer)
         #expect(documentCamera == RuntimeCapabilityDetection.Vision.supportsDocumentCamera)
     }
+
+    /// VisionKit live scanner and document camera APIs are unavailable in Mac Catalyst (#415).
+    #if targetEnvironment(macCatalyst)
+    @Test @MainActor
+    func testLiveDataScannerIsUnsupportedOnMacCatalystWithoutOverride() {
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        #expect(!RuntimeCapabilityDetection.Photos.supportsLiveDataScanner)
+    }
+
+    @Test @MainActor
+    func testDocumentCameraIsUnsupportedOnMacCatalystWithoutOverride() {
+        RuntimeCapabilityDetection.clearAllCapabilityOverrides()
+        #expect(!RuntimeCapabilityDetection.Vision.supportsDocumentCamera)
+    }
+    #endif
 
     // MARK: - Files namespaced runtime (#253)
 

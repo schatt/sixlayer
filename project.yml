@@ -45,10 +45,9 @@ settings:
 
 packages:
   ViewInspector:
-    url: https://github.com/nalexn/ViewInspector
-    # Unreleased iOS 27 GeometryProxy-safe line (PR 421). Tagged 0.10.x still
-    # unsafeBitCasts a 48/52-byte proxy and SIGTRAPs on iOS 27 Simulator (#408).
-    branch: 0.10.4
+    url: https://github.com/schatt/ViewInspector
+    # Temporary fork tag (#438): nalexn has no 0.10.4 tag; switch back in #439.
+    from: "0.10.4"
 
 targets:
   # Main framework target - supports both iOS and macOS
@@ -332,6 +331,9 @@ targets:
       - target: SixLayerFramework_tvOS
 
   # Unit tests - watchOS
+  # No ViewInspector / TestKit dependency — same as tvOS unit tests. ViewInspector's
+  # package min is watchOS 7; SafeAreaBar uses HorizontalEdge (watchOS 8+). AllTests
+  # excludes ViewInspectorTests/**. Refs #431.
   SixLayerFrameworkUnitTests_watchOS:
     type: bundle.unit-test
     platform: watchOS
@@ -353,9 +355,6 @@ targets:
       ENABLE_TESTING_SEARCH_PATHS: YES
     dependencies:
       - target: SixLayerFramework_watchOS
-      - target: SixLayerViewInspectorTestKit_watchOS
-      - package: ViewInspector
-        product: ViewInspector
 
   # Unit tests - visionOS
   SixLayerFrameworkUnitTests_visionOS:
@@ -616,9 +615,6 @@ targets:
       ENABLE_TESTING_SEARCH_PATHS: YES
     dependencies:
       - target: SixLayerFramework_watchOS
-      - target: SixLayerViewInspectorTestKit_watchOS
-      - package: ViewInspector
-        product: ViewInspector
 
   # External integration tests - visionOS
   SixLayerFrameworkExternalIntegrationTests_visionOS:

@@ -176,7 +176,6 @@ open class AutomaticAccessibilityIdentifiersTests: BaseTestClass {
                 // (ViewInspector requires the view to be properly installed)
                 _ = try? inspected.accessibilityIdentifier()
                 // Modifier should work on root view
-                #expect(Bool(true), "Modifier should generate identifier on root view without environment warnings")  // identifier is non-optional
             } else {
                 Issue.record("Could not inspect root view - may indicate environment access issue")
             }
@@ -255,21 +254,18 @@ open class AutomaticAccessibilityIdentifiersTests: BaseTestClass {
             // Handle each view separately to avoid Any type issues
             if let inspected1 = try? AnyView(view1).inspect() {
                 _ = try? inspected1.accessibilityIdentifier()
-                #expect(Bool(true), "Modifier variant 1 should generate identifier without warnings")  // identifier1 is non-optional
             } else {
                 Issue.record("Could not inspect view variant 1")
             }
             
             if let inspected2 = try? AnyView(view2).inspect() {
                 _ = try? inspected2.accessibilityIdentifier()
-                #expect(Bool(true), "Modifier variant 2 should generate identifier without warnings")  // identifier2 is non-optional
             } else {
                 Issue.record("Could not inspect view variant 2")
             }
             
             if let inspected3 = try? AnyView(view3).inspect() {
                 _ = try? inspected3.accessibilityIdentifier()
-                #expect(Bool(true), "Modifier variant 3 should generate identifier without warnings")  // identifier3 is non-optional
             } else {
                 Issue.record("Could not inspect view variant 3")
             }

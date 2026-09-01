@@ -106,7 +106,6 @@ open class CallbackFunctionalTests: BaseTestClass {
             onSubmit: { _ in /* callback would be invoked on button tap */ },
             onCancel: { /* callback would be invoked on button tap */ }
         )
-        #expect(Bool(true), "Form generation should accept callback parameters without error")
     }
     
     @Test @MainActor func testIntelligentFormViewOnCancelCallback() async throws {
@@ -129,7 +128,6 @@ open class CallbackFunctionalTests: BaseTestClass {
             onUpdate: { _ in /* callback would be invoked on field updates */ },
             onCancel: { /* callback would be invoked on button tap */ }
         )
-        #expect(Bool(true), "Form generation should accept callback parameters without error")
     }
     
     // MARK: - External Integration Tests
@@ -158,6 +156,5 @@ open class CallbackFunctionalTests: BaseTestClass {
             onTextEdit: { _, _ in /* callback would be invoked during text editing */ },
             onTextDelete: { _ in /* callback would be invoked during text deletion */ }
         )
-        #expect(Bool(true), "OCROverlayView should accept callback parameters without error")
     }
 }

@@ -113,7 +113,6 @@ struct FieldViewTypeDeterminerTests {
         for contentType in DynamicContentType.allCases {
             let viewType = FieldViewTypeDeterminer.determineViewType(for: contentType)
             // Just verify it doesn't crash - the type system ensures it's valid
-            #expect(Bool(true), "\(contentType) should return a valid view type: \(viewType)")
         }
     }
 }

@@ -16,11 +16,6 @@ public struct PlatformUIIntegration {
         let navigationStyle: NavigationStyle
         let context: NavigationContext
         
-        @Environment(\.platformStyle) private var platform
-        @Environment(\.colorSystem) private var colors
-        @Environment(\.typographySystem) private var typography
-        @Environment(\.accessibilitySettings) private var accessibility
-        
         public init(
             title: String,
             style: NavigationStyle = .adaptive,
@@ -34,29 +29,28 @@ public struct PlatformUIIntegration {
         }
         
         public var body: some View {
-            AdaptiveUIPatterns.AdaptiveNavigation(
-                style: navigationStyle,
-                context: context
-            ) {
-                platformVStackContainer(spacing: 0) {
-                    // Header
-                    if shouldShowHeader {
-                        headerView
+            UnhostedInspection.withThemeTokens { tokens in
+                AdaptiveUIPatterns.AdaptiveNavigation(
+                    style: navigationStyle,
+                    context: context
+                ) {
+                    platformVStackContainer(spacing: 0) {
+                        if shouldShowHeader(tokens.platformStyle) {
+                            headerView(tokens)
+                        }
+                        content
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
                     }
-                    
-                    // Content
-                    content
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
+                .navigationTitle(title)
+                .platformNavigationTitleDisplayMode_L4(adaptiveTitleDisplayMode(tokens.platformStyle))
+                .automaticCompliance(
+                    identifierName: sanitizeLabelText(title)
+                )
             }
-            .navigationTitle(title)
-            .platformNavigationTitleDisplayMode_L4(adaptiveTitleDisplayMode)
-            .automaticCompliance(
-                identifierName: sanitizeLabelText(title)  // Auto-generate identifierName from title
-            )
         }
         
-        private var shouldShowHeader: Bool {
+        private func shouldShowHeader(_ platform: PlatformStyle) -> Bool {
             switch platform {
             case .ios: return !context.isCompact
             case .macOS: return true
@@ -66,8 +60,10 @@ public struct PlatformUIIntegration {
             }
         }
         
-        private var headerView: some View {
-            HStack {
+        private func headerView(_ tokens: ThemeTokens) -> some View {
+            let colors = tokens.colorSystem
+            let typography = tokens.typographySystem
+            return HStack {
                 Text(title)
                     .font(typography.largeTitle)
                     .foregroundColor(colors.text)
@@ -75,10 +71,9 @@ public struct PlatformUIIntegration {
                 
                 Spacer()
                 
-                if accessibility.voiceOverSupport {
+                if tokens.accessibilitySettings.voiceOverSupport {
                     let i18n = InternationalizationService()
                     Button(i18n.localizedString(for: "SixLayerFramework.accessibility.skipToContent")) {
-                        // Handle skip to content
                     }
                     .font(typography.caption1)
                     .foregroundColor(colors.primary)
@@ -94,9 +89,7 @@ public struct PlatformUIIntegration {
             )
         }
         
-        /// Adaptive title display mode based on platform and context
-        /// Returns appropriate display mode: inline for compact contexts, large for spacious contexts
-        private var adaptiveTitleDisplayMode: PlatformTitleDisplayMode {
+        private func adaptiveTitleDisplayMode(_ platform: PlatformStyle) -> PlatformTitleDisplayMode {
             switch platform {
             case .ios:
                 return context.isCompact ? .inline : .large
@@ -116,10 +109,6 @@ public struct PlatformUIIntegration {
         let isPresented: Binding<Bool>
         let onDismiss: (() -> Void)?
         
-        @Environment(\.platformStyle) private var platform
-        @Environment(\.colorSystem) private var colors
-        @Environment(\.typographySystem) private var typography
-        
         public init(
             title: String,
             isPresented: Binding<Bool>,
@@ -135,24 +124,25 @@ public struct PlatformUIIntegration {
         }
         
         public var body: some View {
-            AdaptiveUIPatterns.AdaptiveModal(
-                isPresented: isPresented,
-                style: presentationStyle,
-                onDismiss: onDismiss
-            ) {
-                platformVStackContainer(spacing: 0) {
-                    // Header
-                    headerView
-                    
-                    // Content
-                    content
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+            UnhostedInspection.withThemeTokens { tokens in
+                AdaptiveUIPatterns.AdaptiveModal(
+                    isPresented: isPresented,
+                    style: presentationStyle,
+                    onDismiss: onDismiss
+                ) {
+                    platformVStackContainer(spacing: 0) {
+                        headerView(tokens)
+                        content
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    }
                 }
             }
         }
         
-        private var headerView: some View {
-            HStack {
+        private func headerView(_ tokens: ThemeTokens) -> some View {
+            let colors = tokens.colorSystem
+            let typography = tokens.typographySystem
+            return HStack {
                 Text(title)
                     .font(typography.title2)
                     .foregroundColor(colors.text)
@@ -191,10 +181,6 @@ public struct PlatformUIIntegration {
         let context: ListContext
         let onAdd: (() -> Void)?
         
-        @Environment(\.platformStyle) private var platform
-        @Environment(\.colorSystem) private var colors
-        @Environment(\.typographySystem) private var typography
-        
         public init(
             _ data: Data,
             title: String,
@@ -212,23 +198,22 @@ public struct PlatformUIIntegration {
         }
         
         public var body: some View {
-            platformVStackContainer(spacing: 0) {
-                // Header
-                if shouldShowHeader {
-                    headerView
+            UnhostedInspection.withThemeTokens { tokens in
+                platformVStackContainer(spacing: 0) {
+                    if shouldShowHeader(tokens.platformStyle) {
+                        headerView(tokens)
+                    }
+                    AdaptiveUIPatterns.AdaptiveList(
+                        data,
+                        style: listStyle,
+                        context: context,
+                        content: content
+                    )
                 }
-                
-                // List
-                AdaptiveUIPatterns.AdaptiveList(
-                    data,
-                    style: listStyle,
-                    context: context,
-                    content: content
-                )
             }
         }
         
-        private var shouldShowHeader: Bool {
+        private func shouldShowHeader(_ platform: PlatformStyle) -> Bool {
             switch platform {
             case .ios: return !context.isCompact
             case .macOS: return true
@@ -238,8 +223,10 @@ public struct PlatformUIIntegration {
             }
         }
         
-        private var headerView: some View {
-            HStack {
+        private func headerView(_ tokens: ThemeTokens) -> some View {
+            let colors = tokens.colorSystem
+            let typography = tokens.typographySystem
+            return HStack {
                 platformVStackContainer(alignment: .leading, spacing: 4) {
                     Text(title)
                         .font(typography.title2)
@@ -283,10 +270,6 @@ public struct PlatformUIIntegration {
         let onSubmit: (() -> Void)?
         let onCancel: (() -> Void)?
         
-        @Environment(\.platformStyle) private var platform
-        @Environment(\.colorSystem) private var colors
-        @Environment(\.typographySystem) private var typography
-        
         public init(
             title: String,
             onSubmit: (() -> Void)? = nil,
@@ -300,33 +283,32 @@ public struct PlatformUIIntegration {
         }
         
         public var body: some View {
-            platformVStackContainer(spacing: 0) {
-                // Header
-                headerView
-                
-                // Form content
-                ScrollView {
-                    platformVStackContainer(spacing: 16) {
-                        content
+            UnhostedInspection.withThemeTokens { tokens in
+                platformVStackContainer(spacing: 0) {
+                    headerView(tokens)
+                    ScrollView {
+                        platformVStackContainer(spacing: 16) {
+                            content
+                        }
+                        .padding()
                     }
-                    .padding()
+                    .background(tokens.colorSystem.background)
+                    if shouldShowFooter {
+                        footerView(tokens)
+                    }
                 }
-                .background(colors.background)
-                
-                // Footer
-                if shouldShowFooter {
-                    footerView
-                }
+                .themedCard()
             }
-            .themedCard()
         }
         
         private var shouldShowFooter: Bool {
             onSubmit != nil || onCancel != nil
         }
         
-        private var headerView: some View {
-            HStack {
+        private func headerView(_ tokens: ThemeTokens) -> some View {
+            let colors = tokens.colorSystem
+            let typography = tokens.typographySystem
+            return HStack {
                 Text(title)
                     .font(typography.title2)
                     .foregroundColor(colors.text)
@@ -353,8 +335,9 @@ public struct PlatformUIIntegration {
             )
         }
         
-        private var footerView: some View {
-            HStack {
+        private func footerView(_ tokens: ThemeTokens) -> some View {
+            let colors = tokens.colorSystem
+            return HStack {
                 if let onCancel = onCancel {
                     AdaptiveUIPatterns.AdaptiveButton(
                         "Cancel",
@@ -396,10 +379,6 @@ public struct PlatformUIIntegration {
         let action: (() -> Void)?
         let actionTitle: String?
         
-        @Environment(\.platformStyle) private var platform
-        @Environment(\.colorSystem) private var colors
-        @Environment(\.typographySystem) private var typography
-        
         public init(
             title: String? = nil,
             subtitle: String? = nil,
@@ -415,67 +394,53 @@ public struct PlatformUIIntegration {
         }
         
         public var body: some View {
-            platformVStackContainer(alignment: .leading, spacing: 12) {
-                // Header
-                if let title = title {
-                    platformVStackContainer(alignment: .leading, spacing: 4) {
-                        Text(title)
-                            .font(typography.headline)
-                            .foregroundColor(colors.text)
-                            .fontWeight(.semibold)
-                        
-                        if let subtitle = subtitle {
-                            Text(subtitle)
-                                .font(typography.subheadline)
-                                .foregroundColor(colors.textSecondary)
+            UnhostedInspection.withThemeTokens { tokens in
+                let colors = tokens.colorSystem
+                let typography = tokens.typographySystem
+                let platform = tokens.platformStyle
+                let cornerRadius = platform.sixLayerPlatform.defaultCardCornerRadius
+                platformVStackContainer(alignment: .leading, spacing: 12) {
+                    if let title = title {
+                        platformVStackContainer(alignment: .leading, spacing: 4) {
+                            Text(title)
+                                .font(typography.headline)
+                                .foregroundColor(colors.text)
+                                .fontWeight(.semibold)
+                            
+                            if let subtitle = subtitle {
+                                Text(subtitle)
+                                    .font(typography.subheadline)
+                                    .foregroundColor(colors.textSecondary)
+                            }
+                        }
+                    }
+                    content
+                    if let action = action, let actionTitle = actionTitle {
+                        HStack {
+                            Spacer()
+                            AdaptiveUIPatterns.AdaptiveButton(
+                                actionTitle,
+                                style: .outline,
+                                size: .small,
+                                action: action
+                            )
                         }
                     }
                 }
-                
-                // Content
-                content
-                
-                // Action
-                if let action = action, let actionTitle = actionTitle {
-                    HStack {
-                        Spacer()
-                        AdaptiveUIPatterns.AdaptiveButton(
-                            actionTitle,
-                            style: .outline,
-                            size: .small,
-                            action: action
-                        )
-                    }
-                }
+                .padding()
+                .background(colors.surface)
+                .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
+                .overlay(
+                    RoundedRectangle(cornerRadius: cornerRadius)
+                        .stroke(colors.border, lineWidth: 1)
+                )
+                .shadow(
+                    color: Color.black.opacity(0.1),
+                    radius: platform.sixLayerPlatform.defaultShadowRadius,
+                    x: 0,
+                    y: platform.sixLayerPlatform.defaultShadowOffset
+                )
             }
-            .padding()
-            .background(colors.surface)
-            .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
-            .overlay(
-                RoundedRectangle(cornerRadius: cornerRadius)
-                    .stroke(colors.border, lineWidth: 1)
-            )
-            .shadow(
-                color: Color.black.opacity(0.1),
-                radius: shadowRadius,
-                x: 0,
-                y: shadowOffset
-            )
-        }
-        
-        private var cornerRadius: CGFloat {
-            // Use PlatformStrategy for platform-specific corner radius (Issue #140)
-            return platform.sixLayerPlatform.defaultCardCornerRadius
-        }
-        
-        private var shadowRadius: CGFloat {
-            // Use PlatformStrategy for platform-specific shadow radius (Issue #140)
-            return platform.sixLayerPlatform.defaultShadowRadius
-        }
-        
-        private var shadowOffset: CGFloat {
-            // Use PlatformStrategy for platform-specific shadow offset (Issue #140)
-            return platform.sixLayerPlatform.defaultShadowOffset
         }
     }
 }

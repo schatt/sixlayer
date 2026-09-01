@@ -45,13 +45,12 @@ open class IntelligentCardExpansionTests: BaseTestClass {
     @Test @MainActor func testPlatformPresentItemCollectionL1WithExpandableHints() {
         initializeTestConfig()
         // Test that the Layer 1 function accepts expandable hints
-        _ = platformPresentItemCollection_L1(
+        let view = platformPresentItemCollection_L1(
             items: sampleMenuItems,
             hints: expandableHints
         )
         
-        // Verify the function returns a view
-        #expect(Bool(true), "view is non-optional")  // view is non-optional
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "GenericItemCollectionView")
     }
     
     @Test func testExpandableHintsStructure() {
@@ -197,7 +196,6 @@ open class IntelligentCardExpansionTests: BaseTestClass {
             contentDensity: .balanced
         )
         
-        #expect(Bool(true), "strategy is non-optional")  // strategy is non-optional
         #expect(strategy.supportedStrategies.contains(.hoverExpand))
     }
     
@@ -257,14 +255,14 @@ open class IntelligentCardExpansionTests: BaseTestClass {
     
     // MARK: - Layer 4 Tests: Component Implementation
     
-    @Test @MainActor func testSmartGridContainer() {
-        // Test that the smart grid container works
-        _ = SmartGridContainer(
+    @Test @MainActor func testExpandableCardCollectionView() {
+        // Test that the L4 expandable card collection view constructs
+        let container = ExpandableCardCollectionView(
             items: sampleMenuItems,
             hints: expandableHints
         )
         
-        #expect(Bool(true), "container is non-optional")
+        BaseTestClass.expectViewSubjectTypeContains(container, rootViewName: "ExpandableCardCollectionView")
     }
     
     @Test @MainActor func testExpandableCardComponent() {
@@ -296,7 +294,6 @@ open class IntelligentCardExpansionTests: BaseTestClass {
             onItemEdited: { _ in }
         )
         
-        #expect(Bool(true), "card is non-optional")  // card is non-optional
         #expect(!card.isExpanded)
     }
     
@@ -344,7 +341,7 @@ open class IntelligentCardExpansionTests: BaseTestClass {
     @Test @MainActor func testNativeSwiftUIComponents() {
         initializeTestConfig()
         // Test that native SwiftUI components are used
-        _ = NativeExpandableCardView(
+        let nativeView = NativeExpandableCardView(
             item: sampleMenuItems[0],
             expansionStrategy: .hoverExpand,
             platformConfig: getCardExpansionPlatformConfig(),
@@ -352,7 +349,7 @@ open class IntelligentCardExpansionTests: BaseTestClass {
             accessibilityConfig: getCardExpansionAccessibilityConfig()
         )
         
-        #expect(Bool(true), "nativeView is non-optional")  // nativeView is non-optional
+        BaseTestClass.expectViewSubjectTypeContains(nativeView, rootViewName: "NativeExpandableCardView")
     }
     
     @Test @MainActor func testPlatformSpecificOptimizations() {
@@ -372,22 +369,21 @@ open class IntelligentCardExpansionTests: BaseTestClass {
     @Test @MainActor func testEndToEndCardExpansion() {
         initializeTestConfig()
         // Test complete end-to-end card expansion functionality
-        _ = platformPresentItemCollection_L1(
+        let view = platformPresentItemCollection_L1(
             items: sampleMenuItems,
             hints: expandableHints
         )
         
-        #expect(Bool(true), "view is non-optional")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "GenericItemCollectionView")
         
-        // Verify that the system can handle the complete workflow
-        _ = determineIntelligentCardLayout_L2(
+        let layoutDecision = determineIntelligentCardLayout_L2(
             contentCount: sampleMenuItems.count,
             screenWidth: 1024,
             deviceType: .pad,
             contentComplexity: .moderate
         )
         
-        _ = selectCardExpansionStrategy_L3(
+        let strategy = selectCardExpansionStrategy_L3(
             contentCount: sampleMenuItems.count,
             screenWidth: 1024,
             deviceType: .pad,
@@ -395,8 +391,8 @@ open class IntelligentCardExpansionTests: BaseTestClass {
             contentDensity: .balanced
         )
         
-        #expect(Bool(true), "layoutDecision is non-optional")
-        #expect(Bool(true), "strategy is non-optional")
+        #expect(layoutDecision.columns == 2)
+        #expect(strategy.supportedStrategies.contains(.hoverExpand))
     }
     
     @Test @MainActor func testPerformanceRequirements() {
@@ -412,12 +408,12 @@ open class IntelligentCardExpansionTests: BaseTestClass {
     @Test @MainActor func testBackwardCompatibility() {
             initializeTestConfig()
         // Test that the system works with existing MenuItem structure
-        _ = platformPresentItemCollection_L1(
+        let view = platformPresentItemCollection_L1(
             items: sampleMenuItems,
             hints: expandableHints
         )
         
-        #expect(Bool(true), "view is non-optional")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "GenericItemCollectionView")
         
         // Verify that all menu items are processed
         for item in sampleMenuItems {
@@ -434,35 +430,6 @@ private struct MenuItem: Identifiable {
     let title: String
     let icon: String
     let color: Color
-}
-
-private enum DataTypeHint {
-    case featureCards
-    case collection
-    case form
-    case media
-}
-
-private enum InteractionStyle {
-    case expandable
-    case `static`
-    case interactive
-}
-
-private enum ContentDensity {
-    case dense
-    case balanced
-    case spacious
-}
-
-private struct SmartGridContainer {
-    let items: [MenuItem]
-    let hints: PresentationHints
-    
-    init(items: [MenuItem], hints: PresentationHints) {
-        self.items = items
-        self.hints = hints
-    }
 }
 
 private struct ResponsiveBreakpoints {

@@ -1282,7 +1282,6 @@ open class PlatformColorsTests: BaseTestClass {
             // Verify material can be used in a view
             let _ = Rectangle()
                 .background(material!)
-            #expect(Bool(true), "Material should be usable in views")
         }
     }
 }

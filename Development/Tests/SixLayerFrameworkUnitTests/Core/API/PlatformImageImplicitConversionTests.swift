@@ -109,7 +109,6 @@ open class PlatformImageImplicitConversionTests: BaseTestClass {
         coordinator.imagePickerController(UIImagePickerController(), didFinishPickingMediaWithInfo: mockInfo)
         
         // Then: Implicit conversion should work in callback context
-        #expect(Bool(true), "Implicit conversion should work in Layer 4 callbacks")  // capturedImage is non-optional
         #expect(capturedImage!.uiImage == uiImage, "Callback should receive correctly converted PlatformImage")
         #elseif os(macOS)
         // Given: NSImage and Layer 4 components
@@ -130,7 +129,6 @@ open class PlatformImageImplicitConversionTests: BaseTestClass {
         coordinator.takePhoto()
         
         // Then: Implicit conversion should work in callback context
-        #expect(Bool(true), "Implicit conversion should work in Layer 4 callbacks")  // capturedImage is non-optional
         #expect(capturedImage!.size.width > 0, "Callback should receive valid PlatformImage")
         #endif
     }
@@ -159,7 +157,6 @@ open class PlatformImageImplicitConversionTests: BaseTestClass {
             style: .thumbnail
         )
         
-        #expect(Bool(true), "Framework should work with implicitly converted PlatformImage")  // photoDisplay is non-optional
         
         #elseif os(macOS)
         // Given: NSImage with specific properties
@@ -180,7 +177,6 @@ open class PlatformImageImplicitConversionTests: BaseTestClass {
             style: .thumbnail
         )
         
-        #expect(Bool(true), "Framework should work with implicitly converted PlatformImage")  // photoDisplay is non-optional
         #endif
     }
     

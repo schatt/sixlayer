@@ -208,7 +208,10 @@ ensure_ci_sim_destination_specifier() {
     local udid="$3"
     local label
     label="$(ensure_ci_sim_xcode_platform_label "$platform_family")"
-    printf '%s\n' "platform=${label},name=${name},id=${udid}"
+    # Omit name= — xcodebuild infers OS:latest from name, which misses
+    # non-latest runtimes (CI Mini: 26.5 vs latest). UDID is unique. #429
+    : "${name}"
+    printf '%s\n' "platform=${label},id=${udid}"
 }
 
 # Ensure a simulator exists; print destination specifier on stdout.

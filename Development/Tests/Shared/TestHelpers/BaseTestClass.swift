@@ -28,10 +28,10 @@ import ViewInspector
 ///
 /// Do **not** mutate `AccessibilityIdentifierConfig.shared` for per-test setup (parallel-unsafe).
 /// Use `initializeTestConfig()` then `runWithTaskLocalConfig { … }` so resolution matches
-/// `AccessibilityIdentifierConfig.resolvedForIdentifierGeneration` via `@TaskLocal`. When hosting
-/// SwiftUI where the task local is not visible, inject the same instance on the root with
-/// `\.accessibilityIdentifierConfig` (see `TestSetupUtilities.hostRootPlatformView`). The UI test
-/// host injects at `WindowGroup` instead of touching `shared` (`TestApp.swift`). Reading `shared`
+/// `AccessibilityIdentifierConfig.resolvedForIdentifierGeneration()` via `@TaskLocal`. When hosting
+/// SwiftUI, `hostRootPlatformView` rebinds the same instance with `@TaskLocal` around layout
+/// (not SwiftUI Environment; #435). The UI test host may still set `\.accessibilityIdentifierConfig`
+/// on `WindowGroup` for TestApp-only readers (`TestApp.swift`). Reading `shared`
 /// is acceptable; writes belong on an isolated instance (or a tiny dedicated suite that restores state).
 open class BaseTestClass {
     /// Public initializer required for Swift testing framework to instantiate test classes
@@ -50,7 +50,9 @@ open class BaseTestClass {
     }
     
     /// Run code with task-local config isolation
-    /// Ensures each test runs with its own isolated configuration
+    /// Ensures each test runs with its own isolated configuration.
+    /// Also marks the task as unhosted inspection so `inspect()` does not instantiate
+    /// Environment readers (#435). `hostRootPlatformView` clears that flag around layout.
     @MainActor
     func runWithTaskLocalConfig<T>(_ body: () throws -> T) rethrows -> T {
         guard let config = testConfig else {
@@ -60,11 +62,15 @@ open class BaseTestClass {
                 fatalError("Failed to initialize testConfig")
             }
             return try AccessibilityIdentifierConfig.$taskLocalConfig.withValue(config) {
-                try body()
+                try AccessibilityIdentifierConfig.withUnhostedInspection {
+                    try body()
+                }
             }
         }
         return try AccessibilityIdentifierConfig.$taskLocalConfig.withValue(config) {
-            try body()
+            try AccessibilityIdentifierConfig.withUnhostedInspection {
+                try body()
+            }
         }
     }
     
@@ -79,11 +85,15 @@ open class BaseTestClass {
                 fatalError("Failed to initialize testConfig")
             }
             return try await AccessibilityIdentifierConfig.$taskLocalConfig.withValue(config) {
-                try await body()
+                try await AccessibilityIdentifierConfig.$unhostedInspection.withValue(true) {
+                    try await body()
+                }
             }
         }
         return try await AccessibilityIdentifierConfig.$taskLocalConfig.withValue(config) {
-            try await body()
+            try await AccessibilityIdentifierConfig.$unhostedInspection.withValue(true) {
+                try await body()
+            }
         }
     }
     
@@ -206,7 +216,9 @@ open class BaseTestClass {
         // 2. Contains what it needs to contain - The view has proper structure
         #if canImport(ViewInspector)
         do {
-            _ = try view.inspect()
+            _ = try AccessibilityIdentifierConfig.withUnhostedInspection {
+                try view.inspect()
+            }
         } catch {
             Issue.record("Failed to inspect view structure for \(testName): \(error)")
         }

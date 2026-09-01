@@ -97,14 +97,8 @@ struct DataIntrospectionCoreDataTests {
         let priceField = analysis.fields.first { $0.name == "price" }
         let inStockField = analysis.fields.first { $0.name == "inStock" }
         
-        // nameField, priceField, inStockField are optionals from .first, so nil checks are valid
-        #expect(Bool(true), "Should have 'name' field")  // nameField is non-optional
         #expect(nameField?.type == .string, "Name field should be .string type")
-        
-        #expect(Bool(true), "Should have 'price' field")  // priceField is non-optional
         #expect(priceField?.type == .number, "Price field should be .number type")
-        
-        #expect(Bool(true), "Should have 'inStock' field")  // inStockField is non-optional
         #expect(inStockField?.type == .boolean, "InStock field should be .boolean type")
     }
     

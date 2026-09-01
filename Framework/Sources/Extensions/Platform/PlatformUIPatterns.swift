@@ -16,10 +16,6 @@ public struct AdaptiveUIPatterns {
         let navigationStyle: NavigationStyle
         let context: NavigationContext
         
-        @Environment(\.platformStyle) private var platform
-        @Environment(\.colorSystem) private var colors
-        @Environment(\.typographySystem) private var typography
-        
         public init(
             style: NavigationStyle = .adaptive,
             context: NavigationContext = .standard,
@@ -32,22 +28,24 @@ public struct AdaptiveUIPatterns {
         
         @ViewBuilder
         public var body: some View {
-            switch navigationStyle {
-            case .adaptive:
-                adaptiveNavigation
-            case .splitView:
-                splitViewNavigation
-            case .stack:
-                stackNavigation
-            case .modal:
-                stackNavigation // Use stack navigation for modal case
-            case .sidebar:
-                sidebarNavigation
+            UnhostedInspection.withThemeTokens { tokens in
+                switch navigationStyle {
+                case .adaptive:
+                    adaptiveNavigation(platform: tokens.platformStyle)
+                case .splitView:
+                    splitViewNavigation
+                case .stack:
+                    stackNavigation
+                case .modal:
+                    stackNavigation
+                case .sidebar:
+                    sidebarNavigation
+                }
             }
         }
         
         @ViewBuilder
-        private var adaptiveNavigation: some View {
+        private func adaptiveNavigation(platform: PlatformStyle) -> some View {
             switch platform {
             case .ios:
                 if context.isCompact {
@@ -141,9 +139,6 @@ public struct AdaptiveUIPatterns {
         let isPresented: Binding<Bool>
         let onDismiss: (() -> Void)?
         
-        @Environment(\.platformStyle) private var platform
-        @Environment(\.colorSystem) private var colors
-        
         public init(
             isPresented: Binding<Bool>,
             style: ModalPresentationStyle = .adaptive,
@@ -158,22 +153,24 @@ public struct AdaptiveUIPatterns {
         
         @ViewBuilder
         public var body: some View {
-            switch presentationStyle {
-            case .adaptive:
-                adaptiveModal
-            case .sheet:
-                sheetModal
-            case .fullScreen:
-                fullScreenModal
-            case .popover:
-                popoverModal
-            case .window:
-                adaptiveModal // Use adaptive modal for window case
+            UnhostedInspection.withThemeTokens { tokens in
+                switch presentationStyle {
+                case .adaptive:
+                    adaptiveModal(platform: tokens.platformStyle)
+                case .sheet:
+                    sheetModal
+                case .fullScreen:
+                    fullScreenModal
+                case .popover:
+                    popoverModal
+                case .window:
+                    adaptiveModal(platform: tokens.platformStyle)
+                }
             }
         }
         
         @ViewBuilder
-        private var adaptiveModal: some View {
+        private func adaptiveModal(platform: PlatformStyle) -> some View {
             switch platform {
             case .ios:
                 if #available(iOS 16.0, *) {
@@ -229,10 +226,6 @@ public struct AdaptiveUIPatterns {
         let listStyle: ListStyle
         let context: ListContext
         
-        @Environment(\.platformStyle) private var platform
-        @Environment(\.colorSystem) private var colors
-        @Environment(\.typographySystem) private var typography
-        
         public init(
             _ data: Data,
             style: ListStyle = .adaptive,
@@ -246,27 +239,29 @@ public struct AdaptiveUIPatterns {
         }
         
         public var body: some View {
-            Group {
-                switch listStyle {
-                case .adaptive:
-                    adaptiveList
-                case .plain:
-                    plainList
-                case .grouped:
-                    groupedList
-                case .insetGrouped:
-                    insetGroupedList
-                case .sidebar:
-                    sidebarList
-                case .carousel:
-                    carouselList
+            UnhostedInspection.withThemeTokens { tokens in
+                Group {
+                    switch listStyle {
+                    case .adaptive:
+                        adaptiveList(platform: tokens.platformStyle)
+                    case .plain:
+                        plainList
+                    case .grouped:
+                        groupedList
+                    case .insetGrouped:
+                        insetGroupedList
+                    case .sidebar:
+                        sidebarList
+                    case .carousel:
+                        carouselList
+                    }
                 }
+                .themedList()
             }
-            .themedList()
         }
         
         @ViewBuilder
-        private var adaptiveList: some View {
+        private func adaptiveList(platform: PlatformStyle) -> some View {
             switch platform {
             case .ios:
                 if context.isCompact {
@@ -371,11 +366,6 @@ public struct AdaptiveUIPatterns {
         let size: ButtonSize
         let action: () -> Void
         
-        @Environment(\.platformStyle) private var platform
-        @Environment(\.colorSystem) private var colors
-        @Environment(\.typographySystem) private var typography
-        @Environment(\.accessibilitySettings) private var accessibility
-        
         public init(
             _ title: String,
             icon: String? = nil,
@@ -391,6 +381,32 @@ public struct AdaptiveUIPatterns {
         }
         
         public var body: some View {
+            UnhostedInspection.withThemeTokens { tokens in
+                AdaptiveButtonStyled(
+                    title: title,
+                    icon: icon,
+                    style: style,
+                    size: size,
+                    action: action,
+                    tokens: tokens
+                )
+            }
+        }
+    }
+
+    private struct AdaptiveButtonStyled: View {
+        let title: String
+        let icon: String?
+        let style: ButtonStyle
+        let size: ButtonSize
+        let action: () -> Void
+        let tokens: ThemeTokens
+
+        private var platform: PlatformStyle { tokens.platformStyle }
+        private var colors: ColorSystem { tokens.colorSystem }
+        private var typography: TypographySystem { tokens.typographySystem }
+
+        var body: some View {
             Button(action: action) {
                 platformHStackContainer(spacing: 8) {
                     if let icon = icon {
@@ -410,8 +426,8 @@ public struct AdaptiveUIPatterns {
                 .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
             }
             .buttonStyle(PlainButtonStyle())
-            .scaleEffect(accessibility.reducedMotion ? 1.0 : 0.95)
-            .animation(accessibility.reducedMotion ? nil : .easeInOut(duration: 0.1), value: false)
+            .scaleEffect(PlatformReduceMotionPreference.isReduceMotionEnabled ? 1.0 : 0.95)
+            .animation(PlatformReduceMotionPreference.isReduceMotionEnabled ? nil : .easeInOut(duration: 0.1), value: false)
             .accessibilityLabel(title)
             .accessibilityAddTraits(.isButton)
             .environment(\.accessibilityIdentifierLabel, title)

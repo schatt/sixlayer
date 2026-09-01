@@ -190,7 +190,6 @@ open class SwitchControlTests: BaseTestClass {
             .switchControlEnabled()
         
         // Then: View should support Switch Control (creation verifies it works)
-        #expect(Bool(true), "View with Switch Control should be creatable")
     }
     
     @Test @MainActor func testSwitchControlViewModifierWithConfiguration() {
@@ -203,7 +202,6 @@ open class SwitchControlTests: BaseTestClass {
             .switchControlEnabled(config: config)
         
         // Then: View should support Switch Control with configuration (creation verifies it works)
-        #expect(Bool(true), "View with Switch Control config should be creatable")
     }
     
     // MARK: - Switch Control Compliance Tests

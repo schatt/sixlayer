@@ -108,7 +108,6 @@ open class DataIntrospectionTests: BaseTestClass {
     @Test func testDataIntrospectionWithSwiftDataModel() {
         // SwiftData @Model macro is not available in test targets
         // DataIntrospectionEngine supports SwiftData models at runtime, but we can't test it here
-        #expect(Bool(true), "SwiftData model introspection tested via integration tests - @Model macro not available in test targets")
     }
     #endif
 }

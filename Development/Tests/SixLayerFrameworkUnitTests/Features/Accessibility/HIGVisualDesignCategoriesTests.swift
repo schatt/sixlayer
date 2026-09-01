@@ -25,7 +25,6 @@ open class HIGVisualDesignCategoriesTests: BaseTestClass {
         _ = animationSystem.animation(for: .spring)
         _ = animationSystem.animation(for: .custom(.easeIn))
         
-        #expect(Bool(true), "Animations should be created successfully")
     }
     
     @Test @MainActor func testEaseInOutAnimationCategory() {
@@ -34,7 +33,6 @@ open class HIGVisualDesignCategoriesTests: BaseTestClass {
         // Then: Should provide HIG-compliant easeInOut animation
         let animationSystem = HIGAnimationSystem(for: .iOS)
         _ = animationSystem.animation(for: .easeInOut)
-        #expect(Bool(true), "EaseInOut animation should be created")
     }
     
     @Test @MainActor func testSpringAnimationCategory() {
@@ -43,7 +41,6 @@ open class HIGVisualDesignCategoriesTests: BaseTestClass {
         // Then: Should provide HIG-compliant spring animation
         let animationSystem = HIGAnimationSystem(for: .iOS)
         _ = animationSystem.animation(for: .spring)
-        #expect(Bool(true), "Spring animation should be created")
     }
     
     @Test @MainActor func testCustomTimingFunctionAnimationCategory() {
@@ -52,7 +49,6 @@ open class HIGVisualDesignCategoriesTests: BaseTestClass {
         // Then: Should provide custom timing function animation
         let animationSystem = HIGAnimationSystem(for: .iOS)
         _ = animationSystem.animation(for: .custom(.easeIn))
-        #expect(Bool(true), "Custom animation should be created")
     }
     
     @Test @MainActor func testPlatformAppropriateAnimationDefaults() {
@@ -425,7 +421,6 @@ open class HIGVisualDesignCategoriesTests: BaseTestClass {
         // When: Animation category modifier is applied
         // Then: Should apply animation category
         _ = Text("Test").higAnimationCategory(.easeInOut)
-        #expect(Bool(true), "Animation category modifier should apply")
     }
     
     @Test @MainActor func testShadowCategoryModifier() {
@@ -433,7 +428,6 @@ open class HIGVisualDesignCategoriesTests: BaseTestClass {
         // When: Shadow category modifier is applied
         // Then: Should apply shadow category
         _ = Text("Test").higShadowCategory(.elevated)
-        #expect(Bool(true), "Shadow category modifier should apply")
     }
     
     @Test @MainActor func testCornerRadiusCategoryModifier() {
@@ -441,7 +435,6 @@ open class HIGVisualDesignCategoriesTests: BaseTestClass {
         // When: Corner radius category modifier is applied
         // Then: Should apply corner radius category
         _ = Text("Test").higCornerRadiusCategory(.medium)
-        #expect(Bool(true), "Corner radius category modifier should apply")
     }
     
     @Test @MainActor func testBorderWidthCategoryModifier() {
@@ -449,7 +442,6 @@ open class HIGVisualDesignCategoriesTests: BaseTestClass {
         // When: Border width category modifier is applied
         // Then: Should apply border width category
         _ = Text("Test").higBorderWidthCategory(.thin)
-        #expect(Bool(true), "Border width category modifier should apply")
     }
     
     @Test @MainActor func testOpacityCategoryModifier() {
@@ -457,7 +449,6 @@ open class HIGVisualDesignCategoriesTests: BaseTestClass {
         // When: Opacity category modifier is applied
         // Then: Should apply opacity category
         _ = Text("Test").higOpacityCategory(.primary)
-        #expect(Bool(true), "Opacity category modifier should apply")
     }
     
     @Test @MainActor func testBlurCategoryModifier() {
@@ -465,7 +456,6 @@ open class HIGVisualDesignCategoriesTests: BaseTestClass {
         // When: Blur category modifier is applied
         // Then: Should apply blur category
         _ = Text("Test").higBlurCategory(.light)
-        #expect(Bool(true), "Blur category modifier should apply")
     }
     
     // MARK: - VisualConsistencyModifier Integration Tests
@@ -486,7 +476,6 @@ open class HIGVisualDesignCategoriesTests: BaseTestClass {
             visualDesignConfig: HIGVisualDesignCategoryConfig.default(for: .iOS),
             iOSConfig: HIGiOSCategoryConfig()
         ))
-        #expect(Bool(true), "VisualConsistencyModifier should apply")
     }
 }
 

@@ -96,12 +96,9 @@ public extension View {
 private struct PlatformAnimationModifier: ViewModifier {
     let animation: Animation
     let value: AnyHashable
-    @Environment(\.accessibilityReduceMotion) private var accessibilityReduceMotion
 
     func body(content: Content) -> some View {
-        let reduceMotion = PlatformReduceMotionPreference.effectiveReduceMotionEnabled(
-            accessibilityReduceMotion: accessibilityReduceMotion
-        )
+        let reduceMotion = PlatformReduceMotionPreference.isReduceMotionEnabled
         if let resolved = PlatformReduceMotionPreference.resolvedAnimation(
             animation,
             reduceMotionEnabled: reduceMotion

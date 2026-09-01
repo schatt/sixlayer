@@ -24,7 +24,6 @@ open class PlatformModalSheetNavigationChromeLayer4Tests: BaseTestClass {
             onConfirmation: {},
             content: { Text("Body") }
         )
-        #expect(Bool(true), "Simple overload should compile and build")
     }
 
     @Test @MainActor func testPlatformModalSheetNavigationChrome_L4_WithLeading_APISignature() {
@@ -36,7 +35,6 @@ open class PlatformModalSheetNavigationChromeLayer4Tests: BaseTestClass {
             leadingToolbar: { Button("Reset", action: {}) },
             content: { Text("List") }
         )
-        #expect(Bool(true), "Leading-toolbar overload should compile and build")
     }
 
     // MARK: - Toolbar presence (stub must fail; full implementation must pass)
@@ -82,7 +80,6 @@ open class PlatformModalSheetNavigationChromeLayer4Tests: BaseTestClass {
         }
         #expect(found == true, "macOS inspection should find confirmation toolbar button")
         #else
-        #expect(Bool(true), "Platform-specific toolbar check skipped on this target")
         #endif
     }
 
@@ -101,9 +98,7 @@ open class PlatformModalSheetNavigationChromeLayer4Tests: BaseTestClass {
         let hosted = hostRootPlatformView(chrome)
         let report = diagnosticsReportedAccessibilityElementCounts(inHosted: hosted)
         print("[A11y diagnostics] \(report)")
-        #expect(Bool(true), "See test console log for [A11y diagnostics] line")
         #else
-        #expect(Bool(true), "iOS UIKit-only diagnostic")
         #endif
     }
 
@@ -158,7 +153,6 @@ open class PlatformModalSheetNavigationChromeLayer4Tests: BaseTestClass {
         }
         #expect(found == true, "macOS inspection should find leading and confirmation buttons")
         #else
-        #expect(Bool(true), "Platform-specific toolbar check skipped on this target")
         #endif
     }
 

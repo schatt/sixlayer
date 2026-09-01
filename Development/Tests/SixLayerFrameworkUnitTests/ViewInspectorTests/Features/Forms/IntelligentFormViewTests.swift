@@ -208,7 +208,6 @@ open class IntelligentFormViewTests: BaseTestClass {
                 }
 
                 // TDD RED: Should PASS - button should exist
-                #expect(Bool(true), "Update button should exist in form")
                 // TODO: After fix, add verification for visual feedback (success message, etc.)
             } else {
                 Issue.record("Could not inspect form view")
@@ -287,7 +286,6 @@ open class IntelligentFormViewTests: BaseTestClass {
             cleanupTestEnvironment()
             #else
             // Core Data not available on this platform
-            #expect(Bool(true), "Core Data not available - skipping test")
             #endif
         }
     }
@@ -351,7 +349,6 @@ open class IntelligentFormViewTests: BaseTestClass {
             cleanupTestEnvironment()
             #else
             // Core Data not available on this platform
-            #expect(Bool(true), "Core Data not available - skipping test")
             #endif
         }
     }
@@ -434,13 +431,11 @@ open class IntelligentFormViewTests: BaseTestClass {
 
             // THEN: updatedAt should be updated to current date
             let updatedDate = task.value(forKey: "updatedAt") as? Date
-            #expect(Bool(true), "updatedAt should be set")  // updatedDate is non-optional
             #expect(updatedDate! > originalDate, "updatedAt should be updated to a more recent date")
 
             cleanupTestEnvironment()
             #else
             // Core Data not available on this platform
-            #expect(Bool(true), "Core Data not available - skipping test")
             #endif
         }
     }
@@ -516,7 +511,6 @@ open class IntelligentFormViewTests: BaseTestClass {
             cleanupTestEnvironment()
             #else
             // Core Data not available on this platform
-            #expect(Bool(true), "Core Data not available - skipping test")
             #endif
         }
     }
@@ -572,7 +566,6 @@ open class IntelligentFormViewTests: BaseTestClass {
             cleanupTestEnvironment()
             #else
             // Core Data not available on this platform
-            #expect(Bool(true), "Core Data not available - skipping test")
             #endif
         }
     }

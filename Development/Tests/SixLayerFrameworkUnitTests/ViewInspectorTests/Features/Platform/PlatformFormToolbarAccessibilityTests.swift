@@ -49,7 +49,6 @@ struct PlatformFormToolbarAccessibilityTests {
         #else
         // tvOS/visionOS: ViewInspector not linked; watchOS: toolbar item extraction unreliable (#271).
         // Positive contract: PlatformToolbarAccessibilityUITests on iOS/macOS.
-        #expect(Bool(true), "Skipped: toolbar nil-ID check needs ViewInspector on iOS/macOS only (Issue #221 / #271)")
         #endif
     }
 }

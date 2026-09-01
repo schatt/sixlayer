@@ -54,8 +54,7 @@ open class NavigationStackLayer2Tests: BaseTestClass {
             hints: hints
         )
         
-        // Then: Should return a decision
-        #expect(Bool(true), "decision is non-optional")
+        // Then: Should return a decision with a strategy
         #expect(decision.strategy != nil, "Should have a navigation strategy")
     }
     

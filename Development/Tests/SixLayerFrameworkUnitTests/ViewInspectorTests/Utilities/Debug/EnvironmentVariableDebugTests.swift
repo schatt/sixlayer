@@ -1,94 +1,63 @@
 import Testing
+
+import SwiftUI
 #if canImport(ViewInspector)
 import ViewInspector
 #endif
-import SwiftUI
 @testable import SixLayerFramework
-/// Debug test to understand environment variable propagation
-/// NOTE: Not marked @MainActor on class to allow parallel execution
-@Suite("Environment Variable Debug")
+
+/// Config-path accessibility identifier generation (env var removed in #160).
+/// Do not use `findAll(Button)` here — descendant search SIGTRAPs on iOS 27 (#408).
+@Suite("Environment Variable Debug", HostedViewTestIsolationTrait())
 open class EnvironmentVariableDebugTests: BaseTestClass {
 
-    // BaseTestClass handles setup automatically - no need for custom init
-    
+    /// Local `automaticCompliance(identifierName:)` still generates an ID when global auto-IDs are off.
     @Test @MainActor func testEnvironmentVariablePropagation() {
-            initializeTestConfig()
+        initializeTestConfig()
         runWithTaskLocalConfig {
-            
-            // Test: Does the environment variable get set properly?
-            
-            // 1. Disable global config
             guard let config = testConfig else {
                 Issue.record("testConfig is nil")
                 return
             }
             config.enableAutoIDs = false
-            print("🔧 Global config disabled: enableAutoIDs = false")
-            
-            // 2. Create a view with automaticAccessibilityIdentifiers modifier
-            let view = Button("Test") { }
-                .automaticCompliance()  // ← This should set autoIDsEnabled = true
-            
-            // 3. Try to inspect for accessibility identifier
-            // Using wrapper
-            #if canImport(ViewInspector)
-            if let inspectedView = try? AnyView(view).inspect(),
-               let button = inspectedView.findAll(ViewInspector.ViewType.Button.self).first,
-               let accessibilityID = try? button.accessibilityIdentifier() {
-                print("🔍 Generated ID: '\(accessibilityID)'")
 
-                if accessibilityID.isEmpty {
-                    print("❌ FAILED: No ID generated - environment variable not working")
-                    Issue.record("Environment variable not working - no ID generated")
-                } else {
-                    print("✅ SUCCESS: ID generated - '\(accessibilityID)'")
-                }
-            } else {
-                print("❌ FAILED: Could not inspect view")
-                Issue.record("Could not inspect view")
-            }
-            #else
-            // ViewInspector not available on this platform - this is expected, not a failure
+            let view = Button("Test") { }
+                .automaticCompliance(identifierName: "EnvVarLocalEnable")
+
+            #if canImport(ViewInspector)
+            let hasID = testComponentComplianceSinglePlatform(
+                view,
+                expectedPattern: "*EnvVarLocalEnable*",
+                platform: SixLayerPlatform.current,
+                componentName: "EnvVarLocalEnable"
+            )
+            #expect(hasID, "Local automaticCompliance(identifierName:) should generate an ID when enableAutoIDs is false")
             #endif
         }
     }
-    
+
+    /// `globalAutomaticAccessibilityIdentifiers` (env-var replacement) plus `enableAutoIDs` generate an ID.
     @Test @MainActor func testDirectEnvironmentVariableSetting() {
-            initializeTestConfig()
+        initializeTestConfig()
         runWithTaskLocalConfig {
-            // Test: Does setting the environment variable directly work?
-            
-            // 1. Disable global config
             guard let config = testConfig else {
                 Issue.record("testConfig is nil")
                 return
             }
-            config.enableAutoIDs = false
-            print("🔧 Global config disabled: enableAutoIDs = false")
-            
-            // 2. Create a view with config setting (no environment variable - removed in Issue #160)
-            config.globalAutomaticAccessibilityIdentifiers = true  // ← Enable via config
+            config.enableAutoIDs = true
+            config.globalAutomaticAccessibilityIdentifiers = true
+
             let view = Button("Test") { }
-                .automaticCompliance()
-            
-            // 3. Try to inspect for accessibility identifier
+                .automaticCompliance(identifierName: "EnvVarConfigEnable")
+
             #if canImport(ViewInspector)
-            if let inspectedView = try? AnyView(view).inspect(),
-               let button = inspectedView.findAll(ViewInspector.ViewType.Button.self).first,
-               let accessibilityID = try? button.accessibilityIdentifier() {
-                print("🔍 Generated ID: '\(accessibilityID)'")
-                
-                if accessibilityID.isEmpty {
-                    print("❌ FAILED: No ID generated - direct environment variable not working")
-                    Issue.record("Direct environment variable not working - no ID generated")
-                } else {
-                }
-            } else {
-                print("❌ FAILED: Could not inspect view")
-                Issue.record("Could not inspect view")
-            }
-            #else
-            // ViewInspector not available on this platform - this is expected, not a failure
+            let hasID = testComponentComplianceSinglePlatform(
+                view,
+                expectedPattern: "*EnvVarConfigEnable*",
+                platform: SixLayerPlatform.current,
+                componentName: "EnvVarConfigEnable"
+            )
+            #expect(hasID, "Named automaticCompliance should generate an ID when both config flags are enabled")
             #endif
         }
     }

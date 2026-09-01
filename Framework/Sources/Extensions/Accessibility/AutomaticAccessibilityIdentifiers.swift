@@ -50,8 +50,9 @@ public struct AccessibilityIdentifierLabelKey: EnvironmentKey {
     public static let defaultValue: String? = nil
 }
 
-/// Environment key for injecting AccessibilityIdentifierConfig (for testing)
-/// Allows tests to provide isolated config instances instead of using singleton
+/// Environment key for injecting AccessibilityIdentifierConfig.
+/// Kept for public ABI. Identifier generation does **not** read this key (#435);
+/// it uses `AccessibilityIdentifierConfig.resolvedForIdentifierGeneration()` (task-local then `.shared`).
 public struct AccessibilityIdentifierConfigKey: EnvironmentKey {
     public static let defaultValue: AccessibilityIdentifierConfig? = nil
 }
@@ -469,15 +470,13 @@ public struct AutomaticComplianceModifier: ViewModifier {
 /// Modifier that applies automatic accessibility identifiers with a specific component name
 /// This is used by the .automaticCompliance(named:) helper
 /// 
-/// NOTE: No singleton observer needed - modifier reads config directly from task-local/injected/shared
-/// This eliminates singleton access overhead and improves test isolation.
+/// NOTE: Config comes from `AccessibilityIdentifierConfig.resolvedForIdentifierGeneration()`
+/// (task-local then `.shared`). Do not read SwiftUI Environment for the config instance.
 /// Identifier attaches via ``View/accessibilityHostIdentifier(_:)`` (host sentinel), matching
 /// ``NamedModifier`` / ``ExactNamedModifier`` (#360 / #364 / #406).
 public struct NamedAutomaticComplianceModifier: ViewModifier {
     let componentName: String
     let accessibilityLabel: String?  // NEW: Accessibility label for VoiceOver (Issue #154)
-    /// Optional injected config (e.g. unit-test hosting) when `@TaskLocal` is not visible during SwiftUI body evaluation.
-    @Environment(\.accessibilityIdentifierConfig) private var envAccessibilityIdentifierConfig
     
     nonisolated public init(componentName: String, accessibilityLabel: String? = nil) {
         self.componentName = componentName
@@ -485,7 +484,7 @@ public struct NamedAutomaticComplianceModifier: ViewModifier {
     }
     
     public func body(content: Content) -> some View {
-        let config = AccessibilityIdentifierConfig.resolvedForIdentifierGeneration(environment: envAccessibilityIdentifierConfig)
+        let config = AccessibilityIdentifierConfig.resolvedForIdentifierGeneration()
         // CRITICAL: Capture @Published property values as local variables BEFORE any logic
         // to avoid creating SwiftUI dependencies that cause infinite recursion
         let capturedScreenContext = config.currentScreenContext
@@ -590,10 +589,9 @@ public struct NamedAutomaticComplianceModifier: ViewModifier {
 /// Modifier that allows components to be named for more specific accessibility identifiers
 public struct NamedModifier: ViewModifier {
     let name: String
-    @Environment(\.accessibilityIdentifierConfig) private var envAccessibilityIdentifierConfig
     
     public func body(content: Content) -> some View {
-        let config = AccessibilityIdentifierConfig.resolvedForIdentifierGeneration(environment: envAccessibilityIdentifierConfig)
+        let config = AccessibilityIdentifierConfig.resolvedForIdentifierGeneration()
         // Prefix removed - use config.globalPrefix instead (no environment dependency)
         let capturedScreenContext = config.currentScreenContext
         let capturedViewHierarchy = config.currentViewHierarchy
@@ -700,10 +698,9 @@ public struct NamedModifier: ViewModifier {
 /// overwrite nested child contract ids (#364 / #360).
 public struct ExactNamedModifier: ViewModifier {
     let name: String
-    @Environment(\.accessibilityIdentifierConfig) private var envAccessibilityIdentifierConfig
     
     public func body(content: Content) -> some View {
-        let config = AccessibilityIdentifierConfig.resolvedForIdentifierGeneration(environment: envAccessibilityIdentifierConfig)
+        let config = AccessibilityIdentifierConfig.resolvedForIdentifierGeneration()
         let capturedEnableDebugLogging = config.enableDebugLogging
         let exactId = Self.generateExactNamedAccessibilityIdentifier(
             config: config,
@@ -781,7 +778,6 @@ public struct ForcedAutomaticAccessibilityIdentifiersModifier: ViewModifier {
     // Hints passed as parameters (Option A) - explicit, testable, no hidden dependencies
     let identifierName: String?
     let identifierElementType: String?
-    @Environment(\.accessibilityIdentifierConfig) private var envAccessibilityIdentifierConfig
     
     public init(
         identifierName: String? = nil,
@@ -792,7 +788,7 @@ public struct ForcedAutomaticAccessibilityIdentifiersModifier: ViewModifier {
     }
     
     public func body(content: Content) -> some View {
-        let config = AccessibilityIdentifierConfig.resolvedForIdentifierGeneration(environment: envAccessibilityIdentifierConfig)
+        let config = AccessibilityIdentifierConfig.resolvedForIdentifierGeneration()
         
         // CRITICAL: Capture @Published property values as local variables BEFORE calling generateIdentifier
         // to avoid creating SwiftUI dependencies that cause infinite recursion
@@ -905,14 +901,14 @@ public struct AutomaticHIGColorContrastModifier: ViewModifier {
 /// Ensures text scales with system accessibility settings
 public struct AutomaticHIGTypographyScalingModifier: ViewModifier {
     let platform: SixLayerPlatform
-    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     public func body(content: Content) -> some View {
         let policy = HIGMinimumTypographyPolicy(platform: platform)
-        // Cap upward at accessibility5 without resetting an explicit or inherited size.
-        // Custom fixed sizes should use Font.higCompliantSystem so floors apply via resolver policy.
+        // Cap upward at accessibility5. Do not read `@Environment(\.dynamicTypeSize)` to form a
+        // lower bound — inspect() cannot install Environment (#435). Inherited sizes still flow
+        // into descendants; this only constrains the maximum.
         content
-            .dynamicTypeSize(dynamicTypeSize...HIGMinimumTypographyPolicy.maximumDynamicTypeSize)
+            .dynamicTypeSize(...HIGMinimumTypographyPolicy.maximumDynamicTypeSize)
             .environment(\.higMinimumTypographyPolicy, policy)
             .dynamicFontResolver(
                 DynamicFontResolver(
@@ -1290,9 +1286,7 @@ public struct BasicAutomaticComplianceModifier: ViewModifier {
     let accessibilityTraits: AccessibilityTraits?  // NEW: Accessibility traits (Issue #165)
     let accessibilityValue: String?  // NEW: Accessibility value for stateful elements (Issue #165)
     let accessibilitySortPriority: Double?  // NEW: Accessibility sort priority for reading order (Issue #165)
-    @Environment(\.accessibilityIdentifierConfig) private var envAccessibilityIdentifierConfig
-    @Environment(\.automaticAccessibilityIdentifiersLocallyDisabled) private var envAutomaticAccessibilityLocallyDisabled
-    
+
     nonisolated public init(
         identifierName: String? = nil,
         identifierElementType: String? = nil,
@@ -1328,12 +1322,28 @@ public struct BasicAutomaticComplianceModifier: ViewModifier {
         }
     }
     
+    @ViewBuilder
     public func body(content: Content) -> some View {
+        // inspect() cannot install Environment. Do not instantiate the Environment reader
+        // on the unhosted path (#435). Hosted/production still reads subtree disable.
+        if AccessibilityIdentifierConfig.unhostedInspection {
+            applyingCompliance(
+                to: content,
+                locallyDisabled: AccessibilityIdentifierConfig.resolvedAutomaticIdentifiersLocallyDisabled(
+                    environmentValue: false
+                )
+            )
+        } else {
+            BasicAutomaticComplianceLocalDisableReader(modifier: self, content: content)
+        }
+    }
+
+    fileprivate func applyingCompliance<AppliedContent: View>(to content: AppliedContent, locallyDisabled: Bool) -> some View {
         // CRITICAL DEBUG: Verify identifierName is preserved in the modifier
         // Store the property value to ensure it's not lost during SwiftUI evaluation
         let storedIdentifierName = self.identifierName
         
-        let config = AccessibilityIdentifierConfig.resolvedForIdentifierGeneration(environment: envAccessibilityIdentifierConfig)
+        let config = AccessibilityIdentifierConfig.resolvedForIdentifierGeneration()
         // CRITICAL: Capture property values as local variables BEFORE any logic
         // to avoid creating SwiftUI dependencies that cause infinite recursion
         let capturedEnableAutoIDs = config.enableAutoIDs
@@ -1351,7 +1361,7 @@ public struct BasicAutomaticComplianceModifier: ViewModifier {
         // Logic: enableAutoIDs, global flag, and no local subtree opt-out (disableAutomaticAccessibilityIdentifiers)
         let shouldApply = capturedEnableAutoIDs
             && capturedGlobalAutomaticAccessibilityIdentifiers
-            && !envAutomaticAccessibilityLocallyDisabled
+            && !locallyDisabled
         
         // Apply identifier when automatic IDs are enabled, except for **fully anonymous** modifiers:
         // no name, type, label, or other a11y parameters. Those are structural/layout wrappers; stamping
@@ -1558,6 +1568,23 @@ public struct BasicAutomaticComplianceModifier: ViewModifier {
                     identifierElementType: self.identifierElementType
                 )
             ))
+    }
+}
+
+/// Hosted-only Environment reader for subtree identifier opt-out.
+/// Instantiated only when `unhostedInspection` is false so `inspect()` does not warn (#435).
+private struct BasicAutomaticComplianceLocalDisableReader<Content: View>: View {
+    let modifier: BasicAutomaticComplianceModifier
+    let content: Content
+    @Environment(\.automaticAccessibilityIdentifiersLocallyDisabled) private var environmentLocallyDisabled
+
+    var body: some View {
+        modifier.applyingCompliance(
+            to: content,
+            locallyDisabled: AccessibilityIdentifierConfig.resolvedAutomaticIdentifiersLocallyDisabled(
+                environmentValue: environmentLocallyDisabled
+            )
+        )
     }
 }
 

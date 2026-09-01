@@ -20,6 +20,18 @@ open class IntelligentFormViewPickerTests: BaseTestClass {
     
     // MARK: - Hints Parsing Tests
     
+    private func sizeUnitPickerField(optionsJSON: String) -> DynamicFormField {
+        DynamicFormField(
+            id: "sizeUnit",
+            contentType: .text,
+            label: "Size Unit",
+            metadata: [
+                "inputType": "picker",
+                "pickerOptions": optionsJSON
+            ]
+        )
+    }
+
     /// Helper to write a hints file to documents directory where loader can find it
     private func writeHintsFile(modelName: String, json: [String: Any]) throws -> (fileURL: URL, uniqueModelName: String) {
         let fileManager = FileManager.default
@@ -178,38 +190,29 @@ open class IntelligentFormViewPickerTests: BaseTestClass {
         }
     }
     
-    /// TDD RED PHASE: Test that picker is rendered instead of TextField when inputType is "picker"
+    /// Unit contract: picker hints make `shouldRenderAsPicker` true.
+    /// Picker vs TextField in the hosted tree is a ViewInspector/XCUI observation.
     @Test @MainActor func testPickerRenderedInsteadOfTextField() {
         initializeTestConfig()
         runWithTaskLocalConfig {
-            // This test will need ViewInspector to verify Picker is rendered
-            // For now, mark as TDD placeholder
-            
-            let testData = TestModelWithEnum(sizeUnit: "story_points", name: "Test")
-            
-            // Create hints file with picker configuration
-            // This will be set up in test setup/teardown
-            
-            _ = IntelligentFormView.generateForm(
-                for: TestModelWithEnum.self,
-                initialData: testData
+            let field = sizeUnitPickerField(
+                optionsJSON: #"[{"value":"story_points","label":"Story Points"}]"#
             )
-            
-            // This test will fail until we implement picker rendering
-            #expect(Bool(true), "Picker rendering not yet implemented - TDD placeholder")
+            #expect(field.shouldRenderAsPicker == true)
         }
     }
     
-    /// TDD RED PHASE: Test that picker displays labels but stores values
+    /// Unit contract: picker options keep stored values distinct from display labels.
     @Test @MainActor func testPickerDisplaysLabelsStoresValues() {
         initializeTestConfig()
         runWithTaskLocalConfig {
-            // This test verifies that:
-            // 1. Picker UI shows human-readable labels
-            // 2. Selected value is stored as raw enum value (e.g., "story_points")
-            
-            // Will need to verify via ViewInspector or integration test
-            #expect(Bool(true), "Value mapping not yet implemented - TDD placeholder")
+            let field = sizeUnitPickerField(
+                optionsJSON: #"[{"value":"story_points","label":"Story Points"},{"value":"hours","label":"Hours"}]"#
+            )
+            #expect(field.pickerOptionsFromHints.first?.value == "story_points")
+            #expect(field.pickerOptionsFromHints.first?.label == "Story Points")
+            #expect(field.pickerOptionsFromHints[1].value == "hours")
+            #expect(field.pickerOptionsFromHints[1].label == "Hours")
         }
     }
 }

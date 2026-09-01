@@ -64,7 +64,6 @@ open class PlatformSplitViewStylesLayer4Tests: BaseTestClass {
             }
         
         // Then: View should be created successfully
-        #expect(Bool(true), "platformVerticalSplit_L4 should accept style configuration")
     }
     
     @Test @MainActor func testPlatformHorizontalSplitL4AcceptsStyle() async {
@@ -82,7 +81,6 @@ open class PlatformSplitViewStylesLayer4Tests: BaseTestClass {
             }
         
         // Then: View should be created successfully
-        #expect(Bool(true), "platformHorizontalSplit_L4 should accept style configuration")
     }
     
     @Test @MainActor func testPlatformVerticalSplitL4AcceptsDividerConfiguration() async {
@@ -104,7 +102,6 @@ open class PlatformSplitViewStylesLayer4Tests: BaseTestClass {
             }
         
         // Then: View should be created successfully
-        #expect(Bool(true), "platformVerticalSplit_L4 should accept divider configuration")
     }
     
     @Test @MainActor func testPlatformVerticalSplitL4AcceptsStyleAndDivider() async {
@@ -128,7 +125,6 @@ open class PlatformSplitViewStylesLayer4Tests: BaseTestClass {
             }
         
         // Then: View should be created successfully
-        #expect(Bool(true), "platformVerticalSplit_L4 should accept style and divider")
     }
     
     // MARK: - Appearance Customization Tests
@@ -164,7 +160,6 @@ open class PlatformSplitViewStylesLayer4Tests: BaseTestClass {
             }
         
         // Then: View should be created successfully
-        #expect(Bool(true), "platformVerticalSplit_L4 should accept appearance configuration")
     }
     
     // MARK: - Cross-Platform Behavior Tests
@@ -185,9 +180,7 @@ open class PlatformSplitViewStylesLayer4Tests: BaseTestClass {
             }
         
         // Then: Should work on iOS (may map to visual treatments)
-        #expect(Bool(true), "Style configuration should work on iOS")
         #else
-        #expect(Bool(true), "Test only runs on iOS")
         #endif
     }
     
@@ -207,9 +200,7 @@ open class PlatformSplitViewStylesLayer4Tests: BaseTestClass {
             }
         
         // Then: Should work on macOS (may use NavigationSplitView or visual treatments)
-        #expect(Bool(true), "Style configuration should work on macOS")
         #else
-        #expect(Bool(true), "Test only runs on macOS")
         #endif
     }
 }

@@ -44,39 +44,31 @@ open class PlatformImageAPISignatureTests: BaseTestClass {
     /// METHODOLOGY: Test each initializer signature directly
     @Test func testPlatformImageInitializerSignatures() {
         // Test 1: Default initializer
-        let _ = PlatformImage()
-        // defaultImage is non-optional, so no nil check needed
-        #expect(Bool(true), "Default initializer should exist")
+        #expect(PlatformImage().isEmpty, "Default PlatformImage is empty")
         
-        // Test 2: Data initializer
-        let sampleData = Data([0xFF, 0xD8, 0xFF, 0xE0])  // Minimal JPEG header for testing
-        let _ = PlatformImage(data: sampleData)
-        #expect(Bool(true), "Data initializer should exist and work")  // dataImage is non-optional
+        // Test 2: Data initializer is failable; truncated JPEG follows the platform decoder.
+        expectTruncatedJPEGHeaderMatchesPlatformDecoder()
         
         // Test 3: Platform-specific initializers
         #if os(iOS)
         let uiImage = PlatformImage.createPlaceholder().uiImage // 6LAYER_ALLOW: testing PlatformImage boundary API access
         let uiImageInit = PlatformImage(uiImage: uiImage) // 6LAYER_ALLOW: testing PlatformImage construction from platform-specific image
         // uiImageInit is non-optional, so no nil check needed
-        #expect(Bool(true), "UIImage initializer should exist")
         #expect(uiImageInit.uiImage == uiImage, "UIImage initializer should work correctly") // 6LAYER_ALLOW: testing PlatformImage boundary property access
         
         // Test 4: Backward compatibility initializer (implicit parameter)
         let implicitInit = PlatformImage(uiImage) // 6LAYER_ALLOW: testing PlatformImage construction from platform-specific image
         // implicitInit is non-optional, so no nil check needed
-        #expect(Bool(true), "Implicit parameter initializer should exist for backward compatibility")
         #expect(implicitInit.uiImage == uiImage, "Implicit parameter initializer should work correctly") // 6LAYER_ALLOW: testing PlatformImage boundary property access
         #elseif os(macOS)
         let nsImage = PlatformImage.createPlaceholder().nsImage // 6LAYER_ALLOW: testing PlatformImage boundary API access
         let nsImageInit = PlatformImage(nsImage: nsImage) // 6LAYER_ALLOW: testing PlatformImage construction from platform-specific image
         // nsImageInit is non-optional, so no nil check needed
-        #expect(Bool(true), "NSImage initializer should exist")
         #expect(nsImageInit.nsImage == nsImage, "NSImage initializer should work correctly") // 6LAYER_ALLOW: testing PlatformImage boundary property access
 
         // Test 4: Backward compatibility initializer (implicit parameter)
         let implicitInit = PlatformImage(nsImage) // 6LAYER_ALLOW: testing PlatformImage construction from platform-specific image
         // implicitInit is non-optional, so no nil check needed
-        #expect(Bool(true), "Implicit parameter initializer should exist for backward compatibility")
         #expect(implicitInit.nsImage == nsImage, "Implicit parameter initializer should work correctly") // 6LAYER_ALLOW: testing PlatformImage boundary property access
         #endif
     }
@@ -90,13 +82,9 @@ open class PlatformImageAPISignatureTests: BaseTestClass {
         
         // Test explicit parameter label (current API)
         let explicitInit = PlatformImage(uiImage: uiImage)
-        // explicitInit is non-optional, so no nil check needed
-        #expect(Bool(true), "Explicit parameter label should work")
         
         // Test implicit parameter (backward compatibility)
         let implicitInit = PlatformImage(uiImage)
-        // implicitInit is non-optional, so no nil check needed
-        #expect(Bool(true), "Implicit parameter should work for backward compatibility")
         
         // Verify both produce equivalent results
         #expect(explicitInit.uiImage == implicitInit.uiImage, "Both initializers should produce equivalent results")
@@ -105,13 +93,9 @@ open class PlatformImageAPISignatureTests: BaseTestClass {
         
         // Test explicit parameter label (current API)
         let explicitInit = PlatformImage(nsImage: nsImage)
-        // explicitInit is non-optional, so no nil check needed
-        #expect(Bool(true), "Explicit parameter label should work")
         
         // Test implicit parameter (backward compatibility)
         let implicitInit = PlatformImage(nsImage)
-        // implicitInit is non-optional, so no nil check needed
-        #expect(Bool(true), "Implicit parameter should work for backward compatibility")
         
         // Verify both produce equivalent results
         #expect(explicitInit.nsImage == implicitInit.nsImage, "Both initializers should produce equivalent results")
@@ -128,8 +112,6 @@ open class PlatformImageAPISignatureTests: BaseTestClass {
         // Test the EXACT pattern used in Layer 4 callbacks
         // This is the pattern that was broken in 4.6.2
         let callbackPattern = PlatformImage(uiImage)
-        // callbackPattern is non-optional, so no nil check needed
-        #expect(Bool(true), "Callback pattern PlatformImage(image) should work")
         #expect(callbackPattern.uiImage == uiImage, "Callback pattern should produce correct result")
         
         // Test that both old and new patterns work
@@ -140,8 +122,6 @@ open class PlatformImageAPISignatureTests: BaseTestClass {
         
         // Test the EXACT pattern used in Layer 4 callbacks
         let callbackPattern = PlatformImage(nsImage)
-        // callbackPattern is non-optional, so no nil check needed
-        #expect(Bool(true), "Callback pattern PlatformImage(image) should work")
         #expect(callbackPattern.nsImage == nsImage, "Callback pattern should produce correct result")
         
         // Test that both old and new patterns work
@@ -154,15 +134,10 @@ open class PlatformImageAPISignatureTests: BaseTestClass {
     /// TESTING SCOPE: Tests that API is consistent across platforms
     /// METHODOLOGY: Test API patterns work on all platforms
     @Test func testPlatformImageCrossPlatformConsistency() {
-        // Test that data initializer works on all platforms
-        let sampleData = Data([0xFF, 0xD8, 0xFF, 0xE0])  // Minimal JPEG header for testing
-        let _ = PlatformImage(data: sampleData)
-        #expect(Bool(true), "Data initializer should work on all platforms")  // dataImage is non-optional
+        // Data initializer exists on all platforms; truncated JPEG is decoder-specific.
+        expectTruncatedJPEGHeaderMatchesPlatformDecoder()
         
-        // Test that default initializer works on all platforms
-        let _ = PlatformImage()
-        // defaultImage is non-optional, so no nil check needed
-        #expect(Bool(true), "Default initializer should work on all platforms")
+        #expect(PlatformImage().isEmpty, "Default PlatformImage is empty")
         
         // Test that both implicit and explicit patterns work
         #if os(iOS)
@@ -191,10 +166,6 @@ open class PlatformImageAPISignatureTests: BaseTestClass {
         // Test the broken pattern from Layer 4 callbacks
         // This should work with our backward compatibility fix
         let brokenPattern = PlatformImage(uiImage)
-        // brokenPattern is non-optional, so no nil check needed
-        #expect(Bool(true), "Broken pattern should work with backward compatibility")
-        
-        // Test that the result is usable
         #expect(brokenPattern.uiImage == uiImage, "Broken pattern should produce correct result")
         #expect(brokenPattern.size == uiImage.size, "Broken pattern should preserve image properties")
         #elseif os(macOS)
@@ -202,10 +173,6 @@ open class PlatformImageAPISignatureTests: BaseTestClass {
         
         // Test the broken pattern from Layer 4 callbacks
         let brokenPattern = PlatformImage(nsImage)
-        // brokenPattern is non-optional, so no nil check needed
-        #expect(Bool(true), "Broken pattern should work with backward compatibility")
-        
-        // Test that the result is usable
         #expect(brokenPattern.nsImage == nsImage, "Broken pattern should produce correct result")
         #expect(brokenPattern.size == nsImage.size, "Broken pattern should preserve image properties")
     #endif
@@ -228,10 +195,6 @@ open class PlatformImageAPISignatureTests: BaseTestClass {
         // When: Creating PlatformImage from CGImage
         #if os(iOS)
         let platformImage = PlatformImage(cgImage: cgImage)
-        // platformImage is non-optional, so no nil check needed
-        #expect(Bool(true), "CGImage initializer should exist on iOS")
-        
-        // Then: Should create valid PlatformImage
         #expect(platformImage.size.width > 0, "PlatformImage should have valid width")
         #expect(platformImage.size.height > 0, "PlatformImage should have valid height")
         #expect(platformImage.size.width == CGFloat(cgImage.width), "Size should match CGImage width")
@@ -241,10 +204,6 @@ open class PlatformImageAPISignatureTests: BaseTestClass {
         // macOS requires size parameter
         let expectedSize = CGSize(width: cgImage.width, height: cgImage.height)
         let platformImage = PlatformImage(cgImage: cgImage, size: expectedSize)
-        // platformImage is non-optional, so no nil check needed
-        #expect(Bool(true), "CGImage initializer should exist on macOS")
-        
-        // Then: Should create valid PlatformImage
         #expect(platformImage.size.width > 0, "PlatformImage should have valid width")
         #expect(platformImage.size.height > 0, "PlatformImage should have valid height")
         #expect(platformImage.size == expectedSize, "Size should match provided size")
@@ -294,12 +253,21 @@ open class PlatformImageAPISignatureTests: BaseTestClass {
         let cgImage = context.makeImage()!
         
         // When: Creating PlatformImage with default size (.zero)
-        let _ = PlatformImage(cgImage: cgImage, size: .zero)
-        // platformImage is non-optional, so no nil check needed
-        #expect(Bool(true), "CGImage initializer should work with .zero size")
-        
-        // Then: Should create valid PlatformImage (NSImage handles .zero size)
-        #expect(Bool(true), "PlatformImage should be created even with .zero size")
+        let platformImage = PlatformImage(cgImage: cgImage, size: .zero)
+        #expect(!platformImage.isEmpty, "CGImage init with .zero size uses CGImage dimensions")
+        #expect(platformImage.size == CGSize(width: 100, height: 100), "CGImage .zero size resolves to 100×100")
+        #endif
+    }
+
+    /// `init?(data:)` forwards to UIImage/NSImage. A truncated JPEG header is not a shared contract.
+    private func expectTruncatedJPEGHeaderMatchesPlatformDecoder() {
+        let truncatedJPEGHeader = Data([0xFF, 0xD8, 0xFF, 0xE0])
+        let image = PlatformImage(data: truncatedJPEGHeader)
+        #if os(macOS)
+        #expect(image != nil, "NSImage accepts a truncated JPEG header")
+        #expect(image?.isEmpty == true, "Accepted truncated JPEG has zero size")
+        #else
+        #expect(image == nil, "UIImage rejects a truncated JPEG header")
         #endif
     }
     

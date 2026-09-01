@@ -96,32 +96,6 @@ open class Layer6PlatformOptimizationTests: BaseTestClass {
         #expect(result.hasTabOrderAnalysis, "Should perform tab order analysis")
     }
     
-    // MARK: - Platform-Specific Feature Detection Tests (RED PHASE)
-    
-    /// TDD RED PHASE: Platform features should be detected at runtime
-    /// This test should FAIL initially because feature detection is not implemented
-    @Test @MainActor func testPlatformFeatureDetectionAtRuntime() async {
-        // NOTE: getPlatformRecommendations() has been removed - PlatformRecommendationEngine moved to possible-features/
-        // Test disabled - functionality removed from framework
-        // When: Getting platform recommendations
-        // let recommendations = manager.getPlatformRecommendations()
-        
-        // Then: Should have platform-specific recommendations
-        // #expect(recommendations.count > 0, "Should have platform-specific recommendations")
-        
-        // Should include performance recommendations
-        // let performanceRecs = recommendations.filter { $0.category == .performance }
-        // #expect(performanceRecs.count > 0, "Should have performance recommendations")
-        
-        // Should include UI pattern recommendations
-        // let uiRecs = recommendations.filter { $0.category == .uiPattern }
-        // #expect(uiRecs.count > 0, "Should have UI pattern recommendations")
-        
-        // THIS SHOULD FAIL - Current implementation may not generate real recommendations
-        // #expect(recommendations.allSatisfy { $0.isRealRecommendation }, "All recommendations should be real, not placeholder")
-        #expect(Bool(true), "PlatformRecommendationEngine moved to possible-features/ - test disabled")
-    }
-    
 }
 
 // MARK: - Test Extensions

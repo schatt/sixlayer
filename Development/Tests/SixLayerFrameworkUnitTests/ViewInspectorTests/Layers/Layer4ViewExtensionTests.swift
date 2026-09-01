@@ -320,7 +320,6 @@ open class Layer4ViewExtensionTests: BaseTestClass {
             }
         
         _ = hostRootPlatformView(view)
-        #expect(Bool(true), "platformBackground with view-based background and alignment should render")
     }
     
     @Test @MainActor func testPlatformBackgroundWithShapeStyle() async {
@@ -345,8 +344,6 @@ open class Layer4ViewExtensionTests: BaseTestClass {
         _ = hostRootPlatformView(swiftUIView)
         _ = hostRootPlatformView(platformView)
         
-        #expect(Bool(true), "SwiftUI background with ignoresSafeAreaEdges should render")
-        #expect(Bool(true), "platformBackground with ignoresSafeAreaEdges should match SwiftUI behavior")
     }
     
     // MARK: - platformAlert Data-Presenting Overload Tests (TDD - RED Phase)
@@ -376,7 +373,6 @@ open class Layer4ViewExtensionTests: BaseTestClass {
         
         // Then: View should render successfully
         _ = hostRootPlatformView(view)
-        #expect(Bool(true), "platformAlert with data-presenting should render")
     }
     
     @Test @MainActor func testPlatformAlertWithDataPresentingNoMessage() async {
@@ -400,7 +396,6 @@ open class Layer4ViewExtensionTests: BaseTestClass {
         
         // Then: View should render successfully
         _ = hostRootPlatformView(view)
-        #expect(Bool(true), "platformAlert with data-presenting (no message) should render")
     }
     
     @Test @MainActor func testPlatformAlertDataPresentingNil() async {
@@ -426,7 +421,6 @@ open class Layer4ViewExtensionTests: BaseTestClass {
         
         // Then: View should still be created (binding controls presentation)
         _ = hostRootPlatformView(view)
-        #expect(Bool(true), "platformAlert with nil data should still create view")
     }
     
     @Test @MainActor func testPlatformAlertDataPresentingMatchesSwiftUI() async {
@@ -467,8 +461,6 @@ open class Layer4ViewExtensionTests: BaseTestClass {
         _ = hostRootPlatformView(swiftUIView)
         _ = hostRootPlatformView(platformView)
         
-        #expect(Bool(true), "SwiftUI alert with data-presenting should render")
-        #expect(Bool(true), "platformAlert with data-presenting should match SwiftUI behavior")
     }
     
     // MARK: - platformPadding Tests
@@ -521,8 +513,6 @@ open class Layer4ViewExtensionTests: BaseTestClass {
         _ = hostRootPlatformView(swiftUIView)
         _ = hostRootPlatformView(platformView)
         
-        #expect(Bool(true), "SwiftUI padding with EdgeInsets should render")
-        #expect(Bool(true), "platformPadding with EdgeInsets should render and match SwiftUI behavior")
     }
     
     @Test @MainActor func testPlatformReducedPadding() async {
@@ -734,11 +724,9 @@ open class Layer4ViewExtensionTests: BaseTestClass {
         AccessibilityIdentifierConfig.$taskLocalConfig.withValue(isolated) {
             let anonymous = root()
             _ = hostRootPlatformView(anonymous, accessibilityIdentifierConfig: isolated)
-            #expect(Bool(true), "\(context): anonymous compliance path should render")
 
             let named = root().named(anchorName)
             let namedHost = hostRootPlatformView(named, accessibilityIdentifierConfig: isolated)
-            #expect(Bool(true), "\(context): named path should render")
 
             let expectedNamedId = NamedModifier.testingGeneratedIdentifier(name: anchorName, config: isolated)
             let platformIds = findAllAccessibilityIdentifiersFromPlatformView(namedHost)

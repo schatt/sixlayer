@@ -42,7 +42,6 @@ open class PlatformNavigationSplitViewHelperTests: BaseTestClass {
             if #available(iOS 16.0, *) {
                 // Note: ViewInspector doesn't support NavigationSplitView inspection directly
                 // The view is created successfully, which is verified by tryInspect() succeeding
-                #expect(Bool(true), "iPad should use NavigationSplitView on iOS 16+")
             } else {
                 // iOS 15 fallback
                 let hasNavigationView = (try? inspected.find(ViewType.NavigationView.self)) != nil
@@ -52,7 +51,6 @@ open class PlatformNavigationSplitViewHelperTests: BaseTestClass {
             if #available(macOS 13.0, *) {
                 // Note: ViewInspector doesn't support NavigationSplitView inspection directly
                 // The view is created successfully, which is verified by tryInspect() succeeding
-                #expect(Bool(true), "macOS should use NavigationSplitView on macOS 13+")
             }
             #endif
         #else
@@ -81,7 +79,6 @@ open class PlatformNavigationSplitViewHelperTests: BaseTestClass {
             if #available(iOS 16.0, *) {
                 // Note: ViewInspector doesn't support NavigationStack inspection directly
                 // The view is created successfully, which is verified by tryInspect() succeeding
-                #expect(Bool(true), "iPhone portrait should use NavigationStack on iOS 16+")
             } else {
                 // iOS 15 fallback
                 let hasNavigationView = (try? inspected.find(ViewType.NavigationView.self)) != nil
@@ -113,7 +110,6 @@ open class PlatformNavigationSplitViewHelperTests: BaseTestClass {
             if #available(macOS 13.0, *) {
                 // Note: ViewInspector doesn't support NavigationSplitView inspection directly
                 // The view is created successfully, which is verified by tryInspect() succeeding
-                #expect(Bool(true), "macOS should use NavigationSplitView on macOS 13+")
             } else {
                 // macOS 12 fallback: HStack
                 let hStacks = inspected.findAll(ViewInspector.ViewType.HStack.self)
@@ -151,7 +147,6 @@ open class PlatformNavigationSplitViewHelperTests: BaseTestClass {
             if #available(iOS 16.0, *) {
                 // Note: ViewInspector doesn't support NavigationSplitView inspection directly
                 // The view is created successfully, which is verified by tryInspect() succeeding
-                #expect(Bool(true), "iPad should use NavigationSplitView on iOS 16+")
             } else {
                 // iOS 15 fallback
                 let hasNavigationView = (try? inspected.find(ViewType.NavigationView.self)) != nil
@@ -161,7 +156,6 @@ open class PlatformNavigationSplitViewHelperTests: BaseTestClass {
             if #available(macOS 13.0, *) {
                 // Note: ViewInspector doesn't support NavigationSplitView inspection directly
                 // The view is created successfully, which is verified by tryInspect() succeeding
-                #expect(Bool(true), "macOS should use NavigationSplitView on macOS 13+")
             }
             #endif
         #else
@@ -193,7 +187,6 @@ open class PlatformNavigationSplitViewHelperTests: BaseTestClass {
             if #available(iOS 16.0, *) {
                 // Note: ViewInspector doesn't support NavigationStack inspection directly
                 // The view is created successfully, which is verified by tryInspect() succeeding
-                #expect(Bool(true), "iPhone portrait should use NavigationStack on iOS 16+")
             } else {
                 // iOS 15 fallback
                 let hasNavigationView = (try? inspected.find(ViewType.NavigationView.self)) != nil
@@ -228,7 +221,6 @@ open class PlatformNavigationSplitViewHelperTests: BaseTestClass {
             if #available(macOS 13.0, *) {
                 // Note: ViewInspector doesn't support NavigationSplitView inspection directly
                 // The view is created successfully, which is verified by tryInspect() succeeding
-                #expect(Bool(true), "macOS should use NavigationSplitView on macOS 13+")
             } else {
                 // macOS 12 fallback: HStack
                 let hStacks = inspected.findAll(ViewInspector.ViewType.HStack.self)
@@ -262,7 +254,6 @@ open class PlatformNavigationSplitViewHelperTests: BaseTestClass {
         #if canImport(ViewInspector)
         if (try? AnyView(view).inspect()) != nil {
             // View is inspectable, which means it was created successfully
-            #expect(Bool(true), "Navigation split view should be inspectable")
         } else {
             Issue.record("Failed to inspect navigation split view")
         }
@@ -293,7 +284,6 @@ open class PlatformNavigationSplitViewHelperTests: BaseTestClass {
         #if canImport(ViewInspector)
         if (try? AnyView(view).inspect()) != nil {
             // View is inspectable, which means it was created successfully
-            #expect(Bool(true), "Navigation split view should be inspectable")
         } else {
             Issue.record("Failed to inspect navigation split view")
         }

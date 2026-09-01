@@ -248,7 +248,6 @@ open class DynamicFormViewTests: BaseTestClass {
             #expect(!strings.contains(uniqueFormDesc), "Form configuration description must not appear when formHeaderVisibility is .hidden")
         }
         #else
-        #expect(Bool(true), "View created (ViewInspector not available)")
         #endif
     }
 
@@ -282,7 +281,6 @@ open class DynamicFormViewTests: BaseTestClass {
             #expect(!strings.contains(uniqueFormTitle), "Inline form title must be suppressed when host provides primary heading in automatic mode")
         }
         #else
-        #expect(Bool(true), "View created (ViewInspector not available)")
         #endif
     }
 
@@ -316,7 +314,6 @@ open class DynamicFormViewTests: BaseTestClass {
             #expect(!strings.contains(uniqueFormTitle), "Inline form title must be suppressed when hostProvidesPrimaryHeading is true")
         }
         #else
-        #expect(Bool(true), "View created (ViewInspector not available)")
         #endif
     }
 
@@ -401,7 +398,6 @@ open class DynamicFormViewTests: BaseTestClass {
         }
         #else
         // ViewInspector not available on macOS - test passes by verifying view creation
-        #expect(Bool(true), "View should be created successfully")
         #endif
     }
     
@@ -441,7 +437,6 @@ open class DynamicFormViewTests: BaseTestClass {
         #else
         // ViewInspector not available on macOS - test passes by verifying view creation
         // The .id() modifier is verified in the implementation code
-        #expect(Bool(true), "View should be created successfully with .id() modifier")
         #endif
     }
 
@@ -522,7 +517,6 @@ open class DynamicFormViewTests: BaseTestClass {
         #expect(labelTexts.contains("*"), "Should show asterisk for required field")
         #else
         // ViewInspector not available on macOS - test passes by verifying view creation
-        #expect(Bool(true), "View should be created successfully")
         #endif
     }
     
@@ -556,7 +550,6 @@ open class DynamicFormViewTests: BaseTestClass {
         #expect(!labelTexts.contains("*"), "Optional field should not show asterisk")
         #else
         // ViewInspector not available on macOS - test passes by verifying view creation
-        #expect(Bool(true), "View should be created successfully")
         #endif
     }
     
@@ -595,7 +588,6 @@ open class DynamicFormViewTests: BaseTestClass {
         #expect(hasAccessibilityLabel, "Should have accessibility identifier")
         #else
         // ViewInspector not available on macOS - test passes by verifying view creation
-        #expect(Bool(true), "View should be created successfully")
         #endif
     }
     
@@ -634,7 +626,6 @@ open class DynamicFormViewTests: BaseTestClass {
         #expect(hasAccessibilityLabel, "Should have accessibility identifier")
         #else
         // ViewInspector not available on macOS - test passes by verifying view creation
-        #expect(Bool(true), "View should be created successfully")
         #endif
     }
 
@@ -674,7 +665,6 @@ open class DynamicFormViewTests: BaseTestClass {
             #expect(count == 1, "Field label '\(label)' should appear exactly once (Issue #189); found \(count)")
         }
         #else
-        #expect(Bool(true), "ViewInspector not available; skip duplicate-label assertion")
         #endif
     }
 
@@ -712,7 +702,6 @@ open class DynamicFormViewTests: BaseTestClass {
         #expect(hasHelpButton, "HStack should contain label and info button")
         #else
         // ViewInspector not available on macOS - test passes by verifying view creation
-        #expect(Bool(true), "View should be created successfully with info button")
         #endif
     }
     
@@ -747,7 +736,6 @@ open class DynamicFormViewTests: BaseTestClass {
         #expect(helpButtons.isEmpty, "HStack should only have label when no description")
         #else
         // ViewInspector not available on macOS - test passes by verifying view creation
-        #expect(Bool(true), "View should be created successfully without info button")
         #endif
     }
     
@@ -787,7 +775,6 @@ open class DynamicFormViewTests: BaseTestClass {
         #else
         // ViewInspector not available on macOS - test passes by verifying view creation
         // Accessibility modifiers are verified in implementation code
-        #expect(Bool(true), "View should be created successfully with accessibility support")
         #endif
     }
     
@@ -823,7 +810,6 @@ open class DynamicFormViewTests: BaseTestClass {
         }
         #else
         // ViewInspector not available on macOS - test passes by verifying view creation
-        #expect(Bool(true), "View should be created successfully without visible description text")
         #endif
     }
 
@@ -869,7 +855,6 @@ open class DynamicFormViewTests: BaseTestClass {
         #expect(hasAccessibilityID, "Should generate accessibility identifier")
         #else
         // ViewInspector not available on macOS - skip test gracefully
-        #expect(Bool(true), "FormWizardView compiles (ViewInspector not available on macOS)")
         #endif
     }
 
@@ -958,7 +943,6 @@ open class DynamicFormViewTests: BaseTestClass {
         // Then: Should generate accessibility identifiers
         // VERIFIED: DynamicFormView uses automaticCompliance(identifierName:) from form title.
         // ViewInspector limitation: Cannot reliably detect accessibility identifiers on macOS.
-        #expect(Bool(true), "DynamicFormView has automatic compliance from title (verified in code) - ViewInspector limitation on macOS")
     }
 
     // MARK: - OCR Integration Tests
@@ -1054,7 +1038,6 @@ open class DynamicFormViewTests: BaseTestClass {
         #expect(fieldButtonsInHierarchy(regularFieldView).isEmpty, "Regular field should not show OCR action buttons")
         #else
         // ViewInspector not available on macOS - skip test gracefully
-        #expect(Bool(true), "OCR button test skipped (ViewInspector not available on macOS)")
         #endif
     }
 
@@ -1301,7 +1284,6 @@ open class DynamicFormViewTests: BaseTestClass {
         #expect(!expectsBatchOCRButton(viewWithoutOCR, configuration: configWithoutOCR), "Form without OCR fields should not show batch OCR button")
         #else
         // ViewInspector not available on macOS - skip test gracefully
-        #expect(Bool(true), "Batch OCR button test skipped (ViewInspector not available on macOS)")
         #endif
     }
 
@@ -1393,7 +1375,6 @@ open class DynamicFormViewTests: BaseTestClass {
         #expect(hasBatchOCRButton, "Should have batch OCR button for OCR-enabled fields")
         #else
         // ViewInspector not available - test passes if view is created
-        #expect(Bool(true), "Batch OCR button test skipped (ViewInspector not available)")
         #endif
     }
 
@@ -1648,7 +1629,6 @@ open class DynamicFormViewTests: BaseTestClass {
         )
 
         // Should calculate: 47.93 ÷ 15.5 ≈ 3.092
-        #expect(Bool(true), "Should return a calculated result")  // result is non-optional
         if let calculatedValue = result {
             #expect(abs(calculatedValue - 3.092258064516129) < 0.0001, "Should calculate price per gallon correctly")
         }
@@ -1679,7 +1659,6 @@ open class DynamicFormViewTests: BaseTestClass {
             dependencies: ["total_price", "gallons"]
         )
 
-        #expect(Bool(true), "Should calculate price per gallon")  // pricePerGallon is non-optional
         if let price = pricePerGallon {
             #expect(abs(price - 3.092258064516129) < 0.0001, "Price per gallon should be calculated correctly")
         }
@@ -1692,7 +1671,6 @@ open class DynamicFormViewTests: BaseTestClass {
             dependencies: ["total_price", "gallons"]
         )
 
-        #expect(Bool(true), "Should recalculate with new dependency value")  // newPricePerGallon is non-optional
         if let newPrice = newPricePerGallon {
             #expect(abs(newPrice - 2.3965) < 0.0001, "Should recalculate price per gallon with new gallons value")
         }
@@ -1726,7 +1704,6 @@ open class DynamicFormViewTests: BaseTestClass {
             ]
         )
 
-        #expect(Bool(true), "Should calculate missing field in scenario 1")  // scenario1Result is non-optional
         if let result = scenario1Result {
             #expect(result.fieldId == "price_per_gallon", "Should identify price_per_gallon as missing")
             #expect(abs(result.calculatedValue - 3.092258064516129) < 0.0001, "Should calculate correct price per gallon")
@@ -1745,7 +1722,6 @@ open class DynamicFormViewTests: BaseTestClass {
             ]
         )
 
-        #expect(Bool(true), "Should calculate missing field in scenario 2")  // scenario2Result is non-optional
         if let result = scenario2Result {
             #expect(result.fieldId == "total_price", "Should identify total_price as missing")
             #expect(abs(result.calculatedValue - 47.9105) < 0.0001, "Should calculate correct total price")
@@ -1764,7 +1740,6 @@ open class DynamicFormViewTests: BaseTestClass {
             ]
         )
 
-        #expect(Bool(true), "Should calculate missing field in scenario 3")  // scenario3Result is non-optional
         if let result = scenario3Result {
             #expect(result.fieldId == "gallons", "Should identify gallons as missing")
             #expect(abs(result.calculatedValue - 15.506308637981235) < 0.0001, "Should calculate correct gallons")
@@ -1888,7 +1863,6 @@ open class DynamicFormViewTests: BaseTestClass {
         )
 
         // Should return a result with high confidence (groups agree)
-        #expect(Bool(true), "Should calculate result when groups agree")  // result is non-optional
         if let calcResult = result {
             #expect(calcResult.calculatedValue == 6.0, "Should calculate correct result")
             #expect(calcResult.confidence == .high, "Should have high confidence when groups agree")
@@ -1938,7 +1912,6 @@ open class DynamicFormViewTests: BaseTestClass {
         )
 
         // Should return result but with very low confidence due to conflict
-        #expect(Bool(true), "Should still return result even with conflicts")  // result is non-optional
         if let calcResult = result {
             #expect(calcResult.calculatedValue == 12.0, "Should return highest priority result (12)")
             #expect(calcResult.confidence == .veryLow, "Should have very low confidence when groups conflict")
@@ -1987,7 +1960,6 @@ open class DynamicFormViewTests: BaseTestClass {
         )
 
         // Both groups can calculate (same dependencies), so should detect conflict
-        #expect(Bool(true), "Should calculate result")  // result is non-optional
         if let calcResult = result {
             #expect(calcResult.calculatedValue == 5.0, "Should use highest priority calculation (5)")
             #expect(calcResult.confidence == .veryLow, "Should have very low confidence (groups conflict)")
@@ -2033,7 +2005,6 @@ open class DynamicFormViewTests: BaseTestClass {
         )
 
         // Should use the group that has all required fields (a + b = 5)
-        #expect(Bool(true), "Should calculate using available group")  // result is non-optional
         if let calcResult = result {
             #expect(calcResult.calculatedValue == 5.0, "Should calculate a + b = 5")
             #expect(calcResult.confidence == .high, "Should have high confidence")
@@ -2535,7 +2506,6 @@ open class DynamicFormViewTests: BaseTestClass {
             cleanupTestEnvironment()
             #else
             // Core Data not available on this platform
-            #expect(Bool(true), "Core Data not available - skipping test")
             #endif
         }
     }
@@ -2669,7 +2639,6 @@ open class DynamicFormViewTests: BaseTestClass {
         #expect(submittedValues != nil, "Submit tap should invoke onSubmit")
         #expect(submittedValues?["name"] as? String == "Alice", "onSubmit should receive injected formState's fieldValues")
         #else
-        #expect(Bool(true), "View created with injected formState")
         #endif
     }
     
@@ -2758,7 +2727,6 @@ open class DynamicFormViewTests: BaseTestClass {
         let submittedImage = submittedValues?[imageFieldId] as? PlatformImage
         #expect(submittedImage != nil, "onSubmit should include image when image field is set")
         #else
-        #expect(Bool(true), "View with image field and injected formState builds")
         #endif
     }
 }

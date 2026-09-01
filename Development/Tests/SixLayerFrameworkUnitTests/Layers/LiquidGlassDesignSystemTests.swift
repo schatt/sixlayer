@@ -95,7 +95,6 @@ struct LiquidGlassDesignSystemTests {
         let reflection = material.generateReflection(for: CGSize(width: 100, height: 100))
         
         // Then
-        #expect(Bool(true), "reflection is non-optional")  // reflection is non-optional
         #expect(reflection.size == CGSize(width: 100, height: 100))
         #expect(reflection.isReflective == true)
     }
@@ -115,7 +114,6 @@ struct LiquidGlassDesignSystemTests {
         let reflection = material.generateReflection(for: CGSize(width: 200, height: 200))
         
         // Then
-        #expect(Bool(true), "reflection is non-optional")  // reflection is non-optional
         #expect(reflection.size == CGSize(width: 200, height: 200))
     }
     
@@ -322,10 +320,10 @@ struct LiquidGlassDesignSystemTests {
         let material = liquidGlassSystem.createMaterial(.primary)
         
         // When
-        _ = material.generateReflection(for: CGSize(width: 1000, height: 1000))
+        let reflection = material.generateReflection(for: CGSize(width: 1000, height: 1000))
         
         // Then
-        #expect(Bool(true), "reflection is non-optional")  // reflection is non-optional
+        #expect(reflection.size == CGSize(width: 1000, height: 1000), "performance reflection should match requested size")
     }
     
     @MainActor
@@ -365,11 +363,11 @@ struct LiquidGlassDesignSystemTests {
         let material = liquidGlassSystem.createMaterial(.primary)
         
         // When
-        _ = material.generateReflection(for: CGSize(width: 100, height: 100))
+        let reflection = material.generateReflection(for: CGSize(width: 100, height: 100))
         
         // Then
         #expect(material.isTranslucent) // Should be accessible
-        #expect(Bool(true), "reflection is non-optional")  // reflection is non-optional
+        #expect(reflection.size == CGSize(width: 100, height: 100), "accessibility reflection should match requested size")
     }
     
     @MainActor
@@ -431,11 +429,15 @@ struct LiquidGlassDesignSystemTests {
         
         // Given & When
         let system = LiquidGlassDesignSystem.shared
+        let expected: [LiquidGlassFeature: String] = [
+            .materials: "Use standard background colors",
+            .floatingControls: "Use standard button controls",
+            .contextualMenus: "Use standard context menus",
+            .adaptiveWallpapers: "Use static wallpapers",
+            .dynamicReflections: "Use standard shadows"
+        ]
         for feature in LiquidGlassFeature.allCases {
-            _ = system.getFallbackBehavior(for: feature)
-            
-            // Then
-            #expect(Bool(true), "Feature \(feature.rawValue) should have a fallback behavior")  // fallbackBehavior is non-optional
+            #expect(system.getFallbackBehavior(for: feature) == expected[feature])
         }
     }
 }

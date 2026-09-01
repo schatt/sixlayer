@@ -704,7 +704,9 @@ Development/Tests/
     └── IntegrationTests.swift
 ```
 
-**Benefits:**
+**#402 (2026-08):** `LayeredTestingSuite/` was never added to `project.yml` / any XcodeGen test target. Those files never executed. The directory was **removed**; L1–L6 coverage lives in `Development/Tests/SixLayerFrameworkUnitTests/` (including `Layers/L2LayoutDecisionTests.swift`, ViewInspector `L3StrategySelectionTests.swift`, Layer 4–6 suites). Do not recreate the orphan tree.
+
+**Benefits (historical — the parallel suite was never wired):**
 - **Zero disruption** to existing test suite
 - **Parallel validation** - both old and new tests run
 - **Gradual migration** - can compare results side-by-side

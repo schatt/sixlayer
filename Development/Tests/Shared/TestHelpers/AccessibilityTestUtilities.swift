@@ -64,6 +64,13 @@ extension NSView {
 
 /// Get accessibility identifier: direct typed inspection when possible, then platform/AnyView fallback.
 #if canImport(ViewInspector)
+@MainActor
+private func inspectAnyViewUnhosted(_ view: some View) throws -> ViewInspector.InspectableView<ViewInspector.ViewType.ClassifiedView> {
+    try AccessibilityIdentifierConfig.withUnhostedInspection {
+        try AnyView(view).inspect()
+    }
+}
+
 /// Collect accessibility identifiers from the inspected node only.
 /// `#315` avoided overlapping per-type `findAll`; `#408` drops `findAll(ClassifiedView)`
 /// entirely because GeometryReader inspection SIGTRAPs on iOS 27. Hosted platform
@@ -149,7 +156,7 @@ private func collectAccessibilityIdentifierCandidateBucketsForTest<V: View>(
     }
     // Prefer hosted IDs; skip ViewInspector tree walk when the platform view already
     // observed identifiers (#408 — GeometryReader findAll SIGTRAP on iOS 27).
-    if buckets.hosted.isEmpty, let inspected = try? AnyView(view).inspect() {
+    if buckets.hosted.isEmpty, let inspected = try? inspectAnyViewUnhosted(view) {
         buckets.inspected = allAccessibilityIdentifiersInInspectedRecursive(inspected)
     }
     if let cfg = AccessibilityIdentifierConfig.currentTaskLocalConfig {
@@ -200,7 +207,7 @@ public func getAccessibilityIdentifierForTest<V: View>(view: V, hostedRoot: Any?
     if let inspected = inspectView(view), let id = try? inspected.accessibilityIdentifier(), !id.isEmpty {
         return id
     }
-    if let inspected = try? AnyView(view).inspect(), let id = try? inspected.accessibilityIdentifier(), !id.isEmpty {
+    if let inspected = try? inspectAnyViewUnhosted(view), let id = try? inspected.accessibilityIdentifier(), !id.isEmpty {
         return id
     }
     #endif
@@ -270,7 +277,7 @@ public func getAccessibilityLabelForTest<V: View>(view: V, hostedRoot: Any? = ni
     if let root = hostedRoot, let label = firstAccessibilityLabel(inHosted: root), !label.isEmpty {
         return label
     }
-    if let inspected = try? AnyView(view).inspect() {
+    if let inspected = try? inspectAnyViewUnhosted(view) {
         if let label = firstAccessibilityLabelInInspectedRecursive(inspected) {
             return label
         }
@@ -1195,7 +1202,7 @@ public enum AccessibilityTestUtilities {
     /// prefer hosted platform collection for those.
     @MainActor
     public static func allAccessibilityIdentifiersFromViewInspector<V: View>(_ view: V) -> [String] {
-        guard let inspected = try? AnyView(view).inspect() else { return [] }
+        guard let inspected = try? inspectAnyViewUnhosted(view) else { return [] }
         return allAccessibilityIdentifiersInInspectedRecursive(inspected)
     }
     #endif
@@ -1721,7 +1728,7 @@ public enum AccessibilityTestUtilities {
         from view: V
     ) -> (elementType: String, label: String?)? {
         #if canImport(ViewInspector)
-        if let inspected = try? AnyView(view).inspect() {
+        if let inspected = try? inspectAnyViewUnhosted(view) {
             if let button = try? inspected.find(ViewInspector.ViewType.Button.self) {
                 return ("Button", buttonLabelText(from: button))
             }
@@ -1931,7 +1938,7 @@ public enum AccessibilityTestUtilities {
         do {
             // Current-node only (#408): `button()` / `findAll` descendant search SIGTRAPs
             // when ViewInspector materializes GeometryReader's GeometryProxy on iOS 27.
-            let inspected = try AnyView(view).inspect()
+            let inspected = try inspectAnyViewUnhosted(view)
             if let inner = try? inspected.anyView(),
                let directID = try? inner.accessibilityIdentifier(), !directID.isEmpty {
                 return directID
@@ -2005,7 +2012,7 @@ public enum AccessibilityTestUtilities {
             let viewInspectorIdentifiers: [String] = {
                 guard hostedRoot == nil else { return [] }
                 do {
-                    let inspected = try AnyView(view).inspect()
+                    let inspected = try inspectAnyViewUnhosted(view)
                     return allAccessibilityIdentifiersInInspectedRecursive(inspected)
                 } catch {
                     return []

@@ -131,9 +131,6 @@ open class PlatformSystemActionsLayer4Tests: BaseTestClass {
         // Then: Should return Bool (iOS code path compiles and has correct signature)
         // NOTE: We cannot verify UIApplication.shared.open was called without mocking
         #expect(type(of: result) == Bool.self, "iOS implementation should return Bool")
-        #else
-        // Skip on non-iOS platforms
-        #expect(Bool(true), "Test only runs on iOS")
         #endif
     }
     
@@ -151,9 +148,6 @@ open class PlatformSystemActionsLayer4Tests: BaseTestClass {
         // Then: Should return Bool (macOS code path compiles and has correct signature)
         // NOTE: We cannot verify NSWorkspace.shared.open was called without mocking
         #expect(type(of: result) == Bool.self, "macOS implementation should return Bool")
-        #else
-        // Skip on non-macOS platforms
-        #expect(Bool(true), "Test only runs on macOS")
         #endif
     }
     
@@ -167,10 +161,6 @@ open class PlatformSystemActionsLayer4Tests: BaseTestClass {
             Issue.record("URL(string: \"\") should return nil")
             return
         }
-        
-        // Then: API should handle nil URLs gracefully (compiler prevents passing nil)
-        // This test verifies our understanding of URL(string:) behavior
-        #expect(Bool(true), "Invalid URL strings should return nil from URL(string:)")
         
         // Test with a valid but potentially problematic URL
         guard let url = URL(string: "file:///nonexistent") else {
@@ -192,13 +182,8 @@ open class PlatformSystemActionsLayer4Tests: BaseTestClass {
         // Given: Items to share
         let items: [Any] = ["Test text", URL(string: "https://example.com")!]
         
-        // When: Create share modifier
-        _ = Text("Test")
-            .platformShare_L4(items: items, from: nil)
-        
-        // Then: API should work identically on both platforms
-        // View creation verifies API signature (compile-time check)
-        #expect(Bool(true), "Unified share API should have consistent signature across platforms")
+        let view = shareModifierView(items: items)
+        expectShareModifier(view)
     }
     
     /// BUSINESS PURPOSE: Verify sharing works with text items
@@ -208,12 +193,8 @@ open class PlatformSystemActionsLayer4Tests: BaseTestClass {
         // Given: Text items
         let items: [Any] = ["Test text", "Another text"]
         
-        // When: Create share modifier with text
-        _ = Text("Test")
-            .platformShare_L4(items: items, from: nil)
-        
-        // Then: Should accept text items
-        #expect(Bool(true), "Share API should accept text items")
+        let view = shareModifierView(items: items)
+        expectShareModifier(view)
     }
     
     /// BUSINESS PURPOSE: Verify sharing works with URL items
@@ -228,12 +209,8 @@ open class PlatformSystemActionsLayer4Tests: BaseTestClass {
         }
         let items: [Any] = [url1, url2]
         
-        // When: Create share modifier with URLs
-        _ = Text("Test")
-            .platformShare_L4(items: items, from: nil)
-        
-        // Then: Should accept URL items
-        #expect(Bool(true), "Share API should accept URL items")
+        let view = shareModifierView(items: items)
+        expectShareModifier(view)
     }
     
     /// BUSINESS PURPOSE: Verify sharing works with mixed items
@@ -247,12 +224,8 @@ open class PlatformSystemActionsLayer4Tests: BaseTestClass {
         }
         let items: [Any] = ["Test text", url]
         
-        // When: Create share modifier with mixed items
-        _ = Text("Test")
-            .platformShare_L4(items: items, from: nil)
-        
-        // Then: Should accept mixed items
-        #expect(Bool(true), "Share API should accept mixed items")
+        let view = shareModifierView(items: items)
+        expectShareModifier(view)
     }
     
     /// BUSINESS PURPOSE: Verify iOS implementation uses UIActivityViewController
@@ -263,16 +236,8 @@ open class PlatformSystemActionsLayer4Tests: BaseTestClass {
         // Given: Items to share
         let items: [Any] = ["Test text"]
         
-        // When: Create share modifier
-        _ = Text("Test")
-            .platformShare_L4(items: items, from: nil)
-        
-        // Then: Should use iOS share implementation
-        // API signature verification (compile-time check)
-        #expect(Bool(true), "iOS should use UIActivityViewController implementation")
-        #else
-        // Skip on non-iOS platforms
-        #expect(Bool(true), "Test only runs on iOS")
+        let view = shareModifierView(items: items)
+        expectShareModifier(view)
         #endif
     }
     
@@ -284,16 +249,8 @@ open class PlatformSystemActionsLayer4Tests: BaseTestClass {
         // Given: Items to share
         let items: [Any] = ["Test text"]
         
-        // When: Create share modifier
-        _ = Text("Test")
-            .platformShare_L4(items: items, from: nil)
-        
-        // Then: Should use macOS share implementation
-        // API signature verification (compile-time check)
-        #expect(Bool(true), "macOS should use NSSharingServicePicker implementation")
-        #else
-        // Skip on non-macOS platforms
-        #expect(Bool(true), "Test only runs on macOS")
+        let view = shareModifierView(items: items)
+        expectShareModifier(view)
         #endif
     }
     
@@ -303,12 +260,8 @@ open class PlatformSystemActionsLayer4Tests: BaseTestClass {
     @Test @MainActor func testPlatformShare_AccessibilityIdentifiers() {
         // Given: Share modifier
         let items: [Any] = ["Test text"]
-        _ = Text("Test")
-            .platformShare_L4(items: items, from: nil)
-        
-        // Then: Should have automatic accessibility compliance
-        // The .automaticCompliance modifier should be applied
-        #expect(Bool(true), "Share modifier should apply accessibility identifiers")
+        let view = shareModifierView(items: items)
+        expectShareModifier(view)
     }
     
     /// BUSINESS PURPOSE: Verify error handling for empty items array
@@ -318,12 +271,8 @@ open class PlatformSystemActionsLayer4Tests: BaseTestClass {
         // Given: Empty items array
         let items: [Any] = []
         
-        // When: Create share modifier with empty items
-        _ = Text("Test")
-            .platformShare_L4(items: items, from: nil)
-        
-        // Then: Should handle gracefully (may not show share sheet, but shouldn't crash)
-        #expect(Bool(true), "Share API should handle empty items gracefully")
+        let view = shareModifierView(items: items)
+        expectShareModifier(view)
     }
     
     /// BUSINESS PURPOSE: Verify sourceView parameter is accepted
@@ -334,12 +283,22 @@ open class PlatformSystemActionsLayer4Tests: BaseTestClass {
         let items: [Any] = ["Test text"]
         let sourceView = Text("Source")
         
-        // When: Create share modifier with sourceView
-        _ = Text("Test")
+        let view = shareModifierView(items: items, from: sourceView)
+        expectShareModifier(view)
+    }
+    
+    @MainActor
+    private func shareModifierView(
+        items: [Any],
+        from sourceView: (any View)? = nil
+    ) -> some View {
+        Text("Test")
             .platformShare_L4(items: items, from: sourceView)
-        
-        // Then: Should accept sourceView parameter
-        #expect(Bool(true), "Share API should accept sourceView parameter for positioning")
+    }
+    
+    @MainActor
+    private func expectShareModifier(_ view: some View) {
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "ShareSheetItemsModifier")
     }
 }
 

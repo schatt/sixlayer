@@ -46,8 +46,7 @@ open class NavigationStackLayer3Tests: BaseTestClass {
             platform: .iOS
         )
         
-        // Then: Should return a strategy
-        #expect(Bool(true), "strategy is non-optional")
+        // Then: Should return a strategy with an implementation
         #expect(strategy.implementation != nil, "Should have an implementation strategy")
     }
     

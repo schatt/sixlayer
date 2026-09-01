@@ -46,11 +46,9 @@ open class AccessibilityGlobalLocalConfigTests: BaseTestClass {
                 #expect(accessibilityID.isEmpty, "Global disable without local enable should result in no accessibility identifier, got: '\(accessibilityID)'")
             } else {
                 // If inspection fails, treat as no identifier applied
-                #expect(Bool(true), "Inspection failed, treating as no ID applied")
             }
             #else
             // ViewInspector not available, treat as no identifier applied
-            #expect(Bool(true), "ViewInspector not available, treating as no ID applied")
             #endif
         }
     }

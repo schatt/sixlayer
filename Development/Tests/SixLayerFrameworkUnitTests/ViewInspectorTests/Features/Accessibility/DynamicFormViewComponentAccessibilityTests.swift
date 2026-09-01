@@ -1,28 +1,17 @@
 import Testing
-
-
-//
-//  DynamicFormViewComponentAccessibilityTests.swift
-//  SixLayerFrameworkTests
-//
-//  Comprehensive accessibility tests for ALL DynamicFormView components
-//
-
 import SwiftUI
+import ViewInspector
 @testable import SixLayerFramework
 
-#if canImport(ViewInspector)
-import ViewInspector
-#endif
+// Hosted DynamicFormView accessibility identifiers. VI lane only (#412).
+// Always asserts; no `canImport(ViewInspector)` skip (#398).
 
-// MARK: - Test Data Types
-struct TestData {
+fileprivate struct DynamicFormA11yTestData {
     let name: String
     let email: String
 }
 
 @Suite("Dynamic Form View Component Accessibility", HostedViewTestIsolationTrait())
-/// NOTE: Serialized — ViewInspector hosting and task-local a11y config do not tolerate parallel execution in this suite (#314).
 open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
     
     // MARK: - Shared Test Data (DRY Principle)
@@ -44,28 +33,13 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
     @MainActor
     public func createTestFormView() -> some View {
         IntelligentFormView.generateForm(
-            for: TestData.self,
-            initialData: TestData(name: "Test", email: "test@example.com"),
+            for: DynamicFormA11yTestData.self,
+            initialData: DynamicFormA11yTestData(name: "Test", email: "test@example.com"),
             onSubmit: { _ in },
             onCancel: { }
         )
     }
     
-    /// Creates a test field with correct parameters (DTRT - use actual framework types)
-    public func createTestField() -> DynamicFormField {
-        DynamicFormField(
-            id: "test-field",
-            textContentType: .name,
-            contentType: .text,
-            label: "Test Field",
-            placeholder: "Enter test value",
-            description: "Test field for accessibility testing",
-            isRequired: true,
-            defaultValue: "test"
-        )
-    }
-
-    #if canImport(ViewInspector)
     /// Field components delegate visible labels to `DynamicFormFieldView` (Issue #189); verify control + a11y via Inspectable traversal (#314).
     @MainActor
     private func expectDynamicFieldAccessibility(
@@ -98,43 +72,7 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
             #expect(hasAccessibilityID, "\(testName) should generate accessibility identifier")
         }
     }
-    #endif
-    
-    /// Tests that a field component renders the expected UI control and binds correctly to form state
-    @MainActor
-    private func testFieldComponentFunctionality(
-        fieldType: DynamicContentType,
-        platform: SixLayerPlatform,
-            componentName: String,
-        testName: String
-    ) -> Bool {
-        let field = DynamicFormField(
-            id: "test-\(fieldType.rawValue)-field",
-            textContentType: .name,
-            contentType: fieldType,
-            label: "Test \(fieldType.rawValue.capitalized) Field",
-            placeholder: "Enter \(fieldType.rawValue)",
-            isRequired: true,
-            defaultValue: "test default"
-        )
-        let formState = DynamicFormState(configuration: testFormConfig)
 
-        // Initialize the form state with the field
-        formState.initializeField(field)
-
-        let view = CustomFieldView(field: field, formState: formState)
-        
-        // Test that the component generates accessibility identifiers
-        let hasAccessibilityID = testComponentComplianceSinglePlatform(
-            view,
-            expectedPattern: "SixLayer.main.ui.*\(componentName).*",
-            platform: platform,
-            componentName: componentName
-        )
-
-        return hasAccessibilityID
-    }
-    
     // MARK: - DynamicFormView Tests
     
     @Test @MainActor func testDynamicFormViewGeneratesAccessibilityIdentifiers() async {
@@ -158,7 +96,6 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
         let view = createTestFormView()
         
         // Then: Should generate accessibility identifiers
-        #if canImport(ViewInspector)
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
             view,
             expectedPattern: "SixLayer.*ui.*DynamicFormView.*",
@@ -166,10 +103,6 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
             componentName: "DynamicFormView"
         )
  #expect(hasAccessibilityID, "DynamicFormView should generate accessibility identifiers ")
-        #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-        // The modifier IS present in the code, but ViewInspector can't detect it on macOS
-        #endif
         }
     }
     
@@ -186,7 +119,6 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
         let view = createTestFormView()
         
         // Then: Should generate accessibility identifiers
-        #if canImport(ViewInspector)
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
             view,
             expectedPattern: "SixLayer.*ui.*DynamicFormHeader.*",
@@ -194,10 +126,6 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
             componentName: "DynamicFormHeader"
         )
  #expect(hasAccessibilityID, "DynamicFormHeader should generate accessibility identifiers ")
-        #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-        // The modifier IS present in the code, but ViewInspector can't detect it on macOS
-        #endif
     }
     
     // MARK: - DynamicFormSectionView Tests
@@ -213,7 +141,6 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
         let view = createTestFormView()
         
         // Then: Should generate accessibility identifiers
-        #if canImport(ViewInspector)
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
             view,
             expectedPattern: "SixLayer.*ui.*DynamicFormSectionView.*",
@@ -221,10 +148,6 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
             componentName: "DynamicFormSectionView"
         )
  #expect(hasAccessibilityID, "DynamicFormSectionView should generate accessibility identifiers ")
-        #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-        // The modifier IS present in the code, but ViewInspector can't detect it on macOS
-        #endif
     }
     
     /// BUSINESS PURPOSE: Verify collapsible sections have proper accessibility labels and hints
@@ -254,7 +177,6 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
         let view = DynamicFormSectionView(section: collapsibleSection, formState: formState)
             .enableGlobalAutomaticCompliance()
         
-        #if canImport(ViewInspector)
         runWithTaskLocalConfig {
             guard testConfig != nil else {
                 Issue.record("testConfig is nil")
@@ -276,10 +198,6 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
             )
             #expect(hasAccessibilityID, "Collapsible section should generate accessibility identifier")
         }
-        #else
-        // ViewInspector not available on macOS - test passes by verifying view creation
-        #expect(Bool(true), "View should be created successfully")
-        #endif
     }
     
     // MARK: - DynamicFormActions Tests
@@ -295,7 +213,6 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
         let view = createTestFormView()
         
         // Then: Should generate accessibility identifiers
-        #if canImport(ViewInspector)
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
             view,
             expectedPattern: "SixLayer.*ui.*DynamicFormActions.*",
@@ -303,10 +220,6 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
             componentName: "DynamicFormActions"
         )
  #expect(hasAccessibilityID, "DynamicFormActions should generate accessibility identifiers ")
-        #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-        // The modifier IS present in the code, but ViewInspector can't detect it on macOS
-        #endif
     }
     
     // MARK: - DynamicTextField Tests
@@ -334,7 +247,6 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
         let view = DynamicTextField(field: field, formState: formState)
             .enableGlobalAutomaticCompliance()
 
-        #if canImport(ViewInspector)
         expectDynamicFieldAccessibility(
             view,
             testName: "DynamicTextField",
@@ -345,9 +257,6 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
         }
         let fieldValue: String? = formState.getValue(for: "test-text-field")
         #expect(fieldValue == "John Doe", "Form state should contain initial value")
-        #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-        #endif
     }
     
     // MARK: - DynamicNumberField Tests
@@ -375,7 +284,6 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
         let view = DynamicNumberField(field: field, formState: formState)
             .enableGlobalAutomaticCompliance()
 
-        #if canImport(ViewInspector)
         expectDynamicFieldAccessibility(
             view,
             testName: "DynamicNumberField",
@@ -386,9 +294,6 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
         }
         let numberValue: String? = formState.getValue(for: "test-number-field")
         #expect(numberValue == "25", "Form state should contain numeric value")
-        #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-        #endif
     }
     
     // MARK: - DynamicTextAreaField Tests
@@ -416,7 +321,6 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
         let view = DynamicTextAreaField(field: field, formState: formState)
             .enableGlobalAutomaticCompliance()
 
-        #if canImport(ViewInspector)
         expectDynamicFieldAccessibility(
             view,
             testName: "DynamicTextAreaField",
@@ -429,9 +333,6 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
         }
         let storedValue: String? = formState.getValue(for: "test-textarea-field")
         #expect(storedValue == "This is a\nmultiline description\nwith line breaks", "Form state should contain multiline text")
-        #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-        #endif
     }
     
     // MARK: - DynamicSelectField Tests
@@ -460,7 +361,6 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
         let view = DynamicSelectField(field: field, formState: formState)
 
         // Should render proper selection UI
-        #if canImport(ViewInspector)
         if let inspected = try? AnyView(view).inspect() {
             let vStacks = inspected.findAll(ViewType.VStack.self)
             if let vStack = vStacks.first {
@@ -491,9 +391,6 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
         } else {
             Issue.record("DynamicSelectField inspection failed - component not properly implemented")
         }
-        #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-        #endif
     }
     
     // MARK: - DynamicMultiSelectField Tests
@@ -522,7 +419,6 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
         let view = DynamicMultiSelectField(field: field, formState: formState)
             .enableGlobalAutomaticCompliance()
 
-        #if canImport(ViewInspector)
         expectDynamicFieldAccessibility(
             view,
             testName: "DynamicMultiSelectField",
@@ -533,9 +429,6 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
         }
         let storedValue: [String]? = formState.getValue(for: "test-multiselect-field")
         #expect(storedValue == ["Reading", "Music"], "Form state should contain selected values array")
-        #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-        #endif
     }
     
     // MARK: - DynamicRadioField Tests
@@ -564,7 +457,6 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
         let view = DynamicRadioField(field: field, formState: formState)
             .enableGlobalAutomaticCompliance()
 
-        #if canImport(ViewInspector)
         expectDynamicFieldAccessibility(
             view,
             testName: "DynamicRadioField",
@@ -577,9 +469,6 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
         }
         let radioValue: String? = formState.getValue(for: "test-radio-field")
         #expect(radioValue == "Female", "Form state should contain selected radio value")
-        #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-        #endif
     }
     
     // MARK: - DynamicCheckboxField Tests
@@ -607,7 +496,6 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
         let view = DynamicCheckboxField(field: field, formState: formState)
             .enableGlobalAutomaticCompliance()
 
-        #if canImport(ViewInspector)
         expectDynamicFieldAccessibility(
             view,
             testName: "DynamicCheckboxField",
@@ -618,9 +506,6 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
         }
         let checkboxValue: Bool? = formState.getValue(for: "test-checkbox-field")
         #expect(checkboxValue == true, "Form state should contain boolean checkbox value")
-        #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-        #endif
     }
     
     // MARK: - DynamicToggleField Tests
@@ -648,7 +533,6 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
         let view = DynamicToggleField(field: field, formState: formState)
             .enableGlobalAutomaticCompliance()
 
-        #if canImport(ViewInspector)
         // ViewInspector often classifies SwiftUI Toggle as non-Toggle nodes in fieldContainer hosting;
         // compliance ID on named DynamicToggleField shell is the contract under test (#314).
         expectDynamicFieldAccessibility(
@@ -659,9 +543,6 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
         )
         let toggleValue: Bool? = formState.getValue(for: "test-toggle-field")
         #expect(toggleValue == false, "Form state should contain boolean toggle value")
-        #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-        #endif
     }
     
     // MARK: - FormValidationSummary Tests
@@ -715,7 +596,6 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
         )
         
         // Should have accessibility identifier
-        #if canImport(ViewInspector)
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
             view,
             expectedPattern: "SixLayer.main.ui.*FormValidationSummary.*",
@@ -723,10 +603,6 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
             componentName: "FormValidationSummary"
         )
         #expect(hasAccessibilityID, "FormValidationSummary should generate accessibility identifier")
-        #else
-        // ViewInspector not available on macOS - test passes by verifying view creation
-        #expect(Bool(true), "View should be created successfully")
-        #endif
     }
     
     /// BUSINESS PURPOSE: Verify FormValidationSummary shows correct error count in accessibility label
@@ -802,7 +678,6 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
         )
         
         // Should still generate accessibility identifiers despite ScrollViewReader wrapper
-        #if canImport(ViewInspector)
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
             view,
             expectedPattern: "SixLayer.main.ui.*test-form.*",
@@ -810,13 +685,5 @@ open class DynamicFormViewComponentAccessibilityTests: BaseTestClass {
             componentName: "DynamicFormView"
         )
         #expect(hasAccessibilityID, "DynamicFormView should generate accessibility identifier with ScrollViewReader wrapper")
-        #else
-        // ViewInspector not available on macOS - test passes by verifying view creation
-        // The ScrollViewReader wrapper is verified in the implementation code
-        #expect(Bool(true), "View should be created successfully with ScrollViewReader wrapper")
-        #endif
     }
 }
-
-// MARK: - Test Data Types
-// Using framework types instead of duplicates

@@ -137,7 +137,6 @@ open class PlatformFontSystemExtensionsTests: BaseTestClass {
         
         // Test business logic: Platform fonts should be different from each other
         // We can't directly compare Font values, but we can verify they're usable
-        #expect(Bool(true), "Platform fonts should be consistent and usable")
     }
     
     // MARK: - Semantic Text Style Tests
@@ -149,7 +148,6 @@ open class PlatformFontSystemExtensionsTests: BaseTestClass {
         
         // Then - Test business logic: Platform large title font should be properly defined
         _ = Text("Large Title").font(font)
-        #expect(Bool(true), "Platform large title should be usable")
     }
     
     /// Test platform title font
@@ -159,7 +157,6 @@ open class PlatformFontSystemExtensionsTests: BaseTestClass {
         
         // Then
         _ = Text("Title").font(font)
-        #expect(Bool(true), "Platform title should be usable")
     }
     
     /// Test platform title2 font
@@ -169,7 +166,6 @@ open class PlatformFontSystemExtensionsTests: BaseTestClass {
         
         // Then
         _ = Text("Title 2").font(font)
-        #expect(Bool(true), "Platform title2 should be usable")
     }
     
     /// Test platform title3 font
@@ -179,7 +175,6 @@ open class PlatformFontSystemExtensionsTests: BaseTestClass {
         
         // Then
         _ = Text("Title 3").font(font)
-        #expect(Bool(true), "Platform title3 should be usable")
     }
     
     /// Test platform headline font
@@ -189,7 +184,6 @@ open class PlatformFontSystemExtensionsTests: BaseTestClass {
         
         // Then
         _ = Text("Headline").font(font)
-        #expect(Bool(true), "Platform headline should be usable")
     }
     
     /// Test platform body font
@@ -199,7 +193,6 @@ open class PlatformFontSystemExtensionsTests: BaseTestClass {
         
         // Then
         _ = Text("Body").font(font)
-        #expect(Bool(true), "Platform body should be usable")
     }
     
     /// Test platform callout font
@@ -209,7 +202,6 @@ open class PlatformFontSystemExtensionsTests: BaseTestClass {
         
         // Then
         _ = Text("Callout").font(font)
-        #expect(Bool(true), "Platform callout should be usable")
     }
     
     /// Test platform subheadline font
@@ -219,7 +211,6 @@ open class PlatformFontSystemExtensionsTests: BaseTestClass {
         
         // Then
         _ = Text("Subheadline").font(font)
-        #expect(Bool(true), "Platform subheadline should be usable")
     }
     
     /// Test platform footnote font
@@ -229,7 +220,6 @@ open class PlatformFontSystemExtensionsTests: BaseTestClass {
         
         // Then
         _ = Text("Footnote").font(font)
-        #expect(Bool(true), "Platform footnote should be usable")
     }
     
     /// Test platform caption font
@@ -239,7 +229,6 @@ open class PlatformFontSystemExtensionsTests: BaseTestClass {
         
         // Then
         _ = Text("Caption").font(font)
-        #expect(Bool(true), "Platform caption should be usable")
     }
     
     /// Test platform caption2 font
@@ -249,7 +238,6 @@ open class PlatformFontSystemExtensionsTests: BaseTestClass {
         
         // Then
         _ = Text("Caption 2").font(font)
-        #expect(Bool(true), "Platform caption2 should be usable")
     }
     
     // MARK: - Platform Font Accessor Tests
@@ -271,7 +259,6 @@ open class PlatformFontSystemExtensionsTests: BaseTestClass {
         #expect(platformFont is NSFont, "Platform font accessor should return NSFont on macOS")
         #else
         // On other platforms, should return Font
-        #expect(Bool(true), "Platform font accessor should work on other platforms")
         #endif
     }
     
@@ -294,7 +281,6 @@ open class PlatformFontSystemExtensionsTests: BaseTestClass {
             #elseif os(macOS)
             #expect(platformFont is NSFont, "Platform font should be NSFont")
             #else
-            #expect(Bool(true), "Platform font should be accessible")
             #endif
         }
     }
@@ -313,7 +299,6 @@ open class PlatformFontSystemExtensionsTests: BaseTestClass {
         
         // Then: Font should be usable
         _ = Text("System Font").font(font)
-        #expect(Bool(true), "Platform system font should be usable")
     }
     
     /// Test platform system font with different weights
@@ -325,7 +310,6 @@ open class PlatformFontSystemExtensionsTests: BaseTestClass {
         for weight in weights {
             let font = Font.platformSystem(size: 16, weight: weight)
             _ = Text("Weight Test").font(font)
-            #expect(Bool(true), "Platform system font with weight \(weight) should be usable")
         }
     }
     
@@ -338,7 +322,6 @@ open class PlatformFontSystemExtensionsTests: BaseTestClass {
         for design in designs {
             let font = Font.platformSystem(size: 16, weight: .regular, design: design)
             _ = Text("Design Test").font(font)
-            #expect(Bool(true), "Platform system font with design \(design) should be usable")
         }
     }
     
@@ -358,7 +341,6 @@ open class PlatformFontSystemExtensionsTests: BaseTestClass {
         for (name, font) in fonts {
             _ = Text(name)
                 .font(font)
-            #expect(Bool(true), "Font \(name) should work in views")
         }
     }
     
@@ -385,7 +367,6 @@ open class PlatformFontSystemExtensionsTests: BaseTestClass {
                     .font(font)
             }
             
-            #expect(Bool(true), "Font \(name) should work in SwiftUI views")
         }
     }
     
@@ -407,7 +388,6 @@ open class PlatformFontSystemExtensionsTests: BaseTestClass {
                 .font(font)
                 .accessibilityLabel("Test text")
             
-            #expect(Bool(true), "Font should work with accessibility")
         }
     }
     
@@ -434,7 +414,6 @@ open class PlatformFontSystemExtensionsTests: BaseTestClass {
         
         // When & Then
         // Verify fonts are valid and usable
-        #expect(Bool(true), "All platform fonts should be usable in examples")
     }
     
     // MARK: - Backward Compatibility Tests
@@ -454,7 +433,6 @@ open class PlatformFontSystemExtensionsTests: BaseTestClass {
         for font in fonts {
             _ = Text("Test")
                 .font(font)
-            #expect(Bool(true), "Font should be backward compatible")
         }
     }
     
@@ -500,7 +478,6 @@ open class PlatformFontSystemExtensionsTests: BaseTestClass {
         // Then
         for font in fonts {
             _ = Text("Test").font(font)
-            #expect(Bool(true), "All platform fonts should be available")
         }
     }
 }

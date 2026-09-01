@@ -82,7 +82,6 @@ open class AccessibilityPreferenceTests: BaseTestClass {
         
         // Then: Test actual business logic
         // The configuration should be appropriate for the current platform
-        #expect(Bool(true), "Platform configuration should be available")  // config is non-optional
         
         // Test platform-specific expectations
         switch platform {
@@ -136,7 +135,6 @@ open class AccessibilityPreferenceTests: BaseTestClass {
         
         // Then: Test actual business logic
         // The configuration should have valid performance settings
-        #expect(Bool(true), "Performance configuration should be available")  // config is non-optional
         
         // Test that performance settings are reasonable
         #expect(config.maxAnimationDuration >= 0, "Animation duration should be non-negative")
@@ -231,7 +229,6 @@ open class AccessibilityPreferenceTests: BaseTestClass {
         let _ = config.supportsAssistiveTouch
         let _ = performanceConfig.maxAnimationDuration
         let _ = accessibilityConfig.supportsVoiceOver
-        #expect(Bool(true), "All accessibility properties should be accessible")
         
         // Test that values are within reasonable ranges
         #expect(config.minTouchTarget >= 0, "Touch target size should be non-negative")

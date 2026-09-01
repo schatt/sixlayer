@@ -129,6 +129,10 @@ struct MyView: View {
 }
 ```
 
+`ThemedFrameworkView` writes theme values into SwiftUI Environment. **Hosted app views** can read `@Environment(\.designTokens)` (and the other theme keys).
+
+**Framework modifiers** that ViewInspector `inspect()` will evaluate must not declare those `@Environment` properties on the inspect path (`inspect()` never installs Environment). They use `UnhostedInspection.withThemeTokens`: hosted still reads Environment so `.environment(\.colorSystem, …)` works; unhosted uses `ThemePreference` (task-local then `VisualDesignSystem.shared`).
+
 ## Mapping External Design Tokens
 
 ### From Figma
@@ -400,16 +404,17 @@ struct CustomCard: ViewModifier {
 After:
 ```swift
 struct CustomCard: ViewModifier {
-    @Environment(\.designTokens) private var colors
-    @Environment(\.componentStates) private var states
-
     func body(content: Content) -> some View {
-        content
-            .background(colors.surface)
-            .cornerRadius(states.cornerRadius.md)
+        UnhostedInspection.withThemeTokens { tokens in
+            content
+                .background(tokens.designTokens.surface)
+                .cornerRadius(tokens.componentStates.cornerRadius.md)
+        }
     }
 }
 ```
+
+Do not put `@Environment(\.designTokens)` on a modifier `body` that `inspect()` evaluates — that floods xcresult diagnostics. Hosted app views (not inspect-evaluated modifiers) can still use Environment.
 
 ## Troubleshooting
 

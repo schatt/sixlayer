@@ -3,6 +3,7 @@
 //  SixLayerFrameworkUnitTests
 //
 //  Issue #252 — VisionKit live data scanner Layer 4 surface (gates on #253 `Photos.supportsLiveDataScanner`).
+//  Issue #415 — Mac Catalyst uses the unsupported fallback (no DataScannerViewController).
 //
 
 import SwiftUI
@@ -40,8 +41,8 @@ struct PlatformDataScannerLayer4Tests {
             bannerMessage: "Hint",
             onItemTap: { _ in }
         )
-        _ = TestSetupUtilities.hostRootPlatformView(sheet, forceLayout: false)
-        #expect(Bool(true), "Sheet helper should construct and host")
+        let hosted = TestSetupUtilities.hostRootPlatformView(sheet, forceLayout: false)
+        #expect(hosted != nil, "Sheet helper should construct and host")
     }
     #endif
 }

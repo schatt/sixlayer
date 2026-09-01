@@ -80,7 +80,6 @@ struct IntelligentDetailViewSheetTests {
         #else
         // ViewInspector not available on macOS - skip test gracefully
         // The view is created successfully, which is the main requirement
-        #expect(Bool(true), "platformDetailView compiles and can be created (ViewInspector not available on macOS)")
         #endif
     }
     
@@ -136,7 +135,6 @@ struct IntelligentDetailViewSheetTests {
         #else
         // ViewInspector not available on macOS - skip test gracefully
         // The view is created successfully, which is the main requirement
-        #expect(Bool(true), "platformDetailView compiles and can be created (ViewInspector not available on macOS)")
         #endif
     }
     
@@ -153,14 +151,12 @@ struct IntelligentDetailViewSheetTests {
         #if canImport(ViewInspector)
         if (try? AnyView(detailView).inspect()) != nil {
             // If we can inspect with frame constraints, the view respects them
-            #expect(Bool(true), "platformDetailView should accept frame constraints for sheet sizing")
         } else {
             Issue.record("platformDetailView should accept frame constraints")
         }
         #else
         // ViewInspector not available on macOS - skip test gracefully
         // The view compiles with frame constraints, which is the main requirement
-        #expect(Bool(true), "platformDetailView compiles with frame constraints (ViewInspector not available on macOS)")
         #endif
     }
     
@@ -181,14 +177,12 @@ struct IntelligentDetailViewSheetTests {
         // Verify NavigationStack + platformDetailView works
         #if canImport(ViewInspector)
         if (try? AnyView(sheetContent).inspect()) != nil {
-            #expect(Bool(true), "platformDetailView should work with NavigationStack in sheets")
         } else {
             Issue.record("platformDetailView should work in NavigationStack")
         }
         #else
         // ViewInspector not available on macOS - skip test gracefully
         // The view compiles successfully, which is the main requirement
-        #expect(Bool(true), "NavigationStack + platformDetailView compiles (ViewInspector not available on macOS)")
         #endif
     }
     
@@ -209,7 +203,6 @@ struct IntelligentDetailViewSheetTests {
         let textDetail = IntelligentDetailView.platformDetailView(for: textData)
         _ = try? AnyView(textDetail).inspect()
 
-        #expect(Bool(true), "platformDetailView should work with different data types in sheets")
     }
     
     /// Verify that platformDetailView generates accessibility identifiers in sheet context

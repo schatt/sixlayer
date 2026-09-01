@@ -133,8 +133,6 @@ open class PlatformImageArchitectureTests: BaseTestClass {
         // We verify that the interfaces accept PlatformImage callbacks by checking they were created successfully
         
         // Verify the interfaces were created (they accept PlatformImage callbacks)
-        #expect(Bool(true), "Camera interface should accept PlatformImage callback")  // cameraInterface is non-optional
-        #expect(Bool(true), "Photo picker should accept PlatformImage callback")  // photoPicker is non-optional
     }
     
     /// BUSINESS PURPOSE: Verify PlatformImage can handle all image operations

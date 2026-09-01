@@ -296,8 +296,9 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
         return patterns
     }
     
-    /// Load hints file and convert ocrHints to regex patterns
-    private func loadHintsPatterns(for context: OCRContext) -> [String: String] {
+    /// Load hints file and convert ocrHints to regex patterns.
+    /// Internal so unit tests can observe hint→regex conversion (#382).
+    func loadHintsPatterns(for context: OCRContext) -> [String: String] {
         // Use entityName from context - projects specify which data model's hints to use
         // If nil, return empty patterns (developer opted out of hints-based extraction)
         guard let entityName = context.entityName else {
@@ -312,33 +313,32 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
         // Convert ocrHints to regex patterns
         for (fieldId, fieldHints) in hintsResult.fieldHints {
             if let ocrHints = fieldHints.ocrHints, !ocrHints.isEmpty {
-                // Create regex pattern from ocrHints
-                // Pattern supports bidirectional matching: hint before number OR number before hint
-                // This handles cases where Vision reads text in different orders
-                // Pattern: (?i)((hint1|hint2|hint3)\s*[:=]?\s*([\d.,]+)|([\d.,]+)\s+(hint1|hint2|hint3))
-                let escapedHints = ocrHints
-                    .sorted { $0.count > $1.count }
-                    .map { NSRegularExpression.escapedPattern(for: $0) }
-                let hintsGroup = escapedHints.joined(separator: "|")
-                
-                // Check if any hint is a currency symbol (needs special handling)
-                let hasCurrencySymbol = ocrHints.contains { hint in
-                    ["$", "€", "£", "¥"].contains(hint)
-                }
-                
-                // For currency symbols, allow optional text between symbol and number
-                // For other hints, require closer proximity
-                let separatorPattern = hasCurrencySymbol 
-                    ? "\\s+(?:[A-Za-z]+\\s+)*"  // Allow text like " This Sale " between $ and number
-                    : "\\s*[:=]?\\s*"  // Standard: just whitespace/colon/equals
-                
-                // Bidirectional pattern: (hint separator number) OR (number separator hint)
-                let pattern = "(?i)((\(hintsGroup))\(separatorPattern)([\\d.,]+)|([\\d.,]+)\\s+(\(hintsGroup)))"
-                patterns[fieldId] = pattern
+                patterns[fieldId] = regexPattern(fromOCRHints: ocrHints)
             }
         }
         
         return patterns
+    }
+
+    /// Word hints use optional colon/equals; currency symbols allow optional space and words (#420 / #430).
+    /// Each alternative is `(hint)(?:separator)(number)` so extraction can read adjacent capture groups.
+    private func regexPattern(fromOCRHints ocrHints: [String]) -> String {
+        let currencySymbols: Set<String> = ["$", "€", "£", "¥"]
+        let hints = ocrHints
+            .sorted { $0.count > $1.count }
+            .map { (raw: $0, escaped: NSRegularExpression.escapedPattern(for: $0)) }
+        func separator(for raw: String) -> String {
+            currencySymbols.contains(raw)
+                ? "\\s*(?:[A-Za-z]+\\s+)*"
+                : "\\s*[:=]?\\s*"
+        }
+        let hintThenNumber = hints
+            .map { "(\($0.escaped))(?:\(separator(for: $0.raw)))([\\d.,]+)" }
+            .joined(separator: "|")
+        let numberThenHint = hints
+            .map { "([\\d.,]+)(?:\(separator(for: $0.raw)))(\($0.escaped))" }
+            .joined(separator: "|")
+        return "(?i)(?:\(hintThenNumber))|(?:\(numberThenHint))"
     }
     
     private func calculateExtractionConfidence(_ structuredData: [String: String], context: OCRContext) -> Float {
@@ -1304,9 +1304,18 @@ public class MockOCRService: OCRServiceProtocol {
 /// Factory for creating OCR services
 public class OCRServiceFactory {
     
+    /// Per-task override so tests can inject a hanging or fake service without racing `.shared`.
+    /// Production leaves this `nil`. Layer 1 OCR wrappers must call ``create()`` so cancellation tests can observe in-flight work.
+    @TaskLocal public static var testOverride: (any OCRServiceProtocol)?
+    
     /// Create an OCR service instance
     public static func create() -> OCRServiceProtocol {
-        return OCRService()
+        return testOverride ?? OCRService()
+    }
+    
+    /// Prefer a SwiftUI-injected service, then the task-local override, then a real ``OCRService``.
+    public static func resolve(injected: (any OCRServiceProtocol)?) -> any OCRServiceProtocol {
+        injected ?? create()
     }
     
     /// Create a mock OCR service for testing
@@ -1316,4 +1325,16 @@ public class OCRServiceFactory {
         return MockOCRService(mockResult: result)
     }
     */
+}
+
+private struct SixLayerOCRServiceEnvironmentKey: EnvironmentKey {
+    static let defaultValue: (any OCRServiceProtocol)? = nil
+}
+
+extension EnvironmentValues {
+    /// Optional OCR service for Layer 1 wrappers. Production leaves this unset so ``OCRServiceFactory/create()`` is used.
+    public var sixLayerOCRService: (any OCRServiceProtocol)? {
+        get { self[SixLayerOCRServiceEnvironmentKey.self] }
+        set { self[SixLayerOCRServiceEnvironmentKey.self] = newValue }
+    }
 }

@@ -92,7 +92,6 @@ open class PlatformPresentContentL1Tests: BaseTestClass {
         // Then: Test the two critical aspects
         
         // 1. View created - The view can be instantiated successfully
-        #expect(Bool(true), "platformPresentContent_L1 should return a view for number content")  // view is non-optional
         
         // 2. Contains what it needs to contain - L1 shell exposes accessibility identifiers
         #if canImport(ViewInspector)
@@ -111,18 +110,14 @@ open class PlatformPresentContentL1Tests: BaseTestClass {
         // Test different number types
         let doubleContent = 42.5
         _ = platformPresentContent_L1(content: doubleContent, hints: hints)
-        #expect(Bool(true), "Should handle double values")  // doubleView is non-optional
         
         let floatContent: Float = 42.0
         _ = platformPresentContent_L1(content: floatContent, hints: hints)
-        #expect(Bool(true), "Should handle float values")  // floatView is non-optional
         
         // Test edge cases
         _ = platformPresentContent_L1(content: 0, hints: hints)
-        #expect(Bool(true), "Should handle zero values")  // zeroView is non-optional
         
         _ = platformPresentContent_L1(content: -42, hints: hints)
-        #expect(Bool(true), "Should handle negative values")  // negativeView is non-optional
     }
     
     @Test @MainActor func testPlatformPresentContent_L1_WithArray() {
@@ -138,23 +133,18 @@ open class PlatformPresentContentL1Tests: BaseTestClass {
         )
         
         // Then
-        #expect(Bool(true), "platformPresentContent_L1 should return a view for array content")  // view is non-optional
         
         // Test different array types
         let stringArray = ["hello", "world", "test"]
         _ = platformPresentContent_L1(content: stringArray, hints: hints)
-        #expect(Bool(true), "Should handle string arrays")  // stringArrayView is non-optional
         
         let mixedArray: [Any] = [1, "hello", 3.14, true]
         _ = platformPresentContent_L1(content: mixedArray, hints: hints)
-        #expect(Bool(true), "Should handle mixed type arrays")  // mixedArrayView is non-optional
         
         // Test edge cases
         _ = platformPresentContent_L1(content: [] as [Int], hints: hints)
-        #expect(Bool(true), "Should handle empty arrays")  // emptyArrayView is non-optional
         
         _ = platformPresentContent_L1(content: [42], hints: hints)
-        #expect(Bool(true), "Should handle single element arrays")  // singleElementView is non-optional
     }
     
     @Test @MainActor func testPlatformPresentContent_L1_WithDictionary() {
@@ -170,23 +160,18 @@ open class PlatformPresentContentL1Tests: BaseTestClass {
         )
         
         // Then
-        #expect(Bool(true), "platformPresentContent_L1 should return a view for dictionary content")  // view is non-optional
         
         // Test different dictionary types
         let stringDict = ["key1": "value1", "key2": "value2"]
         _ = platformPresentContent_L1(content: stringDict, hints: hints)
-        #expect(Bool(true), "Should handle string dictionaries")  // stringDictView is non-optional
         
         let numberDict = ["count": 42, "price": 99.99]
         _ = platformPresentContent_L1(content: numberDict, hints: hints)
-        #expect(Bool(true), "Should handle number dictionaries")  // numberDictView is non-optional
         
         // Test edge cases
         _ = platformPresentContent_L1(content: [:] as [String: Any], hints: hints)
-        #expect(Bool(true), "Should handle empty dictionaries")  // emptyDictView is non-optional
         
         _ = platformPresentContent_L1(content: ["single": "value"], hints: hints)
-        #expect(Bool(true), "Should handle single key dictionaries")  // singleKeyView is non-optional
     }
     
     @Test @MainActor func testPlatformPresentContent_L1_WithNil() {
@@ -202,7 +187,6 @@ open class PlatformPresentContentL1Tests: BaseTestClass {
         )
         
         // Then
-        #expect(Bool(true), "platformPresentContent_L1 should return a view for nil content")  // view is non-optional
     }
     
     // MARK: - Different Hint Types Tests
@@ -225,7 +209,6 @@ open class PlatformPresentContentL1Tests: BaseTestClass {
         )
         
         // Then
-        #expect(Bool(true), "platformPresentContent_L1 should return a view with different data type hints")  // view is non-optional
     }
     
     @Test @MainActor func testPlatformPresentContent_L1_WithComplexContent() {
@@ -246,7 +229,6 @@ open class PlatformPresentContentL1Tests: BaseTestClass {
         )
         
         // Then
-        #expect(Bool(true), "platformPresentContent_L1 should return a view for complex content")  // view is non-optional
     }
     
     // MARK: - Edge Cases Tests
@@ -264,7 +246,6 @@ open class PlatformPresentContentL1Tests: BaseTestClass {
         )
         
         // Then
-        #expect(Bool(true), "platformPresentContent_L1 should return a view for empty string")  // view is non-optional
     }
     
     @Test @MainActor func testPlatformPresentContent_L1_WithEmptyArray() {
@@ -280,7 +261,6 @@ open class PlatformPresentContentL1Tests: BaseTestClass {
         )
         
         // Then
-        #expect(Bool(true), "platformPresentContent_L1 should return a view for empty array")  // view is non-optional
     }
     
     @Test @MainActor func testPlatformPresentContent_L1_WithEmptyDictionary() {
@@ -296,7 +276,6 @@ open class PlatformPresentContentL1Tests: BaseTestClass {
         )
         
         // Then
-        #expect(Bool(true), "platformPresentContent_L1 should return a view for empty dictionary")  // view is non-optional
     }
     
     // MARK: - Performance Tests
@@ -315,7 +294,6 @@ open class PlatformPresentContentL1Tests: BaseTestClass {
             
             // Force SwiftUI to actually render the view by hosting it
             _ = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
-            #expect(Bool(true), "Performance test should successfully render the view")  // hostingView is non-optional
         // Performance test removed - performance monitoring was removed from framework
     }
 }

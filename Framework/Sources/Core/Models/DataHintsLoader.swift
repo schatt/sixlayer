@@ -972,6 +972,33 @@ public enum SectionBuilder {
     }
 }
 
+/// Resolves form sections with the same precedence as ``platformPresentFormData_L1``:
+/// explicit ``LayoutSpec``, then hints ``sectionLayouts``, then a single default section.
+public enum FormSectionResolution {
+    public static func resolve(
+        fields: [DynamicFormField],
+        layoutSpec: LayoutSpec?,
+        hintsResult: DataHintsResult?
+    ) -> [DynamicFormSection] {
+        if let explicitSpec = layoutSpec {
+            return explicitSpec.sections
+        }
+        if let hintsResult, !hintsResult.sectionLayouts.isEmpty {
+            return SectionBuilder.buildSections(
+                from: hintsResult.sectionLayouts,
+                matching: fields
+            )
+        }
+        return [
+            DynamicFormSection(
+                id: "default",
+                title: "Form Fields",
+                fields: fields
+            )
+        ]
+    }
+}
+
 // MARK: - Convenience Global Registry
 
 /// Global registry instance for data hints

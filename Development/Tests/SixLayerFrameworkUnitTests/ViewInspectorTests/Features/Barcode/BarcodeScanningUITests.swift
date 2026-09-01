@@ -132,7 +132,6 @@ open class BarcodeScanningUITests: BaseTestClass {
         }
         #else
         // ViewInspector not available on macOS - skip test gracefully
-        #expect(Bool(true), "Barcode button test skipped (ViewInspector not available on macOS)")
         #endif
         
         // Regular field should not show barcode button
@@ -141,11 +140,9 @@ open class BarcodeScanningUITests: BaseTestClass {
             // Regular field should not have HStack with barcode button
             _ = inspected.findAll(ViewType.HStack.self)
             // Note: This might still have HStack if field supports OCR, so we check for barcode button specifically
-            #expect(Bool(true), "Regular field test - barcode button should not be present")
         }
         #else
         // ViewInspector not available on macOS - skip test gracefully
-        #expect(Bool(true), "Regular field test skipped (ViewInspector not available on macOS)")
         #endif
     }
     
@@ -194,7 +191,6 @@ open class BarcodeScanningUITests: BaseTestClass {
             Issue.record("Failed to inspect dual OCR/barcode field view")
         }
         #else
-        #expect(Bool(true), "Dual field test skipped (ViewInspector not available)")
         #endif
     }
     
@@ -364,7 +360,6 @@ open class BarcodeScanningUITests: BaseTestClass {
         )
         
         // Verify view can be created (don't host to avoid UI rendering issues in tests)
-        #expect(Bool(true), "Barcode overlay view should be creatable")
         #expect(barcodeResult.hasBarcodes == true, "Result should have barcodes")
     }
     
@@ -391,7 +386,6 @@ open class BarcodeScanningUITests: BaseTestClass {
         )
         
         // Verify view can be created with empty result
-        #expect(Bool(true), "Barcode overlay view should handle empty result")
         #expect(emptyResult.hasBarcodes == false, "Empty result should have no barcodes")
     }
     

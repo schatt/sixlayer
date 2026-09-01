@@ -111,7 +111,6 @@ open class PlatformNavigationRoutingExtensionsTests: BaseTestClass {
         #expect(platformBottomBarPlacement() == .bottomBar)
         #else
         _ = platformBottomBarPlacement()
-        #expect(Bool(true), "platformBottomBarPlacement returns a placement on this OS")
         #endif
     }
 

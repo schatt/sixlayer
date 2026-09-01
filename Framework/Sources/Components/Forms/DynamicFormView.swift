@@ -71,11 +71,41 @@ public extension EnvironmentValues {
     }
 }
 
+/// Hosted-only Environment reader for resolved field display label (#435).
+struct DynamicFormFieldResolvedDisplayLabelReader<Content: View>: View {
+    let field: DynamicFormField
+    @Environment(\.dynamicFormFieldResolvedDisplayLabel) private var resolvedDisplayLabel
+    let content: (String) -> Content
+
+    init(field: DynamicFormField, content: @escaping (String) -> Content) {
+        self.field = field
+        self.content = content
+    }
+
+    var body: some View {
+        content(resolvedDisplayLabel ?? field.label)
+    }
+}
+
+/// Hosted-only Environment reader for field localization (#435).
+struct DynamicFormLocalizationEnvironmentReader<Content: View>: View {
+    @Environment(\.dynamicFormFieldLocalizationResolver) private var localizationResolver
+    @Environment(\.dynamicFormLocalizationNamespace) private var localizationNamespace
+    let content: (DynamicFormFieldLocalizationResolver?, String?) -> Content
+
+    init(content: @escaping (DynamicFormFieldLocalizationResolver?, String?) -> Content) {
+        self.content = content
+    }
+
+    var body: some View {
+        content(localizationResolver, localizationNamespace)
+    }
+}
+
 /// Applies `accessibilityIdentifierLabel` using the resolved field label from environment when present (Issue #194).
 public struct DynamicFormFieldAccessibilityLabelApplier<Content: View>: View {
     let field: DynamicFormField
     let content: Content
-    @Environment(\.dynamicFormFieldResolvedDisplayLabel) private var resolvedDisplayLabel
 
     public init(field: DynamicFormField, @ViewBuilder content: () -> Content) {
         self.field = field
@@ -83,7 +113,16 @@ public struct DynamicFormFieldAccessibilityLabelApplier<Content: View>: View {
     }
 
     public var body: some View {
-        content.environment(\.accessibilityIdentifierLabel, resolvedDisplayLabel ?? field.label)
+        UnhostedInspection.split(
+            unhosted: {
+                content.environment(\.accessibilityIdentifierLabel, field.label)
+            },
+            hosted: {
+                DynamicFormFieldResolvedDisplayLabelReader(field: field) { label in
+                    content.environment(\.accessibilityIdentifierLabel, label)
+                }
+            }
+        )
     }
 }
 
@@ -103,7 +142,6 @@ public extension View {
 public struct DynamicFormFieldVoiceOverLabelApplier<Content: View>: View {
     let field: DynamicFormField
     let content: Content
-    @Environment(\.dynamicFormFieldResolvedDisplayLabel) private var resolvedDisplayLabel
 
     public init(field: DynamicFormField, content: Content) {
         self.field = field
@@ -111,7 +149,16 @@ public struct DynamicFormFieldVoiceOverLabelApplier<Content: View>: View {
     }
 
     public var body: some View {
-        content.accessibilityLabel(resolvedDisplayLabel ?? field.label)
+        UnhostedInspection.split(
+            unhosted: {
+                content.accessibilityLabel(field.label)
+            },
+            hosted: {
+                DynamicFormFieldResolvedDisplayLabelReader(field: field) { label in
+                    content.accessibilityLabel(label)
+                }
+            }
+        )
     }
 }
 
@@ -142,14 +189,6 @@ public struct DynamicFormView: View {
     let onEntityCreated: ((Any) -> Void)?
     let onError: ((Error) -> Void)?
     let entityType: Any.Type?
-    
-    @Environment(\.dynamicFormState) private var injectedFormState
-    @StateObject private var internalFormState: DynamicFormState
-    
-    // Batch OCR state (Issue #83)
-    @State private var showImagePicker = false
-    @State private var isProcessingOCR = false
-    @State private var ocrError: String?
 
     /// Optional binding for host to trigger batch OCR with target image field and scope (Issue #188).
     /// When the host sets this to a non-nil value, the form shows the image picker and runs batch OCR
@@ -183,10 +222,72 @@ public struct DynamicFormView: View {
 
         // Store effective configuration (with hints applied if applicable)
         self.configuration = effectiveConfiguration
-        _internalFormState = StateObject(wrappedValue: DynamicFormState(configuration: effectiveConfiguration))
     }
 
     public var body: some View {
+        UnhostedInspection.split(
+            unhosted: {
+                DynamicFormViewInner(
+                    formState: DynamicFormState(configuration: configuration),
+                    configuration: configuration,
+                    onSubmit: onSubmit,
+                    onEntityCreated: onEntityCreated,
+                    onError: onError,
+                    entityType: entityType,
+                    showImagePicker: .constant(false),
+                    isProcessingOCR: .constant(false),
+                    ocrError: .constant(nil),
+                    batchOCRRequest: batchOCRRequest ?? .constant(nil)
+                )
+            },
+            hosted: {
+                DynamicFormViewHostedState(
+                    configuration: configuration,
+                    onSubmit: onSubmit,
+                    onEntityCreated: onEntityCreated,
+                    onError: onError,
+                    entityType: entityType,
+                    batchOCRRequest: batchOCRRequest
+                )
+            }
+        )
+    }
+}
+
+/// Hosted-only Environment and StateObject for `DynamicFormView` (#435).
+@MainActor
+private struct DynamicFormViewHostedState: View {
+    let configuration: DynamicFormConfiguration
+    let onSubmit: ([String: Any]) -> Void
+    let onEntityCreated: ((Any) -> Void)?
+    let onError: ((Error) -> Void)?
+    let entityType: Any.Type?
+    var batchOCRRequest: Binding<BatchOCRRequest?>?
+
+    @Environment(\.dynamicFormState) private var injectedFormState
+    @StateObject private var internalFormState: DynamicFormState
+    @State private var showImagePicker = false
+    @State private var isProcessingOCR = false
+    @State private var ocrError: String?
+
+    init(
+        configuration: DynamicFormConfiguration,
+        onSubmit: @escaping ([String: Any]) -> Void,
+        onEntityCreated: ((Any) -> Void)?,
+        onError: ((Error) -> Void)?,
+        entityType: Any.Type?,
+        batchOCRRequest: Binding<BatchOCRRequest?>?
+    ) {
+        self.configuration = configuration
+        self.onSubmit = onSubmit
+        self.onEntityCreated = onEntityCreated
+        self.onError = onError
+        self.entityType = entityType
+        self.batchOCRRequest = batchOCRRequest
+        _internalFormState = StateObject(wrappedValue: DynamicFormState(configuration: configuration))
+    }
+
+    var body: some View {
         DynamicFormViewInner(
             formState: injectedFormState ?? internalFormState,
             configuration: configuration,
@@ -795,8 +896,6 @@ public struct DynamicFormFieldView: View {
     @ObservedObject var formState: DynamicFormState
     @State private var showHelpPopover = false
     let sortPriority: Double?  // Issue #165: Sort priority for accessibility reading order
-    @Environment(\.dynamicFormFieldLocalizationResolver) private var localizationResolver
-    @Environment(\.dynamicFormLocalizationNamespace) private var localizationNamespace
     
     public init(field: DynamicFormField, formState: DynamicFormState, sortPriority: Double? = nil) {
         self.field = field
@@ -804,21 +903,32 @@ public struct DynamicFormFieldView: View {
         self.sortPriority = sortPriority
     }
 
-    /// Localized or fallback label for the field row (Issue #194).
-    private var displayFieldLabel: String {
-        field.resolvedLocalizedDisplayString(
-            role: .label,
-            resolver: localizationResolver,
-            namespace: localizationNamespace,
-            fallback: field.label
+    public var body: some View {
+        UnhostedInspection.split(
+            unhosted: {
+                applyingField(displayLabel: field.label)
+            },
+            hosted: {
+                DynamicFormLocalizationEnvironmentReader { resolver, namespace in
+                    applyingField(
+                        displayLabel: field.resolvedLocalizedDisplayString(
+                            role: .label,
+                            resolver: resolver,
+                            namespace: namespace,
+                            fallback: field.label
+                        )
+                    )
+                }
+            }
         )
     }
-    
-    public var body: some View {
+
+    @ViewBuilder
+    private func applyingField(displayLabel: String) -> some View {
         platformVStackContainer(alignment: .leading, spacing: 8) {
             // Field label with required indicator and info button
             platformHStackContainer(spacing: 4) {
-                Text(displayFieldLabel)
+                Text(displayLabel)
                     .font(.subheadline)
                     .bold()
                 if field.isRequired {
@@ -836,7 +946,7 @@ public struct DynamicFormFieldView: View {
                             .font(.caption)
                     }
                     .buttonStyle(.plain)
-                    .accessibilityLabel("Help for \(displayFieldLabel)")
+                    .accessibilityLabel("Help for \(displayLabel)")
                     .accessibilityHint(description)
                     #if os(macOS)
                     .help(description) // macOS native tooltip on hover
@@ -857,7 +967,7 @@ public struct DynamicFormFieldView: View {
                 }
             }
             .automaticCompliance(named: "FieldLabel")
-            .accessibilityLabel(field.isRequired ? "\(displayFieldLabel), required" : displayFieldLabel)
+            .accessibilityLabel(field.isRequired ? "\(displayLabel), required" : displayLabel)
 
             // Field description is now shown in popover/tooltip, not as plain text (Issue #79)
             // This saves vertical space and reduces form clutter
@@ -877,8 +987,8 @@ public struct DynamicFormFieldView: View {
             }
         }
         .id(field.id) // Add ID for ScrollViewReader scrolling
-        .environment(\.dynamicFormFieldResolvedDisplayLabel, displayFieldLabel)
-        .environment(\.accessibilityIdentifierLabel, displayFieldLabel)
+        .environment(\.dynamicFormFieldResolvedDisplayLabel, displayLabel)
+        .environment(\.accessibilityIdentifierLabel, displayLabel)
         .automaticComplianceForDynamicFormField(
             field,
             accessibilitySortPriority: sortPriority  // Issue #165: Sort priority for reading order
@@ -1055,9 +1165,6 @@ public struct FormWizardView<Content: View, Navigation: View>: View {
     let content: (FormWizardStep, FormWizardState) -> Content
     let navigation: (FormWizardState, @escaping () -> Void, @escaping () -> Void, @escaping () -> Void) -> Navigation
     
-    @Environment(\.formWizardState) private var injectedWizardState
-    @StateObject private var internalWizardState: FormWizardState
-    
     public init(
         steps: [FormWizardStep],
         @ViewBuilder content: @escaping (FormWizardStep, FormWizardState) -> Content,
@@ -1066,10 +1173,38 @@ public struct FormWizardView<Content: View, Navigation: View>: View {
         self.steps = steps
         self.content = content
         self.navigation = navigation
-        _internalWizardState = StateObject(wrappedValue: FormWizardState())
     }
     
     public var body: some View {
+        UnhostedInspection.split(
+            unhosted: {
+                FormWizardViewInner(
+                    wizardState: FormWizardState(),
+                    steps: steps,
+                    content: content,
+                    navigation: navigation
+                )
+            },
+            hosted: {
+                FormWizardViewHostedState(
+                    steps: steps,
+                    content: content,
+                    navigation: navigation
+                )
+            }
+        )
+    }
+}
+
+@MainActor
+private struct FormWizardViewHostedState<Content: View, Navigation: View>: View {
+    let steps: [FormWizardStep]
+    let content: (FormWizardStep, FormWizardState) -> Content
+    let navigation: (FormWizardState, @escaping () -> Void, @escaping () -> Void, @escaping () -> Void) -> Navigation
+    @Environment(\.formWizardState) private var injectedWizardState
+    @StateObject private var internalWizardState = FormWizardState()
+
+    var body: some View {
         FormWizardViewInner(
             wizardState: injectedWizardState ?? internalWizardState,
             steps: steps,

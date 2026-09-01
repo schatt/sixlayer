@@ -40,89 +40,60 @@ import SwiftUI
 @Suite("Cross Platform Color")
 open class CrossPlatformColorTests: BaseTestClass {
     
+    /// SwiftUI `Color` Equatable is vacuous in this suite (`== Color.clear` and
+    /// `!= Color.clear` both pass). Encodeability is the observable contract.
+    private func expectEncodesToNonEmptyData(_ color: Color, name: String) throws {
+        #if os(iOS) || os(macOS)
+        let encoded = try platformColorEncode(color)
+        #expect(!encoded.isEmpty, "\(name) should encode to non-empty data")
+        #endif
+    }
+    
     // MARK: - Cross-Platform Color Tests
     
-    @Test func testCrossPlatformColorsAreAvailable() {
-        // Test that our cross-platform colors are accessible (non-optional, verified at compile time)
-        let _ = Color.cardBackground
-        let _ = Color.secondaryBackground
-        let _ = Color.primaryBackground
-        let _ = Color.groupedBackground
-        let _ = Color.separator
-        let _ = Color.label
-        let _ = Color.secondaryLabel
-        #expect(Bool(true), "All cross-platform colors are accessible")
+    @Test func testCrossPlatformColorsAreAvailable() throws {
+        let colors: [(String, Color)] = [
+            ("cardBackground", .cardBackground),
+            ("secondaryBackground", .secondaryBackground),
+            ("primaryBackground", .primaryBackground),
+            ("groupedBackground", .groupedBackground),
+            ("separator", .separator),
+            ("label", .label),
+            ("secondaryLabel", .secondaryLabel)
+        ]
+        for (name, color) in colors {
+            try expectEncodesToNonEmptyData(color, name: name)
+        }
     }
     
-    @Test func testCardBackgroundColorIsCrossPlatform() {
-        // Test that cardBackground works on both platforms
-        let cardColor = Color.cardBackground
-        #expect(Bool(true), "cardColor is non-optional")  // cardColor is non-optional
-        
-        // Verify it's not the same as system colors (should be our custom implementation)
-        #expect(cardColor != Color.clear)
-        #expect(cardColor != Color.primary)
+    @Test func testCardBackgroundColorIsCrossPlatform() throws {
+        try expectEncodesToNonEmptyData(.cardBackground, name: "cardBackground")
     }
     
-    @Test func testSecondaryBackgroundColorIsCrossPlatform() {
-        // Test that secondaryBackground works on both platforms
-        let secondaryColor = Color.secondaryBackground
-        #expect(Bool(true), "secondaryColor is non-optional")  // secondaryColor is non-optional
-        
-        // Verify it's not the same as system colors
-        #expect(secondaryColor != Color.clear)
-        #expect(secondaryColor != Color.primary)
+    @Test func testSecondaryBackgroundColorIsCrossPlatform() throws {
+        try expectEncodesToNonEmptyData(.secondaryBackground, name: "secondaryBackground")
     }
     
-    @Test func testPrimaryBackgroundColorIsCrossPlatform() {
-        // Test that primaryBackground works on both platforms
-        let primaryColor = Color.primaryBackground
-        #expect(Bool(true), "primaryColor is non-optional")  // primaryColor is non-optional
-        
-        // Verify it's not the same as system colors
-        #expect(primaryColor != Color.clear)
-        #expect(primaryColor != Color.primary)
+    @Test func testPrimaryBackgroundColorIsCrossPlatform() throws {
+        try expectEncodesToNonEmptyData(.primaryBackground, name: "primaryBackground")
     }
     
-    @Test func testGroupedBackgroundColorIsCrossPlatform() {
-        // Test that groupedBackground works on both platforms
-        let groupedColor = Color.groupedBackground
-        #expect(Bool(true), "groupedColor is non-optional")  // groupedColor is non-optional
-        
-        // Verify it's not the same as system colors
-        #expect(groupedColor != Color.clear)
-        #expect(groupedColor != Color.primary)
+    @Test func testGroupedBackgroundColorIsCrossPlatform() throws {
+        try expectEncodesToNonEmptyData(.groupedBackground, name: "groupedBackground")
     }
     
-    @Test func testSeparatorColorIsCrossPlatform() {
-        // Test that separator works on both platforms
-        let separatorColor = Color.separator
-        #expect(Bool(true), "separatorColor is non-optional")  // separatorColor is non-optional
-        
-        // Verify it's not the same as system colors
-        #expect(separatorColor != Color.clear)
-        #expect(separatorColor != Color.primary)
+    @Test func testSeparatorColorIsCrossPlatform() throws {
+        try expectEncodesToNonEmptyData(.separator, name: "separator")
     }
     
-    @Test func testLabelColorsAreCrossPlatform() {
-        // Test that label colors work on both platforms
-        let labelColor = Color.label
-        let secondaryLabelColor = Color.secondaryLabel
-        
-        #expect(Bool(true), "labelColor is non-optional")  // labelColor is non-optional
-        #expect(Bool(true), "secondaryLabelColor is non-optional")  // secondaryLabelColor is non-optional
-        
-        // Verify they're not the same as system colors
-        #expect(labelColor != Color.clear)
-        #expect(secondaryLabelColor != Color.clear)
+    @Test func testLabelColorsAreCrossPlatform() throws {
+        try expectEncodesToNonEmptyData(.label, name: "label")
+        try expectEncodesToNonEmptyData(.secondaryLabel, name: "secondaryLabel")
     }
     
     // MARK: - Business Purpose Tests
     
-    @Test func testCrossPlatformColorsEnableConsistentUI() {
-        // Test that our cross-platform colors provide consistent UI behavior
-        // This is the business purpose: ensuring the framework works on both platforms
-        
+    @Test func testCrossPlatformColorsEnableConsistentUI() throws {
         let colors = [
             Color.cardBackground,
             Color.secondaryBackground,
@@ -130,18 +101,13 @@ open class CrossPlatformColorTests: BaseTestClass {
             Color.groupedBackground
         ]
         
-        // All colors should be valid and usable
         for color in colors {
-            #expect(Bool(true), "color is non-optional")  // color is non-optional
-            // Verify color can be used in SwiftUI views
+            try expectEncodesToNonEmptyData(color, name: "framework background color")
             let _ = Rectangle().fill(color)
         }
     }
     
-    @Test @MainActor func testCrossPlatformColorsSupportFrameworkGoals() {
-        // Test that our color system supports the framework's cross-platform goals
-        // Business purpose: enabling developers to write once, run everywhere
-        
+    @Test @MainActor func testCrossPlatformColorsSupportFrameworkGoals() throws {
         let testColors = [
             ("cardBackground", Color.cardBackground),
             ("secondaryBackground", Color.secondaryBackground),
@@ -150,17 +116,13 @@ open class CrossPlatformColorTests: BaseTestClass {
         ]
         
         for (name, color) in testColors {
-            // Each color should be usable in a real UI context
             _ = platformVStackContainer {
                 Rectangle()
                     .fill(color)
                     .frame(width: 100, height: 100)
             }
             
-            #expect(Bool(true), "view is non-optional")  // view is non-optional
-            #expect(Bool(true), "color is non-optional")  // color is non-optional
-            
-            // Verify the color name is descriptive and meaningful
+            try expectEncodesToNonEmptyData(color, name: name)
             #expect(name.contains("Background"), "Color name should be descriptive: \(name)")
         }
     }

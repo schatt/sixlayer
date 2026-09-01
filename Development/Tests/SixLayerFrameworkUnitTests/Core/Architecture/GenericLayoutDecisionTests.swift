@@ -257,7 +257,6 @@ open class GenericLayoutDecisionTests: BaseTestClass {
         )
         
         // Then
-        #expect(Bool(true), "decision is non-optional")  // decision is non-optional
         #expect(decision.columns > 0)
         // IntelligentCardLayoutDecision doesn't have reasoning property
     }
@@ -273,7 +272,6 @@ open class GenericLayoutDecisionTests: BaseTestClass {
         let decision = determineOptimalFormLayout_L2(hints: hints)
         
         // Then
-        #expect(Bool(true), "decision is non-optional")  // decision is non-optional
         #expect(decision.preferredContainer == ContainerPreference.adaptive)
         #expect(decision.fieldLayout == .standard)
         #expect(decision.spacing == .comfortable)
@@ -290,7 +288,6 @@ open class GenericLayoutDecisionTests: BaseTestClass {
         let decision = determineOptimalFormLayout_L2(hints: hints)
         
         // Then
-        #expect(Bool(true), "decision is non-optional")  // decision is non-optional
         #expect(decision.preferredContainer == ContainerPreference.adaptive)
         #expect(decision.fieldLayout == .standard)
         #expect(decision.spacing == .comfortable)
@@ -505,7 +502,6 @@ open class GenericLayoutDecisionTests: BaseTestClass {
         )
         
         // Then
-        #expect(Bool(true), "decision is non-optional")  // decision is non-optional
         #expect(decision.columns > 0)
         #expect(decision.spacing > 0)
         // IntelligentCardLayoutDecision doesn't have reasoning property
@@ -556,7 +552,6 @@ open class GenericLayoutDecisionTests: BaseTestClass {
         let layout = platformOCRLayout_L2(context: context)
         
         // Then
-        #expect(Bool(true), "layout is non-optional")  // layout is non-optional
         #expect(layout.maxImageSize.width > 0)
         #expect(layout.maxImageSize.height > 0)
     }
@@ -588,7 +583,6 @@ open class GenericLayoutDecisionTests: BaseTestClass {
         )
         
         // Then
-        #expect(Bool(true), "decision is non-optional")  // decision is non-optional
         #expect(decision.columns > 0)
     }
     
@@ -614,8 +608,6 @@ open class GenericLayoutDecisionTests: BaseTestClass {
         )
         
         // Then
-        #expect(Bool(true), "extremeWidthDecision is non-optional")  // extremeWidthDecision is non-optional
-        #expect(Bool(true), "zeroWidthDecision is non-optional")  // zeroWidthDecision is non-optional
         #expect(extremeWidthDecision.columns == zeroWidthDecision.columns) // Both extreme values default to 1 column
     }
     
@@ -645,10 +637,6 @@ open class GenericLayoutDecisionTests: BaseTestClass {
         )
         
         // Then
-        #expect(Bool(true), "layoutDecision is non-optional")  // layoutDecision is non-optional
-        #expect(Bool(true), "formDecision is non-optional")  // formDecision is non-optional
-        #expect(Bool(true), "cardDecision is non-optional")  // cardDecision is non-optional
-        
         // All decisions should be consistent
         #expect(layoutDecision.approach == LayoutApproach.responsive) // 20 items = complex = responsive
         #expect(formDecision.preferredContainer == .adaptive)

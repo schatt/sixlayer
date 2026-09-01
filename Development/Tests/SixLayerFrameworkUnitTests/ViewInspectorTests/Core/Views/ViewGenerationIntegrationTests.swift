@@ -743,7 +743,6 @@ open class ViewGenerationIntegrationTests: BaseTestClass {
         // Then: Test the two critical aspects
         
         // 1. Does it return a valid structure of the kind it's supposed to?
-        #expect(Bool(true), "Should be able to create view with mock config for \(config.name)")  // testView is non-optional
         
         // 2. Does that structure contain what it should?
         if let _ = try? AnyView(testView).inspect() {
@@ -754,7 +753,6 @@ open class ViewGenerationIntegrationTests: BaseTestClass {
             Issue.record("Failed to inspect view structure for \(config.name)")
             #else
             // ViewInspector not available on macOS - test passes by verifying view creation
-            #expect(Bool(true), "View created for \(config.name)")
             #endif
         }
     }
@@ -1033,20 +1031,16 @@ open class ViewGenerationIntegrationTests: BaseTestClass {
         // Then: Test the two critical aspects
         
         // 1. Does it return a valid structure of the kind it's supposed to?
-        #expect(Bool(true), "Touch platform should generate a valid view")  // touchView is non-optional
-        #expect(Bool(true), "Hover platform should generate a valid view")  // hoverView is non-optional
         
         // 2. Does that structure contain what it should?
         let touchInspectionResult = try? AnyView(touchView).inspect()
         if touchInspectionResult != nil {
             // Touch view should be inspectable
-            #expect(Bool(true), "Touch view should be inspectable")
         }
 
         let hoverInspectionResult = try? AnyView(hoverView).inspect()
         if hoverInspectionResult != nil {
             // Hover view should be inspectable
-            #expect(Bool(true), "Hover view should be inspectable")
         }
             
             // The views should be different because they represent different platforms
@@ -1084,9 +1078,7 @@ open class ViewGenerationIntegrationTests: BaseTestClass {
             }
 
             let view = createTestViewWithMockConfig(config)
-            #expect(Bool(true), "\(phase): view should be created on \(platform)")
             if let _ = try? AnyView(view).inspect() {
-                #expect(Bool(true), "\(phase): generated view should be inspectable when ViewInspector allows")
             }
         }
 

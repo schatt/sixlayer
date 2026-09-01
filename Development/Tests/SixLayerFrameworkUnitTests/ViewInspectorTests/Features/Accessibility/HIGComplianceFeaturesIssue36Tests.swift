@@ -51,11 +51,18 @@ open class HIGComplianceFeaturesIssue36Tests: BaseTestClass {
             .automaticCompliance()
     }
     
-    /// Verifies a view can be hosted and has automatic compliance applied
+    /// Verifies a view can be hosted and exposes a SixLayer accessibility identifier (#398).
     @MainActor
     private func verifyViewIsHostable<V: View>(_ view: V, description: String) {
-        _ = hostRootPlatformView(view.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "\(description) should be hostable with automatic compliance")
+        let hosted = view.enableGlobalAutomaticCompliance()
+        _ = hostRootPlatformView(hosted)
+        let passed = testComponentComplianceSinglePlatform(
+            hosted,
+            expectedPattern: "SixLayer.*ui.*",
+            platform: SixLayerPlatform.current,
+            componentName: "HIGComplianceIssue36"
+        )
+        #expect(passed, "\(description)")
     }
     
     /// Verifies platform-specific touch target requirements

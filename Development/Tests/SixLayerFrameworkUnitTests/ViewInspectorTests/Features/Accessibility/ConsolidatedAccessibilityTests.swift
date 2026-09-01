@@ -398,7 +398,6 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             _ = AccessibilitySystemState()
             
             // Then: Should be properly initialized
-            #expect(Bool(true), "AccessibilitySystemState should be properly initialized")
         }
     }
     
@@ -1287,10 +1286,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         
         // Then: Verify the actual platform-specific implementation
         #if canImport(ViewInspector)
-        #expect(Bool(true), "Photo picker view created (UIViewControllerRepresentable may not be inspectable)")
         #else
         // ViewInspector not available on macOS - test passes by verifying view creation
-        #expect(Bool(true), "Photo picker view created (ViewInspector not available on this platform)")
         #endif
     }
     
@@ -2118,7 +2115,6 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         
         // When: Apple HIG compliance is applied
         // Then: Framework component should have compliance applied
-        #expect(Bool(true), "Framework component with Apple HIG compliance should be valid")
     }
     
     @Test @MainActor func testHIGComplianceCheck() async {
@@ -2686,9 +2682,6 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         let gestureString = gestureType.rawValue
         let actionString = actionType.rawValue
         
-        #expect(Bool(true), "Announcement type should convert to string")
-        #expect(Bool(true), "Gesture type should convert to string")
-        #expect(Bool(true), "Action type should convert to string")
         
         #expect(VoiceOverAnnouncementType(rawValue: announcementString) == announcementType,
                "Announcement type conversion should be reversible")
@@ -2800,7 +2793,6 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             #expect(submitID != cancelID,
                    "Buttons with different labels should have different identifiers (implementation verified in code)")
         } else {
-            #expect(Bool(true), "AdaptiveButton implementation verified - ViewInspector can't detect (known limitation)")
         }
         
         self.cleanupTestEnvironment()
@@ -2820,10 +2812,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
                    (buttonID.contains("add-new-item") || buttonID.contains("add") && buttonID.contains("new")),
                   "Identifier should contain sanitized label (implementation verified)")
         } else {
-            #expect(Bool(true), "Label sanitization implementation verified - ViewInspector can't detect (known limitation)")
         }
         #else
-        #expect(Bool(true), "Label sanitization implementation verified - ViewInspector not available on this platform")
         #endif
         
         self.cleanupTestEnvironment()
@@ -2835,7 +2825,6 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         self.initializeTestConfig()
         _ = AccessibilitySystemState()
         // Note: AccessibilitySystemState properties are non-optional and don't need nil checks
-        #expect(Bool(true), "Accessibility system state should be initialized")
     }
     
     @Test @MainActor func testHIGRecommendationCreation() {
@@ -3086,7 +3075,6 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         self.initializeTestConfig()
             self.runWithTaskLocalConfig {
             _ = AccessibilityIdentifierGenerator()
-            #expect(Bool(true), "AccessibilityIdentifierGenerator should be instantiable")
         }
     }
     
@@ -3314,7 +3302,6 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         let platform = SixLayerPlatform.current
         let config = getCardExpansionPlatformConfig()
         
-        #expect(Bool(true), "Platform configuration should be available")
         
         switch platform {
         case .iOS:
@@ -3747,10 +3734,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             #expect(viewID.contains("settings") || viewID.contains("Settings"),
                    "platformNavigationTitle identifier should include title text 'Settings' (implementation verified in code)")
         } else {
-            #expect(Bool(true), "platformNavigationTitle implementation verified - ViewInspector can't detect (known limitation)")
         }
         #else
-        #expect(Bool(true), "platformNavigationTitle implementation verified - ViewInspector not available on this platform")
         #endif
         
         self.cleanupTestEnvironment()
@@ -3779,10 +3764,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             #expect(viewID.contains("next") || viewID.contains("page") || viewID.contains("Next"),
                    "platformNavigationLink_L4 identifier should include title text 'Next Page' (implementation verified in code)")
         } else {
-            #expect(Bool(true), "platformNavigationLink_L4 implementation verified - ViewInspector can't detect (known limitation)")
         }
         #else
-        #expect(Bool(true), "platformNavigationLink_L4 implementation verified - ViewInspector not available on this platform")
         #endif
         
         self.cleanupTestEnvironment()
@@ -3801,10 +3784,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             #expect((!buttonID.contains("&")) && (!buttonID.contains("!")),
                    "Identifier should not contain special chars (implementation verified)")
         } else {
-            #expect(Bool(true), "Label sanitization implementation verified - ViewInspector can't detect (known limitation)")
         }
         #else
-        #expect(Bool(true), "Label sanitization implementation verified - ViewInspector not available on this platform")
         #endif
         
         self.cleanupTestEnvironment()
@@ -3824,10 +3805,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
                    (buttonID.contains("camelcaselabel") || buttonID.contains("camel")),
                   "Identifier should contain lowercase version (implementation verified)")
         } else {
-            #expect(Bool(true), "Label sanitization implementation verified - ViewInspector can't detect (known limitation)")
         }
         #else
-        #expect(Bool(true), "Label sanitization implementation verified - ViewInspector not available on this platform")
         #endif
         
         self.cleanupTestEnvironment()
@@ -3852,7 +3831,6 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             )
                 .appleHIGCompliant()
             
-            #expect(Bool(true), "View should be created with both HIG compliance and automatic IDs")
         }
     }
     
@@ -3862,7 +3840,6 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         self.initializeTestConfig()
         _ = AppleHIGComplianceManager()
         // All AccessibilitySystemState properties are Bool (non-optional) - no need to check for nil
-        #expect(Bool(true), "Accessibility state monitoring should work")
     }
     
     @Test @MainActor func testDesignSystemInitialization() {
@@ -3875,13 +3852,11 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     @Test @MainActor func testColorSystemPlatformSpecific() {
         self.initializeTestConfig()
         // Color types are non-optional in SwiftUI - no need to check for nil
-        #expect(Bool(true), "Color system should be platform-specific")
     }
     
     @Test @MainActor func testTypographySystemPlatformSpecific() {
         self.initializeTestConfig()
         // Font types are non-optional in SwiftUI - no need to check for nil
-        #expect(Bool(true), "Typography system should be platform-specific")
     }
     
     
@@ -4193,10 +4168,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             #expect(fieldID.contains("email") || fieldID.contains("address") || fieldID.contains("Email"),
                    "DynamicTextField identifier should include field label 'Email Address' (implementation verified in code)")
         } else {
-            #expect(Bool(true), "DynamicTextField implementation verified - ViewInspector can't detect (known limitation)")
         }
         #else
-        #expect(Bool(true), "DynamicTextField implementation verified - ViewInspector not available on this platform")
         #endif
         
         self.cleanupTestEnvironment()
@@ -4228,10 +4201,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             #expect(fieldID.contains("user") || fieldID.contains("email") || fieldID.contains("User"),
                    "DynamicEmailField identifier should include field label 'User Email' (implementation verified in code)")
         } else {
-            #expect(Bool(true), "DynamicEmailField implementation verified - ViewInspector can't detect (known limitation)")
         }
         #else
-        #expect(Bool(true), "DynamicEmailField implementation verified - ViewInspector not available on this platform")
         #endif
         
         self.cleanupTestEnvironment()
@@ -4263,10 +4234,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             #expect(fieldID.contains("secure") || fieldID.contains("password") || fieldID.contains("Secure"),
                    "DynamicPasswordField identifier should include field label 'Secure Password' (implementation verified in code)")
         } else {
-            #expect(Bool(true), "DynamicPasswordField implementation verified - ViewInspector can't detect (known limitation)")
         }
         #else
-        #expect(Bool(true), "DynamicPasswordField implementation verified - ViewInspector not available on this platform")
         #endif
         
         self.cleanupTestEnvironment()
@@ -4685,10 +4654,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             #expect(buttonID.contains("save") || buttonID.contains("Save"),
                    "platformNavigationButton identifier should include title text 'Save' (implementation verified in code)")
         } else {
-            #expect(Bool(true), "platformNavigationButton implementation verified - ViewInspector can't detect (known limitation)")
         }
         #else
-        #expect(Bool(true), "platformNavigationButton implementation verified - ViewInspector not available on this platform")
         #endif
         
         self.cleanupTestEnvironment()
@@ -4714,10 +4681,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             #expect(formID.contains("user") || formID.contains("profile") || formID.contains("User"),
                    "DynamicFormView identifier should include configuration title 'User Profile' (implementation verified in code)")
         } else {
-            #expect(Bool(true), "DynamicFormView implementation verified - ViewInspector can't detect (known limitation)")
         }
         #else
-        #expect(Bool(true), "DynamicFormView implementation verified - ViewInspector not available on this platform")
         #endif
         
         self.cleanupTestEnvironment()
@@ -4748,10 +4713,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             #expect(sectionID.contains("personal") || sectionID.contains("information") || sectionID.contains("Personal"),
                    "DynamicFormSectionView identifier should include section title 'Personal Information' (implementation verified in code)")
         } else {
-            #expect(Bool(true), "DynamicFormSectionView implementation verified - ViewInspector can't detect (known limitation)")
         }
         #else
-        #expect(Bool(true), "DynamicFormSectionView implementation verified - ViewInspector not available on this platform")
         #endif
         
         self.cleanupTestEnvironment()
@@ -4783,10 +4746,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             #expect(fieldID.contains("mobile") || fieldID.contains("phone") || fieldID.contains("Mobile"),
                    "DynamicPhoneField identifier should include field label 'Mobile Phone' (implementation verified in code)")
         } else {
-            #expect(Bool(true), "DynamicPhoneField implementation verified - ViewInspector can't detect (known limitation)")
         }
         #else
-        #expect(Bool(true), "DynamicPhoneField implementation verified - ViewInspector not available on this platform")
         #endif
         
         self.cleanupTestEnvironment()
@@ -4818,10 +4779,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             #expect(fieldID.contains("website") || fieldID.contains("url") || fieldID.contains("Website"),
                    "DynamicURLField identifier should include field label 'Website URL' (implementation verified in code)")
         } else {
-            #expect(Bool(true), "DynamicURLField implementation verified - ViewInspector can't detect (known limitation)")
         }
         #else
-        #expect(Bool(true), "DynamicURLField implementation verified - ViewInspector not available on this platform")
         #endif
         
         self.cleanupTestEnvironment()
@@ -4853,10 +4812,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             #expect(fieldID.contains("total") || fieldID.contains("amount") || fieldID.contains("Total"),
                    "DynamicNumberField identifier should include field label 'Total Amount' (implementation verified in code)")
         } else {
-            #expect(Bool(true), "DynamicNumberField implementation verified - ViewInspector can't detect (known limitation)")
         }
         #else
-        #expect(Bool(true), "DynamicNumberField implementation verified - ViewInspector not available on this platform")
         #endif
         
         self.cleanupTestEnvironment()
@@ -4888,10 +4845,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             #expect(fieldID.contains("birth") || fieldID.contains("date") || fieldID.contains("Birth"),
                    "DynamicDateField identifier should include field label 'Birth Date' (implementation verified in code)")
         } else {
-            #expect(Bool(true), "DynamicDateField implementation verified - ViewInspector can't detect (known limitation)")
         }
         #else
-        #expect(Bool(true), "DynamicDateField implementation verified - ViewInspector not available on this platform")
         #endif
         
         self.cleanupTestEnvironment()
@@ -4923,10 +4878,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             #expect(fieldID.contains("enable") || fieldID.contains("notifications") || fieldID.contains("Enable"),
                    "DynamicToggleField identifier should include field label 'Enable Notifications' (implementation verified in code)")
         } else {
-            #expect(Bool(true), "DynamicToggleField implementation verified - ViewInspector can't detect (known limitation)")
         }
         #else
-        #expect(Bool(true), "DynamicToggleField implementation verified - ViewInspector not available on this platform")
         #endif
         
         self.cleanupTestEnvironment()
@@ -4959,10 +4912,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             #expect(fieldID.contains("favorite") || fieldID.contains("colors") || fieldID.contains("Favorite"),
                    "DynamicMultiSelectField identifier should include field label 'Favorite Colors' (implementation verified in code)")
         } else {
-            #expect(Bool(true), "DynamicMultiSelectField implementation verified - ViewInspector can't detect (known limitation)")
         }
         #else
-        #expect(Bool(true), "DynamicMultiSelectField implementation verified - ViewInspector not available on this platform")
         #endif
         
         self.cleanupTestEnvironment()
@@ -4995,10 +4946,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             #expect(fieldID.contains("agree") || fieldID.contains("terms") || fieldID.contains("Agree"),
                    "DynamicCheckboxField identifier should include field label 'Agree to Terms' (implementation verified in code)")
         } else {
-            #expect(Bool(true), "DynamicCheckboxField implementation verified - ViewInspector can't detect (known limitation)")
         }
         #else
-        #expect(Bool(true), "DynamicCheckboxField implementation verified - ViewInspector not available on this platform")
         #endif
         
         self.cleanupTestEnvironment()
@@ -5030,10 +4979,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             #expect(fieldID.contains("upload") || fieldID.contains("document") || fieldID.contains("Upload"),
                    "DynamicFileField identifier should include field label 'Upload Document' (implementation verified in code)")
         } else {
-            #expect(Bool(true), "DynamicFileField implementation verified - ViewInspector can't detect (known limitation)")
         }
         #else
-        #expect(Bool(true), "DynamicFileField implementation verified - ViewInspector not available on this platform")
         #endif
         
         self.cleanupTestEnvironment()
@@ -5066,10 +5013,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             #expect(fieldID.contains("priority") || fieldID.contains("level") || fieldID.contains("Priority"),
                    "DynamicEnumField identifier should include field label 'Priority Level' (implementation verified in code)")
         } else {
-            #expect(Bool(true), "DynamicEnumField implementation verified - ViewInspector can't detect (known limitation)")
         }
         #else
-        #expect(Bool(true), "DynamicEnumField implementation verified - ViewInspector not available on this platform")
         #endif
         
         self.cleanupTestEnvironment()
@@ -5101,10 +5046,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             #expect(fieldID.contains("quantity") || fieldID.contains("Quantity"),
                    "DynamicIntegerField identifier should include field label 'Quantity' (implementation verified in code)")
         } else {
-            #expect(Bool(true), "DynamicIntegerField implementation verified - ViewInspector can't detect (known limitation)")
         }
         #else
-        #expect(Bool(true), "DynamicIntegerField implementation verified - ViewInspector not available on this platform")
         #endif
         
         self.cleanupTestEnvironment()
@@ -5136,10 +5079,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             #expect(fieldID.contains("comments") || fieldID.contains("Comments"),
                    "DynamicTextAreaField identifier should include field label 'Comments' (implementation verified in code)")
         } else {
-            #expect(Bool(true), "DynamicTextAreaField implementation verified - ViewInspector can't detect (known limitation)")
         }
         #else
-        #expect(Bool(true), "DynamicTextAreaField implementation verified - ViewInspector not available on this platform")
         #endif
         
         self.cleanupTestEnvironment()
@@ -5702,10 +5643,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
                     (card2ID.contains("second") || card2ID.contains("item") || card2ID.contains("Second")),
                    "List items with different titles should have different identifiers (implementation verified in code)")
         } else {
-            #expect(Bool(true), "ListCardComponent implementation verified - ViewInspector can't detect (known limitation)")
         }
         #else
-        #expect(Bool(true), "ListCardComponent implementation verified - ViewInspector not available on this platform")
         #endif
         
         self.cleanupTestEnvironment()
@@ -5726,12 +5665,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
            let _ = try? inspected1.accessibilityIdentifier(),
            let inspected2 = try? AnyView(button2).inspect(),
            let _ = try? inspected2.accessibilityIdentifier() {
-            #expect(Bool(true), "AdaptiveButton implementation verified - item context needed for unique IDs in ForEach (design consideration)")
         } else {
-            #expect(Bool(true), "AdaptiveButton implementation verified - ViewInspector can't detect (known limitation)")
         }
         #else
-        #expect(Bool(true), "AdaptiveButton implementation verified - ViewInspector not available on this platform")
         #endif
         
         self.cleanupTestEnvironment()
@@ -5808,10 +5744,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
                     (card1ID.contains("important") || card1ID.contains("card") || card1ID.contains("Important")),
                    "ExpandableCardComponent items with different titles should have different identifiers (implementation verified in code)")
         } else {
-            #expect(Bool(true), "ExpandableCardComponent implementation verified - ViewInspector can't detect (known limitation)")
         }
         #else
-        #expect(Bool(true), "ExpandableCardComponent implementation verified - ViewInspector not available on this platform")
         #endif
         
         self.cleanupTestEnvironment()
@@ -5845,10 +5779,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #if canImport(ViewInspector)
         if let inspected = try? AnyView(listView).inspect() {
             _ = try? inspected.accessibilityIdentifier()
-            #expect(Bool(true), "Documenting requirement - ForEach items need unique identifiers")
         }
         #else
-        #expect(Bool(true), "ForEach implementation verified - ViewInspector not available on this platform")
         #endif
         
         self.cleanupTestEnvironment()
@@ -5883,10 +5815,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             #expect(card1ID.contains("cover") || card1ID.contains("flow") || card1ID.contains("item") || card1ID.contains("Cover"),
                    "CoverFlowCardComponent identifier should include item title (implementation verified in code)")
         } else {
-            #expect(Bool(true), "CoverFlowCardComponent implementation verified - ViewInspector can't detect (known limitation)")
         }
         #else
-        #expect(Bool(true), "CoverFlowCardComponent implementation verified - ViewInspector not available on this platform")
         #endif
         
         self.cleanupTestEnvironment()
@@ -5947,10 +5877,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             #expect(card1ID.contains("simple") || card1ID.contains("card") || card1ID.contains("alpha") || card1ID.contains("Simple"),
                    "SimpleCardComponent identifier should include item title (implementation verified in code)")
         } else {
-            #expect(Bool(true), "SimpleCardComponent implementation verified - ViewInspector can't detect (known limitation)")
         }
         #else
-        #expect(Bool(true), "SimpleCardComponent implementation verified - ViewInspector not available on this platform")
         #endif
         
         self.cleanupTestEnvironment()
@@ -5986,10 +5914,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             #expect(card1ID.contains("masonry") || card1ID.contains("item") || card1ID.contains("one") || card1ID.contains("Masonry"),
                    "MasonryCardComponent identifier should include item title (implementation verified in code)")
         } else {
-            #expect(Bool(true), "MasonryCardComponent implementation verified - ViewInspector can't detect (known limitation)")
         }
         #else
-        #expect(Bool(true), "MasonryCardComponent implementation verified - ViewInspector not available on this platform")
         #endif
         
         self.cleanupTestEnvironment()
@@ -6055,10 +5981,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             #expect(card2ID.contains("2") || card2ID.contains("grid"),
                    "Grid item 2 identifier should include item name (implementation verified in code)")
         } else {
-            #expect(Bool(true), "Grid collection items implementation verified - ViewInspector can't detect (known limitation)")
         }
         #else
-        #expect(Bool(true), "Grid collection items implementation verified - ViewInspector not available on this platform")
         #endif
         
         self.cleanupTestEnvironment()
@@ -6094,10 +6018,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             #expect(card1ID != card2ID,
                    "Cover flow items should have different identifiers (implementation verified in code)")
         } else {
-            #expect(Bool(true), "CoverFlow collection items implementation verified - ViewInspector can't detect (known limitation)")
         }
         #else
-        #expect(Bool(true), "CoverFlow collection items implementation verified - ViewInspector not available on this platform")
         #endif
         
         self.cleanupTestEnvironment()
@@ -6133,10 +6055,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             #expect(card1ID != card2ID,
                    "Masonry collection items should have different identifiers (implementation verified in code)")
         } else {
-            #expect(Bool(true), "Masonry collection items implementation verified - ViewInspector can't detect (known limitation)")
         }
         #else
-        #expect(Bool(true), "Masonry collection items implementation verified - ViewInspector not available on this platform")
         #endif
         
         self.cleanupTestEnvironment()
@@ -6228,10 +6148,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             #expect(masonryID.contains("test") || masonryID.contains("item") || masonryID.contains("Test"),
                    "MasonryCardComponent should include item title (implementation verified in code)")
         } else {
-            #expect(Bool(true), "All card types implementation verified - ViewInspector can't detect (known limitation)")
         }
         #else
-        #expect(Bool(true), "All card types implementation verified - ViewInspector not available on this platform")
         #endif
         
         self.cleanupTestEnvironment()
@@ -6275,10 +6193,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             #expect(card2ID.contains("vehicles") || card2ID.contains("Vehicles"),
                    "ResponsiveCardView identifier should include card title 'Vehicles' (implementation verified in code)")
         } else {
-            #expect(Bool(true), "ResponsiveCardView implementation verified - ViewInspector can't detect (known limitation)")
         }
         #else
-        #expect(Bool(true), "ResponsiveCardView implementation verified - ViewInspector not available on this platform")
         #endif
         
         self.cleanupTestEnvironment()
@@ -6330,10 +6246,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             #expect(card2ID.contains("maintenance") || card2ID.contains("Maintenance"),
                    "ResponsiveCardView identifier should include card title (implementation verified in code)")
         } else {
-            #expect(Bool(true), "ResponsiveCardView collection items implementation verified - ViewInspector can't detect (known limitation)")
         }
         #else
-        #expect(Bool(true), "ResponsiveCardView collection items implementation verified - ViewInspector not available on this platform")
         #endif
         
         self.cleanupTestEnvironment()
@@ -6355,10 +6269,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #if canImport(ViewInspector)
         if let inspected = try? AnyView(tabStrip).inspect() {
             _ = try? inspected.accessibilityIdentifier()
-            #expect(Bool(true), "Documenting requirement - PlatformTabStrip buttons need unique identifiers with item.title")
         }
         #else
-        #expect(Bool(true), "PlatformTabStrip implementation verified - ViewInspector not available on this platform")
         #endif
         
         self.cleanupTestEnvironment()
@@ -6403,10 +6315,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             #expect(settingsID.contains("settings") || settingsID.contains("Settings"),
                    "Settings button identifier should include 'Settings' (implementation verified in code)")
         } else {
-            #expect(Bool(true), "PlatformTabStrip buttons implementation verified - ViewInspector can't detect (known limitation)")
         }
         #else
-        #expect(Bool(true), "PlatformTabStrip buttons implementation verified - ViewInspector not available on this platform")
         #endif
         
         self.cleanupTestEnvironment()
@@ -6435,12 +6345,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             // The picker should exist and have segments with accessibility identifiers
             // Since ViewInspector can't easily inspect Picker ForEach content, we verify the implementation
             // by checking that the code applies accessibility modifiers to Text views in ForEach
-            #expect(Bool(true), "PlatformTabStrip macOS picker segments implementation verified - segments have .accessibilityIdentifier() and .accessibility(label:) applied in Framework/Sources/Components/Navigation/PlatformTabStrip.swift:35")
         } else {
-            #expect(Bool(true), "PlatformTabStrip picker segments implementation verified - ViewInspector can't detect (known limitation)")
         }
         #else
-        #expect(Bool(true), "PlatformTabStrip picker segments implementation verified - segments have accessibility identifiers applied at both segment and picker levels (Issue #163)")
         #endif
         
         self.cleanupTestEnvironment()
@@ -6473,12 +6380,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         if (try? AnyView(enumField).inspect()) != nil {
             // The picker should exist and have segments with accessibility identifiers
             // Since ViewInspector can't easily inspect Picker ForEach content, we verify the implementation
-            #expect(Bool(true), "DynamicEnumField picker segments implementation verified - segments have .accessibilityIdentifier() and .accessibility(label:) applied in Framework/Sources/Components/Forms/DynamicFieldComponents.swift:1552")
         } else {
-            #expect(Bool(true), "DynamicEnumField picker segments implementation verified - ViewInspector can't detect (known limitation)")
         }
         #else
-        #expect(Bool(true), "DynamicEnumField picker segments implementation verified - segments have accessibility identifiers applied at both segment and picker levels (Issue #163)")
         #endif
         
         self.cleanupTestEnvironment()
@@ -6488,7 +6392,6 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         self.initializeTestConfig()
         self.setupTestEnvironment()
         
-        #expect(Bool(true), "Documenting requirement - FileRow needs file.name in identifier for unique rows")
         
         self.cleanupTestEnvironment()
     }
@@ -6518,10 +6421,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #if canImport(ViewInspector)
         if let inspected = try? AnyView(fieldView).inspect() {
             _ = try? inspected.accessibilityIdentifier()
-            #expect(Bool(true), "Documenting requirement - Validation error rows need unique identifiers with error text")
         }
         #else
-        #expect(Bool(true), "Validation error rows implementation verified - ViewInspector not available on this platform")
         #endif
         
         self.cleanupTestEnvironment()
@@ -6676,7 +6577,6 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             hints: PresentationHints()
         )
         
-        #expect(Bool(true), "Framework component should support automatic accessibility")
     }
     
     @Test @MainActor func testPlatformPatternsModifier() {
@@ -6687,7 +6587,6 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         )
         .platformPatterns()
         
-        #expect(Bool(true), "Framework component with platform patterns should be valid")
     }
     
     @Test @MainActor func testVisualConsistencyModifier() {
@@ -6698,7 +6597,6 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         )
         .visualConsistency()
         
-        #expect(Bool(true), "Framework component with visual consistency should be valid")
     }
     
     @Test @MainActor func testInteractionPatternsModifier() {
@@ -6709,7 +6607,6 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         )
         .interactionPatterns()
         
-        #expect(Bool(true), "Framework component should support interaction patterns")
     }
     
     @Test @MainActor func testComplianceReportStructure() {
@@ -7070,8 +6967,6 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             _ = Text("Global Test")
                 .accessibilityIdentifier("global-test")
             
-            #expect(Bool(true), "Accessibility identifier configuration should be valid")
-            #expect(Bool(true), "View with accessibility identifiers should work correctly")
             
             #expect(config.enableAutoIDs, "Auto IDs should be enabled")
             #expect(config.namespace == "SixLayer", "Namespace should be set correctly")
@@ -7435,7 +7330,6 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         )
         .eyeTrackingEnabled()
         
-        #expect(Bool(true), "Eye tracking modifier should initialize correctly")
     }
     
     @Test @MainActor func testEyeTrackingModifierWithConfig() {
@@ -7447,7 +7341,6 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         )
         .eyeTrackingEnabled(config: config)
         
-        #expect(Bool(true), "Eye tracking modifier with config should initialize correctly")
     }
     
     @Test @MainActor func testEyeTrackingModifierWithCallbacks() {
@@ -7461,7 +7354,6 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             onDwell: { _ in }
         )
         
-        #expect(Bool(true), "Eye tracking modifier with callbacks should initialize correctly")
     }
     
     @Test @MainActor func testEyeTrackingEnabledViewModifier() {
@@ -7472,7 +7364,6 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         )
         .eyeTrackingEnabled()
         
-        #expect(Bool(true), "Eye tracking enabled view modifier should work correctly")
     }
     
     // Additional Switch Control Tests (continued)
@@ -7965,10 +7856,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #if canImport(ViewInspector)
         if let inspected = try? AnyView(arrayField).inspect() {
             _ = try? inspected.accessibilityIdentifier()
-            #expect(Bool(true), "Documenting requirement - Array field items need unique identifiers")
         }
         #else
-        #expect(Bool(true), "DynamicArrayField implementation verified - ViewInspector not available on this platform")
         #endif
         
         self.cleanupTestEnvironment()
@@ -8004,10 +7893,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             #expect(row1ID.contains("first") || row1ID.contains("First") || row1ID.contains("item"),
                    "platformListRow identifier should include item content (implementation verified in code)")
         } else {
-            #expect(Bool(true), "platformListRow implementation verified - ViewInspector can't detect (known limitation)")
         }
         #else
-        #expect(Bool(true), "platformListRow implementation verified - ViewInspector not available on this platform")
         #endif
         
         self.cleanupTestEnvironment()
@@ -8017,7 +7904,6 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         self.initializeTestConfig()
         self.setupTestEnvironment()
         
-        #expect(Bool(true), "Documenting requirement - Settings item views need item.title in identifier")
         
         self.cleanupTestEnvironment()
     }
@@ -8048,10 +7934,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             #expect(header1ID.contains("section") || header1ID.contains("one") || header1ID.contains("Section"),
                    "platformListSectionHeader identifier should include title (implementation verified in code)")
         } else {
-            #expect(Bool(true), "platformListSectionHeader implementation verified - ViewInspector can't detect (known limitation)")
         }
         #else
-        #expect(Bool(true), "platformListSectionHeader implementation verified - ViewInspector not available on this platform")
         #endif
         
         self.cleanupTestEnvironment()
@@ -8087,10 +7971,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             #expect(field1ID.contains("email") || field1ID.contains("address") || field1ID.contains("Email"),
                    "platformFormField identifier should include label (implementation verified in code)")
         } else {
-            #expect(Bool(true), "platformFormField implementation verified - ViewInspector can't detect (known limitation)")
         }
         #else
-        #expect(Bool(true), "platformFormField implementation verified - ViewInspector not available on this platform")
         #endif
         
         self.cleanupTestEnvironment()
@@ -8126,10 +8008,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             #expect(group1ID.contains("personal") || group1ID.contains("information") || group1ID.contains("Personal"),
                    "platformFormFieldGroup identifier should include title (implementation verified in code)")
         } else {
-            #expect(Bool(true), "platformFormFieldGroup implementation verified - ViewInspector can't detect (known limitation)")
         }
         #else
-        #expect(Bool(true), "platformFormFieldGroup implementation verified - ViewInspector not available on this platform")
         #endif
         
         self.cleanupTestEnvironment()
@@ -9216,7 +9096,6 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             }
         }
 
-        #expect(Bool(true), "FuelView should be created successfully")
         #expect(config.enableAutoIDs, "Auto IDs should be enabled")
         #expect(config.namespace == "SixLayer", "Namespace should be set correctly")
         #expect(config.enableViewHierarchyTracking, "View hierarchy tracking should be enabled")
@@ -9244,7 +9123,6 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         }
         .named("AddFuelButton")
 
-        #expect(Bool(true), "View with .named() should be created successfully")
 
         #if canImport(ViewInspector)
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
@@ -9307,7 +9185,6 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         }
             .automaticCompliance(named: "ScreenContext")
 
-        #expect(Bool(true), "View with named modifier should be created successfully")
 
         #if canImport(ViewInspector)
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
@@ -9341,7 +9218,6 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         }
         .automaticCompliance(named: "NavigationState")
 
-        #expect(Bool(true), "View with named modifier should be created successfully")
 
         #if canImport(ViewInspector)
         let hasAccessibilityID = testComponentComplianceSinglePlatform(
@@ -9373,7 +9249,6 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         }
         .accessibilityIdentifier("manual-add-fuel-button")
 
-        #expect(Bool(true), "View with manual accessibility identifier should be created successfully")
 
         #if canImport(ViewInspector)
         #expect(testComponentComplianceSinglePlatform(
@@ -9405,7 +9280,6 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         .named("TestButton")
         .enableGlobalAutomaticCompliance()
 
-        #expect(Bool(true), "View with automatic accessibility identifiers should be created successfully")
 
         #if canImport(ViewInspector)
         #expect(testComponentComplianceSinglePlatform(
@@ -9434,7 +9308,6 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         _ = Text("Global Test")
             .enableGlobalAutomaticCompliance()
 
-        #expect(Bool(true), "View with global modifier should be created successfully")
         }
     }
     
@@ -10518,7 +10391,6 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         )
         .assistiveTouchEnabled()
         
-        #expect(Bool(true), "view is non-optional")
     }
     
     @Test @MainActor func testAssistiveTouchViewModifierWithConfiguration() {
@@ -10530,7 +10402,6 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         )
         .assistiveTouchEnabled(config: config)
         
-        #expect(Bool(true), "view is non-optional")
     }
     
     @Test @MainActor func testAssistiveTouchComplianceWithIssues() {
@@ -10793,7 +10664,6 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             hints: PresentationHints()
         )
         let enhancedView = testView.accessibilityEnhanced()
-        #expect(Bool(true), "Should return accessibility enhanced view with default config")
         #if canImport(ViewInspector)
         #expect(testComponentComplianceSinglePlatform(
             enhancedView,
@@ -10814,7 +10684,6 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             hints: PresentationHints()
         )
         .voiceOverEnabled()
-        #expect(Bool(true), "VoiceOver view should be created")
     }
     
     @Test @MainActor func testKeyboardNavigableViewModifier() {
@@ -10824,7 +10693,6 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             hints: PresentationHints()
         )
         .keyboardNavigable()
-        #expect(Bool(true), "Keyboard navigable view should be created")
     }
     
     @Test @MainActor func testHighContrastEnabledViewModifier() {
@@ -10834,7 +10702,6 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             hints: PresentationHints()
         )
         .highContrastEnabled()
-        #expect(Bool(true), "High contrast view should be created")
     }
     
     @Test @MainActor func testAccessibilityViewModifiersIntegration() {
@@ -12002,12 +11869,10 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             #expect(accessibilityID.isEmpty, "Global disable without local enable should result in no accessibility identifier, got: '\(accessibilityID)'")
            } else {
                // If inspection fails, treat as no identifier applied
-               #expect(Bool(true), "Inspection failed, treating as no ID applied")
            }
         }
         #else
         // ViewInspector not available, treat as no identifier applied
-        #expect(Bool(true), "ViewInspector not available, treating as no ID applied")
         #endif
     }
 }
@@ -12810,8 +12675,6 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         
         // Test that the modifier with config can be applied and the view can be hosted
         _ = hostRootPlatformView(modifiedView.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "Eye tracking enabled view with config should be hostable")
-        #expect(Bool(true), "Eye tracking enabled view with config should be created")
 }
 
     @Test @MainActor func testEyeTrackingEnabledWithCallbacks() {
@@ -12827,8 +12690,6 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         
         // Test that the modifier with callbacks can be applied and the view can be hosted
         _ = hostRootPlatformView(modifiedView.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "Eye tracking enabled view with callbacks should be hostable")
-        #expect(Bool(true), "Eye tracking enabled view with callbacks should be created")
 }
 
     @Test func testEyeTrackingPerformance() {
@@ -12850,19 +12711,15 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         _ = EyeTrackingManager(config: config)
         
         // Enable tracking (force for testing)
-        #expect(Bool(true), "Manager should be created successfully")
 
         // Process gaze events
         for _ in 0..<10 {
         // Process gaze event
-        #expect(Bool(true), "Gaze event should be processed")
     }
 
         // Complete calibration
-        #expect(Bool(true), "Calibration should be completed")
 
         // Disable tracking
-        #expect(Bool(true), "Tracking should be disabled")
 }
 
     @Test func testAccessibilityAwareMaterialSelection() {
@@ -12919,7 +12776,6 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         _ = view.accessibilityMaterialEnhanced()
         
         // Then: View should have accessibility enhancements
-        #expect(Bool(true), "enhancedView is non-optional")  // enhancedView is non-optional
 }
 
     @Test @MainActor func testMaterialAccessibilityPerformance() {
@@ -13015,7 +12871,6 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         .switchControlEnabled()
         
         // Then: View should support Switch Control
-        #expect(Bool(true), "view is non-optional")  // view is non-optional
 }
 
     @Test @MainActor func testSwitchControlViewModifierWithConfiguration() {
@@ -13028,7 +12883,6 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         .switchControlEnabled(config: config)
         
         // Then: View should support Switch Control with configuration
-        #expect(Bool(true), "view is non-optional")  // view is non-optional
 }
 
     @Test func testSwitchControlPerformance() {
@@ -13049,7 +12903,6 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         
         // Then: Test actual business logic
         // The configuration should have valid performance settings
-        #expect(Bool(true), "Performance configuration should be available")  // config is non-optional
         
         // Test that performance settings are reasonable
         #expect(config.maxAnimationDuration >= 0, "Animation duration should be non-negative")
@@ -13245,7 +13098,6 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         // The fact that this compiles and runs successfully means the modifiers
         // .appleHIGCompliant(), .automaticAccessibility(), .platformPatterns(), 
         // and .visualConsistency() are being applied without errors
-        #expect(Bool(true), "Automatic HIG compliance should be applied without errors")
 }
 
     @Test @MainActor func testPlatformPresentItemCollection_L1_AutomaticVoiceOverSupport() async {
@@ -13259,9 +13111,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         hints: PresentationHints()
         )
         
-        #expect(Bool(true), "Layer 1 function should create a valid view")
         #expect(RuntimeCapabilityDetection.supportsVoiceOver, "VoiceOver should be enabled")
-        #expect(Bool(true), "Automatic VoiceOver support should be applied")
 }
 
     @Test @MainActor func testPlatformPresentItemCollection_L1_AutomaticPlatformPatterns() async {
@@ -13282,11 +13132,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         )
         
         // Then: View should automatically have platform-specific patterns
-        #expect(Bool(true), "Layer 1 function should create a valid view on \(currentPlatform)")  // view is non-optional
         
         // Verify that automatic platform patterns are applied
         // The view should automatically adapt to the current platform
-        #expect(Bool(true), "Automatic platform patterns should be applied on \(currentPlatform)")
     }
 
     @Test @MainActor func testPlatformPresentItemCollection_L1_AutomaticVisualConsistency() async {
@@ -13298,11 +13146,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         )
         
         // Then: View should automatically have visual consistency applied
-        #expect(Bool(true), "Layer 1 function should create a valid view")  // view is non-optional
         
         // Verify that automatic visual consistency is applied
         // The view should automatically have consistent styling and theming
-        #expect(Bool(true), "Automatic visual consistency should be applied")
     }
 
     @Test @MainActor func testAllLayer1Functions_AutomaticHIGCompliance() async {
@@ -13314,7 +13160,6 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         )
         // Test that collection view can be hosted and has proper structure
         _ = self.hostRootPlatformView(collectionView.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "Collection view should be hostable")  // collectionHostingView is non-optional
         
         // Test platformPresentNumericData_L1
         let numericData = [
@@ -13327,12 +13172,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         
         // Test that numeric view can be hosted and has proper structure
         _ = self.hostRootPlatformView(numericView.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "Numeric view should be hostable")  // numericHostingView is non-optional
         
         // Verify that both views are created successfully and can be hosted
         // This tests that the HIG compliance modifiers are applied without compilation errors
-        #expect(Bool(true), "Collection view should be created")  // collectionView is non-optional
-        #expect(Bool(true), "Numeric view should be created")  // numericView is non-optional
     }
 
     @Test @MainActor func testCrossPlatformOptimizationManagerGeneratesAccessibilityIdentifiers() async {
@@ -14013,7 +13855,6 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
             // (ViewInspector requires the view to be properly installed)
             _ = try? inspected.accessibilityIdentifier()
             // Modifier should work on root view
-            #expect(Bool(true), "Modifier should generate identifier on root view without environment warnings")  // identifier is non-optional
         } else {
             Issue.record("Could not inspect root view - may indicate environment access issue")
         }
@@ -14088,21 +13929,18 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         // Handle each view separately to avoid Any type issues
         if let inspected1 = try? AnyView(view1).inspect() {
             _ = try? inspected1.accessibilityIdentifier()
-            #expect(Bool(true), "Modifier variant 1 should generate identifier without warnings")  // identifier1 is non-optional
         } else {
             Issue.record("Could not inspect view variant 1")
         }
         
         if let inspected2 = try? AnyView(view2).inspect() {
             _ = try? inspected2.accessibilityIdentifier()
-            #expect(Bool(true), "Modifier variant 2 should generate identifier without warnings")  // identifier2 is non-optional
         } else {
             Issue.record("Could not inspect view variant 2")
         }
         
         if let inspected3 = try? AnyView(view3).inspect() {
             _ = try? inspected3.accessibilityIdentifier()
-            #expect(Bool(true), "Modifier variant 3 should generate identifier without warnings")  // identifier3 is non-optional
         } else {
             Issue.record("Could not inspect view variant 3")
         }
@@ -14274,7 +14112,6 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         print("🔴 RED: Recommendation rows displayed in ForEach should have unique identifiers")
         
         // TDD RED: Should verify VisualizationRecommendationRow includes chartType in identifier
-        #expect(Bool(true), "Documenting requirement - VisualizationRecommendationRow needs chartType in identifier for unique rows")
         
         self.cleanupTestEnvironment()
 }
@@ -14931,7 +14768,6 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         }
         .automaticCompliance()
         
-        #expect(Bool(true), "AutomaticAccessibilityIdentifiers view should be created successfully")
         
         // Cleanup: Reset test environment
         self.cleanupTestEnvironment()
@@ -14956,7 +14792,6 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         }
         .named("AddFuelButton")
         
-        #expect(Bool(true), "NamedModifier view should be created successfully")
         
         // Cleanup: Reset test environment
         self.cleanupTestEnvironment()
@@ -14987,7 +14822,6 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         // Then: Test the two critical aspects
             
         // 1. View created - The view can be instantiated successfully
-        #expect(Bool(true), "Automatic accessibility identifiers should create view successfully")  // testView is non-optional
             
         // 2. Contains what it needs to contain - The view has the proper accessibility identifier assigned
         // TODO: ViewInspector Detection Issue - VERIFIED: Framework function (e.g., platformPresentContent_L1) DOES have .automaticCompliance() 
@@ -15030,7 +14864,6 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         .automaticCompliance()
             
         // 1. View created - The view can be instantiated successfully
-        #expect(Bool(true), "View should be created even when automatic IDs are disabled")  // testView1 is non-optional
             
         // 2. Contains what it needs to contain - The view should NOT have an automatic accessibility identifier
         // Using wrapper - when ViewInspector works on macOS, no changes needed here
@@ -15046,7 +14879,6 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         }
         #else
         // ViewInspector not available, treat as no identifier applied
-        #expect(Bool(true), "ViewInspector not available, treating as no ID applied")
         #endif
             
         // Test Case 2: When automatic IDs are enabled
@@ -15058,7 +14890,6 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         .automaticCompliance()
             
             // 1. View created - The view can be instantiated successfully
-            #expect(Bool(true), "View should be created when automatic IDs are enabled")  // testView2 is non-optional
             
         // 2. Contains what it needs to contain - The view should have an automatic accessibility identifier
         #if canImport(ViewInspector)
@@ -15405,10 +15236,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         // That's it! HIG compliance is automatically applied.
         
         // Verify the view is created successfully with automatic compliance
-        #expect(Bool(true), "Layer 1 function should create a view with automatic HIG compliance")  // view is non-optional
         
         // The fact that this compiles and runs means the automatic modifiers are working
-        #expect(Bool(true), "Automatic HIG compliance is now working!")
 }
 
     @Test @MainActor func testDemonstrateAutomaticComplianceWithAccessibilityStates() async {
@@ -15426,7 +15255,6 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         items: testItems,
         hints: testHints
         )
-        #expect(Bool(true), "View should work with VoiceOver enabled")
         #expect(RuntimeCapabilityDetection.supportsVoiceOver, "VoiceOver should be enabled")
 
         RuntimeCapabilityDetection.setTestVoiceOver(false)
@@ -15435,7 +15263,6 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         items: testItems,
         hints: testHints
         )
-        #expect(Bool(true), "View should work with Switch Control enabled")
         #expect(RuntimeCapabilityDetection.supportsSwitchControl, "Switch Control should be enabled")
 
         RuntimeCapabilityDetection.setTestSwitchControl(false)
@@ -15444,7 +15271,6 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         items: testItems,
         hints: testHints
         )
-        #expect(Bool(true), "View should work with AssistiveTouch enabled")
         if SixLayerPlatform.current.supportsAssistiveTouch {
             #expect(RuntimeCapabilityDetection.supportsAssistiveTouch, "AssistiveTouch should be enabled")
         } else {
@@ -15469,8 +15295,6 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         hints: testHints
         )
         
-        #expect(Bool(true), "View should work on \(currentPlatform)")  // view is non-optional
-        #expect(Bool(true), "Automatic HIG compliance works on \(currentPlatform)")
 }
 
     @Test @MainActor func testDemonstrateAllLayer1FunctionsHaveAutomaticCompliance() async {
@@ -15486,7 +15310,6 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         items: testItems,
         hints: testHints
         )
-        #expect(Bool(true), "Collection view should have automatic compliance")  // view is non-optional
 
         // Test platformPresentNumericData_L1
         let numericData = [
@@ -15496,10 +15319,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         data: numericData,
         hints: testHints
         )
-        #expect(Bool(true), "Numeric view should have automatic compliance")  // view is non-optional
 
         // Both views should automatically have HIG compliance applied
-        #expect(Bool(true), "All Layer 1 functions now have automatic HIG compliance!")
 }
 
     @Test @MainActor func testAutomaticHIGCompliance_WithVariousAccessibilityCapabilities() async {
@@ -15514,7 +15335,6 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         hints: PresentationHints()
         )
         _ = hostRootPlatformView(viewWithVoiceOver.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "VoiceOver view should be hostable")
 
         RuntimeCapabilityDetection.setTestVoiceOver(false)
         RuntimeCapabilityDetection.setTestSwitchControl(true)
@@ -15525,7 +15345,6 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         hints: PresentationHints()
         )
         _ = hostRootPlatformView(viewWithSwitchControl.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "Switch Control view should be hostable")
 
         RuntimeCapabilityDetection.setTestVoiceOver(false)
         RuntimeCapabilityDetection.setTestSwitchControl(false)
@@ -15536,7 +15355,6 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         hints: PresentationHints()
         )
         _ = hostRootPlatformView(viewWithAssistiveTouch.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "AssistiveTouch view should be hostable")
 
         RuntimeCapabilityDetection.setTestVoiceOver(true)
         RuntimeCapabilityDetection.setTestSwitchControl(true)
@@ -15547,7 +15365,6 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         hints: PresentationHints()
         )
         _ = hostRootPlatformView(viewWithAllAccessibility.enableGlobalAutomaticCompliance())
-        #expect(Bool(true), "All accessibility view should be hostable")
 }
 
     @Test @MainActor func testCrossPlatformTestingGeneratesAccessibilityIdentifiers() async {
@@ -15768,7 +15585,6 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         let hasAccessibilityID = testComponentComplianceSinglePlatform(contentView, expectedPattern: "SixLayer.*ui", platform: SixLayerPlatform.iOS, componentName: "platformPresentContent_L1")
         #expect(hasAccessibilityID, "platformPresentContent_L1 should generate accessibility identifiers")
         #else
-        #expect(Bool(true), "platformPresentContent_L1 implementation verified - ViewInspector not available")
         #endif
 }
 
@@ -15780,7 +15596,6 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         let hasAccessibilityID = testComponentComplianceSinglePlatform(valueView, expectedPattern: "SixLayer.*ui", platform: SixLayerPlatform.iOS, componentName: "platformPresentBasicValue_L1")
         #expect(hasAccessibilityID, "platformPresentBasicValue_L1 should generate accessibility identifiers")
         #else
-        #expect(Bool(true), "platformPresentBasicValue_L1 implementation verified - ViewInspector not available")
         #endif
 }
 
@@ -15792,7 +15607,6 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         let hasAccessibilityID = testComponentComplianceSinglePlatform(arrayView, expectedPattern: "SixLayer.*ui", platform: SixLayerPlatform.iOS, componentName: "platformPresentBasicArray_L1")
         #expect(hasAccessibilityID, "platformPresentBasicArray_L1 should generate accessibility identifiers")
         #else
-        #expect(Bool(true), "platformPresentBasicArray_L1 implementation verified - ViewInspector not available")
         #endif
 }
 
@@ -15820,7 +15634,6 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         let hasAccessibilityID = testComponentComplianceSinglePlatform(collectionView, expectedPattern: "SixLayer.*ui", platform: SixLayerPlatform.iOS, componentName: "platformPresentItemCollection_L1")
         #expect(hasAccessibilityID, "platformPresentItemCollection_L1 should generate accessibility identifiers")
         #else
-        #expect(Bool(true), "platformPresentItemCollection_L1 implementation verified - ViewInspector not available")
         #endif
         print("Testing platformPresentItemCollection_L1 accessibility identifier generation")
 }

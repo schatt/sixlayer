@@ -28,95 +28,78 @@ import SwiftUI
 @Suite("NavigationStack Layer 5")
 open class NavigationStackLayer5Tests: BaseTestClass {
     
-    // MARK: - Test Data
-    
     // MARK: - platformNavigationStackOptimizations_L5 Tests
     
     @Test @MainActor func testPlatformNavigationStackOptimizations_L5_AppliesOptimizations() {
-        // Given: A simple view
         let content = Text("Test Content")
-        
-        // When: Applying navigation stack optimizations
-        _ = content
+        let view = content
             .platformNavigationStackOptimizations_L5()
         
-        // Then: Should return an optimized view
-        #expect(Bool(true), "optimizedView is non-optional")
+        expectL5OptimizationApplied(view)
     }
     
     @Test @MainActor func testPlatformNavigationStackOptimizations_L5_WorksWithNavigationStack() {
-        // Given: A view wrapped in navigation
         let content = Text("Test Content")
             .platformNavigation_L4 {
                 Text("Content")
             }
-        
-        // When: Applying optimizations
-        _ = content
+        let view = content
             .platformNavigationStackOptimizations_L5()
         
-        // Then: Should return an optimized view
-        #expect(Bool(true), "optimizedView is non-optional")
+        expectL5OptimizationApplied(view)
     }
     
     @Test @MainActor func testPlatformNavigationStackOptimizations_L5_PlatformSpecific() {
-        // Given: A view
         let content = Text("Test Content")
-        
-        // When: Applying optimizations
-        _ = content
+        let view = content
             .platformNavigationStackOptimizations_L5()
         
-        // Then: Should apply platform-specific optimizations
-        #expect(Bool(true), "optimizedView is non-optional")
-        
-        // Verify it works on both iOS and macOS conceptually
-        // (Actual platform detection happens at runtime)
+        expectL5OptimizationApplied(view)
     }
     
     @Test @MainActor func testPlatformNavigationStackOptimizations_L5_MemoryOptimization() {
-        // Given: A view with navigation
         let content = Text("Test Content")
             .platformNavigation_L4 {
                 Text("Content")
             }
-        
-        // When: Applying memory optimizations
-        _ = content
+        let view = content
             .platformNavigationStackOptimizations_L5()
         
-        // Then: Should have memory optimizations applied
-        #expect(Bool(true), "optimizedView is non-optional")
+        expectL5OptimizationApplied(view)
     }
     
     @Test @MainActor func testPlatformNavigationStackOptimizations_L5_StatePreservation() {
-        // Given: A view with navigation state
         let content = Text("Test Content")
             .platformNavigation_L4 {
                 Text("Content")
             }
-        
-        // When: Applying state preservation optimizations
-        _ = content
+        let view = content
             .platformNavigationStackOptimizations_L5()
         
-        // Then: Should preserve navigation state efficiently
-        #expect(Bool(true), "optimizedView is non-optional")
+        expectL5OptimizationApplied(view)
     }
     
     @Test @MainActor func testPlatformNavigationStackOptimizations_L5_DeepNavigationStacks() {
-        // Given: A view that might have deep navigation
         let content = Text("Test Content")
             .platformNavigation_L4 {
                 Text("Content")
             }
-        
-        // When: Applying optimizations for deep stacks
-        _ = content
+        let view = content
             .platformNavigationStackOptimizations_L5()
         
-        // Then: Should optimize for deep navigation stacks
-        #expect(Bool(true), "optimizedView is non-optional")
+        expectL5OptimizationApplied(view)
+    }
+    
+    @MainActor
+    private func expectL5OptimizationApplied(_ view: some View) {
+        #if os(iOS) || os(macOS)
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "_TransactionModifier")
+        #else
+        let description = BaseTestClass.viewSubjectTypeDescription(for: view)
+        #expect(
+            !description.contains("_TransactionModifier"),
+            "L5 is a pass-through off iOS/macOS, got: \(description)"
+        )
+        #endif
     }
 }
-

@@ -29,7 +29,6 @@ open class PlatformSplitViewOptimizationsLayer5Tests: BaseTestClass {
         let runtimePlatform = RuntimeCapabilityDetection.currentPlatform
         if runtimePlatform == .iOS {
             // Then: Should be able to apply iOS optimizations
-            #expect(Bool(true), "iOS optimizations should be available")
         }
     }
     
@@ -45,7 +44,6 @@ open class PlatformSplitViewOptimizationsLayer5Tests: BaseTestClass {
                 .platformIOSSplitViewOptimizations_L5()
             
             // Then: iOS optimizations should be applied
-            #expect(Bool(true), "iOS optimizations should be applied to split view")
         }
     }
     
@@ -56,7 +54,6 @@ open class PlatformSplitViewOptimizationsLayer5Tests: BaseTestClass {
         let runtimePlatform = RuntimeCapabilityDetection.currentPlatform
         if runtimePlatform == .macOS {
             // Then: Should be able to apply macOS optimizations
-            #expect(Bool(true), "macOS optimizations should be available")
         }
     }
     
@@ -72,7 +69,6 @@ open class PlatformSplitViewOptimizationsLayer5Tests: BaseTestClass {
                 .platformMacOSSplitViewOptimizations_L5()
         
             // Then: macOS optimizations should be applied
-            #expect(Bool(true), "macOS optimizations should be applied to split view")
         }
     }
     
@@ -88,7 +84,6 @@ open class PlatformSplitViewOptimizationsLayer5Tests: BaseTestClass {
             .platformSplitViewOptimizations_L5()
         
         // Then: Optimizations should be applied appropriately for platform
-        #expect(Bool(true), "Cross-platform optimizations should work")
     }
     
     @Test @MainActor func testPlatformSplitViewOptimizationsWithState() async {
@@ -102,7 +97,6 @@ open class PlatformSplitViewOptimizationsLayer5Tests: BaseTestClass {
             .platformSplitViewOptimizations_L5()
         
         // Then: Optimizations should work with state management
-        #expect(Bool(true), "Optimizations should work with state management")
     }
     
     // MARK: - Performance Optimization Tests
@@ -117,7 +111,6 @@ open class PlatformSplitViewOptimizationsLayer5Tests: BaseTestClass {
             .platformSplitViewOptimizations_L5()
         
         // Then: Performance optimizations should be applied
-        #expect(Bool(true), "Performance optimizations should be applied")
     }
     
     // MARK: - Memory Optimization Tests
@@ -132,7 +125,6 @@ open class PlatformSplitViewOptimizationsLayer5Tests: BaseTestClass {
             .platformSplitViewOptimizations_L5()
         
         // Then: Memory optimizations should be included
-        #expect(Bool(true), "Memory optimizations should be included")
     }
 }
 

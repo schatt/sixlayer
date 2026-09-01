@@ -274,32 +274,31 @@ open class FormFieldInteractionTests: BaseTestClass {
     /// TESTING SCOPE: Tests date field data binding and value synchronization
     /// METHODOLOGY: Create date field with data binding and verify binding functionality
     @Test @MainActor func testDateFieldWithDataBinding() {
-        #if !os(tvOS)
-        // Given: Date field with data binding
+        #if os(tvOS)
+        // DatePicker is unavailable on tvOS. IntelligentFormView read-only
+        // fallback remains #241 — do not Issue.record (that fails the test).
+        return
+        #else
         resetCallbacks()
         let dateField = sampleFormFields[5]
         var dateValue = Date()
-        
-        // When: Creating date field with binding
-        let _ = DatePicker(
+        let expected = Date(timeIntervalSince1970: 1_700_000_000)
+        let selection = Binding(
+            get: { dateValue },
+            set: { newValue in
+                dateValue = newValue
+                self.fieldValueChanges[dateField.label] = newValue
+            }
+        )
+        _ = DatePicker(
             dateField.placeholder ?? "Select date",
-            selection: Binding(
-                get: { dateValue },
-                set: { newValue in
-                    dateValue = newValue
-                    self.fieldValueChanges[dateField.label] = newValue
-                }
-            ),
+            selection: selection,
             displayedComponents: [.date]
         )
-        
-        // Then: View should be created successfully
-        // View creation succeeded (non-optional result)
-        #else
-        // DatePicker is unavailable on tvOS; date input is covered by the
-        // tvOS read-only fallback in IntelligentFormView. See #241 for
-        // capability-aware coverage.
-        #expect(Bool(true), "DatePicker not available on tvOS")
+        // Binding write into fieldValueChanges — SwiftUI DatePicker, not a
+        // SixLayer date component. tvOS DatePicker gap: #241.
+        selection.wrappedValue = expected
+        #expect(fieldValueChanges[dateField.label] as? Date == expected)
         #endif
     }
     

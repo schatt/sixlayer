@@ -83,7 +83,6 @@ open class Layer4AssistiveVisualAdaptabilityCriterionTests: BaseTestClass {
         }
         #endif
         guard hostedTreeExposesSemanticSurface(defaultRoot), hostedTreeExposesSemanticSurface(adaptedRoot) else {
-            #expect(Bool(true), "\(caseName): hosted UIKit tree did not expose semantic accessibility surface in this lane")
             return
         }
         #expect(
@@ -127,7 +126,6 @@ open class Layer4AssistiveVisualAdaptabilityCriterionTests: BaseTestClass {
         let rootScaled = hostedRoot(for: view.dynamicTypeSize(.accessibility3))
         #expect(rootDefault != nil && rootScaled != nil)
         guard hostedTreeExposesSemanticSurface(rootDefault), hostedTreeExposesSemanticSurface(rootScaled) else {
-            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
             return
         }
         let defaultIDs = Set(sixLayerAccessibilityIDs(from: rootDefault))
@@ -149,7 +147,6 @@ open class Layer4AssistiveVisualAdaptabilityCriterionTests: BaseTestClass {
         let rootScaled = hostedRoot(for: view.dynamicTypeSize(.accessibility3))
         #expect(rootDefault != nil && rootScaled != nil)
         guard hostedTreeExposesSemanticSurface(rootDefault), hostedTreeExposesSemanticSurface(rootScaled) else {
-            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
             return
         }
         func hasProgressSemantics(_ root: Any?) -> Bool {
@@ -174,7 +171,6 @@ open class Layer4AssistiveVisualAdaptabilityCriterionTests: BaseTestClass {
         let rootScaled = hostedRoot(for: view.dynamicTypeSize(.accessibility3))
         #expect(rootDefault != nil && rootScaled != nil)
         guard hostedTreeExposesSemanticSurface(rootDefault), hostedTreeExposesSemanticSurface(rootScaled) else {
-            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
             return
         }
         func hasInformativeSemantics(_ root: Any?) -> Bool {
@@ -218,7 +214,6 @@ open class Layer4AssistiveVisualAdaptabilityCriterionTests: BaseTestClass {
         let rootScaled = hostedRoot(for: view.dynamicTypeSize(.accessibility5))
         #expect(rootDefault != nil && rootScaled != nil)
         guard hostedTreeExposesSemanticSurface(rootDefault), hostedTreeExposesSemanticSurface(rootScaled) else {
-            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
             return
         }
         func hasPaneMarkers(_ root: Any?) -> Bool {
@@ -244,7 +239,6 @@ open class Layer4AssistiveVisualAdaptabilityCriterionTests: BaseTestClass {
         let rootScaled = hostedRoot(for: view.dynamicTypeSize(.accessibility3))
         #expect(rootDefault != nil && rootScaled != nil)
         guard hostedTreeExposesSemanticSurface(rootDefault), hostedTreeExposesSemanticSurface(rootScaled) else {
-            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
             return
         }
         func hasPickerMarkers(_ root: Any?) -> Bool {
@@ -267,7 +261,6 @@ open class Layer4AssistiveVisualAdaptabilityCriterionTests: BaseTestClass {
         let rootScaled = hostedRoot(for: view.dynamicTypeSize(.accessibility3))
         #expect(rootDefault != nil && rootScaled != nil)
         guard hostedTreeExposesSemanticSurface(rootDefault), hostedTreeExposesSemanticSurface(rootScaled) else {
-            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
             return
         }
         let buttonDefault = hostedUIKitAccessibilityHierarchyContains(root: rootDefault) { $0.accessibilityTraits.contains(.button) }
@@ -283,7 +276,6 @@ open class Layer4AssistiveVisualAdaptabilityCriterionTests: BaseTestClass {
         let rootScaled = hostedRoot(for: view.dynamicTypeSize(.accessibility3))
         #expect(rootDefault != nil && rootScaled != nil)
         guard hostedTreeExposesSemanticSurface(rootDefault), hostedTreeExposesSemanticSurface(rootScaled) else {
-            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
             return
         }
         let buttonDefault = hostedUIKitAccessibilityHierarchyContains(root: rootDefault) { $0.accessibilityTraits.contains(.button) }
@@ -298,7 +290,6 @@ open class Layer4AssistiveVisualAdaptabilityCriterionTests: BaseTestClass {
         let rootScaled = hostedRoot(for: view.dynamicTypeSize(.accessibility3))
         #expect(rootDefault != nil && rootScaled != nil)
         guard hostedTreeExposesSemanticSurface(rootDefault), hostedTreeExposesSemanticSurface(rootScaled) else {
-            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
             return
         }
         func hasDisplayMarkers(_ root: Any?) -> Bool {
@@ -319,7 +310,6 @@ open class Layer4AssistiveVisualAdaptabilityCriterionTests: BaseTestClass {
         let rootScaled = hostedRoot(for: view.dynamicTypeSize(.accessibility3))
         #expect(rootDefault != nil && rootScaled != nil)
         guard hostedTreeExposesSemanticSurface(rootDefault), hostedTreeExposesSemanticSurface(rootScaled) else {
-            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
             return
         }
         func hasAccountSurface(_ root: Any?) -> Bool {
@@ -345,7 +335,6 @@ open class Layer4AssistiveVisualAdaptabilityCriterionTests: BaseTestClass {
         let rootScaled = hostedRoot(for: view.dynamicTypeSize(.accessibility3))
         #expect(rootDefault != nil && rootScaled != nil)
         guard hostedTreeExposesSemanticSurface(rootDefault), hostedTreeExposesSemanticSurface(rootScaled) else {
-            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
             return
         }
         let defaultIDs = Set(sixLayerAccessibilityIDs(from: rootDefault))
@@ -367,7 +356,6 @@ open class Layer4AssistiveVisualAdaptabilityCriterionTests: BaseTestClass {
         let rootScaled = hostedRoot(for: view.dynamicTypeSize(.accessibility3))
         #expect(rootDefault != nil && rootScaled != nil)
         guard hostedTreeExposesSemanticSurface(rootDefault), hostedTreeExposesSemanticSurface(rootScaled) else {
-            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
             return
         }
         func hasBadgeSemantics(_ root: Any?) -> Bool {
@@ -393,7 +381,6 @@ open class Layer4AssistiveVisualAdaptabilityCriterionTests: BaseTestClass {
         let rootScaled = hostedRoot(for: view.dynamicTypeSize(.accessibility3))
         #expect(rootDefault != nil && rootScaled != nil)
         guard hostedTreeExposesSemanticSurface(rootDefault), hostedTreeExposesSemanticSurface(rootScaled) else {
-            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
             return
         }
         func hasBadgeSemantics(_ root: Any?) -> Bool {
@@ -419,7 +406,6 @@ open class Layer4AssistiveVisualAdaptabilityCriterionTests: BaseTestClass {
         let rootScaled = hostedRoot(for: view.dynamicTypeSize(.accessibility3))
         #expect(rootDefault != nil && rootScaled != nil)
         guard hostedTreeExposesSemanticSurface(rootDefault), hostedTreeExposesSemanticSurface(rootScaled) else {
-            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
             return
         }
         func hasFormFieldMarkers(_ root: Any?) -> Bool {
@@ -446,7 +432,6 @@ open class Layer4AssistiveVisualAdaptabilityCriterionTests: BaseTestClass {
         let rootScaled = hostedRoot(for: view.dynamicTypeSize(.accessibility3))
         #expect(rootDefault != nil && rootScaled != nil)
         guard hostedTreeExposesSemanticSurface(rootDefault), hostedTreeExposesSemanticSurface(rootScaled) else {
-            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
             return
         }
         func hasInnerMarkers(_ root: Any?) -> Bool {
@@ -471,7 +456,6 @@ open class Layer4AssistiveVisualAdaptabilityCriterionTests: BaseTestClass {
         let rootScaled = hostedRoot(for: view.dynamicTypeSize(.accessibility3))
         #expect(rootDefault != nil && rootScaled != nil)
         guard hostedTreeExposesSemanticSurface(rootDefault), hostedTreeExposesSemanticSurface(rootScaled) else {
-            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
             return
         }
         func hasGroupMarkers(_ root: Any?) -> Bool {
@@ -499,7 +483,6 @@ open class Layer4AssistiveVisualAdaptabilityCriterionTests: BaseTestClass {
         let rootScaled = hostedRoot(for: view.dynamicTypeSize(.accessibility3))
         #expect(rootDefault != nil && rootScaled != nil)
         guard hostedTreeExposesSemanticSurface(rootDefault), hostedTreeExposesSemanticSurface(rootScaled) else {
-            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
             return
         }
         func hasRowActionMarkers(_ root: Any?) -> Bool {
@@ -525,7 +508,6 @@ open class Layer4AssistiveVisualAdaptabilityCriterionTests: BaseTestClass {
         let rootScaled = hostedRoot(for: view.dynamicTypeSize(.accessibility3))
         #expect(rootDefault != nil && rootScaled != nil)
         guard hostedTreeExposesSemanticSurface(rootDefault), hostedTreeExposesSemanticSurface(rootScaled) else {
-            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
             return
         }
         func hasContextMenuMarkers(_ root: Any?) -> Bool {
@@ -559,7 +541,6 @@ open class Layer4AssistiveVisualAdaptabilityCriterionTests: BaseTestClass {
         let rootScaled = hostedRoot(for: view.dynamicTypeSize(.accessibility3))
         #expect(rootDefault != nil && rootScaled != nil)
         guard hostedTreeExposesSemanticSurface(rootDefault), hostedTreeExposesSemanticSurface(rootScaled) else {
-            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
             return
         }
         func hasSidebarDetailMarkers(_ root: Any?) -> Bool {
@@ -595,7 +576,6 @@ open class Layer4AssistiveVisualAdaptabilityCriterionTests: BaseTestClass {
         let rootScaled = hostedRoot(for: view.dynamicTypeSize(.accessibility3))
         #expect(rootDefault != nil && rootScaled != nil)
         guard hostedTreeExposesSemanticSurface(rootDefault), hostedTreeExposesSemanticSurface(rootScaled) else {
-            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
             return
         }
         func hasSettingsMarkers(_ root: Any?) -> Bool {
@@ -648,7 +628,6 @@ open class Layer4AssistiveVisualAdaptabilityCriterionTests: BaseTestClass {
         let rootScaled = hostedRoot(for: view.dynamicTypeSize(.accessibility3))
         #expect(rootDefault != nil && rootScaled != nil)
         guard hostedTreeExposesSemanticSurface(rootDefault), hostedTreeExposesSemanticSurface(rootScaled) else {
-            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
             return
         }
         func hasLocationMapMarkers(_ root: Any?) -> Bool {
@@ -673,7 +652,6 @@ open class Layer4AssistiveVisualAdaptabilityCriterionTests: BaseTestClass {
         let rootScaled = hostedRoot(for: view.dynamicTypeSize(.accessibility3))
         #expect(rootDefault != nil && rootScaled != nil)
         guard hostedTreeExposesSemanticSurface(rootDefault), hostedTreeExposesSemanticSurface(rootScaled) else {
-            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
             return
         }
         func hasCameraSemantics(_ root: Any?) -> Bool {
@@ -695,7 +673,6 @@ open class Layer4AssistiveVisualAdaptabilityCriterionTests: BaseTestClass {
         let rootScaled = hostedRoot(for: view.dynamicTypeSize(.accessibility3))
         #expect(rootDefault != nil && rootScaled != nil)
         guard hostedTreeExposesSemanticSurface(rootDefault), hostedTreeExposesSemanticSurface(rootScaled) else {
-            #expect(Bool(true), "hosted UIKit tree did not expose semantic accessibility surface in this lane")
             return
         }
         func hasPreviewMarkers(_ root: Any?) -> Bool {

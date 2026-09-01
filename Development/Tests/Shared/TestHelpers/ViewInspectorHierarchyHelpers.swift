@@ -7,6 +7,7 @@
 //
 
 import SwiftUI
+@testable import SixLayerFramework
 
 #if canImport(ViewInspector)
 @testable import ViewInspector
@@ -18,20 +19,22 @@ public func findAllInViewHierarchy<V: View, T: ViewInspector.KnownViewType>(
     _ viewType: T.Type,
     maxAnyViewUnwrapDepth: Int = 12
 ) -> [ViewInspector.InspectableView<T>] {
-    if let inspected = try? view.inspect().view(V.self) {
-        var results = inspected.findAll(viewType)
-        if results.isEmpty, let vStack = try? firstVStackInHierarchy(inspected) {
-            results = vStack.findAll(viewType)
+    AccessibilityIdentifierConfig.withUnhostedInspection {
+        if let inspected = try? view.inspect().view(V.self) {
+            var results = inspected.findAll(viewType)
+            if results.isEmpty, let vStack = try? firstVStackInHierarchy(inspected) {
+                results = vStack.findAll(viewType)
+            }
+            if results.isEmpty, let scroll = try? inspected.scrollView() {
+                results = scroll.findAll(viewType)
+            }
+            if results.isEmpty {
+                results = findAllInViewHierarchyErased(AnyView(view), viewType, maxAnyViewUnwrapDepth: maxAnyViewUnwrapDepth)
+            }
+            return results
         }
-        if results.isEmpty, let scroll = try? inspected.scrollView() {
-            results = scroll.findAll(viewType)
-        }
-        if results.isEmpty {
-            results = findAllInViewHierarchyErased(AnyView(view), viewType, maxAnyViewUnwrapDepth: maxAnyViewUnwrapDepth)
-        }
-        return results
+        return findAllInViewHierarchyErased(AnyView(view), viewType, maxAnyViewUnwrapDepth: maxAnyViewUnwrapDepth)
     }
-    return findAllInViewHierarchyErased(AnyView(view), viewType, maxAnyViewUnwrapDepth: maxAnyViewUnwrapDepth)
 }
 
 @MainActor

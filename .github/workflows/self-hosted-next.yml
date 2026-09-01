@@ -8,7 +8,14 @@
 #
 # Platform order in file: iOS → macOS → tvOS → visionOS → watchOS (no `needs` chain — a
 # single self-hosted runner tends to dequeue jobs in declaration order). Each job uses its
-# own `-derivedDataPath` and SPM checkout under the workspace.
+# own `-derivedDataPath` and SPM checkout under the workspace; reclaim-ci-disk.sh removes
+# those trees plus build/*.xcresult at job start and after artifact upload (#416). It does
+# not simctl-delete devices (#417) — Mini is shared with CarManager. Start-of-job reclaim
+# is the path that survives cancel-in-progress. `xcodebuild test` runs through
+# xcodebuild-ci-retry.sh (#432, #433): one retry on xctest bootstrap-only crashes
+# or a silent hang (default 180s without output); parallel testing stays on.
+# Artifact upload exports NODE_EXTRA_CA_CERTS from the Gitea
+# peer cert (#432); --use-system-ca alone does not trust a cert absent from the OS store.
 #
 # Runner: `runs-on: self-hosted` — add labels if your runner uses custom tags.
 name: Self-hosted (next)
@@ -17,14 +24,34 @@ on:
   push:
     branches: [next]
   workflow_dispatch:
+    inputs:
+      reclaim_only:
+        description: Only reclaim disk on Mini; skip tests
+        type: boolean
+        default: false
 
 concurrency:
   group: self-hosted-next-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
+  reclaim-disk:
+    name: Reclaim disk
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.reclaim_only }}
+    runs-on: self-hosted
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Reclaim leftover CI disk
+        run: |
+          set -euo pipefail
+          ./Development/scripts/reclaim-ci-disk.sh --workspace "${{ github.workspace }}"
+
   ios-required-tests:
     name: iOS (${{ matrix.label }})
+    if: ${{ github.event_name == 'push' || inputs.reclaim_only != true }}
     runs-on: self-hosted
     timeout-minutes: ${{ matrix.timeout_minutes }}
     strategy:
@@ -47,6 +74,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
+      - name: Reclaim leftover CI disk
+        run: |
+          set -euo pipefail
+          ./Development/scripts/reclaim-ci-disk.sh --workspace "${{ github.workspace }}"
+
       - name: Generate Xcode project (XcodeGen)
         run: |
           set -euo pipefail
@@ -66,7 +98,7 @@ jobs:
           set -euo pipefail
           mkdir -p build "$CI_DERIVED_DATA" "$CI_SPM_CHECKOUTS"
           set -o pipefail
-          xcodebuild test \
+          ./Development/scripts/xcodebuild-ci-retry.sh xcodebuild test \
             -project SixLayerFramework.xcodeproj \
             -scheme "${{ matrix.scheme }}" \
             -destination 'platform=iOS Simulator,name=iPhone 17 Pro Max' \
@@ -75,21 +107,35 @@ jobs:
             -derivedDataPath "$CI_DERIVED_DATA" \
             -clonedSourcePackagesDirPath "$CI_SPM_CHECKOUTS" \
             -parallel-testing-enabled YES \
-            -maximum-concurrent-test-simulator-destinations 2 \
+            -maximum-concurrent-test-simulator-destinations 1 \
             -resultBundlePath "build/${{ matrix.scheme }}.xcresult"
+
+      - name: Export Gitea CA for Node artifact upload
+        if: failure()
+        run: |
+          set -euo pipefail
+          ./Development/scripts/export-gitea-node-ca.sh
 
       - name: Upload iOS test result bundle
         if: failure()
         env:
           NODE_OPTIONS: --use-system-ca
+          NODE_EXTRA_CA_CERTS: ${{ env.NODE_EXTRA_CA_CERTS }}
         uses: christopherHX/gitea-upload-artifact@v7
         with:
           name: xcresult-${{ matrix.scheme }}
           path: build/${{ matrix.scheme }}.xcresult
           if-no-files-found: ignore
 
+      - name: Reclaim CI disk
+        if: always()
+        run: |
+          set -euo pipefail
+          ./Development/scripts/reclaim-ci-disk.sh --workspace "${{ github.workspace }}"
+
   macos-required-tests:
     name: macOS (${{ matrix.label }})
+    if: ${{ github.event_name == 'push' || inputs.reclaim_only != true }}
     runs-on: self-hosted
     timeout-minutes: ${{ matrix.timeout_minutes }}
     strategy:
@@ -112,6 +158,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
+      - name: Reclaim leftover CI disk
+        run: |
+          set -euo pipefail
+          ./Development/scripts/reclaim-ci-disk.sh --workspace "${{ github.workspace }}"
+
       - name: Generate Xcode project (XcodeGen)
         run: |
           set -euo pipefail
@@ -131,7 +182,7 @@ jobs:
           set -euo pipefail
           mkdir -p build "$CI_DERIVED_DATA" "$CI_SPM_CHECKOUTS"
           set -o pipefail
-          xcodebuild test \
+          ./Development/scripts/xcodebuild-ci-retry.sh xcodebuild test \
             -project SixLayerFramework.xcodeproj \
             -scheme "${{ matrix.scheme }}" \
             -destination 'platform=macOS,arch=arm64' \
@@ -142,24 +193,43 @@ jobs:
             -parallel-testing-enabled YES \
             -resultBundlePath "build/${{ matrix.scheme }}.xcresult"
 
+      - name: Export Gitea CA for Node artifact upload
+        if: failure()
+        run: |
+          set -euo pipefail
+          ./Development/scripts/export-gitea-node-ca.sh
+
       - name: Upload macOS test result bundle
         if: failure()
         env:
           NODE_OPTIONS: --use-system-ca
+          NODE_EXTRA_CA_CERTS: ${{ env.NODE_EXTRA_CA_CERTS }}
         uses: christopherHX/gitea-upload-artifact@v7
         with:
           name: xcresult-${{ matrix.scheme }}
           path: build/${{ matrix.scheme }}.xcresult
           if-no-files-found: ignore
 
+      - name: Reclaim CI disk
+        if: always()
+        run: |
+          set -euo pipefail
+          ./Development/scripts/reclaim-ci-disk.sh --workspace "${{ github.workspace }}"
+
   tvos-tests:
     name: tvOS (SLF-tvOS-AllTests)
+    if: ${{ github.event_name == 'push' || inputs.reclaim_only != true }}
     runs-on: self-hosted
     continue-on-error: true
     timeout-minutes: 90
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+
+      - name: Reclaim leftover CI disk
+        run: |
+          set -euo pipefail
+          ./Development/scripts/reclaim-ci-disk.sh --workspace "${{ github.workspace }}"
 
       - name: Generate Xcode project (XcodeGen)
         run: |
@@ -182,7 +252,7 @@ jobs:
           DEST="$(./Development/scripts/ensure-ci-simulator-destination.sh tvOS)"
           echo "Using destination: $DEST"
           set -o pipefail
-          xcodebuild test \
+          ./Development/scripts/xcodebuild-ci-retry.sh xcodebuild test \
             -project SixLayerFramework.xcodeproj \
             -scheme "SLF-tvOS-AllTests" \
             -destination "$DEST" \
@@ -193,24 +263,43 @@ jobs:
             -parallel-testing-enabled YES \
             -resultBundlePath "build/SLF-tvOS-AllTests.xcresult"
 
+      - name: Export Gitea CA for Node artifact upload
+        if: failure()
+        run: |
+          set -euo pipefail
+          ./Development/scripts/export-gitea-node-ca.sh
+
       - name: Upload tvOS test result bundle
         if: failure()
         env:
           NODE_OPTIONS: --use-system-ca
+          NODE_EXTRA_CA_CERTS: ${{ env.NODE_EXTRA_CA_CERTS }}
         uses: christopherHX/gitea-upload-artifact@v7
         with:
           name: xcresult-tvos
           path: build/SLF-tvOS-AllTests.xcresult
           if-no-files-found: ignore
 
+      - name: Reclaim CI disk
+        if: always()
+        run: |
+          set -euo pipefail
+          ./Development/scripts/reclaim-ci-disk.sh --workspace "${{ github.workspace }}"
+
   visionos-tests:
     name: visionOS (SLF-visionOS-AllTests)
+    if: ${{ github.event_name == 'push' || inputs.reclaim_only != true }}
     runs-on: self-hosted
     continue-on-error: true
     timeout-minutes: 90
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+
+      - name: Reclaim leftover CI disk
+        run: |
+          set -euo pipefail
+          ./Development/scripts/reclaim-ci-disk.sh --workspace "${{ github.workspace }}"
 
       - name: Generate Xcode project (XcodeGen)
         run: |
@@ -233,7 +322,7 @@ jobs:
           DEST="$(./Development/scripts/ensure-ci-simulator-destination.sh visionOS)"
           echo "Using destination: $DEST"
           set -o pipefail
-          xcodebuild test \
+          ./Development/scripts/xcodebuild-ci-retry.sh xcodebuild test \
             -project SixLayerFramework.xcodeproj \
             -scheme "SLF-visionOS-AllTests" \
             -destination "$DEST" \
@@ -244,24 +333,43 @@ jobs:
             -parallel-testing-enabled YES \
             -resultBundlePath "build/SLF-visionOS-AllTests.xcresult"
 
+      - name: Export Gitea CA for Node artifact upload
+        if: failure()
+        run: |
+          set -euo pipefail
+          ./Development/scripts/export-gitea-node-ca.sh
+
       - name: Upload visionOS test result bundle
         if: failure()
         env:
           NODE_OPTIONS: --use-system-ca
+          NODE_EXTRA_CA_CERTS: ${{ env.NODE_EXTRA_CA_CERTS }}
         uses: christopherHX/gitea-upload-artifact@v7
         with:
           name: xcresult-visionos
           path: build/SLF-visionOS-AllTests.xcresult
           if-no-files-found: ignore
 
+      - name: Reclaim CI disk
+        if: always()
+        run: |
+          set -euo pipefail
+          ./Development/scripts/reclaim-ci-disk.sh --workspace "${{ github.workspace }}"
+
   watchos-tests:
     name: watchOS (SLF-watchOS-AllTests)
+    if: ${{ github.event_name == 'push' || inputs.reclaim_only != true }}
     runs-on: self-hosted
     continue-on-error: true
     timeout-minutes: 90
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+
+      - name: Reclaim leftover CI disk
+        run: |
+          set -euo pipefail
+          ./Development/scripts/reclaim-ci-disk.sh --workspace "${{ github.workspace }}"
 
       - name: Generate Xcode project (XcodeGen)
         run: |
@@ -284,7 +392,7 @@ jobs:
           DEST="$(./Development/scripts/ensure-ci-simulator-destination.sh watchOS)"
           echo "Using destination: $DEST"
           set -o pipefail
-          xcodebuild test \
+          ./Development/scripts/xcodebuild-ci-retry.sh xcodebuild test \
             -project SixLayerFramework.xcodeproj \
             -scheme "SLF-watchOS-AllTests" \
             -destination "$DEST" \
@@ -295,12 +403,25 @@ jobs:
             -parallel-testing-enabled YES \
             -resultBundlePath "build/SLF-watchOS-AllTests.xcresult"
 
+      - name: Export Gitea CA for Node artifact upload
+        if: failure()
+        run: |
+          set -euo pipefail
+          ./Development/scripts/export-gitea-node-ca.sh
+
       - name: Upload watchOS test result bundle
         if: failure()
         env:
           NODE_OPTIONS: --use-system-ca
+          NODE_EXTRA_CA_CERTS: ${{ env.NODE_EXTRA_CA_CERTS }}
         uses: christopherHX/gitea-upload-artifact@v7
         with:
           name: xcresult-watchos
           path: build/SLF-watchOS-AllTests.xcresult
           if-no-files-found: ignore
+
+      - name: Reclaim CI disk
+        if: always()
+        run: |
+          set -euo pipefail
+          ./Development/scripts/reclaim-ci-disk.sh --workspace "${{ github.workspace }}"
