@@ -1405,6 +1405,7 @@ public struct BasicAutomaticComplianceModifier: ViewModifier {
             NSLog("%@", debugMsg)
             os_log("%{public}@", log: .default, type: .debug, debugMsg)
             fflush(stdout)
+            config.addDebugLogEntry(debugMsg, enabled: true)
         }
         
         // Additional debug logging if enabled
@@ -1414,6 +1415,7 @@ public struct BasicAutomaticComplianceModifier: ViewModifier {
             NSLog("%@", detailedMsg)
             os_log("%{public}@", log: .default, type: .debug, detailedMsg)
             fflush(stdout)
+            config.addDebugLogEntry(detailedMsg, enabled: true)
         }
 
         let suppressAnonymousWrapperAccessibilityIdentifier = shouldApplyIdentifier
