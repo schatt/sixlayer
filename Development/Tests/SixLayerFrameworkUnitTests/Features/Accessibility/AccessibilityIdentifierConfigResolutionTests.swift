@@ -90,6 +90,30 @@ struct AccessibilityIdentifierConfigResolutionTests {
     /// TestApp injects a non-shared config via Environment (#247). Hosted generation must use it
     /// so XCUI sees `SixLayer.main.ui…` (#437). inspect() still must not instantiate Environment.
     @Test @MainActor
+    func hostedViewSeesEnvironmentIdentifierConfig() {
+        let envConfig = TestSetupUtilities.makeIsolatedAccessibilityIdentifierConfig()
+        envConfig.namespace = "EnvNS"
+
+        let identifiers = AccessibilityIdentifierConfig.$taskLocalConfig.withValue(nil) {
+            let view = EnvironmentIdentifierConfigProbeView()
+                .environment(\.accessibilityIdentifierConfig, envConfig)
+            let hosted = TestSetupUtilities.hostRootPlatformView(
+                view,
+                forceLayout: true,
+                accessibilityIdentifierConfig: nil
+            )
+            return findAllAccessibilityIdentifiersFromPlatformView(hosted)
+        }
+
+        #expect(
+            identifiers.contains(where: { $0.contains("EnvNS") }),
+            "UIHostingController must propagate accessibilityIdentifierConfig Environment. Got \(identifiers)"
+        )
+    }
+
+    /// TestApp injects a non-shared config via Environment (#247). Hosted generation must use it
+    /// so XCUI sees `SixLayer.main.ui…` (#437). inspect() still must not instantiate Environment.
+    @Test @MainActor
     func hostedIdentifierGenerationUsesEnvironmentConfigWhenTaskLocalMissing() {
         let envConfig = TestSetupUtilities.makeIsolatedAccessibilityIdentifierConfig()
         envConfig.namespace = "EnvNS"
@@ -145,5 +169,15 @@ struct AccessibilityIdentifierConfigResolutionTests {
             !identifiers.contains(where: { $0.contains("CatAAutoSuppressed") }),
             "Hosted automatic compliance must honor Environment global-off (TestApp #247). Got \(identifiers)"
         )
+    }
+}
+
+private struct EnvironmentIdentifierConfigProbeView: View {
+    @Environment(\.accessibilityIdentifierConfig) private var environmentConfig
+
+    var body: some View {
+        let namespace = environmentConfig?.namespace ?? "nil-env"
+        Text(namespace)
+            .accessibilityIdentifier(namespace)
     }
 }
