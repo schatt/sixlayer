@@ -99,7 +99,7 @@ struct AccessibilityIdentifierConfigResolutionTests {
         envConfig.includeComponentNames = true
         envConfig.includeElementTypes = true
 
-        let identifier = AccessibilityIdentifierConfig.$taskLocalConfig.withValue(nil) {
+        let identifiers = AccessibilityIdentifierConfig.$taskLocalConfig.withValue(nil) {
             let view = Text("probe")
                 .named("EnvProbe")
                 .environment(\.accessibilityIdentifierConfig, envConfig)
@@ -108,12 +108,12 @@ struct AccessibilityIdentifierConfigResolutionTests {
                 forceLayout: true,
                 accessibilityIdentifierConfig: nil
             )
-            return getAccessibilityIdentifierForTest(view: view, hostedRoot: hosted)
+            return findAllAccessibilityIdentifiersFromPlatformView(hosted)
         }
 
         #expect(
-            identifier?.contains("EnvNS") == true,
-            "Hosted views must honor Environment identifier config (TestApp #247). Got \(identifier ?? "nil")"
+            identifiers.contains(where: { $0.contains("EnvNS") }),
+            "Hosted views must honor Environment identifier config (TestApp #247). Got \(identifiers)"
         )
     }
 
@@ -129,7 +129,7 @@ struct AccessibilityIdentifierConfigResolutionTests {
         envConfig.includeComponentNames = true
         envConfig.includeElementTypes = true
 
-        let identifier = AccessibilityIdentifierConfig.$taskLocalConfig.withValue(nil) {
+        let identifiers = AccessibilityIdentifierConfig.$taskLocalConfig.withValue(nil) {
             let view = Text("probe")
                 .basicAutomaticCompliance(identifierName: "CatAAutoSuppressed")
                 .environment(\.accessibilityIdentifierConfig, envConfig)
@@ -138,12 +138,12 @@ struct AccessibilityIdentifierConfigResolutionTests {
                 forceLayout: true,
                 accessibilityIdentifierConfig: nil
             )
-            return getAccessibilityIdentifierForTest(view: view, hostedRoot: hosted)
+            return findAllAccessibilityIdentifiersFromPlatformView(hosted)
         }
 
         #expect(
-            identifier?.contains("CatAAutoSuppressed") != true,
-            "Hosted automatic compliance must honor Environment global-off (TestApp #247). Got \(identifier ?? "nil")"
+            !identifiers.contains(where: { $0.contains("CatAAutoSuppressed") }),
+            "Hosted automatic compliance must honor Environment global-off (TestApp #247). Got \(identifiers)"
         )
     }
 }
