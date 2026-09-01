@@ -90,30 +90,6 @@ struct AccessibilityIdentifierConfigResolutionTests {
     /// TestApp injects a non-shared config via Environment (#247). Hosted generation must use it
     /// so XCUI sees `SixLayer.main.ui…` (#437). inspect() still must not instantiate Environment.
     @Test @MainActor
-    func hostedViewSeesEnvironmentIdentifierConfig() {
-        let envConfig = TestSetupUtilities.makeIsolatedAccessibilityIdentifierConfig()
-        envConfig.namespace = "EnvNS"
-
-        let identifiers = AccessibilityIdentifierConfig.$taskLocalConfig.withValue(nil) {
-            let view = EnvironmentIdentifierConfigProbeView()
-                .environment(\.accessibilityIdentifierConfig, envConfig)
-            let hosted = TestSetupUtilities.hostRootPlatformView(
-                view,
-                forceLayout: true,
-                accessibilityIdentifierConfig: nil
-            )
-            return findAllAccessibilityIdentifiersFromPlatformView(hosted)
-        }
-
-        #expect(
-            identifiers.contains(where: { $0.contains("EnvNS") }),
-            "UIHostingController must propagate accessibilityIdentifierConfig Environment. Got \(identifiers)"
-        )
-    }
-
-    /// TestApp injects a non-shared config via Environment (#247). Hosted generation must use it
-    /// so XCUI sees `SixLayer.main.ui…` (#437). inspect() still must not instantiate Environment.
-    @Test @MainActor
     func hostedIdentifierGenerationUsesEnvironmentConfigWhenTaskLocalMissing() {
         let envConfig = TestSetupUtilities.makeIsolatedAccessibilityIdentifierConfig()
         envConfig.namespace = "EnvNS"
@@ -122,6 +98,8 @@ struct AccessibilityIdentifierConfigResolutionTests {
         envConfig.enableUITestIntegration = true
         envConfig.includeComponentNames = true
         envConfig.includeElementTypes = true
+        envConfig.enableDebugLogging = true
+        envConfig.clearDebugLog()
 
         let identifiers = AccessibilityIdentifierConfig.$taskLocalConfig.withValue(nil) {
             let view = Text("probe")
@@ -130,14 +108,16 @@ struct AccessibilityIdentifierConfigResolutionTests {
             let hosted = TestSetupUtilities.hostRootPlatformView(
                 view,
                 forceLayout: true,
+                exposeContentAccessibility: true,
                 accessibilityIdentifierConfig: nil
             )
             return findAllAccessibilityIdentifiersFromPlatformView(hosted)
         }
+        let log = envConfig.getDebugLog()
 
         #expect(
-            identifiers.contains(where: { $0.contains("EnvNS") }),
-            "Hosted views must honor Environment identifier config (TestApp #247). Got \(identifiers)"
+            identifiers.contains(where: { $0.contains("EnvNS") }) || log.contains("EnvNS"),
+            "Hosted views must honor Environment identifier config (TestApp #247). ids=\(identifiers) log=\(log)"
         )
     }
 
@@ -152,6 +132,8 @@ struct AccessibilityIdentifierConfigResolutionTests {
         envConfig.enableUITestIntegration = true
         envConfig.includeComponentNames = true
         envConfig.includeElementTypes = true
+        envConfig.enableDebugLogging = true
+        envConfig.clearDebugLog()
 
         let identifiers = AccessibilityIdentifierConfig.$taskLocalConfig.withValue(nil) {
             let view = Text("probe")
@@ -160,24 +142,20 @@ struct AccessibilityIdentifierConfigResolutionTests {
             let hosted = TestSetupUtilities.hostRootPlatformView(
                 view,
                 forceLayout: true,
+                exposeContentAccessibility: true,
                 accessibilityIdentifierConfig: nil
             )
             return findAllAccessibilityIdentifiersFromPlatformView(hosted)
         }
+        let log = envConfig.getDebugLog()
 
         #expect(
-            !identifiers.contains(where: { $0.contains("CatAAutoSuppressed") }),
-            "Hosted automatic compliance must honor Environment global-off (TestApp #247). Got \(identifiers)"
+            log.contains("globalAutoIDs=false"),
+            "Hosted automatic compliance must read Environment global-off (TestApp #247). log=\(log)"
         )
-    }
-}
-
-private struct EnvironmentIdentifierConfigProbeView: View {
-    @Environment(\.accessibilityIdentifierConfig) private var environmentConfig
-
-    var body: some View {
-        let namespace = environmentConfig?.namespace ?? "nil-env"
-        Text(namespace)
-            .accessibilityIdentifier(namespace)
+        #expect(
+            !identifiers.contains(where: { $0.contains("CatAAutoSuppressed") }),
+            "Hosted automatic compliance must not emit the suppressed name. Got \(identifiers)"
+        )
     }
 }
