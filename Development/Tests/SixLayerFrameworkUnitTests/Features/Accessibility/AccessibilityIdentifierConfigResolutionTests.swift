@@ -6,6 +6,7 @@
 //  never from SwiftUI Environment (inspect() cannot install Environment; #435).
 //
 
+import SwiftUI
 import Testing
 @testable import SixLayerFramework
 
@@ -84,5 +85,35 @@ struct AccessibilityIdentifierConfigResolutionTests {
                 "inspect() cannot install Environment or StateObject; unhosted branch must run"
             )
         }
+    }
+
+    /// TestApp injects a non-shared config via Environment (#247). Hosted generation must use it
+    /// so XCUI sees `SixLayer.main.ui…` (#437). inspect() still must not instantiate Environment.
+    @Test @MainActor
+    func hostedIdentifierGenerationUsesEnvironmentConfigWhenTaskLocalMissing() {
+        let envConfig = TestSetupUtilities.makeIsolatedAccessibilityIdentifierConfig()
+        envConfig.namespace = "EnvNS"
+        envConfig.enableAutoIDs = true
+        envConfig.globalAutomaticAccessibilityIdentifiers = true
+        envConfig.enableUITestIntegration = true
+        envConfig.includeComponentNames = true
+        envConfig.includeElementTypes = true
+
+        let identifier = AccessibilityIdentifierConfig.$taskLocalConfig.withValue(nil) {
+            let view = Text("probe")
+                .named("EnvProbe")
+                .environment(\.accessibilityIdentifierConfig, envConfig)
+            let hosted = TestSetupUtilities.hostRootPlatformView(
+                view,
+                forceLayout: true,
+                accessibilityIdentifierConfig: nil
+            )
+            return getAccessibilityIdentifierForTest(view: view, hostedRoot: hosted)
+        }
+
+        #expect(
+            identifier?.contains("EnvNS") == true,
+            "Hosted views must honor Environment identifier config (TestApp #247). Got \(identifier ?? "nil")"
+        )
     }
 }
