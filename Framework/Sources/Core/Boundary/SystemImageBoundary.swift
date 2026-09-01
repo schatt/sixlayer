@@ -81,7 +81,11 @@ public struct SystemImagePicker: UIViewControllerRepresentable {
             if let platformImage = SystemImageBoundary.convertPickerResult(info) {
                 parent.onImageSelected(platformImage)
             }
-            picker.dismiss(animated: true)
+            if shouldDismissSystemImagePickerAfterSelection(
+                presentingViewController: picker.presentingViewController
+            ) {
+                picker.dismiss(animated: true)
+            }
         }
     }
 }
@@ -118,7 +122,11 @@ public struct SystemCameraPicker: UIViewControllerRepresentable {
             if let platformImage = SystemImageBoundary.convertPickerResult(info) {
                 parent.onImageCaptured(platformImage)
             }
-            picker.dismiss(animated: true)
+            if shouldDismissSystemImagePickerAfterSelection(
+                presentingViewController: picker.presentingViewController
+            ) {
+                picker.dismiss(animated: true)
+            }
         }
     }
 }

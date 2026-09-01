@@ -90,7 +90,11 @@ private struct ModernImagePicker: UIViewControllerRepresentable {
         }
         
         func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
-            picker.dismiss(animated: true)
+            if shouldDismissSystemImagePickerAfterSelection(
+                presentingViewController: picker.presentingViewController
+            ) {
+                picker.dismiss(animated: true)
+            }
             
             guard let result = results.first else {
                 return
@@ -156,11 +160,19 @@ private struct LegacyImagePicker: UIViewControllerRepresentable {
                 let platformImage = PlatformImage(uiImage)
                 parent.onImageSelected(platformImage)
             }
-            picker.dismiss(animated: true)
+            if shouldDismissSystemImagePickerAfterSelection(
+                presentingViewController: picker.presentingViewController
+            ) {
+                picker.dismiss(animated: true)
+            }
         }
         
         func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
-            picker.dismiss(animated: true)
+            if shouldDismissSystemImagePickerAfterSelection(
+                presentingViewController: picker.presentingViewController
+            ) {
+                picker.dismiss(animated: true)
+            }
         }
         
         // For testing
