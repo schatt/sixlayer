@@ -42,6 +42,7 @@ public struct FieldActionBarcodeScanner: View {
         EmptyView()
             .sheet(isPresented: $showImagePicker) {
                 UnifiedImagePicker { image in
+                    showImagePicker = false
                     Task {
                         await processBarcode(image: image)
                     }
@@ -121,6 +122,7 @@ public struct FieldActionOCRScanner: View {
         EmptyView()
             .sheet(isPresented: $showImagePicker) {
                 UnifiedImagePicker { image in
+                    showImagePicker = false
                     Task {
                         await processOCR(image: image)
                     }
@@ -129,6 +131,7 @@ public struct FieldActionOCRScanner: View {
             .sheet(isPresented: $showCamera) {
                 #if os(iOS)
                 SystemCameraPicker { image in
+                    showCamera = false
                     Task {
                         await processOCR(image: image)
                     }
@@ -136,6 +139,7 @@ public struct FieldActionOCRScanner: View {
                 #else
                 // macOS camera interface
                 PlatformPhotoComponentsLayer4.platformCameraInterface_L4 { image in
+                    showCamera = false
                     Task {
                         await processOCR(image: image)
                     }

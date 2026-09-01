@@ -23,17 +23,26 @@ import AppKit
 /// Unified cross-platform image picker
 /// Provides a single API that works identically on iOS and macOS
 /// Always returns PlatformImage (never platform-specific types)
+///
+/// **Presentation:** Default ``SystemImagePickerDismissPolicy/hostManaged`` — this picker does not
+/// UIKit-dismiss ancestor presentations. Close SwiftUI sheets/covers via bindings in `onImageSelected`
+/// (GitHub #441).
 public struct UnifiedImagePicker: View {
     let onImageSelected: (PlatformImage) -> Void
+    let dismissPolicy: SystemImagePickerDismissPolicy
     
-    public init(onImageSelected: @escaping (PlatformImage) -> Void) {
+    public init(
+        onImageSelected: @escaping (PlatformImage) -> Void,
+        dismissPolicy: SystemImagePickerDismissPolicy = .default
+    ) {
         self.onImageSelected = onImageSelected
+        self.dismissPolicy = dismissPolicy
     }
     
     public var body: some View {
         Group {
             #if os(iOS)
-            iOSImagePicker(onImageSelected: onImageSelected)
+            iOSImagePicker(onImageSelected: onImageSelected, dismissPolicy: dismissPolicy)
             #elseif os(macOS)
             macOSImagePicker(onImageSelected: onImageSelected)
             #else
@@ -50,12 +59,13 @@ public struct UnifiedImagePicker: View {
 #if os(iOS)
 private struct iOSImagePicker: View {
     let onImageSelected: (PlatformImage) -> Void
+    let dismissPolicy: SystemImagePickerDismissPolicy
     
     var body: some View {
         if #available(iOS 14.0, *) {
-            ModernImagePicker(onImageSelected: onImageSelected)
+            ModernImagePicker(onImageSelected: onImageSelected, dismissPolicy: dismissPolicy)
         } else {
-            LegacyImagePicker(onImageSelected: onImageSelected)
+            LegacyImagePicker(onImageSelected: onImageSelected, dismissPolicy: dismissPolicy)
         }
     }
 }
@@ -65,6 +75,15 @@ private struct iOSImagePicker: View {
 @available(iOS 14.0, *)
 private struct ModernImagePicker: UIViewControllerRepresentable {
     let onImageSelected: (PlatformImage) -> Void
+    let dismissPolicy: SystemImagePickerDismissPolicy
+    
+    init(
+        onImageSelected: @escaping (PlatformImage) -> Void,
+        dismissPolicy: SystemImagePickerDismissPolicy = .default
+    ) {
+        self.onImageSelected = onImageSelected
+        self.dismissPolicy = dismissPolicy
+    }
     
     func makeUIViewController(context: Context) -> PHPickerViewController {
         var configuration = PHPickerConfiguration()
@@ -90,11 +109,11 @@ private struct ModernImagePicker: UIViewControllerRepresentable {
         }
         
         func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
-            if shouldDismissSystemImagePickerAfterSelection(
-                presentingViewController: picker.presentingViewController
-            ) {
-                picker.dismiss(animated: true)
-            }
+            applySystemImagePickerDismissPolicy(
+                parent.dismissPolicy,
+                presentingViewController: picker.presentingViewController,
+                dismiss: { picker.dismiss(animated: true) }
+            )
             
             guard let result = results.first else {
                 return
@@ -130,6 +149,15 @@ private struct ModernImagePicker: UIViewControllerRepresentable {
 
 private struct LegacyImagePicker: UIViewControllerRepresentable {
     let onImageSelected: (PlatformImage) -> Void
+    let dismissPolicy: SystemImagePickerDismissPolicy
+    
+    init(
+        onImageSelected: @escaping (PlatformImage) -> Void,
+        dismissPolicy: SystemImagePickerDismissPolicy = .default
+    ) {
+        self.onImageSelected = onImageSelected
+        self.dismissPolicy = dismissPolicy
+    }
     
     func makeUIViewController(context: Context) -> UIImagePickerController {
         let picker = UIImagePickerController()
@@ -160,19 +188,19 @@ private struct LegacyImagePicker: UIViewControllerRepresentable {
                 let platformImage = PlatformImage(uiImage)
                 parent.onImageSelected(platformImage)
             }
-            if shouldDismissSystemImagePickerAfterSelection(
-                presentingViewController: picker.presentingViewController
-            ) {
-                picker.dismiss(animated: true)
-            }
+            applySystemImagePickerDismissPolicy(
+                parent.dismissPolicy,
+                presentingViewController: picker.presentingViewController,
+                dismiss: { picker.dismiss(animated: true) }
+            )
         }
         
         func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
-            if shouldDismissSystemImagePickerAfterSelection(
-                presentingViewController: picker.presentingViewController
-            ) {
-                picker.dismiss(animated: true)
-            }
+            applySystemImagePickerDismissPolicy(
+                parent.dismissPolicy,
+                presentingViewController: picker.presentingViewController,
+                dismiss: { picker.dismiss(animated: true) }
+            )
         }
         
         // For testing
@@ -266,4 +294,3 @@ private struct macOSImagePicker: NSViewControllerRepresentable {
     }
 }
 #endif
-
