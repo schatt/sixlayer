@@ -116,4 +116,34 @@ struct AccessibilityIdentifierConfigResolutionTests {
             "Hosted views must honor Environment identifier config (TestApp #247). Got \(identifier ?? "nil")"
         )
     }
+
+    /// Category A global-off UITest (`-CategoryAGlobalAutoOff`) sets the flag on the Environment
+    /// instance, not `.shared`. Hosted `basicAutomaticCompliance` must not emit the suppressed name.
+    @Test @MainActor
+    func hostedAutomaticComplianceHonorsEnvironmentGlobalOffWhenTaskLocalMissing() {
+        let envConfig = TestSetupUtilities.makeIsolatedAccessibilityIdentifierConfig()
+        envConfig.namespace = "EnvNS"
+        envConfig.enableAutoIDs = true
+        envConfig.globalAutomaticAccessibilityIdentifiers = false
+        envConfig.enableUITestIntegration = true
+        envConfig.includeComponentNames = true
+        envConfig.includeElementTypes = true
+
+        let identifier = AccessibilityIdentifierConfig.$taskLocalConfig.withValue(nil) {
+            let view = Text("probe")
+                .basicAutomaticCompliance(identifierName: "CatAAutoSuppressed")
+                .environment(\.accessibilityIdentifierConfig, envConfig)
+            let hosted = TestSetupUtilities.hostRootPlatformView(
+                view,
+                forceLayout: true,
+                accessibilityIdentifierConfig: nil
+            )
+            return getAccessibilityIdentifierForTest(view: view, hostedRoot: hosted)
+        }
+
+        #expect(
+            identifier?.contains("CatAAutoSuppressed") != true,
+            "Hosted automatic compliance must honor Environment global-off (TestApp #247). Got \(identifier ?? "nil")"
+        )
+    }
 }
