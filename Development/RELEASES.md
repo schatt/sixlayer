@@ -1,12 +1,21 @@
 # 🚀 Six-Layer Framework Release History
 
-## 📍 **Current Release: v8.3.6** 🔧
+## 📍 **Current Release: v8.3.7** 🔧
 
-**Release Date**: August 11, 2026
+**Release Date**: September 1, 2026
 **Status**: Patch release
-**Previous Release**: v8.3.5 - Patch release
-**Note**: displayOCR / hints inference (#404); named host sentinel (#406); iOS GeometryProxy SIGTRAP (#408); test-lane / release-script hygiene (#381, #395, #400, #405, #409).
+**Previous Release**: v8.3.6 - Patch release
+**Note**: SPM ViewInspector version pin (#438); inspect-safe identifier/theme config (#435); OCR hint regex (#420, #430); CI/test hygiene (#382, #429).
 **Next Release**: TBD
+
+---
+
+## 🎯 **v8.3.7 - SPM ViewInspector pin, inspect-safe identifiers, OCR hint regex** (September 1, 2026)
+
+### **What's in v8.3.7:**
+- Patch release (#382, #398, #401, #410, #415–#421, #427–#432, #435, #438, #440). See [RELEASE_v8.3.7.md](RELEASE_v8.3.7.md) for details.
+
+**See [RELEASE_v8.3.7.md](RELEASE_v8.3.7.md) for complete release notes.**
 
 ---
 
