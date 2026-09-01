@@ -27,7 +27,7 @@ Navigate to the `Framework/` directory and use it as a Swift Package:
 ```swift
 // In your Package.swift
 dependencies: [
-    .package(url: "https://github.com/schatt/sixlayer.git", from: "8.3.6")
+    .package(url: "https://github.com/schatt/sixlayer.git", from: "8.3.7")
 ]
 ```
 
@@ -41,9 +41,12 @@ dependencies: [
 
 The framework is distributed as a Swift Package from the `Framework/` directory. This ensures that only the essential framework code is included when other projects consume it.
 
-## 🆕 Latest Release: v8.3.6
+## 🆕 Latest Release: v8.3.7
 
 ### **Patch release**
+🔧 **Patch**: SPM ViewInspector version pin so consumers can use `from:` (#438); inspect-safe identifier/theme config (#435); OCR hint regex (#420/#430); tautological-expect and CI hygiene (#382, #429). See [RELEASE_v8.3.7.md](Development/RELEASE_v8.3.7.md).
+
+### **Previous Release: v8.3.6 - Patch release**
 🔧 **Patch**: `displayOCR` / stop inferring OCR flags from hints (#404); named compliance host sentinel (#406); iOS GeometryProxy SIGTRAP in ViewInspector walks (#408); test-lane and release-script hygiene (#381, #395, #400, #405, #409, #411–#413). See [RELEASE_v8.3.6.md](Development/RELEASE_v8.3.6.md).
 
 ### **Previous Release: v8.3.5 - Patch release**
@@ -310,7 +313,7 @@ These guides contain critical information about the Layer 1 Semantic Intent phil
 
 ## 📋 Current Status
 
-**Version**: v8.3.6 (Patch)
+**Version**: v8.3.7 (Patch)
 **Phase**: Patch release
 **Next**: TBD
 

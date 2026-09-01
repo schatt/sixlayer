@@ -1,9 +1,17 @@
 # Changelog
 
-## v8.3.7 - TBD
+## v8.3.7 - September 1, 2026
 
 ### 🐛 Fixed
 - **SPM version pins**: ViewInspector is a versioned dependency (`schatt/ViewInspector` 0.10.4) so consumers can use `from:` on SixLayer without revision pins (#438). Switch back to nalexn when they tag a GeometryProxy-safe release (#439).
+- **Inspect-safe identifier/theme config**: identifier generation and HIG/theme tokens no longer read SwiftUI Environment in unhosted inspect bodies (#435).
+- **OCR hint regex**: currency symbols, capture groups, reverse separators, and glued currency no longer break colon/equals matches; extract lock (#420, #430).
+- **Mac Catalyst DataScanner**: VisionKit DataScanner and document camera gated off Mac Catalyst (#415).
+- **Capability matrix**: this-host runtime, not platform touch-possible (#428).
+- **Tautological expects**: remove `Bool(true)` / `Bool(false)` test expects; restore iOS unit observations locked by #382 (#382, #421).
+
+### 📚 Documentation
+- Full notes: [`Development/RELEASE_v8.3.7.md`](Development/RELEASE_v8.3.7.md), index [`Development/RELEASES.md`](Development/RELEASES.md).
 
 ---
 

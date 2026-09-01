@@ -111,6 +111,55 @@ open class PlatformPhotoComponentsLayer4IntegrationTests: BaseTestClass {
             }
         }
     }
+
+    /// BUSINESS PURPOSE: Default picker policy is host-managed — representables must not UIKit-dismiss
+    /// embedded hosts (e.g. consumer fullScreenCover / tabbed photo-first). Issue #441 / CarManager #1037.
+    /// TESTING SCOPE: `SystemImagePickerDismissPolicy` default and `applySystemImagePickerDismissPolicy`.
+    @Test func testSystemImagePickerDismissPolicy_defaultIsHostManaged() {
+        #expect(
+            SystemImagePickerDismissPolicy.default == .hostManaged,
+            "Framework pickers default to host-managed presentation (#441)"
+        )
+    }
+
+    @Test @MainActor func testApplySystemImagePickerDismissPolicy_hostManagedNeverDismisses() {
+        var dismissCount = 0
+        applySystemImagePickerDismissPolicy(
+            .hostManaged,
+            presentingViewController: UIViewController(),
+            dismiss: { dismissCount += 1 }
+        )
+        #expect(
+            dismissCount == 0,
+            "hostManaged must never call UIKit dismiss — even when presentingViewController is non-nil (#441)"
+        )
+    }
+
+    @Test func testApplySystemImagePickerDismissPolicy_dismissWhenModallyPresented_embeddedSkipsDismiss() {
+        var dismissCount = 0
+        applySystemImagePickerDismissPolicy(
+            .dismissWhenModallyPresented,
+            presentingViewController: nil,
+            dismiss: { dismissCount += 1 }
+        )
+        #expect(
+            dismissCount == 0,
+            "Embedded representables have nil presentingViewController — legacy modal policy must not dismiss (#441)"
+        )
+    }
+
+    @Test @MainActor func testApplySystemImagePickerDismissPolicy_dismissWhenModallyPresented_modalDismisses() {
+        var dismissCount = 0
+        applySystemImagePickerDismissPolicy(
+            .dismissWhenModallyPresented,
+            presentingViewController: UIViewController(),
+            dismiss: { dismissCount += 1 }
+        )
+        #expect(
+            dismissCount == 1,
+            "Legacy UIKit modal opt-in may dismiss when presentingViewController is set (#441)"
+        )
+    }
     #endif
     
     /// BUSINESS PURPOSE: Test camera callback with real image data
