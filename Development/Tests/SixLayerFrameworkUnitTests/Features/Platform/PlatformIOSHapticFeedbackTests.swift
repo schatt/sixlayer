@@ -19,7 +19,16 @@ struct PlatformIOSHapticFeedbackTests {
     /// All six styles must be distinct case names (enum is not `CaseIterable`).
     @Test
     func iosHapticStyleCasesAreDistinct() {
-        let names = [
+        // Explicit list — do not invent CaseIterable; production is six cases only (#423).
+        let names = iosHapticStyleCaseNames
+        #expect(
+            Set(names).count == 6,
+            "IOSHapticStyle must expose six distinct cases, got: \(names)"
+        )
+    }
+
+    private var iosHapticStyleCaseNames: [String] {
+        [
             String(describing: IOSHapticStyle.light),
             String(describing: IOSHapticStyle.medium),
             String(describing: IOSHapticStyle.heavy),
@@ -27,10 +36,6 @@ struct PlatformIOSHapticFeedbackTests {
             String(describing: IOSHapticStyle.warning),
             String(describing: IOSHapticStyle.error)
         ]
-        #expect(
-            Set(names).count == 6,
-            "IOSHapticStyle must expose six distinct cases, got: \(names)"
-        )
     }
 
     /// iOS path applies `.onChange` — subject type wraps `Text` with `_ValueActionModifier2`
