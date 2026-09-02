@@ -36,8 +36,8 @@ Every Layer 1 function now **automatically applies**:
 - ✅ **`.automaticAccessibility()`** - VoiceOver, Switch Control, AssistiveTouch support
 - ✅ **`.platformPatterns()`** - Platform-specific UI patterns and behaviors
 - ✅ **`.visualConsistency()`** - Consistent visual design across platforms
-- ✅ **`.platformPerformanceOptimized()`** - Intelligent performance optimization
-- ✅ **`.platformMemoryOptimized()`** - Intelligent memory management
+
+Note (#425): `.platformPerformanceOptimized()` / `.platformMemoryOptimized()` are **not** implemented — do not list them as automatic modifiers.
 
 ### **Affected Functions**
 
