@@ -29,4 +29,26 @@ public enum UnhostedInspection {
             hosted()
         }
     }
+
+    /// Hosted branch reads Environment config (TestApp #247); unhosted uses task-local then `.shared`.
+    /// inspect() must not instantiate `@Environment(\.accessibilityIdentifierConfig)` (#435).
+    @ViewBuilder
+    static func withIdentifierConfig<V: View>(
+        @ViewBuilder _ content: @escaping (AccessibilityIdentifierConfig) -> V
+    ) -> some View {
+        split(
+            unhosted: { content(AccessibilityIdentifierConfig.resolvedForIdentifierGeneration()) },
+            hosted: { IdentifierConfigEnvironmentReader(content: content) }
+        )
+    }
+}
+
+/// Instantiated only on the hosted split so inspect() does not touch identifier Environment.
+private struct IdentifierConfigEnvironmentReader<Content: View>: View {
+    @Environment(\.accessibilityIdentifierConfig) private var environmentConfig
+    let content: (AccessibilityIdentifierConfig) -> Content
+
+    var body: some View {
+        content(environmentConfig ?? AccessibilityIdentifierConfig.resolvedForIdentifierGeneration())
+    }
 }

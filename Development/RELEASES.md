@@ -1,12 +1,21 @@
 # 🚀 Six-Layer Framework Release History
 
-## 📍 **Current Release: v8.3.7** 🔧
+## 📍 **Current Release: v8.3.8** 🔧
 
 **Release Date**: September 1, 2026
 **Status**: Patch release
-**Previous Release**: v8.3.6 - Patch release
-**Note**: SPM ViewInspector version pin (#438); inspect-safe identifier/theme config (#435); OCR hint regex (#420, #430); CI/test hygiene (#382, #429).
+**Previous Release**: v8.3.7 - Patch release
+**Note**: Hosted Environment identifier config (#437); host-managed picker dismiss policy (#441, #442); ViewInspector CI stall window (#437).
 **Next Release**: TBD
+
+---
+
+## 🎯 **v8.3.8 - Hosted identifier config and host-managed picker dismiss** (September 1, 2026)
+
+### **What's in v8.3.8:**
+- Patch release (#437, #441, #442). See [RELEASE_v8.3.8.md](RELEASE_v8.3.8.md) for details.
+
+**See [RELEASE_v8.3.8.md](RELEASE_v8.3.8.md) for complete release notes.**
 
 ---
 

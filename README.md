@@ -27,7 +27,7 @@ Navigate to the `Framework/` directory and use it as a Swift Package:
 ```swift
 // In your Package.swift
 dependencies: [
-    .package(url: "https://github.com/schatt/sixlayer.git", from: "8.3.7")
+    .package(url: "https://github.com/schatt/sixlayer.git", from: "8.3.8")
 ]
 ```
 
@@ -41,9 +41,12 @@ dependencies: [
 
 The framework is distributed as a Swift Package from the `Framework/` directory. This ensures that only the essential framework code is included when other projects consume it.
 
-## 🆕 Latest Release: v8.3.7
+## 🆕 Latest Release: v8.3.8
 
 ### **Patch release**
+🔧 **Patch**: Hosted Environment identifier config (#437); host-managed picker dismiss policy (#441, #442); ViewInspector CI stall window (#437). See [RELEASE_v8.3.8.md](Development/RELEASE_v8.3.8.md).
+
+### **Previous Release: v8.3.7 - Patch release**
 🔧 **Patch**: SPM ViewInspector version pin so consumers can use `from:` (#438); inspect-safe identifier/theme config (#435); OCR hint regex (#420/#430); tautological-expect and CI hygiene (#382, #429). See [RELEASE_v8.3.7.md](Development/RELEASE_v8.3.7.md).
 
 ### **Previous Release: v8.3.6 - Patch release**
@@ -313,7 +316,7 @@ These guides contain critical information about the Layer 1 Semantic Intent phil
 
 ## 📋 Current Status
 
-**Version**: v8.3.7 (Patch)
+**Version**: v8.3.8 (Patch)
 **Phase**: Patch release
 **Next**: TBD
 

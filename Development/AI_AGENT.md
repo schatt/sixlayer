@@ -11,6 +11,7 @@ This document provides guidance for AI assistants working with the SixLayer Fram
 ## 📚 Version-Specific Guides
 
 ### Latest Versions (Recommended)
+- **v8.3.8** — Patch release: hosted Environment identifier config (#437); host-managed picker dismiss policy (#441, #442); ViewInspector CI stall window (#437) (see [RELEASE_v8.3.8.md](RELEASE_v8.3.8.md))
 - **v8.3.7** — Patch release: SPM ViewInspector version pin (#438); inspect-safe identifier/theme config (#435); OCR hint regex (#420/#430); tautological-expect and CI hygiene (#382, #429) (see [RELEASE_v8.3.7.md](RELEASE_v8.3.7.md))
 - **v8.3.6** — Patch release: `displayOCR` / hints inference (#404); named host sentinel (#406); iOS GeometryProxy SIGTRAP (#408); test-lane / release-script hygiene (#381, #395, #400, #405, #409, #411–#413) (see [RELEASE_v8.3.6.md](RELEASE_v8.3.6.md))
 - **v8.3.5** — Patch release: FieldDisplayHints form layout (#385); PlatformPresentationSize (#384/#386); toolbar overflow Menu (#352); UITest MainActor (#387) (see [RELEASE_v8.3.5.md](RELEASE_v8.3.5.md))

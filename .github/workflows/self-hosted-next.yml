@@ -13,7 +13,7 @@
 # not simctl-delete devices (#417) — Mini is shared with CarManager. Start-of-job reclaim
 # is the path that survives cancel-in-progress. `xcodebuild test` runs through
 # xcodebuild-ci-retry.sh (#432, #433): one retry on xctest bootstrap-only crashes
-# or a silent hang (default 180s without output); parallel testing stays on.
+# or a silent hang (default 180s without output; ViewInspector jobs use 600s, #437); parallel testing stays on.
 # Artifact upload exports NODE_EXTRA_CA_CERTS from the Gitea
 # peer cert (#432); --use-system-ca alone does not trust a cert absent from the OS store.
 #
@@ -64,6 +64,7 @@ jobs:
           - label: ViewInspectorTests
             scheme: SLF-iOS-ViewInspectorTests
             timeout_minutes: 90
+            stall_seconds: 600
           - label: UITests
             scheme: SLF-iOS-UITests
             timeout_minutes: 120
@@ -94,6 +95,7 @@ jobs:
         env:
           CI_DERIVED_DATA: ${{ github.workspace }}/.ci-derived-data/${{ matrix.scheme }}
           CI_SPM_CHECKOUTS: ${{ github.workspace }}/.ci-spm/${{ matrix.scheme }}
+          XCODEBUILD_CI_STALL_SECONDS: ${{ matrix.stall_seconds || 180 }}
         run: |
           set -euo pipefail
           mkdir -p build "$CI_DERIVED_DATA" "$CI_SPM_CHECKOUTS"
@@ -147,7 +149,8 @@ jobs:
             timeout_minutes: 60
           - label: ViewInspectorTests
             scheme: SLF-macOS-ViewInspectorTests
-            timeout_minutes: 60
+            timeout_minutes: 90
+            stall_seconds: 600
           - label: UITests
             scheme: SLF-macOS-UITests
             timeout_minutes: 90
@@ -178,6 +181,7 @@ jobs:
         env:
           CI_DERIVED_DATA: ${{ github.workspace }}/.ci-derived-data/${{ matrix.scheme }}
           CI_SPM_CHECKOUTS: ${{ github.workspace }}/.ci-spm/${{ matrix.scheme }}
+          XCODEBUILD_CI_STALL_SECONDS: ${{ matrix.stall_seconds || 180 }}
         run: |
           set -euo pipefail
           mkdir -p build "$CI_DERIVED_DATA" "$CI_SPM_CHECKOUTS"

@@ -111,7 +111,57 @@ open class PlatformPhotoComponentsLayer4IntegrationTests: BaseTestClass {
             }
         }
     }
+
+    /// BUSINESS PURPOSE: applySystemImagePickerDismissPolicy — UIKit presentation only (#441).
+    @Test @MainActor func testApplySystemImagePickerDismissPolicy_hostManagedNeverDismisses() {
+        var dismissCount = 0
+        applySystemImagePickerDismissPolicy(
+            .hostManaged,
+            presentingViewController: UIViewController(),
+            dismiss: { dismissCount += 1 }
+        )
+        #expect(
+            dismissCount == 0,
+            "hostManaged must never call UIKit dismiss — even when presentingViewController is non-nil (#441)"
+        )
+    }
+
+    @Test func testApplySystemImagePickerDismissPolicy_dismissWhenModallyPresented_embeddedSkipsDismiss() {
+        var dismissCount = 0
+        applySystemImagePickerDismissPolicy(
+            .dismissWhenModallyPresented,
+            presentingViewController: nil,
+            dismiss: { dismissCount += 1 }
+        )
+        #expect(
+            dismissCount == 0,
+            "Embedded representables have nil presentingViewController — legacy modal policy must not dismiss (#441)"
+        )
+    }
+
+    @Test @MainActor func testApplySystemImagePickerDismissPolicy_dismissWhenModallyPresented_modalDismisses() {
+        var dismissCount = 0
+        applySystemImagePickerDismissPolicy(
+            .dismissWhenModallyPresented,
+            presentingViewController: UIViewController(),
+            dismiss: { dismissCount += 1 }
+        )
+        #expect(
+            dismissCount == 1,
+            "Legacy UIKit modal opt-in may dismiss when presentingViewController is set (#441)"
+        )
+    }
     #endif
+
+    /// BUSINESS PURPOSE: Default picker policy is host-managed on every platform that compiles
+    /// `UnifiedImagePicker` (macOS included). Issue #442 / #441.
+    /// TESTING SCOPE: `SystemImagePickerDismissPolicy.default` — enum must not be iOS-only.
+    @Test func testSystemImagePickerDismissPolicy_defaultIsHostManaged() {
+        #expect(
+            SystemImagePickerDismissPolicy.default == .hostManaged,
+            "Framework pickers default to host-managed presentation (#441); type must exist on macOS (#442)"
+        )
+    }
     
     /// BUSINESS PURPOSE: Test camera callback with real image data
     /// TESTING SCOPE: Tests that camera callbacks work with actual image data
