@@ -17,7 +17,6 @@ struct PlatformIOSHapticFeedbackTests {
 
     #if os(iOS)
     /// All six styles must be distinct case names (enum is not `CaseIterable`).
-    /// Deliberate red: expect five unique names until production coverage is locked.
     @Test
     func iosHapticStyleCasesAreDistinct() {
         let names = [
@@ -29,34 +28,29 @@ struct PlatformIOSHapticFeedbackTests {
             String(describing: IOSHapticStyle.error)
         ]
         #expect(
-            Set(names).count == 5,
+            Set(names).count == 6,
             "IOSHapticStyle must expose six distinct cases, got: \(names)"
         )
     }
 
-    /// iOS modifier wraps the root (`.onChange`); lock subject type from `got:` after red.
+    /// iOS path applies `.onChange` — subject type wraps `Text` with `_ValueActionModifier2`
+    /// (locked from deliberate-red `got:`). Does not lock `AnyView`.
     @Test @MainActor
     func platformIOSHapticFeedbackWrapsRootOnIOS() {
         let view = Text("haptic-root").platformIOSHapticFeedback(style: .medium, onTrigger: true)
-        BaseTestClass.expectViewSubjectTypeContains(
-            view,
-            rootViewName: "NotAHapticWrapper"
-        )
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "Text")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "_ValueActionModifier2")
     }
     #endif
 
     // MARK: - Non-iOS stub (macOS unit)
 
     #if os(macOS)
-    /// Stub returns `self`; subject type must still contain the original root.
-    /// Deliberate red: wrong root name until locked from `got:`.
+    /// Stub returns `self`; subject type remains the original root (`Text`).
     @Test @MainActor
     func platformIOSHapticFeedbackStubPreservesRootOnMacOS() {
         let view = Text("haptic-root").platformIOSHapticFeedback()
-        BaseTestClass.expectViewSubjectTypeContains(
-            view,
-            rootViewName: "NotTheRootText"
-        )
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "Text")
     }
     #endif
 }
