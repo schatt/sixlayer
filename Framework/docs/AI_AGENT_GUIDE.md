@@ -736,9 +736,6 @@ struct MyBusinessView: View {
         }
         // Layer 4: Component Implementation (handled by framework)
         // Layer 5: Performance Optimization
-        .platformMemoryOptimization()
-        .platformRenderingOptimization()
-        .platformViewCaching()
         // Layer 6: Platform-Specific Features
         #if os(iOS)
         .platformIOSHapticFeedback(style: .medium) { }
