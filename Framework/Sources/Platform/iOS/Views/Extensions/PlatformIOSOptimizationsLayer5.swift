@@ -17,18 +17,33 @@ public enum PlatformIOSSwipeDirection: Equatable {
 }
 
 /// Pure threshold decision for `platformIOSSwipeGestures` (unit-testable; #424).
-/// Deliberate-red stub: always `nil` until green implementation.
+/// Primary axis must exceed ±100; cross-axis must stay inside ±50 reject band.
 public func platformIOSSwipeDirection(from translation: CGSize) -> PlatformIOSSwipeDirection? {
-    nil
+    let width = translation.width
+    let height = translation.height
+    if width < -100 && abs(height) < 50 {
+        return .left
+    }
+    if width > 100 && abs(height) < 50 {
+        return .right
+    }
+    if height < -100 && abs(width) < 50 {
+        return .up
+    }
+    if height > 100 && abs(width) < 50 {
+        return .down
+    }
+    return nil
 }
 
 /// `isRefreshing` true → `onRefresh` → false sequence used by `platformIOSPullToRefresh` (#424).
-/// Deliberate-red stub: no-op until green implementation.
 public func platformIOSPullToRefreshSequence(
     setRefreshing: (Bool) -> Void,
     onRefresh: () -> Void
 ) {
-    // Intentionally empty for deliberate TDD red (#424).
+    setRefreshing(true)
+    onRefresh()
+    setRefreshing(false)
 }
 
 public extension View {
