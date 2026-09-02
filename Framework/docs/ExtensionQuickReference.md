@@ -74,12 +74,15 @@ platformCardGrid(columns: 3, spacing: 16) {
 ### 4. **Progressive Enhancement**
 ```swift
 platformResponsiveCard_L1(content: { MyContent() }, hints: hints)
-    .platformMemoryOptimization()        // Layer 5
-    .platformRenderingOptimization()     // Layer 5
+    #if os(iOS)
+    .platformIOSHapticFeedback(style: .light)  // Layer 5 (real API)
+    #endif
     #if os(macOS)
     .platformMacOSWindowResizing(resizable: true)  // Layer 6
     #endif
 ```
+
+Generic `platformMemoryOptimization` / `platformRenderingOptimization` modifiers are not implemented (#425).
 
 ## 📊 Hints Structure
 
@@ -135,15 +138,9 @@ let hints = EnhancedPresentationHints(
 )
 ```
 
-## ⚡ Performance Optimization
+## ⚡ Layer 5 (platform technical)
 
-```swift
-// Apply when needed
-MyHeavyView()
-    .platformMemoryOptimization()
-    .platformRenderingOptimization()
-    .platformViewCaching()
-```
+Use real L5 APIs only (e.g. `platformIOSHapticFeedback`, split-view / navigation-stack `_L5` helpers). Generic `platformMemoryOptimization` / `platformRenderingOptimization` / `platformViewCaching` names are **not** in Sources — see [README_Layer5_Performance.md](README_Layer5_Performance.md) (#425).
 
 ## 🔍 Debugging
 
