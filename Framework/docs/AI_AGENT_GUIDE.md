@@ -1119,8 +1119,8 @@ platformPresentItemCollection_L1(
             }
     }
 )
-// Still gets: .platformMemoryOptimization()
-//           .platformRenderingOptimization()
+// Framework applies automatic compliance modifiers where configured;
+// generic platformMemoryOptimization / platformRenderingOptimization are not APIs (#425).
 
 // ✅ Good: Combine with enhanced hints
 let enhancedHints = EnhancedPresentationHints(
