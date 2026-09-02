@@ -8,6 +8,29 @@ import UIKit
 /// leverage iOS platform capabilities. This layer handles platform-specific
 /// features like haptics, iOS-specific navigation, and iOS-only UI patterns.
 
+/// Direction recognized by `platformIOSSwipeGestures` thresholds (±100 primary, ±50 reject band).
+public enum PlatformIOSSwipeDirection: Equatable {
+    case left
+    case right
+    case up
+    case down
+}
+
+/// Pure threshold decision for `platformIOSSwipeGestures` (unit-testable; #424).
+/// Deliberate-red stub: always `nil` until green implementation.
+public func platformIOSSwipeDirection(from translation: CGSize) -> PlatformIOSSwipeDirection? {
+    nil
+}
+
+/// `isRefreshing` true → `onRefresh` → false sequence used by `platformIOSPullToRefresh` (#424).
+/// Deliberate-red stub: no-op until green implementation.
+public func platformIOSPullToRefreshSequence(
+    setRefreshing: (Bool) -> Void,
+    onRefresh: () -> Void
+) {
+    // Intentionally empty for deliberate TDD red (#424).
+}
+
 public extension View {
     
     /// Platform-specific iOS navigation bar with consistent styling
@@ -50,7 +73,7 @@ public extension View {
             .gesture(
                 DragGesture()
                     .onEnded { value in
-                        if value.translation.width < -100 && abs(value.translation.height) < 50 {
+                        if platformIOSSwipeDirection(from: value.translation) == .left {
                             onSwipeLeft?()
                         }
                     }
@@ -58,7 +81,7 @@ public extension View {
             .gesture(
                 DragGesture()
                     .onEnded { value in
-                        if value.translation.width > 100 && abs(value.translation.height) < 50 {
+                        if platformIOSSwipeDirection(from: value.translation) == .right {
                             onSwipeRight?()
                         }
                     }
@@ -66,7 +89,7 @@ public extension View {
             .gesture(
                 DragGesture()
                     .onEnded { value in
-                        if value.translation.height < -100 && abs(value.translation.width) < 50 {
+                        if platformIOSSwipeDirection(from: value.translation) == .up {
                             onSwipeUp?()
                         }
                     }
@@ -74,7 +97,7 @@ public extension View {
             .gesture(
                 DragGesture()
                     .onEnded { value in
-                        if value.translation.height > 100 && abs(value.translation.width) < 50 {
+                        if platformIOSSwipeDirection(from: value.translation) == .down {
                             onSwipeDown?()
                         }
                     }
@@ -203,9 +226,10 @@ public extension View {
         onRefresh: @escaping () -> Void
     ) -> some View {
         return self.refreshable {
-            isRefreshing.wrappedValue = true
-            onRefresh()
-            isRefreshing.wrappedValue = false
+            platformIOSPullToRefreshSequence(
+                setRefreshing: { isRefreshing.wrappedValue = $0 },
+                onRefresh: onRefresh
+            )
         }
     }
     
