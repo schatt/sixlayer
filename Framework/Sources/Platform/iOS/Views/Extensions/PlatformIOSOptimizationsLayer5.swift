@@ -84,39 +84,23 @@ public extension View {
         onSwipeDown: (() -> Void)? = nil
     ) -> some View {
         #if os(iOS)
-        self
-            .gesture(
-                DragGesture()
-                    .onEnded { value in
-                        if platformIOSSwipeDirection(from: value.translation) == .left {
-                            onSwipeLeft?()
-                        }
+        self.gesture(
+            DragGesture()
+                .onEnded { value in
+                    switch platformIOSSwipeDirection(from: value.translation) {
+                    case .left:
+                        onSwipeLeft?()
+                    case .right:
+                        onSwipeRight?()
+                    case .up:
+                        onSwipeUp?()
+                    case .down:
+                        onSwipeDown?()
+                    case nil:
+                        break
                     }
-            )
-            .gesture(
-                DragGesture()
-                    .onEnded { value in
-                        if platformIOSSwipeDirection(from: value.translation) == .right {
-                            onSwipeRight?()
-                        }
-                    }
-            )
-            .gesture(
-                DragGesture()
-                    .onEnded { value in
-                        if platformIOSSwipeDirection(from: value.translation) == .up {
-                            onSwipeUp?()
-                        }
-                    }
-            )
-            .gesture(
-                DragGesture()
-                    .onEnded { value in
-                        if platformIOSSwipeDirection(from: value.translation) == .down {
-                            onSwipeDown?()
-                        }
-                    }
-            )
+                }
+        )
         #else
         // DragGesture-based swipe helpers are unavailable on tvOS (#237).
         self
