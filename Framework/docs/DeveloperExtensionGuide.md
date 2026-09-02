@@ -230,8 +230,6 @@ struct MyComplexView: View {
             content: { MyCustomContent() },
             hints: hints
         )
-        .platformMemoryOptimization()        // Layer 5
-        .platformRenderingOptimization()     // Layer 5
         #if os(macOS)
         .platformMacOSWindowResizing(resizable: true)  // Layer 6
         #endif
@@ -448,8 +446,6 @@ let hints = PresentationHints(
 
 // Apply performance optimizations when needed
 MyHeavyView()
-    .platformMemoryOptimization()
-    .platformRenderingOptimization()
 ```
 
 ### 4. Platform Awareness
@@ -506,7 +502,6 @@ struct ProductCatalogView: View {
             hints: hints
         )
         .navigationTitle("Products")
-        .platformMemoryOptimization()
     }
 }
 ```
@@ -528,7 +523,6 @@ struct FinancialDashboardView: View {
             items: financialData,
             hints: hints
         )
-        .platformRenderingOptimization()
     }
 }
 ```
@@ -794,8 +788,6 @@ let hints = PresentationHints(
 
 // Apply performance optimizations
 MyView()
-    .platformMemoryOptimization()
-    .platformRenderingOptimization()
 ```
 
 ## Getting Help
