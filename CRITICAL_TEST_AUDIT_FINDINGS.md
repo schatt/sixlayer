@@ -57,8 +57,9 @@ struct MyBusinessView: View {
             let decision = determineOptimalCardLayout_L2(...)  // Layer 2
             let strategy = selectCardLayoutStrategy_L3(...)    // Layer 3
         }
-        .platformMemoryOptimization()  // Layer 5
-        .platformIOSHapticFeedback()  // Layer 6
+        #if os(iOS)
+        .platformIOSHapticFeedback()  // Layer 5 (real API)
+        #endif
     }
 }
 ```
