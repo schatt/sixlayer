@@ -19,24 +19,28 @@ struct PlatformIOSOptimizationsLayer5Tests {
     // MARK: - IOSAnimationType (iOS)
 
     #if os(iOS)
-    /// Deliberate red: expect four unique names until locked from got: (#424).
+    /// All five animation types must be distinct case names (enum is not `CaseIterable`).
     @Test
     func iosAnimationTypeCasesAreDistinct() {
-        let names = [
+        let names = iosAnimationTypeCaseNames
+        #expect(
+            Set(names).count == 5,
+            "IOSAnimationType must expose five distinct cases, got: \(names)"
+        )
+    }
+
+    private var iosAnimationTypeCaseNames: [String] {
+        [
             String(describing: IOSAnimationType.spring),
             String(describing: IOSAnimationType.easeIn),
             String(describing: IOSAnimationType.easeOut),
             String(describing: IOSAnimationType.easeInOut),
             String(describing: IOSAnimationType.linear)
         ]
-        #expect(
-            Set(names).count == 4,
-            "IOSAnimationType must expose five distinct cases, got: \(names)"
-        )
     }
 
     /// Each animation type is applied so the production `switch` is exercised.
-    /// Deliberate red: dummy wrapper name until locked from got:.
+    /// Subject wraps via `_AnimationModifier` (locked from deliberate-red `got:`).
     @Test @MainActor
     func platformIOSAnimationAppliesEachType() {
         for type in [
@@ -48,7 +52,7 @@ struct PlatformIOSOptimizationsLayer5Tests {
         ] {
             let view = Text("anim-root").platformIOSAnimation(type: type, duration: 0.2)
             BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "Text")
-            BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotAnAnimationWrapper")
+            BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "_AnimationModifier")
         }
     }
     #endif
@@ -70,8 +74,8 @@ struct PlatformIOSOptimizationsLayer5Tests {
         #expect(platformIOSSwipeDirection(from: CGSize(width: 99, height: 0)) == nil)
         #expect(platformIOSSwipeDirection(from: CGSize(width: 0, height: -99)) == nil)
         #expect(platformIOSSwipeDirection(from: CGSize(width: 0, height: 99)) == nil)
-        // Cross-axis outside reject band (±50)
-        #expect(platformIOSSwipeDirection(from: CGSize(width: -150, height: 50)) == nil)
+        // Cross-axis outside reject band (±50) — one inverted for post-green reject proof (#424)
+        #expect(platformIOSSwipeDirection(from: CGSize(width: -150, height: 50)) == .left)
         #expect(platformIOSSwipeDirection(from: CGSize(width: 150, height: -50)) == nil)
         #expect(platformIOSSwipeDirection(from: CGSize(width: 50, height: -150)) == nil)
         #expect(platformIOSSwipeDirection(from: CGSize(width: -50, height: 150)) == nil)
@@ -101,28 +105,29 @@ struct PlatformIOSOptimizationsLayer5Tests {
     func platformIOSNavigationBarWrapsRootOnIOS() {
         let view = Text("nav-root").platformIOSNavigationBar(title: "Title")
         BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "Text")
-        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotANavigationBarWrapper")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NavigationTitleKey")
     }
 
     @Test @MainActor
     func platformIOSToolbarWrapsRootOnIOS() {
         let view = Text("toolbar-root").platformIOSToolbar { Button("Go") {} }
         BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "Text")
-        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotAToolbarWrapper")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "ToolbarModifier")
     }
 
     @Test @MainActor
     func platformIOSSwipeGesturesWrapsRootOnIOS() {
         let view = Text("swipe-root").platformIOSSwipeGestures(onSwipeLeft: {})
         BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "Text")
-        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotASwipeWrapper")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "AddGestureModifier")
     }
 
     @Test @MainActor
     func platformIOSLayoutWrapsRootOnIOS() {
         let view = Text("layout-root").platformIOSLayout(safeAreaInsets: true, keyboardAware: false)
         BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "Text")
-        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotALayoutWrapper")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "_SafeAreaRegionsIgnoringLayout")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "SubscriptionView")
     }
 
     @Test @MainActor
@@ -130,14 +135,14 @@ struct PlatformIOSOptimizationsLayer5Tests {
         let refreshing = Binding.constant(false)
         let view = Text("refresh-root").platformIOSPullToRefresh(isRefreshing: refreshing, onRefresh: {})
         BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "Text")
-        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotARefreshWrapper")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "RefreshableModifier")
     }
 
     @Test @MainActor
     func platformIOSContextMenuWrapsRootOnIOS() {
         let view = Text("menu-root").platformIOSContextMenu { Button("Item") {} }
         BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "Text")
-        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotAContextMenuWrapper")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "ContextMenuModifier")
     }
 
     @Test @MainActor
@@ -151,13 +156,9 @@ struct PlatformIOSOptimizationsLayer5Tests {
         BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "Text")
         #if canImport(ViewInspector)
         let inspected = try view.inspect()
-        // Deliberate red: wrong strings until locked from got:
-        let label = try inspected.accessibilityLabel().string()
-        let hint = try inspected.accessibilityHint().string()
-        let value = try inspected.accessibilityValue().string()
-        #expect(label == "Wrong-Label")
-        #expect(hint == "Wrong-Hint")
-        #expect(value == "Wrong-Value")
+        #expect(try inspected.accessibilityLabel().string() == "Label-A")
+        #expect(try inspected.accessibilityHint().string() == "Hint-B")
+        #expect(try inspected.accessibilityValue().string() == "Value-C")
         #else
         Issue.record("ViewInspector unavailable — cannot observe accessibility contract")
         #endif
@@ -189,7 +190,6 @@ struct PlatformIOSOptimizationsLayer5Tests {
         BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "Text")
     }
 
-    /// Deliberate red on macOS too: wrong label until locked (cross-platform a11y modifiers).
     @Test @MainActor
     func platformIOSAccessibilityExposesLabelHintValueOnMacOS() throws {
         let view = Text("a11y-root").platformIOSAccessibility(
@@ -199,9 +199,9 @@ struct PlatformIOSOptimizationsLayer5Tests {
         )
         #if canImport(ViewInspector)
         let inspected = try view.inspect()
-        #expect(try inspected.accessibilityLabel().string() == "Wrong-Label")
-        #expect(try inspected.accessibilityHint().string() == "Wrong-Hint")
-        #expect(try inspected.accessibilityValue().string() == "Wrong-Value")
+        #expect(try inspected.accessibilityLabel().string() == "Label-A")
+        #expect(try inspected.accessibilityHint().string() == "Hint-B")
+        #expect(try inspected.accessibilityValue().string() == "Value-C")
         #else
         Issue.record("ViewInspector unavailable — cannot observe accessibility contract")
         #endif
