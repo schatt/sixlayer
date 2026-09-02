@@ -39,58 +39,9 @@ Extension context is shown for functions that are part of extensions.
   - *function*
   - *Calculate animation duration based on device\n*
 
-## ./Framework/Sources/Shared/Views/Extensions/PerformanceOptimizationLayer5.swift
-### Public Interface
-- **L316:** ` public var body: some View`
-  - *function*
-- **L346:** ` public var body: some View`
-  - *function*
-- **L369:** ` public var body: some View`
-  - *function*
-- **L17:** ` public init(`
-  - *function*
-- **L39:** ` public init(`
-  - *function*
-- **L61:** ` public init(totalItems: Int, config: LazyLoadingConfig = LazyLoadingConfig())`
-  - *function*
-- **L102:** ` public init(`
-  - *function*
-- **L133:** ` public init(config: MemoryConfig = MemoryConfig())`
-  - *function*
-- **L305:** ` public init(`
-  - *function*
-- **L341:** ` public init(config: MemoryConfig, @ViewBuilder content: @escaping () -> Content)`
-  - *function*
-- **L365:** ` public init(@ViewBuilder content: @escaping () -> Content)`
-  - *function*
 
-### Internal Methods
-- **L66:** ` func loadMoreIfNeeded(currentIndex: Int)`
-  - *function*
-- **L228:** ` func startRender()`
-  - *function*
-- **L232:** ` func endRender()`
-  - *function*
-- **L246:** ` func recordFrame()`
-  - *function*
-- **L282:** ` func memoryOptimized(config: MemoryConfig = MemoryConfig()) -> some View`
-  - *function*
-  - *Apply memory optimization\n*
-- **L289:** ` func performanceProfiled() -> some View`
-  - *function*
-  - *Apply performance profiling\n*
+> Removed (#425): `PerformanceOptimizationLayer5.swift` / related phantom L5 performance APIs are not in Sources.
 
-### Private Implementation
-- **L75:** ` private func loadNextBatch()`
-  - *function*
-- **L162:** ` private func evictItems(neededSpace: Int64)`
-  - *function*
-- **L176:** ` private func selectKeysForEviction(neededSpace: Int64) -> [String]`
-  - *function*
-- **L189:** ` private func setupMemoryPressureMonitoring()`
-  - *function*
-- **L201:** ` private func handleMemoryPressure()`
-  - *function*
 
 ## ./Framework/Sources/Shared/Views/Extensions/PlatformTabViewExtensions.swift
 ### Internal Methods
@@ -2420,12 +2371,6 @@ Extension context is shown for functions that are part of extensions.
 - **L375:** ` func platformGridOptimized() -> some View`
   - *function*
   - *Apply platform-specific grid styling\n*
-- **L382:** ` func platformPerformanceOptimized(for platform: Platform) -> some View`
-  - *function*
-  - *Apply platform-specific performance optimizations\n*
-- **L387:** ` func platformMemoryOptimized(for platform: Platform) -> some View`
-  - *function*
-  - *Apply platform-specific memory optimizations\n*
 - **L392:** ` func platformAccessibilityEnhanced(for platform: Platform) -> some View`
   - *function*
   - *Apply platform-specific accessibility enhancements\n*
@@ -3162,28 +3107,6 @@ Extension context is shown for functions that are part of extensions.
 - **L4:** ` func platformTextFieldStyle() -> some View`
   - *function|extension TextField*
 
-## ./Framework/Sources/Shared/Views/Extensions/PlatformPerformanceExtensionsLayer5.swift
-### Internal Methods
-- **L13:** ` func platformMemoryOptimization() -> some View`
-  - *function*
-  - *Platform-specific memory optimization with consistent behavior\nProvides memory optimization strategies across platforms\n*
-- **L47:** ` func platformRenderingOptimization() -> some View`
-  - *function*
-  - *Platform-specific rendering optimization with consistent behavior\nProvides rendering optimization strategies across platforms\n*
-- **L61:** ` func platformAnimationOptimization() -> some View`
-  - *function*
-  - *Platform-specific animation optimization with consistent behavior\nProvides animation optimization strategies across platforms\n*
-- **L75:** ` func platformCachingOptimization() -> some View`
-  - *function*
-  - *Platform-specific caching optimization with consistent behavior\nProvides caching optimization strategies across platforms\n*
-- **L128:** ` var multiplier: Double`
-  - *function*
-- **L146:** ` var cacheSize: Int`
-  - *function*
-- **L163:** ` var useMetal: Bool`
-  - *function*
-- **L112:** ` init(renderTime: TimeInterval = 0, memoryUsage: Int64 = 0, frameRate: Double = 60.0)`
-  - *function*
 
 ## ./Framework/Sources/Shared/Views/Extensions/AccessibilityTypes.swift
 ### Public Interface
