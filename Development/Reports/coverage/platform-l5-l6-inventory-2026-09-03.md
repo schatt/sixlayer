@@ -84,3 +84,14 @@ zero coverage: 19
 - macOS run: 1 unrelated failure `OCRLayer1TaskCancellationTests/testRepeatedVisualCorrectionHostTeardownKeepsResidentSizeBounded` (resident-size bound); coverage still extracted.
 - Already covered / do not re-spawn: #422–#425, #444; iOS L5 optimizations file at ~71% iOS / ~60% macOS.
 - Related product issues (not coverage): #446, #447, #448, #449, #451, #452.
+
+## Spawned gap issues
+
+| Issue | Cluster |
+| --- | --- |
+| **#453** | Placeholder Platform*Layer5 demo Views (0%) — implement or remove |
+| **#454** | AccessibilityFeaturesLayer5 unit-lane coverage |
+| **#455** | PlatformMessagingLayer5 + PlatformResourceLayer5 |
+| **#456** | PlatformSplitViewOptimizationsLayer5 unit-lane |
+| **#457** | IntelligentCardExpansion L5/L6 gaps |
+| **#458** | CrossPlatformOptimizationLayer6 + PlatformPerformanceLayer6 |
