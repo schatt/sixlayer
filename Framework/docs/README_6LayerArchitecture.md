@@ -35,11 +35,12 @@ Build specific UI components with platform-adaptive behavior.
 **Content:** `extension View` blocks
 
 ### **Layer 5: Technical Implementation**
-Optimize performance and memory usage.
+Platform-aware technical behavior (iOS chrome/gestures/haptics, split-view and navigation-stack tuning, card-expansion performance config).
 
-**Purpose:** Apply performance optimizations
-**Location:** `PlatformPerformanceExtensionsLayer5.swift`
-**Content:** `extension View` blocks
+**Purpose:** Apply platform technical enhancements (not generic memory/render modifier names)
+**Location:** `PlatformIOSOptimizationsLayer5.swift` and `Framework/Sources/Layers/Layer5-Platform/`
+**Content:** `extension View` blocks and L5 platform types/views — see [README_Layer5_Performance.md](README_Layer5_Performance.md)
+**Note:** There is no `PlatformPerformanceExtensionsLayer5.swift`; documented phantom modifiers were removed (#425).
 
 ### **Layer 6: Platform Optimization**
 Apply platform-specific enhancements and conventions.
