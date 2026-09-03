@@ -198,26 +198,20 @@ public extension View {
     }
     #endif
     
-    /// Platform-specific iOS layout with consistent behavior
-    /// Provides iOS-specific layout optimizations
-    func platformIOSLayout(
-        safeAreaInsets: Bool = true,
-        keyboardAware: Bool = false
-    ) -> some View {
-        #if os(iOS)
-        self
-            .ignoresSafeArea(safeAreaInsets ? .keyboard : .all, edges: .bottom)
-            .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)) { _ in
-                // Handle keyboard appearance
-            }
-            .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { _ in
-                // Handle keyboard dismissal
-            }
-        #else
-        self
-        #endif
-    }
-    
+/// Platform-specific iOS layout with consistent behavior.
+/// Applies safe-area region ignoring; does not subscribe to keyboard notifications
+/// (empty keyboardAware / onReceive hooks removed — #444).
+func platformIOSLayout(
+    safeAreaInsets: Bool = true
+) -> some View {
+    #if os(iOS)
+    self
+        .ignoresSafeArea(safeAreaInsets ? .keyboard : .all, edges: .bottom)
+    #else
+    self
+    #endif
+}
+
     /// Platform-specific iOS pull-to-refresh with consistent behavior
     /// Provides iOS-specific pull-to-refresh functionality
     func platformIOSPullToRefresh(
