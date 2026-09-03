@@ -124,10 +124,16 @@ struct PlatformIOSOptimizationsLayer5Tests {
 
     @Test @MainActor
     func platformIOSLayoutWrapsRootOnIOS() {
-        let view = Text("layout-root").platformIOSLayout(safeAreaInsets: true, keyboardAware: false)
+        // #444: no keyboardAware param; empty onReceive hooks must be gone (no SubscriptionView).
+        let view = Text("layout-root").platformIOSLayout(safeAreaInsets: true)
         BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "Text")
         BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "_SafeAreaRegionsIgnoringLayout")
-        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "SubscriptionView")
+        let description = BaseTestClass.viewSubjectTypeDescription(for: view)
+        // Deliberate red while production still wraps onReceive → SubscriptionView (#444).
+        #expect(
+            !description.contains("SubscriptionView"),
+            "platformIOSLayout must not subscribe to keyboard notifications, got: \(description)"
+        )
     }
 
     @Test @MainActor
