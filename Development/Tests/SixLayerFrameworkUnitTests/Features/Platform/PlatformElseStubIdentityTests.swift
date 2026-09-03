@@ -18,20 +18,19 @@ struct PlatformElseStubIdentityTests {
     @Test @MainActor
     func platformIOSNavigationStackEnhancementsStubPreservesRootOnMacOS() {
         let view = Text("stub-root").platformIOSNavigationStackEnhancements_L6()
-        // Deliberate red (#449): invert until locked to Text.
-        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotTheRootText")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "Text")
     }
 
     @Test @MainActor
     func platformIOSSplitViewOptimizationsStubPreservesRootOnMacOS() {
         let view = Text("stub-root").platformIOSSplitViewOptimizations_L5()
-        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotTheRootText")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "Text")
     }
 
     @Test @MainActor
     func platformIOSNavigationStackOptimizationsStubPreservesRootOnMacOS() {
         let view = Text("stub-root").platformIOSNavigationStackOptimizations_L5()
-        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotTheRootText")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "Text")
     }
     #endif
 
@@ -41,19 +40,19 @@ struct PlatformElseStubIdentityTests {
     @Test @MainActor
     func platformMacOSNavigationStackEnhancementsStubPreservesRootOnIOS() {
         let view = Text("stub-root").platformMacOSNavigationStackEnhancements_L6()
-        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotTheRootText")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "Text")
     }
 
     @Test @MainActor
     func platformMacOSSplitViewOptimizationsStubPreservesRootOnIOS() {
         let view = Text("stub-root").platformMacOSSplitViewOptimizations_L5()
-        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotTheRootText")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "Text")
     }
 
     @Test @MainActor
     func platformMacOSNavigationStackOptimizationsStubPreservesRootOnIOS() {
         let view = Text("stub-root").platformMacOSNavigationStackOptimizations_L5()
-        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotTheRootText")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "Text")
     }
     #endif
 }
