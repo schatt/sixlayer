@@ -156,6 +156,9 @@ Public framework types follow a documented **hints vs presentation** split: immu
 
 **Rule**: Add **targeted** UI tests (sentinels per major surface or pattern), not a 1:1 port of every ViewInspector test. XCUITest is slower and more sensitive to flakiness; use it where lower layers genuinely cannot supply the signal.
 
+#### Platform `#else` identity stubs (#449)
+Public platform View modifiers that use `#else { self }` (or equivalent identity stubs) on non-primary platforms **must** have executing unit coverage that the stub still yields a subject type containing the original root (`Text`, etc.) on at least the opposite primary lane (macOS for iOS-only APIs, iOS for macOS-only APIs). Prefer shared test sources with `#if os` branches over lane-only suites. When a stub later gains real behavior, update tests in the same change (strict TDD). Do not assert system side effects (haptics, refresh gestures) in these stub tests.
+
 #### Legacy ViewInspector debt
 Many ViewInspector tests were added without a green run at write time. **Failing tests are not automatically the product spec.**
 
