@@ -152,7 +152,7 @@ Complete list of all `Platform*` types in the SixLayer Framework codebase, organ
 - **Core Types**: 7
 - **Layer 1 (Semantic)**: 1 (functions, not types)
 - **Layer 4 (Component)**: 18
-- **Layer 5 (Platform)**: 16
+- **Layer 5 (Platform)**: 2 (plus real optimizers elsewhere; demo shells removed #453)
 - **Layer 6 (Optimization)**: 7
 - **UI & Extensions**: 16
 - **Input & Interaction**: 7
