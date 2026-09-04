@@ -9,7 +9,7 @@ Layer 5 applies platform-aware technical behavior (navigation chrome, gestures, 
 | Area | Path |
 |------|------|
 | iOS View enhancements | `Framework/Sources/Platform/iOS/Views/Extensions/PlatformIOSOptimizationsLayer5.swift` |
-| Shared L5 platform components | `Framework/Sources/Layers/Layer5-Platform/` (e.g. split view / navigation stack optimizations, card expansion performance config, profiling placeholder views) |
+| Shared L5 platform components | `Framework/Sources/Layers/Layer5-Platform/` (e.g. split view / navigation stack optimizations, card expansion performance config, Messaging/Resource helpers) |
 
 There is **no** `Shared/Views/Extensions/PlatformPerformanceExtensionsLayer5.swift`.
 
@@ -34,7 +34,8 @@ Coverage for haptics: **#423**. Remaining modifiers in that file: **#424**.
 - `platformSplitViewOptimizations_L5()` / platform-specific variants
 - `platformNavigationStackOptimizations_L5()` / platform-specific variants
 - `getCardExpansionPerformanceConfig()` / `CardExpansionPerformanceConfig`
-- Demo / placeholder L5 views such as `PlatformOptimizationLayer5`, `PlatformProfilingLayer5` (not drop-in performance modifiers)
+
+Placeholder demo Views (`PlatformOptimizationLayer5`, `PlatformProfilingLayer5`, and siblings) were **removed** in **#453** — do not document or call them.
 
 ## What not to call
 

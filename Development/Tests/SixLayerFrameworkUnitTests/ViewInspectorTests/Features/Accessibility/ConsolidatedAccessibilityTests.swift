@@ -708,137 +708,16 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         }
     }
     
-    // MARK: - Platform Layer 5 Component Identifier Tests
+    // MARK: - Platform Layer 5/6 Component Identifier Tests
     
-    // Tests consolidated from all Platform*Layer5ComponentAccessibilityTests.swift files
+    // Placeholder demo Layer5 Views removed in #453; keep Messaging/Resource + Performance L6.
     
-    @Test @MainActor func testPlatformSafetyLayer5GeneratesAccessibilityIdentifiers() async {
-        self.initializeTestConfig()
-        // Given: PlatformSafetyLayer5
-        let testView = PlatformSafetyLayer5()
-        
-        // Then: Should generate accessibility identifiers
-        #if canImport(ViewInspector)
-        let hasAccessibilityID = testComponentComplianceSinglePlatform(
-            testView,
-            expectedPattern: "SixLayer.main.ui.*",
-            platform: SixLayerPlatform.iOS,
-            componentName: "PlatformSafetyLayer5"
-        )
-        #expect(hasAccessibilityID, "PlatformSafetyLayer5 should generate accessibility identifiers ")
-        #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-        // The modifier IS present in the code, but ViewInspector can't detect it on macOS
-        #endif
-    }
     
-    @Test @MainActor func testPlatformPrivacyLayer5GeneratesAccessibilityIdentifiers() async {
-        self.initializeTestConfig()
-        // Given: PlatformPrivacyLayer5
-        let testView = PlatformPrivacyLayer5()
-        
-        // Then: Should generate accessibility identifiers
-        #if canImport(ViewInspector)
-        let hasAccessibilityID = testComponentComplianceSinglePlatform(
-            testView,
-            expectedPattern: "SixLayer.main.ui.*",
-            platform: SixLayerPlatform.iOS,
-            componentName: "PlatformPrivacyLayer5"
-        )
-        #expect(hasAccessibilityID, "PlatformPrivacyLayer5 should generate accessibility identifiers ")
-        #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-        // The modifier IS present in the code, but ViewInspector can't detect it on macOS
-        #endif
-    }
     
-    @Test @MainActor func testPlatformRecognitionLayer5GeneratesAccessibilityIdentifiers() async {
-        self.initializeTestConfig()
-        // Given: PlatformRecognitionLayer5
-        let testView = PlatformRecognitionLayer5()
-        
-        // Then: Should generate accessibility identifiers
-        #if canImport(ViewInspector)
-        let hasAccessibilityID = testComponentComplianceSinglePlatform(
-            testView,
-            expectedPattern: "SixLayer.main.ui.*",
-            platform: SixLayerPlatform.iOS,
-            componentName: "PlatformRecognitionLayer5"
-        )
-        #expect(hasAccessibilityID, "PlatformRecognitionLayer5 should generate accessibility identifiers ")
-        #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-        // The modifier IS present in the code, but ViewInspector can't detect it on macOS
-        #endif
-    }
     
-    @Test @MainActor func testPlatformNotificationLayer5GeneratesAccessibilityIdentifiers() async {
-        self.initializeTestConfig()
-        // Given: PlatformNotificationLayer5
-        let testView = PlatformNotificationLayer5()
-        
-        // Then: Should generate accessibility identifiers
-        #if canImport(ViewInspector)
-        let hasAccessibilityID = testComponentComplianceSinglePlatform(
-            testView,
-            expectedPattern: "SixLayer.main.ui.*",
-            platform: SixLayerPlatform.iOS,
-            componentName: "PlatformNotificationLayer5"
-        )
-        #expect(hasAccessibilityID, "PlatformNotificationLayer5 should generate accessibility identifiers ")
-        #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-        // The modifier IS present in the code, but ViewInspector can't detect it on macOS
-        #endif
-    }
     
-    @Test @MainActor func testPlatformOrganizationLayer5GeneratesAccessibilityIdentifiers() async {
-        self.initializeTestConfig()
-        let testView = PlatformOrganizationLayer5()
-        #if canImport(ViewInspector)
-        let hasAccessibilityID = testComponentComplianceSinglePlatform(
-            testView,
-            expectedPattern: "SixLayer.main.ui.*",
-            platform: SixLayerPlatform.iOS,
-            componentName: "PlatformOrganizationLayer5"
-        )
-        #expect(hasAccessibilityID, "PlatformOrganizationLayer5 should generate accessibility identifiers ")
-        #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-        #endif
-    }
     
-    @Test @MainActor func testPlatformRoutingLayer5GeneratesAccessibilityIdentifiers() async {
-        self.initializeTestConfig()
-        let testView = PlatformRoutingLayer5()
-        #if canImport(ViewInspector)
-        let hasAccessibilityID = testComponentComplianceSinglePlatform(
-            testView,
-            expectedPattern: "SixLayer.main.ui.*",
-            platform: SixLayerPlatform.iOS,
-            componentName: "PlatformRoutingLayer5"
-        )
-        #expect(hasAccessibilityID, "PlatformRoutingLayer5 should generate accessibility identifiers ")
-        #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-        #endif
-    }
     
-    @Test @MainActor func testPlatformProfilingLayer5GeneratesAccessibilityIdentifiers() async {
-        self.initializeTestConfig()
-        let testView = PlatformProfilingLayer5()
-        #if canImport(ViewInspector)
-        let hasAccessibilityID = testComponentComplianceSinglePlatform(
-            testView,
-            expectedPattern: "SixLayer.main.ui.*",
-            platform: SixLayerPlatform.iOS,
-            componentName: "PlatformProfilingLayer5"
-        )
-        #expect(hasAccessibilityID, "PlatformProfilingLayer5 should generate accessibility identifiers ")
-        #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-        #endif
-    }
     
     @Test @MainActor func testPlatformPerformanceLayer6GeneratesAccessibilityIdentifiers() async {
         self.initializeTestConfig()
@@ -856,69 +735,9 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #endif
     }
     
-    @Test @MainActor func testPlatformOrchestrationLayer5GeneratesAccessibilityIdentifiers() async {
-        self.initializeTestConfig()
-        let testView = PlatformOrchestrationLayer5()
-        #if canImport(ViewInspector)
-        let hasAccessibilityID = testComponentComplianceSinglePlatform(
-            testView,
-            expectedPattern: "SixLayer.main.ui.*",
-            platform: SixLayerPlatform.iOS,
-            componentName: "PlatformOrchestrationLayer5"
-        )
-        #expect(hasAccessibilityID, "PlatformOrchestrationLayer5 should generate accessibility identifiers ")
-        #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-        #endif
-    }
     
-    @Test @MainActor func testPlatformOptimizationLayer5GeneratesAccessibilityIdentifiers() async {
-        self.initializeTestConfig()
-        let testView = PlatformOptimizationLayer5()
-        #if canImport(ViewInspector)
-        let hasAccessibilityID = testComponentComplianceSinglePlatform(
-            testView,
-            expectedPattern: "SixLayer.main.ui.*",
-            platform: SixLayerPlatform.iOS,
-            componentName: "PlatformOptimizationLayer5"
-        )
-        #expect(hasAccessibilityID, "PlatformOptimizationLayer5 should generate accessibility identifiers ")
-        #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-        #endif
-    }
     
-    @Test @MainActor func testPlatformInterpretationLayer5GeneratesAccessibilityIdentifiers() async {
-        self.initializeTestConfig()
-        let testView = PlatformInterpretationLayer5()
-        #if canImport(ViewInspector)
-        let hasAccessibilityID = testComponentComplianceSinglePlatform(
-            testView,
-            expectedPattern: "SixLayer.main.ui.*",
-            platform: SixLayerPlatform.iOS,
-            componentName: "PlatformInterpretationLayer5"
-        )
-        #expect(hasAccessibilityID, "PlatformInterpretationLayer5 should generate accessibility identifiers ")
-        #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-        #endif
-    }
     
-    @Test @MainActor func testPlatformMaintenanceLayer5GeneratesAccessibilityIdentifiers() async {
-        self.initializeTestConfig()
-        let testView = PlatformMaintenanceLayer5()
-        #if canImport(ViewInspector)
-        let hasAccessibilityID = testComponentComplianceSinglePlatform(
-            testView,
-            expectedPattern: "SixLayer.main.ui.*",
-            platform: SixLayerPlatform.iOS,
-            componentName: "PlatformMaintenanceLayer5"
-        )
-        #expect(hasAccessibilityID, "PlatformMaintenanceLayer5 should generate accessibility identifiers ")
-        #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-        #endif
-    }
     
     @Test @MainActor func testPlatformMessagingLayer5GeneratesAccessibilityIdentifiers() async {
         self.initializeTestConfig()
@@ -938,53 +757,8 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         #endif
     }
     
-    @Test @MainActor func testPlatformLoggingLayer5GeneratesAccessibilityIdentifiers() async {
-        self.initializeTestConfig()
-        let testView = PlatformLoggingLayer5()
-        #if canImport(ViewInspector)
-        let hasAccessibilityID = testComponentComplianceSinglePlatform(
-            testView,
-            expectedPattern: "SixLayer.main.ui.*",
-            platform: SixLayerPlatform.iOS,
-            componentName: "PlatformLoggingLayer5"
-        )
-        #expect(hasAccessibilityID, "PlatformLoggingLayer5 should generate accessibility identifiers ")
-        #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-        #endif
-    }
     
-    @Test @MainActor func testPlatformKnowledgeLayer5GeneratesAccessibilityIdentifiers() async {
-        self.initializeTestConfig()
-        let testView = PlatformKnowledgeLayer5()
-        #if canImport(ViewInspector)
-        let hasAccessibilityID = testComponentComplianceSinglePlatform(
-            testView,
-            expectedPattern: "SixLayer.main.ui.*",
-            platform: SixLayerPlatform.iOS,
-            componentName: "PlatformKnowledgeLayer5"
-        )
-        #expect(hasAccessibilityID, "PlatformKnowledgeLayer5 should generate accessibility identifiers ")
-        #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-        #endif
-    }
     
-    @Test @MainActor func testPlatformWisdomLayer5GeneratesAccessibilityIdentifiers() async {
-        self.initializeTestConfig()
-        let testView = PlatformWisdomLayer5()
-        #if canImport(ViewInspector)
-        let hasAccessibilityID = testComponentComplianceSinglePlatform(
-            testView,
-            expectedPattern: "SixLayer.main.ui.*",
-            platform: SixLayerPlatform.iOS,
-            componentName: "PlatformWisdomLayer5"
-        )
-        #expect(hasAccessibilityID, "PlatformWisdomLayer5 should generate accessibility identifiers ")
-        #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-        #endif
-    }
     
     @Test @MainActor func testPlatformResourceLayer5GeneratesAccessibilityIdentifiers() async {
         self.initializeTestConfig()

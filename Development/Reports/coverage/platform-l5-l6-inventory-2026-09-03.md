@@ -3,6 +3,8 @@
 Generated from unit lanes with `-enableCodeCoverage YES`.
 ViewInspectorTests are **excluded** from SLF-*-UnitTests (separate schemes) — 0% here can mean VI-only coverage.
 
+**Update (#453):** The 14 placeholder demo Views listed at 0% below (`PlatformInterpretationLayer5` … `PlatformWisdomLayer5`, excluding Messaging/Resource/AccessibilityFeatures/SplitView/real optimizers) were **removed** from `Framework/Sources`. Numbers below are the #450 snapshot and are not re-measured here.
+
 ## iOS
 ```
 iOS Simulator unit coverage — platform L5/L6 filter
