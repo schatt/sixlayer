@@ -7,6 +7,8 @@ ViewInspectorTests are **excluded** from SLF-*-UnitTests (separate schemes) — 
 
 **Update (#454):** Unit-lane tests added for `AccessibilityFeaturesLayer5` (`AccessibilityFeaturesLayer5UnitTests` on `SLF-*-UnitTests`). Re-measure with xccov still open if desired on #426.
 
+**Update (#455):** Unit-lane tests added for `PlatformMessagingLayer5` + `PlatformResourceLayer5` (`PlatformMessagingResourceLayer5UnitTests`).
+
 ## iOS
 ```
 iOS Simulator unit coverage — platform L5/L6 filter
