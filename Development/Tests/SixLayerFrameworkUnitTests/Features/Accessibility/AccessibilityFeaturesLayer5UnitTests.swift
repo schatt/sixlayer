@@ -4,9 +4,7 @@ import SwiftUI
 
 /**
  * Unit-lane coverage for AccessibilityFeaturesLayer5.swift (#454).
- *
- * ViewInspectorTests/…/AccessibilityFeaturesLayer5Tests.swift exercises some of
- * this surface but is excluded from SLF-*-UnitTests. Epic #426 measures unit lanes.
+ * VI suite under ViewInspectorTests/ is excluded from SLF-*-UnitTests.
  */
 
 @Suite("Accessibility Features Layer5 Unit", DefaultRuntimeCapabilityIsolationTrait())
