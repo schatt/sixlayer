@@ -9,7 +9,7 @@ import SwiftUI
  * this surface but is excluded from SLF-*-UnitTests. Epic #426 measures unit lanes.
  */
 
-@Suite("Accessibility Features Layer5 Unit")
+@Suite("Accessibility Features Layer5 Unit", DefaultRuntimeCapabilityIsolationTrait())
 struct AccessibilityFeaturesLayer5UnitTests {
 
     // MARK: - AccessibilityConfig
@@ -57,8 +57,7 @@ struct AccessibilityFeaturesLayer5UnitTests {
     }
 
     @Test func testContrastLevelCasesAndRawValues() {
-        // Deliberate red for #454: wrong count until locked to production (3).
-        #expect(ContrastLevel.allCases.count == 99)
+        #expect(ContrastLevel.allCases.count == 3)
         #expect(ContrastLevel.normal.rawValue == "Normal")
         #expect(ContrastLevel.high.rawValue == "High")
         #expect(ContrastLevel.extreme.rawValue == "Extreme")
