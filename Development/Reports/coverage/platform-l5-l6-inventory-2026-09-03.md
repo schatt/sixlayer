@@ -5,6 +5,8 @@ ViewInspectorTests are **excluded** from SLF-*-UnitTests (separate schemes) — 
 
 **Update (#453):** The 14 placeholder demo Views listed at 0% below (`PlatformInterpretationLayer5` … `PlatformWisdomLayer5`, excluding Messaging/Resource/AccessibilityFeatures/SplitView/real optimizers) were **removed** from `Framework/Sources`. Numbers below are the #450 snapshot and are not re-measured here.
 
+**Update (#454):** Unit-lane tests added for `AccessibilityFeaturesLayer5` (`AccessibilityFeaturesLayer5UnitTests` on `SLF-*-UnitTests`). Re-measure with xccov still open if desired on #426.
+
 ## iOS
 ```
 iOS Simulator unit coverage — platform L5/L6 filter
