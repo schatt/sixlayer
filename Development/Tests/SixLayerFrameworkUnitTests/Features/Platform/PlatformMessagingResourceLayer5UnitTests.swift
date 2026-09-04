@@ -4,7 +4,7 @@ import SwiftUI
 
 /**
  * Unit-lane coverage for PlatformMessagingLayer5 + PlatformResourceLayer5 (#455).
- * VI a11y tests exist but are excluded from SLF-*-UnitTests.
+ * Exercises public helpers (and private toast/banner switches via those calls).
  */
 
 @Suite("Platform Messaging & Resource Layer5 Unit")
