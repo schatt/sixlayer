@@ -10,12 +10,11 @@ import SwiftUI
 @Suite("Platform Messaging & Resource Layer5 Unit")
 struct PlatformMessagingResourceLayer5UnitTests {
 
-    // MARK: - Messaging enums (deliberate red: wrong ToastType count)
+    // MARK: - Messaging enums
 
     @Test func testToastTypeExhaustiveCaseCount() {
         let types: [ToastType] = [.success, .error, .warning, .info]
-        // Deliberate red for #455 until locked to production (4).
-        #expect(types.count == 99)
+        #expect(types.count == 4)
     }
 
     @Test func testBannerTypeExhaustiveCaseCount() {
