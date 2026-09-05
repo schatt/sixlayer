@@ -21,8 +21,8 @@ struct PlatformSplitViewOptimizationsLayer5UnitTests {
     @Test @MainActor
     func platformIOSSplitViewOptimizations_L5_AppliesTransactionOnIOS() {
         let view = Text("split-root").platformIOSSplitViewOptimizations_L5()
-        // Deliberate red for #456: wrong modifier name until locked.
-        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "_NotATransactionModifier")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "_TransactionModifier")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "_ContentShapeModifier")
         BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "Text")
     }
     #endif
