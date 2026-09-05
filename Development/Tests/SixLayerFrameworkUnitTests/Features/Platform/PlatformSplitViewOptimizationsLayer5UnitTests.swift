@@ -4,8 +4,8 @@ import Testing
 
 /**
  * Unit-lane coverage for PlatformSplitViewOptimizationsLayer5 (#456).
- * VI suite under ViewInspectorTests/ is excluded from SLF-*-UnitTests.
- * Opposite-lane stubs already covered by PlatformElseStubIdentityTests (#449).
+ * Host platforms wrap with _TransactionModifier (+ iOS _ContentShapeModifier).
+ * Opposite-lane stubs: PlatformElseStubIdentityTests (#449).
  */
 
 @Suite("Platform Split View Optimizations Layer5 Unit")
