@@ -9,6 +9,8 @@ ViewInspectorTests are **excluded** from SLF-*-UnitTests (separate schemes) — 
 
 **Update (#455):** Unit-lane tests added for `PlatformMessagingLayer5` + `PlatformResourceLayer5` (`PlatformMessagingResourceLayer5UnitTests`).
 
+**Update (#456):** Unit-lane tests added for `PlatformSplitViewOptimizationsLayer5` (`PlatformSplitViewOptimizationsLayer5UnitTests` — `_TransactionModifier` / iOS `_ContentShapeModifier`).
+
 ## iOS
 ```
 iOS Simulator unit coverage — platform L5/L6 filter
