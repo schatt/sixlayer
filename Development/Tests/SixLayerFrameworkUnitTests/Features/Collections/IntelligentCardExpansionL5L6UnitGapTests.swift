@@ -4,8 +4,8 @@ import Testing
 
 /**
  * Unit-lane gap coverage for IntelligentCardExpansion Layer5/L6 (#457).
- * Focus: L6 platform routing via `.body` subject types + tighter L5 performance
- * defaults on the current host (cross-platform simulation is not supported).
+ * L6 routing is observed via `.body` subject types; L5 performance defaults
+ * are asserted for the current host platform only.
  */
 
 @Suite("Intelligent Card Expansion L5/L6 Unit Gaps", DefaultRuntimeCapabilityIsolationTrait())
