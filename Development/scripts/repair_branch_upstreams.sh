@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Retarget local done/* (and wip/* that track next) to origin/<same-name>
-# or all/<same-name>. Does not change remote.pushDefault. See #459.
+# Drop unused local done/* when origin/all already has them. Retarget live
+# wip/* that still track next. Does not change remote.pushDefault. See #459.
 
 set -euo pipefail
 
@@ -41,59 +41,100 @@ if ! git -C "$REPO" rev-parse --git-dir >/dev/null 2>&1; then
     exit 1
 fi
 
+GIT_COMMON="$(git -C "$REPO" rev-parse --path-format=absolute --git-common-dir)"
+REPO_ROOT="$(dirname "$GIT_COMMON")"
+CURRENT="$(git -C "$REPO_ROOT" branch --show-current 2>/dev/null || true)"
+
+worktree_for_branch() {
+    local want="$1"
+    local wt="" branch=""
+    while IFS= read -r line; do
+        case "$line" in
+            worktree*) wt="${line#worktree }"; branch="" ;;
+            branch*)
+                branch="${line#branch }"
+                branch="${branch#refs/heads/}"
+                if [[ "$branch" == "$want" ]]; then
+                    echo "$wt"
+                    return 0
+                fi
+                ;;
+        esac
+    done < <(git -C "$REPO_ROOT" worktree list --porcelain)
+    return 1
+}
+
 if [[ "$NO_FETCH" -eq 0 ]]; then
-    git -C "$REPO" fetch origin --prune 2>/dev/null || true
-    git -C "$REPO" fetch all --prune 2>/dev/null || true
+    git -C "$REPO_ROOT" fetch origin --prune 2>/dev/null || true
+    git -C "$REPO_ROOT" fetch all --prune 2>/dev/null || true
 fi
 
-apply_if_needed() {
+FAILED=0
+
+delete_unused_local_done() {
+    local branch="$1"
+    if [[ "$branch" == "$CURRENT" ]]; then
+        echo "⚠ Skipping ${branch} (currently checked out)" >&2
+        return 0
+    fi
+    if worktree_for_branch "$branch" >/dev/null; then
+        echo "⚠ Skipping ${branch} (registered worktree)" >&2
+        return 0
+    fi
+    if ! branch_has_published_remote "$REPO_ROOT" "$branch"; then
+        echo "⚠️  No origin/${branch} or all/${branch} — skip ${branch}" >&2
+        return 0
+    fi
+    if [[ "$DRY" = "dry" ]]; then
+        echo "would delete local ${branch}"
+        return 0
+    fi
+    git -C "$REPO_ROOT" branch -D "$branch"
+    echo "✅ Deleted local ${branch}"
+}
+
+while IFS= read -r branch; do
+    [[ -z "$branch" ]] && continue
+    set +e
+    delete_unused_local_done "$branch"
+    rc=$?
+    set -e
+    if [[ "$rc" -ne 0 ]]; then
+        FAILED=$((FAILED + 1))
+    fi
+done < <(git -C "$REPO_ROOT" for-each-ref --format='%(refname:short)' refs/heads/done/)
+
+retarget_wip_off_next() {
     local branch="$1"
     local merge
-    if branch_upstream_is_matching "$REPO" "$branch"; then
+    merge="$(branch_configured_merge "$REPO_ROOT" "$branch")"
+    if [[ "$merge" != "refs/heads/next" ]]; then
         return 0
     fi
     local rc
     set +e
-    set_matching_branch_upstream "$REPO" "$branch" "$DRY"
+    set_matching_branch_upstream "$REPO_ROOT" "$branch" "$DRY"
     rc=$?
     set -e
-    # 2 = no origin/<branch> or all/<branch> (warned); not a repair failure
     if [[ "$rc" -eq 2 ]]; then
         return 0
     fi
     return "$rc"
 }
 
-FAILED=0
-
 while IFS= read -r branch; do
     [[ -z "$branch" ]] && continue
     set +e
-    apply_if_needed "$branch"
+    retarget_wip_off_next "$branch"
     rc=$?
     set -e
-    if [[ "$rc" -ne 0 && "$rc" -ne 2 ]]; then
+    if [[ "$rc" -ne 0 ]]; then
         FAILED=$((FAILED + 1))
     fi
-done < <(git -C "$REPO" for-each-ref --format='%(refname:short)' refs/heads/done/)
-
-while IFS= read -r branch; do
-    [[ -z "$branch" ]] && continue
-    merge="$(branch_configured_merge "$REPO" "$branch")"
-    if [[ "$merge" != "refs/heads/next" ]]; then
-        continue
-    fi
-    set +e
-    apply_if_needed "$branch"
-    rc=$?
-    set -e
-    if [[ "$rc" -ne 0 && "$rc" -ne 2 ]]; then
-        FAILED=$((FAILED + 1))
-    fi
-done < <(git -C "$REPO" for-each-ref --format='%(refname:short)' refs/heads/wip/)
+done < <(git -C "$REPO_ROOT" for-each-ref --format='%(refname:short)' refs/heads/wip/)
 
 if [[ "$FAILED" -ne 0 ]]; then
-    echo "✗ ${FAILED} branch(es) failed to retarget" >&2
+    echo "✗ ${FAILED} branch(es) failed" >&2
     exit 1
 fi
 exit 0
