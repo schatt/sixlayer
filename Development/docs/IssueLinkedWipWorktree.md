@@ -8,10 +8,15 @@ From your **primary** clone (not inside another worktree), with `next` up to dat
 
 ```bash
 cd /path/to/sixlayer
-git fetch all next
-git worktree add /path/to/sixlayer-wip-<ISSUE> -b wip/<ISSUE>-<short-slug> next
+git fetch origin next
+git worktree add --no-track /path/to/sixlayer-wip-<ISSUE> -b wip/<ISSUE>-<short-slug> origin/next
 cd /path/to/sixlayer-wip-<ISSUE>
+git push all HEAD
+git fetch origin
+git branch --set-upstream-to=origin/wip/<ISSUE>-<short-slug>
 ```
+
+`--no-track` is required. `git worktree add -b wip/… origin/next` (or `all/next`) otherwise sets `merge = refs/heads/next`, and SourceTree will report the issue branch as N behind `next` for its whole life (#459). `git push all` does not set `branch.*.merge` — set the matching `origin/wip/…` upstream after the first push.
 
 - Use a path **outside** the main repo tree (sibling directory is fine).
 - **Branch name** should include the issue number (e.g. `wip/280-agent-wip-worktree-checklist`).
@@ -43,7 +48,7 @@ Refs #280"
 git push all next
 ```
 
-Then follow **Worklist closure** in `github-issue-workflow.mdc` (rename `wip/` → `done/`, remove temp worktree if used, final issue comment + close).
+Then follow **Worklist closure** in `github-issue-workflow.mdc`: `Development/scripts/retire_wip_branch.sh <slug>` (publish `done/` to remotes, delete remote `wip/`, remove the worktree, delete the unused local `done/` branch), then final issue comment + close.
 
 ## Remove the worktree (after merge + rename)
 
