@@ -58,13 +58,14 @@ Complete list of all `Platform*` types in the SixLayer Framework codebase, organ
 
 ## Layer 6 - Optimization Layer
 
-29. **`PlatformPerformanceLayer6`** (struct, View)
-30. **`PlatformOptimizationSettings`** (struct)
-31. **`PlatformSpecificMetrics`** (struct)
-32. **`PlatformUIPatterns`** (struct)
-33. **`PlatformOptimizationModifier`** (struct, ViewModifier)
-34. **`PlatformKey`** (struct, EnvironmentKey)
-35. **`PlatformAwareExpandableCardView`** (struct, View)
+29. **`PlatformOptimizationSettings`** (struct)
+30. **`PlatformSpecificMetrics`** (struct)
+31. **`PlatformUIPatterns`** (struct)
+32. **`PlatformOptimizationModifier`** (struct, ViewModifier)
+33. **`PlatformKey`** (struct, EnvironmentKey)
+34. **`PlatformAwareExpandableCardView`** (struct, View)
+
+> Removed (#458): placeholder demo View `PlatformPerformanceLayer6`.
 
 ---
 

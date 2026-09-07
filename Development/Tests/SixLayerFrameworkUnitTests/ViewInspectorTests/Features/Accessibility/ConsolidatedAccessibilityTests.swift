@@ -710,7 +710,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     // MARK: - Platform Layer 5/6 Component Identifier Tests
     
-    // Placeholder demo Layer5 Views removed in #453; keep Messaging/Resource + Performance L6.
+    // Placeholder demo Layer5 Views removed in #453; PlatformPerformanceLayer6 removed in #458. Keep Messaging/Resource.
     
     
     
@@ -719,21 +719,6 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
     
     
     
-    @Test @MainActor func testPlatformPerformanceLayer6GeneratesAccessibilityIdentifiers() async {
-        self.initializeTestConfig()
-        let testView = PlatformPerformanceLayer6()
-        #if canImport(ViewInspector)
-        let hasAccessibilityID = testComponentComplianceSinglePlatform(
-            testView,
-            expectedPattern: "SixLayer.main.ui.*",
-            platform: SixLayerPlatform.iOS,
-            componentName: "PlatformPerformanceLayer6"
-        )
-        #expect(hasAccessibilityID, "PlatformPerformanceLayer6 should generate accessibility identifiers ")
-        #else
-        // ViewInspector not available on this platform (likely macOS) - this is expected, not a failure
-        #endif
-    }
     
     
     
