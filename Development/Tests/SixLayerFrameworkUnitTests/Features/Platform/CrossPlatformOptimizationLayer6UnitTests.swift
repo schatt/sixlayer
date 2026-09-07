@@ -10,11 +10,10 @@ import SwiftUI
 @Suite("CrossPlatform Optimization Layer6 Unit", DefaultRuntimeCapabilityIsolationTrait())
 struct CrossPlatformOptimizationLayer6UnitTests {
 
-    // MARK: - Enums (deliberate red: wrong PerformanceLevel count)
+    // MARK: - Enums
 
     @Test func testPerformanceLevelCasesAndMultipliers() {
-        // Deliberate red for #458 until locked to production (4).
-        #expect(PerformanceLevel.allCases.count == 99)
+        #expect(PerformanceLevel.allCases.count == 4)
         #expect(PerformanceLevel.low.optimizationMultiplier == 0.5)
         #expect(PerformanceLevel.balanced.optimizationMultiplier == 1.0)
         #expect(PerformanceLevel.high.optimizationMultiplier == 1.5)
