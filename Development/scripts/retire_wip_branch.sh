@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-# Rename wip/<slug> → done/<slug>, publish done/, drop remote wip/, set matching
-# upstream (origin/<done> preferred). Does not merge to next. See #459.
+# Rename wip/<slug> → done/<slug>, publish done/, drop remote wip/, remove
+# worktree, delete local done/. Remotes keep history; no idle local done/.
+# Does not merge to next. See #459.
 
 set -euo pipefail
 
@@ -130,11 +131,25 @@ fi
 git -C "$REPO_ROOT" fetch origin --prune 2>/dev/null || true
 git -C "$REPO_ROOT" fetch all --prune 2>/dev/null || true
 
-set_matching_branch_upstream "$REPO_ROOT" "$DONE_BRANCH"
-
 if [[ "$REMOVE_WORKTREE" -eq 1 && -n "$WORKTREE_PATH" ]]; then
     echo "ℹ Removing worktree ${WORKTREE_PATH}"
     git -C "$REPO_ROOT" worktree remove "$WORKTREE_PATH"
+    WORKTREE_PATH=""
 fi
 
-echo "✓ ${DONE_BRANCH} tracks $(git -C "$REPO_ROOT" rev-parse --abbrev-ref "${DONE_BRANCH}@{u}")"
+if git -C "$REPO_ROOT" show-ref --verify --quiet "refs/heads/${DONE_BRANCH}"; then
+    still_wt="$(find_worktree_for_branch "$DONE_BRANCH" || true)"
+    if [[ -n "$still_wt" ]]; then
+        echo "⚠ Leaving local ${DONE_BRANCH} (checked out at ${still_wt})" >&2
+    else
+        echo "ℹ Deleting local ${DONE_BRANCH} (remote copy kept)"
+        git -C "$REPO_ROOT" branch -D "$DONE_BRANCH"
+    fi
+fi
+
+if branch_has_published_remote "$REPO_ROOT" "$DONE_BRANCH"; then
+    echo "✓ Published ${DONE_BRANCH} on remotes; no unused local branch"
+else
+    echo "✗ ${DONE_BRANCH} not found on origin/ or all/ after push" >&2
+    exit 1
+fi
