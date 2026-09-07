@@ -65,3 +65,10 @@ set_matching_branch_upstream() {
     git -C "$repo" branch --set-upstream-to="${remote}/${branch}" "$branch"
     echo "✅ ${branch} tracks ${remote}/${branch}"
 }
+
+# True when origin/<branch> or all/<branch> exists (safe to drop the local copy).
+branch_has_published_remote() {
+    local repo="$1" branch="$2"
+    git -C "$repo" show-ref --verify --quiet "refs/remotes/origin/${branch}" \
+        || git -C "$repo" show-ref --verify --quiet "refs/remotes/all/${branch}"
+}
