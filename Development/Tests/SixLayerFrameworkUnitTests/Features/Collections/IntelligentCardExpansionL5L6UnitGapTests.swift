@@ -4,8 +4,8 @@ import Testing
 
 /**
  * Unit-lane gap coverage for IntelligentCardExpansion Layer5/L6 (#457).
- * Focus: L6 platform routing subject types + tighter L5 performance defaults
- * on the current host (cross-platform simulation is not supported).
+ * Focus: L6 platform routing via `.body` subject types + tighter L5 performance
+ * defaults on the current host (cross-platform simulation is not supported).
  */
 
 @Suite("Intelligent Card Expansion L5/L6 Unit Gaps", DefaultRuntimeCapabilityIsolationTrait())
@@ -25,9 +25,14 @@ struct IntelligentCardExpansionL5L6UnitGapTests {
             item: sampleItem,
             expansionStrategy: .hoverExpand
         )
-        // Deliberate red for #457: wrong subject until locked to host type.
-        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NotACardView")
         BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "PlatformAwareExpandableCardView")
+        #if os(iOS)
+        BaseTestClass.expectViewSubjectTypeContains(view.body, rootViewName: "iOSExpandableCardView")
+        #elseif os(macOS)
+        BaseTestClass.expectViewSubjectTypeContains(view.body, rootViewName: "macOSExpandableCardView")
+        #else
+        BaseTestClass.expectViewSubjectTypeContains(view.body, rootViewName: "NativeExpandableCardView")
+        #endif
     }
 
     #if os(iOS)
@@ -35,7 +40,7 @@ struct IntelligentCardExpansionL5L6UnitGapTests {
     func iOSExpandableCardViewWrapsNativeExpandableCardView() {
         let view = iOSExpandableCardView(item: sampleItem, expansionStrategy: .hoverExpand)
         BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "iOSExpandableCardView")
-        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NativeExpandableCardView")
+        BaseTestClass.expectViewSubjectTypeContains(view.body, rootViewName: "NativeExpandableCardView")
     }
     #endif
 
@@ -44,7 +49,7 @@ struct IntelligentCardExpansionL5L6UnitGapTests {
     func macOSExpandableCardViewWrapsNativeExpandableCardView() {
         let view = macOSExpandableCardView(item: sampleItem, expansionStrategy: .hoverExpand)
         BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "macOSExpandableCardView")
-        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NativeExpandableCardView")
+        BaseTestClass.expectViewSubjectTypeContains(view.body, rootViewName: "NativeExpandableCardView")
     }
     #endif
 
@@ -52,8 +57,8 @@ struct IntelligentCardExpansionL5L6UnitGapTests {
     func visionOSExpandableCardViewAppliesFocusableModifier() {
         let view = visionOSExpandableCardView(item: sampleItem, expansionStrategy: .hoverExpand)
         BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "visionOSExpandableCardView")
-        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "NativeExpandableCardView")
-        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "FocusableModifier")
+        BaseTestClass.expectViewSubjectTypeContains(view.body, rootViewName: "NativeExpandableCardView")
+        BaseTestClass.expectViewSubjectTypeContains(view.body, rootViewName: "FocusableModifier")
     }
 
     @Test @MainActor
