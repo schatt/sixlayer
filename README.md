@@ -27,7 +27,7 @@ Navigate to the `Framework/` directory and use it as a Swift Package:
 ```swift
 // In your Package.swift
 dependencies: [
-    .package(url: "https://github.com/schatt/sixlayer.git", from: "8.3.8")
+    .package(url: "https://github.com/schatt/sixlayer.git", from: "8.4.0")
 ]
 ```
 
@@ -41,9 +41,12 @@ dependencies: [
 
 The framework is distributed as a Swift Package from the `Framework/` directory. This ensures that only the essential framework code is included when other projects consume it.
 
-## 🆕 Latest Release: v8.3.8
+## 🆕 Latest Release: v8.4.0
 
-### **Patch release**
+### **Minor release**
+🔧 **Minor**: Layer 5 honesty — real iOS L5 haptic/swipe/PTR tests (#423, #424); remove phantom performance APIs (#425); drop `keyboardAware` no-op (#444); delete placeholder Layer5 demos (#453); coverage inventory and unit clusters (#449, #450, #454–#457). See [RELEASE_v8.4.0.md](Development/RELEASE_v8.4.0.md).
+
+### **Previous Release: v8.3.8 - Patch release**
 🔧 **Patch**: Hosted Environment identifier config (#437); host-managed picker dismiss policy (#441, #442); ViewInspector CI stall window (#437). See [RELEASE_v8.3.8.md](Development/RELEASE_v8.3.8.md).
 
 ### **Previous Release: v8.3.7 - Patch release**
@@ -316,9 +319,9 @@ These guides contain critical information about the Layer 1 Semantic Intent phil
 
 ## 📋 Current Status
 
-**Version**: v8.3.8 (Patch)
-**Phase**: Patch release
-**Next**: TBD
+**Version**: v8.4.0 (Minor)
+**Phase**: Minor release
+**Next**: v8.5.0
 
 ## 🤝 Contributing
 

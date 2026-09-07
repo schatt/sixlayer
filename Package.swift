@@ -1,5 +1,5 @@
 // swift-tools-version: 6.0
-// SixLayerFramework v8.3.8 - Patch: hosted Environment identifier config, host-managed picker dismiss (#437, #441, #442)
+// SixLayerFramework v8.4.0 - Minor: L5 honesty, placeholder Layer5 removals, unit coverage (#423–#425, #444, #449–#450, #453–#457)
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription

@@ -1,5 +1,24 @@
 # Changelog
 
+## v8.4.0 - September 7, 2026
+
+### ✨ Added
+- **iOS L5 swipe / pull-to-refresh helpers**: `platformIOSSwipeDirection` and pull-to-refresh sequence with executing unit tests (#424).
+- **L5/L6 coverage inventory** and unit clusters for AccessibilityFeatures, Messaging/Resource, SplitView, IntelligentCardExpansion, and `#else` stub identity (#449, #450, #454–#457).
+
+### 🐛 Fixed
+- **Haptic L5 tests**: executing coverage for `platformIOSHapticFeedback` / `IOSHapticStyle` (#423).
+- **Docs honesty**: remove phantom L5 performance APIs from current guides and `DataIntrospection` recommendations (#425).
+
+### ⚠️ Breaking
+- **Removed `platformIOSLayout(keyboardAware:)`** — empty keyboard hooks deleted; use `platformIOSLayout(safeAreaInsets:)` only (#444).
+- **Removed 14 placeholder `Platform*Layer5` demo types** (Interpretation, Knowledge, Logging, Maintenance, Notification, Optimization, Orchestration, Organization, Privacy, Profiling, Recognition, Routing, Safety, Wisdom) (#453).
+
+### 📚 Documentation
+- Full notes: [`Development/RELEASE_v8.4.0.md`](Development/RELEASE_v8.4.0.md), index [`Development/RELEASES.md`](Development/RELEASES.md).
+
+---
+
 ## v8.3.8 - September 1, 2026
 
 ### ✨ Added
