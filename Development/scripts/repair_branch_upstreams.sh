@@ -52,10 +52,15 @@ apply_if_needed() {
     if branch_upstream_is_matching "$REPO" "$branch"; then
         return 0
     fi
+    local rc
     set +e
     set_matching_branch_upstream "$REPO" "$branch" "$DRY"
-    local rc=$?
+    rc=$?
     set -e
+    # 2 = no origin/<branch> or all/<branch> (warned); not a repair failure
+    if [[ "$rc" -eq 2 ]]; then
+        return 0
+    fi
     return "$rc"
 }
 
