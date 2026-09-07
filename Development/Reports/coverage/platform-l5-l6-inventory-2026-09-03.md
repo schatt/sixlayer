@@ -11,6 +11,8 @@ ViewInspectorTests are **excluded** from SLF-*-UnitTests (separate schemes) — 
 
 **Update (#456):** Unit-lane tests added for `PlatformSplitViewOptimizationsLayer5` (`PlatformSplitViewOptimizationsLayer5UnitTests` — `_TransactionModifier` / iOS `_ContentShapeModifier`).
 
+**Update (#457):** Unit-lane gap tests for IntelligentCardExpansion L5/L6 (`IntelligentCardExpansionL5L6UnitGapTests` — platform routing via `.body`, host performance defaults).
+
 ## iOS
 ```
 iOS Simulator unit coverage — platform L5/L6 filter
