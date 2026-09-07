@@ -1,6 +1,6 @@
 # SixLayer Framework
 
-[![Version](https://img.shields.io/badge/version-v8.3.8-blue.svg)](https://github.com/schatt/sixlayer/releases/tag/v8.3.8)
+[![Version](https://img.shields.io/badge/version-v8.4.0-blue.svg)](https://github.com/schatt/sixlayer/releases/tag/v8.4.0)
 [![Platform](https://img.shields.io/badge/platform-iOS%2016%2B%20%7C%20macOS%2013%2B-lightgrey.svg)](https://github.com/schatt/6layer)
 [![Swift](https://img.shields.io/badge/Swift-5.9+-orange.svg)](https://swift.org)
 
@@ -39,6 +39,12 @@ Layer 1: Semantic Intent → Layer 2: Layout Decision → Layer 3: Strategy Sele
 - **Extensible**: Easy to extend with custom layers and strategies
 - **Comprehensively Tested**: 800+ tests with platform-aware testing and mandatory TDD implementation
 - **DRY Architecture**: Define hints once in files, use everywhere automatically
+
+## 🆕 What's New in v8.4.0
+
+### Minor release
+
+Layer 5 honesty: real iOS L5 haptic/swipe/PTR coverage (#423, #424); phantom performance APIs removed from docs (#425); `platformIOSLayout(keyboardAware:)` gone (#444); 14 placeholder Layer5 demo types deleted (#453). See [RELEASE_v8.4.0.md](../Development/RELEASE_v8.4.0.md).
 
 ## 🆕 What's New in v8.3.8
 
