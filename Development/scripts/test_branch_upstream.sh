@@ -216,6 +216,18 @@ assert_eq "$(branch_configured_remote "$REPO" "done/459-slug")" "origin" \
 assert_true "retired branch is matching" \
     branch_upstream_is_matching "$REPO" "done/459-slug"
 
+# --- repair: missing remote-tracking ref is skip, not failure ---
+git -C "$REPO" branch --no-track done/no-remote origin/next
+git -C "$REPO" config "branch.done/no-remote.remote" all
+git -C "$REPO" config "branch.done/no-remote.merge" refs/heads/next
+set +e
+"$REPAIR" --no-fetch --git-dir "$REPO" >/dev/null
+RC=$?
+set -e
+assert_exit_zero "$RC" "repair skips done/ with no origin/all counterpart"
+assert_eq "$(branch_configured_merge "$REPO" "done/no-remote")" "refs/heads/next" \
+    "repair leaves merge=next when no matching remote ref"
+
 echo ""
 echo "Passed: $PASS  Failed: $FAIL"
 if [ "$FAIL" -ne 0 ]; then
