@@ -8,7 +8,9 @@
 #
 # Stall seconds: $XCODEBUILD_CI_STALL_SECONDS (default 180). 0 disables.
 # The stall watchdog watches the tee log's mtime/size; it does not read
-# xcodebuild stdout (#434).
+# xcodebuild stdout (#434). CPU time increasing in the child process group
+# also resets the stall clock so quiet-but-busy ViewInspector runs are not
+# killed (#461). Silent *idle* hangs still exit 124.
 
 _XCODEBUILD_CI_LIB_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
