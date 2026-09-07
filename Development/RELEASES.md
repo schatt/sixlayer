@@ -1,12 +1,21 @@
 # 🚀 Six-Layer Framework Release History
 
-## 📍 **Current Release: v8.3.8** 🔧
+## 📍 **Current Release: v8.4.0** 🔧
 
-**Release Date**: September 1, 2026
-**Status**: Patch release
-**Previous Release**: v8.3.7 - Patch release
-**Note**: Hosted Environment identifier config (#437); host-managed picker dismiss policy (#441, #442); ViewInspector CI stall window (#437).
-**Next Release**: TBD
+**Release Date**: September 7, 2026
+**Status**: Minor release
+**Previous Release**: v8.3.8 - Patch release
+**Note**: L5 honesty — real iOS L5 tests/helpers (#423, #424); remove phantom performance APIs (#425); drop keyboardAware no-op (#444); delete placeholder Layer5 demos (#453); coverage inventory and unit clusters (#449, #450, #454–#457).
+**Next Release**: TBD (v8.5.0)
+
+---
+
+## 🎯 **v8.4.0 - Layer 5 honesty and unit coverage** (September 7, 2026)
+
+### **What's in v8.4.0:**
+- Minor release (#423–#425, #444, #449, #450, #453–#457, #462). See [RELEASE_v8.4.0.md](RELEASE_v8.4.0.md) for details.
+
+**See [RELEASE_v8.4.0.md](RELEASE_v8.4.0.md) for complete release notes.**
 
 ---
 
