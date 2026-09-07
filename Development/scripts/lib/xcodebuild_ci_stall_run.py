@@ -67,8 +67,19 @@ def _parse_ps_cputime(raw: str) -> float:
 def _group_cpu_seconds(pgid: int) -> float | None:
     """Sum CPU time for processes whose PGID is `pgid`. None if none found."""
     try:
+        pid_text = subprocess.check_output(
+            ["pgrep", "-g", str(pgid)],
+            text=True,
+            stderr=subprocess.DEVNULL,
+        )
+    except (OSError, subprocess.CalledProcessError):
+        return None
+    pids = [p for p in pid_text.split() if p]
+    if not pids:
+        return None
+    try:
         out = subprocess.check_output(
-            ["ps", "-ax", "-o", "pgid=,time="],
+            ["ps", "-o", "time=", "-p", ",".join(pids)],
             text=True,
             stderr=subprocess.DEVNULL,
         )
@@ -77,17 +88,11 @@ def _group_cpu_seconds(pgid: int) -> float | None:
     total = 0.0
     found = False
     for line in out.splitlines():
-        parts = line.split()
-        if len(parts) < 2:
-            continue
-        try:
-            group = int(parts[0])
-        except ValueError:
-            continue
-        if group != pgid:
+        raw = line.strip()
+        if not raw:
             continue
         found = True
-        total += _parse_ps_cputime(parts[1])
+        total += _parse_ps_cputime(raw)
     return total if found else None
 
 
