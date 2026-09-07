@@ -48,7 +48,7 @@ Refs #280"
 git push all next
 ```
 
-Then follow **Worklist closure** in `github-issue-workflow.mdc`: `Development/scripts/retire_wip_branch.sh <slug>` (rename `wip/` → `done/`, push `done/`, delete remote `wip/`, matching upstream, remove temp worktree), then final issue comment + close.
+Then follow **Worklist closure** in `github-issue-workflow.mdc`: `Development/scripts/retire_wip_branch.sh <slug>` (publish `done/` to remotes, delete remote `wip/`, remove the worktree, delete the unused local `done/` branch), then final issue comment + close.
 
 ## Remove the worktree (after merge + rename)
 
