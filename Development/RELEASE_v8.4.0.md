@@ -40,7 +40,7 @@ Docs, examples, and `DataIntrospection` no longer recommend `platformLazyLoading
 
 Fourteen public demo-shell types with 0% unit coverage are **deleted** (Interpretation, Knowledge, Logging, Maintenance, Notification, Optimization, Orchestration, Organization, Privacy, Profiling, Recognition, Routing, Safety, Wisdom Layer5). Dependent ViewInspector/a11y tests and indexes were scrubbed. No replacement APIs.
 
-### **Coverage inventory and unit clusters (#450, #449, #454–#457)**
+### **Coverage inventory and unit clusters (#450, #449, #454–#457, #464)**
 
 - **#450** — platform L5/L6 unit-lane coverage inventory; spawned gap issues.
 - **#449** — policy + tests: opposite-lane subject-type identity for `#else { self }` platform stubs.
@@ -48,6 +48,7 @@ Fourteen public demo-shell types with 0% unit coverage are **deleted** (Interpre
 - **#455** — `PlatformMessagingLayer5` / `PlatformResourceLayer5` unit coverage.
 - **#456** — `PlatformSplitViewOptimizationsLayer5` unit coverage.
 - **#457** — IntelligentCardExpansion L5/L6 unit gap tests.
+- **#464** — OCR L1 repeated host-teardown test no longer uses process RSS (unreliable under parallel `xctest`); observes mock `inFlight` / `completed` / `onResult` only.
 
 ---
 
@@ -87,6 +88,7 @@ Do not call `platformLazyLoading`, `platformMemoryOptimization`, or other docume
 - **[Issue #456](https://github.com/schatt/sixlayer/issues/456)** — Unit-lane coverage for `PlatformSplitViewOptimizationsLayer5`.
 - **[Issue #457](https://github.com/schatt/sixlayer/issues/457)** — Close IntelligentCardExpansion L5/L6 unit coverage gaps.
 - **[Issue #462](https://github.com/schatt/sixlayer/issues/462)** — Prepare v8.4.0 minor release (docs / `--docs`).
+- **[Issue #464](https://github.com/schatt/sixlayer/issues/464)** — Drop process-wide RSS bound from OCR L1 repeated-teardown test (parallel-unsafe).
 
 ### Already in v8.3.8 (still on this milestone)
 
