@@ -49,7 +49,7 @@ The following areas are explicitly supported as **stable extension points** for 
 5. **Layer 4 Components & Modifiers**
    - Public SwiftUI components and modifiers under the `Platform*` / `platform*` naming:
      - e.g. `platformCardGrid(...)`, `platformCardStyle(...)`, `platformCardPadding()`
-     - Layer 5: real APIs such as `platformIOSHapticFeedback` (see `README_Layer5_Performance.md`)
+     - Layer 5: real APIs such as split-view / navigation-stack `_L5` helpers (see `README_Layer5_Performance.md`). Haptics: `platformHapticFeedback` (#445).
    - These can be used directly in custom views and are part of the supported surface.
    - Do **not** use undocumented names like `platformMemoryOptimization()` — they are not in Sources (#425).
 
@@ -810,7 +810,8 @@ Key functions for extension:
 - `platformResponsiveCard_L1()` - Present responsive cards
 - `platformCardGrid()` - Grid layout
 - `platformCardStyle()` - Card styling
-- `platformIOSHapticFeedback(style:onTrigger:)` - iOS Layer 5 haptic feedback (real API)
+- `platformHapticFeedback(_:)` - public haptic View API (GitHub #445)
+- `platformIOSHapticFeedback(style:onTrigger:)` - deprecated L5 wrapper
 
 **Form Functions (Recommended):**
 - `DynamicFormView()` - Modern form presentation with native types
