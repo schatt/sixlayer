@@ -129,7 +129,7 @@ platformPresentNavigationStack_L1(
 ```swift
 // Apply platform-specific optimizations directly
 #if os(iOS)
-.platformIOSHapticFeedback(style: .medium)
+.platformHapticFeedback(.medium)
 #elseif os(macOS)
 .platformMacOSWindowResizing(resizable: true)
 #endif
@@ -160,7 +160,7 @@ platformPresentNavigationStack_L1(
     }
 }
 #if os(iOS)
-.platformIOSHapticFeedback(style: .light)
+.platformHapticFeedback(.light)
 #endif
 ```
 
@@ -198,7 +198,7 @@ VStack {
     
     // Content with iOS optimizations
     ItemDetailView(item: item)
-        .platformIOSHapticFeedback(style: .medium)
+        .platformHapticFeedback(.medium)
         .platformIOSSwipeGestures(
             onSwipeLeft: { /* handle swipe */ },
             onSwipeRight: { /* handle swipe */ }
@@ -441,7 +441,7 @@ func applyOptimizations<Content: View>(
     
     if includePlatform {
         #if os(iOS)
-        result = result.platformIOSHapticFeedback(style: .light)
+        result = result.platformHapticFeedback(.light)
         #elseif os(macOS)
         result = result.platformMacOSWindowResizing(resizable: true)
         #endif

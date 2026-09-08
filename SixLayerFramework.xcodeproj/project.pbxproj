@@ -299,6 +299,7 @@
 		15413FD924A5EBC3FE571CC8 /* PlatformPhotoComponentsLayer4ComponentAccessibilityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20A4B3E0A97C99988EB13BA0 /* PlatformPhotoComponentsLayer4ComponentAccessibilityTests.swift */; };
 		154476F9D644A6B197508353 /* PlatformManagedSettingsTopLevelState.swift in Sources */ = {isa = PBXBuildFile; fileRef = F203009FDCD29DADD0C273D2 /* PlatformManagedSettingsTopLevelState.swift */; };
 		154746782E6765D0D98734E5 /* OCRPumpLabelAnchoredExtraction282Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5EBBF4825F5718495272822 /* OCRPumpLabelAnchoredExtraction282Tests.swift */; };
+		155B59B7DE69AAE9E008F2FA /* SixLayerHaptic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 915D26AFE373437F5D7C949C /* SixLayerHaptic.swift */; };
 		1572820C6D47BFF66CB84647 /* DetailViewTestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88F9AF8FC1E45B605B3AA775 /* DetailViewTestView.swift */; };
 		1572C28A5C727756A1EFB70E /* PlatformManagedSettingsFlowLayer4Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3D00A234DB60BFBA1F5F4F9 /* PlatformManagedSettingsFlowLayer4Tests.swift */; };
 		158157BB7EFA73695E93409D /* DynamicSelectField.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7B5709DD9536EEA8468F2A6 /* DynamicSelectField.swift */; };
@@ -605,6 +606,7 @@
 		2B365C30E6A7EB210A29E361 /* MigrationToolingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E921C45D86B18B73143D020B /* MigrationToolingTests.swift */; };
 		2B3FFCF35EB58CA359E52BE1 /* KeyboardTypeViewExtensionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F75707F12395C50438064FB /* KeyboardTypeViewExtensionTests.swift */; };
 		2B405CC41FEC688AC657C178 /* PlatformSystemZoomPreferenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5C97661144994BBF292BA4D /* PlatformSystemZoomPreferenceTests.swift */; };
+		2B4669A0591628D986470722 /* SixLayerHaptic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 915D26AFE373437F5D7C949C /* SixLayerHaptic.swift */; };
 		2B5B0F422287E501DBC07DC9 /* PlatformOCRDisambiguationLayer1.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70F9493AA62C7E8F0502D5B7 /* PlatformOCRDisambiguationLayer1.swift */; };
 		2B60723A1CFAC19CA7D0BE73 /* DynamicFormViewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 421933E7753601DE2F731F04 /* DynamicFormViewTests.swift */; };
 		2B65E7E840E72DA884301CB9 /* DisplayOCRSeparationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA688C094DADD7A53451476A /* DisplayOCRSeparationTests.swift */; };
@@ -614,6 +616,7 @@
 		2BC1E670AD8F7F10435BE5D5 /* DynamicFormStoredDateValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A0676CEBC17AD835250ED98 /* DynamicFormStoredDateValue.swift */; };
 		2BDC476A1B6A0933A2E67CD9 /* AccessibilityTypesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03E379B177E32359512CD838 /* AccessibilityTypesTests.swift */; };
 		2BFD4A2F99BB0E67DC94D460 /* AccessibilityManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C55C9E91F3D2D58EDCEC567F /* AccessibilityManagerTests.swift */; };
+		2C1659423B6BC5665E9C4B3E /* HapticPublicSurfaceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7E716C3AF85545F10A5F16B /* HapticPublicSurfaceTests.swift */; };
 		2C3A63E8FBF4DC9F68DFF0DA /* CloudKitService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D0FD1077B3E38837DBD44AC /* CloudKitService.swift */; };
 		2C3AF2613A32CA53AD1D6F91 /* Layer1PresentationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E42D54ECE8A0D8DAEA377942 /* Layer1PresentationTests.swift */; };
 		2C3D4AF222FC60BDD257808F /* FieldLayoutPackedSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0755773814540113B461175B /* FieldLayoutPackedSection.swift */; };
@@ -1356,6 +1359,7 @@
 		64B55D0F0F82CD8E10C50C42 /* IntelligentDetailViewCategoryBUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3817786379FB86E8B7F2F1C2 /* IntelligentDetailViewCategoryBUITests.swift */; };
 		64CA63EBC4822A7087E35CFF /* PlatformFileSystemUtilitiesAuditHost.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5EB7DCE495F701389D81F61 /* PlatformFileSystemUtilitiesAuditHost.swift */; };
 		64E210FF025A3D879111089C /* VisualDesignSystemTypographyTokensTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24375737E97FFA1068CA6268 /* VisualDesignSystemTypographyTokensTests.swift */; };
+		64EC8E7594B38C452A0A3203 /* HapticPublicSurfaceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7E716C3AF85545F10A5F16B /* HapticPublicSurfaceTests.swift */; };
 		64F29C41EDCE16B9D7B68760 /* HIGVisualDesignCategoriesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C28BC344CC9DAC947D6C9553 /* HIGVisualDesignCategoriesTests.swift */; };
 		65122AE6D36F4B2794EBCDA8 /* Layer5UITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5388A0E77743FDE42284654 /* Layer5UITests.swift */; };
 		65207697005569FD8082F722 /* FieldHintsRegistry.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2A96054BAC281C152C27252 /* FieldHintsRegistry.swift */; };
@@ -1789,6 +1793,7 @@
 		84224C05A6344864E9F192DC /* DesignSystemTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0C72ABE5166316267FBC4D8 /* DesignSystemTests.swift */; };
 		843DE1B55CCFCDBC41AA86D0 /* DataFrameAnalysisEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9370489B2A338F777BAD4E7B /* DataFrameAnalysisEngineTests.swift */; };
 		84469C83150E616807E6DB03 /* SecurityTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA193FE0569D79FBBC985A2B /* SecurityTypes.swift */; };
+		847AE285F834CC3297551CAE /* SixLayerHaptic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 915D26AFE373437F5D7C949C /* SixLayerHaptic.swift */; };
 		847D760CFCDC108D09339FDB /* LocationServiceMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5920A4EA4BF2652062F9AAA7 /* LocationServiceMock.swift */; };
 		8499F07692EA0F69F2EFE95B /* PlatformColorEncodeExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FF5B1D70A34EDD6D353B5E7 /* PlatformColorEncodeExtensions.swift */; };
 		84A39669D2A185E07B948CAC /* ThemedViewModifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90C2AC65C118270C10625059 /* ThemedViewModifiers.swift */; };
@@ -1821,6 +1826,7 @@
 		868994A9AC5F664F3119351D /* L3StrategySelectionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F96187134410467C526BA2E4 /* L3StrategySelectionTests.swift */; };
 		868FB7C1951C45969CD9515F /* PlatformAnimationSystemExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E13207FD966EB91C1BD0E88 /* PlatformAnimationSystemExtensions.swift */; };
 		86C9AE67AA3CB715F2491648 /* PlatformNavigationDecisionLayer2.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD8ABDDAE7D3748A905885FC /* PlatformNavigationDecisionLayer2.swift */; };
+		86E58E2BEF74E39446CFD590 /* HapticPublicSurfaceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7E716C3AF85545F10A5F16B /* HapticPublicSurfaceTests.swift */; };
 		86EA97346ABD4C1265AF73F6 /* ExtensibleHints.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8996A5C0690CAC02907C7FD2 /* ExtensibleHints.swift */; };
 		86EFBD9DF6F691BBACD472A4 /* macOSWindowDetectionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEF8C3C192460B7DBD9106E1 /* macOSWindowDetectionTests.swift */; };
 		86F77B5C689D32C2AAE635BC /* PlatformFrameSpacingUtilityExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8B7C01BFD604DD193FF8F77 /* PlatformFrameSpacingUtilityExtensionsTests.swift */; };
@@ -2150,6 +2156,7 @@
 		9F49D4EC7FEEFCEB023A6308 /* CloudKitService+DataSyncHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C0D005EB9DDDF232D5565A4 /* CloudKitService+DataSyncHelpers.swift */; };
 		9F624D9159A6C5F1D028F108 /* PlatformOCRStrategySelectionLayer3AccessibilityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1E69E0D6996BBD010E32B58 /* PlatformOCRStrategySelectionLayer3AccessibilityTests.swift */; };
 		9F83403E96E946A9EBB97A94 /* AccessibilityTypesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03E379B177E32359512CD838 /* AccessibilityTypesTests.swift */; };
+		9FADA1AD881998E886EC23F7 /* HapticPublicSurfaceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7E716C3AF85545F10A5F16B /* HapticPublicSurfaceTests.swift */; };
 		A02F282F01FBE3A2AF11E79B /* PlatformListNavigationExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10BFA60EFA46CDB1EE70713A /* PlatformListNavigationExtensionsTests.swift */; };
 		A035878FE3B99D104A5A18B1 /* NavigationLayoutResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = E68FB3769A200C2DC3759196 /* NavigationLayoutResolver.swift */; };
 		A03BA604D1ECB937BD2030FE /* PlatformFontSystemExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0B9B4FE73177F70296E750F /* PlatformFontSystemExtensions.swift */; };
@@ -2330,6 +2337,7 @@
 		AFF2BD9BA0C2F4AC14CAEDAE /* PlatformOpenSettingsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EDAB3F7CA12B73D025F8901 /* PlatformOpenSettingsTests.swift */; };
 		B00EA0DCE7501C374330961E /* CloudKitServiceSwiftDataTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F31B5C8FE9E71F1504A8ABBE /* CloudKitServiceSwiftDataTests.swift */; };
 		B035633947C4FE8408A942D2 /* ControlTestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 744E808A66DF1FF304D7DBD1 /* ControlTestView.swift */; };
+		B05524654382099A126DC7BC /* HapticPublicSurfaceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7E716C3AF85545F10A5F16B /* HapticPublicSurfaceTests.swift */; };
 		B060791BA26FEA7915EBF3DA /* PlatformImageAPISignatureTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F557D7E2FE2549899354753 /* PlatformImageAPISignatureTests.swift */; };
 		B06BFA94B27701C0E3933267 /* PlatformAdvancedContainersAccessibilityUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF82A5D408C5D4B696012AB7 /* PlatformAdvancedContainersAccessibilityUITests.swift */; };
 		B076E2911CA65619C28D8582 /* PlatformPresentationSizeResolverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6C7EC1BC79226937F4BE286 /* PlatformPresentationSizeResolverTests.swift */; };
@@ -2466,6 +2474,7 @@
 		B9E9151EFE20A882D1C5F730 /* SixLayerViewInspectorTestKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F2D1E5794CF602D7572C4EC2 /* SixLayerViewInspectorTestKit.framework */; };
 		B9EECE5FAB1D851DDF351F3E /* LabelPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = D91BA1A47EC7F7586CEC251E /* LabelPolicy.swift */; };
 		B9FD0A8C100FC33AED5D5B54 /* LabeledContentDisplayFieldTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 777C5F6F950807A19284B96B /* LabeledContentDisplayFieldTests.swift */; };
+		B9FE568626AF56C61E680126 /* SixLayerHaptic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 915D26AFE373437F5D7C949C /* SixLayerHaptic.swift */; };
 		BA005A3A6039163E14DEE045 /* PlatformPhotoLayoutDecisionLayer2.swift in Sources */ = {isa = PBXBuildFile; fileRef = D762AB299089808826BB4966 /* PlatformPhotoLayoutDecisionLayer2.swift */; };
 		BA013B00934D19E9BEC8DE60 /* PlatformImageExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 048F07172808CEB22C5B6065 /* PlatformImageExtensions.swift */; };
 		BA0BA6082E95C813C4F7FCC3 /* AssistiveTouchManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76418B4A125D74B578AB05D7 /* AssistiveTouchManager.swift */; };
@@ -2786,6 +2795,7 @@
 		D25027924436E02ED967D2A4 /* PhotoComponentsLayer4Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 861DB8AAEDE409926FFBB5DD /* PhotoComponentsLayer4Tests.swift */; };
 		D26069C30992AD66C904E4CE /* PlatformSpacing.swift in Sources */ = {isa = PBXBuildFile; fileRef = D830DC86B303D516DE78B916 /* PlatformSpacing.swift */; };
 		D266FFE335BA16699EEE25C7 /* OCRDisambiguationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45CC996DE644797A2B3EF01D /* OCRDisambiguationTests.swift */; };
+		D278F8350E5F9E013CFB78C3 /* SixLayerHaptic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 915D26AFE373437F5D7C949C /* SixLayerHaptic.swift */; };
 		D2C50BB2543C1DD1ECF7F3E9 /* SystemImagePickerPresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6CEAAB1B432886C4A4267366 /* SystemImagePickerPresentation.swift */; };
 		D2EAD9D4916E76B6D9F3B4E8 /* TabularDataAPITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69128AA189274DD8C3B44FE4 /* TabularDataAPITests.swift */; };
 		D2FFF1FDC92144C4C2AD45E8 /* FieldHintsIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E14EA202260D1B8D67FDBCA4 /* FieldHintsIntegrationTests.swift */; };
@@ -4298,6 +4308,7 @@
 		9068EC40EF159124908EA95A /* PlatformCameraPreviewViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformCameraPreviewViewTests.swift; sourceTree = "<group>"; };
 		90C2AC65C118270C10625059 /* ThemedViewModifiers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemedViewModifiers.swift; sourceTree = "<group>"; };
 		90DFF357E6006CA31E9B8C83 /* PlatformTabStrip.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformTabStrip.swift; sourceTree = "<group>"; };
+		915D26AFE373437F5D7C949C /* SixLayerHaptic.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SixLayerHaptic.swift; sourceTree = "<group>"; };
 		92A79CD69A10FC102C727690 /* OCRAccessibilityWorkflowRenderingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OCRAccessibilityWorkflowRenderingTests.swift; sourceTree = "<group>"; };
 		92B93E244800423C34BD6F58 /* CrossComponentIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrossComponentIntegrationTests.swift; sourceTree = "<group>"; };
 		9318FDD1BFC94B0C0116FA8D /* DeclarativeHintsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeclarativeHintsTests.swift; sourceTree = "<group>"; };
@@ -4626,6 +4637,7 @@
 		F7B36D5FF84FB78A61990872 /* PlatformOCRStrategySelectionLayer3.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformOCRStrategySelectionLayer3.swift; sourceTree = "<group>"; };
 		F7B5709DD9536EEA8468F2A6 /* DynamicSelectField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DynamicSelectField.swift; sourceTree = "<group>"; };
 		F7BEE98C1F3F5F36FBBAE884 /* IntelligentCardExpansionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntelligentCardExpansionTests.swift; sourceTree = "<group>"; };
+		F7E716C3AF85545F10A5F16B /* HapticPublicSurfaceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticPublicSurfaceTests.swift; sourceTree = "<group>"; };
 		F84CA2B7A6C9BC043160C280 /* DynamicFormLabelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DynamicFormLabelTests.swift; sourceTree = "<group>"; };
 		F86050C4D46F7CD3941677C7 /* AccessibilityTestUtilitiesSyntheticComplianceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessibilityTestUtilitiesSyntheticComplianceTests.swift; sourceTree = "<group>"; };
 		F8681DFEE4B24B472BABF48E /* PlatformManagedSettingsDetailNavigationState+NavigationPathBinding.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PlatformManagedSettingsDetailNavigationState+NavigationPathBinding.swift"; sourceTree = "<group>"; };
@@ -6374,6 +6386,7 @@
 		D3834E3CB186A05D0DF19369 /* Input */ = {
 			isa = PBXGroup;
 			children = (
+				F7E716C3AF85545F10A5F16B /* HapticPublicSurfaceTests.swift */,
 				338F46850FB1DD0AFEC57806 /* PlatformHapticFeedbackExtensionsTests.swift */,
 			);
 			path = Input;
@@ -6734,6 +6747,7 @@
 				044B57EF20751BFE08140572 /* InputHandlingInteractions.swift */,
 				1BB862D740FC81E8450DA718 /* PlatformHapticFeedbackExtensions.swift */,
 				03DBF8FF4A1E1B6421814CF5 /* PlatformInputExtensions.swift */,
+				915D26AFE373437F5D7C949C /* SixLayerHaptic.swift */,
 			);
 			path = Input;
 			sourceTree = "<group>";
@@ -7978,6 +7992,7 @@
 				95B5C73623A0ECD8875FDD1F /* GenericLayoutDecisionTests.swift in Sources */,
 				E27476448AC604E0F2D41577 /* HIGPlatformSpecificCategoriesTests.swift in Sources */,
 				7D06C3F36FB549D2265DE991 /* HIGVisualDesignCategoriesTests.swift in Sources */,
+				2C1659423B6BC5665E9C4B3E /* HapticPublicSurfaceTests.swift in Sources */,
 				9B075B916AF57D0535BFB848 /* HiddenFieldsTests.swift in Sources */,
 				3E7A040A5058C6831CFAAC5B /* HintsDefaultValueTests.swift in Sources */,
 				C5174A918DF4AE7207010E0B /* HintsFileColorConfigurationTests.swift in Sources */,
@@ -8385,6 +8400,7 @@
 				7A31195351A6AB5F9D705EE1 /* SettingsPaneDescriptor.swift in Sources */,
 				9E0A6F23BDE63C637BCA25B2 /* ShapeStyleSystem.swift in Sources */,
 				CD01A2C746B70A03F9CD381D /* SharedNetworkStatusManager.swift in Sources */,
+				2B4669A0591628D986470722 /* SixLayerHaptic.swift in Sources */,
 				83F7FB3FDCC7B83745B9DC31 /* StringSanitizationHelpers.swift in Sources */,
 				145BD6EAB4070D5BBB8F490D /* StringUtilities.swift in Sources */,
 				F201B4CDA1B42A1CB9142AE1 /* SwitchControlManager.swift in Sources */,
@@ -8692,6 +8708,7 @@
 				BBCC3AD64106BFE61E36B537 /* SettingsPaneDescriptor.swift in Sources */,
 				F5E2588E260BD1B55A051279 /* ShapeStyleSystem.swift in Sources */,
 				CFD3C4BB2C7E4CC9CE6E4C97 /* SharedNetworkStatusManager.swift in Sources */,
+				155B59B7DE69AAE9E008F2FA /* SixLayerHaptic.swift in Sources */,
 				57712BB20F041A0162CE1F1E /* StringSanitizationHelpers.swift in Sources */,
 				81BA80C4CFAB394249A761FB /* StringUtilities.swift in Sources */,
 				29527563CFAE81107CE814B9 /* SwitchControlManager.swift in Sources */,
@@ -9304,6 +9321,7 @@
 				5E20CA16CFFE78244E181385 /* SettingsPaneDescriptor.swift in Sources */,
 				31D1BA2593EE0AA4113F98D5 /* ShapeStyleSystem.swift in Sources */,
 				BF22C80DC8222B5E04A3DD45 /* SharedNetworkStatusManager.swift in Sources */,
+				847AE285F834CC3297551CAE /* SixLayerHaptic.swift in Sources */,
 				4C0890A86F5EA67492B85258 /* StringSanitizationHelpers.swift in Sources */,
 				631502DA0B82196D6EAD0A22 /* StringUtilities.swift in Sources */,
 				8536953B71F1DA283D43659C /* SwitchControlManager.swift in Sources */,
@@ -9431,6 +9449,7 @@
 				60592DBCD10578ADD549DF62 /* GenericLayoutDecisionTests.swift in Sources */,
 				877105D009D49B2E7A029F1E /* HIGPlatformSpecificCategoriesTests.swift in Sources */,
 				7D3E8859A71A9335137BDF8B /* HIGVisualDesignCategoriesTests.swift in Sources */,
+				86E58E2BEF74E39446CFD590 /* HapticPublicSurfaceTests.swift in Sources */,
 				F81270FB32B2CF833D0336A4 /* HiddenFieldsTests.swift in Sources */,
 				896B3C8F0394E60638E61C5E /* HintsDefaultValueTests.swift in Sources */,
 				E6F4CA8EC01B5972B247A5DE /* HintsFileColorConfigurationTests.swift in Sources */,
@@ -10031,6 +10050,7 @@
 				8D1C3278DE3A2F7701FBF5A7 /* GenericLayoutDecisionTests.swift in Sources */,
 				E5FB4EF8CB06A17F2DF236FF /* HIGPlatformSpecificCategoriesTests.swift in Sources */,
 				A6FD1E7225FCF6FB317038D4 /* HIGVisualDesignCategoriesTests.swift in Sources */,
+				64EC8E7594B38C452A0A3203 /* HapticPublicSurfaceTests.swift in Sources */,
 				D44F979A5DE3AD99D402A8B5 /* HiddenFieldsTests.swift in Sources */,
 				1DF8EAD20F672B5A54D021BF /* HintsDefaultValueTests.swift in Sources */,
 				0333F52FBF2EA7DF1E00B267 /* HintsFileColorConfigurationTests.swift in Sources */,
@@ -10438,6 +10458,7 @@
 				E296019ACB25BD3AC85A81AA /* SettingsPaneDescriptor.swift in Sources */,
 				2F8B85810E6A4C6FC7AC8BCB /* ShapeStyleSystem.swift in Sources */,
 				A814CBDC0A95A86DEF0A95B8 /* SharedNetworkStatusManager.swift in Sources */,
+				D278F8350E5F9E013CFB78C3 /* SixLayerHaptic.swift in Sources */,
 				34DE57BD7F2570D21BAD731E /* StringSanitizationHelpers.swift in Sources */,
 				FB9EC09242356AF025059484 /* StringUtilities.swift in Sources */,
 				CCA0DEC131754B7C6AB2F916 /* SwitchControlManager.swift in Sources */,
@@ -10581,6 +10602,7 @@
 				276F481871A8C995DB809EF9 /* GenericLayoutDecisionTests.swift in Sources */,
 				347641BC20DC1DC950128531 /* HIGPlatformSpecificCategoriesTests.swift in Sources */,
 				64F29C41EDCE16B9D7B68760 /* HIGVisualDesignCategoriesTests.swift in Sources */,
+				9FADA1AD881998E886EC23F7 /* HapticPublicSurfaceTests.swift in Sources */,
 				C6E27DF6906BF1CE55727DC2 /* HiddenFieldsTests.swift in Sources */,
 				B57818710615D9724B149BE0 /* HintsDefaultValueTests.swift in Sources */,
 				53C4D2DB1AE6AD7F59E4172A /* HintsFileColorConfigurationTests.swift in Sources */,
@@ -11012,6 +11034,7 @@
 				B5DAAE4EDC507D0FE5AAC191 /* SettingsPaneDescriptor.swift in Sources */,
 				A3B2E7EDA160C1F7510AA5B0 /* ShapeStyleSystem.swift in Sources */,
 				87150B14421D8675EDFB741A /* SharedNetworkStatusManager.swift in Sources */,
+				B9FE568626AF56C61E680126 /* SixLayerHaptic.swift in Sources */,
 				DEFB55B32A388919E076CAA6 /* StringSanitizationHelpers.swift in Sources */,
 				24F7F8913390E772B077A6A6 /* StringUtilities.swift in Sources */,
 				84CB0A20B40963A8F3652EE2 /* SwitchControlManager.swift in Sources */,
@@ -11131,6 +11154,7 @@
 				B21DD2069F3019F85D95403D /* GenericLayoutDecisionTests.swift in Sources */,
 				725BEA23CA1C9417CD31E577 /* HIGPlatformSpecificCategoriesTests.swift in Sources */,
 				19A071EFE59F8880AE40C3D2 /* HIGVisualDesignCategoriesTests.swift in Sources */,
+				B05524654382099A126DC7BC /* HapticPublicSurfaceTests.swift in Sources */,
 				2E1A360F2555303FF18AEDC9 /* HiddenFieldsTests.swift in Sources */,
 				3C30600C7A1037667A18F288 /* HintsDefaultValueTests.swift in Sources */,
 				B179B078C49B626554A3724F /* HintsFileColorConfigurationTests.swift in Sources */,

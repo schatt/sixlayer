@@ -738,7 +738,7 @@ struct MyBusinessView: View {
         // Layer 5: Performance Optimization
         // Layer 6: Platform-Specific Features
         #if os(iOS)
-        .platformIOSHapticFeedback(style: .medium) { }
+        .platformHapticFeedback(.medium)
         .platformIOSSwipeGestures(
             onSwipeLeft: { /* Custom business logic */ },
             onSwipeRight: { /* Custom business logic */ }

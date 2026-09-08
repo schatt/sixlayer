@@ -36,7 +36,7 @@ Apply platform-specific optimizations and features that enhance the user experie
 - `platformIOSSwipeGestures(onSwipeLeft:onSwipeRight:onSwipeUp:onSwipeDown:)` - iOS-specific swipe gestures
 
 #### **Haptic Feedback**
-- `platformIOSHapticFeedback(style:onTrigger:)` - iOS-specific haptic feedback
+- App-facing: `platformHapticFeedback(_:)` / `PlatformHapticFeedback` (not Layer 6). L5 `platformIOSHapticFeedback` is deprecated (#445).
 
 ### **macOS Optimizations**
 
@@ -64,13 +64,9 @@ Apply platform-specific optimizations and features that enhance the user experie
 #endif
 ```
 
-### **iOS Haptic Feedback**
+### **Haptic Feedback**
 ```swift
-#if os(iOS)
-.platformIOSHapticFeedback(style: .medium) {
-    // Trigger haptic feedback
-}
-#endif
+.platformHapticFeedback(.medium)
 ```
 
 ### **macOS Window Sizing**
