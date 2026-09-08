@@ -20,14 +20,14 @@ These exist as `extension View` (iOS) with non-iOS stubs where needed:
 - `platformIOSNavigationBar(...)`
 - `platformIOSToolbar(...)`
 - `platformIOSSwipeGestures(...)`
-- `platformIOSHapticFeedback(style:onTrigger:)` / `IOSHapticStyle`
+- `platformIOSHapticFeedback(style:onTrigger:)` / `IOSHapticStyle` — **deprecated** (#445). App authors should use `View.platformHapticFeedback(_:)` / `PlatformHapticFeedback`. The L5 methods remain as thin `onChange` wrappers.
 - `platformIOSAccessibility(...)`
 - `platformIOSAnimation(...)` / `IOSAnimationType`
 - `platformIOSLayout(...)`
 - `platformIOSPullToRefresh(...)`
 - `platformIOSContextMenu(...)`
 
-Coverage for haptics: **#423**. Remaining modifiers in that file: **#424**.
+Coverage for haptics: **#423** (L5 wrappers), **#445** (unified public surface). Remaining modifiers in that file: **#424**.
 
 ## Other L5 surfaces (examples)
 
