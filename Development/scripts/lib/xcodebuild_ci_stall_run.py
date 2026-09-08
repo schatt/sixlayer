@@ -5,6 +5,11 @@ The child inherits this process's stdout (typically a pipe to `tee`). Stall
 detection watches the log file's mtime/size and never reads the child's
 stdout — Darwin EAGAIN on a non-blocking drain must not fail a green run
 (#434).
+
+A quiet-but-busy process group (ViewInspector / Swift Testing with no tee
+bytes) is not a hang (#461). CPU time increasing in the child's process
+group resets the stall clock; only log-silent *and* CPU-idle groups are
+killed.
 """
 
 from __future__ import annotations
@@ -36,6 +41,61 @@ def _log_fingerprint(path: str) -> tuple[int, int] | None:
     return (st.st_mtime_ns, st.st_size)
 
 
+def _parse_ps_cputime(raw: str) -> float:
+    """Parse Darwin/BSD `ps` TIME (`[[dd-]hh:]mm:ss[.frac]`)."""
+    days = 0
+    s = raw.strip()
+    if "-" in s:
+        daypart, s = s.split("-", 1)
+        days = int(daypart)
+    frac = 0.0
+    if "." in s:
+        main, fracpart = s.split(".", 1)
+        frac = float("0." + fracpart)
+        s = main
+    parts = [int(p) for p in s.split(":")]
+    if len(parts) == 3:
+        hours, minutes, seconds = parts
+    elif len(parts) == 2:
+        hours = 0
+        minutes, seconds = parts
+    else:
+        return days * 86400 + frac
+    return days * 86400 + hours * 3600 + minutes * 60 + seconds + frac
+
+
+def _group_cpu_seconds(pgid: int) -> float | None:
+    """Sum CPU time for processes whose PGID is `pgid`. None if none found."""
+    try:
+        pid_text = subprocess.check_output(
+            ["pgrep", "-g", str(pgid)],
+            text=True,
+            stderr=subprocess.DEVNULL,
+        )
+    except (OSError, subprocess.CalledProcessError):
+        return None
+    pids = [p for p in pid_text.split() if p]
+    if not pids:
+        return None
+    try:
+        out = subprocess.check_output(
+            ["ps", "-o", "time=", "-p", ",".join(pids)],
+            text=True,
+            stderr=subprocess.DEVNULL,
+        )
+    except (OSError, subprocess.CalledProcessError):
+        return None
+    total = 0.0
+    found = False
+    for line in out.splitlines():
+        raw = line.strip()
+        if not raw:
+            continue
+        found = True
+        total += _parse_ps_cputime(raw)
+    return total if found else None
+
+
 def main(argv: list[str]) -> int:
     if len(argv) < 4:
         sys.stderr.write(
@@ -58,6 +118,7 @@ def main(argv: list[str]) -> int:
         start_new_session=True,
     )
     last_fp = _log_fingerprint(log_file)
+    last_cpu = _group_cpu_seconds(proc.pid)
     last_change = time.monotonic()
 
     while True:
@@ -65,6 +126,12 @@ def main(argv: list[str]) -> int:
         if fp != last_fp:
             last_fp = fp
             last_change = time.monotonic()
+
+        cpu = _group_cpu_seconds(proc.pid)
+        if cpu is not None and last_cpu is not None and cpu > last_cpu:
+            last_change = time.monotonic()
+        if cpu is not None:
+            last_cpu = cpu
 
         if proc.poll() is not None:
             # Descendants may still hold inherited stdout; kill the session

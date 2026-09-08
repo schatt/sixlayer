@@ -51,32 +51,21 @@ Complete list of all `Platform*` types in the SixLayer Framework codebase, organ
 
 27. **`PlatformResourceLayer5`** (class)
 28. **`PlatformMessagingLayer5`** (class)
-29. **`PlatformKnowledgeLayer5`** (struct, View)
-30. **`PlatformWisdomLayer5`** (struct, View)
-31. **`PlatformNotificationLayer5`** (struct, View)
-32. **`PlatformSafetyLayer5`** (struct, View)
-33. **`PlatformOrganizationLayer5`** (struct, View)
-34. **`PlatformPrivacyLayer5`** (struct, View)
-35. **`PlatformLoggingLayer5`** (struct, View)
-36. **`PlatformMaintenanceLayer5`** (struct, View)
-37. **`PlatformRoutingLayer5`** (struct, View)
-38. **`PlatformOrchestrationLayer5`** (struct, View)
-39. **`PlatformRecognitionLayer5`** (struct, View)
-40. **`PlatformProfilingLayer5`** (struct, View)
-41. **`PlatformOptimizationLayer5`** (struct, View)
-42. **`PlatformInterpretationLayer5`** (struct, View)
+
+> Removed (#453): placeholder demo Views `PlatformKnowledgeLayer5`, `PlatformWisdomLayer5`, `PlatformNotificationLayer5`, `PlatformSafetyLayer5`, `PlatformOrganizationLayer5`, `PlatformPrivacyLayer5`, `PlatformLoggingLayer5`, `PlatformMaintenanceLayer5`, `PlatformRoutingLayer5`, `PlatformOrchestrationLayer5`, `PlatformRecognitionLayer5`, `PlatformProfilingLayer5`, `PlatformOptimizationLayer5`, `PlatformInterpretationLayer5`.
 
 ---
 
 ## Layer 6 - Optimization Layer
 
-43. **`PlatformPerformanceLayer6`** (struct, View)
-44. **`PlatformOptimizationSettings`** (struct)
-45. **`PlatformSpecificMetrics`** (struct)
-46. **`PlatformUIPatterns`** (struct)
-47. **`PlatformOptimizationModifier`** (struct, ViewModifier)
-48. **`PlatformKey`** (struct, EnvironmentKey)
-49. **`PlatformAwareExpandableCardView`** (struct, View)
+29. **`PlatformOptimizationSettings`** (struct)
+30. **`PlatformSpecificMetrics`** (struct)
+31. **`PlatformUIPatterns`** (struct)
+32. **`PlatformOptimizationModifier`** (struct, ViewModifier)
+33. **`PlatformKey`** (struct, EnvironmentKey)
+34. **`PlatformAwareExpandableCardView`** (struct, View)
+
+> Removed (#458): placeholder demo View `PlatformPerformanceLayer6`.
 
 ---
 
@@ -164,7 +153,7 @@ Complete list of all `Platform*` types in the SixLayer Framework codebase, organ
 - **Core Types**: 7
 - **Layer 1 (Semantic)**: 1 (functions, not types)
 - **Layer 4 (Component)**: 18
-- **Layer 5 (Platform)**: 16
+- **Layer 5 (Platform)**: 2 (plus real optimizers elsewhere; demo shells removed #453)
 - **Layer 6 (Optimization)**: 7
 - **UI & Extensions**: 16
 - **Input & Interaction**: 7

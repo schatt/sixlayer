@@ -110,45 +110,4 @@ open class Layer6ComponentAccessibilityTests: BaseTestClass {
         // Then: Should return recommendations (may be empty if not implemented yet)
         // NOTE: Tests for PlatformRecommendationEngine moved to possible-features/PlatformRecommendationEngineTests.swift
     }
-    
-    @Test @MainActor func testPlatformPerformanceLayer6GeneratesAccessibilityIdentifiers() async {
-        // Given: Layer 6 platform performance component (stub)
-        let performanceLayer = PlatformPerformanceLayer6()
-        
-        // When: Creating performance view
-        let performanceView = performanceLayer.body
-        
-        // Then: Should generate accessibility identifiers
-            // TODO: ViewInspector Detection Issue - VERIFIED: PlatformPerformanceLayer6 DOES have .automaticCompliance() 
-            // modifier applied in Framework/Sources/Layers/Layer6-Optimization/PlatformPerformanceLayer6.swift:16.
-            // The test needs to be updated to handle ViewInspector's inability to detect these modifiers reliably.
-            // This is a ViewInspector limitation, not a missing modifier issue.
-        let hasAccessibilityID = testComponentComplianceSinglePlatform(
-            performanceView,
-            expectedPattern: "*.main.ui.element.*",
-            platform: SixLayerPlatform.iOS,
-            componentName: "PlatformPerformanceLayer6"
-        )
-        #expect(hasAccessibilityID, "PlatformPerformanceLayer6 should generate accessibility identifiers ")
-    }
-    
-    @Test @MainActor func testPlatformPerformanceLayer6PerformanceMetrics() async {
-        // Given: Layer 6 platform performance component (stub)
-        let performanceLayer = PlatformPerformanceLayer6()
-        
-        // When: Getting performance view
-        _ = performanceLayer.body
-        
-        // Then: Should return valid view (body always returns a non-optional View)
-    }
-    
-    @Test @MainActor func testPlatformPerformanceLayer6OptimizationSuggestions() async {
-        // Given: Layer 6 platform performance component (stub)
-        let performanceLayer = PlatformPerformanceLayer6()
-        
-        // When: Getting performance view
-        _ = performanceLayer.body
-        
-        // Then: Should return valid view (body always returns a non-optional View)
-    }
 }

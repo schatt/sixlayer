@@ -246,6 +246,8 @@ public enum TestSetupUtilities {
         }
         return root
         #else
+        // watchOS: no UIKit UIHostingController / AppKit NSHostingController in this harness
+        // (#379, #460). Callers that need a hosted tree must be platform-gated.
         return nil
         #endif
         }

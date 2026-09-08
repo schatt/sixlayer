@@ -32,8 +32,8 @@ let view = platformPresentItemCollection_L1(items: items, hints: hints)
 - ✅ `.automaticAccessibility()` - VoiceOver, Switch Control, AssistiveTouch support
 - ✅ `.platformPatterns()` - Platform-specific UI patterns and behaviors
 - ✅ `.visualConsistency()` - Consistent visual design across platforms
-- ✅ `.platformPerformanceOptimized()` - Intelligent performance optimization
-- ✅ `.platformMemoryOptimized()` - Intelligent memory management
+
+Note (#425): `.platformPerformanceOptimized()` / `.platformMemoryOptimized()` are **not** implemented View modifiers — do not advertise them.
 
 ### **2. Configurable Performance Optimization**
 

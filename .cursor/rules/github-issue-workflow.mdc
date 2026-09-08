@@ -65,8 +65,8 @@ When issue-linked work used a **`wip/<issue-slug>`** branch (often in a **temp w
 
 1. **Merge `next` into `wip/...`** (in the worktree or equivalent checkout), resolve conflicts, commit the merge if needed, push.
 2. **Merge `wip/...` into `next`** in the primary clone with **`git merge --no-ff`** (never fast-forward — see [no-fast-forward-merges.mdc](mdc:.cursor/rules/no-fast-forward-merges.mdc)), push `next` (`git push all next` or repo convention).
-3. **Rename branch** `wip/<slug>` → **`done/<slug>`** (same history), **`git push all done/<slug>`**, then **`git push all --delete wip/<slug>`** on remotes that still carry the old name (retain history on `done/`, same issue — do not silently drop unpushed commits).
-4. **`git worktree remove <path>`** for the dedicated worktree.
+3. **Retire** `wip/<slug>` → **`done/<slug>`** with `Development/scripts/retire_wip_branch.sh <slug>` (rename, `git push all done/<slug>`, delete remote `wip/`, remove the temp worktree, **delete the local `done/` branch**). Remotes keep `done/` for history; do not leave an unused local `done/` tip (#459). Leftover local `done/*`: `Development/scripts/repair_branch_upstreams.sh`.
+4. **Worktree:** `retire_wip_branch.sh` removes the dedicated worktree. If you retired with `--no-worktree-remove` (or renamed by hand), **`git worktree remove <path>`** now. If no temp worktree was used, **skip** and state that in the closing comment.
 5. **Then** finalize GitHub state: replace the issue body with the **Final Record** (mandatory section below) via Taska `update_issue` (or `gh issue edit --body-file` fallback). Add a comment (Taska `add_comment` / `gh` fallback) documenting steps 1–4: merge SHAs, `next`/`done/` tips, **worktree path removed**, pushes. Close via Taska `set_issue_state` (or `gh issue close --reason completed`). **Order:** edits and comment **before** close (close last). If the issue was closed early by mistake, **reopen**, post the closure comment, then close again.
 
 If production work used **`wip/`** + **`next`** but you close before step 5, the audit trail diverges from the integration-line record — avoid that.

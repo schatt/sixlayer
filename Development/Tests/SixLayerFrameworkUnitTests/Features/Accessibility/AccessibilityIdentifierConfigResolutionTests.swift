@@ -89,6 +89,10 @@ struct AccessibilityIdentifierConfigResolutionTests {
 
     /// TestApp injects a non-shared config via Environment (#247). Hosted generation must use it
     /// so XCUI sees `SixLayer.main.ui…` (#437). inspect() still must not instantiate Environment.
+    ///
+    /// watchOS: `hostRootPlatformView` returns nil (no UIKit/AppKit host; #379/#460). These
+    /// observations require a hosted tree; unhosted resolution tests above still run on watchOS.
+    #if !os(watchOS)
     @Test @MainActor
     func hostedIdentifierGenerationUsesEnvironmentConfigWhenTaskLocalMissing() {
         let envConfig = TestSetupUtilities.makeIsolatedAccessibilityIdentifierConfig()
@@ -158,4 +162,5 @@ struct AccessibilityIdentifierConfigResolutionTests {
             "Hosted automatic compliance must not emit the suppressed name. Got \(identifiers)"
         )
     }
+    #endif
 }

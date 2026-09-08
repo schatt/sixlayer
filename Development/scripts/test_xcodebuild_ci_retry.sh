@@ -280,6 +280,29 @@ unset XCODEBUILD_CI_STALL_SECONDS
 assert_eq "$heartbeat_status" "0" \
     "stall wrapper does not kill a command that keeps writing past the stall window"
 
+# #461: ViewInspector CI can run for minutes with no tee-log bytes while xctest is
+# still busy (parallel Swift Testing). Kill only when the process group is idle.
+BUSY_SILENT="$WORKDIR/busy-silent.py"
+cat > "$BUSY_SILENT" <<'EOF'
+#!/usr/bin/env python3
+import time
+end = time.monotonic() + 2.5
+n = 0
+while time.monotonic() < end:
+    n += 1
+raise SystemExit(0)
+EOF
+chmod +x "$BUSY_SILENT"
+
+export XCODEBUILD_CI_STALL_SECONDS=1
+set +e
+xcodebuild_ci_invoke_logged "$WORKDIR/busy-silent.log" "$BUSY_SILENT"
+busy_status=$?
+set -e
+unset XCODEBUILD_CI_STALL_SECONDS
+assert_eq "$busy_status" "0" \
+    "stall wrapper does not kill a CPU-busy command that writes no output (#461)"
+
 echo
 echo "Passed: $PASS  Failed: $FAIL"
 if [[ "$FAIL" -ne 0 ]]; then

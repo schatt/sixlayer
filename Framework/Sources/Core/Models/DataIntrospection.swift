@@ -943,7 +943,7 @@ private extension DataIntrospectionEngine {
                 type: .performance,
                 priority: .critical,
                 description: "Use lazy loading and pagination",
-                implementation: "platformLazyLoading"
+                implementation: "LazyVStack / pagination (no platformLazyLoading API)"
             ))
         default:
             break

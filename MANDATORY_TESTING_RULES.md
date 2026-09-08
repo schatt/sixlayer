@@ -571,14 +571,14 @@ func testCustomViewWithAllSixLayers_CompleteFunctionality() {
             let decision = determineOptimalCardLayout_L2(...)  // L2
             let strategy = selectCardLayoutStrategy_L3(...)    // L3
         }
-        .platformMemoryOptimization()  // L5
-        .platformIOSHapticFeedback()  // L6
+        #if os(iOS)
+        .platformIOSHapticFeedback()  // L5 (real API; not L6)
+        #endif
     
     // Then: Validate complete functionality
     XCTAssertTrue(result.hasAllLayerFeatures, "Should have all layer features")
     XCTAssertTrue(result.hasAutomaticAccessibilityIdentifiers, "Should have accessibility identifiers")
     XCTAssertTrue(result.isHIGCompliant, "Should be HIG compliant")
-    XCTAssertTrue(result.hasPerformanceOptimizations, "Should have performance optimizations")
     XCTAssertTrue(result.hasPlatformSpecificFeatures, "Should have platform-specific features")
 }
 ```

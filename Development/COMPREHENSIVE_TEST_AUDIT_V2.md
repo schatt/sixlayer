@@ -157,9 +157,6 @@ Classes without Test Files: 130
 - **MockURL** (struct) - in Shared/Models/MockTypes.swift
 - **MockDataContainer** (struct) - in Shared/Models/MockTypes.swift
 - **UnifiedWindowDetection** (class) - in Shared/WindowDetection/UnifiedWindowDetection.swift
-- **LazyLoadingState** (class) - in Shared/Views/Extensions/PerformanceOptimizationLayer5.swift
-- **MemoryManager** (class) - in Shared/Views/Extensions/PerformanceOptimizationLayer5.swift
-- **PerformanceProfiler** (class) - in Shared/Views/Extensions/PerformanceOptimizationLayer5.swift
 - **SwitchControlManager** (class) - in Shared/Views/Extensions/SwitchControlManager.swift
 - **AssistiveTouchManager** (class) - in Shared/Views/Extensions/AssistiveTouchManager.swift
 - **LiquidGlassMaterial** (struct) - in Shared/Views/Extensions/LiquidGlassDesignSystem.swift
@@ -170,9 +167,6 @@ Classes without Test Files: 130
 - **AdaptiveWallpaper** (struct) - in Shared/Views/Extensions/LiquidGlassDesignSystem.swift
 - **AdaptiveElement** (struct) - in Shared/Views/Extensions/LiquidGlassDesignSystem.swift
 - **LiquidGlassAccessibilityInfo** (struct) - in Shared/Views/Extensions/LiquidGlassDesignSystem.swift
-- **AdvancedCacheManager** (class) - in Shared/Views/Extensions/CachingStrategiesLayer5.swift
-- **RenderingPipelineManager** (class) - in Shared/Views/Extensions/CachingStrategiesLayer5.swift
-- **RenderTask** (class) - in Shared/Views/Extensions/CachingStrategiesLayer5.swift
 - **ResponsiveCardData** (struct) - in Shared/Views/Extensions/ResponsiveCardsView.swift
 - **ThemedTextFieldStyle** (struct) - in Shared/Views/Extensions/ThemedViewModifiers.swift
 - **MaterialAccessibilityManager** (class) - in Shared/Views/Extensions/MaterialAccessibilityManager.swift

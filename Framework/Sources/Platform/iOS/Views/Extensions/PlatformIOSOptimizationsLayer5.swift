@@ -8,6 +8,44 @@ import UIKit
 /// leverage iOS platform capabilities. This layer handles platform-specific
 /// features like haptics, iOS-specific navigation, and iOS-only UI patterns.
 
+/// Direction recognized by `platformIOSSwipeGestures` thresholds (±100 primary, ±50 reject band).
+public enum PlatformIOSSwipeDirection: Equatable {
+    case left
+    case right
+    case up
+    case down
+}
+
+/// Pure threshold decision for `platformIOSSwipeGestures` (unit-testable; #424).
+/// Primary axis must exceed ±100; cross-axis must stay inside ±50 reject band.
+public func platformIOSSwipeDirection(from translation: CGSize) -> PlatformIOSSwipeDirection? {
+    let width = translation.width
+    let height = translation.height
+    if width < -100 && abs(height) < 50 {
+        return .left
+    }
+    if width > 100 && abs(height) < 50 {
+        return .right
+    }
+    if height < -100 && abs(width) < 50 {
+        return .up
+    }
+    if height > 100 && abs(width) < 50 {
+        return .down
+    }
+    return nil
+}
+
+/// `isRefreshing` true → `onRefresh` → false sequence used by `platformIOSPullToRefresh` (#424).
+public func platformIOSPullToRefreshSequence(
+    setRefreshing: (Bool) -> Void,
+    onRefresh: () -> Void
+) {
+    setRefreshing(true)
+    onRefresh()
+    setRefreshing(false)
+}
+
 public extension View {
     
     /// Platform-specific iOS navigation bar with consistent styling
@@ -46,39 +84,23 @@ public extension View {
         onSwipeDown: (() -> Void)? = nil
     ) -> some View {
         #if os(iOS)
-        self
-            .gesture(
-                DragGesture()
-                    .onEnded { value in
-                        if value.translation.width < -100 && abs(value.translation.height) < 50 {
-                            onSwipeLeft?()
-                        }
+        self.gesture(
+            DragGesture()
+                .onEnded { value in
+                    switch platformIOSSwipeDirection(from: value.translation) {
+                    case .left:
+                        onSwipeLeft?()
+                    case .right:
+                        onSwipeRight?()
+                    case .up:
+                        onSwipeUp?()
+                    case .down:
+                        onSwipeDown?()
+                    case nil:
+                        break
                     }
-            )
-            .gesture(
-                DragGesture()
-                    .onEnded { value in
-                        if value.translation.width > 100 && abs(value.translation.height) < 50 {
-                            onSwipeRight?()
-                        }
-                    }
-            )
-            .gesture(
-                DragGesture()
-                    .onEnded { value in
-                        if value.translation.height < -100 && abs(value.translation.width) < 50 {
-                            onSwipeUp?()
-                        }
-                    }
-            )
-            .gesture(
-                DragGesture()
-                    .onEnded { value in
-                        if value.translation.height > 100 && abs(value.translation.width) < 50 {
-                            onSwipeDown?()
-                        }
-                    }
-            )
+                }
+        )
         #else
         // DragGesture-based swipe helpers are unavailable on tvOS (#237).
         self
@@ -176,26 +198,20 @@ public extension View {
     }
     #endif
     
-    /// Platform-specific iOS layout with consistent behavior
-    /// Provides iOS-specific layout optimizations
-    func platformIOSLayout(
-        safeAreaInsets: Bool = true,
-        keyboardAware: Bool = false
-    ) -> some View {
-        #if os(iOS)
-        self
-            .ignoresSafeArea(safeAreaInsets ? .keyboard : .all, edges: .bottom)
-            .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)) { _ in
-                // Handle keyboard appearance
-            }
-            .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { _ in
-                // Handle keyboard dismissal
-            }
-        #else
-        self
-        #endif
-    }
-    
+/// Platform-specific iOS layout with consistent behavior.
+/// Applies safe-area region ignoring; does not subscribe to keyboard notifications
+/// (empty keyboardAware / onReceive hooks removed — #444).
+func platformIOSLayout(
+    safeAreaInsets: Bool = true
+) -> some View {
+    #if os(iOS)
+    self
+        .ignoresSafeArea(safeAreaInsets ? .keyboard : .all, edges: .bottom)
+    #else
+    self
+    #endif
+}
+
     /// Platform-specific iOS pull-to-refresh with consistent behavior
     /// Provides iOS-specific pull-to-refresh functionality
     func platformIOSPullToRefresh(
@@ -203,9 +219,10 @@ public extension View {
         onRefresh: @escaping () -> Void
     ) -> some View {
         return self.refreshable {
-            isRefreshing.wrappedValue = true
-            onRefresh()
-            isRefreshing.wrappedValue = false
+            platformIOSPullToRefreshSequence(
+                setRefreshing: { isRefreshing.wrappedValue = $0 },
+                onRefresh: onRefresh
+            )
         }
     }
     
