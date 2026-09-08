@@ -10,12 +10,6 @@
 
 import SwiftUI
 import Foundation
-#if os(iOS)
-import UIKit
-#endif
-#if os(macOS)
-import AppKit
-#endif
 
 // MARK: - Input Handling & Interactions Manager
 
@@ -145,87 +139,9 @@ public class HapticFeedbackManager {
         self.platform = platform
     }
     
-    /// Trigger haptic feedback appropriate for the platform
+    /// Trigger haptic feedback. Delegates to `SixLayerHaptic` (#445).
     @MainActor func triggerFeedback(_ feedback: PlatformHapticFeedback) {
-        switch platform {
-        case .iOS:
-            #if os(iOS)
-            triggerIOSFeedback(feedback)
-            #endif
-        case .macOS:
-            #if os(macOS)
-            triggerMacOSFeedback(feedback)
-            #endif
-        case .watchOS:
-            triggerWatchOSFeedback(feedback)
-        case .tvOS:
-            // tvOS doesn't support haptic feedback
-            break
-        case .visionOS:
-            // visionOS supports spatial haptics
-            triggerVisionOSFeedback(feedback)
-        }
-    }
-    
-    #if os(iOS)
-    @MainActor private func triggerIOSFeedback(_ feedback: PlatformHapticFeedback) {
-        switch feedback {
-        case .light:
-            let impactFeedback = UIImpactFeedbackGenerator(style: .light)
-            impactFeedback.impactOccurred()
-        case .medium:
-            let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
-            impactFeedback.impactOccurred()
-        case .heavy:
-            let impactFeedback = UIImpactFeedbackGenerator(style: .heavy)
-            impactFeedback.impactOccurred()
-        case .soft:
-            let impactFeedback = UIImpactFeedbackGenerator(style: .soft)
-            impactFeedback.impactOccurred()
-        case .rigid:
-            let impactFeedback = UIImpactFeedbackGenerator(style: .rigid)
-            impactFeedback.impactOccurred()
-        case .success:
-            let notificationFeedback = UINotificationFeedbackGenerator()
-            notificationFeedback.notificationOccurred(.success)
-        case .warning:
-            let notificationFeedback = UINotificationFeedbackGenerator()
-            notificationFeedback.notificationOccurred(.warning)
-        case .error:
-            let notificationFeedback = UINotificationFeedbackGenerator()
-            notificationFeedback.notificationOccurred(.error)
-        }
-    }
-    #endif
-    
-    #if os(macOS)
-    private func triggerMacOSFeedback(_ feedback: PlatformHapticFeedback) {
-        // macOS provides sound feedback instead of haptic feedback
-        switch feedback {
-        case .light, .soft:
-            NSSound.beep()
-        case .medium:
-            NSSound.beep()
-        case .heavy, .rigid:
-            NSSound.beep()
-        case .success:
-            NSSound.beep()
-        case .warning:
-            NSSound.beep()
-        case .error:
-            NSSound.beep()
-        }
-    }
-    #endif
-    
-    private func triggerWatchOSFeedback(_ feedback: PlatformHapticFeedback) {
-        // watchOS has limited haptic feedback capabilities
-        // This would need to be implemented with WatchKit
-    }
-    
-    private func triggerVisionOSFeedback(_ feedback: PlatformHapticFeedback) {
-        // visionOS supports spatial haptic feedback
-        // This would need to be implemented with visionOS APIs
+        SixLayerHaptic.trigger(feedback)
     }
 }
 
