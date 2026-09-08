@@ -2,7 +2,8 @@
 //  PlatformIOSHapticFeedbackTests.swift
 //  SixLayerFrameworkTests
 //
-//  Executing coverage for `platformIOSHapticFeedback` / `IOSHapticStyle` (#423).
+//  Coverage for deprecated `platformIOSHapticFeedback` / `IOSHapticStyle` (#423).
+//  Public surface is `platformHapticFeedback` / `PlatformHapticFeedback` (#445).
 //  Does not assert Taptic Engine firing (not observable in unit tests).
 //
 
