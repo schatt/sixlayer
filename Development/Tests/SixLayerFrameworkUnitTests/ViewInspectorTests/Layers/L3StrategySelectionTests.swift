@@ -259,21 +259,18 @@ open class L3StrategySelectionTests: BaseTestClass {
     // MARK: - Form Strategy Tests
     
     @Test @MainActor func testSelectFormStrategy_AddFuelView_L3() {
-        // Layout deliberately differs from the hardcoded stub so we do not fake layout→strategy mapping.
-        // Product: #397 (stub currently ignores layout).
         let layout = FormLayoutDecision(
             containerType: .scrollView,
             fieldLayout: .compact,
             spacing: .compact,
             validation: .onSubmit
         )
-        
+
         let strategy = selectFormStrategy_AddFuelView_L3(layout: layout)
-        
-        // Current stub hardcodes .form/.standard/.realTime and ignores layout (#397).
-        #expect(strategy.containerType == .form, "Hardcoded stub returns .form (ignores layout; see #397)")
-        #expect(strategy.fieldLayout == .standard, "Hardcoded stub returns .standard field layout (see #397)")
-        #expect(strategy.validation == .realTime, "Hardcoded stub returns .realTime validation (see #397)")
+
+        #expect(strategy.containerType == layout.containerType)
+        #expect(strategy.fieldLayout == layout.fieldLayout)
+        #expect(strategy.validation == layout.validation)
     }
     
     @Test @MainActor func testSelectModalStrategy_Form_L3() {
