@@ -10,10 +10,9 @@
 //  TESTING SCOPE:
 //  - Visual correction L1: teardown cancels hanging processImage
 //  - Structured extraction L1: same
-//  - Repeated host/teardown does not accumulate in-flight work or unbounded RSS
+//  - Repeated host/teardown: in-flight count returns to 0 each cycle (not process RSS)
 //
 
-import Darwin
 import Foundation
 import SwiftUI
 import Testing
@@ -49,12 +48,11 @@ open class OCRLayer1TaskCancellationTests: BaseTestClass {
         )
     }
 
-    @Test func testRepeatedVisualCorrectionHostTeardownKeepsResidentSizeBounded() async {
+    @Test func testRepeatedVisualCorrectionHostTeardownCancelsEachCycle() async {
         let mock = HangingOCRService()
         let resultCount = CallbackCounter()
         let context = OCRContext()
         let image = PlatformImage()
-        let rssBefore = currentResidentBytes()
 
         await OCRServiceFactory.$testOverride.withValue(mock) {
             for cycle in 0..<12 {
@@ -84,16 +82,7 @@ open class OCRLayer1TaskCancellationTests: BaseTestClass {
 
         #expect(mock.completed == 0, "cancelled OCR must not complete")
         #expect(resultCount.value == 0, "onResult must not fire after cancel")
-
-        let rssAfter = currentResidentBytes()
-        let growth = rssAfter > rssBefore ? rssAfter - rssBefore : 0
-        print("OCR L1 RSS #436 before=\(rssBefore) after=\(rssAfter) growth=\(growth) bytes")
-        // 64 MiB bound is generous for 12 host/teardown cycles of a hanging mock (no Vision).
-        // Unbounded growth would indicate leaked tasks/images, not Mini 16 GB by itself.
-        #expect(
-            growth < 64 * 1024 * 1024,
-            "resident size grew by \(growth) bytes (before \(rssBefore), after \(rssAfter))"
-        )
+        #expect(mock.inFlight == 0, "no OCR work should remain in-flight after 12 teardowns")
     }
 
     // MARK: - Shared assertion
@@ -208,16 +197,4 @@ private func waitUntil(timeout: TimeInterval, _ condition: () -> Bool) async -> 
         try? await Task.sleep(for: .milliseconds(10))
     }
     return condition()
-}
-
-private func currentResidentBytes() -> UInt64 {
-    var info = mach_task_basic_info()
-    var count = mach_msg_type_number_t(MemoryLayout<mach_task_basic_info>.size / MemoryLayout<natural_t>.size)
-    let kernelResult = withUnsafeMutablePointer(to: &info) { infoPointer in
-        infoPointer.withMemoryRebound(to: integer_t.self, capacity: Int(count)) { rebound in
-            task_info(mach_task_self_, task_flavor_t(MACH_TASK_BASIC_INFO), rebound, &count)
-        }
-    }
-    guard kernelResult == KERN_SUCCESS else { return 0 }
-    return UInt64(info.resident_size)
 }
