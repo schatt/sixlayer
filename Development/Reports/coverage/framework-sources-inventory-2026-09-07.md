@@ -97,7 +97,12 @@ Do **not** re-spawn closed #422–#425, #444, #449, #453–#458. Do **not** dupl
 
 | Issue | Cluster |
 | --- | --- |
-| *(filled after create)* | |
+| **#465** | Example/demo Sources (0%) — remove or cover |
+| **#466** | Layer1 semantic zeros |
+| **#467** | Layer4 component zeros |
+| **#468** | Platform UI extension zeros (non-example) |
+| **#469** | Components Views + Navigation zeros |
+| **#470** | Deepen AccessibilityFeatures + IntelligentCardExpansion (&lt;50%) |
 
 ## Related open (not re-spawned)
 
