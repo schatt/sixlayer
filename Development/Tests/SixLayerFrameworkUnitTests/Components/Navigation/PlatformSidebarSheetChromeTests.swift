@@ -6,6 +6,7 @@
 //  iOS wraps NavigationStack; macOS uses a small presentation frame; others pass through.
 //
 
+import SwiftUI
 import Testing
 @testable import SixLayerFramework
 
@@ -28,6 +29,40 @@ struct PlatformSidebarSheetChromeTests {
             #expect(
                 platformSidebarSheetChrome(for: platform) == .unmodified,
                 "\(platform) must not invent iOS/macOS sidebar-sheet chrome"
+            )
+        }
+    }
+
+    @Test
+    func iOSAndMacOSWrapOverlayDetailInNavigationStack() {
+        #expect(platformOverlayDetailChrome(for: .iOS) == .navigationStackWrapped)
+        #expect(platformOverlayDetailChrome(for: .macOS) == .navigationStackWrapped)
+    }
+
+    @Test
+    func secondaryPlatformsLeaveOverlayDetailUnmodified() {
+        for platform in [SixLayerPlatform.tvOS, .watchOS, .visionOS] {
+            #expect(
+                platformOverlayDetailChrome(for: platform) == .unmodified,
+                "\(platform) must not invent overlay-detail NavigationStack chrome"
+            )
+        }
+    }
+
+    @Test @MainActor
+    func sidebarSheetChromeModifierMatchesHostDecision() {
+        let view = Text("sidebar-sheet").platformSidebarSheetChrome_L6()
+        let description = BaseTestClass.viewSubjectTypeDescription(for: view)
+        switch platformSidebarSheetChrome(for: .current) {
+        case .navigationStackWrapped:
+            #expect(
+                description.contains("NavigationStack"),
+                "iOS sidebar-sheet chrome should wrap NavigationStack, got: \(description)"
+            )
+        case .presentationFramed, .unmodified:
+            #expect(
+                !description.contains("NavigationStack"),
+                "Non-iOS sidebar-sheet chrome must not wrap NavigationStack, got: \(description)"
             )
         }
     }
