@@ -853,17 +853,7 @@ public extension View {
     private func createSidebarSheetContent<SidebarContent: View>(
         sidebarContent: SidebarContent
     ) -> some View {
-        #if os(iOS)
-        // Package platforms require iOS 17+ (#340).
-        NavigationStack {
-            sidebarContent
-        }
-        #elseif os(macOS)
-        sidebarContent
-            .platformPresentationFrame(sizes: [.small])
-        #else
-        sidebarContent
-        #endif
+        sidebarContent.platformSidebarSheetChrome_L6()
     }
     
     /// Helper to create detail-only view with sidebar sheet
