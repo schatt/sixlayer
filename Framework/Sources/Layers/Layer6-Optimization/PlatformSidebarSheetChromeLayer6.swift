@@ -12,15 +12,6 @@ public extension View {
     @MainActor
     @ViewBuilder
     func platformSidebarSheetChrome_L6() -> some View {
-        switch platformSidebarSheetChrome(for: .current) {
-        case .navigationStackWrapped:
-            NavigationStack {
-                self
-            }
-        case .presentationFramed:
-            self.platformPresentationFrame(sizes: [.small])
-        case .unmodified:
-            self
-        }
+        self
     }
 }
