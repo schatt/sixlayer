@@ -62,18 +62,7 @@ private struct Layer4OuterSidebarOverlayHost<SidebarSheet: View, Detail: View>: 
             isOverlayPresented: isOuterSidebarPresented
         )
         Group {
-            #if os(iOS)
-            // Package platforms require iOS 17+ — NavigationStack is unconditional (#340).
-            NavigationStack {
-                detailContent
-            }
-            #elseif os(macOS)
-            NavigationStack {
-                detailContent
-            }
-            #else
-            detailContent
-            #endif
+            detailContent.platformOverlayDetailChrome_L6()
         }
         .accessibilityHidden(accessibilityState.isUnderlyingContentAccessibilityHidden)
         .toolbar {
