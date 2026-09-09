@@ -61,10 +61,8 @@ private struct Layer4OuterSidebarOverlayHost<SidebarSheet: View, Detail: View>: 
         let accessibilityState = NavigationLayoutResolver.layer4OverlayAccessibilityState(
             isOverlayPresented: isOuterSidebarPresented
         )
-        Group {
-            detailContent.platformOverlayDetailChrome_L6()
-        }
-        .accessibilityHidden(accessibilityState.isUnderlyingContentAccessibilityHidden)
+        detailContent.platformOverlayDetailChrome_L6()
+            .accessibilityHidden(accessibilityState.isUnderlyingContentAccessibilityHidden)
         .toolbar {
             // `.primaryAction` can fold into overflow on compact widths, hiding the control from XCUITest (#207).
             // Use `platformToolbarPlacement(.trailing)`: `.navigationBarTrailing` on iOS; `.automatic` on macOS (trailing unavailable there).
