@@ -15,10 +15,12 @@ public enum PlatformMacOSWindowToolbarChrome: Equatable {
     case unmodified
 }
 
-/// Platform decision for macOS window-toolbar chrome. Intentionally wrong until green.
+/// Platform decision for macOS window-toolbar chrome. L5 applies the result.
 public func platformMacOSWindowToolbarChrome(for platform: SixLayerPlatform) -> PlatformMacOSWindowToolbarChrome {
     switch platform {
-    case .iOS, .macOS, .tvOS, .watchOS, .visionOS:
+    case .macOS:
+        return .unified
+    case .iOS, .tvOS, .watchOS, .visionOS:
         return .unmodified
     }
 }
@@ -26,7 +28,17 @@ public func platformMacOSWindowToolbarChrome(for platform: SixLayerPlatform) -> 
 public extension View {
     /// Unified window toolbar on macOS; identity elsewhere.
     @MainActor
+    @ViewBuilder
     func platformMacOSWindowToolbar_L5() -> some View {
+        #if os(macOS)
+        switch platformMacOSWindowToolbarChrome(for: .macOS) {
+        case .unified:
+            self.windowToolbarStyle(.unified)
+        case .unmodified:
+            self
+        }
+        #else
         self
+        #endif
     }
 }
