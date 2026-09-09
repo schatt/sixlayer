@@ -9,6 +9,7 @@ Layer 5 applies platform-aware technical behavior (navigation chrome, gestures, 
 | Area | Path |
 |------|------|
 | iOS View enhancements | `Framework/Sources/Platform/iOS/Views/Extensions/PlatformIOSOptimizationsLayer5.swift` |
+| macOS View enhancements | `Framework/Sources/Platform/macOS/Views/Extensions/PlatformMacOSOptimizationsLayer5.swift` |
 | Shared L5 platform components | `Framework/Sources/Layers/Layer5-Platform/` (e.g. split view / navigation stack optimizations, card expansion performance config, Messaging/Resource helpers) |
 
 There is **no** `Shared/Views/Extensions/PlatformPerformanceExtensionsLayer5.swift`.
@@ -28,6 +29,14 @@ These exist as `extension View` (iOS) with non-iOS stubs where needed:
 - `platformIOSContextMenu(...)`
 
 Coverage for haptics: **#423** (L5 wrappers), **#445** (unified public surface). Remaining modifiers in that file: **#424**.
+
+## macOS View APIs (`PlatformMacOSOptimizationsLayer5`)
+
+These exist as `extension View` (macOS) with non-macOS identity stubs (#451 / #449):
+
+- `platformMacOSWindowToolbar_L5()` — applies `presentedWindowToolbarStyle(.unified)` on macOS. Decision: `platformMacOSWindowToolbarChrome(for:)`. This is **not** Scene `windowToolbarStyle` (that cannot be a View modifier).
+
+Deeper NavigationStack keyboard work stays on **#446**. Sidebar/split chrome should call shared L5 split helpers rather than duplicating them.
 
 ## Other L5 surfaces (examples)
 
