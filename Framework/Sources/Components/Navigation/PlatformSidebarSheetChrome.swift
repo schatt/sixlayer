@@ -33,7 +33,9 @@ public enum PlatformOverlayDetailChrome: Equatable {
 /// Platform decision for overlay-host detail chrome. L4 applies the result.
 public func platformOverlayDetailChrome(for platform: SixLayerPlatform) -> PlatformOverlayDetailChrome {
     switch platform {
-    case .iOS, .macOS, .tvOS, .watchOS, .visionOS:
+    case .iOS, .macOS:
+        return .navigationStackWrapped
+    case .tvOS, .watchOS, .visionOS:
         return .unmodified
     }
 }
