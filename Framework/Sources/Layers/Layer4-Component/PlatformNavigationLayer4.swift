@@ -61,21 +61,8 @@ private struct Layer4OuterSidebarOverlayHost<SidebarSheet: View, Detail: View>: 
         let accessibilityState = NavigationLayoutResolver.layer4OverlayAccessibilityState(
             isOverlayPresented: isOuterSidebarPresented
         )
-        Group {
-            #if os(iOS)
-            // Package platforms require iOS 17+ — NavigationStack is unconditional (#340).
-            NavigationStack {
-                detailContent
-            }
-            #elseif os(macOS)
-            NavigationStack {
-                detailContent
-            }
-            #else
-            detailContent
-            #endif
-        }
-        .accessibilityHidden(accessibilityState.isUnderlyingContentAccessibilityHidden)
+        detailContent.platformOverlayDetailChrome_L6()
+            .accessibilityHidden(accessibilityState.isUnderlyingContentAccessibilityHidden)
         .toolbar {
             // `.primaryAction` can fold into overflow on compact widths, hiding the control from XCUITest (#207).
             // Use `platformToolbarPlacement(.trailing)`: `.navigationBarTrailing` on iOS; `.automatic` on macOS (trailing unavailable there).
@@ -853,17 +840,7 @@ public extension View {
     private func createSidebarSheetContent<SidebarContent: View>(
         sidebarContent: SidebarContent
     ) -> some View {
-        #if os(iOS)
-        // Package platforms require iOS 17+ (#340).
-        NavigationStack {
-            sidebarContent
-        }
-        #elseif os(macOS)
-        sidebarContent
-            .platformPresentationFrame(sizes: [.small])
-        #else
-        sidebarContent
-        #endif
+        sidebarContent.platformSidebarSheetChrome_L6()
     }
     
     /// Helper to create detail-only view with sidebar sheet
