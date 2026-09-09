@@ -21,3 +21,19 @@ public func platformSidebarSheetChrome(for platform: SixLayerPlatform) -> Platfo
         return .unmodified
     }
 }
+
+/// How the compact overlay host chromes its detail surface (#447).
+public enum PlatformOverlayDetailChrome: Equatable {
+    /// Wrap detail in `NavigationStack` (iOS and macOS).
+    case navigationStackWrapped
+    /// Pass through (tvOS / watchOS / visionOS).
+    case unmodified
+}
+
+/// Platform decision for overlay-host detail chrome. L4 applies the result.
+public func platformOverlayDetailChrome(for platform: SixLayerPlatform) -> PlatformOverlayDetailChrome {
+    switch platform {
+    case .iOS, .macOS, .tvOS, .watchOS, .visionOS:
+        return .unmodified
+    }
+}
