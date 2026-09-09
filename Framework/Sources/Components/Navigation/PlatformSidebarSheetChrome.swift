@@ -10,7 +10,14 @@ public enum PlatformSidebarSheetChrome: Equatable {
     case unmodified
 }
 
-/// Deliberately wrong mapping so #447 tests fail at runtime.
+/// Platform decision for sidebar-sheet chrome. L4/L6 apply the result; they do not re-fork `#if os`.
 public func platformSidebarSheetChrome(for platform: SixLayerPlatform) -> PlatformSidebarSheetChrome {
-    .unmodified
+    switch platform {
+    case .iOS:
+        return .navigationStackWrapped
+    case .macOS:
+        return .presentationFramed
+    case .tvOS, .watchOS, .visionOS:
+        return .unmodified
+    }
 }
