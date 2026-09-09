@@ -3,38 +3,38 @@
 //  SixLayerFramework
 //
 //  Layer 5: macOS-specific chrome adapters (#451).
-//  View-level `.toolbarStyle(.browser)` — not Scene `windowToolbarStyle`.
+//  View-level `presentedWindowToolbarStyle(.unified)` — not Scene `windowToolbarStyle`.
 //
 
 import SwiftUI
 
-/// How L5 chromes a macOS toolbar.
-public enum PlatformMacOSToolbarChrome: Equatable {
-    /// Apply browser toolbar style (macOS).
-    case browser
+/// How L5 chromes a macOS window toolbar.
+public enum PlatformMacOSWindowToolbarChrome: Equatable {
+    /// Apply unified presented window toolbar style (macOS).
+    case unified
     /// Pass through (iOS / tvOS / watchOS / visionOS).
     case unmodified
 }
 
-/// Platform decision for macOS toolbar chrome. L5 applies the result.
-public func platformMacOSToolbarChrome(for platform: SixLayerPlatform) -> PlatformMacOSToolbarChrome {
+/// Platform decision for macOS window-toolbar chrome. L5 applies the result.
+public func platformMacOSWindowToolbarChrome(for platform: SixLayerPlatform) -> PlatformMacOSWindowToolbarChrome {
     switch platform {
     case .macOS:
-        return .browser
+        return .unified
     case .iOS, .tvOS, .watchOS, .visionOS:
         return .unmodified
     }
 }
 
 public extension View {
-    /// Browser toolbar style on macOS; identity elsewhere.
+    /// Unified presented window toolbar on macOS; identity elsewhere.
     @MainActor
     @ViewBuilder
-    func platformMacOSToolbar_L5() -> some View {
+    func platformMacOSWindowToolbar_L5() -> some View {
         #if os(macOS)
-        switch platformMacOSToolbarChrome(for: .macOS) {
-        case .browser:
-            self.toolbarStyle(.browser)
+        switch platformMacOSWindowToolbarChrome(for: .macOS) {
+        case .unified:
+            self.presentedWindowToolbarStyle(.unified)
         case .unmodified:
             self
         }
