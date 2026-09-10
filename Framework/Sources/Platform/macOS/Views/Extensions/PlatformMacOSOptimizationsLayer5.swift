@@ -53,16 +53,30 @@ public enum PlatformMacOSKeyboardFocusChrome: Equatable {
 }
 
 /// Platform decision for macOS keyboard-focus chrome. L5 applies the result.
-/// Deliberately wrong stub: always `.unmodified` so decision tests fail at runtime.
 public func platformMacOSKeyboardFocusChrome(for platform: SixLayerPlatform) -> PlatformMacOSKeyboardFocusChrome {
-    return .unmodified
+    switch platform {
+    case .macOS:
+        return .focusable
+    case .iOS, .tvOS, .watchOS, .visionOS:
+        return .unmodified
+    }
 }
 
 public extension View {
     /// Keyboard-focus affordance on macOS; identity elsewhere.
+    /// Uses SwiftUI `.focusable()` (macOS 12+). NavigationStack keyboard product stays on #446.
     @MainActor
     @ViewBuilder
     func platformMacOSKeyboardFocus_L5() -> some View {
+        #if os(macOS)
+        switch platformMacOSKeyboardFocusChrome(for: .macOS) {
+        case .focusable:
+            self.focusable()
+        case .unmodified:
+            self
+        }
+        #else
         self
+        #endif
     }
 }
