@@ -43,3 +43,26 @@ public extension View {
         #endif
     }
 }
+
+/// How L5 chromes keyboard-focus affordance on macOS.
+public enum PlatformMacOSKeyboardFocusChrome: Equatable {
+    /// Apply SwiftUI `.focusable()` (macOS).
+    case focusable
+    /// Pass through (iOS / tvOS / watchOS / visionOS).
+    case unmodified
+}
+
+/// Platform decision for macOS keyboard-focus chrome. L5 applies the result.
+/// Deliberately wrong stub: always `.unmodified` so decision tests fail at runtime.
+public func platformMacOSKeyboardFocusChrome(for platform: SixLayerPlatform) -> PlatformMacOSKeyboardFocusChrome {
+    return .unmodified
+}
+
+public extension View {
+    /// Keyboard-focus affordance on macOS; identity elsewhere.
+    @MainActor
+    @ViewBuilder
+    func platformMacOSKeyboardFocus_L5() -> some View {
+        self
+    }
+}
