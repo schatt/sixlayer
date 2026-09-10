@@ -21,58 +21,102 @@ public extension EnvironmentValues {
 
 /// Resolves the native text control owned by a field's zero-size anchor.
 ///
-/// Tests exercise the lookup against synthetic view trees. The production modifier
-/// uses the same function so hosted select-all cannot bind every field to the first control.
+/// Walks to the nearest sibling subtree by subview-index distance instead of taking
+/// the first text control in an ancestor (which binds every field to field 1).
 enum NativeTextControlLookup {
     #if os(iOS)
     static func nearestTextControl(from marker: UIView) -> AnyObject? {
-        firstTextControlInAncestors(from: marker)
-    }
-
-    private static func firstTextControlInAncestors(from view: UIView) -> AnyObject? {
-        var ancestor: UIView? = view.superview
-        while let current = ancestor {
-            if let found = firstTextControl(in: current) {
-                return found
-            }
-            ancestor = current.superview
-        }
-        return nil
-    }
-
-    private static func firstTextControl(in view: UIView) -> AnyObject? {
-        if view is UITextField || view is UITextView {
-            return view
-        }
-        for child in view.subviews {
-            if let found = firstTextControl(in: child) {
-                return found
-            }
-        }
-        return nil
+        nearest(
+            from: marker,
+            superview: { $0.superview },
+            subviews: { $0.subviews },
+            isTextControl: { $0 is UITextField || $0 is UITextView }
+        )
     }
     #elseif os(macOS)
     static func nearestTextControl(from marker: NSView) -> AnyObject? {
-        firstTextControlInAncestors(from: marker)
+        nearest(
+            from: marker,
+            superview: { $0.superview },
+            subviews: { $0.subviews },
+            isTextControl: { $0 is NSTextField || $0 is NSTextView }
+        )
     }
+    #endif
 
-    private static func firstTextControlInAncestors(from view: NSView) -> AnyObject? {
-        var ancestor: NSView? = view.superview
+    #if os(iOS) || os(macOS)
+    private static func nearest<ViewType: AnyObject>(
+        from marker: ViewType,
+        superview: (ViewType) -> ViewType?,
+        subviews: (ViewType) -> [ViewType],
+        isTextControl: (ViewType) -> Bool
+    ) -> ViewType? {
+        var child = marker
+        var ancestor = superview(marker)
         while let current = ancestor {
-            if let found = firstTextControl(in: current) {
+            if isTextControl(current) {
+                return current
+            }
+            if let found = nearestTextControlAmongSiblings(
+                of: child,
+                in: current,
+                subviews: subviews,
+                isTextControl: isTextControl
+            ) {
                 return found
             }
-            ancestor = current.superview
+            child = current
+            ancestor = superview(current)
         }
         return nil
     }
 
-    private static func firstTextControl(in view: NSView) -> AnyObject? {
-        if view is NSTextField || view is NSTextView {
+    private static func nearestTextControlAmongSiblings<ViewType: AnyObject>(
+        of child: ViewType,
+        in parent: ViewType,
+        subviews: (ViewType) -> [ViewType],
+        isTextControl: (ViewType) -> Bool
+    ) -> ViewType? {
+        let siblings = subviews(parent)
+        guard let childIndex = siblings.firstIndex(where: { $0 === child }) else {
+            return nil
+        }
+        var best: (view: ViewType, distance: Int, index: Int)?
+        for (index, sibling) in siblings.enumerated() where sibling !== child {
+            guard let control = firstTextControl(
+                in: sibling,
+                subviews: subviews,
+                isTextControl: isTextControl
+            ) else {
+                continue
+            }
+            let distance = abs(index - childIndex)
+            if let currentBest = best {
+                if distance < currentBest.distance
+                    || (distance == currentBest.distance && index > currentBest.index) {
+                    best = (control, distance, index)
+                }
+            } else {
+                best = (control, distance, index)
+            }
+        }
+        return best?.view
+    }
+
+    private static func firstTextControl<ViewType: AnyObject>(
+        in view: ViewType,
+        subviews: (ViewType) -> [ViewType],
+        isTextControl: (ViewType) -> Bool
+    ) -> ViewType? {
+        if isTextControl(view) {
             return view
         }
-        for child in view.subviews {
-            if let found = firstTextControl(in: child) {
+        for child in subviews(view) {
+            if let found = firstTextControl(
+                in: child,
+                subviews: subviews,
+                isTextControl: isTextControl
+            ) {
                 return found
             }
         }
@@ -155,6 +199,13 @@ private struct SelectAllOnBeginEditingIfFormOptedInModifier: ViewModifier {
             }
             #elseif os(macOS)
             .onReceive(NotificationCenter.default.publisher(for: NSControl.textDidBeginEditingNotification)) { note in
+                TextFieldBeginEditingSelection.applySelectAll(
+                    to: note.object,
+                    matching: nativeField,
+                    shouldSelect: shouldSelect
+                )
+            }
+            .onReceive(NotificationCenter.default.publisher(for: NSText.didBeginEditingNotification)) { note in
                 TextFieldBeginEditingSelection.applySelectAll(
                     to: note.object,
                     matching: nativeField,
