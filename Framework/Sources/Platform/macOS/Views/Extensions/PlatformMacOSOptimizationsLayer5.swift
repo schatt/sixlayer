@@ -4,7 +4,7 @@
 //
 //  Layer 5: macOS-specific chrome adapters (#451).
 //  Toolbar: View-level `presentedWindowToolbarStyle(.unified)` — not Scene `windowToolbarStyle`.
-//  Keyboard: SwiftUI `.focusable()` — NavigationStack keyboard product stays on #446.
+//  Keyboard: SwiftUI `.focusable()` — NavigationStack keyboard-first product is L6 (#446).
 //  Sidebar / split: call `platformMacOSSplitViewOptimizations_L5()` — no tautological alias here.
 //
 
@@ -64,7 +64,7 @@ public extension View {
     }
 
     /// Keyboard-focus affordance on macOS; identity elsewhere.
-    /// Uses SwiftUI `.focusable()` (macOS 12+). NavigationStack keyboard product stays on #446.
+    /// Uses SwiftUI `.focusable()` (macOS 12+). NavigationStack keyboard-first product is L6 (#446).
     @MainActor
     @ViewBuilder
     func platformMacOSKeyboardFocus_L5() -> some View {
