@@ -424,9 +424,12 @@ open class FormSelectAllOnBeginEditingTests: BaseTestClass {
         runWithTaskLocalConfig {
             let data = SelectAllFormFixture(odometer: "42000", station: "Station")
             let view = IntelligentFormView.generateForm(
-                for: SelectAllFormFixture.self,
-                initialData: data,
-                selectAllOnBeginEditing: true
+                for: data,
+                selectAllOnBeginEditing: true,
+                customFieldView: { name, value, _ in
+                    TextField(name, text: .constant("\(value)"))
+                        .selectAllTextOnBeginEditingIfFormOptedIn()
+                }
             )
             guard let root = hostRootPlatformView(view, forceLayout: true) else {
                 Issue.record("expected hosted IFV root")
