@@ -21,8 +21,7 @@ public extension View {
             self
         }
         #elseif os(macOS)
-        // Deliberate wrong stub for #447 FlexFrame host observation red — restore after failing run.
-        self
+        self.platformPresentationFrame(sizes: [.small])
         #else
         self
         #endif
