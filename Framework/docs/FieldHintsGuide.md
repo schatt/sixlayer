@@ -176,6 +176,8 @@ public struct FieldDisplayHints: Sendable {
 }
 ```
 
+**Not a FieldDisplayHints / `.hints` key:** `selectAllOnBeginEditing` is a **per-form** opt-in on `DynamicFormConfiguration`, `platformPresentFormData_L1`, and `IntelligentFormView.generateForm`. It is not a field property and must not be added to hints files.
+
 **📚 For complete OCR hints, calculation groups, and value ranges documentation, see:**
 - **[Hints File OCR and Calculations Guide](HintsFileOCRAndCalculationsGuide.md)** - Complete guide to OCR hints, calculations, and value ranges in hints files
 
