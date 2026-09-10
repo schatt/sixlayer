@@ -3,14 +3,12 @@
 //  SixLayerFramework
 //
 //  Layer 6: macOS NavigationStack keyboard-first navigation (#446).
-//  Verified SwiftUI View APIs: `focusSection()`, `defaultFocus(_::)`, `onExitCommand`,
-//  `keyboardShortcut`. Scene `commands` cannot be a View L6 adapter.
+//  Verified SwiftUI View APIs: `focusSection()`, `defaultFocus(_:_:)` (macOS 13+),
+//  `onExitCommand(perform:)`, `keyboardShortcut`. Scene `commands` is Scene-only
+//  and is not applied here.
 //
 
 import SwiftUI
-#if os(macOS)
-import AppKit
-#endif
 
 // MARK: - Decisions
 
@@ -50,16 +48,19 @@ public enum PlatformMacOSNavigationKeyboardShortcutKind: Equatable, Sendable {
 public func platformMacOSNavigationStackKeyboardChrome(
     for platform: SixLayerPlatform
 ) -> PlatformMacOSNavigationStackKeyboardChrome {
-    // Deliberately wrong until green (#446 TDD red).
-    return .unmodified
+    switch platform {
+    case .macOS:
+        return .keyboardFirst
+    case .iOS, .tvOS, .watchOS, .visionOS:
+        return .unmodified
+    }
 }
 
 /// Default-focus pane for list ↔ detail. Detail presented → detail; otherwise list.
 public func platformMacOSNavigationDefaultFocusPane(
     isDetailPresented: Bool
 ) -> PlatformMacOSNavigationFocusPane {
-    // Deliberately wrong until green (#446 TDD red).
-    return .list
+    isDetailPresented ? .detail : .list
 }
 
 /// Resolved default-focus value for the given pane.
@@ -68,22 +69,31 @@ public func platformMacOSNavigationDefaultFocusValue<Value>(
     list: Value,
     detail: Value
 ) -> Value {
-    // Deliberately wrong until green (#446 TDD red).
-    return list
+    switch pane {
+    case .list:
+        return list
+    case .detail:
+        return detail
+    }
 }
 
 /// Escape / `onExitCommand` should dismiss only when the stack is presented.
 public func platformMacOSNavigationShouldDismissOnExit(isPresented: Bool) -> Bool {
-    // Deliberately wrong until green (#446 TDD red).
-    return false
+    isPresented
 }
 
 /// Shortcut kind for a navigation action. Scene `commands` is not used.
 public func platformMacOSNavigationKeyboardShortcutKind(
     for action: PlatformMacOSNavigationKeyboardAction
 ) -> PlatformMacOSNavigationKeyboardShortcutKind {
-    // Deliberately wrong until green (#446 TDD red).
-    return .cancelAction
+    switch action {
+    case .back:
+        return .commandLeftBracket
+    case .select:
+        return .defaultAction
+    case .dismiss:
+        return .cancelAction
+    }
 }
 
 #if os(iOS) || os(macOS) || os(visionOS)
@@ -141,8 +151,30 @@ public struct PlatformMacOSNavigationKeyboardShortcutsModifier: ViewModifier {
     public var onDismiss: (() -> Void)?
 
     public func body(content: Content) -> some View {
-        // Identity stub until green — modifier must wrap on macOS.
+        #if os(macOS)
+        content.background(alignment: .topLeading) {
+            HStack(spacing: 0) {
+                if let onBack {
+                    Button("Back", action: onBack)
+                        .keyboardShortcut(platformMacOSNavigationKeyboardShortcut(for: .back))
+                }
+                if let onSelect {
+                    Button("Select", action: onSelect)
+                        .keyboardShortcut(platformMacOSNavigationKeyboardShortcut(for: .select))
+                }
+                if let onDismiss {
+                    Button("Dismiss", action: onDismiss)
+                        .keyboardShortcut(platformMacOSNavigationKeyboardShortcut(for: .dismiss))
+                }
+            }
+            .opacity(0)
+            .frame(width: 0, height: 0)
+            .allowsHitTesting(false)
+            .accessibilityHidden(true)
+        }
+        #else
         content
+        #endif
     }
 }
 
@@ -167,12 +199,17 @@ public extension View {
     /// `.focusable()` and does not mark every stack `.isHeader`.
     #if os(macOS)
     @MainActor
+    @ViewBuilder
     func platformMacOSNavigationStackEnhancements_L6() -> some View {
-        return self
-            // Still the pre-#446 body so subject-type tests fail at runtime (TDD red).
-            .focusable()
-            .accessibilityAddTraits(.isHeader)
-            .platformPresentationFrame(sizes: [.small])
+        switch platformMacOSNavigationStackKeyboardChrome(for: .macOS) {
+        case .keyboardFirst:
+            self
+                .modifier(PlatformMacOSNavigationFocusSectionModifier())
+                .modifier(PlatformMacOSNavigationExitCommandModifier())
+                .platformPresentationFrame(sizes: [.small])
+        case .unmodified:
+            self
+        }
     }
     #else
     func platformMacOSNavigationStackEnhancements_L6() -> some View {
@@ -182,16 +219,32 @@ public extension View {
 
     /// View-level keyboard shortcuts for back / select / dismiss.
     /// Scene `commands` is skipped — that API is not a View modifier.
+    #if os(macOS)
     @MainActor
     func platformMacOSNavigationKeyboardShortcuts_L6(
         onBack: (() -> Void)? = nil,
         onSelect: (() -> Void)? = nil,
         onDismiss: (() -> Void)? = nil
     ) -> some View {
-        // Identity stub until green — macOS must wrap with the named modifier.
+        modifier(
+            PlatformMacOSNavigationKeyboardShortcutsModifier(
+                onBack: onBack,
+                onSelect: onSelect,
+                onDismiss: onDismiss
+            )
+        )
+    }
+    #else
+    @MainActor
+    func platformMacOSNavigationKeyboardShortcuts_L6(
+        onBack: (() -> Void)? = nil,
+        onSelect: (() -> Void)? = nil,
+        onDismiss: (() -> Void)? = nil
+    ) -> some View {
         _ = (onBack, onSelect, onDismiss)
         return self
     }
+    #endif
 
     /// Apply SwiftUI `defaultFocus` for list ↔ detail using the resolved pane.
     @MainActor
