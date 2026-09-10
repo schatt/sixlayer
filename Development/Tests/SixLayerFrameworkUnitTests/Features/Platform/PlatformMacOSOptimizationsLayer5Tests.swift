@@ -44,4 +44,36 @@ struct PlatformMacOSOptimizationsLayer5Tests {
         BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "Text")
     }
     #endif
+
+    @Test
+    func macOSUsesFocusableKeyboardFocus() {
+        #expect(platformMacOSKeyboardFocusChrome(for: .macOS) == .focusable)
+    }
+
+    @Test
+    func nonMacOSLeavesKeyboardFocusUnmodified() {
+        for platform in [SixLayerPlatform.iOS, .tvOS, .watchOS, .visionOS] {
+            #expect(
+                platformMacOSKeyboardFocusChrome(for: platform) == .unmodified,
+                "\(platform) must not invent macOS keyboard-focus chrome"
+            )
+        }
+    }
+
+    #if os(macOS)
+    @Test @MainActor
+    func platformMacOSKeyboardFocusWrapsRootOnMacOS() {
+        let view = Text("focus-root").platformMacOSKeyboardFocus_L5()
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "Text")
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "_FocusableModifier")
+    }
+    #endif
+
+    #if os(iOS)
+    @Test @MainActor
+    func platformMacOSKeyboardFocusStubPreservesRootOnIOS() {
+        let view = Text("focus-root").platformMacOSKeyboardFocus_L5()
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "Text")
+    }
+    #endif
 }
