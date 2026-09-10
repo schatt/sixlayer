@@ -2,8 +2,9 @@
 //  PlatformMacOSOptimizationsLayer5Tests.swift
 //  SixLayerFrameworkTests
 //
-//  macOS L5 window-toolbar chrome decision and host/stub identity (#451).
-//  View-level `presentedWindowToolbarStyle(.unified)` — not Scene `windowToolbarStyle`.
+//  macOS L5 window-toolbar and keyboard-focus chrome (#451).
+//  Toolbar: `presentedWindowToolbarStyle(.unified)` — not Scene `windowToolbarStyle`.
+//  Keyboard: SwiftUI `.focusable()` — NavigationStack keyboard product stays on #446.
 //
 
 import SwiftUI
