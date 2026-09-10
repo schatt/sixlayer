@@ -103,12 +103,15 @@ File: `Platform/macOS/Views/Extensions/PlatformMacOSNavigationStackEnhancementsL
 ### **Layer 4 → Layer 6**
 Layer 4 components can be enhanced with Layer 6 platform-specific features.
 
-Sidebar-sheet and compact overlay chrome live here, not as `#if os` forks in L4 (#447):
+Sidebar-sheet and compact overlay chrome live here (#447). Pure decisions stay in
+`platformSidebarSheetChrome(for:)` / `platformOverlayDetailChrome(for:)`; L6 apply uses
+compile-time `#if os` mirroring those tables so host Mirror subject types stay
+platform-truthful (a ViewBuilder runtime switch encoded unused `NavigationStack` branches):
 
-- `platformSidebarSheetChrome_L6()` — `NavigationStack` on iOS, small `platformPresentationFrame` on macOS
-- `platformOverlayDetailChrome_L6()` — `NavigationStack` on iOS and macOS
+- `platformSidebarSheetChrome_L6()` — `NavigationStack` on iOS, small `platformPresentationFrame` on macOS, identity elsewhere
+- `platformOverlayDetailChrome_L6()` — `NavigationStack` on iOS and macOS, identity elsewhere
 
-Decisions are `platformSidebarSheetChrome(for:)` / `platformOverlayDetailChrome(for:)`. Compact collapse and column visibility stay in `NavigationLayoutResolver` / L5 split helpers.
+Compact collapse and column visibility stay in `NavigationLayoutResolver` / L5 split helpers.
 
 ### **Layer 5 → Layer 6**
 Layer 5 optimizations can be enhanced with Layer 6 platform-specific performance features.

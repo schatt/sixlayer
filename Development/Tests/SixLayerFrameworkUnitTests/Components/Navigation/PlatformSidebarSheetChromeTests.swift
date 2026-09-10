@@ -2,8 +2,9 @@
 //  PlatformSidebarSheetChromeTests.swift
 //  SixLayerFrameworkTests
 //
-//  Pure L6 decision for sidebar-sheet navigation chrome (#447).
-//  iOS wraps NavigationStack; macOS uses a small presentation frame; others pass through.
+//  Pure decision mapping + host subject-type for sidebar-sheet / overlay chrome (#447).
+//  L6 apply is compile-time `#if os` mirroring these decisions so Mirror types stay
+//  platform-truthful (a ViewBuilder runtime switch encoded NavigationStack on non-iOS).
 //
 
 import SwiftUI
@@ -59,10 +60,19 @@ struct PlatformSidebarSheetChromeTests {
                 description.contains("NavigationStack"),
                 "iOS sidebar-sheet chrome should wrap NavigationStack, got: \(description)"
             )
-        case .presentationFramed, .unmodified:
+        case .presentationFramed:
+            #expect(
+                description.contains("_FlexFrameLayout"),
+                "macOS sidebar-sheet chrome should apply presentation frame, got: \(description)"
+            )
             #expect(
                 !description.contains("NavigationStack"),
-                "Non-iOS sidebar-sheet chrome must not wrap NavigationStack, got: \(description)"
+                "macOS sidebar-sheet chrome must not wrap NavigationStack, got: \(description)"
+            )
+        case .unmodified:
+            #expect(
+                !description.contains("NavigationStack"),
+                "Secondary-platform sidebar-sheet chrome must not wrap NavigationStack, got: \(description)"
             )
         }
     }
