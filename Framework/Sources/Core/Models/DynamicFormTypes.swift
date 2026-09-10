@@ -1043,7 +1043,6 @@ public struct DynamicFormConfiguration: Identifiable {
     /// Maps group name to field IDs; fields may appear in multiple groups.
     public let ocrGroups: [String: [String]]?
     /// When true, text-entry controls on this form select all contents on begin editing (#472).
-    /// Stub: always false until green.
     public let selectAllOnBeginEditing: Bool
 
     public init(
@@ -1079,9 +1078,7 @@ public struct DynamicFormConfiguration: Identifiable {
         self.modelName = modelName
         self.showProgress = showProgress
         self.ocrGroups = ocrGroups
-        // Stub: ignore caller value so `selectAllOnBeginEditing: true` is observably wrong (#472 red).
-        self.selectAllOnBeginEditing = false
-        _ = selectAllOnBeginEditing
+        self.selectAllOnBeginEditing = selectAllOnBeginEditing
     }
     
     /// Get all fields from all sections
