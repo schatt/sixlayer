@@ -424,7 +424,8 @@ open class FormSelectAllOnBeginEditingTests: BaseTestClass {
         runWithTaskLocalConfig {
             let data = SelectAllFormFixture(odometer: "42000", station: "Station")
             let view = IntelligentFormView.generateForm(
-                for: data,
+                for: SelectAllFormFixture.self,
+                initialData: data,
                 selectAllOnBeginEditing: true
             )
             guard let root = hostRootPlatformView(view, forceLayout: true) else {
