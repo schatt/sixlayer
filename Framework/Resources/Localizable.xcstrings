@@ -107,109 +107,10 @@
     "• Adaptive spacing" : {
 
     },
-    "• Alert presentation and handling" : {
-
-    },
-    "• Content classification and tagging" : {
-
-    },
-    "• Cross-platform service integration" : {
-
-    },
-    "• Data interpretation and analysis" : {
-
-    },
-    "• Data organization and categorization" : {
-
-    },
-    "• Data sharing controls and permissions" : {
-
-    },
-    "• Frame rate analysis and optimization suggestions" : {
-
-    },
-    "• Image analysis and text recognition" : {
-
-    },
-    "• Information architecture management" : {
-
-    },
-    "• Intelligent UI pattern selection" : {
-
-    },
-    "• Memory usage tracking and leak detection" : {
-
-    },
-    "• Navigation routing and strategies" : {
-
-    },
-    "• Notification delivery and management" : {
-
-    },
     "• Optimal component sizing" : {
 
     },
-    "• Pattern detection and classification" : {
-
-    },
-    "• Performance profiling and analysis" : {
-
-    },
-    "• Platform-specific AI service integration" : {
-
-    },
-    "• Platform-specific display adaptation" : {
-
-    },
     "• Platform-specific layouts" : {
-
-    },
-    "• Platform-specific navigation patterns" : {
-
-    },
-    "• Platform-specific notification styles" : {
-
-    },
-    "• Platform-specific optimization services" : {
-
-    },
-    "• Platform-specific profiling services" : {
-
-    },
-    "• Platform-specific safety features" : {
-
-    },
-    "• Privacy policy presentation and compliance" : {
-
-    },
-    "• Privacy settings and consent management" : {
-
-    },
-    "• Real-time performance monitoring and metrics" : {
-
-    },
-    "• Resource optimization strategies" : {
-
-    },
-    "• Route management and coordination" : {
-
-    },
-    "• Safety checks and security validation" : {
-
-    },
-    "• Security context management" : {
-
-    },
-    "• Service coordination and orchestration" : {
-
-    },
-    "• System optimization recommendations" : {
-
-    },
-    "• System profiling and metrics" : {
-
-    },
-    "• Workflow management and automation" : {
 
     },
     "✅ After (Cross-platform)" : {
@@ -249,9 +150,6 @@
 
     },
     "Age" : {
-
-    },
-    "AI/ML-powered content recognition" : {
 
     },
     "Analysis failed" : {
@@ -348,9 +246,6 @@
 
     },
     "Custom field not registered: %@" : {
-
-    },
-    "Data organization and categorization" : {
 
     },
     "Data points: %@" : {
@@ -458,12 +353,6 @@
     "Inset Grouped" : {
 
     },
-    "Intelligent data display adaptation" : {
-
-    },
-    "Intelligent platform-specific recommendations" : {
-
-    },
     "iOS Optimized View" : {
 
     },
@@ -497,13 +386,7 @@
     "Lists" : {
 
     },
-    "Logging and monitoring features" : {
-
-    },
     "macOS Optimized View" : {
-
-    },
-    "Maintenance and lifecycle management features" : {
 
     },
     "Manage your preferences" : {
@@ -533,9 +416,6 @@
     "Navigation" : {
 
     },
-    "Navigation routing and navigation strategies" : {
-
-    },
     "No Barcode Found" : {
 
     },
@@ -561,9 +441,6 @@
 
     },
     "No visualization recommendations available" : {
-
-    },
-    "Notification and alert management" : {
 
     },
     "Numeric Data" : {
@@ -597,12 +474,6 @@
     "Pattern Recognition" : {
 
     },
-    "Performance monitoring and optimization" : {
-
-    },
-    "Performance profiling and analysis" : {
-
-    },
     "Performance: %@" : {
 
     },
@@ -612,55 +483,10 @@
     "Plain" : {
 
     },
-    "Platform Interpretation" : {
-
-    },
-    "Platform Logging Layer 5" : {
-
-    },
-    "Platform Maintenance Layer 5" : {
-
-    },
-    "Platform Notifications" : {
-
-    },
-    "Platform Optimization" : {
-
-    },
-    "Platform Orchestration" : {
-
-    },
-    "Platform Organization" : {
-
-    },
-    "Platform Performance" : {
-
-    },
-    "Platform Privacy" : {
-
-    },
-    "Platform Profiling" : {
-
-    },
-    "Platform Recognition" : {
-
-    },
-    "Platform Routing" : {
-
-    },
-    "Platform Safety" : {
-
-    },
-    "Platform Wisdom" : {
-
-    },
     "Primary Background" : {
 
     },
     "Primary Label" : {
-
-    },
-    "Privacy settings and data protection" : {
 
     },
     "Quaternary Label" : {
@@ -687,9 +513,6 @@
     "Rows: %@" : {
 
     },
-    "Safety and security features" : {
-
-    },
     "Scanning Barcode..." : {
 
     },
@@ -706,9 +529,6 @@
 
     },
     "Separator Colors" : {
-
-    },
-    "Service coordination and orchestration" : {
 
     },
     "Settings" : {
@@ -27136,9 +26956,6 @@
 
     },
     "System Colors" : {
-
-    },
-    "System optimization recommendations" : {
 
     },
     "Tab 1" : {
