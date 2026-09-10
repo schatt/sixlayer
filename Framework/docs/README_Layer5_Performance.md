@@ -35,7 +35,7 @@ Coverage for haptics: **#423** (L5 wrappers), **#445** (unified public surface).
 These exist as `extension View` (macOS) with non-macOS identity stubs (#451 / #449):
 
 - `platformMacOSWindowToolbar_L5()` — applies `presentedWindowToolbarStyle(.unified)` on macOS. Decision: `platformMacOSWindowToolbarChrome(for:)`. This is **not** Scene `windowToolbarStyle` (that cannot be a View modifier).
-- `platformMacOSKeyboardFocus_L5()` — applies SwiftUI `.focusable()` on macOS. Decision: `platformMacOSKeyboardFocusChrome(for:)`. Deeper NavigationStack keyboard work stays on **#446**.
+- `platformMacOSKeyboardFocus_L5()` — applies SwiftUI `.focusable()` on macOS. Decision: `platformMacOSKeyboardFocusChrome(for:)`. NavigationStack keyboard-first product is L6 (`platformMacOSNavigationStackEnhancements_L6()`, **#446**).
 
 There is **no** `platformMacOSSidebarChrome_L5()` alias. Sidebar / split-column chrome already lives on the shared L5 helpers (`platformMacOSSplitViewOptimizations_L5()` / `platformSplitViewOptimizations_L5()`). A thin wrapper would be a tautological alias with no extra behavior (#447).
 
