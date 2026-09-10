@@ -480,6 +480,7 @@ struct DynamicFormViewInner: View {
                 )
             }
             .environment(\.dynamicFormLocalizationNamespace, formLocalizationNamespace)
+            .environment(\.formSelectAllOnBeginEditing, configuration.selectAllOnBeginEditing)
             .padding(.horizontal)
             .padding(.bottom)
             .padding(.top, max(0, configuration.topContentPadding))
