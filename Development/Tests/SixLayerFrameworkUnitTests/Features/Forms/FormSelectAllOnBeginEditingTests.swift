@@ -458,6 +458,7 @@ open class FormSelectAllOnBeginEditingTests: BaseTestClass {
         }
     }
 
+    @MainActor
     private func twoFieldForm(selectAll: Bool, first: String, second: String) -> some View {
         let configuration = DynamicFormConfiguration(
             id: "fuel-\(selectAll)-\(first)",
