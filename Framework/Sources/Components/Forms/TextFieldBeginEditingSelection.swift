@@ -19,6 +19,68 @@ public extension EnvironmentValues {
     }
 }
 
+/// Resolves the native text control owned by a field's zero-size anchor.
+///
+/// Tests exercise the lookup against synthetic view trees. The production modifier
+/// uses the same function so hosted select-all cannot bind every field to the first control.
+enum NativeTextControlLookup {
+    #if os(iOS)
+    static func nearestTextControl(from marker: UIView) -> AnyObject? {
+        firstTextControlInAncestors(from: marker)
+    }
+
+    private static func firstTextControlInAncestors(from view: UIView) -> AnyObject? {
+        var ancestor: UIView? = view.superview
+        while let current = ancestor {
+            if let found = firstTextControl(in: current) {
+                return found
+            }
+            ancestor = current.superview
+        }
+        return nil
+    }
+
+    private static func firstTextControl(in view: UIView) -> AnyObject? {
+        if view is UITextField || view is UITextView {
+            return view
+        }
+        for child in view.subviews {
+            if let found = firstTextControl(in: child) {
+                return found
+            }
+        }
+        return nil
+    }
+    #elseif os(macOS)
+    static func nearestTextControl(from marker: NSView) -> AnyObject? {
+        firstTextControlInAncestors(from: marker)
+    }
+
+    private static func firstTextControlInAncestors(from view: NSView) -> AnyObject? {
+        var ancestor: NSView? = view.superview
+        while let current = ancestor {
+            if let found = firstTextControl(in: current) {
+                return found
+            }
+            ancestor = current.superview
+        }
+        return nil
+    }
+
+    private static func firstTextControl(in view: NSView) -> AnyObject? {
+        if view is NSTextField || view is NSTextView {
+            return view
+        }
+        for child in view.subviews {
+            if let found = firstTextControl(in: child) {
+                return found
+            }
+        }
+        return nil
+    }
+    #endif
+}
+
 /// Selects all contents of a native text control when it is the same instance that began editing.
 public enum TextFieldBeginEditingSelection {
     public static func applySelectAll(
@@ -124,31 +186,8 @@ private struct NativeTextControlAnchorRepresentable: UIViewRepresentable {
 
     func updateUIView(_ uiView: UIView, context: Context) {
         DispatchQueue.main.async {
-            nativeField = Self.findTextControl(from: uiView)
+            nativeField = NativeTextControlLookup.nearestTextControl(from: uiView)
         }
-    }
-
-    private static func findTextControl(from view: UIView) -> AnyObject? {
-        var ancestor: UIView? = view.superview
-        while let current = ancestor {
-            if let found = firstTextControl(in: current) {
-                return found
-            }
-            ancestor = current.superview
-        }
-        return nil
-    }
-
-    private static func firstTextControl(in view: UIView) -> AnyObject? {
-        if view is UITextField || view is UITextView {
-            return view
-        }
-        for child in view.subviews {
-            if let found = firstTextControl(in: child) {
-                return found
-            }
-        }
-        return nil
     }
 }
 #elseif os(macOS)
@@ -161,31 +200,8 @@ private struct NativeTextControlAnchorRepresentable: NSViewRepresentable {
 
     func updateNSView(_ nsView: NSView, context: Context) {
         DispatchQueue.main.async {
-            nativeField = Self.findTextControl(from: nsView)
+            nativeField = NativeTextControlLookup.nearestTextControl(from: nsView)
         }
-    }
-
-    private static func findTextControl(from view: NSView) -> AnyObject? {
-        var ancestor: NSView? = view.superview
-        while let current = ancestor {
-            if let found = firstTextControl(in: current) {
-                return found
-            }
-            ancestor = current.superview
-        }
-        return nil
-    }
-
-    private static func firstTextControl(in view: NSView) -> AnyObject? {
-        if view is NSTextField || view is NSTextView {
-            return view
-        }
-        for child in view.subviews {
-            if let found = firstTextControl(in: child) {
-                return found
-            }
-        }
-        return nil
     }
 }
 #else
