@@ -4,7 +4,7 @@
 //
 //  macOS L5 window-toolbar and keyboard-focus chrome (#451).
 //  Toolbar: `presentedWindowToolbarStyle(.unified)` — not Scene `windowToolbarStyle`.
-//  Keyboard: SwiftUI `.focusable()` — NavigationStack keyboard product stays on #446.
+//  Keyboard: SwiftUI `.focusable()` — NavigationStack keyboard-first product is L6 (#446).
 //
 
 import SwiftUI
