@@ -659,6 +659,7 @@ public struct DynamicTextField: View {
         )
         TextField(placeholderText, text: field.textBinding(formState: formState))
             .platformTextFieldStyle()
+            .selectAllTextOnBeginEditingIfFormOptedIn()
             .focused($isFocused)
             .onSubmit {
                 // Move focus to next field on Enter/Return (Issue #81)
@@ -712,6 +713,7 @@ public struct DynamicTextField: View {
             axis: .vertical
         )
         .platformTextFieldStyle()
+            .selectAllTextOnBeginEditingIfFormOptedIn()
         .lineLimit(field.minLines...field.maxLines)
         .focused($isFocused)
         .automaticComplianceForDynamicFormField(field, identifierElementType: "TextField")
@@ -728,12 +730,14 @@ public struct DynamicTextField: View {
         #elseif os(watchOS)
         TextField("", text: field.textBinding(formState: formState), axis: .vertical)
             .platformTextFieldStyle()
+            .selectAllTextOnBeginEditingIfFormOptedIn()
             .lineLimit(field.minLines...field.maxLines)
             .frame(minHeight: CGFloat(field.minLines * 20))
             .border(Color.gray.opacity(0.2))
             .automaticComplianceForDynamicFormField(field, identifierElementType: "TextField")
         #else
         TextEditor(text: field.textBinding(formState: formState))
+            .selectAllTextOnBeginEditingIfFormOptedIn()
             .frame(minHeight: CGFloat(field.minLines * 20))
             .border(Color.gray.opacity(0.2))
             .automaticComplianceForDynamicFormField(field, identifierElementType: "TextField")
@@ -782,6 +786,7 @@ public struct DynamicEmailField: View {
 
             TextField(placeholderText, text: field.textBinding(formState: formState))
                 .platformTextFieldStyle()
+            .selectAllTextOnBeginEditingIfFormOptedIn()
                 #if os(iOS)
                 .keyboardType(UIKeyboardType.emailAddress)
                 #endif
@@ -870,6 +875,7 @@ public struct DynamicPasswordField: View {
 
             SecureField(placeholderText, text: field.textBinding(formState: formState))
                 .platformTextFieldStyle()
+            .selectAllTextOnBeginEditingIfFormOptedIn()
                 .focused($isFocused)
                 .onSubmit {
                     // Move focus to next field on Enter/Return (Issue #81)
@@ -920,6 +926,7 @@ public struct DynamicPhoneField: View {
             let i18n = InternationalizationService()
             TextField(field.placeholder ?? i18n.localizedString(for: "SixLayerFramework.form.placeholder.enterPhone"), text: field.textBinding(formState: formState))
                 .platformTextFieldStyle()
+            .selectAllTextOnBeginEditingIfFormOptedIn()
                 #if os(iOS)
                 .keyboardType(UIKeyboardType.phonePad)
                 #endif
@@ -997,6 +1004,7 @@ public struct DynamicURLField: View {
         VStack(alignment: .leading, spacing: 4) {
             TextField(field.placeholder ?? i18n.localizedString(for: "SixLayerFramework.form.placeholder.enterURL"), text: field.textBinding(formState: formState))
                 .platformTextFieldStyle()
+            .selectAllTextOnBeginEditingIfFormOptedIn()
                 #if os(iOS)
                 .keyboardType(UIKeyboardType.URL)
                 #endif
@@ -1025,6 +1033,7 @@ public struct DynamicNumberField: View {
             let i18n = InternationalizationService()
             TextField(field.placeholder ?? i18n.localizedString(for: "SixLayerFramework.form.placeholder.enterNumber"), text: field.numericTextBinding(formState: formState))
             .platformTextFieldStyle()
+            .selectAllTextOnBeginEditingIfFormOptedIn()
             #if os(iOS)
             .keyboardType(UIKeyboardType.decimalPad)
             #endif
@@ -1050,6 +1059,7 @@ public struct DynamicIntegerField: View {
             let i18n = InternationalizationService()
             TextField(field.placeholder ?? i18n.localizedString(for: "SixLayerFramework.form.placeholder.enterInteger"), text: field.numericTextBinding(formState: formState))
             .platformTextFieldStyle()
+            .selectAllTextOnBeginEditingIfFormOptedIn()
             #if os(iOS)
             .keyboardType(UIKeyboardType.numberPad)
             #endif
@@ -1545,6 +1555,7 @@ public struct DynamicRichTextField: View {
         field.fieldContainer(content: {
             #if os(iOS)
             TextEditor(text: field.textBinding(formState: formState))
+                .selectAllTextOnBeginEditingIfFormOptedIn()
                 .frame(minHeight: 100)
                 .border(Color.gray.opacity(0.2))
                 .automaticCompliance(named: "RichTextEditor")
@@ -1552,6 +1563,7 @@ public struct DynamicRichTextField: View {
             let i18n = InternationalizationService()
             TextField(field.placeholder ?? i18n.localizedString(for: "SixLayerFramework.form.placeholder.enterText"), text: field.textBinding(formState: formState))
                 .platformTextFieldStyle()
+            .selectAllTextOnBeginEditingIfFormOptedIn()
                 .frame(minHeight: 100)
                 .automaticCompliance(named: "RichTextEditor")
             #endif
@@ -1750,6 +1762,7 @@ public struct DynamicArrayField: View {
                         }
                     ))
                     .platformTextFieldStyle()
+            .selectAllTextOnBeginEditingIfFormOptedIn()
                     .environment(\.accessibilityIdentifierLabel, value) // TDD GREEN: Pass array item value to identifier generation
                     .automaticCompliance(named: "ArrayItem")
 
@@ -1824,12 +1837,14 @@ public struct DynamicDataField: View {
             #elseif os(watchOS)
             TextField("", text: dataTextBinding, axis: .vertical)
                 .platformTextFieldStyle()
+            .selectAllTextOnBeginEditingIfFormOptedIn()
                 .lineLimit(4...24)
                 .frame(minHeight: 100)
                 .border(Color.gray.opacity(0.2))
                 .automaticCompliance(named: "DataInput")
             #else
             TextEditor(text: dataTextBinding)
+                .selectAllTextOnBeginEditingIfFormOptedIn()
                 .frame(minHeight: 100)
                 .border(Color.gray.opacity(0.2))
                 .automaticCompliance(named: "DataInput")
@@ -1874,6 +1889,7 @@ public struct DynamicAutocompleteField: View {
                 }
             ))
             .platformTextFieldStyle()
+            .selectAllTextOnBeginEditingIfFormOptedIn()
             .automaticCompliance(named: "AutocompleteInput")
             .onAppear {
                 searchText = formState.getValue(for: field.id) as String? ?? ""
@@ -2115,6 +2131,7 @@ public struct DynamicTextAreaField: View {
         field.fieldContainer(content: {
             #if os(iOS)
             TextEditor(text: field.textBinding(formState: formState))
+                .selectAllTextOnBeginEditingIfFormOptedIn()
                 .frame(minHeight: 100)
                 .border(Color.gray.opacity(0.2))
                 .automaticCompliance(named: "TextArea")
@@ -2122,6 +2139,7 @@ public struct DynamicTextAreaField: View {
             let i18n = InternationalizationService()
             TextField(field.placeholder ?? i18n.localizedString(for: "SixLayerFramework.form.placeholder.enterText"), text: field.textBinding(formState: formState), axis: .vertical)
                 .platformTextFieldStyle()
+            .selectAllTextOnBeginEditingIfFormOptedIn()
                 .lineLimit(5...10)
                 .automaticCompliance(named: "TextArea")
             #endif
