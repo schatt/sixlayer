@@ -52,6 +52,14 @@ Apply platform-specific optimizations and features that enhance the user experie
 #### **Window Sizing**
 - `platformMacOSWindowSizing(minWidth:minHeight:idealWidth:idealHeight:)` - macOS-specific window sizing constraints
 
+#### **NavigationStack keyboard-first (#446)**
+File: `Platform/macOS/Views/Extensions/PlatformMacOSNavigationStackEnhancementsLayer6.swift`
+
+- `platformMacOSNavigationStackEnhancements_L6()` — macOS: `focusSection()` + `onExitCommand` dismiss when presented + `platformPresentationFrame(sizes: [.small])`. Does **not** duplicate L5 `.focusable()` and does **not** apply blanket `.isHeader`. Identity on other platforms.
+- `platformMacOSNavigationListDetailFocus_L6(_:list:detail:isDetailPresented:)` — macOS `defaultFocus` for list ↔ detail restore. Identity elsewhere.
+- `platformMacOSNavigationKeyboardShortcuts_L6(onBack:onSelect:onDismiss:)` — View-level `keyboardShortcut` (Cmd+`[`, Return, Escape). **Not** Scene `commands` (that API cannot be a View modifier).
+- Decisions: `platformMacOSNavigationStackKeyboardChrome(for:)`, `platformMacOSNavigationDefaultFocusPane(isDetailPresented:)`, `platformMacOSNavigationShouldDismissOnExit(isPresented:)`, `platformMacOSNavigationKeyboardShortcutKind(for:)`.
+
 ## 💡 Usage Examples
 
 ### **iOS Navigation Bar**
