@@ -60,5 +60,11 @@ struct PlatformElseStubIdentityTests {
         let view = Text("stub-root").platformMacOSWindowToolbar_L5()
         BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "Text")
     }
+
+    @Test @MainActor
+    func platformMacOSKeyboardFocusStubPreservesRootOnIOS() {
+        let view = Text("stub-root").platformMacOSKeyboardFocus_L5()
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "Text")
+    }
     #endif
 }
