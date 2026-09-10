@@ -177,87 +177,152 @@ extension View {
 
 private struct SelectAllOnBeginEditingIfFormOptedInModifier: ViewModifier {
     @Environment(\.formSelectAllOnBeginEditing) private var shouldSelect
-    @State private var nativeField: AnyObject?
 
     func body(content: Content) -> some View {
         content
-            .background(NativeTextControlAnchor(nativeField: $nativeField))
-            #if os(iOS)
-            .onReceive(NotificationCenter.default.publisher(for: UITextField.textDidBeginEditingNotification)) { note in
-                TextFieldBeginEditingSelection.applySelectAll(
-                    to: note.object,
-                    matching: nativeField,
-                    shouldSelect: shouldSelect
-                )
-            }
-            .onReceive(NotificationCenter.default.publisher(for: UITextView.textDidBeginEditingNotification)) { note in
-                TextFieldBeginEditingSelection.applySelectAll(
-                    to: note.object,
-                    matching: nativeField,
-                    shouldSelect: shouldSelect
-                )
-            }
-            #elseif os(macOS)
-            .onReceive(NotificationCenter.default.publisher(for: NSControl.textDidBeginEditingNotification)) { note in
-                TextFieldBeginEditingSelection.applySelectAll(
-                    to: note.object,
-                    matching: nativeField,
-                    shouldSelect: shouldSelect
-                )
-            }
-            .onReceive(NotificationCenter.default.publisher(for: NSText.didBeginEditingNotification)) { note in
-                TextFieldBeginEditingSelection.applySelectAll(
-                    to: note.object,
-                    matching: nativeField,
-                    shouldSelect: shouldSelect
-                )
-            }
-            #endif
+            .background(NativeTextControlAnchor(shouldSelect: shouldSelect))
     }
 }
 
-/// Finds this view's backing `UITextField` / `UITextView` / `NSTextField` so select-all is instance-scoped.
+/// Zero-size marker that observes begin-editing and select-alls only its nearest native field.
 private struct NativeTextControlAnchor: View {
-    @Binding var nativeField: AnyObject?
+    let shouldSelect: Bool
 
     var body: some View {
-        NativeTextControlAnchorRepresentable(nativeField: $nativeField)
+        NativeTextControlAnchorRepresentable(shouldSelect: shouldSelect)
             .frame(width: 0, height: 0)
             .accessibilityHidden(true)
     }
 }
 
 #if os(iOS)
-private struct NativeTextControlAnchorRepresentable: UIViewRepresentable {
-    @Binding var nativeField: AnyObject?
+private final class NativeTextControlMarkerView: UIView {
+    var shouldSelect = false
+    private var observers: [NSObjectProtocol] = []
 
-    func makeUIView(context: Context) -> UIView {
-        UIView()
+    override func didMoveToWindow() {
+        super.didMoveToWindow()
+        refreshObservers()
     }
 
-    func updateUIView(_ uiView: UIView, context: Context) {
-        DispatchQueue.main.async {
-            nativeField = NativeTextControlLookup.nearestTextControl(from: uiView)
+    override func willMove(toWindow newWindow: UIWindow?) {
+        super.willMove(toWindow: newWindow)
+        if newWindow == nil {
+            removeObservers()
         }
+    }
+
+    func refreshObservers() {
+        removeObservers()
+        guard window != nil else { return }
+        let names = [
+            UITextField.textDidBeginEditingNotification,
+            UITextView.textDidBeginEditingNotification
+        ]
+        for name in names {
+            observers.append(
+                NotificationCenter.default.addObserver(
+                    forName: name,
+                    object: nil,
+                    queue: .main
+                ) { [weak self] note in
+                    guard let self else { return }
+                    let matching = NativeTextControlLookup.nearestTextControl(from: self)
+                    TextFieldBeginEditingSelection.applySelectAll(
+                        to: note.object,
+                        matching: matching,
+                        shouldSelect: self.shouldSelect
+                    )
+                }
+            )
+        }
+    }
+
+    private func removeObservers() {
+        for observer in observers {
+            NotificationCenter.default.removeObserver(observer)
+        }
+        observers.removeAll()
+    }
+
+    deinit {
+        removeObservers()
+    }
+}
+
+private struct NativeTextControlAnchorRepresentable: UIViewRepresentable {
+    let shouldSelect: Bool
+
+    func makeUIView(context: Context) -> NativeTextControlMarkerView {
+        NativeTextControlMarkerView()
+    }
+
+    func updateUIView(_ uiView: NativeTextControlMarkerView, context: Context) {
+        uiView.shouldSelect = shouldSelect
     }
 }
 #elseif os(macOS)
-private struct NativeTextControlAnchorRepresentable: NSViewRepresentable {
-    @Binding var nativeField: AnyObject?
+private final class NativeTextControlMarkerView: NSView {
+    var shouldSelect = false
+    private var observers: [NSObjectProtocol] = []
 
-    func makeNSView(context: Context) -> NSView {
-        NSView()
+    override func viewDidMoveToWindow() {
+        super.viewDidMoveToWindow()
+        refreshObservers()
     }
 
-    func updateNSView(_ nsView: NSView, context: Context) {
-        DispatchQueue.main.async {
-            nativeField = NativeTextControlLookup.nearestTextControl(from: nsView)
+    func refreshObservers() {
+        removeObservers()
+        guard window != nil else { return }
+        let names = [
+            NSControl.textDidBeginEditingNotification,
+            NSText.didBeginEditingNotification
+        ]
+        for name in names {
+            observers.append(
+                NotificationCenter.default.addObserver(
+                    forName: name,
+                    object: nil,
+                    queue: .main
+                ) { [weak self] note in
+                    guard let self else { return }
+                    let matching = NativeTextControlLookup.nearestTextControl(from: self)
+                    TextFieldBeginEditingSelection.applySelectAll(
+                        to: note.object,
+                        matching: matching,
+                        shouldSelect: self.shouldSelect
+                    )
+                }
+            )
         }
+    }
+
+    private func removeObservers() {
+        for observer in observers {
+            NotificationCenter.default.removeObserver(observer)
+        }
+        observers.removeAll()
+    }
+
+    deinit {
+        removeObservers()
+    }
+}
+
+private struct NativeTextControlAnchorRepresentable: NSViewRepresentable {
+    let shouldSelect: Bool
+
+    func makeNSView(context: Context) -> NativeTextControlMarkerView {
+        NativeTextControlMarkerView()
+    }
+
+    func updateNSView(_ nsView: NativeTextControlMarkerView, context: Context) {
+        nsView.shouldSelect = shouldSelect
     }
 }
 #else
 private struct NativeTextControlAnchorRepresentable: View {
-    @Binding var nativeField: AnyObject?
+    var shouldSelect: Bool
     var body: some View { EmptyView() }
 }
 #endif
