@@ -318,10 +318,12 @@ public func platformPresentFormData_L1(
 
 /// Present a single form field
 /// Internally wraps the single field in an array and delegates to the array version
+/// - Parameter selectAllOnBeginEditing: Form-level opt-in (#472). When true, generated text-entry controls select all contents on begin editing. Default false (caret at end). Not a FieldDisplayHints / .hints file key.
 @MainActor
 public func platformPresentFormData_L1(
     field: DynamicFormField,
-    hints: PresentationHints
+    hints: PresentationHints,
+    selectAllOnBeginEditing: Bool = false
 ) -> some View {
     let enhancedHints = EnhancedPresentationHints(
         dataType: hints.dataType,
@@ -341,7 +343,8 @@ public func platformPresentFormData_L1(
         fields: [field],
         hints: enhancedHints,
         modelName: nil,
-        layoutSpec: nil
+        layoutSpec: nil,
+        selectAllOnBeginEditing: selectAllOnBeginEditing
     )
     .environment(\.accessibilityIdentifierName, "platformPresentFormData_L1")
     .automaticCompliance(identifierName: "platformPresentFormData_L1")
@@ -1212,23 +1215,27 @@ public func platformResponsiveCard_L1<Content: View>(
 
 /// Generic function for presenting form data with enhanced hints
 /// Automatically loads hints from .hints files that describe the data
-/// 
+///
 /// Precedence order:
 /// 1. Explicit layoutSpec (if provided) - highest priority
 /// 2. Hints sections from modelName (if provided)
 /// 3. Framework defaults (vertical stack of all fields)
+///
+/// - Parameter selectAllOnBeginEditing: Form-level opt-in (#472). When true, generated text-entry controls select all contents on begin editing. Default false (caret at end). Not a FieldDisplayHints / .hints file key.
 @MainActor
 public func platformPresentFormData_L1(
     fields: [DynamicFormField],
     hints: EnhancedPresentationHints,
     modelName: String? = nil,
-    layoutSpec: LayoutSpec? = nil
+    layoutSpec: LayoutSpec? = nil,
+    selectAllOnBeginEditing: Bool = false
 ) -> some View {
     return AsyncFormView(
         fields: fields,
         hints: hints,
         modelName: modelName,
-        layoutSpec: layoutSpec
+        layoutSpec: layoutSpec,
+        selectAllOnBeginEditing: selectAllOnBeginEditing
     )
     .environment(\.accessibilityIdentifierName, "platformPresentFormData_L1")
     .automaticCompliance(identifierName: "platformPresentFormData_L1")
@@ -1243,17 +1250,25 @@ private struct AsyncFormView: View {
     let hints: EnhancedPresentationHints
     let modelName: String?
     let layoutSpec: LayoutSpec?
+    let selectAllOnBeginEditing: Bool
     
     @State private var resolvedSections: [DynamicFormSection]?
     @State private var isLoading: Bool
     
     // Initialize with cached hints if available (synchronous check)
     // Flow: optional hint → file/cache → default
-    init(fields: [DynamicFormField], hints: EnhancedPresentationHints, modelName: String?, layoutSpec: LayoutSpec?) {
+    init(
+        fields: [DynamicFormField],
+        hints: EnhancedPresentationHints,
+        modelName: String?,
+        layoutSpec: LayoutSpec?,
+        selectAllOnBeginEditing: Bool
+    ) {
         self.fields = fields
         self.hints = hints
         self.modelName = modelName
         self.layoutSpec = layoutSpec
+        self.selectAllOnBeginEditing = selectAllOnBeginEditing
         
         // Step 1: If code provides hint (layoutSpec), use it synchronously
         if layoutSpec != nil {
@@ -1367,7 +1382,8 @@ private struct AsyncFormView: View {
             description: hints.customPreferences["formDescription"],
             sections: sections,
             submitButtonText: hints.customPreferences["submitButtonText"] ?? "Submit",
-            cancelButtonText: hints.customPreferences["cancelButtonText"]
+            cancelButtonText: hints.customPreferences["cancelButtonText"],
+            selectAllOnBeginEditing: selectAllOnBeginEditing
         )
         
         DynamicFormView(

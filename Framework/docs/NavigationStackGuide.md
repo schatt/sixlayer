@@ -308,8 +308,9 @@ NavigationStack respects presentation hints to guide decisions:
 - **Enhancements**: Haptic feedback, swipe gestures, iOS navigation bar styling
 
 ### macOS
-- Uses `NavigationView` (NavigationStack not available on macOS)
-- **Enhancements**: Keyboard navigation, window sizing, macOS-specific styling
+- Uses platform NavigationStack / NavigationSplitView as selected by L3/L4
+- **L6 keyboard-first (#446):** `platformMacOSNavigationStackEnhancements_L6()` applies `focusSection()` and Escape/`onExitCommand` dismiss when the stack is presented. List ↔ detail restore is `platformMacOSNavigationListDetailFocus_L6`. View-level shortcuts are `platformMacOSNavigationKeyboardShortcuts_L6`. Scene `commands` is not applied (Scene-only API).
+- Window sizing remains `platformPresentationFrame` on the L6 wrapper
 
 ### Automatic Platform Detection
 The framework automatically detects the platform and applies appropriate implementations. No platform-specific code needed in your app.

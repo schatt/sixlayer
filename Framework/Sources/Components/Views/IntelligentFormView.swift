@@ -135,6 +135,7 @@ public struct IntelligentFormView {
     ///   - dataBinder: Optional explicit DataBinder. If provided, `autoBind` is ignored.
     ///   - autoBind: Whether to automatically create a DataBinder (default: true, ignored for type-only forms)
     ///   - inputHandlingManager: Optional input handling manager
+    ///   - selectAllOnBeginEditing: When true, text-entry fields in this form select their entire contents on begin editing. Default false (caret at end). Form-level opt-in; not a FieldDisplayHints key.
     ///   - customFieldView: Custom view builder for field rendering
     ///   - onSubmit: Callback when form is submitted. For type-only forms, receives a dictionary of field values.
     ///   - onCancel: Callback when form is cancelled
@@ -145,6 +146,7 @@ public struct IntelligentFormView {
         dataBinder: DataBinder<T>? = nil,
         autoBind: Bool = true,
         inputHandlingManager: InputHandlingManager? = nil,
+        selectAllOnBeginEditing: Bool = false,
         @ViewBuilder customFieldView: @escaping (String, Any, FieldType) -> some View = { _, _, _ in EmptyView() },
         onSubmit: @escaping (T) -> Void = { _ in },
         onCancel: @escaping () -> Void = { }
@@ -250,12 +252,14 @@ Text(i18n.localizedString(for: "SixLayerFramework.form.title"))
                         formStrategy: formStrategy,
                         fieldHints: fieldHints,
                         inputHandlingManager: inputHandlingManager,
+                        selectAllOnBeginEditing: selectAllOnBeginEditing,
                         customFieldView: { name, value, type in
                             AnyView(customFieldView(name, value, type))
                         },
                         onSubmit: onSubmit,
                         onCancel: onCancel
                     )
+                    .environment(\.formSelectAllOnBeginEditing, selectAllOnBeginEditing)
                 )
             } else {
                 // Cannot generate form without instance data and fully declarative hints
@@ -379,7 +383,8 @@ Text(i18n.localizedString(for: "SixLayerFramework.form.title"))
         // Apply IntelligentFormView identifier at the outermost level
         // Inner components (DynamicFormView, DynamicFormHeader, etc.) maintain their own identifiers
         return AnyView(content
-            .automaticCompliance(named: "IntelligentFormView"))
+            .automaticCompliance(named: "IntelligentFormView")
+            .environment(\.formSelectAllOnBeginEditing, selectAllOnBeginEditing))
     }
     
     /// Generate a form for updating existing data with data binding integration
@@ -405,6 +410,7 @@ Text(i18n.localizedString(for: "SixLayerFramework.form.title"))
     ///   - dataBinder: Optional explicit DataBinder. If provided, `autoBind` is ignored.
     ///   - autoBind: Whether to automatically create a DataBinder (default: true)
     ///   - inputHandlingManager: Optional input handling manager
+    ///   - selectAllOnBeginEditing: When true, text-entry fields in this form select their entire contents on begin editing. Default false (caret at end). Form-level opt-in; not a FieldDisplayHints key.
     ///   - customFieldView: Custom view builder for field rendering
     ///   - onUpdate: Callback when form is updated
     ///   - onCancel: Callback when form is cancelled
@@ -416,6 +422,7 @@ Text(i18n.localizedString(for: "SixLayerFramework.form.title"))
         dataBinder: DataBinder<T>? = nil,
         autoBind: Bool = true,
         inputHandlingManager: InputHandlingManager? = nil,
+        selectAllOnBeginEditing: Bool = false,
         @ViewBuilder customFieldView: @escaping (String, Any, FieldType) -> some View = { _, _, _ in EmptyView() },
         onUpdate: @escaping (T) -> Void = { _ in },
         onCancel: @escaping () -> Void = { },
@@ -528,7 +535,8 @@ Text(i18n.localizedString(for: "SixLayerFramework.form.title"))
         // Apply IntelligentFormView identifier at the outermost level
         // Inner components (DynamicFormView, DynamicFormHeader, etc.) maintain their own identifiers
         return AnyView(content
-            .automaticCompliance(named: "IntelligentFormView"))
+            .automaticCompliance(named: "IntelligentFormView")
+            .environment(\.formSelectAllOnBeginEditing, selectAllOnBeginEditing))
     }
     
     /// Generate form action buttons for type-only forms
@@ -1323,6 +1331,7 @@ private struct DefaultPlatformFieldView: View {
                     set: { if isEditable { onValueChange($0) } }
                 ))
                 .platformTextFieldStyle()
+                .selectAllTextOnBeginEditingIfFormOptedIn()
                 .disabled(!isEditable)
                 .background(isValid ? Color.platformSecondaryBackground : Color.red.opacity(0.1))
                 .overlay(
@@ -1338,6 +1347,7 @@ private struct DefaultPlatformFieldView: View {
                     set: { if isEditable { onValueChange($0) } }
                 ), format: .number)
                 .platformTextFieldStyle()
+                .selectAllTextOnBeginEditingIfFormOptedIn()
                 .disabled(!isEditable)
                 #if os(iOS)
                 .keyboardType(UIKeyboardType.decimalPad)
@@ -1390,6 +1400,7 @@ private struct DefaultPlatformFieldView: View {
                 set: { if isEditable { onValueChange($0) } }
             ))
             .platformTextFieldStyle()
+            .selectAllTextOnBeginEditingIfFormOptedIn()
             .disabled(!isEditable)
             .keyboardType(KeyboardType.URL)
             .platformTextInputAutocapitalization(.never)
@@ -1405,6 +1416,7 @@ private struct DefaultPlatformFieldView: View {
                 set: { if isEditable { onValueChange($0) } }
             ))
             .platformTextFieldStyle()
+            .selectAllTextOnBeginEditingIfFormOptedIn()
             .disabled(!isEditable)
             .platformTextInputAutocapitalization(.never)
             .background(isValid ? Color.platformSecondaryBackground : Color.red.opacity(0.1))
@@ -1429,6 +1441,7 @@ private struct DefaultPlatformFieldView: View {
                 set: { if isEditable { onValueChange($0) } }
             ))
             .platformTextFieldStyle()
+            .selectAllTextOnBeginEditingIfFormOptedIn()
             .disabled(!isEditable)
             .background(isValid ? Color.platformSecondaryBackground : Color.red.opacity(0.1))
             .overlay(
@@ -1486,6 +1499,7 @@ public extension View {
         initialData: T? = nil,
         dataBinder: DataBinder<T>? = nil,
         inputHandlingManager: InputHandlingManager? = nil,
+        selectAllOnBeginEditing: Bool = false,
         @ViewBuilder customFieldView: @escaping (String, Any, FieldType) -> some View = { _, _, _ in EmptyView() },
         onSubmit: @escaping (T) -> Void = { _ in },
         onCancel: @escaping () -> Void = { }
@@ -1495,6 +1509,7 @@ public extension View {
             initialData: initialData,
             dataBinder: dataBinder,
             inputHandlingManager: inputHandlingManager,
+            selectAllOnBeginEditing: selectAllOnBeginEditing,
             customFieldView: customFieldView,
             onSubmit: onSubmit,
             onCancel: onCancel
@@ -1506,6 +1521,7 @@ public extension View {
         for data: T,
         dataBinder: DataBinder<T>? = nil,
         inputHandlingManager: InputHandlingManager? = nil,
+        selectAllOnBeginEditing: Bool = false,
         @ViewBuilder customFieldView: @escaping (String, Any, FieldType) -> some View = { _, _, _ in EmptyView() },
         onUpdate: @escaping (T) -> Void = { _ in },
         onCancel: @escaping () -> Void = { }
@@ -1514,6 +1530,7 @@ public extension View {
             for: data,
             dataBinder: dataBinder,
             inputHandlingManager: inputHandlingManager,
+            selectAllOnBeginEditing: selectAllOnBeginEditing,
             customFieldView: customFieldView,
             onUpdate: onUpdate,
             onCancel: onCancel
@@ -1532,6 +1549,7 @@ private struct TypeOnlyFormWrapper<T>: View {
     let formStrategy: FormStrategy
     let fieldHints: [String: FieldDisplayHints]
     let inputHandlingManager: InputHandlingManager?
+    let selectAllOnBeginEditing: Bool
     let customFieldView: (String, Any, FieldType) -> AnyView
     let onSubmit: (T) -> Void
     let onCancel: () -> Void
@@ -1557,6 +1575,7 @@ private struct TypeOnlyFormWrapper<T>: View {
                 // Mark as draft since it's a newly created entity (Issue #80)
                 IntelligentFormView.generateForm(
                     for: entity,
+                    selectAllOnBeginEditing: selectAllOnBeginEditing,
                     onUpdate: { updatedEntity in
                         onSubmit(updatedEntity)
                     },

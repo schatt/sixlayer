@@ -1042,6 +1042,8 @@ public struct DynamicFormConfiguration: Identifiable {
     /// OCR groups for batch OCR target scoping (e.g. from _ocrGroups in .hints).
     /// Maps group name to field IDs; fields may appear in multiple groups.
     public let ocrGroups: [String: [String]]?
+    /// When true, text-entry controls on this form select all contents on begin editing (#472).
+    public let selectAllOnBeginEditing: Bool
 
     public init(
         id: String,
@@ -1058,7 +1060,8 @@ public struct DynamicFormConfiguration: Identifiable {
         metadata: [String: String]? = nil,
         modelName: String? = nil,
         showProgress: Bool = false,
-        ocrGroups: [String: [String]]? = nil
+        ocrGroups: [String: [String]]? = nil,
+        selectAllOnBeginEditing: Bool = false
     ) {
         self.id = id
         self.title = title
@@ -1075,6 +1078,7 @@ public struct DynamicFormConfiguration: Identifiable {
         self.modelName = modelName
         self.showProgress = showProgress
         self.ocrGroups = ocrGroups
+        self.selectAllOnBeginEditing = selectAllOnBeginEditing
     }
     
     /// Get all fields from all sections
@@ -1178,7 +1182,8 @@ public struct DynamicFormConfiguration: Identifiable {
             metadata: metadata,
             modelName: modelName,
             showProgress: showProgress,
-            ocrGroups: hintsResult.ocrGroups ?? ocrGroups
+            ocrGroups: hintsResult.ocrGroups ?? ocrGroups,
+            selectAllOnBeginEditing: selectAllOnBeginEditing
         )
     }
 }
@@ -2052,7 +2057,8 @@ public struct DynamicFormBuilder {
         hostProvidesPrimaryHeading: Bool = false,
         topContentPadding: CGFloat = 20,
         submitButtonText: String = "Submit",
-        cancelButtonText: String? = "Cancel"
+        cancelButtonText: String? = "Cancel",
+        selectAllOnBeginEditing: Bool = false
     ) -> DynamicFormConfiguration {
         // Complete any remaining section
         if let section = currentSection {
@@ -2070,7 +2076,8 @@ public struct DynamicFormBuilder {
             topContentPadding: topContentPadding,
             sections: sections,
             submitButtonText: submitButtonText,
-            cancelButtonText: cancelButtonText
+            cancelButtonText: cancelButtonText,
+            selectAllOnBeginEditing: selectAllOnBeginEditing
         )
     }
 }
