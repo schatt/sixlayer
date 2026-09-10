@@ -154,18 +154,9 @@ public struct PlatformMacOSNavigationKeyboardShortcutsModifier: ViewModifier {
         #if os(macOS)
         content.background(alignment: .topLeading) {
             HStack(spacing: 0) {
-                if let onBack {
-                    Button("Back", action: onBack)
-                        .keyboardShortcut(platformMacOSNavigationKeyboardShortcut(for: .back))
-                }
-                if let onSelect {
-                    Button("Select", action: onSelect)
-                        .keyboardShortcut(platformMacOSNavigationKeyboardShortcut(for: .select))
-                }
-                if let onDismiss {
-                    Button("Dismiss", action: onDismiss)
-                        .keyboardShortcut(platformMacOSNavigationKeyboardShortcut(for: .dismiss))
-                }
+                shortcutButton("Back", action: onBack, for: .back)
+                shortcutButton("Select", action: onSelect, for: .select)
+                shortcutButton("Dismiss", action: onDismiss, for: .dismiss)
             }
             .opacity(0)
             .frame(width: 0, height: 0)
@@ -176,6 +167,20 @@ public struct PlatformMacOSNavigationKeyboardShortcutsModifier: ViewModifier {
         content
         #endif
     }
+
+    #if os(macOS)
+    @ViewBuilder
+    private func shortcutButton(
+        _ title: String,
+        action: (() -> Void)?,
+        for keyboardAction: PlatformMacOSNavigationKeyboardAction
+    ) -> some View {
+        if let action {
+            Button(title, action: action)
+                .keyboardShortcut(platformMacOSNavigationKeyboardShortcut(for: keyboardAction))
+        }
+    }
+    #endif
 }
 
 /// Applies SwiftUI `defaultFocus` for list ↔ detail restore.
@@ -247,6 +252,7 @@ public extension View {
     #endif
 
     /// Apply SwiftUI `defaultFocus` for list ↔ detail using the resolved pane.
+    #if os(macOS)
     @MainActor
     func platformMacOSNavigationListDetailFocus_L6<Value: Hashable>(
         _ binding: FocusState<Value>.Binding,
@@ -260,4 +266,16 @@ public extension View {
             PlatformMacOSNavigationListDetailFocusModifier(binding: binding, value: value)
         )
     }
+    #else
+    @MainActor
+    func platformMacOSNavigationListDetailFocus_L6<Value: Hashable>(
+        _ binding: FocusState<Value>.Binding,
+        list: Value,
+        detail: Value,
+        isDetailPresented: Bool
+    ) -> some View {
+        _ = (binding, list, detail, isDetailPresented)
+        return self
+    }
+    #endif
 }
