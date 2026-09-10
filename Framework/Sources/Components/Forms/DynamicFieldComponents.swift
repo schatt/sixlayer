@@ -724,6 +724,7 @@ public struct DynamicTextField: View {
     private var multiLineTextEditorFallback: some View {
         #if os(tvOS)
         EmptyView().platformTextEditor(text: field.textBinding(formState: formState), prompt: "")
+            .selectAllTextOnBeginEditingIfFormOptedIn()
             .frame(minHeight: CGFloat(field.minLines * 20))
             .border(Color.gray.opacity(0.2))
             .automaticComplianceForDynamicFormField(field, identifierElementType: "TextField")
@@ -1831,6 +1832,7 @@ public struct DynamicDataField: View {
 
             #if os(tvOS)
             EmptyView().platformTextEditor(text: dataTextBinding, prompt: "")
+                .selectAllTextOnBeginEditingIfFormOptedIn()
                 .frame(minHeight: 100)
                 .border(Color.gray.opacity(0.2))
                 .automaticCompliance(named: "DataInput")
