@@ -3,7 +3,9 @@
 //  SixLayerFramework
 //
 //  Layer 5: macOS-specific chrome adapters (#451).
-//  View-level `presentedWindowToolbarStyle(.unified)` — not Scene `windowToolbarStyle`.
+//  Toolbar: View-level `presentedWindowToolbarStyle(.unified)` — not Scene `windowToolbarStyle`.
+//  Keyboard: SwiftUI `.focusable()` — NavigationStack keyboard product stays on #446.
+//  Sidebar / split: call `platformMacOSSplitViewOptimizations_L5()` — no tautological alias here.
 //
 
 import SwiftUI
@@ -16,11 +18,29 @@ public enum PlatformMacOSWindowToolbarChrome: Equatable {
     case unmodified
 }
 
+/// How L5 chromes keyboard-focus affordance on macOS.
+public enum PlatformMacOSKeyboardFocusChrome: Equatable {
+    /// Apply SwiftUI `.focusable()` (macOS).
+    case focusable
+    /// Pass through (iOS / tvOS / watchOS / visionOS).
+    case unmodified
+}
+
 /// Platform decision for macOS window-toolbar chrome. L5 applies the result.
 public func platformMacOSWindowToolbarChrome(for platform: SixLayerPlatform) -> PlatformMacOSWindowToolbarChrome {
     switch platform {
     case .macOS:
         return .unified
+    case .iOS, .tvOS, .watchOS, .visionOS:
+        return .unmodified
+    }
+}
+
+/// Platform decision for macOS keyboard-focus chrome. L5 applies the result.
+public func platformMacOSKeyboardFocusChrome(for platform: SixLayerPlatform) -> PlatformMacOSKeyboardFocusChrome {
+    switch platform {
+    case .macOS:
+        return .focusable
     case .iOS, .tvOS, .watchOS, .visionOS:
         return .unmodified
     }
@@ -42,27 +62,7 @@ public extension View {
         self
         #endif
     }
-}
 
-/// How L5 chromes keyboard-focus affordance on macOS.
-public enum PlatformMacOSKeyboardFocusChrome: Equatable {
-    /// Apply SwiftUI `.focusable()` (macOS).
-    case focusable
-    /// Pass through (iOS / tvOS / watchOS / visionOS).
-    case unmodified
-}
-
-/// Platform decision for macOS keyboard-focus chrome. L5 applies the result.
-public func platformMacOSKeyboardFocusChrome(for platform: SixLayerPlatform) -> PlatformMacOSKeyboardFocusChrome {
-    switch platform {
-    case .macOS:
-        return .focusable
-    case .iOS, .tvOS, .watchOS, .visionOS:
-        return .unmodified
-    }
-}
-
-public extension View {
     /// Keyboard-focus affordance on macOS; identity elsewhere.
     /// Uses SwiftUI `.focusable()` (macOS 12+). NavigationStack keyboard product stays on #446.
     @MainActor
