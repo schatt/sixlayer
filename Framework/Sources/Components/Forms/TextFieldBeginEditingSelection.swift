@@ -126,8 +126,8 @@ enum NativeTextControlLookup {
 }
 
 /// Selects all contents of a native text control when it is the same instance that began editing.
-public enum TextFieldBeginEditingSelection {
-    public static func applySelectAll(
+enum TextFieldBeginEditingSelection {
+    static func applySelectAll(
         to object: Any?,
         matching nativeField: AnyObject?,
         shouldSelect: Bool
@@ -158,12 +158,28 @@ public enum TextFieldBeginEditingSelection {
     }
 
     #if os(iOS)
+    static func handleBeginEditing(_ object: Any?, marker: UIView, shouldSelect: Bool) {
+        applySelectAll(
+            to: object,
+            matching: NativeTextControlLookup.nearestTextControl(from: marker),
+            shouldSelect: shouldSelect
+        )
+    }
+
     private static func selectAll(in textField: UITextField) {
         guard let text = textField.text, !text.isEmpty else { return }
         if let from = textField.position(from: textField.beginningOfDocument, offset: 0),
            let to = textField.position(from: textField.beginningOfDocument, offset: text.count) {
             textField.selectedTextRange = textField.textRange(from: from, to: to)
         }
+    }
+    #elseif os(macOS)
+    static func handleBeginEditing(_ object: Any?, marker: NSView, shouldSelect: Bool) {
+        applySelectAll(
+            to: object,
+            matching: NativeTextControlLookup.nearestTextControl(from: marker),
+            shouldSelect: shouldSelect
+        )
     }
     #endif
 }
@@ -227,10 +243,9 @@ private final class NativeTextControlMarkerView: UIView {
                     queue: .main
                 ) { [weak self] note in
                     guard let self else { return }
-                    let matching = NativeTextControlLookup.nearestTextControl(from: self)
-                    TextFieldBeginEditingSelection.applySelectAll(
-                        to: note.object,
-                        matching: matching,
+                    TextFieldBeginEditingSelection.handleBeginEditing(
+                        note.object,
+                        marker: self,
                         shouldSelect: self.shouldSelect
                     )
                 }
@@ -286,10 +301,9 @@ private final class NativeTextControlMarkerView: NSView {
                     queue: .main
                 ) { [weak self] note in
                     guard let self else { return }
-                    let matching = NativeTextControlLookup.nearestTextControl(from: self)
-                    TextFieldBeginEditingSelection.applySelectAll(
-                        to: note.object,
-                        matching: matching,
+                    TextFieldBeginEditingSelection.handleBeginEditing(
+                        note.object,
+                        marker: self,
                         shouldSelect: self.shouldSelect
                     )
                 }
