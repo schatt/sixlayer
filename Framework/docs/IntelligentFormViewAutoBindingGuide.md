@@ -45,6 +45,8 @@ let form = IntelligentFormView.generateForm(
 )
 ```
 
+`selectAllOnBeginEditing` is a form-level opt-in (default `false`, caret at end). It is **not** a `FieldDisplayHints` / `.hints` file key.
+
 ### Opt-Out (Disable Automatic Binding)
 
 ```swift
