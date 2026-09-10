@@ -478,11 +478,13 @@ open class FormSelectAllOnBeginEditingTests: BaseTestClass {
         return DynamicFormView(configuration: configuration, onSubmit: { _ in })
     }
 
+    @MainActor
     private func pumpSelectAllHost() {
         RunLoop.current.run(until: Date().addingTimeInterval(0.2))
     }
 
     #if os(iOS)
+    @MainActor
     private func collectUITextFields(in view: UIView) -> [UITextField] {
         var result: [UITextField] = []
         if let field = view as? UITextField {
@@ -494,6 +496,7 @@ open class FormSelectAllOnBeginEditingTests: BaseTestClass {
         return result
     }
 
+    @MainActor
     private func isFullySelected(_ field: UITextField) -> Bool {
         guard let text = field.text, !text.isEmpty, let range = field.selectedTextRange else {
             return false
@@ -501,6 +504,7 @@ open class FormSelectAllOnBeginEditingTests: BaseTestClass {
         return field.text(in: range) == text
     }
 
+    @MainActor
     private func beginEditing(_ field: UITextField) {
         _ = field.becomeFirstResponder()
         NotificationCenter.default.post(
@@ -512,6 +516,7 @@ open class FormSelectAllOnBeginEditingTests: BaseTestClass {
     #endif
 
     #if os(macOS)
+    @MainActor
     private func collectNSTextFields(in view: NSView) -> [NSTextField] {
         var result: [NSTextField] = []
         if let field = view as? NSTextField {
@@ -523,6 +528,7 @@ open class FormSelectAllOnBeginEditingTests: BaseTestClass {
         return result
     }
 
+    @MainActor
     private func beginEditing(_ field: NSTextField) {
         _ = field.becomeFirstResponder()
         NotificationCenter.default.post(
