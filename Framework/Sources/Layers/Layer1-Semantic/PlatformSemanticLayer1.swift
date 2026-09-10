@@ -318,6 +318,7 @@ public func platformPresentFormData_L1(
 
 /// Present a single form field
 /// Internally wraps the single field in an array and delegates to the array version
+/// - Parameter selectAllOnBeginEditing: Form-level opt-in (#472). When true, generated text-entry controls select all contents on begin editing. Default false (caret at end). Not a FieldDisplayHints / .hints file key.
 @MainActor
 public func platformPresentFormData_L1(
     field: DynamicFormField,
@@ -1214,11 +1215,13 @@ public func platformResponsiveCard_L1<Content: View>(
 
 /// Generic function for presenting form data with enhanced hints
 /// Automatically loads hints from .hints files that describe the data
-/// 
+///
 /// Precedence order:
 /// 1. Explicit layoutSpec (if provided) - highest priority
 /// 2. Hints sections from modelName (if provided)
 /// 3. Framework defaults (vertical stack of all fields)
+///
+/// - Parameter selectAllOnBeginEditing: Form-level opt-in (#472). When true, generated text-entry controls select all contents on begin editing. Default false (caret at end). Not a FieldDisplayHints / .hints file key.
 @MainActor
 public func platformPresentFormData_L1(
     fields: [DynamicFormField],
