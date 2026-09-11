@@ -167,4 +167,40 @@ struct HintsDrivenCatalogLayoutTests {
         #expect(SettingsActionChrome.isVisible(onSaved: nil, onCancelled: {}))
         #expect(!SettingsActionChrome.isVisible(onSaved: nil, onCancelled: nil))
     }
+
+    @Test func masonryAndCoverFlow_useGrid() {
+        #expect(
+            HintsDrivenCatalogLayout.strategy(
+                hints: hints(preference: .masonry),
+                itemCount: 8,
+                surface: .settings
+            ) == .grid
+        )
+        #expect(
+            HintsDrivenCatalogLayout.strategy(
+                hints: hints(preference: .coverFlow),
+                itemCount: 8,
+                surface: .media
+            ) == .grid
+        )
+    }
+
+    @Test func nestedCountBased_doesNotRecurse_usesSurfaceDefault() {
+        let nested = PresentationPreference.countBased(
+            lowCount: .countBased(lowCount: .grid, highCount: .list, threshold: 2),
+            highCount: .list,
+            threshold: 10
+        )
+        let strategy = HintsDrivenCatalogLayout.strategy(
+            hints: hints(preference: nested),
+            itemCount: 4,
+            surface: .settings
+        )
+        #expect(strategy == .list)
+    }
+
+    @Test func resolvedViewportWidth_ignoresZeroUntilMeasured() {
+        #expect(HintsDrivenCatalogLayout.resolvedViewportWidth(0) == 800)
+        #expect(HintsDrivenCatalogLayout.resolvedViewportWidth(390) == 390)
+    }
 }
