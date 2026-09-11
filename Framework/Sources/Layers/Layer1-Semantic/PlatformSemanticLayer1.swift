@@ -4060,21 +4060,25 @@ public struct GenericSettingsView: View {
         }
         .navigationTitle("Settings")
         .onAppear {
-            initializeValues()
+            applyCatalog()
+        }
+        .onChange(of: catalogKeys) { _, _ in
+            applyCatalog()
         }
         .environment(\.accessibilityIdentifierName, "GenericSettingsView")
         .automaticCompliance(identifierName: "GenericSettingsView")
     }
-    
-    private func initializeValues() {
-        for section in settings {
-            for item in section.items {
-                if values[item.key] == nil {
-                    values[item.key] = item.value
-                }
-            }
-            sectionStates[section.id] = section.isExpanded
+
+    /// Section ids plus item keys. Value/default changes do not retrigger (user edits stay).
+    private var catalogKeys: [String] {
+        settings.flatMap { section in
+            [section.id] + section.items.map(\.key)
         }
+    }
+
+    private func applyCatalog() {
+        values = SettingsCatalogReconciliation.values(settings: settings, existing: values)
+        sectionStates = SettingsCatalogReconciliation.sectionStates(settings: settings, existing: sectionStates)
     }
 }
 
