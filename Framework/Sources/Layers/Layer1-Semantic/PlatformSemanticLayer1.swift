@@ -3600,7 +3600,16 @@ public struct ExtensibleHintsKey: EnvironmentKey {
 }
 
 public struct SettingsOnSettingChangedKey: EnvironmentKey {
-    public static let defaultValue: ((String, Any) -> Void)? = nil
+    public static let defaultValue: SettingsOnSettingChangedAction? = nil
+}
+
+/// Environment payload for custom settings rows (#477). `@unchecked` because values are `Any`.
+public struct SettingsOnSettingChangedAction: @unchecked Sendable {
+    public let handler: (String, Any) -> Void
+
+    public init(_ handler: @escaping (String, Any) -> Void) {
+        self.handler = handler
+    }
 }
 
 public extension EnvironmentValues {
@@ -3611,7 +3620,7 @@ public extension EnvironmentValues {
 
     /// Callback for custom settings section views (#477). `CustomSettingsView` publishes this so
     /// consumer rows can report edits; Save/Cancel still fire via `SettingsActionBar`.
-    var onSettingChanged: ((String, Any) -> Void)? {
+    var onSettingChanged: SettingsOnSettingChangedAction? {
         get { self[SettingsOnSettingChangedKey.self] }
         set { self[SettingsOnSettingChangedKey.self] = newValue }
     }
@@ -4427,7 +4436,7 @@ public struct CustomSettingsView<CustomView: View>: View {
                 onCancelled: onSettingsCancelled
             )
         }
-        .environment(\.onSettingChanged, onSettingChanged)
+        .environment(\.onSettingChanged, onSettingChanged.map(SettingsOnSettingChangedAction.init))
         .background(Color.platformBackground)
     }
 }
