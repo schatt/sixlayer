@@ -31,7 +31,12 @@ public extension View {
     /// Apply path matches `platformOverlayDetailChrome(for: .current)`.
     @MainActor
     func platformOverlayDetailChrome_L6() -> some View {
-        // Deliberate wrong identity stub for TDD red of overlay host observation (#447 /2).
+        #if os(iOS) || os(macOS)
+        NavigationStack {
+            self
+        }
+        #else
         self
+        #endif
     }
 }
