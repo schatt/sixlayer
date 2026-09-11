@@ -1,11 +1,20 @@
 import SwiftUI
 
+private struct CatalogViewportWidthKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = nextValue()
+    }
+}
+
 /// List vs grid container driven by `HintsDrivenCatalogLayout` (#477).
 struct HintsDrivenCatalogContainer<Item: Identifiable, Content: View>: View {
     let items: [Item]
     let hints: PresentationHints
     let surface: HintsDrivenCatalogLayout.Surface
     let content: (Item) -> Content
+
+    @State private var measuredViewportWidth: CGFloat = 0
 
     init(
         items: [Item],
@@ -20,6 +29,20 @@ struct HintsDrivenCatalogContainer<Item: Identifiable, Content: View>: View {
     }
 
     var body: some View {
+        stack
+            .background {
+                GeometryReader { geometry in
+                    Color.clear.preference(
+                        key: CatalogViewportWidthKey.self,
+                        value: geometry.size.width
+                    )
+                }
+            }
+            .onPreferenceChange(CatalogViewportWidthKey.self) { measuredViewportWidth = $0 }
+    }
+
+    @ViewBuilder
+    private var stack: some View {
         switch HintsDrivenCatalogLayout.strategy(
             hints: hints,
             itemCount: items.count,
@@ -32,13 +55,22 @@ struct HintsDrivenCatalogContainer<Item: Identifiable, Content: View>: View {
         }
     }
 
+    private var layoutContext: LayoutContext {
+        LayoutContext.from(
+            viewportWidth: HintsDrivenCatalogLayout.resolvedViewportWidth(measuredViewportWidth)
+        )
+    }
+
     private var layoutDataType: DataTypeHint {
         HintsDrivenCatalogLayout.layoutDataType(hints: hints, fallback: surface.fallbackDataType)
     }
 
     private var itemSpacing: CGFloat {
-        let context = LayoutContext.from(viewportWidth: 800)
-        return LayoutParameterCalculator.calculateSpacing(
+        spacing(for: layoutContext)
+    }
+
+    private func spacing(for context: LayoutContext) -> CGFloat {
+        LayoutParameterCalculator.calculateSpacing(
             context: context,
             dataType: layoutDataType
         ) * HintsDrivenCatalogLayout.spacingScale(complexity: hints.complexity)
@@ -48,7 +80,10 @@ struct HintsDrivenCatalogContainer<Item: Identifiable, Content: View>: View {
         ScrollView {
             platformLazyVStackContainer(spacing: itemSpacing) {
                 ForEach(items) { item in
-                    styled(content(item))
+                    content(item)
+                        .hintsDrivenCardSurface(
+                            enabled: HintsDrivenCatalogLayout.rowVisualStyleIsCard(hints: hints)
+                        )
                 }
             }
             .padding(16)
@@ -56,34 +91,35 @@ struct HintsDrivenCatalogContainer<Item: Identifiable, Content: View>: View {
     }
 
     private var gridStack: some View {
-        GeometryReader { geometry in
-            let context = LayoutContext.from(viewportWidth: geometry.size.width)
-            let columns = LayoutParameterCalculator.calculateColumns(
-                count: items.count,
-                dataType: layoutDataType,
-                context: context
-            )
-            let spacing = LayoutParameterCalculator.calculateSpacing(
-                context: context,
-                dataType: layoutDataType
-            ) * HintsDrivenCatalogLayout.spacingScale(complexity: hints.complexity)
-            let gridColumns = Array(repeating: GridItem(.flexible(), spacing: spacing), count: columns)
+        let context = layoutContext
+        let spacing = spacing(for: context)
+        let columns = LayoutParameterCalculator.calculateColumns(
+            count: items.count,
+            dataType: layoutDataType,
+            context: context
+        )
+        let gridColumns = Array(repeating: GridItem(.flexible(), spacing: spacing), count: columns)
 
-            ScrollView {
-                LazyVGrid(columns: gridColumns, spacing: spacing) {
-                    ForEach(items) { item in
-                        styled(content(item))
-                    }
+        return ScrollView {
+            LazyVGrid(columns: gridColumns, spacing: spacing) {
+                ForEach(items) { item in
+                    content(item)
+                        .hintsDrivenCardSurface(
+                            enabled: HintsDrivenCatalogLayout.rowVisualStyleIsCard(hints: hints)
+                        )
                 }
-                .padding(16)
             }
+            .padding(16)
         }
     }
+}
 
+extension View {
+    /// Card chrome shared by catalog stacks and `CustomListCollectionView` (#272 / #477).
     @ViewBuilder
-    private func styled(_ view: Content) -> some View {
-        if HintsDrivenCatalogLayout.rowVisualStyleIsCard(hints: hints) {
-            view
+    func hintsDrivenCardSurface(enabled: Bool) -> some View {
+        if enabled {
+            self
                 .padding(12)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .background(
@@ -91,7 +127,7 @@ struct HintsDrivenCatalogContainer<Item: Identifiable, Content: View>: View {
                         .fill(Color.platformSecondaryBackground)
                 )
         } else {
-            view
+            self
         }
     }
 }
