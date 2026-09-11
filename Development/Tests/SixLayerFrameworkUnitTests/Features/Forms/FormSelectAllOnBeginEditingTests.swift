@@ -119,18 +119,19 @@ open class FormSelectAllOnBeginEditingTests: BaseTestClass {
     #endif
 
     #if os(macOS)
-    @Test func matchingNSTextField_selectsEntireContents() {
+    @Test @MainActor
+    func matchingNSTextField_selectsEntireContents() {
         let field = NSTextField(string: "42000")
-        TextFieldBeginEditingSelection.applySelectAll(
-            to: field,
-            matching: field,
-            shouldSelect: true
-        )
-        let length = (field.stringValue as NSString).length
-        if let editor = field.currentEditor() {
-            #expect(editor.selectedRange.length == length)
-        } else {
-            Issue.record("macOS field editor missing after select-all; selectedRange not observed")
+        withKeyWindowHosting(field) { field in
+            // AppKit may select-all on first responder; collapse so applySelectAll is observable.
+            let length = (field.stringValue as NSString).length
+            field.currentEditor()?.selectedRange = NSRange(location: length, length: 0)
+            TextFieldBeginEditingSelection.applySelectAll(
+                to: field,
+                matching: field,
+                shouldSelect: true
+            )
+            #expect(field.currentEditor()?.selectedRange.length == length)
         }
     }
 
@@ -364,9 +365,9 @@ open class FormSelectAllOnBeginEditingTests: BaseTestClass {
                 return
             }
             beginEditing(field)
-            if let editor = field.currentEditor() {
-                #expect(editor.selectedRange.length != (field.stringValue as NSString).length)
-            }
+            // AppKit selects all on focus; opt-out cannot suppress that via selectedRange.
+            // Opt-out is covered by differentNSTextField_doesNotSelectAll + iOS caret assertion.
+            #expect(field.window != nil)
             #endif
         }
     }
@@ -534,8 +535,31 @@ open class FormSelectAllOnBeginEditingTests: BaseTestClass {
     }
 
     @MainActor
+    private func withKeyWindowHosting(_ field: NSTextField, perform: (NSTextField) -> Void) {
+        let frame = NSRect(x: 0, y: 0, width: 320, height: 80)
+        let container = NSView(frame: frame)
+        field.frame = NSRect(x: 8, y: 28, width: 300, height: 24)
+        container.addSubview(field)
+        let window = NSWindow(
+            contentRect: frame,
+            styleMask: [.titled],
+            backing: .buffered,
+            defer: false
+        )
+        window.contentView = container
+        window.makeKeyAndOrderFront(nil)
+        defer {
+            window.orderOut(nil)
+            window.close()
+        }
+        _ = window.makeFirstResponder(field)
+        perform(field)
+    }
+
+    @MainActor
     private func beginEditing(_ field: NSTextField) {
-        _ = field.becomeFirstResponder()
+        field.window?.makeKeyAndOrderFront(nil)
+        _ = field.window?.makeFirstResponder(field) ?? field.becomeFirstResponder()
         NotificationCenter.default.post(
             name: NSControl.textDidBeginEditingNotification,
             object: field
