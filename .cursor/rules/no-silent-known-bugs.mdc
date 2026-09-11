@@ -22,6 +22,8 @@ Any **confirmed or strongly suspected defect** you observe while working is eith
 
 **Related ≠ found-while.** Related means the *work* relates (same defect class, dependency, or an explicit do-not-absorb split). It does not mean you noticed B while doing A. Changing the oil and seeing a low brake pad: file the pad; do not mark it related to the oil. A discovery comment with the new number is the trail; the issue body Related/see-also line is only for actual relation.
 
+**Batch related work, not found-while.** Related issues may be picked up together (one joint worktree / `wip/` branch) when that is cheaper than two trips — same types, same tests, same breaking change. Found-while issues stay their own tickets and their own trips unless you explicitly expand scope. Filing first is still required; batching is scheduling, not silence.
+
 Uncertain is not ignore: state confidence (“I think…”, “unverified”) and still put it on the thread or an issue.
 
 Do not drive-by-fix unless it is explicitly in this issue’s scope.
@@ -36,5 +38,5 @@ Similarity is irrelevant. Same class, similar, or unrelated-but-wrong all follow
 
 ## Example
 
-- **Related:** #474 settings `id = UUID()` and #475 other catalog types with the same pattern — same work, split so 474 stays settings-only. Collapse keyed on ephemeral `section.id` stays *in* #474 (same identity bug).
-- **Not related:** #476 stale `@State` on catalog rebuild, #477 unused `PresentationHints` — filed because they were visible under `GenericSettingsView`, not because they are the UUID bug.
+- **Related:** #474 settings `id = UUID()` and #475 other catalog types with the same pattern — same work, split so 474 stays settings-only; reasonable to implement together. Collapse keyed on ephemeral `section.id` stays *in* #474 (same identity bug).
+- **Not related:** #476 stale `@State` on catalog rebuild, #477 unused `PresentationHints` — filed because they were visible under `GenericSettingsView`, not because they are the UUID bug. Do not bundle them into a 474/475 trip.
