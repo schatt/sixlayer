@@ -119,22 +119,18 @@ open class FormSelectAllOnBeginEditingTests: BaseTestClass {
     #endif
 
     #if os(macOS)
-    @Test func matchingNSTextField_selectsEntireContents() {
+    @Test @MainActor func matchingNSTextField_selectsEntireContents() {
         let field = NSTextField(string: "42000")
         TextFieldBeginEditingSelection.applySelectAll(
             to: field,
             matching: field,
             shouldSelect: true
         )
-        // `selectText` needs a key window for `currentEditor()`; creating one under
-        // parallel xctest SEGV'd the worker (#447). Crash-freedom is the unit observation.
-        #expect(field.stringValue == "42000")
-        if let editor = field.currentEditor() {
-            #expect(editor.selectedRange.length == (field.stringValue as NSString).length)
-        }
+        let length = (field.stringValue as NSString).length
+        #expect(field.currentEditor()?.selectedRange.length == length)
     }
 
-    @Test func differentNSTextField_doesNotSelectAll() {
+    @Test @MainActor func differentNSTextField_doesNotSelectAll() {
         let field = NSTextField(string: "42000")
         let other = NSTextField(string: "Station")
         TextFieldBeginEditingSelection.applySelectAll(
@@ -142,9 +138,7 @@ open class FormSelectAllOnBeginEditingTests: BaseTestClass {
             matching: other,
             shouldSelect: true
         )
-        if let editor = field.currentEditor() {
-            #expect(editor.selectedRange.length != (field.stringValue as NSString).length)
-        }
+        #expect(field.currentEditor() == nil)
     }
 
     // Bare `NSTextView.string =` aborts via TextInputUI under parallel xctest (Gitea run 293).
@@ -158,6 +152,17 @@ open class FormSelectAllOnBeginEditingTests: BaseTestClass {
             shouldSelect: true
         )
         #expect(view.selectedRange.length == 0)
+    }
+
+    @Test func unhostedNSTextField_selectAllIsNoOpWithoutWindow() {
+        let field = NSTextField(string: "42000")
+        #expect(field.window == nil)
+        TextFieldBeginEditingSelection.applySelectAll(
+            to: field,
+            matching: field,
+            shouldSelect: true
+        )
+        #expect(field.currentEditor() == nil)
     }
     #endif
 
