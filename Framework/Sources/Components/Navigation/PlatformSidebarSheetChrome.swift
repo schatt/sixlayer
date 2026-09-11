@@ -16,7 +16,8 @@ public func platformSidebarSheetChrome(for platform: SixLayerPlatform) -> Platfo
     case .iOS:
         return .navigationStackWrapped
     case .macOS:
-        return .presentationFramed
+        // Deliberate wrong mapping for TDD red of sync gate (#447 /2).
+        return .unmodified
     case .tvOS, .watchOS, .visionOS:
         return .unmodified
     }
