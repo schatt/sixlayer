@@ -48,6 +48,8 @@ final class HostingSession: @unchecked Sendable {
             if let window = window as? NSWindow {
                 window.orderOut(nil)
                 window.contentViewController = nil
+                // Raw AppKit hosts (ParallelSafeAppKitHost) attach via contentView only.
+                window.contentView = nil
             }
             #endif
         }
