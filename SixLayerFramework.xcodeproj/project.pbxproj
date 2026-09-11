@@ -1624,6 +1624,7 @@
 		757B2CA03BCDDE0BFF7DB8CE /* GlobalDisableLocalEnableTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC55A9B1CA024C645AF0ED9B /* GlobalDisableLocalEnableTests.swift */; };
 		757BE424825EA100A75EA6C0 /* CoreViewFunctionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A233B900930D0273E7BD2D84 /* CoreViewFunctionTests.swift */; };
 		75AB3C83078EA9EBA2A3310F /* HintsFilePresentationPropertiesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E39D929928BE180BA60924E1 /* HintsFilePresentationPropertiesTests.swift */; };
+		75B5105C8A51123AB6F712EA /* AccessibilityHostIdentifierXCUI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67C5853DF0D05D98553E939C /* AccessibilityHostIdentifierXCUI.swift */; };
 		75C17880BE8DED3A68AF009B /* PlatformModalsLayer4.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D9ABDD4EA4F96857BDDFEC7 /* PlatformModalsLayer4.swift */; };
 		75C1F0BC03CF7459EE2788C5 /* SixLayerFramework.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C263F30766391143C12BAF70 /* SixLayerFramework.framework */; };
 		75E23FC88A7C56E3C2108156 /* PlatformImageEXIFWriters.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64EACD90C6C69FAA5D878815 /* PlatformImageEXIFWriters.swift */; };
@@ -2371,6 +2372,7 @@
 		AFF2BD9BA0C2F4AC14CAEDAE /* PlatformOpenSettingsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EDAB3F7CA12B73D025F8901 /* PlatformOpenSettingsTests.swift */; };
 		B00EA0DCE7501C374330961E /* CloudKitServiceSwiftDataTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F31B5C8FE9E71F1504A8ABBE /* CloudKitServiceSwiftDataTests.swift */; };
 		B035633947C4FE8408A942D2 /* ControlTestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 744E808A66DF1FF304D7DBD1 /* ControlTestView.swift */; };
+		B051D3ED597D9DD2A6008F4D /* AccessibilityHostIdentifierXCUI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67C5853DF0D05D98553E939C /* AccessibilityHostIdentifierXCUI.swift */; };
 		B05524654382099A126DC7BC /* HapticPublicSurfaceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7E716C3AF85545F10A5F16B /* HapticPublicSurfaceTests.swift */; };
 		B060791BA26FEA7915EBF3DA /* PlatformImageAPISignatureTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F557D7E2FE2549899354753 /* PlatformImageAPISignatureTests.swift */; };
 		B06BFA94B27701C0E3933267 /* PlatformAdvancedContainersAccessibilityUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF82A5D408C5D4B696012AB7 /* PlatformAdvancedContainersAccessibilityUITests.swift */; };
@@ -4209,6 +4211,7 @@
 		65ED9D9381B8426E60FACF55 /* CategoryCCallbackTestView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoryCCallbackTestView.swift; sourceTree = "<group>"; };
 		660449FBCF9CF0BAAD1E1D6B /* CardDisplayable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardDisplayable.swift; sourceTree = "<group>"; };
 		6723EB251833B9CC22C520E4 /* ExpandableCardCollectionNamedComplianceHostTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExpandableCardCollectionNamedComplianceHostTests.swift; sourceTree = "<group>"; };
+		67C5853DF0D05D98553E939C /* AccessibilityHostIdentifierXCUI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessibilityHostIdentifierXCUI.swift; sourceTree = "<group>"; };
 		6823A7FA3CE18BD0484D5534 /* PlatformManagedSettingsDetailNavigationState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformManagedSettingsDetailNavigationState.swift; sourceTree = "<group>"; };
 		6837EE07B9B62FE066A13500 /* CapabilityMatrixTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CapabilityMatrixTests.swift; sourceTree = "<group>"; };
 		684F019336FBF1D10A30C17B /* PlatformUIPatterns.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformUIPatterns.swift; sourceTree = "<group>"; };
@@ -5406,6 +5409,7 @@
 		3528CBD09AC98B890DE89A26 /* UINavigation */ = {
 			isa = PBXGroup;
 			children = (
+				67C5853DF0D05D98553E939C /* AccessibilityHostIdentifierXCUI.swift */,
 				E2578EEAEAADECABF62233FB /* SixLayerUITestNavigator.swift */,
 				938D6C266D2ED60B5811AB68 /* SixLayerUITestNavigatorInternals.swift */,
 				1518F9FB0020575E297E09D6 /* UITestContractAssertions.swift */,
@@ -9704,6 +9708,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				75B5105C8A51123AB6F712EA /* AccessibilityHostIdentifierXCUI.swift in Sources */,
 				96B1CDAB588DC07F273BE83A /* BarcodeServiceMock.swift in Sources */,
 				1DB6C21FF6D056A8B63D4656 /* CloudKitServiceMock.swift in Sources */,
 				EF90A3D8DC7E91066EC00FED /* FormTestHelper.swift in Sources */,
@@ -11431,6 +11436,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B051D3ED597D9DD2A6008F4D /* AccessibilityHostIdentifierXCUI.swift in Sources */,
 				B8D9FEEAC608D4A20BD567D6 /* BarcodeServiceMock.swift in Sources */,
 				4C6DCB434A7A84A8A5A97D19 /* CloudKitServiceMock.swift in Sources */,
 				BA51588AF8A0F989ACD76B6A /* FormTestHelper.swift in Sources */,
