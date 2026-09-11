@@ -27,12 +27,16 @@ public struct OCRDataCandidate: Identifiable, Equatable, Hashable {
         suggestedType: TextType,
         alternativeTypes: [TextType]
     ) {
-        self.id = "\(text)|\(boundingBox.origin.x)|\(boundingBox.origin.y)|\(boundingBox.size.width)|\(boundingBox.size.height)|\(suggestedType.rawValue)"
+        self.id = Self.stableId(text: text, boundingBox: boundingBox, suggestedType: suggestedType)
         self.text = text
         self.boundingBox = boundingBox
         self.confidence = confidence
         self.suggestedType = suggestedType
         self.alternativeTypes = alternativeTypes
+    }
+
+    static func stableId(text: String, boundingBox: CGRect, suggestedType: TextType) -> String {
+        "\(text)|\(boundingBox.origin.x)|\(boundingBox.origin.y)|\(boundingBox.size.width)|\(boundingBox.size.height)|\(suggestedType.rawValue)"
     }
     
     // Custom equality that ignores UUID for testing
