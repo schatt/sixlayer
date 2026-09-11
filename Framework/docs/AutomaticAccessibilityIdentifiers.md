@@ -212,6 +212,30 @@ Button("Save") { }
 - There is no guaranteed priority between two manually-specified identifiers (they are both explicit).
 - Recommendation: avoid mixing. Pick one approach per view. If you must combine them, document the intended order locally and verify via tests.
 
+### Host identifiers (`accessibilityHostIdentifier`) — XCUI contract (#473)
+
+Use `View.accessibilityHostIdentifier(_:)` (or `.named` / `.exactNamed`, which attach the same way) on destination roots and scroll hosts when nested child ids must stay queryable.
+
+**Query (required):** resolve with `descendants(matching: .any)` and an exact `identifier ==` predicate. Do **not** query `otherElements`, `scrollViews`, or `collectionViews` for this id.
+
+```swift
+let host = app.descendants(matching: .any)
+    .matching(NSPredicate(format: "identifier == %@", "MyApp.Expenses.scrollHost"))
+    .firstMatch
+XCTAssertTrue(host.waitForExistence(timeout: 2.5))
+```
+
+**AX element type:**
+
+| Platform | XCUI type | Why |
+|---|---|---|
+| macOS | `StaticText` | 1pt `Text` leaf sentinel (`Color.clear` is often absent from the macOS tree — #370) |
+| iOS | `Other` | `Color.clear` + `.accessibilityElement(children: .ignore)` |
+
+**Placement:** stamp an **outer** container. Nested lists may remount via `.id`; presented sheets are a different identity (and on macOS, a different AX window). Do not put the host id on a view that is destroyed by `.id` or by the sheet. A second plain `.accessibilityIdentifier` on the same view is **not** required when query and placement are correct. Plain identifier on a `Group` is often invisible on macOS; if you add insurance, use a real container (`VStack`).
+
+Proved by `HostIdentifierRemountUITests` (`-OpenHostIdentifierRemount`): host-only stamp survives `platformSheet_L4` dismiss and nested `.id` remount when queried via `.any`.
+
 ### Enabling Automatic IDs for Custom Views
 
 **For complex custom views, enable automatic IDs:**
