@@ -50,6 +50,21 @@ struct PlatformSidebarSheetChromeTests {
         }
     }
 
+    /// Both-direction gate: pure `.current` decisions must match this binary's compile-time OS.
+    @Test
+    func currentPlatformDecisionMatchesCompileTimeOS() {
+        #if os(iOS)
+        #expect(platformSidebarSheetChrome(for: .current) == .navigationStackWrapped)
+        #expect(platformOverlayDetailChrome(for: .current) == .navigationStackWrapped)
+        #elseif os(macOS)
+        #expect(platformSidebarSheetChrome(for: .current) == .presentationFramed)
+        #expect(platformOverlayDetailChrome(for: .current) == .navigationStackWrapped)
+        #else
+        #expect(platformSidebarSheetChrome(for: .current) == .unmodified)
+        #expect(platformOverlayDetailChrome(for: .current) == .unmodified)
+        #endif
+    }
+
     @Test @MainActor
     func sidebarSheetChromeModifierMatchesHostDecision() {
         let view = Text("sidebar-sheet").platformSidebarSheetChrome_L6()
@@ -70,9 +85,28 @@ struct PlatformSidebarSheetChromeTests {
                 "macOS sidebar-sheet chrome must not wrap NavigationStack, got: \(description)"
             )
         case .unmodified:
+            // Exact identity — catches apply still framing/wrapping while decision says unmodified.
             #expect(
-                !description.contains("NavigationStack"),
-                "Secondary-platform sidebar-sheet chrome must not wrap NavigationStack, got: \(description)"
+                description == "Text",
+                "Secondary-platform sidebar-sheet chrome must be identity, got: \(description)"
+            )
+        }
+    }
+
+    @Test @MainActor
+    func overlayDetailChromeModifierMatchesHostDecision() {
+        let view = Text("overlay-detail").platformOverlayDetailChrome_L6()
+        let description = BaseTestClass.viewSubjectTypeDescription(for: view)
+        switch platformOverlayDetailChrome(for: .current) {
+        case .navigationStackWrapped:
+            #expect(
+                description.contains("NavigationStack"),
+                "iOS/macOS overlay-detail chrome should wrap NavigationStack, got: \(description)"
+            )
+        case .unmodified:
+            #expect(
+                description == "Text",
+                "Secondary-platform overlay-detail chrome must be identity, got: \(description)"
             )
         }
     }

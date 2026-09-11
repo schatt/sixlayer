@@ -10,7 +10,8 @@ public enum PlatformSidebarSheetChrome: Equatable {
     case unmodified
 }
 
-/// Platform decision for sidebar-sheet chrome. L4/L6 apply the result; they do not re-fork `#if os`.
+/// Platform decision for sidebar-sheet chrome.
+/// L6 apply mirrors this table via compile-time `#if os` (not a runtime ViewBuilder switch).
 public func platformSidebarSheetChrome(for platform: SixLayerPlatform) -> PlatformSidebarSheetChrome {
     switch platform {
     case .iOS:
@@ -30,7 +31,8 @@ public enum PlatformOverlayDetailChrome: Equatable {
     case unmodified
 }
 
-/// Platform decision for overlay-host detail chrome. L4 applies the result.
+/// Platform decision for overlay-host detail chrome.
+/// L6 apply mirrors this table via compile-time `#if os` (not a runtime ViewBuilder switch).
 public func platformOverlayDetailChrome(for platform: SixLayerPlatform) -> PlatformOverlayDetailChrome {
     switch platform {
     case .iOS, .macOS:
