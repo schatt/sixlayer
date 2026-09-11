@@ -4032,8 +4032,7 @@ public struct GenericSettingsView: View {
             HintsDrivenCatalogContainer(
                 items: settings,
                 hints: hints,
-                surface: .settings,
-                fallbackDataType: .generic
+                surface: .settings
             ) { section in
                 SettingsSectionView(
                     section: section,
@@ -4425,8 +4424,7 @@ public struct CustomSettingsView<CustomView: View>: View {
             HintsDrivenCatalogContainer(
                 items: settings,
                 hints: hints,
-                surface: .settings,
-                fallbackDataType: .generic
+                surface: .settings
             ) { setting in
                 customSettingView(setting)
             }
@@ -4461,8 +4459,7 @@ public struct CustomMediaView<CustomView: View>: View {
         HintsDrivenCatalogContainer(
             items: media,
             hints: hints,
-            surface: .media,
-            fallbackDataType: .media
+            surface: .media
         ) { mediaItem in
             customMediaView(mediaItem)
         }
@@ -4489,8 +4486,7 @@ public struct CustomHierarchicalView<CustomView: View>: View {
         HintsDrivenCatalogContainer(
             items: items,
             hints: hints,
-            surface: .hierarchical,
-            fallbackDataType: .hierarchical
+            surface: .hierarchical
         ) { item in
             customItemView(item)
         }
@@ -4518,8 +4514,7 @@ public struct CustomTemporalView<CustomView: View>: View {
         HintsDrivenCatalogContainer(
             items: items,
             hints: hints,
-            surface: .temporal,
-            fallbackDataType: .temporal
+            surface: .temporal
         ) { item in
             customItemView(item)
         }
@@ -4547,8 +4542,7 @@ public struct CustomNumericDataView<CustomView: View>: View {
         HintsDrivenCatalogContainer(
             items: data,
             hints: hints,
-            surface: .numeric,
-            fallbackDataType: .numeric
+            surface: .numeric
         ) { dataItem in
             customDataView(dataItem)
         }
