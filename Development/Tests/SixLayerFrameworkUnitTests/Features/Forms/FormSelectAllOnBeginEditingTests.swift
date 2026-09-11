@@ -580,17 +580,17 @@ open class FormSelectAllOnBeginEditingTests: BaseTestClass {
 
     @MainActor
     private func beginEditing(_ field: NSTextField) {
-        // SwiftUI hosts use orderOut windows; borrow key exclusively so field editor attaches
-        // under parallel xctest without suite serialization.
+        // Borrow key only for first-responder attach — never hold the lock across
+        // RunLoop pumping (that deadlocks parallel MainActor workers).
         AppKitKeyWindowIsolation.withExclusiveKeyWindow {
             field.window?.makeKeyAndOrderFront(nil)
             _ = field.window?.makeFirstResponder(field) ?? field.becomeFirstResponder()
-            NotificationCenter.default.post(
-                name: NSControl.textDidBeginEditingNotification,
-                object: field
-            )
-            pumpSelectAllHost()
         }
+        NotificationCenter.default.post(
+            name: NSControl.textDidBeginEditingNotification,
+            object: field
+        )
+        pumpSelectAllHost()
     }
     #endif
 }
