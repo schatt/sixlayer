@@ -14,6 +14,7 @@ import XCTest
 /// `.accessibilityIdentifier` on that same view).
 @MainActor
 final class HostIdentifierRemountUITests: SixLayerUITestCase {
+    /// Keep in sync with `HostIdentifierRemountIDs` in the TestApp host (separate target).
     private enum IDs {
         static let land = "host-identifier-remount-host-root"
         static let host = "SixLayer.uitest.hostIdentifier.scrollHost"
@@ -61,11 +62,11 @@ final class HostIdentifierRemountUITests: SixLayerUITestCase {
     /// `StaticText`, not `Other` / `ScrollView` (#370 / #473).
     @MainActor
     func testHostIdentifier_onlyStamp_survivesSheetDismissAndNestedRemount() throws {
-        let host = element(identifier: IDs.host)
         XCTAssertTrue(
-            host.waitForExistence(timeout: 2.5),
+            app.waitForHostRootIdentifier(IDs.host, timeout: 2.5),
             "Host id '\(IDs.host)' must resolve via descendants(.any) from accessibilityHostIdentifier alone"
         )
+        let host = element(identifier: IDs.host)
         #if os(macOS)
         XCTAssertEqual(
             host.elementType,
