@@ -20,7 +20,7 @@ Any **confirmed or strongly suspected defect** you observe while working is eith
 
 **Do not silently ignore it.** “Out of scope / don’t expand / leave it / unrelated, skip” without a follow-up issue number is forbidden.
 
-**Do not build a Related graph.** Link issue bodies only when they share a defect class or an explicit scope split (do not absorb A into B). “Found on the same file” is not related.
+**Related ≠ found-while.** Related means the *work* relates (same defect class, dependency, or an explicit do-not-absorb split). It does not mean you noticed B while doing A. Changing the oil and seeing a low brake pad: file the pad; do not mark it related to the oil. A discovery comment with the new number is the trail; the issue body Related/see-also line is only for actual relation.
 
 Uncertain is not ignore: state confidence (“I think…”, “unverified”) and still put it on the thread or an issue.
 
@@ -34,7 +34,7 @@ Do not drive-by-fix unless it is explicitly in this issue’s scope.
 
 Similarity is irrelevant. Same class, similar, or unrelated-but-wrong all follow the fork above.
 
-## Example (scope split, not a Related graph)
+## Example
 
-- #474 UUID catalog identity (in scope) + collapse keyed on ephemeral `section.id` (adjacent, same issue)
-- #475 other `id = UUID()` catalog types (follow-up, not ignored)
+- **Related:** #474 settings `id = UUID()` and #475 other catalog types with the same pattern — same work, split so 474 stays settings-only. Collapse keyed on ephemeral `section.id` stays *in* #474 (same identity bug).
+- **Not related:** #476 stale `@State` on catalog rebuild, #477 unused `PresentationHints` — filed because they were visible under `GenericSettingsView`, not because they are the UUID bug.
