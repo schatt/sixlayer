@@ -119,11 +119,15 @@ public enum PlatformMapComponentsLayer4 {
 // MARK: - Supporting Types
 
 /// Cross-platform map annotation data
+///
+/// `id` is `title` plus coordinate. Duplicate keys collide in `ForEach` (#475).
 #if os(iOS) || os(macOS)
 @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
 #endif
 public struct MapAnnotationData: Identifiable {
-    public let id = UUID()
+    public var id: String {
+        "\(title)|\(coordinate.latitude)|\(coordinate.longitude)"
+    }
     public let title: String
     public let coordinate: CLLocationCoordinate2D
     public let content: AnyView
