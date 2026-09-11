@@ -1125,8 +1125,11 @@ public extension View {
     /// and similar wrappers. ``View/named(_:)`` and ``View/exactNamed(_:)`` use this
     /// pattern (#360 / #364 / CarManager #757).
     ///
-    /// XCUI query: `app.descendants(matching: .any).matching(NSPredicate(format: "identifier == %@", id))`.
+    /// XCUI query: `descendants(.any)` + `identifier ==`, or SixLayerTestKit
+    /// `waitForAccessibilityIdentifier` / `elementMatchingAccessibilityIdentifier`.
     /// Do **not** use typed `otherElements` / `scrollViews` / `collectionViews` for this id.
+    /// The matched node is a **sibling leaf**, not a parent of nested child ids — query
+    /// those from `app`, not from the host element.
     ///
     /// AX element type: **macOS** `StaticText` (1pt `Text` leaf; `Color.clear` is often
     /// absent — #370); **iOS** `.other` (`Color.clear` + `.ignore`).
