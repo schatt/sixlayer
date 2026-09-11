@@ -47,7 +47,7 @@ struct HostIdentifierRemountHostView: View {
                 .accessibilityLabel("Present sheet")
                 .buttonStyle(.borderless)
 
-            Button("Remount nested") { /* no-op: deliberate red for epoch assertion (#473) */ }
+            Button("Remount nested") { nestedEpoch += 1 }
                 .accessibilityIdentifier(HostIdentifierRemountIDs.remount)
                 .accessibilityLabel("Remount nested")
                 .buttonStyle(.borderless)
