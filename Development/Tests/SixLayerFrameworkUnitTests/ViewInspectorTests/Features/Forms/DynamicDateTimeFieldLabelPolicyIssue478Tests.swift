@@ -82,6 +82,7 @@ open class DynamicDateTimeFieldLabelPolicyIssue478Tests: BaseTestClass {
 
     // MARK: - Helpers
 
+    @MainActor
     private func makeField(contentType: DynamicContentType) -> DynamicFormField {
         DynamicFormField(
             id: "probe-\(contentType.rawValue)",
@@ -91,6 +92,7 @@ open class DynamicDateTimeFieldLabelPolicyIssue478Tests: BaseTestClass {
         )
     }
 
+    @MainActor
     private func makeFormState(field: DynamicFormField) -> DynamicFormState {
         let configuration = DynamicFormConfiguration(
             id: "issue-478-form",
@@ -102,6 +104,7 @@ open class DynamicDateTimeFieldLabelPolicyIssue478Tests: BaseTestClass {
         return state
     }
 
+    @MainActor
     private func assertDatePickerTitleIsEmpty<V: View>(
         making: (DynamicFormField, DynamicFormState) -> V,
         contentType: DynamicContentType,
@@ -130,7 +133,7 @@ open class DynamicDateTimeFieldLabelPolicyIssue478Tests: BaseTestClass {
 
         let titles = datePickerTitles(from: pickers)
         #expect(
-            titles.allSatisfy(\.isEmpty),
+            titles.allSatisfy { $0.isEmpty },
             "\(componentName) DatePicker title must be empty (parent draws the label); got \(titles) (#478)"
         )
         #else
@@ -140,6 +143,7 @@ open class DynamicDateTimeFieldLabelPolicyIssue478Tests: BaseTestClass {
     }
 
     #if canImport(ViewInspector)
+    @MainActor
     private func datePickerTitles(
         from pickers: [ViewInspector.InspectableView<ViewInspector.ViewType.DatePicker>]
     ) -> [String] {
