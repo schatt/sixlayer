@@ -1,5 +1,5 @@
 ---
-description: Same bug elsewhere is in scope or a follow-up issue; never silently ignore known copies.
+description: Same or similar bugs elsewhere are in scope or a follow-up issue; never silently ignore known copies.
 alwaysApply: true
 ---
 
@@ -9,23 +9,25 @@ alwaysApply: true
 
 ## Rule
 
-When finding or fixing a bug, if the **same defect class** exists at other types, call sites, platforms, or layers:
+When finding or fixing a bug, if a **same or similar** defect exists at other types, call sites, platforms, or layers:
 
 1. **Expand this issue** — make those sites explicit in scope (acceptance + a comment), **or**
 2. **Open a follow-up GitHub issue** — inventory the remaining sites, link it from the current issue.
 
-**Do not silently ignore known copies.** Writing “out of scope / don’t expand / leave the others” without a follow-up issue number is forbidden.
+**Do not silently ignore known copies.** Writing “out of scope / don’t expand / leave the others” without a follow-up issue number is forbidden. “Similar” is not a judgment call that skips a ticket.
 
-## What counts as the same bug
+## Same vs similar
 
-Same root cause and failure mode, not a vague resemblance. Example: `public let id = UUID()` on another `Identifiable` catalog type used in `ForEach` is the same class as #474; a different identity bug is not.
+- **Same** — identical defect class: same root cause and failure mode. Example: `public let id = UUID()` on another `Identifiable` catalog type used in `ForEach` (#474 → #475).
+- **Similar** — same failure mode in the same layer/API family, or an adjacent defect found on the same code path, even if the type/name/root-cause string differs. Example: settings collapse keyed on ephemeral `section.id` next to UUID catalog identity (#474).
+- **Not in this rule** — vague resemblance only (unrelated identity/remount smells in a different API).
 
 ## Correct response
 
-- Name the other sites (type/file/call site).
+- Name the other sites (type/file/call site) and whether they are same or similar.
 - Choose expand vs follow-up **in the current issue thread**.
 - If follow-up: create the issue immediately; do not defer “we should file that later.”
 
 ## Related
 
-- #474 (settings catalog UUID identity) → follow-up #475 (other catalog types)
+- #474 (settings catalog UUID identity + adjacent collapse-state key) → follow-up #475 (other catalog types)
