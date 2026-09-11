@@ -66,6 +66,11 @@ enum HintsDrivenCatalogLayout {
         hints.customPreferences["rowVisualStyle"]?.lowercased() == "card"
     }
 
+    /// Background `GeometryReader` reports 0 until laid out; don't feed that to column math.
+    static func resolvedViewportWidth(_ measured: CGFloat) -> CGFloat {
+        measured > 0 ? measured : 800
+    }
+
     private static func strategy(
         for preference: PresentationPreference,
         itemCount: Int,
@@ -77,11 +82,11 @@ enum HintsDrivenCatalogLayout {
         case .grid, .cards, .card, .masonry, .coverFlow:
             return .grid
         case .countBased(let lowCount, let highCount, let threshold):
-            return strategy(
-                for: itemCount <= threshold ? lowCount : highCount,
-                itemCount: itemCount,
-                surface: surface
-            )
+            let chosen = itemCount <= threshold ? lowCount : highCount
+            if case .countBased = chosen {
+                return defaultStrategy(surface)
+            }
+            return strategy(for: chosen, itemCount: itemCount, surface: surface)
         case .automatic, .custom, .detail, .modal, .navigation, .chart, .moderate, .rich:
             return defaultStrategy(surface)
         }
