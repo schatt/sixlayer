@@ -8,6 +8,7 @@
 //
 
 import XCTest
+import SixLayerTestKit
 
 /// Deep-link `-OpenHostIdentifierRemount`. Host stamps **only**
 /// `accessibilityHostIdentifier` on the outer container (no plain
@@ -63,7 +64,7 @@ final class HostIdentifierRemountUITests: SixLayerUITestCase {
     @MainActor
     func testHostIdentifier_onlyStamp_survivesSheetDismissAndNestedRemount() throws {
         XCTAssertTrue(
-            app.waitForHostRootIdentifier(IDs.host, timeout: 2.5),
+            app.waitForAccessibilityIdentifier(IDs.host, timeout: 2.5),
             "Host id '\(IDs.host)' must resolve via descendants(.any) from accessibilityHostIdentifier alone"
         )
         assertHostAXTypeAndTypedQueries(context: "before sheet")
@@ -109,7 +110,7 @@ final class HostIdentifierRemountUITests: SixLayerUITestCase {
             "Remount must change nested identity (epoch 0 → 1); a no-op remount is not the contract"
         )
         XCTAssertTrue(
-            app.waitForHostRootIdentifier(IDs.host, timeout: 2.5),
+            app.waitForAccessibilityIdentifier(IDs.host, timeout: 2.5),
             "Host id '\(IDs.host)' must still resolve via descendants(.any) after sheet dismiss and nested .id remount"
         )
         assertHostAXTypeAndTypedQueries(context: "after remount")
@@ -189,9 +190,7 @@ final class HostIdentifierRemountUITests: SixLayerUITestCase {
 
     @MainActor
     private func element(identifier: String) -> XCUIElement {
-        app.descendants(matching: .any)
-            .matching(NSPredicate(format: "identifier == %@", identifier))
-            .firstMatch
+        app.elementMatchingAccessibilityIdentifier(identifier)
     }
 
     @MainActor
