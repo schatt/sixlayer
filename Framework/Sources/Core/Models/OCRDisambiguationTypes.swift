@@ -68,12 +68,12 @@ public struct OCRDisambiguationResult {
 
 /// User's selection for disambiguation
 public struct OCRDisambiguationSelection {
-    public let candidateId: UUID
+    public let candidateId: String
     public let selectedType: TextType
     public let customText: String?
     
     public init(
-        candidateId: UUID,
+        candidateId: String,
         selectedType: TextType,
         customText: String? = nil
     ) {
