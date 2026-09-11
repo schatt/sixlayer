@@ -75,6 +75,10 @@ final class HostIdentifierRemountUITests: SixLayerUITestCase {
             "Nested 0",
             "Nested content should start at epoch 0 so remount can be observed"
         )
+        assertHostIsLeafNotParent(context: "before sheet")
+        #if os(macOS)
+        assertHostDoesNotExposeIdentifierAsAccessibleText(context: "before sheet")
+        #endif
 
         let present = element(identifier: IDs.presentSheet)
         XCTAssertTrue(present.waitForExistence(timeout: 2.0), "Present-sheet control should exist")
@@ -109,6 +113,10 @@ final class HostIdentifierRemountUITests: SixLayerUITestCase {
             "Host id '\(IDs.host)' must still resolve via descendants(.any) after sheet dismiss and nested .id remount"
         )
         assertHostAXTypeAndTypedQueries(context: "after remount")
+        assertHostIsLeafNotParent(context: "after remount")
+        #if os(macOS)
+        assertHostDoesNotExposeIdentifierAsAccessibleText(context: "after remount")
+        #endif
     }
 
     /// Both-direction AX contract: `.any` already waited; typed slots must match the documented type.
@@ -148,6 +156,35 @@ final class HostIdentifierRemountUITests: SixLayerUITestCase {
             "\(context): iOS host id should not appear as StaticText"
         )
         #endif
+    }
+
+    /// The host stamp is a background leaf. Nested contract ids must be found from `app`, not as
+    /// descendants of the host element (#473).
+    @MainActor
+    private func assertHostIsLeafNotParent(context: String) {
+        let host = element(identifier: IDs.host)
+        let nestedUnderHost = host.descendants(matching: .any)
+            .matching(NSPredicate(format: "identifier == %@", IDs.nested))
+            .firstMatch
+        XCTAssertFalse(
+            nestedUnderHost.exists,
+            "\(context): host sentinel is not a parent of nested content; do not query host.descendants for child ids"
+        )
+        XCTAssertTrue(
+            element(identifier: IDs.nested).exists,
+            "\(context): nested id must still resolve from the application (sibling of the sentinel)"
+        )
+    }
+
+    /// macOS Text sentinel must not advertise the contract id as its accessible name (VoiceOver).
+    @MainActor
+    private func assertHostDoesNotExposeIdentifierAsAccessibleText(context: String) {
+        let host = element(identifier: IDs.host)
+        XCTAssertNotEqual(
+            host.xcuiAccessibleText,
+            IDs.host,
+            "\(context): macOS host sentinel must not use the identifier as VoiceOver label/value"
+        )
     }
 
     @MainActor
