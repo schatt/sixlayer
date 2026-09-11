@@ -1124,6 +1124,16 @@ public extension View {
     /// Prefer this over raw `accessibilityIdentifier` on destination roots, scroll hosts,
     /// and similar wrappers. ``View/named(_:)`` and ``View/exactNamed(_:)`` use this
     /// pattern (#360 / #364 / CarManager #757).
+    ///
+    /// XCUI query: `app.descendants(matching: .any).matching(NSPredicate(format: "identifier == %@", id))`.
+    /// Do **not** use typed `otherElements` / `scrollViews` / `collectionViews` for this id.
+    ///
+    /// AX element type: **macOS** `StaticText` (1pt `Text` leaf; `Color.clear` is often
+    /// absent — #370); **iOS** `.other` (`Color.clear` + `.ignore`).
+    ///
+    /// Placement: stamp an outer container. Nested content may remount via `.id`.
+    /// Do not put this id on a view that dies with a sheet or with a remounting `.id`
+    /// (#473). A second plain `.accessibilityIdentifier` on the same view is not required.
     func accessibilityHostIdentifier(_ identifier: String) -> some View {
         #if os(macOS)
         // `Color.clear` + `.accessibilityElement(children: .ignore)` is frequently absent from
