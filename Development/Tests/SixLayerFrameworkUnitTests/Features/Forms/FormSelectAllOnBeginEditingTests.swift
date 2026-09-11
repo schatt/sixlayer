@@ -583,8 +583,14 @@ open class FormSelectAllOnBeginEditingTests: BaseTestClass {
         // Borrow key only for first-responder attach — never hold the lock across
         // RunLoop pumping (that deadlocks parallel MainActor workers).
         AppKitKeyWindowIsolation.withExclusiveKeyWindow {
-            field.window?.makeKeyAndOrderFront(nil)
-            _ = field.window?.makeFirstResponder(field) ?? field.becomeFirstResponder()
+            NSApp.activate(ignoringOtherApps: true)
+            guard let window = field.window else { return }
+            window.makeKeyAndOrderFront(nil)
+            _ = window.makeFirstResponder(field)
+            // Prefer an explicit field editor over relying on focus alone under parallel.
+            if window.currentEditor() == nil {
+                field.selectText(nil)
+            }
         }
         NotificationCenter.default.post(
             name: NSControl.textDidBeginEditingNotification,
