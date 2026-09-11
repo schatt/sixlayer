@@ -20,12 +20,13 @@ import SwiftUI
 /// This shows how to create a custom type that works with the framework
 /// Copy this pattern and modify for your own vehicle types
 public struct GenericVehicle: Identifiable, Hashable {
-    public let id = UUID()
+    public let id: String
     public let name: String
     public let description: String
     public let type: VehicleType
     
-    public init(name: String, description: String, type: VehicleType = .generic) {
+    public init(name: String, description: String, type: VehicleType = .generic, id: String? = nil) {
+        self.id = id ?? name
         self.name = name
         self.description = description
         self.type = type
@@ -59,12 +60,13 @@ public enum VehicleType: String, CaseIterable {
 /// This shows how to create a generic container that works with the framework
 /// Copy this pattern and modify for your own data types
 public struct GenericDataItem: Identifiable, Hashable {
-    public let id = UUID()
+    public let id: String
     public let title: String
     public let subtitle: String?
     public let data: [String: Any]
     
-    public init(title: String, subtitle: String? = nil, data: [String: Any] = [:]) {
+    public init(title: String, subtitle: String? = nil, data: [String: Any] = [:], id: String? = nil) {
+        self.id = id ?? title
         self.title = title
         self.subtitle = subtitle
         self.data = data
@@ -196,7 +198,7 @@ public struct FormValidationResult {
 
 /// Generic media item for media collections
 public struct GenericMediaItem: Identifiable {
-    public let id = UUID()
+    public let id: String
     public let title: String
     public let description: String?
     public let mediaType: MediaType
@@ -206,8 +208,10 @@ public struct GenericMediaItem: Identifiable {
         title: String,
         description: String? = nil,
         mediaType: MediaType = .image,
-        url: URL? = nil
+        url: URL? = nil,
+        id: String? = nil
     ) {
+        self.id = id ?? url?.absoluteString ?? title
         self.title = title
         self.description = description
         self.mediaType = mediaType
@@ -230,7 +234,7 @@ public enum MediaType: String, CaseIterable {
 
 /// Generic temporal data for date-based collections
 public struct GenericTemporalData: Identifiable {
-    public let id = UUID()
+    public let id: String
     public let title: String
     public let date: Date
     public let description: String?
@@ -240,8 +244,10 @@ public struct GenericTemporalData: Identifiable {
         title: String,
         date: Date,
         description: String? = nil,
-        data: [String: Any] = [:]
+        data: [String: Any] = [:],
+        id: String? = nil
     ) {
+        self.id = id ?? "\(title)|\(date.timeIntervalSinceReferenceDate)"
         self.title = title
         self.date = date
         self.description = description
@@ -253,7 +259,7 @@ public struct GenericTemporalData: Identifiable {
 
 /// Generic hierarchical data for tree-like structures
 public struct GenericHierarchicalData: Identifiable {
-    public let id = UUID()
+    public let id: String
     public let title: String
     public let children: [GenericHierarchicalData]
     public let data: [String: Any]
@@ -261,8 +267,10 @@ public struct GenericHierarchicalData: Identifiable {
     public init(
         title: String,
         children: [GenericHierarchicalData] = [],
-        data: [String: Any] = [:]
+        data: [String: Any] = [:],
+        id: String? = nil
     ) {
+        self.id = id ?? title
         self.title = title
         self.children = children
         self.data = data
@@ -273,7 +281,7 @@ public struct GenericHierarchicalData: Identifiable {
 
 /// Generic numeric data for charts and analytics
 public struct GenericNumericData: Identifiable {
-    public let id = UUID()
+    public let id: String
     public let label: String
     public let value: Double
     public let unit: String?
@@ -283,8 +291,10 @@ public struct GenericNumericData: Identifiable {
         label: String,
         value: Double,
         unit: String? = nil,
-        metadata: [String: Any] = [:]
+        metadata: [String: Any] = [:],
+        id: String? = nil
     ) {
+        self.id = id ?? label
         self.label = label
         self.value = value
         self.unit = unit
@@ -296,7 +306,7 @@ public struct GenericNumericData: Identifiable {
 
 /// Generic hierarchical item for tree-like structures
 public struct GenericHierarchicalItem: Identifiable {
-    public let id = UUID()
+    public let id: String
     public let title: String
     public let children: [GenericHierarchicalItem]
     public let data: [String: Any]
@@ -304,8 +314,10 @@ public struct GenericHierarchicalItem: Identifiable {
     public init(
         title: String,
         children: [GenericHierarchicalItem] = [],
-        data: [String: Any] = [:]
+        data: [String: Any] = [:],
+        id: String? = nil
     ) {
+        self.id = id ?? title
         self.title = title
         self.children = children
         self.data = data
@@ -316,7 +328,7 @@ public struct GenericHierarchicalItem: Identifiable {
 
 /// Generic temporal item for date-based collections
 public struct GenericTemporalItem: Identifiable {
-    public let id = UUID()
+    public let id: String
     public let title: String
     public let date: Date
     public let description: String?
@@ -326,8 +338,10 @@ public struct GenericTemporalItem: Identifiable {
         title: String,
         date: Date,
         description: String? = nil,
-        data: [String: Any] = [:]
+        data: [String: Any] = [:],
+        id: String? = nil
     ) {
+        self.id = id ?? "\(title)|\(date.timeIntervalSinceReferenceDate)"
         self.title = title
         self.date = date
         self.description = description
