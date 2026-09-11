@@ -29,6 +29,10 @@ extension UITestContractXCUIQuerySlot {
 public enum UITestContractElementResolver {
     /// Walks ``slots`` in order, returning the first element matching `elementId` that becomes hittable within the per-slot timeout.
     ///
+    /// Do **not** use this for `accessibilityHostIdentifier` / `.named` / `.exactNamed` hosts (#473).
+    /// Those stamps are type-unstable (`StaticText` on macOS, `.other` on iOS). Use
+    /// ``XCUIElement/waitForAccessibilityIdentifier(_:timeout:)`` instead.
+    ///
     /// - Parameters:
     ///   - root: Search root (often `XCUIApplication` or a container).
     ///   - elementId: Validated contract identifier (accessibility identifier).
