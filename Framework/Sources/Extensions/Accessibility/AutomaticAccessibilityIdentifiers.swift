@@ -1135,21 +1135,23 @@ public extension View {
     /// Do not put this id on a view that dies with a sheet or with a remounting `.id`
     /// (#473). A second plain `.accessibilityIdentifier` on the same view is not required.
     ///
-    /// VoiceOver (macOS): the Text sentinel sets ``View/accessibilityLabel(_:)`` to the
-    /// identifier string so XCUI can see the leaf (#370). VoiceOver may announce that
-    /// contract id. Do not treat the sentinel as a user-facing label.
+    /// VoiceOver (macOS): the Text leaf uses a zero-width space and an empty
+    /// accessibility label so the contract id is not spoken. XCUI must query
+    /// `identifier`, not label (#473 / #370).
     func accessibilityHostIdentifier(_ identifier: String) -> some View {
         #if os(macOS)
         // `Color.clear` + `.accessibilityElement(children: .ignore)` is frequently absent from
         // the macOS XCUI tree (GlobalOff / SD150 / first-paint host waits — #370). Use a 1pt
         // leaf Text sentinel instead; keep iOS on Color.clear (proven for #360/#364).
         self.background(alignment: .topLeading) {
-            Text(verbatim: identifier)
+            // Zero-width space keeps a Text leaf in the macOS XCUI tree (#370) without using the
+            // contract id as VoiceOver name (#473). Query by identifier, not label.
+            Text(verbatim: "\u{200B}")
                 .font(.system(size: 1))
                 .foregroundStyle(.clear)
                 .frame(width: 1, height: 1)
                 .accessibilityIdentifier(identifier)
-                .accessibilityLabel(identifier)
+                .accessibilityLabel("")
                 .allowsHitTesting(false)
         }
         #else
