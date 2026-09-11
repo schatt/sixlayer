@@ -115,18 +115,23 @@ open class DynamicDateTimeFieldLabelPolicyIssue478Tests: BaseTestClass {
         let state = makeFormState(field: field)
         let view = making(field, state).enableGlobalAutomaticCompliance()
 
-        let titles = datePickerTitles(in: view)
+        let pickers = findAllInViewHierarchy(view, ViewInspector.ViewType.DatePicker.self)
         #expect(
-            !titles.isEmpty,
+            !pickers.isEmpty,
             "\(componentName) must host a DatePicker (#478)"
         )
+
+        let visibleTexts = findAllInViewHierarchy(view, ViewInspector.ViewType.Text.self)
+            .compactMap { try? $0.string() }
         #expect(
-            titles.allSatisfy { $0.isEmpty },
-            "\(componentName) DatePicker title must be empty (parent draws the label); got \(titles) (#478)"
+            !visibleTexts.contains(sentinelPlaceholder),
+            "\(componentName) must not render the placeholder as visible DatePicker title; texts=\(visibleTexts) (#478)"
         )
+
+        let titles = datePickerTitles(from: pickers)
         #expect(
-            !titles.contains(sentinelPlaceholder),
-            "\(componentName) must not use the placeholder as a visible DatePicker title (#478)"
+            titles.allSatisfy(\.isEmpty),
+            "\(componentName) DatePicker title must be empty (parent draws the label); got \(titles) (#478)"
         )
         #else
         Issue.record("ViewInspector not available")
@@ -135,15 +140,14 @@ open class DynamicDateTimeFieldLabelPolicyIssue478Tests: BaseTestClass {
     }
 
     #if canImport(ViewInspector)
-    private func datePickerTitles<V: View>(in view: V) -> [String] {
-        findAllInViewHierarchy(view, ViewInspector.ViewType.DatePicker.self).map { picker in
+    private func datePickerTitles(
+        from pickers: [ViewInspector.InspectableView<ViewInspector.ViewType.DatePicker>]
+    ) -> [String] {
+        pickers.compactMap { picker in
             if let text = try? picker.labelView().text().string() {
                 return text
             }
-            if let text = try? picker.labelView().find(ViewInspector.ViewType.Text.self).string() {
-                return text
-            }
-            return ""
+            return try? picker.labelView().find(ViewInspector.ViewType.Text.self).string()
         }
     }
     #endif
