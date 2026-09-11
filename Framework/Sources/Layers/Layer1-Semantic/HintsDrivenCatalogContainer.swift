@@ -5,20 +5,17 @@ struct HintsDrivenCatalogContainer<Item: Identifiable, Content: View>: View {
     let items: [Item]
     let hints: PresentationHints
     let surface: HintsDrivenCatalogLayout.Surface
-    let fallbackDataType: DataTypeHint
     let content: (Item) -> Content
 
     init(
         items: [Item],
         hints: PresentationHints,
         surface: HintsDrivenCatalogLayout.Surface,
-        fallbackDataType: DataTypeHint,
         @ViewBuilder content: @escaping (Item) -> Content
     ) {
         self.items = items
         self.hints = hints
         self.surface = surface
-        self.fallbackDataType = fallbackDataType
         self.content = content
     }
 
@@ -36,7 +33,7 @@ struct HintsDrivenCatalogContainer<Item: Identifiable, Content: View>: View {
     }
 
     private var layoutDataType: DataTypeHint {
-        HintsDrivenCatalogLayout.layoutDataType(hints: hints, fallback: fallbackDataType)
+        HintsDrivenCatalogLayout.layoutDataType(hints: hints, fallback: surface.fallbackDataType)
     }
 
     private var itemSpacing: CGFloat {
