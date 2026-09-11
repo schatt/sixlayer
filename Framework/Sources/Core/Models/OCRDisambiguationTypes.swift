@@ -13,7 +13,7 @@ import SwiftUI
 
 /// Represents a single piece of data found by OCR that may need disambiguation
 public struct OCRDataCandidate: Identifiable, Equatable, Hashable {
-    public let id: UUID
+    public let id: String
     public let text: String
     public let boundingBox: CGRect
     public let confidence: Float
@@ -27,7 +27,7 @@ public struct OCRDataCandidate: Identifiable, Equatable, Hashable {
         suggestedType: TextType,
         alternativeTypes: [TextType]
     ) {
-        self.id = UUID()
+        self.id = "\(text)|\(boundingBox.origin.x)|\(boundingBox.origin.y)|\(boundingBox.size.width)|\(boundingBox.size.height)|\(suggestedType.rawValue)"
         self.text = text
         self.boundingBox = boundingBox
         self.confidence = confidence
