@@ -16,39 +16,74 @@ enum HintsDrivenCatalogLayout {
         case numeric
     }
 
-    /// Stub: always list so preference/surface tests fail until green.
     static func strategy(
         hints: PresentationHints,
         itemCount: Int,
         surface: Surface
     ) -> Strategy {
-        _ = (hints, itemCount, surface)
-        return .list
+        strategy(
+            for: hints.presentationPreference,
+            itemCount: itemCount,
+            surface: surface
+        )
     }
 
-    /// Stub: always the fallback so explicit hint dataType is ignored.
+    /// Uses `hints.dataType` when it is not `.generic`; otherwise the surface fallback
+    /// (so `CustomMediaView` still lays out as media when callers pass default hints).
     static func layoutDataType(hints: PresentationHints, fallback: DataTypeHint) -> DataTypeHint {
-        _ = hints
-        return fallback
+        hints.dataType == .generic ? fallback : hints.dataType
     }
 
-    /// Stub: ignore complexity.
     static func spacingScale(complexity: ContentComplexity) -> CGFloat {
-        _ = complexity
-        return 1.0
+        switch complexity {
+        case .simple:
+            return 0.75
+        case .moderate:
+            return 1.0
+        case .complex:
+            return 1.25
+        case .veryComplex, .advanced:
+            return 1.5
+        }
     }
 
-    /// Stub: ignore customPreferences.
     static func rowVisualStyleIsCard(hints: PresentationHints) -> Bool {
-        _ = hints
-        return false
+        hints.customPreferences["rowVisualStyle"]?.lowercased() == "card"
+    }
+
+    private static func strategy(
+        for preference: PresentationPreference,
+        itemCount: Int,
+        surface: Surface
+    ) -> Strategy {
+        switch preference {
+        case .list, .compact, .form, .standard, .minimal:
+            return .list
+        case .grid, .cards, .card, .masonry, .coverFlow:
+            return .grid
+        case .countBased(let lowCount, let highCount, let threshold):
+            return strategy(
+                for: itemCount <= threshold ? lowCount : highCount,
+                itemCount: itemCount,
+                surface: surface
+            )
+        case .automatic, .custom, .detail, .modal, .navigation, .chart, .moderate, .rich:
+            return defaultStrategy(surface)
+        }
+    }
+
+    private static func defaultStrategy(_ surface: Surface) -> Strategy {
+        switch surface {
+        case .settings, .hierarchical, .temporal:
+            return .list
+        case .media, .numeric:
+            return .grid
+        }
     }
 }
 
 enum SettingsActionChrome {
-    /// Stub: never show chrome so callback tests fail until green.
     static func isVisible(onSaved: (() -> Void)?, onCancelled: (() -> Void)?) -> Bool {
-        _ = (onSaved, onCancelled)
-        return false
+        onSaved != nil || onCancelled != nil
     }
 }
