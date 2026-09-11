@@ -1175,7 +1175,7 @@ public struct DynamicDateField: View {
             if DynamicFormStoredDateValue.date(fromStoredValue: formState.fieldValues[field.id]) != nil {
                 EmptyView().platformDateInput(
                     selection: selectedDate,
-                    label: field.placeholder ?? i18n.placeholderSelectDate()
+                    label: field.datePickerSelfLabelingLabel(fallback: i18n.placeholderSelectDate())
                 )
                 .automaticComplianceForDynamicFormField(field)
             } else {
@@ -1225,7 +1225,7 @@ public struct DynamicTimeField: View {
             if DynamicFormStoredDateValue.date(fromStoredValue: formState.fieldValues[field.id]) != nil {
                 EmptyView().platformTimeInput(
                     selection: selectedTime,
-                    label: field.placeholder ?? i18n.placeholderSelectTime()
+                    label: field.datePickerSelfLabelingLabel(fallback: i18n.placeholderSelectTime())
                 )
                 .automaticComplianceForDynamicFormField(field, identifierElementType: "TextField")
             } else {
@@ -1275,7 +1275,7 @@ public struct DynamicDateTimeField: View {
             if DynamicFormStoredDateValue.date(fromStoredValue: formState.fieldValues[field.id]) != nil {
                 EmptyView().platformDateTimeInput(
                     selection: selectedDateTime,
-                    label: field.placeholder ?? i18n.placeholderSelectDateTime()
+                    label: field.datePickerSelfLabelingLabel(fallback: i18n.placeholderSelectDateTime())
                 )
                 .automaticComplianceForDynamicFormField(field, identifierElementType: "TextField")
             } else {
