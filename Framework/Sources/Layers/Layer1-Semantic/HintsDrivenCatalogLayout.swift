@@ -14,6 +14,21 @@ enum HintsDrivenCatalogLayout {
         case hierarchical
         case temporal
         case numeric
+
+        var fallbackDataType: DataTypeHint {
+            switch self {
+            case .settings:
+                return .generic
+            case .media:
+                return .media
+            case .hierarchical:
+                return .hierarchical
+            case .temporal:
+                return .temporal
+            case .numeric:
+                return .numeric
+            }
+        }
     }
 
     static func strategy(
