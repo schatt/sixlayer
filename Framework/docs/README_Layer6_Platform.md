@@ -111,6 +111,9 @@ platform-truthful (a ViewBuilder runtime switch encoded unused `NavigationStack`
 - `platformSidebarSheetChrome_L6()` — `NavigationStack` on iOS, small `platformPresentationFrame` on macOS, identity elsewhere
 - `platformOverlayDetailChrome_L6()` — `NavigationStack` on iOS and macOS, identity elsewhere
 
+`PlatformSidebarSheetChromeTests` gates both directions: `.current` decisions must match
+compile-time OS, and host Mirror subject types must match each decision (including overlay).
+
 Compact collapse and column visibility stay in `NavigationLayoutResolver` / L5 split helpers.
 
 ### **Layer 5 → Layer 6**
