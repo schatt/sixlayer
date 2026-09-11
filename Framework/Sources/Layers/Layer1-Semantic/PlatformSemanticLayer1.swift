@@ -4054,6 +4054,7 @@ public struct GenericSettingsView: View {
         .onChange(of: catalogKeys) { _, _ in
             applyCatalog()
         }
+        .environment(\.onSettingChanged, onSettingChanged.map(SettingsOnSettingChangedAction.init))
         .environment(\.accessibilityIdentifierName, "GenericSettingsView")
         .automaticCompliance(identifierName: "GenericSettingsView")
     }
@@ -4371,21 +4372,10 @@ public struct CustomListCollectionView<Item: Identifiable, CustomView: View>: Vi
     /// When `hints.customPreferences["rowVisualStyle"]` is `"card"`, applies a default card-like row surface (#272).
     @ViewBuilder
     private func listRowSurface(for item: Item) -> some View {
-        if rowVisualStyleIsCard {
-            customItemView(item)
-                .padding(12)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(
-                    RoundedRectangle(cornerRadius: 12, style: .continuous)
-                        .fill(Color.platformSecondaryBackground)
-                )
-        } else {
-            customItemView(item)
-        }
-    }
-
-    private var rowVisualStyleIsCard: Bool {
-        HintsDrivenCatalogLayout.rowVisualStyleIsCard(hints: hints)
+        customItemView(item)
+            .hintsDrivenCardSurface(
+                enabled: HintsDrivenCatalogLayout.rowVisualStyleIsCard(hints: hints)
+            )
     }
 }
 
