@@ -66,24 +66,14 @@ final class HostIdentifierRemountUITests: SixLayerUITestCase {
             app.waitForHostRootIdentifier(IDs.host, timeout: 2.5),
             "Host id '\(IDs.host)' must resolve via descendants(.any) from accessibilityHostIdentifier alone"
         )
-        let host = element(identifier: IDs.host)
-        #if os(macOS)
-        XCTAssertEqual(
-            host.elementType,
-            .staticText,
-            "macOS accessibilityHostIdentifier is a Text leaf (StaticText). Do not query otherElements or scrollViews."
-        )
-        #else
-        XCTAssertEqual(
-            host.elementType,
-            .other,
-            "iOS accessibilityHostIdentifier is Color.clear + .ignore (.other)"
-        )
-        #endif
+        assertHostAXTypeAndTypedQueries(context: "before sheet")
 
-        XCTAssertTrue(
-            element(identifier: IDs.nested).waitForExistence(timeout: 2.0),
-            "Nested content id should exist before sheet"
+        let nested = element(identifier: IDs.nested)
+        XCTAssertTrue(nested.waitForExistence(timeout: 2.0), "Nested content id should exist before sheet")
+        XCTAssertEqual(
+            nested.xcuiAccessibleText,
+            "Nested 0",
+            "Nested content should start at epoch 0 so remount can be observed"
         )
 
         let present = element(identifier: IDs.presentSheet)
@@ -107,14 +97,57 @@ final class HostIdentifierRemountUITests: SixLayerUITestCase {
         XCTAssertTrue(remount.waitForExistence(timeout: 2.0), "Remount control should exist on the parent after dismiss")
         tapByNormalizedCenter(remount)
 
-        XCTAssertTrue(
-            element(identifier: IDs.nested).waitForExistence(timeout: 2.5),
-            "Nested content should exist after .id remount"
+        let nestedAfter = element(identifier: IDs.nested)
+        XCTAssertTrue(nestedAfter.waitForExistence(timeout: 2.5), "Nested content should exist after .id remount")
+        XCTAssertEqual(
+            nestedAfter.xcuiAccessibleText,
+            "Nested 1",
+            "Remount must change nested identity (epoch 0 → 1); a no-op remount is not the contract"
         )
         XCTAssertTrue(
             app.waitForHostRootIdentifier(IDs.host, timeout: 2.5),
             "Host id '\(IDs.host)' must still resolve via descendants(.any) after sheet dismiss and nested .id remount"
         )
+        assertHostAXTypeAndTypedQueries(context: "after remount")
+    }
+
+    /// Both-direction AX contract: `.any` already waited; typed slots must match the documented type.
+    @MainActor
+    private func assertHostAXTypeAndTypedQueries(context: String) {
+        let host = element(identifier: IDs.host)
+        #if os(macOS)
+        XCTAssertEqual(
+            host.elementType,
+            .staticText,
+            "\(context): macOS accessibilityHostIdentifier is a Text leaf (StaticText)"
+        )
+        XCTAssertTrue(
+            app.staticTexts.matching(NSPredicate(format: "identifier == %@", IDs.host)).firstMatch.exists,
+            "\(context): macOS host id should match staticTexts (documented AX type)"
+        )
+        XCTAssertFalse(
+            app.otherElements.matching(NSPredicate(format: "identifier == %@", IDs.host)).firstMatch.exists,
+            "\(context): macOS host id must not require otherElements"
+        )
+        XCTAssertFalse(
+            app.scrollViews.matching(NSPredicate(format: "identifier == %@", IDs.host)).firstMatch.exists,
+            "\(context): macOS host id must not require scrollViews"
+        )
+        #else
+        XCTAssertEqual(
+            host.elementType,
+            .other,
+            "\(context): iOS accessibilityHostIdentifier is Color.clear + .ignore (.other)"
+        )
+        XCTAssertTrue(
+            app.otherElements.matching(NSPredicate(format: "identifier == %@", IDs.host)).firstMatch.exists,
+            "\(context): iOS host id should match otherElements (documented AX type)"
+        )
+        XCTAssertFalse(
+            app.staticTexts.matching(NSPredicate(format: "identifier == %@", IDs.host)).firstMatch.exists,
+            "\(context): iOS host id should not appear as StaticText"
+        )
+        #endif
     }
 
     @MainActor
