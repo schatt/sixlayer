@@ -16,6 +16,8 @@ import AppKit
 /// Serializes borrow of the process-global AppKit key window.
 ///
 /// Suites stay parallelizable; only the key-window critical section is exclusive.
+/// Callers must not pump the RunLoop (or otherwise re-enter MainActor wait) while
+/// holding this lock — that deadlocks parallel workers.
 enum AppKitKeyWindowIsolation {
     private static let lock = NSLock()
 
