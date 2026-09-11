@@ -3911,8 +3911,10 @@ extension Color {
 // MARK: - Settings Data Structures
 
 /// Data structure representing a settings section
+///
+/// `id` is stable across reinits. Duplicate `id` values collide in `ForEach` (#474).
 public struct SettingsSectionData: Identifiable {
-    public let id = UUID()
+    public let id: String
     public let title: String
     public let items: [SettingsItemData]
     public let isCollapsible: Bool
@@ -3922,8 +3924,10 @@ public struct SettingsSectionData: Identifiable {
         title: String,
         items: [SettingsItemData],
         isCollapsible: Bool = false,
-        isExpanded: Bool = true
+        isExpanded: Bool = true,
+        id: String? = nil
     ) {
+        self.id = id ?? title
         self.title = title
         self.items = items
         self.isCollapsible = isCollapsible
@@ -3932,8 +3936,10 @@ public struct SettingsSectionData: Identifiable {
 }
 
 /// Data structure representing a settings item
+///
+/// `id` is `key`. Duplicate keys collide in `ForEach` (#474).
 public struct SettingsItemData: Identifiable {
-    public let id = UUID()
+    public var id: String { key }
     public let key: String
     public let title: String
     public let description: String?
@@ -4067,7 +4073,7 @@ public struct GenericSettingsView: View {
                     values[item.key] = item.value
                 }
             }
-            sectionStates[section.id.uuidString] = section.isExpanded
+            sectionStates[section.id] = section.isExpanded
         }
     }
 }
@@ -4080,7 +4086,7 @@ struct SettingsSectionView: View {
     let onSettingChanged: ((String, Any) -> Void)?
     
     private var isExpanded: Bool {
-        sectionStates[section.id.uuidString] ?? section.isExpanded
+        sectionStates[section.id] ?? section.isExpanded
     }
     
     var body: some View {
@@ -4095,7 +4101,11 @@ struct SettingsSectionView: View {
                 
                 if section.isCollapsible {
                     Button(action: {
-                        sectionStates[section.id.uuidString]?.toggle()
+                        sectionStates = SettingsSectionCollapse.toggled(
+                            sectionStates,
+                            id: section.id,
+                            defaultExpanded: section.isExpanded
+                        )
                     }) {
                         Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
                             .foregroundColor(.secondary)
@@ -4417,7 +4427,7 @@ public struct CustomSettingsView<CustomView: View>: View {
     public var body: some View {
         ScrollView {
             platformLazyVStackContainer(spacing: 16) {
-                ForEach(settings, id: \.title) { setting in
+                ForEach(settings) { setting in
                     customSettingView(setting)
                 }
             }
