@@ -426,6 +426,7 @@
 		1F526B1A06A5F4D57A229F03 /* PlatformOCRLayoutDecisionLayer2.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C6D9391BC17345B4A7D36B5 /* PlatformOCRLayoutDecisionLayer2.swift */; };
 		1F556A35C3E7791B2529527C /* HintsGeneratorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47DAD3848FE439B29A38F11B /* HintsGeneratorTests.swift */; };
 		1F68AE666236CD9EB3C9F162 /* PlatformToolbarActionsLayer4.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16736E6BCD65CF166E839997 /* PlatformToolbarActionsLayer4.swift */; };
+		1F8459BEF0A943A74A1F409D /* DynamicDateTimeFieldLabelPolicyIssue478Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 399C2CCB5B02E7EEE0E7BE3D /* DynamicDateTimeFieldLabelPolicyIssue478Tests.swift */; };
 		1F91F9BF26C76D3964B5809B /* PlatformBasicContainerExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1F1D7C4EB0205747D512B6C /* PlatformBasicContainerExtensions.swift */; };
 		1F951EF370B7FE1093CC1421 /* DataBindingCoreDataTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E9D0270040692F0C868C5F2 /* DataBindingCoreDataTests.swift */; };
 		1F95989C67D115FF16A0EDC0 /* DynamicFormView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C2B85546CDAA3A3CFAA2233 /* DynamicFormView.swift */; };
@@ -2147,6 +2148,7 @@
 		9BD7090B7EC9220B009C1BE5 /* OCROverlayConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CBC59F8E4FB7B8B8CB45F8D /* OCROverlayConfiguration.swift */; };
 		9BE651D4829D102D6B5AD9D5 /* PlatformUITypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = A99CFE982A39BDB47D56B73B /* PlatformUITypes.swift */; };
 		9C0A8EEEADA265C4376E2ADA /* CrossComponentIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92B93E244800423C34BD6F58 /* CrossComponentIntegrationTests.swift */; };
+		9C34F89F8A8FF96BEAC1C3BC /* DynamicDateTimeFieldLabelPolicyIssue478Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 399C2CCB5B02E7EEE0E7BE3D /* DynamicDateTimeFieldLabelPolicyIssue478Tests.swift */; };
 		9C45FAE57B7804B27A34C9CC /* PlatformHapticFeedbackExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1BB862D740FC81E8450DA718 /* PlatformHapticFeedbackExtensions.swift */; };
 		9C475C07DA8D328A73C6BD3C /* PlatformBehaviorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11AA3F1E7257631C0FF13A30 /* PlatformBehaviorTests.swift */; };
 		9C871B07112D974718ED9ECC /* PlatformImageArchitectureTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF240A0D64FE3DE1C3E89935 /* PlatformImageArchitectureTests.swift */; };
@@ -4063,6 +4065,7 @@
 		391F24462104C647E4AEF81D /* DynamicFormGridLayoutTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DynamicFormGridLayoutTests.swift; sourceTree = "<group>"; };
 		39254C5791805FB88FB7599F /* DataIntrospectionCoreDataTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataIntrospectionCoreDataTests.swift; sourceTree = "<group>"; };
 		3949410F83D5BAD1A031254C /* PlatformExportActionsLayer4.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformExportActionsLayer4.swift; sourceTree = "<group>"; };
+		399C2CCB5B02E7EEE0E7BE3D /* DynamicDateTimeFieldLabelPolicyIssue478Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DynamicDateTimeFieldLabelPolicyIssue478Tests.swift; sourceTree = "<group>"; };
 		3A5B4656643C770C019024C8 /* VisualDesignSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisualDesignSystem.swift; sourceTree = "<group>"; };
 		3A8E0E6670EF429DC0C799C4 /* SwitchControlTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwitchControlTests.swift; sourceTree = "<group>"; };
 		3AF9B38DE0012FA10783F256 /* LayoutSpec.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayoutSpec.swift; sourceTree = "<group>"; };
@@ -6151,6 +6154,7 @@
 			isa = PBXGroup;
 			children = (
 				B874931C39333F1FE4A4560E /* AdvancedFieldTypesTests.swift */,
+				399C2CCB5B02E7EEE0E7BE3D /* DynamicDateTimeFieldLabelPolicyIssue478Tests.swift */,
 				C19C048E72FAD64FDEDB7EA4 /* DynamicFieldComponentsTests.swift */,
 				DEEAA03A9A4893E681F6FAA9 /* DynamicFormProgressIndicatorTests.swift */,
 				A0B047B2879F85EC19B4CBE0 /* DynamicFormViewAutoSaveTests.swift */,
@@ -8883,6 +8887,7 @@
 				1DB451EFE44FCEE1C0C992A4 /* DefaultRuntimeCapabilityIsolationTrait.swift in Sources */,
 				EF67D4BB126678E9633F67BA /* DefensiveTestImplementation.swift in Sources */,
 				764AC4AF2677AB469463945D /* DesignSystemUITests.swift in Sources */,
+				9C34F89F8A8FF96BEAC1C3BC /* DynamicDateTimeFieldLabelPolicyIssue478Tests.swift in Sources */,
 				194CB54D09A91CF9B15C7574 /* DynamicFieldComponentsTests.swift in Sources */,
 				A7D008F84F6E0F61ACB6ADBC /* DynamicFormProgressIndicatorTests.swift in Sources */,
 				11D083FF52F8515F0FDDC69D /* DynamicFormViewAutoSaveTests.swift in Sources */,
@@ -9823,6 +9828,7 @@
 				4D007ADE822BAE969A9B4873 /* DefaultRuntimeCapabilityIsolationTrait.swift in Sources */,
 				604A46D6BADDBB54105ED0AE /* DefensiveTestImplementation.swift in Sources */,
 				A0573CD5DCFB8314CE27FE37 /* DesignSystemUITests.swift in Sources */,
+				1F8459BEF0A943A74A1F409D /* DynamicDateTimeFieldLabelPolicyIssue478Tests.swift in Sources */,
 				5BE06CB919E8A6BF5BAE0153 /* DynamicFieldComponentsTests.swift in Sources */,
 				1AC2D64ACB307DFBBE23368E /* DynamicFormProgressIndicatorTests.swift in Sources */,
 				8F589CC8B43981F068335D05 /* DynamicFormViewAutoSaveTests.swift in Sources */,
