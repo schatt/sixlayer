@@ -234,7 +234,9 @@ XCTAssertTrue(host.waitForExistence(timeout: 2.5))
 
 **Placement:** stamp an **outer** container. Nested lists may remount via `.id`; presented sheets are a different identity (and on macOS, a different AX window). Do not put the host id on a view that is destroyed by `.id` or by the sheet. A second plain `.accessibilityIdentifier` on the same view is **not** required when query and placement are correct. Plain identifier on a `Group` is often invisible on macOS; if you add insurance, use a real container (`VStack`).
 
-Proved by `HostIdentifierRemountUITests` (`-OpenHostIdentifierRemount`): host-only stamp survives `platformSheet_L4` dismiss and nested `.id` remount when queried via `.any`.
+**VoiceOver (macOS):** the Text sentinel sets `accessibilityLabel` to the identifier so XCUI can see the leaf (#370). VoiceOver may announce that contract id; it is not a user-facing label. Do not change the sentinel to silence VO without re-proving #370 first-paint waits.
+
+Proved by `HostIdentifierRemountUITests` (`-OpenHostIdentifierRemount`): host-only stamp survives `platformSheet_L4` dismiss and nested `.id` remount when queried via `.any`. Typed `otherElements` / `scrollViews` must not be required on macOS.
 
 ### Enabling Automatic IDs for Custom Views
 
