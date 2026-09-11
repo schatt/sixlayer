@@ -216,14 +216,14 @@ Button("Save") { }
 
 Use `View.accessibilityHostIdentifier(_:)` (or `.named` / `.exactNamed`, which attach the same way) on destination roots and scroll hosts when nested child ids must stay queryable.
 
-**Query (required):** resolve with `descendants(matching: .any)` and an exact `identifier ==` predicate. Do **not** query `otherElements`, `scrollViews`, or `collectionViews` for this id.
+**Query (required):** resolve with `descendants(matching: .any)` and an exact `identifier ==` predicate, or SixLayerTestKit `waitForAccessibilityIdentifier` / `elementMatchingAccessibilityIdentifier`. Do **not** query `otherElements`, `scrollViews`, or `collectionViews` for this id. Do **not** use `UITestContractElementResolver.findFirstExisting` (typed slot walk).
 
 ```swift
-let host = app.descendants(matching: .any)
-    .matching(NSPredicate(format: "identifier == %@", "MyApp.Expenses.scrollHost"))
-    .firstMatch
-XCTAssertTrue(host.waitForExistence(timeout: 2.5))
+XCTAssertTrue(app.waitForAccessibilityIdentifier("MyApp.Expenses.scrollHost", timeout: 2.5))
+let host = app.elementMatchingAccessibilityIdentifier("MyApp.Expenses.scrollHost")
 ```
+
+**The matched node is a sibling leaf, not the container.** Nested row / empty-state ids are **not** descendants of `host`. Query those from `app` (or the parent window), never `host.cells` / `host.descendants`.
 
 **AX element type:**
 
@@ -234,9 +234,13 @@ XCTAssertTrue(host.waitForExistence(timeout: 2.5))
 
 **Placement:** stamp an **outer** container. Nested lists may remount via `.id`; presented sheets are a different identity (and on macOS, a different AX window). Do not put the host id on a view that is destroyed by `.id` or by the sheet. A second plain `.accessibilityIdentifier` on the same view is **not** required when query and placement are correct. Plain identifier on a `Group` is often invisible on macOS; if you add insurance, use a real container (`VStack`).
 
-**VoiceOver (macOS):** the Text sentinel sets `accessibilityLabel` to the identifier so XCUI can see the leaf (#370). VoiceOver may announce that contract id; it is not a user-facing label. Do not change the sentinel to silence VO without re-proving #370 first-paint waits.
+**First paint:** the host sentinel is a weak land marker on macOS (#370). Wait on a real leaf (`uiTestHostLandMarker` / visible `Text`), then assert the host id.
 
-Proved by `HostIdentifierRemountUITests` (`-OpenHostIdentifierRemount`): host-only stamp survives `platformSheet_L4` dismiss and nested `.id` remount when queried via `.any`. Typed `otherElements` / `scrollViews` must not be required on macOS.
+**Sheet window:** after present/dismiss, query `app` or the **parent** window — not the sheet's AX window.
+
+**VoiceOver (macOS):** the Text leaf uses a zero-width space and an empty accessibility label so the contract id is not spoken. XCUI must query `identifier`, not label.
+
+Proved by `HostIdentifierRemountUITests` (`-OpenHostIdentifierRemount`): host-only stamp survives `platformSheet_L4` dismiss and nested `.id` remount when queried via `.any`. Typed `otherElements` / `scrollViews` must not be required on macOS. Nested ids are not descendants of the host element.
 
 ### Enabling Automatic IDs for Custom Views
 
