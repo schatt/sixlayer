@@ -1,0 +1,31 @@
+---
+description: Same bug elsewhere is in scope or a follow-up issue; never silently ignore known copies.
+alwaysApply: true
+---
+
+# No Silent Known Bugs
+
+**Precedence:** standing user instruction.
+
+## Rule
+
+When finding or fixing a bug, if the **same defect class** exists at other types, call sites, platforms, or layers:
+
+1. **Expand this issue** — make those sites explicit in scope (acceptance + a comment), **or**
+2. **Open a follow-up GitHub issue** — inventory the remaining sites, link it from the current issue.
+
+**Do not silently ignore known copies.** Writing “out of scope / don’t expand / leave the others” without a follow-up issue number is forbidden.
+
+## What counts as the same bug
+
+Same root cause and failure mode, not a vague resemblance. Example: `public let id = UUID()` on another `Identifiable` catalog type used in `ForEach` is the same class as #474; a different identity bug is not.
+
+## Correct response
+
+- Name the other sites (type/file/call site).
+- Choose expand vs follow-up **in the current issue thread**.
+- If follow-up: create the issue immediately; do not defer “we should file that later.”
+
+## Related
+
+- #474 (settings catalog UUID identity) → follow-up #475 (other catalog types)
