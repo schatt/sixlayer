@@ -1134,6 +1134,10 @@ public extension View {
     /// Placement: stamp an outer container. Nested content may remount via `.id`.
     /// Do not put this id on a view that dies with a sheet or with a remounting `.id`
     /// (#473). A second plain `.accessibilityIdentifier` on the same view is not required.
+    ///
+    /// VoiceOver (macOS): the Text sentinel sets ``View/accessibilityLabel(_:)`` to the
+    /// identifier string so XCUI can see the leaf (#370). VoiceOver may announce that
+    /// contract id. Do not treat the sentinel as a user-facing label.
     func accessibilityHostIdentifier(_ identifier: String) -> some View {
         #if os(macOS)
         // `Color.clear` + `.accessibilityElement(children: .ignore)` is frequently absent from
