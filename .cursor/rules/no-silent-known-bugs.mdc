@@ -16,9 +16,11 @@ Help write correct code. If while hunting, fixing, or reviewing you observe some
 Any **confirmed or strongly suspected defect** you observe while working is either:
 
 1. **In this issue** — expand scope explicitly (acceptance + a comment), **or**
-2. **A follow-up GitHub issue** — created immediately, linked from the current issue.
+2. **A follow-up GitHub issue** — created immediately. A one-line discovery comment with the new number is enough.
 
 **Do not silently ignore it.** “Out of scope / don’t expand / leave it / unrelated, skip” without a follow-up issue number is forbidden.
+
+**Do not build a Related graph.** Link issue bodies only when they share a defect class or an explicit scope split (do not absorb A into B). “Found on the same file” is not related.
 
 Uncertain is not ignore: state confidence (“I think…”, “unverified”) and still put it on the thread or an issue.
 
@@ -32,7 +34,7 @@ Do not drive-by-fix unless it is explicitly in this issue’s scope.
 
 Similarity is irrelevant. Same class, similar, or unrelated-but-wrong all follow the fork above.
 
-## Related
+## Example (scope split, not a Related graph)
 
 - #474 UUID catalog identity (in scope) + collapse keyed on ephemeral `section.id` (adjacent, same issue)
 - #475 other `id = UUID()` catalog types (follow-up, not ignored)
