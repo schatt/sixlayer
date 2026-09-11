@@ -39,7 +39,8 @@ public struct ResponsiveGrid<Content: View>: View {
 
 // MARK: - Grid Item Data
 public struct GridItemData: Identifiable {
-    public var id = UUID()
+    /// Duplicate titles collide in `ForEach` (#475).
+    public var id: String { title }
     var title: String
     var subtitle: String
     var icon: String
