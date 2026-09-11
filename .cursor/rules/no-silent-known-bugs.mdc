@@ -1,5 +1,5 @@
 ---
-description: Same or similar bugs elsewhere are in scope or a follow-up issue; never silently ignore known copies.
+description: Observed defects (confirmed or strongly suspected) are in scope or a follow-up; never silently ignore them. Nits are not defects.
 alwaysApply: true
 ---
 
@@ -7,27 +7,32 @@ alwaysApply: true
 
 **Precedence:** standing user instruction.
 
+## Intent
+
+Help write correct code. If while hunting, fixing, or reviewing you observe something that is **actually wrong**, do not walk past it — whether or not it matches the issue you were hired to fix.
+
 ## Rule
 
-When finding or fixing a bug, if a **same or similar** defect exists at other types, call sites, platforms, or layers:
+Any **confirmed or strongly suspected defect** you observe while working is either:
 
-1. **Expand this issue** — make those sites explicit in scope (acceptance + a comment), **or**
-2. **Open a follow-up GitHub issue** — inventory the remaining sites, link it from the current issue.
+1. **In this issue** — expand scope explicitly (acceptance + a comment), **or**
+2. **A follow-up GitHub issue** — created immediately, linked from the current issue.
 
-**Do not silently ignore known copies.** Writing “out of scope / don’t expand / leave the others” without a follow-up issue number is forbidden. “Similar” is not a judgment call that skips a ticket.
+**Do not silently ignore it.** “Out of scope / don’t expand / leave it / unrelated, skip” without a follow-up issue number is forbidden.
 
-## Same vs similar
+Uncertain is not ignore: state confidence (“I think…”, “unverified”) and still put it on the thread or an issue.
 
-- **Same** — identical defect class: same root cause and failure mode. Example: `public let id = UUID()` on another `Identifiable` catalog type used in `ForEach` (#474 → #475).
-- **Similar** — same failure mode in the same layer/API family, or an adjacent defect found on the same code path, even if the type/name/root-cause string differs. Example: settings collapse keyed on ephemeral `section.id` next to UUID catalog identity (#474).
-- **Not in this rule** — vague resemblance only (unrelated identity/remount smells in a different API).
+Do not drive-by-fix unless it is explicitly in this issue’s scope.
 
-## Correct response
+## Defect vs nit
 
-- Name the other sites (type/file/call site) and whether they are same or similar.
-- Choose expand vs follow-up **in the current issue thread**.
-- If follow-up: create the issue immediately; do not defer “we should file that later.”
+**Defect** — correctness, identity/lifecycle, security, broken contracts, missing tests for claimed behavior, adjacent logic bugs on the path you are in. Name the site (type/file/call) and what fails or can fail.
+
+**Nit** — style, naming taste, speculative refactors, “I would have written it differently.” Nits are not this rule. Do not file them.
+
+Similarity is irrelevant. Same class, similar, or unrelated-but-wrong all follow the fork above.
 
 ## Related
 
-- #474 (settings catalog UUID identity + adjacent collapse-state key) → follow-up #475 (other catalog types)
+- #474 UUID catalog identity (in scope) + collapse keyed on ephemeral `section.id` (adjacent, same issue)
+- #475 other `id = UUID()` catalog types (follow-up, not ignored)
