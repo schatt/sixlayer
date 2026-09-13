@@ -588,7 +588,7 @@ open class FormSelectAllOnBeginEditingTests: BaseTestClass {
             window.makeKeyAndOrderFront(nil)
             _ = window.makeFirstResponder(field)
             // Prefer an explicit field editor over relying on focus alone under parallel.
-            if window.currentEditor() == nil {
+            if field.currentEditor() == nil {
                 field.selectText(nil)
             }
         }
