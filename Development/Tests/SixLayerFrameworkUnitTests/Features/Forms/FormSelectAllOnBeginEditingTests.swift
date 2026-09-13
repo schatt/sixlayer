@@ -569,7 +569,8 @@ open class FormSelectAllOnBeginEditingTests: BaseTestClass {
     @MainActor
     private func collectNSTextFields(in view: NSView) -> [NSTextField] {
         var result: [NSTextField] = []
-        if let field = view as? NSTextField {
+        // SwiftUI labels are NSTextField with isEditable == false; those cannot host a field editor.
+        if let field = view as? NSTextField, field.isEditable {
             result.append(field)
         }
         for child in view.subviews {
