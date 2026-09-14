@@ -129,6 +129,36 @@ struct FormStrategyConsumptionTests {
         #expect(message == nil)
     }
 
+    @Test func liveStrategy_reportsRequiredEmptyDataField() {
+        let field = DataField(name: "email", type: .string, isOptional: false)
+        let message = FormFieldLiveValidation.message(
+            field: field,
+            value: "",
+            strategy: .immediate
+        )
+        #expect(message == "Email is required")
+    }
+
+    @Test func deferredStrategy_doesNotReportRequiredEmptyDataField() {
+        let field = DataField(name: "email", type: .string, isOptional: false)
+        let message = FormFieldLiveValidation.message(
+            field: field,
+            value: "",
+            strategy: .deferred
+        )
+        #expect(message == nil)
+    }
+
+    @Test func liveStrategy_skipsOptionalEmptyDataField() {
+        let field = DataField(name: "note", type: .string, isOptional: true)
+        let message = FormFieldLiveValidation.message(
+            field: field,
+            value: "",
+            strategy: .realTime
+        )
+        #expect(message == nil)
+    }
+
     // MARK: - #484 L2 honors preference and complexity
 
     @Test @MainActor func l2_formPreference_usesStructuredVertical() {
