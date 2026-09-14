@@ -28,7 +28,7 @@ Define the user's intent in platform-agnostic terms that can be interpreted by t
 
 #### GenericFormView hints (#480)
 
-`GenericFormView` derives `FormStrategy` from `PresentationHints` (preference, complexity, field count, and optional `customPreferences`). Field packing still uses `hints.fieldHints` (#385); `FormStrategy.fieldLayout` currently drives Layer 4 container spacing.
+`GenericFormView` derives `FormStrategy` from `PresentationHints` (preference, complexity, field count, and optional `customPreferences`). Field packing still uses `hints.fieldHints` (#385); `FormStrategy.fieldLayout` currently drives Layer 4 container **spacing only** (packing does not switch to a grid — #485). `FormStrategy.validation` is stored on the strategy but Layer 4 does not apply it (#483).
 
 - **Default:** `presentationPreference: .automatic` and `complexity: .moderate` keep `containerType: .standard`, `fieldLayout: .vertical`, `validation: .deferred`.
 - **Preference:** `.form` / `.modal` → Form container; `.compact` / `.minimal` → compact spacing; `.grid` / `.cards` / `.masonry` → grid field layout; `.list` / `.detail` / `.navigation` → scroll view.
