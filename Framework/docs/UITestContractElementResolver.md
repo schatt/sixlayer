@@ -24,6 +24,25 @@ Total worst-case wait is roughly `timeoutPerSlot * slotCount` when nothing match
 
 The **same** ordering is used on both platforms. Differences in the accessibility tree (e.g. table rows exposed as `cell` on iOS vs `outlineRow` on macOS in some hosts) are **host-specific**; hosts that need a different axis should pass a custom `slots` array (prepend `.other` or app-specific probes) without changing the library default until a documented cross-platform policy exists.
 
+## Host identifiers (`accessibilityHostIdentifier`) — do not use this resolver
+
+`View.accessibilityHostIdentifier` (and `.named` / `.exactNamed` hosts) attach a **background leaf**, not a typed container (#473):
+
+- macOS: `StaticText`
+- iOS: `Other`
+
+`findFirstExisting` walks typed slots. On macOS that either misses (`other` / `scrollViews`) or wastes timeouts until `.staticText`. On both platforms the matched node is a **sibling leaf** — it is not a parent of nested row/empty-state ids.
+
+Use SixLayerTestKit:
+
+```swift
+app.waitForAccessibilityIdentifier("MyApp.Expenses.scrollHost")
+let host = app.elementMatchingAccessibilityIdentifier("MyApp.Expenses.scrollHost")
+// Query children from `app`, not from `host`.
+```
+
+Do not use the host element as the `root` argument to `findFirstExisting` when looking up nested ids.
+
 ## Relation to #229
 
 Navigator primitives should call ``UITestContractElementResolver/findFirstExisting`` (or the core with custom materialization) rather than embedding ad-hoc query order.

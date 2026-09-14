@@ -1124,18 +1124,37 @@ public extension View {
     /// Prefer this over raw `accessibilityIdentifier` on destination roots, scroll hosts,
     /// and similar wrappers. ``View/named(_:)`` and ``View/exactNamed(_:)`` use this
     /// pattern (#360 / #364 / CarManager #757).
+    ///
+    /// XCUI query: `descendants(.any)` + `identifier ==`, or SixLayerTestKit
+    /// `waitForAccessibilityIdentifier` / `elementMatchingAccessibilityIdentifier`.
+    /// Do **not** use typed `otherElements` / `scrollViews` / `collectionViews` for this id.
+    /// The matched node is a **sibling leaf**, not a parent of nested child ids — query
+    /// those from `app`, not from the host element.
+    ///
+    /// AX element type: **macOS** `StaticText` (1pt `Text` leaf; `Color.clear` is often
+    /// absent — #370); **iOS** `.other` (`Color.clear` + `.ignore`).
+    ///
+    /// Placement: stamp an outer container. Nested content may remount via `.id`.
+    /// Do not put this id on a view that dies with a sheet or with a remounting `.id`
+    /// (#473). A second plain `.accessibilityIdentifier` on the same view is not required.
+    ///
+    /// VoiceOver (macOS): the Text leaf uses a zero-width space and an empty
+    /// accessibility label so the contract id is not spoken. XCUI must query
+    /// `identifier`, not label (#473 / #370).
     func accessibilityHostIdentifier(_ identifier: String) -> some View {
         #if os(macOS)
         // `Color.clear` + `.accessibilityElement(children: .ignore)` is frequently absent from
         // the macOS XCUI tree (GlobalOff / SD150 / first-paint host waits — #370). Use a 1pt
         // leaf Text sentinel instead; keep iOS on Color.clear (proven for #360/#364).
         self.background(alignment: .topLeading) {
-            Text(verbatim: identifier)
+            // Zero-width space keeps a Text leaf in the macOS XCUI tree (#370) without using the
+            // contract id as VoiceOver name (#473). Query by identifier, not label.
+            Text(verbatim: "\u{200B}")
                 .font(.system(size: 1))
                 .foregroundStyle(.clear)
                 .frame(width: 1, height: 1)
                 .accessibilityIdentifier(identifier)
-                .accessibilityLabel(identifier)
+                .accessibilityLabel("")
                 .allowsHitTesting(false)
         }
         #else
