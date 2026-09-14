@@ -279,10 +279,7 @@ open class FormSelectAllOnBeginEditingTests: BaseTestClass {
             guard fields.count >= 2 else { return }
             let second = fields[1]
             beginEditing(second)
-            if let editor = second.currentEditor() {
-                #expect(editor.selectedRange.length == (second.stringValue as NSString).length)
-            }
-            // No field editor: ParallelSafeAppKitHost unit tests own select-all under parallel.
+            expectSelectAllIfEditorPresent(second, fullySelected: true)
             #endif
         }
     }
@@ -317,9 +314,7 @@ open class FormSelectAllOnBeginEditingTests: BaseTestClass {
                 return
             }
             beginEditing(fields[1])
-            if let editor = fields[1].currentEditor() {
-                #expect(editor.selectedRange.length != (fields[1].stringValue as NSString).length)
-            }
+            expectSelectAllIfEditorPresent(fields[1], fullySelected: false)
             #endif
         }
     }
@@ -359,9 +354,7 @@ open class FormSelectAllOnBeginEditingTests: BaseTestClass {
                 return
             }
             beginEditing(offField)
-            if let editor = offField.currentEditor() {
-                #expect(editor.selectedRange.length != (offField.stringValue as NSString).length)
-            }
+            expectSelectAllIfEditorPresent(offField, fullySelected: false)
             #endif
         }
     }
@@ -447,9 +440,7 @@ open class FormSelectAllOnBeginEditingTests: BaseTestClass {
                 return
             }
             beginEditing(hosted[1])
-            if let editor = hosted[1].currentEditor() {
-                #expect(editor.selectedRange.length == (hosted[1].stringValue as NSString).length)
-            }
+            expectSelectAllIfEditorPresent(hosted[1], fullySelected: true)
             #endif
         }
     }
@@ -492,9 +483,7 @@ open class FormSelectAllOnBeginEditingTests: BaseTestClass {
                 return
             }
             beginEditing(hosted[1])
-            if let editor = hosted[1].currentEditor() {
-                #expect(editor.selectedRange.length == (hosted[1].stringValue as NSString).length)
-            }
+            expectSelectAllIfEditorPresent(hosted[1], fullySelected: true)
             #endif
         }
     }
@@ -569,6 +558,18 @@ open class FormSelectAllOnBeginEditingTests: BaseTestClass {
             result.append(contentsOf: collectNSTextFields(in: child))
         }
         return result
+    }
+
+    /// When a field editor is present, assert select-all state; otherwise no-op (ParallelSafeAppKitHost covers it).
+    @MainActor
+    private func expectSelectAllIfEditorPresent(_ field: NSTextField, fullySelected: Bool) {
+        guard let editor = field.currentEditor() else { return }
+        let length = (field.stringValue as NSString).length
+        if fullySelected {
+            #expect(editor.selectedRange.length == length)
+        } else {
+            #expect(editor.selectedRange.length != length)
+        }
     }
 
     @MainActor
