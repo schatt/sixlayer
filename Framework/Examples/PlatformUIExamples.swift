@@ -1,5 +1,6 @@
 import Foundation
 import SwiftUI
+import SixLayerFramework
 
 // MARK: - Platform UI Examples
 // Comprehensive examples showing how to use the platform-specific UI patterns

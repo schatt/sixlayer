@@ -273,15 +273,29 @@ private struct AdaptiveCompactDateTimePickers: View {
 
 // MARK: - Form container (Layer 4)
 
+private struct FormValidationStrategyKey: EnvironmentKey {
+    static let defaultValue: ValidationStrategy = .deferred
+}
+
+public extension EnvironmentValues {
+    /// Validation timing published by ``platformFormContainer_L4`` (#483).
+    var formValidationStrategy: ValidationStrategy {
+        get { self[FormValidationStrategyKey.self] }
+        set { self[FormValidationStrategyKey.self] = newValue }
+    }
+}
+
 /// Resolves ``FormStrategy`` into a concrete form container. File-scope API so call sites use trailing-closure syntax without a dummy `View` receiver.
 @MainActor
 func platformFormContainer_L4<Content: View>(
     strategy: FormStrategy,
     @ViewBuilder content: @escaping () -> Content
 ) -> some View {
+    let spacing = strategy.fieldLayout.formContainerSpacing
+    let container: AnyView
     switch strategy.containerType {
     case .form:
-        return AnyView(
+        container = AnyView(
             Form {
                 content()
             }
@@ -289,18 +303,7 @@ func platformFormContainer_L4<Content: View>(
         )
 
     case .standard:
-        let spacing: CGFloat = {
-            switch strategy.fieldLayout {
-            case .compact: return 8
-            case .standard: return 16
-            case .spacious: return 20
-            case .adaptive: return 16
-            case .vertical: return 16
-            case .horizontal: return 12
-            case .grid: return 20
-            }
-        }()
-        return AnyView(
+        container = AnyView(
             platformVStackContainer(spacing: spacing) {
                 content()
             }
@@ -310,19 +313,7 @@ func platformFormContainer_L4<Content: View>(
         )
 
     case .scrollView:
-        let spacing: CGFloat = {
-            switch strategy.fieldLayout {
-            case .compact: return 8
-            case .standard: return 16
-            case .spacious: return 20
-            case .adaptive: return 16
-            case .vertical: return 16
-            case .horizontal: return 12
-            case .grid: return 20
-            }
-        }()
-
-        return AnyView(
+        container = AnyView(
             ScrollView {
                 platformVStackContainer(spacing: spacing) {
                     content()
@@ -333,18 +324,7 @@ func platformFormContainer_L4<Content: View>(
         )
 
     case .custom:
-        let spacing: CGFloat = {
-            switch strategy.fieldLayout {
-            case .compact: return 8
-            case .standard: return 16
-            case .spacious: return 20
-            case .adaptive: return 16
-            case .vertical: return 16
-            case .horizontal: return 12
-            case .grid: return 20
-            }
-        }()
-        return AnyView(
+        container = AnyView(
             platformVStackContainer(spacing: spacing) {
                 content()
             }
@@ -354,18 +334,7 @@ func platformFormContainer_L4<Content: View>(
         )
 
     case .adaptive:
-        let spacing: CGFloat = {
-            switch strategy.fieldLayout {
-            case .compact: return 8
-            case .standard: return 16
-            case .spacious: return 20
-            case .adaptive: return 16
-            case .vertical: return 16
-            case .horizontal: return 12
-            case .grid: return 20
-            }
-        }()
-        return AnyView(
+        container = AnyView(
             platformVStackContainer(spacing: spacing) {
                 content()
             }
@@ -374,6 +343,7 @@ func platformFormContainer_L4<Content: View>(
             .cornerRadius(12)
         )
     }
+    return AnyView(container.environment(\.formValidationStrategy, strategy.validation))
 }
 
 // MARK: - Validation Types

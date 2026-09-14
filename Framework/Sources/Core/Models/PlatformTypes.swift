@@ -535,7 +535,7 @@ public enum FormContainerType: String, CaseIterable {
 }
 
 /// Represents validation strategies
-public enum ValidationStrategy: String, CaseIterable {
+public enum ValidationStrategy: String, CaseIterable, Sendable {
     case none = "none"
     case realTime = "realTime"
     case onSubmit = "onSubmit"

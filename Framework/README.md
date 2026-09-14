@@ -968,7 +968,7 @@ The framework includes comprehensive examples showing how to use reasoning prope
 - **Transparency**: Display reasoning to users for transparency
 - **Testing**: Verify reasoning content in automated tests
 
-See `PlatformUIExamples.swift` for complete working examples.
+See `Framework/Examples/PlatformUIExamples.swift` for complete working examples (not compiled into the framework; #465).
 
 ## 🔧 Extending the Framework
 
