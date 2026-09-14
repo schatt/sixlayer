@@ -71,12 +71,62 @@ struct FormStrategyConsumptionTests {
         #expect(!ValidationStrategy.none.isLive)
     }
 
+    @Test func onSubmitAndCustom_areNotLiveValidation() {
+        #expect(!ValidationStrategy.onSubmit.isLive)
+        #expect(!ValidationStrategy.custom.isLive)
+    }
+
     @Test func simpleFewFields_usesLiveValidation() {
         let strategy = HintsDrivenFormStrategy.strategy(
             hints: hints(complexity: .simple),
             fieldCount: 2
         )
         #expect(strategy.validation.isLive)
+    }
+
+    @Test func liveStrategy_reportsRequiredEmptyField() {
+        let field = DynamicFormField(
+            id: "name",
+            contentType: .text,
+            label: "Name",
+            isRequired: true
+        )
+        let message = FormFieldLiveValidation.message(
+            field: field,
+            value: "",
+            strategy: .immediate
+        )
+        #expect(message == "Name is required")
+    }
+
+    @Test func deferredStrategy_doesNotReportRequiredEmptyField() {
+        let field = DynamicFormField(
+            id: "name",
+            contentType: .text,
+            label: "Name",
+            isRequired: true
+        )
+        let message = FormFieldLiveValidation.message(
+            field: field,
+            value: "",
+            strategy: .deferred
+        )
+        #expect(message == nil)
+    }
+
+    @Test func liveStrategy_skipsOptionalEmptyField() {
+        let field = DynamicFormField(
+            id: "note",
+            contentType: .text,
+            label: "Note",
+            isRequired: false
+        )
+        let message = FormFieldLiveValidation.message(
+            field: field,
+            value: "",
+            strategy: .realTime
+        )
+        #expect(message == nil)
     }
 
     // MARK: - #484 L2 honors preference and complexity
