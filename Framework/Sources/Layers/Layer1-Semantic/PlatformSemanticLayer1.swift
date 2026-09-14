@@ -2030,18 +2030,17 @@ public struct GenericNumericDataView: View {
     }
     
     public var body: some View {
-        HintsDrivenCatalogContainer(
+        GenericCatalogSurfaceView(
             items: data,
             hints: hints,
-            surface: .numeric
-        ) { item in
-            GenericCatalogItemRow(copy: GenericCatalogRowCopy.numeric(item))
-        }
+            surface: .numeric,
+            identifierName: "GenericNumericDataView",
+            copy: GenericCatalogRowCopy.numeric
+        )
         .appleHIGCompliant()
         .automaticAccessibility()
         .platformPatterns()
         .visualConsistency()
-        .automaticCompliance(named: "GenericNumericDataView")
     }
 }
 
@@ -2245,14 +2244,13 @@ public struct GenericMediaView: View {
     let hints: PresentationHints
     
     public var body: some View {
-        HintsDrivenCatalogContainer(
+        GenericCatalogSurfaceView(
             items: media,
             hints: hints,
-            surface: .media
-        ) { item in
-            GenericCatalogItemRow(copy: GenericCatalogRowCopy.media(item))
-        }
-        .automaticCompliance(named: "GenericMediaView")
+            surface: .media,
+            identifierName: "GenericMediaView",
+            copy: GenericCatalogRowCopy.media
+        )
     }
 }
 
@@ -2262,15 +2260,14 @@ public struct GenericHierarchicalView: View {
     let hints: PresentationHints
     
     public var body: some View {
-        HintsDrivenCatalogContainer(
+        GenericCatalogSurfaceView(
             items: items,
             hints: hints,
-            surface: .hierarchical
-        ) { item in
-            GenericCatalogItemRow(copy: GenericCatalogRowCopy.hierarchical(item))
-                .padding(.leading, CGFloat(item.level) * 12)
-        }
-        .automaticCompliance(named: "GenericHierarchicalView")
+            surface: .hierarchical,
+            identifierName: "GenericHierarchicalView",
+            leadingPadding: { CGFloat($0.level) * 12 },
+            copy: GenericCatalogRowCopy.hierarchical
+        )
     }
 }
 
@@ -2280,14 +2277,13 @@ public struct GenericTemporalView: View {
     let hints: PresentationHints
     
     public var body: some View {
-        HintsDrivenCatalogContainer(
+        GenericCatalogSurfaceView(
             items: items,
             hints: hints,
-            surface: .temporal
-        ) { item in
-            GenericCatalogItemRow(copy: GenericCatalogRowCopy.temporal(item))
-        }
-        .automaticCompliance(named: "GenericTemporalView")
+            surface: .temporal,
+            identifierName: "GenericTemporalView",
+            copy: GenericCatalogRowCopy.temporal
+        )
     }
 }
 
