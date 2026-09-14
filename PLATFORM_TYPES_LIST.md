@@ -71,24 +71,20 @@ Complete list of all `Platform*` types in the SixLayer Framework codebase, organ
 
 ## UI & Extensions
 
-50. **`PlatformUIExamples`** (struct)
-51. **`PlatformUIExampleApp`** (struct, View)
-52. **`PlatformUITypes`** (file with types)
-53. **`PlatformTitleDisplayMode`** (enum)
-54. **`PlatformPresentationSize`** (enum) — `.small` / `.medium` / `.large` / `.exact(width:height:)` (#384)
-55. **`PlatformPresentationSizeResolver`** (enum)
-56. **`PlatformPresentationDetent`** (enum, deprecated — use `PlatformPresentationSize`)
-57. **`PlatformTabItem`** (struct)
-58. **`PlatformFrameHelpers`** (enum)
-59. **`PlatformUIIntegration`** (struct)
-60. **`PlatformSpacing`** (struct)
-61. **`PlatformColorExamples`** (struct, View)
-62. **`PlatformColorFormExamples`** (struct, View)
-63. **`PlatformColorListExamples`** (struct, View)
-64. **`PlatformColorCardExamples`** (struct, View)
-65. **`PlatformAnyShapeStyle`** (struct, ShapeStyle)
-66. **`PlatformAnimation`** (enum)
-67. **`PlatformToolbarPlacement`** (enum)
+50. **`PlatformUITypes`** (file with types)
+51. **`PlatformTitleDisplayMode`** (enum)
+52. **`PlatformPresentationSize`** (enum) — `.small` / `.medium` / `.large` / `.exact(width:height:)` (#384)
+53. **`PlatformPresentationSizeResolver`** (enum)
+54. **`PlatformPresentationDetent`** (enum, deprecated — use `PlatformPresentationSize`)
+55. **`PlatformTabItem`** (struct)
+56. **`PlatformFrameHelpers`** (enum)
+57. **`PlatformUIIntegration`** (struct)
+58. **`PlatformSpacing`** (struct)
+59. **`PlatformAnyShapeStyle`** (struct, ShapeStyle)
+60. **`PlatformAnimation`** (enum)
+61. **`PlatformToolbarPlacement`** (enum)
+
+> Removed (#465): demo types `PlatformUIExamples`, `PlatformUIExampleApp`, `PlatformColorExamples`, `PlatformColorFormExamples`, `PlatformColorListExamples`, `PlatformColorCardExamples` (moved to `Framework/Examples/`; not compiled). `FormUsageExample` deleted as obsolete. `AppleHIGComplianceExamples` / `LiquidGlassExampleUsage` likewise moved to Examples.
 
 ---
 
