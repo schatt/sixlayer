@@ -243,6 +243,34 @@ public extension View {
     }
 }
 
+#if os(iOS) || os(macOS) || os(visionOS)
+/// Compact date + time pickers that sit side-by-side when they fit and stack when they do not (#481).
+/// `ViewThatFits` must see uncompressed HStack children (`fixedSize`) or it will treat a squished row as fitting.
+private struct AdaptiveCompactDateTimePickers: View {
+    @Binding var selection: Date
+    let accessibilityLabel: String
+
+    var body: some View {
+        ViewThatFits(in: .horizontal) {
+            HStack {
+                compactPicker(.date).fixedSize(horizontal: true, vertical: false)
+                compactPicker(.hourAndMinute).fixedSize(horizontal: true, vertical: false)
+            }
+            VStack(alignment: .leading) {
+                compactPicker(.date)
+                compactPicker(.hourAndMinute)
+            }
+        }
+    }
+
+    private func compactPicker(_ components: DatePickerComponents) -> some View {
+        DatePicker("", selection: $selection, displayedComponents: components)
+            .datePickerStyle(.compact)
+            .selfLabelingControl(label: accessibilityLabel)
+    }
+}
+#endif
+
 // MARK: - Form container (Layer 4)
 
 /// Resolves ``FormStrategy`` into a concrete form container. File-scope API so call sites use trailing-closure syntax without a dummy `View` receiver.
@@ -382,38 +410,4 @@ public enum FormSpacing: CGFloat, CaseIterable {
     case large = 24
     case extraLarge = 32
 }
-
-#if os(iOS) || os(macOS) || os(visionOS)
-/// Compact date + time pickers that sit side-by-side when they fit and stack when they do not (#481).
-/// `ViewThatFits` must see uncompressed HStack children (`fixedSize`) or it will treat a squished row as fitting.
-private struct AdaptiveCompactDateTimePickers: View {
-    @Binding var selection: Date
-    let accessibilityLabel: String
-
-    var body: some View {
-        ViewThatFits(in: .horizontal) {
-            HStack {
-                datePicker.fixedSize(horizontal: true, vertical: false)
-                timePicker.fixedSize(horizontal: true, vertical: false)
-            }
-            VStack(alignment: .leading) {
-                datePicker
-                timePicker
-            }
-        }
-    }
-
-    private var datePicker: some View {
-        DatePicker("", selection: $selection, displayedComponents: .date)
-            .datePickerStyle(.compact)
-            .selfLabelingControl(label: accessibilityLabel)
-    }
-
-    private var timePicker: some View {
-        DatePicker("", selection: $selection, displayedComponents: .hourAndMinute)
-            .datePickerStyle(.compact)
-            .selfLabelingControl(label: accessibilityLabel)
-    }
-}
-#endif
 
