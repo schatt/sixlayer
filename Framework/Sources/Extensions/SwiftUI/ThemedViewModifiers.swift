@@ -168,8 +168,12 @@ public struct ThemedProgressBar: View {
     let variant: ProgressVariant
 
     public init(progress: Double, variant: ProgressVariant = .primary) {
-        self.progress = max(0, min(1, progress))
+        self.progress = Self.clampedProgress(progress)
         self.variant = variant
+    }
+
+    static func clampedProgress(_ progress: Double) -> Double {
+        max(0, min(1, progress))
     }
 
     public var body: some View {
