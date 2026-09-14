@@ -116,9 +116,9 @@ enum HintsDrivenFormStrategy {
             return .spacious
         case .automatic, .moderate:
             switch complexity {
-            case .simple, .moderate:
+            case .simple:
                 return .vertical
-            case .complex, .veryComplex, .advanced:
+            case .moderate, .complex, .veryComplex, .advanced:
                 return .adaptive
             }
         case .form, .standard, .modal, .custom, .list, .detail, .navigation, .countBased:
