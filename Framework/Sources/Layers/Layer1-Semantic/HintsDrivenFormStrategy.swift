@@ -2,9 +2,9 @@ import Foundation
 
 /// Derives ``FormStrategy`` from ``PresentationHints`` for generic L1 forms (#480).
 ///
-/// Default hints (`.automatic` + `.moderate`) keep the historical
-/// `standard` / `vertical` / `deferred` container. Explicit preference,
-/// complexity, and `customPreferences` keys override that hardcode.
+/// Default hints (`.automatic` + `.moderate`) keep `standard` / `adaptive` /
+/// `deferred` so packing can share a row. Explicit preference, complexity,
+/// and `customPreferences` keys override that default.
 enum HintsDrivenFormStrategy {
     static func strategy(hints: PresentationHints, fieldCount: Int) -> FormStrategy {
         let preference = resolvedPreference(hints.presentationPreference, fieldCount: fieldCount)
@@ -116,9 +116,9 @@ enum HintsDrivenFormStrategy {
             return .spacious
         case .automatic, .moderate:
             switch complexity {
-            case .simple, .moderate:
+            case .simple:
                 return .vertical
-            case .complex, .veryComplex, .advanced:
+            case .moderate, .complex, .veryComplex, .advanced:
                 return .adaptive
             }
         case .form, .standard, .modal, .custom, .list, .detail, .navigation, .countBased:

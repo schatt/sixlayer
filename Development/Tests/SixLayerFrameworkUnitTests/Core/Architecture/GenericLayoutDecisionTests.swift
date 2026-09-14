@@ -273,9 +273,9 @@ open class GenericLayoutDecisionTests: BaseTestClass {
         
         // Then
         #expect(decision.preferredContainer == ContainerPreference.adaptive)
-        #expect(decision.fieldLayout == .standard)
+        #expect(decision.fieldLayout == .adaptive)
         #expect(decision.spacing == .comfortable)
-        #expect(decision.validation == .none)
+        #expect(decision.validation == .deferred)
         // IntelligentCardLayoutDecision doesn't have reasoning property
     }
     
@@ -288,11 +288,11 @@ open class GenericLayoutDecisionTests: BaseTestClass {
         let decision = determineOptimalFormLayout_L2(hints: hints)
         
         // Then
-        #expect(decision.preferredContainer == ContainerPreference.adaptive)
-        #expect(decision.fieldLayout == .standard)
+        #expect(decision.preferredContainer == ContainerPreference.flexible)
+        #expect(decision.fieldLayout == .adaptive)
         #expect(decision.spacing == .comfortable)
-        #expect(decision.validation == .none) // hasValidation not set in hints
-        #expect(decision.contentComplexity == .moderate)
+        #expect(decision.validation == .deferred) // hasValidation not set in hints
+        #expect(decision.contentComplexity == .complex)
     }
     
     @Test @MainActor func testDetermineOptimalFormLayout_L2_AccessibilityLevels() {
@@ -639,7 +639,7 @@ open class GenericLayoutDecisionTests: BaseTestClass {
         // Then
         // All decisions should be consistent
         #expect(layoutDecision.approach == LayoutApproach.responsive) // 20 items = complex = responsive
-        #expect(formDecision.preferredContainer == .adaptive)
+        #expect(formDecision.preferredContainer == .flexible)
         #expect(cardDecision.layout == CardLayoutType.uniform)
     }
 }

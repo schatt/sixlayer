@@ -547,7 +547,7 @@ Preferred width claims are capped with measured container `availableWidth` when 
 
 `PresentationHints.fieldHints[fieldId]` wins over the field’s own `displayHints` / metadata. Use presentation-level hints when constructing `ModalFormView` / `GenericFormView` without putting width on each field.
 
-`GenericFormView` also derives `FormStrategy` (container, field-layout spacing, validation) from `presentationPreference`, `complexity`, field count, and optional `customPreferences` keys `containerType`, `fieldLayout`, `validation`, and `hasValidation` (#480). Packed rows still come from field hints, not from `FormStrategy.fieldLayout` (#485). Layer 4 does not apply `FormStrategy.validation` (#483).
+`GenericFormView` and `ModalFormView` derive `FormStrategy` (container, field layout, validation) from `presentationPreference`, `complexity`, field count, and optional `customPreferences` keys `containerType`, `fieldLayout`, `validation`, and `hasValidation` (#480, #482). Packed rows still honor field-hint widths; `FormStrategy.fieldLayout` also sets max items per row (vertical 1, horizontal 2, grid 3, compact/standard/spacious/adaptive 4) (#485). Layer 4 publishes `FormStrategy.validation` as `EnvironmentValues.formValidationStrategy` (`isLive` for `.immediate` / `.realTime`). Generic/modal and IntelligentFormView field chrome show a required-empty error while live (#483).
 
 ### Packing rules (sections)
 
@@ -557,7 +557,7 @@ When the framework lays out a list of fields:
 - Width-aware rows; wrap when the next field does not fit
 - Keep **contiguous same-type runs** together — never orphan `check, check, check, note` into `[check][check]` / `[check][note]`
 - Isolate tall / multi-line and wide-flex fields on their own row
-- Cap items per row (~3–4); consistent spacing; section boundaries win
+- Cap items per row from `FieldLayout.formPackMaxItemsPerRow` (1–4 depending on `FormStrategy.fieldLayout`); consistent spacing; section boundaries win
 - Do not force a balanced `N×M` grid for neatness when widths/runs say otherwise
 - **Alignment:** packed rows use `FieldLayoutPackedSection.plan` (`FieldLayoutAligner.columnMaxWidths` + `packedFormControlLeadingInset`). Label-above chrome (current) uses inset `0`; label-leading chrome uses `max(labelWidths) + spacing` via `sharedControlLeadingInset`.
 

@@ -1261,7 +1261,8 @@ private struct DefaultPlatformFieldView: View {
     let value: Any
     let hints: FieldDisplayHints?
     let onValueChange: (Any) -> Void
-    
+    @Environment(\.formValidationStrategy) private var validationStrategy
+
     /// Whether the field is editable (defaults to true if hints not provided)
     private var isEditable: Bool {
         return hints?.isEditable ?? true
@@ -1274,14 +1275,19 @@ private struct DefaultPlatformFieldView: View {
         self.onValueChange = onValueChange
     }
     
-    // Computed property to get field errors
     private var fieldErrors: [String] {
-        [] // No validation errors without FormStateManager
+        if let message = FormFieldLiveValidation.message(
+            field: field,
+            value: value,
+            strategy: validationStrategy
+        ) {
+            return [message]
+        }
+        return []
     }
-    
-    // Computed property to check if field is valid
+
     private var isValid: Bool {
-        true // Always valid without FormStateManager
+        fieldErrors.isEmpty
     }
     
     public var body: some View {
