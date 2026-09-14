@@ -71,16 +71,16 @@ open class PlatformDateTimeInputAdaptiveLayoutIssue481Tests: BaseTestClass {
             "Must host separate date and time DatePickers, not one combined control; got \(pickers.count) (#481)"
         )
 
-        let descriptions = pickers.map(datePickerComponentsDescription)
-        let hasDateOnly = descriptions.contains { $0.contains(".date") && !$0.contains("hourAndMinute") }
-        let hasTimeOnly = descriptions.contains { $0.contains("hourAndMinute") && !$0.contains(".date") }
-        let hasCombined = descriptions.contains { $0.contains(".date") && $0.contains("hourAndMinute") }
+        let components = pickers.compactMap(datePickerComponents)
+        let hasDateOnly = components.contains { $0.contains(.date) && !$0.contains(.hourAndMinute) }
+        let hasTimeOnly = components.contains { $0.contains(.hourAndMinute) && !$0.contains(.date) }
+        let hasCombined = components.contains { $0.contains(.date) && $0.contains(.hourAndMinute) }
 
-        #expect(hasDateOnly, "Need a date-only picker; components=\(descriptions) (#481)")
-        #expect(hasTimeOnly, "Need a time-only picker; components=\(descriptions) (#481)")
+        #expect(hasDateOnly, "Need a date-only picker; components=\(components) (#481)")
+        #expect(hasTimeOnly, "Need a time-only picker; components=\(components) (#481)")
         #expect(
             !hasCombined,
-            "Combined [.date, .hourAndMinute] picker compresses instead of stacking; components=\(descriptions) (#481)"
+            "Combined [.date, .hourAndMinute] picker compresses instead of stacking; components=\(components) (#481)"
         )
         #else
         Issue.record("ViewInspector not available")
@@ -143,24 +143,23 @@ open class PlatformDateTimeInputAdaptiveLayoutIssue481Tests: BaseTestClass {
 
     #if canImport(ViewInspector)
     @MainActor
-    private func datePickerComponentsDescription(
+    private func datePickerComponents(
         _ picker: ViewInspector.InspectableView<ViewInspector.ViewType.DatePicker>
-    ) -> String {
-        let view = picker.content.view
-        if let fromMirror = firstComponentsDump(in: view, depth: 0) {
-            return fromMirror
-        }
-        return String(describing: view)
+    ) -> DatePickerComponents? {
+        firstComponents(in: picker.content.view, depth: 0)
     }
 
-    private func firstComponentsDump(in value: Any, depth: Int) -> String? {
+    private func firstComponents(in value: Any, depth: Int) -> DatePickerComponents? {
         guard depth < 8 else { return nil }
+        if let components = value as? DatePickerComponents {
+            return components
+        }
         let mirror = Mirror(reflecting: value)
         for child in mirror.children {
-            if let label = child.label?.lowercased(), label.contains("component") {
-                return String(describing: child.value)
+            if let components = child.value as? DatePickerComponents {
+                return components
             }
-            if let nested = firstComponentsDump(in: child.value, depth: depth + 1) {
+            if let nested = firstComponents(in: child.value, depth: depth + 1) {
                 return nested
             }
         }
