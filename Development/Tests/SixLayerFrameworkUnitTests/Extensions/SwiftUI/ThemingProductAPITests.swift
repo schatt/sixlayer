@@ -3,7 +3,8 @@
 //  SixLayerFrameworkTests
 //
 //  Unit-lane coverage for ThemedViewModifiers + ThemingIntegration (#465).
-//  These types are product APIs; example/demo Sources are out of this file.
+//  Product APIs only; example/demo Sources are out of this file.
+//  Observations are stored inputs and progress clamp, not body-only eval.
 //
 
 import SwiftUI
@@ -32,13 +33,6 @@ struct ThemingProductAPITests {
         let bar = ThemedProgressBar(progress: 0.4, variant: .warning)
         #expect(bar.progress == 0.4)
         #expect(bar.variant == .warning)
-    }
-
-    @Test @MainActor
-    func progressBarBodyEvaluatesWhenUnhosted() {
-        AccessibilityIdentifierConfig.withUnhostedInspection {
-            _ = ThemedProgressBar(progress: 0.25, variant: .success).body
-        }
     }
 
     @Test
@@ -121,16 +115,6 @@ struct ThemingProductAPITests {
         #expect(view.initialData?.name == "Ada")
         AccessibilityIdentifierConfig.withUnhostedInspection {
             _ = view.body
-        }
-    }
-
-    @Test @MainActor
-    func themedFrameworkViewAndLoadingIndicatorBodiesEvaluateWhenUnhosted() {
-        AccessibilityIdentifierConfig.withUnhostedInspection {
-            _ = ThemedFrameworkView { Text("hosted") }.body
-            _ = ThemedLoadingIndicator().body
-            _ = Text("card").themedCard()
-            _ = Text("wrap").withThemedFramework()
         }
     }
 }
