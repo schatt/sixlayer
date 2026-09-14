@@ -41,18 +41,32 @@ extension ValidationStrategy {
 }
 
 enum FormFieldLiveValidation {
-    /// Message shown by generic/modal field chrome when validation is live (#483).
+    /// Message shown by L4 form field chrome when validation is live (#483).
     static func message(
-        field: DynamicFormField,
+        label: String,
+        isRequired: Bool,
         value: String,
         strategy: ValidationStrategy
     ) -> String? {
         guard strategy.isLive else { return nil }
         let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
-        if field.isRequired && trimmed.isEmpty {
-            return "\(field.label) is required"
+        if isRequired && trimmed.isEmpty {
+            return "\(label) is required"
         }
         return nil
+    }
+
+    static func message(
+        field: DynamicFormField,
+        value: String,
+        strategy: ValidationStrategy
+    ) -> String? {
+        message(
+            label: field.label,
+            isRequired: field.isRequired,
+            value: value,
+            strategy: strategy
+        )
     }
 
     static func message(
@@ -60,7 +74,13 @@ enum FormFieldLiveValidation {
         value: Any,
         strategy: ValidationStrategy
     ) -> String? {
-        nil
+        guard let stringValue = value as? String else { return nil }
+        return message(
+            label: field.name.capitalized,
+            isRequired: !field.isOptional,
+            value: stringValue,
+            strategy: strategy
+        )
     }
 }
 
