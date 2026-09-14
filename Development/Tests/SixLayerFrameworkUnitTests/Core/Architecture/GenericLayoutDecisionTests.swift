@@ -639,7 +639,7 @@ open class GenericLayoutDecisionTests: BaseTestClass {
         // Then
         // All decisions should be consistent
         #expect(layoutDecision.approach == LayoutApproach.responsive) // 20 items = complex = responsive
-        #expect(formDecision.preferredContainer == .adaptive)
+        #expect(formDecision.preferredContainer == .flexible)
         #expect(cardDecision.layout == CardLayoutType.uniform)
     }
 }
