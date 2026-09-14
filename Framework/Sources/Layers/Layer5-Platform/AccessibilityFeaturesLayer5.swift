@@ -180,8 +180,10 @@ public class AccessibilityTestingManager: ObservableObject {
 }
 
 /// Accessibility test result
+///
+/// `id` is `testName`. Duplicate names collide in `ForEach` (#475).
 public struct AccessibilityTestResult: Identifiable {
-    public let id = UUID()
+    public var id: String { testName }
     public let testName: String
     public let status: TestStatus
     public let description: String

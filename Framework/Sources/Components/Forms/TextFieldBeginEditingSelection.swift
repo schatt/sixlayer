@@ -151,6 +151,8 @@ enum TextFieldBeginEditingSelection {
             textField.selectText(nil)
             textField.currentEditor()?.selectedRange = NSRange(location: 0, length: length)
         } else if let textView = object as? NSTextView {
+            // Unhosted NSTextView selection/mutation can abort via TextInputUI (#447 CI).
+            guard textView.window != nil else { return }
             let length = (textView.string as NSString).length
             textView.selectedRange = NSRange(location: 0, length: length)
         }
