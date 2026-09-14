@@ -39,7 +39,7 @@ public struct OCRDataCandidate: Identifiable, Equatable, Hashable {
         "\(text)|\(boundingBox.origin.x)|\(boundingBox.origin.y)|\(boundingBox.size.width)|\(boundingBox.size.height)|\(suggestedType.rawValue)"
     }
     
-    // Custom equality that ignores UUID for testing
+    /// Value equality (not identity). `id` is derived from text, box, and type (#475).
     public static func == (lhs: OCRDataCandidate, rhs: OCRDataCandidate) -> Bool {
         return lhs.text == rhs.text &&
                lhs.boundingBox == rhs.boundingBox &&

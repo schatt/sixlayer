@@ -37,6 +37,25 @@ struct StableCatalogIdentifiableTests {
         #expect(toggled["General"] == false)
     }
 
+    @Test func settingsSectionCollapse_existingKey_flipsStoredValue() {
+        let toggled = SettingsSectionCollapse.toggled(
+            ["General": false],
+            id: "General",
+            defaultExpanded: true
+        )
+        #expect(toggled["General"] == true)
+    }
+
+    @Test func settingsSectionData_explicitId_isStableAndDistinctFromTitle() {
+        let a = SettingsSectionData(title: "General", items: [], id: "sec-1")
+        let b = SettingsSectionData(title: "General", items: [], id: "sec-1")
+        let other = SettingsSectionData(title: "General", items: [], id: "sec-2")
+        #expect(a.id == "sec-1")
+        #expect(a.id == b.id)
+        #expect(a.id != other.id)
+        #expect(a.id != SettingsSectionData(title: "General", items: []).id)
+    }
+
     // MARK: - #475 other catalog types
 
     @Test func genericDataItem_sameTitle_sharesIdAndEqualityAcrossReinits() {
@@ -45,6 +64,7 @@ struct StableCatalogIdentifiableTests {
         #expect(a.id == b.id)
         #expect(a == b)
         #expect(a.hashValue == b.hashValue)
+        #expect(GenericDataItem(title: "Car", id: "veh-1").id != GenericDataItem(title: "Car", id: "veh-2").id)
     }
 
     @Test func genericNumericData_sameLabel_sharesIdAcrossReinits() {
@@ -82,6 +102,13 @@ struct StableCatalogIdentifiableTests {
         let a = FileInfo(name: "a.txt", size: 10, type: .plainText, url: url)
         let b = FileInfo(name: "renamed.txt", size: 99, type: .plainText, url: url)
         #expect(a.id == b.id)
+    }
+
+    @Test func fileInfo_nilURL_usesNameSizeType() {
+        let a = FileInfo(name: "a.txt", size: 10, type: .plainText, url: nil)
+        let b = FileInfo(name: "a.txt", size: 10, type: .plainText, url: nil)
+        #expect(a.id == b.id)
+        #expect(a.id != FileInfo(name: "b.txt", size: 10, type: .plainText, url: nil).id)
     }
 
     @Test func mapAnnotationData_sameTitleAndCoordinate_sharesIdAcrossReinits() {
