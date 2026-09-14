@@ -1,5 +1,5 @@
 ---
-description: GitHub issue workflow — wip branch for all issue-linked work, Taska comments by default, TDD red on issue, closure sequence.
+description: GitHub issue workflow — wip branch, leftover taxonomy (in scope / child / follow-up), Taska comments, TDD red on issue, closure sequence.
 globs: **/*
 alwaysApply: true
 ---
@@ -54,10 +54,29 @@ Post via Taska `add_comment` with the full Markdown body (safe for backticks/`$`
 
 See [strict-tdd-definition.mdc](mdc:.cursor/rules/strict-tdd-definition.mdc) → Required Evidence → GitHub issue red log.
 
+## Leftovers: name the bucket
+
+When proposing or classifying unfinished work, **say which bucket** — do not use bare “follow-up?” (overloaded; agents escape Done with it).
+
+| Bucket | Meaning | Tracking | Parent Done? |
+|---|---|---|---|
+| **In scope** | Required for this issue to be done right (peer/API/Goal claim, soft-skips that dodge real proof, incomplete twin of a landed helper, …) | Same issue: expand acceptance if needed; finish on the **same** `wip/<issue-slug>` branch (same worktree) | **Blocked** until finished |
+| **Child / sub-issue** | Part of a parent/epic; the slice is still *in* the epic | Open a child issue; link from parent; parent acceptance may checkbox the child | Parent **stays open** until the child is fully done/integrated (merged to `next`, `wip/` retired) **or** parent acceptance no longer requires it. A child is **not** an escape hatch. |
+| **Follow-up** | Optional / truly out of scope (“you might also…”, similar pattern elsewhere) | **Own** open issue per item, linked from the parent close comment | Parent may close after land **only if** no in-scope or required-child work remains |
+
+**Prefer finishing in scope** on the parent `wip/` branch. A child issue is fine for visibility/parallelism **only if** the parent stays open and acceptance still requires the work.
+
+Structure (same branch vs child) is flexible; **Done gating is not**.
+
+**No leftover escape:** Do not default to bare “want a follow-up?” for incomplete twin work, thin proof, or soft-skips that dodge the real assertion. Classify as **in scope**, **child / sub-issue**, or **follow-up** — not a bare follow-up question. Twins and soft-skip dodges are **in scope** (same branch, or a child that keeps the parent open) — not optional follow-ups.
+
+**Never** leave leftover bullets only in a closed issue, PR summary, or chat — they will not be seen. Closed issues are not a backlog.
+
 ## When to close issues
 
 - **Default:** **Close when the work is done on its branch** — don't wait for merge to `main`. Name the branch in the closing comment (e.g. implemented on **`wip/…`** then merged, or on **`done/…`** after rename). Issue-linked implementation should have lived on **`wip/<issue-slug>`** before integration (see above).
 - Merge to `main` is part of the release process, not a prerequisite for closing (unless you are using the integration-line workflow below — then `next` is part of “done”).
+- **Leftover gates (before close):** no **in-scope** leftovers remain (or reopen and finish); no open **child** issues that parent acceptance still requires; every **follow-up** has its own open issue, linked from the close comment.
 
 ### Worklist closure: `wip/` + `next` + dedicated worktree
 
@@ -67,7 +86,7 @@ When issue-linked work used a **`wip/<issue-slug>`** branch (often in a **temp w
 2. **Merge `wip/...` into `next`** in the primary clone with **`git merge --no-ff`** (never fast-forward — see [no-fast-forward-merges.mdc](mdc:.cursor/rules/no-fast-forward-merges.mdc)), push `next` (`git push all next` or repo convention).
 3. **Retire** `wip/<slug>` → **`done/<slug>`** with `Development/scripts/retire_wip_branch.sh <slug>` (rename, `git push all done/<slug>`, delete remote `wip/`, remove the temp worktree, **delete the local `done/` branch**). Remotes keep `done/` for history; do not leave an unused local `done/` tip (#459). Leftover local `done/*`: `Development/scripts/repair_branch_upstreams.sh`.
 4. **Worktree:** `retire_wip_branch.sh` removes the dedicated worktree. If you retired with `--no-worktree-remove` (or renamed by hand), **`git worktree remove <path>`** now. If no temp worktree was used, **skip** and state that in the closing comment.
-5. **Then** finalize GitHub state: replace the issue body with the **Final Record** (mandatory section below) via Taska `update_issue` (or `gh issue edit --body-file` fallback). Add a comment (Taska `add_comment` / `gh` fallback) documenting steps 1–4: merge SHAs, `next`/`done/` tips, **worktree path removed**, pushes. Close via Taska `set_issue_state` (or `gh issue close --reason completed`). **Order:** edits and comment **before** close (close last). If the issue was closed early by mistake, **reopen**, post the closure comment, then close again.
+5. **Then** finalize GitHub state: confirm leftover gates (no in-scope leftovers; no open required children; each follow-up has its own open issue). Replace the issue body with the **Final Record** (mandatory section below) via Taska `update_issue` (or `gh issue edit --body-file` fallback). Add a comment (Taska `add_comment` / `gh` fallback) documenting steps 1–4: merge SHAs, `next`/`done/` tips, **worktree path removed**, pushes, **leftover issue numbers**. Close via Taska `set_issue_state` (or `gh issue close --reason completed`). **Order:** edits and comment **before** close (close last). If the issue was closed early by mistake, **reopen**, post the closure comment, then close again.
 
 If production work used **`wip/`** + **`next`** but you close before step 5, the audit trail diverges from the integration-line record — avoid that.
 
@@ -79,6 +98,7 @@ When an issue is ready to close, replace the body with a concise final record (T
 - **Decisions** — key trade-offs and rationale.
 - **Delivered API** — final public interfaces/behaviors shipped (or explicitly "no API changes").
 - **Tests** — what was added/updated and current status.
+- **Leftovers** — bucketed: in-scope remaining (must be none), required children (none or closed/integrated), follow-ups (each an open issue, linked).
 - **References** — PR(s), branch, commit(s), design docs, related issues.
 
 Prefer this structure:
@@ -98,6 +118,11 @@ Prefer this structure:
 ### Tests
 - Added/updated: ...
 - Result: ...
+
+### Leftovers
+- In scope remaining: none
+- Required children: none (or #N closed/integrated)
+- Follow-ups: #N, #M (open, linked from this close)
 
 ### References
 - PR: ...
