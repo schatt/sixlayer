@@ -574,7 +574,17 @@ Text(i18n.localizedString(for: "SixLayerFramework.form.title"))
     }
     
     // MARK: - Private Implementation
-    
+
+    /// Packing cap for `PackedIntelligentFormFieldsLayout` (#488).
+    /// Stub matches the previous hardcoded generator caps (vertical path always 4).
+    static func packMaxItemsPerRow(for fieldLayout: FieldLayout) -> Int {
+        switch fieldLayout {
+        case .horizontal: return 2
+        case .grid: return 3
+        default: return 4
+        }
+    }
+
     /// Determine the best form strategy based on data analysis
     private static func determineFormStrategy(
         analysis: DataAnalysisResult
