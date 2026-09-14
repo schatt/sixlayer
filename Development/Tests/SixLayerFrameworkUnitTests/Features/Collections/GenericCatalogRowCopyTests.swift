@@ -47,6 +47,24 @@ struct GenericCatalogRowCopyTests {
         #expect(copy.detail == "Level 2")
     }
 
+    @Test func hierarchical_levelZero_includesLevel() {
+        let copy = GenericCatalogRowCopy.hierarchical(
+            GenericHierarchicalItem(title: "Root", level: 0)
+        )
+        #expect(copy.title == "Root")
+        #expect(copy.detail == "Level 0")
+    }
+
+    @Test func hierarchicalLeadingPadding_zeroLevelIsZero() {
+        let item = GenericHierarchicalItem(title: "Root", level: 0)
+        #expect(GenericCatalogRowCopy.hierarchicalLeadingPadding(item) == 0)
+    }
+
+    @Test func hierarchicalLeadingPadding_scalesWithLevel() {
+        let item = GenericHierarchicalItem(title: "Child", level: 2)
+        #expect(GenericCatalogRowCopy.hierarchicalLeadingPadding(item) == 24)
+    }
+
     @Test func temporal_usesISODate() {
         let date = Date(timeIntervalSince1970: 0)
         let copy = GenericCatalogRowCopy.temporal(

@@ -24,6 +24,17 @@ Define the user's intent in platform-agnostic terms that can be interpreted by t
 - `platformPresentModal(type:content:)` - Express intent to present a modal
 - `platformPresentModalForm_L1(formType:context:)` - Present modal forms with automatic field generation
 - `platformPresentModalForm_L1(formType:context:customFormContainer:)` - Present modal forms with custom container styling
+- `GenericFormView(fields:hints:)` - Present caller-supplied `DynamicFormField`s in a Layer 4 form container
+
+#### GenericFormView hints (#480)
+
+`GenericFormView` derives `FormStrategy` from `PresentationHints` (preference, complexity, field count, and optional `customPreferences`). Field packing still uses `hints.fieldHints` (#385); `FormStrategy.fieldLayout` currently drives Layer 4 container **spacing only** (packing does not switch to a grid — #485). `FormStrategy.validation` is stored on the strategy but Layer 4 does not apply it (#483).
+
+- **Default:** `presentationPreference: .automatic` and `complexity: .moderate` keep `containerType: .standard`, `fieldLayout: .vertical`, `validation: .deferred`.
+- **Preference:** `.form` / `.modal` → Form container; `.compact` / `.minimal` → compact spacing; `.grid` / `.cards` / `.masonry` → grid field layout; `.list` / `.detail` / `.navigation` → scroll view.
+- **Complexity (when preference is `.automatic`):** `.simple` with ≤3 fields → Form + immediate validation; `.complex` / `.veryComplex` / `.advanced` → scroll view + adaptive spacing.
+- **Overrides:** `customPreferences["containerType"]`, `["fieldLayout"]`, and `["validation"]` accept the corresponding enum raw values. `["hasValidation"] = "true"` selects real-time validation unless `validation` is set.
+- **`.countBased`:** picks the low or high preference from field count; a nested `.countBased` does not recurse (falls back to `.automatic`).
 
 ### **Responsive Cards**
 - `platformResponsiveCard(type:content:)` - Express intent for responsive cards

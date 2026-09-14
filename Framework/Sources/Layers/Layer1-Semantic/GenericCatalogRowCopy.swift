@@ -1,3 +1,4 @@
+import CoreGraphics
 import Foundation
 
 /// Default row copy for generic catalog L1 views (#479).
@@ -19,6 +20,11 @@ enum GenericCatalogRowCopy {
 
     static func hierarchical(_ item: GenericHierarchicalItem) -> Copy {
         Copy(title: item.title, detail: "Level \(item.level)")
+    }
+
+    /// Horizontal inset for generic hierarchical catalog rows (#479).
+    static func hierarchicalLeadingPadding(_ item: GenericHierarchicalItem) -> CGFloat {
+        CGFloat(item.level) * 12
     }
 
     static func temporal(_ item: GenericTemporalItem) -> Copy {
