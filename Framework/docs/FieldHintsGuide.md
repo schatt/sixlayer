@@ -547,6 +547,8 @@ Preferred width claims are capped with measured container `availableWidth` when 
 
 `PresentationHints.fieldHints[fieldId]` wins over the field’s own `displayHints` / metadata. Use presentation-level hints when constructing `ModalFormView` / `GenericFormView` without putting width on each field.
 
+`GenericFormView` also derives `FormStrategy` (container, field-layout spacing, validation) from `presentationPreference`, `complexity`, field count, and optional `customPreferences` keys `containerType`, `fieldLayout`, `validation`, and `hasValidation` (#480). Packed rows still come from field hints, not from `FormStrategy.fieldLayout`.
+
 ### Packing rules (sections)
 
 When the framework lays out a list of fields:
