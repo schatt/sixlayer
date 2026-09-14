@@ -144,9 +144,11 @@ The framework automatically generates accessibility labels for VoiceOver complia
 
 ### 4. Form Validation Messages
 
-#### Validation Rules (`FormUsageExample.swift`)
+#### Validation Rules
 - `"Please enter a valid email address"`
 - `"Please enter a valid phone number"`
+
+Removed as a Sources demo in #465 (`FormUsageExample.swift`). Keep these strings only if they still appear in product form validation.
 
 #### Field Labels
 - `"Selected: %@"` (with filename)

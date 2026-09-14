@@ -146,6 +146,8 @@ enum TextFieldBeginEditingSelection {
         }
         #elseif os(macOS)
         if let textField = object as? NSTextField {
+            // Select-all needs a real window/field editor; unhosted calls are no-ops.
+            guard textField.window != nil else { return }
             let length = (textField.stringValue as NSString).length
             guard length > 0 else { return }
             textField.selectText(nil)

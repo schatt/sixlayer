@@ -6,18 +6,6 @@ import SwiftUI
 @Suite("Example Component Accessibility", HostedViewTestIsolationTrait())
 open class ExampleComponentAccessibilityTests: BaseTestClass {
 
-    @Test @MainActor func testFormUsageExampleGeneratesAccessibilityIdentifiers() async {
-        initializeTestConfig()
-        let testView = FormUsageExample()
-        let hasAccessibilityID = testComponentComplianceSinglePlatform(
-            testView,
-            expectedPattern: "SixLayer.main.ui.*",
-            platform: SixLayerPlatform.current,
-            componentName: "FormUsageExample"
-        )
-        #expect(hasAccessibilityID, "FormUsageExample should generate accessibility identifiers")
-    }
-
     @Test @MainActor func testExampleHelpersGeneratesAccessibilityIdentifiers() async {
         initializeTestConfig()
         runWithTaskLocalConfig {

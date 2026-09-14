@@ -104,6 +104,8 @@ struct TestAppContentView: View {
     private let openCategoryCCallbacks = ProcessInfo.processInfo.arguments.contains("-OpenCategoryCCallbacks")
     /// When true, app opens to Category E one-off coverage host (launch arg -OpenCategoryEOneOffs). Issue #201.
     private let openCategoryEOneOffs = ProcessInfo.processInfo.arguments.contains("-OpenCategoryEOneOffs")
+    /// When true, app opens to #473 host-identifier remount contract (`-OpenHostIdentifierRemount`).
+    private let openHostIdentifierRemount = ProcessInfo.processInfo.arguments.contains("-OpenHostIdentifierRemount")
     /// When true, app opens to platform accessibility extension audit host (launch arg -OpenPlatformAccessibilityExtensions).
     private let openPlatformAccessibilityExtensions = ProcessInfo.processInfo.arguments.contains("-OpenPlatformAccessibilityExtensions")
     /// When true, app opens to Layer 4 `platform*` styling extension audit host (launch arg -OpenPlatformStylingLayer4Extensions).
@@ -257,6 +259,10 @@ struct TestAppContentView: View {
             } else if openCategoryEOneOffs {
                 NavigationStack {
                     CategoryEOneOffAuditView()
+                }
+            } else if openHostIdentifierRemount {
+                NavigationStack {
+                    HostIdentifierRemountHostView()
                 }
             } else if openPlatformAccessibilityExtensions {
                 NavigationStack {
