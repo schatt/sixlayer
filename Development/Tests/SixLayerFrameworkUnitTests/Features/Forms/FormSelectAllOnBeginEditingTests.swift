@@ -571,8 +571,9 @@ open class FormSelectAllOnBeginEditingTests: BaseTestClass {
     @MainActor
     private func collectNSTextFields(in view: NSView) -> [NSTextField] {
         var result: [NSTextField] = []
-        // SwiftUI labels are NSTextField with isEditable == false; those cannot host a field editor.
-        if let field = view as? NSTextField, field.isEditable {
+        // SwiftUI labels are non-editable NSTextFields; unattached editable clones also appear
+        // in the tree under parallel hosting and cannot take a field editor.
+        if let field = view as? NSTextField, field.isEditable, field.window != nil {
             result.append(field)
         }
         for child in view.subviews {
