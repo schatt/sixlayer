@@ -139,11 +139,6 @@ struct HintsDrivenFormStrategyTests {
             fieldCount: 4
         )
         expect(strategy, container: .standard, layout: .adaptive, validation: .deferred)
-        let strategy = HintsDrivenFormStrategy.strategy(
-            hints: hints(complexity: .simple),
-            fieldCount: 3
-        )
-        expect(strategy, container: .form, layout: .vertical, validation: .immediate)
     }
 
     @Test func automaticSimple_moreThanThreeFields_usesStandardDeferred() {
