@@ -943,7 +943,8 @@ public func platformPresentSettings_L1(
 }
 
 /// Generic function for presenting settings interface with custom views
-/// Allows specifying custom views for settings sections and individual settings
+/// Honors `PresentationHints` for list vs grid. Save/Cancel chrome fires the matching
+/// callbacks. Custom section views report edits via `EnvironmentValues.onSettingChanged`.
 @MainActor
 public func platformPresentSettings_L1(
     settings: [SettingsSectionData],
@@ -3598,10 +3599,30 @@ public struct ExtensibleHintsKey: EnvironmentKey {
     public static let defaultValue: [ExtensibleHint] = []
 }
 
+public struct SettingsOnSettingChangedKey: EnvironmentKey {
+    public static let defaultValue: SettingsOnSettingChangedAction? = nil
+}
+
+/// Environment payload for custom settings rows (#477). `@unchecked` because values are `Any`.
+public struct SettingsOnSettingChangedAction: @unchecked Sendable {
+    public let handler: (String, Any) -> Void
+
+    public init(_ handler: @escaping (String, Any) -> Void) {
+        self.handler = handler
+    }
+}
+
 public extension EnvironmentValues {
     var extensibleHints: [ExtensibleHint] {
         get { self[ExtensibleHintsKey.self] }
         set { self[ExtensibleHintsKey.self] = newValue }
+    }
+
+    /// Callback for custom settings section views (#477). `CustomSettingsView` publishes this so
+    /// consumer rows can report edits; Save/Cancel still fire via `SettingsActionBar`.
+    var onSettingChanged: SettingsOnSettingChangedAction? {
+        get { self[SettingsOnSettingChangedKey.self] }
+        set { self[SettingsOnSettingChangedKey.self] = newValue }
     }
 }
 
@@ -4008,55 +4029,23 @@ public struct GenericSettingsView: View {
     
     public var body: some View {
         platformVStackContainer(spacing: 0) {
-            // Settings content
-            ScrollView {
-                platformLazyVStackContainer(spacing: 16) {
-                    ForEach(settings) { section in
-                        SettingsSectionView(
-                            section: section,
-                            values: $values,
-                            sectionStates: $sectionStates,
-                            onSettingChanged: onSettingChanged
-                        )
-                    }
-                }
-                .padding()
+            HintsDrivenCatalogContainer(
+                items: settings,
+                hints: hints,
+                surface: .settings
+            ) { section in
+                SettingsSectionView(
+                    section: section,
+                    values: $values,
+                    sectionStates: $sectionStates,
+                    onSettingChanged: onSettingChanged
+                )
             }
-            
-            // Action buttons
-            if onSettingsSaved != nil || onSettingsCancelled != nil {
-                platformHStackContainer(spacing: 16) {
-                    if let onSettingsCancelled = onSettingsCancelled {
-                        platformButton("Cancel") {
-                            onSettingsCancelled()
-                        }
-                        .buttonStyle(.bordered)
-                        .automaticCompliance(
-                            identifierName: sanitizeLabelText("Cancel"),
-                            identifierElementType: "Button",
-                            accessibilityTraits: .isButton,
-                            accessibilitySortPriority: 2.0  // Issue #165: Secondary action
-                        )
-                    }
-                    
-                    Spacer()
-                    
-                    if let onSettingsSaved = onSettingsSaved {
-                        platformButton("Save") {
-                            onSettingsSaved()
-                        }
-                        .buttonStyle(.borderedProminent)
-                        .automaticCompliance(
-                            identifierName: sanitizeLabelText("Save"),
-                            identifierElementType: "Button",
-                            accessibilityTraits: .isButton,
-                            accessibilitySortPriority: 1.0  // Issue #165: Primary action
-                        )
-                    }
-                }
-                .padding()
-                .background(Color.platformBackground)
-            }
+
+            SettingsActionBar(
+                onSaved: onSettingsSaved,
+                onCancelled: onSettingsCancelled
+            )
         }
         .navigationTitle("Settings")
         .onAppear {
@@ -4065,6 +4054,7 @@ public struct GenericSettingsView: View {
         .onChange(of: catalogKeys) { _, _ in
             applyCatalog()
         }
+        .environment(\.onSettingChanged, onSettingChanged.map(SettingsOnSettingChangedAction.init))
         .environment(\.accessibilityIdentifierName, "GenericSettingsView")
         .automaticCompliance(identifierName: "GenericSettingsView")
     }
@@ -4382,28 +4372,19 @@ public struct CustomListCollectionView<Item: Identifiable, CustomView: View>: Vi
     /// When `hints.customPreferences["rowVisualStyle"]` is `"card"`, applies a default card-like row surface (#272).
     @ViewBuilder
     private func listRowSurface(for item: Item) -> some View {
-        if rowVisualStyleIsCard {
-            customItemView(item)
-                .padding(12)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(
-                    RoundedRectangle(cornerRadius: 12, style: .continuous)
-                        .fill(Color.platformSecondaryBackground)
-                )
-        } else {
-            customItemView(item)
-        }
-    }
-
-    private var rowVisualStyleIsCard: Bool {
-        hints.customPreferences["rowVisualStyle"]?.lowercased() == "card"
+        customItemView(item)
+            .hintsDrivenCardSurface(
+                enabled: HintsDrivenCatalogLayout.rowVisualStyleIsCard(hints: hints)
+            )
     }
 }
 
 
 // MARK: - Additional Custom View Components
 
-/// Custom settings view that supports custom setting views (no AnyView — Issue 178)
+/// Custom settings view that honors `PresentationHints` for list vs grid (#477).
+/// Save/Cancel fire `onSettingsSaved`/`onSettingsCancelled`. Custom section views read
+/// `\.onSettingChanged` from the environment to report edits.
 public struct CustomSettingsView<CustomView: View>: View {
     let settings: [SettingsSectionData]
     let hints: PresentationHints
@@ -4429,14 +4410,21 @@ public struct CustomSettingsView<CustomView: View>: View {
     }
     
     public var body: some View {
-        ScrollView {
-            platformLazyVStackContainer(spacing: 16) {
-                ForEach(settings) { setting in
-                    customSettingView(setting)
-                }
+        platformVStackContainer(spacing: 0) {
+            HintsDrivenCatalogContainer(
+                items: settings,
+                hints: hints,
+                surface: .settings
+            ) { setting in
+                customSettingView(setting)
             }
-            .padding(16)
+
+            SettingsActionBar(
+                onSaved: onSettingsSaved,
+                onCancelled: onSettingsCancelled
+            )
         }
+        .environment(\.onSettingChanged, onSettingChanged.map(SettingsOnSettingChangedAction.init))
         .background(Color.platformBackground)
     }
 }
@@ -4458,27 +4446,12 @@ public struct CustomMediaView<CustomView: View>: View {
     }
     
     public var body: some View {
-        GeometryReader { geometry in
-            let context = LayoutContext.from(viewportWidth: geometry.size.width)
-            let columns = LayoutParameterCalculator.calculateColumns(
-                count: media.count,
-                dataType: .media,
-                context: context
-            )
-            let spacing = LayoutParameterCalculator.calculateSpacing(
-                context: context,
-                dataType: .media
-            )
-            let gridColumns = Array(repeating: GridItem(.flexible(), spacing: spacing), count: columns)
-            
-            ScrollView {
-                LazyVGrid(columns: gridColumns, spacing: spacing) {
-                    ForEach(media, id: \.id) { mediaItem in
-                        customMediaView(mediaItem)
-                    }
-                }
-                .padding(16)
-            }
+        HintsDrivenCatalogContainer(
+            items: media,
+            hints: hints,
+            surface: .media
+        ) { mediaItem in
+            customMediaView(mediaItem)
         }
     }
 }
@@ -4500,13 +4473,12 @@ public struct CustomHierarchicalView<CustomView: View>: View {
     }
     
     public var body: some View {
-        ScrollView {
-            platformLazyVStackContainer(spacing: 8) {
-                ForEach(items, id: \.id) { item in
-                    customItemView(item)
-                }
-            }
-            .padding(16)
+        HintsDrivenCatalogContainer(
+            items: items,
+            hints: hints,
+            surface: .hierarchical
+        ) { item in
+            customItemView(item)
         }
         .background(Color.platformBackground)
     }
@@ -4529,13 +4501,12 @@ public struct CustomTemporalView<CustomView: View>: View {
     }
     
     public var body: some View {
-        ScrollView {
-            platformLazyVStackContainer(spacing: 12) {
-                ForEach(items, id: \.id) { item in
-                    customItemView(item)
-                }
-            }
-            .padding(16)
+        HintsDrivenCatalogContainer(
+            items: items,
+            hints: hints,
+            surface: .temporal
+        ) { item in
+            customItemView(item)
         }
         .background(Color.platformBackground)
     }
@@ -4558,25 +4529,13 @@ public struct CustomNumericDataView<CustomView: View>: View {
     }
     
     public var body: some View {
-        GeometryReader { geometry in
-            let columns = determineColumns(for: geometry.size.width)
-            let gridColumns = Array(repeating: GridItem(.flexible(), spacing: 16), count: columns)
-            
-            ScrollView {
-                LazyVGrid(columns: gridColumns, spacing: 16) {
-                    ForEach(data, id: \.id) { dataItem in
-                        customDataView(dataItem)
-                    }
-                }
-                .padding(16)
-            }
+        HintsDrivenCatalogContainer(
+            items: data,
+            hints: hints,
+            surface: .numeric
+        ) { dataItem in
+            customDataView(dataItem)
         }
-    }
-    
-    private func determineColumns(for width: CGFloat) -> Int {
-        let minItemWidth: CGFloat = 200
-        let maxColumns = Int(width / minItemWidth)
-        return max(1, min(maxColumns, 4))
     }
 }
 
