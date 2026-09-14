@@ -47,7 +47,12 @@ enum FormFieldLiveValidation {
         value: String,
         strategy: ValidationStrategy
     ) -> String? {
-        nil
+        guard strategy.isLive else { return nil }
+        let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
+        if field.isRequired && trimmed.isEmpty {
+            return "\(field.label) is required"
+        }
+        return nil
     }
 }
 
