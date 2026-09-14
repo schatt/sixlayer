@@ -2052,10 +2052,9 @@ public struct GenericFormView: View {
     public var body: some View {
         // Use our platform form container from Layer 4
         platformFormContainer_L4(
-            strategy: FormStrategy(
-                containerType: .standard,
-                fieldLayout: .vertical,
-                validation: .deferred
+            strategy: HintsDrivenFormStrategy.strategy(
+                hints: hints,
+                fieldCount: fields.count
             ),
             content: {
                 PackedGenericFormFieldsLayout(
