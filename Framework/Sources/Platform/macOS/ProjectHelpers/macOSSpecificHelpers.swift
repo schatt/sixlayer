@@ -167,14 +167,17 @@ public extension View {
 // MARK: - macOS-Specific Data Models
 
 /// macOS-optimized data model for desktop interfaces
+///
+/// `id` defaults to `title`. Duplicate titles collide in `ForEach` (#475).
 public struct macOSDesktopDataItem: Identifiable {
-    public let id = UUID()
+    public let id: String
     public let title: String
     public let subtitle: String?
     public let icon: String
     public let isActive: Bool
     
-    public init(title: String, subtitle: String? = nil, icon: String, isActive: Bool = false) {
+    public init(title: String, subtitle: String? = nil, icon: String, isActive: Bool = false, id: String? = nil) {
+        self.id = id ?? title
         self.title = title
         self.subtitle = subtitle
         self.icon = icon

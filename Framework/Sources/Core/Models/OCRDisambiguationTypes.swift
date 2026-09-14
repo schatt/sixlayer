@@ -13,7 +13,7 @@ import SwiftUI
 
 /// Represents a single piece of data found by OCR that may need disambiguation
 public struct OCRDataCandidate: Identifiable, Equatable, Hashable {
-    public let id: UUID
+    public let id: String
     public let text: String
     public let boundingBox: CGRect
     public let confidence: Float
@@ -27,15 +27,19 @@ public struct OCRDataCandidate: Identifiable, Equatable, Hashable {
         suggestedType: TextType,
         alternativeTypes: [TextType]
     ) {
-        self.id = UUID()
+        self.id = Self.stableId(text: text, boundingBox: boundingBox, suggestedType: suggestedType)
         self.text = text
         self.boundingBox = boundingBox
         self.confidence = confidence
         self.suggestedType = suggestedType
         self.alternativeTypes = alternativeTypes
     }
+
+    static func stableId(text: String, boundingBox: CGRect, suggestedType: TextType) -> String {
+        "\(text)|\(boundingBox.origin.x)|\(boundingBox.origin.y)|\(boundingBox.size.width)|\(boundingBox.size.height)|\(suggestedType.rawValue)"
+    }
     
-    // Custom equality that ignores UUID for testing
+    /// Value equality (not identity). `id` is derived from text, box, and type (#475).
     public static func == (lhs: OCRDataCandidate, rhs: OCRDataCandidate) -> Bool {
         return lhs.text == rhs.text &&
                lhs.boundingBox == rhs.boundingBox &&
@@ -68,12 +72,12 @@ public struct OCRDisambiguationResult {
 
 /// User's selection for disambiguation
 public struct OCRDisambiguationSelection {
-    public let candidateId: UUID
+    public let candidateId: String
     public let selectedType: TextType
     public let customText: String?
     
     public init(
-        candidateId: UUID,
+        candidateId: String,
         selectedType: TextType,
         customText: String? = nil
     ) {

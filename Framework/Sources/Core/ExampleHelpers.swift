@@ -155,13 +155,16 @@ public extension View {
 // MARK: - Example Data Models
 
 /// Example of project-specific data that can be used with the helpers
+///
+/// `id` defaults to `title`. Duplicate titles collide in `ForEach` (#475).
 public struct ExampleProjectItem: Identifiable {
-    public let id = UUID()
+    public let id: String
     public let title: String
     public let description: String
     public let isActive: Bool
     
-    public init(title: String, description: String, isActive: Bool = false) {
+    public init(title: String, description: String, isActive: Bool = false, id: String? = nil) {
+        self.id = id ?? title
         self.title = title
         self.description = description
         self.isActive = isActive
