@@ -20,16 +20,13 @@ enum HintsDrivenFormStrategy {
             fieldCount: fieldCount
         )
 
-        if let raw = hints.customPreferences["containerType"],
-           let override = FormContainerType(rawValue: raw) {
+        if let override: FormContainerType = rawOverride("containerType", from: hints.customPreferences) {
             container = override
         }
-        if let raw = hints.customPreferences["fieldLayout"],
-           let override = FieldLayout(rawValue: raw) {
+        if let override: FieldLayout = rawOverride("fieldLayout", from: hints.customPreferences) {
             layout = override
         }
-        if let raw = hints.customPreferences["validation"],
-           let override = ValidationStrategy(rawValue: raw) {
+        if let override: ValidationStrategy = rawOverride("validation", from: hints.customPreferences) {
             validation = override
         } else if hints.customPreferences["hasValidation"] == "true" {
             validation = .realTime
@@ -56,6 +53,13 @@ enum HintsDrivenFormStrategy {
         return chosen
     }
 
+    private static func rawOverride<T: RawRepresentable>(
+        _ key: String,
+        from custom: [String: String]
+    ) -> T? where T.RawValue == String {
+        custom[key].flatMap(T.init(rawValue:))
+    }
+
     private static func usesComplexityDefaults(_ preference: PresentationPreference) -> Bool {
         switch preference {
         case .automatic, .moderate, .rich:
@@ -79,9 +83,8 @@ enum HintsDrivenFormStrategy {
             return .scrollView
         case .compact, .minimal, .standard, .grid, .cards, .card, .masonry, .coverFlow, .chart:
             return .standard
-        case .automatic, .moderate, .rich:
-            return complexityContainer(complexity: complexity, fieldCount: fieldCount)
-        case .countBased:
+        case .automatic, .moderate, .rich, .countBased:
+            // `.countBased` is unwrapped in `resolvedPreference`; nested leftover uses complexity.
             return complexityContainer(complexity: complexity, fieldCount: fieldCount)
         }
     }
