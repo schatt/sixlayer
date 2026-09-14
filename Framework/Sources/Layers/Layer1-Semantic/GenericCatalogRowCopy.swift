@@ -22,17 +22,22 @@ enum GenericCatalogRowCopy {
     }
 
     static func temporal(_ item: GenericTemporalItem) -> Copy {
-        Copy(title: item.title, detail: isoDay.string(from: item.date))
+        Copy(title: item.title, detail: utcDayString(item.date))
     }
 
     private static func formatValue(_ value: Double) -> String {
         value.rounded() == value ? String(Int(value)) : String(value)
     }
 
-    private static let isoDay: ISO8601DateFormatter = {
-        let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = [.withFullDate]
-        formatter.timeZone = TimeZone(secondsFromGMT: 0)
-        return formatter
-    }()
+    private static func utcDayString(_ date: Date) -> String {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+        let parts = calendar.dateComponents([.year, .month, .day], from: date)
+        return String(
+            format: "%04d-%02d-%02d",
+            parts.year ?? 0,
+            parts.month ?? 0,
+            parts.day ?? 0
+        )
+    }
 }
