@@ -530,8 +530,12 @@ public struct FileUploadArea: View {
 // MARK: - File Info
 
 /// Information about a selected file
+///
+/// `id` is the file URL, or `name|size|type` when `url` is nil. Duplicate ids collide in `ForEach` (#475).
 public struct FileInfo: Identifiable, Sendable {
-    public let id = UUID()
+    public var id: String {
+        url?.absoluteString ?? "\(name)|\(size)|\(type.identifier)"
+    }
     public let name: String
     public let size: Int64
     public let type: UTType

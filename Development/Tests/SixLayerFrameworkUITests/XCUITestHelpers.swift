@@ -12,6 +12,7 @@
 //
 
 import XCTest
+import SixLayerTestKit
 
 
 // MARK: - XCUIApplication Extensions
@@ -204,14 +205,14 @@ extension XCUIElement {
 extension XCUIApplication {
     /// Wait for a deep-linked host's stable root accessibility identifier (#348 / #316).
     /// Prefer this over navigationBar / staticText OR ladders — hosts must expose the marker.
-    /// Uses an exact `identifier ==` predicate (same as CatA section waits) — the
-    /// `descendants[identifier]` subscript alone has been a weaker first-paint signal on macOS (#370).
+    /// Uses an exact `identifier ==` predicate on `descendants(.any)` (same as CatA section
+    /// waits) — the `descendants[identifier]` subscript alone has been a weaker first-paint
+    /// signal on macOS (#370). Required for `accessibilityHostIdentifier` on macOS: that
+    /// sentinel is `StaticText`, not `Other` / `ScrollView` (#473). Delegates to
+    /// SixLayerTestKit `waitForAccessibilityIdentifier`.
     @discardableResult
     func waitForHostRootIdentifier(_ identifier: String, timeout: TimeInterval = 8.0) -> Bool {
-        descendants(matching: .any)
-            .matching(NSPredicate(format: "identifier == %@", identifier))
-            .firstMatch
-            .waitForExistence(timeout: timeout)
+        waitForAccessibilityIdentifier(identifier, timeout: timeout)
     }
 
     /// Runs compatibility-oriented checks on the **current** screen only (Issue #180).

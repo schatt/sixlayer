@@ -11,6 +11,7 @@ Testing code that uses SixLayer can be challenging because of its layered archit
 - **Navigation Helpers**: Tools for testing navigation flows and Layer 1 functions
 - **Layer Flow Driver**: Deterministic testing of complete Layer 1→6 flows
 - **Test Data Generators**: Utilities for generating realistic test data
+- **Host-identifier XCUI query**: `waitForAccessibilityIdentifier` / `elementMatchingAccessibilityIdentifier` for `accessibilityHostIdentifier` (#473)
 
 ## Installation
 
@@ -689,6 +690,19 @@ XCTAssertEqual(mock.lastRequestedLocale, "en")
    let url = URL(string: "myapp://settings")!
    let result = navHelper.simulateDeepLink(url)
    ```
+
+## Host identifiers in XCUITest (#473)
+
+`accessibilityHostIdentifier` (and `.named` / `.exactNamed` hosts) are **not** typed containers. On macOS the stamp is a `StaticText` leaf. Use:
+
+```swift
+import SixLayerTestKit
+
+XCTAssertTrue(app.waitForAccessibilityIdentifier("MyApp.Expenses.scrollHost"))
+let host = app.elementMatchingAccessibilityIdentifier("MyApp.Expenses.scrollHost")
+```
+
+Do not use `otherElements` / `scrollViews` or `UITestContractElementResolver.findFirstExisting` for these ids. Do not query nested ids as descendants of `host`. See `AutomaticAccessibilityIdentifiers.md` and `UITestContractElementResolver.md`.
 
 ## Examples Repository
 

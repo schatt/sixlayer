@@ -80,7 +80,8 @@ public enum PlatformPresentationDetent {
 }
 
 public struct PlatformTabItem: Identifiable, Hashable {
-    public let id: UUID = UUID()
+    /// Duplicate titles collide in `ForEach` (#475).
+    public var id: String { title }
     public let title: String
     public let systemImage: String?
 
