@@ -8,6 +8,18 @@ This folder contains example types and implementations that demonstrate how to u
 
 ## Available Examples
 
+### **PlatformUIExamples.swift** (#465)
+Moved out of `Framework/Sources`. Adaptive navigation, split view, modal, list, button, form, and card samples (`PlatformUIExamples`, `PlatformUIExampleApp`). Copy into an app; not compiled into the framework.
+
+### **PlatformColorExamples.swift** (#465)
+Moved out of `Framework/Sources`. Platform color swatches plus form/list/card color samples (`PlatformColorFormExamples`, `PlatformColorListExamples`, `PlatformColorCardExamples`).
+
+### **AppleHIGComplianceExamples.swift** (#465)
+Moved out of `Framework/Sources`. Static factories showing `.appleHIGCompliant()`, `.automaticAccessibility()`, and related modifiers. Pair with `AutomaticHIGStylingExample.swift`.
+
+### **LiquidGlassExampleUsage.swift** (#465)
+Moved out of `Framework/Sources`. Liquid Glass capability-status demo View (`@available` iOS/macOS/visionOS 26).
+
 ### **PhotoPurposeExtensionExample.swift** (v7.4.0)
 Comprehensive example showing PhotoPurpose extensibility and migration:
 
