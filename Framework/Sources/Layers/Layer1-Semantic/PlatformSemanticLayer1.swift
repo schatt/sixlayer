@@ -2264,7 +2264,7 @@ public struct GenericHierarchicalView: View {
             hints: hints,
             surface: .hierarchical,
             identifierName: "GenericHierarchicalView",
-            leadingPadding: { CGFloat($0.level) * 12 },
+            leadingPadding: GenericCatalogRowCopy.hierarchicalLeadingPadding,
             copy: GenericCatalogRowCopy.hierarchical
         )
     }
