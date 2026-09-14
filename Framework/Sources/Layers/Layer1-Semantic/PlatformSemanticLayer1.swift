@@ -1996,7 +1996,7 @@ extension View {
     }
 }
 
-/// Generic numeric data view
+/// Generic numeric data view that honors `PresentationHints` for list vs grid (#479).
 public struct GenericNumericDataView: View {
     let data: [GenericNumericData]
     let hints: PresentationHints
@@ -2030,21 +2030,18 @@ public struct GenericNumericDataView: View {
     }
     
     public var body: some View {
-        let baseView = VStack {
-            Text("Numeric Data")
-                .font(.headline)
-            Text("Data points: \(data.count)")
-                .font(.caption)
+        HintsDrivenCatalogContainer(
+            items: data,
+            hints: hints,
+            surface: .numeric
+        ) { item in
+            GenericCatalogItemRow(copy: GenericCatalogRowCopy.numeric(item))
         }
-        .padding()
-        
-        // AUTOMATICALLY apply HIG compliance
-        return baseView
-            .appleHIGCompliant()
-            .automaticAccessibility()
-            .platformPatterns()
-            .visualConsistency()
-            .automaticCompliance(named: "GenericNumericDataView")
+        .appleHIGCompliant()
+        .automaticAccessibility()
+        .platformPatterns()
+        .visualConsistency()
+        .automaticCompliance(named: "GenericNumericDataView")
     }
 }
 
@@ -2242,53 +2239,54 @@ private struct GenericFormFieldChrome: View {
     }
 }
 
-/// Generic media view
+/// Generic media view that honors `PresentationHints` for list vs grid (#479).
 public struct GenericMediaView: View {
     let media: [GenericMediaItem]
     let hints: PresentationHints
     
     public var body: some View {
-        VStack {
-            Text("Media Collection")
-                .font(.headline)
-            Text("Items: \(media.count)")
-                .font(.caption)
+        HintsDrivenCatalogContainer(
+            items: media,
+            hints: hints,
+            surface: .media
+        ) { item in
+            GenericCatalogItemRow(copy: GenericCatalogRowCopy.media(item))
         }
-        .padding()
         .automaticCompliance(named: "GenericMediaView")
     }
 }
 
-/// Generic hierarchical view
+/// Generic hierarchical view that honors `PresentationHints` for list vs grid (#479).
 public struct GenericHierarchicalView: View {
     let items: [GenericHierarchicalItem]
     let hints: PresentationHints
     
     public var body: some View {
-        VStack {
-            Text("Hierarchical Data")
-                .font(.headline)
-            Text("Root items: \(items.count)")
-                .font(.caption)
+        HintsDrivenCatalogContainer(
+            items: items,
+            hints: hints,
+            surface: .hierarchical
+        ) { item in
+            GenericCatalogItemRow(copy: GenericCatalogRowCopy.hierarchical(item))
+                .padding(.leading, CGFloat(item.level) * 12)
         }
-        .padding()
         .automaticCompliance(named: "GenericHierarchicalView")
     }
 }
 
-/// Generic temporal view
+/// Generic temporal view that honors `PresentationHints` for list vs grid (#479).
 public struct GenericTemporalView: View {
     let items: [GenericTemporalItem]
     let hints: PresentationHints
     
     public var body: some View {
-        VStack {
-            Text("Temporal Data")
-                .font(.headline)
-            Text("Events: \(items.count)")
-                .font(.caption)
+        HintsDrivenCatalogContainer(
+            items: items,
+            hints: hints,
+            surface: .temporal
+        ) { item in
+            GenericCatalogItemRow(copy: GenericCatalogRowCopy.temporal(item))
         }
-        .padding()
         .automaticCompliance(named: "GenericTemporalView")
     }
 }
