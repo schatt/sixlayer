@@ -576,13 +576,8 @@ Text(i18n.localizedString(for: "SixLayerFramework.form.title"))
     // MARK: - Private Implementation
 
     /// Packing cap for `PackedIntelligentFormFieldsLayout` (#488).
-    /// Stub matches the previous hardcoded generator caps (vertical path always 4).
     nonisolated static func packMaxItemsPerRow(for fieldLayout: FieldLayout) -> Int {
-        switch fieldLayout {
-        case .horizontal: return 2
-        case .grid: return 3
-        default: return 4
-        }
+        fieldLayout.formPackMaxItemsPerRow
     }
 
     /// Determine the best form strategy based on data analysis
@@ -656,7 +651,8 @@ Text(i18n.localizedString(for: "SixLayerFramework.form.title"))
                     dataBinder: dataBinder,
                     inputHandlingManager: inputHandlingManager,
                     customFieldView: customFieldView,
-                    fieldHints: Self.fieldHintsForLayout(.vertical, provided: fieldHints)
+                    fieldHints: Self.fieldHintsForLayout(.vertical, provided: fieldHints),
+                    fieldLayout: .vertical
                 )
                 
             case .horizontal:
@@ -666,7 +662,8 @@ Text(i18n.localizedString(for: "SixLayerFramework.form.title"))
                     dataBinder: dataBinder,
                     inputHandlingManager: inputHandlingManager,
                     customFieldView: customFieldView,
-                    fieldHints: Self.fieldHintsForLayout(.horizontal, provided: fieldHints)
+                    fieldHints: Self.fieldHintsForLayout(.horizontal, provided: fieldHints),
+                    fieldLayout: .horizontal
                 )
                 
             case .grid:
@@ -676,7 +673,8 @@ Text(i18n.localizedString(for: "SixLayerFramework.form.title"))
                     dataBinder: dataBinder,
                     inputHandlingManager: inputHandlingManager,
                     customFieldView: customFieldView,
-                    fieldHints: Self.fieldHintsForLayout(.grid, provided: fieldHints)
+                    fieldHints: Self.fieldHintsForLayout(.grid, provided: fieldHints),
+                    fieldLayout: .grid
                 )
                 
             case .adaptive:
@@ -697,7 +695,8 @@ Text(i18n.localizedString(for: "SixLayerFramework.form.title"))
                     dataBinder: dataBinder,
                     inputHandlingManager: inputHandlingManager,
                     customFieldView: customFieldView,
-                    fieldHints: fieldHints
+                    fieldHints: fieldHints,
+                    fieldLayout: formStrategy.fieldLayout
                 )
             }
         }
@@ -711,14 +710,16 @@ Text(i18n.localizedString(for: "SixLayerFramework.form.title"))
         }
     }
     
-    /// Generate vertical field layout with intelligent grouping
+    /// Generate vertical field layout with intelligent grouping.
+    /// `fieldLayout` is the strategy being packed (may be `.vertical`, `.compact`, `.adaptive`, etc.).
     private static func generateVerticalLayout<T>(
         analysis: DataAnalysisResult,
         initialData: T?,
         dataBinder: DataBinder<T>?,
         inputHandlingManager: InputHandlingManager?,
         customFieldView: @escaping (String, Any, FieldType) -> some View,
-        fieldHints: [String: FieldDisplayHints] = [:]
+        fieldHints: [String: FieldDisplayHints] = [:],
+        fieldLayout: FieldLayout
     ) -> some View {
         let visibleFields = filterHiddenFields(analysis.fields, hints: fieldHints)
         let orderedFields = orderFieldsByPriority(visibleFields)
@@ -730,7 +731,7 @@ Text(i18n.localizedString(for: "SixLayerFramework.form.title"))
             customFieldView: customFieldView,
             fieldHints: fieldHints,
             spacing: 16,
-            maxItemsPerRow: 4
+            maxItemsPerRow: packMaxItemsPerRow(for: fieldLayout)
         )
     }
     
@@ -741,7 +742,8 @@ Text(i18n.localizedString(for: "SixLayerFramework.form.title"))
         dataBinder: DataBinder<T>?,
         inputHandlingManager: InputHandlingManager?,
         customFieldView: @escaping (String, Any, FieldType) -> some View,
-        fieldHints: [String: FieldDisplayHints] = [:]
+        fieldHints: [String: FieldDisplayHints] = [:],
+        fieldLayout: FieldLayout
     ) -> some View {
         let orderedFields = orderFieldsByPriority(filterHiddenFields(analysis.fields, hints: fieldHints))
         return PackedIntelligentFormFieldsLayout(
@@ -752,7 +754,7 @@ Text(i18n.localizedString(for: "SixLayerFramework.form.title"))
             customFieldView: customFieldView,
             fieldHints: fieldHints,
             spacing: 16,
-            maxItemsPerRow: 2
+            maxItemsPerRow: packMaxItemsPerRow(for: fieldLayout)
         )
     }
     
@@ -763,7 +765,8 @@ Text(i18n.localizedString(for: "SixLayerFramework.form.title"))
         dataBinder: DataBinder<T>?,
         inputHandlingManager: InputHandlingManager?,
         customFieldView: @escaping (String, Any, FieldType) -> some View,
-        fieldHints: [String: FieldDisplayHints] = [:]
+        fieldHints: [String: FieldDisplayHints] = [:],
+        fieldLayout: FieldLayout
     ) -> some View {
         let visibleFields = filterHiddenFields(analysis.fields, hints: fieldHints)
         let orderedFields = orderFieldsByPriority(visibleFields)
@@ -775,7 +778,7 @@ Text(i18n.localizedString(for: "SixLayerFramework.form.title"))
             customFieldView: customFieldView,
             fieldHints: fieldHints,
             spacing: 16,
-            maxItemsPerRow: 3
+            maxItemsPerRow: packMaxItemsPerRow(for: fieldLayout)
         )
     }
     
@@ -797,7 +800,8 @@ Text(i18n.localizedString(for: "SixLayerFramework.form.title"))
                 dataBinder: dataBinder,
                 inputHandlingManager: inputHandlingManager,
                 customFieldView: customFieldView,
-                fieldHints: fieldHints
+                fieldHints: fieldHints,
+                fieldLayout: .adaptive
             ))
         } else if visibleFields.count <= 8 {
             return AnyView(generateHorizontalLayout(
@@ -806,7 +810,8 @@ Text(i18n.localizedString(for: "SixLayerFramework.form.title"))
                 dataBinder: dataBinder,
                 inputHandlingManager: inputHandlingManager,
                 customFieldView: customFieldView,
-                fieldHints: fieldHints
+                fieldHints: fieldHints,
+                fieldLayout: .horizontal
             ))
         } else {
             return AnyView(generateGridLayout(
@@ -815,7 +820,8 @@ Text(i18n.localizedString(for: "SixLayerFramework.form.title"))
                 dataBinder: dataBinder,
                 inputHandlingManager: inputHandlingManager,
                 customFieldView: customFieldView,
-                fieldHints: fieldHints
+                fieldHints: fieldHints,
+                fieldLayout: .grid
             ))
         }
     }
