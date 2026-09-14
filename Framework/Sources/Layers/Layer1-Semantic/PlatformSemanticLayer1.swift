@@ -2050,23 +2050,33 @@ public struct GenericFormView: View {
     let hints: PresentationHints
     
     public var body: some View {
+        HintsDrivenPackedFormContainer(fields: fields, hints: hints)
+        // Issue #245 / gh-243: caller-defined fields are arbitrary content; use identifierName shell.
+        .environment(\.accessibilityIdentifierName, "GenericFormView")
+        .automaticCompliance(identifierName: "GenericFormView")
+    }
+}
+
+/// Shared hints → FormStrategy → L4 container + packed fields (#482, #485).
+@MainActor
+private struct HintsDrivenPackedFormContainer: View {
+    let fields: [DynamicFormField]
+    let hints: PresentationHints
+    var innerHorizontalPadding: CGFloat = 0
+
+    var body: some View {
         let strategy = HintsDrivenFormStrategy.strategy(
             hints: hints,
             fieldCount: fields.count
         )
-        platformFormContainer_L4(
-            strategy: strategy,
-            content: {
-                PackedGenericFormFieldsLayout(
-                    fields: fields,
-                    presentationFieldHints: hints.fieldHints,
-                    fieldLayout: strategy.fieldLayout
-                )
-            }
-        )
-        // Issue #245 / gh-243: caller-defined fields are arbitrary content; use identifierName shell.
-        .environment(\.accessibilityIdentifierName, "GenericFormView")
-        .automaticCompliance(identifierName: "GenericFormView")
+        platformFormContainer_L4(strategy: strategy) {
+            PackedGenericFormFieldsLayout(
+                fields: fields,
+                presentationFieldHints: hints.fieldHints,
+                fieldLayout: strategy.fieldLayout
+            )
+            .padding(.horizontal, innerHorizontalPadding)
+        }
     }
 }
 
@@ -2309,10 +2319,6 @@ public struct ModalFormView: View {
     }
     
     public var body: some View {
-        let strategy = HintsDrivenFormStrategy.strategy(
-            hints: hints,
-            fieldCount: fields.count
-        )
         platformVStackContainer(spacing: 16) {
             HStack {
                 Text("Form: \(formType.rawValue.capitalized)")
@@ -2328,14 +2334,11 @@ public struct ModalFormView: View {
             .padding(.horizontal)
             .padding(.top)
 
-            platformFormContainer_L4(strategy: strategy) {
-                PackedGenericFormFieldsLayout(
-                    fields: fields,
-                    presentationFieldHints: hints.fieldHints,
-                    fieldLayout: strategy.fieldLayout
-                )
-                .padding(.horizontal)
-            }
+            HintsDrivenPackedFormContainer(
+                fields: fields,
+                hints: hints,
+                innerHorizontalPadding: 16
+            )
         }
         .platformPresentationFrame(sizes: [.small])
         .background(Color.platformBackground)
