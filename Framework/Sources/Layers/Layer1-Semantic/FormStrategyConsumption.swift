@@ -54,6 +54,14 @@ enum FormFieldLiveValidation {
         }
         return nil
     }
+
+    static func message(
+        field: DataField,
+        value: Any,
+        strategy: ValidationStrategy
+    ) -> String? {
+        nil
+    }
 }
 
 extension FormContainerType {
