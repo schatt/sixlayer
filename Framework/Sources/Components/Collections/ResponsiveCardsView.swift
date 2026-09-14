@@ -472,7 +472,8 @@ public struct ResponsiveCardView: View {
 // MARK: - Data Models
 
 public struct ResponsiveCardData: Identifiable {
-    public let id = UUID()
+    /// Duplicate titles collide in `ForEach` (#475).
+    public var id: String { title }
     let title: String
     let subtitle: String
     let icon: String
