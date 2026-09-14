@@ -140,4 +140,104 @@ struct HintsDrivenFormStrategyTests {
         )
         expect(strategy, container: .standard, layout: .vertical, validation: .deferred)
     }
+
+    @Test func automaticSimple_atMostThreeFields_usesFormImmediate() {
+        let strategy = HintsDrivenFormStrategy.strategy(
+            hints: hints(complexity: .simple),
+            fieldCount: 3
+        )
+        expect(strategy, container: .form, layout: .vertical, validation: .immediate)
+    }
+
+    @Test func automaticSimple_moreThanThreeFields_usesStandardDeferred() {
+        let strategy = HintsDrivenFormStrategy.strategy(
+            hints: hints(complexity: .simple),
+            fieldCount: 4
+        )
+        expect(strategy, container: .standard, layout: .vertical, validation: .deferred)
+    }
+
+    @Test func formPreference_doesNotTakeSimpleImmediateValidation() {
+        let strategy = HintsDrivenFormStrategy.strategy(
+            hints: hints(preference: .form, complexity: .simple),
+            fieldCount: 2
+        )
+        expect(strategy, container: .form, layout: .vertical, validation: .deferred)
+    }
+
+    @Test func countBased_atThreshold_usesLowPreference() {
+        let preference = PresentationPreference.countBased(
+            lowCount: .form,
+            highCount: .list,
+            threshold: 5
+        )
+        let strategy = HintsDrivenFormStrategy.strategy(
+            hints: hints(preference: preference),
+            fieldCount: 5
+        )
+        expect(strategy, container: .form, layout: .vertical, validation: .deferred)
+    }
+
+    @Test func invalidCustomOverrides_areIgnored() {
+        let strategy = HintsDrivenFormStrategy.strategy(
+            hints: hints(
+                preference: .form,
+                custom: [
+                    "containerType": "not-a-container",
+                    "fieldLayout": "nope",
+                    "validation": "bogus"
+                ]
+            ),
+            fieldCount: 3
+        )
+        expect(strategy, container: .form, layout: .vertical, validation: .deferred)
+    }
+
+    @Test func customFieldLayoutOverride_wins() {
+        let strategy = HintsDrivenFormStrategy.strategy(
+            hints: hints(preference: .form, custom: ["fieldLayout": "horizontal"]),
+            fieldCount: 3
+        )
+        expect(strategy, container: .form, layout: .horizontal, validation: .deferred)
+    }
+
+    @Test func validationKey_winsOverHasValidation() {
+        let strategy = HintsDrivenFormStrategy.strategy(
+            hints: hints(custom: ["validation": "none", "hasValidation": "true"]),
+            fieldCount: 3
+        )
+        expect(strategy, container: .standard, layout: .vertical, validation: .none)
+    }
+
+    @Test func hasValidationOtherThanTrue_doesNotForceRealTime() {
+        let strategy = HintsDrivenFormStrategy.strategy(
+            hints: hints(custom: ["hasValidation": "false"]),
+            fieldCount: 3
+        )
+        expect(strategy, container: .standard, layout: .vertical, validation: .deferred)
+    }
+
+    @Test func customPreference_usesCustomContainer() {
+        let strategy = HintsDrivenFormStrategy.strategy(
+            hints: hints(preference: .custom),
+            fieldCount: 3
+        )
+        expect(strategy, container: .custom, layout: .vertical, validation: .deferred)
+    }
+
+    @Test func richPreference_usesSpaciousFieldLayout() {
+        let strategy = HintsDrivenFormStrategy.strategy(
+            hints: hints(preference: .rich),
+            fieldCount: 3
+        )
+        expect(strategy, container: .standard, layout: .spacious, validation: .deferred)
+    }
+
+    @Test func minimalPreference_usesCompactFieldLayout() {
+        let strategy = HintsDrivenFormStrategy.strategy(
+            hints: hints(preference: .minimal),
+            fieldCount: 3
+        )
+        expect(strategy, container: .standard, layout: .compact, validation: .deferred)
+    }
 }
