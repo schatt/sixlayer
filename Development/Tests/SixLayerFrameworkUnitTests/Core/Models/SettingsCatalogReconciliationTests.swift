@@ -56,6 +56,18 @@ struct SettingsCatalogReconciliationTests {
         #expect(result["theme"] as? Bool == false)
     }
 
+    @Test func emptyCatalog_dropsAllExistingKeys() {
+        let existing: [String: Any] = ["theme": true, "gone": false]
+        let result = SettingsCatalogReconciliation.values(settings: [], existing: existing)
+        #expect(result.isEmpty)
+        #expect(
+            SettingsCatalogReconciliation.sectionStates(
+                settings: [],
+                existing: ["General": false]
+            ).isEmpty
+        )
+    }
+
     @Test func newSections_seedExpanded_existingCollapsePreserved_orphansDropped() {
         let settings = [
             section("General", items: [], isExpanded: true),
