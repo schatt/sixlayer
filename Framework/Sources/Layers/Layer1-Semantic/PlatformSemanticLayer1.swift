@@ -2050,16 +2050,17 @@ public struct GenericFormView: View {
     let hints: PresentationHints
     
     public var body: some View {
-        // Use our platform form container from Layer 4
+        let strategy = HintsDrivenFormStrategy.strategy(
+            hints: hints,
+            fieldCount: fields.count
+        )
         platformFormContainer_L4(
-            strategy: HintsDrivenFormStrategy.strategy(
-                hints: hints,
-                fieldCount: fields.count
-            ),
+            strategy: strategy,
             content: {
                 PackedGenericFormFieldsLayout(
                     fields: fields,
-                    presentationFieldHints: hints.fieldHints
+                    presentationFieldHints: hints.fieldHints,
+                    fieldLayout: strategy.fieldLayout
                 )
             }
         )
@@ -2082,9 +2083,11 @@ private struct GenericFormSectionAvailableWidthKey: PreferenceKey {
 private struct PackedGenericFormFieldsLayout: View {
     let fields: [DynamicFormField]
     var presentationFieldHints: [String: FieldDisplayHints] = [:]
+    var fieldLayout: FieldLayout = .adaptive
     @State private var availableWidth: CGFloat = 390
-    private let spacing: CGFloat = 16
-    private let maxItemsPerRow = 4
+
+    private var spacing: CGFloat { fieldLayout.formContainerSpacing }
+    private var maxItemsPerRow: Int { fieldLayout.formPackMaxItemsPerRow }
 
     private func resolvedHints(for field: DynamicFormField) -> FieldDisplayHints? {
         presentationFieldHints[field.id] ?? field.displayHints
@@ -2306,8 +2309,11 @@ public struct ModalFormView: View {
     }
     
     public var body: some View {
+        let strategy = HintsDrivenFormStrategy.strategy(
+            hints: hints,
+            fieldCount: fields.count
+        )
         platformVStackContainer(spacing: 16) {
-            // Modal header
             HStack {
                 Text("Form: \(formType.rawValue.capitalized)")
                     .font(.headline)
@@ -2321,17 +2327,15 @@ public struct ModalFormView: View {
             }
             .padding(.horizontal)
             .padding(.top)
-            
-            // Form content — shared packer / aligner (#385)
-            ScrollView {
+
+            platformFormContainer_L4(strategy: strategy) {
                 PackedGenericFormFieldsLayout(
                     fields: fields,
-                    presentationFieldHints: hints.fieldHints
+                    presentationFieldHints: hints.fieldHints,
+                    fieldLayout: strategy.fieldLayout
                 )
-                    .padding(.horizontal)
+                .padding(.horizontal)
             }
-            
-            Spacer()
         }
         .platformPresentationFrame(sizes: [.small])
         .background(Color.platformBackground)
