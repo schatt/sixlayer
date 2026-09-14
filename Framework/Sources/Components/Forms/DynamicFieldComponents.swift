@@ -1175,7 +1175,7 @@ public struct DynamicDateField: View {
             if DynamicFormStoredDateValue.date(fromStoredValue: formState.fieldValues[field.id]) != nil {
                 EmptyView().platformDateInput(
                     selection: selectedDate,
-                    label: field.placeholder ?? i18n.placeholderSelectDate()
+                    label: field.datePickerSelfLabelingLabel(fallback: i18n.placeholderSelectDate())
                 )
                 .automaticComplianceForDynamicFormField(field)
             } else {
@@ -1184,10 +1184,9 @@ public struct DynamicDateField: View {
                     .automaticComplianceForDynamicFormField(field)
             }
             #else
-            DatePicker(
-                field.placeholder ?? i18n.placeholderSelectDate(),
+            EmptyView().platformDateInput(
                 selection: selectedDate,
-                displayedComponents: .date
+                label: field.datePickerSelfLabelingLabel(fallback: i18n.placeholderSelectDate())
             )
             .automaticComplianceForDynamicFormField(field)
             #endif
@@ -1226,7 +1225,7 @@ public struct DynamicTimeField: View {
             if DynamicFormStoredDateValue.date(fromStoredValue: formState.fieldValues[field.id]) != nil {
                 EmptyView().platformTimeInput(
                     selection: selectedTime,
-                    label: field.placeholder ?? i18n.placeholderSelectTime()
+                    label: field.datePickerSelfLabelingLabel(fallback: i18n.placeholderSelectTime())
                 )
                 .automaticComplianceForDynamicFormField(field, identifierElementType: "TextField")
             } else {
@@ -1235,10 +1234,9 @@ public struct DynamicTimeField: View {
                     .automaticComplianceForDynamicFormField(field, identifierElementType: "TextField")
             }
             #else
-            DatePicker(
-                field.placeholder ?? i18n.placeholderSelectTime(),
+            EmptyView().platformTimeInput(
                 selection: selectedTime,
-                displayedComponents: .hourAndMinute
+                label: field.datePickerSelfLabelingLabel(fallback: i18n.placeholderSelectTime())
             )
             .automaticComplianceForDynamicFormField(field, identifierElementType: "TextField")
             #endif
@@ -1277,7 +1275,7 @@ public struct DynamicDateTimeField: View {
             if DynamicFormStoredDateValue.date(fromStoredValue: formState.fieldValues[field.id]) != nil {
                 EmptyView().platformDateTimeInput(
                     selection: selectedDateTime,
-                    label: field.placeholder ?? i18n.placeholderSelectDateTime()
+                    label: field.datePickerSelfLabelingLabel(fallback: i18n.placeholderSelectDateTime())
                 )
                 .automaticComplianceForDynamicFormField(field, identifierElementType: "TextField")
             } else {
@@ -1286,9 +1284,9 @@ public struct DynamicDateTimeField: View {
                     .automaticComplianceForDynamicFormField(field, identifierElementType: "TextField")
             }
             #else
-            DatePicker(
-                field.placeholder ?? i18n.placeholderSelectDateTime(),
-                selection: selectedDateTime
+            EmptyView().platformDateTimeInput(
+                selection: selectedDateTime,
+                label: field.datePickerSelfLabelingLabel(fallback: i18n.placeholderSelectDateTime())
             )
             .automaticComplianceForDynamicFormField(field, identifierElementType: "TextField")
             #endif
@@ -1296,6 +1294,14 @@ public struct DynamicDateTimeField: View {
         .padding()
         .dynamicFormFieldAccessibilityLabel(field) // Issue #194: resolved label when localized
         .automaticComplianceForDynamicFormField(field)
+    }
+}
+
+private extension DynamicFormField {
+    /// VoiceOver label for compact DatePickers whose visual title is hidden (#478).
+    func datePickerSelfLabelingLabel(fallback: String) -> String {
+        if !label.isEmpty { return label }
+        return placeholder ?? fallback
     }
 }
 
