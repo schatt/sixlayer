@@ -3,8 +3,14 @@ import Foundation
 
 extension FieldLayout {
     /// How many fields `PackedGenericFormFieldsLayout` may place on one row (#485).
-    /// Stub: historical GenericFormView always packed up to 4.
-    var formPackMaxItemsPerRow: Int { 4 }
+    var formPackMaxItemsPerRow: Int {
+        switch self {
+        case .vertical: return 1
+        case .horizontal: return 2
+        case .grid: return 3
+        case .compact, .standard, .spacious, .adaptive: return 4
+        }
+    }
 
     var formContainerSpacing: CGFloat {
         switch self {
@@ -25,8 +31,13 @@ extension FieldLayout {
 }
 
 extension ValidationStrategy {
-    /// Stub: L4 currently never treats validation as live (#483).
-    var isLive: Bool { false }
+    /// Immediate / real-time strategies validate while editing (#483).
+    var isLive: Bool {
+        switch self {
+        case .immediate, .realTime: return true
+        case .none, .deferred, .onSubmit, .custom: return false
+        }
+    }
 }
 
 extension FormContainerType {
