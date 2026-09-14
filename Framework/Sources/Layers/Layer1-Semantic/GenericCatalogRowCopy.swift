@@ -24,7 +24,7 @@ enum GenericCatalogRowCopy {
 
     /// Horizontal inset for generic hierarchical catalog rows (#479).
     static func hierarchicalLeadingPadding(_ item: GenericHierarchicalItem) -> CGFloat {
-        0
+        CGFloat(item.level) * 12
     }
 
     static func temporal(_ item: GenericTemporalItem) -> Copy {
