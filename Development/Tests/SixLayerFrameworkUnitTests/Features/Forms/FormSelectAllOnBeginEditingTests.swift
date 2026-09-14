@@ -119,31 +119,44 @@ open class FormSelectAllOnBeginEditingTests: BaseTestClass {
     #endif
 
     #if os(macOS)
-    @Test func matchingNSTextField_selectsEntireContents() {
-        let field = NSTextField(string: "42000")
-        TextFieldBeginEditingSelection.applySelectAll(
-            to: field,
-            matching: field,
-            shouldSelect: true
-        )
-        // `selectText` needs a key window for `currentEditor()`; creating one under
-        // parallel xctest SEGV'd the worker (#447). Crash-freedom is the unit observation.
-        #expect(field.stringValue == "42000")
-        if let editor = field.currentEditor() {
-            #expect(editor.selectedRange.length == (field.stringValue as NSString).length)
+    @Test @MainActor func matchingNSTextField_selectsEntireContents() {
+        ParallelSafeAppKitHost.withHostedTextField(string: "42000") { field in
+            let length = (field.stringValue as NSString).length
+            // AppKit may select-all on first responder; collapse so applySelectAll is observable.
+            field.currentEditor()?.selectedRange = NSRange(location: length, length: 0)
+            TextFieldBeginEditingSelection.applySelectAll(
+                to: field,
+                matching: field,
+                shouldSelect: true
+            )
+            #expect(field.currentEditor()?.selectedRange.length == length)
         }
     }
 
-    @Test func differentNSTextField_doesNotSelectAll() {
-        let field = NSTextField(string: "42000")
-        let other = NSTextField(string: "Station")
-        TextFieldBeginEditingSelection.applySelectAll(
-            to: field,
-            matching: other,
-            shouldSelect: true
-        )
-        if let editor = field.currentEditor() {
-            #expect(editor.selectedRange.length != (field.stringValue as NSString).length)
+    @Test @MainActor func differentNSTextField_doesNotSelectAll() {
+        ParallelSafeAppKitHost.withHostedTextField(string: "42000") { field in
+            let other = NSTextField(string: "Station")
+            let length = (field.stringValue as NSString).length
+            field.currentEditor()?.selectedRange = NSRange(location: length, length: 0)
+            TextFieldBeginEditingSelection.applySelectAll(
+                to: field,
+                matching: other,
+                shouldSelect: true
+            )
+            #expect(field.currentEditor()?.selectedRange.length != length)
+        }
+    }
+
+    @Test @MainActor func matchingNSTextView_selectsEntireContents() {
+        ParallelSafeAppKitHost.withHostedTextView { view in
+            view.string = "notes"
+            TextFieldBeginEditingSelection.applySelectAll(
+                to: view,
+                matching: view,
+                shouldSelect: true
+            )
+            #expect(view.selectedRange.location == 0)
+            #expect(view.selectedRange.length == (view.string as NSString).length)
         }
     }
 
@@ -158,6 +171,17 @@ open class FormSelectAllOnBeginEditingTests: BaseTestClass {
             shouldSelect: true
         )
         #expect(view.selectedRange.length == 0)
+    }
+
+    @Test func unhostedNSTextField_selectAllIsNoOpWithoutWindow() {
+        let field = NSTextField(string: "42000")
+        #expect(field.window == nil)
+        TextFieldBeginEditingSelection.applySelectAll(
+            to: field,
+            matching: field,
+            shouldSelect: true
+        )
+        #expect(field.currentEditor() == nil)
     }
     #endif
 
@@ -255,11 +279,7 @@ open class FormSelectAllOnBeginEditingTests: BaseTestClass {
             guard fields.count >= 2 else { return }
             let second = fields[1]
             beginEditing(second)
-            if let editor = second.currentEditor() {
-                #expect(editor.selectedRange.length == (second.stringValue as NSString).length)
-            }
-            // No Issue.record when editor is nil: hosted window often isn't key under
-            // parallel xctest; recording fails the whole case and masks crash-freedom.
+            expectSelectAllIfEditorPresent(second, fullySelected: true)
             #endif
         }
     }
@@ -294,9 +314,7 @@ open class FormSelectAllOnBeginEditingTests: BaseTestClass {
                 return
             }
             beginEditing(fields[1])
-            if let editor = fields[1].currentEditor() {
-                #expect(editor.selectedRange.length != (fields[1].stringValue as NSString).length)
-            }
+            expectSelectAllIfEditorPresent(fields[1], fullySelected: false)
             #endif
         }
     }
@@ -336,9 +354,7 @@ open class FormSelectAllOnBeginEditingTests: BaseTestClass {
                 return
             }
             beginEditing(offField)
-            if let editor = offField.currentEditor() {
-                #expect(editor.selectedRange.length != (offField.stringValue as NSString).length)
-            }
+            expectSelectAllIfEditorPresent(offField, fullySelected: false)
             #endif
         }
     }
@@ -424,9 +440,7 @@ open class FormSelectAllOnBeginEditingTests: BaseTestClass {
                 return
             }
             beginEditing(hosted[1])
-            if let editor = hosted[1].currentEditor() {
-                #expect(editor.selectedRange.length == (hosted[1].stringValue as NSString).length)
-            }
+            expectSelectAllIfEditorPresent(hosted[1], fullySelected: true)
             #endif
         }
     }
@@ -469,9 +483,7 @@ open class FormSelectAllOnBeginEditingTests: BaseTestClass {
                 return
             }
             beginEditing(hosted[1])
-            if let editor = hosted[1].currentEditor() {
-                #expect(editor.selectedRange.length == (hosted[1].stringValue as NSString).length)
-            }
+            expectSelectAllIfEditorPresent(hosted[1], fullySelected: true)
             #endif
         }
     }
@@ -537,7 +549,9 @@ open class FormSelectAllOnBeginEditingTests: BaseTestClass {
     @MainActor
     private func collectNSTextFields(in view: NSView) -> [NSTextField] {
         var result: [NSTextField] = []
-        if let field = view as? NSTextField {
+        // SwiftUI labels are non-editable NSTextFields; unattached editable clones also appear
+        // in the tree under parallel hosting and cannot take a field editor.
+        if let field = view as? NSTextField, field.isEditable, field.window != nil {
             result.append(field)
         }
         for child in view.subviews {
@@ -546,8 +560,23 @@ open class FormSelectAllOnBeginEditingTests: BaseTestClass {
         return result
     }
 
+    /// When a field editor is present, assert select-all state; otherwise no-op (ParallelSafeAppKitHost covers it).
+    @MainActor
+    private func expectSelectAllIfEditorPresent(_ field: NSTextField, fullySelected: Bool) {
+        guard let editor = field.currentEditor() else { return }
+        let length = (field.stringValue as NSString).length
+        if fullySelected {
+            #expect(editor.selectedRange.length == length)
+        } else {
+            #expect(editor.selectedRange.length != length)
+        }
+    }
+
     @MainActor
     private func beginEditing(_ field: NSTextField) {
+        // Do not makeKeyAndOrderFront the SwiftUI host window: under parallel xctest that
+        // rebuilds the hierarchy and detaches collected NSTextField references (window → nil).
+        // Field-editor select-all is proven by ParallelSafeAppKitHost unit tests instead.
         _ = field.becomeFirstResponder()
         NotificationCenter.default.post(
             name: NSControl.textDidBeginEditingNotification,
