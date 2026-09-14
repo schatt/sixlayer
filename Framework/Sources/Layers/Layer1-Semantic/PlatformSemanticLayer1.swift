@@ -2172,6 +2172,7 @@ private struct PackedGenericFormFieldsLayout: View {
 @MainActor
 private struct GenericFormFieldChrome: View {
     let field: DynamicFormField
+    @Environment(\.formValidationStrategy) private var validationStrategy
 
     var body: some View {
         platformVStackContainer(alignment: .leading, spacing: 8) {
@@ -2244,6 +2245,14 @@ private struct GenericFormFieldChrome: View {
                 TextField(field.placeholder ?? "Enter \(field.label)", text: .constant(""))
                     .l1SemanticTextFieldBorderStyle()
                     .background(Color.platformSecondaryBackground)
+            }
+
+            if let message = FormFieldLiveValidation.message(
+                field: field,
+                value: field.defaultValue ?? "",
+                strategy: validationStrategy
+            ) {
+                EmptyView().platformValidationMessage(message, type: .error)
             }
         }
         .padding(.vertical, 4)
