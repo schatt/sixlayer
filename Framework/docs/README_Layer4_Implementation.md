@@ -67,6 +67,9 @@ Create the actual UI components with platform-adaptive behavior, implementing th
 
 ### **Form Components**
 
+#### **Form Container**
+- `platformFormContainer_L4(strategy:content:)` - Resolves `FormStrategy` into Form / stack / scroll containers. Spacing comes from `fieldLayout`. Publishes `EnvironmentValues.formValidationStrategy` from `strategy.validation` (#483); `ValidationStrategy.isLive` is true for `.immediate` / `.realTime`.
+
 #### **Form Sections**
 - `platformFormSection(title:content:)` - Platform-adaptive form section
 
