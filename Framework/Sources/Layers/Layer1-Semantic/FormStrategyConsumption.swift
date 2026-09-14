@@ -40,6 +40,17 @@ extension ValidationStrategy {
     }
 }
 
+enum FormFieldLiveValidation {
+    /// Message shown by generic/modal field chrome when validation is live (#483).
+    static func message(
+        field: DynamicFormField,
+        value: String,
+        strategy: ValidationStrategy
+    ) -> String? {
+        nil
+    }
+}
+
 extension FormContainerType {
     var asContainerPreference: ContainerPreference {
         switch self {
