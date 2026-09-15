@@ -7,16 +7,21 @@ import Testing
  * Observes L1 entry points (not only SecurityService).
  */
 
-@Suite("Platform Security L1 Unit")
+@Suite("Platform Security L1 Unit", HostedViewTestIsolationTrait())
 struct PlatformSecurityL1UnitTests {
 
     @Test @MainActor
-    func biometricAuthL1FailsWhenUnavailableInTestEnvironment() async throws {
-        // Deliberate red (#466): expect success. Test env has no biometrics → throw/false.
-        let authenticated = try await platformRequestBiometricAuth_L1(
-            reason: "Unit test biometric probe"
-        )
-        #expect(authenticated, "deliberate red: expect biometrics available in CI")
+    func biometricAuthL1FailsWhenUnavailableInTestEnvironment() async {
+        do {
+            let authenticated = try await platformRequestBiometricAuth_L1(
+                reason: "Unit test biometric probe"
+            )
+            #expect(!authenticated, "test env without biometrics must not report success")
+        } catch let error as SecurityServiceError {
+            #expect(error == .biometricNotAvailable)
+        } catch {
+            Issue.record("expected SecurityServiceError.biometricNotAvailable, got \(error)")
+        }
     }
 
     @Test @MainActor
@@ -68,7 +73,6 @@ struct PlatformSecurityL1UnitTests {
             isActive: true,
             hints: SecurityHints(enablePrivacyIndicators: true)
         )
-        // EmptyView shell — observe by hosting without crash.
         #if os(watchOS)
         _ = view
         #else
