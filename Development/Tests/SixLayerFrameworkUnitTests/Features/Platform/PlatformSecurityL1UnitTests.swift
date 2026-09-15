@@ -43,25 +43,32 @@ struct PlatformSecurityL1UnitTests {
     }
 
     @Test @MainActor
-    func secureTextFieldL1EmitsNamedIdentifier() {
+    func secureTextFieldL1UsesIdentifierNamePath() {
         #if os(watchOS)
         return
         #else
         var text = ""
+        let isolated = TestSetupUtilities.makeIsolatedAccessibilityIdentifierConfig()
+        isolated.enableDebugLogging = true
+        isolated.clearDebugLog()
         let view = platformPresentSecureTextField_L1(
             title: "Password",
             text: Binding(get: { text }, set: { text = $0 }),
             hints: SecurityHints(enableSecureTextEntry: true)
         )
-        let hosted = TestSetupUtilities.hostRootPlatformView(
-            view,
-            forceLayout: true,
-            exposeContentAccessibility: true
-        )
-        let ids = findAllAccessibilityIdentifiersFromPlatformView(hosted)
+        let hosted = AccessibilityIdentifierConfig.$taskLocalConfig.withValue(isolated) {
+            TestSetupUtilities.hostRootPlatformView(
+                view,
+                forceLayout: true,
+                exposeContentAccessibility: true,
+                accessibilityIdentifierConfig: isolated
+            )
+        }
+        #expect(hosted != nil, "secure text field L1 must host")
+        let log = isolated.getDebugLog()
         #expect(
-            ids.contains(where: { $0.contains("platformPresentSecureTextField_L1") }),
-            "secure text field L1 must emit its named compliance id. ids=\(ids)"
+            log.contains("platformPresentSecureTextField_L1"),
+            "secure text field L1 must use identifierName path. log=\(String(log.suffix(400)))"
         )
         #endif
     }
