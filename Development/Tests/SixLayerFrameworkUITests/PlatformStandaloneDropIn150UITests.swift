@@ -168,7 +168,8 @@ final class PlatformStandaloneDropIn150UITests: SixLayerUITestCase {
     }
 
     /// Resolve the interactive Toggle leaf when `host` is an `exactNamed` sentinel (#364 / #493).
-    /// On macOS the sentinel can be a StaticText with an invalid frame; the real control is a checkbox.
+    /// On macOS the sentinel is a 1pt StaticText with an invalid frame; the real control carries
+    /// the framework compliance id (`…*.Toggle`) from `platformToggle` + `automaticCompliance`.
     @MainActor
     private func toggleControl(near hostOrToggle: XCUIElement) -> XCUIElement {
         switch hostOrToggle.elementType {
@@ -178,15 +179,33 @@ final class PlatformStandaloneDropIn150UITests: SixLayerUITestCase {
             break
         }
         let token = hostOrToggle.identifier
-        let predicate: NSPredicate? = token.isEmpty
-            ? nil
-            : NSPredicate(format: "identifier CONTAINS[c] %@ OR label CONTAINS[c] %@", token, token)
+        let compliance = app.descendants(matching: .any).matching(
+            NSPredicate(format: "identifier ENDSWITH %@", ".Toggle")
+        )
+        if !token.isEmpty {
+            let hyphenated = token.replacingOccurrences(of: "_", with: "-")
+            let byHyphen = compliance.matching(
+                NSPredicate(format: "identifier CONTAINS[c] %@", hyphenated)
+            ).firstMatch
+            if byHyphen.waitForExistence(timeout: 2.0) { return byHyphen }
+            let byToken = compliance.matching(
+                NSPredicate(format: "identifier CONTAINS[c] %@", token)
+            ).firstMatch
+            if byToken.exists { return byToken }
+        }
+        let firstCompliance = compliance.firstMatch
+        if firstCompliance.exists { return firstCompliance }
+
         #if os(macOS)
         let boxes = app.descendants(matching: .checkBox)
         #else
         let boxes = app.descendants(matching: .switch)
         #endif
-        if let predicate {
+        if !token.isEmpty {
+            let predicate = NSPredicate(
+                format: "identifier CONTAINS[c] %@ OR label CONTAINS[c] %@",
+                token, token
+            )
             let matched = boxes.matching(predicate).firstMatch
             if matched.exists { return matched }
         }
