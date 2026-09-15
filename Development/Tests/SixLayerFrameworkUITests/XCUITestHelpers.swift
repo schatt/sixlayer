@@ -59,10 +59,31 @@ extension XCUIElement {
     }
 
 
+    /// True when `frame` has finite, positive size (coordinate taps require this on macOS).
+    var xcuiHasValidTapFrame: Bool {
+        let f = frame
+        return f.width.isFinite && f.height.isFinite
+            && f.origin.x.isFinite && f.origin.y.isFinite
+            && f.width > 0 && f.height > 0
+    }
+
     /// Tap to become first responder; uses a coordinate tap when `Form` chrome clips hittability.
     /// On iOS, secure fields often need a second tap before `typeText` receives keyboard focus (#150 / iOS 26).
     /// For switches, prefer the trailing thumb region when the control is not hittable.
+    /// On macOS, wait for a finite frame before coordinate taps — infinity frames throw (#493).
     func xcuiTapToBecomeFirstResponder() {
+        #if os(macOS)
+        let layoutDeadline = Date().addingTimeInterval(2.0)
+        while !xcuiHasValidTapFrame, Date() < layoutDeadline {
+            RunLoop.current.run(until: Date().addingTimeInterval(0.05))
+        }
+        // SwiftUI Toggle → checkbox; prefer click over coordinate (Form chrome infinity frames, #493).
+        if elementType == .checkBox {
+            click()
+            RunLoop.current.run(until: Date().addingTimeInterval(0.25))
+            return
+        }
+        #endif
         let center = coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
         #if os(iOS)
         if elementType == .secureTextField {
@@ -84,8 +105,11 @@ extension XCUIElement {
         #endif
         if isHittable {
             tap()
-        } else {
+        } else if xcuiHasValidTapFrame {
             center.tap()
+        } else {
+            // Avoid coordinate tap on infinite/zero frames (macOS Form chrome, #493).
+            tap()
         }
         RunLoop.current.run(until: Date().addingTimeInterval(0.2))
     }

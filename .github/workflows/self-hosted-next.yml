@@ -101,11 +101,15 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p build "$CI_DERIVED_DATA" "$CI_SPM_CHECKOUTS"
+          # Prefer Pro Max; create-or-fallback via UDID (#399 / #493). Hardcoded
+          # name=…,OS:latest misses when Pro Max is absent on the runner.
+          DEST="$(./Development/scripts/ensure-ci-simulator-destination.sh iOS)"
+          echo "Using destination: $DEST"
           set -o pipefail
           ./Development/scripts/xcodebuild-ci-retry.sh xcodebuild test \
             -project SixLayerFramework.xcodeproj \
             -scheme "${{ matrix.scheme }}" \
-            -destination 'platform=iOS Simulator,name=iPhone 17 Pro Max' \
+            -destination "$DEST" \
             -configuration Debug \
             -allowProvisioningUpdates \
             -derivedDataPath "$CI_DERIVED_DATA" \
@@ -322,6 +326,8 @@ jobs:
         env:
           CI_DERIVED_DATA: ${{ github.workspace }}/.ci-derived-data/${{ github.job }}
           CI_SPM_CHECKOUTS: ${{ github.workspace }}/.ci-spm/${{ github.job }}
+          # Parallel visionOS batches can go quiet >180s while still progressing (#493).
+          XCODEBUILD_CI_STALL_SECONDS: 600
         run: |
           set -euo pipefail
           mkdir -p build "$CI_DERIVED_DATA" "$CI_SPM_CHECKOUTS"

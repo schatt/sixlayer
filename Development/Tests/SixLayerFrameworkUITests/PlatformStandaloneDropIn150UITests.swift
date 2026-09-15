@@ -167,6 +167,53 @@ final class PlatformStandaloneDropIn150UITests: SixLayerUITestCase {
         return hostOrField
     }
 
+    /// Resolve the interactive Toggle leaf when `host` is an `exactNamed` sentinel (#364 / #493).
+    /// On macOS the sentinel is a 1pt StaticText with an invalid frame; the real control carries
+    /// the framework compliance id (`…*.Toggle`) from `platformToggle` + `automaticCompliance`.
+    @MainActor
+    private func toggleControl(near hostOrToggle: XCUIElement) -> XCUIElement {
+        switch hostOrToggle.elementType {
+        case .checkBox, .switch:
+            return hostOrToggle
+        default:
+            break
+        }
+        let token = hostOrToggle.identifier
+        let compliance = app.descendants(matching: .any).matching(
+            NSPredicate(format: "identifier ENDSWITH %@", ".Toggle")
+        )
+        if !token.isEmpty {
+            let hyphenated = token.replacingOccurrences(of: "_", with: "-")
+            let byHyphen = compliance.matching(
+                NSPredicate(format: "identifier CONTAINS[c] %@", hyphenated)
+            ).firstMatch
+            if byHyphen.waitForExistence(timeout: 2.0) { return byHyphen }
+            let byToken = compliance.matching(
+                NSPredicate(format: "identifier CONTAINS[c] %@", token)
+            ).firstMatch
+            if byToken.exists { return byToken }
+        }
+        let firstCompliance = compliance.firstMatch
+        if firstCompliance.exists { return firstCompliance }
+
+        #if os(macOS)
+        let boxes = app.descendants(matching: .checkBox)
+        #else
+        let boxes = app.descendants(matching: .switch)
+        #endif
+        if !token.isEmpty {
+            let predicate = NSPredicate(
+                format: "identifier CONTAINS[c] %@ OR label CONTAINS[c] %@",
+                token, token
+            )
+            let matched = boxes.matching(predicate).firstMatch
+            if matched.exists { return matched }
+        }
+        let first = boxes.firstMatch
+        if first.exists { return first }
+        return hostOrToggle
+    }
+
     @MainActor
     private func focusAndType(_ field: XCUIElement, _ text: String, file: StaticString = #filePath, line: UInt = #line) {
         XCTAssertTrue(field.exists, "Field should exist before typing", file: file, line: line)
@@ -257,7 +304,7 @@ final class PlatformStandaloneDropIn150UITests: SixLayerUITestCase {
         launchSD150Host(section: "toggle")
         assertBindingMirrorContains("SD150_Mirror_G", "0")
         assertExactIdentifierExists("SD150_Toggle")
-        let toggle = element(exactIdentifier: "SD150_Toggle")
+        let toggle = toggleControl(near: element(exactIdentifier: "SD150_Toggle"))
         toggle.xcuiTapToBecomeFirstResponder()
         assertBindingMirrorContains("SD150_Mirror_G", "1")
         #else
@@ -324,7 +371,8 @@ final class PlatformStandaloneDropIn150UITests: SixLayerUITestCase {
         assertBindingMirrorContains("SD150_Mirror_IN", "Pat")
         assertBindingMirrorContains("SD150_Mirror_IN", "secret")
         assertExactIdentifierExists("SD150_Integration_Toggle")
-        toggle.xcuiTapToBecomeFirstResponder()
+        let toggleLeaf = toggleControl(near: toggle)
+        toggleLeaf.xcuiTapToBecomeFirstResponder()
         #else
         throw XCTSkip("Issue #150 host UI tests require iOS or macOS TestApp")
         #endif
