@@ -19,6 +19,7 @@ Analyze content and make intelligent layout decisions based on current condition
 ## 📋 Available Functions
 
 ### **Form Layout Analysis**
+- `determineOptimalFormLayout_L2(hints:)` - Derives `GenericFormLayoutDecision` from `HintsDrivenFormStrategy` (#484). `preferredContainer` maps form→structured, scrollView→flexible, otherwise adaptive. `fieldLayout` and `validation` come from the strategy; `spacing` from `fieldLayout` (compact / spacious / comfortable). `contentComplexity` is `hints.complexity` (not a field-count heuristic).
 - `determineOptimalFormLayout(fieldCount:complexity:deviceType:screenSize:)` - Analyze and decide form layout
 - `analyzeFormContent(fields:deviceType:screenSize:)` - Analyze form content for optimal layout
 - `decideFormLayout(recommendation:constraints:)` - Make final form layout decision

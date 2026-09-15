@@ -93,7 +93,7 @@ Public framework types follow a documented **hints vs presentation** split: immu
 
 #### GitHub issue–linked work (`wip/` branches)
 
-**MANDATORY**: Any work scoped to a **numbered GitHub issue** is implemented on **`wip/<issue-slug>`** and merged (or PR’d) into the integration line — **not** committed directly to `next` / `main` for that scope. Full workflow, worktree preference, and closure steps: [.cursor/rules/github-issue-workflow.mdc](.cursor/rules/github-issue-workflow.mdc).
+**MANDATORY**: Any work scoped to a **numbered GitHub issue** is implemented on **`wip/<issue-slug>`** and merged (or PR’d) into the integration line — **not** committed directly to `next` / `main` for that scope. Full workflow, leftover taxonomy (in scope / child / follow-up — never bare “follow-up?”), worktree preference, and closure steps: [.cursor/rules/github-issue-workflow.mdc](.cursor/rules/github-issue-workflow.mdc).
 
 **Worktrees are ephemeral:** dedicated `wip/` worktrees are temporary (multi-machine, may be wiped on reset). All work there must be **committed and pushed** before pause, machine switch, or worktree removal — the remote branch is the durable record, not the local worktree path.
 

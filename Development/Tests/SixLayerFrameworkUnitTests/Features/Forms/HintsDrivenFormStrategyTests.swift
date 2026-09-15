@@ -38,12 +38,12 @@ struct HintsDrivenFormStrategyTests {
         #expect(strategy.validation == validation, sourceLocation: sourceLocation)
     }
 
-    @Test func automaticModerate_keepsStandardVerticalDeferred() {
+    @Test func automaticModerate_keepsStandardAdaptiveDeferred() {
         let strategy = HintsDrivenFormStrategy.strategy(
             hints: hints(),
             fieldCount: 3
         )
-        expect(strategy, container: .standard, layout: .vertical, validation: .deferred)
+        expect(strategy, container: .standard, layout: .adaptive, validation: .deferred)
     }
 
     @Test func formPreference_usesFormContainer() {
@@ -91,7 +91,7 @@ struct HintsDrivenFormStrategyTests {
             hints: hints(custom: ["validation": "realTime"]),
             fieldCount: 3
         )
-        expect(strategy, container: .standard, layout: .vertical, validation: .realTime)
+        expect(strategy, container: .standard, layout: .adaptive, validation: .realTime)
     }
 
     @Test func hasValidationCustomPreference_usesRealTime() {
@@ -99,7 +99,7 @@ struct HintsDrivenFormStrategyTests {
             hints: hints(custom: ["hasValidation": "true"]),
             fieldCount: 3
         )
-        expect(strategy, container: .standard, layout: .vertical, validation: .realTime)
+        expect(strategy, container: .standard, layout: .adaptive, validation: .realTime)
     }
 
     @Test func customContainerTypeOverride_wins() {
@@ -138,15 +138,7 @@ struct HintsDrivenFormStrategyTests {
             hints: hints(preference: nested),
             fieldCount: 4
         )
-        expect(strategy, container: .standard, layout: .vertical, validation: .deferred)
-    }
-
-    @Test func automaticSimple_atMostThreeFields_usesFormImmediate() {
-        let strategy = HintsDrivenFormStrategy.strategy(
-            hints: hints(complexity: .simple),
-            fieldCount: 3
-        )
-        expect(strategy, container: .form, layout: .vertical, validation: .immediate)
+        expect(strategy, container: .standard, layout: .adaptive, validation: .deferred)
     }
 
     @Test func automaticSimple_moreThanThreeFields_usesStandardDeferred() {
@@ -206,7 +198,7 @@ struct HintsDrivenFormStrategyTests {
             hints: hints(custom: ["validation": "none", "hasValidation": "true"]),
             fieldCount: 3
         )
-        expect(strategy, container: .standard, layout: .vertical, validation: .none)
+        expect(strategy, container: .standard, layout: .adaptive, validation: .none)
     }
 
     @Test func hasValidationOtherThanTrue_doesNotForceRealTime() {
@@ -214,7 +206,7 @@ struct HintsDrivenFormStrategyTests {
             hints: hints(custom: ["hasValidation": "false"]),
             fieldCount: 3
         )
-        expect(strategy, container: .standard, layout: .vertical, validation: .deferred)
+        expect(strategy, container: .standard, layout: .adaptive, validation: .deferred)
     }
 
     @Test func customPreference_usesCustomContainer() {

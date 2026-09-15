@@ -1,5 +1,5 @@
 ---
-description: sixlayer release quality gate + project-specific TDD/commit cross-refs.
+description: sixlayer release quality gate, leftover Done gating, and TDD/commit cross-refs.
 globs: **/*.swift, **/*.m, **/*.h, **/*.pl, **/*.pm, **/*.yml, **/*.yaml, **/*.json, **/*.md
 alwaysApply: true
 ---
@@ -15,6 +15,9 @@ TDD / DTRT / DRY / Epistemology are covered by global user rules. This file adds
 ## TDD specifics (sixlayer)
 - Red ends when tests **compile and fail** (stubs allowed so they compile).
 - Full Red→Green→Refactor definition: [strict-tdd-definition.mdc](mdc:.cursor/rules/strict-tdd-definition.mdc).
+
+## DTRT leftovers (sixlayer)
+Do **not** escape Done with a bare “want a follow-up?”. Classify unfinished work as **in scope**, **child / sub-issue**, or **follow-up** — not a bare follow-up question. Full taxonomy and close gates: [github-issue-workflow.mdc](mdc:.cursor/rules/github-issue-workflow.mdc). Observed defects: [no-silent-known-bugs.mdc](mdc:.cursor/rules/no-silent-known-bugs.mdc).
 
 ## Git hygiene
 - **One edit = one commit** per [commit-after-every-edit.mdc](mdc:.cursor/rules/commit-after-every-edit.mdc) (with the `project.yml` + XcodeGen exception).

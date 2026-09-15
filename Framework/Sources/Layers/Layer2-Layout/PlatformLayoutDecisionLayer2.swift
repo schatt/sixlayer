@@ -65,36 +65,20 @@ import WatchKit
     )
 }
 
-/// Determine optimal form layout based on content analysis
+/// Determine optimal form layout based on presentation hints (#484).
 @MainActor
     func determineOptimalFormLayout_L2(
     hints: PresentationHints
 ) -> GenericFormLayoutDecision {
-    
-    // Analyze form content complexity based on hints
     let fieldCount = Int(hints.customPreferences["fieldCount"] ?? "5") ?? 5
-    let hasComplexFields = hints.customPreferences["hasComplexFields"] == "true"
-    let hasValidation = hints.customPreferences["hasValidation"] == "true"
-    
-    // Content complexity analysis
-    let contentComplexity: ContentComplexity = {
-        if fieldCount >= 8 && hasComplexFields && hasValidation {
-            return .complex
-        } else if fieldCount >= 5 {
-            return .moderate
-        } else {
-            return .simple
-        }
-    }()
-    
-    // Layout decision based on content analysis (not platform!)
+    let strategy = HintsDrivenFormStrategy.strategy(hints: hints, fieldCount: fieldCount)
     return GenericFormLayoutDecision(
-        preferredContainer: .adaptive, // Let Layer 3 decide Form vs ScrollView based on platform
-        fieldLayout: .standard, // Standard forms work well with standard layout
-        spacing: .comfortable, // Complex forms need breathing room
-        validation: hasValidation ? .realTime : .none, // Use validation if specified
-        contentComplexity: contentComplexity,
-        reasoning: "Form layout optimized based on field count and complexity"
+        preferredContainer: strategy.containerType.asContainerPreference,
+        fieldLayout: strategy.fieldLayout,
+        spacing: strategy.fieldLayout.asSpacingPreference,
+        validation: strategy.validation,
+        contentComplexity: hints.complexity,
+        reasoning: "Form layout optimized from presentation preference, complexity, and field count"
     )
 }
 
