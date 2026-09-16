@@ -502,10 +502,11 @@ else
         # Prefer ensure-ci-simulator-destination (UDID; create-or-fallback). Optional
         # SLF_IOS_TEST_SIMULATOR selects preferred name (#494; replaces brittle name= +
         # hand-rolled simctl create with wrong iPhone-16-Pro type).
+        # Invoke via $REPO_ROOT — relative ./Development fails if cwd ≠ repo root (/2).
         if [ -n "${SLF_IOS_TEST_SIMULATOR:-}" ]; then
-            IOS_DEST="$(./Development/scripts/ensure-ci-simulator-destination.sh iOS "$SLF_IOS_TEST_SIMULATOR")"
+            IOS_DEST="$("$REPO_ROOT/Development/scripts/ensure-ci-simulator-destination.sh" iOS "$SLF_IOS_TEST_SIMULATOR")"
         else
-            IOS_DEST="$(./Development/scripts/ensure-ci-simulator-destination.sh iOS)"
+            IOS_DEST="$("$REPO_ROOT/Development/scripts/ensure-ci-simulator-destination.sh" iOS)"
         fi
         echo "📱 Using iOS destination: ${IOS_DEST}"
         # Do not `xcodebuild clean` before test (same Xcode 27 race as macOS; #409 / FB24278669).
