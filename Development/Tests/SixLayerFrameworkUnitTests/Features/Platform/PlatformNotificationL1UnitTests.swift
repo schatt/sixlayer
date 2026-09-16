@@ -13,8 +13,8 @@ struct PlatformNotificationL1UnitTests {
     @Test @MainActor
     func requestPermissionL1ReturnsDeterminedStatus() async {
         let status = await platformRequestNotificationPermission_L1()
-        // Unit env forces .notDetermined (same as NotificationServiceTests).
-        #expect(status == .notDetermined || status == .denied || status == .authorized || status == .provisional)
+        // Unit env forces .notDetermined (same contract as NotificationServiceTests).
+        #expect(status == .notDetermined)
     }
 
     @Test @MainActor
