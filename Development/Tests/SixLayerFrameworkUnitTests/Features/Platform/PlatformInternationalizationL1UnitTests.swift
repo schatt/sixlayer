@@ -87,8 +87,7 @@ struct PlatformInternationalizationL1UnitTests {
     @Test
     func internationalizationHintsDefaultsAreStable() {
         let hints = InternationalizationHints()
-        // Deliberate red (#466): wrong default so first run fails.
-        #expect(hints.currencyCode == "EUR")
+        #expect(hints.currencyCode == "USD")
         #expect(hints.enableRTL == true)
         #expect(hints.dateStyle == .medium)
     }
