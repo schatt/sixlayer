@@ -34,7 +34,6 @@ assert_false() {
 
 BUILDCONFIG="$ROOT/buildconfig.yml"
 RELEASE="$ROOT/Development/scripts/release-process.sh"
-ENSURE="Development/scripts/ensure-ci-simulator-destination.sh"
 
 assert_true "buildconfig.yml exists" test -f "$BUILDCONFIG"
 assert_true "release-process.sh exists" test -f "$RELEASE"
@@ -54,6 +53,13 @@ assert_false "release-process does not hand-roll iPhone-16-Pro create for Pro Ma
 
 assert_true "release-process uses ensure-ci-simulator-destination.sh" \
     grep -qE 'ensure-ci-simulator-destination\.sh' "$RELEASE"
+
+# Must not rely on cwd == repo root (#494 /2).
+assert_true "release-process invokes ensure via \$REPO_ROOT" \
+    grep -qE '\$\{?REPO_ROOT\}?/Development/scripts/ensure-ci-simulator-destination\.sh|"\$REPO_ROOT/Development/scripts/ensure-ci-simulator-destination\.sh"' "$RELEASE"
+
+assert_false "release-process does not use relative ./Development/scripts/ensure" \
+    grep -qE '\$\(\./Development/scripts/ensure-ci-simulator-destination\.sh' "$RELEASE"
 
 assert_true "TESTING_COMMANDS documents ensure script" \
     grep -qE 'ensure-ci-simulator-destination\.sh' "$ROOT/Development/TESTING_COMMANDS.md"
