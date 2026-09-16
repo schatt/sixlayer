@@ -48,33 +48,33 @@ platforms:
       - build/macos/*.app
     # scheme: Required. The Xcode scheme to build for this platform.
   - name: iOS_build
-    build_command: xcodebuild build -workspace .swiftpm/xcode/package.xcworkspace -scheme SixLayerFramework   -destination "platform=iOS Simulator,name=iPhone 17 Pro Max"
+    build_command: xcodebuild build -workspace .swiftpm/xcode/package.xcworkspace -scheme SixLayerFramework -destination "$(./Development/scripts/ensure-ci-simulator-destination.sh iOS)"
     artifact_dir: build/ios
     artifact_patterns:
       - build/ios/*.ipa
     # scheme: Required. The Xcode scheme to build for this platform.
   - name: iOS_unit_tests
-    build_command: xcodebuild test -project SixLayerFramework.xcodeproj -scheme SLF-iOS-UnitTests -destination "platform=iOS Simulator,name=iPhone 17 Pro Max" -parallel-testing-enabled YES
+    build_command: xcodebuild test -project SixLayerFramework.xcodeproj -scheme SLF-iOS-UnitTests -destination "$(./Development/scripts/ensure-ci-simulator-destination.sh iOS)" -parallel-testing-enabled YES
     artifact_dir: build/ios
     artifact_patterns:
       - build/ios/*.ipa
   - name: iOS_viewinspector_tests
-    build_command: xcodebuild test -project SixLayerFramework.xcodeproj -scheme SLF-iOS-ViewInspectorTests -destination "platform=iOS Simulator,name=iPhone 17 Pro Max" -parallel-testing-enabled YES
+    build_command: xcodebuild test -project SixLayerFramework.xcodeproj -scheme SLF-iOS-ViewInspectorTests -destination "$(./Development/scripts/ensure-ci-simulator-destination.sh iOS)" -parallel-testing-enabled YES
     artifact_dir: build/ios
     artifact_patterns:
       - build/ios/*.ipa
   - name: iOS_ui_tests
-    build_command: xcodebuild test -project SixLayerFramework.xcodeproj -scheme SLF-iOS-UITests -destination "platform=iOS Simulator,name=iPhone 17 Pro Max" -parallel-testing-enabled YES
+    build_command: xcodebuild test -project SixLayerFramework.xcodeproj -scheme SLF-iOS-UITests -destination "$(./Development/scripts/ensure-ci-simulator-destination.sh iOS)" -parallel-testing-enabled YES
     artifact_dir: build/ios
     artifact_patterns:
       - build/ios/*.ipa
   - name: iOS_tests
-    build_command: xcodebuild test -project SixLayerFramework.xcodeproj -scheme SLF-iOS-AllTests -destination "platform=iOS Simulator,name=iPhone 17 Pro Max" -parallel-testing-enabled YES -maximum-concurrent-test-simulator-destinations 2
+    build_command: xcodebuild test -project SixLayerFramework.xcodeproj -scheme SLF-iOS-AllTests -destination "$(./Development/scripts/ensure-ci-simulator-destination.sh iOS)" -parallel-testing-enabled YES -maximum-concurrent-test-simulator-destinations 2
     artifact_dir: build/ios
     artifact_patterns:
       - build/ios/*.ipa
   - name: iOS_framework_tests
-    build_command: xcodebuild test -project SixLayerFramework.xcodeproj -scheme SLF-iOS-Framework -destination "platform=iOS Simulator,name=iPhone 17 Pro Max" -parallel-testing-enabled YES
+    build_command: xcodebuild test -project SixLayerFramework.xcodeproj -scheme SLF-iOS-Framework -destination "$(./Development/scripts/ensure-ci-simulator-destination.sh iOS)" -parallel-testing-enabled YES
     artifact_dir: build/ios
     artifact_patterns:
       - build/ios/*.ipa

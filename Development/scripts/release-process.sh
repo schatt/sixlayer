@@ -499,20 +499,21 @@ else
         echo "⏭️  Skipping iOS unit tests (already passed at stamped commit)"
     else
         echo "🧪 Running iOS unit tests on Simulator (SLF-iOS-UnitTests)..."
-        IOS_SIM_NAME="${SLF_IOS_TEST_SIMULATOR:-iPhone 17 Pro Max}"
-        if ! xcrun simctl list devices available | grep -q "${IOS_SIM_NAME} ("; then
-            IOS_RUNTIME=$(xcrun simctl list runtimes available -j | python3 -c "import json,sys; rs=[r for r in json.load(sys.stdin).get('runtimes',[]) if r.get('isAvailable') and 'iOS' in r.get('name','')]; print(sorted(rs,key=lambda r:r.get('version',''))[-1]['identifier'] if rs else '')")
-            if [ -n "$IOS_RUNTIME" ]; then
-                echo "📱 Creating iOS Simulator: ${IOS_SIM_NAME} (${IOS_RUNTIME})"
-                xcrun simctl create "$IOS_SIM_NAME" com.apple.CoreSimulator.SimDeviceType.iPhone-16-Pro "$IOS_RUNTIME" >/dev/null 2>&1 || true
-            fi
+        # Prefer ensure-ci-simulator-destination (UDID; create-or-fallback). Optional
+        # SLF_IOS_TEST_SIMULATOR selects preferred name (#494; replaces brittle name= +
+        # hand-rolled simctl create with wrong iPhone-16-Pro type).
+        if [ -n "${SLF_IOS_TEST_SIMULATOR:-}" ]; then
+            IOS_DEST="$(./Development/scripts/ensure-ci-simulator-destination.sh iOS "$SLF_IOS_TEST_SIMULATOR")"
+        else
+            IOS_DEST="$(./Development/scripts/ensure-ci-simulator-destination.sh iOS)"
         fi
+        echo "📱 Using iOS destination: ${IOS_DEST}"
         # Do not `xcodebuild clean` before test (same Xcode 27 race as macOS; #409 / FB24278669).
         # Single `xcodebuild test` (#411; do not split the unit-gate invoke).
         if ! rtk xcodebuild test \
             -project SixLayerFramework.xcodeproj \
             -scheme SLF-iOS-UnitTests \
-            -destination "platform=iOS Simulator,name=${IOS_SIM_NAME}" \
+            -destination "${IOS_DEST}" \
             -resultBundlePath "$IOS_XCRESULT"; then
             IOS_TESTS_FAILED=1
             log_error "iOS unit tests failed."
