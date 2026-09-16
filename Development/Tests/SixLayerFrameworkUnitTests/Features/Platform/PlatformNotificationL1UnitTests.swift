@@ -18,10 +18,15 @@ struct PlatformNotificationL1UnitTests {
     }
 
     @Test @MainActor
-    func showNotificationL1ThrowsPermissionDeniedInUnitEnv() async throws {
-        // Deliberate red (#466): expect success; unit env denies permission.
-        try await platformShowNotification_L1(title: "T", body: "B")
-        #expect(Bool(true), "deliberate red: notification show must succeed")
+    func showNotificationL1ThrowsPermissionDeniedInUnitEnv() async {
+        do {
+            try await platformShowNotification_L1(title: "T", body: "B")
+            Issue.record("expected permissionDenied in unit-test env")
+        } catch let error as NotificationServiceError {
+            #expect(error == .permissionDenied)
+        } catch {
+            Issue.record("unexpected error: \(error)")
+        }
     }
 
     @Test @MainActor
