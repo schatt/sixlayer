@@ -28,12 +28,8 @@ struct OCRDisambiguationL1UnitTests {
         let hosted = TestSetupUtilities.hostRootPlatformView(view, forceLayout: true)
         #expect(hosted != nil, "OCR disambiguation L1 must host")
 
-        let deadline = Date().addingTimeInterval(2.0)
-        while box.value == nil, Date() < deadline {
-            await Task.yield()
-            RunLoop.main.run(until: Date().addingTimeInterval(0.05))
-        }
-        #expect(box.value != nil, "mock processImage should call onResult")
+        let got = await waitForResult(box, timeout: 2.0)
+        #expect(got, "mock processImage should call onResult")
         guard let result = box.value else { return }
         #expect(!result.candidates.isEmpty, "mock result should include candidates")
         #endif
@@ -59,4 +55,21 @@ struct OCRDisambiguationL1UnitTests {
 @MainActor
 private final class ResultBox {
     var value: OCRDisambiguationResult?
+}
+
+@MainActor
+private func waitForResult(_ box: ResultBox, timeout: TimeInterval) async -> Bool {
+    let deadline = Date().addingTimeInterval(timeout)
+    while box.value == nil, Date() < deadline {
+        await Task.yield()
+        pumpMainRunLoop(for: 0.05)
+    }
+    return box.value != nil
+}
+
+private func pumpMainRunLoop(for duration: TimeInterval) {
+    let deadline = Date().addingTimeInterval(duration)
+    while Date() < deadline {
+        RunLoop.current.run(until: Date().addingTimeInterval(0.01))
+    }
 }
