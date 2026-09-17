@@ -31,19 +31,26 @@ extension XCUIApplication {
 
     /// Resign first responder so the next `Form` row can accept focus (Issue #150 / iOS 26; Refs #261).
     /// Never swipe the keyboard surface — QuickPath treats that swipe as typing (#497).
-    /// Do not tap Return: in a Form it can confirm autocorrect or insert a newline into the binding.
+    /// Prefer an explicit Done/Hide control; otherwise drag the form, not the keys.
     func xcuiDismissSoftwareKeyboardIfPresent() {
         #if os(iOS)
-        let board = keyboards.firstMatch
-        guard board.exists else { return }
-        let hide = board.buttons["Hide keyboard"]
+        guard keyboards.firstMatch.exists else { return }
+        let hide = keyboards.buttons["Hide keyboard"]
+        let hostDone = buttons["SD150_KeyboardDone"].firstMatch
+        let toolbarDone = toolbars.buttons["Done"].firstMatch
         if hide.exists {
             hide.tap()
+        } else if hostDone.exists {
+            hostDone.tap()
+        } else if toolbarDone.exists {
+            toolbarDone.tap()
         } else {
-            let nav = navigationBars.firstMatch
-            if nav.exists {
-                nav.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
-            }
+            let host = collectionViews.firstMatch.exists
+                ? collectionViews.firstMatch
+                : (scrollViews.firstMatch.exists ? scrollViews.firstMatch : windows.firstMatch)
+            let start = host.coordinate(withNormalizedOffset: CGVector(dx: 0.92, dy: 0.18))
+            let end = host.coordinate(withNormalizedOffset: CGVector(dx: 0.92, dy: 0.42))
+            start.press(forDuration: 0.05, thenDragTo: end)
         }
         let deadline = Date().addingTimeInterval(2.5)
         while keyboards.firstMatch.exists, Date() < deadline {
