@@ -580,9 +580,9 @@ Text(i18n.localizedString(for: "SixLayerFramework.form.title"))
         fieldLayout.formPackMaxItemsPerRow
     }
 
-    /// Packed row/column spacing (#492). Stub matches the previous hardcoded 16.
+    /// Packed row/column spacing (#492).
     nonisolated static func packSpacing(for fieldLayout: FieldLayout) -> CGFloat {
-        16
+        fieldLayout.formContainerSpacing
     }
 
     /// Determine the best form strategy based on data analysis
@@ -681,7 +681,8 @@ Text(i18n.localizedString(for: "SixLayerFramework.form.title"))
         }
     }
     
-    /// Pack visible fields using `fieldLayout`'s shared max-items-per-row cap (#488).
+    /// Pack visible fields using `fieldLayout`'s shared density and spacing maps (#488, #492).
+    /// Adaptive inner density picks (horizontal/grid) keep `.adaptive` spacing (16).
     private static func generatePackedFieldsLayout<T>(
         analysis: DataAnalysisResult,
         initialData: T?,
@@ -689,7 +690,8 @@ Text(i18n.localizedString(for: "SixLayerFramework.form.title"))
         inputHandlingManager: InputHandlingManager?,
         customFieldView: @escaping (String, Any, FieldType) -> some View,
         fieldHints: [String: FieldDisplayHints] = [:],
-        fieldLayout: FieldLayout
+        fieldLayout: FieldLayout,
+        spacingLayout: FieldLayout? = nil
     ) -> some View {
         let visibleFields = filterHiddenFields(analysis.fields, hints: fieldHints)
         let orderedFields = orderFieldsByPriority(visibleFields)
@@ -700,7 +702,7 @@ Text(i18n.localizedString(for: "SixLayerFramework.form.title"))
             inputHandlingManager: inputHandlingManager,
             customFieldView: customFieldView,
             fieldHints: fieldHints,
-            spacing: 16,
+            spacing: packSpacing(for: spacingLayout ?? fieldLayout),
             maxItemsPerRow: packMaxItemsPerRow(for: fieldLayout)
         )
     }
@@ -730,7 +732,8 @@ Text(i18n.localizedString(for: "SixLayerFramework.form.title"))
             inputHandlingManager: inputHandlingManager,
             customFieldView: customFieldView,
             fieldHints: fieldHints,
-            fieldLayout: fieldLayout
+            fieldLayout: fieldLayout,
+            spacingLayout: .adaptive
         ))
     }
     
