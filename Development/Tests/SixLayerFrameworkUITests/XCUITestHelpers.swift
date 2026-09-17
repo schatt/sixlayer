@@ -29,13 +29,22 @@ extension XCUIApplication {
         launchEnvironment = ["XCUI_TESTING": "1"]
     }
 
-    /// Swipe down on the software keyboard when present so the next `Form` row can scroll above the
-    /// keyboard and accept first responder (Issue #150 / iOS 26 UITest flakes; Refs #261).
+    /// Resign first responder so the next `Form` row can accept focus (Issue #150 / iOS 26; Refs #261).
+    /// Never swipe the keyboard surface — QuickPath treats that swipe as typing (#497).
+    /// Do not tap Return: in a Form it can confirm autocorrect or insert a newline into the binding.
     func xcuiDismissSoftwareKeyboardIfPresent() {
         #if os(iOS)
         let board = keyboards.firstMatch
         guard board.exists else { return }
-        board.swipeDown()
+        let hide = board.buttons["Hide keyboard"]
+        if hide.exists {
+            hide.tap()
+        } else {
+            let nav = navigationBars.firstMatch
+            if nav.exists {
+                nav.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
+            }
+        }
         let deadline = Date().addingTimeInterval(2.5)
         while keyboards.firstMatch.exists, Date() < deadline {
             RunLoop.current.run(until: Date().addingTimeInterval(0.1))
