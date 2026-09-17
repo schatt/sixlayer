@@ -574,7 +574,12 @@ Text(i18n.localizedString(for: "SixLayerFramework.form.title"))
     }
     
     // MARK: - Private Implementation
-    
+
+    /// Packing cap for `PackedIntelligentFormFieldsLayout` (#488).
+    nonisolated static func packMaxItemsPerRow(for fieldLayout: FieldLayout) -> Int {
+        fieldLayout.formPackMaxItemsPerRow
+    }
+
     /// Determine the best form strategy based on data analysis
     private static func determineFormStrategy(
         analysis: DataAnalysisResult
@@ -639,34 +644,15 @@ Text(i18n.localizedString(for: "SixLayerFramework.form.title"))
     ) -> some View {
         Group {
             switch formStrategy.fieldLayout {
-            case .vertical:
-                generateVerticalLayout(
+            case .vertical, .horizontal, .grid, .compact, .standard, .spacious:
+                generatePackedFieldsLayout(
                     analysis: analysis,
                     initialData: initialData,
                     dataBinder: dataBinder,
                     inputHandlingManager: inputHandlingManager,
                     customFieldView: customFieldView,
-                    fieldHints: Self.fieldHintsForLayout(.vertical, provided: fieldHints)
-                )
-                
-            case .horizontal:
-                generateHorizontalLayout(
-                    analysis: analysis,
-                    initialData: initialData,
-                    dataBinder: dataBinder,
-                    inputHandlingManager: inputHandlingManager,
-                    customFieldView: customFieldView,
-                    fieldHints: Self.fieldHintsForLayout(.horizontal, provided: fieldHints)
-                )
-                
-            case .grid:
-                generateGridLayout(
-                    analysis: analysis,
-                    initialData: initialData,
-                    dataBinder: dataBinder,
-                    inputHandlingManager: inputHandlingManager,
-                    customFieldView: customFieldView,
-                    fieldHints: Self.fieldHintsForLayout(.grid, provided: fieldHints)
+                    fieldHints: Self.fieldHintsForLayout(formStrategy.fieldLayout, provided: fieldHints),
+                    fieldLayout: formStrategy.fieldLayout
                 )
                 
             case .adaptive:
@@ -676,18 +662,7 @@ Text(i18n.localizedString(for: "SixLayerFramework.form.title"))
                     dataBinder: dataBinder,
                     inputHandlingManager: inputHandlingManager,
                     customFieldView: customFieldView,
-                    formStrategy: formStrategy,
                     fieldHints: Self.fieldHintsForLayout(.adaptive, provided: fieldHints)
-                )
-                
-            case .compact, .standard, .spacious:
-                generateVerticalLayout(
-                    analysis: analysis,
-                    initialData: initialData,
-                    dataBinder: dataBinder,
-                    inputHandlingManager: inputHandlingManager,
-                    customFieldView: customFieldView,
-                    fieldHints: fieldHints
                 )
             }
         }
@@ -701,14 +676,15 @@ Text(i18n.localizedString(for: "SixLayerFramework.form.title"))
         }
     }
     
-    /// Generate vertical field layout with intelligent grouping
-    private static func generateVerticalLayout<T>(
+    /// Pack visible fields using `fieldLayout`'s shared max-items-per-row cap (#488).
+    private static func generatePackedFieldsLayout<T>(
         analysis: DataAnalysisResult,
         initialData: T?,
         dataBinder: DataBinder<T>?,
         inputHandlingManager: InputHandlingManager?,
         customFieldView: @escaping (String, Any, FieldType) -> some View,
-        fieldHints: [String: FieldDisplayHints] = [:]
+        fieldHints: [String: FieldDisplayHints] = [:],
+        fieldLayout: FieldLayout
     ) -> some View {
         let visibleFields = filterHiddenFields(analysis.fields, hints: fieldHints)
         let orderedFields = orderFieldsByPriority(visibleFields)
@@ -720,94 +696,37 @@ Text(i18n.localizedString(for: "SixLayerFramework.form.title"))
             customFieldView: customFieldView,
             fieldHints: fieldHints,
             spacing: 16,
-            maxItemsPerRow: 4
+            maxItemsPerRow: packMaxItemsPerRow(for: fieldLayout)
         )
     }
     
-    /// Generate horizontal field layout (side-by-side fields)
-    private static func generateHorizontalLayout<T>(
-        analysis: DataAnalysisResult,
-        initialData: T?,
-        dataBinder: DataBinder<T>?,
-        inputHandlingManager: InputHandlingManager?,
-        customFieldView: @escaping (String, Any, FieldType) -> some View,
-        fieldHints: [String: FieldDisplayHints] = [:]
-    ) -> some View {
-        let orderedFields = orderFieldsByPriority(filterHiddenFields(analysis.fields, hints: fieldHints))
-        return PackedIntelligentFormFieldsLayout(
-            fields: orderedFields,
-            initialData: initialData,
-            dataBinder: dataBinder,
-            inputHandlingManager: inputHandlingManager,
-            customFieldView: customFieldView,
-            fieldHints: fieldHints,
-            spacing: 16,
-            maxItemsPerRow: 2
-        )
-    }
-    
-    /// Generate grid field layout
-    private static func generateGridLayout<T>(
-        analysis: DataAnalysisResult,
-        initialData: T?,
-        dataBinder: DataBinder<T>?,
-        inputHandlingManager: InputHandlingManager?,
-        customFieldView: @escaping (String, Any, FieldType) -> some View,
-        fieldHints: [String: FieldDisplayHints] = [:]
-    ) -> some View {
-        let visibleFields = filterHiddenFields(analysis.fields, hints: fieldHints)
-        let orderedFields = orderFieldsByPriority(visibleFields)
-        return PackedIntelligentFormFieldsLayout(
-            fields: orderedFields,
-            initialData: initialData,
-            dataBinder: dataBinder,
-            inputHandlingManager: inputHandlingManager,
-            customFieldView: customFieldView,
-            fieldHints: fieldHints,
-            spacing: 16,
-            maxItemsPerRow: 3
-        )
-    }
-    
-    /// Generate adaptive field layout based on content
+    /// Adaptive packing: few fields stay 4-up; more fields keep the previous 2-up / 3-up caps.
     private static func generateAdaptiveLayout<T>(
         analysis: DataAnalysisResult,
         initialData: T?,
         dataBinder: DataBinder<T>?,
         inputHandlingManager: InputHandlingManager?,
         customFieldView: @escaping (String, Any, FieldType) -> some View,
-        formStrategy: FormStrategy,
         fieldHints: [String: FieldDisplayHints] = [:]
     ) -> some View {
         let visibleFields = filterHiddenFields(analysis.fields, hints: fieldHints)
+        let fieldLayout: FieldLayout
         if visibleFields.count <= 4 {
-            return AnyView(generateVerticalLayout(
-                analysis: analysis,
-                initialData: initialData,
-                dataBinder: dataBinder,
-                inputHandlingManager: inputHandlingManager,
-                customFieldView: customFieldView,
-                fieldHints: fieldHints
-            ))
+            fieldLayout = .adaptive
         } else if visibleFields.count <= 8 {
-            return AnyView(generateHorizontalLayout(
-                analysis: analysis,
-                initialData: initialData,
-                dataBinder: dataBinder,
-                inputHandlingManager: inputHandlingManager,
-                customFieldView: customFieldView,
-                fieldHints: fieldHints
-            ))
+            fieldLayout = .horizontal
         } else {
-            return AnyView(generateGridLayout(
-                analysis: analysis,
-                initialData: initialData,
-                dataBinder: dataBinder,
-                inputHandlingManager: inputHandlingManager,
-                customFieldView: customFieldView,
-                fieldHints: fieldHints
-            ))
+            fieldLayout = .grid
         }
+        return AnyView(generatePackedFieldsLayout(
+            analysis: analysis,
+            initialData: initialData,
+            dataBinder: dataBinder,
+            inputHandlingManager: inputHandlingManager,
+            customFieldView: customFieldView,
+            fieldHints: fieldHints,
+            fieldLayout: fieldLayout
+        ))
     }
     
     /// Group fields by type for better organization

@@ -47,18 +47,17 @@ xcodebuild test \
 
 ### iOS Simulator Tests Only
 ```bash
-# Using dbs-build
+# Using dbs-build (resolves destination via ensure-ci-simulator-destination.sh — #494)
 dbs-build --target iOS_tests
 
-# Or directly with xcodebuild
-# Boot simulator first (if not already running)
-xcrun simctl boot "iPhone 17 Pro Max" 2>/dev/null || echo "Simulator already booted..."
-
-# Run tests
+# Or directly with xcodebuild — prefer UDID destination (create-or-fallback):
+DEST="$(./Development/scripts/ensure-ci-simulator-destination.sh iOS)"
 xcodebuild test \
-  -workspace .swiftpm/xcode/package.xcworkspace \
-  -scheme SixLayerFramework \
-  -destination "platform=iOS Simulator,name=iPhone 17 Pro Max"
+  -project SixLayerFramework.xcodeproj \
+  -scheme SLF-iOS-UnitTests \
+  -destination "$DEST"
+# Optional preferred name: ensure-ci-simulator-destination.sh iOS "iPhone 17 Pro Max"
+# Do not rely on bare name=…,OS:latest — missing devices / non-latest runtimes fail (#429 / #493).
 ```
 
 ### ViewInspector Tests Only (iOS or macOS)
@@ -114,14 +113,12 @@ swift test
 
 ### iOS Simulator Tests
 ```bash
-# Boot simulator first
-xcrun simctl boot "iPhone 17 Pro Max"
-
-# Run tests
+# Prefer ensure script (UDID; create-or-fallback) — #494
+DEST="$(./Development/scripts/ensure-ci-simulator-destination.sh iOS)"
 xcodebuild test \
-  -workspace .swiftpm/xcode/package.xcworkspace \
-  -scheme SixLayerFramework \
-  -destination "platform=iOS Simulator,name=iPhone 17 Pro Max"
+  -project SixLayerFramework.xcodeproj \
+  -scheme SLF-iOS-UnitTests \
+  -destination "$DEST"
 ```
 
 ## Important Notes
@@ -130,18 +127,18 @@ xcodebuild test \
 2. **Platform-Specific Code**: Tests with `#if os(macOS)` only compile when targeting macOS
 3. **Complete Coverage**: To test all code paths, you must run tests on both platforms
 4. **SwiftUI Rendering**: Use `xcodebuild test` for SwiftUI rendering tests (not just `swift test`)
-5. **Simulator Management**: Boot simulator before running iOS tests if not already running
+5. **Simulator destinations**: Prefer `./Development/scripts/ensure-ci-simulator-destination.sh iOS` over hardcoding `name=iPhone …` (#399 / #494)
 
 ## Finding Available Simulators
 
 ```bash
+# Resolve a CI-safe destination (preferred)
+./Development/scripts/ensure-ci-simulator-destination.sh iOS
+
 # List all available iOS simulators
 xcrun simctl list devices available | grep -i "iphone\|ipad"
 
 # List booted simulators
 xcrun simctl list devices | grep "Booted"
-
-# Get device ID for a specific simulator
-xcrun simctl list devices | grep "iPhone 16 Pro"
 ```
 

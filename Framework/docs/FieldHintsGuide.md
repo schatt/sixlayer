@@ -479,7 +479,7 @@ Framework-owned field layouts honor `FieldDisplayHints` for preferred width, pac
 | Surface | Path |
 |---------|------|
 | DynamicForm | `DynamicFormSectionView` → `PackedDynamicFormFieldsLayout` |
-| IntelligentFormView | vertical / horizontal / **grid** / adaptive → `PackedIntelligentFormFieldsLayout` |
+| IntelligentFormView | vertical / horizontal / **grid** / compact / standard / spacious / adaptive → `PackedIntelligentFormFieldsLayout` via `packMaxItemsPerRow(for:)` (#488) |
 | GenericFormView / ModalFormView / `platformPresentModalForm_L1` | `PackedGenericFormFieldsLayout` |
 | `platformPresentFormData_L1` | `AsyncFormView` → DynamicForm |
 
@@ -547,7 +547,7 @@ Preferred width claims are capped with measured container `availableWidth` when 
 
 `PresentationHints.fieldHints[fieldId]` wins over the field’s own `displayHints` / metadata. Use presentation-level hints when constructing `ModalFormView` / `GenericFormView` without putting width on each field.
 
-`GenericFormView` and `ModalFormView` derive `FormStrategy` (container, field layout, validation) from `presentationPreference`, `complexity`, field count, and optional `customPreferences` keys `containerType`, `fieldLayout`, `validation`, and `hasValidation` (#480, #482). Packed rows still honor field-hint widths; `FormStrategy.fieldLayout` also sets max items per row (vertical 1, horizontal 2, grid 3, compact/standard/spacious/adaptive 4) (#485). Layer 4 publishes `FormStrategy.validation` as `EnvironmentValues.formValidationStrategy` (`isLive` for `.immediate` / `.realTime`). Generic/modal and IntelligentFormView field chrome show a required-empty error while live (#483).
+`GenericFormView` and `ModalFormView` derive `FormStrategy` (container, field layout, validation) from `presentationPreference`, `complexity`, field count, and optional `customPreferences` keys `containerType`, `fieldLayout`, `validation`, and `hasValidation` (#480, #482). Packed rows still honor field-hint widths; `FormStrategy.fieldLayout` also sets max items per row (vertical 1, horizontal 2, grid 3, compact/standard/spacious/adaptive 4) (#485). `IntelligentFormView` packing uses the same `FieldLayout.formPackMaxItemsPerRow` map (#488). Layer 4 publishes `FormStrategy.validation` as `EnvironmentValues.formValidationStrategy` (`isLive` for `.immediate` / `.realTime`). Generic/modal and IntelligentFormView field chrome show a required-empty error while live (#483).
 
 ### Packing rules (sections)
 
