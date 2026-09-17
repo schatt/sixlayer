@@ -12,17 +12,19 @@
 ### 1. Limited Parallel Testing
 The `xcodebuild test` command is not using parallel testing effectively. Tests are running with limited parallelism (~3x speedup instead of potential 10-20x).
 
-**Current Command**:
+**Current Command** (prefer ensure script over bare `name=` — #496):
 ```bash
-xcodebuild test -workspace .swiftpm/xcode/package.xcworkspace -scheme SixLayerFrameworkTests -destination "platform=iOS Simulator,name=iPhone 17 Pro Max"
+DEST="$(./Development/scripts/ensure-ci-simulator-destination.sh iOS)"
+xcodebuild test -workspace .swiftpm/xcode/package.xcworkspace -scheme SixLayerFrameworkTests -destination "$DEST"
 ```
 
 **Recommended Fix**: Add parallel testing flags:
 ```bash
+DEST="$(./Development/scripts/ensure-ci-simulator-destination.sh iOS)"
 xcodebuild test \
   -workspace .swiftpm/xcode/package.xcworkspace \
   -scheme SixLayerFrameworkTests \
-  -destination "platform=iOS Simulator,name=iPhone 17 Pro Max" \
+  -destination "$DEST" \
   -parallel-testing-enabled YES \
   -maximum-concurrent-test-simulator-destinations 4 \
   -maximum-concurrent-test-device-destinations 4
