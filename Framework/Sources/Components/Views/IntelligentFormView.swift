@@ -580,6 +580,11 @@ Text(i18n.localizedString(for: "SixLayerFramework.form.title"))
         fieldLayout.formPackMaxItemsPerRow
     }
 
+    /// Packed row/column spacing (#492). Stub matches the previous hardcoded 16.
+    nonisolated static func packSpacing(for fieldLayout: FieldLayout) -> CGFloat {
+        16
+    }
+
     /// Determine the best form strategy based on data analysis
     private static func determineFormStrategy(
         analysis: DataAnalysisResult
