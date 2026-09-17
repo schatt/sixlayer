@@ -57,7 +57,7 @@ struct PlatformSplitViewLayer4StateUnitTests {
     @Test func animationConfigurationCasesAreDistinct() {
         let ease = PlatformSplitViewAnimationConfiguration(duration: 0.2, curve: .easeInOut)
         let spring = PlatformSplitViewAnimationConfiguration(duration: 0.3, curve: .spring)
-        #expect(ease.duration != spring.duration || ease.curve != spring.curve)
+        #expect(ease.curveType != spring.curveType)
         _ = ease.animation
         _ = spring.animation
     }
