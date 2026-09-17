@@ -35,22 +35,22 @@ extension XCUIApplication {
     func xcuiDismissSoftwareKeyboardIfPresent() {
         #if os(iOS)
         guard keyboards.firstMatch.exists else { return }
-        let hide = keyboards.buttons["Hide keyboard"]
-        let hostDone = buttons["SD150_KeyboardDone"].firstMatch
-        let toolbarDone = toolbars.buttons["Done"].firstMatch
-        if hide.exists {
-            hide.tap()
-        } else if hostDone.exists {
-            hostDone.tap()
-        } else if toolbarDone.exists {
-            toolbarDone.tap()
+        let dismissControl = [
+            keyboards.buttons["Hide keyboard"],
+            descendants(matching: .any)["SD150_KeyboardDone"].firstMatch,
+            toolbars.buttons["Done"]
+        ].first(where: \.exists)
+        if let dismissControl {
+            dismissControl.tap()
         } else {
             let host = collectionViews.firstMatch.exists
                 ? collectionViews.firstMatch
                 : (scrollViews.firstMatch.exists ? scrollViews.firstMatch : windows.firstMatch)
-            let start = host.coordinate(withNormalizedOffset: CGVector(dx: 0.92, dy: 0.18))
-            let end = host.coordinate(withNormalizedOffset: CGVector(dx: 0.92, dy: 0.42))
-            start.press(forDuration: 0.05, thenDragTo: end)
+            host.coordinate(withNormalizedOffset: CGVector(dx: 0.92, dy: 0.18))
+                .press(
+                    forDuration: 0.05,
+                    thenDragTo: host.coordinate(withNormalizedOffset: CGVector(dx: 0.92, dy: 0.42))
+                )
         }
         let deadline = Date().addingTimeInterval(2.5)
         while keyboards.firstMatch.exists, Date() < deadline {
