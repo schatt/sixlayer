@@ -61,7 +61,9 @@ struct PlatformLayer4RemainingComponentsUnitTests {
         return
         #else
         let grid = EmptyView()
-            .platformCardGrid(columns: 2, spacing: 8) { Text("A"); Text("B") }
+            .platformCardGrid(columns: 2, spacing: 8) {
+                HStack { Text("A"); Text("B") }
+            }
             .platformCardPadding()
         #expect(TestSetupUtilities.hostRootPlatformView(grid, forceLayout: true) != nil)
         #endif
