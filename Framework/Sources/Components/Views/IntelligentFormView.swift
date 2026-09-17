@@ -580,6 +580,11 @@ Text(i18n.localizedString(for: "SixLayerFramework.form.title"))
         fieldLayout.formPackMaxItemsPerRow
     }
 
+    /// Packed row/column spacing (#492).
+    nonisolated static func packSpacing(for fieldLayout: FieldLayout) -> CGFloat {
+        fieldLayout.formContainerSpacing
+    }
+
     /// Determine the best form strategy based on data analysis
     private static func determineFormStrategy(
         analysis: DataAnalysisResult
@@ -652,7 +657,8 @@ Text(i18n.localizedString(for: "SixLayerFramework.form.title"))
                     inputHandlingManager: inputHandlingManager,
                     customFieldView: customFieldView,
                     fieldHints: Self.fieldHintsForLayout(formStrategy.fieldLayout, provided: fieldHints),
-                    fieldLayout: formStrategy.fieldLayout
+                    fieldLayout: formStrategy.fieldLayout,
+                    spacingLayout: formStrategy.fieldLayout
                 )
                 
             case .adaptive:
@@ -676,7 +682,8 @@ Text(i18n.localizedString(for: "SixLayerFramework.form.title"))
         }
     }
     
-    /// Pack visible fields using `fieldLayout`'s shared max-items-per-row cap (#488).
+    /// Pack visible fields using `fieldLayout`'s shared density and spacing maps (#488, #492).
+    /// Adaptive inner density picks (horizontal/grid) pass `spacingLayout: .adaptive` so spacing stays 16.
     private static func generatePackedFieldsLayout<T>(
         analysis: DataAnalysisResult,
         initialData: T?,
@@ -684,7 +691,8 @@ Text(i18n.localizedString(for: "SixLayerFramework.form.title"))
         inputHandlingManager: InputHandlingManager?,
         customFieldView: @escaping (String, Any, FieldType) -> some View,
         fieldHints: [String: FieldDisplayHints] = [:],
-        fieldLayout: FieldLayout
+        fieldLayout: FieldLayout,
+        spacingLayout: FieldLayout
     ) -> some View {
         let visibleFields = filterHiddenFields(analysis.fields, hints: fieldHints)
         let orderedFields = orderFieldsByPriority(visibleFields)
@@ -695,7 +703,7 @@ Text(i18n.localizedString(for: "SixLayerFramework.form.title"))
             inputHandlingManager: inputHandlingManager,
             customFieldView: customFieldView,
             fieldHints: fieldHints,
-            spacing: 16,
+            spacing: packSpacing(for: spacingLayout),
             maxItemsPerRow: packMaxItemsPerRow(for: fieldLayout)
         )
     }
@@ -725,7 +733,8 @@ Text(i18n.localizedString(for: "SixLayerFramework.form.title"))
             inputHandlingManager: inputHandlingManager,
             customFieldView: customFieldView,
             fieldHints: fieldHints,
-            fieldLayout: fieldLayout
+            fieldLayout: fieldLayout,
+            spacingLayout: .adaptive
         ))
     }
     
