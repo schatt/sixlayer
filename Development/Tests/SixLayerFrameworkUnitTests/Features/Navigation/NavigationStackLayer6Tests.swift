@@ -98,7 +98,13 @@ open class NavigationStackLayer6Tests: BaseTestClass {
     @MainActor
     private func expectL6EnhancementApplied(_ view: some View) {
         #if os(macOS)
-        for rootViewName in ["_FocusableModifier", "AccessibilityAttachmentModifier", "_FlexFrameLayout"] {
+        // Keyboard-first L6 (#446): focus section + exit command + presentation frame.
+        // Not L5 `.focusable()` and not blanket `.isHeader`.
+        for rootViewName in [
+            "PlatformMacOSNavigationFocusSectionModifier",
+            "PlatformMacOSNavigationExitCommandModifier",
+            "_FlexFrameLayout"
+        ] {
             BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: rootViewName)
         }
         #elseif os(iOS)

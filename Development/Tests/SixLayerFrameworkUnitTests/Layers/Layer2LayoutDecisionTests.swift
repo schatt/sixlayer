@@ -284,10 +284,7 @@ open class Layer2LayoutDecisionTests: BaseTestClass {
     // MARK: - determineOptimalFormLayout_L2 Tests
     
     @Test @MainActor func testDetermineOptimalFormLayout_L2_FieldCountComplexityAlgorithm() {
-        // Test the actual form complexity analysis algorithm
-        // Algorithm: fieldCount >= 8 && hasComplexFields && hasValidation = complex
-        //           fieldCount >= 5 = moderate
-        //           fieldCount < 5 = simple
+        // Honor presentationPreference and hints.complexity (#484).
         
         // Test simple form (fieldCount < 5)
         let simpleHints = PresentationHints(
@@ -302,9 +299,11 @@ open class Layer2LayoutDecisionTests: BaseTestClass {
             ]
         )
         let simpleDecision = determineOptimalFormLayout_L2(hints: simpleHints)
-        #expect(simpleDecision.contentComplexity == .simple, "3 fields should result in simple complexity")
-        #expect(simpleDecision.validation == .none, "No validation specified should result in none")
-        
+        #expect(simpleDecision.contentComplexity == .simple, "hints.complexity .simple should be honored")
+        #expect(simpleDecision.preferredContainer == .structured)
+        #expect(simpleDecision.fieldLayout == .vertical)
+        #expect(simpleDecision.validation == .deferred)
+
         // Test moderate form (fieldCount >= 5)
         let moderateHints = PresentationHints(
             dataType: .form,
@@ -318,10 +317,10 @@ open class Layer2LayoutDecisionTests: BaseTestClass {
             ]
         )
         let moderateDecision = determineOptimalFormLayout_L2(hints: moderateHints)
-        #expect(moderateDecision.contentComplexity == .moderate, "6 fields should result in moderate complexity")
+        #expect(moderateDecision.contentComplexity == .moderate, "hints.complexity .moderate should be honored")
         #expect(moderateDecision.validation == .realTime, "Validation specified should result in realTime")
-        
-        // Test complex form (fieldCount >= 8 && hasComplexFields && hasValidation)
+
+        // Test complex form (explicit hints.complexity, not fieldCount heuristic)
         let complexHints = PresentationHints(
             dataType: .form,
             presentationPreference: .form,
@@ -334,10 +333,10 @@ open class Layer2LayoutDecisionTests: BaseTestClass {
             ]
         )
         let complexDecision = determineOptimalFormLayout_L2(hints: complexHints)
-        #expect(complexDecision.contentComplexity == .complex, "10 fields with complex fields and validation should result in complex complexity")
+        #expect(complexDecision.contentComplexity == .complex, "hints.complexity .complex should be honored")
         #expect(complexDecision.validation == .realTime, "Validation specified should result in realTime")
-        
-        // Test edge case: many fields but no complex fields or validation
+
+        // Test edge case: many fields but hints.complexity stays moderate
         let edgeHints = PresentationHints(
             dataType: .form,
             presentationPreference: .form,
@@ -350,8 +349,8 @@ open class Layer2LayoutDecisionTests: BaseTestClass {
             ]
         )
         let edgeDecision = determineOptimalFormLayout_L2(hints: edgeHints)
-        #expect(edgeDecision.contentComplexity == .moderate, "12 fields without complex fields should result in moderate complexity")
-        #expect(edgeDecision.validation == .none, "No validation specified should result in none")
+        #expect(edgeDecision.contentComplexity == .moderate, "hints.complexity wins over fieldCount")
+        #expect(edgeDecision.validation == .deferred)
     }
     
     @Test @MainActor func testDetermineOptimalFormLayout_L2_ComplexForm() {
@@ -372,8 +371,8 @@ open class Layer2LayoutDecisionTests: BaseTestClass {
         let decision = determineOptimalFormLayout_L2(hints: hints)
         
         // Then: Should return appropriate form layout decision
-        #expect(decision.preferredContainer == ContainerPreference.adaptive)
-        #expect(decision.fieldLayout == .standard)
+        #expect(decision.preferredContainer == ContainerPreference.structured)
+        #expect(decision.fieldLayout == .vertical)
         #expect(decision.spacing == .comfortable)
         #expect(decision.validation == .realTime)
         #expect(decision.contentComplexity == .complex)
@@ -398,8 +397,8 @@ open class Layer2LayoutDecisionTests: BaseTestClass {
         let decision = determineOptimalFormLayout_L2(hints: hints)
         
         // Then: Should return appropriate form layout decision
-        #expect(decision.preferredContainer == ContainerPreference.adaptive)
-        #expect(decision.fieldLayout == .standard)
+        #expect(decision.preferredContainer == ContainerPreference.structured)
+        #expect(decision.fieldLayout == .vertical)
         #expect(decision.spacing == .comfortable)
         #expect(decision.validation == .realTime)
         #expect(decision.contentComplexity == .moderate)
@@ -419,11 +418,11 @@ open class Layer2LayoutDecisionTests: BaseTestClass {
         let decision = determineOptimalFormLayout_L2(hints: hints)
         
         // Then: Should use default values
-        #expect(decision.preferredContainer == ContainerPreference.adaptive)
-        #expect(decision.fieldLayout == .standard)
+        #expect(decision.preferredContainer == ContainerPreference.structured)
+        #expect(decision.fieldLayout == .vertical)
         #expect(decision.spacing == .comfortable)
-        #expect(decision.validation == .none) // Default should be no validation
-        #expect(decision.contentComplexity == .moderate) // Default fieldCount=5 = moderate
+        #expect(decision.validation == .deferred)
+        #expect(decision.contentComplexity == .moderate)
         #expect(!decision.reasoning.isEmpty)
     }
     

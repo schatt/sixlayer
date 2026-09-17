@@ -1,8 +1,8 @@
 # 🚀 Six-Layer Framework Development Roadmap
 
 **Purpose**: Track planned upcoming work and future enhancements.  
-**Last Updated**: September 7, 2026  
-**Current Release**: v8.4.0
+**Last Updated**: September 17, 2026  
+**Current Release**: v8.5.0
 
 > **Note**: This roadmap tracks planned work. For active todos, see [`todos.md`](../todos.md). For release history, see [`RELEASES.md`](RELEASES.md).
 
@@ -10,9 +10,9 @@
 
 ## 📍 **Current Status**
 
-**Last Release**: v8.4.0 (L5 honesty #423/#424/#425/#444; placeholder Layer5 removals #453; coverage #449/#450/#454–#457)
+**Last Release**: v8.5.0 (honest iOS/macOS L5/L6 #397/#445–#447/#451/#459/#465/#466/#472)
 **Current Phase**: Minor Release
-**Next Phase**: v8.5.0 — honest iOS/macOS L5/L6 public APIs
+**Next Phase**: v8.6.0 — forms product + primary-lane coverage
 
 ### ✅ **Recently Completed**
 - **Configurable Vision `minimumTextHeight`** (#288) - Pump-friendly default `0.003` and `OCRContext.visionMinimumTextHeight` for full-resolution pump LCD OCR

@@ -752,7 +752,7 @@ public enum BarcodeType: String, CaseIterable, Sendable {
     }
     
     /// Convert to VNBarcodeSymbology (for Vision framework)
-    #if canImport(Vision)
+    #if canImport(Vision) && !os(watchOS)
     @available(iOS 11.0, macOS 10.15, visionOS 1.0, *)
     public var vnSymbology: VNBarcodeSymbology? {
         switch self {

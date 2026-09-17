@@ -318,10 +318,12 @@ public func platformPresentFormData_L1(
 
 /// Present a single form field
 /// Internally wraps the single field in an array and delegates to the array version
+/// - Parameter selectAllOnBeginEditing: Form-level opt-in (#472). When true, generated text-entry controls select all contents on begin editing. Default false (caret at end). Not a FieldDisplayHints / .hints file key.
 @MainActor
 public func platformPresentFormData_L1(
     field: DynamicFormField,
-    hints: PresentationHints
+    hints: PresentationHints,
+    selectAllOnBeginEditing: Bool = false
 ) -> some View {
     let enhancedHints = EnhancedPresentationHints(
         dataType: hints.dataType,
@@ -341,7 +343,8 @@ public func platformPresentFormData_L1(
         fields: [field],
         hints: enhancedHints,
         modelName: nil,
-        layoutSpec: nil
+        layoutSpec: nil,
+        selectAllOnBeginEditing: selectAllOnBeginEditing
     )
     .environment(\.accessibilityIdentifierName, "platformPresentFormData_L1")
     .automaticCompliance(identifierName: "platformPresentFormData_L1")
@@ -940,7 +943,8 @@ public func platformPresentSettings_L1(
 }
 
 /// Generic function for presenting settings interface with custom views
-/// Allows specifying custom views for settings sections and individual settings
+/// Honors `PresentationHints` for list vs grid. Save/Cancel chrome fires the matching
+/// callbacks. Custom section views report edits via `EnvironmentValues.onSettingChanged`.
 @MainActor
 public func platformPresentSettings_L1(
     settings: [SettingsSectionData],
@@ -1212,23 +1216,27 @@ public func platformResponsiveCard_L1<Content: View>(
 
 /// Generic function for presenting form data with enhanced hints
 /// Automatically loads hints from .hints files that describe the data
-/// 
+///
 /// Precedence order:
 /// 1. Explicit layoutSpec (if provided) - highest priority
 /// 2. Hints sections from modelName (if provided)
 /// 3. Framework defaults (vertical stack of all fields)
+///
+/// - Parameter selectAllOnBeginEditing: Form-level opt-in (#472). When true, generated text-entry controls select all contents on begin editing. Default false (caret at end). Not a FieldDisplayHints / .hints file key.
 @MainActor
 public func platformPresentFormData_L1(
     fields: [DynamicFormField],
     hints: EnhancedPresentationHints,
     modelName: String? = nil,
-    layoutSpec: LayoutSpec? = nil
+    layoutSpec: LayoutSpec? = nil,
+    selectAllOnBeginEditing: Bool = false
 ) -> some View {
     return AsyncFormView(
         fields: fields,
         hints: hints,
         modelName: modelName,
-        layoutSpec: layoutSpec
+        layoutSpec: layoutSpec,
+        selectAllOnBeginEditing: selectAllOnBeginEditing
     )
     .environment(\.accessibilityIdentifierName, "platformPresentFormData_L1")
     .automaticCompliance(identifierName: "platformPresentFormData_L1")
@@ -1243,17 +1251,25 @@ private struct AsyncFormView: View {
     let hints: EnhancedPresentationHints
     let modelName: String?
     let layoutSpec: LayoutSpec?
+    let selectAllOnBeginEditing: Bool
     
     @State private var resolvedSections: [DynamicFormSection]?
     @State private var isLoading: Bool
     
     // Initialize with cached hints if available (synchronous check)
     // Flow: optional hint → file/cache → default
-    init(fields: [DynamicFormField], hints: EnhancedPresentationHints, modelName: String?, layoutSpec: LayoutSpec?) {
+    init(
+        fields: [DynamicFormField],
+        hints: EnhancedPresentationHints,
+        modelName: String?,
+        layoutSpec: LayoutSpec?,
+        selectAllOnBeginEditing: Bool
+    ) {
         self.fields = fields
         self.hints = hints
         self.modelName = modelName
         self.layoutSpec = layoutSpec
+        self.selectAllOnBeginEditing = selectAllOnBeginEditing
         
         // Step 1: If code provides hint (layoutSpec), use it synchronously
         if layoutSpec != nil {
@@ -1367,7 +1383,8 @@ private struct AsyncFormView: View {
             description: hints.customPreferences["formDescription"],
             sections: sections,
             submitButtonText: hints.customPreferences["submitButtonText"] ?? "Submit",
-            cancelButtonText: hints.customPreferences["cancelButtonText"]
+            cancelButtonText: hints.customPreferences["cancelButtonText"],
+            selectAllOnBeginEditing: selectAllOnBeginEditing
         )
         
         DynamicFormView(
@@ -1979,7 +1996,7 @@ extension View {
     }
 }
 
-/// Generic numeric data view
+/// Generic numeric data view that honors `PresentationHints` for list vs grid (#479).
 public struct GenericNumericDataView: View {
     let data: [GenericNumericData]
     let hints: PresentationHints
@@ -2013,21 +2030,17 @@ public struct GenericNumericDataView: View {
     }
     
     public var body: some View {
-        let baseView = VStack {
-            Text("Numeric Data")
-                .font(.headline)
-            Text("Data points: \(data.count)")
-                .font(.caption)
-        }
-        .padding()
-        
-        // AUTOMATICALLY apply HIG compliance
-        return baseView
-            .appleHIGCompliant()
-            .automaticAccessibility()
-            .platformPatterns()
-            .visualConsistency()
-            .automaticCompliance(named: "GenericNumericDataView")
+        GenericCatalogSurfaceView(
+            items: data,
+            hints: hints,
+            surface: .numeric,
+            identifierName: "GenericNumericDataView",
+            copy: GenericCatalogRowCopy.numeric
+        )
+        .appleHIGCompliant()
+        .automaticAccessibility()
+        .platformPatterns()
+        .visualConsistency()
     }
 }
 
@@ -2037,23 +2050,33 @@ public struct GenericFormView: View {
     let hints: PresentationHints
     
     public var body: some View {
-        // Use our platform form container from Layer 4
-        platformFormContainer_L4(
-            strategy: FormStrategy(
-                containerType: .standard,
-                fieldLayout: .vertical,
-                validation: .deferred
-            ),
-            content: {
-                PackedGenericFormFieldsLayout(
-                    fields: fields,
-                    presentationFieldHints: hints.fieldHints
-                )
-            }
-        )
+        HintsDrivenPackedFormContainer(fields: fields, hints: hints)
         // Issue #245 / gh-243: caller-defined fields are arbitrary content; use identifierName shell.
         .environment(\.accessibilityIdentifierName, "GenericFormView")
         .automaticCompliance(identifierName: "GenericFormView")
+    }
+}
+
+/// Shared hints → FormStrategy → L4 container + packed fields (#482, #485).
+@MainActor
+private struct HintsDrivenPackedFormContainer: View {
+    let fields: [DynamicFormField]
+    let hints: PresentationHints
+    var innerHorizontalPadding: CGFloat = 0
+
+    var body: some View {
+        let strategy = HintsDrivenFormStrategy.strategy(
+            hints: hints,
+            fieldCount: fields.count
+        )
+        platformFormContainer_L4(strategy: strategy) {
+            PackedGenericFormFieldsLayout(
+                fields: fields,
+                presentationFieldHints: hints.fieldHints,
+                fieldLayout: strategy.fieldLayout
+            )
+            .padding(.horizontal, innerHorizontalPadding)
+        }
     }
 }
 
@@ -2070,9 +2093,11 @@ private struct GenericFormSectionAvailableWidthKey: PreferenceKey {
 private struct PackedGenericFormFieldsLayout: View {
     let fields: [DynamicFormField]
     var presentationFieldHints: [String: FieldDisplayHints] = [:]
+    var fieldLayout: FieldLayout = .adaptive
     @State private var availableWidth: CGFloat = 390
-    private let spacing: CGFloat = 16
-    private let maxItemsPerRow = 4
+
+    private var spacing: CGFloat { fieldLayout.formContainerSpacing }
+    private var maxItemsPerRow: Int { fieldLayout.formPackMaxItemsPerRow }
 
     private func resolvedHints(for field: DynamicFormField) -> FieldDisplayHints? {
         presentationFieldHints[field.id] ?? field.displayHints
@@ -2147,6 +2172,7 @@ private struct PackedGenericFormFieldsLayout: View {
 @MainActor
 private struct GenericFormFieldChrome: View {
     let field: DynamicFormField
+    @Environment(\.formValidationStrategy) private var validationStrategy
 
     var body: some View {
         platformVStackContainer(alignment: .leading, spacing: 8) {
@@ -2220,59 +2246,65 @@ private struct GenericFormFieldChrome: View {
                     .l1SemanticTextFieldBorderStyle()
                     .background(Color.platformSecondaryBackground)
             }
+
+            if let message = FormFieldLiveValidation.message(
+                field: field,
+                value: field.defaultValue ?? "",
+                strategy: validationStrategy
+            ) {
+                EmptyView().platformValidationMessage(message, type: .error)
+            }
         }
         .padding(.vertical, 4)
     }
 }
 
-/// Generic media view
+/// Generic media view that honors `PresentationHints` for list vs grid (#479).
 public struct GenericMediaView: View {
     let media: [GenericMediaItem]
     let hints: PresentationHints
     
     public var body: some View {
-        VStack {
-            Text("Media Collection")
-                .font(.headline)
-            Text("Items: \(media.count)")
-                .font(.caption)
-        }
-        .padding()
-        .automaticCompliance(named: "GenericMediaView")
+        GenericCatalogSurfaceView(
+            items: media,
+            hints: hints,
+            surface: .media,
+            identifierName: "GenericMediaView",
+            copy: GenericCatalogRowCopy.media
+        )
     }
 }
 
-/// Generic hierarchical view
+/// Generic hierarchical view that honors `PresentationHints` for list vs grid (#479).
 public struct GenericHierarchicalView: View {
     let items: [GenericHierarchicalItem]
     let hints: PresentationHints
     
     public var body: some View {
-        VStack {
-            Text("Hierarchical Data")
-                .font(.headline)
-            Text("Root items: \(items.count)")
-                .font(.caption)
-        }
-        .padding()
-        .automaticCompliance(named: "GenericHierarchicalView")
+        GenericCatalogSurfaceView(
+            items: items,
+            hints: hints,
+            surface: .hierarchical,
+            identifierName: "GenericHierarchicalView",
+            leadingPadding: GenericCatalogRowCopy.hierarchicalLeadingPadding,
+            copy: GenericCatalogRowCopy.hierarchical
+        )
     }
 }
 
-/// Generic temporal view
+/// Generic temporal view that honors `PresentationHints` for list vs grid (#479).
 public struct GenericTemporalView: View {
     let items: [GenericTemporalItem]
     let hints: PresentationHints
     
     public var body: some View {
-        VStack {
-            Text("Temporal Data")
-                .font(.headline)
-            Text("Events: \(items.count)")
-                .font(.caption)
-        }
-        .padding()
-        .automaticCompliance(named: "GenericTemporalView")
+        GenericCatalogSurfaceView(
+            items: items,
+            hints: hints,
+            surface: .temporal,
+            identifierName: "GenericTemporalView",
+            copy: GenericCatalogRowCopy.temporal
+        )
     }
 }
 
@@ -2297,7 +2329,6 @@ public struct ModalFormView: View {
     
     public var body: some View {
         platformVStackContainer(spacing: 16) {
-            // Modal header
             HStack {
                 Text("Form: \(formType.rawValue.capitalized)")
                     .font(.headline)
@@ -2311,17 +2342,12 @@ public struct ModalFormView: View {
             }
             .padding(.horizontal)
             .padding(.top)
-            
-            // Form content — shared packer / aligner (#385)
-            ScrollView {
-                PackedGenericFormFieldsLayout(
-                    fields: fields,
-                    presentationFieldHints: hints.fieldHints
-                )
-                    .padding(.horizontal)
-            }
-            
-            Spacer()
+
+            HintsDrivenPackedFormContainer(
+                fields: fields,
+                hints: hints,
+                innerHorizontalPadding: 16
+            )
         }
         .platformPresentationFrame(sizes: [.small])
         .background(Color.platformBackground)
@@ -3582,10 +3608,30 @@ public struct ExtensibleHintsKey: EnvironmentKey {
     public static let defaultValue: [ExtensibleHint] = []
 }
 
+public struct SettingsOnSettingChangedKey: EnvironmentKey {
+    public static let defaultValue: SettingsOnSettingChangedAction? = nil
+}
+
+/// Environment payload for custom settings rows (#477). `@unchecked` because values are `Any`.
+public struct SettingsOnSettingChangedAction: @unchecked Sendable {
+    public let handler: (String, Any) -> Void
+
+    public init(_ handler: @escaping (String, Any) -> Void) {
+        self.handler = handler
+    }
+}
+
 public extension EnvironmentValues {
     var extensibleHints: [ExtensibleHint] {
         get { self[ExtensibleHintsKey.self] }
         set { self[ExtensibleHintsKey.self] = newValue }
+    }
+
+    /// Callback for custom settings section views (#477). `CustomSettingsView` publishes this so
+    /// consumer rows can report edits; Save/Cancel still fire via `SettingsActionBar`.
+    var onSettingChanged: SettingsOnSettingChangedAction? {
+        get { self[SettingsOnSettingChangedKey.self] }
+        set { self[SettingsOnSettingChangedKey.self] = newValue }
     }
 }
 
@@ -3895,8 +3941,10 @@ extension Color {
 // MARK: - Settings Data Structures
 
 /// Data structure representing a settings section
+///
+/// `id` is stable across reinits. Duplicate `id` values collide in `ForEach` (#474).
 public struct SettingsSectionData: Identifiable {
-    public let id = UUID()
+    public let id: String
     public let title: String
     public let items: [SettingsItemData]
     public let isCollapsible: Bool
@@ -3906,8 +3954,10 @@ public struct SettingsSectionData: Identifiable {
         title: String,
         items: [SettingsItemData],
         isCollapsible: Bool = false,
-        isExpanded: Bool = true
+        isExpanded: Bool = true,
+        id: String? = nil
     ) {
+        self.id = id ?? title
         self.title = title
         self.items = items
         self.isCollapsible = isCollapsible
@@ -3916,8 +3966,10 @@ public struct SettingsSectionData: Identifiable {
 }
 
 /// Data structure representing a settings item
+///
+/// `id` is `key`. Duplicate keys collide in `ForEach` (#474).
 public struct SettingsItemData: Identifiable {
-    public let id = UUID()
+    public var id: String { key }
     public let key: String
     public let title: String
     public let description: String?
@@ -3986,73 +4038,46 @@ public struct GenericSettingsView: View {
     
     public var body: some View {
         platformVStackContainer(spacing: 0) {
-            // Settings content
-            ScrollView {
-                platformLazyVStackContainer(spacing: 16) {
-                    ForEach(settings) { section in
-                        SettingsSectionView(
-                            section: section,
-                            values: $values,
-                            sectionStates: $sectionStates,
-                            onSettingChanged: onSettingChanged
-                        )
-                    }
-                }
-                .padding()
+            HintsDrivenCatalogContainer(
+                items: settings,
+                hints: hints,
+                surface: .settings
+            ) { section in
+                SettingsSectionView(
+                    section: section,
+                    values: $values,
+                    sectionStates: $sectionStates,
+                    onSettingChanged: onSettingChanged
+                )
             }
-            
-            // Action buttons
-            if onSettingsSaved != nil || onSettingsCancelled != nil {
-                platformHStackContainer(spacing: 16) {
-                    if let onSettingsCancelled = onSettingsCancelled {
-                        platformButton("Cancel") {
-                            onSettingsCancelled()
-                        }
-                        .buttonStyle(.bordered)
-                        .automaticCompliance(
-                            identifierName: sanitizeLabelText("Cancel"),
-                            identifierElementType: "Button",
-                            accessibilityTraits: .isButton,
-                            accessibilitySortPriority: 2.0  // Issue #165: Secondary action
-                        )
-                    }
-                    
-                    Spacer()
-                    
-                    if let onSettingsSaved = onSettingsSaved {
-                        platformButton("Save") {
-                            onSettingsSaved()
-                        }
-                        .buttonStyle(.borderedProminent)
-                        .automaticCompliance(
-                            identifierName: sanitizeLabelText("Save"),
-                            identifierElementType: "Button",
-                            accessibilityTraits: .isButton,
-                            accessibilitySortPriority: 1.0  // Issue #165: Primary action
-                        )
-                    }
-                }
-                .padding()
-                .background(Color.platformBackground)
-            }
+
+            SettingsActionBar(
+                onSaved: onSettingsSaved,
+                onCancelled: onSettingsCancelled
+            )
         }
         .navigationTitle("Settings")
         .onAppear {
-            initializeValues()
+            applyCatalog()
         }
+        .onChange(of: catalogKeys) { _, _ in
+            applyCatalog()
+        }
+        .environment(\.onSettingChanged, onSettingChanged.map(SettingsOnSettingChangedAction.init))
         .environment(\.accessibilityIdentifierName, "GenericSettingsView")
         .automaticCompliance(identifierName: "GenericSettingsView")
     }
-    
-    private func initializeValues() {
-        for section in settings {
-            for item in section.items {
-                if values[item.key] == nil {
-                    values[item.key] = item.value
-                }
-            }
-            sectionStates[section.id.uuidString] = section.isExpanded
+
+    /// Section ids plus item keys. Value/default changes do not retrigger (user edits stay).
+    private var catalogKeys: [String] {
+        settings.flatMap { section in
+            [section.id] + section.items.map(\.key)
         }
+    }
+
+    private func applyCatalog() {
+        values = SettingsCatalogReconciliation.values(settings: settings, existing: values)
+        sectionStates = SettingsCatalogReconciliation.sectionStates(settings: settings, existing: sectionStates)
     }
 }
 
@@ -4064,7 +4089,7 @@ struct SettingsSectionView: View {
     let onSettingChanged: ((String, Any) -> Void)?
     
     private var isExpanded: Bool {
-        sectionStates[section.id.uuidString] ?? section.isExpanded
+        sectionStates[section.id] ?? section.isExpanded
     }
     
     var body: some View {
@@ -4079,7 +4104,11 @@ struct SettingsSectionView: View {
                 
                 if section.isCollapsible {
                     Button(action: {
-                        sectionStates[section.id.uuidString]?.toggle()
+                        sectionStates = SettingsSectionCollapse.toggled(
+                            sectionStates,
+                            id: section.id,
+                            defaultExpanded: section.isExpanded
+                        )
                     }) {
                         Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
                             .foregroundColor(.secondary)
@@ -4352,28 +4381,19 @@ public struct CustomListCollectionView<Item: Identifiable, CustomView: View>: Vi
     /// When `hints.customPreferences["rowVisualStyle"]` is `"card"`, applies a default card-like row surface (#272).
     @ViewBuilder
     private func listRowSurface(for item: Item) -> some View {
-        if rowVisualStyleIsCard {
-            customItemView(item)
-                .padding(12)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(
-                    RoundedRectangle(cornerRadius: 12, style: .continuous)
-                        .fill(Color.platformSecondaryBackground)
-                )
-        } else {
-            customItemView(item)
-        }
-    }
-
-    private var rowVisualStyleIsCard: Bool {
-        hints.customPreferences["rowVisualStyle"]?.lowercased() == "card"
+        customItemView(item)
+            .hintsDrivenCardSurface(
+                enabled: HintsDrivenCatalogLayout.rowVisualStyleIsCard(hints: hints)
+            )
     }
 }
 
 
 // MARK: - Additional Custom View Components
 
-/// Custom settings view that supports custom setting views (no AnyView — Issue 178)
+/// Custom settings view that honors `PresentationHints` for list vs grid (#477).
+/// Save/Cancel fire `onSettingsSaved`/`onSettingsCancelled`. Custom section views read
+/// `\.onSettingChanged` from the environment to report edits.
 public struct CustomSettingsView<CustomView: View>: View {
     let settings: [SettingsSectionData]
     let hints: PresentationHints
@@ -4399,14 +4419,21 @@ public struct CustomSettingsView<CustomView: View>: View {
     }
     
     public var body: some View {
-        ScrollView {
-            platformLazyVStackContainer(spacing: 16) {
-                ForEach(settings, id: \.title) { setting in
-                    customSettingView(setting)
-                }
+        platformVStackContainer(spacing: 0) {
+            HintsDrivenCatalogContainer(
+                items: settings,
+                hints: hints,
+                surface: .settings
+            ) { setting in
+                customSettingView(setting)
             }
-            .padding(16)
+
+            SettingsActionBar(
+                onSaved: onSettingsSaved,
+                onCancelled: onSettingsCancelled
+            )
         }
+        .environment(\.onSettingChanged, onSettingChanged.map(SettingsOnSettingChangedAction.init))
         .background(Color.platformBackground)
     }
 }
@@ -4428,27 +4455,12 @@ public struct CustomMediaView<CustomView: View>: View {
     }
     
     public var body: some View {
-        GeometryReader { geometry in
-            let context = LayoutContext.from(viewportWidth: geometry.size.width)
-            let columns = LayoutParameterCalculator.calculateColumns(
-                count: media.count,
-                dataType: .media,
-                context: context
-            )
-            let spacing = LayoutParameterCalculator.calculateSpacing(
-                context: context,
-                dataType: .media
-            )
-            let gridColumns = Array(repeating: GridItem(.flexible(), spacing: spacing), count: columns)
-            
-            ScrollView {
-                LazyVGrid(columns: gridColumns, spacing: spacing) {
-                    ForEach(media, id: \.id) { mediaItem in
-                        customMediaView(mediaItem)
-                    }
-                }
-                .padding(16)
-            }
+        HintsDrivenCatalogContainer(
+            items: media,
+            hints: hints,
+            surface: .media
+        ) { mediaItem in
+            customMediaView(mediaItem)
         }
     }
 }
@@ -4470,13 +4482,12 @@ public struct CustomHierarchicalView<CustomView: View>: View {
     }
     
     public var body: some View {
-        ScrollView {
-            platformLazyVStackContainer(spacing: 8) {
-                ForEach(items, id: \.id) { item in
-                    customItemView(item)
-                }
-            }
-            .padding(16)
+        HintsDrivenCatalogContainer(
+            items: items,
+            hints: hints,
+            surface: .hierarchical
+        ) { item in
+            customItemView(item)
         }
         .background(Color.platformBackground)
     }
@@ -4499,13 +4510,12 @@ public struct CustomTemporalView<CustomView: View>: View {
     }
     
     public var body: some View {
-        ScrollView {
-            platformLazyVStackContainer(spacing: 12) {
-                ForEach(items, id: \.id) { item in
-                    customItemView(item)
-                }
-            }
-            .padding(16)
+        HintsDrivenCatalogContainer(
+            items: items,
+            hints: hints,
+            surface: .temporal
+        ) { item in
+            customItemView(item)
         }
         .background(Color.platformBackground)
     }
@@ -4528,25 +4538,13 @@ public struct CustomNumericDataView<CustomView: View>: View {
     }
     
     public var body: some View {
-        GeometryReader { geometry in
-            let columns = determineColumns(for: geometry.size.width)
-            let gridColumns = Array(repeating: GridItem(.flexible(), spacing: 16), count: columns)
-            
-            ScrollView {
-                LazyVGrid(columns: gridColumns, spacing: 16) {
-                    ForEach(data, id: \.id) { dataItem in
-                        customDataView(dataItem)
-                    }
-                }
-                .padding(16)
-            }
+        HintsDrivenCatalogContainer(
+            items: data,
+            hints: hints,
+            surface: .numeric
+        ) { dataItem in
+            customDataView(dataItem)
         }
-    }
-    
-    private func determineColumns(for width: CGFloat) -> Int {
-        let minItemWidth: CGFloat = 200
-        let maxColumns = Int(width / minItemWidth)
-        return max(1, min(maxColumns, 4))
     }
 }
 

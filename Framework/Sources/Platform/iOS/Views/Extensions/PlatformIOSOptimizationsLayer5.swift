@@ -1,7 +1,4 @@
 import SwiftUI
-#if os(iOS)
-import UIKit
-#endif
 
 // MARK: - Platform iOS Optimizations Layer 5: Platform-Specific Enhancements
 /// This layer provides iOS-specific optimizations and enhancements that
@@ -107,46 +104,25 @@ public extension View {
         #endif
     }
     
-    /// Platform-specific iOS haptic feedback with consistent behavior
-    /// Provides iOS-specific haptic feedback patterns
+    /// Deprecated iOS-only haptic wrapper. Use `platformHapticFeedback(_:)` (#445).
+    /// Preserves `onChange(of: trigger)` semantics for existing callers.
     #if os(iOS)
+    @available(*, deprecated, message: "Use platformHapticFeedback(_:) with PlatformHapticFeedback (GitHub #445).")
     func platformIOSHapticFeedback(
         style: IOSHapticStyle = .light,
         onTrigger trigger: Bool = true
     ) -> some View {
-        return self.onChange(of: trigger) {
-            let impactFeedback: UIImpactFeedbackGenerator
-            
-            switch style {
-            case .light:
-                impactFeedback = UIImpactFeedbackGenerator(style: .light)
-            case .medium:
-                impactFeedback = UIImpactFeedbackGenerator(style: .medium)
-            case .heavy:
-                impactFeedback = UIImpactFeedbackGenerator(style: .heavy)
-            case .success:
-                let notificationFeedback = UINotificationFeedbackGenerator()
-                notificationFeedback.notificationOccurred(.success)
-                return
-            case .warning:
-                let notificationFeedback = UINotificationFeedbackGenerator()
-                notificationFeedback.notificationOccurred(.warning)
-                return
-            case .error:
-                let notificationFeedback = UINotificationFeedbackGenerator()
-                notificationFeedback.notificationOccurred(.error)
-                return
-            }
-            
-            impactFeedback.impactOccurred()
+        self.onChange(of: trigger) {
+            SixLayerHaptic.trigger(style.platformHapticFeedback)
         }
     }
     #else
+    @available(*, deprecated, message: "Use platformHapticFeedback(_:) with PlatformHapticFeedback (GitHub #445).")
     func platformIOSHapticFeedback(
         style: Any = "light",
         onTrigger trigger: Bool = true
     ) -> some View {
-        return self
+        self
     }
     #endif
     
@@ -238,7 +214,8 @@ func platformIOSLayout(
 }
 
 #if os(iOS)
-/// iOS-specific haptic feedback styles
+/// Deprecated iOS-only haptic styles. Use `PlatformHapticFeedback` (#445).
+@available(*, deprecated, message: "Use PlatformHapticFeedback (GitHub #445).")
 public enum IOSHapticStyle {
     case light
     case medium

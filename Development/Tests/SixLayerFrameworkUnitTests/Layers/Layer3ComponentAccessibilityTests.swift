@@ -59,21 +59,21 @@ open class Layer3ComponentAccessibilityTests: BaseTestClass {
     }
     
     @Test @MainActor func testSelectFormStrategyAddFuelViewL3CreatesFormStrategy() async {
-        // Given: Layer 3 form strategy function
+        // Layout differs from the former hardcode so mapping cannot be faked (#397).
         let formLayoutDecision = FormLayoutDecision(
-            containerType: .standard,
-            fieldLayout: .vertical,
-            spacing: .standard,
-            validation: .realTime
+            containerType: .scrollView,
+            fieldLayout: .compact,
+            spacing: .compact,
+            validation: .onSubmit
         )
-        
-        // When: Creating form strategy
-        _ = selectFormStrategy_AddFuelView_L3(
+
+        let strategy = selectFormStrategy_AddFuelView_L3(
             layout: formLayoutDecision
         )
-        
-        // Then: Should return valid form strategy struct
-        // All properties are non-optional, so they exist if we reach here
+
+        #expect(strategy.containerType == formLayoutDecision.containerType)
+        #expect(strategy.fieldLayout == formLayoutDecision.fieldLayout)
+        #expect(strategy.validation == formLayoutDecision.validation)
     }
     
     @Test @MainActor func testSelectModalStrategyFormL3CreatesModalStrategy() async {

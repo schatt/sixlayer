@@ -24,6 +24,18 @@ Define the user's intent in platform-agnostic terms that can be interpreted by t
 - `platformPresentModal(type:content:)` - Express intent to present a modal
 - `platformPresentModalForm_L1(formType:context:)` - Present modal forms with automatic field generation
 - `platformPresentModalForm_L1(formType:context:customFormContainer:)` - Present modal forms with custom container styling
+- `GenericFormView(fields:hints:)` - Present caller-supplied `DynamicFormField`s in a Layer 4 form container
+
+#### GenericFormView and ModalFormView hints (#480, #482–#485)
+
+`GenericFormView` and `ModalFormView` derive `FormStrategy` from `PresentationHints` (preference, complexity, field count, and optional `customPreferences`). Field packing still uses `hints.fieldHints` for width claims (#385). `FormStrategy.fieldLayout` also sets packed **max items per row** and Layer 4 container spacing (#485). `platformFormContainer_L4` publishes `FormStrategy.validation` as `EnvironmentValues.formValidationStrategy`; `ValidationStrategy.isLive` is true for `.immediate` / `.realTime`. Generic/modal and IntelligentFormView field chrome show a required-empty error while live (#483).
+
+- **Default:** `presentationPreference: .automatic` and `complexity: .moderate` keep `containerType: .standard`, `fieldLayout: .adaptive` (up to 4 fields per packed row), `validation: .deferred`.
+- **Preference:** `.form` / `.modal` → Form container and vertical packing (one field per row); `.compact` / `.minimal` → compact spacing; `.grid` / `.cards` / `.masonry` → grid field layout (3 per row); `.list` / `.detail` / `.navigation` → scroll view.
+- **Complexity (when preference is `.automatic`):** `.simple` with ≤3 fields → Form + immediate validation + vertical packing; `.complex` / `.veryComplex` / `.advanced` → scroll view + adaptive packing.
+- **Overrides:** `customPreferences["containerType"]`, `["fieldLayout"]`, and `["validation"]` accept the corresponding enum raw values. `["hasValidation"] = "true"` selects real-time validation unless `validation` is set.
+- **`.countBased`:** picks the low or high preference from field count; a nested `.countBased` does not recurse (falls back to `.automatic`).
+- **Packing density:** `.vertical` → 1, `.horizontal` → 2, `.grid` → 3, `.compact` / `.standard` / `.spacious` / `.adaptive` → 4.
 
 ### **Responsive Cards**
 - `platformResponsiveCard(type:content:)` - Express intent for responsive cards

@@ -12,6 +12,7 @@
 //
 
 import XCTest
+import SixLayerTestKit
 
 
 // MARK: - XCUIApplication Extensions
@@ -58,10 +59,31 @@ extension XCUIElement {
     }
 
 
+    /// True when `frame` has finite, positive size (coordinate taps require this on macOS).
+    var xcuiHasValidTapFrame: Bool {
+        let f = frame
+        return f.width.isFinite && f.height.isFinite
+            && f.origin.x.isFinite && f.origin.y.isFinite
+            && f.width > 0 && f.height > 0
+    }
+
     /// Tap to become first responder; uses a coordinate tap when `Form` chrome clips hittability.
     /// On iOS, secure fields often need a second tap before `typeText` receives keyboard focus (#150 / iOS 26).
     /// For switches, prefer the trailing thumb region when the control is not hittable.
+    /// On macOS, wait for a finite frame before coordinate taps — infinity frames throw (#493).
     func xcuiTapToBecomeFirstResponder() {
+        #if os(macOS)
+        let layoutDeadline = Date().addingTimeInterval(2.0)
+        while !xcuiHasValidTapFrame, Date() < layoutDeadline {
+            RunLoop.current.run(until: Date().addingTimeInterval(0.05))
+        }
+        // SwiftUI Toggle → checkbox; prefer click over coordinate (Form chrome infinity frames, #493).
+        if elementType == .checkBox {
+            click()
+            RunLoop.current.run(until: Date().addingTimeInterval(0.25))
+            return
+        }
+        #endif
         let center = coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
         #if os(iOS)
         if elementType == .secureTextField {
@@ -83,8 +105,11 @@ extension XCUIElement {
         #endif
         if isHittable {
             tap()
-        } else {
+        } else if xcuiHasValidTapFrame {
             center.tap()
+        } else {
+            // Avoid coordinate tap on infinite/zero frames (macOS Form chrome, #493).
+            tap()
         }
         RunLoop.current.run(until: Date().addingTimeInterval(0.2))
     }
@@ -204,14 +229,14 @@ extension XCUIElement {
 extension XCUIApplication {
     /// Wait for a deep-linked host's stable root accessibility identifier (#348 / #316).
     /// Prefer this over navigationBar / staticText OR ladders — hosts must expose the marker.
-    /// Uses an exact `identifier ==` predicate (same as CatA section waits) — the
-    /// `descendants[identifier]` subscript alone has been a weaker first-paint signal on macOS (#370).
+    /// Uses an exact `identifier ==` predicate on `descendants(.any)` (same as CatA section
+    /// waits) — the `descendants[identifier]` subscript alone has been a weaker first-paint
+    /// signal on macOS (#370). Required for `accessibilityHostIdentifier` on macOS: that
+    /// sentinel is `StaticText`, not `Other` / `ScrollView` (#473). Delegates to
+    /// SixLayerTestKit `waitForAccessibilityIdentifier`.
     @discardableResult
     func waitForHostRootIdentifier(_ identifier: String, timeout: TimeInterval = 8.0) -> Bool {
-        descendants(matching: .any)
-            .matching(NSPredicate(format: "identifier == %@", identifier))
-            .firstMatch
-            .waitForExistence(timeout: timeout)
+        waitForAccessibilityIdentifier(identifier, timeout: timeout)
     }
 
     /// Runs compatibility-oriented checks on the **current** screen only (Issue #180).

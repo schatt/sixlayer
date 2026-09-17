@@ -75,7 +75,7 @@ platformCardGrid(columns: 3, spacing: 16) {
 ```swift
 platformResponsiveCard_L1(content: { MyContent() }, hints: hints)
     #if os(iOS)
-    .platformIOSHapticFeedback(style: .light)  // Layer 5 (real API)
+    .platformHapticFeedback(.light)  // public haptic API (#445)
     #endif
     #if os(macOS)
     .platformMacOSWindowResizing(resizable: true)  // Layer 6
@@ -140,7 +140,7 @@ let hints = EnhancedPresentationHints(
 
 ## ⚡ Layer 5 (platform technical)
 
-Use real L5 APIs only (e.g. `platformIOSHapticFeedback`, split-view / navigation-stack `_L5` helpers). Generic `platformMemoryOptimization` / `platformRenderingOptimization` / `platformViewCaching` names are **not** in Sources — see [README_Layer5_Performance.md](README_Layer5_Performance.md) (#425).
+Use real L5 APIs only (e.g. split-view / navigation-stack `_L5` helpers). For haptics use `platformHapticFeedback` (#445), not deprecated `platformIOSHapticFeedback`. Generic `platformMemoryOptimization` / `platformRenderingOptimization` / `platformViewCaching` names are **not** in Sources — see [README_Layer5_Performance.md](README_Layer5_Performance.md) (#425).
 
 ## 🔍 Debugging
 

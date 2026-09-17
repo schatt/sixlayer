@@ -360,18 +360,17 @@ public struct ModalStrategy {
     }
 }
 
-/// Temporary Layer 3 function for selecting form strategy for AddFuelView
-/// This provides immediate domain-specific strategy logic while building the intelligent system
+/// Layer 3 form strategy for AddFuelView-shaped forms.
+/// Maps overlapping `FormLayoutDecision` fields onto `FormStrategy` (#397).
+/// `platformAdaptations` are not on the layout type; keep macOS/iOS field-size defaults.
 @MainActor
     func selectFormStrategy_AddFuelView_L3(
     layout: FormLayoutDecision
 ) -> FormStrategy {
-    // Hardcoded for now, will become intelligent later
-    // Select the optimal strategy based on the layout decision
     return FormStrategy(
-        containerType: FormContainerType.form,
-        fieldLayout: FieldLayout.standard,
-        validation: ValidationStrategy.realTime,
+        containerType: layout.containerType,
+        fieldLayout: layout.fieldLayout,
+        validation: layout.validation,
         platformAdaptations: [ModalPlatform.macOS: PlatformAdaptation.largeFields, ModalPlatform.iOS: PlatformAdaptation.standardFields]
     )
 }

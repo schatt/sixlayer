@@ -116,9 +116,7 @@ struct MyBusinessDashboard: View {
         // Layer 5: Performance Optimization
         // Layer 6: Platform-Specific Features
         #if os(iOS)
-        .platformIOSHapticFeedback(style: .medium) {
-            // Haptic feedback on interactions
-        }
+        .platformHapticFeedback(.medium)
         #elseif os(macOS)
         .platformMacOSWindowSizing(
             minWidth: 800,
@@ -338,9 +336,7 @@ struct MyBusinessView: View {
         // Layer 5: Performance Optimization
         // Layer 6: Platform-Specific Features
         #if os(iOS)
-        .platformIOSHapticFeedback(style: .medium) {
-            // Haptic feedback
-        }
+        .platformHapticFeedback(.medium)
         .platformIOSSwipeGestures(
             onSwipeLeft: { /* Custom business logic */ },
             onSwipeRight: { /* Custom business logic */ }
@@ -641,9 +637,7 @@ struct ProductManagementView: View {
         // Layer 5: Performance Optimization
         // Layer 6: Platform-Specific Features
         #if os(iOS)
-        .platformIOSHapticFeedback(style: .medium) {
-            // Haptic feedback on product selection
-        }
+        .platformHapticFeedback(.medium)
         #endif
     }
     
@@ -774,7 +768,8 @@ struct MyBusinessView: View {
         // Layer 5: Performance Optimization
         // Layer 6: Platform-Specific Features
         #if os(iOS)
-        .platformIOSHapticFeedback(style: .medium) { }
+        .platformHapticFeedback(.medium)
+
         #endif
     }
 }
@@ -861,7 +856,7 @@ struct MyCustomView: View {
             // Your custom content
         }
         #if os(iOS)
-        .platformIOSHapticFeedback(...)      // Layer 6
+        .platformHapticFeedback(...)      // public haptic API (#445)
         #endif
     }
 }
@@ -893,7 +888,7 @@ let hint = CustomHint(
 
 ```swift
 #if os(iOS)
-.platformIOSHapticFeedback(style: .medium) { }
+.platformHapticFeedback(.medium)
 #elseif os(macOS)
 .platformMacOSWindowSizing(minWidth: 800, minHeight: 600)
 #endif

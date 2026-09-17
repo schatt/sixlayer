@@ -9,6 +9,7 @@ Layer 5 applies platform-aware technical behavior (navigation chrome, gestures, 
 | Area | Path |
 |------|------|
 | iOS View enhancements | `Framework/Sources/Platform/iOS/Views/Extensions/PlatformIOSOptimizationsLayer5.swift` |
+| macOS View enhancements | `Framework/Sources/Platform/macOS/Views/Extensions/PlatformMacOSOptimizationsLayer5.swift` |
 | Shared L5 platform components | `Framework/Sources/Layers/Layer5-Platform/` (e.g. split view / navigation stack optimizations, card expansion performance config, Messaging/Resource helpers) |
 
 There is **no** `Shared/Views/Extensions/PlatformPerformanceExtensionsLayer5.swift`.
@@ -20,14 +21,23 @@ These exist as `extension View` (iOS) with non-iOS stubs where needed:
 - `platformIOSNavigationBar(...)`
 - `platformIOSToolbar(...)`
 - `platformIOSSwipeGestures(...)`
-- `platformIOSHapticFeedback(style:onTrigger:)` / `IOSHapticStyle`
+- `platformIOSHapticFeedback(style:onTrigger:)` / `IOSHapticStyle` — **deprecated** (#445). App authors should use `View.platformHapticFeedback(_:)` / `PlatformHapticFeedback`. The L5 methods remain as thin `onChange` wrappers.
 - `platformIOSAccessibility(...)`
 - `platformIOSAnimation(...)` / `IOSAnimationType`
 - `platformIOSLayout(...)`
 - `platformIOSPullToRefresh(...)`
 - `platformIOSContextMenu(...)`
 
-Coverage for haptics: **#423**. Remaining modifiers in that file: **#424**.
+Coverage for haptics: **#423** (L5 wrappers), **#445** (unified public surface). Remaining modifiers in that file: **#424**.
+
+## macOS View APIs (`PlatformMacOSOptimizationsLayer5`)
+
+These exist as `extension View` (macOS) with non-macOS identity stubs (#451 / #449):
+
+- `platformMacOSWindowToolbar_L5()` — applies `presentedWindowToolbarStyle(.unified)` on macOS. Decision: `platformMacOSWindowToolbarChrome(for:)`. This is **not** Scene `windowToolbarStyle` (that cannot be a View modifier).
+- `platformMacOSKeyboardFocus_L5()` — applies SwiftUI `.focusable()` on macOS. Decision: `platformMacOSKeyboardFocusChrome(for:)`. NavigationStack keyboard-first product is L6 (`platformMacOSNavigationStackEnhancements_L6()`, **#446**).
+
+There is **no** `platformMacOSSidebarChrome_L5()` alias. Sidebar / split-column chrome already lives on the shared L5 helpers (`platformMacOSSplitViewOptimizations_L5()` / `platformSplitViewOptimizations_L5()`). A thin wrapper would be a tautological alias with no extra behavior (#447).
 
 ## Other L5 surfaces (examples)
 

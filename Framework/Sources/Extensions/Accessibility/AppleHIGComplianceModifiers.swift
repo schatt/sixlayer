@@ -1,8 +1,5 @@
 import Foundation
 import SwiftUI
-#if os(iOS) || os(visionOS)
-import UIKit
-#endif
 
 // MARK: - Helper Extensions for Platform-Specific Modifiers
 
@@ -823,51 +820,9 @@ public struct HapticFeedbackModifier: ViewModifier {
         
         return content
             .onTapGesture {
-                triggerIOSHapticFeedback(type: hapticType)
+                SixLayerHaptic.trigger(hapticType)
             }
             .wrappedWithCompliance(named: "HapticFeedbackModifier")
-    }
-    
-    /// Trigger iOS haptic feedback based on type
-    private func triggerIOSHapticFeedback(type: PlatformHapticFeedback) {
-        #if os(iOS)
-        switch type {
-        case .light:
-            let generator = UIImpactFeedbackGenerator(style: .light)
-            generator.impactOccurred()
-        case .medium:
-            let generator = UIImpactFeedbackGenerator(style: .medium)
-            generator.impactOccurred()
-        case .heavy:
-            let generator = UIImpactFeedbackGenerator(style: .heavy)
-            generator.impactOccurred()
-        case .soft:
-            if #available(iOS 13.0, *) {
-                let generator = UIImpactFeedbackGenerator(style: .soft)
-                generator.impactOccurred()
-            } else {
-                let generator = UIImpactFeedbackGenerator(style: .light)
-                generator.impactOccurred()
-            }
-        case .rigid:
-            if #available(iOS 13.0, *) {
-                let generator = UIImpactFeedbackGenerator(style: .rigid)
-                generator.impactOccurred()
-            } else {
-                let generator = UIImpactFeedbackGenerator(style: .heavy)
-                generator.impactOccurred()
-            }
-        case .success:
-            let generator = UINotificationFeedbackGenerator()
-            generator.notificationOccurred(.success)
-        case .warning:
-            let generator = UINotificationFeedbackGenerator()
-            generator.notificationOccurred(.warning)
-        case .error:
-            let generator = UINotificationFeedbackGenerator()
-            generator.notificationOccurred(.error)
-        }
-        #endif
     }
     #endif
     

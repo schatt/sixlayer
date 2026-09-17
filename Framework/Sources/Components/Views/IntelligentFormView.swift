@@ -135,6 +135,7 @@ public struct IntelligentFormView {
     ///   - dataBinder: Optional explicit DataBinder. If provided, `autoBind` is ignored.
     ///   - autoBind: Whether to automatically create a DataBinder (default: true, ignored for type-only forms)
     ///   - inputHandlingManager: Optional input handling manager
+    ///   - selectAllOnBeginEditing: When true, text-entry fields in this form select their entire contents on begin editing. Default false (caret at end). Form-level opt-in; not a FieldDisplayHints key.
     ///   - customFieldView: Custom view builder for field rendering
     ///   - onSubmit: Callback when form is submitted. For type-only forms, receives a dictionary of field values.
     ///   - onCancel: Callback when form is cancelled
@@ -145,6 +146,7 @@ public struct IntelligentFormView {
         dataBinder: DataBinder<T>? = nil,
         autoBind: Bool = true,
         inputHandlingManager: InputHandlingManager? = nil,
+        selectAllOnBeginEditing: Bool = false,
         @ViewBuilder customFieldView: @escaping (String, Any, FieldType) -> some View = { _, _, _ in EmptyView() },
         onSubmit: @escaping (T) -> Void = { _ in },
         onCancel: @escaping () -> Void = { }
@@ -250,12 +252,14 @@ Text(i18n.localizedString(for: "SixLayerFramework.form.title"))
                         formStrategy: formStrategy,
                         fieldHints: fieldHints,
                         inputHandlingManager: inputHandlingManager,
+                        selectAllOnBeginEditing: selectAllOnBeginEditing,
                         customFieldView: { name, value, type in
                             AnyView(customFieldView(name, value, type))
                         },
                         onSubmit: onSubmit,
                         onCancel: onCancel
                     )
+                    .environment(\.formSelectAllOnBeginEditing, selectAllOnBeginEditing)
                 )
             } else {
                 // Cannot generate form without instance data and fully declarative hints
@@ -379,7 +383,8 @@ Text(i18n.localizedString(for: "SixLayerFramework.form.title"))
         // Apply IntelligentFormView identifier at the outermost level
         // Inner components (DynamicFormView, DynamicFormHeader, etc.) maintain their own identifiers
         return AnyView(content
-            .automaticCompliance(named: "IntelligentFormView"))
+            .automaticCompliance(named: "IntelligentFormView")
+            .environment(\.formSelectAllOnBeginEditing, selectAllOnBeginEditing))
     }
     
     /// Generate a form for updating existing data with data binding integration
@@ -405,6 +410,7 @@ Text(i18n.localizedString(for: "SixLayerFramework.form.title"))
     ///   - dataBinder: Optional explicit DataBinder. If provided, `autoBind` is ignored.
     ///   - autoBind: Whether to automatically create a DataBinder (default: true)
     ///   - inputHandlingManager: Optional input handling manager
+    ///   - selectAllOnBeginEditing: When true, text-entry fields in this form select their entire contents on begin editing. Default false (caret at end). Form-level opt-in; not a FieldDisplayHints key.
     ///   - customFieldView: Custom view builder for field rendering
     ///   - onUpdate: Callback when form is updated
     ///   - onCancel: Callback when form is cancelled
@@ -416,6 +422,7 @@ Text(i18n.localizedString(for: "SixLayerFramework.form.title"))
         dataBinder: DataBinder<T>? = nil,
         autoBind: Bool = true,
         inputHandlingManager: InputHandlingManager? = nil,
+        selectAllOnBeginEditing: Bool = false,
         @ViewBuilder customFieldView: @escaping (String, Any, FieldType) -> some View = { _, _, _ in EmptyView() },
         onUpdate: @escaping (T) -> Void = { _ in },
         onCancel: @escaping () -> Void = { },
@@ -528,7 +535,8 @@ Text(i18n.localizedString(for: "SixLayerFramework.form.title"))
         // Apply IntelligentFormView identifier at the outermost level
         // Inner components (DynamicFormView, DynamicFormHeader, etc.) maintain their own identifiers
         return AnyView(content
-            .automaticCompliance(named: "IntelligentFormView"))
+            .automaticCompliance(named: "IntelligentFormView")
+            .environment(\.formSelectAllOnBeginEditing, selectAllOnBeginEditing))
     }
     
     /// Generate form action buttons for type-only forms
@@ -566,7 +574,12 @@ Text(i18n.localizedString(for: "SixLayerFramework.form.title"))
     }
     
     // MARK: - Private Implementation
-    
+
+    /// Packing cap for `PackedIntelligentFormFieldsLayout` (#488).
+    nonisolated static func packMaxItemsPerRow(for fieldLayout: FieldLayout) -> Int {
+        fieldLayout.formPackMaxItemsPerRow
+    }
+
     /// Determine the best form strategy based on data analysis
     private static func determineFormStrategy(
         analysis: DataAnalysisResult
@@ -631,34 +644,15 @@ Text(i18n.localizedString(for: "SixLayerFramework.form.title"))
     ) -> some View {
         Group {
             switch formStrategy.fieldLayout {
-            case .vertical:
-                generateVerticalLayout(
+            case .vertical, .horizontal, .grid, .compact, .standard, .spacious:
+                generatePackedFieldsLayout(
                     analysis: analysis,
                     initialData: initialData,
                     dataBinder: dataBinder,
                     inputHandlingManager: inputHandlingManager,
                     customFieldView: customFieldView,
-                    fieldHints: Self.fieldHintsForLayout(.vertical, provided: fieldHints)
-                )
-                
-            case .horizontal:
-                generateHorizontalLayout(
-                    analysis: analysis,
-                    initialData: initialData,
-                    dataBinder: dataBinder,
-                    inputHandlingManager: inputHandlingManager,
-                    customFieldView: customFieldView,
-                    fieldHints: Self.fieldHintsForLayout(.horizontal, provided: fieldHints)
-                )
-                
-            case .grid:
-                generateGridLayout(
-                    analysis: analysis,
-                    initialData: initialData,
-                    dataBinder: dataBinder,
-                    inputHandlingManager: inputHandlingManager,
-                    customFieldView: customFieldView,
-                    fieldHints: Self.fieldHintsForLayout(.grid, provided: fieldHints)
+                    fieldHints: Self.fieldHintsForLayout(formStrategy.fieldLayout, provided: fieldHints),
+                    fieldLayout: formStrategy.fieldLayout
                 )
                 
             case .adaptive:
@@ -668,18 +662,7 @@ Text(i18n.localizedString(for: "SixLayerFramework.form.title"))
                     dataBinder: dataBinder,
                     inputHandlingManager: inputHandlingManager,
                     customFieldView: customFieldView,
-                    formStrategy: formStrategy,
                     fieldHints: Self.fieldHintsForLayout(.adaptive, provided: fieldHints)
-                )
-                
-            case .compact, .standard, .spacious:
-                generateVerticalLayout(
-                    analysis: analysis,
-                    initialData: initialData,
-                    dataBinder: dataBinder,
-                    inputHandlingManager: inputHandlingManager,
-                    customFieldView: customFieldView,
-                    fieldHints: fieldHints
                 )
             }
         }
@@ -693,14 +676,15 @@ Text(i18n.localizedString(for: "SixLayerFramework.form.title"))
         }
     }
     
-    /// Generate vertical field layout with intelligent grouping
-    private static func generateVerticalLayout<T>(
+    /// Pack visible fields using `fieldLayout`'s shared max-items-per-row cap (#488).
+    private static func generatePackedFieldsLayout<T>(
         analysis: DataAnalysisResult,
         initialData: T?,
         dataBinder: DataBinder<T>?,
         inputHandlingManager: InputHandlingManager?,
         customFieldView: @escaping (String, Any, FieldType) -> some View,
-        fieldHints: [String: FieldDisplayHints] = [:]
+        fieldHints: [String: FieldDisplayHints] = [:],
+        fieldLayout: FieldLayout
     ) -> some View {
         let visibleFields = filterHiddenFields(analysis.fields, hints: fieldHints)
         let orderedFields = orderFieldsByPriority(visibleFields)
@@ -712,94 +696,37 @@ Text(i18n.localizedString(for: "SixLayerFramework.form.title"))
             customFieldView: customFieldView,
             fieldHints: fieldHints,
             spacing: 16,
-            maxItemsPerRow: 4
+            maxItemsPerRow: packMaxItemsPerRow(for: fieldLayout)
         )
     }
     
-    /// Generate horizontal field layout (side-by-side fields)
-    private static func generateHorizontalLayout<T>(
-        analysis: DataAnalysisResult,
-        initialData: T?,
-        dataBinder: DataBinder<T>?,
-        inputHandlingManager: InputHandlingManager?,
-        customFieldView: @escaping (String, Any, FieldType) -> some View,
-        fieldHints: [String: FieldDisplayHints] = [:]
-    ) -> some View {
-        let orderedFields = orderFieldsByPriority(filterHiddenFields(analysis.fields, hints: fieldHints))
-        return PackedIntelligentFormFieldsLayout(
-            fields: orderedFields,
-            initialData: initialData,
-            dataBinder: dataBinder,
-            inputHandlingManager: inputHandlingManager,
-            customFieldView: customFieldView,
-            fieldHints: fieldHints,
-            spacing: 16,
-            maxItemsPerRow: 2
-        )
-    }
-    
-    /// Generate grid field layout
-    private static func generateGridLayout<T>(
-        analysis: DataAnalysisResult,
-        initialData: T?,
-        dataBinder: DataBinder<T>?,
-        inputHandlingManager: InputHandlingManager?,
-        customFieldView: @escaping (String, Any, FieldType) -> some View,
-        fieldHints: [String: FieldDisplayHints] = [:]
-    ) -> some View {
-        let visibleFields = filterHiddenFields(analysis.fields, hints: fieldHints)
-        let orderedFields = orderFieldsByPriority(visibleFields)
-        return PackedIntelligentFormFieldsLayout(
-            fields: orderedFields,
-            initialData: initialData,
-            dataBinder: dataBinder,
-            inputHandlingManager: inputHandlingManager,
-            customFieldView: customFieldView,
-            fieldHints: fieldHints,
-            spacing: 16,
-            maxItemsPerRow: 3
-        )
-    }
-    
-    /// Generate adaptive field layout based on content
+    /// Adaptive packing: few fields stay 4-up; more fields keep the previous 2-up / 3-up caps.
     private static func generateAdaptiveLayout<T>(
         analysis: DataAnalysisResult,
         initialData: T?,
         dataBinder: DataBinder<T>?,
         inputHandlingManager: InputHandlingManager?,
         customFieldView: @escaping (String, Any, FieldType) -> some View,
-        formStrategy: FormStrategy,
         fieldHints: [String: FieldDisplayHints] = [:]
     ) -> some View {
         let visibleFields = filterHiddenFields(analysis.fields, hints: fieldHints)
+        let fieldLayout: FieldLayout
         if visibleFields.count <= 4 {
-            return AnyView(generateVerticalLayout(
-                analysis: analysis,
-                initialData: initialData,
-                dataBinder: dataBinder,
-                inputHandlingManager: inputHandlingManager,
-                customFieldView: customFieldView,
-                fieldHints: fieldHints
-            ))
+            fieldLayout = .adaptive
         } else if visibleFields.count <= 8 {
-            return AnyView(generateHorizontalLayout(
-                analysis: analysis,
-                initialData: initialData,
-                dataBinder: dataBinder,
-                inputHandlingManager: inputHandlingManager,
-                customFieldView: customFieldView,
-                fieldHints: fieldHints
-            ))
+            fieldLayout = .horizontal
         } else {
-            return AnyView(generateGridLayout(
-                analysis: analysis,
-                initialData: initialData,
-                dataBinder: dataBinder,
-                inputHandlingManager: inputHandlingManager,
-                customFieldView: customFieldView,
-                fieldHints: fieldHints
-            ))
+            fieldLayout = .grid
         }
+        return AnyView(generatePackedFieldsLayout(
+            analysis: analysis,
+            initialData: initialData,
+            dataBinder: dataBinder,
+            inputHandlingManager: inputHandlingManager,
+            customFieldView: customFieldView,
+            fieldHints: fieldHints,
+            fieldLayout: fieldLayout
+        ))
     }
     
     /// Group fields by type for better organization
@@ -1253,7 +1180,8 @@ private struct DefaultPlatformFieldView: View {
     let value: Any
     let hints: FieldDisplayHints?
     let onValueChange: (Any) -> Void
-    
+    @Environment(\.formValidationStrategy) private var validationStrategy
+
     /// Whether the field is editable (defaults to true if hints not provided)
     private var isEditable: Bool {
         return hints?.isEditable ?? true
@@ -1266,14 +1194,19 @@ private struct DefaultPlatformFieldView: View {
         self.onValueChange = onValueChange
     }
     
-    // Computed property to get field errors
     private var fieldErrors: [String] {
-        [] // No validation errors without FormStateManager
+        if let message = FormFieldLiveValidation.message(
+            field: field,
+            value: value,
+            strategy: validationStrategy
+        ) {
+            return [message]
+        }
+        return []
     }
-    
-    // Computed property to check if field is valid
+
     private var isValid: Bool {
-        true // Always valid without FormStateManager
+        fieldErrors.isEmpty
     }
     
     public var body: some View {
@@ -1323,6 +1256,7 @@ private struct DefaultPlatformFieldView: View {
                     set: { if isEditable { onValueChange($0) } }
                 ))
                 .platformTextFieldStyle()
+                .selectAllTextOnBeginEditingIfFormOptedIn()
                 .disabled(!isEditable)
                 .background(isValid ? Color.platformSecondaryBackground : Color.red.opacity(0.1))
                 .overlay(
@@ -1338,6 +1272,7 @@ private struct DefaultPlatformFieldView: View {
                     set: { if isEditable { onValueChange($0) } }
                 ), format: .number)
                 .platformTextFieldStyle()
+                .selectAllTextOnBeginEditingIfFormOptedIn()
                 .disabled(!isEditable)
                 #if os(iOS)
                 .keyboardType(UIKeyboardType.decimalPad)
@@ -1390,6 +1325,7 @@ private struct DefaultPlatformFieldView: View {
                 set: { if isEditable { onValueChange($0) } }
             ))
             .platformTextFieldStyle()
+            .selectAllTextOnBeginEditingIfFormOptedIn()
             .disabled(!isEditable)
             .keyboardType(KeyboardType.URL)
             .platformTextInputAutocapitalization(.never)
@@ -1405,6 +1341,7 @@ private struct DefaultPlatformFieldView: View {
                 set: { if isEditable { onValueChange($0) } }
             ))
             .platformTextFieldStyle()
+            .selectAllTextOnBeginEditingIfFormOptedIn()
             .disabled(!isEditable)
             .platformTextInputAutocapitalization(.never)
             .background(isValid ? Color.platformSecondaryBackground : Color.red.opacity(0.1))
@@ -1429,6 +1366,7 @@ private struct DefaultPlatformFieldView: View {
                 set: { if isEditable { onValueChange($0) } }
             ))
             .platformTextFieldStyle()
+            .selectAllTextOnBeginEditingIfFormOptedIn()
             .disabled(!isEditable)
             .background(isValid ? Color.platformSecondaryBackground : Color.red.opacity(0.1))
             .overlay(
@@ -1486,6 +1424,7 @@ public extension View {
         initialData: T? = nil,
         dataBinder: DataBinder<T>? = nil,
         inputHandlingManager: InputHandlingManager? = nil,
+        selectAllOnBeginEditing: Bool = false,
         @ViewBuilder customFieldView: @escaping (String, Any, FieldType) -> some View = { _, _, _ in EmptyView() },
         onSubmit: @escaping (T) -> Void = { _ in },
         onCancel: @escaping () -> Void = { }
@@ -1495,6 +1434,7 @@ public extension View {
             initialData: initialData,
             dataBinder: dataBinder,
             inputHandlingManager: inputHandlingManager,
+            selectAllOnBeginEditing: selectAllOnBeginEditing,
             customFieldView: customFieldView,
             onSubmit: onSubmit,
             onCancel: onCancel
@@ -1506,6 +1446,7 @@ public extension View {
         for data: T,
         dataBinder: DataBinder<T>? = nil,
         inputHandlingManager: InputHandlingManager? = nil,
+        selectAllOnBeginEditing: Bool = false,
         @ViewBuilder customFieldView: @escaping (String, Any, FieldType) -> some View = { _, _, _ in EmptyView() },
         onUpdate: @escaping (T) -> Void = { _ in },
         onCancel: @escaping () -> Void = { }
@@ -1514,6 +1455,7 @@ public extension View {
             for: data,
             dataBinder: dataBinder,
             inputHandlingManager: inputHandlingManager,
+            selectAllOnBeginEditing: selectAllOnBeginEditing,
             customFieldView: customFieldView,
             onUpdate: onUpdate,
             onCancel: onCancel
@@ -1532,6 +1474,7 @@ private struct TypeOnlyFormWrapper<T>: View {
     let formStrategy: FormStrategy
     let fieldHints: [String: FieldDisplayHints]
     let inputHandlingManager: InputHandlingManager?
+    let selectAllOnBeginEditing: Bool
     let customFieldView: (String, Any, FieldType) -> AnyView
     let onSubmit: (T) -> Void
     let onCancel: () -> Void
@@ -1557,6 +1500,7 @@ private struct TypeOnlyFormWrapper<T>: View {
                 // Mark as draft since it's a newly created entity (Issue #80)
                 IntelligentFormView.generateForm(
                     for: entity,
+                    selectAllOnBeginEditing: selectAllOnBeginEditing,
                     onUpdate: { updatedEntity in
                         onSubmit(updatedEntity)
                     },

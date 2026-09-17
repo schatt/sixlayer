@@ -1,12 +1,9 @@
 import SwiftUI
-#if os(iOS)
-import UIKit
-#endif
 
 // MARK: - Platform Haptic Feedback Extensions
 
-/// Platform-specific haptic feedback types that provide consistent tactile feedback
-/// across iOS devices while gracefully handling macOS (no-op)
+/// App-facing haptic styles. Use `View.platformHapticFeedback(_:)` as the public
+/// View API; L5 `platformIOSHapticFeedback` / `IOSHapticStyle` are deprecated wrappers (#445).
 public enum PlatformHapticFeedback: CaseIterable {
     /// Light impact feedback - subtle tactile response
     case light
@@ -26,53 +23,6 @@ public enum PlatformHapticFeedback: CaseIterable {
     case error
 }
 
-// MARK: - Haptic Feedback Triggering
-
-/// Platform-specific haptic feedback triggering logic
-@MainActor
-private func triggerHapticFeedback(_ feedback: PlatformHapticFeedback) {
-    #if os(iOS)
-    switch feedback {
-    case .light:
-        let generator = UIImpactFeedbackGenerator(style: .light)
-        generator.impactOccurred()
-    case .medium:
-        let generator = UIImpactFeedbackGenerator(style: .medium)
-        generator.impactOccurred()
-    case .heavy:
-        let generator = UIImpactFeedbackGenerator(style: .heavy)
-        generator.impactOccurred()
-    case .soft:
-        if #available(iOS 13.0, *) {
-            let generator = UIImpactFeedbackGenerator(style: .soft)
-            generator.impactOccurred()
-        } else {
-            let generator = UIImpactFeedbackGenerator(style: .light)
-            generator.impactOccurred()
-        }
-    case .rigid:
-        if #available(iOS 13.0, *) {
-            let generator = UIImpactFeedbackGenerator(style: .rigid)
-            generator.impactOccurred()
-        } else {
-            let generator = UIImpactFeedbackGenerator(style: .heavy)
-            generator.impactOccurred()
-        }
-    case .success:
-        let generator = UINotificationFeedbackGenerator()
-        generator.notificationOccurred(.success)
-    case .warning:
-        let generator = UINotificationFeedbackGenerator()
-        generator.notificationOccurred(.warning)
-    case .error:
-        let generator = UINotificationFeedbackGenerator()
-        generator.notificationOccurred(.error)
-    }
-    #else
-    // macOS and other platforms: No-op (graceful fallback)
-    #endif
-}
-
 // MARK: - Haptic Feedback View Modifiers
 
 /// View modifier that triggers haptic feedback on tap
@@ -83,7 +33,7 @@ private struct PlatformHapticFeedbackTapModifier: ViewModifier {
         content
             .onTapGesture {
                 Task { @MainActor in
-                    triggerHapticFeedback(feedback)
+                    SixLayerHaptic.trigger(feedback)
                 }
             }
     }
@@ -98,7 +48,7 @@ private struct PlatformHapticFeedbackWithActionModifier: ViewModifier {
         content
             .onTapGesture {
                 Task { @MainActor in
-                    triggerHapticFeedback(feedback)
+                    SixLayerHaptic.trigger(feedback)
                 }
                 action()
             }
@@ -109,8 +59,9 @@ private struct PlatformHapticFeedbackWithActionModifier: ViewModifier {
 /// across iOS and macOS while handling platform differences appropriately
 public extension View {
 
-    /// Platform haptic feedback trigger
-    /// iOS: Triggers haptic feedback on tap; macOS: No-op (graceful fallback)
+    /// Primary View API for haptic feedback (#445).
+    /// iOS: fires on tap when `RuntimeCapabilityDetection.supportsHapticFeedback`;
+    /// other platforms: no-op.
     ///
     /// - Parameter feedback: The type of haptic feedback to trigger
     /// - Returns: The view with haptic feedback on tap
@@ -128,8 +79,8 @@ public extension View {
             .automaticCompliance()
     }
 
-    /// Platform haptic feedback trigger with custom action
-    /// iOS: Triggers haptic feedback and executes action on tap; macOS: Executes action only
+    /// Primary View API for haptic feedback plus a tap action (#445).
+    /// iOS: fires haptics on tap when supported; other platforms: action only.
     ///
     /// - Parameters:
     ///   - feedback: The type of haptic feedback to trigger

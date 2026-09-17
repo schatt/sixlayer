@@ -36,7 +36,7 @@ Apply platform-specific optimizations and features that enhance the user experie
 - `platformIOSSwipeGestures(onSwipeLeft:onSwipeRight:onSwipeUp:onSwipeDown:)` - iOS-specific swipe gestures
 
 #### **Haptic Feedback**
-- `platformIOSHapticFeedback(style:onTrigger:)` - iOS-specific haptic feedback
+- App-facing: `platformHapticFeedback(_:)` / `PlatformHapticFeedback` (not Layer 6). L5 `platformIOSHapticFeedback` is deprecated (#445).
 
 ### **macOS Optimizations**
 
@@ -52,6 +52,14 @@ Apply platform-specific optimizations and features that enhance the user experie
 #### **Window Sizing**
 - `platformMacOSWindowSizing(minWidth:minHeight:idealWidth:idealHeight:)` - macOS-specific window sizing constraints
 
+#### **NavigationStack keyboard-first (#446)**
+File: `Platform/macOS/Views/Extensions/PlatformMacOSNavigationStackEnhancementsLayer6.swift`
+
+- `platformMacOSNavigationStackEnhancements_L6()` — macOS: `focusSection()` + `onExitCommand` dismiss when presented + `platformPresentationFrame(sizes: [.small])`. Does **not** duplicate L5 `.focusable()` and does **not** apply blanket `.isHeader`. Identity on other platforms.
+- `platformMacOSNavigationListDetailFocus_L6(_:list:detail:isDetailPresented:)` — macOS `defaultFocus` for list ↔ detail restore. Identity elsewhere.
+- `platformMacOSNavigationKeyboardShortcuts_L6(onBack:onSelect:onDismiss:)` — View-level `keyboardShortcut` (Cmd+`[`, Return, Escape). **Not** Scene `commands` (that API cannot be a View modifier).
+- Decisions: `platformMacOSNavigationStackKeyboardChrome(for:)`, `platformMacOSNavigationDefaultFocusPane(isDetailPresented:)`, `platformMacOSNavigationShouldDismissOnExit(isPresented:)`, `platformMacOSNavigationKeyboardShortcutKind(for:)`.
+
 ## 💡 Usage Examples
 
 ### **iOS Navigation Bar**
@@ -64,13 +72,9 @@ Apply platform-specific optimizations and features that enhance the user experie
 #endif
 ```
 
-### **iOS Haptic Feedback**
+### **Haptic Feedback**
 ```swift
-#if os(iOS)
-.platformIOSHapticFeedback(style: .medium) {
-    // Trigger haptic feedback
-}
-#endif
+.platformHapticFeedback(.medium)
 ```
 
 ### **macOS Window Sizing**
@@ -98,6 +102,19 @@ Apply platform-specific optimizations and features that enhance the user experie
 
 ### **Layer 4 → Layer 6**
 Layer 4 components can be enhanced with Layer 6 platform-specific features.
+
+Sidebar-sheet and compact overlay chrome live here (#447). Pure decisions stay in
+`platformSidebarSheetChrome(for:)` / `platformOverlayDetailChrome(for:)`; L6 apply uses
+compile-time `#if os` mirroring those tables so host Mirror subject types stay
+platform-truthful (a ViewBuilder runtime switch encoded unused `NavigationStack` branches):
+
+- `platformSidebarSheetChrome_L6()` — `NavigationStack` on iOS, small `platformPresentationFrame` on macOS, identity elsewhere
+- `platformOverlayDetailChrome_L6()` — `NavigationStack` on iOS and macOS, identity elsewhere
+
+`PlatformSidebarSheetChromeTests` gates both directions: `.current` decisions must match
+compile-time OS, and host Mirror subject types must match each decision (including overlay).
+
+Compact collapse and column visibility stay in `NavigationLayoutResolver` / L5 split helpers.
 
 ### **Layer 5 → Layer 6**
 Layer 5 optimizations can be enhanced with Layer 6 platform-specific performance features.

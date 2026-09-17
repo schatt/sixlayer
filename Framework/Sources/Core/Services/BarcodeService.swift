@@ -9,7 +9,8 @@
 import Foundation
 import SwiftUI
 
-#if canImport(Vision)
+// watchOS ships a Vision module without barcode request APIs (#493; same gate as OCRService).
+#if canImport(Vision) && !os(watchOS)
 import Vision
 #endif
 
@@ -84,7 +85,7 @@ public class BarcodeService: BarcodeServiceProtocol, @unchecked Sendable {
         context: BarcodeContext
     ) async throws -> BarcodeResult {
         
-        #if canImport(Vision)
+        #if canImport(Vision) && !os(watchOS)
         #if os(iOS)
         guard #available(iOS 11.0, *) else {
             throw BarcodeError.unsupportedPlatform
@@ -139,7 +140,7 @@ public class BarcodeService: BarcodeServiceProtocol, @unchecked Sendable {
         #endif
     }
     
-    #if canImport(Vision)
+    #if canImport(Vision) && !os(watchOS)
     @available(iOS 11.0, macOS 10.15, visionOS 1.0, *)
     private func configureVisionBarcodeRequest(
         _ request: VNDetectBarcodesRequest,
@@ -248,7 +249,7 @@ public class BarcodeService: BarcodeServiceProtocol, @unchecked Sendable {
     }
     
     private func isVisionBarcodeAvailable() -> Bool {
-        #if canImport(Vision)
+        #if canImport(Vision) && !os(watchOS)
         #if os(iOS)
         if #available(iOS 11.0, *) {
             return true
@@ -267,7 +268,7 @@ public class BarcodeService: BarcodeServiceProtocol, @unchecked Sendable {
     }
     
     private func getBarcodeCapabilities() -> BarcodeCapabilities {
-        #if canImport(Vision)
+        #if canImport(Vision) && !os(watchOS)
         #if os(iOS)
         if #available(iOS 11.0, *) {
             return BarcodeCapabilities(
