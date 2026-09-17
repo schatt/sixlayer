@@ -85,7 +85,8 @@ extension XCUIElement {
 
     /// Tap to become first responder; uses a coordinate tap when `Form` chrome clips hittability.
     /// On iOS, secure fields often need a second tap before `typeText` receives keyboard focus (#150 / iOS 26).
-    /// For switches, prefer the trailing thumb region when the control is not hittable.
+    /// For switches, tap the trailing thumb — iOS Form Switch elements span the full row,
+    /// so a center tap hits the label and does not flip (#497).
     /// On macOS, wait for a finite frame before coordinate taps — infinity frames throw (#493).
     func xcuiTapToBecomeFirstResponder() {
         #if os(macOS)
@@ -110,11 +111,7 @@ extension XCUIElement {
             return
         }
         if elementType == .switch {
-            if isHittable {
-                tap()
-            } else {
-                coordinate(withNormalizedOffset: CGVector(dx: 0.92, dy: 0.5)).tap()
-            }
+            coordinate(withNormalizedOffset: CGVector(dx: 0.92, dy: 0.5)).tap()
             RunLoop.current.run(until: Date().addingTimeInterval(0.25))
             return
         }
