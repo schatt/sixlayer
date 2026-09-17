@@ -657,7 +657,8 @@ Text(i18n.localizedString(for: "SixLayerFramework.form.title"))
                     inputHandlingManager: inputHandlingManager,
                     customFieldView: customFieldView,
                     fieldHints: Self.fieldHintsForLayout(formStrategy.fieldLayout, provided: fieldHints),
-                    fieldLayout: formStrategy.fieldLayout
+                    fieldLayout: formStrategy.fieldLayout,
+                    spacingLayout: formStrategy.fieldLayout
                 )
                 
             case .adaptive:
@@ -682,7 +683,7 @@ Text(i18n.localizedString(for: "SixLayerFramework.form.title"))
     }
     
     /// Pack visible fields using `fieldLayout`'s shared density and spacing maps (#488, #492).
-    /// Adaptive inner density picks (horizontal/grid) keep `.adaptive` spacing (16).
+    /// Adaptive inner density picks (horizontal/grid) pass `spacingLayout: .adaptive` so spacing stays 16.
     private static func generatePackedFieldsLayout<T>(
         analysis: DataAnalysisResult,
         initialData: T?,
@@ -691,7 +692,7 @@ Text(i18n.localizedString(for: "SixLayerFramework.form.title"))
         customFieldView: @escaping (String, Any, FieldType) -> some View,
         fieldHints: [String: FieldDisplayHints] = [:],
         fieldLayout: FieldLayout,
-        spacingLayout: FieldLayout? = nil
+        spacingLayout: FieldLayout
     ) -> some View {
         let visibleFields = filterHiddenFields(analysis.fields, hints: fieldHints)
         let orderedFields = orderFieldsByPriority(visibleFields)
@@ -702,7 +703,7 @@ Text(i18n.localizedString(for: "SixLayerFramework.form.title"))
             inputHandlingManager: inputHandlingManager,
             customFieldView: customFieldView,
             fieldHints: fieldHints,
-            spacing: packSpacing(for: spacingLayout ?? fieldLayout),
+            spacing: packSpacing(for: spacingLayout),
             maxItemsPerRow: packMaxItemsPerRow(for: fieldLayout)
         )
     }
