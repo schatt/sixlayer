@@ -1,12 +1,21 @@
 # 🚀 Six-Layer Framework Release History
 
-## 📍 **Current Release: v8.4.0** 🔧
+## 📍 **Current Release: v8.5.0** 🔧
 
-**Release Date**: September 7, 2026
+**Release Date**: September 17, 2026
 **Status**: Minor release
-**Previous Release**: v8.3.8 - Patch release
-**Note**: L5 honesty — real iOS L5 tests/helpers (#423, #424); remove phantom performance APIs (#425); drop keyboardAware no-op (#444); delete placeholder Layer5 demos (#453); coverage inventory and unit clusters (#449, #450, #454–#457).
-**Next Release**: TBD (v8.5.0)
+**Previous Release**: v8.4.0 - Minor release
+**Note**: Honest iOS/macOS L5/L6 — unified haptics (#445); macOS L5 chrome (#451); keyboard-first NavigationStack (#446); split/nav consolidation (#447); FormLayoutDecision (#397); select-all opt-in (#472); example Sources honesty (#465); Layer1 unit coverage (#466); retire `done/` hygiene (#459).
+**Next Release**: TBD (v8.6.0)
+
+---
+
+## 🎯 **v8.5.0 - Honest iOS/macOS L5/L6 public APIs** (September 17, 2026)
+
+### **What's in v8.5.0:**
+- Minor release (#397, #445–#447, #451, #459, #465, #466, #472). See [RELEASE_v8.5.0.md](RELEASE_v8.5.0.md) for details.
+
+**See [RELEASE_v8.5.0.md](RELEASE_v8.5.0.md) for complete release notes.**
 
 ---
 

@@ -1,5 +1,5 @@
 // swift-tools-version: 6.0
-// SixLayerFramework v8.4.0 - Minor: L5 honesty, placeholder Layer5 removals, unit coverage (#423–#425, #444, #449–#450, #453–#457)
+// SixLayerFramework v8.5.0 - Minor: honest iOS/macOS L5/L6 APIs (#397, #445–#447, #451, #459, #465, #466, #472)
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
