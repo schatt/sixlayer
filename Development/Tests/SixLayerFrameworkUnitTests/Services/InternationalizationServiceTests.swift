@@ -270,6 +270,51 @@ open class InternationalizationServiceTests: BaseTestClass {
         }
         """
         
+        let fixture = try makeCopiedXcstringsBundle(catalogJSON)
+        defer { try? FileManager.default.removeItem(at: fixture.cleanup) }
+        
+        let service = InternationalizationService(locale: Locale(identifier: "en"), appBundle: fixture.bundle)
+        let camera = service.appLocalizedString(for: "SixLayerFramework.photo.camera")
+        let library = service.appLocalizedString(for: "SixLayerFramework.photo.library")
+        
+        #expect(camera == "Camera", "SPM .copy xcstrings must resolve; got '\(camera)'")
+        #expect(library == "Library", "SPM .copy xcstrings must resolve; got '\(library)'")
+    }
+    
+    /// #500: Missing locale falls back to English, never to an unrelated catalog language.
+    @Test func testAppLocalizedString_CopiedXcstringsFallsBackToEnglishNotArbitraryLanguage() throws {
+        let catalogJSON = """
+        {
+          "sourceLanguage" : "en",
+          "strings" : {
+            "photo.camera" : {
+              "localizations" : {
+                "en" : { "stringUnit" : { "state" : "translated", "value" : "Camera" } }
+              }
+            },
+            "photo.onlyGerman" : {
+              "localizations" : {
+                "de" : { "stringUnit" : { "state" : "translated", "value" : "Kamera" } }
+              }
+            }
+          },
+          "version" : "1.0"
+        }
+        """
+        let fixture = try makeCopiedXcstringsBundle(catalogJSON)
+        defer { try? FileManager.default.removeItem(at: fixture.cleanup) }
+        
+        let french = InternationalizationService(locale: Locale(identifier: "fr"), appBundle: fixture.bundle)
+        let english = InternationalizationService(locale: Locale(identifier: "en"), appBundle: fixture.bundle)
+        
+        #expect(french.appLocalizedString(for: "photo.camera") == "Camera")
+        #expect(
+            english.appLocalizedString(for: "photo.onlyGerman") == "photo.onlyGerman",
+            "Must not return an unrequested language; got '\(english.appLocalizedString(for: "photo.onlyGerman"))'"
+        )
+    }
+    
+    private func makeCopiedXcstringsBundle(_ catalogJSON: String) throws -> (bundle: Bundle, cleanup: URL) {
         let fixtureRoot = FileManager.default.temporaryDirectory
             .appendingPathComponent("xcstrings-fixture-\(UUID().uuidString)", isDirectory: true)
         let bundleURL = fixtureRoot.appendingPathComponent("CatalogOnly.bundle", isDirectory: true)
@@ -279,19 +324,10 @@ open class InternationalizationServiceTests: BaseTestClass {
             atomically: true,
             encoding: .utf8
         )
-        defer { try? FileManager.default.removeItem(at: fixtureRoot) }
-        
         guard let catalogBundle = Bundle(url: bundleURL) else {
-            Issue.record("Failed to create Bundle for xcstrings-only fixture at \(bundleURL.path)")
-            return
+            throw CocoaError(.fileNoSuchFile)
         }
-        
-        let service = InternationalizationService(locale: Locale(identifier: "en"), appBundle: catalogBundle)
-        let camera = service.appLocalizedString(for: "SixLayerFramework.photo.camera")
-        let library = service.appLocalizedString(for: "SixLayerFramework.photo.library")
-        
-        #expect(camera == "Camera", "SPM .copy xcstrings must resolve; got '\(camera)'")
-        #expect(library == "Library", "SPM .copy xcstrings must resolve; got '\(library)'")
+        return (catalogBundle, fixtureRoot)
     }
     
     @Test func testFrameworkBundle_CanLoadStrings() {
