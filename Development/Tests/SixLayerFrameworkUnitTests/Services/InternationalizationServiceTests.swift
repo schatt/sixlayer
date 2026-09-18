@@ -448,10 +448,6 @@ open class InternationalizationServiceTests: BaseTestClass {
     }
     
     @Test func testEdgeCase_SpecialCharactersInStrings() {
-        // Given: Service
-        let service = InternationalizationService()
-        
-        // When: Requesting strings that may contain special characters
         let key = "SixLayerFramework.error.message"
         let service = InternationalizationService(locale: Locale(identifier: "en"))
         let result = service.frameworkLocalizedString(for: key)
