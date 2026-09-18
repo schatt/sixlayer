@@ -1,6 +1,6 @@
 # SixLayer Framework
 
-[![Version](https://img.shields.io/badge/version-v8.4.0-blue.svg)](https://github.com/schatt/sixlayer/releases/tag/v8.4.0)
+[![Version](https://img.shields.io/badge/version-v8.5.0-blue.svg)](https://github.com/schatt/sixlayer/releases/tag/v8.5.0)
 [![Platform](https://img.shields.io/badge/platform-iOS%2016%2B%20%7C%20macOS%2013%2B-lightgrey.svg)](https://github.com/schatt/6layer)
 [![Swift](https://img.shields.io/badge/Swift-5.9+-orange.svg)](https://swift.org)
 
@@ -39,6 +39,12 @@ Layer 1: Semantic Intent → Layer 2: Layout Decision → Layer 3: Strategy Sele
 - **Extensible**: Easy to extend with custom layers and strategies
 - **Comprehensively Tested**: 800+ tests with platform-aware testing and mandatory TDD implementation
 - **DRY Architecture**: Define hints once in files, use everywhere automatically
+
+## 🆕 What's New in v8.5.0
+
+### Minor release
+
+Honest iOS/macOS L5/L6: unified `platformHapticFeedback` (#445); `PlatformMacOSOptimizationsLayer5` (#451); keyboard-first NavigationStack L6 (#446); split/nav chrome consolidation (#447); FormLayoutDecision (#397); select-all opt-in (#472); example Sources moved/removed (#465); Layer1 unit coverage (#466). See [RELEASE_v8.5.0.md](../Development/RELEASE_v8.5.0.md).
 
 ## 🆕 What's New in v8.4.0
 
@@ -783,7 +789,7 @@ if let location = image?.exif.gpsLocation {
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/schatt/sixlayer.git", from: "8.3.8")
+    .package(url: "https://github.com/schatt/sixlayer.git", from: "8.5.0")
 ]
 ```
 

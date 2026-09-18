@@ -145,9 +145,7 @@ public extension View {
             .foregroundStyle(.secondary)
             .selfLabelingControl(label: label)
         #else
-        DatePicker("", selection: selection, displayedComponents: [.date, .hourAndMinute])
-            .datePickerStyle(.compact)
-            .selfLabelingControl(label: label)
+        AdaptiveCompactDateTimePickers(selection: selection, accessibilityLabel: label)
         #endif
     }
 
@@ -244,6 +242,34 @@ public extension View {
         #endif
     }
 }
+
+#if os(iOS) || os(macOS) || os(visionOS)
+/// Compact date + time pickers that sit side-by-side when they fit and stack when they do not (#481).
+/// `ViewThatFits` must see uncompressed HStack children (`fixedSize`) or it will treat a squished row as fitting.
+private struct AdaptiveCompactDateTimePickers: View {
+    @Binding var selection: Date
+    let accessibilityLabel: String
+
+    var body: some View {
+        ViewThatFits(in: .horizontal) {
+            HStack {
+                compactPicker(.date).fixedSize(horizontal: true, vertical: false)
+                compactPicker(.hourAndMinute).fixedSize(horizontal: true, vertical: false)
+            }
+            VStack(alignment: .leading) {
+                compactPicker(.date)
+                compactPicker(.hourAndMinute)
+            }
+        }
+    }
+
+    private func compactPicker(_ components: DatePickerComponents) -> some View {
+        DatePicker("", selection: $selection, displayedComponents: components)
+            .datePickerStyle(.compact)
+            .selfLabelingControl(label: accessibilityLabel)
+    }
+}
+#endif
 
 // MARK: - Form container (Layer 4)
 
@@ -354,3 +380,4 @@ public enum FormSpacing: CGFloat, CaseIterable {
     case large = 24
     case extraLarge = 32
 }
+
