@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import os
 import SwiftUI
 
 // MARK: - Internationalization Service
@@ -364,8 +365,7 @@ public class InternationalizationService: ObservableObject {
     
     /// Cached parsed Localizable.xcstrings catalogs keyed by bundle identity (#500).
     /// SPM `.copy` ships the JSON catalog without compiling it to `.strings`.
-    private static var xcstringsCatalogCache: [ObjectIdentifier: XCStringsCatalog] = [:]
-    private static let xcstringsCatalogCacheLock = NSLock()
+    private static let xcstringsCatalogCache = OSAllocatedUnfairLock(initialState: [ObjectIdentifier: XCStringsCatalog]())
     
     /// Locale codes to try when resolving a key (most specific → English fallback).
     private func localeCodesToTry(for locale: Locale) -> [String] {
@@ -427,12 +427,9 @@ public class InternationalizationService: ObservableObject {
     private static func loadXcstringsCatalog(from bundle: Bundle) -> XCStringsCatalog? {
         let bundleID = ObjectIdentifier(bundle)
         
-        xcstringsCatalogCacheLock.lock()
-        if let cached = xcstringsCatalogCache[bundleID] {
-            xcstringsCatalogCacheLock.unlock()
+        if let cached = xcstringsCatalogCache.withLock({ $0[bundleID] }) {
             return cached
         }
-        xcstringsCatalogCacheLock.unlock()
         
         guard let catalogURL = bundle.url(forResource: "Localizable", withExtension: "xcstrings"),
               let data = try? Data(contentsOf: catalogURL),
@@ -440,9 +437,9 @@ public class InternationalizationService: ObservableObject {
             return nil
         }
         
-        xcstringsCatalogCacheLock.lock()
-        xcstringsCatalogCache[bundleID] = catalog
-        xcstringsCatalogCacheLock.unlock()
+        xcstringsCatalogCache.withLock { cache in
+            cache[bundleID] = catalog
+        }
         
         return catalog
     }
@@ -726,7 +723,7 @@ public class InternationalizationService: ObservableObject {
 
 /// Parsed `Localizable.xcstrings` for bundles that ship the catalog via SPM `.copy`
 /// without compiling it to `.lproj` / `.strings`.
-fileprivate struct XCStringsCatalog {
+fileprivate struct XCStringsCatalog: Sendable {
     /// key → locale code → value
     private let valuesByKey: [String: [String: String]]
     private let sourceLanguage: String
