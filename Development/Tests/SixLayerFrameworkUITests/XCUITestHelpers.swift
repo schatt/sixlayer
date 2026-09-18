@@ -29,13 +29,29 @@ extension XCUIApplication {
         launchEnvironment = ["XCUI_TESTING": "1"]
     }
 
-    /// Swipe down on the software keyboard when present so the next `Form` row can scroll above the
-    /// keyboard and accept first responder (Issue #150 / iOS 26 UITest flakes; Refs #261).
+    /// Resign first responder so the next `Form` row can accept focus (Issue #150 / iOS 26; Refs #261).
+    /// Never swipe the keyboard surface — QuickPath treats that swipe as typing (#497).
+    /// Prefer an explicit Done/Hide control; otherwise drag the form, not the keys.
     func xcuiDismissSoftwareKeyboardIfPresent() {
         #if os(iOS)
-        let board = keyboards.firstMatch
-        guard board.exists else { return }
-        board.swipeDown()
+        guard keyboards.firstMatch.exists else { return }
+        let dismissControl = [
+            keyboards.buttons["Hide keyboard"],
+            descendants(matching: .any)["SD150_KeyboardDone"].firstMatch,
+            toolbars.buttons["Done"]
+        ].first(where: \.exists)
+        if let dismissControl {
+            dismissControl.tap()
+        } else {
+            let host = collectionViews.firstMatch.exists
+                ? collectionViews.firstMatch
+                : (scrollViews.firstMatch.exists ? scrollViews.firstMatch : windows.firstMatch)
+            host.coordinate(withNormalizedOffset: CGVector(dx: 0.92, dy: 0.18))
+                .press(
+                    forDuration: 0.05,
+                    thenDragTo: host.coordinate(withNormalizedOffset: CGVector(dx: 0.92, dy: 0.42))
+                )
+        }
         let deadline = Date().addingTimeInterval(2.5)
         while keyboards.firstMatch.exists, Date() < deadline {
             RunLoop.current.run(until: Date().addingTimeInterval(0.1))
@@ -69,7 +85,8 @@ extension XCUIElement {
 
     /// Tap to become first responder; uses a coordinate tap when `Form` chrome clips hittability.
     /// On iOS, secure fields often need a second tap before `typeText` receives keyboard focus (#150 / iOS 26).
-    /// For switches, prefer the trailing thumb region when the control is not hittable.
+    /// For switches, tap the trailing thumb — iOS Form Switch elements span the full row,
+    /// so a center tap hits the label and does not flip (#497).
     /// On macOS, wait for a finite frame before coordinate taps — infinity frames throw (#493).
     func xcuiTapToBecomeFirstResponder() {
         #if os(macOS)
@@ -94,11 +111,7 @@ extension XCUIElement {
             return
         }
         if elementType == .switch {
-            if isHittable {
-                tap()
-            } else {
-                coordinate(withNormalizedOffset: CGVector(dx: 0.92, dy: 0.5)).tap()
-            }
+            coordinate(withNormalizedOffset: CGVector(dx: 0.92, dy: 0.5)).tap()
             RunLoop.current.run(until: Date().addingTimeInterval(0.25))
             return
         }
