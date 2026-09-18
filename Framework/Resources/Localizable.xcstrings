@@ -7,19 +7,10 @@
     "... and %@ more items" : {
 
     },
-    ".foregroundColor(.platformTertiaryLabel)" : {
-
-    },
     "[%@]:" : {
 
     },
     "*" : {
-
-    },
-    "#if os(iOS)\n.foregroundColor(.tertiaryLabel)\n#elseif os(macOS)\n.foregroundColor(.secondary)\n#endif" : {
-
-    },
-    "%.1fpt" : {
 
     },
     "%@" : {
@@ -113,37 +104,13 @@
     "• Platform-specific layouts" : {
 
     },
-    "✅ After (Cross-platform)" : {
-
-    },
-    "❌ Before (Platform-specific)" : {
-
-    },
     "📋" : {
 
     },
     "0" : {
 
     },
-    "1. Accessing Reasoning Properties" : {
-
-    },
-    "2. Debugging Layout Decisions" : {
-
-    },
-    "3. Form Layout Reasoning" : {
-
-    },
-    "4.5" : {
-
-    },
     "Accessibility Testing" : {
-
-    },
-    "Account Details" : {
-
-    },
-    "Adaptive" : {
 
     },
     "Additional Details" : {
@@ -155,25 +122,10 @@
     "Analysis failed" : {
 
     },
-    "Analytics Log:" : {
-
-    },
     "Analyzing image for barcode detection" : {
 
     },
-    "Approach:" : {
-
-    },
-    "Approach: %@" : {
-
-    },
     "Array" : {
-
-    },
-    "Available Features" : {
-
-    },
-    "Background Colors" : {
 
     },
     "Barcode %@:" : {
@@ -185,25 +137,7 @@
     "Barcode Scanning Error" : {
 
     },
-    "Before vs After" : {
-
-    },
-    "Button Sizes" : {
-
-    },
-    "Button Styles" : {
-
-    },
-    "Buttons" : {
-
-    },
-    "Buttons with Icons" : {
-
-    },
     "Cancel" : {
-
-    },
-    "Capability Status" : {
 
     },
     "Card description" : {
@@ -212,16 +146,7 @@
     "Card Title" : {
 
     },
-    "Cards" : {
-
-    },
-    "Carousel" : {
-
-    },
     "Close sidebar" : {
-
-    },
-    "Columns:" : {
 
     },
     "Columns: %@" : {
@@ -239,16 +164,10 @@
     "Confidence" : {
 
     },
-    "Container: %@" : {
-
-    },
     "Cross-Platform Layout Optimization" : {
 
     },
     "Custom field not registered: %@" : {
-
-    },
-    "Data points: %@" : {
 
     },
     "Data Quality" : {
@@ -269,15 +188,6 @@
     "DataFrame Overview" : {
 
     },
-    "Detail %@" : {
-
-    },
-    "Detail for %@" : {
-
-    },
-    "Details" : {
-
-    },
     "Dictionary with %@ keys" : {
 
     },
@@ -290,13 +200,7 @@
     "Error" : {
 
     },
-    "Events: %@" : {
-
-    },
     "Extracting structured data..." : {
-
-    },
-    "Fallback Behaviors" : {
 
     },
     "Field Count: %@" : {
@@ -305,37 +209,16 @@
     "Field Details:" : {
 
     },
-    "Field Layout: %@" : {
-
-    },
     "File Picker" : {
 
     },
     "File picker requires iOS 14 or later" : {
 
     },
-    "Form Examples" : {
-
-    },
-    "Form functionality temporarily disabled - needs DynamicFormField migration" : {
-
-    },
     "Form: %@" : {
 
     },
-    "Forms" : {
-
-    },
     "Found %@ barcode(s)" : {
-
-    },
-    "Full Liquid Glass UI" : {
-
-    },
-    "Grouped" : {
-
-    },
-    "Grouped Background" : {
 
     },
     "Has Dates: %@" : {
@@ -347,64 +230,16 @@
     "Has Relationships: %@" : {
 
     },
-    "Hierarchical Data" : {
-
-    },
-    "Inset Grouped" : {
-
-    },
-    "iOS Optimized View" : {
-
-    },
     "Is Hierarchical: %@" : {
 
     },
     "Item %@" : {
 
     },
-    "Items" : {
-
-    },
-    "Items: %@" : {
-
-    },
-    "Label Colors" : {
-
-    },
-    "Layout Decision" : {
-
-    },
-    "Layout Decision Reasoning" : {
-
-    },
-    "Layout Transparency Example" : {
-
-    },
-    "Liquid Glass Design System" : {
-
-    },
-    "Lists" : {
-
-    },
-    "macOS Optimized View" : {
-
-    },
-    "Manage your preferences" : {
-
-    },
     "Map not available on this platform" : {
 
     },
     "Mean: %.2f" : {
-
-    },
-    "Media Collection" : {
-
-    },
-    "Modal Examples" : {
-
-    },
-    "Modals" : {
 
     },
     "Multiple date selection requires iOS 16+" : {
@@ -428,9 +263,6 @@
     "No items available" : {
 
     },
-    "No Liquid Glass features available" : {
-
-    },
     "No options available" : {
 
     },
@@ -443,19 +275,10 @@
     "No visualization recommendations available" : {
 
     },
-    "Numeric Data" : {
-
-    },
     "OCR Complete (Fallback)" : {
 
     },
     "OCR Error: %@" : {
-
-    },
-    "On iOS, it shows as a sheet with detents." : {
-
-    },
-    "On macOS, it shows in a window with specific dimensions." : {
 
     },
     "Optimal layouts for %@" : {
@@ -474,40 +297,10 @@
     "Pattern Recognition" : {
 
     },
-    "Performance: %@" : {
-
-    },
-    "Personal Information" : {
-
-    },
-    "Plain" : {
-
-    },
-    "Primary Background" : {
-
-    },
-    "Primary Label" : {
-
-    },
-    "Quaternary Label" : {
-
-    },
     "Ready for OCR (Fallback)" : {
 
     },
     "Ready to Scan" : {
-
-    },
-    "Reasoning Analytics Example" : {
-
-    },
-    "Reasoning: %@" : {
-
-    },
-    "Recommended Approach:" : {
-
-    },
-    "Root items: %@" : {
 
     },
     "Rows: %@" : {
@@ -516,25 +309,10 @@
     "Scanning Barcode..." : {
 
     },
-    "Secondary Background" : {
-
-    },
-    "Secondary Label" : {
-
-    },
     "Select" : {
 
     },
-    "Select an item" : {
-
-    },
-    "Separator Colors" : {
-
-    },
     "Settings" : {
-
-    },
-    "Sidebar" : {
 
     },
     "Sidebar Item 1" : {
@@ -26931,31 +26709,10 @@
         }
       }
     },
-    "Spacing:" : {
-
-    },
-    "Spacing: %.1fpt" : {
-
-    },
-    "Spacing: %@" : {
-
-    },
-    "Standard UI with Enhanced Styling" : {
-
-    },
     "Statistical Analysis" : {
 
     },
     "String: %@" : {
-
-    },
-    "Support Level:" : {
-
-    },
-    "Supported:" : {
-
-    },
-    "System Colors" : {
 
     },
     "Tab 1" : {
@@ -26967,22 +26724,7 @@
     "Tap to start barcode scanning" : {
 
     },
-    "Temporal Data" : {
-
-    },
-    "Tertiary Label" : {
-
-    },
     "Test Results" : {
-
-    },
-    "Text Input Colors" : {
-
-    },
-    "This card contains simple content without any actions." : {
-
-    },
-    "This card has an action button that can be tapped." : {
 
     },
     "This content is revealed when the card is expanded." : {
@@ -26991,43 +26733,10 @@
     "This content is revealed when the card is expanded. It can contain additional information, actions, or interactive elements." : {
 
     },
-    "This example shows how to display layout reasoning to users for transparency." : {
-
-    },
-    "This example shows how to log layout decision reasoning for analytics and monitoring." : {
-
-    },
-    "This information will be kept private" : {
-
-    },
-    "This is a more complex card with multiple elements." : {
-
-    },
-    "This is an adaptive modal that adjusts to the platform." : {
-
-    },
-    "This is the detail view for %@. It shows additional information about the selected item." : {
-
-    },
-    "This uses standard UI components with enhanced styling" : {
-
-    },
-    "This would use the complete Liquid Glass design system" : {
-
-    },
     "Type: %@" : {
 
     },
     "Unknown Content" : {
-
-    },
-    "Updated 2 hours ago" : {
-
-    },
-    "Use a strong password with at least 8 characters" : {
-
-    },
-    "Validation: %@" : {
 
     },
     "Value" : {
@@ -27037,9 +26746,6 @@
 
     },
     "Visualization Recommendations" : {
-
-    },
-    "Why this layout was chosen:" : {
 
     }
   },
