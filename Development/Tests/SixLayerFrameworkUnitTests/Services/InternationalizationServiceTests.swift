@@ -217,7 +217,7 @@ open class InternationalizationServiceTests: BaseTestClass {
     // MARK: - Framework String Loading Tests
     
     /// #500: Framework catalog values must resolve (not return the raw key).
-    /// Covers SPM/.copy Localizable.xcstrings — loader must find catalog entries in the framework bundle.
+    /// Covers Xcode-processed catalogs (compiled .strings / string catalogs in the framework product).
     @Test func testFrameworkBundle_ResolvesPhotoCatalogKeysToTranslatedValues() {
         let service = InternationalizationService(locale: Locale(identifier: "en"))
         
@@ -236,6 +236,62 @@ open class InternationalizationServiceTests: BaseTestClass {
         let camera = service.localizedString(for: "SixLayerFramework.photo.camera")
         
         #expect(camera == "Camera", "Expected framework catalog fallback 'Camera', got '\(camera)'")
+    }
+    
+    /// #500: SPM ships Localizable.xcstrings via `.copy` — no compiled .strings.
+    /// Simulate that layout with a bundle that contains only the catalog JSON.
+    @Test func testAppLocalizedString_ResolvesValuesFromCopiedXcstringsCatalog() throws {
+        let catalogJSON = """
+        {
+          "sourceLanguage" : "en",
+          "strings" : {
+            "SixLayerFramework.photo.camera" : {
+              "localizations" : {
+                "en" : {
+                  "stringUnit" : {
+                    "state" : "translated",
+                    "value" : "Camera"
+                  }
+                }
+              }
+            },
+            "SixLayerFramework.photo.library" : {
+              "localizations" : {
+                "en" : {
+                  "stringUnit" : {
+                    "state" : "translated",
+                    "value" : "Library"
+                  }
+                }
+              }
+            }
+          },
+          "version" : "1.0"
+        }
+        """
+        
+        let fixtureRoot = FileManager.default.temporaryDirectory
+            .appendingPathComponent("xcstrings-fixture-\(UUID().uuidString)", isDirectory: true)
+        let bundleURL = fixtureRoot.appendingPathComponent("CatalogOnly.bundle", isDirectory: true)
+        try FileManager.default.createDirectory(at: bundleURL, withIntermediateDirectories: true)
+        try catalogJSON.write(
+            to: bundleURL.appendingPathComponent("Localizable.xcstrings"),
+            atomically: true,
+            encoding: .utf8
+        )
+        defer { try? FileManager.default.removeItem(at: fixtureRoot) }
+        
+        guard let catalogBundle = Bundle(url: bundleURL) else {
+            Issue.record("Failed to create Bundle for xcstrings-only fixture at \(bundleURL.path)")
+            return
+        }
+        
+        let service = InternationalizationService(locale: Locale(identifier: "en"), appBundle: catalogBundle)
+        let camera = service.appLocalizedString(for: "SixLayerFramework.photo.camera")
+        let library = service.appLocalizedString(for: "SixLayerFramework.photo.library")
+        
+        #expect(camera == "Camera", "SPM .copy xcstrings must resolve; got '\(camera)'")
+        #expect(library == "Library", "SPM .copy xcstrings must resolve; got '\(library)'")
     }
     
     @Test func testFrameworkBundle_CanLoadStrings() {
