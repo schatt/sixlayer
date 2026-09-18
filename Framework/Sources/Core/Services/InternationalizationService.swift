@@ -427,21 +427,20 @@ public class InternationalizationService: ObservableObject {
     private static func loadXcstringsCatalog(from bundle: Bundle) -> XCStringsCatalog? {
         let bundleID = ObjectIdentifier(bundle)
         
-        if let cached = xcstringsCatalogCache.withLock({ $0[bundleID] }) {
-            return cached
-        }
-        
-        guard let catalogURL = bundle.url(forResource: "Localizable", withExtension: "xcstrings"),
-              let data = try? Data(contentsOf: catalogURL),
-              let catalog = XCStringsCatalog(data: data) else {
-            return nil
-        }
-        
-        xcstringsCatalogCache.withLock { cache in
+        return xcstringsCatalogCache.withLock { cache in
+            if let cached = cache[bundleID] {
+                return cached
+            }
+            
+            guard let catalogURL = bundle.url(forResource: "Localizable", withExtension: "xcstrings"),
+                  let data = try? Data(contentsOf: catalogURL),
+                  let catalog = XCStringsCatalog(data: data) else {
+                return nil
+            }
+            
             cache[bundleID] = catalog
+            return catalog
         }
-        
-        return catalog
     }
     
     /// Get localized string for a key with fallback support
