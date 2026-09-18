@@ -363,9 +363,17 @@ public class InternationalizationService: ObservableObject {
     
     // MARK: - Localized Strings
     
-    /// Cached parsed Localizable.xcstrings catalogs keyed by bundle identity (#500).
-    /// SPM `.copy` ships the JSON catalog without compiling it to `.strings`.
-    private static let xcstringsCatalogCache = OSAllocatedUnfairLock(initialState: [ObjectIdentifier: XCStringsCatalog]())
+    /// Cached parsed Localizable.xcstrings catalogs keyed by bundle path (#500).
+    /// Path, not object identity: short-lived `Bundle` instances reuse addresses.
+    /// `.missing` avoids a resource stat on every lookup when the bundle has no catalog.
+    private enum XCStringsCatalogCacheEntry: Sendable {
+        case missing
+        case catalog(XCStringsCatalog)
+    }
+    
+    private static let xcstringsCatalogCache = OSAllocatedUnfairLock(
+        initialState: [String: XCStringsCatalogCacheEntry]()
+    )
     
     /// Locale codes to try when resolving a key (most specific → English fallback).
     private func localeCodesToTry(for locale: Locale) -> [String] {
@@ -409,37 +417,50 @@ public class InternationalizationService: ObservableObject {
         }
         
         // 2. Raw Localizable.xcstrings (SPM `.copy` — #500)
-        if let catalogValue = getLocalizedStringFromXcstrings(bundle: bundle, key: key, localeCodes: localeCodes) {
+        if let catalog = Self.loadXcstringsCatalog(from: bundle),
+           let catalogValue = catalog.value(for: key, localeCodes: localeCodes) {
             return catalogValue
         }
         
         return nil
     }
     
-    /// Look up a key in a copied `Localizable.xcstrings` string catalog in the bundle.
-    private func getLocalizedStringFromXcstrings(bundle: Bundle, key: String, localeCodes: [String]) -> String? {
-        guard let catalog = Self.loadXcstringsCatalog(from: bundle) else {
-            return nil
-        }
-        return catalog.value(for: key, localeCodes: localeCodes)
-    }
-    
     private static func loadXcstringsCatalog(from bundle: Bundle) -> XCStringsCatalog? {
-        let bundleID = ObjectIdentifier(bundle)
+        let cacheKey = bundle.bundlePath
+        
+        if let cached = xcstringsCatalogCache.withLock({ $0[cacheKey] }) {
+            switch cached {
+            case .missing:
+                return nil
+            case .catalog(let catalog):
+                return catalog
+            }
+        }
+        
+        let parsed: XCStringsCatalog?
+        if let catalogURL = bundle.url(forResource: "Localizable", withExtension: "xcstrings"),
+           let data = try? Data(contentsOf: catalogURL),
+           let catalog = XCStringsCatalog(data: data) {
+            parsed = catalog
+        } else {
+            parsed = nil
+        }
         
         return xcstringsCatalogCache.withLock { cache in
-            if let cached = cache[bundleID] {
-                return cached
+            if let existing = cache[cacheKey] {
+                switch existing {
+                case .missing:
+                    return nil
+                case .catalog(let catalog):
+                    return catalog
+                }
             }
-            
-            guard let catalogURL = bundle.url(forResource: "Localizable", withExtension: "xcstrings"),
-                  let data = try? Data(contentsOf: catalogURL),
-                  let catalog = XCStringsCatalog(data: data) else {
-                return nil
+            if let parsed {
+                cache[cacheKey] = .catalog(parsed)
+                return parsed
             }
-            
-            cache[bundleID] = catalog
-            return catalog
+            cache[cacheKey] = .missing
+            return nil
         }
     }
     
@@ -777,6 +798,6 @@ fileprivate struct XCStringsCatalog: Sendable {
             return sourceValue
         }
         
-        return localeValues.values.first
+        return nil
     }
 }
