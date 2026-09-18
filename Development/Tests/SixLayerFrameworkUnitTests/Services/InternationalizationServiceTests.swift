@@ -216,6 +216,28 @@ open class InternationalizationServiceTests: BaseTestClass {
     
     // MARK: - Framework String Loading Tests
     
+    /// #500: Framework catalog values must resolve (not return the raw key).
+    /// Covers SPM/.copy Localizable.xcstrings — loader must find catalog entries in the framework bundle.
+    @Test func testFrameworkBundle_ResolvesPhotoCatalogKeysToTranslatedValues() {
+        let service = InternationalizationService(locale: Locale(identifier: "en"))
+        
+        let camera = service.frameworkLocalizedString(for: "SixLayerFramework.photo.camera")
+        let library = service.frameworkLocalizedString(for: "SixLayerFramework.photo.library")
+        
+        #expect(camera == "Camera", "Expected catalog value 'Camera', got '\(camera)'")
+        #expect(library == "Library", "Expected catalog value 'Library', got '\(library)'")
+    }
+    
+    /// #500: localizedString must fall back to framework catalog when app has no override.
+    @Test func testLocalizedString_FallsBackToFrameworkCatalogWhenAppHasNoOverride() {
+        let emptyAppBundle = Bundle(for: InternationalizationServiceTests.self)
+        let service = InternationalizationService(locale: Locale(identifier: "en"), appBundle: emptyAppBundle)
+        
+        let camera = service.localizedString(for: "SixLayerFramework.photo.camera")
+        
+        #expect(camera == "Camera", "Expected framework catalog fallback 'Camera', got '\(camera)'")
+    }
+    
     @Test func testFrameworkBundle_CanLoadStrings() {
         // Given: Service
         let service = InternationalizationService()
