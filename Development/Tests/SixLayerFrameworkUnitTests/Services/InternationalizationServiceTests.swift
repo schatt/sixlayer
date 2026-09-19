@@ -223,7 +223,7 @@ open class InternationalizationServiceTests: BaseTestClass {
         
         #expect(
             result == FrameworkCatalogFixture.value(key),
-            "bundle=\(InternationalizationService.frameworkBundle.bundleURL?.path ?? "nil") enPath=\(InternationalizationService.frameworkBundle.path(forResource: "Localizable", ofType: "strings", inDirectory: nil, forLocalization: "en") ?? "nil") got=\(result)"
+            "bundle=\(InternationalizationService.frameworkBundle.bundleURL.path) enPath=\(InternationalizationService.frameworkBundle.path(forResource: "Localizable", ofType: "strings", inDirectory: nil, forLocalization: "en") ?? "nil") got=\(result)"
         )
     }
     
