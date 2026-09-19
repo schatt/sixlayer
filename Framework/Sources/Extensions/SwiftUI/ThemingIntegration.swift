@@ -75,20 +75,16 @@ public struct ThemedIntelligentFormView<DataType: Codable>: View {
     }
 }
 
-/// Date and time control for themed forms.
+/// Date and time control for themed forms (#498).
 ///
-/// iOS, macOS, and visionOS must not use one compact picker with both date and time;
-/// that layout compresses when width is tight (#498).
+/// Delegates to ``platformDateTimeInput`` so iOS, macOS, and visionOS split into
+/// compact date and time pickers inside `ViewThatFits` instead of one combined picker.
 struct ThemedDateTimeField: View {
     @Binding var selection: Date
     var label: String
 
     var body: some View {
-        #if os(tvOS) || os(watchOS)
-        Text(label)
-        #else
-        DatePicker(label, selection: $selection, displayedComponents: [.date, .hourAndMinute])
-        #endif
+        EmptyView().platformDateTimeInput(selection: $selection, label: label)
     }
 }
 
@@ -288,10 +284,13 @@ public struct ThemedGenericFormView: View {
                 ), displayedComponents: .hourAndMinute)
             case .datetime:
                 let i18n = InternationalizationService()
-                DatePicker(field.placeholder ?? i18n.localizedString(for: "SixLayerFramework.form.placeholder.selectDateTime"), selection: Binding(
-                    get: { formData[field.id.uuidString] as? Date ?? Date() },
-                    set: { formData[field.id.uuidString] = $0 }
-                ), displayedComponents: [.date, .hourAndMinute])
+                ThemedDateTimeField(
+                    selection: Binding(
+                        get: { formData[field.id.uuidString] as? Date ?? Date() },
+                        set: { formData[field.id.uuidString] = $0 }
+                    ),
+                    label: field.placeholder ?? i18n.localizedString(for: "SixLayerFramework.form.placeholder.selectDateTime")
+                )
             case .multiselect:
                 let i18n = InternationalizationService()
                 Text(i18n.localizedString(for: "SixLayerFramework.form.fieldType.multiselect", arguments: [field.label]))
