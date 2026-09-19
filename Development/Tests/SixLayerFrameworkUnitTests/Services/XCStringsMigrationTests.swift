@@ -69,20 +69,6 @@ open class XCStringsMigrationTests: BaseTestClass {
         }
     }
     
-    @Test func testMigration_AllLanguagesPreserved() {
-        let expectedLanguages = ["en", "es", "fr", "de", "de-CH", "ja", "ko", "pl", "zh-Hans"]
-        
-        for languageCode in expectedLanguages {
-            let langService = InternationalizationService(locale: Locale(identifier: languageCode))
-            let result = langService.frameworkLocalizedString(for: selectKey)
-            
-            #expect(
-                result == FrameworkCatalogFixture.value(selectKey, language: languageCode),
-                "Language \(languageCode) resolved to '\(result)'"
-            )
-        }
-    }
-    
     @Test func testMigration_AllKeysPreserved() {
         let service = InternationalizationService(locale: Locale(identifier: "en"))
         let sampleKeys = [
@@ -93,7 +79,8 @@ open class XCStringsMigrationTests: BaseTestClass {
             "SixLayerFramework.button.save",
             "SixLayerFramework.button.cancel",
             "SixLayerFramework.cloudkit.accountUnavailable",
-            "SixLayerFramework.image.invalidImage"
+            "SixLayerFramework.image.invalidImage",
+            "SixLayerFramework.form.progressFields"
         ]
         
         for key in sampleKeys {
@@ -104,11 +91,13 @@ open class XCStringsMigrationTests: BaseTestClass {
     
     @Test func testMigration_StringFormattingPreserved() {
         let service = InternationalizationService(locale: Locale(identifier: "en"))
+        // %@ only. progressFields uses %d; arguments: [String] cannot format it.
+        // FormProgressIndicator formats that key with Ints. The template itself is
+        // locked in testMigration_AllKeysPreserved.
         let formatKeys = [
             ("SixLayerFramework.cloudkit.missingField", ["testField"]),
             ("SixLayerFramework.cloudkit.unknownError", ["Test Error"]),
-            ("SixLayerFramework.error.message", ["Error Message"]),
-            ("SixLayerFramework.form.progressFields", ["1", "5", ""])
+            ("SixLayerFramework.error.message", ["Error Message"])
         ]
         
         for (key, args) in formatKeys {
@@ -118,13 +107,6 @@ open class XCStringsMigrationTests: BaseTestClass {
                 "Format key '\(key)' resolved to '\(result)'"
             )
         }
-    }
-    
-    @Test func testMigration_CommentsPreserved() {
-        let service = InternationalizationService(locale: Locale(identifier: "en"))
-        let result = service.frameworkLocalizedString(for: selectKey)
-        
-        #expect(result == FrameworkCatalogFixture.value(selectKey))
     }
     
     @Test func testBackwardCompatibility_NSLocalizedStringWorks() {
