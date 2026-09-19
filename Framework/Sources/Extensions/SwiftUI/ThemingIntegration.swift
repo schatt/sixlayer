@@ -75,6 +75,23 @@ public struct ThemedIntelligentFormView<DataType: Codable>: View {
     }
 }
 
+/// Date and time control for themed forms.
+///
+/// iOS, macOS, and visionOS must not use one compact picker with both date and time;
+/// that layout compresses when width is tight (#498).
+struct ThemedDateTimeField: View {
+    @Binding var selection: Date
+    var label: String
+
+    var body: some View {
+        #if os(tvOS) || os(watchOS)
+        Text(label)
+        #else
+        DatePicker(label, selection: $selection, displayedComponents: [.date, .hourAndMinute])
+        #endif
+    }
+}
+
 /// Themed version of GenericFormView
 // MARK: - DEPRECATED: This struct uses GenericFormField which has been deprecated
 // TODO: Replace with DynamicFormField equivalents
