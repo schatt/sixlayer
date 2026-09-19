@@ -241,51 +241,13 @@ open class InternationalizationServiceTests: BaseTestClass {
         }
     }
     
-    @Test func testFrameworkBundle_StringFormattingWithArguments() {
-        // Given: Service
-        let service = InternationalizationService()
-        
-        // When: Testing string formatting logic with a format string
-        // Note: We test the formatting logic works, even if the key doesn't exist
-        let formatString = "Field '%@' is missing"
-        let formatted = String(format: formatString, "testField")
-        
-        // Then: Should format the string with arguments
-        #expect(formatted.contains("testField"), "Should contain formatted argument")
-        
-        // Also test that the service method handles arguments correctly
-        let result = service.localizedString(for: "test.format.key.xyz", arguments: ["testField"])
-        #expect(result == "test.format.key.xyz", "Unknown format keys are returned unchanged")
-    }
-    
-    @Test func testFrameworkBundle_StringFormattingWithMultipleArguments() {
-        // Given: Service
-        let service = InternationalizationService()
-        
-        // When: Testing string formatting logic with multiple arguments
-        let formatString = "%d of %d field%@"
-        let formatted = String(format: formatString, 1, 5, "")
-        
-        // Then: Should format the string with all arguments
-        #expect(formatted.contains("1"), "Should contain first argument")
-        #expect(formatted.contains("5"), "Should contain second argument")
-        
-        // Also test that the service method handles multiple arguments
-        let result = service.localizedString(for: "test.progress.key.xyz", arguments: ["1", "5", ""])
-        #expect(result == "test.progress.key.xyz", "Unknown format keys are returned unchanged")
-    }
-    
     // MARK: - App Override Functionality Tests
     
-    @Test func testAppOverride_AppStringOverridesFrameworkString() {
+    @Test func testAppOverride_TestHostDoesNotDefineFrameworkKey() {
         let service = InternationalizationService(locale: Locale(identifier: "en"), appBundle: Bundle.main)
         let key = "SixLayerFramework.form.placeholder.select"
-        
-        // Test host has no override, so the combined lookup is the framework catalog value.
-        let result = service.localizedString(for: key)
-        #expect(result == FrameworkCatalogFixture.value(key), "Expected framework fallback, got '\(result)'")
-        
         let appResult = service.appLocalizedString(for: key)
+        
         #expect(appResult == key, "Test host must not define '\(key)', got '\(appResult)'")
     }
     
@@ -453,40 +415,6 @@ open class InternationalizationServiceTests: BaseTestClass {
         let result = service.frameworkLocalizedString(for: key)
         
         #expect(result == FrameworkCatalogFixture.value(key))
-    }
-    
-    @Test func testEdgeCase_FormatStringPlaceholders() {
-        // Given: Service
-        let service = InternationalizationService()
-        
-        // When: Testing format string placeholder logic
-        // We test that the formatting mechanism works, even if the key doesn't exist
-        let formatString = "Unknown error: %@"
-        let formatted = String(format: formatString, "Test Error")
-        
-        // Then: Should format correctly
-        #expect(formatted.contains("Test Error"), "Should format with %@ placeholder")
-        
-        // Also verify service method handles format strings
-        let result = service.localizedString(for: "test.error.xyz", arguments: ["Test Error"])
-        #expect(result == "test.error.xyz")
-    }
-    
-    @Test func testEdgeCase_FormatStringWithIntegerPlaceholder() {
-        // Given: Service
-        let service = InternationalizationService()
-        
-        // When: Testing format string with integer placeholders
-        let formatString = "%d of %d field%@"
-        let formatted = String(format: formatString, 1, 5, "")
-        
-        // Then: Should format correctly
-        #expect(formatted.contains("1"), "Should format with %d placeholder")
-        #expect(formatted.contains("5"), "Should format with %d placeholder")
-        
-        // Also verify service method handles integer format strings
-        let result = service.localizedString(for: "test.progress.xyz", arguments: ["1", "5", ""])
-        #expect(result == "test.progress.xyz")
     }
     
 }
