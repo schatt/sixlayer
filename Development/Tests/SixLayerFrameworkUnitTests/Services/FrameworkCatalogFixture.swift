@@ -11,7 +11,12 @@ enum FrameworkCatalogFixture {
     }
 
     static func formatted(_ key: String, language: String = "en", arguments: [String]) -> String {
-        String(format: value(key, language: language), arguments: arguments)
+        let template = value(key, language: language)
+        precondition(
+            template.range(of: "%(?!@)", options: .regularExpression) == nil,
+            "formatted() only supports %@; \(key) is '\(template)'"
+        )
+        return String(format: template, arguments: arguments)
     }
 
     private static let values: [String: [String: String]] = [
