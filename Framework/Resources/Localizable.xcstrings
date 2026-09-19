@@ -4,15 +4,6 @@
     "" : {
 
     },
-    "... and %@ more items" : {
-
-    },
-    "[%@]:" : {
-
-    },
-    "*" : {
-
-    },
     "%@" : {
 
     },
@@ -32,16 +23,6 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "%1$@ / %2$@ characters"
-          }
-        }
-      }
-    },
-    "%@ • %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$@ • %2$@"
           }
         }
       }
@@ -69,15 +50,18 @@
         }
       }
     },
-    "%@: %@" : {
+    "%@ • %@" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "%1$@: %2$@"
+            "value" : "%1$@ • %2$@"
           }
         }
       }
+    },
+    "%@%%" : {
+
     },
     "%@. %@" : {
       "localizations" : {
@@ -89,22 +73,20 @@
         }
       }
     },
-    "%@%%" : {
+    "%@: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@: %2$@"
+          }
+        }
+      }
+    },
+    "*" : {
 
     },
-    "•" : {
-
-    },
-    "• Adaptive spacing" : {
-
-    },
-    "• Optimal component sizing" : {
-
-    },
-    "• Platform-specific layouts" : {
-
-    },
-    "📋" : {
+    "... and %@ more items" : {
 
     },
     "0" : {
@@ -140,10 +122,10 @@
     "Cancel" : {
 
     },
-    "Card description" : {
+    "Card Title" : {
 
     },
-    "Card Title" : {
+    "Card description" : {
 
     },
     "Close sidebar" : {
@@ -14492,95 +14474,6 @@
         }
       }
     },
-    "SixLayerFramework.form.fieldsCount" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "da" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%d felter"
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%d Felder"
-          }
-        },
-        "de-CH" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%d Felder"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%d fields"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%d campos"
-          }
-        },
-        "es-US" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%d campos"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%d champs"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%d campi"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%d フィールド"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%d개의 필드"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%d velden"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%d pól"
-          }
-        },
-        "sv" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%d fält"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%d 个字段"
-          }
-        }
-      }
-    },
     "SixLayerFramework.form.fieldType.array" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -15467,6 +15360,95 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "富文本字段：%@"
+          }
+        }
+      }
+    },
+    "SixLayerFramework.form.fieldsCount" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d felter"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d Felder"
+          }
+        },
+        "de-CH" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d Felder"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d fields"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d campos"
+          }
+        },
+        "es-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d campos"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d champs"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d campi"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d フィールド"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d개의 필드"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d velden"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d pól"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d fält"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d 个字段"
           }
         }
       }
@@ -17145,94 +17127,6 @@
         }
       }
     },
-    "SixLayerFramework.form.placeholder.selectDates" : {
-      "localizations" : {
-        "da" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Vælg datoer"
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Daten auswählen"
-          }
-        },
-        "de-CH" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Daten auswählen"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Select dates"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Seleccionar fechas"
-          }
-        },
-        "es-US" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Seleccionar fechas"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sélectionner des dates"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Seleziona le date"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "日付を選択"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "날짜 선택"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Selecteer data"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Wybierz daty"
-          }
-        },
-        "sv" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Välj datum"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "选择日期"
-          }
-        }
-      }
-    },
     "SixLayerFramework.form.placeholder.selectDateTime" : {
       "localizations" : {
         "da" : {
@@ -17317,6 +17211,94 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "选择日期和时间"
+          }
+        }
+      }
+    },
+    "SixLayerFramework.form.placeholder.selectDates" : {
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vælg datoer"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Daten auswählen"
+          }
+        },
+        "de-CH" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Daten auswählen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Select dates"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seleccionar fechas"
+          }
+        },
+        "es-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seleccionar fechas"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sélectionner des dates"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seleziona le date"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "日付を選択"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "날짜 선택"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Selecteer data"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wybierz daty"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Välj datum"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "选择日期"
           }
         }
       }
@@ -26746,6 +26728,24 @@
 
     },
     "Visualization Recommendations" : {
+
+    },
+    "[%@]:" : {
+
+    },
+    "•" : {
+
+    },
+    "• Adaptive spacing" : {
+
+    },
+    "• Optimal component sizing" : {
+
+    },
+    "• Platform-specific layouts" : {
+
+    },
+    "📋" : {
 
     }
   },
