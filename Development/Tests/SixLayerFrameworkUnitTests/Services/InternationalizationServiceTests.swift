@@ -221,7 +221,10 @@ open class InternationalizationServiceTests: BaseTestClass {
         let key = "SixLayerFramework.form.placeholder.select"
         let result = service.frameworkLocalizedString(for: key)
         
-        #expect(result == FrameworkCatalogFixture.value(key), "Expected catalog value, got '\(result)'")
+        #expect(
+            result == FrameworkCatalogFixture.value(key),
+            "bundle=\(InternationalizationService.frameworkBundle.bundleURL?.path ?? "nil") enPath=\(InternationalizationService.frameworkBundle.path(forResource: "Localizable", ofType: "strings", inDirectory: nil, forLocalization: "en") ?? "nil") got=\(result)"
+        )
     }
     
     @Test func testFrameworkBundle_AllDefinedKeysReturnProperValues() {
