@@ -27,7 +27,7 @@ Navigate to the `Framework/` directory and use it as a Swift Package:
 ```swift
 // In your Package.swift
 dependencies: [
-    .package(url: "https://github.com/schatt/sixlayer.git", from: "8.5.0")
+    .package(url: "https://github.com/schatt/sixlayer.git", from: "8.5.1")
 ]
 ```
 
@@ -41,9 +41,12 @@ dependencies: [
 
 The framework is distributed as a Swift Package from the `Framework/` directory. This ensures that only the essential framework code is included when other projects consume it.
 
-## 🆕 Latest Release: v8.5.0
+## 🆕 Latest Release: v8.5.1
 
-### **Minor release**
+### **Patch release**
+🔧 **Patch**: Adaptive compact date+time stacking (#481, #498); IntelligentFormView packing spacing (#492); SPM `.xcstrings` resolution (#500–#502); CI destinations and SD150 XCUI harness (#495–#497). See [RELEASE_v8.5.1.md](Development/RELEASE_v8.5.1.md).
+
+### **Previous Release: v8.5.0 - Minor release**
 🔧 **Minor**: Honest iOS/macOS L5/L6 — unified haptics (#445); macOS L5 chrome (#451); keyboard-first NavigationStack (#446); split/nav consolidation (#447); FormLayoutDecision (#397); select-all opt-in (#472); example Sources honesty (#465); Layer1 unit coverage (#466). See [RELEASE_v8.5.0.md](Development/RELEASE_v8.5.0.md).
 
 ### **Previous Release: v8.4.0 - Minor release**
@@ -322,8 +325,8 @@ These guides contain critical information about the Layer 1 Semantic Intent phil
 
 ## 📋 Current Status
 
-**Version**: v8.5.0 (Minor)
-**Phase**: Minor release
+**Version**: v8.5.1 (Patch)
+**Phase**: Patch release
 **Next**: v8.6.0
 
 ## 🤝 Contributing
