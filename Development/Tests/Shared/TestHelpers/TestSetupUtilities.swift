@@ -254,6 +254,30 @@ public enum TestSetupUtilities {
         #endif
         }
     }
+
+    /// Host a simple view with an isolated identifier config and return its debug log.
+    /// Use for unit-lane named-`automaticCompliance` observations (#467).
+    @MainActor
+    public static func hostRootPlatformViewNamedDebugLog<V: View>(
+        _ view: V,
+        forceLayout: Bool = true
+    ) -> (hosted: Any?, debugLog: String) {
+        #if os(watchOS)
+        return (nil, "")
+        #else
+        let isolated = makeIsolatedAccessibilityIdentifierConfig()
+        isolated.enableDebugLogging = true
+        isolated.clearDebugLog()
+        let hosted = AccessibilityIdentifierConfig.$taskLocalConfig.withValue(isolated) {
+            hostRootPlatformView(
+                view,
+                forceLayout: forceLayout,
+                accessibilityIdentifierConfig: isolated
+            )
+        }
+        return (hosted, isolated.getDebugLog())
+        #endif
+    }
     
     // MARK: - Field Type Helpers
     
