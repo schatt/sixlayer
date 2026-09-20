@@ -12,10 +12,6 @@ import Testing
 @MainActor
 struct PlatformSplitViewLayer4StateUnitTests {
 
-    /// Deliberate red: production `named:` strings do not include this suffix.
-    /// Removed after the failing run.
-    private let namedComplianceRedProbe = "SIXLAYER_467_RED"
-
     @Test func defaultVisibilityAndToggle() {
         let state = PlatformSplitViewState()
         #expect(state.isPaneVisible(0))
@@ -239,10 +235,9 @@ struct PlatformSplitViewLayer4StateUnitTests {
             )
         }
         #expect(hosted != nil)
-        let expected = name + namedComplianceRedProbe
         #expect(
-            isolated.getDebugLog().contains(expected),
-            "named compliance \(expected) must appear in debug log"
+            isolated.getDebugLog().contains(name),
+            "named compliance \(name) must appear in debug log"
         )
         #endif
     }
