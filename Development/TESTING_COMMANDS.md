@@ -127,13 +127,16 @@ xcodebuild test \
 2. **Platform-Specific Code**: Tests with `#if os(macOS)` only compile when targeting macOS
 3. **Complete Coverage**: To test all code paths, you must run tests on both platforms
 4. **SwiftUI Rendering**: Use `xcodebuild test` for SwiftUI rendering tests (not just `swift test`)
-5. **Simulator destinations**: Prefer `./Development/scripts/ensure-ci-simulator-destination.sh iOS` over hardcoding `name=iPhone …` (#399 / #494)
+5. **Simulator destinations**: Prefer `./Development/scripts/ensure-ci-simulator-destination.sh <family>` over hardcoding `name=…` (#399 / #494 / #495). Families: `iOS`, `tvOS`, `watchOS`, `visionOS`.
 
 ## Finding Available Simulators
 
 ```bash
-# Resolve a CI-safe destination (preferred)
+# Resolve a CI-safe destination (preferred) — any family
 ./Development/scripts/ensure-ci-simulator-destination.sh iOS
+./Development/scripts/ensure-ci-simulator-destination.sh tvOS
+./Development/scripts/ensure-ci-simulator-destination.sh watchOS
+./Development/scripts/ensure-ci-simulator-destination.sh visionOS
 
 # List all available iOS simulators
 xcrun simctl list devices available | grep -i "iphone\|ipad"

@@ -241,13 +241,12 @@ final class PlatformStandaloneDropIn150UITests: SixLayerUITestCase {
         file: StaticString,
         line: UInt
     ) {
-        let deadline = Date().addingTimeInterval(3.0)
+        let deadline = Date().addingTimeInterval(5.0)
         var focused = false
         while !focused && Date() < deadline {
             target.tap()
             RunLoop.current.run(until: Date().addingTimeInterval(0.2))
             focused = (target.value(forKey: "hasKeyboardFocus") as? Bool) == true
-                || app.keyboards.firstMatch.exists
         }
         XCTAssertTrue(
             focused,

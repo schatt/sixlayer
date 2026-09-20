@@ -28,8 +28,8 @@ open class InternationalizationServiceTests: BaseTestClass {
         // When: Requesting a localized string
         let localizedString = service.localizedString(for: "test.key")
         
-        // Then: Should return a string (even if it's the key itself)
-        #expect(!localizedString.isEmpty)
+        // Then: Unknown keys come back unchanged
+        #expect(localizedString == "test.key")
     }
     
     @Test func testInternationalizationServiceHandlesMissingKey() async {
@@ -39,8 +39,8 @@ open class InternationalizationServiceTests: BaseTestClass {
         // When: Requesting a non-existent key
         let result = service.localizedString(for: "nonexistent.key.that.does.not.exist")
         
-        // Then: Should return the key itself or a fallback
-        #expect(!result.isEmpty)
+        // Then: Should return the key itself
+        #expect(result == "nonexistent.key.that.does.not.exist")
     }
     
     @Test func testInternationalizationServiceSupportsMultipleLanguages() async {
@@ -176,8 +176,8 @@ open class InternationalizationServiceTests: BaseTestClass {
         // When: Requesting with format arguments (even if key doesn't exist)
         let result = service.localizedString(for: "test.key", arguments: ["arg1", "arg2"])
         
-        // Then: Should handle arguments (will return key if not found, but method should not crash)
-        #expect(!result.isEmpty)
+        // Then: Unknown keys are returned unchanged (no format specifiers to apply)
+        #expect(result == "test.key")
     }
     
     @Test func testAppLocalizedString_MethodExists() {
@@ -187,8 +187,8 @@ open class InternationalizationServiceTests: BaseTestClass {
         // When: Using app-only method
         let result = service.appLocalizedString(for: "test.key")
         
-        // Then: Should return a string (key itself if not found)
-        #expect(!result.isEmpty)
+        // Then: Unknown keys come back unchanged
+        #expect(result == "test.key")
     }
     
     @Test func testFrameworkLocalizedString_MethodExists() {
@@ -198,8 +198,8 @@ open class InternationalizationServiceTests: BaseTestClass {
         // When: Using framework-only method
         let result = service.frameworkLocalizedString(for: "test.key")
         
-        // Then: Should return a string (key itself if not found)
-        #expect(!result.isEmpty)
+        // Then: Unknown keys come back unchanged
+        #expect(result == "test.key")
     }
     
     @Test func testLocalizedString_WithCustomAppBundle() {
@@ -210,27 +210,22 @@ open class InternationalizationServiceTests: BaseTestClass {
         // When: Requesting a string
         let result = service.localizedString(for: "test.key")
         
-        // Then: Should use the custom bundle
-        #expect(!result.isEmpty)
+        // Then: Unknown keys come back unchanged
+        #expect(result == "test.key")
     }
     
     // MARK: - Framework String Loading Tests
     
     @Test func testFrameworkBundle_CanLoadStrings() {
-        // Given: Service
-        let service = InternationalizationService()
+        let service = InternationalizationService(locale: Locale(identifier: "en"))
+        let key = "SixLayerFramework.form.placeholder.select"
+        let result = service.frameworkLocalizedString(for: key)
         
-        // When: Requesting a known framework string
-        let result = service.frameworkLocalizedString(for: "SixLayerFramework.form.placeholder.select")
-        
-        // Then: Should return a string (either localized or key if bundle not found in test environment)
-        // Note: In test environment, resource bundle might not be available, so we test the method works
-        #expect(!result.isEmpty, "Should return non-empty string")
+        #expect(result == FrameworkCatalogFixture.value(key), "Expected catalog value, got '\(result)'")
     }
     
     @Test func testFrameworkBundle_AllDefinedKeysReturnProperValues() {
-        // Given: Service and known framework keys
-        let service = InternationalizationService()
+        let service = InternationalizationService(locale: Locale(identifier: "en"))
         let knownKeys = [
             "SixLayerFramework.form.placeholder.select",
             "SixLayerFramework.form.placeholder.selectOption",
@@ -240,96 +235,40 @@ open class InternationalizationServiceTests: BaseTestClass {
             "SixLayerFramework.error.title"
         ]
         
-        // When: Requesting each known key
         for key in knownKeys {
             let result = service.frameworkLocalizedString(for: key)
-            
-            // Then: Should return a string (either localized or key if bundle not found)
-            // Note: In test environment, we verify the method works, not that strings are loaded
-            #expect(!result.isEmpty, "Key '\(key)' should return non-empty string")
+            #expect(result == FrameworkCatalogFixture.value(key), "Key '\(key)' resolved to '\(result)'")
         }
-    }
-    
-    @Test func testFrameworkBundle_StringFormattingWithArguments() {
-        // Given: Service
-        let service = InternationalizationService()
-        
-        // When: Testing string formatting logic with a format string
-        // Note: We test the formatting logic works, even if the key doesn't exist
-        let formatString = "Field '%@' is missing"
-        let formatted = String(format: formatString, "testField")
-        
-        // Then: Should format the string with arguments
-        #expect(formatted.contains("testField"), "Should contain formatted argument")
-        
-        // Also test that the service method handles arguments correctly
-        let result = service.localizedString(for: "test.format.key.xyz", arguments: ["testField"])
-        // Result will be the key if not found, but method should not crash
-        #expect(!result.isEmpty, "Method should handle arguments without crashing")
-    }
-    
-    @Test func testFrameworkBundle_StringFormattingWithMultipleArguments() {
-        // Given: Service
-        let service = InternationalizationService()
-        
-        // When: Testing string formatting logic with multiple arguments
-        let formatString = "%d of %d field%@"
-        let formatted = String(format: formatString, 1, 5, "")
-        
-        // Then: Should format the string with all arguments
-        #expect(formatted.contains("1"), "Should contain first argument")
-        #expect(formatted.contains("5"), "Should contain second argument")
-        
-        // Also test that the service method handles multiple arguments
-        let result = service.localizedString(for: "test.progress.key.xyz", arguments: ["1", "5", ""])
-        #expect(!result.isEmpty, "Method should handle multiple arguments without crashing")
     }
     
     // MARK: - App Override Functionality Tests
     
-    @Test func testAppOverride_AppStringOverridesFrameworkString() {
-        // Given: Service with Bundle.main (which may or may not have the key)
-        // Note: In test environment, we verify the fallback logic works
-        let service = InternationalizationService(appBundle: Bundle.main)
+    @Test func testAppOverride_TestHostDoesNotDefineFrameworkKey() {
+        let service = InternationalizationService(locale: Locale(identifier: "en"), appBundle: Bundle.main)
+        let key = "SixLayerFramework.form.placeholder.select"
+        let appResult = service.appLocalizedString(for: key)
         
-        // When: Requesting a key
-        let result = service.localizedString(for: "SixLayerFramework.form.placeholder.select")
-        
-        // Then: Should return a string (app override if exists, framework if exists, or key)
-        // The important part is that the method works and follows the fallback chain
-        #expect(!result.isEmpty, "Should return non-empty string")
-        
-        // Verify app bundle is checked first by testing appLocalizedString
-        let appResult = service.appLocalizedString(for: "SixLayerFramework.form.placeholder.select")
-        #expect(!appResult.isEmpty, "App bundle lookup should work")
+        #expect(appResult == key, "Test host must not define '\(key)', got '\(appResult)'")
     }
     
     @Test func testAppOverride_FrameworkFallbackWhenAppDoesntOverride() {
-        // Given: Service with Bundle.main (which likely doesn't have framework keys)
-        let service = InternationalizationService(appBundle: Bundle.main)
+        let service = InternationalizationService(locale: Locale(identifier: "en"), appBundle: Bundle.main)
+        let key = "SixLayerFramework.form.placeholder.select"
+        let result = service.localizedString(for: key)
         
-        // When: Requesting a key that only exists in framework (or returns key if not found)
-        let result = service.localizedString(for: "SixLayerFramework.form.placeholder.select")
-        
-        // Then: Should return a string (framework string if available, or key if not found in test environment)
-        // Note: In test environment, framework bundle might not be available
-        #expect(!result.isEmpty, "Should return non-empty string")
+        #expect(result == FrameworkCatalogFixture.value(key), "Expected framework fallback, got '\(result)'")
     }
     
     @Test func testAppOverride_MultipleOverridesInSameApp() {
-        // Given: Service with Bundle.main
-        let service = InternationalizationService(appBundle: Bundle.main)
+        let service = InternationalizationService(locale: Locale(identifier: "en"), appBundle: Bundle.main)
         
-        // When: Requesting multiple keys
-        let selectResult = service.localizedString(for: "SixLayerFramework.form.placeholder.select")
-        let saveResult = service.localizedString(for: "SixLayerFramework.button.save")
-        let cancelResult = service.localizedString(for: "SixLayerFramework.button.cancel")
+        let selectKey = "SixLayerFramework.form.placeholder.select"
+        let saveKey = "SixLayerFramework.button.save"
+        let cancelKey = "SixLayerFramework.button.cancel"
         
-        // Then: Should return strings (app overrides if exist, framework if exist, or keys)
-        // The important part is that the method works for multiple keys
-        #expect(!selectResult.isEmpty, "Should handle multiple keys")
-        #expect(!saveResult.isEmpty, "Should handle multiple keys")
-        #expect(!cancelResult.isEmpty, "Should handle multiple keys")
+        #expect(service.localizedString(for: selectKey) == FrameworkCatalogFixture.value(selectKey))
+        #expect(service.localizedString(for: saveKey) == FrameworkCatalogFixture.value(saveKey))
+        #expect(service.localizedString(for: cancelKey) == FrameworkCatalogFixture.value(cancelKey))
     }
     
     // MARK: - Fallback Chain Tests
@@ -341,14 +280,12 @@ open class InternationalizationServiceTests: BaseTestClass {
         // When: Requesting different keys
         // Test with a key that definitely doesn't exist (app-only scenario)
         let appOnly = service.localizedString(for: "definitely.app.only.key.xyz123")
-        let frameworkOnly = service.localizedString(for: "SixLayerFramework.form.placeholder.select")
+        let key = "SixLayerFramework.form.placeholder.select"
+        let frameworkOnly = service.localizedString(for: key)
         let missingKey = service.localizedString(for: "nonexistent.key.12345")
         
-        // Then: Should follow fallback chain correctly
-        // App-only key should return key itself (not in app or framework)
         #expect(appOnly == "definitely.app.only.key.xyz123", "App-only key should return key itself if not found")
-        // Framework key might return key itself in test environment if bundle not found
-        #expect(!frameworkOnly.isEmpty, "Framework key should return a string")
+        #expect(frameworkOnly == FrameworkCatalogFixture.value(key), "Expected framework catalog value, got '\(frameworkOnly)'")
         #expect(missingKey == "nonexistent.key.12345", "Missing key should return key itself")
     }
     
@@ -364,120 +301,76 @@ open class InternationalizationServiceTests: BaseTestClass {
     }
     
     @Test func testFallbackChain_PartialKeyMatches() {
-        // Given: Service
-        let service = InternationalizationService()
+        let service = InternationalizationService(locale: Locale(identifier: "en"))
+        let selectKey = "SixLayerFramework.form.placeholder.select"
+        let optionKey = "SixLayerFramework.form.placeholder.selectOption"
+        let dateKey = "SixLayerFramework.form.placeholder.selectDate"
         
-        // When: Requesting keys with similar prefixes
-        // These keys might exist in framework or return keys themselves
-        let selectResult = service.localizedString(for: "SixLayerFramework.form.placeholder.select")
-        let selectOptionResult = service.localizedString(for: "SixLayerFramework.form.placeholder.selectOption")
-        let selectDateResult = service.localizedString(for: "SixLayerFramework.form.placeholder.selectDate")
-        
-        // Then: Each should return a string (either localized or key if not found)
-        // The important part is that similar keys don't interfere with each other
-        #expect(!selectResult.isEmpty, "Should handle keys with similar prefixes")
-        #expect(!selectOptionResult.isEmpty, "Should handle keys with similar prefixes")
-        #expect(!selectDateResult.isEmpty, "Should handle keys with similar prefixes")
+        #expect(service.localizedString(for: selectKey) == FrameworkCatalogFixture.value(selectKey))
+        #expect(service.localizedString(for: optionKey) == FrameworkCatalogFixture.value(optionKey))
+        #expect(service.localizedString(for: dateKey) == FrameworkCatalogFixture.value(dateKey))
     }
     
     // MARK: - Multi-Language Support Tests
     
     @Test func testMultiLanguage_English() {
-        // Given: Service with English locale
+        let key = "SixLayerFramework.form.placeholder.select"
         let service = InternationalizationService(locale: Locale(identifier: "en"))
+        let result = service.frameworkLocalizedString(for: key)
         
-        // When: Requesting a localized string
-        // Note: NSLocalizedString uses system language, not service locale
-        let result = service.frameworkLocalizedString(for: "SixLayerFramework.form.placeholder.select")
-        
-        // Then: Should return a string (localized if available, or key if not found)
-        #expect(!result.isEmpty, "Should return non-empty string")
-        
-        // Verify locale is set correctly
-        #expect(service.currentLanguage() == "en", "Service should have English locale")
+        #expect(result == FrameworkCatalogFixture.value(key, language: "en"))
+        #expect(service.currentLanguage() == "en")
     }
     
     @Test func testMultiLanguage_Spanish() {
-        // Given: Service with Spanish locale
+        let key = "SixLayerFramework.form.placeholder.select"
         let service = InternationalizationService(locale: Locale(identifier: "es"))
+        let result = service.frameworkLocalizedString(for: key)
         
-        // When: Requesting a localized string
-        // Note: NSLocalizedString uses system language, not service locale
-        let result = service.frameworkLocalizedString(for: "SixLayerFramework.form.placeholder.select")
-        
-        // Then: Should return a string (localized if available, or key if not found)
-        #expect(!result.isEmpty, "Should return non-empty string")
-        
-        // Verify locale is set correctly
-        #expect(service.currentLanguage() == "es", "Service should have Spanish locale")
+        #expect(result == FrameworkCatalogFixture.value(key, language: "es"))
+        #expect(service.currentLanguage() == "es")
     }
     
     @Test func testMultiLanguage_French() {
-        // Given: Service with French locale
+        let key = "SixLayerFramework.form.placeholder.select"
         let service = InternationalizationService(locale: Locale(identifier: "fr"))
         
-        // When: Requesting a localized string
-        // Note: NSLocalizedString uses system language, not service locale
-        let result = service.frameworkLocalizedString(for: "SixLayerFramework.form.placeholder.select")
-        
-        // Then: Should return a string (either localized or key if bundle not found)
-        #expect(!result.isEmpty, "Should return non-empty string")
+        #expect(service.frameworkLocalizedString(for: key) == FrameworkCatalogFixture.value(key, language: "fr"))
     }
     
     @Test func testMultiLanguage_German() {
-        // Given: Service with German locale
+        let key = "SixLayerFramework.form.placeholder.select"
         let service = InternationalizationService(locale: Locale(identifier: "de"))
         
-        // When: Requesting a localized string
-        let result = service.frameworkLocalizedString(for: "SixLayerFramework.form.placeholder.select")
-        
-        // Then: Should return a string (either localized or key if bundle not found)
-        #expect(!result.isEmpty, "Should return non-empty string")
+        #expect(service.frameworkLocalizedString(for: key) == FrameworkCatalogFixture.value(key, language: "de"))
     }
     
     @Test func testMultiLanguage_Japanese() {
-        // Given: Service with Japanese locale
+        let key = "SixLayerFramework.form.placeholder.select"
         let service = InternationalizationService(locale: Locale(identifier: "ja"))
         
-        // When: Requesting a localized string
-        let result = service.frameworkLocalizedString(for: "SixLayerFramework.form.placeholder.select")
-        
-        // Then: Should return a string (either localized or key if bundle not found)
-        #expect(!result.isEmpty, "Should return non-empty string")
+        #expect(service.frameworkLocalizedString(for: key) == FrameworkCatalogFixture.value(key, language: "ja"))
     }
     
     @Test func testMultiLanguage_Korean() {
-        // Given: Service with Korean locale
+        let key = "SixLayerFramework.form.placeholder.select"
         let service = InternationalizationService(locale: Locale(identifier: "ko"))
         
-        // When: Requesting a localized string
-        let result = service.frameworkLocalizedString(for: "SixLayerFramework.form.placeholder.select")
-        
-        // Then: Should return a string (either localized or key if bundle not found)
-        #expect(!result.isEmpty, "Should return non-empty string")
+        #expect(service.frameworkLocalizedString(for: key) == FrameworkCatalogFixture.value(key, language: "ko"))
     }
     
     @Test func testMultiLanguage_SimplifiedChinese() {
-        // Given: Service with Simplified Chinese locale
+        let key = "SixLayerFramework.form.placeholder.select"
         let service = InternationalizationService(locale: Locale(identifier: "zh-Hans"))
         
-        // When: Requesting a localized string
-        let result = service.frameworkLocalizedString(for: "SixLayerFramework.form.placeholder.select")
-        
-        // Then: Should return a string (either localized or key if bundle not found)
-        #expect(!result.isEmpty, "Should return non-empty string")
+        #expect(service.frameworkLocalizedString(for: key) == FrameworkCatalogFixture.value(key, language: "zh-Hans"))
     }
     
     @Test func testMultiLanguage_LocaleFallback_DeCHFallsBackToDe() {
-        // Given: Service with de-CH locale (Swiss German)
+        let key = "SixLayerFramework.form.placeholder.select"
         let service = InternationalizationService(locale: Locale(identifier: "de-CH"))
         
-        // When: Requesting a localized string
-        let result = service.frameworkLocalizedString(for: "SixLayerFramework.form.placeholder.select")
-        
-        // Then: Should return a string (either localized or key if bundle not found)
-        // Note: System handles locale fallback automatically
-        #expect(!result.isEmpty, "Should return non-empty string")
+        #expect(service.frameworkLocalizedString(for: key) == FrameworkCatalogFixture.value(key, language: "de-CH"))
     }
     
     // MARK: - Edge Cases Tests
@@ -490,19 +383,16 @@ open class InternationalizationServiceTests: BaseTestClass {
         let result = service.localizedString(for: "definitely.missing.key.xyz")
         
         // Then: Should fallback to framework or return key
-        #expect(!result.isEmpty, "Should handle missing keys gracefully")
         #expect(result == "definitely.missing.key.xyz", "Should return key itself when not found")
     }
     
     @Test func testEdgeCase_MissingLanguageFiles() {
         // Given: Service with unsupported locale
+        let key = "SixLayerFramework.form.placeholder.select"
         let service = InternationalizationService(locale: Locale(identifier: "xx"))
+        let result = service.frameworkLocalizedString(for: key)
         
-        // When: Requesting a localized string
-        let result = service.frameworkLocalizedString(for: "SixLayerFramework.form.placeholder.select")
-        
-        // Then: Should fallback to base language or return key
-        #expect(!result.isEmpty, "Should handle missing language files gracefully")
+        #expect(result == FrameworkCatalogFixture.value(key, language: "en"), "Unsupported locale should fall back to English, got '\(result)'")
     }
     
     @Test func testEdgeCase_InvalidKeys() {
@@ -520,48 +410,11 @@ open class InternationalizationServiceTests: BaseTestClass {
     }
     
     @Test func testEdgeCase_SpecialCharactersInStrings() {
-        // Given: Service
-        let service = InternationalizationService()
+        let key = "SixLayerFramework.error.message"
+        let service = InternationalizationService(locale: Locale(identifier: "en"))
+        let result = service.frameworkLocalizedString(for: key)
         
-        // When: Requesting strings that may contain special characters
-        let result = service.frameworkLocalizedString(for: "SixLayerFramework.error.message")
-        
-        // Then: Should handle special characters correctly
-        #expect(!result.isEmpty, "Should handle special characters")
-    }
-    
-    @Test func testEdgeCase_FormatStringPlaceholders() {
-        // Given: Service
-        let service = InternationalizationService()
-        
-        // When: Testing format string placeholder logic
-        // We test that the formatting mechanism works, even if the key doesn't exist
-        let formatString = "Unknown error: %@"
-        let formatted = String(format: formatString, "Test Error")
-        
-        // Then: Should format correctly
-        #expect(formatted.contains("Test Error"), "Should format with %@ placeholder")
-        
-        // Also verify service method handles format strings
-        let result = service.localizedString(for: "test.error.xyz", arguments: ["Test Error"])
-        #expect(!result.isEmpty, "Method should handle format placeholders")
-    }
-    
-    @Test func testEdgeCase_FormatStringWithIntegerPlaceholder() {
-        // Given: Service
-        let service = InternationalizationService()
-        
-        // When: Testing format string with integer placeholders
-        let formatString = "%d of %d field%@"
-        let formatted = String(format: formatString, 1, 5, "")
-        
-        // Then: Should format correctly
-        #expect(formatted.contains("1"), "Should format with %d placeholder")
-        #expect(formatted.contains("5"), "Should format with %d placeholder")
-        
-        // Also verify service method handles integer format strings
-        let result = service.localizedString(for: "test.progress.xyz", arguments: ["1", "5", ""])
-        #expect(!result.isEmpty, "Method should handle integer format placeholders")
+        #expect(result == FrameworkCatalogFixture.value(key))
     }
     
 }
