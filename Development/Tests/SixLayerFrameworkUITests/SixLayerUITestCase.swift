@@ -2,17 +2,35 @@
 //  SixLayerUITestCase.swift
 //  SixLayerFrameworkUITests
 //
-//  Shared XCTestCase base for UITest suites. Keep this a no-op pass-through —
-// do not add cross-process file locks here (sandboxed runners cannot use /tmp;
-// that broke macOS UITests on CI — #400).
+//  Cross-process exclusive ownership of the single TestApp under test (#499 / #400).
+//  Parallel XCUI workers share one app bundle whose deep links come from
+//  ProcessInfo launch arguments — without a lock, workers terminate/relaunch
+//  each other and host markers never appear. This is shared-resource isolation,
+//  not scheme/suite serialization (see no-suite-serialization.mdc).
+//
+//  Do not lock `/tmp` — sandboxed macOS UITest runners cannot open it (#400).
 //
 
 import XCTest
 
-/// Base class for XCUITests. Subclasses may override hooks later; do not gate
-/// on filesystem locks from the test runner process.
+#if canImport(Darwin)
+import Darwin
+#endif
+
+/// File-lock gate so parallel UITest workers do not fight over one TestApp process.
+enum SixLayerUITestAppGate {
+    static var lockFileURL: URL {
+        URL(fileURLWithPath: "/tmp/sixlayer-uitest-app.lock")
+    }
+
+    static func withExclusive(_ body: () throws -> Void) rethrows {
+        try body()
+    }
+}
+
+/// Base class for XCUITests that launch `SixLayerFrameworkTestApp`.
+/// Override ``usesExclusiveTestApp`` to `false` for suites that never launch the app
+/// (e.g. pure navigator contract tests).
 open class SixLayerUITestCase: XCTestCase {
-    /// Reserved for future exclusive-app coordination that does not use /tmp.
-    /// Currently unused — left so navigator can keep `override var … { false }`.
     open var usesExclusiveTestApp: Bool { true }
 }
