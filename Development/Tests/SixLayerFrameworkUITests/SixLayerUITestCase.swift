@@ -13,14 +13,18 @@
 
 import XCTest
 
-#if canImport(Darwin)
+#if os(macOS)
 import Darwin
 #endif
 
 /// File-lock gate so parallel UITest workers do not fight over one TestApp process.
 enum SixLayerUITestAppGate {
+    private static let lockFileName = "sixlayer-uitest-app.lock"
+
     static var lockFileURL: URL {
-        FileManager.default.temporaryDirectory.appendingPathComponent("sixlayer-uitest-app.lock")
+        FileManager.default.temporaryDirectory
+            .appendingPathComponent(lockFileName)
+            .standardizedFileURL
     }
 
     static func withExclusive(_ body: () throws -> Void) rethrows {
