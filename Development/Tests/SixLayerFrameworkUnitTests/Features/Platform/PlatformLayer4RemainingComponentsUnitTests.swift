@@ -14,10 +14,6 @@ import Testing
 @Suite("Platform Layer4 Remaining Components Unit", HostedViewTestIsolationTrait())
 struct PlatformLayer4RemainingComponentsUnitTests {
 
-    /// Deliberate red: production `named:` strings do not include this suffix.
-    /// Removed after the failing run.
-    private let namedComplianceRedProbe = "SIXLAYER_467_RED"
-
     private struct SheetItem: Identifiable {
         let id: String
     }
@@ -391,10 +387,9 @@ struct PlatformLayer4RemainingComponentsUnitTests {
             )
         }
         #expect(hosted != nil)
-        let expected = name + namedComplianceRedProbe
         #expect(
-            isolated.getDebugLog().contains(expected),
-            "named compliance \(expected) must appear in debug log"
+            isolated.getDebugLog().contains(name),
+            "named compliance \(name) must appear in debug log"
         )
         #endif
     }
