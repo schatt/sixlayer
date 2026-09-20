@@ -224,19 +224,10 @@ struct PlatformSplitViewLayer4StateUnitTests {
         #if os(watchOS)
         return
         #else
-        let isolated = TestSetupUtilities.makeIsolatedAccessibilityIdentifierConfig()
-        isolated.enableDebugLogging = true
-        isolated.clearDebugLog()
-        let hosted = AccessibilityIdentifierConfig.$taskLocalConfig.withValue(isolated) {
-            TestSetupUtilities.hostRootPlatformView(
-                view(),
-                forceLayout: true,
-                accessibilityIdentifierConfig: isolated
-            )
-        }
+        let (hosted, log) = TestSetupUtilities.hostRootPlatformViewNamedDebugLog(view())
         #expect(hosted != nil)
         #expect(
-            isolated.getDebugLog().contains(name),
+            log.contains(name),
             "named compliance \(name) must appear in debug log"
         )
         #endif
