@@ -102,6 +102,8 @@ The framework uses a JSON-based `.xcstrings` file that contains all languages. E
 - `comment`: Context for translators
 - `localizations`: Translations for each language with `state` and `value`
 
+`InternationalizationService` resolves framework defaults from that catalog. SPM ships it with `.copy` (the JSON is not compiled to `.strings`); the service reads `Localizable.xcstrings` directly when compiled `.strings` are absent. Xcode framework builds still use compiled catalogs first. **Apps do not need to duplicate framework keys.** Override only the keys you want to change; missing keys fall back to the framework catalog.
+
 Example structure:
 ```json
 {
