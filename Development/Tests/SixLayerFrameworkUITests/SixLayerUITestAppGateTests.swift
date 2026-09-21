@@ -7,10 +7,12 @@
 
 import XCTest
 
-#if canImport(Darwin)
+#if os(macOS)
 import Darwin
 #endif
 
+/// Gate-path contract only — inherits `XCTestCase` (not `SixLayerUITestCase`) so these
+/// tests do not nest `withExclusive` under `invokeTest`.
 final class SixLayerUITestAppGateTests: XCTestCase {
     func testLockFileLivesInProcessTemporaryDirectory() {
         let tmp = FileManager.default.temporaryDirectory.standardizedFileURL
@@ -33,7 +35,7 @@ final class SixLayerUITestAppGateTests: XCTestCase {
         XCTAssertNoThrow(
             try FileManager.default.createDirectory(at: parent, withIntermediateDirectories: true)
         )
-        #if canImport(Darwin)
+        #if os(macOS)
         let fd = open(url.path, O_CREAT | O_RDWR, 0o644)
         XCTAssertGreaterThanOrEqual(fd, 0, "runner must be able to open \(url.path)")
         if fd >= 0 {
