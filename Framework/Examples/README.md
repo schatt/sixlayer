@@ -20,6 +20,15 @@ Moved out of `Framework/Sources`. Static factories showing `.appleHIGCompliant()
 ### **LiquidGlassExampleUsage.swift** (#465)
 Moved out of `Framework/Sources`. Liquid Glass capability-status demo View (`@available` iOS/macOS/visionOS 26).
 
+### **ExampleProjectHelpers.swift** (#490)
+Moved out of `Framework/Sources/Core`. Demo `ExampleProjectCard` / `ExampleProjectList` / `ExampleProjectFormField` shells. Copy into an app; not compiled into the framework.
+
+### **ExampleHelpersView.swift** (#490)
+Moved out of `Framework/Sources/Components/Views`. Minimal `ExampleHelpers` View using `InternationalizationService` localization keys.
+
+### **ExtensibleHintsExample.swift** (#490)
+Moved out of `Framework/Sources/Core`. Sample `CustomHint` subclasses (`EcommerceProductHint`, `SocialFeedHint`, `FinancialDashboardHint`) plus `ExtensibleHintsExamples` presenters. Prefer `Framework/Stubs/` for copy-paste starting points when available.
+
 ### **PhotoPurposeExtensionExample.swift** (v7.4.0)
 Comprehensive example showing PhotoPurpose extensibility and migration:
 
