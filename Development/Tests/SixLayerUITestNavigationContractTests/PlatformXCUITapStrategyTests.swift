@@ -12,7 +12,7 @@ import SixLayerFramework
 final class PlatformXCUITapStrategyTests: XCTestCase {
 
     func testForPlatform_mapsTouchPlatformsToMultiTapAPI() {
-        XCTAssertEqual(PlatformXCUITapStrategy.forPlatform(.iOS), .repeatedSingleTap)
+        XCTAssertEqual(PlatformXCUITapStrategy.forPlatform(.iOS), .multiTapAPI)
         XCTAssertEqual(PlatformXCUITapStrategy.forPlatform(.tvOS), .multiTapAPI)
         XCTAssertEqual(PlatformXCUITapStrategy.forPlatform(.visionOS), .multiTapAPI)
     }
