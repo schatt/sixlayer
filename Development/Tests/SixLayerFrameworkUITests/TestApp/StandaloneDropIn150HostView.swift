@@ -22,6 +22,21 @@ struct StandaloneDropIn150HostView: View {
     @State private var integrationName = ""
     @State private var integrationPassword = ""
     @State private var integrationOn = false
+    /// Shared focus so the keyboard Done control can resign any SD150 field (#497).
+    @FocusState private var focusedField: String?
+
+    @ViewBuilder
+    private func sd150KeyboardField<V: View>(_ id: String, _ content: V) -> some View {
+        #if os(iOS)
+        content
+            .focused($focusedField, equals: id)
+            .autocorrectionDisabled(true)
+            .textInputAutocapitalization(.never)
+        #else
+        content
+            .focused($focusedField, equals: id)
+        #endif
+    }
 
     private var showBindingMirrors: Bool {
         ProcessInfo.processInfo.environment["XCUI_TESTING"] == "1"
@@ -57,12 +72,18 @@ struct StandaloneDropIn150HostView: View {
             SixLayerFramework.platformForm {
                 if shows("integration") {
                     Section {
-                        SixLayerFramework.platformTextField("SD150_Integration_Name", text: $integrationName)
-                            .exactNamed("SD150_Integration_Name")
-                        SixLayerFramework.platformSecureField("SD150_Integration_Password", text: $integrationPassword)
+                        sd150KeyboardField(
+                            "SD150_Integration_Name",
+                            SixLayerFramework.platformTextField("SD150_Integration_Name", text: $integrationName)
+                                .exactNamed("SD150_Integration_Name")
+                        )
+                        sd150KeyboardField(
+                            "SD150_Integration_Password",
+                            SixLayerFramework.platformSecureField("SD150_Integration_Password", text: $integrationPassword)
                             // Avoid iOS strong-password UI which blocks XCUITest SecureField focus (#368).
-                            .textContentType(.oneTimeCode)
-                            .exactNamed("SD150_Integration_Password")
+                                .textContentType(.oneTimeCode)
+                                .exactNamed("SD150_Integration_Password")
+                        )
                         SixLayerFramework.platformToggle("SD150_Integration_Toggle", isOn: $integrationOn)
                             .exactNamed("SD150_Integration_Toggle")
                         if showBindingMirrors {
@@ -78,13 +99,19 @@ struct StandaloneDropIn150HostView: View {
                 }
                 if shows("text") {
                     Section {
-                        SixLayerFramework.platformTextField("SD150_TextField", text: $textFieldValue)
-                            .exactNamed("SD150_TextField")
+                        sd150KeyboardField(
+                            "SD150_TextField",
+                            SixLayerFramework.platformTextField("SD150_TextField", text: $textFieldValue)
+                                .exactNamed("SD150_TextField")
+                        )
                         if showBindingMirrors {
                             bindingMirror(id: "SD150_Mirror_T", text: "SD150_Mirror_T:\(textFieldValue)")
                         }
-                        SixLayerFramework.platformTextField("SD150_AxisField", text: $axisFieldValue, axis: .vertical)
-                            .exactNamed("SD150_AxisField")
+                        sd150KeyboardField(
+                            "SD150_AxisField",
+                            SixLayerFramework.platformTextField("SD150_AxisField", text: $axisFieldValue, axis: .vertical)
+                                .exactNamed("SD150_AxisField")
+                        )
                         if showBindingMirrors {
                             bindingMirror(id: "SD150_Mirror_A", text: "SD150_Mirror_A:\(axisFieldValue)")
                         }
@@ -95,9 +122,12 @@ struct StandaloneDropIn150HostView: View {
                 }
                 if shows("secure") {
                     Section {
-                        SixLayerFramework.platformSecureField("SD150_SecureField", text: $secureValue)
-                            .textContentType(.oneTimeCode)
-                            .exactNamed("SD150_SecureField")
+                        sd150KeyboardField(
+                            "SD150_SecureField",
+                            SixLayerFramework.platformSecureField("SD150_SecureField", text: $secureValue)
+                                .textContentType(.oneTimeCode)
+                                .exactNamed("SD150_SecureField")
+                        )
                         if showBindingMirrors {
                             bindingMirror(id: "SD150_Mirror_S", text: "SD150_Mirror_S:\(secureValue)")
                         }
@@ -120,8 +150,11 @@ struct StandaloneDropIn150HostView: View {
                 }
                 if shows("editor") {
                     Section {
-                        SixLayerFramework.platformTextEditor("SD150_EditorPrompt", text: $editorValue)
-                            .exactNamed("SD150_EditorPrompt")
+                        sd150KeyboardField(
+                            "SD150_EditorPrompt",
+                            SixLayerFramework.platformTextEditor("SD150_EditorPrompt", text: $editorValue)
+                                .exactNamed("SD150_EditorPrompt")
+                        )
                         if showBindingMirrors {
                             bindingMirror(id: "SD150_Mirror_E", text: "SD150_Mirror_E:\(editorValue)")
                         }
@@ -132,8 +165,11 @@ struct StandaloneDropIn150HostView: View {
                 }
                 if shows("long") {
                     Section {
-                        SixLayerFramework.platformTextField("SD150_LongField", text: $longFieldValue)
-                            .exactNamed("SD150_LongField")
+                        sd150KeyboardField(
+                            "SD150_LongField",
+                            SixLayerFramework.platformTextField("SD150_LongField", text: $longFieldValue)
+                                .exactNamed("SD150_LongField")
+                        )
                         if showBindingMirrors {
                             bindingMirror(id: "SD150_Mirror_L", text: "SD150_Mirror_L:\(longFieldValue)")
                         }
@@ -143,6 +179,18 @@ struct StandaloneDropIn150HostView: View {
                     }
                 }
             }
+            #if os(iOS)
+            .scrollDismissesKeyboard(.immediately)
+            .toolbar {
+                ToolbarItemGroup(placement: .keyboard) {
+                    Spacer()
+                    Button("Done") {
+                        focusedField = nil
+                    }
+                    .accessibilityIdentifier("SD150_KeyboardDone")
+                }
+            }
+            #endif
             .navigationTitle("SD150 Standalone")
             #if os(iOS) || os(macOS)
             .platformNavigationTitleDisplayMode_L4(.inline)

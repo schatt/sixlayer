@@ -11,6 +11,7 @@ This document provides guidance for AI assistants working with the SixLayer Fram
 ## 📚 Version-Specific Guides
 
 ### Latest Versions (Recommended)
+- **v8.5.1** — Patch release: adaptive compact date+time stacking (#481, #498); IntelligentFormView packing spacing (#492); SPM `.xcstrings` resolution (#500–#502); CI destinations and SD150 XCUI harness (#495–#497) (see [RELEASE_v8.5.1.md](RELEASE_v8.5.1.md))
 - **v8.5.0** — Minor release: honest iOS/macOS L5/L6 APIs (#397, #445–#447, #451, #459, #465, #466, #472) (see [RELEASE_v8.5.0.md](RELEASE_v8.5.0.md))
 - **[AI_AGENT_v8.5.0.md](AI_AGENT_v8.5.0.md)** - v8.5.0 minor notes; prior minor baseline [AI_AGENT_v8.4.0.md](AI_AGENT_v8.4.0.md)
 - **v8.4.0** — Minor release: L5 honesty (#423–#425, #444); placeholder Layer5 demo removals (#453); coverage inventory and unit clusters (#449, #450, #454–#457) (see [RELEASE_v8.4.0.md](RELEASE_v8.4.0.md))

@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import os
 import SwiftUI
 
 // MARK: - Internationalization Service
@@ -362,47 +363,52 @@ public class InternationalizationService: ObservableObject {
     
     // MARK: - Localized Strings
     
-    /// Helper method to get localized string from a bundle for a specific locale
-    private func getLocalizedString(from bundle: Bundle, for key: String, locale: Locale) -> String? {
-        // Get the locale identifier (e.g., "en", "es", "zh-Hans", "de-CH")
+    /// Cached parsed Localizable.xcstrings catalogs keyed by bundle path (#500).
+    /// Path, not object identity: short-lived `Bundle` instances reuse addresses.
+    /// `.missing` avoids a resource stat on every lookup when the bundle has no catalog.
+    private enum XCStringsCatalogCacheEntry: Sendable {
+        case missing
+        case catalog(XCStringsCatalog)
+    }
+    
+    private static let xcstringsCatalogCache = OSAllocatedUnfairLock(
+        initialState: [String: XCStringsCatalogCacheEntry]()
+    )
+    
+    /// Locale codes to try when resolving a key (most specific → English fallback).
+    private func localeCodesToTry(for locale: Locale) -> [String] {
         let localeIdentifier = locale.identifier
-        
-        // Extract language code (e.g., "zh" from "zh-Hans")
         let languageCode = locale.language.languageCode?.identifier ?? "en"
         
-        // Try locale identifiers in order of specificity:
-        // 1. Full locale identifier (e.g., "zh-Hans", "de-CH")
-        // 2. Language code with script/region (if different from identifier)
-        // 3. Base language code (e.g., "zh" from "zh-Hans")
-        // 4. English fallback
+        var localeCodes: [String] = []
         
-        var localeCodesToTry: [String] = []
-        
-        // Add full identifier if it's different from language code
         if localeIdentifier != languageCode {
-            localeCodesToTry.append(localeIdentifier)
+            localeCodes.append(localeIdentifier)
         }
         
-        // Add language code
-        localeCodesToTry.append(languageCode)
+        localeCodes.append(languageCode)
         
-        // If language code contains a hyphen, try base language
         if languageCode.contains("-") {
             let baseLanguage = String(languageCode.prefix(while: { $0 != "-" }))
             if baseLanguage != languageCode {
-                localeCodesToTry.append(baseLanguage)
+                localeCodes.append(baseLanguage)
             }
         }
         
-        // Add English as final fallback
         if languageCode != "en" {
-            localeCodesToTry.append("en")
+            localeCodes.append("en")
         }
         
-        // Try each locale code
-        for localeCode in localeCodesToTry {
+        return localeCodes
+    }
+    
+    /// Helper method to get localized string from a bundle for a specific locale
+    private func getLocalizedString(from bundle: Bundle, for key: String, locale: Locale) -> String? {
+        let localeCodes = localeCodesToTry(for: locale)
+        
+        // 1. Compiled .strings / .lproj (Xcode-processed catalogs, legacy resources)
+        for localeCode in localeCodes {
             if let stringsPath = bundle.path(forResource: "Localizable", ofType: "strings", inDirectory: nil, forLocalization: localeCode) {
-                // Load the strings dictionary from the file
                 if let stringsDict = NSDictionary(contentsOfFile: stringsPath) as? [String: String],
                    let value = stringsDict[key] {
                     return value
@@ -410,7 +416,52 @@ public class InternationalizationService: ObservableObject {
             }
         }
         
+        // 2. Raw Localizable.xcstrings (SPM `.copy` — #500)
+        if let catalog = Self.loadXcstringsCatalog(from: bundle),
+           let catalogValue = catalog.value(for: key, localeCodes: localeCodes) {
+            return catalogValue
+        }
+        
         return nil
+    }
+    
+    private static func loadXcstringsCatalog(from bundle: Bundle) -> XCStringsCatalog? {
+        let cacheKey = bundle.bundlePath
+        
+        if let cached = xcstringsCatalogCache.withLock({ $0[cacheKey] }) {
+            switch cached {
+            case .missing:
+                return nil
+            case .catalog(let catalog):
+                return catalog
+            }
+        }
+        
+        let parsed: XCStringsCatalog?
+        if let catalogURL = bundle.url(forResource: "Localizable", withExtension: "xcstrings"),
+           let data = try? Data(contentsOf: catalogURL),
+           let catalog = XCStringsCatalog(data: data) {
+            parsed = catalog
+        } else {
+            parsed = nil
+        }
+        
+        return xcstringsCatalogCache.withLock { cache in
+            if let existing = cache[cacheKey] {
+                switch existing {
+                case .missing:
+                    return nil
+                case .catalog(let catalog):
+                    return catalog
+                }
+            }
+            if let parsed {
+                cache[cacheKey] = .catalog(parsed)
+                return parsed
+            }
+            cache[cacheKey] = .missing
+            return nil
+        }
     }
     
     /// Get localized string for a key with fallback support
@@ -685,5 +736,68 @@ public class InternationalizationService: ObservableObject {
         
         guard let languageCode = locale.language.languageCode?.identifier else { return false }
         return supportedLanguages.contains(languageCode)
+    }
+}
+
+// MARK: - String Catalog (xcstrings) support (#500)
+
+/// Parsed `Localizable.xcstrings` for bundles that ship the catalog via SPM `.copy`
+/// without compiling it to `.lproj` / `.strings`.
+fileprivate struct XCStringsCatalog: Sendable {
+    /// key → locale code → value
+    private let valuesByKey: [String: [String: String]]
+    private let sourceLanguage: String
+    
+    init?(data: Data) {
+        guard let root = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let strings = root["strings"] as? [String: Any] else {
+            return nil
+        }
+        
+        self.sourceLanguage = (root["sourceLanguage"] as? String) ?? "en"
+        
+        var parsed: [String: [String: String]] = [:]
+        parsed.reserveCapacity(strings.count)
+        
+        for (key, entryValue) in strings {
+            guard let entry = entryValue as? [String: Any],
+                  let localizations = entry["localizations"] as? [String: Any] else {
+                continue
+            }
+            
+            var localeValues: [String: String] = [:]
+            for (localeCode, localizationValue) in localizations {
+                guard let localization = localizationValue as? [String: Any],
+                      let stringUnit = localization["stringUnit"] as? [String: Any],
+                      let value = stringUnit["value"] as? String else {
+                    continue
+                }
+                localeValues[localeCode] = value
+            }
+            
+            if !localeValues.isEmpty {
+                parsed[key] = localeValues
+            }
+        }
+        
+        self.valuesByKey = parsed
+    }
+    
+    func value(for key: String, localeCodes: [String]) -> String? {
+        guard let localeValues = valuesByKey[key] else {
+            return nil
+        }
+        
+        for localeCode in localeCodes {
+            if let value = localeValues[localeCode] {
+                return value
+            }
+        }
+        
+        if let sourceValue = localeValues[sourceLanguage] {
+            return sourceValue
+        }
+        
+        return nil
     }
 }

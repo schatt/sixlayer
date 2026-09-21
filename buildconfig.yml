@@ -80,62 +80,62 @@ platforms:
       - build/ios/*.ipa
     # scheme: Required. The Xcode scheme to build for this platform.
   - name: tvOS_build
-    build_command: xcodebuild build -workspace .swiftpm/xcode/package.xcworkspace -scheme SixLayerFramework -destination "platform=tvOS Simulator,name=Apple TV"
+    build_command: xcodebuild build -workspace .swiftpm/xcode/package.xcworkspace -scheme SixLayerFramework -destination "$(./Development/scripts/ensure-ci-simulator-destination.sh tvOS)"
     artifact_dir: build/tvos
     artifact_patterns:
       - build/tvos/*.app
   - name: tvOS_unit_tests
-    build_command: xcodebuild test -project SixLayerFramework.xcodeproj -scheme SLF-tvOS-UnitTests -destination "platform=tvOS Simulator,name=Apple TV" -parallel-testing-enabled YES
+    build_command: xcodebuild test -project SixLayerFramework.xcodeproj -scheme SLF-tvOS-UnitTests -destination "$(./Development/scripts/ensure-ci-simulator-destination.sh tvOS)" -parallel-testing-enabled YES
     artifact_dir: build/tvos
     artifact_patterns:
       - build/tvos/*.app
   - name: tvOS_tests
-    build_command: xcodebuild test -project SixLayerFramework.xcodeproj -scheme SLF-tvOS-AllTests -destination "platform=tvOS Simulator,name=Apple TV" -parallel-testing-enabled YES
+    build_command: xcodebuild test -project SixLayerFramework.xcodeproj -scheme SLF-tvOS-AllTests -destination "$(./Development/scripts/ensure-ci-simulator-destination.sh tvOS)" -parallel-testing-enabled YES
     artifact_dir: build/tvos
     artifact_patterns:
       - build/tvos/*.app
   - name: tvOS_framework_tests
-    build_command: xcodebuild test -project SixLayerFramework.xcodeproj -scheme SLF-tvOS-Framework -destination "platform=tvOS Simulator,name=Apple TV" -parallel-testing-enabled YES
+    build_command: xcodebuild test -project SixLayerFramework.xcodeproj -scheme SLF-tvOS-Framework -destination "$(./Development/scripts/ensure-ci-simulator-destination.sh tvOS)" -parallel-testing-enabled YES
     artifact_dir: build/tvos
     artifact_patterns:
       - build/tvos/*.app
   - name: watchOS_build
-    build_command: xcodebuild build -workspace .swiftpm/xcode/package.xcworkspace -scheme SixLayerFramework -destination "platform=watchOS Simulator,name=Apple Watch Series 11 (46mm)"
+    build_command: xcodebuild build -workspace .swiftpm/xcode/package.xcworkspace -scheme SixLayerFramework -destination "$(./Development/scripts/ensure-ci-simulator-destination.sh watchOS)"
     artifact_dir: build/watchos
     artifact_patterns:
       - build/watchos/*.app
   - name: watchOS_unit_tests
-    build_command: xcodebuild test -project SixLayerFramework.xcodeproj -scheme SLF-watchOS-UnitTests -destination "platform=watchOS Simulator,name=Apple Watch Series 11 (46mm)" -parallel-testing-enabled YES
+    build_command: xcodebuild test -project SixLayerFramework.xcodeproj -scheme SLF-watchOS-UnitTests -destination "$(./Development/scripts/ensure-ci-simulator-destination.sh watchOS)" -parallel-testing-enabled YES
     artifact_dir: build/watchos
     artifact_patterns:
       - build/watchos/*.app
   - name: watchOS_tests
-    build_command: xcodebuild test -project SixLayerFramework.xcodeproj -scheme SLF-watchOS-AllTests -destination "platform=watchOS Simulator,name=Apple Watch Series 11 (46mm)" -parallel-testing-enabled YES
+    build_command: xcodebuild test -project SixLayerFramework.xcodeproj -scheme SLF-watchOS-AllTests -destination "$(./Development/scripts/ensure-ci-simulator-destination.sh watchOS)" -parallel-testing-enabled YES
     artifact_dir: build/watchos
     artifact_patterns:
       - build/watchos/*.app
   - name: watchOS_framework_tests
-    build_command: xcodebuild test -project SixLayerFramework.xcodeproj -scheme SLF-watchOS-Framework -destination "platform=watchOS Simulator,name=Apple Watch Series 11 (46mm)" -parallel-testing-enabled YES
+    build_command: xcodebuild test -project SixLayerFramework.xcodeproj -scheme SLF-watchOS-Framework -destination "$(./Development/scripts/ensure-ci-simulator-destination.sh watchOS)" -parallel-testing-enabled YES
     artifact_dir: build/watchos
     artifact_patterns:
       - build/watchos/*.app
   - name: visionOS_build
-    build_command: xcodebuild build -workspace .swiftpm/xcode/package.xcworkspace -scheme SixLayerFramework -destination "platform=visionOS Simulator,name=Apple Vision Pro"
+    build_command: xcodebuild build -workspace .swiftpm/xcode/package.xcworkspace -scheme SixLayerFramework -destination "$(./Development/scripts/ensure-ci-simulator-destination.sh visionOS)"
     artifact_dir: build/visionos
     artifact_patterns:
       - build/visionos/*.app
   - name: visionOS_unit_tests
-    build_command: xcodebuild test -project SixLayerFramework.xcodeproj -scheme SLF-visionOS-UnitTests -destination "platform=visionOS Simulator,name=Apple Vision Pro" -parallel-testing-enabled YES
+    build_command: xcodebuild test -project SixLayerFramework.xcodeproj -scheme SLF-visionOS-UnitTests -destination "$(./Development/scripts/ensure-ci-simulator-destination.sh visionOS)" -parallel-testing-enabled YES
     artifact_dir: build/visionos
     artifact_patterns:
       - build/visionos/*.app
   - name: visionOS_tests
-    build_command: xcodebuild test -project SixLayerFramework.xcodeproj -scheme SLF-visionOS-AllTests -destination "platform=visionOS Simulator,name=Apple Vision Pro" -parallel-testing-enabled YES
+    build_command: xcodebuild test -project SixLayerFramework.xcodeproj -scheme SLF-visionOS-AllTests -destination "$(./Development/scripts/ensure-ci-simulator-destination.sh visionOS)" -parallel-testing-enabled YES
     artifact_dir: build/visionos
     artifact_patterns:
       - build/visionos/*.app
   - name: visionOS_framework_tests
-    build_command: xcodebuild test -project SixLayerFramework.xcodeproj -scheme SLF-visionOS-Framework -destination "platform=visionOS Simulator,name=Apple Vision Pro" -parallel-testing-enabled YES
+    build_command: xcodebuild test -project SixLayerFramework.xcodeproj -scheme SLF-visionOS-Framework -destination "$(./Development/scripts/ensure-ci-simulator-destination.sh visionOS)" -parallel-testing-enabled YES
     artifact_dir: build/visionos
     artifact_patterns:
       - build/visionos/*.app
