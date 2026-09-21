@@ -69,19 +69,23 @@ public extension XCUIElement {
 
     private func platformTapRepeatedSingle(taps: Int) {
         for _ in 0..<taps {
-            if isHittable {
-                tap()
-            } else {
-                let frame = frame
-                let valid = frame.width.isFinite && frame.height.isFinite
-                    && frame.origin.x.isFinite && frame.origin.y.isFinite
-                    && frame.width > 0 && frame.height > 0
-                if valid {
-                    coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
-                } else {
-                    tap()
-                }
-            }
+            platformTapOncePreferringHittable()
+        }
+    }
+
+    private func platformTapOncePreferringHittable() {
+        if isHittable {
+            tap()
+            return
+        }
+        let frame = frame
+        let valid = frame.width.isFinite && frame.height.isFinite
+            && frame.origin.x.isFinite && frame.origin.y.isFinite
+            && frame.width > 0 && frame.height > 0
+        if valid {
+            coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
+        } else {
+            tap()
         }
     }
 }
