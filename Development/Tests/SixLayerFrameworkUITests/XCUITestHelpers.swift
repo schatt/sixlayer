@@ -240,6 +240,21 @@ extension XCUIElement {
 }
 
 extension XCUIApplication {
+    /// Compact identifier dump for host-open failure messages (#499).
+    /// Caps count so assertion text stays readable in xcresult / CI logs.
+    func xcuiIdentifierSummary(limit: Int = 40) -> String {
+        let stateDesc = String(describing: state)
+        let nodes = descendants(matching: .any).allElementsBoundByIndex
+        let ids = nodes.compactMap { el -> String? in
+            guard el.exists, !el.identifier.isEmpty else { return nil }
+            return el.identifier
+        }
+        let unique = Array(Set(ids)).sorted()
+        let shown = unique.prefix(limit)
+        let more = unique.count > limit ? " (+\(unique.count - limit) more)" : ""
+        return "app.state=\(stateDesc) identifiers[\(unique.count)]=\(shown.joined(separator: ", "))\(more)"
+    }
+
     /// Wait for a deep-linked host's stable root accessibility identifier (#348 / #316).
     /// Prefer this over navigationBar / staticText OR ladders — hosts must expose the marker.
     /// Uses an exact `identifier ==` predicate on `descendants(.any)` (same as CatA section
