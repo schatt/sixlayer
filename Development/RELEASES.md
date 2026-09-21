@@ -1,12 +1,21 @@
 # 🚀 Six-Layer Framework Release History
 
-## 📍 **Current Release: v8.5.0** 🔧
+## 📍 **Current Release: v8.5.1** 🔧
 
-**Release Date**: September 17, 2026
-**Status**: Minor release
-**Previous Release**: v8.4.0 - Minor release
-**Note**: Honest iOS/macOS L5/L6 — unified haptics (#445); macOS L5 chrome (#451); keyboard-first NavigationStack (#446); split/nav consolidation (#447); FormLayoutDecision (#397); select-all opt-in (#472); example Sources honesty (#465); Layer1 unit coverage (#466); retire `done/` hygiene (#459).
+**Release Date**: September 20, 2026
+**Status**: Patch release
+**Previous Release**: v8.5.0 - Minor release
+**Note**: Adaptive compact date+time stacking (#481, #498); IntelligentFormView packing spacing (#492); SPM `.xcstrings` resolution (#500–#502); CI destinations and SD150 XCUI harness (#495–#497).
 **Next Release**: TBD (v8.6.0)
+
+---
+
+## 🎯 **v8.5.1 - DateTime stacking, SPM catalogs, packing spacing** (September 20, 2026)
+
+### **What's in v8.5.1:**
+- Patch release (#478, #481–#484, #492–#498, #500–#502, #504). See [RELEASE_v8.5.1.md](RELEASE_v8.5.1.md) for details.
+
+**See [RELEASE_v8.5.1.md](RELEASE_v8.5.1.md) for complete release notes.**
 
 ---
 

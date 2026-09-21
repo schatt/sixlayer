@@ -1,5 +1,5 @@
 // swift-tools-version: 6.0
-// SixLayerFramework v8.5.0 - Minor: honest iOS/macOS L5/L6 APIs (#397, #445–#447, #451, #459, #465, #466, #472)
+// SixLayerFramework v8.5.1 - Patch: datetime stacking, packing spacing, SPM xcstrings (#481, #492, #498, #500–#502)
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
