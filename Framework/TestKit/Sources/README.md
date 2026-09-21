@@ -9,6 +9,7 @@ SixLayerTestKit provides testing utilities to help app teams test code that uses
 - **Service Test Doubles**: Mocks and stubs for SixLayer services (CloudKit, Notifications, Security, etc.)
 - **Form & Navigation Helpers**: Utilities for testing DynamicForm and navigation flows
 - **Layer Flow Utilities**: Tools to drive Layer 1→6 flows deterministically in tests
+- **XCUI helpers**: Cross-platform `XCUIElement.platformTap` for multi-tap (iOS API / macOS repeated taps; #510)
 
 ## Usage
 
