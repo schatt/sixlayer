@@ -39,10 +39,6 @@ let package = Package(
             name: "SixLayerFramework",
             dependencies: [],
             path: "Framework",
-            exclude: [
-                "Sources/Core/ExampleHelpers.swift",
-                "Sources/Core/ExtensibleHintsExample.swift"
-            ],
             sources: [
                 "Sources"
             ],
