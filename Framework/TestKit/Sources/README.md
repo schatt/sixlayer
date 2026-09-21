@@ -71,6 +71,13 @@ class MyAppTests: XCTestCase {
 
 - `NavigationTestHelper`: Utilities for testing navigation flows
 - `LayerFlowDriver`: Tools to drive Layer 1→6 flows deterministically
+- `XCUIElement.platformTap(numberOfTaps:numberOfTouches:)`: Cross-platform multi-tap (#510). Prefer this over iOS-only `tap(withNumberOfTaps:numberOfTouches:)`. On macOS, repeats single taps (`numberOfTouches` ignored). Strategy: `PlatformXCUITapStrategy`.
+
+```swift
+import SixLayerTestKit
+
+element.platformTap(numberOfTaps: 2) // double-tap on iOS + macOS
+```
 
 ## Configuration
 
