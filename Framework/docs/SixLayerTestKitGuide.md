@@ -12,6 +12,7 @@ Testing code that uses SixLayer can be challenging because of its layered archit
 - **Layer Flow Driver**: Deterministic testing of complete Layer 1→6 flows
 - **Test Data Generators**: Utilities for generating realistic test data
 - **Host-identifier XCUI query**: `waitForAccessibilityIdentifier` / `elementMatchingAccessibilityIdentifier` for `accessibilityHostIdentifier` (#473)
+- **Cross-platform XCUI multi-tap**: `XCUIElement.platformTap(numberOfTaps:numberOfTouches:)` — iOS/tvOS/visionOS use `tap(withNumberOfTaps:)`; macOS/watchOS repeat single taps (`PlatformXCUITapStrategy`, #510 / CarManager #1119)
 
 ## Installation
 
