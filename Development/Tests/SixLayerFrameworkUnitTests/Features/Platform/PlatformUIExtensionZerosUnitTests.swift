@@ -113,7 +113,7 @@ struct PlatformUIExtensionZerosUnitTests {
     @Test @MainActor
     func dragDropHosts() {
         hostView {
-            Text("Drop").platformOnDropText { _ in }
+            Text("Drop").platformOnDropText { _ in true }
         }
     }
 
