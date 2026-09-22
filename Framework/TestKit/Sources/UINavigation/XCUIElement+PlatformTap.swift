@@ -74,6 +74,22 @@ public extension XCUIElement {
     }
 
     private func platformTapOncePreferringHittable() {
+        #if os(macOS)
+        // SwiftUI presentation/navigation needs click on macOS; tap alone is a no-op (#516 / #518).
+        if isHittable {
+            click()
+            return
+        }
+        let frame = frame
+        let valid = frame.width.isFinite && frame.height.isFinite
+            && frame.origin.x.isFinite && frame.origin.y.isFinite
+            && frame.width > 0 && frame.height > 0
+        if valid {
+            coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).click()
+        } else {
+            click()
+        }
+        #else
         if isHittable {
             tap()
             return
@@ -87,6 +103,7 @@ public extension XCUIElement {
         } else {
             tap()
         }
+        #endif
     }
 }
 #endif
