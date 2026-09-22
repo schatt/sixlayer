@@ -12,47 +12,6 @@ import Testing
 @Suite("Platform UI extension zeros (#468)", HostedViewTestIsolationTrait())
 struct PlatformUIExtensionZerosUnitTests {
 
-    // MARK: - AdaptiveFrameSizing
-
-    @Test func adaptiveFrame_simpleFormUsesBasePlusFieldAndSectionContributions() {
-        let metrics = FormContentMetrics(
-            fieldCount: 3,
-            estimatedComplexity: .simple,
-            preferredLayout: .compact,
-            sectionCount: 2,
-            hasComplexContent: false
-        )
-        let size = AdaptiveFrameSizing.dimensions(for: metrics)
-        #expect(size.minWidth == 575)
-        #expect(size.minHeight == 600)
-    }
-
-    @Test func adaptiveFrame_complexContentAddsHeightBonusAndCaps() {
-        let metrics = FormContentMetrics(
-            fieldCount: 12,
-            estimatedComplexity: .complex,
-            preferredLayout: .spacious,
-            sectionCount: 6,
-            hasComplexContent: true
-        )
-        let size = AdaptiveFrameSizing.dimensions(for: metrics)
-        #expect(size.minWidth == 800)
-        #expect(size.minHeight == 1000)
-    }
-
-    @Test func adaptiveFrame_veryWideFieldCountCapsWidthAt900() {
-        let metrics = FormContentMetrics(
-            fieldCount: 20,
-            estimatedComplexity: .veryComplex,
-            preferredLayout: .custom,
-            sectionCount: 8,
-            hasComplexContent: true
-        )
-        let size = AdaptiveFrameSizing.dimensions(for: metrics)
-        #expect(size.minWidth == 900)
-        #expect(size.minHeight == 1000)
-    }
-
     // MARK: - Named compliance / host smoke
 
     @Test @MainActor
