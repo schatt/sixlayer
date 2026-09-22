@@ -119,8 +119,7 @@ struct PlatformUIExtensionZerosUnitTests {
 
     @Test @MainActor
     func adaptiveButtonUsesNamedCompliance() {
-        // Deliberate wrong name for #468 red; corrected after failing run.
-        hostExpectingNamedCompliance("AdaptiveButtonSIXLAYER_468_RED") {
+        hostExpectingNamedCompliance("AdaptiveButton") {
             AdaptiveUIPatterns.AdaptiveButton("Save") {}
         }
     }
