@@ -24,6 +24,10 @@ final class SixLayerUITestNavigatorConsumerSmokeUITests: SixLayerUITestCase {
             localApp.launch()
             #if os(macOS)
             localApp.activate()
+            XCTAssertTrue(
+                localApp.windows.firstMatch.waitForExistence(timeout: 8),
+                "TestApp content window should exist after smoke deep-link; \(localApp.xcuiIdentifierSummary())"
+            )
             #endif
             instance.app = localApp
             let marker = localApp.descendants(matching: .any).matching(identifier: "com.sixlayer.smoke.ready.marker").element
