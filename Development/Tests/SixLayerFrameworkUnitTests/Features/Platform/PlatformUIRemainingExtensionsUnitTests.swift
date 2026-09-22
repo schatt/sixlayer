@@ -63,8 +63,7 @@ struct PlatformUIRemainingExtensionsUnitTests {
     // MARK: - Accessibility hint helpers (BasicContainer)
 
     @Test func buttonHint_saveUsesSaveMessage() {
-        // Deliberate wrong expectation for #468 red; corrected after failing run.
-        #expect(generateAccessibilityHintForButton(label: "Save") == "SIXLAYER_468_RED")
+        #expect(generateAccessibilityHintForButton(label: "Save") == "Saves your current work")
     }
 
     @Test func buttonHint_unknownFallsBackToActivate() {
