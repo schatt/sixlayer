@@ -405,7 +405,15 @@ final class PlatformStandaloneDropIn150UITests: SixLayerUITestCase {
         assertExactIdentifierExists("SD150_Integration_Toggle")
         let toggleLeaf = toggleControl(near: toggle)
         assertResolvedToggleLeaf(toggleLeaf)
+        #if os(macOS)
+        // After SecureField typing, Form focus can swallow a single switch click (#515).
+        app.activate()
         toggleLeaf.xcuiTapToBecomeFirstResponder()
+        toggleLeaf.typeKey(.space, modifierFlags: [])
+        RunLoop.current.run(until: Date().addingTimeInterval(0.25))
+        #else
+        toggleLeaf.xcuiTapToBecomeFirstResponder()
+        #endif
         assertBindingMirrorContains("SD150_Mirror_IN", "secret|1")
         #else
         throw XCTSkip("Issue #150 host UI tests require iOS or macOS TestApp")
