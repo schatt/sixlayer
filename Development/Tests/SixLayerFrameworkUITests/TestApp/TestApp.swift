@@ -18,6 +18,15 @@ final class TestAppMacActivationDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.regular)
         NSApp.activate(ignoringOtherApps: true)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            let titles = NSApp.windows.map(\.title)
+            NSLog(
+                "TestApp#499 launch windows=%d titles=%@ args=%@",
+                NSApp.windows.count,
+                titles.description,
+                ProcessInfo.processInfo.arguments.description
+            )
+        }
     }
 }
 #endif
