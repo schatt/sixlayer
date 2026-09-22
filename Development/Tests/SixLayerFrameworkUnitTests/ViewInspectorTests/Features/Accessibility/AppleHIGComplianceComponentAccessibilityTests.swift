@@ -561,10 +561,7 @@ extension View {
     }
     
     func keyboardNavigation() -> some View {
-        self.modifier(KeyboardNavigationModifier(
-            hasKeyboardSupport: true,
-            hasFullKeyboardAccess: true
-        ))
+        self.modifier(KeyboardNavigationModifier())
     }
     
     func highContrast() -> some View {
