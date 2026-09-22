@@ -7,6 +7,20 @@
 
 import SwiftUI
 import SixLayerFramework
+#if os(macOS)
+import AppKit
+#endif
+
+#if os(macOS)
+/// XCUI launches can leave the host as a non-UI process with **zero windows** (#499).
+/// Force a regular activation policy and activate so `WindowGroup` presents content.
+final class TestAppMacActivationDelegate: NSObject, NSApplicationDelegate {
+    func applicationDidFinishLaunching(_ notification: Notification) {
+        NSApp.setActivationPolicy(.regular)
+        NSApp.activate(ignoringOtherApps: true)
+    }
+}
+#endif
 
 /// Minimal test app that displays views for XCUITest testing
 @main
@@ -14,6 +28,10 @@ struct TestApp: App {
     /// Per-process config for the UI test host — **not** `AccessibilityIdentifierConfig.shared` (#247).
     /// Injected at the window root so modifiers resolve the same instance without mutating the production singleton.
     private let accessibilityIdentifierHostConfiguration: AccessibilityIdentifierConfig
+
+    #if os(macOS)
+    @NSApplicationDelegateAdaptor(TestAppMacActivationDelegate.self) private var macActivationDelegate
+    #endif
 
     init() {
         let suiteName = "SixLayer.Framework.UITestHost.AccessibilityIdentifier"
@@ -42,7 +60,11 @@ struct TestApp: App {
         WindowGroup {
             TestAppContentView()
                 .environment(\.accessibilityIdentifierConfig, accessibilityIdentifierHostConfiguration)
+                .testAppHostRootSurface()
         }
+        #if os(macOS)
+        .defaultSize(width: 900, height: 700)
+        #endif
     }
 }
 
