@@ -310,9 +310,11 @@ enum KeyboardNavigationContainerChrome: Equatable {
 }
 
 /// Container focus chrome for keyboard-navigation HIG.
-/// Keyboard-capable hosts currently mark the container itself focusable.
+/// Always compliance-only. A focusable collection root is the macOS accent platter
+/// on an empty `platformPresentItemCollection_L1` (#521). Buttons and fields are
+/// already focusable; `hasKeyboardSupport` does not promote the container.
 func slfKeyboardNavigationContainerChrome(hasKeyboardSupport: Bool) -> KeyboardNavigationContainerChrome {
-    hasKeyboardSupport ? .focusableContainer : .complianceOnly
+    .complianceOnly
 }
 
 /// Keyboard navigation modifier
