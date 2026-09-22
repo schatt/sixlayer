@@ -300,6 +300,21 @@ public struct VoiceOverSupportModifier: ViewModifier {
     }
 }
 
+/// Chrome ``KeyboardNavigationModifier`` applies to a container.
+/// `.focusableContainer` is the macOS accent focus platter on collection roots (#521).
+enum KeyboardNavigationContainerChrome: Equatable {
+    /// Identifier compliance only. Buttons and fields stay focusable on their own.
+    case complianceOnly
+    /// Marks the wrapped container `.focusable()`.
+    case focusableContainer
+}
+
+/// Container focus chrome for keyboard-navigation HIG.
+/// Keyboard-capable hosts currently mark the container itself focusable.
+func slfKeyboardNavigationContainerChrome(hasKeyboardSupport: Bool) -> KeyboardNavigationContainerChrome {
+    hasKeyboardSupport ? .focusableContainer : .complianceOnly
+}
+
 /// Keyboard navigation modifier
 public struct KeyboardNavigationModifier: ViewModifier {
     let hasKeyboardSupport: Bool
@@ -317,7 +332,7 @@ public struct KeyboardNavigationModifier: ViewModifier {
         hasKeyboardSupport: Bool,
         hasFullKeyboardAccess: Bool
     ) -> AnyView {
-        guard hasKeyboardSupport else {
+        guard slfKeyboardNavigationContainerChrome(hasKeyboardSupport: hasKeyboardSupport) == .focusableContainer else {
             return content.wrappedWithCompliance(named: "KeyboardNavigationModifier")
         }
         
