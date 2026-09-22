@@ -243,6 +243,12 @@ final class PlatformStandaloneDropIn150UITests: SixLayerUITestCase {
             file: file,
             line: line
         )
+        // Prefer per-character typeKey over typeText — typeText often times out when
+        // foreign windows (IDE, docs) interrupt event synthesis on macOS (#515).
+        app.activate()
+        for character in text {
+            target.typeKey(String(character), modifierFlags: [])
+        }
         #else
         target.xcuiTapToBecomeFirstResponder()
         if target.elementType == .secureTextField {
@@ -250,8 +256,8 @@ final class PlatformStandaloneDropIn150UITests: SixLayerUITestCase {
             return
         }
         _ = app.keyboards.firstMatch.waitForExistence(timeout: 1.0)
-        #endif
         target.typeText(text)
+        #endif
     }
 
     #if os(iOS)
@@ -366,7 +372,12 @@ final class PlatformStandaloneDropIn150UITests: SixLayerUITestCase {
         assertExactIdentifierExists("SD150_TextField")
         let field = element(exactIdentifier: "SD150_TextField")
         focusAndType(field, "a")
+        #if os(macOS)
+        // Append without a second click (click can select-all and replace) (#515).
+        editableControl(near: field).typeKey("b", modifierFlags: [])
+        #else
         editableControl(near: field).typeText("b")
+        #endif
         assertBindingMirrorContains("SD150_Mirror_T", "ab")
         #else
         throw XCTSkip("Issue #150 host UI tests require iOS or macOS TestApp")
