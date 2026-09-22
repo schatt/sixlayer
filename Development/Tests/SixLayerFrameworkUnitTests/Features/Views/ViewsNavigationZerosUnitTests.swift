@@ -15,8 +15,7 @@ struct ViewsNavigationZerosLogicUnitTests {
     @Test func platformBottomBarPlacement_isPlatformSpecific() {
         let placement = platformBottomBarPlacement()
         #if os(iOS)
-        // Deliberate red (#469): wrong placement — expect .automatic; production returns .bottomBar
-        #expect(placement == .automatic)
+        #expect(placement == .bottomBar)
         #else
         #expect(placement == .automatic)
         #endif
@@ -35,8 +34,7 @@ struct ViewsNavigationZerosHostUnitTests {
 
     @Test @MainActor
     func crossPlatformOptimizationUsesNamedCompliance() {
-        // Deliberate red (#469): wrong name until green
-        hostExpectingNamedCompliance("CrossPlatformOptimizationWRONG") {
+        hostExpectingNamedCompliance("CrossPlatformOptimization") {
             CrossPlatformOptimization()
         }
     }
@@ -80,7 +78,7 @@ struct ViewsNavigationZerosHostUnitTests {
     func responsiveContainerHosts() {
         hostView {
             ResponsiveContainer { horizontal, vertical in
-                Text("h=\(horizontal) v=\(vertical)")
+                Text("h=\(horizontal ? "yes" : "no") v=\(vertical ? "yes" : "no")")
             }
         }
     }
