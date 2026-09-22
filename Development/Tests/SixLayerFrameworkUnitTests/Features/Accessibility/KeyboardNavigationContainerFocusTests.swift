@@ -6,24 +6,20 @@
 //  focus platter on a focusable collection root (#521).
 //
 
+import SwiftUI
 import Testing
 @testable import SixLayerFramework
 
 @Suite("Keyboard navigation container focus")
 struct KeyboardNavigationContainerFocusTests {
 
-    @Test
-    func keyboardCapableContainerStaysComplianceOnly() {
+    @Test @MainActor
+    func keyboardNavigationContainerDoesNotApplyFocusable() {
+        let view = slfKeyboardNavigationContainer(Text("collection"))
+        let description = BaseTestClass.viewSubjectTypeDescription(for: view)
         #expect(
-            slfKeyboardNavigationContainerChrome(hasKeyboardSupport: true) == .complianceOnly,
-            "A keyboard-capable collection container must not be .focusable(); that platter is the off-center blue box"
-        )
-    }
-
-    @Test
-    func containerWithoutKeyboardSupportStaysComplianceOnly() {
-        #expect(
-            slfKeyboardNavigationContainerChrome(hasKeyboardSupport: false) == .complianceOnly
+            !description.contains("_FocusableModifier"),
+            "Keyboard navigation must not mark the container .focusable(), got: \(description)"
         )
     }
 }
