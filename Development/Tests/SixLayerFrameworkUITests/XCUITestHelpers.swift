@@ -94,9 +94,14 @@ extension XCUIElement {
         while !xcuiHasValidTapFrame, Date() < layoutDeadline {
             RunLoop.current.run(until: Date().addingTimeInterval(0.05))
         }
-        // SwiftUI Toggle → checkbox; prefer click over coordinate (Form chrome infinity frames, #493).
-        if elementType == .checkBox {
-            click()
+        // SwiftUI Toggle → checkbox or switch; prefer click over coordinate (Form chrome, #493).
+        // Trailing hit for switch — center often lands on the label and does not flip (#515 / #497).
+        if elementType == .checkBox || elementType == .switch {
+            if elementType == .switch, xcuiHasValidTapFrame {
+                coordinate(withNormalizedOffset: CGVector(dx: 0.92, dy: 0.5)).click()
+            } else {
+                click()
+            }
             RunLoop.current.run(until: Date().addingTimeInterval(0.25))
             return
         }
