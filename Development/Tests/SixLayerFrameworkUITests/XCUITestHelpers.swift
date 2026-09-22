@@ -242,8 +242,17 @@ extension XCUIElement {
 extension XCUIApplication {
     /// Compact identifier dump for host-open failure messages (#499).
     /// Caps count so assertion text stays readable in xcresult / CI logs.
+    /// Includes window count/titles — menu-only trees mean the content window never entered AX.
     func xcuiIdentifierSummary(limit: Int = 40) -> String {
         let stateDesc = String(describing: state)
+        let windowCount = windows.allElementsBoundByIndex.filter(\.exists).count
+        let windowTitles = windows.allElementsBoundByIndex
+            .prefix(8)
+            .compactMap { win -> String? in
+                guard win.exists else { return nil }
+                let title = win.title
+                return title.isEmpty ? "(untitled)" : title
+            }
         let nodes = descendants(matching: .any).allElementsBoundByIndex
         let ids = nodes.compactMap { el -> String? in
             guard el.exists, !el.identifier.isEmpty else { return nil }
@@ -252,7 +261,7 @@ extension XCUIApplication {
         let unique = Array(Set(ids)).sorted()
         let shown = unique.prefix(limit)
         let more = unique.count > limit ? " (+\(unique.count - limit) more)" : ""
-        return "app.state=\(stateDesc) identifiers[\(unique.count)]=\(shown.joined(separator: ", "))\(more)"
+        return "app.state=\(stateDesc) windows=\(windowCount) titles=\(windowTitles.joined(separator: "|")) identifiers[\(unique.count)]=\(shown.joined(separator: ", "))\(more)"
     }
 
     /// Wait for a deep-linked host's stable root accessibility identifier (#348 / #316).
