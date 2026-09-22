@@ -85,16 +85,9 @@ struct ViewsNavigationZerosHostUnitTests {
 
     @Test @MainActor
     func barcodeOverlayViewHostsEmptyResult() {
-        #if os(iOS)
-        let image = PlatformImage(uiImage: UIImage())
-        #elseif os(macOS)
-        let image = PlatformImage(nsImage: NSImage())
-        #else
-        let image = PlatformImage()
-        #endif
         let result = BarcodeResult(barcodes: [], confidence: 0, processingTime: 0)
         hostExpectingNamedCompliance("BarcodeOverlayView") {
-            BarcodeOverlayView(image: image, result: result)
+            BarcodeOverlayView(image: emptyPlatformImage(), result: result)
         }
     }
 
@@ -140,6 +133,17 @@ struct ViewsNavigationZerosHostUnitTests {
         let _ = Text("Root").platformCancellationActionPlacement()
         let _ = Text("Root").platformPrimaryActionPlacement()
         let _ = Text("Root").platformSecondaryActionPlacement()
+    }
+
+    @MainActor
+    private func emptyPlatformImage() -> PlatformImage {
+        #if os(iOS)
+        PlatformImage(uiImage: UIImage())
+        #elseif os(macOS)
+        PlatformImage(nsImage: NSImage())
+        #else
+        PlatformImage()
+        #endif
     }
 
     @MainActor
