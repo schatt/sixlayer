@@ -23,17 +23,17 @@ struct ResponsiveLayoutUnitTests {
         #expect(columns.count == 1)
     }
 
-    @Test func gridItemData_idIsStablePerInstance() {
+    @Test func gridItemData_idDerivesFromTitle() {
         let item = GridItemData(
             title: "A",
             subtitle: "B",
             icon: "star",
             color: .blue
         )
+        #expect(item.id == "A")
         #expect(item.title == "A")
         #expect(item.subtitle == "B")
         #expect(item.icon == "star")
-        #expect(item.id != UUID())
     }
 }
 
