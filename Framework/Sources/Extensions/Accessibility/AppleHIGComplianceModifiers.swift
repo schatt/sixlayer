@@ -300,11 +300,9 @@ public struct VoiceOverSupportModifier: ViewModifier {
 /// Keyboard-navigation container. Does not call `.focusable()`.
 /// A focusable collection root is the macOS accent platter on an empty
 /// `platformPresentItemCollection_L1` (#521). Buttons and fields stay focusable
-/// on their own. `.focusable()` below is the deliberate-red stand-in.
+/// on their own.
 func slfKeyboardNavigationContainer<Content: View>(_ content: Content) -> some View {
-    content
-        .focusable()
-        .automaticCompliance(named: "KeyboardNavigationModifier")
+    content.automaticCompliance(named: "KeyboardNavigationModifier")
 }
 
 /// Keyboard navigation modifier
