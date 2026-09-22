@@ -117,6 +117,32 @@ struct PlatformUIExtensionZerosUnitTests {
         }
     }
 
+    @Test @MainActor
+    func adaptiveButtonUsesNamedCompliance() {
+        // Deliberate wrong name for #468 red; corrected after failing run.
+        hostExpectingNamedCompliance("AdaptiveButtonSIXLAYER_468_RED") {
+            AdaptiveUIPatterns.AdaptiveButton("Save") {}
+        }
+    }
+
+    @Test @MainActor
+    func scanBarcodeL1Hosts() {
+        #if os(iOS)
+        let image = PlatformImage(uiImage: UIImage())
+        #elseif os(macOS)
+        let image = PlatformImage(nsImage: NSImage())
+        #else
+        let image = PlatformImage()
+        #endif
+        hostView {
+            platformScanBarcode_L1(
+                image: image,
+                context: BarcodeContext(),
+                onResult: { _ in }
+            )
+        }
+    }
+
     @MainActor
     private func hostExpectingNamedCompliance<V: View>(
         _ name: String,
