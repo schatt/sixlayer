@@ -21,8 +21,7 @@ struct PlatformUIIntegrationPatternsContextUnitTests {
 
     @Test @MainActor
     func navigationContextCompactIsCompact() {
-        // Deliberate wrong expectation for #468 red; corrected after failing run.
-        #expect(!NavigationContext.compact.isCompact)
+        #expect(NavigationContext.compact.isCompact)
     }
 
     @Test @MainActor
@@ -61,8 +60,7 @@ struct PlatformUIIntegrationPatternsHostUnitTests {
 
     @Test @MainActor
     func smartFormContainerUsesAdaptiveButtonNamedCompliance() {
-        // Deliberate wrong probe for #468 red; corrected after failing run.
-        hostExpectingNamedCompliance("AdaptiveButtonSIXLAYER_468_RED") {
+        hostExpectingNamedCompliance("AdaptiveButton") {
             PlatformUIIntegration.SmartFormContainer(
                 title: "Account",
                 onSubmit: {}
