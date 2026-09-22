@@ -221,8 +221,30 @@ final class PlatformStandaloneDropIn150UITests: SixLayerUITestCase {
         // Blur any prior field so SecureField can take first responder in a Form (#368).
         app.xcuiDismissSoftwareKeyboardIfPresent()
         #endif
+        #if os(macOS)
+        // macOS XCUI `typeText` requires keyboard focus; a single tap often misses Form fields (#515).
+        app.activate()
+        let focusDeadline = Date().addingTimeInterval(5.0)
+        var focused = false
+        while !focused, Date() < focusDeadline {
+            if target.xcuiHasValidTapFrame {
+                target.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).click()
+            } else if target.isHittable {
+                target.click()
+            } else {
+                target.xcuiTapToBecomeFirstResponder()
+            }
+            RunLoop.current.run(until: Date().addingTimeInterval(0.2))
+            focused = (target.value(forKey: "hasKeyboardFocus") as? Bool) == true
+        }
+        XCTAssertTrue(
+            focused,
+            "Field '\(target.identifier)' should accept keyboard focus before typeText (#515)",
+            file: file,
+            line: line
+        )
+        #else
         target.xcuiTapToBecomeFirstResponder()
-        #if os(iOS)
         if target.elementType == .secureTextField {
             typeIntoFocusedSecureField(target, text, file: file, line: line)
             return
