@@ -29,6 +29,9 @@ Moved out of `Framework/Sources/Components/Views`. Minimal `ExampleHelpers` View
 ### **ExtensibleHintsExample.swift** (#490)
 Moved out of `Framework/Sources/Core`. Sample `CustomHint` subclasses (`EcommerceProductHint`, `SocialFeedHint`, `FinancialDashboardHint`) plus `ExtensibleHintsExamples` presenters. Prefer `Framework/Stubs/` for copy-paste starting points when available.
 
+### **ResponsiveLayoutExample.swift** (#469)
+Moved out of `Framework/Sources/Components/Views`. Demo `ResponsiveLayoutExample` (adaptive grid) and `ResponsiveNavigationExample` (horizontal vs stacked navigation). Copy into an app; not compiled into the framework.
+
 ### **PhotoPurposeExtensionExample.swift** (v7.4.0)
 Comprehensive example showing PhotoPurpose extensibility and migration:
 
