@@ -301,11 +301,11 @@ public struct VoiceOverSupportModifier: ViewModifier {
 }
 
 /// Chrome ``KeyboardNavigationModifier`` applies to a container.
-/// `.focusableContainer` is the macOS accent focus platter on collection roots (#521).
 enum KeyboardNavigationContainerChrome: Equatable {
     /// Identifier compliance only. Buttons and fields stay focusable on their own.
     case complianceOnly
-    /// Marks the wrapped container `.focusable()`.
+    /// Rejected. This was the macOS accent focus platter on collection roots (#521).
+    /// ``KeyboardNavigationModifier`` does not apply it.
     case focusableContainer
 }
 
@@ -323,56 +323,25 @@ public struct KeyboardNavigationModifier: ViewModifier {
     let hasFullKeyboardAccess: Bool
     
     public func body(content: Content) -> some View {
-        applyKeyboardNavigation(to: content, hasKeyboardSupport: hasKeyboardSupport, hasFullKeyboardAccess: hasFullKeyboardAccess)
+        applyKeyboardNavigation(
+            to: content,
+            hasKeyboardSupport: hasKeyboardSupport,
+            hasFullKeyboardAccess: hasFullKeyboardAccess
+        )
     }
     
-    // MARK: - Cross-Platform Implementation
-    
-    /// Apply keyboard navigation with platform-specific behavior
+    /// Compliance wrapper only. `.focusableContainer` is not painted (#521).
     private func applyKeyboardNavigation<Content: View>(
         to content: Content,
         hasKeyboardSupport: Bool,
         hasFullKeyboardAccess: Bool
     ) -> AnyView {
-        guard slfKeyboardNavigationContainerChrome(hasKeyboardSupport: hasKeyboardSupport) == .focusableContainer else {
+        // Full keyboard access does not mark the container focusable.
+        _ = hasFullKeyboardAccess
+        switch slfKeyboardNavigationContainerChrome(hasKeyboardSupport: hasKeyboardSupport) {
+        case .complianceOnly, .focusableContainer:
             return content.wrappedWithCompliance(named: "KeyboardNavigationModifier")
         }
-        
-        #if os(macOS)
-        return macOSKeyboardNavigation(to: content, hasFullKeyboardAccess: hasFullKeyboardAccess).wrappedWithCompliance(named: "KeyboardNavigationModifier")
-        #elseif os(iOS) || os(tvOS) || os(watchOS)
-        return iosKeyboardNavigation(to: content).wrappedWithCompliance(named: "KeyboardNavigationModifier")
-        #else
-        return fallbackKeyboardNavigation(to: content)
-        #endif
-    }
-    
-    // MARK: - Platform-Specific Implementations
-    
-    #if os(macOS)
-    @available(macOS 14.0, *)
-    private func macOSKeyboardNavigation<Content: View>(
-        to content: Content,
-        hasFullKeyboardAccess: Bool
-    ) -> some View {
-        content
-            .focusable()
-            .onKeyPress(.return) {
-                // Handle keyboard activation
-                return .handled
-            }
-    }
-    #endif
-    
-    #if os(iOS) || os(tvOS) || os(watchOS)
-    @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
-    private func iosKeyboardNavigation<Content: View>(to content: Content) -> some View {
-        content.focusable()
-    }
-    #endif
-    
-    private func fallbackKeyboardNavigation<Content: View>(to content: Content) -> AnyView {
-        content.wrappedWithCompliance(named: "KeyboardNavigationModifier")
     }
 }
 
