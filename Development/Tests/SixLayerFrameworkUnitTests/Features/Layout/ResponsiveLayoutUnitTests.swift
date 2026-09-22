@@ -13,9 +13,8 @@ import Testing
 struct ResponsiveLayoutUnitTests {
 
     @Test func gridColumns_countsFromWidthOverMinWidth() {
-        // Deliberate wrong count for #469 red; corrected after failing run.
         let columns = ResponsiveLayout.gridColumns(for: 900, minWidth: 300)
-        #expect(columns.count == 99)
+        #expect(columns.count == 3)
     }
 
     @Test func gridColumns_narrowWidthYieldsAtLeastOne() {
