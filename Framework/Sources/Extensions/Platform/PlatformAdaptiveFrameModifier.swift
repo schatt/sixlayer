@@ -4,10 +4,22 @@ import SwiftUI
 
 /// Pure sizing map for ``AdaptiveFrameModifier`` (unit-lane observable).
 public enum AdaptiveFrameSizing {
-    /// Deliberate wrong stub for #468 red — replaced after failing assertions.
     public static func dimensions(for metrics: FormContentMetrics) -> (minWidth: CGFloat, minHeight: CGFloat) {
-        _ = metrics
-        return (minWidth: 0, minHeight: 0)
+        let baseWidth: CGFloat = 500
+        let baseHeight: CGFloat = 400
+        let fieldWidthContribution: CGFloat = 25
+        let sectionHeightContribution: CGFloat = 100
+        let complexContentBonus: CGFloat = metrics.hasComplexContent ? 200 : 0
+
+        let calculatedWidth = baseWidth + (CGFloat(metrics.fieldCount) * fieldWidthContribution)
+        let calculatedHeight =
+            baseHeight
+            + (CGFloat(metrics.sectionCount) * sectionHeightContribution)
+            + complexContentBonus
+
+        let minWidth = max(500, min(900, calculatedWidth))
+        let minHeight = max(400, min(1000, calculatedHeight))
+        return (minWidth: minWidth, minHeight: minHeight)
     }
 }
 
