@@ -70,10 +70,7 @@ public struct SystemAccessibilityModifier: ViewModifier {
             .modifier(VoiceOverSupportModifier(
                 isEnabled: accessibilityState.isVoiceOverRunning
             ))
-            .modifier(KeyboardNavigationModifier(
-                hasKeyboardSupport: accessibilityState.hasKeyboardSupport,
-                hasFullKeyboardAccess: accessibilityState.hasFullKeyboardAccess
-            ))
+            .modifier(KeyboardNavigationModifier())
             .modifier(HighContrastModifier(
                 isEnabled: accessibilityState.isHighContrastEnabled
             ))
@@ -300,48 +297,20 @@ public struct VoiceOverSupportModifier: ViewModifier {
     }
 }
 
-/// Chrome ``KeyboardNavigationModifier`` applies to a container.
-enum KeyboardNavigationContainerChrome: Equatable {
-    /// Identifier compliance only. Buttons and fields stay focusable on their own.
-    case complianceOnly
-    /// Rejected. This was the macOS accent focus platter on collection roots (#521).
-    /// ``KeyboardNavigationModifier`` does not apply it.
-    case focusableContainer
-}
-
-/// Container focus chrome for keyboard-navigation HIG.
-/// Always compliance-only. A focusable collection root is the macOS accent platter
-/// on an empty `platformPresentItemCollection_L1` (#521). Buttons and fields are
-/// already focusable; `hasKeyboardSupport` does not promote the container.
-func slfKeyboardNavigationContainerChrome(hasKeyboardSupport: Bool) -> KeyboardNavigationContainerChrome {
-    .complianceOnly
+/// Keyboard-navigation container. Does not call `.focusable()`.
+/// A focusable collection root is the macOS accent platter on an empty
+/// `platformPresentItemCollection_L1` (#521). Buttons and fields stay focusable
+/// on their own. `.focusable()` below is the deliberate-red stand-in.
+func slfKeyboardNavigationContainer<Content: View>(_ content: Content) -> some View {
+    content
+        .focusable()
+        .automaticCompliance(named: "KeyboardNavigationModifier")
 }
 
 /// Keyboard navigation modifier
 public struct KeyboardNavigationModifier: ViewModifier {
-    let hasKeyboardSupport: Bool
-    let hasFullKeyboardAccess: Bool
-    
     public func body(content: Content) -> some View {
-        applyKeyboardNavigation(
-            to: content,
-            hasKeyboardSupport: hasKeyboardSupport,
-            hasFullKeyboardAccess: hasFullKeyboardAccess
-        )
-    }
-    
-    /// Compliance wrapper only. `.focusableContainer` is not painted (#521).
-    private func applyKeyboardNavigation<Content: View>(
-        to content: Content,
-        hasKeyboardSupport: Bool,
-        hasFullKeyboardAccess: Bool
-    ) -> AnyView {
-        // Full keyboard access does not mark the container focusable.
-        _ = hasFullKeyboardAccess
-        switch slfKeyboardNavigationContainerChrome(hasKeyboardSupport: hasKeyboardSupport) {
-        case .complianceOnly, .focusableContainer:
-            return content.wrappedWithCompliance(named: "KeyboardNavigationModifier")
-        }
+        slfKeyboardNavigationContainer(content)
     }
 }
 
