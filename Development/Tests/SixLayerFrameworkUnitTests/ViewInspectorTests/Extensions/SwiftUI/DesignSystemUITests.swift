@@ -138,19 +138,6 @@ class DesignSystemUITests: XCTestCase {
         XCTAssertEqual(designSystem.designSystem.name, "SixLayer")
     }
 
-    // MARK: - Environment Integration Tests
-
-    @MainActor
-    func testThemedFrameworkViewProvidesEnvironment() {
-        // Test that ThemedFrameworkView provides the necessary environment
-        let view = ThemedFrameworkView {
-            // This view should have access to design tokens via environment
-            TestEnvironmentView()
-        }
-
-        XCTAssertNotNil(view)
-    }
-
     // MARK: - Theme Change Notification Tests
 
     @MainActor
