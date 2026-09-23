@@ -191,23 +191,6 @@ class DesignSystemUITests: XCTestCase {
     }
 }
 
-// MARK: - Test Helper Views
-
-private struct TestEnvironmentView: View {
-    @Environment(\.designTokens) private var designTokens
-    @Environment(\.spacingTokens) private var spacingTokens
-    @Environment(\.componentStates) private var componentStates
-
-    var body: some View {
-        VStack {
-            // Test that environment values are available
-            Text("Primary: \(designTokens.primary.description)")
-            Text("Spacing SM: \(spacingTokens.sm)")
-            Text("Corner Radius SM: \(componentStates.cornerRadius.sm)")
-        }
-    }
-}
-
 // MARK: - Test Helper Extensions
 
 extension Color {
