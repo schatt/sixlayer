@@ -221,15 +221,43 @@ final class PlatformStandaloneDropIn150UITests: SixLayerUITestCase {
         // Blur any prior field so SecureField can take first responder in a Form (#368).
         app.xcuiDismissSoftwareKeyboardIfPresent()
         #endif
+        #if os(macOS)
+        // macOS XCUI `typeText` requires keyboard focus; a single tap often misses Form fields (#515).
+        app.activate()
+        let focusDeadline = Date().addingTimeInterval(5.0)
+        var focused = false
+        while !focused, Date() < focusDeadline {
+            if target.xcuiHasValidTapFrame {
+                target.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).click()
+            } else if target.isHittable {
+                target.click()
+            } else {
+                target.xcuiTapToBecomeFirstResponder()
+            }
+            RunLoop.current.run(until: Date().addingTimeInterval(0.2))
+            focused = (target.value(forKey: "hasKeyboardFocus") as? Bool) == true
+        }
+        XCTAssertTrue(
+            focused,
+            "Field '\(target.identifier)' should accept keyboard focus before typeText (#515)",
+            file: file,
+            line: line
+        )
+        // Prefer per-character typeKey over typeText — typeText often times out when
+        // foreign windows (IDE, docs) interrupt event synthesis on macOS (#515).
+        app.activate()
+        for character in text {
+            target.typeKey(String(character), modifierFlags: [])
+        }
+        #else
         target.xcuiTapToBecomeFirstResponder()
-        #if os(iOS)
         if target.elementType == .secureTextField {
             typeIntoFocusedSecureField(target, text, file: file, line: line)
             return
         }
         _ = app.keyboards.firstMatch.waitForExistence(timeout: 1.0)
-        #endif
         target.typeText(text)
+        #endif
     }
 
     #if os(iOS)
@@ -344,7 +372,12 @@ final class PlatformStandaloneDropIn150UITests: SixLayerUITestCase {
         assertExactIdentifierExists("SD150_TextField")
         let field = element(exactIdentifier: "SD150_TextField")
         focusAndType(field, "a")
+        #if os(macOS)
+        // Append without a second click (click can select-all and replace) (#515).
+        editableControl(near: field).typeKey("b", modifierFlags: [])
+        #else
         editableControl(near: field).typeText("b")
+        #endif
         assertBindingMirrorContains("SD150_Mirror_T", "ab")
         #else
         throw XCTSkip("Issue #150 host UI tests require iOS or macOS TestApp")
@@ -372,6 +405,15 @@ final class PlatformStandaloneDropIn150UITests: SixLayerUITestCase {
         assertExactIdentifierExists("SD150_Integration_Toggle")
         let toggleLeaf = toggleControl(near: toggle)
         assertResolvedToggleLeaf(toggleLeaf)
+        #if os(macOS)
+        // Resign SecureField first responder so keys/clicks hit the switch (#515).
+        app.activate()
+        let section = element(exactIdentifier: "SD150_Section_Integration")
+        if section.exists, section.xcuiHasValidTapFrame {
+            section.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).click()
+            RunLoop.current.run(until: Date().addingTimeInterval(0.2))
+        }
+        #endif
         toggleLeaf.xcuiTapToBecomeFirstResponder()
         assertBindingMirrorContains("SD150_Mirror_IN", "secret|1")
         #else
