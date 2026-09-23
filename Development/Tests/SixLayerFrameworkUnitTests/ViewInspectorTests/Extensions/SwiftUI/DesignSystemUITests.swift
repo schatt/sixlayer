@@ -11,41 +11,8 @@ import SwiftUI
 
 class DesignSystemUITests: XCTestCase {
 
-    // MARK: - Themed Component Tests
-
-    @MainActor
-    func testThemedCardStyle() {
-        // Test that themed card applies design system styling
-        let view = ThemedFrameworkView {
-            Text("Test Content")
-                .themedCard()
-        }
-
-        // Note: UI testing with ViewInspector would be ideal here
-        // For now, we test that the view can be created without errors
-        XCTAssertNotNil(view)
-    }
-
-    @MainActor
-    func testThemedTextFieldStyle() {
-        // Test that themed text field applies design system styling
-        let view = ThemedFrameworkView {
-            TextField("Test", text: .constant(""))
-                .themedTextField()
-        }
-
-        XCTAssertNotNil(view)
-    }
-
-    @MainActor
-    func testThemedProgressBar() {
-        // Test that themed progress bar uses design tokens
-        let view = ThemedFrameworkView {
-            ThemedProgressBar(progress: 0.5, variant: .primary)
-        }
-
-        XCTAssertNotNil(view)
-    }
+    // Themed Framework / card / progress XCTAssertNotNil cases removed (#491).
+    // Real observations live on the unit lane in ThemingProductAPITests.
 
     // MARK: - Theme Switching Tests
 
