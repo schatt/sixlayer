@@ -9,6 +9,7 @@ import Testing
 @testable import SixLayerFramework
 
 @Suite("IntelligentFormView Debug (#469)")
+@MainActor
 struct IntelligentFormViewDebugUnitTests {
 
     @Test func inspectEffectiveOrder_prefersTitleWithoutExternalRules() {
