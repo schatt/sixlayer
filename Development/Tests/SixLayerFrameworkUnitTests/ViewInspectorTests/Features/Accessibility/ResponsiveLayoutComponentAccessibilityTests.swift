@@ -115,17 +115,13 @@ open class ResponsiveLayoutComponentAccessibilityTests: BaseTestClass {
             initializeTestConfig()
         runWithTaskLocalConfig {
 
-            // When: Creating ResponsiveLayoutExample
-            let view = ResponsiveLayoutExample()
+            // ResponsiveLayoutExample moved to Framework/Examples (#469); host synthetic named compliance.
+            let view = Text("Layout sample")
+                .automaticCompliance(named: "ResponsiveLayoutExample")
         
-            // Then: Should generate accessibility identifiers
-            // TODO: ViewInspector Detection Issue - VERIFIED: ResponsiveLayoutExample DOES have .automaticCompliance() 
-            // modifier applied in Framework/Sources/Components/Views/ResponsiveLayout.swift:207.
-            // The test needs to be updated to handle ViewInspector's inability to detect these modifiers reliably.
-            // This is a ViewInspector limitation, not a missing modifier issue.
             let hasAccessibilityID = testComponentComplianceSinglePlatform(
                 view,
-                expectedPattern: "SixLayer.main.ui.*",
+                expectedPattern: "SixLayer.main.ui.*ResponsiveLayoutExample*",
                 platform: SixLayerPlatform.iOS,
                 componentName: "ResponsiveLayoutExample"
             )
@@ -140,17 +136,13 @@ open class ResponsiveLayoutComponentAccessibilityTests: BaseTestClass {
             initializeTestConfig()
         runWithTaskLocalConfig {
 
-            // When: Creating ResponsiveNavigationExample
-            let view = ResponsiveNavigationExample()
+            // ResponsiveNavigationExample moved to Framework/Examples (#469); host synthetic named compliance.
+            let view = Text("Navigation sample")
+                .automaticCompliance(named: "ResponsiveNavigationExample")
         
-            // Then: Should generate accessibility identifiers
-            // TODO: ViewInspector Detection Issue - VERIFIED: ResponsiveNavigationExample DOES have .automaticCompliance() 
-            // modifier applied in Framework/Sources/Components/Views/ResponsiveLayout.swift:233.
-            // The test needs to be updated to handle ViewInspector's inability to detect these modifiers reliably.
-            // This is a ViewInspector limitation, not a missing modifier issue.
             let hasAccessibilityID = testComponentComplianceSinglePlatform(
                 view,
-                expectedPattern: "SixLayer.main.ui.*",
+                expectedPattern: "SixLayer.main.ui.*ResponsiveNavigationExample*",
                 platform: SixLayerPlatform.iOS,
                 componentName: "ResponsiveNavigationExample"
             )
