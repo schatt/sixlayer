@@ -190,12 +190,3 @@ class DesignSystemUITests: XCTestCase {
         XCTAssertNotEqual(lightColors.background, darkColors.background)
     }
 }
-
-// MARK: - Test Helper Extensions
-
-extension Color {
-    var description: String {
-        // Simplified description for testing
-        return "Color"
-    }
-}
