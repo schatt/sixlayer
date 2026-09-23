@@ -173,8 +173,7 @@ struct AccessibilityFeaturesLayer5HostUnitTests {
 
     @Test @MainActor
     func accessibilityTestingViewUsesNamedCompliance() {
-        // Deliberate red (#470): wrong name until green
-        hostExpectingNamedCompliance("AccessibilityTestingViewWRONG") {
+        hostExpectingNamedCompliance("AccessibilityTestingView") {
             AccessibilityTestingView()
         }
     }
