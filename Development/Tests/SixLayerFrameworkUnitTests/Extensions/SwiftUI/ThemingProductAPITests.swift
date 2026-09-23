@@ -124,8 +124,7 @@ struct ThemingProductHostUnitTests {
 
     @Test @MainActor
     func themedFrameworkViewUsesNamedCompliance() {
-        // Deliberate red (#491): wrong name until green
-        hostExpectingNamedCompliance("ThemedFrameworkViewWRONG") {
+        hostExpectingNamedCompliance("ThemedFrameworkView") {
             ThemedFrameworkView {
                 Text("Content")
             }
