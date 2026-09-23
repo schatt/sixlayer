@@ -118,3 +118,64 @@ struct ThemingProductAPITests {
         }
     }
 }
+
+@Suite("Theming product hosts (#491)", HostedViewTestIsolationTrait())
+struct ThemingProductHostUnitTests {
+
+    @Test @MainActor
+    func themedFrameworkViewUsesNamedCompliance() {
+        hostExpectingNamedCompliance("ThemedFrameworkView") {
+            ThemedFrameworkView {
+                Text("Content")
+            }
+        }
+    }
+
+    @Test @MainActor
+    func themedProgressBarUsesNamedCompliance() {
+        hostExpectingNamedCompliance("ThemedProgressBar") {
+            ThemedProgressBar(progress: 0.5, variant: .primary)
+        }
+    }
+
+    @Test @MainActor
+    func themedCardHosts() {
+        hostView {
+            Text("Card").themedCard()
+        }
+    }
+
+    @Test @MainActor
+    func themedTextFieldHosts() {
+        hostView {
+            TextField("Label", text: .constant(""))
+                .themedTextField()
+        }
+    }
+
+    @MainActor
+    private func hostExpectingNamedCompliance<V: View>(
+        _ name: String,
+        @ViewBuilder _ view: () -> V
+    ) {
+        #if os(watchOS)
+        return
+        #else
+        let (hosted, log) = TestSetupUtilities.hostRootPlatformViewNamedDebugLog(view())
+        #expect(hosted != nil)
+        #expect(
+            log.contains(name),
+            "named compliance \(name) must appear in debug log"
+        )
+        #endif
+    }
+
+    @MainActor
+    private func hostView<V: View>(@ViewBuilder _ view: () -> V) {
+        #if os(watchOS)
+        return
+        #else
+        #expect(TestSetupUtilities.hostRootPlatformView(view(), forceLayout: true) != nil)
+        #endif
+    }
+}
