@@ -34,8 +34,7 @@ struct ViewsNavigationZerosLogicUnitTests {
             case settings
         }
         let state = PlatformAppNavigationTopLevelState<Pane>(deviceType: .phone)
-        // Deliberate red (#469): phone should start unselected; wrong probe expects .home
-        #expect(state.selectedPane == .home)
+        #expect(state.selectedPane == nil)
     }
 }
 
