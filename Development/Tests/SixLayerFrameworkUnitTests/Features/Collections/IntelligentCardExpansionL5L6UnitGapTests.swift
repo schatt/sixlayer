@@ -121,4 +121,51 @@ struct IntelligentCardExpansionL5L6UnitGapTests {
         #expect(!config.memoryOptimization)
         #expect(!config.lazyLoading)
     }
+
+    // MARK: - Layer 5 accessibility config (#470)
+
+    @Test
+    func cardExpansionAccessibilityConfigCustomInitializerStoresValues() {
+        let config = CardExpansionAccessibilityConfig(
+            supportsVoiceOver: false,
+            supportsSwitchControl: false,
+            supportsAssistiveTouch: false,
+            supportsReduceMotion: false,
+            supportsHighContrast: false,
+            supportsDynamicType: false,
+            announcementDelay: 1.25,
+            focusManagement: false
+        )
+        #expect(!config.supportsVoiceOver)
+        #expect(!config.supportsSwitchControl)
+        #expect(!config.supportsAssistiveTouch)
+        #expect(!config.supportsReduceMotion)
+        #expect(!config.supportsHighContrast)
+        #expect(!config.supportsDynamicType)
+        #expect(config.announcementDelay == 1.25)
+        #expect(!config.focusManagement)
+    }
+
+    @Test @MainActor
+    func getCardExpansionAccessibilityConfigRespectsVoiceOverOverride() {
+        defer { RuntimeCapabilityDetection.clearAllCapabilityOverrides() }
+        RuntimeCapabilityDetection.setTestVoiceOver(false)
+        RuntimeCapabilityDetection.setTestSwitchControl(false)
+        RuntimeCapabilityDetection.setTestAssistiveTouch(false)
+
+        let config = getCardExpansionAccessibilityConfig()
+        // Deliberate red (#470): expect VoiceOver still true until green
+        #expect(config.supportsVoiceOver)
+        #expect(!config.supportsSwitchControl)
+        #expect(config.announcementDelay == SixLayerPlatform.current.defaultAnnouncementDelay)
+    }
+
+    @Test @MainActor
+    func getCardExpansionPlatformConfigReflectsHapticOverride() {
+        defer { RuntimeCapabilityDetection.clearAllCapabilityOverrides() }
+        RuntimeCapabilityDetection.setTestHapticFeedback(true)
+        let config = getCardExpansionPlatformConfig()
+        #expect(config.supportsHapticFeedback == RuntimeCapabilityDetection.supportsHapticFeedback)
+        #expect(config.minTouchTarget == RuntimeCapabilityDetection.minTouchTarget)
+    }
 }
