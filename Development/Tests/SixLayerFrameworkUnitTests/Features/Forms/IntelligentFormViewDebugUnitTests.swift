@@ -26,8 +26,7 @@ struct IntelligentFormViewDebugUnitTests {
 
         let (effective, warnings) = IntelligentFormView.inspectEffectiveOrder(analysis: analysis)
 
-        // Deliberate red (#469): inverted order until green
-        #expect(effective == ["zulu", "title"])
+        #expect(effective == ["title", "zulu"])
         #expect(warnings.isEmpty)
     }
 }
