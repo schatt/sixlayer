@@ -27,6 +27,16 @@ struct ViewsNavigationZerosLogicUnitTests {
         #expect(item.title == "Home")
         #expect(item.systemImage == "house")
     }
+
+    @Test func appNavigationTopLevelState_phoneStartsWithNoSelection() {
+        enum Pane: String, Hashable, Sendable, CaseIterable {
+            case home
+            case settings
+        }
+        let state = PlatformAppNavigationTopLevelState<Pane>(deviceType: .phone)
+        // Deliberate red (#469): phone should start unselected; wrong probe expects .home
+        #expect(state.selectedPane == .home)
+    }
 }
 
 @Suite("Views + Navigation zeros hosts (#469)", HostedViewTestIsolationTrait())
@@ -133,6 +143,40 @@ struct ViewsNavigationZerosHostUnitTests {
         let _ = Text("Root").platformCancellationActionPlacement()
         let _ = Text("Root").platformPrimaryActionPlacement()
         let _ = Text("Root").platformSecondaryActionPlacement()
+    }
+
+    @Test @MainActor
+    func entityAutoSaveWrapperHosts() {
+        hostView {
+            IntelligentFormView.withEntityAutoSave(
+                content: Text("Form"),
+                entity: "draft-entity",
+                autoSaveInterval: 3600,
+                isDraft: true,
+                onEntitySaved: { _ in }
+            )
+        }
+    }
+
+    @Test @MainActor
+    func managedAppNavigationHosts() {
+        enum Pane: String, Hashable, Sendable, CaseIterable {
+            case home
+            case settings
+        }
+        let descriptors: [AppNavigationPaneDescriptor<Pane>] = [
+            .init(id: .home, titleKey: "Home", systemImage: "house"),
+            .init(id: .settings, titleKey: "Settings", systemImage: "gear")
+        ]
+        hostView {
+            Text("Root")
+                .platformManagedAppNavigation_L4(
+                    state: .constant(PlatformAppNavigationTopLevelState(deviceType: .phone)),
+                    descriptors: descriptors
+                ) { pane in
+                    Text(pane?.rawValue ?? "nil")
+                }
+        }
     }
 
     @MainActor
