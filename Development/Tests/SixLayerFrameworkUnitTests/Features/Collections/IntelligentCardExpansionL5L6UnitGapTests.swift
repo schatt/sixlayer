@@ -154,8 +154,7 @@ struct IntelligentCardExpansionL5L6UnitGapTests {
         RuntimeCapabilityDetection.setTestAssistiveTouch(false)
 
         let config = getCardExpansionAccessibilityConfig()
-        // Deliberate red (#470): expect VoiceOver still true until green
-        #expect(config.supportsVoiceOver)
+        #expect(!config.supportsVoiceOver)
         #expect(!config.supportsSwitchControl)
         #expect(config.announcementDelay == SixLayerPlatform.current.defaultAnnouncementDelay)
     }
