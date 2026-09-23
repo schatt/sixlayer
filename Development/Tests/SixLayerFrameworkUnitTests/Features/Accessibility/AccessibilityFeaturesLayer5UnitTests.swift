@@ -139,3 +139,69 @@ struct AccessibilityFeaturesLayer5UnitTests {
         #expect(result.timestamp <= Date())
     }
 }
+
+@Suite("Accessibility Features Layer5 hosts (#470)", HostedViewTestIsolationTrait())
+struct AccessibilityFeaturesLayer5HostUnitTests {
+
+    @Test @MainActor
+    func accessibilityEnhancedUsesNamedCompliance() {
+        hostExpectingNamedCompliance("accessibility-enhanced") {
+            Text("Content").accessibilityEnhanced()
+        }
+    }
+
+    @Test @MainActor
+    func voiceOverEnabledUsesNamedCompliance() {
+        hostExpectingNamedCompliance("voiceOverEnabled") {
+            Text("Content").voiceOverEnabled()
+        }
+    }
+
+    @Test @MainActor
+    func keyboardNavigableHosts() {
+        hostView {
+            Text("Content").keyboardNavigable()
+        }
+    }
+
+    @Test @MainActor
+    func highContrastEnabledHosts() {
+        hostView {
+            Text("Content").highContrastEnabled()
+        }
+    }
+
+    @Test @MainActor
+    func accessibilityTestingViewUsesNamedCompliance() {
+        // Deliberate red (#470): wrong name until green
+        hostExpectingNamedCompliance("AccessibilityTestingViewWRONG") {
+            AccessibilityTestingView()
+        }
+    }
+
+    @MainActor
+    private func hostExpectingNamedCompliance<V: View>(
+        _ name: String,
+        @ViewBuilder _ view: () -> V
+    ) {
+        #if os(watchOS)
+        return
+        #else
+        let (hosted, log) = TestSetupUtilities.hostRootPlatformViewNamedDebugLog(view())
+        #expect(hosted != nil)
+        #expect(
+            log.contains(name),
+            "named compliance \(name) must appear in debug log"
+        )
+        #endif
+    }
+
+    @MainActor
+    private func hostView<V: View>(@ViewBuilder _ view: () -> V) {
+        #if os(watchOS)
+        return
+        #else
+        #expect(TestSetupUtilities.hostRootPlatformView(view(), forceLayout: true) != nil)
+        #endif
+    }
+}
