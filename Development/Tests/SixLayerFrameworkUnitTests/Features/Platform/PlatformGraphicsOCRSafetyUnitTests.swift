@@ -31,8 +31,7 @@ struct PlatformGraphicsOCRSafetyUnitTests {
     @Test func getVisionAvailabilityInfo_matchesHostPlatform() {
         let info = getVisionAvailabilityInfo()
         #if os(iOS)
-        // Deliberate red (#513): wrong platform label until green
-        #expect(info.platform == "watchOS")
+        #expect(info.platform == "iOS")
         #expect(info.minVersion == "11.0")
         #expect(info.isAvailable)
         #expect(info.isCompatible)
