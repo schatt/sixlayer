@@ -7,8 +7,20 @@ import UniformTypeIdentifiers
 public struct RichTextEditorField: View {
     let field: DynamicFormField
     @ObservedObject var formState: DynamicFormState
-    @State private var isEditing = false
+    @State private var isEditing: Bool
     @State private var selectedText: NSRange?
+
+    /// - Parameter initiallyEditing: Seeds edit vs preview presentation (testable; #403).
+    public init(
+        field: DynamicFormField,
+        formState: DynamicFormState,
+        initiallyEditing: Bool = false
+    ) {
+        self.field = field
+        self.formState = formState
+        self._isEditing = State(initialValue: initiallyEditing)
+        self._selectedText = State(initialValue: nil)
+    }
     
     public var body: some View {
         platformVStackContainer(alignment: .leading, spacing: 8) {
