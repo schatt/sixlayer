@@ -49,13 +49,23 @@ final class PullToRefresh452UITests: SixLayerUITestCase {
     /// Pull down on the list to trigger `.refreshable` / `platformIOSPullToRefresh`.
     @MainActor
     private func performPullToRefresh() {
-        let list = app.tables.firstMatch
-        let scroll = list.exists ? list : app.scrollViews.firstMatch
-        XCTAssertTrue(scroll.waitForExistence(timeout: 5.0), "Scrollable content for pull-to-refresh")
+        // SwiftUI `List` is exposed as a collection view on modern iOS (not UITableView).
+        let collection = app.collectionViews.firstMatch
+        let table = app.tables.firstMatch
+        let scrollView = app.scrollViews.firstMatch
+        let scroll: XCUIElement
+        if collection.waitForExistence(timeout: 5.0) {
+            scroll = collection
+        } else if table.waitForExistence(timeout: 2.0) {
+            scroll = table
+        } else {
+            XCTAssertTrue(scrollView.waitForExistence(timeout: 2.0), "Scrollable content for pull-to-refresh")
+            scroll = scrollView
+        }
 
-        let start = scroll.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.15))
-        let end = scroll.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.85))
-        start.press(forDuration: 0.05, thenDragTo: end)
+        let start = scroll.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.12))
+        let end = scroll.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.9))
+        start.press(forDuration: 0.1, thenDragTo: end)
     }
 
     @MainActor
