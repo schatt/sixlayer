@@ -206,6 +206,7 @@
 		0D60584EA9A9A183BB65592E /* SecurityHints.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6A88D8E24398AE87D26BAF4 /* SecurityHints.swift */; };
 		0D8F51F4122D81DEFF10DA50 /* PlatformAdaptiveFrameModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34C11B2E2E2FC55792D39F14 /* PlatformAdaptiveFrameModifier.swift */; };
 		0D9F993EC49B1F0812822713 /* MockOCRServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2384310ED2E0DD996B528FD7 /* MockOCRServiceTests.swift */; };
+		0DBEC2375610231BC64619C3 /* AdvancedFieldTypesInteractionViewInspectorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95A231EDCA9A3F765817E422 /* AdvancedFieldTypesInteractionViewInspectorTests.swift */; };
 		0E12D0CEC8419620DC849ACE /* PlatformPickerTestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64AE00D2988706F5BE715E6A /* PlatformPickerTestView.swift */; };
 		0E190E36056D6E12EBE5CFE9 /* RuntimeOptimizationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F73688E0D08C155421AB55C1 /* RuntimeOptimizationTests.swift */; };
 		0E6031B083E0ACB44D65A603 /* IntelligentFormView+Debug.swift in Sources */ = {isa = PBXBuildFile; fileRef = E199DDD6AFBAA8FA621BA3F6 /* IntelligentFormView+Debug.swift */; };
@@ -3030,6 +3031,7 @@
 		D67CD14F892F2C1BE41C92B7 /* ModalContainerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09FFAA8FB08DDD888050C880 /* ModalContainerTests.swift */; };
 		D69026154CD3795103C97A0B /* BasicAutomaticComplianceLogicTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FFFE89D716B2F60C57A15AD7 /* BasicAutomaticComplianceLogicTests.swift */; };
 		D69525F821FA6C2112B28F2F /* ImageProcessingPipelineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBAFDBC9C7D020E0A4FF4D15 /* ImageProcessingPipelineTests.swift */; };
+		D6A4F25E8959F7CB3E7C9B15 /* AdvancedFieldTypesInteractionViewInspectorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95A231EDCA9A3F765817E422 /* AdvancedFieldTypesInteractionViewInspectorTests.swift */; };
 		D6D38157FB6E426C73C3CA20 /* ManagedSettingsPaneList.swift in Sources */ = {isa = PBXBuildFile; fileRef = C89CC72A51B698960367C9CD /* ManagedSettingsPaneList.swift */; };
 		D6E7E2C2A15B1C4EC3C9FD47 /* Layer2LayoutDecisionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08B4CB20079AF0ADD8AF9C32 /* Layer2LayoutDecisionTests.swift */; };
 		D70066A663E15FADBCFDF931 /* FormWizardViewTDDTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3D5F0571AA532A7F8EF242D /* FormWizardViewTDDTests.swift */; };
@@ -4570,6 +4572,7 @@
 		951351CCDB9482231BDD67BE /* PresentationProfilesCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresentationProfilesCatalog.swift; sourceTree = "<group>"; };
 		9528C3BB8701ACDB9F949476 /* DataPresentationIntelligence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataPresentationIntelligence.swift; sourceTree = "<group>"; };
 		959A6C6D0F2BEA9209FB1A6C /* CoreDataTestUtilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataTestUtilities.swift; sourceTree = "<group>"; };
+		95A231EDCA9A3F765817E422 /* AdvancedFieldTypesInteractionViewInspectorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdvancedFieldTypesInteractionViewInspectorTests.swift; sourceTree = "<group>"; };
 		95D94CC4B45FDB7BBAF879FD /* PlatformUIIntegrationPatternsUnitTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformUIIntegrationPatternsUnitTests.swift; sourceTree = "<group>"; };
 		95E9384F29FD43936D08084A /* WindowDetectionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowDetectionTests.swift; sourceTree = "<group>"; };
 		96034D11EEA255F8B0FF8427 /* PlatformShareClipboardLayer4.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformShareClipboardLayer4.swift; sourceTree = "<group>"; };
@@ -6406,6 +6409,7 @@
 		B080F3B39CDDE38F19747605 /* Forms */ = {
 			isa = PBXGroup;
 			children = (
+				95A231EDCA9A3F765817E422 /* AdvancedFieldTypesInteractionViewInspectorTests.swift */,
 				B874931C39333F1FE4A4560E /* AdvancedFieldTypesTests.swift */,
 				399C2CCB5B02E7EEE0E7BE3D /* DynamicDateTimeFieldLabelPolicyIssue478Tests.swift */,
 				C19C048E72FAD64FDEDB7EA4 /* DynamicFieldComponentsTests.swift */,
@@ -9161,6 +9165,7 @@
 				82E177A7E5C819C16011B265 /* AccessibilityTestUtilitiesSyntheticComplianceTests.swift in Sources */,
 				55B9824410E65A7D13786778 /* AccessibilityWorkflowRenderingTests.swift in Sources */,
 				8F07DB3DB71EBFAE2FA4118A /* AdaptiveDetailViewRenderingTests.swift in Sources */,
+				0DBEC2375610231BC64619C3 /* AdvancedFieldTypesInteractionViewInspectorTests.swift in Sources */,
 				E2E0B4D9B42367A20EA4B75C /* AdvancedFieldTypesTests.swift in Sources */,
 				765E857C1C5A8CE137ED0D31 /* AppleHIGComplianceComponentAccessibilityTests.swift in Sources */,
 				B9C63C8C5FB6E8422FF47C94 /* AppleHIGComplianceManagerAccessibilityTests.swift in Sources */,
@@ -10146,6 +10151,7 @@
 				1A1D33F3E81EA76018BD9688 /* AccessibilityTestUtilitiesSyntheticComplianceTests.swift in Sources */,
 				CB1E34E0E37559E889B0286D /* AccessibilityWorkflowRenderingTests.swift in Sources */,
 				FF6FAA18F889669DF7E85A98 /* AdaptiveDetailViewRenderingTests.swift in Sources */,
+				D6A4F25E8959F7CB3E7C9B15 /* AdvancedFieldTypesInteractionViewInspectorTests.swift in Sources */,
 				C86E3418C8129D6AD3941A47 /* AdvancedFieldTypesTests.swift in Sources */,
 				537FFC22F7D2ECE5D6DB38FA /* AppleHIGComplianceComponentAccessibilityTests.swift in Sources */,
 				82171C6C081EB7BC47022EB8 /* AppleHIGComplianceManagerAccessibilityTests.swift in Sources */,
