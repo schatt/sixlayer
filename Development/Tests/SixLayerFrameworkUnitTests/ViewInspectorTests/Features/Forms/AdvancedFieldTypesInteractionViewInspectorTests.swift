@@ -111,8 +111,7 @@ struct AdvancedFieldTypesInteractionViewInspectorTests {
             initiallyEditing: true
         )
         let hasBold = findButtonInViewHierarchy(sut, labels: ["B"]) != nil
-        // Deliberate wrong expectation until initiallyEditing is wired (#403).
-        #expect(hasBold == false)
+        #expect(hasBold, "Editing mode must expose toolbar format controls")
         #endif
     }
 }
