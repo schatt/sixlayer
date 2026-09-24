@@ -78,11 +78,10 @@ final class PullToRefresh452UITests: SixLayerUITestCase {
 
         performPullToRefresh()
 
-        // Deliberate red (#452): wrong expected value until green after confirming gesture works
-        let predicate = NSPredicate(format: "value == %@ OR label == %@", "never-refreshed", "never-refreshed")
+        let predicate = NSPredicate(format: "value == %@ OR label == %@", "refreshed", "refreshed")
         let expectation = XCTNSPredicateExpectation(predicate: predicate, object: status)
         let result = XCTWaiter.wait(for: [expectation], timeout: 8.0)
-        XCTAssertEqual(result, .completed, "onRefresh should flip PullToRefresh452_Status (deliberate red expects never-refreshed)")
+        XCTAssertEqual(result, .completed, "onRefresh should flip PullToRefresh452_Status to refreshed")
     }
 }
 #endif
