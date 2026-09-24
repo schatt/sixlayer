@@ -2,12 +2,11 @@
 //  AdvancedFieldTypesInteractionViewInspectorTests.swift
 //  SixLayerFrameworkUnitTests
 //
-//  VI observations for #403: edit-mode presentation, suggestion pick, upload a11y.
+//  VI observations for #403 / #524: edit-mode presentation + suggestion pick.
 //
 
 import SwiftUI
 import Testing
-import UniformTypeIdentifiers
 @testable import SixLayerFramework
 
 #if canImport(ViewInspector)
@@ -53,39 +52,15 @@ struct AdvancedFieldTypesInteractionViewInspectorTests {
             suggestions: ["Apple", "Banana"],
             onSelect: { selected = $0 }
         )
-        guard let button = findButtonInViewHierarchy(view, labels: ["Apple"]) else {
-            Issue.record("Expected Apple suggestion button")
-            return
-        }
-        try? button.tap()
+        let button = findButtonInViewHierarchy(view, labels: ["Apple"])
+        #expect(button != nil, "Expected Apple suggestion button")
+        try? button?.tap()
         #expect(selected == "Apple")
         #endif
     }
 
-    // MARK: - Upload a11y identifiers
-
-    @Test @MainActor
-    func fileUploadArea_exposesNamedAccessibilityIdentity() {
-        #if os(watchOS)
-        return
-        #else
-        let view = FileUploadArea(
-            isDragOver: .constant(false),
-            selectedFiles: .constant([]),
-            allowedTypes: [.image],
-            maxFileSize: 1024,
-            onFilesSelected: { _ in }
-        )
-        let (hosted, log) = TestSetupUtilities.hostRootPlatformViewNamedDebugLog(view)
-        #expect(hosted != nil)
-        #expect(
-            log.contains("FileUploadArea"),
-            "FileUploadArea named compliance must appear for a11y identity"
-        )
-        #endif
-    }
-
     // MARK: - Edit-mode presentation
+    // FileUploadArea named compliance: unit lane FileUploadAreaHostUnitTests (#403 / #524).
 
     @Test @MainActor
     func richTextEditorField_previewModeShowsEditControl() {

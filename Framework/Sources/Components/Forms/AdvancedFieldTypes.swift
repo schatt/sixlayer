@@ -531,57 +531,56 @@ public struct FileUploadArea: View {
     }
     
     private func handleDrop(providers: [NSItemProvider]) {
-        // Process dropped providers; accept only via ``FileUploadValidation`` (#403).
+        // Process dropped providers; accept only via ``FileUploadValidation`` (#403 / #524).
         let group = DispatchGroup()
         let allowed = allowedTypes
         let maxSize = maxFileSize
-        
+        let loadTypes: [(identifier: String, declared: UTType)] = [
+            (UTType.image.identifier, .image),
+            (UTType.pdf.identifier, .pdf)
+        ]
+
         for provider in providers {
-            if provider.hasItemConformingToTypeIdentifier(UTType.image.identifier) {
-                group.enter()
-                provider.loadItem(forTypeIdentifier: UTType.image.identifier, options: nil) { item, error in
-                    defer { group.leave() }
-                    if let url = item as? URL {
-                        Task { @MainActor in
-                            let fileInfo = FileInfo(
-                                name: url.lastPathComponent,
-                                size: Int64((try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0),
-                                type: UTType.image,
-                                url: url
-                            )
-                            let accepted = FileUploadValidation.accepted(
-                                from: [fileInfo],
-                                allowedTypes: allowed,
-                                maxFileSize: maxSize
-                            )
-                            if !accepted.isEmpty {
-                                onFilesSelected(accepted)
-                            }
-                        }
-                    }
-                }
-            } else if provider.hasItemConformingToTypeIdentifier(UTType.pdf.identifier) {
-                group.enter()
-                provider.loadItem(forTypeIdentifier: UTType.pdf.identifier, options: nil) { item, error in
-                    defer { group.leave() }
-                    if let url = item as? URL {
-                        Task { @MainActor in
-                            let fileInfo = FileInfo(
-                                name: url.lastPathComponent,
-                                size: Int64((try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0),
-                                type: UTType.pdf,
-                                url: url
-                            )
-                            let accepted = FileUploadValidation.accepted(
-                                from: [fileInfo],
-                                allowedTypes: allowed,
-                                maxFileSize: maxSize
-                            )
-                            if !accepted.isEmpty {
-                                onFilesSelected(accepted)
-                            }
-                        }
-                    }
+            for loadType in loadTypes where provider.hasItemConformingToTypeIdentifier(loadType.identifier) {
+                loadDroppedItem(
+                    provider: provider,
+                    typeIdentifier: loadType.identifier,
+                    declaredType: loadType.declared,
+                    allowedTypes: allowed,
+                    maxFileSize: maxSize,
+                    group: group
+                )
+                break
+            }
+        }
+    }
+
+    private func loadDroppedItem(
+        provider: NSItemProvider,
+        typeIdentifier: String,
+        declaredType: UTType,
+        allowedTypes: [UTType],
+        maxFileSize: Int64?,
+        group: DispatchGroup
+    ) {
+        group.enter()
+        provider.loadItem(forTypeIdentifier: typeIdentifier, options: nil) { item, _ in
+            defer { group.leave() }
+            guard let url = item as? URL else { return }
+            Task { @MainActor in
+                let fileInfo = FileInfo(
+                    name: url.lastPathComponent,
+                    size: Int64((try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0),
+                    type: declaredType,
+                    url: url
+                )
+                let accepted = FileUploadValidation.accepted(
+                    from: [fileInfo],
+                    allowedTypes: allowedTypes,
+                    maxFileSize: maxFileSize
+                )
+                if !accepted.isEmpty {
+                    onFilesSelected(accepted)
                 }
             }
         }
