@@ -958,8 +958,9 @@ open class AdvancedFieldTypesTests: BaseTestClass {
             maxFileSize: maxFileSize
         )
     
-        // Enforcement not implemented (#403); unit observes maxFileSize config.
+        // FileUploadValidation enforces max size (#403); unit observes config + pure gates.
         #expect(sut26.maxFileSize == maxFileSize)
+        #expect(!FileUploadValidation.isSizeAllowed(maxFileSize + 1, max: maxFileSize))
         expectHostable(sut26, "EnhancedFileUploadField size config")
     }
     
