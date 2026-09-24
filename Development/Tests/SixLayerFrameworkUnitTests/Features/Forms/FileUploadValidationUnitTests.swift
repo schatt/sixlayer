@@ -24,8 +24,7 @@ struct FileUploadValidationUnitTests {
         #expect(FileUploadValidation.isSizeAllowed(500, max: nil))
         #expect(FileUploadValidation.isSizeAllowed(500, max: 1000))
         #expect(FileUploadValidation.isSizeAllowed(1000, max: 1000))
-        // Deliberate red (#403): oversized file should be rejected
-        #expect(FileUploadValidation.isSizeAllowed(1001, max: 1000))
+        #expect(!FileUploadValidation.isSizeAllowed(1001, max: 1000))
     }
 
     @Test func accepted_filtersByTypeAndSize() {
