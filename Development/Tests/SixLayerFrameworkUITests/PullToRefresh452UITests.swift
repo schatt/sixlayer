@@ -1,0 +1,87 @@
+//
+//  PullToRefresh452UITests.swift
+//  SixLayerFrameworkUITests
+//
+//  GitHub #452: Thin XCUI sentinel — pull-to-refresh fires onRefresh.
+//
+
+import XCTest
+
+#if os(iOS)
+@MainActor
+final class PullToRefresh452UITests: SixLayerUITestCase {
+    private nonisolated(unsafe) var app: XCUIApplication!
+
+    nonisolated override func setUpWithError() throws {
+        continueAfterFailure = false
+        addDefaultUIInterruptionMonitor()
+    }
+
+    nonisolated override func tearDownWithError() throws {
+        app = nil
+        try super.tearDownWithError()
+    }
+
+    @MainActor
+    private func launchHost() {
+        let localApp = XCUIApplication()
+        localApp.configureForFastTesting()
+        localApp.launchArguments.append("-OpenPullToRefresh452")
+        localApp.launch()
+        app = localApp
+        XCTAssertTrue(
+            localApp.wait(for: .runningForeground, timeout: 8.0),
+            "PullToRefresh452 host should be foreground after launch"
+        )
+        XCTAssertTrue(
+            element(exactIdentifier: "PullToRefresh452_Host").waitForExistence(timeout: 8.0),
+            "PullToRefresh452_Host land marker should exist"
+        )
+    }
+
+    @MainActor
+    private func element(exactIdentifier id: String) -> XCUIElement {
+        app.descendants(matching: .any)
+            .matching(NSPredicate(format: "identifier == %@", id))
+            .firstMatch
+    }
+
+    /// Pull down on the list to trigger `.refreshable` / `platformIOSPullToRefresh`.
+    @MainActor
+    private func performPullToRefresh() {
+        // SwiftUI `List` is exposed as a collection view on modern iOS (not UITableView).
+        let collection = app.collectionViews.firstMatch
+        let table = app.tables.firstMatch
+        let scrollView = app.scrollViews.firstMatch
+        let scroll: XCUIElement
+        if collection.waitForExistence(timeout: 5.0) {
+            scroll = collection
+        } else if table.waitForExistence(timeout: 2.0) {
+            scroll = table
+        } else {
+            XCTAssertTrue(scrollView.waitForExistence(timeout: 2.0), "Scrollable content for pull-to-refresh")
+            scroll = scrollView
+        }
+
+        let start = scroll.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.12))
+        let end = scroll.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.9))
+        start.press(forDuration: 0.1, thenDragTo: end)
+    }
+
+    @MainActor
+    func testPlatformIOSPullToRefreshFiresOnRefresh() {
+        launchHost()
+
+        let status = element(exactIdentifier: "PullToRefresh452_Status")
+        XCTAssertTrue(status.waitForExistence(timeout: 5.0), "Status label should exist")
+        XCTAssertEqual(status.value as? String ?? status.label, "idle", "Status starts idle")
+
+        performPullToRefresh()
+
+        let predicate = NSPredicate(format: "value == %@ OR label == %@", "refreshed", "refreshed")
+        let expectation = XCTNSPredicateExpectation(predicate: predicate, object: status)
+        let result = XCTWaiter.wait(for: [expectation], timeout: 8.0)
+        XCTAssertEqual(result, .completed, "onRefresh should flip PullToRefresh452_Status to refreshed")
+    }
+}
+#endif

@@ -86,6 +86,8 @@ struct TestAppContentView: View {
     private let openStandaloneDropIn150 = ProcessInfo.processInfo.arguments.contains("-OpenStandaloneDropIn150")
     /// When true, app opens to Issue #385 ModalFormView packing / checkbox alignment host (launch arg -OpenFieldLayout385).
     private let openFieldLayout385 = ProcessInfo.processInfo.arguments.contains("-OpenFieldLayout385")
+    /// When true, app opens to Issue #452 pull-to-refresh sentinel host (launch arg -OpenPullToRefresh452).
+    private let openPullToRefresh452 = ProcessInfo.processInfo.arguments.contains("-OpenPullToRefresh452")
     /// Deep links for ``AccessibilityCompatibilityUITests`` — open a single test host without launch-page navigation (Issue #180).
     private let openAccessibilityCompatibilityControlTest = ProcessInfo.processInfo.arguments.contains("-OpenAccessibilityCompatibilityControlTest")
     private let openAccessibilityCompatibilityTextTest = ProcessInfo.processInfo.arguments.contains("-OpenAccessibilityCompatibilityTextTest")
@@ -193,6 +195,8 @@ struct TestAppContentView: View {
                 StandaloneDropIn150HostView()
             } else if openFieldLayout385 {
                 FieldLayout385HostView()
+            } else if openPullToRefresh452 {
+                PullToRefresh452HostView()
             } else if openAccessibilityCompatibilityControlTest {
                 NavigationStack {
                     ControlTestView(onBackToMain: {})
