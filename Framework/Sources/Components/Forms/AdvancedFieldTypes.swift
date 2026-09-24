@@ -7,8 +7,20 @@ import UniformTypeIdentifiers
 public struct RichTextEditorField: View {
     let field: DynamicFormField
     @ObservedObject var formState: DynamicFormState
-    @State private var isEditing = false
+    @State private var isEditing: Bool
     @State private var selectedText: NSRange?
+
+    /// - Parameter initiallyEditing: Seeds edit vs preview presentation (testable; #403).
+    public init(
+        field: DynamicFormField,
+        formState: DynamicFormState,
+        initiallyEditing: Bool = false
+    ) {
+        self.field = field
+        self.formState = formState
+        self._isEditing = State(initialValue: initiallyEditing)
+        self._selectedText = State(initialValue: nil)
+    }
     
     public var body: some View {
         platformVStackContainer(alignment: .leading, spacing: 8) {
@@ -279,6 +291,44 @@ public enum AutocompleteSuggestionFiltering {
     }
 }
 
+// MARK: - File Upload Validation
+
+/// Pure type/size gates for ``FileUploadArea`` / ``EnhancedFileUploadField`` (#403).
+public enum FileUploadValidation {
+    /// Whether `type` is allowed: exact match or conformance to any entry in `allowed`.
+    public static func isTypeAllowed(_ type: UTType, allowed: [UTType]) -> Bool {
+        guard !allowed.isEmpty else { return true }
+        return allowed.contains { allowedType in
+            type == allowedType || type.conforms(to: allowedType)
+        }
+    }
+
+    /// Whether `size` is within `max` when a max is configured (`nil` = unlimited).
+    public static func isSizeAllowed(_ size: Int64, max: Int64?) -> Bool {
+        guard let max else { return true }
+        return size >= 0 && size <= max
+    }
+
+    /// Combined type + size acceptance for a candidate file.
+    public static func isAccepted(
+        _ file: FileInfo,
+        allowedTypes: [UTType],
+        maxFileSize: Int64?
+    ) -> Bool {
+        isTypeAllowed(file.type, allowed: allowedTypes)
+            && isSizeAllowed(file.size, max: maxFileSize)
+    }
+
+    /// Filters candidates to those that pass ``isAccepted``.
+    public static func accepted(
+        from files: [FileInfo],
+        allowedTypes: [UTType],
+        maxFileSize: Int64?
+    ) -> [FileInfo] {
+        files.filter { isAccepted($0, allowedTypes: allowedTypes, maxFileSize: maxFileSize) }
+    }
+}
+
 // MARK: - Autocomplete Field
 
 /// Autocomplete text field with suggestions
@@ -471,9 +521,8 @@ public struct FileUploadArea: View {
     }
     
     private func selectFiles() {
-        // File picker implementation
-        // This would integrate with the system file picker
-        // For now, this is a placeholder for the actual implementation
+        // System file picker remains platform-specific; candidates must pass
+        // ``FileUploadValidation`` before `onFilesSelected` (#403).
         #if os(iOS)
         // iOS file picker implementation would go here
         #elseif os(macOS)
@@ -482,14 +531,13 @@ public struct FileUploadArea: View {
     }
     
     private func handleDrop(providers: [NSItemProvider]) {
-        // Handle dropped files
-        // This would process the dropped file providers
-        // For now, this is a placeholder for the actual implementation
+        // Process dropped providers; accept only via ``FileUploadValidation`` (#403).
         let group = DispatchGroup()
+        let allowed = allowedTypes
+        let maxSize = maxFileSize
         
         for provider in providers {
             if provider.hasItemConformingToTypeIdentifier(UTType.image.identifier) {
-                // Handle image files
                 group.enter()
                 provider.loadItem(forTypeIdentifier: UTType.image.identifier, options: nil) { item, error in
                     defer { group.leave() }
@@ -501,12 +549,18 @@ public struct FileUploadArea: View {
                                 type: UTType.image,
                                 url: url
                             )
-                            onFilesSelected([fileInfo])
+                            let accepted = FileUploadValidation.accepted(
+                                from: [fileInfo],
+                                allowedTypes: allowed,
+                                maxFileSize: maxSize
+                            )
+                            if !accepted.isEmpty {
+                                onFilesSelected(accepted)
+                            }
                         }
                     }
                 }
             } else if provider.hasItemConformingToTypeIdentifier(UTType.pdf.identifier) {
-                // Handle PDF files
                 group.enter()
                 provider.loadItem(forTypeIdentifier: UTType.pdf.identifier, options: nil) { item, error in
                     defer { group.leave() }
@@ -518,7 +572,14 @@ public struct FileUploadArea: View {
                                 type: UTType.pdf,
                                 url: url
                             )
-                            onFilesSelected([fileInfo])
+                            let accepted = FileUploadValidation.accepted(
+                                from: [fileInfo],
+                                allowedTypes: allowed,
+                                maxFileSize: maxSize
+                            )
+                            if !accepted.isEmpty {
+                                onFilesSelected(accepted)
+                            }
                         }
                     }
                 }
