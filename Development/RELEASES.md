@@ -6,7 +6,7 @@
 **Status**: Patch release
 **Previous Release**: v8.5.0 - Minor release
 **Note**: Adaptive compact date+time stacking (#481, #498); IntelligentFormView packing spacing (#492); SPM `.xcstrings` resolution (#500–#502); CI destinations and SD150 XCUI harness (#495–#497).
-**Next Release**: TBD (v8.6.0)
+**Next Release**: v8.6.0 (draft: [RELEASE_v8.6.0.md](RELEASE_v8.6.0.md); not tagged)
 
 ---
 
