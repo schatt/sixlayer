@@ -531,10 +531,8 @@ public struct FileUploadArea: View {
     }
     
     private func handleDrop(providers: [NSItemProvider]) {
-        // Process dropped providers; accept only via ``FileUploadValidation`` (#403 / #524).
-        let group = DispatchGroup()
-        let allowed = allowedTypes
-        let maxSize = maxFileSize
+        // Process dropped providers; accept only via ``FileUploadValidation`` (#403 / #530).
+        // Load identifiers remain image/pdf until #525.
         let loadTypes: [(identifier: String, declared: UTType)] = [
             (UTType.image.identifier, .image),
             (UTType.pdf.identifier, .pdf)
@@ -545,10 +543,7 @@ public struct FileUploadArea: View {
                 loadDroppedItem(
                     provider: provider,
                     typeIdentifier: loadType.identifier,
-                    declaredType: loadType.declared,
-                    allowedTypes: allowed,
-                    maxFileSize: maxSize,
-                    group: group
+                    declaredType: loadType.declared
                 )
                 break
             }
@@ -558,14 +553,11 @@ public struct FileUploadArea: View {
     private func loadDroppedItem(
         provider: NSItemProvider,
         typeIdentifier: String,
-        declaredType: UTType,
-        allowedTypes: [UTType],
-        maxFileSize: Int64?,
-        group: DispatchGroup
+        declaredType: UTType
     ) {
-        group.enter()
+        let allowed = allowedTypes
+        let maxSize = maxFileSize
         provider.loadItem(forTypeIdentifier: typeIdentifier, options: nil) { item, _ in
-            defer { group.leave() }
             guard let url = item as? URL else { return }
             Task { @MainActor in
                 let fileInfo = FileInfo(
@@ -576,8 +568,8 @@ public struct FileUploadArea: View {
                 )
                 let accepted = FileUploadValidation.accepted(
                     from: [fileInfo],
-                    allowedTypes: allowedTypes,
-                    maxFileSize: maxFileSize
+                    allowedTypes: allowed,
+                    maxFileSize: maxSize
                 )
                 if !accepted.isEmpty {
                     onFilesSelected(accepted)
