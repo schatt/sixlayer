@@ -2,12 +2,11 @@
 //  AdvancedFieldTypesInteractionViewInspectorTests.swift
 //  SixLayerFrameworkUnitTests
 //
-//  VI observations for #403: edit-mode presentation, suggestion pick, upload a11y.
+//  VI observations for #403 / #524: edit-mode presentation + suggestion pick.
 //
 
 import SwiftUI
 import Testing
-import UniformTypeIdentifiers
 @testable import SixLayerFramework
 
 #if canImport(ViewInspector)
