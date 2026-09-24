@@ -16,8 +16,8 @@ import UniformTypeIdentifiers
  * capability detection for comprehensive validation.
  * 
  * METHODOLOGY: Unit-layer contracts — stored field/config props, formState round-trips,
- * AutocompleteSuggestionFiltering, and isHostable (with HostedViewTestIsolationTrait).
- * Editing-mode / drop / tree a11y interaction claims defer to #403 (VI/XCUI).
+ * AutocompleteSuggestionFiltering / FileUploadValidation, and isHostable (with HostedViewTestIsolationTrait).
+ * Interaction / edit-mode / suggestion-pick / upload a11y: AdvancedFieldTypesInteractionViewInspectorTests (#403).
  * Capability tri-state for a11y axes where fields branch on RuntimeCapabilityDetection (#251).
  */
 @Suite("Advanced Field Types", DefaultRuntimeCapabilityIsolationTrait(), HostedViewTestIsolationTrait())
@@ -97,7 +97,7 @@ open class AdvancedFieldTypesTests: BaseTestClass {
         // When
         let sut2 = RichTextEditorField(field: field, formState: formState)
     
-        // Editing-mode toggle is @State; unit layer observes hostability + field wiring (#403 for VI).
+        // Editing-mode presentation covered by AdvancedFieldTypesInteractionViewInspectorTests (#403).
         #expect(sut2.field.id == "richText")
         expectHostable(sut2, "RichTextEditorField editing mode")
     }
@@ -129,7 +129,7 @@ open class AdvancedFieldTypesTests: BaseTestClass {
         // When
         let sut4 = RichTextToolbar(selectedText: .constant(selectedText))
     
-        // Format actions are product placeholders; hostability is the unit-layer floor (#403).
+        // Format actions remain product placeholders; hostability is the unit-layer floor.
         expectHostable(sut4, "RichTextToolbar")
     }
     
@@ -220,7 +220,7 @@ open class AdvancedFieldTypesTests: BaseTestClass {
             suggestions: suggestions
         )
     
-        // Selection UI needs VI/XCUI (#403); unit observes suggestions + hostability.
+        // Suggestion pick covered by AdvancedFieldTypesInteractionViewInspectorTests (#403).
         #expect(sut8.suggestions.contains("Apple"))
         expectHostable(sut8, "AutocompleteField selection")
     }
@@ -345,7 +345,7 @@ open class AdvancedFieldTypesTests: BaseTestClass {
             }
         )
     
-        // Drop handling is a product placeholder (#403); unit observes configuration + hostability.
+        // Drop acceptance gated by FileUploadValidation; system browse picker is still a stub (follow-up).
         #expect(sut13.allowedTypes == allowedTypes)
         #expect(sut13.maxFileSize == maxFileSize)
         expectHostable(sut13, "FileUploadArea")
@@ -766,7 +766,7 @@ open class AdvancedFieldTypesTests: BaseTestClass {
         #expect(field.label == "Select Dates", "Field should have label for accessibility")
         // Note: Accessibility labels will be verified in implementation
     
-        // View-tree a11y needs VI (#403); unit observes field + hostability.
+        // View-tree a11y for multi-date is out of #403 scope; unit observes field + hostability.
         #expect(sut20.field.label == field.label)
         expectHostable(sut20, "DynamicMultiDateField a11y")
     }
@@ -861,7 +861,7 @@ open class AdvancedFieldTypesTests: BaseTestClass {
         // When
         let sut22 = RichTextEditorField(field: field, formState: formState)
     
-        // Labels/hints on tree need VI (#403).
+        // Upload/edit a11y covered by AdvancedFieldTypesInteractionViewInspectorTests (#403).
         #expect(sut22.field.label == "Rich Text Content")
         expectHostable(sut22, "RichTextEditorField a11y")
     }
@@ -933,7 +933,7 @@ open class AdvancedFieldTypesTests: BaseTestClass {
             maxFileSize: nil
         )
     
-        // Rejection logic not implemented (#403); unit observes allow-list config.
+        // Type rejection via FileUploadValidation; unit observes allow-list config.
         #expect(sut25.allowedTypes == [UTType.image])
         expectHostable(sut25, "EnhancedFileUploadField invalid type config")
     }
