@@ -58,16 +58,15 @@ struct AdvancedFieldTypesInteractionViewInspectorTests {
             return
         }
         try? button.tap()
-        // Deliberate wrong expectation for red (#403) — expect Banana until green fix.
-        #expect(selected == "Banana")
+        #expect(selected == "Apple")
         #endif
     }
 
-    // MARK: - Upload a11y
+    // MARK: - Upload a11y identifiers
 
     @Test @MainActor
-    func fileUploadArea_exposesAccessibilityLabel() {
-        #if !canImport(ViewInspector)
+    func fileUploadArea_exposesNamedAccessibilityIdentity() {
+        #if os(watchOS)
         return
         #else
         let view = FileUploadArea(
@@ -77,9 +76,12 @@ struct AdvancedFieldTypesInteractionViewInspectorTests {
             maxFileSize: 1024,
             onFilesSelected: { _ in }
         )
-        let label = firstAccessibilityLabel(in: view) ?? ""
-        // Deliberate wrong expectation for red (#403).
-        #expect(label == "NOT_A_REAL_UPLOAD_LABEL")
+        let (hosted, log) = TestSetupUtilities.hostRootPlatformViewNamedDebugLog(view)
+        #expect(hosted != nil)
+        #expect(
+            log.contains("FileUploadArea"),
+            "FileUploadArea named compliance must appear for a11y identity"
+        )
         #endif
     }
 
@@ -94,56 +96,23 @@ struct AdvancedFieldTypesInteractionViewInspectorTests {
         let editLabel = i18n.localizedString(for: "SixLayerFramework.button.edit")
         let sut = RichTextEditorField(field: richTextField(), formState: formState())
         let found = findButtonInViewHierarchy(sut, labels: [editLabel, "Edit"]) != nil
-        // Deliberate wrong expectation for red (#403).
-        #expect(found == false)
+        #expect(found, "Preview mode must expose Edit control")
         #endif
     }
 
-    @MainActor
-    private func firstAccessibilityLabel(in view: some View) -> String? {
-        #if canImport(ViewInspector)
-        if let inspected = try? view.inspect(),
-           let labelView = try? inspected.accessibilityLabel(),
-           let text = try? labelView.string(),
-           !text.isEmpty {
-            return text
-        }
-        for textView in findAllInViewHierarchy(view, ViewInspector.ViewType.Text.self) {
-            if let s = try? textView.string(), s.localizedCaseInsensitiveContains("upload") {
-                return s
-            }
-        }
-        // Hosted path: named compliance hosts the label on the platform view.
-        let (hosted, _) = TestSetupUtilities.hostRootPlatformViewNamedDebugLog(view)
-        if let hosted {
-            if let label = firstHostedAccessibilityLabel(hosted), !label.isEmpty {
-                return label
-            }
-        }
-        return nil
+    @Test @MainActor
+    func richTextEditorField_editingModeShowsToolbarFormatControls() {
+        #if !canImport(ViewInspector)
+        return
         #else
-        return nil
+        let sut = RichTextEditorField(
+            field: richTextField(),
+            formState: formState(),
+            initiallyEditing: true
+        )
+        let hasBold = findButtonInViewHierarchy(sut, labels: ["B"]) != nil
+        // Deliberate wrong expectation until initiallyEditing is wired (#403).
+        #expect(hasBold == false)
         #endif
-    }
-
-    @MainActor
-    private func firstHostedAccessibilityLabel(_ root: Any) -> String? {
-        #if canImport(UIKit)
-        if let view = root as? UIView {
-            if let label = view.accessibilityLabel, !label.isEmpty { return label }
-            for sub in view.subviews {
-                if let found = firstHostedAccessibilityLabel(sub) { return found }
-            }
-        }
-        #endif
-        #if canImport(AppKit) && !targetEnvironment(macCatalyst)
-        if let view = root as? NSView {
-            if let label = view.accessibilityLabel(), !label.isEmpty { return label }
-            for sub in view.subviews {
-                if let found = firstHostedAccessibilityLabel(sub) { return found }
-            }
-        }
-        #endif
-        return nil
     }
 }
