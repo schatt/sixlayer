@@ -327,6 +327,22 @@ public enum FileUploadValidation {
     ) -> [FileInfo] {
         files.filter { isAccepted($0, allowedTypes: allowedTypes, maxFileSize: maxFileSize) }
     }
+
+    /// NSItemProvider / importer load pairs derived from `allowed` (#525).
+    /// Empty `allowed` keeps the historical image+pdf probe set (validation still accepts all).
+    public static func dropLoadTypes(from allowed: [UTType]) -> [(identifier: String, declared: UTType)] {
+        // Deliberate stub for TDD red (#525): ignore `allowed` until green.
+        [
+            (UTType.image.identifier, .image),
+            (UTType.pdf.identifier, .pdf)
+        ]
+    }
+
+    /// Prefer a concrete type from the URL extension; otherwise `fallback` (#525).
+    public static func resolvedType(for url: URL, fallback: UTType) -> UTType {
+        // Deliberate stub for TDD red (#525): ignore URL until green.
+        fallback
+    }
 }
 
 // MARK: - Autocomplete Field
