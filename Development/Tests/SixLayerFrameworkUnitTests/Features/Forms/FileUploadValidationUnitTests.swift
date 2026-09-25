@@ -39,6 +39,23 @@ struct FileUploadValidationUnitTests {
         )
         #expect(accepted.map(\.name) == ["a.png"])
     }
+
+    @Test func dropLoadTypes_usesAllowedTypesNotHardcodedImagePdf() {
+        let types = FileUploadValidation.dropLoadTypes(from: [.plainText])
+        #expect(types.map(\.declared) == [.plainText])
+        #expect(types.map(\.identifier) == [UTType.plainText.identifier])
+    }
+
+    @Test func dropLoadTypes_emptyAllowedKeepsImageAndPdfProbes() {
+        let types = FileUploadValidation.dropLoadTypes(from: [])
+        #expect(types.map(\.declared) == [.image, .pdf])
+    }
+
+    @Test func resolvedType_prefersFilenameExtensionOverFallback() {
+        let url = URL(fileURLWithPath: "/tmp/notes.txt")
+        let resolved = FileUploadValidation.resolvedType(for: url, fallback: .pdf)
+        #expect(resolved == .plainText || resolved.conforms(to: .plainText))
+    }
 }
 
 @Suite("FileUploadArea hosts (#403)", HostedViewTestIsolationTrait())
