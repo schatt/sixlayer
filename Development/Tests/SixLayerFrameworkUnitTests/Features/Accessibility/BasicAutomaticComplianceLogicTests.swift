@@ -318,15 +318,10 @@ open class BasicAutomaticComplianceLogicTests: BaseTestClass {
     /// TESTING SCOPE: Label localization logic with localization keys
     /// METHODOLOGY: Test localizeAccessibilityLabel() with localization key format
     @Test func testLabelLocalization_HandlesLocalizationKeys() {
-        // Given: Label that looks like a localization key
-        let label = "SixLayerFramework.accessibility.button.save"
-        
-        // When: Localizing the label
+        let label = "SixLayerFramework.button.save"
         let localized = localizeAccessibilityLabel(label)
-        
-        // Then: Label should attempt localization (result depends on whether key exists)
-        // If key exists, it will be localized; if not, it will be formatted as-is
-        #expect(localized.hasSuffix(".") || localized == label, "Label should be formatted or localized")
+        let expected = formatAccessibilityLabel(FrameworkCatalogFixture.value(label))
+        #expect(localized == expected, "Must resolve catalog value (#503)")
     }
     
     // MARK: - Interactive Element Detection Tests
