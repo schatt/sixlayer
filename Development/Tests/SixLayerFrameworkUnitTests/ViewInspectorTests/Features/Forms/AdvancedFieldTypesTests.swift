@@ -127,9 +127,9 @@ open class AdvancedFieldTypesTests: BaseTestClass {
         let selectedText = NSRange(location: 0, length: 5)
         
         // When
-        let sut4 = RichTextToolbar(selectedText: .constant(selectedText))
+        let sut4 = RichTextToolbar(text: .constant("hello"), selectedText: .constant(selectedText))
     
-        // Format actions remain product placeholders; hostability is the unit-layer floor.
+        // Format actions via RichTextFormatting (#523); hostability remains the unit-layer floor.
         expectHostable(sut4, "RichTextToolbar")
     }
     
