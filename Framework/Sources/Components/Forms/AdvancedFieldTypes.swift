@@ -49,7 +49,13 @@ public struct RichTextEditorField: View {
                 .background(Color.secondaryBackground)
                 .cornerRadius(8)
                 
-                RichTextToolbar(selectedText: $selectedText)
+                RichTextToolbar(
+                    text: Binding(
+                        get: { formState.getValue(for: field.id) ?? "" },
+                        set: { formState.setValue($0, for: field.id) }
+                    ),
+                    selectedText: $selectedText
+                )
             } else {
                 RichTextPreview(
                     text: formState.getValue(for: field.id) ?? ""
@@ -172,22 +178,88 @@ public struct RichTextEditor: View {
 }
 #endif
 
+// MARK: - Rich Text Formatting
+
+/// Pure markdown-style wraps for ``RichTextToolbar`` (#523).
+public enum RichTextFormatStyle: Sendable {
+    case bold
+    case italic
+    case underline
+    case bullet
+    case numbered
+}
+
+public enum RichTextFormatting {
+    /// Apply `style` to `selection` within `text`. Returns nil when the range is invalid.
+    public static func apply(
+        _ style: RichTextFormatStyle,
+        to text: String,
+        selection: NSRange
+    ) -> String? {
+        let ns = text as NSString
+        guard selection.location != NSNotFound,
+              selection.location >= 0,
+              selection.length >= 0,
+              NSMaxRange(selection) <= ns.length else {
+            return nil
+        }
+        let selected = ns.substring(with: selection)
+        let replacement: String
+        switch style {
+        case .bold:
+            replacement = "**\(selected)**"
+        case .italic:
+            replacement = "*\(selected)*"
+        case .underline:
+            replacement = "<u>\(selected)</u>"
+        case .bullet:
+            replacement = selected
+                .split(separator: "\n", omittingEmptySubsequences: false)
+                .map { line -> String in
+                    let trimmed = line.trimmingCharacters(in: .whitespaces)
+                    if trimmed.hasPrefix("• ") { return String(line) }
+                    return "• \(line)"
+                }
+                .joined(separator: "\n")
+        case .numbered:
+            replacement = selected
+                .split(separator: "\n", omittingEmptySubsequences: false)
+                .enumerated()
+                .map { index, line in
+                    let trimmed = String(line).trimmingCharacters(in: .whitespaces)
+                    if trimmed.range(of: #"^\d+\.\s"#, options: .regularExpression) != nil {
+                        return String(line)
+                    }
+                    return "\(index + 1). \(line)"
+                }
+                .joined(separator: "\n")
+        }
+        return ns.replacingCharacters(in: selection, with: replacement)
+    }
+}
+
 // MARK: - Rich Text Toolbar
 
 /// Toolbar for rich text formatting
 public struct RichTextToolbar: View {
+    @Binding var text: String
     @Binding var selectedText: NSRange?
+    
+    public init(text: Binding<String>, selectedText: Binding<NSRange?>) {
+        self._text = text
+        self._selectedText = selectedText
+    }
     
     public var body: some View {
         platformHStackContainer(spacing: 12) {
-            FormatButton(title: "B", action: { formatBold() })
-            FormatButton(title: "I", action: { formatItalic() })
-            FormatButton(title: "U", action: { formatUnderline() })
+            FormatButton(title: "B", action: { format(.bold) })
+            FormatButton(title: "I", action: { format(.italic) })
+            FormatButton(title: "U", action: { format(.underline) })
             
             Divider()
             
-            FormatButton(title: "•", action: { formatBullet() })
-            FormatButton(title: "1.", action: { formatNumbered() })
+            FormatButton(title: "•", action: { format(.bullet) })
+            FormatButton(title: "1.", action: { format(.numbered) })
             
             Spacer()
         }
@@ -198,34 +270,12 @@ public struct RichTextToolbar: View {
         .automaticCompliance(named: "RichTextToolbar")
     }
     
-    private func formatBold() {
-        // Format bold implementation
-        // This would apply bold formatting to the selected text
-        // For now, this is a placeholder for the actual implementation
-    }
-    
-    private func formatItalic() {
-        // Format italic implementation
-        // This would apply italic formatting to the selected text
-        // For now, this is a placeholder for the actual implementation
-    }
-    
-    private func formatUnderline() {
-        // Format underline implementation
-        // This would apply underline formatting to the selected text
-        // For now, this is a placeholder for the actual implementation
-    }
-    
-    private func formatBullet() {
-        // Format bullet list implementation
-        // This would apply bullet list formatting to the selected text
-        // For now, this is a placeholder for the actual implementation
-    }
-    
-    private func formatNumbered() {
-        // Format numbered list implementation
-        // This would apply numbered list formatting to the selected text
-        // For now, this is a placeholder for the actual implementation
+    private func format(_ style: RichTextFormatStyle) {
+        guard let selection = selectedText,
+              let updated = RichTextFormatting.apply(style, to: text, selection: selection) else {
+            return
+        }
+        text = updated
     }
 }
 
