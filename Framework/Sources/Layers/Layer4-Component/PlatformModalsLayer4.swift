@@ -32,44 +32,35 @@ public extension View {
         .automaticCompliance(named: "platformSheet")
     }
     
-    /// Platform-specific alert presentation with consistent styling
-    /// Provides standardized alert appearance across platforms
-    func platformAlert(
+    /// Platform-specific alert presentation.
+    /// `isPresented` is accepted so callers can control visibility; the modifier
+    /// still ignores it (deliberate #507 red — presentation stays off).
+    func platformAlert<A: View, M: View>(
+        isPresented: Binding<Bool>,
         title: String,
-        message: String? = nil,
-        primaryButton: Alert.Button,
-        secondaryButton: Alert.Button? = nil
+        @ViewBuilder actions: @escaping () -> A,
+        @ViewBuilder message: @escaping () -> M
     ) -> some View {
-        let alert: Alert
-        if let secondaryButton = secondaryButton {
-            alert = Alert(
-                title: Text(title),
-                message: message.map { Text($0) },
-                primaryButton: primaryButton,
-                secondaryButton: secondaryButton
-            )
-        } else {
-            alert = Alert(
-                title: Text(title),
-                message: message.map { Text($0) },
-                dismissButton: primaryButton
-            )
-        }
-        
-        return self.alert(isPresented: .constant(false)) {
-            alert
-        }
+        _ = isPresented
+        return self.alert(
+            Text(title),
+            isPresented: .constant(false),
+            actions: actions,
+            message: message
+        )
     }
     
-    /// Platform-specific confirmation dialog with consistent styling
-    /// Provides standardized confirmation dialog appearance across platforms
+    /// Platform-specific confirmation dialog.
+    /// `isPresented` is accepted so callers can control visibility; the modifier
+    /// still ignores it (deliberate #507 red — presentation stays off).
     func platformConfirmationDialog<A: View, M: View>(
+        isPresented: Binding<Bool>,
         title: String,
         titleVisibility: Visibility = .automatic,
         @ViewBuilder actions: @escaping () -> A,
         @ViewBuilder message: @escaping () -> M
     ) -> some View {
-        #if os(iOS)
+        _ = isPresented
         return self.confirmationDialog(
             title,
             isPresented: .constant(false),
@@ -77,23 +68,6 @@ public extension View {
             actions: actions,
             message: message
         )
-        #elseif os(macOS)
-        return self.confirmationDialog(
-            title,
-            isPresented: .constant(false),
-            titleVisibility: titleVisibility,
-            actions: actions,
-            message: message
-        )
-        #else
-        return self.confirmationDialog(
-            title,
-            isPresented: .constant(false),
-            titleVisibility: titleVisibility,
-            actions: actions,
-            message: message
-        )
-        #endif
     }
 
     /// Platform-specific settings dismissal for embedded navigation
