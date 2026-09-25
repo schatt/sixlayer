@@ -97,10 +97,10 @@ Create the actual UI components with platform-adaptive behavior, implementing th
 - `platformSheet_L4(isPresented:sizes:content:)` - L4 sheet; `sizes` project to iOS detents and clamped min frames on all platforms (#384)
 - `platformPopover_L4(isPresented:sizes:content:)` - L4 popover; defaults to `[.small]`
 #### **Alerts**
-- `platformAlert(isPresented:content:)` - Platform-adaptive alert presentation
+- `platformAlert(isPresented:title:actions:message:)` - System alert; visibility follows the caller binding
 
 #### **Confirmation Dialogs**
-- `platformConfirmationDialog(isPresented:content:)` - Platform-adaptive confirmation dialog
+- `platformConfirmationDialog(isPresented:title:actions:message:)` - System confirmation dialog; visibility follows the caller binding
 
 ### **System Actions**
 
