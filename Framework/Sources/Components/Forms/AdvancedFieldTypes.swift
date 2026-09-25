@@ -350,6 +350,28 @@ public enum FileUploadValidation {
         }
         return fromExt
     }
+
+    /// Build ``FileInfo`` from a filesystem URL (#522 / #525).
+    public static func fileInfo(from url: URL, fallbackType: UTType) -> FileInfo {
+        FileInfo(
+            name: url.lastPathComponent,
+            size: Int64((try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0),
+            type: resolvedType(for: url, fallback: fallbackType),
+            url: url
+        )
+    }
+
+    /// Validate imported/dropped URLs through type/size gates (#522).
+    public static func acceptedFiles(
+        from urls: [URL],
+        allowedTypes: [UTType],
+        maxFileSize: Int64?,
+        fallbackType: UTType = .data
+    ) -> [FileInfo] {
+        // Deliberate stub for TDD red (#522).
+        _ = (urls, allowedTypes, maxFileSize, fallbackType)
+        return []
+    }
 }
 
 // MARK: - Autocomplete Field
