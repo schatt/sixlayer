@@ -299,20 +299,26 @@ VStack {
 
 Related L4 APIs: `platformSheet_L4(..., sizes:)`, `platformPopover_L4(..., sizes:)` (default `[.small]`), `platformExportSheet(..., sizes:)` (default `[.medium, .large]`), `platformHelpSheet(..., sizes:)` (default `[.large]`). System alerts are not sized by `PlatformPresentationSize`.
 
-#### `platformAlert(isPresented: Binding<Bool>, title: String, message: String?, primaryButton: Alert.Button, secondaryButton: Alert.Button?)`
+#### `platformAlert(isPresented:title:actions:message:)`
 
-Provides consistent alert presentation across platforms.
+Presents a system alert when `isPresented` is `true`. Dismiss writes `false` back to that binding.
 
 ```swift
 Button("Show Alert") { showingAlert = true }
 .platformAlert(
     isPresented: $showingAlert,
     title: "Confirmation",
-    message: "Are you sure?",
-    primaryButton: .default("OK") { },
-    secondaryButton: .cancel("Cancel")
+    actions: {
+        Button("OK") { }
+        Button("Cancel", role: .cancel) { }
+    },
+    message: { Text("Are you sure?") }
 )
 ```
+
+#### `platformConfirmationDialog(isPresented:title:titleVisibility:actions:message:)`
+
+Same binding contract as `platformAlert`. `titleVisibility` defaults to `.automatic`.
 
 ### Input Control Modifiers
 
