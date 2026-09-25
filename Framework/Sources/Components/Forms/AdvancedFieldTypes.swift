@@ -196,9 +196,45 @@ public enum RichTextFormatting {
         to text: String,
         selection: NSRange
     ) -> String? {
-        // Deliberate stub for TDD red (#523).
-        _ = (style, text, selection)
-        return nil
+        let ns = text as NSString
+        guard selection.location != NSNotFound,
+              selection.location >= 0,
+              selection.length >= 0,
+              NSMaxRange(selection) <= ns.length else {
+            return nil
+        }
+        let selected = ns.substring(with: selection)
+        let replacement: String
+        switch style {
+        case .bold:
+            replacement = "**\(selected)**"
+        case .italic:
+            replacement = "*\(selected)*"
+        case .underline:
+            replacement = "<u>\(selected)</u>"
+        case .bullet:
+            replacement = selected
+                .split(separator: "\n", omittingEmptySubsequences: false)
+                .map { line -> String in
+                    let trimmed = line.trimmingCharacters(in: .whitespaces)
+                    if trimmed.hasPrefix("• ") { return String(line) }
+                    return "• \(line)"
+                }
+                .joined(separator: "\n")
+        case .numbered:
+            replacement = selected
+                .split(separator: "\n", omittingEmptySubsequences: false)
+                .enumerated()
+                .map { index, line in
+                    let trimmed = String(line).trimmingCharacters(in: .whitespaces)
+                    if trimmed.range(of: #"^\d+\.\s"#, options: .regularExpression) != nil {
+                        return String(line)
+                    }
+                    return "\(index + 1). \(line)"
+                }
+                .joined(separator: "\n")
+        }
+        return ns.replacingCharacters(in: selection, with: replacement)
     }
 }
 
