@@ -40,8 +40,8 @@ public extension View {
         @ViewBuilder actions: @escaping () -> A,
         @ViewBuilder message: @escaping () -> M
     ) -> some View {
-        self.alert(
-            Text(title),
+        self.platformAlert(
+            title,
             isPresented: isPresented,
             actions: actions,
             message: message
