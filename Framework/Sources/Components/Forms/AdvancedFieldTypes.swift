@@ -331,17 +331,24 @@ public enum FileUploadValidation {
     /// NSItemProvider / importer load pairs derived from `allowed` (#525).
     /// Empty `allowed` keeps the historical image+pdf probe set (validation still accepts all).
     public static func dropLoadTypes(from allowed: [UTType]) -> [(identifier: String, declared: UTType)] {
-        // Deliberate stub for TDD red (#525): ignore `allowed` until green.
-        [
-            (UTType.image.identifier, .image),
-            (UTType.pdf.identifier, .pdf)
-        ]
+        let source: [UTType] = allowed.isEmpty ? [.image, .pdf] : allowed
+        var seen = Set<String>()
+        var result: [(identifier: String, declared: UTType)] = []
+        for type in source {
+            if seen.insert(type.identifier).inserted {
+                result.append((type.identifier, type))
+            }
+        }
+        return result
     }
 
     /// Prefer a concrete type from the URL extension; otherwise `fallback` (#525).
     public static func resolvedType(for url: URL, fallback: UTType) -> UTType {
-        // Deliberate stub for TDD red (#525): ignore URL until green.
-        fallback
+        let ext = url.pathExtension
+        guard !ext.isEmpty, let fromExt = UTType(filenameExtension: ext) else {
+            return fallback
+        }
+        return fromExt
     }
 }
 
@@ -547,12 +554,8 @@ public struct FileUploadArea: View {
     }
     
     private func handleDrop(providers: [NSItemProvider]) {
-        // Process dropped providers; accept only via ``FileUploadValidation`` (#403 / #530).
-        // Load identifiers remain image/pdf until #525.
-        let loadTypes: [(identifier: String, declared: UTType)] = [
-            (UTType.image.identifier, .image),
-            (UTType.pdf.identifier, .pdf)
-        ]
+        // Process dropped providers; accept only via ``FileUploadValidation`` (#525).
+        let loadTypes = FileUploadValidation.dropLoadTypes(from: allowedTypes)
 
         for provider in providers {
             for loadType in loadTypes where provider.hasItemConformingToTypeIdentifier(loadType.identifier) {
@@ -579,7 +582,7 @@ public struct FileUploadArea: View {
                 let fileInfo = FileInfo(
                     name: url.lastPathComponent,
                     size: Int64((try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0),
-                    type: declaredType,
+                    type: FileUploadValidation.resolvedType(for: url, fallback: declaredType),
                     url: url
                 )
                 let accepted = FileUploadValidation.accepted(
