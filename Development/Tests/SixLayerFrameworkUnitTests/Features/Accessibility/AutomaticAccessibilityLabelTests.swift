@@ -100,10 +100,9 @@ open class AutomaticAccessibilityLabelTests: BaseTestClass {
     /// TESTING SCOPE: Label localization logic with localization keys
     /// METHODOLOGY: Assert translated+formatted value via FrameworkCatalogFixture (#503)
     @Test func testLabelLocalization_HandlesLocalizationKeys() {
-        // Wrong key first for deliberate red (#503): accessibility.button.save is not in the catalog.
-        let localizationKey = "SixLayerFramework.accessibility.button.save"
+        let localizationKey = "SixLayerFramework.button.save"
         let localized = localizeAccessibilityLabel(localizationKey)
-        let expected = formatAccessibilityLabel(FrameworkCatalogFixture.value("SixLayerFramework.button.save"))
+        let expected = formatAccessibilityLabel(FrameworkCatalogFixture.value(localizationKey))
         #expect(localized == expected, "Must resolve a real catalog value, not pass on raw/missing key (#503)")
     }
 
