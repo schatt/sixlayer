@@ -33,26 +33,23 @@ public extension View {
     }
     
     /// Platform-specific alert presentation.
-    /// `isPresented` is accepted so callers can control visibility; the modifier
-    /// still ignores it (deliberate #507 red — presentation stays off).
+    /// Visibility follows the caller binding, including dismiss writing `false`.
     func platformAlert<A: View, M: View>(
         isPresented: Binding<Bool>,
         title: String,
         @ViewBuilder actions: @escaping () -> A,
         @ViewBuilder message: @escaping () -> M
     ) -> some View {
-        _ = isPresented
-        return self.alert(
+        self.alert(
             Text(title),
-            isPresented: .constant(false),
+            isPresented: isPresented,
             actions: actions,
             message: message
         )
     }
     
     /// Platform-specific confirmation dialog.
-    /// `isPresented` is accepted so callers can control visibility; the modifier
-    /// still ignores it (deliberate #507 red — presentation stays off).
+    /// Visibility follows the caller binding, including dismiss writing `false`.
     func platformConfirmationDialog<A: View, M: View>(
         isPresented: Binding<Bool>,
         title: String,
@@ -60,10 +57,9 @@ public extension View {
         @ViewBuilder actions: @escaping () -> A,
         @ViewBuilder message: @escaping () -> M
     ) -> some View {
-        _ = isPresented
-        return self.confirmationDialog(
+        self.confirmationDialog(
             title,
-            isPresented: .constant(false),
+            isPresented: isPresented,
             titleVisibility: titleVisibility,
             actions: actions,
             message: message
