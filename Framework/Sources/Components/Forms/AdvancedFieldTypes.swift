@@ -327,6 +327,50 @@ public enum FileUploadValidation {
     ) -> [FileInfo] {
         files.filter { isAccepted($0, allowedTypes: allowedTypes, maxFileSize: maxFileSize) }
     }
+
+    /// NSItemProvider / importer load pairs derived from `allowed` (#525).
+    /// Empty `allowed` keeps the historical image+pdf probe set (validation still accepts all).
+    public static func dropLoadTypes(from allowed: [UTType]) -> [(identifier: String, declared: UTType)] {
+        let source: [UTType] = allowed.isEmpty ? [.image, .pdf] : allowed
+        var seen = Set<String>()
+        var result: [(identifier: String, declared: UTType)] = []
+        for type in source {
+            if seen.insert(type.identifier).inserted {
+                result.append((type.identifier, type))
+            }
+        }
+        return result
+    }
+
+    /// Prefer a concrete type from the URL extension; otherwise `fallback` (#525).
+    public static func resolvedType(for url: URL, fallback: UTType) -> UTType {
+        let ext = url.pathExtension
+        guard !ext.isEmpty, let fromExt = UTType(filenameExtension: ext) else {
+            return fallback
+        }
+        return fromExt
+    }
+
+    /// Build ``FileInfo`` from a filesystem URL (#522 / #525).
+    public static func fileInfo(from url: URL, fallbackType: UTType) -> FileInfo {
+        FileInfo(
+            name: url.lastPathComponent,
+            size: Int64((try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0),
+            type: resolvedType(for: url, fallback: fallbackType),
+            url: url
+        )
+    }
+
+    /// Validate imported/dropped URLs through type/size gates (#522).
+    public static func acceptedFiles(
+        from urls: [URL],
+        allowedTypes: [UTType],
+        maxFileSize: Int64?,
+        fallbackType: UTType = .data
+    ) -> [FileInfo] {
+        let files = urls.map { fileInfo(from: $0, fallbackType: fallbackType) }
+        return accepted(from: files, allowedTypes: allowedTypes, maxFileSize: maxFileSize)
+    }
 }
 
 // MARK: - Autocomplete Field
@@ -468,6 +512,7 @@ public struct FileUploadArea: View {
     let allowedTypes: [UTType]
     let maxFileSize: Int64?
     let onFilesSelected: ([FileInfo]) -> Void
+    @State private var isFileImporterPresented = false
     
     public var body: some View {
         platformVStackContainer(spacing: 16) {
@@ -484,7 +529,7 @@ public struct FileUploadArea: View {
                 .foregroundColor(.secondary)
             
             Button(i18n.localizedString(for: "SixLayerFramework.button.browseFiles")) {
-                selectFiles()
+                isFileImporterPresented = true
             }
             .buttonStyle(.borderedProminent)
             
@@ -515,28 +560,34 @@ public struct FileUploadArea: View {
             handleDrop(providers: providers)
             return true
         }
+        .platformFileImporter(
+            isPresented: $isFileImporterPresented,
+            allowedContentTypes: allowedTypes.isEmpty ? [.item] : allowedTypes,
+            allowsMultipleSelection: true,
+            onCompletion: handleImportedFiles
+        )
         .accessibilityLabel("File upload area")
         .accessibilityHint("Drag and drop files here or tap to browse")
         .automaticCompliance(named: "FileUploadArea")
     }
-    
-    private func selectFiles() {
-        // System file picker remains platform-specific; candidates must pass
-        // ``FileUploadValidation`` before `onFilesSelected` (#403).
-        #if os(iOS)
-        // iOS file picker implementation would go here
-        #elseif os(macOS)
-        // macOS file picker implementation would go here
-        #endif
+
+    private func handleImportedFiles(_ result: Result<[URL], Error>) {
+        guard case .success(let urls) = result else { return }
+        let fallback = allowedTypes.first ?? .data
+        let accepted = FileUploadValidation.acceptedFiles(
+            from: urls,
+            allowedTypes: allowedTypes,
+            maxFileSize: maxFileSize,
+            fallbackType: fallback
+        )
+        if !accepted.isEmpty {
+            onFilesSelected(accepted)
+        }
     }
     
     private func handleDrop(providers: [NSItemProvider]) {
-        // Process dropped providers; accept only via ``FileUploadValidation`` (#403 / #530).
-        // Load identifiers remain image/pdf until #525.
-        let loadTypes: [(identifier: String, declared: UTType)] = [
-            (UTType.image.identifier, .image),
-            (UTType.pdf.identifier, .pdf)
-        ]
+        // Process dropped providers; accept only via ``FileUploadValidation`` (#525).
+        let loadTypes = FileUploadValidation.dropLoadTypes(from: allowedTypes)
 
         for provider in providers {
             for loadType in loadTypes where provider.hasItemConformingToTypeIdentifier(loadType.identifier) {
@@ -560,12 +611,7 @@ public struct FileUploadArea: View {
         provider.loadItem(forTypeIdentifier: typeIdentifier, options: nil) { item, _ in
             guard let url = item as? URL else { return }
             Task { @MainActor in
-                let fileInfo = FileInfo(
-                    name: url.lastPathComponent,
-                    size: Int64((try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0),
-                    type: declaredType,
-                    url: url
-                )
+                let fileInfo = FileUploadValidation.fileInfo(from: url, fallbackType: declaredType)
                 let accepted = FileUploadValidation.accepted(
                     from: [fileInfo],
                     allowedTypes: allowed,
