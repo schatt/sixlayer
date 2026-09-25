@@ -56,6 +56,18 @@ struct FileUploadValidationUnitTests {
         let resolved = FileUploadValidation.resolvedType(for: url, fallback: .pdf)
         #expect(resolved == .plainText || resolved.conforms(to: .plainText))
     }
+
+    @Test func acceptedFiles_filtersImportedURLsByTypeAndSize() {
+        let png = URL(fileURLWithPath: "/tmp/a.png")
+        let pdf = URL(fileURLWithPath: "/tmp/c.pdf")
+        let accepted = FileUploadValidation.acceptedFiles(
+            from: [png, pdf],
+            allowedTypes: [.image],
+            maxFileSize: 1000,
+            fallbackType: .image
+        )
+        #expect(accepted.map(\.name) == ["a.png"])
+    }
 }
 
 @Suite("FileUploadArea hosts (#403)", HostedViewTestIsolationTrait())
