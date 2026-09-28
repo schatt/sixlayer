@@ -101,10 +101,17 @@ public extension View {
     }
 
     /// Platform-specific settings dismissal for window presentation.
-    /// `onClose` is the dismiss action. The default closes the macOS key window.
+    /// The zero-argument form closes the macOS key window.
+    @MainActor
+    func platformDismissWindowSettings() -> some View {
+        platformDismissWindowSettings(onClose: PlatformWindowSettingsDismissal.closeKeyWindow)
+    }
+
+    /// Platform-specific settings dismissal for window presentation.
+    /// `onClose` is the dismiss action.
     @MainActor
     func platformDismissWindowSettings(
-        onClose: @escaping @MainActor () -> Void = PlatformWindowSettingsDismissal.closeKeyWindow
+        onClose: @escaping @MainActor () -> Void
     ) -> some View {
         #if os(macOS)
         onClose()
