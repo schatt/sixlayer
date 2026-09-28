@@ -1,6 +1,6 @@
 # SixLayer Framework
 
-[![Version](https://img.shields.io/badge/version-v8.5.1-blue.svg)](https://github.com/schatt/sixlayer/releases/tag/v8.5.1)
+[![Version](https://img.shields.io/badge/version-v8.6.0-blue.svg)](https://github.com/schatt/sixlayer/releases/tag/v8.6.0)
 [![Platform](https://img.shields.io/badge/platform-iOS%2016%2B%20%7C%20macOS%2013%2B-lightgrey.svg)](https://github.com/schatt/6layer)
 [![Swift](https://img.shields.io/badge/Swift-5.9+-orange.svg)](https://swift.org)
 
@@ -39,6 +39,12 @@ Layer 1: Semantic Intent → Layer 2: Layout Decision → Layer 3: Strategy Sele
 - **Extensible**: Easy to extend with custom layers and strategies
 - **Comprehensively Tested**: 800+ tests with platform-aware testing and mandatory TDD implementation
 - **DRY Architecture**: Define hints once in files, use everywhere automatically
+
+## 🆕 What's New in v8.6.0
+
+### Minor release
+
+Forms product and primary-lane coverage: `FileUploadValidation` plus drop/browse wired to allowed types and the system file importer (#403, #522, #525); `RichTextFormatting` / toolbar format actions (#523); `GenericFormView` packing honors `fieldLayout` (#486); `platformAlert` / `platformConfirmationDialog` present (#507); `platformDismissWindowSettings` no longer closes the key window on apply (#508); macOS XCUI host/`platformTap`/Layer4 contracts (#499, #510, #515–#521); unit-lane and a11y-label honesty coverage (#468–#470, #490, #491, #503, #512, #513). See [RELEASE_v8.6.0.md](../Development/RELEASE_v8.6.0.md).
 
 ## 🆕 What's New in v8.5.1
 
