@@ -93,6 +93,11 @@ let package = Package(
         ),
 
         /// Pure routing policy for managed settings flow (#209); no ViewInspector / BaseTestClass.
+        ///
+        /// Lane split (#512): this SPM target owns logic-only files listed in `sources`.
+        /// Layer 4 smoke tests that call `BaseTestClass` (`PlatformManagedSettingsFlowLayer4Tests`,
+        /// `PlatformManagedSettingsDetailNavigationLayer4Tests`) stay on the Xcode unit-test lane
+        /// (`SixLayerFrameworkUnitTests_*`), which compiles `Development/Tests/Shared/TestHelpers`.
         .testTarget(
             name: "PlatformManagedSettingsFlowLogicTests",
             dependencies: [
@@ -102,9 +107,7 @@ let package = Package(
             sources: [
                 "PlatformManagedSettingsFlowLogicTests.swift",
                 "PlatformManagedSettingsTopLevelStateTests.swift",
-                "PlatformManagedSettingsFlowLayer4Tests.swift",
                 "PlatformManagedSettingsDetailNavigationStateTests.swift",
-                "PlatformManagedSettingsDetailNavigationLayer4Tests.swift",
                 "ManagedPlatformSettingsFlowGuideExampleTests.swift"
             ]
         ),
