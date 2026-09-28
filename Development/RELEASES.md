@@ -1,12 +1,21 @@
 # 🚀 Six-Layer Framework Release History
 
-## 📍 **Current Release: v8.5.1** 🔧
+## 📍 **Current Release: v8.6.0** 🚀
 
-**Release Date**: September 20, 2026
-**Status**: Patch release
-**Previous Release**: v8.5.0 - Minor release
-**Note**: Adaptive compact date+time stacking (#481, #498); IntelligentFormView packing spacing (#492); SPM `.xcstrings` resolution (#500–#502); CI destinations and SD150 XCUI harness (#495–#497).
-**Next Release**: v8.6.0 (draft: [RELEASE_v8.6.0.md](RELEASE_v8.6.0.md); forms/advanced fields, modals, macOS XCUI, primary-lane coverage; not tagged)
+**Release Date**: September 28, 2026
+**Status**: Minor release
+**Previous Release**: v8.5.1 - Patch release
+**Note**: Forms product and primary-lane coverage — advanced field types / file upload (#403, #522–#525); rich-text formats (#523); form packing (#486); presenting alerts (#507); settings-window dismiss (#508); macOS XCUI harness (#499, #510, #515–#521); unit-lane and a11y-label honesty (#452, #468–#470, #490, #491, #503, #512, #513).
+**Next Release**: v8.7.0
+
+---
+
+## 🎯 **v8.6.0 - Forms product and primary-lane coverage** (September 28, 2026)
+
+### **What's in v8.6.0:**
+- Minor release (#403, #452, #468–#470, #486, #490, #491, #499, #503, #507, #508, #510–#525, #531, #535, #536). See [RELEASE_v8.6.0.md](RELEASE_v8.6.0.md) for details.
+
+**See [RELEASE_v8.6.0.md](RELEASE_v8.6.0.md) for complete release notes.**
 
 ---
 

@@ -1,9 +1,9 @@
 # SixLayer Framework v8.6.0 Release Documentation
 
-**Release Date**: Not tagged  
+**Release Date**: September 28, 2026  
 **Release Type**: Minor  
 **Previous Release**: v8.5.1  
-**Status**: Draft (not a release cut)
+**Status**: Prepared (docs); tagging is the `--release` gate
 
 ---
 
@@ -21,7 +21,7 @@ Product highlights on `next` since v8.5.1:
 
 Published release notes are not revised after a tag. Milestone issues that already shipped in an older tag, and were omitted from that tag's notes, are named here with the tag that contained them.
 
-This file does not tag, bump the version, or claim the suite was run for a release. Docs prep: [#535](https://github.com/schatt/sixlayer/issues/535). Earlier draft: [#531](https://github.com/schatt/sixlayer/issues/531).
+This file does not claim the suite was run for a release until the release script's test gate passes. Docs prep: [#535](https://github.com/schatt/sixlayer/issues/535), [#536](https://github.com/schatt/sixlayer/issues/536). Earlier draft: [#531](https://github.com/schatt/sixlayer/issues/531).
 
 ---
 
@@ -134,7 +134,8 @@ XCUITest sentinel: `platformIOSPullToRefresh` fires `onRefresh`.
 ### Docs
 
 - **#531** — Initial draft of these notes.
-- **#535** — This prep pass (complete closed-issue coverage; remove stale open list).
+- **#535** — Closed-milestone coverage rewrite (remove stale open list).
+- **#536** — Version-pointer bumps for the release-script gates (Current Release, AI_AGENT, README/Package badges).
 
 ---
 
@@ -203,6 +204,7 @@ Prefer `platformTap` over raw `tap(withNumberOfTaps:)` when writing cross-platfo
 - **[Issue #527](https://github.com/schatt/sixlayer/issues/527)** — Not-planned duplicate of #522.
 - **[Issue #531](https://github.com/schatt/sixlayer/issues/531)** — Draft v8.6.0 release notes.
 - **[Issue #535](https://github.com/schatt/sixlayer/issues/535)** — Prepare v8.6.0 release notes (docs).
+- **[Issue #536](https://github.com/schatt/sixlayer/issues/536)** — v8.6.0 release doc version bumps (script gates).
 
 ### Already shipped (still on this milestone)
 
@@ -224,4 +226,5 @@ Prefer `platformTap` over raw `tap(withNumberOfTaps:)` when writing cross-platfo
 - [RELEASE_v8.5.1.md](RELEASE_v8.5.1.md) — Previous release.
 - [RELEASES.md](RELEASES.md) — Release history index.
 - [#531](https://github.com/schatt/sixlayer/issues/531) — Initial draft.
-- [#535](https://github.com/schatt/sixlayer/issues/535) — This prep pass.
+- [#535](https://github.com/schatt/sixlayer/issues/535) — Closed-milestone rewrite.
+- [#536](https://github.com/schatt/sixlayer/issues/536) — Version-pointer / script-gate bumps.
