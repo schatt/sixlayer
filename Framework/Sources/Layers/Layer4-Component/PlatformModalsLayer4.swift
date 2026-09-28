@@ -100,23 +100,34 @@ public extension View {
         return self
     }
 
-    /// Platform-specific settings dismissal for window presentation.
-    /// The zero-argument form closes the macOS key window.
+    /// Settings shown in their own window.
+    /// Applying this modifier does not close the window.
+    /// The close control runs `onClose`; the zero-argument form closes the macOS key window.
     @MainActor
     func platformDismissWindowSettings() -> some View {
         platformDismissWindowSettings(onClose: PlatformWindowSettingsDismissal.closeKeyWindow)
     }
 
-    /// Platform-specific settings dismissal for window presentation.
-    /// `onClose` is the dismiss action.
+    /// Settings shown in their own window.
+    /// Applying this modifier does not run `onClose`.
+    /// On macOS, the close control runs `onClose` when activated.
     @MainActor
+    @ViewBuilder
     func platformDismissWindowSettings(
         onClose: @escaping @MainActor () -> Void
     ) -> some View {
         #if os(macOS)
-        onClose()
+        self.overlay(alignment: .topTrailing) {
+            Button {
+                onClose()
+            } label: {
+                Text(InternationalizationService().localizedString(for: "SixLayerFramework.button.done"))
+            }
+            .accessibilityIdentifier("platformDismissWindowSettings.close")
+        }
+        #else
+        self
         #endif
-        return self
     }
 }
 
