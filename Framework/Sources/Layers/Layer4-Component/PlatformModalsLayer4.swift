@@ -100,37 +100,25 @@ public extension View {
         return self
     }
 
-    /// Platform-specific settings dismissal for window presentation
-    /// Handles dismissal when settings are presented in separate windows
-    func platformDismissWindowSettings() -> some View {
-        // Delegate to platform-specific implementations
+    /// Platform-specific settings dismissal for window presentation.
+    /// `onClose` is the dismiss action. The default closes the macOS key window.
+    @MainActor
+    func platformDismissWindowSettings(
+        onClose: @escaping @MainActor () -> Void = PlatformWindowSettingsDismissal.closeKeyWindow
+    ) -> some View {
         #if os(macOS)
-        return self.platformDismissWindowSettingsMacOS()
-        #elseif os(iOS)
-        return self.platformDismissWindowSettingsIOS()
-        #else
+        onClose()
+        #endif
         return self
+    }
+}
+
+/// Default window-settings dismiss: close the key window when the caller asks.
+enum PlatformWindowSettingsDismissal {
+    @MainActor
+    static func closeKeyWindow() {
+        #if os(macOS)
+        NSApplication.shared.keyWindow?.performClose(nil)
         #endif
     }
-    
-    // MARK: - Platform-Specific Implementations
-    
-    #if os(macOS)
-    /// macOS-specific window dismissal implementation
-    private func platformDismissWindowSettingsMacOS() -> some View {
-        // For window presentation, close the specific window
-        if let targetWindow = NSApplication.shared.keyWindow {
-            targetWindow.performClose(nil)
-        }
-        return self
-    }
-    #endif
-    
-    #if os(iOS)
-    /// iOS-specific window dismissal implementation
-    private func platformDismissWindowSettingsIOS() -> some View {
-        // iOS doesn't have separate windows, so this is a no-op
-        return self
-    }
-    #endif
 }
