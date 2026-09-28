@@ -75,6 +75,8 @@ that `platformManagedSettingsTopLevel_L4` would otherwise centralize.
 
 SPM coverage: `PlatformManagedSettingsFlowLogicTests` (`shellPolicyMatrix_*`). Adding a `DeviceType` case should update this table, production switches, and the test matrix together.
 
+Layer 4 smoke tests (`PlatformManagedSettingsFlowLayer4Tests`, `PlatformManagedSettingsDetailNavigationLayer4Tests`) are owned by the Xcode unit-test lane (`SixLayerFrameworkUnitTests_*`). They call `BaseTestClass` from Shared TestHelpers, which the SPM target does not compile. Do not add those files to the SwiftPM `sources` list.
+
 Top-level shell route policy (`PlatformManagedSettingsTopLevelShellPolicy`) is explicit: `phone`/`car` use stack-with-selection push, `pad`/`mac` use split, and `tv`/`watch`/`vision` use sidebar fallback in `platformSettingsContainer_L4` unless you take the escape hatch (`platformSettingsContainer_L4` manual wiring).
 
 Sub-pane stacks (`platformManagedSettingsDetailNavigationStack_L4`) sit **inside** the detail column (or inside the iPhone pushed detail); they do not bypass resolver output on iPad/macOS.
