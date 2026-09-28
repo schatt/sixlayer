@@ -2,6 +2,9 @@
 //  PlatformManagedSettingsFlowLayer4Tests.swift
 //  Issue #209 — managed top-level Layer 4 modifier smoke tests
 //
+//  Xcode unit-test lane only (#512). Calls BaseTestClass; not in the SwiftPM
+//  PlatformManagedSettingsFlowLogicTests sources list.
+//
 
 import SwiftUI
 import Testing
