@@ -1483,7 +1483,32 @@ public class DynamicFormState: ObservableObject {
             number = nil
         }
         guard let number, number.isFinite else { return nil }
-        return String(number)
+        if case let string as String = value {
+            let trimmed = string.trimmingCharacters(in: .whitespacesAndNewlines)
+            if isSafeArithmeticExpression(trimmed) {
+                return trimmed
+            }
+        }
+        return plainDecimalLiteral(number)
+    }
+
+    /// Decimal text with no exponent. `String(Double)` emits `1e-07`, which `NSExpression` accepts
+    /// but the arithmetic guard must reject because `e` is also an identifier.
+    private func plainDecimalLiteral(_ number: Double) -> String? {
+        guard number.isFinite else { return nil }
+        var formatted = String(format: "%.15f", locale: Locale(identifier: "en_US_POSIX"), number)
+        if formatted.contains(".") {
+            while formatted.last == "0" {
+                formatted.removeLast()
+            }
+            if formatted.last == "." {
+                formatted.removeLast()
+            }
+        }
+        if formatted == "-0" || formatted.isEmpty {
+            return "0"
+        }
+        return formatted
     }
 
     /// True when `expression` contains only numbers, `+ - * /`, and parentheses.
