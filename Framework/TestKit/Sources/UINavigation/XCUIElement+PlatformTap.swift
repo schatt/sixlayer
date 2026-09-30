@@ -128,15 +128,7 @@ public extension XCUIElement {
         #if os(tvOS)
         XCTFail(PlatformTapRejection.tvOSElementTapUnavailable.failureDescription)
         #else
-        if isHittable {
-            tap()
-            return
-        }
-        if let center = platformCenterCoordinateIfUsable() {
-            center.tap()
-        } else {
-            tap()
-        }
+        performPreferringHittable(element: { tap() }, center: { $0.tap() })
         #endif
     }
 
@@ -153,15 +145,7 @@ public extension XCUIElement {
 
     private func platformPerformClick() {
         #if os(macOS)
-        if isHittable {
-            click()
-            return
-        }
-        if let center = platformCenterCoordinateIfUsable() {
-            center.click()
-        } else {
-            click()
-        }
+        performPreferringHittable(element: { click() }, center: { $0.click() })
         #else
         XCTFail("click() is only the macOS platformTap path")
         #endif
@@ -169,15 +153,7 @@ public extension XCUIElement {
 
     private func platformPerformDoubleClick() {
         #if os(macOS)
-        if isHittable {
-            doubleClick()
-            return
-        }
-        if let center = platformCenterCoordinateIfUsable() {
-            center.doubleClick()
-        } else {
-            doubleClick()
-        }
+        performPreferringHittable(element: { doubleClick() }, center: { $0.doubleClick() })
         #else
         XCTFail("doubleClick() is only the macOS platformTap path")
         #endif
@@ -185,20 +161,27 @@ public extension XCUIElement {
 
     private func platformPerformDoubleTap() {
         #if os(visionOS)
-        if isHittable {
-            doubleTap()
-            return
-        }
-        if let center = platformCenterCoordinateIfUsable() {
-            center.doubleTap()
-        } else {
-            doubleTap()
-        }
+        performPreferringHittable(element: { doubleTap() }, center: { $0.doubleTap() })
         #elseif os(tvOS)
         XCTFail(PlatformTapRejection.tvOSElementTapUnavailable.failureDescription)
         #else
         XCTFail("doubleTap() is only the visionOS platformTap path")
         #endif
+    }
+
+    private func performPreferringHittable(
+        element: () -> Void,
+        center: (XCUICoordinate) -> Void
+    ) {
+        if isHittable {
+            element()
+            return
+        }
+        if let usableCenter = platformCenterCoordinateIfUsable() {
+            center(usableCenter)
+        } else {
+            element()
+        }
     }
 
     private func platformCenterCoordinateIfUsable() -> XCUICoordinate? {
