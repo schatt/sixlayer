@@ -33,4 +33,9 @@ struct OCRMathExpressionSafetyTests {
         let value = service.evaluateMathExpression("(2 * 3) + 4")
         #expect(value == 10)
     }
+
+    @Test func scientificNotationStillEvaluates() {
+        let value = service.evaluateMathExpression("1e-07*2")
+        #expect(value == 2e-7)
+    }
 }
