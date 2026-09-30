@@ -14,7 +14,13 @@ struct OCRMathExpressionSafetyTests {
     private let service = OCRService()
 
     @Test func formatTokenReturnsNil() {
-        let value = service.evaluateMathExpression("%@")
+        // "%@" alone does not throw; a format token left in a formula does.
+        let value = service.evaluateMathExpression("2.0 * %@")
+        #expect(value == nil)
+    }
+
+    @Test func emptyFormulaReturnsNil() {
+        let value = service.evaluateMathExpression("")
         #expect(value == nil)
     }
 
