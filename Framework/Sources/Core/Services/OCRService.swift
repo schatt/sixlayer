@@ -905,8 +905,9 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
         return evaluateMathExpression(processedExpression)
     }
     
-    /// Evaluate a simple mathematical expression (supports +, -, *, /, parentheses)
-    private func evaluateMathExpression(_ expression: String) -> Double? {
+    /// Evaluate a simple mathematical expression (supports +, -, *, /, parentheses).
+    /// Internal so unit tests can show a malformed formula returns nil instead of aborting.
+    func evaluateMathExpression(_ expression: String) -> Double? {
         // Use NSExpression for safe evaluation
         let expression = NSExpression(format: expression)
         if let result = expression.expressionValue(with: nil, context: nil) as? Double {
