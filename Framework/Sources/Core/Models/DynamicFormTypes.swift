@@ -1485,15 +1485,15 @@ public class DynamicFormState: ObservableObject {
         guard let number, number.isFinite else { return nil }
         if case let string as String = value {
             let trimmed = string.trimmingCharacters(in: .whitespacesAndNewlines)
-            if isSafeArithmeticExpression(trimmed) {
+            if SafeArithmeticExpression.isSafe(trimmed) {
                 return trimmed
             }
         }
         return plainDecimalLiteral(number)
     }
 
-    /// Decimal text with no exponent. `String(Double)` emits `1e-07`, which `NSExpression` accepts
-    /// but the arithmetic guard must reject because `e` is also an identifier.
+    /// Decimal text with no exponent. Binary numbers are formatted here so substitution
+    /// does not depend on `String(Double)`, which emits `1e-07`.
     private func plainDecimalLiteral(_ number: Double) -> String? {
         guard number.isFinite else { return nil }
         var formatted = String(format: "%.15f", locale: Locale(identifier: "en_US_POSIX"), number)
@@ -1511,63 +1511,6 @@ public class DynamicFormState: ObservableObject {
         return formatted
     }
 
-    /// True when `expression` contains only numbers, `+ - * /`, and parentheses.
-    /// `NSExpression(format:)` throws an uncaught ObjC exception on anything else (`*3.25`, `..`).
-    private func isSafeArithmeticExpression(_ expression: String) -> Bool {
-        guard !expression.isEmpty else { return false }
-        var index = expression.startIndex
-        var depth = 0
-        var expectValue = true
-        var sawDigit = false
-
-        while index < expression.endIndex {
-            let character = expression[index]
-            if character == "(" {
-                guard expectValue else { return false }
-                depth += 1
-                index = expression.index(after: index)
-                continue
-            }
-            if character == ")" {
-                guard !expectValue, depth > 0 else { return false }
-                depth -= 1
-                expectValue = false
-                index = expression.index(after: index)
-                continue
-            }
-            if character == "+" || character == "-" || character == "*" || character == "/" {
-                if expectValue {
-                    guard character == "-" else { return false }
-                    index = expression.index(after: index)
-                    continue
-                }
-                expectValue = true
-                index = expression.index(after: index)
-                continue
-            }
-            guard expectValue, character.isNumber || character == "." else { return false }
-            var sawDot = false
-            var sawNumeral = false
-            while index < expression.endIndex {
-                let digit = expression[index]
-                if digit.isNumber {
-                    sawNumeral = true
-                    sawDigit = true
-                    index = expression.index(after: index)
-                } else if digit == "." {
-                    if sawDot { return false }
-                    sawDot = true
-                    index = expression.index(after: index)
-                } else {
-                    break
-                }
-            }
-            guard sawNumeral else { return false }
-            expectValue = false
-        }
-        return depth == 0 && !expectValue && sawDigit
-    }
-
     /// Evaluate a mathematical expression after caller has substituted field names with numeric literals.
     /// Uses `NSExpression` for parentheses and operator precedence (required by e.g. `(a * b) + c` fuel hints).
     private func evaluateMathExpression(_ expression: String) -> Double? {
@@ -1576,7 +1519,7 @@ public class DynamicFormState: ObservableObject {
         if let literal = Double(cleanedExpression) {
             return literal
         }
-        guard isSafeArithmeticExpression(cleanedExpression) else { return nil }
+        guard SafeArithmeticExpression.isSafe(cleanedExpression) else { return nil }
         let expr = NSExpression(format: cleanedExpression)
         if let anyValue = expr.expressionValue(with: nil, context: nil) {
             if let num = anyValue as? NSNumber {
