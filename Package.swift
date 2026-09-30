@@ -1,5 +1,5 @@
 // swift-tools-version: 6.0
-// SixLayerFramework v8.6.1 - Patch: platformTap follows XCUI availability (#510)
+// SixLayerFramework v8.6.2 - Patch: form and OCR math evaluation no longer abort (#542, #544)
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
