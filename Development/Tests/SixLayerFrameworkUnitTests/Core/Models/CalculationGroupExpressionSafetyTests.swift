@@ -93,6 +93,23 @@ struct CalculationGroupExpressionSafetyTests {
         #expect(result?.calculatedValue == 6.5)
     }
 
+    @Test func tinyNumericStringStillCalculates() {
+        let form = formState()
+        form.setValue("0.0000001", for: "gallons")
+        form.setValue("2", for: "price")
+
+        let result = form.calculateFieldFromGroups(
+            fieldId: "result",
+            calculationGroups: [costGroup()]
+        )
+
+        let value = result?.calculatedValue
+        #expect(value != nil)
+        if let value {
+            #expect(abs(value - 0.0000002) < 0.0000000000001)
+        }
+    }
+
     @Test func parenthesizedFormulaStillCalculates() {
         let form = formState()
         form.setValue("2", for: "a")
