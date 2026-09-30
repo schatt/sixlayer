@@ -384,6 +384,7 @@
 		1AC2D64ACB307DFBBE23368E /* DynamicFormProgressIndicatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEEAA03A9A4893E681F6FAA9 /* DynamicFormProgressIndicatorTests.swift */; };
 		1AC9E677522F6EA865F55A19 /* InternationalizationServiceComponentAccessibilityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D20368DC9B50E7DB03E77BB2 /* InternationalizationServiceComponentAccessibilityTests.swift */; };
 		1B027CE3AEFAD7D56C92CB83 /* ThemingIntegration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A8723AE44E462450B23E862 /* ThemingIntegration.swift */; };
+		1B0280D7D28934EC394BE433 /* SafeArithmeticExpression.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB6FDEC81647B0EF243B605D /* SafeArithmeticExpression.swift */; };
 		1B118ED498A7EC73524924DD /* StringUtilitiesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 549D3CD07638D99B36CEBAC5 /* StringUtilitiesTests.swift */; };
 		1B235D86B27544C896C99380 /* SixLayerFramework.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D5AF7DBD84739235964D8881 /* SixLayerFramework.framework */; };
 		1B261041D6B4FD2F07C400F8 /* AccessibilityIdentifierConfigResolutionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84F524D1CED151E14D3A8B90 /* AccessibilityIdentifierConfigResolutionTests.swift */; };
@@ -2372,6 +2373,7 @@
 		A48EF5F25FE87485296782E7 /* OCRBoundingBoxLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83C2BC8DD9C3265BF57924D7 /* OCRBoundingBoxLayout.swift */; };
 		A4BCBE4A6447A66B666C282E /* PlatformSpecificViewExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05563B36B69EF88EC0C0254F /* PlatformSpecificViewExtensions.swift */; };
 		A4BE1E2B45CB3D550E7BE389 /* CloudKitQueueStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63BBCED79830C617B49953F2 /* CloudKitQueueStorage.swift */; };
+		A4BF634F24DE732166E45131 /* SafeArithmeticExpression.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB6FDEC81647B0EF243B605D /* SafeArithmeticExpression.swift */; };
 		A4D59D3B345238EF54357335 /* PlatformFrameHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 036D2C260CEA41F952B1227C /* PlatformFrameHelpers.swift */; };
 		A4FFD3E8475A00DA24DF9C99 /* PlatformImageBugFixVerificationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C47554E9058DC0EFEEC2F26B /* PlatformImageBugFixVerificationTests.swift */; };
 		A500F71CF1C73E731EBBB2C5 /* PlatformPhotoSemanticLayer1.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D2C39D1881E9896B3CDDFE3 /* PlatformPhotoSemanticLayer1.swift */; };
@@ -2458,6 +2460,7 @@
 		AB2C7451288D60282DE28503 /* FrameworkComponentIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C6179CF823FA01587121862 /* FrameworkComponentIntegrationTests.swift */; };
 		AB335B554BECACD7C3BA0BFB /* FieldLayoutPacker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1DF3237AF6E77697F02143DD /* FieldLayoutPacker.swift */; };
 		AB39274AFB5963505BC19F1C /* CalculationGroupExpressionSafetyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57087A8B07E4C4B1A970C21A /* CalculationGroupExpressionSafetyTests.swift */; };
+		AB4376A6FB21D88E0BB9AB6A /* SafeArithmeticExpression.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB6FDEC81647B0EF243B605D /* SafeArithmeticExpression.swift */; };
 		AB4B2409D2CF085F0F9FDAF8 /* FieldDisplayWidthResolverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AA02E6E031123BB097C00B0 /* FieldDisplayWidthResolverTests.swift */; };
 		AB7EA177760157BA6A08CF67 /* DataIntrospectionHintsFirstTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 756A11F6A844B89F143217DB /* DataIntrospectionHintsFirstTests.swift */; };
 		ABA85B181F0CAB5594D1D44D /* AccessibilityManagerTDDTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F636BE5D9EE02D780C018198 /* AccessibilityManagerTDDTests.swift */; };
@@ -2470,6 +2473,7 @@
 		AC208AF5BC0C4A7B15EFA4CE /* UnifiedImagePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = E40D91EA797B81A272545CAE /* UnifiedImagePicker.swift */; };
 		AC7BE5AF2C00F9F952C07915 /* DynamicFormStoredDateValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A0676CEBC17AD835250ED98 /* DynamicFormStoredDateValue.swift */; };
 		AC9DA4AC666A57D38B787E6A /* UnhostedInspection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 339AD1232B8AC4E8B3067486 /* UnhostedInspection.swift */; };
+		ACCE11CA9E6E3D9A58D4570B /* SafeArithmeticExpression.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB6FDEC81647B0EF243B605D /* SafeArithmeticExpression.swift */; };
 		ACD9A00BDB6803901C41F7A7 /* PlatformReduceMotionPreference.swift in Sources */ = {isa = PBXBuildFile; fileRef = C76964D4BE510EDC67AE7133 /* PlatformReduceMotionPreference.swift */; };
 		ACD9F9591809124BFDB1365C /* VIEWINSPECTOR_ANYVIEW_INVESTIGATION.md in Resources */ = {isa = PBXBuildFile; fileRef = B79AD98936960569626B63AD /* VIEWINSPECTOR_ANYVIEW_INVESTIGATION.md */; };
 		AD0EE01B1DE21E1C2EBB6625 /* PlatformImageEXIFTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89F62E0BE08A34001773F194 /* PlatformImageEXIFTests.swift */; };
@@ -3522,6 +3526,7 @@
 		FA845BF2B63903BD6DC1681F /* PlatformFileSystemUtilitiesAuditHost.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5EB7DCE495F701389D81F61 /* PlatformFileSystemUtilitiesAuditHost.swift */; };
 		FA8B7B67A9F0464E63C8A87B /* GenericCatalogRowCopyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 565963431F680B0D7C8B5DB2 /* GenericCatalogRowCopyTests.swift */; };
 		FA8EC4E239B2495456CD8CCF /* PlatformUITypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = A99CFE982A39BDB47D56B73B /* PlatformUITypes.swift */; };
+		FA8F35E0A2983B3AE4778B37 /* SafeArithmeticExpression.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB6FDEC81647B0EF243B605D /* SafeArithmeticExpression.swift */; };
 		FAA389C6384AFD82F0E5CC03 /* CapabilityOverrideThreePhaseTestSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 744DBF85BA53F6DD7CF16655 /* CapabilityOverrideThreePhaseTestSupport.swift */; };
 		FAACDF9BB1845A63BF366DF4 /* PlatformFontSystemExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0B9B4FE73177F70296E750F /* PlatformFontSystemExtensions.swift */; };
 		FAB1FBC7FC7A703CB1A83423 /* ResponsiveLayoutTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F7B9122AB17F208FA31CB44 /* ResponsiveLayoutTests.swift */; };
@@ -4757,6 +4762,7 @@
 		CA5CC07731764A1BBD624993 /* XCStringsMigrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XCStringsMigrationTests.swift; sourceTree = "<group>"; };
 		CAFC654A85F9F6F2F6E5581D /* UITestContractElementQueryModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UITestContractElementQueryModels.swift; sourceTree = "<group>"; };
 		CB56531BCDB76F5C9ACB0FC6 /* PlatformDismissWindowSettingsUnitTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformDismissWindowSettingsUnitTests.swift; sourceTree = "<group>"; };
+		CB6FDEC81647B0EF243B605D /* SafeArithmeticExpression.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SafeArithmeticExpression.swift; sourceTree = "<group>"; };
 		CB7E83037085D9DAB37DC1A1 /* PlatformAnyShapeStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformAnyShapeStyle.swift; sourceTree = "<group>"; };
 		CBAFDBC9C7D020E0A4FF4D15 /* ImageProcessingPipelineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageProcessingPipelineTests.swift; sourceTree = "<group>"; };
 		CBBD7BBE5800CC25115CD4B8 /* SixLayerFrameworkUnitTests_tvOS.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = SixLayerFrameworkUnitTests_tvOS.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -6718,6 +6724,7 @@
 				CF24C793FD142E6B5379925C /* RuntimeCapabilityDetection.swift */,
 				F1DE91A3943C18168D531916 /* RuntimeCapabilityHarness.swift */,
 				1A50E90FE94F54BF1CA691CB /* RuntimeOptimization.swift */,
+				CB6FDEC81647B0EF243B605D /* SafeArithmeticExpression.swift */,
 				F6A88D8E24398AE87D26BAF4 /* SecurityHints.swift */,
 				DA193FE0569D79FBBC985A2B /* SecurityTypes.swift */,
 			);
@@ -8800,6 +8807,7 @@
 				20C79314945A846DAAE39A2A /* RuntimeCapabilityDetectionView.swift in Sources */,
 				5D030970C68AB5E0714EB9B4 /* RuntimeCapabilityHarness.swift in Sources */,
 				CAF3AEFD42DDF66C4899FF09 /* RuntimeOptimization.swift in Sources */,
+				AB4376A6FB21D88E0BB9AB6A /* SafeArithmeticExpression.swift in Sources */,
 				423B642ED4F2BFC7ADF29F0E /* SafeTextEditor.swift in Sources */,
 				0D60584EA9A9A183BB65592E /* SecurityHints.swift in Sources */,
 				820AE2C78FAFEBC1A3C9435C /* SecurityService.swift in Sources */,
@@ -9116,6 +9124,7 @@
 				93FCF7A8D8C022CCEC3FA494 /* RuntimeCapabilityDetectionView.swift in Sources */,
 				F8B8CD27E0B647695AF15662 /* RuntimeCapabilityHarness.swift in Sources */,
 				315D7908932C94D566E7C714 /* RuntimeOptimization.swift in Sources */,
+				A4BF634F24DE732166E45131 /* SafeArithmeticExpression.swift in Sources */,
 				7C54990F582739F64D2C4E2F /* SafeTextEditor.swift in Sources */,
 				061869A27DE43D22D8C9478F /* SecurityHints.swift in Sources */,
 				73D9E003CC73F02E2AC26CFF /* SecurityService.swift in Sources */,
@@ -9751,6 +9760,7 @@
 				0C0743158AEC51A9B2F03B61 /* RuntimeCapabilityDetectionView.swift in Sources */,
 				3848029965C3714B9F9C0056 /* RuntimeCapabilityHarness.swift in Sources */,
 				EEE8D0BE3570B825D7539EB8 /* RuntimeOptimization.swift in Sources */,
+				1B0280D7D28934EC394BE433 /* SafeArithmeticExpression.swift in Sources */,
 				B29521D832502773842C8446 /* SafeTextEditor.swift in Sources */,
 				8FDA7DF94D0328513EA8CE79 /* SecurityHints.swift in Sources */,
 				C68CD1B468FC5955AEAA1F88 /* SecurityService.swift in Sources */,
@@ -10978,6 +10988,7 @@
 				ED4677D33C07F7947F546C01 /* RuntimeCapabilityDetectionView.swift in Sources */,
 				CD543511644B5E9DC8AC1A27 /* RuntimeCapabilityHarness.swift in Sources */,
 				DCACF4F55967240069E2ADE6 /* RuntimeOptimization.swift in Sources */,
+				FA8F35E0A2983B3AE4778B37 /* SafeArithmeticExpression.swift in Sources */,
 				D7BFFBC33023A4A021A1FF56 /* SafeTextEditor.swift in Sources */,
 				5B5531EC54CDE26AE1D58CDC /* SecurityHints.swift in Sources */,
 				0A8CAB26ACAE0EE55F327B89 /* SecurityService.swift in Sources */,
@@ -11598,6 +11609,7 @@
 				BFA304362185905B56BDED66 /* RuntimeCapabilityDetectionView.swift in Sources */,
 				A5CE2453E7E17D6FE06AF395 /* RuntimeCapabilityHarness.swift in Sources */,
 				44CFB521D8B89023D667A79A /* RuntimeOptimization.swift in Sources */,
+				ACCE11CA9E6E3D9A58D4570B /* SafeArithmeticExpression.swift in Sources */,
 				CCCEA3907664540355C9A206 /* SafeTextEditor.swift in Sources */,
 				F9666BC634C696951B4FE858 /* SecurityHints.swift in Sources */,
 				E3E2689EE5DDCB3CFD797F7F /* SecurityService.swift in Sources */,
