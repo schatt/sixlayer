@@ -2,7 +2,7 @@
 
 **Purpose**: Track planned upcoming work and future enhancements.  
 **Last Updated**: September 30, 2026  
-**Current Release**: v8.6.1
+**Current Release**: v8.6.2
 
 > **Note**: This roadmap tracks planned work. For active todos, see [`todos.md`](../todos.md). For release history, see [`RELEASES.md`](RELEASES.md).
 
@@ -10,7 +10,7 @@
 
 ## 📍 **Current Status**
 
-**Last Release**: v8.6.1 (`platformTap` XCUI availability #510)
+**Last Release**: v8.6.2 (form and OCR `NSExpression` guards #542, #544)
 **Current Phase**: Patch Release
 **Next Phase**: v8.7.0 — secondary-platform capability spine
 
