@@ -1,12 +1,21 @@
 # 🚀 Six-Layer Framework Release History
 
-## 📍 **Current Release: v8.6.0** 🚀
+## 📍 **Current Release: v8.6.1** 🚀
 
-**Release Date**: September 28, 2026
-**Status**: Minor release
-**Previous Release**: v8.5.1 - Patch release
-**Note**: Forms product and primary-lane coverage — advanced field types / file upload (#403, #522–#525); rich-text formats (#523); form packing (#486); presenting alerts (#507); settings-window dismiss (#508); macOS XCUI harness (#499, #510, #515–#521); unit-lane and a11y-label honesty (#452, #468–#470, #490, #491, #503, #512, #513).
+**Release Date**: September 30, 2026
+**Status**: Patch release
+**Previous Release**: v8.6.0 - Minor release
+**Note**: `platformTap` follows XCUIAutomation availability (#510). macOS uses `click()` / `doubleClick()`; `PlatformXCUITapStrategy` is removed.
 **Next Release**: v8.7.0
+
+---
+
+## 🎯 **v8.6.1 - platformTap XCUI availability** (September 30, 2026)
+
+### **What's in v8.6.1:**
+- Patch release (#510, #537). See [RELEASE_v8.6.1.md](RELEASE_v8.6.1.md) for details.
+
+**See [RELEASE_v8.6.1.md](RELEASE_v8.6.1.md) for complete release notes.**
 
 ---
 

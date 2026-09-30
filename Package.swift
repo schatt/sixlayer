@@ -1,5 +1,5 @@
 // swift-tools-version: 6.0
-// SixLayerFramework v8.6.0 - Minor: forms/advanced fields, modals, macOS XCUI, primary-lane coverage (#403, #486, #507, #508, #522–#525)
+// SixLayerFramework v8.6.1 - Patch: platformTap follows XCUI availability (#510)
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription

@@ -27,7 +27,7 @@ Navigate to the `Framework/` directory and use it as a Swift Package:
 ```swift
 // In your Package.swift
 dependencies: [
-    .package(url: "https://github.com/schatt/sixlayer.git", from: "8.6.0")
+    .package(url: "https://github.com/schatt/sixlayer.git", from: "8.6.1")
 ]
 ```
 
@@ -41,9 +41,12 @@ dependencies: [
 
 The framework is distributed as a Swift Package from the `Framework/` directory. This ensures that only the essential framework code is included when other projects consume it.
 
-## 🆕 Latest Release: v8.6.0
+## 🆕 Latest Release: v8.6.1
 
-### **Minor release**
+### **Patch release**
+🔧 **Patch**: `platformTap` follows XCUI availability (#510). macOS uses `click()` / `doubleClick()`; a third tap or multiple touches fails the test. `PlatformXCUITapStrategy` is removed. See [RELEASE_v8.6.1.md](Development/RELEASE_v8.6.1.md).
+
+### **Previous Release: v8.6.0 - Minor release**
 🚀 **Minor**: Forms product and primary-lane coverage — `FileUploadValidation` / drop+browse (#403, #522, #525); rich-text format actions (#523); form packing `fieldLayout` (#486); presenting alerts (#507); settings-window dismiss (#508); macOS XCUI harness (#499, #510, #515–#521); unit-lane and a11y-label honesty (#468–#470, #490, #491, #503, #512, #513). See [RELEASE_v8.6.0.md](Development/RELEASE_v8.6.0.md).
 
 ### **Previous Release: v8.5.1 - Patch release**
@@ -328,8 +331,8 @@ These guides contain critical information about the Layer 1 Semantic Intent phil
 
 ## 📋 Current Status
 
-**Version**: v8.6.0 (Minor)
-**Phase**: Minor release
+**Version**: v8.6.1 (Patch)
+**Phase**: Patch release
 **Next**: v8.7.0
 
 ## 🤝 Contributing
