@@ -907,15 +907,88 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
     
     /// Evaluate a simple mathematical expression (supports +, -, *, /, parentheses).
     /// Internal so unit tests can show a malformed formula returns nil instead of aborting.
+    ///
+    /// `NSExpression(format:)` throws an uncaught ObjC exception on invalid syntax
+    /// (`2.0%3.0`, `*3.25`, `""`). Only arithmetic text is passed through.
     func evaluateMathExpression(_ expression: String) -> Double? {
-        // Use NSExpression for safe evaluation
-        let expression = NSExpression(format: expression)
-        if let result = expression.expressionValue(with: nil, context: nil) as? Double {
+        let cleanedExpression = expression.replacingOccurrences(of: " ", with: "")
+        guard !cleanedExpression.isEmpty, isSafeArithmeticExpression(cleanedExpression) else { return nil }
+        let expr = NSExpression(format: cleanedExpression)
+        if let result = expr.expressionValue(with: nil, context: nil) as? Double {
             return result
-        } else if let result = expression.expressionValue(with: nil, context: nil) as? Int {
+        } else if let result = expr.expressionValue(with: nil, context: nil) as? Int {
             return Double(result)
         }
         return nil
+    }
+
+    /// Numbers (optional exponent), `+ - * /`, and parentheses. Rejects `%` and other format tokens.
+    private func isSafeArithmeticExpression(_ expression: String) -> Bool {
+        guard !expression.isEmpty else { return false }
+        var index = expression.startIndex
+        var depth = 0
+        var expectValue = true
+        var sawDigit = false
+
+        while index < expression.endIndex {
+            let character = expression[index]
+            if character == "(" {
+                guard expectValue else { return false }
+                depth += 1
+                index = expression.index(after: index)
+                continue
+            }
+            if character == ")" {
+                guard !expectValue, depth > 0 else { return false }
+                depth -= 1
+                expectValue = false
+                index = expression.index(after: index)
+                continue
+            }
+            if character == "+" || character == "-" || character == "*" || character == "/" {
+                if expectValue {
+                    guard character == "-" else { return false }
+                    index = expression.index(after: index)
+                    continue
+                }
+                expectValue = true
+                index = expression.index(after: index)
+                continue
+            }
+            guard expectValue, character.isNumber || character == "." else { return false }
+            var sawDot = false
+            var sawNumeral = false
+            while index < expression.endIndex {
+                let digit = expression[index]
+                if digit.isNumber {
+                    sawNumeral = true
+                    sawDigit = true
+                    index = expression.index(after: index)
+                } else if digit == "." {
+                    if sawDot { return false }
+                    sawDot = true
+                    index = expression.index(after: index)
+                } else if digit == "e" || digit == "E" {
+                    guard sawNumeral else { return false }
+                    index = expression.index(after: index)
+                    if index < expression.endIndex, expression[index] == "+" || expression[index] == "-" {
+                        index = expression.index(after: index)
+                    }
+                    var sawExponentDigit = false
+                    while index < expression.endIndex, expression[index].isNumber {
+                        sawExponentDigit = true
+                        index = expression.index(after: index)
+                    }
+                    guard sawExponentDigit else { return false }
+                    break
+                } else {
+                    break
+                }
+            }
+            guard sawNumeral else { return false }
+            expectValue = false
+        }
+        return depth == 0 && !expectValue && sawDigit
     }
     
     private func getFieldName(for textType: TextType) -> String {
