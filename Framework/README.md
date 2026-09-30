@@ -1,6 +1,6 @@
 # SixLayer Framework
 
-[![Version](https://img.shields.io/badge/version-v8.6.0-blue.svg)](https://github.com/schatt/sixlayer/releases/tag/v8.6.0)
+[![Version](https://img.shields.io/badge/version-v8.6.1-blue.svg)](https://github.com/schatt/sixlayer/releases/tag/v8.6.1)
 [![Platform](https://img.shields.io/badge/platform-iOS%2016%2B%20%7C%20macOS%2013%2B-lightgrey.svg)](https://github.com/schatt/6layer)
 [![Swift](https://img.shields.io/badge/Swift-5.9+-orange.svg)](https://swift.org)
 
@@ -39,6 +39,12 @@ Layer 1: Semantic Intent → Layer 2: Layout Decision → Layer 3: Strategy Sele
 - **Extensible**: Easy to extend with custom layers and strategies
 - **Comprehensively Tested**: 800+ tests with platform-aware testing and mandatory TDD implementation
 - **DRY Architecture**: Define hints once in files, use everywhere automatically
+
+## 🆕 What's New in v8.6.1
+
+### Patch release
+
+`platformTap` follows XCUIAutomation availability (#510). iOS and watchOS use `tap(withNumberOfTaps:numberOfTouches:)`. macOS uses `click()` or `doubleClick()` and fails when that cannot express the request. visionOS uses `tap()` or `doubleTap()`. tvOS fails and points at `XCUIRemote`. `PlatformXCUITapStrategy` is removed. See [RELEASE_v8.6.1.md](../Development/RELEASE_v8.6.1.md).
 
 ## 🆕 What's New in v8.6.0
 

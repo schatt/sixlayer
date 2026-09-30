@@ -1,8 +1,8 @@
 # 🚀 Six-Layer Framework Development Roadmap
 
 **Purpose**: Track planned upcoming work and future enhancements.  
-**Last Updated**: September 20, 2026  
-**Current Release**: v8.5.1
+**Last Updated**: September 30, 2026  
+**Current Release**: v8.6.1
 
 > **Note**: This roadmap tracks planned work. For active todos, see [`todos.md`](../todos.md). For release history, see [`RELEASES.md`](RELEASES.md).
 
@@ -10,9 +10,9 @@
 
 ## 📍 **Current Status**
 
-**Last Release**: v8.5.1 (datetime stacking #481/#498; packing spacing #492; SPM xcstrings #500–#502; CI/XCUI #495–#497)
+**Last Release**: v8.6.1 (`platformTap` XCUI availability #510)
 **Current Phase**: Patch Release
-**Next Phase**: v8.6.0 — forms product + primary-lane coverage
+**Next Phase**: v8.7.0 — secondary-platform capability spine
 
 ### ✅ **Recently Completed**
 - **Configurable Vision `minimumTextHeight`** (#288) - Pump-friendly default `0.003` and `OCRContext.visionMinimumTextHeight` for full-resolution pump LCD OCR
