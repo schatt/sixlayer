@@ -11,41 +11,8 @@ import SwiftUI
 
 class DesignSystemUITests: XCTestCase {
 
-    // MARK: - Themed Component Tests
-
-    @MainActor
-    func testThemedCardStyle() {
-        // Test that themed card applies design system styling
-        let view = ThemedFrameworkView {
-            Text("Test Content")
-                .themedCard()
-        }
-
-        // Note: UI testing with ViewInspector would be ideal here
-        // For now, we test that the view can be created without errors
-        XCTAssertNotNil(view)
-    }
-
-    @MainActor
-    func testThemedTextFieldStyle() {
-        // Test that themed text field applies design system styling
-        let view = ThemedFrameworkView {
-            TextField("Test", text: .constant(""))
-                .themedTextField()
-        }
-
-        XCTAssertNotNil(view)
-    }
-
-    @MainActor
-    func testThemedProgressBar() {
-        // Test that themed progress bar uses design tokens
-        let view = ThemedFrameworkView {
-            ThemedProgressBar(progress: 0.5, variant: .primary)
-        }
-
-        XCTAssertNotNil(view)
-    }
+    // Themed Framework / card / progress XCTAssertNotNil cases removed (#491).
+    // Real observations live on the unit lane in ThemingProductAPITests.
 
     // MARK: - Theme Switching Tests
 
@@ -171,19 +138,6 @@ class DesignSystemUITests: XCTestCase {
         XCTAssertEqual(designSystem.designSystem.name, "SixLayer")
     }
 
-    // MARK: - Environment Integration Tests
-
-    @MainActor
-    func testThemedFrameworkViewProvidesEnvironment() {
-        // Test that ThemedFrameworkView provides the necessary environment
-        let view = ThemedFrameworkView {
-            // This view should have access to design tokens via environment
-            TestEnvironmentView()
-        }
-
-        XCTAssertNotNil(view)
-    }
-
     // MARK: - Theme Change Notification Tests
 
     @MainActor
@@ -234,31 +188,5 @@ class DesignSystemUITests: XCTestCase {
         XCTAssertNotNil(lightColors.text)
         XCTAssertNotNil(darkColors.text)
         XCTAssertNotEqual(lightColors.background, darkColors.background)
-    }
-}
-
-// MARK: - Test Helper Views
-
-private struct TestEnvironmentView: View {
-    @Environment(\.designTokens) private var designTokens
-    @Environment(\.spacingTokens) private var spacingTokens
-    @Environment(\.componentStates) private var componentStates
-
-    var body: some View {
-        VStack {
-            // Test that environment values are available
-            Text("Primary: \(designTokens.primary.description)")
-            Text("Spacing SM: \(spacingTokens.sm)")
-            Text("Corner Radius SM: \(componentStates.cornerRadius.sm)")
-        }
-    }
-}
-
-// MARK: - Test Helper Extensions
-
-extension Color {
-    var description: String {
-        // Simplified description for testing
-        return "Color"
     }
 }

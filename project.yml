@@ -56,9 +56,6 @@ targets:
     platform: [iOS, macOS, tvOS, watchOS, visionOS]
     sources:
       - path: Framework/Sources
-        excludes:
-          - "**/ExampleHelpers.swift"
-          - "**/ExtensibleHintsExample.swift"
       - path: Framework/Resources
         excludes:
           - "**/*.lproj/**"

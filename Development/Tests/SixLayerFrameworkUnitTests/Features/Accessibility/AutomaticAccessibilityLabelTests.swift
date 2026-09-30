@@ -91,59 +91,45 @@ open class AutomaticAccessibilityLabelTests: BaseTestClass {
     /// TESTING SCOPE: Label localization logic with plain text
     /// METHODOLOGY: Test localizeAccessibilityLabel() with plain text (not a key)
     @Test func testLabelLocalization_FormatsPlainText() {
-        // Given: A plain text label (not a localization key)
         let plainText = "Save document"
-        
-        // When: Localizing the label
         let localized = localizeAccessibilityLabel(plainText)
-        
-        // Then: Should format the text (add punctuation if needed)
-        // Note: localizeAccessibilityLabel calls formatAccessibilityLabel internally
-        #expect(!localized.isEmpty, "Localized label should not be empty")
+        #expect(localized == "Save document.", "Plain text must be formatted, not merely non-empty (#503)")
     }
     
-    /// BUSINESS PURPOSE: Test that localizeAccessibilityLabel handles localization keys
+    /// BUSINESS PURPOSE: Test that localizeAccessibilityLabel resolves a real catalog key
     /// TESTING SCOPE: Label localization logic with localization keys
-    /// METHODOLOGY: Test localizeAccessibilityLabel() with a key format
+    /// METHODOLOGY: Assert translated+formatted value via FrameworkCatalogFixture (#503)
     @Test func testLabelLocalization_HandlesLocalizationKeys() {
-        // Given: A localization key format
-        let localizationKey = "SixLayerFramework.accessibility.button.save"
-        
-        // When: Localizing the key
+        let localizationKey = "SixLayerFramework.button.save"
         let localized = localizeAccessibilityLabel(localizationKey)
-        
-        // Then: Should attempt to localize (may return key if not found)
-        #expect(!localized.isEmpty, "Localized label should not be empty")
+        let expected = formatAccessibilityLabel(FrameworkCatalogFixture.value(localizationKey))
+        #expect(localized == expected, "Must resolve a real catalog value, not pass on raw/missing key (#503)")
+    }
+
+    /// Missing keys must surface as formatted key text — not as a successful “Save.” translation (#503).
+    @Test func testLabelLocalization_MissingKeyReturnsFormattedKey() {
+        let missingKey = "SixLayerFramework.accessibility.button.save"
+        let localized = localizeAccessibilityLabel(missingKey)
+        #expect(localized == formatAccessibilityLabel(missingKey))
+        #expect(localized != formatAccessibilityLabel(FrameworkCatalogFixture.value("SixLayerFramework.button.save")))
     }
     
-    /// BUSINESS PURPOSE: Test that localizeAccessibilityLabel uses context when provided
-    /// TESTING SCOPE: Label localization logic with context
+    /// BUSINESS PURPOSE: Test that localizeAccessibilityLabel still formats when context is provided
+    /// TESTING SCOPE: context is debug-log only today; output remains formatted plain text
     /// METHODOLOGY: Test localizeAccessibilityLabel() with context parameter
     @Test func testLabelLocalization_UsesContext() {
-        // Given: A label with context
         let label = "Save"
-        let context = "button"
-        
-        // When: Localizing with context
-        let localized = localizeAccessibilityLabel(label, context: context)
-        
-        // Then: Should use context for better localization
-        #expect(!localized.isEmpty, "Localized label with context should not be empty")
+        let localized = localizeAccessibilityLabel(label, context: "button")
+        #expect(localized == "Save.", "Context must not weaken formatting (#503)")
     }
     
-    /// BUSINESS PURPOSE: Test that localizeAccessibilityLabel uses elementType when provided
-    /// TESTING SCOPE: Label localization logic with element type
+    /// BUSINESS PURPOSE: Test that localizeAccessibilityLabel still formats when elementType is provided
+    /// TESTING SCOPE: elementType is debug-log only today; output remains formatted plain text
     /// METHODOLOGY: Test localizeAccessibilityLabel() with elementType parameter
     @Test func testLabelLocalization_UsesElementType() {
-        // Given: A label with element type
         let label = "Save"
-        let elementType = "Button"
-        
-        // When: Localizing with element type
-        let localized = localizeAccessibilityLabel(label, context: nil, elementType: elementType)
-        
-        // Then: Should use element type for better localization
-        #expect(!localized.isEmpty, "Localized label with element type should not be empty")
+        let localized = localizeAccessibilityLabel(label, context: nil, elementType: "Button")
+        #expect(localized == "Save.", "Element type must not weaken formatting (#503)")
     }
     
     // MARK: - Label Sanitization Logic Tests
@@ -212,14 +198,9 @@ open class AutomaticAccessibilityLabelTests: BaseTestClass {
     /// TESTING SCOPE: Integration of formatting and localization
     /// METHODOLOGY: Test that formatting is applied after localization
     @Test func testLabelFormattingAndLocalization_WorkTogether() {
-        // Given: A plain text label
         let label = "Save document"
-        
-        // When: Localizing (which formats internally)
         let localized = localizeAccessibilityLabel(label)
-        
-        // Then: Should be both localized (if key exists) and formatted
-        #expect(!localized.isEmpty, "Label should be processed")
+        #expect(localized == "Save document.", "Formatting+localization path must yield concrete text (#503)")
     }
     
     /// BUSINESS PURPOSE: Test that sanitizeLabelText works with formatted labels

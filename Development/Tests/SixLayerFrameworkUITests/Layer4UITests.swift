@@ -119,11 +119,21 @@ final class Layer4UITests: SixLayerUITestCase {
 
     @MainActor
     private func tapByNormalizedCenter(_ element: XCUIElement) {
+        #if os(macOS)
+        if element.isHittable {
+            element.click()
+        } else if element.xcuiHasValidTapFrame {
+            element.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).click()
+        } else {
+            element.click()
+        }
+        #else
         if element.isHittable {
             element.tap()
         } else {
             element.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
         }
+        #endif
     }
 
     @MainActor

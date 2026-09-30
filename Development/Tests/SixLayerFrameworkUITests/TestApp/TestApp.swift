@@ -7,6 +7,20 @@
 
 import SwiftUI
 import SixLayerFramework
+#if os(macOS)
+import AppKit
+#endif
+
+#if os(macOS)
+/// XCUI launches can leave the host as a non-UI process with **zero windows** (#499).
+/// Force a regular activation policy and activate so `WindowGroup` presents content.
+final class TestAppMacActivationDelegate: NSObject, NSApplicationDelegate {
+    func applicationDidFinishLaunching(_ notification: Notification) {
+        NSApp.setActivationPolicy(.regular)
+        NSApp.activate(ignoringOtherApps: true)
+    }
+}
+#endif
 
 /// Minimal test app that displays views for XCUITest testing
 @main
@@ -14,6 +28,10 @@ struct TestApp: App {
     /// Per-process config for the UI test host — **not** `AccessibilityIdentifierConfig.shared` (#247).
     /// Injected at the window root so modifiers resolve the same instance without mutating the production singleton.
     private let accessibilityIdentifierHostConfiguration: AccessibilityIdentifierConfig
+
+    #if os(macOS)
+    @NSApplicationDelegateAdaptor(TestAppMacActivationDelegate.self) private var macActivationDelegate
+    #endif
 
     init() {
         let suiteName = "SixLayer.Framework.UITestHost.AccessibilityIdentifier"
@@ -42,7 +60,11 @@ struct TestApp: App {
         WindowGroup {
             TestAppContentView()
                 .environment(\.accessibilityIdentifierConfig, accessibilityIdentifierHostConfiguration)
+                .testAppHostRootSurface()
         }
+        #if os(macOS)
+        .defaultSize(width: 900, height: 700)
+        #endif
     }
 }
 
@@ -64,6 +86,8 @@ struct TestAppContentView: View {
     private let openStandaloneDropIn150 = ProcessInfo.processInfo.arguments.contains("-OpenStandaloneDropIn150")
     /// When true, app opens to Issue #385 ModalFormView packing / checkbox alignment host (launch arg -OpenFieldLayout385).
     private let openFieldLayout385 = ProcessInfo.processInfo.arguments.contains("-OpenFieldLayout385")
+    /// When true, app opens to Issue #452 pull-to-refresh sentinel host (launch arg -OpenPullToRefresh452).
+    private let openPullToRefresh452 = ProcessInfo.processInfo.arguments.contains("-OpenPullToRefresh452")
     /// Deep links for ``AccessibilityCompatibilityUITests`` — open a single test host without launch-page navigation (Issue #180).
     private let openAccessibilityCompatibilityControlTest = ProcessInfo.processInfo.arguments.contains("-OpenAccessibilityCompatibilityControlTest")
     private let openAccessibilityCompatibilityTextTest = ProcessInfo.processInfo.arguments.contains("-OpenAccessibilityCompatibilityTextTest")
@@ -171,6 +195,8 @@ struct TestAppContentView: View {
                 StandaloneDropIn150HostView()
             } else if openFieldLayout385 {
                 FieldLayout385HostView()
+            } else if openPullToRefresh452 {
+                PullToRefresh452HostView()
             } else if openAccessibilityCompatibilityControlTest {
                 NavigationStack {
                     ControlTestView(onBackToMain: {})

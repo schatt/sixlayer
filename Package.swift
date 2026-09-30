@@ -1,5 +1,5 @@
 // swift-tools-version: 6.0
-// SixLayerFramework v8.5.1 - Patch: datetime stacking, packing spacing, SPM xcstrings (#481, #492, #498, #500–#502)
+// SixLayerFramework v8.6.0 - Minor: forms/advanced fields, modals, macOS XCUI, primary-lane coverage (#403, #486, #507, #508, #522–#525)
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
@@ -39,10 +39,6 @@ let package = Package(
             name: "SixLayerFramework",
             dependencies: [],
             path: "Framework",
-            exclude: [
-                "Sources/Core/ExampleHelpers.swift",
-                "Sources/Core/ExtensibleHintsExample.swift"
-            ],
             sources: [
                 "Sources"
             ],
@@ -97,6 +93,11 @@ let package = Package(
         ),
 
         /// Pure routing policy for managed settings flow (#209); no ViewInspector / BaseTestClass.
+        ///
+        /// Lane split (#512): this SPM target owns logic-only files listed in `sources`.
+        /// Layer 4 smoke tests that call `BaseTestClass` (`PlatformManagedSettingsFlowLayer4Tests`,
+        /// `PlatformManagedSettingsDetailNavigationLayer4Tests`) stay on the Xcode unit-test lane
+        /// (`SixLayerFrameworkUnitTests_*`), which compiles `Development/Tests/Shared/TestHelpers`.
         .testTarget(
             name: "PlatformManagedSettingsFlowLogicTests",
             dependencies: [
@@ -106,9 +107,7 @@ let package = Package(
             sources: [
                 "PlatformManagedSettingsFlowLogicTests.swift",
                 "PlatformManagedSettingsTopLevelStateTests.swift",
-                "PlatformManagedSettingsFlowLayer4Tests.swift",
                 "PlatformManagedSettingsDetailNavigationStateTests.swift",
-                "PlatformManagedSettingsDetailNavigationLayer4Tests.swift",
                 "ManagedPlatformSettingsFlowGuideExampleTests.swift"
             ]
         ),

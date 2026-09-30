@@ -347,11 +347,13 @@ struct PlatformLayer4RemainingComponentsUnitTests {
         hostView {
             Text("Root")
                 .platformAlert(
+                    isPresented: .constant(false),
                     title: "Alert",
-                    message: "Body",
-                    primaryButton: .default(Text("OK"))
+                    actions: { Button("OK") {} },
+                    message: { Text("Body") }
                 )
                 .platformConfirmationDialog(
+                    isPresented: .constant(false),
                     title: "Confirm",
                     actions: { Button("Yes") {} },
                     message: { Text("Sure?") }

@@ -7,8 +7,20 @@ import UniformTypeIdentifiers
 public struct RichTextEditorField: View {
     let field: DynamicFormField
     @ObservedObject var formState: DynamicFormState
-    @State private var isEditing = false
+    @State private var isEditing: Bool
     @State private var selectedText: NSRange?
+
+    /// - Parameter initiallyEditing: Seeds edit vs preview presentation (testable; #403).
+    public init(
+        field: DynamicFormField,
+        formState: DynamicFormState,
+        initiallyEditing: Bool = false
+    ) {
+        self.field = field
+        self.formState = formState
+        self._isEditing = State(initialValue: initiallyEditing)
+        self._selectedText = State(initialValue: nil)
+    }
     
     public var body: some View {
         platformVStackContainer(alignment: .leading, spacing: 8) {
@@ -37,7 +49,13 @@ public struct RichTextEditorField: View {
                 .background(Color.secondaryBackground)
                 .cornerRadius(8)
                 
-                RichTextToolbar(selectedText: $selectedText)
+                RichTextToolbar(
+                    text: Binding(
+                        get: { formState.getValue(for: field.id) ?? "" },
+                        set: { formState.setValue($0, for: field.id) }
+                    ),
+                    selectedText: $selectedText
+                )
             } else {
                 RichTextPreview(
                     text: formState.getValue(for: field.id) ?? ""
@@ -160,22 +178,88 @@ public struct RichTextEditor: View {
 }
 #endif
 
+// MARK: - Rich Text Formatting
+
+/// Pure markdown-style wraps for ``RichTextToolbar`` (#523).
+public enum RichTextFormatStyle: Sendable {
+    case bold
+    case italic
+    case underline
+    case bullet
+    case numbered
+}
+
+public enum RichTextFormatting {
+    /// Apply `style` to `selection` within `text`. Returns nil when the range is invalid.
+    public static func apply(
+        _ style: RichTextFormatStyle,
+        to text: String,
+        selection: NSRange
+    ) -> String? {
+        let ns = text as NSString
+        guard selection.location != NSNotFound,
+              selection.location >= 0,
+              selection.length >= 0,
+              NSMaxRange(selection) <= ns.length else {
+            return nil
+        }
+        let selected = ns.substring(with: selection)
+        let replacement: String
+        switch style {
+        case .bold:
+            replacement = "**\(selected)**"
+        case .italic:
+            replacement = "*\(selected)*"
+        case .underline:
+            replacement = "<u>\(selected)</u>"
+        case .bullet:
+            replacement = selected
+                .split(separator: "\n", omittingEmptySubsequences: false)
+                .map { line -> String in
+                    let trimmed = line.trimmingCharacters(in: .whitespaces)
+                    if trimmed.hasPrefix("• ") { return String(line) }
+                    return "• \(line)"
+                }
+                .joined(separator: "\n")
+        case .numbered:
+            replacement = selected
+                .split(separator: "\n", omittingEmptySubsequences: false)
+                .enumerated()
+                .map { index, line in
+                    let trimmed = String(line).trimmingCharacters(in: .whitespaces)
+                    if trimmed.range(of: #"^\d+\.\s"#, options: .regularExpression) != nil {
+                        return String(line)
+                    }
+                    return "\(index + 1). \(line)"
+                }
+                .joined(separator: "\n")
+        }
+        return ns.replacingCharacters(in: selection, with: replacement)
+    }
+}
+
 // MARK: - Rich Text Toolbar
 
 /// Toolbar for rich text formatting
 public struct RichTextToolbar: View {
+    @Binding var text: String
     @Binding var selectedText: NSRange?
+    
+    public init(text: Binding<String>, selectedText: Binding<NSRange?>) {
+        self._text = text
+        self._selectedText = selectedText
+    }
     
     public var body: some View {
         platformHStackContainer(spacing: 12) {
-            FormatButton(title: "B", action: { formatBold() })
-            FormatButton(title: "I", action: { formatItalic() })
-            FormatButton(title: "U", action: { formatUnderline() })
+            FormatButton(title: "B", action: { format(.bold) })
+            FormatButton(title: "I", action: { format(.italic) })
+            FormatButton(title: "U", action: { format(.underline) })
             
             Divider()
             
-            FormatButton(title: "•", action: { formatBullet() })
-            FormatButton(title: "1.", action: { formatNumbered() })
+            FormatButton(title: "•", action: { format(.bullet) })
+            FormatButton(title: "1.", action: { format(.numbered) })
             
             Spacer()
         }
@@ -186,34 +270,12 @@ public struct RichTextToolbar: View {
         .automaticCompliance(named: "RichTextToolbar")
     }
     
-    private func formatBold() {
-        // Format bold implementation
-        // This would apply bold formatting to the selected text
-        // For now, this is a placeholder for the actual implementation
-    }
-    
-    private func formatItalic() {
-        // Format italic implementation
-        // This would apply italic formatting to the selected text
-        // For now, this is a placeholder for the actual implementation
-    }
-    
-    private func formatUnderline() {
-        // Format underline implementation
-        // This would apply underline formatting to the selected text
-        // For now, this is a placeholder for the actual implementation
-    }
-    
-    private func formatBullet() {
-        // Format bullet list implementation
-        // This would apply bullet list formatting to the selected text
-        // For now, this is a placeholder for the actual implementation
-    }
-    
-    private func formatNumbered() {
-        // Format numbered list implementation
-        // This would apply numbered list formatting to the selected text
-        // For now, this is a placeholder for the actual implementation
+    private func format(_ style: RichTextFormatStyle) {
+        guard let selection = selectedText,
+              let updated = RichTextFormatting.apply(style, to: text, selection: selection) else {
+            return
+        }
+        text = updated
     }
 }
 
@@ -276,6 +338,88 @@ public enum AutocompleteSuggestionFiltering {
                 }
                 return suggestion1 < suggestion2
             }
+    }
+}
+
+// MARK: - File Upload Validation
+
+/// Pure type/size gates for ``FileUploadArea`` / ``EnhancedFileUploadField`` (#403).
+public enum FileUploadValidation {
+    /// Whether `type` is allowed: exact match or conformance to any entry in `allowed`.
+    public static func isTypeAllowed(_ type: UTType, allowed: [UTType]) -> Bool {
+        guard !allowed.isEmpty else { return true }
+        return allowed.contains { allowedType in
+            type == allowedType || type.conforms(to: allowedType)
+        }
+    }
+
+    /// Whether `size` is within `max` when a max is configured (`nil` = unlimited).
+    public static func isSizeAllowed(_ size: Int64, max: Int64?) -> Bool {
+        guard let max else { return true }
+        return size >= 0 && size <= max
+    }
+
+    /// Combined type + size acceptance for a candidate file.
+    public static func isAccepted(
+        _ file: FileInfo,
+        allowedTypes: [UTType],
+        maxFileSize: Int64?
+    ) -> Bool {
+        isTypeAllowed(file.type, allowed: allowedTypes)
+            && isSizeAllowed(file.size, max: maxFileSize)
+    }
+
+    /// Filters candidates to those that pass ``isAccepted``.
+    public static func accepted(
+        from files: [FileInfo],
+        allowedTypes: [UTType],
+        maxFileSize: Int64?
+    ) -> [FileInfo] {
+        files.filter { isAccepted($0, allowedTypes: allowedTypes, maxFileSize: maxFileSize) }
+    }
+
+    /// NSItemProvider / importer load pairs derived from `allowed` (#525).
+    /// Empty `allowed` keeps the historical image+pdf probe set (validation still accepts all).
+    public static func dropLoadTypes(from allowed: [UTType]) -> [(identifier: String, declared: UTType)] {
+        let source: [UTType] = allowed.isEmpty ? [.image, .pdf] : allowed
+        var seen = Set<String>()
+        var result: [(identifier: String, declared: UTType)] = []
+        for type in source {
+            if seen.insert(type.identifier).inserted {
+                result.append((type.identifier, type))
+            }
+        }
+        return result
+    }
+
+    /// Prefer a concrete type from the URL extension; otherwise `fallback` (#525).
+    public static func resolvedType(for url: URL, fallback: UTType) -> UTType {
+        let ext = url.pathExtension
+        guard !ext.isEmpty, let fromExt = UTType(filenameExtension: ext) else {
+            return fallback
+        }
+        return fromExt
+    }
+
+    /// Build ``FileInfo`` from a filesystem URL (#522 / #525).
+    public static func fileInfo(from url: URL, fallbackType: UTType) -> FileInfo {
+        FileInfo(
+            name: url.lastPathComponent,
+            size: Int64((try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0),
+            type: resolvedType(for: url, fallback: fallbackType),
+            url: url
+        )
+    }
+
+    /// Validate imported/dropped URLs through type/size gates (#522).
+    public static func acceptedFiles(
+        from urls: [URL],
+        allowedTypes: [UTType],
+        maxFileSize: Int64?,
+        fallbackType: UTType = .data
+    ) -> [FileInfo] {
+        let files = urls.map { fileInfo(from: $0, fallbackType: fallbackType) }
+        return accepted(from: files, allowedTypes: allowedTypes, maxFileSize: maxFileSize)
     }
 }
 
@@ -418,6 +562,7 @@ public struct FileUploadArea: View {
     let allowedTypes: [UTType]
     let maxFileSize: Int64?
     let onFilesSelected: ([FileInfo]) -> Void
+    @State private var isFileImporterPresented = false
     
     public var body: some View {
         platformVStackContainer(spacing: 16) {
@@ -434,7 +579,7 @@ public struct FileUploadArea: View {
                 .foregroundColor(.secondary)
             
             Button(i18n.localizedString(for: "SixLayerFramework.button.browseFiles")) {
-                selectFiles()
+                isFileImporterPresented = true
             }
             .buttonStyle(.borderedProminent)
             
@@ -465,62 +610,65 @@ public struct FileUploadArea: View {
             handleDrop(providers: providers)
             return true
         }
+        .platformFileImporter(
+            isPresented: $isFileImporterPresented,
+            allowedContentTypes: allowedTypes.isEmpty ? [.item] : allowedTypes,
+            allowsMultipleSelection: true,
+            onCompletion: handleImportedFiles
+        )
         .accessibilityLabel("File upload area")
         .accessibilityHint("Drag and drop files here or tap to browse")
         .automaticCompliance(named: "FileUploadArea")
     }
-    
-    private func selectFiles() {
-        // File picker implementation
-        // This would integrate with the system file picker
-        // For now, this is a placeholder for the actual implementation
-        #if os(iOS)
-        // iOS file picker implementation would go here
-        #elseif os(macOS)
-        // macOS file picker implementation would go here
-        #endif
+
+    private func handleImportedFiles(_ result: Result<[URL], Error>) {
+        guard case .success(let urls) = result else { return }
+        let fallback = allowedTypes.first ?? .data
+        let accepted = FileUploadValidation.acceptedFiles(
+            from: urls,
+            allowedTypes: allowedTypes,
+            maxFileSize: maxFileSize,
+            fallbackType: fallback
+        )
+        if !accepted.isEmpty {
+            onFilesSelected(accepted)
+        }
     }
     
     private func handleDrop(providers: [NSItemProvider]) {
-        // Handle dropped files
-        // This would process the dropped file providers
-        // For now, this is a placeholder for the actual implementation
-        let group = DispatchGroup()
-        
+        // Process dropped providers; accept only via ``FileUploadValidation`` (#525).
+        let loadTypes = FileUploadValidation.dropLoadTypes(from: allowedTypes)
+
         for provider in providers {
-            if provider.hasItemConformingToTypeIdentifier(UTType.image.identifier) {
-                // Handle image files
-                group.enter()
-                provider.loadItem(forTypeIdentifier: UTType.image.identifier, options: nil) { item, error in
-                    defer { group.leave() }
-                    if let url = item as? URL {
-                        Task { @MainActor in
-                            let fileInfo = FileInfo(
-                                name: url.lastPathComponent,
-                                size: Int64((try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0),
-                                type: UTType.image,
-                                url: url
-                            )
-                            onFilesSelected([fileInfo])
-                        }
-                    }
-                }
-            } else if provider.hasItemConformingToTypeIdentifier(UTType.pdf.identifier) {
-                // Handle PDF files
-                group.enter()
-                provider.loadItem(forTypeIdentifier: UTType.pdf.identifier, options: nil) { item, error in
-                    defer { group.leave() }
-                    if let url = item as? URL {
-                        Task { @MainActor in
-                            let fileInfo = FileInfo(
-                                name: url.lastPathComponent,
-                                size: Int64((try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0),
-                                type: UTType.pdf,
-                                url: url
-                            )
-                            onFilesSelected([fileInfo])
-                        }
-                    }
+            for loadType in loadTypes where provider.hasItemConformingToTypeIdentifier(loadType.identifier) {
+                loadDroppedItem(
+                    provider: provider,
+                    typeIdentifier: loadType.identifier,
+                    declaredType: loadType.declared
+                )
+                break
+            }
+        }
+    }
+
+    private func loadDroppedItem(
+        provider: NSItemProvider,
+        typeIdentifier: String,
+        declaredType: UTType
+    ) {
+        let allowed = allowedTypes
+        let maxSize = maxFileSize
+        provider.loadItem(forTypeIdentifier: typeIdentifier, options: nil) { item, _ in
+            guard let url = item as? URL else { return }
+            Task { @MainActor in
+                let fileInfo = FileUploadValidation.fileInfo(from: url, fallbackType: declaredType)
+                let accepted = FileUploadValidation.accepted(
+                    from: [fileInfo],
+                    allowedTypes: allowed,
+                    maxFileSize: maxSize
+                )
+                if !accepted.isEmpty {
+                    onFilesSelected(accepted)
                 }
             }
         }

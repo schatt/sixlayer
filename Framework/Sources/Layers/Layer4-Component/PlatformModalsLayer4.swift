@@ -32,68 +32,38 @@ public extension View {
         .automaticCompliance(named: "platformSheet")
     }
     
-    /// Platform-specific alert presentation with consistent styling
-    /// Provides standardized alert appearance across platforms
-    func platformAlert(
+    /// Platform-specific alert presentation.
+    /// Visibility follows the caller binding, including dismiss writing `false`.
+    func platformAlert<A: View, M: View>(
+        isPresented: Binding<Bool>,
         title: String,
-        message: String? = nil,
-        primaryButton: Alert.Button,
-        secondaryButton: Alert.Button? = nil
+        @ViewBuilder actions: @escaping () -> A,
+        @ViewBuilder message: @escaping () -> M
     ) -> some View {
-        let alert: Alert
-        if let secondaryButton = secondaryButton {
-            alert = Alert(
-                title: Text(title),
-                message: message.map { Text($0) },
-                primaryButton: primaryButton,
-                secondaryButton: secondaryButton
-            )
-        } else {
-            alert = Alert(
-                title: Text(title),
-                message: message.map { Text($0) },
-                dismissButton: primaryButton
-            )
-        }
-        
-        return self.alert(isPresented: .constant(false)) {
-            alert
-        }
+        self.platformAlert(
+            title,
+            isPresented: isPresented,
+            actions: actions,
+            message: message
+        )
     }
     
-    /// Platform-specific confirmation dialog with consistent styling
-    /// Provides standardized confirmation dialog appearance across platforms
+    /// Platform-specific confirmation dialog.
+    /// Visibility follows the caller binding, including dismiss writing `false`.
     func platformConfirmationDialog<A: View, M: View>(
+        isPresented: Binding<Bool>,
         title: String,
         titleVisibility: Visibility = .automatic,
         @ViewBuilder actions: @escaping () -> A,
         @ViewBuilder message: @escaping () -> M
     ) -> some View {
-        #if os(iOS)
-        return self.confirmationDialog(
+        self.confirmationDialog(
             title,
-            isPresented: .constant(false),
+            isPresented: isPresented,
             titleVisibility: titleVisibility,
             actions: actions,
             message: message
         )
-        #elseif os(macOS)
-        return self.confirmationDialog(
-            title,
-            isPresented: .constant(false),
-            titleVisibility: titleVisibility,
-            actions: actions,
-            message: message
-        )
-        #else
-        return self.confirmationDialog(
-            title,
-            isPresented: .constant(false),
-            titleVisibility: titleVisibility,
-            actions: actions,
-            message: message
-        )
-        #endif
     }
 
     /// Platform-specific settings dismissal for embedded navigation
@@ -130,37 +100,43 @@ public extension View {
         return self
     }
 
-    /// Platform-specific settings dismissal for window presentation
-    /// Handles dismissal when settings are presented in separate windows
+    /// Settings shown in their own window.
+    /// Applying this modifier does not close the window.
+    /// The close control runs `onClose`; the zero-argument form closes the macOS key window.
+    @MainActor
     func platformDismissWindowSettings() -> some View {
-        // Delegate to platform-specific implementations
+        platformDismissWindowSettings(onClose: PlatformWindowSettingsDismissal.closeKeyWindow)
+    }
+
+    /// Settings shown in their own window.
+    /// Applying this modifier does not run `onClose`.
+    /// On macOS, the close control runs `onClose` when activated.
+    @MainActor
+    @ViewBuilder
+    func platformDismissWindowSettings(
+        onClose: @escaping @MainActor () -> Void
+    ) -> some View {
         #if os(macOS)
-        return self.platformDismissWindowSettingsMacOS()
-        #elseif os(iOS)
-        return self.platformDismissWindowSettingsIOS()
+        self.overlay(alignment: .topTrailing) {
+            Button {
+                onClose()
+            } label: {
+                Text(InternationalizationService().localizedString(for: "SixLayerFramework.button.done"))
+            }
+            .accessibilityIdentifier("platformDismissWindowSettings.close")
+        }
         #else
-        return self
+        self
         #endif
     }
-    
-    // MARK: - Platform-Specific Implementations
-    
-    #if os(macOS)
-    /// macOS-specific window dismissal implementation
-    private func platformDismissWindowSettingsMacOS() -> some View {
-        // For window presentation, close the specific window
-        if let targetWindow = NSApplication.shared.keyWindow {
-            targetWindow.performClose(nil)
-        }
-        return self
+}
+
+/// Default window-settings dismiss: close the key window when the caller asks.
+enum PlatformWindowSettingsDismissal {
+    @MainActor
+    static func closeKeyWindow() {
+        #if os(macOS)
+        NSApplication.shared.keyWindow?.performClose(nil)
+        #endif
     }
-    #endif
-    
-    #if os(iOS)
-    /// iOS-specific window dismissal implementation
-    private func platformDismissWindowSettingsIOS() -> some View {
-        // iOS doesn't have separate windows, so this is a no-op
-        return self
-    }
-    #endif
 }
