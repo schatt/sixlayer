@@ -1459,6 +1459,58 @@ public class DynamicFormState: ObservableObject {
         return nil
     }
 
+    /// Decimal literal safe to splice into an `NSExpression` formula.
+    /// Empty strings, `".."`, booleans, and other non-numeric values return nil.
+    private func formulaNumericLiteral(for value: Any) -> String? {
+        if value is Bool { return nil }
+        let number: Double?
+        switch value {
+        case let int as Int:
+            number = Double(int)
+        case let int as Int64:
+            number = Double(int)
+        case let int as UInt:
+            number = Double(int)
+        case let double as Double:
+            number = double
+        case let float as Float:
+            number = Double(float)
+        case let numberValue as NSNumber:
+            number = numberValue.doubleValue
+        case let string as String:
+            number = Double(string.trimmingCharacters(in: .whitespacesAndNewlines))
+        default:
+            number = nil
+        }
+        guard let number, number.isFinite else { return nil }
+        if case let string as String = value {
+            let trimmed = string.trimmingCharacters(in: .whitespacesAndNewlines)
+            if SafeArithmeticExpression.isSafe(trimmed) {
+                return trimmed
+            }
+        }
+        return plainDecimalLiteral(number)
+    }
+
+    /// Decimal text with no exponent. Binary numbers are formatted here so substitution
+    /// does not depend on `String(Double)`, which emits `1e-07`.
+    private func plainDecimalLiteral(_ number: Double) -> String? {
+        guard number.isFinite else { return nil }
+        var formatted = String(format: "%.15f", locale: Locale(identifier: "en_US_POSIX"), number)
+        if formatted.contains(".") {
+            while formatted.last == "0" {
+                formatted.removeLast()
+            }
+            if formatted.last == "." {
+                formatted.removeLast()
+            }
+        }
+        if formatted == "-0" || formatted.isEmpty {
+            return "0"
+        }
+        return formatted
+    }
+
     /// Evaluate a mathematical expression after caller has substituted field names with numeric literals.
     /// Uses `NSExpression` for parentheses and operator precedence (required by e.g. `(a * b) + c` fuel hints).
     private func evaluateMathExpression(_ expression: String) -> Double? {
@@ -1467,6 +1519,7 @@ public class DynamicFormState: ObservableObject {
         if let literal = Double(cleanedExpression) {
             return literal
         }
+        guard SafeArithmeticExpression.isSafe(cleanedExpression) else { return nil }
         let expr = NSExpression(format: cleanedExpression)
         if let anyValue = expr.expressionValue(with: nil, context: nil) {
             if let num = anyValue as? NSNumber {
@@ -1602,15 +1655,15 @@ public class DynamicFormState: ObservableObject {
         guard parts.count == 2 else { return nil }
         let expression = parts[1]
 
-        // Replace field references with their values
+        // Substitute numeric scalars only. String(describing:) of "" or ".." builds a formula
+        // NSExpression cannot parse, and that throw is an uncaught ObjC exception (SIGABRT).
         var processedExpression = expression
         for fieldId in group.dependentFields {
-            if let value = fieldValues[fieldId] {
-                let stringValue = String(describing: value)
-                processedExpression = processedExpression.replacingOccurrences(of: fieldId, with: stringValue)
-            } else {
-                return nil // Missing dependency
+            guard let value = fieldValues[fieldId],
+                  let literal = formulaNumericLiteral(for: value) else {
+                return nil
             }
+            processedExpression = processedExpression.replacingOccurrences(of: fieldId, with: literal)
         }
 
         // Evaluate the mathematical expression
