@@ -1,12 +1,21 @@
 # 🚀 Six-Layer Framework Release History
 
-## 📍 **Current Release: v8.6.1** 🚀
+## 📍 **Current Release: v8.6.2** 🚀
 
 **Release Date**: September 30, 2026
 **Status**: Patch release
-**Previous Release**: v8.6.0 - Minor release
-**Note**: `platformTap` follows XCUIAutomation availability (#510). macOS uses `click()` / `doubleClick()`; `PlatformXCUITapStrategy` is removed.
+**Previous Release**: v8.6.1 - Patch release
+**Note**: Form and OCR math evaluation return nil instead of aborting in `NSExpression` (#542, #544).
 **Next Release**: v8.7.0
+
+---
+
+## 🎯 **v8.6.2 - calculation and OCR expression guards** (September 30, 2026)
+
+### **What's in v8.6.2:**
+- Patch release (#542, #544). See [RELEASE_v8.6.2.md](RELEASE_v8.6.2.md) for details.
+
+**See [RELEASE_v8.6.2.md](RELEASE_v8.6.2.md) for complete release notes.**
 
 ---
 
