@@ -905,18 +905,23 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
         return evaluateMathExpression(processedExpression)
     }
     
-    /// Evaluate a simple mathematical expression (supports +, -, *, /, parentheses)
-    private func evaluateMathExpression(_ expression: String) -> Double? {
-        // Use NSExpression for safe evaluation
-        let expression = NSExpression(format: expression)
-        if let result = expression.expressionValue(with: nil, context: nil) as? Double {
+    /// Evaluate a simple mathematical expression (supports +, -, *, /, parentheses).
+    /// Internal so unit tests can show a malformed formula returns nil instead of aborting.
+    ///
+    /// `NSExpression(format:)` throws an uncaught ObjC exception on invalid syntax
+    /// (`2.0%3.0`, `*3.25`, `""`). Only arithmetic text is passed through.
+    func evaluateMathExpression(_ expression: String) -> Double? {
+        let cleanedExpression = expression.replacingOccurrences(of: " ", with: "")
+        guard !cleanedExpression.isEmpty, SafeArithmeticExpression.isSafe(cleanedExpression) else { return nil }
+        let expr = NSExpression(format: cleanedExpression)
+        if let result = expr.expressionValue(with: nil, context: nil) as? Double {
             return result
-        } else if let result = expression.expressionValue(with: nil, context: nil) as? Int {
+        } else if let result = expr.expressionValue(with: nil, context: nil) as? Int {
             return Double(result)
         }
         return nil
     }
-    
+
     private func getFieldName(for textType: TextType) -> String {
         switch textType {
         case .price:

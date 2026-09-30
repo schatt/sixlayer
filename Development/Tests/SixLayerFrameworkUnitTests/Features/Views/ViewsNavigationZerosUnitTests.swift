@@ -17,7 +17,12 @@ struct ViewsNavigationZerosLogicUnitTests {
         #if os(iOS)
         #expect(placement == .bottomBar)
         #else
-        #expect(placement == .automatic)
+        // ToolbarItemPlacement is not Equatable on watchOS/tvOS; `.automatic` also
+        // binds to WindowLevel there, so name the type and compare its description.
+        #expect(
+            String(describing: placement)
+                == "ToolbarItemPlacement(role: SwiftUI.ToolbarItemPlacement.Role.automatic)"
+        )
         #endif
     }
 

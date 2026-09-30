@@ -11,6 +11,7 @@ This document provides guidance for AI assistants working with the SixLayer Fram
 ## 📚 Version-Specific Guides
 
 ### Latest Versions (Recommended)
+- **v8.6.2** — Patch release: form and OCR math evaluation return nil instead of aborting in `NSExpression` (#542, #544) (see [RELEASE_v8.6.2.md](RELEASE_v8.6.2.md))
 - **v8.6.1** — Patch release: `platformTap` follows XCUI availability (#510). macOS `click()` / `doubleClick()`; `PlatformXCUITapStrategy` removed (see [RELEASE_v8.6.1.md](RELEASE_v8.6.1.md))
 - **v8.6.0** — Minor release: forms product and primary-lane coverage (#403, #486, #507, #508, #522–#525; coverage #452, #468–#470, #490, #491, #499, #503, #510–#521) (see [RELEASE_v8.6.0.md](RELEASE_v8.6.0.md))
 - **[AI_AGENT_v8.6.0.md](AI_AGENT_v8.6.0.md)** - v8.6.0 minor notes; prior minor baseline [AI_AGENT_v8.5.0.md](AI_AGENT_v8.5.0.md)
