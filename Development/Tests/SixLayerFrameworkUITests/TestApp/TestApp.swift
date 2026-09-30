@@ -26,13 +26,22 @@ enum TestAppMacHostWindow {
     }
 
     @MainActor static func orderFrontOrCreateHostWindow() {
-        let keyable = NSApp.windows.filter { $0.canBecomeKey }
+        let keyable = NSApp.windows.filter(\.canBecomeKey)
         if !shouldCreateFallbackHostWindow(keyableWindowCount: keyable.count) {
             keyable.forEach { $0.makeKeyAndOrderFront(nil) }
             NSApp.activate(ignoringOtherApps: true)
             return
         }
-        guard let config = accessibilityConfiguration else { return }
+        let window = makeFallbackHostWindow()
+        window.center()
+        window.makeKeyAndOrderFront(nil)
+        NSApp.activate(ignoringOtherApps: true)
+    }
+
+    @MainActor private static func makeFallbackHostWindow() -> NSWindow {
+        guard let config = accessibilityConfiguration else {
+            fatalError("TestApp host window requested before accessibility configuration was installed")
+        }
         let window = NSWindow(
             contentRect: NSRect(x: 0, y: 0, width: 900, height: 700),
             styleMask: [.titled, .closable, .miniaturizable, .resizable],
@@ -46,9 +55,7 @@ enum TestAppMacHostWindow {
                 .environment(\.accessibilityIdentifierConfig, config)
                 .testAppHostRootSurface()
         )
-        window.center()
-        window.makeKeyAndOrderFront(nil)
-        NSApp.activate(ignoringOtherApps: true)
+        return window
     }
 }
 
