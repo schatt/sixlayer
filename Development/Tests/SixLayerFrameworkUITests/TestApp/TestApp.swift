@@ -12,12 +12,53 @@ import AppKit
 #endif
 
 #if os(macOS)
-/// XCUI launches can leave the host as a non-UI process with **zero windows** (#499).
-/// Force a regular activation policy and activate so `WindowGroup` presents content.
+/// XCUI launches can leave the host foreground with a menu bar and **zero windows**
+/// (#499, #539). Self-hosted `xcodebuild` does this even after activation in
+/// `applicationDidFinishLaunching`. Present the SwiftUI scene, and if that still
+/// yields no keyable window, host the same root in an AppKit window.
+enum TestAppMacHostWindow {
+    @MainActor static var accessibilityConfiguration: AccessibilityIdentifierConfig?
+
+    /// A presented `WindowGroup` already has a keyable window in a GUI session.
+    /// Create the AppKit host only when that scene produced none (#539).
+    @MainActor static func shouldCreateFallbackHostWindow(keyableWindowCount: Int) -> Bool {
+        keyableWindowCount == 0
+    }
+
+    @MainActor static func orderFrontOrCreateHostWindow() {
+        let keyable = NSApp.windows.filter { $0.canBecomeKey }
+        if !shouldCreateFallbackHostWindow(keyableWindowCount: keyable.count) {
+            keyable.forEach { $0.makeKeyAndOrderFront(nil) }
+            NSApp.activate(ignoringOtherApps: true)
+            return
+        }
+        guard let config = accessibilityConfiguration else { return }
+        let window = NSWindow(
+            contentRect: NSRect(x: 0, y: 0, width: 900, height: 700),
+            styleMask: [.titled, .closable, .miniaturizable, .resizable],
+            backing: .buffered,
+            defer: false
+        )
+        window.title = "SixLayer Test Host"
+        window.isReleasedWhenClosed = false
+        window.contentView = NSHostingView(
+            rootView: TestAppContentView()
+                .environment(\.accessibilityIdentifierConfig, config)
+                .testAppHostRootSurface()
+        )
+        window.center()
+        window.makeKeyAndOrderFront(nil)
+        NSApp.activate(ignoringOtherApps: true)
+    }
+}
+
 final class TestAppMacActivationDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.regular)
         NSApp.activate(ignoringOtherApps: true)
+        DispatchQueue.main.async {
+            TestAppMacHostWindow.orderFrontOrCreateHostWindow()
+        }
     }
 }
 #endif
@@ -34,6 +75,10 @@ struct TestApp: App {
     #endif
 
     init() {
+        #if os(macOS)
+        // Before the scene connects. didFinishLaunching is too late for WindowGroup (#539).
+        NSApplication.shared.setActivationPolicy(.regular)
+        #endif
         let suiteName = "SixLayer.Framework.UITestHost.AccessibilityIdentifier"
         UserDefaults.standard.removePersistentDomain(forName: suiteName)
         guard let defaults = UserDefaults(suiteName: suiteName) else {
@@ -54,6 +99,9 @@ struct TestApp: App {
             config.globalAutomaticAccessibilityIdentifiers = false
         }
         self.accessibilityIdentifierHostConfiguration = config
+        #if os(macOS)
+        TestAppMacHostWindow.accessibilityConfiguration = config
+        #endif
     }
 
     var body: some Scene {
@@ -64,6 +112,7 @@ struct TestApp: App {
         }
         #if os(macOS)
         .defaultSize(width: 900, height: 700)
+        .defaultLaunchBehavior(.presented)
         #endif
     }
 }
