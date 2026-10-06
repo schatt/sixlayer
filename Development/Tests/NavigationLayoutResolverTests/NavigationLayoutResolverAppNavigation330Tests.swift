@@ -38,10 +38,27 @@ struct NavigationLayoutResolverAppNavigation330Tests {
     }
 
     @Test
-    func appNavigationSidebarColumnSizing_allowsShrinkTowardIconRailFloor() {
+    func appNavigationSidebarColumnSizing_wideWindowMinFitsLabeledRows() {
+        // 800pt fits textSidebar (ideal ~200). macOS opens the column at `min`,
+        // so min must be the labeled floor — not the icon-rail floor (#549).
         let sizing = NavigationLayoutResolver.appNavigationSidebarColumnSizing(availableWidth: 800)
         #expect(sizing != nil)
-        #expect(sizing!.min == NavigationSidebarProfile.iconRail.minWidth)
+        let column = try! #require(sizing)
+        #expect(column.min >= NavigationSidebarProfile.textSidebar.minWidth)
+        #expect(column.min <= column.ideal)
+        #expect(column.ideal <= column.max)
+        #expect(column.min > NavigationSidebarProfile.iconRail.minWidth)
+    }
+
+    @Test
+    func appNavigationSidebarColumnSizing_iconRailFloorOnlyWhenLabelsDoNotFit() {
+        // 600pt budget leaves ~120 for the sidebar: below compactList, so icon rail.
+        let sizing = NavigationLayoutResolver.appNavigationSidebarColumnSizing(availableWidth: 600)
+        #expect(sizing != nil)
+        let column = try! #require(sizing)
+        #expect(column.ideal < NavigationSidebarProfile.compactList.minWidth)
+        #expect(column.min == NavigationSidebarProfile.iconRail.minWidth)
+        #expect(column.min <= column.ideal)
     }
 
     @Test
