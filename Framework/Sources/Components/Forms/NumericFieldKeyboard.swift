@@ -15,10 +15,16 @@ public enum NumericFieldKind: String, Sendable, Equatable {
 
 /// Pure keyboard selection for signed and unsigned numeric fields.
 public enum NumericFieldKeyboard {
-    /// Deliberate stub: always the decimal pad so tests fail until the matrix is implemented.
+    /// Off keeps the numeric pad for the field kind. On uses the only stock keyboard that includes a minus.
     public static func keyboardType(kind: NumericFieldKind, allowsNegative: Bool) -> PlatformKeyboardType {
-        _ = kind
-        _ = allowsNegative
-        return .decimalPad
+        if allowsNegative {
+            return .numbersAndPunctuation
+        }
+        switch kind {
+        case .number:
+            return .decimalPad
+        case .integer:
+            return .numberPad
+        }
     }
 }
