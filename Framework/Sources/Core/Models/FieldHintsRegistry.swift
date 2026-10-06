@@ -139,7 +139,7 @@ public class JSONFieldHintsStore: FieldHintsStore, @unchecked Sendable {
         let metadata = data["metadata"] as? [String: String] ?? [:]
         let isHidden = data["isHidden"] as? Bool ?? false
         let isEditable = data["isEditable"] as? Bool ?? true  // Defaults to true for backward compatibility
-        let allowsNegative = Self.parsedAllowsNegative(data["allowsNegative"])
+        let allowsNegative = FieldDisplayHints.allowsNegative(parsing: data["allowsNegative"])
         
         return FieldDisplayHints(
             // Type information (new)
@@ -207,19 +207,6 @@ public class JSONFieldHintsStore: FieldHintsStore, @unchecked Sendable {
         }
         
         return result
-    }
-
-    /// Off unless the stored value is JSON `true` or the string `"true"`.
-    private static func parsedAllowsNegative(_ value: Any?) -> Bool {
-        guard let value else { return false }
-        if let number = value as? NSNumber {
-            guard CFGetTypeID(number) == CFBooleanGetTypeID() else { return false }
-            return number.boolValue
-        }
-        if let string = value as? String {
-            return string == "true"
-        }
-        return false
     }
 }
 
