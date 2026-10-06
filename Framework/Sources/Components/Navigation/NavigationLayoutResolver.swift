@@ -305,8 +305,10 @@ public enum NavigationLayoutResolver {
         let profileIdeal = resolvedWidth(for: profile, availableWidth: availableWidth)
         let budgetIdeal = availableWidth - detailMin
         let ideal = min(profile.maxWidth, max(floor, min(profileIdeal, budgetIdeal)))
+        let renderedMin = activeSidebarRenderingProfile(columnIdealWidth: ideal).minWidth
+        let columnMin = min(ideal, max(floor, renderedMin))
         return NavigationSplitColumnSizing(
-            min: floor,
+            min: columnMin,
             ideal: ideal,
             max: profile.maxWidth
         )
