@@ -363,7 +363,7 @@ public final class FileBasedDataHintsLoader: DataHintsLoader, @unchecked Sendabl
                     if !["expectedLength", "displayWidth", "showCharacterCounter", "maxLength", "minLength", 
                          "expectedRange", "ocrHints", "calculationGroups", "inputType", "options",
                          "fieldType", "isOptional", "isArray", "defaultValue", "isHidden", "isEditable",
-                         "supportsOCR", "displayOCR", "isCalculated"].contains(propKey) &&
+                         "supportsOCR", "displayOCR", "isCalculated", "allowsNegative"].contains(propKey) &&
                        !propKey.hasPrefix("ocrHints.") {
                         if let stringValue = propValue as? String {
                             metadata[propKey] = stringValue
@@ -393,6 +393,7 @@ public final class FileBasedDataHintsLoader: DataHintsLoader, @unchecked Sendabl
                 // Parse isEditable flag (defaults to true for backward compatibility)
                 let isEditable = (properties["isEditable"] as? String) == "false" ||
                                (properties["isEditable"] as? Bool) == false ? false : true
+                let allowsNegative = parseAllowsNegative(from: properties)
                 
                 fieldHints[key] = FieldDisplayHints(
                     // Type information (new)
@@ -416,7 +417,8 @@ public final class FileBasedDataHintsLoader: DataHintsLoader, @unchecked Sendabl
                     inputType: inputType,
                     pickerOptions: pickerOptions,
                     isHidden: isHidden,
-                    isEditable: isEditable
+                    isEditable: isEditable,
+                    allowsNegative: allowsNegative
                 )
             }
         }
@@ -553,6 +555,19 @@ public final class FileBasedDataHintsLoader: DataHintsLoader, @unchecked Sendabl
         }
         return nil
     }
+
+    /// `allowsNegative` is off unless the hints value is JSON `true` or the string `"true"`.
+    private func parseAllowsNegative(from properties: [String: Any]) -> Bool {
+        guard let value = properties["allowsNegative"] else { return false }
+        if let number = value as? NSNumber {
+            guard CFGetTypeID(number) == CFBooleanGetTypeID() else { return false }
+            return number.boolValue
+        }
+        if let string = value as? String {
+            return string == "true"
+        }
+        return false
+    }
     
     /// Parse OCR hints with language-specific fallback: ocrHints.{language} -> ocrHints -> nil
     private func parseOCRHints(from properties: [String: Any], languageCode: String) -> [String]? {
@@ -679,7 +694,8 @@ public final class FileBasedDataHintsLoader: DataHintsLoader, @unchecked Sendabl
                 expectedRange: expectedRange,
                 metadata: properties,
                 inputType: inputType,
-                pickerOptions: pickerOptions
+                pickerOptions: pickerOptions,
+                allowsNegative: properties["allowsNegative"] == "true"
             )
         }
         
