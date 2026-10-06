@@ -178,6 +178,8 @@ public struct FieldDisplayHints: Sendable {
 
 **Not a FieldDisplayHints / `.hints` key:** `selectAllOnBeginEditing` is a **per-form** opt-in on `DynamicFormConfiguration`, `platformPresentFormData_L1`, and `IntelligentFormView.generateForm`. It is not a field property and must not be added to hints files.
 
+**`allowsNegative`:** field hint for `number` and `integer` fields. JSON `true` or `"true"` selects a keyboard that can type a minus (`.numbersAndPunctuation` on iOS). Omitted, `false`, or `"false"` keeps the decimal pad or number pad. See [Field Hints Complete Guide](FieldHintsCompleteGuide.md).
+
 **📚 For complete OCR hints, calculation groups, and value ranges documentation, see:**
 - **[Hints File OCR and Calculations Guide](HintsFileOCRAndCalculationsGuide.md)** - Complete guide to OCR hints, calculations, and value ranges in hints files
 
