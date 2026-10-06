@@ -557,6 +557,7 @@ public struct DynamicFormField: Identifiable {
         // Parse boolean flags
         let isHidden = metadata["isHidden"] == "true"
         let isEditable = metadata["isEditable"] != "false"  // Defaults to true
+        let allowsNegative = metadata["allowsNegative"] == "true"
         
         return FieldDisplayHints(
             // Type information (new)
@@ -577,7 +578,8 @@ public struct DynamicFormField: Identifiable {
             inputType: metadata["inputType"],
             pickerOptions: pickerOptions,
             isHidden: isHidden,
-            isEditable: isEditable
+            isEditable: isEditable,
+            allowsNegative: allowsNegative
         )
     }
     
@@ -707,6 +709,9 @@ public struct DynamicFormField: Identifiable {
         }
         if mergedMeta["isEditable"] == nil {
             mergedMeta["isEditable"] = hints.isEditable ? "true" : "false"
+        }
+        if mergedMeta["allowsNegative"] == nil {
+            mergedMeta["allowsNegative"] = hints.allowsNegative ? "true" : "false"
         }
         let finalMeta: [String: String]? = mergedMeta.isEmpty ? nil : mergedMeta
         return DynamicFormField(
