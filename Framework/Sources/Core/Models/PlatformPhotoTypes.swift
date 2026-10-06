@@ -232,7 +232,7 @@ public enum ImageFormat: String {
 // MARK: - Platform Keyboard Type
 
 /// Cross-platform keyboard types
-public enum PlatformKeyboardType: String, CaseIterable {
+public enum PlatformKeyboardType: String, CaseIterable, Sendable {
     case `default` = "default"
     case asciiCapable = "asciiCapable"
     case numbersAndPunctuation = "numbersAndPunctuation"
