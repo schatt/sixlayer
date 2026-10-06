@@ -393,7 +393,7 @@ public final class FileBasedDataHintsLoader: DataHintsLoader, @unchecked Sendabl
                 // Parse isEditable flag (defaults to true for backward compatibility)
                 let isEditable = (properties["isEditable"] as? String) == "false" ||
                                (properties["isEditable"] as? Bool) == false ? false : true
-                let allowsNegative = parseAllowsNegative(from: properties)
+                let allowsNegative = FieldDisplayHints.allowsNegative(parsing: properties["allowsNegative"])
                 
                 fieldHints[key] = FieldDisplayHints(
                     // Type information (new)
@@ -555,19 +555,6 @@ public final class FileBasedDataHintsLoader: DataHintsLoader, @unchecked Sendabl
         }
         return nil
     }
-
-    /// `allowsNegative` is off unless the hints value is JSON `true` or the string `"true"`.
-    private func parseAllowsNegative(from properties: [String: Any]) -> Bool {
-        guard let value = properties["allowsNegative"] else { return false }
-        if let number = value as? NSNumber {
-            guard CFGetTypeID(number) == CFBooleanGetTypeID() else { return false }
-            return number.boolValue
-        }
-        if let string = value as? String {
-            return string == "true"
-        }
-        return false
-    }
     
     /// Parse OCR hints with language-specific fallback: ocrHints.{language} -> ocrHints -> nil
     private func parseOCRHints(from properties: [String: Any], languageCode: String) -> [String]? {
@@ -695,7 +682,7 @@ public final class FileBasedDataHintsLoader: DataHintsLoader, @unchecked Sendabl
                 metadata: properties,
                 inputType: inputType,
                 pickerOptions: pickerOptions,
-                allowsNegative: properties["allowsNegative"] == "true"
+                allowsNegative: FieldDisplayHints.allowsNegative(parsing: properties["allowsNegative"])
             )
         }
         
