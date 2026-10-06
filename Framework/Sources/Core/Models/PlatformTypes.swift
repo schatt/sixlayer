@@ -1248,6 +1248,19 @@ public struct FieldDisplayHints: Sendable {
         self.isEditable = isEditable
         self.allowsNegative = allowsNegative
     }
+
+    /// JSON `true` or the string `"true"`. A missing value and every other value are off.
+    static func allowsNegative(parsing value: Any?) -> Bool {
+        guard let value else { return false }
+        if let number = value as? NSNumber {
+            guard CFGetTypeID(number) == CFBooleanGetTypeID() else { return false }
+            return number.boolValue
+        }
+        if let string = value as? String {
+            return string == "true"
+        }
+        return false
+    }
     
     /// Get display width as CGFloat if a specific numeric value is provided
     public func displayWidthValue() -> CGFloat? {
