@@ -1195,6 +1195,11 @@ public struct FieldDisplayHints: Sendable {
     /// Useful for computed/calculated fields that should be visible but not editable
     /// Defaults to true for backward compatibility
     public let isEditable: Bool
+
+    /// Whether a number or integer field should offer a keyboard that can type a minus sign.
+    /// Off uses the decimal pad or number pad. On uses numbers and punctuation.
+    /// Defaults to false.
+    public let allowsNegative: Bool
     
     public init(
         // Type information (new - optional for backward compatibility)
@@ -1218,7 +1223,8 @@ public struct FieldDisplayHints: Sendable {
         inputType: String? = nil,
         pickerOptions: [PickerOption]? = nil,
         isHidden: Bool = false,
-        isEditable: Bool = true
+        isEditable: Bool = true,
+        allowsNegative: Bool = false
     ) {
         self.fieldType = fieldType
         self.isOptional = isOptional
@@ -1240,6 +1246,20 @@ public struct FieldDisplayHints: Sendable {
         self.pickerOptions = pickerOptions
         self.isHidden = isHidden
         self.isEditable = isEditable
+        self.allowsNegative = allowsNegative
+    }
+
+    /// JSON `true` or the string `"true"`. A missing value and every other value are off.
+    static func allowsNegative(parsing value: Any?) -> Bool {
+        guard let value else { return false }
+        if let number = value as? NSNumber {
+            guard CFGetTypeID(number) == CFBooleanGetTypeID() else { return false }
+            return number.boolValue
+        }
+        if let string = value as? String {
+            return string == "true"
+        }
+        return false
     }
     
     /// Get display width as CGFloat if a specific numeric value is provided

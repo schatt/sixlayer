@@ -1036,7 +1036,12 @@ public struct DynamicNumberField: View {
             .platformTextFieldStyle()
             .selectAllTextOnBeginEditingIfFormOptedIn()
             #if os(iOS)
-            .keyboardType(UIKeyboardType.decimalPad)
+            .keyboardType(
+                NumericFieldKeyboard.keyboardType(
+                    kind: .number,
+                    allowsNegative: field.displayHints?.allowsNegative == true
+                ).uiKeyboardType
+            )
             #endif
             .automaticComplianceForDynamicFormField(field, identifierElementType: "TextField")
         }, componentName: "DynamicNumberField")
@@ -1062,7 +1067,12 @@ public struct DynamicIntegerField: View {
             .platformTextFieldStyle()
             .selectAllTextOnBeginEditingIfFormOptedIn()
             #if os(iOS)
-            .keyboardType(UIKeyboardType.numberPad)
+            .keyboardType(
+                NumericFieldKeyboard.keyboardType(
+                    kind: .integer,
+                    allowsNegative: field.displayHints?.allowsNegative == true
+                ).uiKeyboardType
+            )
             #endif
             .automaticComplianceForDynamicFormField(field, identifierElementType: "TextField")
         }, componentName: "DynamicIntegerField")
