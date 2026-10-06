@@ -1,5 +1,5 @@
 // swift-tools-version: 6.0
-// SixLayerFramework v8.6.2 - Patch: form and OCR math evaluation no longer abort (#542, #544)
+// SixLayerFramework v8.6.3 - Patch: macOS app-nav sidebar column min matches the rendered profile (#549)
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
