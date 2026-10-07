@@ -7,7 +7,7 @@ import SwiftUI
 /// that gutter consumes the title, so the label clips.
 public enum SidebarLabeledTextTrailingInset {
     /// Gap after the title. Kept modest so the label stays inside the column.
-    public static let points: CGFloat = 48
+    public static let points: CGFloat = 8
 
     public static let leading: CGFloat = 10
     public static let vertical: CGFloat = 2
