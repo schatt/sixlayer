@@ -1,5 +1,5 @@
 // swift-tools-version: 6.0
-// SixLayerFramework v8.6.3 - Patch: macOS app-nav sidebar column min matches the rendered profile (#549)
+// SixLayerFramework v8.6.4 - Patch: modest trailing inset on macOS full-text sidebar labels (#552)
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
