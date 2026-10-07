@@ -87,7 +87,8 @@ let package = Package(
         .testTarget(
             name: "NavigationLayoutResolverTests",
             dependencies: [
-                "SixLayerFramework"
+                "SixLayerFramework",
+                .product(name: "ViewInspector", package: "ViewInspector")
             ],
             path: "Development/Tests/NavigationLayoutResolverTests"
         ),
