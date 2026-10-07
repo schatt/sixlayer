@@ -384,6 +384,7 @@ public extension View {
             identifierLabel: title,
             accessibilitySortPriority: 5.0  // Issue #165: Navigation elements have medium priority
         )
+        .platformSidebarLabeledRowInsets()
     }
     
 
