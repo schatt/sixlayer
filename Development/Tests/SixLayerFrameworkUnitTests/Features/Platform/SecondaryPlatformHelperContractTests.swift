@@ -28,20 +28,10 @@ struct SecondaryPlatformHelperContractTests {
         let view = EmptyView().platformFormContainer {
             Text("FormOwnedMarker")
         }
-        if Self.hostsPlatformViews {
-            #expect(
-                PlatformContainerStructureAssertions.containsForm(view),
-                "platformFormContainer should wrap content in Form"
-            )
-        } else {
-            #expect(!PlatformContainerStructureAssertions.isHostable(view))
-            #if os(visionOS)
-            #expect(
-                PlatformContainerStructureAssertions.containsForm(view),
-                "platformFormContainer should wrap content in Form"
-            )
-            #endif
-        }
+        expectStructure(
+            view,
+            PlatformContainerStructureAssertions.containsForm(view)
+        )
     }
 
     @Test @MainActor func testPlatformSectionContainer_ContainsSection() {
@@ -50,53 +40,45 @@ struct SecondaryPlatformHelperContractTests {
                 Text("SectionRowMarker")
             }
         }
-        if Self.hostsPlatformViews {
-            #expect(
-                PlatformContainerStructureAssertions.containsSection(view),
-                "no-header platformSectionContainer should use Section inside platformFormContainer"
-            )
-        } else {
-            #expect(!PlatformContainerStructureAssertions.isHostable(view))
-            #if os(visionOS)
-            #expect(
-                PlatformContainerStructureAssertions.containsSection(view),
-                "no-header platformSectionContainer should use Section inside platformFormContainer"
-            )
-            #endif
-        }
+        expectStructure(
+            view,
+            PlatformContainerStructureAssertions.containsSection(view)
+        )
     }
 
     @Test @MainActor func testPlatformGroupedInsetContainer_IsVStackWithoutSection() {
         let view = EmptyView().platformGroupedInsetContainer {
             Text("InsetMarker")
         }
-        if Self.hostsPlatformViews {
-            #expect(
-                PlatformContainerStructureAssertions.containsVStackWithoutSection(view),
-                "platformGroupedInsetContainer should use VStack for inset grouping without Section"
-            )
-        } else {
-            #expect(!PlatformContainerStructureAssertions.isHostable(view))
-            #if os(visionOS)
-            #expect(
-                PlatformContainerStructureAssertions.containsVStackWithoutSection(view),
-                "platformGroupedInsetContainer should use VStack for inset grouping without Section"
-            )
-            #endif
-        }
+        expectStructure(
+            view,
+            PlatformContainerStructureAssertions.containsVStackWithoutSection(view)
+        )
     }
 
     @Test @MainActor func testDropInTextField_IsHostable() {
-        let text = State(initialValue: "")
-        let view = platformTextField("Enter name", text: text.projectedValue)
+        let view = platformTextField("Enter name", text: .constant(""))
         #expect(PlatformContainerStructureAssertions.isHostable(view) == Self.hostsPlatformViews)
     }
 
     @Test @MainActor func testDropInToggleAndButton_AreHostable() {
-        let isOn = State(initialValue: false)
-        let toggle = platformToggle("Enable notifications", isOn: isOn.projectedValue)
+        let toggle = platformToggle("Enable notifications", isOn: .constant(false))
         let button = platformButton(label: "Save") { }
         #expect(PlatformContainerStructureAssertions.isHostable(toggle) == Self.hostsPlatformViews)
         #expect(PlatformContainerStructureAssertions.isHostable(button) == Self.hostsPlatformViews)
+    }
+
+    /// watchOS only checks that hosting is unavailable. visionOS still checks structure
+    /// because that path does not need a window. Other platforms require a hosted match.
+    @MainActor
+    private func expectStructure<V: View>(_ view: V, _ matches: Bool) {
+        #if os(watchOS)
+        #expect(!PlatformContainerStructureAssertions.isHostable(view))
+        #else
+        #expect(matches)
+        if !Self.hostsPlatformViews {
+            #expect(!PlatformContainerStructureAssertions.isHostable(view))
+        }
+        #endif
     }
 }
