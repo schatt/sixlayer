@@ -27,29 +27,14 @@ public enum SidebarLabeledTextTrailingInset {
     }
 }
 
-struct SidebarLabeledRowInsetsModifier: ViewModifier {
-    func body(content: Content) -> some View {
-        if let insets = SidebarLabeledTextTrailingInset.rowInsets(for: .current) {
-            content.listRowInsets(insets)
-        } else {
-            content
-        }
-    }
-}
-
 public extension View {
     /// Modest trailing inset for a full-text sidebar row on macOS (#552).
-    ///
-    /// `nonisolated` so it is visible on the opaque `some View` returned by
-    /// `automaticCompliance` (also nonisolated). A MainActor-isolated method
-    /// is not a member of that opaque type.
-    nonisolated func platformSidebarLabeledRowInsets() -> some View {
-        modifier(SidebarLabeledRowInsetsModifier())
+    @ViewBuilder
+    func platformSidebarLabeledRowInsets() -> some View {
+        if let insets = SidebarLabeledTextTrailingInset.rowInsets(for: .current) {
+            self.listRowInsets(insets)
+        } else {
+            self
+        }
     }
-}
-
-/// Applies the sidebar row inset when the receiver is an opaque `some View`.
-/// Member lookup on that opaque type does not see `platformSidebarLabeledRowInsets`.
-nonisolated func applySidebarLabeledRowInsets<V: View>(_ view: V) -> some View {
-    view.modifier(SidebarLabeledRowInsetsModifier())
 }
