@@ -1,7 +1,9 @@
 import CoreGraphics
 import SwiftUI
 import Testing
+#if canImport(ViewInspector)
 import ViewInspector
+#endif
 @testable import SixLayerFramework
 
 /// Full-text sidebar labels keep a modest trailing inset (#552).
@@ -21,6 +23,7 @@ struct SidebarLabeledTextTrailingInsetTests {
         #expect(row.leading <= 16)
     }
 
+    #if canImport(ViewInspector)
     @Test @MainActor
     func navigationButtonAppliesModestTrailingInset() throws {
         let view = EmptyView().platformNavigationButton_L4(
@@ -34,6 +37,7 @@ struct SidebarLabeledTextTrailingInsetTests {
         #expect(insets.trailing == SidebarLabeledTextTrailingInset.points)
         #expect(insets.trailing <= insets.leading)
     }
+    #endif
 
     @Test
     func nonMacPlatformsKeepTheSystemRowInset() {
