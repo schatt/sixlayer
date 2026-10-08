@@ -27,7 +27,7 @@ public enum SidebarLabeledTextTrailingInset {
     }
 }
 
-private struct SidebarLabeledRowInsetsModifier: ViewModifier {
+struct SidebarLabeledRowInsetsModifier: ViewModifier {
     func body(content: Content) -> some View {
         if let insets = SidebarLabeledTextTrailingInset.rowInsets(for: .current) {
             content.listRowInsets(insets)
@@ -46,4 +46,10 @@ public extension View {
     nonisolated func platformSidebarLabeledRowInsets() -> some View {
         modifier(SidebarLabeledRowInsetsModifier())
     }
+}
+
+/// Applies the sidebar row inset when the receiver is an opaque `some View`.
+/// Member lookup on that opaque type does not see `platformSidebarLabeledRowInsets`.
+nonisolated func applySidebarLabeledRowInsets<V: View>(_ view: V) -> some View {
+    view.modifier(SidebarLabeledRowInsetsModifier())
 }
