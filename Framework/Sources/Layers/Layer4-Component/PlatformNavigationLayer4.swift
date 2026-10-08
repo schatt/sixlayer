@@ -367,7 +367,7 @@ public extension View {
         accessibilityHint: String,
         action: @escaping () -> Void
     ) -> some View {
-        let row = Button(action: action) {
+        Button(action: action) {
             // Package platforms require macOS 15+ — Label is unconditional (#340).
             Label(title, systemImage: systemImage)
                 .foregroundColor(.primary)
@@ -384,8 +384,7 @@ public extension View {
             identifierLabel: title,
             accessibilitySortPriority: 5.0  // Issue #165: Navigation elements have medium priority
         )
-        // Opaque `some View` from automaticCompliance does not see the inset member.
-        return applySidebarLabeledRowInsets(row)
+        .platformSidebarLabeledRowInsets()
     }
     
 
