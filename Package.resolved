@@ -1,13 +1,13 @@
 {
-  "originHash" : "239934093dc69e107cb220eca9e5bdac23fb032f9d6fd95143235049186caf51",
+  "originHash" : "fe2bbbeed12fb2a8de8c982aa50bee6a1a2488e9173aeb1c97eba1222372553a",
   "pins" : [
     {
       "identity" : "viewinspector",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/schatt/ViewInspector",
+      "location" : "https://github.com/nalexn/ViewInspector",
       "state" : {
-        "revision" : "f110d97d84f7a3a2fe89b897d63c814c538f695e",
-        "version" : "0.10.4"
+        "revision" : "2dacb6e514be19379c605a5a11564d0f3fea89d9",
+        "version" : "0.10.5"
       }
     }
   ],
