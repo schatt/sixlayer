@@ -27,9 +27,7 @@ public enum SidebarLabeledTextTrailingInset {
     }
 }
 
-/// Applies the macOS sidebar label inset. A `ViewModifier` keeps the call site
-/// type-checkable: a `@ViewBuilder` that returns `self` on the no-op branch cannot
-/// be resolved when chained after `automaticCompliance` on visionOS (#380, #552).
+/// Applies the macOS sidebar label inset without a ViewBuilder branch that returns `self`.
 private struct SidebarLabeledRowInsetModifier: ViewModifier {
     @ViewBuilder
     func body(content: Content) -> some View {
