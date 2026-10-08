@@ -150,7 +150,7 @@ RuntimeCapabilityDetection.clearAllCapabilityOverrides()
 | macOS    | ❌    | ❌     | ✅    | ❌        | ❌            | ❌             |
 | watchOS  | ✅    | ✅     | ❌    | ❌        | ❌            | ❌             |
 | tvOS     | ❌    | ❌     | ❌    | ❌        | ❌            | ❌             |
-| visionOS | ✅    | ✅     | ✅    | ❌        | ❌            | ❌             |
+| visionOS | ❌    | ❌     | ✅    | ❌        | ❌            | ❌             |
 
 ### Runtime Detection (Used in Production)
 
@@ -158,7 +158,7 @@ RuntimeCapabilityDetection.clearAllCapabilityOverrides()
 - **macOS**: Supports hover by default, touch only with third-party drivers or override
 - **watchOS**: Supports touch and haptic feedback
 - **tvOS**: Limited capabilities
-- **visionOS**: Supports touch, haptic, and hover
+- **visionOS**: Hover via hand tracking. Not a touchscreen and no native haptics (`detectvisionOSTouchSupport` / `detectvisionOSHapticSupport`). View modifiers for secondary platforms branch on [PlatformModifierCapabilityMatrix.md](PlatformModifierCapabilityMatrix.md) (#448), not a cloned iOS modifier.
 
 ## Override System
 

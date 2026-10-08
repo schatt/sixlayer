@@ -66,6 +66,8 @@ Welcome to the SixLayer Framework documentation. This directory contains compreh
 
 ### 📱 Platform-Specific
 - **[keyboard-consistency-guidelines.md](keyboard-consistency-guidelines.md)** - Cross-platform keyboard handling
+- **[PlatformModifierCapabilityMatrix.md](PlatformModifierCapabilityMatrix.md)** - Secondary-platform modifiers branch on capabilities (#448)
+- **[RuntimeCapabilityDetectionGuide.md](RuntimeCapabilityDetectionGuide.md)** - Runtime touch, hover, and haptic detection
 
 
 ## 🎯 Quick Navigation
