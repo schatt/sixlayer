@@ -143,7 +143,7 @@ public struct PlatformModifierCapabilityMatrix: Equatable, Sendable {
     /// - spatial: `platform == .visionOS` (no runtime probe)
     /// - pointer: macOS or visionOS hover. iOS pencil hover stays on `hover` only
     /// - pullToRefresh: touch on iOS or macOS. watchOS touch does not imply it
-    /// - swipe: touch, except tvOS where `DragGesture` is unavailable (#237)
+    /// - swipe: touch. tvOS still skips: `DragGesture` is not in that SDK (#237)
     public static func resolved(_ reading: PlatformModifierCapabilityReading) -> PlatformModifierCapabilityMatrix {
         let platform = reading.platform
         let touch = reading.supportsTouch
@@ -157,7 +157,7 @@ public struct PlatformModifierCapabilityMatrix: Equatable, Sendable {
             keyboard: reading.supportsKeyboardNavigation,
             spatial: platform == .visionOS,
             touch: touch,
-            swipe: touch && platform != .tvOS
+            swipe: touch
         )
     }
 
