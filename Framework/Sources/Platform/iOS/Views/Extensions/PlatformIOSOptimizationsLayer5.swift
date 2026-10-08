@@ -1,9 +1,10 @@
 import SwiftUI
 
 // MARK: - Platform iOS Optimizations Layer 5: Platform-Specific Enhancements
-/// This layer provides iOS-specific optimizations and enhancements that
-/// leverage iOS platform capabilities. This layer handles platform-specific
-/// features like haptics, iOS-specific navigation, and iOS-only UI patterns.
+/// iOS-named wrappers. Where the SDK symbol is missing, other platforms return `self`.
+/// New visionOS, tvOS, and watchOS modifiers branch on `PlatformModifierCapabilityMatrix` (#448).
+/// Do not copy these bodies onto secondary platforms.
+/// This layer handles platform-specific features like haptics, iOS-specific navigation, and iOS-only UI patterns.
 
 /// Direction recognized by `platformIOSSwipeGestures` thresholds (±100 primary, ±50 reject band).
 public enum PlatformIOSSwipeDirection: Equatable {

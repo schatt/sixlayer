@@ -13,13 +13,11 @@ enum SixLayerHaptic {
         supported ? requested : nil
     }
 
-    /// Fires platform haptic feedback when the capability is present; no-op otherwise.
+    /// Fires platform haptic feedback when the capability matrix says haptics apply; no-op otherwise.
     @MainActor
     static func trigger(_ requested: PlatformHapticFeedback) {
-        guard let feedback = resolvedFeedback(
-            requested,
-            supported: RuntimeCapabilityDetection.supportsHapticFeedback
-        ) else {
+        let hapticsApply = PlatformModifierCapabilityMatrix.current.branch(for: .haptics) == .apply
+        guard let feedback = resolvedFeedback(requested, supported: hapticsApply) else {
             return
         }
         fire(feedback)
