@@ -20,7 +20,38 @@ import UIKit
 /// Cheap, truthful structural assertions for platform container helpers (Issue #219).
 public enum PlatformContainerStructureAssertions {
 
+    /// Hosting or type-name result. `.unavailable` means this lane did not look
+    /// (watchOS has no hosting controller — #379). That is not an observed `false`.
+    public enum ContainerStructureObservation: Equatable {
+        case observed(Bool)
+        case unavailable
+    }
+
     // MARK: - Public API
+
+    /// Stub: wrong on purpose so #379 tests fail at runtime until the lane contract lands.
+    @MainActor
+    public static func observeHostability<V: View>(_: V) -> ContainerStructureObservation {
+        .observed(false)
+    }
+
+    /// Stub: wrong on purpose so #379 tests fail at runtime until the lane contract lands.
+    @MainActor
+    public static func observeContainsForm<V: View>(_: V) -> ContainerStructureObservation {
+        .observed(false)
+    }
+
+    /// Stub: wrong on purpose so #379 tests fail at runtime until the lane contract lands.
+    @MainActor
+    public static func observeContainsSection<V: View>(_: V) -> ContainerStructureObservation {
+        .observed(false)
+    }
+
+    /// Stub: wrong on purpose so #379 tests fail at runtime until the lane contract lands.
+    @MainActor
+    public static func observeContainsVStackWithoutSection<V: View>(_: V) -> ContainerStructureObservation {
+        .observed(false)
+    }
 
     /// Returns whether `view` hosts a SwiftUI `Form` (directly or via `platformFormContainer`).
     @MainActor
