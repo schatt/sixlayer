@@ -14,9 +14,10 @@ import Testing
 @Suite("Secondary platform helper contracts", HostedViewTestIsolationTrait())
 struct SecondaryPlatformHelperContractTests {
 
-    /// watchOS unit tests have no UIHostingController harness (#379).
+    /// watchOS has no UIHostingController harness (#379). visionOS unit tests have no
+    /// UIWindowScene, so `hostRootPlatformView` returns nil instead of hanging (#380).
     private static var hostsPlatformViews: Bool {
-        #if os(watchOS)
+        #if os(watchOS) || os(visionOS)
         false
         #else
         true
@@ -34,6 +35,12 @@ struct SecondaryPlatformHelperContractTests {
             )
         } else {
             #expect(!PlatformContainerStructureAssertions.isHostable(view))
+            #if os(visionOS)
+            #expect(
+                PlatformContainerStructureAssertions.containsForm(view),
+                "platformFormContainer should wrap content in Form"
+            )
+            #endif
         }
     }
 
@@ -50,6 +57,12 @@ struct SecondaryPlatformHelperContractTests {
             )
         } else {
             #expect(!PlatformContainerStructureAssertions.isHostable(view))
+            #if os(visionOS)
+            #expect(
+                PlatformContainerStructureAssertions.containsSection(view),
+                "no-header platformSectionContainer should use Section inside platformFormContainer"
+            )
+            #endif
         }
     }
 
@@ -64,6 +77,12 @@ struct SecondaryPlatformHelperContractTests {
             )
         } else {
             #expect(!PlatformContainerStructureAssertions.isHostable(view))
+            #if os(visionOS)
+            #expect(
+                PlatformContainerStructureAssertions.containsVStackWithoutSection(view),
+                "platformGroupedInsetContainer should use VStack for inset grouping without Section"
+            )
+            #endif
         }
     }
 
