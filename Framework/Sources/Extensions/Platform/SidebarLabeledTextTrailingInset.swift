@@ -40,9 +40,10 @@ private struct SidebarLabeledRowInsetsModifier: ViewModifier {
 public extension View {
     /// Modest trailing inset for a full-text sidebar row on macOS (#552).
     ///
-    /// A `ViewModifier` (not a `@ViewBuilder` method) so this chains on opaque
-    /// `some View` results such as `automaticCompliance`.
-    func platformSidebarLabeledRowInsets() -> some View {
+    /// `nonisolated` so it is visible on the opaque `some View` returned by
+    /// `automaticCompliance` (also nonisolated). A MainActor-isolated method
+    /// is not a member of that opaque type.
+    nonisolated func platformSidebarLabeledRowInsets() -> some View {
         modifier(SidebarLabeledRowInsetsModifier())
     }
 }
