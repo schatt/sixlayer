@@ -384,9 +384,8 @@ public extension View {
             identifierLabel: title,
             accessibilitySortPriority: 5.0  // Issue #165: Navigation elements have medium priority
         )
-        // Named binding: chaining this modifier on the opaque `some View` from
-        // `automaticCompliance` fails type checking ("without a contextual type").
-        return row.platformSidebarLabeledRowInsets()
+        // Opaque `some View` from automaticCompliance does not see the inset member.
+        return applySidebarLabeledRowInsets(row)
     }
     
 
