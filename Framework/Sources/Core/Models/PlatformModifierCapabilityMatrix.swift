@@ -3,7 +3,8 @@
 //  SixLayerFramework
 //
 //  Capability spine for secondary-platform View modifiers (GitHub #448).
-//  Deliberate stub: branches are wrong until the contract is implemented.
+//  Branch on this matrix. Use `#if` only when `apiUnavailable` is true.
+//  When the branch is `.stubIdentity`, return `self` — do not clone an iOS modifier.
 //
 
 import Foundation
@@ -135,18 +136,28 @@ public struct PlatformModifierCapabilityMatrix: Equatable, Sendable {
         self.swipe = swipe
     }
 
-    /// Wrong on purpose (#448 red). Real resolution lands in the green commit.
+    /// Resolve modifier capabilities from detection inputs.
+    ///
+    /// - touch, hover, haptics: passed through from `RuntimeCapabilityDetection`
+    /// - keyboard: `SixLayerPlatform.supportsKeyboardNavigation` (macOS, tvOS)
+    /// - spatial: `platform == .visionOS` (no runtime probe)
+    /// - pointer: macOS or visionOS hover. iOS pencil hover stays on `hover` only
+    /// - pullToRefresh: touch on iOS or macOS. watchOS touch does not imply it
+    /// - swipe: touch, except tvOS where `DragGesture` is unavailable (#237)
     public static func resolved(_ reading: PlatformModifierCapabilityReading) -> PlatformModifierCapabilityMatrix {
-        PlatformModifierCapabilityMatrix(
-            platform: reading.platform,
-            pointer: false,
-            hover: false,
-            haptics: false,
-            pullToRefresh: false,
-            keyboard: false,
-            spatial: false,
-            touch: false,
-            swipe: false
+        let platform = reading.platform
+        let touch = reading.supportsTouch
+        let hover = reading.supportsHover
+        return PlatformModifierCapabilityMatrix(
+            platform: platform,
+            pointer: (platform == .macOS || platform == .visionOS) && hover,
+            hover: hover,
+            haptics: reading.supportsHapticFeedback,
+            pullToRefresh: touch && (platform == .iOS || platform == .macOS),
+            keyboard: reading.supportsKeyboardNavigation,
+            spatial: platform == .visionOS,
+            touch: touch,
+            swipe: touch && platform != .tvOS
         )
     }
 
@@ -176,18 +187,41 @@ public struct PlatformModifierCapabilityMatrix: Equatable, Sendable {
         }
     }
 
-    /// Wrong on purpose: every capability stubs, including ones whose API is missing.
+    /// Apply when the capability is on and the API exists; skip when the SDK lacks the API; otherwise identity.
     public func branch(for capability: PlatformModifierCapability) -> PlatformModifierBranch {
-        _ = capability
+        if Self.apiUnavailable(capability, on: platform) {
+            return .skipUnavailableAPI
+        }
+        if supports(capability) {
+            return .apply
+        }
         return .stubIdentity
     }
 
+    /// SwiftUI API for `capability` is missing on `platform`.
+    /// Unit lanes skip the observation. Do not compile an iOS clone under `#else`.
     public static func apiUnavailable(
         _ capability: PlatformModifierCapability,
         on platform: SixLayerPlatform
     ) -> Bool {
-        _ = capability
-        _ = platform
-        return false
+        switch capability {
+        case .swipe:
+            // DragGesture-based swipe is unavailable on tvOS (#237).
+            return platform == .tvOS
+        case .pullToRefresh:
+            // `refreshable` is not in the watchOS or tvOS SDK.
+            return platform == .tvOS || platform == .watchOS
+        case .spatial:
+            return platform != .visionOS
+        case .hover, .pointer:
+            // `onHover` is not in the watchOS or tvOS SDK.
+            return platform == .tvOS || platform == .watchOS
+        case .keyboard:
+            // watchOS has no keyboard-shortcut or focus-navigation API.
+            // tvOS keyboard means the focus engine, which is present.
+            return platform == .watchOS
+        case .haptics, .touch:
+            return false
+        }
     }
 }
