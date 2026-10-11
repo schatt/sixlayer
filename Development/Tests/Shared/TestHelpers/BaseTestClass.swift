@@ -314,7 +314,8 @@ open class BaseTestClass {
                 "View should be hostable for \(testName); \(detail)"
             )
         case .unavailable:
-            // watchOS unit lane cannot host (#379). Do not treat that as "not hostable".
+            // watchOS has no hosting controller (#379). visionOS unit tests have no
+            // UIWindowScene (#380). Either way the lane did not look.
             break
         }
     }
