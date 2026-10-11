@@ -45,9 +45,9 @@ settings:
 
 packages:
   ViewInspector:
-    url: https://github.com/schatt/ViewInspector
-    # Temporary fork tag (#438): nalexn has no 0.10.4 tag; switch back in #439.
-    from: "0.10.4"
+    url: https://github.com/nalexn/ViewInspector
+    # Tag 0.10.5 (2dacb6e). Branch 0.10.6 is that commit; no 0.10.6 tag (#439).
+    from: "0.10.5"
 
 targets:
   # Main framework target - supports both iOS and macOS

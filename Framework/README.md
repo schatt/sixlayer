@@ -817,7 +817,7 @@ dependencies: [
 ]
 ```
 
-`from:` version requirements work for SixLayer again (#438). Do not pin SixLayer by revision for the ViewInspector branch. The transitive ViewInspector pin is `schatt/ViewInspector` 0.10.4 until nalexn tags a GeometryProxy-safe release (#439).
+`from:` version requirements work for SixLayer (#438). Transitive ViewInspector is [`nalexn/ViewInspector`](https://github.com/nalexn/ViewInspector) `from: "0.10.5"` (#439). Consumers that declare ViewInspector themselves must use that same URL.
 
 ### Manual Installation
 
