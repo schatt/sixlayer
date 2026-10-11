@@ -27,14 +27,21 @@ public enum SidebarLabeledTextTrailingInset {
     }
 }
 
+/// Applies the macOS sidebar label inset without a ViewBuilder branch that returns `self`.
+private struct SidebarLabeledRowInsetModifier: ViewModifier {
+    @ViewBuilder
+    func body(content: Content) -> some View {
+        if let insets = SidebarLabeledTextTrailingInset.rowInsets(for: .current) {
+            content.listRowInsets(insets)
+        } else {
+            content
+        }
+    }
+}
+
 public extension View {
     /// Modest trailing inset for a full-text sidebar row on macOS (#552).
-    @ViewBuilder
     func platformSidebarLabeledRowInsets() -> some View {
-        if let insets = SidebarLabeledTextTrailingInset.rowInsets(for: .current) {
-            self.listRowInsets(insets)
-        } else {
-            self
-        }
+        modifier(SidebarLabeledRowInsetModifier())
     }
 }

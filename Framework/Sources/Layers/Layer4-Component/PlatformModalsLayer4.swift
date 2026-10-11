@@ -66,38 +66,41 @@ public extension View {
         )
     }
 
-    /// Platform-specific settings dismissal for embedded navigation
-    /// Handles dismissal when settings are presented as embedded views in navigation
+    /// Platform-specific settings dismissal for embedded navigation.
+    /// Applying this modifier does not run `onClose`.
+    /// The close control runs `onClose` when activated.
     func platformDismissEmbeddedSettings(
         onClose: @escaping () -> Void
     ) -> some View {
-        #if os(macOS)
-        // For embedded navigation, just trigger the onClose callback
-        // This prevents window closing in single-window architecture
-        // Note: onAppear removed as it was unused
-        #else
-        // iOS handles this through navigation state
-        #endif
-        
-        return self
+        settingsDismissControl(
+            accessibilityIdentifier: "platformDismissEmbeddedSettings.close",
+            action: onClose
+        )
     }
 
-    /// Platform-specific settings dismissal for sheet presentation
-    /// Handles dismissal when settings are presented as sheets
+    /// Platform-specific settings dismissal for sheet presentation.
+    /// Applying this modifier does not dismiss.
+    /// The dismiss control calls `presentationMode.dismiss()` when activated.
     func platformDismissSheetSettings(
         presentationMode: Binding<PresentationMode>
     ) -> some View {
-        #if os(macOS)
-        // For sheet presentation, dismiss the sheet
-        // Note: onAppear removed as it was unused - use direct dismissal instead
-        if presentationMode.wrappedValue.isPresented {
-            presentationMode.wrappedValue.dismiss()
+        settingsDismissControl(
+            accessibilityIdentifier: "platformDismissSheetSettings.dismiss",
+            action: { presentationMode.wrappedValue.dismiss() }
+        )
+    }
+
+    /// Explicit Done control. Construction must not run `action`.
+    private func settingsDismissControl(
+        accessibilityIdentifier: String,
+        action: @escaping () -> Void
+    ) -> some View {
+        overlay(alignment: .topTrailing) {
+            Button(action: action) {
+                Text(InternationalizationService().localizedString(for: "SixLayerFramework.button.done"))
+            }
+            .accessibilityIdentifier(accessibilityIdentifier)
         }
-        #else
-        // iOS handles this through presentationMode
-        #endif
-        
-        return self
     }
 
     /// Settings shown in their own window.

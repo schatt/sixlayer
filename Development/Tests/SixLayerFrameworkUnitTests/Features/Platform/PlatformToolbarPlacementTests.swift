@@ -4,7 +4,7 @@ import SwiftUI
 
 //
 //  PlatformToolbarPlacementTests.swift
-//  SixLayerFrameworkUITests
+//  SixLayerFrameworkUnitTests
 //
 //  BUSINESS PURPOSE:
 //  Validates the platform toolbar placement helper functions that abstract toolbar
@@ -12,6 +12,7 @@ import SwiftUI
 //
 //  Issue #219 — one test per API with real platform-branch expects (no Bool(true) else no-ops).
 //  ToolbarItemPlacement is not Equatable on all SDKs; compare via String(describing:).
+//  Lives on the unit lane (not ViewInspectorTests) so visionOS / tvOS / watchOS execute it (#380).
 //
 
 @Suite("Platform Toolbar Placement Helpers", HostedViewTestIsolationTrait())

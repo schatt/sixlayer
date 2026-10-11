@@ -153,8 +153,16 @@ public enum TestSetupUtilities {
         accessibilityIdentifierConfig: AccessibilityIdentifierConfig? = nil
     ) -> Any? {
         autoreleasepool {
+        #if os(visionOS)
+        // Unit-test process has no UIWindowScene. UIWindow() + makeKeyAndVisible()
+        // never returns, and Xcode aborts the runner (#380).
+        _ = view
+        _ = forceLayout
+        _ = exposeContentAccessibility
+        _ = accessibilityIdentifierConfig
+        return nil
+        #elseif canImport(UIKit) && !os(watchOS)
         let injectedConfig = accessibilityIdentifierConfig ?? AccessibilityIdentifierConfig.currentTaskLocalConfig
-        #if canImport(UIKit) && !os(watchOS)
         // Re-bind task-local config for the whole hosting + layout window so SwiftUI modifier bodies that run
         // synchronously during layout still see the isolated test config (and debug log), not only `.shared`.
         let hostUIKitSubtree: () -> UIView? = {
@@ -206,6 +214,7 @@ public enum TestSetupUtilities {
         
         return root
         #elseif canImport(AppKit)
+        let injectedConfig = accessibilityIdentifierConfig ?? AccessibilityIdentifierConfig.currentTaskLocalConfig
         // Mirror UIKit hosting: without a visible window + run loop, SwiftUI on macOS often never
         // evaluates modifier bodies, so automaticCompliance / debug logs stay empty (Layer 4 a11y tests).
         let hostAppKitSubtree: () -> NSView? = {
