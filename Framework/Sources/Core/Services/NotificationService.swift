@@ -514,6 +514,18 @@ public class NotificationService: ObservableObject {
     #endif
 }
 
+// MARK: - Alert presentation binding
+
+/// Binding SwiftUI should use for `platformNotificationAlert`.
+///
+/// Do Not Disturb suppression must not replace the caller binding with a constant.
+enum PlatformNotificationAlertPresentation {
+    static func presentableBinding(caller: Binding<Bool>, suppress: Bool) -> Binding<Bool> {
+        // Stub: current production drops the caller binding while suppressed (#533).
+        suppress ? .constant(false) : caller
+    }
+}
+
 // MARK: - View Extension for Platform-Appropriate Alerts
 
 public extension View {
