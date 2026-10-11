@@ -520,9 +520,13 @@ public class NotificationService: ObservableObject {
 ///
 /// Do Not Disturb suppression must not replace the caller binding with a constant.
 enum PlatformNotificationAlertPresentation {
+    /// When `suppress` is true, clear `caller` so the alert cannot stay stuck presented.
+    /// The returned binding is always `caller`, so later dismissals write through.
     static func presentableBinding(caller: Binding<Bool>, suppress: Bool) -> Binding<Bool> {
-        // Stub: current production drops the caller binding while suppressed (#533).
-        suppress ? .constant(false) : caller
+        if suppress, caller.wrappedValue {
+            caller.wrappedValue = false
+        }
+        return caller
     }
 }
 
@@ -567,7 +571,11 @@ public extension View {
             )
         }
         
-        return self.alert(isPresented: shouldShow ? isPresented : .constant(false)) {
+        let presented = PlatformNotificationAlertPresentation.presentableBinding(
+            caller: isPresented,
+            suppress: !shouldShow
+        )
+        return self.alert(isPresented: presented) {
             alert
         }
         .environmentObject(service)
