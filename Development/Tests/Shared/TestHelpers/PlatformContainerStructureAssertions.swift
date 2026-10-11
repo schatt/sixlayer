@@ -5,6 +5,8 @@
 //  Cross-platform structural checks for container APIs where ViewInspector may be absent (#219).
 //  Prefers ViewInspector when linked; falls back to UIKit subtree heuristics on tvOS/visionOS/iOS.
 //  watchOS cannot host: observe* returns `.unavailable` instead of a false absence (#379).
+//  visionOS unit tests do not attempt UIWindow hosting; observeHostability is
+//  `.unavailable` rather than a false absence (#380).
 //
 
 import SwiftUI
@@ -22,7 +24,8 @@ import UIKit
 public enum PlatformContainerStructureAssertions {
 
     /// Hosting or type-name result. `.unavailable` means this lane did not look
-    /// (watchOS has no hosting controller — #379). That is not an observed `false`.
+    /// (watchOS has no hosting controller — #379; visionOS unit tests have no
+    /// window scene — #380). That is not an observed `false`.
     public enum ContainerStructureObservation: Equatable {
         case observed(Bool)
         case unavailable
@@ -30,11 +33,13 @@ public enum PlatformContainerStructureAssertions {
 
     // MARK: - Public API
 
-    /// Hostability for this lane. watchOS unit tests have no hosting controller, so the
-    /// result is `.unavailable` rather than a false "not hostable" (#379).
+    /// Hostability for this lane. watchOS has no hosting controller (#379).
+    /// visionOS unit tests have no `UIWindowScene`, so this lane does not look (#380).
+    /// Either case is `.unavailable`, not a false "not hostable".
     @MainActor
     public static func observeHostability<V: View>(_ view: V) -> ContainerStructureObservation {
-        #if os(watchOS)
+        #if os(watchOS) || os(visionOS)
+        _ = view
         return .unavailable
         #else
         return .observed(isHostable(view))
