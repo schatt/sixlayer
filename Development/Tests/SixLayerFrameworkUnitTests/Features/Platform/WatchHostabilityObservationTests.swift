@@ -17,7 +17,9 @@ struct WatchHostabilityObservationTests {
     func observeHostability_matchesLane() {
         let view = Text("379-host")
         let observation = PlatformContainerStructureAssertions.observeHostability(view)
-        #if os(watchOS)
+        #if os(watchOS) || os(visionOS)
+        // watchOS has no hosting controller (#379). visionOS unit tests have no
+        // UIWindowScene, so this lane does not look (#380).
         #expect(observation == .unavailable)
         #else
         #expect(observation == .observed(true))

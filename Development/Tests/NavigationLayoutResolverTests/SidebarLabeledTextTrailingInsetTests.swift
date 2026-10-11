@@ -23,7 +23,9 @@ struct SidebarLabeledTextTrailingInsetTests {
         #expect(row.leading <= 16)
     }
 
-    #if canImport(ViewInspector)
+    // ViewInspector is linked on iOS and macOS unit targets. The inset is applied
+    // only on macOS (#552, #380), so the inspect check stays on that lane (#553).
+    #if os(macOS) && canImport(ViewInspector)
     @Test @MainActor
     func navigationButtonAppliesModestTrailingInset() throws {
         let view = EmptyView().platformNavigationButton_L4(
