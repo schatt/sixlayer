@@ -58,26 +58,38 @@ struct SecondaryPlatformHelperContractTests {
 
     @Test @MainActor func testDropInTextField_IsHostable() {
         let view = platformTextField("Enter name", text: .constant(""))
-        #expect(PlatformContainerStructureAssertions.isHostable(view) == Self.hostsPlatformViews)
+        expectHostability(view)
     }
 
     @Test @MainActor func testDropInToggleAndButton_AreHostable() {
         let toggle = platformToggle("Enable notifications", isOn: .constant(false))
         let button = platformButton(label: "Save") { }
-        #expect(PlatformContainerStructureAssertions.isHostable(toggle) == Self.hostsPlatformViews)
-        #expect(PlatformContainerStructureAssertions.isHostable(button) == Self.hostsPlatformViews)
+        expectHostability(toggle)
+        expectHostability(button)
     }
 
-    /// watchOS only checks that hosting is unavailable. visionOS still checks structure
-    /// because that path does not need a window. Other platforms require a hosted match.
+    /// watchOS and visionOS unit tests cannot host, so the observation is
+    /// unavailable (#379, #380). Other lanes must actually host.
+    @MainActor
+    private func expectHostability<V: View>(_ view: V) {
+        let observation = PlatformContainerStructureAssertions.observeHostability(view)
+        #if os(watchOS) || os(visionOS)
+        #expect(observation == .unavailable)
+        #else
+        #expect(observation == .observed(true))
+        #endif
+    }
+
+    /// watchOS only checks that hosting was not attempted. visionOS still checks
+    /// structure because that path does not need a window.
     @MainActor
     private func expectStructure<V: View>(_ view: V, _ matches: Bool) {
         #if os(watchOS)
-        #expect(!PlatformContainerStructureAssertions.isHostable(view))
+        expectHostability(view)
         #else
         #expect(matches)
         if !Self.hostsPlatformViews {
-            #expect(!PlatformContainerStructureAssertions.isHostable(view))
+            expectHostability(view)
         }
         #endif
     }
