@@ -2,40 +2,77 @@ import SwiftUI
 import Testing
 @testable import SixLayerFramework
 
-/// #533: Do Not Disturb suppression must not replace the caller binding
-/// with a constant. The caller is cleared, and later writes still hit it.
-@Suite("Platform notification alert binding")
+/// #555: suppression must not write `isPresented` while the modifier is built.
+/// The caller binding stays the one SwiftUI presents, and hosting clears it
+/// only when Do Not Disturb actually blocks the alert.
+@Suite(.tags(.unit))
+@MainActor
 struct PlatformNotificationAlertBindingTests {
 
     @Test @MainActor
-    func suppressionClearsCallerAndKeepsWriteThrough() {
+    func suppressedAlertDoesNotWriteBindingDuringConstruction() {
+        let service = NotificationService()
+        service.setDoNotDisturbActiveForTesting(true)
         var presented = true
-        let caller = Binding(get: { presented }, set: { presented = $0 })
-        let presentable = PlatformNotificationAlertPresentation.presentableBinding(
-            caller: caller,
-            suppress: true
+        let binding = Binding(get: { presented }, set: { presented = $0 })
+
+        _ = Text("Alert").platformNotificationAlert(
+            isPresented: binding,
+            title: "Blocked",
+            primaryAction: .default(Text("OK")),
+            notificationService: service
         )
-        #expect(
-            presented == false,
-            "Suppressing the alert must clear the caller binding"
-        )
-        presentable.wrappedValue = true
+
         #expect(
             presented == true,
-            "The presented binding must write through to the caller"
+            "Building platformNotificationAlert must not write isPresented"
         )
     }
 
     @Test @MainActor
-    func unsuppressedAlertKeepsCallerPresented() {
+    func suppressedAlertClearsCallerAfterHosting() {
+        let service = NotificationService()
+        service.setDoNotDisturbActiveForTesting(true)
         var presented = true
-        let caller = Binding(get: { presented }, set: { presented = $0 })
-        let presentable = PlatformNotificationAlertPresentation.presentableBinding(
-            caller: caller,
-            suppress: false
+        let binding = Binding(get: { presented }, set: { presented = $0 })
+        let view = Text("Alert").platformNotificationAlert(
+            isPresented: binding,
+            title: "Blocked",
+            primaryAction: .default(Text("OK")),
+            notificationService: service
         )
+
+        #if os(iOS) || os(macOS)
+        #expect(TestSetupUtilities.hostRootPlatformView(view) != nil)
+        #expect(
+            presented == false,
+            "Hosting a suppressed alert must clear the caller binding"
+        )
+        #else
+        _ = view
+        #endif
+    }
+
+    @Test @MainActor
+    func unsuppressedAlertStaysPresentedThroughHosting() {
+        let service = NotificationService()
+        service.setDoNotDisturbActiveForTesting(false)
+        var presented = true
+        let binding = Binding(get: { presented }, set: { presented = $0 })
+        let view = Text("Alert").platformNotificationAlert(
+            isPresented: binding,
+            title: "Shown",
+            primaryAction: .default(Text("OK")),
+            notificationService: service
+        )
+
         #expect(presented == true)
-        presentable.wrappedValue = false
-        #expect(presented == false, "Dismiss must clear the caller binding")
+        #if os(iOS) || os(macOS)
+        #expect(TestSetupUtilities.hostRootPlatformView(view) != nil)
+        #endif
+        #expect(
+            presented == true,
+            "An unsuppressed alert must leave the caller binding presented"
+        )
     }
 }
