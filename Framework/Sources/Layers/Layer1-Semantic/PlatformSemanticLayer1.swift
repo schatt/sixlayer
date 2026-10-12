@@ -4305,6 +4305,8 @@ extension EnvironmentValues {
 
 /// Custom grid collection view that uses custom item views (no AnyView — Issue 178)
 public struct CustomGridCollectionView<Item: Identifiable, CustomView: View>: View {
+    @Environment(\.collectionContentInset) private var collectionContentInset
+
     let items: [Item]
     let hints: PresentationHints
     let customItemView: (Item) -> CustomView
@@ -4351,7 +4353,7 @@ public struct CustomGridCollectionView<Item: Identifiable, CustomView: View>: Vi
                             }
                     }
                 }
-                .padding(16)
+                .padding(collectionContentInset)
             }
         }
     }
@@ -4359,6 +4361,8 @@ public struct CustomGridCollectionView<Item: Identifiable, CustomView: View>: Vi
 
 /// Custom list collection view that uses custom item views (no AnyView — Issue 178)
 public struct CustomListCollectionView<Item: Identifiable, CustomView: View>: View {
+    @Environment(\.collectionContentInset) private var collectionContentInset
+
     let items: [Item]
     let hints: PresentationHints
     let customItemView: (Item) -> CustomView
@@ -4392,7 +4396,7 @@ public struct CustomListCollectionView<Item: Identifiable, CustomView: View>: Vi
                         }
                 }
             }
-            .padding(16)
+            .padding(collectionContentInset)
         }
     }
 
