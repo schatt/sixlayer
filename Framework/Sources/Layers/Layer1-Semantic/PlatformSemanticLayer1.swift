@@ -4285,6 +4285,24 @@ struct GenericSettingsItemView: View {
 
 // MARK: - Custom Collection View Components
 
+/// Inset for custom list and grid collections (#557).
+/// The default matches the historical `.padding(16)`. Callers that own a shared
+/// margin set `\.collectionContentInset` instead of keeping a second literal.
+public enum CollectionContentInset {
+    public static let `default`: CGFloat = 16
+}
+
+private struct CollectionContentInsetKey: EnvironmentKey {
+    static let defaultValue: CGFloat = CollectionContentInset.default
+}
+
+extension EnvironmentValues {
+    public var collectionContentInset: CGFloat {
+        get { self[CollectionContentInsetKey.self] }
+        set { self[CollectionContentInsetKey.self] = newValue }
+    }
+}
+
 /// Custom grid collection view that uses custom item views (no AnyView — Issue 178)
 public struct CustomGridCollectionView<Item: Identifiable, CustomView: View>: View {
     let items: [Item]
