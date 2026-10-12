@@ -350,6 +350,7 @@ open class Layer1CallbackFunctionalTests: BaseTestClass {
 
     /// Leading insets ViewInspector can read on the presented collection.
     /// `.padding(length)` is an all-edge inset, so leading is that length.
+    @MainActor
     private func collectionLeadingInsets(
         preference: PresentationPreference,
         override: CGFloat?
