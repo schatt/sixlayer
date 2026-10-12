@@ -185,6 +185,11 @@ public class NotificationService: ObservableObject {
     public var isRespectingDoNotDisturb: Bool {
         return respectDoNotDisturb
     }
+
+    /// Unit tests set this. Production code reads the system Do Not Disturb flag.
+    func setDoNotDisturbActiveForTesting(_ active: Bool) {
+        isDoNotDisturbActive = active
+    }
     
     // MARK: - Local Notifications
     
