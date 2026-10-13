@@ -44,6 +44,7 @@ struct PlatformNotificationAlertBindingTests {
 
         #if os(iOS) || os(macOS)
         #expect(TestSetupUtilities.hostRootPlatformView(view) != nil)
+        pumpMainRunLoop(for: 0.3)
         #expect(
             presented == false,
             "Hosting a suppressed alert must clear the caller binding"
@@ -74,5 +75,13 @@ struct PlatformNotificationAlertBindingTests {
             presented == true,
             "An unsuppressed alert must leave the caller binding presented"
         )
+    }
+}
+
+@MainActor
+private func pumpMainRunLoop(for duration: TimeInterval) {
+    let deadline = Date().addingTimeInterval(duration)
+    while Date() < deadline {
+        RunLoop.main.run(mode: .common, before: Date(timeIntervalSinceNow: 0.005))
     }
 }
