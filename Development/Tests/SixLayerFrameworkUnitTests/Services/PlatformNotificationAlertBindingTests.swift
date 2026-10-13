@@ -5,7 +5,7 @@ import Testing
 /// #555: suppression must not write `isPresented` while the modifier is built.
 /// The caller binding stays the one SwiftUI presents, and hosting clears it
 /// only when Do Not Disturb actually blocks the alert.
-@Suite(.tags(.unit))
+@Suite("Platform notification alert binding", HostedViewTestIsolationTrait())
 @MainActor
 struct PlatformNotificationAlertBindingTests {
 
