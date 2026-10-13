@@ -1023,6 +1023,7 @@ public struct DynamicURLField: View {
 public struct DynamicNumberField: View {
     let field: DynamicFormField
     @ObservedObject var formState: DynamicFormState
+    @FocusState private var isFocused: Bool
 
     public init(field: DynamicFormField, formState: DynamicFormState) {
         self.field = field
@@ -1035,6 +1036,7 @@ public struct DynamicNumberField: View {
             TextField(field.placeholder ?? i18n.localizedString(for: "SixLayerFramework.form.placeholder.enterNumber"), text: field.numericTextBinding(formState: formState))
             .platformTextFieldStyle()
             .selectAllTextOnBeginEditingIfFormOptedIn()
+            .focused($isFocused)
             #if os(iOS)
             .keyboardType(
                 NumericFieldKeyboard.keyboardType(
@@ -1045,6 +1047,16 @@ public struct DynamicNumberField: View {
             #endif
             .automaticComplianceForDynamicFormField(field, identifierElementType: "TextField")
         }, componentName: "DynamicNumberField")
+        .onChange(of: formState.focusedFieldId) { _, newValue in
+            isFocused = (newValue == field.id)
+        }
+        .onChange(of: isFocused) { _, newValue in
+            if newValue {
+                formState.focusedFieldId = field.id
+            } else if formState.focusedFieldId == field.id {
+                formState.focusedFieldId = nil
+            }
+        }
     }
 }
 
@@ -1054,6 +1066,7 @@ public struct DynamicNumberField: View {
 public struct DynamicIntegerField: View {
     let field: DynamicFormField
     @ObservedObject var formState: DynamicFormState
+    @FocusState private var isFocused: Bool
 
     public init(field: DynamicFormField, formState: DynamicFormState) {
         self.field = field
@@ -1066,6 +1079,7 @@ public struct DynamicIntegerField: View {
             TextField(field.placeholder ?? i18n.localizedString(for: "SixLayerFramework.form.placeholder.enterInteger"), text: field.numericTextBinding(formState: formState))
             .platformTextFieldStyle()
             .selectAllTextOnBeginEditingIfFormOptedIn()
+            .focused($isFocused)
             #if os(iOS)
             .keyboardType(
                 NumericFieldKeyboard.keyboardType(
@@ -1076,6 +1090,16 @@ public struct DynamicIntegerField: View {
             #endif
             .automaticComplianceForDynamicFormField(field, identifierElementType: "TextField")
         }, componentName: "DynamicIntegerField")
+        .onChange(of: formState.focusedFieldId) { _, newValue in
+            isFocused = (newValue == field.id)
+        }
+        .onChange(of: isFocused) { _, newValue in
+            if newValue {
+                formState.focusedFieldId = field.id
+            } else if formState.focusedFieldId == field.id {
+                formState.focusedFieldId = nil
+            }
+        }
     }
 }
 

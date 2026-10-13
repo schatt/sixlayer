@@ -63,11 +63,57 @@ public enum DynamicFormStoredNumericDisplay {
 
         return decimalFormatter.string(from: NSNumber(value: value)) ?? String(value)
     }
+
+    /// True when `newValue` is a sibling text field echoing a stale string over a stored number (#558).
+    /// A focused field always accepts the write. A stored `String` always accepts the write.
+    /// The same number as the stored value is a display refresh and is kept.
+    static func shouldIgnoreNumericBindingSet(
+        newValue: String,
+        storedValue: Any?,
+        fieldIsFocused: Bool
+    ) -> Bool {
+        if fieldIsFocused { return false }
+        guard let storedNumber = storedNumber(storedValue) else { return false }
+        if let incoming = parsedNumber(newValue), numbersEqual(incoming, storedNumber) {
+            return false
+        }
+        return true
+    }
+
+    private static func storedNumber(_ value: Any?) -> Double? {
+        switch value {
+        case let double as Double:
+            return double.isFinite ? double : nil
+        case let int as Int:
+            return Double(int)
+        case let number as NSNumber:
+            let double = number.doubleValue
+            return double.isFinite ? double : nil
+        default:
+            return nil
+        }
+    }
+
+    private static func parsedNumber(_ text: String) -> Double? {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return nil }
+        let cleaned = trimmed
+            .replacingOccurrences(of: "$", with: "")
+            .replacingOccurrences(of: ",", with: "")
+        return Double(cleaned).flatMap { $0.isFinite ? $0 : nil }
+    }
+
+    private static func numbersEqual(_ lhs: Double, _ rhs: Double) -> Bool {
+        abs(lhs - rhs) <= 0.000_000_1 * max(1, abs(rhs))
+    }
 }
 
 @MainActor
 extension DynamicFormField {
     /// Text binding that reads numeric stored values as display strings and writes `String`.
+    ///
+    /// A sibling field can push the string still on screen when another field's value changes.
+    /// That echo must not replace a stored number unless this field is focused (#558).
     func numericTextBinding(formState: DynamicFormState) -> Binding<String> {
         Binding(
             get: {
@@ -76,7 +122,16 @@ extension DynamicFormField {
                     defaultValue: defaultValue
                 )
             },
-            set: { formState.setValue($0, for: id) }
+            set: { newValue in
+                if DynamicFormStoredNumericDisplay.shouldIgnoreNumericBindingSet(
+                    newValue: newValue,
+                    storedValue: formState.getValue(for: id),
+                    fieldIsFocused: formState.focusedFieldId == id
+                ) {
+                    return
+                }
+                formState.setValue(newValue, for: id)
+            }
         )
     }
 }
