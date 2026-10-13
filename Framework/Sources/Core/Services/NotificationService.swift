@@ -586,7 +586,13 @@ public extension View {
             )
         }
         
-        return self.alert(isPresented: isPresented) {
+        // SwiftUI must see "not presented" while suppressed. Writing the caller
+        // here happens during view update, so the real clear waits for appearance.
+        let presentedToSwiftUI = Binding<Bool>(
+            get: { !suppress && isPresented.wrappedValue },
+            set: { isPresented.wrappedValue = $0 }
+        )
+        return self.alert(isPresented: presentedToSwiftUI) {
             alert
         }
         .onAppear {
