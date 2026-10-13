@@ -530,6 +530,19 @@ enum PlatformNotificationAlertPresentation {
     static func shouldClearPresented(suppress: Bool, isPresented: Bool) -> Bool {
         suppress && isPresented
     }
+
+    /// Clear on the next turn so the write is not part of the view update that observed it.
+    static func scheduleClearIfNeeded(suppress: Bool, isPresented: Binding<Bool>) {
+        guard shouldClearPresented(suppress: suppress, isPresented: isPresented.wrappedValue) else {
+            return
+        }
+        DispatchQueue.main.async {
+            guard shouldClearPresented(suppress: suppress, isPresented: isPresented.wrappedValue) else {
+                return
+            }
+            isPresented.wrappedValue = false
+        }
+    }
 }
 
 // MARK: - View Extension for Platform-Appropriate Alerts
@@ -576,21 +589,23 @@ public extension View {
         return self.alert(isPresented: isPresented) {
             alert
         }
-        .onChange(of: isPresented.wrappedValue, initial: true) { _, presented in
-            if PlatformNotificationAlertPresentation.shouldClearPresented(
+        .onAppear {
+            PlatformNotificationAlertPresentation.scheduleClearIfNeeded(
                 suppress: suppress,
-                isPresented: presented
-            ) {
-                isPresented.wrappedValue = false
-            }
+                isPresented: isPresented
+            )
         }
-        .onChange(of: suppress) { _, isSuppressed in
-            if PlatformNotificationAlertPresentation.shouldClearPresented(
-                suppress: isSuppressed,
-                isPresented: isPresented.wrappedValue
-            ) {
-                isPresented.wrappedValue = false
-            }
+        .onChange(of: isPresented.wrappedValue) { _, _ in
+            PlatformNotificationAlertPresentation.scheduleClearIfNeeded(
+                suppress: suppress,
+                isPresented: isPresented
+            )
+        }
+        .onChange(of: suppress) { _, _ in
+            PlatformNotificationAlertPresentation.scheduleClearIfNeeded(
+                suppress: suppress,
+                isPresented: isPresented
+            )
         }
         .environmentObject(service)
     }
