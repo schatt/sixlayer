@@ -1283,9 +1283,11 @@ private struct DefaultPlatformFieldView: View {
                 .platformTextFieldStyle()
                 .selectAllTextOnBeginEditingIfFormOptedIn()
                 .disabled(!isEditable)
-                #if os(iOS)
-                .keyboardType(UIKeyboardType.decimalPad)
-                #endif
+                .platformKeyboardType(
+                    IntelligentFormNumberPresentation.keyboardType(
+                        allowsNegative: hints?.allowsNegative == true
+                    )
+                )
                 .background(isValid ? Color.platformSecondaryBackground : Color.red.opacity(0.1))
                 .overlay(
                     RoundedRectangle(cornerRadius: 8)
@@ -1296,7 +1298,7 @@ private struct DefaultPlatformFieldView: View {
                 Stepper("", value: Binding(
                     get: { value as? Double ?? 0.0 },
                     set: { if isEditable { onValueChange($0) } }
-                ), in: 0...1000)
+                ), in: IntelligentFormNumberPresentation.stepperRange(hints: hints))
                 .disabled(!isEditable)
                 #endif
             }
