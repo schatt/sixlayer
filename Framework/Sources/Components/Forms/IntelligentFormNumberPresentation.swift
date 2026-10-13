@@ -9,15 +9,24 @@ import Foundation
 
 /// Pure presentation choices for an IntelligentFormView number field.
 public enum IntelligentFormNumberPresentation {
-    /// Stub: historical unsigned keyboard. Tests expect a signed opt-in.
+    /// Historical unsigned stepper ceiling when no `expectedRange` is set.
+    public static let unsignedStepperUpperBound: Double = 1000
+
+    /// Same keyboard choice as `DynamicNumberField`: decimal pad unless negatives are allowed.
     public static func keyboardType(allowsNegative: Bool) -> PlatformKeyboardType {
-        _ = allowsNegative
-        return .decimalPad
+        NumericFieldKeyboard.keyboardType(kind: .number, allowsNegative: allowsNegative)
     }
 
-    /// Stub: historical stepper bounds. Tests expect hints to widen them.
+    /// `expectedRange` wins. Otherwise a signed field uses `-1000...1000` and an unsigned field keeps `0...1000`.
     public static func stepperRange(hints: FieldDisplayHints?) -> ClosedRange<Double> {
-        _ = hints
-        return 0...1000
+        if let expected = hints?.expectedRange {
+            let lower = min(expected.min, expected.max)
+            let upper = max(expected.min, expected.max)
+            return lower...upper
+        }
+        if hints?.allowsNegative == true {
+            return (-unsignedStepperUpperBound)...unsignedStepperUpperBound
+        }
+        return 0...unsignedStepperUpperBound
     }
 }
