@@ -34,7 +34,11 @@ struct PlatformNotificationAlertBindingTests {
         let service = NotificationService()
         service.setDoNotDisturbActiveForTesting(true)
         var presented = true
-        let binding = Binding(get: { presented }, set: { presented = $0 })
+        var writes = 0
+        let binding = Binding(get: { presented }, set: { newValue in
+            presented = newValue
+            writes += 1
+        })
         let view = Text("Alert").platformNotificationAlert(
             isPresented: binding,
             title: "Blocked",
@@ -47,7 +51,7 @@ struct PlatformNotificationAlertBindingTests {
         pumpMainRunLoop(for: 0.3)
         #expect(
             presented == false,
-            "Hosting a suppressed alert must clear the caller binding"
+            "Hosting a suppressed alert must clear the caller binding (writes=\(writes), presented=\(presented))"
         )
         #else
         _ = view
