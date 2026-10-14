@@ -34,11 +34,7 @@ struct PlatformNotificationAlertBindingTests {
         let service = NotificationService()
         service.setDoNotDisturbActiveForTesting(true)
         var presented = true
-        var writes = 0
-        let binding = Binding(get: { presented }, set: { newValue in
-            presented = newValue
-            writes += 1
-        })
+        let binding = Binding(get: { presented }, set: { presented = $0 })
         let view = Text("Alert").platformNotificationAlert(
             isPresented: binding,
             title: "Blocked",
@@ -49,10 +45,10 @@ struct PlatformNotificationAlertBindingTests {
         #if os(iOS) || os(macOS)
         #expect(TestSetupUtilities.hostRootPlatformView(view, forceLayout: true) != nil)
         pumpMainRunLoop(for: 0.3)
-        let report = "writes=\(writes) presented=\(presented) dnd=\(service.isDoNotDisturbActive)"
-        try? report.write(toFile: "/tmp/sixlayer-555-writes.txt", atomically: true, encoding: .utf8)
-        print("ALERT_CLEAR \(report)")
-        #expect(presented == false)
+        #expect(
+            presented == false,
+            "Hosting a suppressed alert must clear the caller binding"
+        )
         #else
         _ = view
         #endif
