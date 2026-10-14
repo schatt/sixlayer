@@ -540,61 +540,14 @@ enum PlatformNotificationAlertPresentation {
         suppress && isPresented
     }
 
-    /// Clear immediately. Hosting pumps do not drain `DispatchQueue.main`, so a deferred write never lands in the unit test, and a real alert would stay up for a turn.
-    static func scheduleClearIfNeeded(suppress: Bool, isPresented: Binding<Bool>) {
+    /// Clear immediately when suppression is on and the caller still wants the alert.
+    static func clearIfNeeded(suppress: Bool, isPresented: Binding<Bool>) {
         guard shouldClearPresented(suppress: suppress, isPresented: isPresented.wrappedValue) else {
             return
         }
         isPresented.wrappedValue = false
     }
 }
-
-#if os(iOS)
-private struct ClearSuppressedAlertOnInstall: UIViewControllerRepresentable {
-    var suppress: Bool
-    var isPresented: Binding<Bool>
-
-    func makeUIViewController(context: Context) -> UIViewController {
-        PlatformNotificationAlertPresentation.scheduleClearIfNeeded(
-            suppress: suppress,
-            isPresented: isPresented
-        )
-        let controller = UIViewController()
-        controller.view.isUserInteractionEnabled = false
-        controller.view.backgroundColor = .clear
-        return controller
-    }
-
-    func updateUIViewController(_ uiViewController: UIViewController, context: Context) {
-        PlatformNotificationAlertPresentation.scheduleClearIfNeeded(
-            suppress: suppress,
-            isPresented: isPresented
-        )
-    }
-}
-#elseif os(macOS)
-private struct ClearSuppressedAlertOnInstall: NSViewControllerRepresentable {
-    var suppress: Bool
-    var isPresented: Binding<Bool>
-
-    func makeNSViewController(context: Context) -> NSViewController {
-        PlatformNotificationAlertPresentation.scheduleClearIfNeeded(
-            suppress: suppress,
-            isPresented: isPresented
-        )
-        let controller = NSViewController()
-        controller.view.isHidden = true
-        return controller
-    }
-
-    func updateNSViewController(_ nsViewController: NSViewController, context: Context) {
-        PlatformNotificationAlertPresentation.scheduleClearIfNeeded(
-            suppress: suppress,
-            isPresented: isPresented
-        )
-    }
-}
-#endif
 
 // MARK: - View Extension for Platform-Appropriate Alerts
 
@@ -647,29 +600,23 @@ public extension View {
             alert
         }
         .onAppear {
-            PlatformNotificationAlertPresentation.scheduleClearIfNeeded(
+            PlatformNotificationAlertPresentation.clearIfNeeded(
                 suppress: suppress,
                 isPresented: isPresented
             )
         }
         .onChange(of: isPresented.wrappedValue) { _, _ in
-            PlatformNotificationAlertPresentation.scheduleClearIfNeeded(
+            PlatformNotificationAlertPresentation.clearIfNeeded(
                 suppress: suppress,
                 isPresented: isPresented
             )
         }
         .onChange(of: suppress) { _, _ in
-            PlatformNotificationAlertPresentation.scheduleClearIfNeeded(
+            PlatformNotificationAlertPresentation.clearIfNeeded(
                 suppress: suppress,
                 isPresented: isPresented
             )
         }
-        #if os(iOS) || os(macOS)
-        .background {
-            ClearSuppressedAlertOnInstall(suppress: suppress, isPresented: isPresented)
-                .frame(width: 0, height: 0)
-        }
-        #endif
         .environmentObject(service)
     }
     
