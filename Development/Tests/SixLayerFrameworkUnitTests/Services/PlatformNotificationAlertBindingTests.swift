@@ -51,10 +51,8 @@ struct PlatformNotificationAlertBindingTests {
         pumpMainRunLoop(for: 0.3)
         let report = "writes=\(writes) presented=\(presented) dnd=\(service.isDoNotDisturbActive)"
         try? report.write(toFile: "/tmp/sixlayer-555-writes.txt", atomically: true, encoding: .utf8)
-        #expect(
-            presented == false,
-            report
-        )
+        print("ALERT_CLEAR \(report)")
+        #expect(presented == false)
         #else
         _ = view
         #endif
