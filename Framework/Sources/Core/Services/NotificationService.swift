@@ -545,6 +545,53 @@ enum PlatformNotificationAlertPresentation {
     }
 }
 
+#if os(iOS)
+private struct ClearSuppressedAlertOnInstall: UIViewControllerRepresentable {
+    var suppress: Bool
+    var isPresented: Binding<Bool>
+
+    func makeUIViewController(context: Context) -> UIViewController {
+        PlatformNotificationAlertPresentation.scheduleClearIfNeeded(
+            suppress: suppress,
+            isPresented: isPresented
+        )
+        let controller = UIViewController()
+        controller.view.isUserInteractionEnabled = false
+        controller.view.backgroundColor = .clear
+        return controller
+    }
+
+    func updateUIViewController(_ uiViewController: UIViewController, context: Context) {
+        PlatformNotificationAlertPresentation.scheduleClearIfNeeded(
+            suppress: suppress,
+            isPresented: isPresented
+        )
+    }
+}
+#elseif os(macOS)
+private struct ClearSuppressedAlertOnInstall: NSViewControllerRepresentable {
+    var suppress: Bool
+    var isPresented: Binding<Bool>
+
+    func makeNSViewController(context: Context) -> NSViewController {
+        PlatformNotificationAlertPresentation.scheduleClearIfNeeded(
+            suppress: suppress,
+            isPresented: isPresented
+        )
+        let controller = NSViewController()
+        controller.view.isHidden = true
+        return controller
+    }
+
+    func updateNSViewController(_ nsViewController: NSViewController, context: Context) {
+        PlatformNotificationAlertPresentation.scheduleClearIfNeeded(
+            suppress: suppress,
+            isPresented: isPresented
+        )
+    }
+}
+#endif
+
 // MARK: - View Extension for Platform-Appropriate Alerts
 
 public extension View {
@@ -613,6 +660,12 @@ public extension View {
                 isPresented: isPresented
             )
         }
+        #if os(iOS) || os(macOS)
+        .background {
+            ClearSuppressedAlertOnInstall(suppress: suppress, isPresented: isPresented)
+                .frame(width: 0, height: 0)
+        }
+        #endif
         .environmentObject(service)
     }
     
