@@ -1217,6 +1217,13 @@ private struct DefaultPlatformFieldView: View {
     private var isValid: Bool {
         fieldErrors.isEmpty
     }
+
+    private var numberBinding: Binding<Double> {
+        Binding(
+            get: { value as? Double ?? 0.0 },
+            set: { if isEditable { onValueChange($0) } }
+        )
+    }
     
     public var body: some View {
         platformVStackContainer(alignment: .leading, spacing: 4) {
@@ -1276,10 +1283,7 @@ private struct DefaultPlatformFieldView: View {
 
         case .number:
             HStack {
-                TextField("Enter \(field.name)", value: Binding(
-                    get: { value as? Double ?? 0.0 },
-                    set: { if isEditable { onValueChange($0) } }
-                ), format: .number)
+                TextField("Enter \(field.name)", value: numberBinding, format: .number)
                 .platformTextFieldStyle()
                 .selectAllTextOnBeginEditingIfFormOptedIn()
                 .disabled(!isEditable)
@@ -1295,10 +1299,7 @@ private struct DefaultPlatformFieldView: View {
                 )
 
                 #if !os(tvOS)
-                Stepper("", value: Binding(
-                    get: { value as? Double ?? 0.0 },
-                    set: { if isEditable { onValueChange($0) } }
-                ), in: IntelligentFormNumberPresentation.stepperRange(hints: hints))
+                Stepper("", value: numberBinding, in: IntelligentFormNumberPresentation.stepperRange(hints: hints))
                 .disabled(!isEditable)
                 #endif
             }
