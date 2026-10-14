@@ -47,7 +47,7 @@ struct PlatformNotificationAlertBindingTests {
         )
 
         #if os(iOS) || os(macOS)
-        #expect(TestSetupUtilities.hostRootPlatformView(view) != nil)
+        #expect(TestSetupUtilities.hostRootPlatformView(view, forceLayout: true) != nil)
         pumpMainRunLoop(for: 0.3)
         let report = "writes=\(writes) presented=\(presented) dnd=\(service.isDoNotDisturbActive)"
         try? report.write(toFile: "/tmp/sixlayer-555-writes.txt", atomically: true, encoding: .utf8)
