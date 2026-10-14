@@ -187,7 +187,11 @@ public class NotificationService: ObservableObject {
     }
 
     /// Unit tests set this. Production code reads the system Do Not Disturb flag.
+    /// A system refresh must not overwrite the override: init already started that refresh.
+    private var doNotDisturbOverrideForTesting: Bool?
+
     func setDoNotDisturbActiveForTesting(_ active: Bool) {
+        doNotDisturbOverrideForTesting = active
         isDoNotDisturbActive = active
     }
     
@@ -359,9 +363,14 @@ public class NotificationService: ObservableObject {
     
     /// Update Do Not Disturb status from system
     private func updateDoNotDisturbStatus() {
+        if doNotDisturbOverrideForTesting != nil {
+            return
+        }
         #if os(iOS)
         Task { @MainActor in
-            self.isDoNotDisturbActive = await self.checkIOSDoNotDisturbStatusAsync()
+            let systemActive = await self.checkIOSDoNotDisturbStatusAsync()
+            guard self.doNotDisturbOverrideForTesting == nil else { return }
+            self.isDoNotDisturbActive = systemActive
             self.updateSettings()
         }
         #elseif os(macOS)
@@ -531,17 +540,12 @@ enum PlatformNotificationAlertPresentation {
         suppress && isPresented
     }
 
-    /// Clear on the next turn so the write is not part of the view update that observed it.
+    /// Clear immediately. Hosting pumps do not drain `DispatchQueue.main`, so a deferred write never lands in the unit test, and a real alert would stay up for a turn.
     static func scheduleClearIfNeeded(suppress: Bool, isPresented: Binding<Bool>) {
         guard shouldClearPresented(suppress: suppress, isPresented: isPresented.wrappedValue) else {
             return
         }
-        DispatchQueue.main.async {
-            guard shouldClearPresented(suppress: suppress, isPresented: isPresented.wrappedValue) else {
-                return
-            }
-            isPresented.wrappedValue = false
-        }
+        isPresented.wrappedValue = false
     }
 }
 
