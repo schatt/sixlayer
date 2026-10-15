@@ -9,6 +9,8 @@ private struct CatalogViewportWidthKey: PreferenceKey {
 
 /// List vs grid container driven by `HintsDrivenCatalogLayout` (#477).
 struct HintsDrivenCatalogContainer<Item: Identifiable, Content: View>: View {
+    @Environment(\.collectionContentInset) private var collectionContentInset
+
     let items: [Item]
     let hints: PresentationHints
     let surface: HintsDrivenCatalogLayout.Surface
@@ -86,7 +88,7 @@ struct HintsDrivenCatalogContainer<Item: Identifiable, Content: View>: View {
                         )
                 }
             }
-            .padding(16)
+            .padding(collectionContentInset)
         }
     }
 
@@ -109,7 +111,7 @@ struct HintsDrivenCatalogContainer<Item: Identifiable, Content: View>: View {
                         )
                 }
             }
-            .padding(16)
+            .padding(collectionContentInset)
         }
     }
 }
