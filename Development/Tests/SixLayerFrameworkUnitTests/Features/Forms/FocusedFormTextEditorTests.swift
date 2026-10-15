@@ -236,7 +236,7 @@ open class FocusedFormTextEditorTests: BaseTestClass {
     #endif
 }
 
-private enum EditorKind: String, CaseIterable, Sendable {
+enum EditorKind: String, CaseIterable, Sendable {
     case text
     case textMultiline
     case email
