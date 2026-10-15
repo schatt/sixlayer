@@ -185,6 +185,15 @@ public class NotificationService: ObservableObject {
     public var isRespectingDoNotDisturb: Bool {
         return respectDoNotDisturb
     }
+
+    /// Unit tests set this. Production code reads the system Do Not Disturb flag.
+    /// A system refresh must not overwrite the override: init already started that refresh.
+    private var doNotDisturbOverrideForTesting: Bool?
+
+    func setDoNotDisturbActiveForTesting(_ active: Bool) {
+        doNotDisturbOverrideForTesting = active
+        isDoNotDisturbActive = active
+    }
     
     // MARK: - Local Notifications
     
@@ -354,9 +363,14 @@ public class NotificationService: ObservableObject {
     
     /// Update Do Not Disturb status from system
     private func updateDoNotDisturbStatus() {
+        if doNotDisturbOverrideForTesting != nil {
+            return
+        }
         #if os(iOS)
         Task { @MainActor in
-            self.isDoNotDisturbActive = await self.checkIOSDoNotDisturbStatusAsync()
+            let systemActive = await self.checkIOSDoNotDisturbStatusAsync()
+            guard self.doNotDisturbOverrideForTesting == nil else { return }
+            self.isDoNotDisturbActive = systemActive
             self.updateSettings()
         }
         #elseif os(macOS)
@@ -516,17 +530,22 @@ public class NotificationService: ObservableObject {
 
 // MARK: - Alert presentation binding
 
-/// Binding SwiftUI should use for `platformNotificationAlert`.
+/// When Do Not Disturb should hide a notification alert.
 ///
-/// Do Not Disturb suppression must not replace the caller binding with a constant.
+/// The decision is pure. Callers clear the binding from `onChange` / appearance,
+/// not while the view function is building.
 enum PlatformNotificationAlertPresentation {
-    /// When `suppress` is true, clear `caller` so the alert cannot stay stuck presented.
-    /// The returned binding is always `caller`, so later dismissals write through.
-    static func presentableBinding(caller: Binding<Bool>, suppress: Bool) -> Binding<Bool> {
-        if suppress, caller.wrappedValue {
-            caller.wrappedValue = false
+    /// True only when suppression is active and the caller still wants the alert shown.
+    static func shouldClearPresented(suppress: Bool, isPresented: Bool) -> Bool {
+        suppress && isPresented
+    }
+
+    /// Clear immediately when suppression is on and the caller still wants the alert.
+    static func clearIfNeeded(suppress: Bool, isPresented: Binding<Bool>) {
+        guard shouldClearPresented(suppress: suppress, isPresented: isPresented.wrappedValue) else {
+            return
         }
-        return caller
+        isPresented.wrappedValue = false
     }
 }
 
@@ -552,8 +571,8 @@ public extension View {
     ) -> some View {
         let service = notificationService ?? NotificationService()
         
-        // Check if Do Not Disturb would block
-        let shouldShow = !service.isDoNotDisturbActive || !service.isRespectingDoNotDisturb
+        // Check if Do Not Disturb would block. Do not write `isPresented` here.
+        let suppress = service.isDoNotDisturbActive && service.isRespectingDoNotDisturb
         
         let alert: Alert
         if let secondaryAction = secondaryAction {
@@ -571,12 +590,32 @@ public extension View {
             )
         }
         
-        let presented = PlatformNotificationAlertPresentation.presentableBinding(
-            caller: isPresented,
-            suppress: !shouldShow
+        // SwiftUI must see "not presented" while suppressed. Writing the caller
+        // here happens during view update, so the real clear waits for appearance.
+        let presentedToSwiftUI = Binding<Bool>(
+            get: { !suppress && isPresented.wrappedValue },
+            set: { isPresented.wrappedValue = $0 }
         )
-        return self.alert(isPresented: presented) {
+        return self.alert(isPresented: presentedToSwiftUI) {
             alert
+        }
+        .onAppear {
+            PlatformNotificationAlertPresentation.clearIfNeeded(
+                suppress: suppress,
+                isPresented: isPresented
+            )
+        }
+        .onChange(of: isPresented.wrappedValue) { _, _ in
+            PlatformNotificationAlertPresentation.clearIfNeeded(
+                suppress: suppress,
+                isPresented: isPresented
+            )
+        }
+        .onChange(of: suppress) { _, _ in
+            PlatformNotificationAlertPresentation.clearIfNeeded(
+                suppress: suppress,
+                isPresented: isPresented
+            )
         }
         .environmentObject(service)
     }
