@@ -2,9 +2,9 @@ import SwiftUI
 import Testing
 @testable import SixLayerFramework
 
-/// #555: suppression must not write `isPresented` while the modifier is built.
+/// #555 / #556: suppression must not write `isPresented` while the modifier is built.
 /// The caller binding stays the one SwiftUI presents, and hosting clears it
-/// only when Do Not Disturb actually blocks the alert.
+/// only when Do Not Disturb actually blocks the alert. RTL uses the same rule.
 @Suite("Platform notification alert binding", HostedViewTestIsolationTrait())
 @MainActor
 struct PlatformNotificationAlertBindingTests {
