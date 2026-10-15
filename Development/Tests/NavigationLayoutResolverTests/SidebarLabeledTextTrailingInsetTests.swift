@@ -23,11 +23,10 @@ struct SidebarLabeledTextTrailingInsetTests {
         #expect(row.leading <= 16)
     }
 
-    // ViewInspector is linked on iOS and macOS unit targets. The inset is applied
-    // only on macOS (#552, #380), so the inspect check stays on that lane (#553).
-    #if os(macOS) && canImport(ViewInspector)
+    #if canImport(ViewInspector)
+    /// macOS installs the modest trailing inset. Other ViewInspector lanes keep the system row (#554).
     @Test @MainActor
-    func navigationButtonAppliesModestTrailingInset() throws {
+    func navigationButtonRowInsetFollowsPlatform() throws {
         let view = EmptyView().platformNavigationButton_L4(
             title: "Message Center",
             systemImage: "bell",
@@ -35,9 +34,21 @@ struct SidebarLabeledTextTrailingInsetTests {
             accessibilityHint: "Opens messages",
             action: {}
         )
+        #if os(macOS)
         let insets = try view.inspect().listRowInsets()
         #expect(insets.trailing == SidebarLabeledTextTrailingInset.points)
         #expect(insets.trailing <= insets.leading)
+        #else
+        do {
+            _ = try view.inspect().listRowInsets()
+            Issue.record("Non-macOS lanes must not install the macOS listRowInsets")
+        } catch {
+            #expect(
+                String(describing: error).contains("listRowInsets"),
+                "Expected a missing listRowInsets modifier, got: \(error)"
+            )
+        }
+        #endif
     }
     #endif
 

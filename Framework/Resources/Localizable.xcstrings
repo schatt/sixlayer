@@ -297,12 +297,6 @@
     "Settings" : {
 
     },
-    "Sidebar Item 1" : {
-
-    },
-    "Sidebar Item 2" : {
-
-    },
     "SixLayerFramework.accessibility.skipToContent" : {
       "comment" : "============================================================================ ACCESSIBILITY ============================================================================",
       "localizations" : {
@@ -26695,12 +26689,6 @@
 
     },
     "String: %@" : {
-
-    },
-    "Tab 1" : {
-
-    },
-    "Tab 2" : {
 
     },
     "Tap to start barcode scanning" : {

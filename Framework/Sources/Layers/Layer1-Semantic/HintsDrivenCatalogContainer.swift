@@ -9,6 +9,8 @@ private struct CatalogViewportWidthKey: PreferenceKey {
 
 /// List vs grid container driven by `HintsDrivenCatalogLayout` (#477).
 struct HintsDrivenCatalogContainer<Item: Identifiable, Content: View>: View {
+    @Environment(\.collectionContentInset) private var collectionContentInset
+
     let items: [Item]
     let hints: PresentationHints
     let surface: HintsDrivenCatalogLayout.Surface
@@ -76,17 +78,22 @@ struct HintsDrivenCatalogContainer<Item: Identifiable, Content: View>: View {
         ) * HintsDrivenCatalogLayout.spacingScale(complexity: hints.complexity)
     }
 
+    private var cardStyleEnabled: Bool {
+        HintsDrivenCatalogLayout.rowVisualStyleIsCard(hints: hints)
+    }
+
+    @ViewBuilder
+    private func catalogItem(_ item: Item) -> some View {
+        content(item)
+            .hintsDrivenCardSurface(enabled: cardStyleEnabled)
+    }
+
     private var listStack: some View {
         ScrollView {
             platformLazyVStackContainer(spacing: itemSpacing) {
-                ForEach(items) { item in
-                    content(item)
-                        .hintsDrivenCardSurface(
-                            enabled: HintsDrivenCatalogLayout.rowVisualStyleIsCard(hints: hints)
-                        )
-                }
+                ForEach(items, content: catalogItem)
             }
-            .padding(16)
+            .padding(collectionContentInset)
         }
     }
 
@@ -102,14 +109,9 @@ struct HintsDrivenCatalogContainer<Item: Identifiable, Content: View>: View {
 
         return ScrollView {
             LazyVGrid(columns: gridColumns, spacing: spacing) {
-                ForEach(items) { item in
-                    content(item)
-                        .hintsDrivenCardSurface(
-                            enabled: HintsDrivenCatalogLayout.rowVisualStyleIsCard(hints: hints)
-                        )
-                }
+                ForEach(items, content: catalogItem)
             }
-            .padding(16)
+            .padding(collectionContentInset)
         }
     }
 }

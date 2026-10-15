@@ -304,5 +304,88 @@ open class Layer1CallbackFunctionalTests: BaseTestClass {
             onItemSelected: { _ in }
         )
     }
+
+    // MARK: - Collection content inset (#557)
+
+    @Test @MainActor func collectionListKeepsTheDefaultInset() throws {
+        initializeTestConfig()
+        let insets = try collectionLeadingInsets(preference: .list, override: nil)
+        #expect(CollectionContentInset.default == 16)
+        #expect(insets.contains(CollectionContentInset.default))
+    }
+
+    @Test @MainActor func collectionListHonorsANonDefaultInset() throws {
+        initializeTestConfig()
+        let insets = try collectionLeadingInsets(preference: .list, override: 24)
+        #expect(insets.contains(24))
+        #expect(!insets.contains(CollectionContentInset.default))
+    }
+
+    @Test @MainActor func collectionListHonorsAZeroInset() throws {
+        initializeTestConfig()
+        let insets = try collectionLeadingInsets(preference: .list, override: 0)
+        #expect(insets.contains(0))
+        #expect(!insets.contains(CollectionContentInset.default))
+    }
+
+    @Test @MainActor func collectionGridKeepsTheDefaultInset() throws {
+        initializeTestConfig()
+        let insets = try collectionLeadingInsets(preference: .grid, override: nil)
+        #expect(insets.contains(CollectionContentInset.default))
+    }
+
+    @Test @MainActor func collectionGridHonorsANonDefaultInset() throws {
+        initializeTestConfig()
+        let insets = try collectionLeadingInsets(preference: .grid, override: 24)
+        #expect(insets.contains(24))
+        #expect(!insets.contains(CollectionContentInset.default))
+    }
+
+    @Test @MainActor func collectionGridHonorsAZeroInset() throws {
+        initializeTestConfig()
+        let insets = try collectionLeadingInsets(preference: .grid, override: 0)
+        #expect(insets.contains(0))
+        #expect(!insets.contains(CollectionContentInset.default))
+    }
+
+    /// Leading insets ViewInspector can read on the presented collection.
+    /// `.padding(length)` is an all-edge inset, so leading is that length.
+    @MainActor
+    private func collectionLeadingInsets(
+        preference: PresentationPreference,
+        override: CGFloat?
+    ) throws -> [CGFloat] {
+        #if canImport(ViewInspector)
+        let collection = platformPresentItemCollection_L1(
+            items: sampleItems,
+            hints: PresentationHints(
+                dataType: .collection,
+                presentationPreference: preference,
+                complexity: .moderate,
+                context: .dashboard
+            ),
+            customItemView: { item in
+                Text(item.title)
+            }
+        )
+        if let override {
+            return try leadingInsets(of: collection.environment(\.collectionContentInset, override))
+        }
+        return try leadingInsets(of: collection)
+        #else
+        Issue.record("ViewInspector is required to read the collection inset")
+        return []
+        #endif
+    }
+
+    #if canImport(ViewInspector)
+    private func leadingInsets<V: View>(of view: V) throws -> [CGFloat] {
+        try view.inspect().findAll { node in
+            node.hasPadding(.all) || node.hasPadding(.leading) || node.hasPadding(.horizontal)
+        }.compactMap { node in
+            try? node.padding(.leading)
+        }
+    }
+    #endif
 }
 
