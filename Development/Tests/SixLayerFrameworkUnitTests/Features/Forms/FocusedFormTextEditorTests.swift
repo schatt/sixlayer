@@ -27,7 +27,7 @@ open class FocusedFormTextEditorTests: BaseTestClass {
             kind.seed(state, text: "10")
             guard let root = host(kind.view(state: state), kind: kind) else { return }
 
-            state.focusedFieldId = EditorKind.fieldID
+            state.focusedFieldId = kind.focusID
             pump()
             state.setValue("other", for: "sibling")
             pump()
@@ -252,6 +252,11 @@ enum EditorKind: String, CaseIterable, Sendable {
     case data
 
     static let fieldID = "value"
+
+    /// Array rows focus `value.0`. Every other editor focuses `value`.
+    var focusID: String {
+        self == .arrayItem ? "\(Self.fieldID).0" : Self.fieldID
+    }
 
     @MainActor
     func seed(_ state: DynamicFormState, text: String) {
