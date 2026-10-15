@@ -569,11 +569,62 @@ public extension View {
         secondaryAction: Alert.Button? = nil,
         notificationService: NotificationService? = nil
     ) -> some View {
+        notificationAlert(
+            isPresented: isPresented,
+            title: title,
+            message: message,
+            primaryAction: primaryAction,
+            secondaryAction: secondaryAction,
+            notificationService: notificationService
+        )
+    }
+    
+    /// Present a platform-appropriate alert with RTL support
+    /// - Parameters:
+    ///   - isPresented: Binding to control alert presentation
+    ///   - title: Alert title
+    ///   - message: Alert message (optional)
+    ///   - primaryAction: Primary action button
+    ///   - secondaryAction: Secondary action button (optional)
+    ///   - locale: Locale for RTL detection
+    ///   - notificationService: NotificationService instance (optional)
+    /// - Returns: View with alert modifier and RTL support
+    func platformNotificationAlertRTL(
+        isPresented: Binding<Bool>,
+        title: String,
+        message: String? = nil,
+        primaryAction: Alert.Button,
+        secondaryAction: Alert.Button? = nil,
+        locale: Locale = Locale.current,
+        notificationService: NotificationService? = nil
+    ) -> some View {
+        let i18n = InternationalizationService(locale: locale)
+        return notificationAlert(
+            isPresented: isPresented,
+            title: title,
+            message: message,
+            primaryAction: primaryAction,
+            secondaryAction: secondaryAction,
+            notificationService: notificationService
+        )
+        .environment(\.layoutDirection, i18n.getLayoutDirection())
+        .environment(\.locale, locale)
+    }
+
+    /// Shared alert presentation. Do Not Disturb suppression is the same for LTR and RTL.
+    private func notificationAlert(
+        isPresented: Binding<Bool>,
+        title: String,
+        message: String?,
+        primaryAction: Alert.Button,
+        secondaryAction: Alert.Button?,
+        notificationService: NotificationService?
+    ) -> some View {
         let service = notificationService ?? NotificationService()
-        
+
         // Check if Do Not Disturb would block. Do not write `isPresented` here.
         let suppress = service.isDoNotDisturbActive && service.isRespectingDoNotDisturb
-        
+
         let alert: Alert
         if let secondaryAction = secondaryAction {
             alert = Alert(
@@ -589,7 +640,7 @@ public extension View {
                 dismissButton: primaryAction
             )
         }
-        
+
         // SwiftUI must see "not presented" while suppressed. Writing the caller
         // here happens during view update, so the real clear waits for appearance.
         let presentedToSwiftUI = Binding<Bool>(
@@ -617,53 +668,6 @@ public extension View {
                 isPresented: isPresented
             )
         }
-        .environmentObject(service)
-    }
-    
-    /// Present a platform-appropriate alert with RTL support
-    /// - Parameters:
-    ///   - isPresented: Binding to control alert presentation
-    ///   - title: Alert title
-    ///   - message: Alert message (optional)
-    ///   - primaryAction: Primary action button
-    ///   - secondaryAction: Secondary action button (optional)
-    ///   - locale: Locale for RTL detection
-    ///   - notificationService: NotificationService instance (optional)
-    /// - Returns: View with alert modifier and RTL support
-    func platformNotificationAlertRTL(
-        isPresented: Binding<Bool>,
-        title: String,
-        message: String? = nil,
-        primaryAction: Alert.Button,
-        secondaryAction: Alert.Button? = nil,
-        locale: Locale = Locale.current,
-        notificationService: NotificationService? = nil
-    ) -> some View {
-        let service = notificationService ?? NotificationService()
-        let i18n = InternationalizationService(locale: locale)
-        let layoutDirection = i18n.getLayoutDirection()
-        
-        let alert: Alert
-        if let secondaryAction = secondaryAction {
-            alert = Alert(
-                title: Text(title),
-                message: message.map { Text($0) },
-                primaryButton: primaryAction,
-                secondaryButton: secondaryAction
-            )
-        } else {
-            alert = Alert(
-                title: Text(title),
-                message: message.map { Text($0) },
-                dismissButton: primaryAction
-            )
-        }
-        
-        return self.alert(isPresented: isPresented) {
-            alert
-        }
-        .environment(\.layoutDirection, layoutDirection)
-        .environment(\.locale, locale)
         .environmentObject(service)
     }
 }
