@@ -4285,7 +4285,7 @@ struct GenericSettingsItemView: View {
 
 // MARK: - Custom Collection View Components
 
-/// Inset for custom list and grid collections (#557).
+/// Inset for custom list/grid collections and catalog stacks (#557, #559).
 /// The default matches the historical `.padding(16)`. Callers that own a shared
 /// margin set `\.collectionContentInset` instead of keeping a second literal.
 public enum CollectionContentInset {
