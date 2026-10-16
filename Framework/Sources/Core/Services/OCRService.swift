@@ -105,14 +105,6 @@ final class VisionContinuationGate: @unchecked Sendable {
         claimed = true
         return true
     }
-
-    func resume<T: Sendable>(
-        _ continuation: CheckedContinuation<T, any Error>,
-        with result: sending Result<T, any Error>
-    ) {
-        guard claim() else { return }
-        continuation.resume(with: result)
-    }
 }
 
 // MARK: - OCR Service Implementation
@@ -1005,7 +997,9 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
     ) async throws -> (result: OCRResult, recognizedLineTexts: [String]) {
         
         return try await withCheckedThrowingContinuation { continuation in
+            let gate = VisionContinuationGate()
             let request = VNRecognizeTextRequest { request, error in
+                guard gate.claim() else { return }
                 if let error = error {
                     continuation.resume(throwing: error)
                     return
@@ -1031,6 +1025,7 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
             do {
                 try handler.perform([request])
             } catch {
+                guard gate.claim() else { return }
                 continuation.resume(throwing: error)
             }
         }
