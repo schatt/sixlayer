@@ -89,6 +89,25 @@ public struct OCRCapabilities {
     }
 }
 
+/// Single-resume claim for a Vision `CheckedContinuation`.
+///
+/// `VNImageRequestHandler.perform` can invoke the request completion and then throw.
+/// Resuming the same continuation from both paths traps the process.
+/// This stub accepts every claim so the regression test fails until the second claim is rejected.
+final class VisionContinuationGate: @unchecked Sendable {
+    func claim() -> Bool {
+        true
+    }
+
+    func resume<T>(
+        _ continuation: CheckedContinuation<T, Error>,
+        with result: Result<T, Error>
+    ) {
+        guard claim() else { return }
+        continuation.resume(with: result)
+    }
+}
+
 // MARK: - OCR Service Implementation
 
 /// Main OCR service implementation
