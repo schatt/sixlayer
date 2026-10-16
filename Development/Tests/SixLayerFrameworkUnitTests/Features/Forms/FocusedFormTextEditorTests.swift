@@ -112,10 +112,22 @@ open class FocusedFormTextEditorTests: BaseTestClass {
             )
             state.setValue("99", for: "cost")
             pump()
-            if let field = firstEditableTextField(in: window.contentView ?? nsRoot) {
-                #expect(editorString(of: field).isEmpty, "sibling publish must not rewrite the cleared field editor")
-            } else {
-                Issue.record("field editor disappeared before the sibling publish could be observed")
+            AppKitKeyWindowIsolation.withExclusiveKeyWindow {
+                window.makeKeyAndOrderFront(nil)
+                guard let field = firstEditableTextField(in: window.contentView ?? nsRoot) else {
+                    Issue.record("field editor disappeared before the second ⌘A")
+                    return
+                }
+                _ = window.makeFirstResponder(field)
+                guard field.currentEditor() != nil else {
+                    Issue.record("expected a field editor for the second ⌘A")
+                    return
+                }
+                sendKey(keyCode: 0, characters: "a", modifiers: .command, window: window)
+                #expect(
+                    editorString(of: field).isEmpty,
+                    "second ⌘A after a sibling publish must leave the field empty, got \(editorString(of: field).debugDescription)"
+                )
             }
             window.orderOut(nil)
         }
