@@ -93,10 +93,25 @@ public struct OCRCapabilities {
 ///
 /// `VNImageRequestHandler.perform` can invoke the request completion and then throw.
 /// Resuming the same continuation from both paths traps the process.
-/// This stub accepts every claim so the regression test fails until the second claim is rejected.
+/// The first claim wins. A later claim is ignored.
 final class VisionContinuationGate: @unchecked Sendable {
+    private let lock = NSLock()
+    private var claimed = false
+
     func claim() -> Bool {
-        true
+        lock.lock()
+        defer { lock.unlock() }
+        if claimed { return false }
+        claimed = true
+        return true
+    }
+
+    func resume<T: Sendable>(
+        _ continuation: CheckedContinuation<T, any Error>,
+        with result: sending Result<T, any Error>
+    ) {
+        guard claim() else { return }
+        continuation.resume(with: result)
     }
 }
 
