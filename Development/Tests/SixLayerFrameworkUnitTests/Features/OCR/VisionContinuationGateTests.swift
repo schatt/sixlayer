@@ -7,8 +7,9 @@
 //  both try to resume one continuation. A second resume traps the process (#563).
 //
 //  TESTING SCOPE:
-//  - The first claim wins.
-//  - A second claim is rejected.
+//  - The first claim wins and a second claim is rejected.
+//  - Completion then perform-throw keeps the completion value.
+//  - Perform-throw then a late completion keeps the throw.
 //
 
 import Testing
