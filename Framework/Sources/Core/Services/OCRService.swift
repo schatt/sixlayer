@@ -997,6 +997,8 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
     ) async throws -> (result: OCRResult, recognizedLineTexts: [String]) {
         
         return try await withCheckedThrowingContinuation { continuation in
+            // perform(_:) can run this completion and then throw. Claim once so the
+            // second path cannot resume the continuation (#563).
             let gate = VisionContinuationGate()
             let request = VNRecognizeTextRequest { request, error in
                 guard gate.claim() else { return }
