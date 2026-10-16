@@ -44,8 +44,10 @@ struct FormEditorText<Editor: View>: View {
                 write(newValue)
             }
             .onChange(of: isFocused) { _, focused in
+                // Do not copy `externalDisplay` here. The buffer already mirrors it
+                // until focus begins, and a copy on this turn would push a sibling
+                // publish into the field editor.
                 if focused {
-                    applyExternal(externalDisplay)
                     if formState.focusedFieldId != fieldID {
                         formState.focusedFieldId = fieldID
                     }
