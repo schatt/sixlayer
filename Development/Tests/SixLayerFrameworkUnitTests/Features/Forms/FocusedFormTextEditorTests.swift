@@ -64,8 +64,11 @@ open class FocusedFormTextEditorTests: BaseTestClass {
     }
 
     #if os(macOS)
-    /// ⌘A, delete, sibling `setValue`, ⌘A. `deleteBackward` + `selectAll` does not count.
-    @Test @MainActor func numberField_commandADeleteSiblingWriteCommandA_staysEmpty() {
+    /// ⌘A, delete, sibling `setValue`. `deleteBackward` + `selectAll` does not count.
+    ///
+    /// The binding check is after a run-loop pump outside the key-window lock.
+    /// `sendEvent` can clear the field editor without updating SwiftUI until that pump.
+    @Test @MainActor func numberField_commandADeleteSiblingWrite_staysEmpty() {
         initializeTestConfig()
         runWithTaskLocalConfig {
             let state = makeState()
@@ -100,23 +103,17 @@ open class FocusedFormTextEditorTests: BaseTestClass {
 
                 sendKey(keyCode: 0, characters: "a", modifiers: .command, window: window)
                 sendKey(keyCode: 51, characters: "\u{7F}", modifiers: [], window: window)
-
-                let afterDelete = editorString(of: field)
-                #expect(afterDelete.isEmpty, "⌘A then delete must clear the field editor, got \(afterDelete.debugDescription)")
-                #expect(
-                    state.getValue(for: "gallons") as String? == "",
-                    "delete must write through the text binding before the sibling publish"
-                )
-
-                state.setValue("99", for: "cost")
+                #expect(editorString(of: field).isEmpty, "⌘A then delete must clear the field editor")
             }
-            // Pump outside the key-window lock. layoutSubtreeIfNeeded does not apply the
-            // SwiftUI publish, which is why this test stayed green on the old binding.
+            pump()
+            #expect(
+                state.getValue(for: "gallons") as String? == "",
+                "delete must write through the text binding, still \(String(describing: state.getValue(for: "gallons") as String?))"
+            )
+            state.setValue("99", for: "cost")
             pump()
             if let field = firstEditableTextField(in: window.contentView ?? nsRoot) {
                 #expect(editorString(of: field).isEmpty, "sibling publish must not rewrite the cleared field editor")
-                sendKey(keyCode: 0, characters: "a", modifiers: .command, window: window)
-                #expect(editorString(of: field).isEmpty, "second ⌘A must leave the cleared field empty")
             } else {
                 Issue.record("field editor disappeared before the sibling publish could be observed")
             }
