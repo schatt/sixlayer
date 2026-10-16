@@ -85,7 +85,6 @@ open class FocusedFormTextEditorTests: BaseTestClass {
 
             AppKitKeyWindowIsolation.withExclusiveKeyWindow {
                 window.makeKeyAndOrderFront(nil)
-                defer { window.orderOut(nil) }
                 guard let field = firstEditableTextField(in: window.contentView ?? nsRoot) else {
                     Issue.record("expected an editable NSTextField after making the host key")
                     return
@@ -96,21 +95,32 @@ open class FocusedFormTextEditorTests: BaseTestClass {
                     return
                 }
 
+                let before = editorString(of: field)
+                #expect(before == "10", "⌘A must start from the gallons value, got \(before.debugDescription)")
+
                 sendKey(keyCode: 0, characters: "a", modifiers: .command, window: window)
                 sendKey(keyCode: 51, characters: "\u{7F}", modifiers: [], window: window)
 
                 let afterDelete = editorString(of: field)
                 #expect(afterDelete.isEmpty, "⌘A then delete must clear the field editor, got \(afterDelete.debugDescription)")
+                #expect(
+                    state.getValue(for: "gallons") as String? == "",
+                    "delete must write through the text binding before the sibling publish"
+                )
 
                 state.setValue("99", for: "cost")
-                field.window?.contentView?.layoutSubtreeIfNeeded()
-
-                let afterSibling = editorString(of: field)
-                #expect(afterSibling.isEmpty, "sibling publish must not rewrite the cleared field editor")
-
+            }
+            // Pump outside the key-window lock. layoutSubtreeIfNeeded does not apply the
+            // SwiftUI publish, which is why this test stayed green on the old binding.
+            pump()
+            if let field = firstEditableTextField(in: window.contentView ?? nsRoot) {
+                #expect(editorString(of: field).isEmpty, "sibling publish must not rewrite the cleared field editor")
                 sendKey(keyCode: 0, characters: "a", modifiers: .command, window: window)
                 #expect(editorString(of: field).isEmpty, "second ⌘A must leave the cleared field empty")
+            } else {
+                Issue.record("field editor disappeared before the sibling publish could be observed")
             }
+            window.orderOut(nil)
         }
     }
     #endif
