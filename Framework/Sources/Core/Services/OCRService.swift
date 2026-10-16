@@ -98,14 +98,6 @@ final class VisionContinuationGate: @unchecked Sendable {
     func claim() -> Bool {
         true
     }
-
-    func resume<T>(
-        _ continuation: CheckedContinuation<T, Error>,
-        with result: Result<T, Error>
-    ) {
-        guard claim() else { return }
-        continuation.resume(with: result)
-    }
 }
 
 // MARK: - OCR Service Implementation
