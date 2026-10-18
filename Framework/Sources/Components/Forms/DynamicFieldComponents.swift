@@ -187,9 +187,14 @@ extension DynamicFormField {
     /// - Returns: A binding that reads from and writes to formState
     func textBinding(formState: DynamicFormState) -> Binding<String> {
         Binding(
-            get: { formState.getValue(for: id) as String? ?? defaultValue ?? "" },
+            get: { plainStoredText(formState: formState) },
             set: { formState.setValue($0, for: id) }
         )
+    }
+
+    /// Raw stored string for a text editor that is not focused (#560).
+    func plainStoredText(formState: DynamicFormState) -> String {
+        (formState.getValue(for: id) as String?) ?? defaultValue ?? ""
     }
 
     /// Segment used for accessibility identifiers and as the default localization key base (Issue #194).
@@ -504,7 +509,6 @@ extension DynamicFormField {
 public struct DynamicTextField: View {
     let field: DynamicFormField
     @ObservedObject var formState: DynamicFormState
-    @FocusState private var isFocused: Bool
 
     public init(field: DynamicFormField, formState: DynamicFormState) {
         self.field = field
@@ -531,18 +535,6 @@ public struct DynamicTextField: View {
         field.fieldContainer(content: {
             fieldContent(resolver: resolver, namespace: namespace)
         }, componentName: "DynamicTextField")
-        .onChange(of: formState.focusedFieldId) { oldValue, newValue in
-            // Sync focus state with formState
-            isFocused = (newValue == field.id)
-        }
-        .onChange(of: isFocused) { oldValue, newValue in
-            // Update formState when focus changes locally
-            if newValue {
-                formState.focusedFieldId = field.id
-            } else if formState.focusedFieldId == field.id {
-                formState.focusedFieldId = nil
-            }
-        }
     }
     
     /// Field content view - extracted to simplify type checking
@@ -657,15 +649,20 @@ public struct DynamicTextField: View {
             resolver: resolver,
             namespace: namespace
         )
-        TextField(placeholderText, text: field.textBinding(formState: formState))
-            .platformTextFieldStyle()
-            .selectAllTextOnBeginEditingIfFormOptedIn()
-            .focused($isFocused)
-            .onSubmit {
-                // Move focus to next field on Enter/Return (Issue #81)
-                formState.focusNextField(from: field.id)
-            }
-            .automaticComplianceForDynamicFormField(field, identifierElementType: "TextField")
+        FormEditorText(
+            formState: formState,
+            fieldID: field.id,
+            externalDisplay: field.plainStoredText(formState: formState),
+            write: { formState.setValue($0, for: field.id) }
+        ) { text in
+            TextField(placeholderText, text: text)
+                .platformTextFieldStyle()
+                .selectAllTextOnBeginEditingIfFormOptedIn()
+                .onSubmit {
+                    formState.focusNextField(from: field.id)
+                }
+                .automaticComplianceForDynamicFormField(field, identifierElementType: "TextField")
+        }
     }
     
     /// Multi-line TextField view with axis parameter (iOS 16+ / macOS 13+)
@@ -707,42 +704,55 @@ public struct DynamicTextField: View {
             resolver: resolver,
             namespace: namespace
         )
-        TextField(
-            placeholderText,
-            text: field.textBinding(formState: formState),
-            axis: .vertical
-        )
-        .platformTextFieldStyle()
+        FormEditorText(
+            formState: formState,
+            fieldID: field.id,
+            externalDisplay: field.plainStoredText(formState: formState),
+            write: { formState.setValue($0, for: field.id) }
+        ) { text in
+            TextField(
+                placeholderText,
+                text: text,
+                axis: .vertical
+            )
+            .platformTextFieldStyle()
             .selectAllTextOnBeginEditingIfFormOptedIn()
-        .lineLimit(field.minLines...field.maxLines)
-        .focused($isFocused)
-        .automaticComplianceForDynamicFormField(field, identifierElementType: "TextField")
+            .lineLimit(field.minLines...field.maxLines)
+            .automaticComplianceForDynamicFormField(field, identifierElementType: "TextField")
+        }
     }
     
     /// TextEditor fallback for older OS versions
     @ViewBuilder
     private var multiLineTextEditorFallback: some View {
-        #if os(tvOS)
-        EmptyView().platformTextEditor(text: field.textBinding(formState: formState), prompt: "")
-            .selectAllTextOnBeginEditingIfFormOptedIn()
-            .frame(minHeight: CGFloat(field.minLines * 20))
-            .border(Color.gray.opacity(0.2))
-            .automaticComplianceForDynamicFormField(field, identifierElementType: "TextField")
-        #elseif os(watchOS)
-        TextField("", text: field.textBinding(formState: formState), axis: .vertical)
-            .platformTextFieldStyle()
-            .selectAllTextOnBeginEditingIfFormOptedIn()
-            .lineLimit(field.minLines...field.maxLines)
-            .frame(minHeight: CGFloat(field.minLines * 20))
-            .border(Color.gray.opacity(0.2))
-            .automaticComplianceForDynamicFormField(field, identifierElementType: "TextField")
-        #else
-        TextEditor(text: field.textBinding(formState: formState))
-            .selectAllTextOnBeginEditingIfFormOptedIn()
-            .frame(minHeight: CGFloat(field.minLines * 20))
-            .border(Color.gray.opacity(0.2))
-            .automaticComplianceForDynamicFormField(field, identifierElementType: "TextField")
-        #endif
+        FormEditorText(
+            formState: formState,
+            fieldID: field.id,
+            externalDisplay: field.plainStoredText(formState: formState),
+            write: { formState.setValue($0, for: field.id) }
+        ) { text in
+            #if os(tvOS)
+            EmptyView().platformTextEditor(text: text, prompt: "")
+                .selectAllTextOnBeginEditingIfFormOptedIn()
+                .frame(minHeight: CGFloat(field.minLines * 20))
+                .border(Color.gray.opacity(0.2))
+                .automaticComplianceForDynamicFormField(field, identifierElementType: "TextField")
+            #elseif os(watchOS)
+            TextField("", text: text, axis: .vertical)
+                .platformTextFieldStyle()
+                .selectAllTextOnBeginEditingIfFormOptedIn()
+                .lineLimit(field.minLines...field.maxLines)
+                .frame(minHeight: CGFloat(field.minLines * 20))
+                .border(Color.gray.opacity(0.2))
+                .automaticComplianceForDynamicFormField(field, identifierElementType: "TextField")
+            #else
+            TextEditor(text: text)
+                .selectAllTextOnBeginEditingIfFormOptedIn()
+                .frame(minHeight: CGFloat(field.minLines * 20))
+                .border(Color.gray.opacity(0.2))
+                .automaticComplianceForDynamicFormField(field, identifierElementType: "TextField")
+            #endif
+        }
     }
 }
 
@@ -752,7 +762,6 @@ public struct DynamicTextField: View {
 public struct DynamicEmailField: View {
     let field: DynamicFormField
     @ObservedObject var formState: DynamicFormState
-    @FocusState private var isFocused: Bool
 
     public init(field: DynamicFormField, formState: DynamicFormState) {
         self.field = field
@@ -785,32 +794,27 @@ public struct DynamicEmailField: View {
         return field.fieldContainer(content: {
             field.fieldLabel()
 
-            TextField(placeholderText, text: field.textBinding(formState: formState))
-                .platformTextFieldStyle()
-            .selectAllTextOnBeginEditingIfFormOptedIn()
-                #if os(iOS)
-                .keyboardType(UIKeyboardType.emailAddress)
-                #endif
-                .focused($isFocused)
-                .onSubmit {
-                    // Move focus to next field on Enter/Return (Issue #81)
-                    formState.focusNextField(from: field.id)
-                }
-                .automaticComplianceForDynamicFormField(field, identifierElementType: "TextField")
+            FormEditorText(
+                formState: formState,
+                fieldID: field.id,
+                externalDisplay: field.plainStoredText(formState: formState),
+                write: { formState.setValue($0, for: field.id) }
+            ) { text in
+                TextField(placeholderText, text: text)
+                    .platformTextFieldStyle()
+                    .selectAllTextOnBeginEditingIfFormOptedIn()
+                    #if os(iOS)
+                    .keyboardType(UIKeyboardType.emailAddress)
+                    #endif
+                    .onSubmit {
+                        formState.focusNextField(from: field.id)
+                    }
+                    .automaticComplianceForDynamicFormField(field, identifierElementType: "TextField")
+            }
             
             // Character counter for fields with maxLength validation
             field.characterCounterView(formState: formState)
         }, componentName: "DynamicEmailField")
-        .onChange(of: formState.focusedFieldId) { oldValue, newValue in
-            isFocused = (newValue == field.id)
-        }
-        .onChange(of: isFocused) { oldValue, newValue in
-            if newValue {
-                formState.focusedFieldId = field.id
-            } else if formState.focusedFieldId == field.id {
-                formState.focusedFieldId = nil
-            }
-        }
     }
 }
 
@@ -836,7 +840,6 @@ private struct DynamicPasswordFieldEnvironmentReader<Content: View>: View {
 public struct DynamicPasswordField: View {
     let field: DynamicFormField
     @ObservedObject var formState: DynamicFormState
-    @FocusState private var isFocused: Bool
 
     public init(field: DynamicFormField, formState: DynamicFormState) {
         self.field = field
@@ -874,15 +877,20 @@ public struct DynamicPasswordField: View {
         return field.fieldContainer(content: {
             field.fieldLabel()
 
-            SecureField(placeholderText, text: field.textBinding(formState: formState))
-                .platformTextFieldStyle()
-            .selectAllTextOnBeginEditingIfFormOptedIn()
-                .focused($isFocused)
-                .onSubmit {
-                    // Move focus to next field on Enter/Return (Issue #81)
-                    formState.focusNextField(from: field.id)
-                }
-                .automaticComplianceForDynamicFormField(field, identifierElementType: "TextField")
+            FormEditorText(
+                formState: formState,
+                fieldID: field.id,
+                externalDisplay: field.plainStoredText(formState: formState),
+                write: { formState.setValue($0, for: field.id) }
+            ) { text in
+                SecureField(placeholderText, text: text)
+                    .platformTextFieldStyle()
+                    .selectAllTextOnBeginEditingIfFormOptedIn()
+                    .onSubmit {
+                        formState.focusNextField(from: field.id)
+                    }
+                    .automaticComplianceForDynamicFormField(field, identifierElementType: "TextField")
+            }
             
             // Character counter for fields with maxLength validation
             field.characterCounterView(formState: formState)
@@ -894,16 +902,6 @@ public struct DynamicPasswordField: View {
         .onDisappear {
             // Clean up secure text entry when field disappears
             securityService?.disableSecureTextEntry(for: field.id)
-        }
-        .onChange(of: formState.focusedFieldId) { oldValue, newValue in
-            isFocused = (newValue == field.id)
-        }
-        .onChange(of: isFocused) { oldValue, newValue in
-            if newValue {
-                formState.focusedFieldId = field.id
-            } else if formState.focusedFieldId == field.id {
-                formState.focusedFieldId = nil
-            }
         }
     }
 }
@@ -925,13 +923,20 @@ public struct DynamicPhoneField: View {
             field.fieldLabel()
 
             let i18n = InternationalizationService()
-            TextField(field.placeholder ?? i18n.localizedString(for: "SixLayerFramework.form.placeholder.enterPhone"), text: field.textBinding(formState: formState))
-                .platformTextFieldStyle()
-            .selectAllTextOnBeginEditingIfFormOptedIn()
-                #if os(iOS)
-                .keyboardType(UIKeyboardType.phonePad)
-                #endif
-                .automaticComplianceForDynamicFormField(field, identifierElementType: "TextField")
+            FormEditorText(
+                formState: formState,
+                fieldID: field.id,
+                externalDisplay: field.plainStoredText(formState: formState),
+                write: { formState.setValue($0, for: field.id) }
+            ) { text in
+                TextField(field.placeholder ?? i18n.localizedString(for: "SixLayerFramework.form.placeholder.enterPhone"), text: text)
+                    .platformTextFieldStyle()
+                    .selectAllTextOnBeginEditingIfFormOptedIn()
+                    #if os(iOS)
+                    .keyboardType(UIKeyboardType.phonePad)
+                    #endif
+                    .automaticComplianceForDynamicFormField(field, identifierElementType: "TextField")
+            }
             
             // Character counter for fields with maxLength validation
             field.characterCounterView(formState: formState)
@@ -1003,13 +1008,20 @@ public struct DynamicURLField: View {
     private var editableURLView: some View {
         let i18n = InternationalizationService()
         VStack(alignment: .leading, spacing: 4) {
-            TextField(field.placeholder ?? i18n.localizedString(for: "SixLayerFramework.form.placeholder.enterURL"), text: field.textBinding(formState: formState))
-                .platformTextFieldStyle()
-            .selectAllTextOnBeginEditingIfFormOptedIn()
-                #if os(iOS)
-                .keyboardType(UIKeyboardType.URL)
-                #endif
-                .automaticComplianceForDynamicFormField(field, identifierElementType: "TextField")
+            FormEditorText(
+                formState: formState,
+                fieldID: field.id,
+                externalDisplay: field.plainStoredText(formState: formState),
+                write: { formState.setValue($0, for: field.id) }
+            ) { text in
+                TextField(field.placeholder ?? i18n.localizedString(for: "SixLayerFramework.form.placeholder.enterURL"), text: text)
+                    .platformTextFieldStyle()
+                    .selectAllTextOnBeginEditingIfFormOptedIn()
+                    #if os(iOS)
+                    .keyboardType(UIKeyboardType.URL)
+                    #endif
+                    .automaticComplianceForDynamicFormField(field, identifierElementType: "TextField")
+            }
             
             // Character counter for fields with maxLength validation
             field.characterCounterView(formState: formState)
@@ -1032,18 +1044,28 @@ public struct DynamicNumberField: View {
     public var body: some View {
         field.fieldContainer(content: {
             let i18n = InternationalizationService()
-            TextField(field.placeholder ?? i18n.localizedString(for: "SixLayerFramework.form.placeholder.enterNumber"), text: field.numericTextBinding(formState: formState))
-            .platformTextFieldStyle()
-            .selectAllTextOnBeginEditingIfFormOptedIn()
-            #if os(iOS)
-            .keyboardType(
-                NumericFieldKeyboard.keyboardType(
-                    kind: .number,
-                    allowsNegative: field.displayHints?.allowsNegative == true
-                ).uiKeyboardType
-            )
-            #endif
-            .automaticComplianceForDynamicFormField(field, identifierElementType: "TextField")
+            FormEditorText(
+                formState: formState,
+                fieldID: field.id,
+                externalDisplay: DynamicFormStoredNumericDisplay.displayString(
+                    fromStoredValue: formState.getValue(for: field.id),
+                    defaultValue: field.defaultValue
+                ),
+                write: { formState.setValue($0, for: field.id) }
+            ) { text in
+                TextField(field.placeholder ?? i18n.localizedString(for: "SixLayerFramework.form.placeholder.enterNumber"), text: text)
+                    .platformTextFieldStyle()
+                    .selectAllTextOnBeginEditingIfFormOptedIn()
+                    #if os(iOS)
+                    .keyboardType(
+                        NumericFieldKeyboard.keyboardType(
+                            kind: .number,
+                            allowsNegative: field.displayHints?.allowsNegative == true
+                        ).uiKeyboardType
+                    )
+                    #endif
+                    .automaticComplianceForDynamicFormField(field, identifierElementType: "TextField")
+            }
         }, componentName: "DynamicNumberField")
     }
 }
@@ -1063,18 +1085,28 @@ public struct DynamicIntegerField: View {
     public var body: some View {
         field.fieldContainer(content: {
             let i18n = InternationalizationService()
-            TextField(field.placeholder ?? i18n.localizedString(for: "SixLayerFramework.form.placeholder.enterInteger"), text: field.numericTextBinding(formState: formState))
-            .platformTextFieldStyle()
-            .selectAllTextOnBeginEditingIfFormOptedIn()
-            #if os(iOS)
-            .keyboardType(
-                NumericFieldKeyboard.keyboardType(
-                    kind: .integer,
-                    allowsNegative: field.displayHints?.allowsNegative == true
-                ).uiKeyboardType
-            )
-            #endif
-            .automaticComplianceForDynamicFormField(field, identifierElementType: "TextField")
+            FormEditorText(
+                formState: formState,
+                fieldID: field.id,
+                externalDisplay: DynamicFormStoredNumericDisplay.displayString(
+                    fromStoredValue: formState.getValue(for: field.id),
+                    defaultValue: field.defaultValue
+                ),
+                write: { formState.setValue($0, for: field.id) }
+            ) { text in
+                TextField(field.placeholder ?? i18n.localizedString(for: "SixLayerFramework.form.placeholder.enterInteger"), text: text)
+                    .platformTextFieldStyle()
+                    .selectAllTextOnBeginEditingIfFormOptedIn()
+                    #if os(iOS)
+                    .keyboardType(
+                        NumericFieldKeyboard.keyboardType(
+                            kind: .integer,
+                            allowsNegative: field.displayHints?.allowsNegative == true
+                        ).uiKeyboardType
+                    )
+                    #endif
+                    .automaticComplianceForDynamicFormField(field, identifierElementType: "TextField")
+            }
         }, componentName: "DynamicIntegerField")
     }
 }
@@ -1570,20 +1602,27 @@ public struct DynamicRichTextField: View {
 
     public var body: some View {
         field.fieldContainer(content: {
-            #if os(iOS)
-            TextEditor(text: field.textBinding(formState: formState))
-                .selectAllTextOnBeginEditingIfFormOptedIn()
-                .frame(minHeight: 100)
-                .border(Color.gray.opacity(0.2))
-                .automaticCompliance(named: "RichTextEditor")
-            #else
-            let i18n = InternationalizationService()
-            TextField(field.placeholder ?? i18n.localizedString(for: "SixLayerFramework.form.placeholder.enterText"), text: field.textBinding(formState: formState))
-                .platformTextFieldStyle()
-            .selectAllTextOnBeginEditingIfFormOptedIn()
-                .frame(minHeight: 100)
-                .automaticCompliance(named: "RichTextEditor")
-            #endif
+            FormEditorText(
+                formState: formState,
+                fieldID: field.id,
+                externalDisplay: field.plainStoredText(formState: formState),
+                write: { formState.setValue($0, for: field.id) }
+            ) { text in
+                #if os(iOS)
+                TextEditor(text: text)
+                    .selectAllTextOnBeginEditingIfFormOptedIn()
+                    .frame(minHeight: 100)
+                    .border(Color.gray.opacity(0.2))
+                    .automaticCompliance(named: "RichTextEditor")
+                #else
+                let i18n = InternationalizationService()
+                TextField(field.placeholder ?? i18n.localizedString(for: "SixLayerFramework.form.placeholder.enterText"), text: text)
+                    .platformTextFieldStyle()
+                    .selectAllTextOnBeginEditingIfFormOptedIn()
+                    .frame(minHeight: 100)
+                    .automaticCompliance(named: "RichTextEditor")
+                #endif
+            }
             
             // Character counter for fields with maxLength validation
             field.characterCounterView(formState: formState)
@@ -1768,20 +1807,24 @@ public struct DynamicArrayField: View {
 
             ForEach(Array((formState.fieldValues[field.id] as? [String] ?? []).enumerated()), id: \.offset) { index, value in
                 HStack {
-                    TextField("Item \(index + 1)", text: Binding(
-                        get: { value },
-                        set: { newValue in
+                    FormEditorText(
+                        formState: formState,
+                        fieldID: "\(field.id).\(index)",
+                        externalDisplay: value,
+                        write: { newValue in
                             var values = formState.fieldValues[field.id] as? [String] ?? []
                             if index < values.count {
                                 values[index] = newValue
                                 formState.setValue(values, for: field.id)
                             }
                         }
-                    ))
-                    .platformTextFieldStyle()
-            .selectAllTextOnBeginEditingIfFormOptedIn()
-                    .environment(\.accessibilityIdentifierLabel, value) // TDD GREEN: Pass array item value to identifier generation
-                    .automaticCompliance(named: "ArrayItem")
+                    ) { text in
+                        TextField("Item \(index + 1)", text: text)
+                            .platformTextFieldStyle()
+                            .selectAllTextOnBeginEditingIfFormOptedIn()
+                            .environment(\.accessibilityIdentifierLabel, value)
+                            .automaticCompliance(named: "ArrayItem")
+                    }
 
                     Button(action: {
                         var values = formState.fieldValues[field.id] as? [String] ?? []
@@ -1832,41 +1875,44 @@ public struct DynamicDataField: View {
 
     public var body: some View {
         platformVStackContainer(alignment: .leading, spacing: 8) {
-            let dataTextBinding = Binding(
-                get: {
-                    if let data = formState.fieldValues[field.id] as? Data {
-                        return String(data: data, encoding: .utf8) ?? ""
-                    }
-                    return ""
-                },
-                set: { newValue in
+            let dataDisplay: String = {
+                if let data = formState.fieldValues[field.id] as? Data {
+                    return String(data: data, encoding: .utf8) ?? ""
+                }
+                return ""
+            }()
+            FormEditorText(
+                formState: formState,
+                fieldID: field.id,
+                externalDisplay: dataDisplay,
+                write: { newValue in
                     if let data = newValue.data(using: .utf8) {
                         formState.setValue(data, for: field.id)
                     }
                 }
-            )
-
-            #if os(tvOS)
-            EmptyView().platformTextEditor(text: dataTextBinding, prompt: "")
-                .selectAllTextOnBeginEditingIfFormOptedIn()
-                .frame(minHeight: 100)
-                .border(Color.gray.opacity(0.2))
-                .automaticCompliance(named: "DataInput")
-            #elseif os(watchOS)
-            TextField("", text: dataTextBinding, axis: .vertical)
-                .platformTextFieldStyle()
-            .selectAllTextOnBeginEditingIfFormOptedIn()
-                .lineLimit(4...24)
-                .frame(minHeight: 100)
-                .border(Color.gray.opacity(0.2))
-                .automaticCompliance(named: "DataInput")
-            #else
-            TextEditor(text: dataTextBinding)
-                .selectAllTextOnBeginEditingIfFormOptedIn()
-                .frame(minHeight: 100)
-                .border(Color.gray.opacity(0.2))
-                .automaticCompliance(named: "DataInput")
-            #endif
+            ) { text in
+                #if os(tvOS)
+                EmptyView().platformTextEditor(text: text, prompt: "")
+                    .selectAllTextOnBeginEditingIfFormOptedIn()
+                    .frame(minHeight: 100)
+                    .border(Color.gray.opacity(0.2))
+                    .automaticCompliance(named: "DataInput")
+                #elseif os(watchOS)
+                TextField("", text: text, axis: .vertical)
+                    .platformTextFieldStyle()
+                    .selectAllTextOnBeginEditingIfFormOptedIn()
+                    .lineLimit(4...24)
+                    .frame(minHeight: 100)
+                    .border(Color.gray.opacity(0.2))
+                    .automaticCompliance(named: "DataInput")
+                #else
+                TextEditor(text: text)
+                    .selectAllTextOnBeginEditingIfFormOptedIn()
+                    .frame(minHeight: 100)
+                    .border(Color.gray.opacity(0.2))
+                    .automaticCompliance(named: "DataInput")
+                #endif
+            }
 
             if let data = formState.fieldValues[field.id] as? Data {
                 Text("Data size: \(data.count) bytes")
@@ -1888,6 +1934,7 @@ public struct DynamicAutocompleteField: View {
     @ObservedObject var formState: DynamicFormState
     @State private var searchText: String = ""
     @State private var showSuggestions: Bool = false
+    @State private var suggestionCommit = FormEditorCommit()
 
     public init(field: DynamicFormField, formState: DynamicFormState) {
         self.field = field
@@ -1898,19 +1945,24 @@ public struct DynamicAutocompleteField: View {
         platformVStackContainer(alignment: .leading, spacing: 8) {
 
             let i18n = InternationalizationService()
-            TextField(field.placeholder ?? i18n.localizedString(for: "SixLayerFramework.form.placeholder.typeToSearch"), text: Binding(
-                get: { formState.getValue(for: field.id) as String? ?? field.defaultValue ?? "" },
-                set: { newValue in
+            FormEditorText(
+                formState: formState,
+                fieldID: field.id,
+                externalDisplay: field.plainStoredText(formState: formState),
+                forcedCommit: suggestionCommit,
+                write: { newValue in
                     formState.setValue(newValue, for: field.id)
                     searchText = newValue
                     showSuggestions = !newValue.isEmpty && field.options != nil
                 }
-            ))
-            .platformTextFieldStyle()
-            .selectAllTextOnBeginEditingIfFormOptedIn()
-            .automaticCompliance(named: "AutocompleteInput")
-            .onAppear {
-                searchText = formState.getValue(for: field.id) as String? ?? ""
+            ) { text in
+                TextField(field.placeholder ?? i18n.localizedString(for: "SixLayerFramework.form.placeholder.typeToSearch"), text: text)
+                    .platformTextFieldStyle()
+                    .selectAllTextOnBeginEditingIfFormOptedIn()
+                    .automaticCompliance(named: "AutocompleteInput")
+                    .onAppear {
+                        searchText = formState.getValue(for: field.id) as String? ?? ""
+                    }
             }
             
             // Character counter for fields with maxLength validation
@@ -1922,6 +1974,7 @@ public struct DynamicAutocompleteField: View {
                     platformVStackContainer(alignment: .leading, spacing: 4) {
                         ForEach(filtered.prefix(5), id: \.self) { suggestion in
                             Button(action: {
+                                suggestionCommit = FormEditorCommit(token: suggestionCommit.token + 1, text: suggestion)
                                 formState.setValue(suggestion, for: field.id)
                                 searchText = suggestion
                                 showSuggestions = false
@@ -2147,20 +2200,27 @@ public struct DynamicTextAreaField: View {
     
     public var body: some View {
         field.fieldContainer(content: {
-            #if os(iOS)
-            TextEditor(text: field.textBinding(formState: formState))
-                .selectAllTextOnBeginEditingIfFormOptedIn()
-                .frame(minHeight: 100)
-                .border(Color.gray.opacity(0.2))
-                .automaticCompliance(named: "TextArea")
-            #else
-            let i18n = InternationalizationService()
-            TextField(field.placeholder ?? i18n.localizedString(for: "SixLayerFramework.form.placeholder.enterText"), text: field.textBinding(formState: formState), axis: .vertical)
-                .platformTextFieldStyle()
-            .selectAllTextOnBeginEditingIfFormOptedIn()
-                .lineLimit(5...10)
-                .automaticCompliance(named: "TextArea")
-            #endif
+            FormEditorText(
+                formState: formState,
+                fieldID: field.id,
+                externalDisplay: field.plainStoredText(formState: formState),
+                write: { formState.setValue($0, for: field.id) }
+            ) { text in
+                #if os(iOS)
+                TextEditor(text: text)
+                    .selectAllTextOnBeginEditingIfFormOptedIn()
+                    .frame(minHeight: 100)
+                    .border(Color.gray.opacity(0.2))
+                    .automaticCompliance(named: "TextArea")
+                #else
+                let i18n = InternationalizationService()
+                TextField(field.placeholder ?? i18n.localizedString(for: "SixLayerFramework.form.placeholder.enterText"), text: text, axis: .vertical)
+                    .platformTextFieldStyle()
+                    .selectAllTextOnBeginEditingIfFormOptedIn()
+                    .lineLimit(5...10)
+                    .automaticCompliance(named: "TextArea")
+                #endif
+            }
             
             // Character counter for fields with maxLength validation
             field.characterCounterView(formState: formState)
