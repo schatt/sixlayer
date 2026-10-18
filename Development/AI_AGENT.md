@@ -11,6 +11,7 @@ This document provides guidance for AI assistants working with the SixLayer Fram
 ## 📚 Version-Specific Guides
 
 ### Latest Versions (Recommended)
+- **v8.6.7** — Patch release: sidebar column and label inset (#549, #552); signed number entry (#548, #550); alert binding, deferred clear, and RTL Do Not Disturb (#533, #555, #556); focused form editors (#560); settings dismiss (#532); collection and catalog content inset (#557, #559) (see [RELEASE_v8.6.7.md](RELEASE_v8.6.7.md))
 - **v8.6.2** — Patch release: form and OCR math evaluation return nil instead of aborting in `NSExpression` (#542, #544) (see [RELEASE_v8.6.2.md](RELEASE_v8.6.2.md))
 - **v8.6.1** — Patch release: `platformTap` follows XCUI availability (#510). macOS `click()` / `doubleClick()`; `PlatformXCUITapStrategy` removed (see [RELEASE_v8.6.1.md](RELEASE_v8.6.1.md))
 - **v8.6.0** — Minor release: forms product and primary-lane coverage (#403, #486, #507, #508, #522–#525; coverage #452, #468–#470, #490, #491, #499, #503, #510–#521) (see [RELEASE_v8.6.0.md](RELEASE_v8.6.0.md))

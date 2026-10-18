@@ -27,7 +27,7 @@ Navigate to the `Framework/` directory and use it as a Swift Package:
 ```swift
 // In your Package.swift
 dependencies: [
-    .package(url: "https://github.com/schatt/sixlayer.git", from: "8.6.2")
+    .package(url: "https://github.com/schatt/sixlayer.git", from: "8.6.7")
 ]
 ```
 
@@ -41,9 +41,12 @@ dependencies: [
 
 The framework is distributed as a Swift Package from the `Framework/` directory. This ensures that only the essential framework code is included when other projects consume it.
 
-## 🆕 Latest Release: v8.6.2
+## 🆕 Latest Release: v8.6.7
 
 ### **Patch release**
+🔧 **Patch**: Sidebar column minimum and label inset (#549, #552); signed number entry (#548, #550); alert binding, deferred clear, and RTL Do Not Disturb (#533, #555, #556); focused form editors (#560); settings dismiss (#532); collection and catalog content inset (#557, #559). See [RELEASE_v8.6.7.md](Development/RELEASE_v8.6.7.md).
+
+### **Previous Release: v8.6.2 - Patch release**
 🔧 **Patch**: Form and OCR math evaluation return nil instead of aborting in `NSExpression` (#542, #544). Non-numeric calculation input and a malformed OCR formula no longer crash the process. See [RELEASE_v8.6.2.md](Development/RELEASE_v8.6.2.md).
 
 ### **Previous Release: v8.6.1 - Patch release**
@@ -334,7 +337,7 @@ These guides contain critical information about the Layer 1 Semantic Intent phil
 
 ## 📋 Current Status
 
-**Version**: v8.6.2 (Patch)
+**Version**: v8.6.7 (Patch)
 **Phase**: Patch release
 **Next**: v8.7.0
 
