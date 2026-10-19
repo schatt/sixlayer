@@ -226,6 +226,31 @@ if [ "$partial_ready" -eq 1 ]; then
         git --git-dir "$ALL_BARE" show-ref --verify --quiet refs/heads/done/564-partial
 fi
 
+# --- retire: a rejected delete is still fatal (#564) ---
+# receive.denyDeletes is a real push failure, not a missing ref.
+git --git-dir "$ALL_BARE" config receive.denyDeletes true
+REJECT_WT="${WORKDIR}/wt-564-reject"
+git -C "$REPO" worktree add -q --no-track -b wip/564-reject "$REJECT_WT" next
+git -C "$REPO" push -q "$ORIGIN_BARE" wip/564-reject
+git -C "$REPO" push -q "$ALL_BARE" wip/564-reject
+
+set +e
+REJECT_OUT="$("$RETIRE" --git-dir "$REPO" 564-reject 2>&1)"
+RC=$?
+set -e
+if [ "$RC" -ne 0 ]; then
+    echo "✅ retire aborts when a push URL rejects the delete"
+    PASS=$((PASS + 1))
+else
+    echo "❌ retire aborts when a push URL rejects the delete (expected non-zero, got 0)"
+    printf '%s\n' "$REJECT_OUT"
+    FAIL=$((FAIL + 1))
+fi
+assert_true "worktree kept when delete is rejected" \
+    test -d "$REJECT_WT"
+assert_true "local done/564-reject kept when delete is rejected" \
+    git -C "$REPO" show-ref --verify --quiet refs/heads/done/564-reject
+
 echo ""
 echo "Passed: $PASS  Failed: $FAIL"
 if [ "$FAIL" -ne 0 ]; then
