@@ -186,6 +186,71 @@ assert_false "done/459-slug is not kept as a local branch" \
 assert_true "origin/done/459-slug exists after retire" \
     git -C "$REPO" show-ref --verify --quiet refs/remotes/origin/done/459-slug
 
+# --- retire: missing wip/ on one push URL is not fatal (#564) ---
+# `all` fetches from ALL_BARE and pushes to ORIGIN_BARE then ALL_BARE.
+# Publish wip only to the fetch URL so ls-remote succeeds, then
+# `git push all --delete` errors on the URL that never had the ref.
+PARTIAL_WT="${WORKDIR}/wt-564"
+git -C "$REPO" worktree add -q --no-track -b wip/564-partial "$PARTIAL_WT" next
+git -C "$REPO" push -q "$ALL_BARE" wip/564-partial
+
+partial_ready=0
+if git --git-dir "$ALL_BARE" show-ref --verify --quiet refs/heads/wip/564-partial \
+    && ! git --git-dir "$ORIGIN_BARE" show-ref --verify --quiet refs/heads/wip/564-partial \
+    && [ -d "$PARTIAL_WT" ]; then
+    partial_ready=1
+fi
+assert_eq "$partial_ready" "1" \
+    "precondition: wip/564-partial is on the all fetch URL, absent on origin, worktree live"
+
+if [ "$partial_ready" -eq 1 ]; then
+    set +e
+    PARTIAL_OUT="$("$RETIRE" --git-dir "$REPO" 564-partial 2>&1)"
+    RC=$?
+    set -e
+    assert_exit_zero "$RC" "retire exits 0 when one push URL lacks wip/"
+    if [ "$RC" -ne 0 ]; then
+        printf '%s\n' "$PARTIAL_OUT"
+    fi
+    assert_false "worktree removed when one push URL lacks wip/" \
+        test -d "$PARTIAL_WT"
+    assert_false "local wip/564-partial is gone" \
+        git -C "$REPO" show-ref --verify --quiet refs/heads/wip/564-partial
+    assert_false "local done/564-partial is not kept" \
+        git -C "$REPO" show-ref --verify --quiet refs/heads/done/564-partial
+    assert_false "wip/564-partial deleted from the URL that had it" \
+        git --git-dir "$ALL_BARE" show-ref --verify --quiet refs/heads/wip/564-partial
+    assert_true "done/564-partial published to origin push URL" \
+        git --git-dir "$ORIGIN_BARE" show-ref --verify --quiet refs/heads/done/564-partial
+    assert_true "done/564-partial published to all fetch URL" \
+        git --git-dir "$ALL_BARE" show-ref --verify --quiet refs/heads/done/564-partial
+fi
+
+# --- retire: a rejected delete is still fatal (#564) ---
+# receive.denyDeletes is a real push failure, not a missing ref.
+git --git-dir "$ALL_BARE" config receive.denyDeletes true
+REJECT_WT="${WORKDIR}/wt-564-reject"
+git -C "$REPO" worktree add -q --no-track -b wip/564-reject "$REJECT_WT" next
+git -C "$REPO" push -q "$ORIGIN_BARE" wip/564-reject
+git -C "$REPO" push -q "$ALL_BARE" wip/564-reject
+
+set +e
+REJECT_OUT="$("$RETIRE" --git-dir "$REPO" 564-reject 2>&1)"
+RC=$?
+set -e
+if [ "$RC" -ne 0 ]; then
+    echo "✅ retire aborts when a push URL rejects the delete"
+    PASS=$((PASS + 1))
+else
+    echo "❌ retire aborts when a push URL rejects the delete (expected non-zero, got 0)"
+    printf '%s\n' "$REJECT_OUT"
+    FAIL=$((FAIL + 1))
+fi
+assert_true "worktree kept when delete is rejected" \
+    test -d "$REJECT_WT"
+assert_true "local done/564-reject kept when delete is rejected" \
+    git -C "$REPO" show-ref --verify --quiet refs/heads/done/564-reject
+
 echo ""
 echo "Passed: $PASS  Failed: $FAIL"
 if [ "$FAIL" -ne 0 ]; then
