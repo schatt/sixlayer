@@ -1,12 +1,21 @@
 # 🚀 Six-Layer Framework Release History
 
-## 📍 **Current Release: v8.6.2** 🚀
+## 📍 **Current Release: v8.6.7** 🚀
 
-**Release Date**: September 30, 2026
+**Release Date**: October 18, 2026
 **Status**: Patch release
-**Previous Release**: v8.6.1 - Patch release
-**Note**: Form and OCR math evaluation return nil instead of aborting in `NSExpression` (#542, #544).
+**Previous Release**: v8.6.2 - Patch release
+**Note**: Sidebar column and label inset (#549, #552); signed number entry (#548, #550); alert binding, deferred clear, and RTL Do Not Disturb (#533, #555, #556); focused form editors (#560); settings dismiss (#532); collection and catalog content inset (#557, #559). Tags v8.6.3–v8.6.6 were not published.
 **Next Release**: v8.7.0
+
+---
+
+## 🎯 **v8.6.7 - sidebar, alerts, and signed numbers** (October 18, 2026)
+
+### **What's in v8.6.7:**
+- Patch release (#379, #380, #439, #448, #532, #533, #548–#550, #552, #555–#557, #559, #560, #565). See [RELEASE_v8.6.7.md](RELEASE_v8.6.7.md) for details.
+
+**See [RELEASE_v8.6.7.md](RELEASE_v8.6.7.md) for complete release notes.**
 
 ---
 

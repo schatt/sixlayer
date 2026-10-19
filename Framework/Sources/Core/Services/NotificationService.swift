@@ -185,6 +185,15 @@ public class NotificationService: ObservableObject {
     public var isRespectingDoNotDisturb: Bool {
         return respectDoNotDisturb
     }
+
+    /// Unit tests set this. Production code reads the system Do Not Disturb flag.
+    /// A system refresh must not overwrite the override: init already started that refresh.
+    private var doNotDisturbOverrideForTesting: Bool?
+
+    func setDoNotDisturbActiveForTesting(_ active: Bool) {
+        doNotDisturbOverrideForTesting = active
+        isDoNotDisturbActive = active
+    }
     
     // MARK: - Local Notifications
     
@@ -354,9 +363,14 @@ public class NotificationService: ObservableObject {
     
     /// Update Do Not Disturb status from system
     private func updateDoNotDisturbStatus() {
+        if doNotDisturbOverrideForTesting != nil {
+            return
+        }
         #if os(iOS)
         Task { @MainActor in
-            self.isDoNotDisturbActive = await self.checkIOSDoNotDisturbStatusAsync()
+            let systemActive = await self.checkIOSDoNotDisturbStatusAsync()
+            guard self.doNotDisturbOverrideForTesting == nil else { return }
+            self.isDoNotDisturbActive = systemActive
             self.updateSettings()
         }
         #elseif os(macOS)
@@ -514,6 +528,27 @@ public class NotificationService: ObservableObject {
     #endif
 }
 
+// MARK: - Alert presentation binding
+
+/// When Do Not Disturb should hide a notification alert.
+///
+/// The decision is pure. Callers clear the binding from `onChange` / appearance,
+/// not while the view function is building.
+enum PlatformNotificationAlertPresentation {
+    /// True only when suppression is active and the caller still wants the alert shown.
+    static func shouldClearPresented(suppress: Bool, isPresented: Bool) -> Bool {
+        suppress && isPresented
+    }
+
+    /// Clear immediately when suppression is on and the caller still wants the alert.
+    static func clearIfNeeded(suppress: Bool, isPresented: Binding<Bool>) {
+        guard shouldClearPresented(suppress: suppress, isPresented: isPresented.wrappedValue) else {
+            return
+        }
+        isPresented.wrappedValue = false
+    }
+}
+
 // MARK: - View Extension for Platform-Appropriate Alerts
 
 public extension View {
@@ -534,31 +569,14 @@ public extension View {
         secondaryAction: Alert.Button? = nil,
         notificationService: NotificationService? = nil
     ) -> some View {
-        let service = notificationService ?? NotificationService()
-        
-        // Check if Do Not Disturb would block
-        let shouldShow = !service.isDoNotDisturbActive || !service.isRespectingDoNotDisturb
-        
-        let alert: Alert
-        if let secondaryAction = secondaryAction {
-            alert = Alert(
-                title: Text(title),
-                message: message.map { Text($0) },
-                primaryButton: primaryAction,
-                secondaryButton: secondaryAction
-            )
-        } else {
-            alert = Alert(
-                title: Text(title),
-                message: message.map { Text($0) },
-                dismissButton: primaryAction
-            )
-        }
-        
-        return self.alert(isPresented: shouldShow ? isPresented : .constant(false)) {
-            alert
-        }
-        .environmentObject(service)
+        notificationAlert(
+            isPresented: isPresented,
+            title: title,
+            message: message,
+            primaryAction: primaryAction,
+            secondaryAction: secondaryAction,
+            notificationService: notificationService
+        )
     }
     
     /// Present a platform-appropriate alert with RTL support
@@ -580,10 +598,33 @@ public extension View {
         locale: Locale = Locale.current,
         notificationService: NotificationService? = nil
     ) -> some View {
-        let service = notificationService ?? NotificationService()
         let i18n = InternationalizationService(locale: locale)
-        let layoutDirection = i18n.getLayoutDirection()
-        
+        return notificationAlert(
+            isPresented: isPresented,
+            title: title,
+            message: message,
+            primaryAction: primaryAction,
+            secondaryAction: secondaryAction,
+            notificationService: notificationService
+        )
+        .environment(\.layoutDirection, i18n.getLayoutDirection())
+        .environment(\.locale, locale)
+    }
+
+    /// Shared alert presentation. Do Not Disturb suppression is the same for LTR and RTL.
+    private func notificationAlert(
+        isPresented: Binding<Bool>,
+        title: String,
+        message: String?,
+        primaryAction: Alert.Button,
+        secondaryAction: Alert.Button?,
+        notificationService: NotificationService?
+    ) -> some View {
+        let service = notificationService ?? NotificationService()
+
+        // Check if Do Not Disturb would block. Do not write `isPresented` here.
+        let suppress = service.isDoNotDisturbActive && service.isRespectingDoNotDisturb
+
         let alert: Alert
         if let secondaryAction = secondaryAction {
             alert = Alert(
@@ -599,12 +640,34 @@ public extension View {
                 dismissButton: primaryAction
             )
         }
-        
-        return self.alert(isPresented: isPresented) {
+
+        // SwiftUI must see "not presented" while suppressed. Writing the caller
+        // here happens during view update, so the real clear waits for appearance.
+        let presentedToSwiftUI = Binding<Bool>(
+            get: { !suppress && isPresented.wrappedValue },
+            set: { isPresented.wrappedValue = $0 }
+        )
+        return self.alert(isPresented: presentedToSwiftUI) {
             alert
         }
-        .environment(\.layoutDirection, layoutDirection)
-        .environment(\.locale, locale)
+        .onAppear {
+            PlatformNotificationAlertPresentation.clearIfNeeded(
+                suppress: suppress,
+                isPresented: isPresented
+            )
+        }
+        .onChange(of: isPresented.wrappedValue) { _, _ in
+            PlatformNotificationAlertPresentation.clearIfNeeded(
+                suppress: suppress,
+                isPresented: isPresented
+            )
+        }
+        .onChange(of: suppress) { _, _ in
+            PlatformNotificationAlertPresentation.clearIfNeeded(
+                suppress: suppress,
+                isPresented: isPresented
+            )
+        }
         .environmentObject(service)
     }
 }

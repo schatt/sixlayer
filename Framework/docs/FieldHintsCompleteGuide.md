@@ -510,6 +510,7 @@ public struct FieldDisplayHints: Sendable {
     public let maxLength: Int?
     public let minLength: Int?
     public let metadata: [String: String]
+    public let allowsNegative: Bool
 }
 ```
 
@@ -541,6 +542,12 @@ public struct FieldDisplayHints: Sendable {
 - **Type**: Int
 - **Purpose**: Minimum required length for validation
 - **Example**: `"minLength": "3"`
+
+#### `allowsNegative`
+- **Type**: Bool. JSON `true` / `false`, or the strings `"true"` / `"false"`. Anything else, including a missing key, is off.
+- **Purpose**: Let a `number` or `integer` field use a keyboard that can type a minus sign. Off keeps `.decimalPad` for numbers and `.numberPad` for integers. On uses `.numbersAndPunctuation` for both. `IntelligentFormView` number fields use the same keyboard. Their stepper follows `expectedRange` when set; otherwise signed fields use `-1000...1000` and unsigned fields keep `0...1000`. The field still stores the text it is given; this does not filter keystrokes.
+- **Example**: `"allowsNegative": true`
+- **Stored form**: `metadata["allowsNegative"]` is `"true"` or `"false"`. If that key is already set on the field, hints do not replace it.
 
 #### `metadata`
 - **Type**: Dictionary<String, String>

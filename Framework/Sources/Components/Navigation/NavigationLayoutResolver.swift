@@ -286,7 +286,11 @@ public enum NavigationLayoutResolver {
     }
 
     /// Column min/ideal/max for app-nav `NavigationSplitView` sidebar; `nil` when even the shrink floor + detail cannot fit (#330).
-    /// Ideal shrinks with available width so the column tracks the window instead of parking a sticky min offscreen.
+    ///
+    /// macOS opens the column at `min` and does not later grow it to `ideal` (#549).
+    /// `min` is therefore the rendering profile for `ideal` (text 180 / compact 140 / icon 80),
+    /// not always the icon-rail floor. Ideal still shrinks with the width budget so a narrow
+    /// window is not stuck with a text-sidebar minimum parked offscreen.
     public static func appNavigationSidebarColumnSizing(
         availableWidth: CGFloat,
         profile: NavigationSidebarProfile = .textSidebar,
@@ -301,8 +305,10 @@ public enum NavigationLayoutResolver {
         let profileIdeal = resolvedWidth(for: profile, availableWidth: availableWidth)
         let budgetIdeal = availableWidth - detailMin
         let ideal = min(profile.maxWidth, max(floor, min(profileIdeal, budgetIdeal)))
+        let renderedMin = activeSidebarRenderingProfile(columnIdealWidth: ideal).minWidth
+        let columnMin = min(ideal, max(floor, renderedMin))
         return NavigationSplitColumnSizing(
-            min: floor,
+            min: columnMin,
             ideal: ideal,
             max: profile.maxWidth
         )

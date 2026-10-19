@@ -1,5 +1,5 @@
 // swift-tools-version: 6.0
-// SixLayerFramework v8.6.2 - Patch: form and OCR math evaluation no longer abort (#542, #544)
+// SixLayerFramework v8.6.7 - Patch: sidebar, alerts, signed numbers, content inset (#549, #552, #533, #550, #557, #560)
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
@@ -28,10 +28,9 @@ let package = Package(
         )
     ],
     dependencies: [
-        // Temporary: schatt/ViewInspector 0.10.4 (nalexn PR 421 @ f110d97) so
-        // consumers can use version requirements (#438). Switch back to nalexn
-        // when they tag a GeometryProxy-safe release (#439).
-        .package(url: "https://github.com/schatt/ViewInspector", from: "0.10.4"),
+        // nalexn 0.10.5 (2dacb6e) is the GeometryProxy-safe tag (#439).
+        // Branch 0.10.6 points at that same commit; there is no 0.10.6 tag.
+        .package(url: "https://github.com/nalexn/ViewInspector", from: "0.10.5"),
     ],
     targets: [
         // Main framework target - organized into logical structure
@@ -87,7 +86,8 @@ let package = Package(
         .testTarget(
             name: "NavigationLayoutResolverTests",
             dependencies: [
-                "SixLayerFramework"
+                "SixLayerFramework",
+                .product(name: "ViewInspector", package: "ViewInspector")
             ],
             path: "Development/Tests/NavigationLayoutResolverTests"
         ),

@@ -307,10 +307,17 @@ open class BaseTestClass {
     // Text/image *content* still needs VI or XCUI (#393 / #392) — hostability is the cheap truthful floor.
     @MainActor
     private func expectHostableWithoutViewInspector(_ view: some View, testName: String, detail: String) {
-        #expect(
-            PlatformContainerStructureAssertions.isHostable(view),
-            "View should be hostable for \(testName); \(detail)"
-        )
+        switch PlatformContainerStructureAssertions.observeHostability(view) {
+        case .observed(let hostable):
+            #expect(
+                hostable,
+                "View should be hostable for \(testName); \(detail)"
+            )
+        case .unavailable:
+            // watchOS has no hosting controller (#379). visionOS unit tests have no
+            // UIWindowScene (#380). Either way the lane did not look.
+            break
+        }
     }
 
     @MainActor
