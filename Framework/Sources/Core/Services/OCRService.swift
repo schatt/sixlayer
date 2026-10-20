@@ -242,7 +242,7 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
             deskewMaximumDegrees: context.segmentDeskewMaximumDegrees
         )
         var labels = context.suppliedLabelFragments
-        if labels.isEmpty && !SevenSegmentRedHold.enabled {
+        if labels.isEmpty {
             labels = await recognizeLabelFragments(cgImage: cgImage, context: context)
         }
         let segments = decoded.recognizedTexts.filter { $0.role == .segment }
