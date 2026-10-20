@@ -18,7 +18,7 @@ private struct OptionalHintsProbe581 {
 @Suite("Optional initialData hints lookup (#581)")
 struct IntelligentFormViewOptionalInitialDataHintsTests {
 
-    @Test func typeBasedFormResolvesUnwrappedModelNameAndFields() {
+    @Test @MainActor func typeBasedFormResolvesUnwrappedModelNameAndFields() {
         let item = OptionalHintsProbe581(title: "Edit me")
         let lookup = IntelligentFormView.initialDataFormHintsLookup(
             dataType: OptionalHintsProbe581.self,
