@@ -109,15 +109,20 @@ final class VisionContinuationGate: @unchecked Sendable {
 
 /// Runs a Vision `perform` whose completion and thrown error both try to resume.
 ///
-/// The stub still forwards every path. Callers must not rely on a single resume yet.
+/// The first claim wins. A later claim does not call `onResume` (#574).
 func runVisionRequest<T>(
     onResume: @escaping (Result<T, Error>) -> Void,
     perform: (_ resume: @escaping (Result<T, Error>) -> Void) throws -> Void
 ) {
-    let resume: (Result<T, Error>) -> Void = { onResume($0) }
+    let gate = VisionContinuationGate()
+    let resume: (Result<T, Error>) -> Void = { result in
+        guard gate.claim() else { return }
+        onResume(result)
+    }
     do {
         try perform(resume)
     } catch {
+        guard gate.claim() else { return }
         onResume(.failure(error))
     }
 }
