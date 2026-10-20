@@ -127,6 +127,22 @@ func runVisionRequest<T>(
     }
 }
 
+/// Awaits one Vision result. `perform` may resume and then throw; only the first delivery is returned.
+func withVisionRequest<T>(
+    perform: (_ resume: @escaping (Result<T, Error>) -> Void) throws -> Void
+) async throws -> T {
+    try await withCheckedThrowingContinuation { continuation in
+        runVisionRequest(onResume: { result in
+            switch result {
+            case .success(let value):
+                continuation.resume(returning: value)
+            case .failure(let error):
+                continuation.resume(throwing: error)
+            }
+        }, perform: perform)
+    }
+}
+
 // MARK: - OCR Service Implementation
 
 /// Main OCR service implementation
