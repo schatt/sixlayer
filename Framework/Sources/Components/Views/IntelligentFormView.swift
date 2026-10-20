@@ -98,8 +98,8 @@ public struct IntelligentFormView {
     // MARK: - Public API
 
     /// Hints lookup for `generateForm(for:initialData:)` when an instance is present.
-    /// `initialData` on that overload is `T?`, so the name and analysis must use the
-    /// unwrapped model. Callers pass the non-optional value.
+    /// The overload's `initialData` parameter is `T?`. Callers pass the unwrapped value
+    /// and `dataType`, so the hints file is `Model.hints` and Mirror sees the model.
     struct InitialDataFormHintsLookup {
         let modelName: String
         let fieldNames: [String]
@@ -110,13 +110,9 @@ public struct IntelligentFormView {
         dataType: T.Type,
         initialData: T
     ) -> InitialDataFormHintsLookup {
-        // Preserve the overload's current behavior: it passes the optional through,
-        // so the model name is Optional<T> and Mirror sees the wrapper.
-        _ = dataType
-        let wrapped: T? = initialData
-        let analysis = DataIntrospectionEngine.analyze(wrapped)
-        let described = String(describing: type(of: wrapped))
+        let described = String(describing: dataType)
         let modelName = described.components(separatedBy: ".").last ?? described
+        let analysis = DataIntrospectionEngine.analyze(initialData)
         return InitialDataFormHintsLookup(
             modelName: modelName,
             fieldNames: analysis.fields.map(\.name),
