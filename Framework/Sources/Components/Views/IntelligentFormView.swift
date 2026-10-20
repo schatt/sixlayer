@@ -97,6 +97,11 @@ public struct IntelligentFormView {
     
     // MARK: - Public API
 
+    static func hintsModelName<T>(for dataType: T.Type) -> String {
+        let described = String(describing: dataType)
+        return described.components(separatedBy: ".").last ?? described
+    }
+
     /// Hints lookup for `generateForm(for:initialData:)` when an instance is present.
     /// The overload's `initialData` parameter is `T?`. Callers pass the unwrapped value
     /// and `dataType`, so the hints file is `Model.hints` and Mirror sees the model.
@@ -110,8 +115,7 @@ public struct IntelligentFormView {
         dataType: T.Type,
         initialData: T
     ) -> InitialDataFormHintsLookup {
-        let described = String(describing: dataType)
-        let modelName = described.components(separatedBy: ".").last ?? described
+        let modelName = hintsModelName(for: dataType)
         let analysis = DataIntrospectionEngine.analyze(initialData)
         return InitialDataFormHintsLookup(
             modelName: modelName,
@@ -176,8 +180,7 @@ public struct IntelligentFormView {
     ) -> some View {
         // Try type-only analysis if no initialData provided
         if initialData == nil {
-            let modelName = String(describing: dataType)
-                .components(separatedBy: ".").last ?? String(describing: dataType)
+            let modelName = hintsModelName(for: dataType)
             
             if let analysis = DataIntrospectionEngine.analyzeFromType(dataType, modelName: modelName) {
                 // Type-only form generation: use hints-only analysis
@@ -300,19 +303,18 @@ Text(i18n.localizedString(for: "SixLayerFramework.form.title"))
             }
         }
         
-        // Analyze data - will use hints-first if available, Mirror as fallback.
-        // initialData is non-nil here; the optional wrapper must not be the analyzed value.
-        let lookup = initialDataFormHintsLookup(dataType: dataType, initialData: initialData!)
+        // initialData is non-nil here. Analyze that value, not the optional wrapper.
+        let data = initialData!
+        let lookup = initialDataFormHintsLookup(dataType: dataType, initialData: data)
         let analysis = lookup.analysis
         let formStrategy = determineFormStrategy(analysis: analysis)
         
         // Auto-create dataBinder if enabled and not provided
-        // Note: initialData is guaranteed to be non-nil here (we checked above)
         let effectiveDataBinder: DataBinder<T>?
         if let providedBinder = dataBinder {
             effectiveDataBinder = providedBinder
-        } else if autoBind && supportsAutoBinding(initialData!, analysis: analysis) {
-            effectiveDataBinder = createAutoDataBinder(for: initialData!, analysis: analysis)
+        } else if autoBind && supportsAutoBinding(data, analysis: analysis) {
+            effectiveDataBinder = createAutoDataBinder(for: data, analysis: analysis)
         } else {
             effectiveDataBinder = nil
         }
@@ -1559,8 +1561,7 @@ private struct TypeOnlyFormWrapper<T>: View {
     
     /// Create a blank entity and populate with defaults from hints
     private func createBlankEntity() {
-        let modelName = String(describing: dataType)
-            .components(separatedBy: ".").last ?? String(describing: dataType)
+        let modelName = IntelligentFormView.hintsModelName(for: dataType)
         
         // Try Core Data first
         #if canImport(CoreData)
