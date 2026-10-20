@@ -12,6 +12,7 @@
 //  - Perform-throw then a late completion keeps the throw and resumes once.
 //
 
+import Foundation
 import Testing
 @testable import SixLayerFramework
 
