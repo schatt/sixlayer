@@ -10,9 +10,6 @@ import Foundation
 
 enum OCRSegmentLabelBinding {
     static func merge(segments: [OCRRecognizedText], labels: [OCRRecognizedText]) -> [OCRRecognizedText] {
-        if SevenSegmentRedHold.enabled {
-            return segments
-        }
         let kept = labels.filter { label in
             !segments.contains { segment in overlapsEnough(label.boundingBox, segment.boundingBox) }
         }
@@ -20,9 +17,6 @@ enum OCRSegmentLabelBinding {
     }
 
     static func assign(fragments: [OCRRecognizedText], patterns: [String: String]) -> [String: String] {
-        if SevenSegmentRedHold.enabled {
-            return [:]
-        }
         let segments = fragments.filter { $0.role == .segment }
         let labels = fragments.filter { $0.role == .label }
         guard !segments.isEmpty, !labels.isEmpty, !patterns.isEmpty else { return [:] }
