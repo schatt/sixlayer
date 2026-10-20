@@ -107,6 +107,29 @@ final class VisionContinuationGate: @unchecked Sendable {
     }
 }
 
+/// Runs a Vision `perform` whose completion and thrown error both try to resume.
+///
+/// The stub still forwards every path. Callers must not rely on a single resume yet.
+func runVisionRequest<T>(
+    onResume: @escaping (Result<T, Error>) -> Void,
+    perform: (_ resume: @escaping (Result<T, Error>) -> Void) throws -> Void
+) {
+    let resume: (Result<T, Error>) -> Void = { onResume($0) }
+    do {
+        try perform(resume)
+    } catch {
+        onResume(.failure(error))
+    }
+}
+
+func withVisionRequest<T>(
+    perform: (_ resume: @escaping (Result<T, Error>) -> Void) throws -> Void
+) async throws -> T {
+    try await withCheckedThrowingContinuation { continuation in
+        runVisionRequest(onResume: { continuation.resume(with: $0) }, perform: perform)
+    }
+}
+
 // MARK: - OCR Service Implementation
 
 /// Main OCR service implementation
