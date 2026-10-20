@@ -101,38 +101,40 @@ public class BarcodeService: BarcodeServiceProtocol, @unchecked Sendable {
         #endif
         
         return try await withCheckedThrowingContinuation { continuation in
-            let request = VNDetectBarcodesRequest { request, error in
-                if let error = error {
-                    continuation.resume(throwing: error)
-                    return
-                }
-                
-                guard let observations = request.results as? [VNBarcodeObservation] else {
-                    // No barcodes found - return empty result
-                    let emptyResult = BarcodeResult(
-                        barcodes: [],
-                        confidence: 0.0,
-                        processingTime: 0.0
+            // perform(_:) can run the completion and then throw. One claim, so the
+            // second path cannot resume (#574).
+            runVisionRequest(onResume: { continuation.resume(with: $0) }) { resume in
+                let request = VNDetectBarcodesRequest { request, error in
+                    if let error = error {
+                        resume(.failure(error))
+                        return
+                    }
+
+                    guard let observations = request.results as? [VNBarcodeObservation] else {
+                        let emptyResult = BarcodeResult(
+                            barcodes: [],
+                            confidence: 0.0,
+                            processingTime: 0.0
+                        )
+                        resume(.success(emptyResult))
+                        return
+                    }
+
+                    let result = self.processVisionBarcodeResults(
+                        observations: observations,
+                        context: context
                     )
-                    continuation.resume(returning: emptyResult)
-                    return
+                    resume(.success(result))
                 }
-                
-                let result = self.processVisionBarcodeResults(
-                    observations: observations,
-                    context: context
-                )
-                continuation.resume(returning: result)
-            }
-            
-            // Configure request based on context
-            configureVisionBarcodeRequest(request, context: context)
-            
-            let handler = VNImageRequestHandler(cgImage: cgImage)
-            do {
-                try handler.perform([request])
-            } catch {
-                continuation.resume(throwing: BarcodeError.processingFailed)
+
+                configureVisionBarcodeRequest(request, context: context)
+
+                let handler = VNImageRequestHandler(cgImage: cgImage)
+                do {
+                    try handler.perform([request])
+                } catch {
+                    resume(.failure(BarcodeError.processingFailed))
+                }
             }
         }
         #else
