@@ -10,6 +10,7 @@
 //
 
 import XCTest
+import SixLayerTestKit
 @testable import SixLayerFramework
 
 /// Layer 4 component tests: one test per L4 API. Contract = full contract (behavior, structure, a11y).
@@ -119,21 +120,7 @@ final class Layer4UITests: SixLayerUITestCase {
 
     @MainActor
     private func tapByNormalizedCenter(_ element: XCUIElement) {
-        #if os(macOS)
-        if element.isHittable {
-            element.click()
-        } else if element.xcuiHasValidTapFrame {
-            element.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).click()
-        } else {
-            element.click()
-        }
-        #else
-        if element.isHittable {
-            element.tap()
-        } else {
-            element.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
-        }
-        #endif
+        element.platformTap()
     }
 
     @MainActor
@@ -259,9 +246,9 @@ final class Layer4UITests: SixLayerUITestCase {
     @MainActor
     private func dismissStraySystemSheetIfNeeded() {
         let cancel = app.buttons["Cancel"].firstMatch
-        if cancel.exists { cancel.tap() }
+        if cancel.exists { cancel.platformTap() }
         let close = app.navigationBars.buttons["Close"].firstMatch
-        if close.exists { close.tap() }
+        if close.exists { close.platformTap() }
     }
 
     /// Fail with nearby identifier samples so the next xcresult failure text carries real a11y ids (#316).
