@@ -122,14 +122,6 @@ func runVisionRequest<T>(
     }
 }
 
-func withVisionRequest<T>(
-    perform: (_ resume: @escaping (Result<T, Error>) -> Void) throws -> Void
-) async throws -> T {
-    try await withCheckedThrowingContinuation { continuation in
-        runVisionRequest(onResume: { continuation.resume(with: $0) }, perform: perform)
-    }
-}
-
 // MARK: - OCR Service Implementation
 
 /// Main OCR service implementation
