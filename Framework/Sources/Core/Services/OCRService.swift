@@ -167,7 +167,7 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
                 deskewMaximumDegrees: context.segmentDeskewMaximumDegrees
             )
         }
-        try await performVisionOCRIfAvailable(
+        return try await performVisionOCRIfAvailable(
             image: image,
             context: context,
             strategy: strategy
