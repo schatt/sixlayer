@@ -596,7 +596,8 @@ private enum SegmentPanel {
                     x += extra
                 case .digit(let pattern):
                     strokes.append(contentsOf: digitStrokes(pattern, x: x, y: y, opposite: false))
-                    x += cellW + intra
+                    let advance = isNarrowOne(pattern) ? stroke : cellW
+                    x += advance + intra
                 case .period:
                     strokes.append(Stroke(rect: periodRect(x: x, y: y), opposite: false))
                     x += stroke + intra
@@ -630,6 +631,10 @@ private enum SegmentPanel {
         let height = max(padding, y - rowGap + padding)
         let width = max(padding, maxX - intra + padding)
         return Layout(width: max(width, 1), height: max(height, 1), strokes: strokes, rowBands: bands)
+    }
+
+    private static func isNarrowOne(_ pattern: SevenSegmentPattern) -> Bool {
+        pattern == [.b, .c]
     }
 
     private static func periodRect(x: Int, y: Int) -> CGRect {
