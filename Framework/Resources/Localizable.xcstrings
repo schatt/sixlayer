@@ -2,12 +2,15 @@
   "sourceLanguage" : "en",
   "strings" : {
     "" : {
-
+      "extractionState" : "manual",
+      "shouldTranslate" : false
     },
     "%@" : {
-
+      "extractionState" : "manual",
+      "shouldTranslate" : false
     },
     "%@ / %@" : {
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -18,6 +21,7 @@
       }
     },
     "%@ / %@ characters" : {
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -28,6 +32,7 @@
       }
     },
     "%@ fields • %@ complexity" : {
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -38,9 +43,10 @@
       }
     },
     "%@ items" : {
-
+      "extractionState" : "manual"
     },
     "%@ validation error%@" : {
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -51,6 +57,7 @@
       }
     },
     "%@ • %@" : {
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -61,9 +68,11 @@
       }
     },
     "%@%%" : {
-
+      "extractionState" : "manual",
+      "shouldTranslate" : false
     },
     "%@. %@" : {
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -74,6 +83,7 @@
       }
     },
     "%@: %@" : {
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -84,189 +94,192 @@
       }
     },
     "*" : {
-
+      "extractionState" : "manual",
+      "shouldTranslate" : false
     },
     "... and %@ more items" : {
-
+      "extractionState" : "manual"
     },
     "0" : {
-
+      "extractionState" : "manual",
+      "shouldTranslate" : false
     },
     "Accessibility Testing" : {
-
+      "extractionState" : "manual"
     },
     "Additional Details" : {
-
+      "extractionState" : "manual"
     },
     "Age" : {
-
+      "extractionState" : "manual"
     },
     "Analysis failed" : {
-
+      "extractionState" : "manual"
     },
     "Analyzing image for barcode detection" : {
-
+      "extractionState" : "manual"
     },
     "Array" : {
-
+      "extractionState" : "manual"
     },
     "Barcode %@:" : {
-
+      "extractionState" : "manual"
     },
     "Barcode Detected" : {
-
+      "extractionState" : "manual"
     },
     "Barcode Scanning Error" : {
-
+      "extractionState" : "manual"
     },
     "Cancel" : {
-
+      "extractionState" : "manual"
     },
     "Card Title" : {
-
+      "extractionState" : "manual"
     },
     "Card description" : {
-
+      "extractionState" : "manual"
     },
     "Close sidebar" : {
-
+      "extractionState" : "manual"
     },
     "Columns: %@" : {
-
+      "extractionState" : "manual"
     },
     "Comparing %@ DataFrames" : {
-
+      "extractionState" : "manual"
     },
     "Comparison analysis coming soon..." : {
-
+      "extractionState" : "manual"
     },
     "Complexity: %@" : {
-
+      "extractionState" : "manual"
     },
     "Confidence" : {
-
+      "extractionState" : "manual"
     },
     "Cross-Platform Layout Optimization" : {
-
+      "extractionState" : "manual"
     },
     "Custom field not registered: %@" : {
-
+      "extractionState" : "manual"
     },
     "Data Quality" : {
-
+      "extractionState" : "manual"
     },
     "Data Quality Assessment" : {
-
+      "extractionState" : "manual"
     },
     "Data quality assessment failed" : {
-
+      "extractionState" : "manual"
     },
     "Data size: %@ bytes" : {
-
+      "extractionState" : "manual"
     },
     "DataFrame Comparison" : {
-
+      "extractionState" : "manual"
     },
     "DataFrame Overview" : {
-
+      "extractionState" : "manual"
     },
     "Dictionary with %@ keys" : {
-
+      "extractionState" : "manual"
     },
     "Email" : {
-
+      "extractionState" : "manual"
     },
     "Empty array" : {
-
+      "extractionState" : "manual"
     },
     "Error" : {
-
+      "extractionState" : "manual"
     },
     "Extracting structured data..." : {
-
+      "extractionState" : "manual"
     },
     "Field Count: %@" : {
-
+      "extractionState" : "manual"
     },
     "Field Details:" : {
-
+      "extractionState" : "manual"
     },
     "File Picker" : {
-
+      "extractionState" : "manual"
     },
     "File picker requires iOS 14 or later" : {
-
+      "extractionState" : "manual"
     },
     "Form: %@" : {
-
+      "extractionState" : "manual"
     },
     "Found %@ barcode(s)" : {
-
+      "extractionState" : "manual"
     },
     "Has Dates: %@" : {
-
+      "extractionState" : "manual"
     },
     "Has Media: %@" : {
-
+      "extractionState" : "manual"
     },
     "Has Relationships: %@" : {
-
+      "extractionState" : "manual"
     },
     "Is Hierarchical: %@" : {
-
+      "extractionState" : "manual"
     },
     "Item %@" : {
-
+      "extractionState" : "manual"
     },
     "Map not available on this platform" : {
-
+      "extractionState" : "manual"
     },
     "Mean: %.2f" : {
-
+      "extractionState" : "manual"
     },
     "Multiple date selection requires iOS 16+" : {
-
+      "extractionState" : "manual"
     },
     "Name" : {
-
+      "extractionState" : "manual"
     },
     "Navigation" : {
-
+      "extractionState" : "manual"
     },
     "No Barcode Found" : {
-
+      "extractionState" : "manual"
     },
     "No barcodes were detected in the image" : {
-
+      "extractionState" : "manual"
     },
     "No data quality information available" : {
-
+      "extractionState" : "manual"
     },
     "No items available" : {
-
+      "extractionState" : "manual"
     },
     "No options available" : {
-
+      "extractionState" : "manual"
     },
     "No statistical analysis available" : {
-
+      "extractionState" : "manual"
     },
     "No text regions detected" : {
-
+      "extractionState" : "manual"
     },
     "No visualization recommendations available" : {
-
+      "extractionState" : "manual"
     },
     "OCR Complete (Fallback)" : {
-
+      "extractionState" : "manual"
     },
     "OCR Error: %@" : {
-
+      "extractionState" : "manual"
     },
     "Optimal layouts for %@" : {
-
+      "extractionState" : "manual"
     },
     "Optional: %@ • Array: %@ • Identifiable: %@" : {
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -277,28 +290,29 @@
       }
     },
     "Pattern Recognition" : {
-
+      "extractionState" : "manual"
     },
     "Ready for OCR (Fallback)" : {
-
+      "extractionState" : "manual"
     },
     "Ready to Scan" : {
-
+      "extractionState" : "manual"
     },
     "Rows: %@" : {
-
+      "extractionState" : "manual"
     },
     "Scanning Barcode..." : {
-
+      "extractionState" : "manual"
     },
     "Select" : {
-
+      "extractionState" : "manual"
     },
     "Settings" : {
-
+      "extractionState" : "manual"
     },
     "SixLayerFramework.accessibility.skipToContent" : {
       "comment" : "============================================================================ ACCESSIBILITY ============================================================================",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -388,7 +402,7 @@
     },
     "SixLayerFramework.autosave.coreDataFailed" : {
       "comment" : "============================================================================ AUTO-SAVE MESSAGES ============================================================================",
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -477,7 +491,7 @@
       }
     },
     "SixLayerFramework.autosave.swiftDataFailed" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -566,6 +580,7 @@
       }
     },
     "SixLayerFramework.barcode.barcodeNumber" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -654,6 +669,7 @@
       }
     },
     "SixLayerFramework.barcode.confidence" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -742,6 +758,7 @@
       }
     },
     "SixLayerFramework.barcode.detectedBarcodes" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -830,6 +847,7 @@
       }
     },
     "SixLayerFramework.barcode.invalidImage" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -918,6 +936,7 @@
       }
     },
     "SixLayerFramework.barcode.noBarcodeFound" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -1006,6 +1025,7 @@
       }
     },
     "SixLayerFramework.barcode.noBarcodesDetected" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -1094,6 +1114,7 @@
       }
     },
     "SixLayerFramework.barcode.processingFailed" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -1182,6 +1203,7 @@
       }
     },
     "SixLayerFramework.barcode.tryDifferentImage" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -1270,6 +1292,7 @@
       }
     },
     "SixLayerFramework.barcode.unsupportedPlatform" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -1359,6 +1382,7 @@
     },
     "SixLayerFramework.barcode.visionUnavailable" : {
       "comment" : "Barcode Errors",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -1447,7 +1471,7 @@
       }
     },
     "SixLayerFramework.button.addAction" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -1536,7 +1560,7 @@
       }
     },
     "SixLayerFramework.button.addBoolean" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -1625,7 +1649,7 @@
       }
     },
     "SixLayerFramework.button.addCard" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -1714,7 +1738,7 @@
       }
     },
     "SixLayerFramework.button.addChart" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -1803,7 +1827,7 @@
       }
     },
     "SixLayerFramework.button.addData" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -1892,7 +1916,7 @@
       }
     },
     "SixLayerFramework.button.addDate" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -1981,7 +2005,7 @@
       }
     },
     "SixLayerFramework.button.addDetail" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -2070,7 +2094,7 @@
       }
     },
     "SixLayerFramework.button.addEvent" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -2159,7 +2183,7 @@
       }
     },
     "SixLayerFramework.button.addFormField" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -2248,7 +2272,7 @@
       }
     },
     "SixLayerFramework.button.addGrid" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -2337,7 +2361,7 @@
       }
     },
     "SixLayerFramework.button.addImage" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -2426,6 +2450,7 @@
       }
     },
     "SixLayerFramework.button.addItem" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -2514,7 +2539,7 @@
       }
     },
     "SixLayerFramework.button.addList" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -2603,7 +2628,7 @@
       }
     },
     "SixLayerFramework.button.addLocation" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -2692,7 +2717,7 @@
       }
     },
     "SixLayerFramework.button.addMedia" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -2781,7 +2806,7 @@
       }
     },
     "SixLayerFramework.button.addMessage" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -2870,7 +2895,7 @@
       }
     },
     "SixLayerFramework.button.addNavigationItem" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -2959,7 +2984,7 @@
       }
     },
     "SixLayerFramework.button.addNumber" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -3048,7 +3073,7 @@
       }
     },
     "SixLayerFramework.button.addProduct" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -3137,7 +3162,7 @@
       }
     },
     "SixLayerFramework.button.addText" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -3226,7 +3251,7 @@
       }
     },
     "SixLayerFramework.button.addTransaction" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -3315,7 +3340,7 @@
       }
     },
     "SixLayerFramework.button.addUser" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -3404,6 +3429,7 @@
       }
     },
     "SixLayerFramework.button.browseFiles" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -3492,6 +3518,7 @@
       }
     },
     "SixLayerFramework.button.cancel" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -3581,6 +3608,7 @@
     },
     "SixLayerFramework.button.chooseImage" : {
       "comment" : "============================================================================ BUTTON LABELS ============================================================================",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -3669,7 +3697,7 @@
       }
     },
     "SixLayerFramework.button.chooseOption" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -3758,6 +3786,7 @@
       }
     },
     "SixLayerFramework.button.choosePhoto" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -3846,6 +3875,7 @@
       }
     },
     "SixLayerFramework.button.confirm" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -3934,6 +3964,7 @@
       }
     },
     "SixLayerFramework.button.create" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -4022,6 +4053,7 @@
       }
     },
     "SixLayerFramework.button.done" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -4110,6 +4142,7 @@
       }
     },
     "SixLayerFramework.button.edit" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -4198,6 +4231,7 @@
       }
     },
     "SixLayerFramework.button.retry" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -4286,7 +4320,7 @@
       }
     },
     "SixLayerFramework.button.save" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -4375,6 +4409,7 @@
       }
     },
     "SixLayerFramework.button.saveChanges" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -4463,7 +4498,7 @@
       }
     },
     "SixLayerFramework.button.select" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -4552,6 +4587,7 @@
       }
     },
     "SixLayerFramework.button.selectFile" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -4640,6 +4676,7 @@
       }
     },
     "SixLayerFramework.button.selectImage" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -4728,7 +4765,7 @@
       }
     },
     "SixLayerFramework.button.submit" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -4817,6 +4854,7 @@
       }
     },
     "SixLayerFramework.button.update" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -4905,6 +4943,7 @@
       }
     },
     "SixLayerFramework.button.viewDetails" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -4993,6 +5032,7 @@
       }
     },
     "SixLayerFramework.camera.notAvailable" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -5081,7 +5121,7 @@
       }
     },
     "SixLayerFramework.camera.previewNotAvailable" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -5170,6 +5210,7 @@
       }
     },
     "SixLayerFramework.cloudkit.accountUnavailable" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -5258,6 +5299,7 @@
       }
     },
     "SixLayerFramework.cloudkit.conflictDetected" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -5347,6 +5389,7 @@
     },
     "SixLayerFramework.cloudkit.containerNotFound" : {
       "comment" : "CloudKit Service Errors",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -5435,6 +5478,7 @@
       }
     },
     "SixLayerFramework.cloudkit.invalidRecord" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -5523,6 +5567,7 @@
       }
     },
     "SixLayerFramework.cloudkit.missingField" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -5611,6 +5656,7 @@
       }
     },
     "SixLayerFramework.cloudkit.networkUnavailable" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -5699,6 +5745,7 @@
       }
     },
     "SixLayerFramework.cloudkit.permissionDenied" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -5787,6 +5834,7 @@
       }
     },
     "SixLayerFramework.cloudkit.quotaExceeded" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -5875,6 +5923,7 @@
       }
     },
     "SixLayerFramework.cloudkit.recordNotFound" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -5963,6 +6012,7 @@
       }
     },
     "SixLayerFramework.cloudkit.unknownError" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -6051,6 +6101,7 @@
       }
     },
     "SixLayerFramework.cloudkit.writeNotSupported" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -6139,7 +6190,7 @@
       }
     },
     "SixLayerFramework.color.decodeFailed" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -6229,7 +6280,7 @@
     },
     "SixLayerFramework.color.encodeFailed" : {
       "comment" : "Color Encoding Errors",
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -6318,7 +6369,7 @@
       }
     },
     "SixLayerFramework.color.invalidData" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -6407,6 +6458,7 @@
       }
     },
     "SixLayerFramework.complexity.advanced" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -6495,6 +6547,7 @@
       }
     },
     "SixLayerFramework.complexity.complex" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -6583,6 +6636,7 @@
       }
     },
     "SixLayerFramework.complexity.moderate" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -6671,6 +6725,7 @@
       }
     },
     "SixLayerFramework.complexity.simple" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -6759,6 +6814,7 @@
       }
     },
     "SixLayerFramework.complexity.veryComplex" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -6847,6 +6903,7 @@
       }
     },
     "SixLayerFramework.detail.array" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -6935,6 +6992,7 @@
       }
     },
     "SixLayerFramework.detail.identifiable" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -7023,6 +7081,7 @@
       }
     },
     "SixLayerFramework.detail.optional" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -7111,6 +7170,7 @@
       }
     },
     "SixLayerFramework.detail.overview" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -7199,6 +7259,7 @@
       }
     },
     "SixLayerFramework.detail.rawData" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -7287,6 +7348,7 @@
       }
     },
     "SixLayerFramework.detail.rawDataAnalysis" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -7375,6 +7437,7 @@
       }
     },
     "SixLayerFramework.detail.title" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -7464,6 +7527,7 @@
     },
     "SixLayerFramework.directory.doesNotExist" : {
       "comment" : "Directory Validation Errors",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -7552,6 +7616,7 @@
       }
     },
     "SixLayerFramework.directory.networkVolumeSlow" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -7640,6 +7705,7 @@
       }
     },
     "SixLayerFramework.directory.networkVolumeUnavailable" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -7728,6 +7794,7 @@
       }
     },
     "SixLayerFramework.directory.notADirectory" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -7816,6 +7883,7 @@
       }
     },
     "SixLayerFramework.directory.notExecutable" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -7904,6 +7972,7 @@
       }
     },
     "SixLayerFramework.directory.notReadable" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -7992,6 +8061,7 @@
       }
     },
     "SixLayerFramework.directory.notWritable" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -8080,7 +8150,7 @@
       }
     },
     "SixLayerFramework.emptyState.addItemsToGetStarted" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -8169,7 +8239,7 @@
       }
     },
     "SixLayerFramework.emptyState.adjustSearchCriteria" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -8258,6 +8328,7 @@
       }
     },
     "SixLayerFramework.emptyState.collectionEmpty" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -8346,7 +8417,7 @@
       }
     },
     "SixLayerFramework.emptyState.createFirstItem" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -8435,7 +8506,7 @@
       }
     },
     "SixLayerFramework.emptyState.noActions" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -8524,7 +8595,7 @@
       }
     },
     "SixLayerFramework.emptyState.noAdditionalItems" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -8613,7 +8684,7 @@
       }
     },
     "SixLayerFramework.emptyState.noBooleanValues" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -8702,7 +8773,7 @@
       }
     },
     "SixLayerFramework.emptyState.noCards" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -8791,7 +8862,7 @@
       }
     },
     "SixLayerFramework.emptyState.noChartData" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -8880,7 +8951,7 @@
       }
     },
     "SixLayerFramework.emptyState.noDataAvailable" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -8969,7 +9040,7 @@
       }
     },
     "SixLayerFramework.emptyState.noDates" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -9058,7 +9129,7 @@
       }
     },
     "SixLayerFramework.emptyState.noDetails" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -9147,7 +9218,7 @@
       }
     },
     "SixLayerFramework.emptyState.noEvents" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -9236,7 +9307,7 @@
       }
     },
     "SixLayerFramework.emptyState.noFormFields" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -9325,7 +9396,7 @@
       }
     },
     "SixLayerFramework.emptyState.noGridItems" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -9414,7 +9485,7 @@
       }
     },
     "SixLayerFramework.emptyState.noImages" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -9503,7 +9574,7 @@
       }
     },
     "SixLayerFramework.emptyState.noItems" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -9592,7 +9663,7 @@
       }
     },
     "SixLayerFramework.emptyState.noItemsAvailable" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -9681,7 +9752,7 @@
       }
     },
     "SixLayerFramework.emptyState.noItemsInGallery" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -9770,7 +9841,7 @@
       }
     },
     "SixLayerFramework.emptyState.noItemsToBrowse" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -9859,7 +9930,7 @@
       }
     },
     "SixLayerFramework.emptyState.noItemsToEdit" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -9948,7 +10019,7 @@
       }
     },
     "SixLayerFramework.emptyState.noListItems" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -10037,7 +10108,7 @@
       }
     },
     "SixLayerFramework.emptyState.noLocations" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -10126,7 +10197,7 @@
       }
     },
     "SixLayerFramework.emptyState.noMediaItems" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -10215,7 +10286,7 @@
       }
     },
     "SixLayerFramework.emptyState.noMessages" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -10304,7 +10375,7 @@
       }
     },
     "SixLayerFramework.emptyState.noModalContent" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -10393,7 +10464,7 @@
       }
     },
     "SixLayerFramework.emptyState.noNavigationItems" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -10482,7 +10553,7 @@
       }
     },
     "SixLayerFramework.emptyState.noNumbers" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -10571,7 +10642,7 @@
       }
     },
     "SixLayerFramework.emptyState.noProducts" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -10660,7 +10731,7 @@
       }
     },
     "SixLayerFramework.emptyState.noProfile" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -10749,7 +10820,7 @@
       }
     },
     "SixLayerFramework.emptyState.noProfileInformation" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -10838,7 +10909,7 @@
       }
     },
     "SixLayerFramework.emptyState.noSettings" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -10927,7 +10998,7 @@
       }
     },
     "SixLayerFramework.emptyState.noSheetContent" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -11016,7 +11087,7 @@
       }
     },
     "SixLayerFramework.emptyState.noSummaryData" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -11105,7 +11176,7 @@
       }
     },
     "SixLayerFramework.emptyState.noTextContent" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -11194,7 +11265,7 @@
       }
     },
     "SixLayerFramework.emptyState.noTransactions" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -11283,7 +11354,7 @@
       }
     },
     "SixLayerFramework.emptyState.noUsers" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -11372,7 +11443,7 @@
       }
     },
     "SixLayerFramework.entity.creationFailed" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -11462,7 +11533,7 @@
     },
     "SixLayerFramework.entity.decodeFailed" : {
       "comment" : "Entity Creation Errors",
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -11551,6 +11622,7 @@
       }
     },
     "SixLayerFramework.error.formattingFailed" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -11639,6 +11711,7 @@
       }
     },
     "SixLayerFramework.error.invalidCurrencyCode" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -11728,6 +11801,7 @@
     },
     "SixLayerFramework.error.invalidLocale" : {
       "comment" : "Internationalization Errors",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -11816,6 +11890,7 @@
       }
     },
     "SixLayerFramework.error.languageNotSupported" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -11904,6 +11979,7 @@
       }
     },
     "SixLayerFramework.error.localizationNotFound" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -11992,6 +12068,7 @@
       }
     },
     "SixLayerFramework.error.message" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -12080,6 +12157,7 @@
       }
     },
     "SixLayerFramework.error.pluralizationFailed" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -12169,7 +12247,7 @@
     },
     "SixLayerFramework.error.title" : {
       "comment" : "============================================================================ ERROR DISPLAY ============================================================================",
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -12258,7 +12336,7 @@
       }
     },
     "SixLayerFramework.example.helpers.description" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -12347,7 +12425,7 @@
       }
     },
     "SixLayerFramework.example.helpers.title" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -12436,7 +12514,7 @@
       }
     },
     "SixLayerFramework.failed.title" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -12526,6 +12604,7 @@
     },
     "SixLayerFramework.fieldAction.barcodeScanningRequiresUI" : {
       "comment" : "Field Action Errors",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -12614,6 +12693,7 @@
       }
     },
     "SixLayerFramework.fieldAction.ocrScanningRequiresUI" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -12702,7 +12782,7 @@
       }
     },
     "SixLayerFramework.file.directoryCreationFailed" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -12792,7 +12872,7 @@
     },
     "SixLayerFramework.file.invalidPath" : {
       "comment" : "File System Errors",
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -12881,6 +12961,7 @@
       }
     },
     "SixLayerFramework.file.saveError" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -12969,6 +13050,7 @@
       }
     },
     "SixLayerFramework.file.selectError" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -13058,6 +13140,7 @@
     },
     "SixLayerFramework.file.selectFile" : {
       "comment" : "============================================================================ FILE SELECTION ============================================================================",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -13146,6 +13229,7 @@
       }
     },
     "SixLayerFramework.file.systemError" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -13234,6 +13318,7 @@
       }
     },
     "SixLayerFramework.file.unknownError" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -13322,6 +13407,7 @@
       }
     },
     "SixLayerFramework.filesystem.creationFailed" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -13411,6 +13497,7 @@
     },
     "SixLayerFramework.filesystem.directoryNotFound" : {
       "comment" : "Platform File System Errors",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -13499,6 +13586,7 @@
       }
     },
     "SixLayerFramework.filesystem.diskFull" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -13587,6 +13675,7 @@
       }
     },
     "SixLayerFramework.filesystem.iCloudUnavailable" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -13675,6 +13764,7 @@
       }
     },
     "SixLayerFramework.filesystem.invalidPath" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -13763,6 +13853,7 @@
       }
     },
     "SixLayerFramework.filesystem.permissionDenied" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -13851,6 +13942,7 @@
       }
     },
     "SixLayerFramework.filesystem.securityScopedAccessRequired" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -13939,6 +14031,7 @@
       }
     },
     "SixLayerFramework.form.autoSaveChanges" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -14027,6 +14120,7 @@
       }
     },
     "SixLayerFramework.form.cannotGenerate" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -14115,7 +14209,7 @@
       }
     },
     "SixLayerFramework.form.clearFailed" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -14204,6 +14298,7 @@
       }
     },
     "SixLayerFramework.form.decodeFailed" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -14292,6 +14387,7 @@
       }
     },
     "SixLayerFramework.form.dragDropFiles" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -14381,6 +14477,7 @@
     },
     "SixLayerFramework.form.encodeFailed" : {
       "comment" : "Form Storage Errors",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -14469,7 +14566,7 @@
       }
     },
     "SixLayerFramework.form.fieldType.array" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -14558,7 +14655,7 @@
       }
     },
     "SixLayerFramework.form.fieldType.autocomplete" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -14647,7 +14744,7 @@
       }
     },
     "SixLayerFramework.form.fieldType.colorPicker" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -14736,7 +14833,7 @@
       }
     },
     "SixLayerFramework.form.fieldType.custom" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -14825,7 +14922,7 @@
       }
     },
     "SixLayerFramework.form.fieldType.data" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -14914,7 +15011,7 @@
       }
     },
     "SixLayerFramework.form.fieldType.fileUpload" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -15003,7 +15100,7 @@
       }
     },
     "SixLayerFramework.form.fieldType.image" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -15092,7 +15189,7 @@
       }
     },
     "SixLayerFramework.form.fieldType.multiselect" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -15181,7 +15278,7 @@
       }
     },
     "SixLayerFramework.form.fieldType.range" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -15270,7 +15367,7 @@
       }
     },
     "SixLayerFramework.form.fieldType.richText" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -15359,7 +15456,7 @@
       }
     },
     "SixLayerFramework.form.fieldsCount" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -15448,6 +15545,7 @@
       }
     },
     "SixLayerFramework.form.fullyDeclarativeRequired" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -15536,6 +15634,7 @@
       }
     },
     "SixLayerFramework.form.maxFileSize" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -15624,6 +15723,7 @@
       }
     },
     "SixLayerFramework.form.noOptionsAvailable" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -15712,6 +15812,7 @@
       }
     },
     "SixLayerFramework.form.or" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -15800,6 +15901,7 @@
       }
     },
     "SixLayerFramework.form.placeholder.enterEmail" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -15888,6 +15990,7 @@
       }
     },
     "SixLayerFramework.form.placeholder.enterInteger" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -15976,6 +16079,7 @@
       }
     },
     "SixLayerFramework.form.placeholder.enterNumber" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -16064,6 +16168,7 @@
       }
     },
     "SixLayerFramework.form.placeholder.enterPassword" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -16152,6 +16257,7 @@
       }
     },
     "SixLayerFramework.form.placeholder.enterPhone" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -16240,6 +16346,7 @@
       }
     },
     "SixLayerFramework.form.placeholder.enterText" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -16328,6 +16435,7 @@
       }
     },
     "SixLayerFramework.form.placeholder.enterURL" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -16417,6 +16525,7 @@
     },
     "SixLayerFramework.form.placeholder.select" : {
       "comment" : "============================================================================ FORM PLACEHOLDERS ============================================================================",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -16505,6 +16614,7 @@
       }
     },
     "SixLayerFramework.form.placeholder.selectBirthDate" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -16593,7 +16703,7 @@
       }
     },
     "SixLayerFramework.form.placeholder.selectCategory" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -16682,6 +16792,7 @@
       }
     },
     "SixLayerFramework.form.placeholder.selectColor" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -16770,6 +16881,7 @@
       }
     },
     "SixLayerFramework.form.placeholder.selectCountry" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -16858,6 +16970,7 @@
       }
     },
     "SixLayerFramework.form.placeholder.selectCreationDate" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -16946,6 +17059,7 @@
       }
     },
     "SixLayerFramework.form.placeholder.selectCreationTime" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -17034,6 +17148,7 @@
       }
     },
     "SixLayerFramework.form.placeholder.selectDate" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -17122,6 +17237,7 @@
       }
     },
     "SixLayerFramework.form.placeholder.selectDateTime" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -17210,6 +17326,7 @@
       }
     },
     "SixLayerFramework.form.placeholder.selectDates" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -17298,6 +17415,7 @@
       }
     },
     "SixLayerFramework.form.placeholder.selectEndDate" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -17386,6 +17504,7 @@
       }
     },
     "SixLayerFramework.form.placeholder.selectEndTime" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -17474,6 +17593,7 @@
       }
     },
     "SixLayerFramework.form.placeholder.selectFile" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -17562,6 +17682,7 @@
       }
     },
     "SixLayerFramework.form.placeholder.selectFilters" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -17650,6 +17771,7 @@
       }
     },
     "SixLayerFramework.form.placeholder.selectImage" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -17738,6 +17860,7 @@
       }
     },
     "SixLayerFramework.form.placeholder.selectOption" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -17826,6 +17949,7 @@
       }
     },
     "SixLayerFramework.form.placeholder.selectRouteType" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -17914,6 +18038,7 @@
       }
     },
     "SixLayerFramework.form.placeholder.selectStartDate" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -18002,6 +18127,7 @@
       }
     },
     "SixLayerFramework.form.placeholder.selectStartTime" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -18090,6 +18216,7 @@
       }
     },
     "SixLayerFramework.form.placeholder.selectTheme" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -18178,6 +18305,7 @@
       }
     },
     "SixLayerFramework.form.placeholder.selectTime" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -18266,6 +18394,7 @@
       }
     },
     "SixLayerFramework.form.placeholder.selectType" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -18354,7 +18483,7 @@
       }
     },
     "SixLayerFramework.form.placeholder.toggle" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -18443,6 +18572,7 @@
       }
     },
     "SixLayerFramework.form.placeholder.typeToSearch" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -18531,6 +18661,7 @@
       }
     },
     "SixLayerFramework.form.progress" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -18619,6 +18750,7 @@
       }
     },
     "SixLayerFramework.form.progressFields" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -18707,6 +18839,7 @@
       }
     },
     "SixLayerFramework.form.quotaExceeded" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -18795,7 +18928,7 @@
       }
     },
     "SixLayerFramework.form.saveFailed" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -18885,6 +19018,7 @@
     },
     "SixLayerFramework.form.selected" : {
       "comment" : "============================================================================ FORM FIELD LABELS ============================================================================",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -18973,6 +19107,7 @@
       }
     },
     "SixLayerFramework.form.selectedDates" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -19061,6 +19196,7 @@
       }
     },
     "SixLayerFramework.form.storageUnavailable" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -19149,6 +19285,7 @@
       }
     },
     "SixLayerFramework.form.supportedTypes" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -19237,6 +19374,7 @@
       }
     },
     "SixLayerFramework.form.title" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -19325,6 +19463,7 @@
       }
     },
     "SixLayerFramework.image.analysisFailed" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -19413,6 +19552,7 @@
       }
     },
     "SixLayerFramework.image.enhancementFailed" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -19502,6 +19642,7 @@
     },
     "SixLayerFramework.image.invalidImage" : {
       "comment" : "Image Processing Errors",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -19590,6 +19731,7 @@
       }
     },
     "SixLayerFramework.image.noImage" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -19678,6 +19820,7 @@
       }
     },
     "SixLayerFramework.image.optimizationFailed" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -19766,6 +19909,7 @@
       }
     },
     "SixLayerFramework.image.processingFailed" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -19855,6 +19999,7 @@
     },
     "SixLayerFramework.image.unsupportedFormat" : {
       "comment" : "Image Processing Errors - Additional",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -19943,6 +20088,7 @@
       }
     },
     "SixLayerFramework.imagePicker.notAvailable" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -20032,6 +20178,7 @@
     },
     "SixLayerFramework.invalid.date" : {
       "comment" : "============================================================================ INVALID DATA ============================================================================",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -20120,6 +20267,7 @@
       }
     },
     "SixLayerFramework.invalid.url" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -20208,6 +20356,7 @@
       }
     },
     "SixLayerFramework.list.itemNumber" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -20297,6 +20446,7 @@
     },
     "SixLayerFramework.list.itemsCount" : {
       "comment" : "============================================================================ LIST AND COLLECTION ============================================================================",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -20385,6 +20535,7 @@
       }
     },
     "SixLayerFramework.list.tapToView" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -20473,6 +20624,7 @@
       }
     },
     "SixLayerFramework.location.authorizationTimeout" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -20561,6 +20713,7 @@
       }
     },
     "SixLayerFramework.location.denied" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -20649,6 +20802,7 @@
       }
     },
     "SixLayerFramework.location.locationTimeout" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -20737,6 +20891,7 @@
       }
     },
     "SixLayerFramework.location.restricted" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -20826,6 +20981,7 @@
     },
     "SixLayerFramework.location.servicesDisabled" : {
       "comment" : "Location Service Errors",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -20914,6 +21070,7 @@
       }
     },
     "SixLayerFramework.location.unauthorized" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -21002,6 +21159,7 @@
       }
     },
     "SixLayerFramework.location.unknown" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -21090,6 +21248,7 @@
       }
     },
     "SixLayerFramework.metadata.analysisFailed" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -21178,6 +21337,7 @@
       }
     },
     "SixLayerFramework.metadata.categorizationFailed" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -21266,6 +21426,7 @@
       }
     },
     "SixLayerFramework.metadata.corruptedImage" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -21354,6 +21515,7 @@
       }
     },
     "SixLayerFramework.metadata.extractionFailed" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -21443,6 +21605,7 @@
     },
     "SixLayerFramework.metadata.invalidImage" : {
       "comment" : "Image Metadata Errors",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -21531,6 +21694,7 @@
       }
     },
     "SixLayerFramework.navigation.chooseItem" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -21620,6 +21784,7 @@
     },
     "SixLayerFramework.navigation.selectItem" : {
       "comment" : "============================================================================ NAVIGATION ============================================================================",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -21708,6 +21873,7 @@
       }
     },
     "SixLayerFramework.navigation.selectItemToContinue" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -21796,6 +21962,7 @@
       }
     },
     "SixLayerFramework.ocr.analyzingImage" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -21884,6 +22051,7 @@
       }
     },
     "SixLayerFramework.ocr.complete" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -21972,6 +22140,7 @@
       }
     },
     "SixLayerFramework.ocr.disambiguation.bestMatch" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -22060,6 +22229,7 @@
       }
     },
     "SixLayerFramework.ocr.disambiguation.confidence" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -22148,6 +22318,7 @@
       }
     },
     "SixLayerFramework.ocr.disambiguation.prompt" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -22237,6 +22408,7 @@
     },
     "SixLayerFramework.ocr.disambiguation.title" : {
       "comment" : "OCR Disambiguation",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -22325,6 +22497,7 @@
       }
     },
     "SixLayerFramework.ocr.disambiguation.type" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -22413,6 +22586,7 @@
       }
     },
     "SixLayerFramework.ocr.error" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -22501,6 +22675,7 @@
       }
     },
     "SixLayerFramework.ocr.extractionComplete" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -22589,6 +22764,7 @@
       }
     },
     "SixLayerFramework.ocr.highConfidenceNoDisambiguation" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -22677,6 +22853,7 @@
       }
     },
     "SixLayerFramework.ocr.invalidImage" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -22765,6 +22942,7 @@
       }
     },
     "SixLayerFramework.ocr.noTextFound" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -22853,6 +23031,7 @@
       }
     },
     "SixLayerFramework.ocr.overlay.bothRequired" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -22941,6 +23120,7 @@
       }
     },
     "SixLayerFramework.ocr.overlay.extractedText" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -23029,6 +23209,7 @@
       }
     },
     "SixLayerFramework.ocr.overlay.imageMissing" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -23117,6 +23298,7 @@
       }
     },
     "SixLayerFramework.ocr.overlay.resultMissing" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -23206,6 +23388,7 @@
     },
     "SixLayerFramework.ocr.overlay.unavailable" : {
       "comment" : "OCR Overlay",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -23294,6 +23477,7 @@
       }
     },
     "SixLayerFramework.ocr.processing" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -23382,6 +23566,7 @@
       }
     },
     "SixLayerFramework.ocr.processingFailed" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -23470,6 +23655,7 @@
       }
     },
     "SixLayerFramework.ocr.processingOCR" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -23558,6 +23744,7 @@
       }
     },
     "SixLayerFramework.ocr.readyToExtract" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -23646,6 +23833,7 @@
       }
     },
     "SixLayerFramework.ocr.readyToProcess" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -23734,6 +23922,7 @@
       }
     },
     "SixLayerFramework.ocr.scanDocument" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -23822,6 +24011,7 @@
       }
     },
     "SixLayerFramework.ocr.startOCR" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -23910,6 +24100,7 @@
       }
     },
     "SixLayerFramework.ocr.tapToStart" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -23998,6 +24189,7 @@
       }
     },
     "SixLayerFramework.ocr.tapToStartWithCorrection" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -24086,6 +24278,7 @@
       }
     },
     "SixLayerFramework.ocr.unsupportedPlatform" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -24174,6 +24367,7 @@
       }
     },
     "SixLayerFramework.ocr.viewResults" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -24263,6 +24457,7 @@
     },
     "SixLayerFramework.ocr.visionUnavailable" : {
       "comment" : "OCR Service Errors",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -24351,6 +24546,7 @@
       }
     },
     "SixLayerFramework.photo.camera" : {
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -24361,6 +24557,7 @@
       }
     },
     "SixLayerFramework.photo.captureNew" : {
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -24371,6 +24568,7 @@
       }
     },
     "SixLayerFramework.photo.library" : {
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -24381,7 +24579,7 @@
       }
     },
     "SixLayerFramework.platform.crossPlatform.adaptiveSpacing" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -24470,7 +24668,7 @@
       }
     },
     "SixLayerFramework.platform.crossPlatform.optimalSizing" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -24559,7 +24757,7 @@
       }
     },
     "SixLayerFramework.platform.crossPlatform.specificLayouts" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -24648,7 +24846,7 @@
       }
     },
     "SixLayerFramework.platform.crossPlatform.subtitle" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -24737,7 +24935,7 @@
       }
     },
     "SixLayerFramework.platform.crossPlatform.title" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -24826,6 +25024,7 @@
       }
     },
     "SixLayerFramework.platform.privacy.description" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -24915,6 +25114,7 @@
     },
     "SixLayerFramework.platform.privacy.title" : {
       "comment" : "============================================================================ PLATFORM SPECIFIC ============================================================================",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -25003,6 +25203,7 @@
       }
     },
     "SixLayerFramework.platform.safety.description" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -25091,6 +25292,7 @@
       }
     },
     "SixLayerFramework.platform.safety.title" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -25179,6 +25381,7 @@
       }
     },
     "SixLayerFramework.platform.security.description" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -25267,6 +25470,7 @@
       }
     },
     "SixLayerFramework.platform.security.title" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -25355,6 +25559,7 @@
       }
     },
     "SixLayerFramework.runtime.capabilities.detecting" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -25443,6 +25648,7 @@
       }
     },
     "SixLayerFramework.runtime.capabilities.refresh" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -25531,6 +25737,7 @@
       }
     },
     "SixLayerFramework.runtime.capabilities.title" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -25619,7 +25826,7 @@
       }
     },
     "SixLayerFramework.status.id" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -25708,7 +25915,7 @@
       }
     },
     "SixLayerFramework.status.label" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -25798,7 +26005,7 @@
     },
     "SixLayerFramework.status.loading" : {
       "comment" : "============================================================================ STATUS AND LOADING ============================================================================",
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -25887,6 +26094,7 @@
       }
     },
     "SixLayerFramework.status.loadingLocation" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -25975,7 +26183,7 @@
       }
     },
     "SixLayerFramework.success.title" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -26065,7 +26273,7 @@
     },
     "SixLayerFramework.validation.email" : {
       "comment" : "============================================================================ VALIDATION MESSAGES ============================================================================",
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -26154,7 +26362,7 @@
       }
     },
     "SixLayerFramework.validation.invalid" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -26243,7 +26451,7 @@
       }
     },
     "SixLayerFramework.validation.phone" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -26332,7 +26540,7 @@
       }
     },
     "SixLayerFramework.validation.required" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -26421,6 +26629,7 @@
       }
     },
     "SixLayerFramework.vision.safety.description" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -26509,6 +26718,7 @@
       }
     },
     "SixLayerFramework.vision.safety.title" : {
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -26597,7 +26807,7 @@
       }
     },
     "SixLayerFramework.warning.title" : {
-      "extractionState" : "stale",
+      "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -26686,55 +26896,58 @@
       }
     },
     "Statistical Analysis" : {
-
+      "extractionState" : "manual"
     },
     "String: %@" : {
-
+      "extractionState" : "manual"
     },
     "Tap to start barcode scanning" : {
-
+      "extractionState" : "manual"
     },
     "Test Results" : {
-
+      "extractionState" : "manual"
     },
     "This content is revealed when the card is expanded." : {
-
+      "extractionState" : "manual"
     },
     "This content is revealed when the card is expanded. It can contain additional information, actions, or interactive elements." : {
-
+      "extractionState" : "manual"
     },
     "Type: %@" : {
-
+      "extractionState" : "manual"
     },
     "Unknown Content" : {
-
+      "extractionState" : "manual"
     },
     "Value" : {
-
+      "extractionState" : "manual"
     },
     "Value: %@" : {
-
+      "extractionState" : "manual"
     },
     "Visualization Recommendations" : {
-
+      "extractionState" : "manual"
     },
     "[%@]:" : {
-
+      "extractionState" : "manual",
+      "shouldTranslate" : false
     },
     "•" : {
-
+      "extractionState" : "manual",
+      "shouldTranslate" : false
     },
     "• Adaptive spacing" : {
-
+      "extractionState" : "manual"
     },
     "• Optimal component sizing" : {
-
+      "extractionState" : "manual"
     },
     "• Platform-specific layouts" : {
-
+      "extractionState" : "manual"
     },
     "📋" : {
-
+      "extractionState" : "manual",
+      "shouldTranslate" : false
     }
   },
   "version" : "1.0"
