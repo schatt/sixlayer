@@ -30,9 +30,6 @@ public enum SevenSegmentGlyph {
     }
 
     static func interpreted(_ pattern: SevenSegmentPattern) -> (character: Character, confidence: Float)? {
-        if SevenSegmentRedHold.enabled {
-            return ("0", 1)
-        }
         return match(pattern)
     }
 
@@ -69,15 +66,6 @@ public enum SevenSegmentGlyph {
 
 public enum SevenSegmentOCR {
     public static func decode(cgImage: CGImage, deskewMaximumDegrees: Double = 3) -> OCRResult {
-        if SevenSegmentRedHold.enabled {
-            return OCRResult(
-                extractedText: "0",
-                confidence: 1,
-                recognizedTexts: [
-                    OCRRecognizedText(text: "0", boundingBox: .zero, confidence: 1, role: .segment)
-                ]
-            )
-        }
         guard let gray = GrayBuffer.read(cgImage) else {
             return OCRResult(extractedText: "", confidence: 0)
         }
