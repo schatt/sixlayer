@@ -81,7 +81,10 @@ def fix_catalog(catalog):
     fixed = copy.deepcopy(catalog)
     for key, entry in fixed.get("strings", {}).items():
         entry["extractionState"] = "manual"
-        if not any(char.isalpha() for char in key):
+        # Symbol-only *and* untranslated: nothing locale-dependent exists yet.
+        # A translated punctuation format ("%@: %@") stays translatable —
+        # punctuation spacing differs by locale.
+        if not entry_has_translations(entry) and not any(char.isalpha() for char in key):
             entry["shouldTranslate"] = False
     return fixed
 
