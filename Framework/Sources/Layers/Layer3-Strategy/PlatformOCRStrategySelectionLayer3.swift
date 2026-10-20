@@ -288,6 +288,8 @@ private func getProcessingModeMultiplier(_ mode: OCRProcessingMode) -> Double {
         return 1.5
     case .neural:
         return 0.8 // Neural engine is actually faster for supported operations
+    case .ssocr:
+        return 1.0
     }
 }
 
