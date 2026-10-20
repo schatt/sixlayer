@@ -89,6 +89,24 @@ public struct OCRCapabilities {
     }
 }
 
+/// Single-resume claim for a Vision `CheckedContinuation`.
+///
+/// `VNImageRequestHandler.perform` can invoke the request completion and then throw.
+/// Resuming the same continuation from both paths traps the process.
+/// The first claim wins. A later claim is ignored.
+final class VisionContinuationGate: @unchecked Sendable {
+    private let lock = NSLock()
+    private var claimed = false
+
+    func claim() -> Bool {
+        lock.lock()
+        defer { lock.unlock() }
+        if claimed { return false }
+        claimed = true
+        return true
+    }
+}
+
 // MARK: - OCR Service Implementation
 
 /// Main OCR service implementation
@@ -979,7 +997,11 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
     ) async throws -> (result: OCRResult, recognizedLineTexts: [String]) {
         
         return try await withCheckedThrowingContinuation { continuation in
+            // perform(_:) can run this completion and then throw. Claim once so the
+            // second path cannot resume the continuation (#563).
+            let gate = VisionContinuationGate()
             let request = VNRecognizeTextRequest { request, error in
+                guard gate.claim() else { return }
                 if let error = error {
                     continuation.resume(throwing: error)
                     return
@@ -1005,6 +1027,7 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
             do {
                 try handler.perform([request])
             } catch {
+                guard gate.claim() else { return }
                 continuation.resume(throwing: error)
             }
         }
