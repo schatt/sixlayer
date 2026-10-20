@@ -66,6 +66,13 @@ class FixCatalogTests(unittest.TestCase):
         self.assertEqual(fixed["strings"][""].get("shouldTranslate"), False)
         self.assertNotIn("shouldTranslate", fixed["strings"]["Cancel"])
 
+    def test_fix_keeps_translated_format_keys_translatable(self):
+        # "%@: %@" has no letters, but punctuation spacing is locale-dependent
+        # and the key already carries a translation: it must stay translatable.
+        catalog = {"strings": {"%@: %@": translated_entry(value="%1$@: %2$@")}}
+        fixed = catalog_tool.fix_catalog(catalog)
+        self.assertNotIn("shouldTranslate", fixed["strings"]["%@: %@"])
+
     def test_fix_preserves_translations(self):
         catalog = {"strings": {"SixLayerFramework.button.save": translated_entry(extraction_state="stale")}}
         fixed = catalog_tool.fix_catalog(catalog)
