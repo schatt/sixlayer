@@ -1,5 +1,5 @@
 // swift-tools-version: 6.0
-// SixLayerFramework v8.6.4 - Patch: modest trailing inset on macOS full-text sidebar labels (#552)
+// SixLayerFramework v8.6.7 - Patch: sidebar, alerts, signed numbers, content inset (#549, #552, #533, #550, #557, #560)
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription

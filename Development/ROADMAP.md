@@ -1,8 +1,8 @@
 # 🚀 Six-Layer Framework Development Roadmap
 
 **Purpose**: Track planned upcoming work and future enhancements.  
-**Last Updated**: September 30, 2026  
-**Current Release**: v8.6.2
+**Last Updated**: October 18, 2026  
+**Current Release**: v8.6.7
 
 > **Note**: This roadmap tracks planned work. For active todos, see [`todos.md`](../todos.md). For release history, see [`RELEASES.md`](RELEASES.md).
 
@@ -10,7 +10,7 @@
 
 ## 📍 **Current Status**
 
-**Last Release**: v8.6.2 (form and OCR `NSExpression` guards #542, #544)
+**Last Release**: v8.6.7 (sidebar, alerts, signed numbers, content inset #549, #552, #533, #550, #557, #560)
 **Current Phase**: Patch Release
 **Next Phase**: v8.7.0 — secondary-platform capability spine
 

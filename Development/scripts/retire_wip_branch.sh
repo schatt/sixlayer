@@ -66,6 +66,33 @@ push_remote() {
     fi
 }
 
+# Delete branch on every push URL of remote. A missing ref is not a failure:
+# `git push <remote> --delete` exits non-zero when any URL lacks the ref, and
+# that used to abort before worktree removal (#564). Other push errors abort.
+delete_remote_branch() {
+    local remote="$1"
+    local branch="$2"
+    local url rc out
+    while IFS= read -r url; do
+        [[ -n "$url" ]] || continue
+        set +e
+        out="$(git -C "$REPO_ROOT" push "$url" --delete "$branch" 2>&1)"
+        rc=$?
+        set -e
+        if [[ "$rc" -eq 0 ]]; then
+            echo "ℹ Deleted ${branch} from ${url}"
+            continue
+        fi
+        if [[ "$out" == *"remote ref does not exist"* ]]; then
+            echo "ℹ ${branch} absent on ${url}"
+            continue
+        fi
+        printf '%s\n' "$out" >&2
+        echo "✗ Failed to delete ${branch} from ${url}" >&2
+        return 1
+    done < <(git -C "$REPO_ROOT" remote get-url --push --all "$remote")
+}
+
 find_worktree_for_branch() {
     local want="$1"
     local wt="" branch=""
@@ -123,10 +150,8 @@ fi
 REMOTE="$(push_remote)"
 echo "ℹ Publishing ${DONE_BRANCH} to ${REMOTE}"
 git -C "$REPO_ROOT" push "$REMOTE" "$DONE_BRANCH"
-if git -C "$REPO_ROOT" ls-remote --exit-code "$REMOTE" "refs/heads/${WIP_BRANCH}" >/dev/null 2>&1; then
-    echo "ℹ Deleting ${REMOTE}/${WIP_BRANCH}"
-    git -C "$REPO_ROOT" push "$REMOTE" --delete "$WIP_BRANCH"
-fi
+echo "ℹ Deleting ${WIP_BRANCH} from ${REMOTE} push URLs"
+delete_remote_branch "$REMOTE" "$WIP_BRANCH"
 
 git -C "$REPO_ROOT" fetch origin --prune 2>/dev/null || true
 git -C "$REPO_ROOT" fetch all --prune 2>/dev/null || true
