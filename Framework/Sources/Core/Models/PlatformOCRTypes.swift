@@ -650,7 +650,7 @@ public enum OCRProcessingMode: String, CaseIterable, Sendable {
         case .standard: return "Standard"
         case .accurate: return "Accurate"
         case .neural: return "Neural Engine"
-        case .ssocr: return SevenSegmentRedHold.enabled ? "Fast" : "Seven-segment"
+        case .ssocr: return "Seven-segment"
         }
     }
 
@@ -662,7 +662,7 @@ public enum OCRProcessingMode: String, CaseIterable, Sendable {
         case .standard, .accurate, .neural:
             return .accurate
         case .ssocr:
-            return SevenSegmentRedHold.enabled ? .fast : nil
+            return nil
         }
     }
 
@@ -674,7 +674,7 @@ public enum OCRProcessingMode: String, CaseIterable, Sendable {
         case .fast, .standard, .accurate:
             return .fast
         case .ssocr:
-            return SevenSegmentRedHold.enabled ? .fast : nil
+            return nil
         }
     }
 
@@ -692,11 +692,6 @@ public enum OCRProcessingMode: String, CaseIterable, Sendable {
 enum OCRVisionRecognitionChoice: Equatable {
     case fast
     case accurate
-}
-
-/// Deliberate red gate for #576. Removed once the new tests have failed at runtime.
-enum SevenSegmentRedHold {
-    nonisolated(unsafe) static var enabled = true
 }
 
 // MARK: - OCR UI Configuration
