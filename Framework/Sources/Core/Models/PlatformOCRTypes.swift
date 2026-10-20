@@ -696,7 +696,7 @@ enum OCRVisionRecognitionChoice: Equatable {
 
 /// Deliberate red gate for #576. Removed once the new tests have failed at runtime.
 enum SevenSegmentRedHold {
-    static var enabled = true
+    nonisolated(unsafe) static var enabled = true
 }
 
 // MARK: - OCR UI Configuration
