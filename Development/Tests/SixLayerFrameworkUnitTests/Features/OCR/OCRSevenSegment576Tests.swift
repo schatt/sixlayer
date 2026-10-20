@@ -686,20 +686,26 @@ private enum SegmentPanel {
 
     private static func image(pixels: [UInt8], width: Int, height: Int) -> CGImage {
         let colorSpace = CGColorSpaceCreateDeviceGray()
-        let pointer = UnsafeMutablePointer<UInt8>.allocate(capacity: pixels.count)
-        pointer.initialize(from: pixels, count: pixels.count)
-        let context = CGContext(
-            data: pointer,
+        let data = Data(pixels) as CFData
+        guard let provider = CGDataProvider(data: data) else {
+            fatalError("segment fixture could not wrap pixels")
+        }
+        guard let image = CGImage(
             width: width,
             height: height,
             bitsPerComponent: 8,
+            bitsPerPixel: 8,
             bytesPerRow: width,
             space: colorSpace,
-            bitmapInfo: CGImageAlphaInfo.none.rawValue
-        )
-        let image = context?.makeImage()
-        pointer.deallocate()
-        return image!
+            bitmapInfo: CGBitmapInfo(rawValue: CGImageAlphaInfo.none.rawValue),
+            provider: provider,
+            decode: nil,
+            shouldInterpolate: false,
+            intent: .defaultIntent
+        ) else {
+            fatalError("segment fixture could not build an image")
+        }
+        return image
     }
 
     private static func rotate(
