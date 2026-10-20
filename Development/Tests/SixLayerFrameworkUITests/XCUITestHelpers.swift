@@ -472,9 +472,9 @@ extension XCTestCase {
                 guard alertText.contains("Bluetooth") || alertText.contains("CPU") || alertText.contains("Activity Monitor") else {
                     return false
                 }
-                if alert.buttons["OK"].exists { alert.buttons["OK"].tap(); return true }
-                if alert.buttons["Cancel"].exists { alert.buttons["Cancel"].tap(); return true }
-                if alert.buttons["Don't Allow"].exists { alert.buttons["Don't Allow"].tap(); return true }
+                if alert.buttons["OK"].exists { alert.buttons["OK"].platformTap(); return true }
+                if alert.buttons["Cancel"].exists { alert.buttons["Cancel"].platformTap(); return true }
+                if alert.buttons["Don't Allow"].exists { alert.buttons["Don't Allow"].platformTap(); return true }
                 return false
             }
         }
