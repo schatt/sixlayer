@@ -7,6 +7,7 @@
 //
 
 import XCTest
+import SixLayerTestKit
 
 @MainActor
 final class CallbackCategoryCUITests: SixLayerUITestCase {
@@ -71,12 +72,12 @@ final class CallbackCategoryCUITests: SixLayerUITestCase {
 
         let submit = app.buttons[IDs.formSubmitButton]
         XCTAssertTrue(submit.waitForExistence(timeout: 1.5), "Submit action should exist")
-        submit.tap()
+        submit.platformTap()
         XCTAssertEqual(state.xcuiAccessibleText, "Form callback state: submit")
 
         let cancel = app.buttons[IDs.formCancelButton]
         XCTAssertTrue(cancel.waitForExistence(timeout: 1.5), "Cancel action should exist")
-        cancel.tap()
+        cancel.platformTap()
         XCTAssertEqual(state.xcuiAccessibleText, "Form callback state: cancel")
     }
 
@@ -87,7 +88,7 @@ final class CallbackCategoryCUITests: SixLayerUITestCase {
 
         let row = app.buttons[IDs.selectionRowSecond]
         XCTAssertTrue(row.waitForExistence(timeout: 2.0), "Selection row should exist")
-        row.tap()
+        row.platformTap()
 
         XCTAssertEqual(state.xcuiAccessibleText, "Selected item: Category C Item 2")
     }
