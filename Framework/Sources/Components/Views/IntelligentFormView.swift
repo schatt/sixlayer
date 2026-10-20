@@ -96,6 +96,33 @@ extension IntelligentFormView {
 public struct IntelligentFormView {
     
     // MARK: - Public API
+
+    /// Hints lookup for `generateForm(for:initialData:)` when an instance is present.
+    /// `initialData` on that overload is `T?`, so the name and analysis must use the
+    /// unwrapped model. Callers pass the non-optional value.
+    struct InitialDataFormHintsLookup {
+        let modelName: String
+        let fieldNames: [String]
+        let analysis: DataAnalysisResult
+    }
+
+    static func initialDataFormHintsLookup<T>(
+        dataType: T.Type,
+        initialData: T
+    ) -> InitialDataFormHintsLookup {
+        // Preserve the overload's current behavior: it passes the optional through,
+        // so the model name is Optional<T> and Mirror sees the wrapper.
+        _ = dataType
+        let wrapped: T? = initialData
+        let analysis = DataIntrospectionEngine.analyze(wrapped)
+        let described = String(describing: type(of: wrapped))
+        let modelName = described.components(separatedBy: ".").last ?? described
+        return InitialDataFormHintsLookup(
+            modelName: modelName,
+            fieldNames: analysis.fields.map(\.name),
+            analysis: analysis
+        )
+    }
     
     /// Generate a form for creating new data with data binding integration
     ///
@@ -277,8 +304,10 @@ Text(i18n.localizedString(for: "SixLayerFramework.form.title"))
             }
         }
         
-        // Analyze data - will use hints-first if available, Mirror as fallback
-        let analysis = DataIntrospectionEngine.analyze(initialData)
+        // Analyze data - will use hints-first if available, Mirror as fallback.
+        // initialData is non-nil here; the optional wrapper must not be the analyzed value.
+        let lookup = initialDataFormHintsLookup(dataType: dataType, initialData: initialData!)
+        let analysis = lookup.analysis
         let formStrategy = determineFormStrategy(analysis: analysis)
         
         // Auto-create dataBinder if enabled and not provided
@@ -292,9 +321,8 @@ Text(i18n.localizedString(for: "SixLayerFramework.form.title"))
             effectiveDataBinder = nil
         }
         
-        // Load hints for the model type
-        let modelName = String(describing: type(of: initialData))
-            .components(separatedBy: ".").last ?? String(describing: type(of: initialData))
+        // Load hints for the model type (same resolution as analysis above)
+        let modelName = lookup.modelName
         let hintsLoader = FileBasedDataHintsLoader()
         let hintsResult = hintsLoader.loadHintsResult(for: modelName)
         let fieldHints = hintsResult.fieldHints
