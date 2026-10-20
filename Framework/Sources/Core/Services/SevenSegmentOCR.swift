@@ -50,7 +50,7 @@ public enum SevenSegmentGlyph {
         ("-", SevenSegmentPattern.g.rawValue)
     ]
 
-    private static func match(_ pattern: SevenSegmentPattern) -> (character: Character, confidence: Float)? {
+    fileprivate static func match(_ pattern: SevenSegmentPattern) -> (character: Character, confidence: Float)? {
         if pattern.rawValue == 0 {
             return nil
         }
@@ -246,7 +246,7 @@ private struct GrayBuffer {
         }
     }
 
-    private static func group(_ cells: [Cell]) -> [[Cell]] {
+    fileprivate static func group(_ cells: [Cell]) -> [[Cell]] {
         guard !cells.isEmpty else { return [] }
         let ordered = cells.sorted { $0.minX < $1.minX }
         guard ordered.count > 1 else { return [ordered] }
@@ -272,7 +272,7 @@ private struct GrayBuffer {
     private static func score(_ mask: Mask) -> Int {
         let rows = mask.rowSums
         guard !rows.isEmpty else { return 0 }
-        let total = rows.reduce(Int64(0), +)
+        let total = rows.reduce(Int64(0)) { $0 + Int64($1) }
         let mean = total / Int64(rows.count)
         return rows.reduce(0) { partial, row in
             let delta = Int64(row) - mean
