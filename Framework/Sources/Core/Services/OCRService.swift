@@ -1017,38 +1017,30 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
     ) async throws -> (result: OCRResult, recognizedLineTexts: [String]) {
         
         return try await withCheckedThrowingContinuation { continuation in
-            // perform(_:) can run this completion and then throw. Claim once so the
-            // second path cannot resume the continuation (#563).
-            let gate = VisionContinuationGate()
-            let request = VNRecognizeTextRequest { request, error in
-                guard gate.claim() else { return }
-                if let error = error {
-                    continuation.resume(throwing: error)
-                    return
+            runVisionRequest(onResume: { continuation.resume(with: $0) }) { resume in
+                let request = VNRecognizeTextRequest { request, error in
+                    if let error = error {
+                        resume(.failure(error))
+                        return
+                    }
+
+                    guard let observations = request.results as? [VNRecognizedTextObservation] else {
+                        resume(.failure(OCRError.noTextFound))
+                        return
+                    }
+
+                    let outcome = self.processVisionResults(
+                        observations: observations,
+                        context: context,
+                        strategy: strategy
+                    )
+                    resume(.success(outcome))
                 }
-                
-                guard let observations = request.results as? [VNRecognizedTextObservation] else {
-                    continuation.resume(throwing: OCRError.noTextFound)
-                    return
-                }
-                
-                let outcome = self.processVisionResults(
-                    observations: observations,
-                    context: context,
-                    strategy: strategy
-                )
-                continuation.resume(returning: outcome)
-            }
-            
-            // Configure request based on strategy
-            configureVisionRequest(request, context: context, strategy: strategy)
-            
-            let handler = VNImageRequestHandler(cgImage: cgImage)
-            do {
+
+                configureVisionRequest(request, context: context, strategy: strategy)
+
+                let handler = VNImageRequestHandler(cgImage: cgImage)
                 try handler.perform([request])
-            } catch {
-                guard gate.claim() else { return }
-                continuation.resume(throwing: error)
             }
         }
     }

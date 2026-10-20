@@ -106,9 +106,9 @@ extension XCUIElement {
             return
         }
         #endif
-        let center = coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
         #if os(iOS)
         if elementType == .secureTextField {
+            let center = coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
             center.tap()
             RunLoop.current.run(until: Date().addingTimeInterval(0.2))
             center.tap()
@@ -121,14 +121,9 @@ extension XCUIElement {
             return
         }
         #endif
-        if isHittable {
-            tap()
-        } else if xcuiHasValidTapFrame {
-            center.tap()
-        } else {
-            // Avoid coordinate tap on infinite/zero frames (macOS Form chrome, #493).
-            tap()
-        }
+        // macOS SwiftUI ignores tap() (#516). platformTap clicks there and still taps on iOS.
+        // It also skips coordinate hits on infinite frames (#493, #575).
+        platformTap()
         RunLoop.current.run(until: Date().addingTimeInterval(0.2))
     }
 }
@@ -477,9 +472,9 @@ extension XCTestCase {
                 guard alertText.contains("Bluetooth") || alertText.contains("CPU") || alertText.contains("Activity Monitor") else {
                     return false
                 }
-                if alert.buttons["OK"].exists { alert.buttons["OK"].tap(); return true }
-                if alert.buttons["Cancel"].exists { alert.buttons["Cancel"].tap(); return true }
-                if alert.buttons["Don't Allow"].exists { alert.buttons["Don't Allow"].tap(); return true }
+                if alert.buttons["OK"].exists { alert.buttons["OK"].platformTap(); return true }
+                if alert.buttons["Cancel"].exists { alert.buttons["Cancel"].platformTap(); return true }
+                if alert.buttons["Don't Allow"].exists { alert.buttons["Don't Allow"].platformTap(); return true }
                 return false
             }
         }
