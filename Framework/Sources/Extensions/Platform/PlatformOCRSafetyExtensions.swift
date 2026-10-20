@@ -177,6 +177,15 @@ struct SafeVisionOCRView: View {
     }
     
     private func performVisionOCR() async throws -> OCRResult {
+        if strategy.processingMode == .ssocr {
+            guard let cgImage = getCGImage(from: image) else {
+                throw OCRError.invalidImage
+            }
+            return SevenSegmentOCR.decode(
+                cgImage: cgImage,
+                deskewMaximumDegrees: context.segmentDeskewMaximumDegrees
+            )
+        }
         try await withCheckedThrowingContinuation { continuation in
             // perform(_:) can run the completion and then throw. One claim, so the
             // second path cannot resume (#574).
@@ -214,7 +223,17 @@ struct SafeVisionOCRView: View {
         context: OCRContext,
         strategy: OCRStrategy
     ) {
-        request.recognitionLevel = strategy.processingMode == .neural ? .accurate : .fast
+        switch strategy.processingMode {
+        case .fast, .standard, .accurate, .neural, .ssocr:
+            switch strategy.processingMode.safetyVisionRecognition {
+            case .fast:
+                request.recognitionLevel = .fast
+            case .accurate:
+                request.recognitionLevel = .accurate
+            case nil:
+                break
+            }
+        }
         request.usesLanguageCorrection = true
         request.recognitionLanguages = strategy.supportedLanguages.map { $0.rawValue }
         request.minimumTextHeight = context.visionMinimumTextHeight
