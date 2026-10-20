@@ -7,6 +7,7 @@
 //
 
 import XCTest
+import SixLayerTestKit
 
 @MainActor
 final class OCRCategoryDUITests: SixLayerUITestCase {
@@ -85,7 +86,7 @@ final class OCRCategoryDUITests: SixLayerUITestCase {
         XCTAssertTrue(selectionState.waitForExistence(timeout: 1.5), "Selection state label should exist")
         XCTAssertEqual(selectionState.xcuiAccessibleText, "Selected candidate: none")
 
-        secondCandidate.tap()
+        secondCandidate.platformTap()
         XCTAssertEqual(selectionState.xcuiAccessibleText, "Selected candidate: Category D Candidate 2")
     }
 
@@ -96,12 +97,12 @@ final class OCRCategoryDUITests: SixLayerUITestCase {
 
         let openOverlay = app.buttons[IDs.openOverlayButton]
         XCTAssertTrue(openOverlay.waitForExistence(timeout: 1.5), "Open overlay action should exist")
-        openOverlay.tap()
+        openOverlay.platformTap()
         XCTAssertEqual(overlayState.xcuiAccessibleText, "Overlay state: presented")
 
         let done = app.buttons[IDs.overlayDoneButton]
         XCTAssertTrue(done.waitForExistence(timeout: 1.5), "Overlay dismiss action should exist")
-        done.tap()
+        done.platformTap()
         XCTAssertEqual(overlayState.xcuiAccessibleText, "Overlay state: dismissed")
     }
 }
