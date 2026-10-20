@@ -186,7 +186,7 @@ struct SafeVisionOCRView: View {
                 deskewMaximumDegrees: context.segmentDeskewMaximumDegrees
             )
         }
-        try await withCheckedThrowingContinuation { continuation in
+        return try await withCheckedThrowingContinuation { continuation in
             // perform(_:) can run the completion and then throw. One claim, so the
             // second path cannot resume (#574).
             runVisionRequest(onResume: { continuation.resume(with: $0) }) { resume in
