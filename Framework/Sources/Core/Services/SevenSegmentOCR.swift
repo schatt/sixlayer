@@ -142,7 +142,7 @@ private struct GrayBuffer {
         let columns = columnRuns(mask, y0: band.0, y1: band.1, width: buffer.width)
         let boxes = columns.map { span -> PixelBox in
             tightBox(mask, x0: span.0, x1: span.1, y0: band.0, y1: band.1, width: buffer.width)
-        }.filter { $0.width >= 2 && $0.height >= 2 }
+        }.filter { $0.width >= 4 && $0.height >= 4 }
         guard !boxes.isEmpty else { return [] }
         let maxHeight = boxes.map(\.height).max() ?? 1
         let tall = boxes.filter { $0.height * 100 >= maxHeight * 55 }
@@ -179,7 +179,7 @@ private struct GrayBuffer {
         let columns = columnRuns(secondary, y0: expanded.0, y1: expanded.1, width: buffer.width)
         return columns.compactMap { span -> Cell? in
             let box = tightBox(secondary, x0: span.0, x1: span.1, y0: expanded.0, y1: expanded.1, width: buffer.width)
-            guard box.width >= 2, box.height >= 2 else { return nil }
+            guard box.width >= 4, box.height >= 4 else { return nil }
             guard box.width < digitHeight * 30 / 100, box.height < digitHeight * 55 / 100 else { return nil }
             if existing.contains(where: { overlap($0.box, box) > 0 }) { return nil }
             let comma = box.maxY > baseline + max(2, digitHeight / 12)
@@ -212,6 +212,7 @@ private struct GrayBuffer {
             return nil
         }
         if box.height * 100 < digitHeight * 45, box.width * 100 < digitHeight * 30 {
+            guard inkFraction(buffer, box: box, darkInk: darkInk) > 0.5 else { return nil }
             let comma = box.maxY > baseline + max(2, digitHeight / 12)
             return Cell(box: box, character: comma ? "," : ".", confidence: 1, band: bandIndex)
         }
