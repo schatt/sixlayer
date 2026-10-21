@@ -64,3 +64,6 @@ test_output.log
 .cursor/hooks/dirty-guard.json
 .cursor/hooks/dirty-guard.lock
 .cursor/hooks/worktree-activity.json
+
+# Translation script virtualenv (bootstrap_venv.sh)
+scripts/venv/
