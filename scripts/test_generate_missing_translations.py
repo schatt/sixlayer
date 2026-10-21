@@ -56,6 +56,16 @@ class MyMemoryCodeTests(unittest.TestCase):
         self.assertEqual(translator._get_mymemory_code("ja"), "ja-JP")
 
 
+class InitializeTranslatorTests(unittest.TestCase):
+    @unittest.skipUnless(generator.TRANSLATION_AVAILABLE, "deep-translator not installed (use scripts/venv)")
+    def test_mymemory_translator_uses_full_locale_codes(self):
+        # MyMemoryTranslator() with library defaults raises: short codes unsupported.
+        translator = make_translator({"strings": {}})
+        translator.provider = "mymemory"
+        translator._initialize_translator()  # must not raise
+        self.assertIsNotNone(translator.translator)
+
+
 class TranslateXCStringsSkipTests(unittest.TestCase):
     def test_should_translate_false_entries_are_skipped(self):
         catalog = {"sourceLanguage": "en", "strings": {
