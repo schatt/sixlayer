@@ -212,7 +212,7 @@ struct OCRSevenSegment576Tests {
     @Test func overlapDropsOnlyALargeIntersection() {
         let segment = fragment("2.899", x: 0.2, y: 0.4, w: 0.2, h: 0.2, role: .segment)
         let heavy = fragment("87", x: 0.22, y: 0.42, w: 0.16, h: 0.16, role: .label)
-        let light = fragment("87", x: 0.35, y: 0.4, w: 0.1, h: 0.2, role: .label)
+        let light = fragment("87", x: 0.37, y: 0.4, w: 0.1, h: 0.2, role: .label)
         let dropped = OCRSegmentLabelBinding.merge(segments: [segment], labels: [heavy])
         #expect(dropped.map(\.text) == ["2.899"])
         let kept = OCRSegmentLabelBinding.merge(segments: [segment], labels: [light])
@@ -493,6 +493,7 @@ struct OCRSevenSegment576Tests {
 
     private func decoderSource() throws -> String {
         let url = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent()
             .deletingLastPathComponent()
             .deletingLastPathComponent()
             .deletingLastPathComponent()
