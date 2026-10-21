@@ -517,7 +517,7 @@ private func merge(_ bands: [(Int, Int)], whenGapBelow limit: Int) -> [(Int, Int
     return merged
 }
 
-private func columnRuns(_ mask: Mask, y0: Int, y1: Int, width: Int) -> [(Int, Int)] {
+private func columnSums(_ mask: Mask, y0: Int, y1: Int, width: Int) -> [Int] {
     var sums = [Int](repeating: 0, count: width)
     let lower = max(0, y0)
     let upper = min(mask.height, y1)
@@ -527,9 +527,22 @@ private func columnRuns(_ mask: Mask, y0: Int, y1: Int, width: Int) -> [(Int, In
             sums[x] += 1
         }
     }
-    return runs(sums).flatMap { span in
+    return sums
+}
+
+private func columnRuns(_ mask: Mask, y0: Int, y1: Int, width: Int) -> [(Int, Int)] {
+    let sums = columnSums(mask, y0: y0, y1: y1, width: width)
+    let raw = runs(sums)
+    let peaks = raw.map { span in (span.0..<span.1).map { sums[$0] }.max() ?? 0 }
+    let tallest = peaks.max() ?? 0
+    let digitWidths = zip(raw, peaks).compactMap { span, peak -> Int? in
+        guard tallest > 0, peak * 2 >= tallest else { return nil }
+        return span.1 - span.0
+    }.sorted()
+    let typical = digitWidths.isEmpty ? 0 : digitWidths[(digitWidths.count - 1) / 2]
+    return raw.flatMap { span in
         let spanWidth = span.1 - span.0
-        guard spanWidth > 80 else { return [span] }
+        guard typical > 0, spanWidth > typical * 2 else { return [span] }
         let peak = (span.0..<span.1).map { sums[$0] }.max() ?? 0
         let floor = max(3, peak / 8)
         var pieces: [(Int, Int)] = []
@@ -667,15 +680,7 @@ private func prefersDark(_ dark: Mask, _ light: Mask) -> Bool {
 
 private func bandedColumnRuns(_ mask: Mask) -> Int {
     runs(mask.rowSums).reduce(0) { total, band in
-        var sums = [Int](repeating: 0, count: mask.width)
-        let lower = max(0, band.0)
-        let upper = min(mask.height, band.1)
-        for y in lower..<upper {
-            let start = y * mask.width
-            for x in 0..<mask.width where mask.bits[start + x] {
-                sums[x] += 1
-            }
-        }
+        let sums = columnSums(mask, y0: band.0, y1: band.1, width: mask.width)
         return total + runs(sums).count
     }
 }
