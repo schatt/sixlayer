@@ -210,10 +210,7 @@ private struct GrayBuffer {
            vertical.allSatisfy({ $0.1 - $0.0 < digitHeight * 45 / 100 }) {
             return Cell(box: box, character: ":", confidence: 1, band: bandIndex)
         }
-        let thinSplit = vertical.count == 2 && splitGap < shorterRun
-        if box.height * 100 >= digitHeight * 55,
-           box.width * 100 <= box.height * 30,
-           vertical.count == 1 || thinSplit {
+        if box.height * 100 >= digitHeight * 55, box.width * 100 <= box.height * 30 {
             return Cell(box: box, character: "1", confidence: 1, band: bandIndex)
         }
         if box.height * 100 >= digitHeight * 50,
@@ -388,7 +385,7 @@ private struct GrayBuffer {
 
     fileprivate func extremeMarkMask() -> Mask {
         Mask(
-            bits: pixels.map { $0 <= 10 || $0 >= 245 },
+            bits: pixels.map { $0 <= 10 || $0 >= 252 },
             width: width,
             height: height
         )
@@ -475,10 +472,6 @@ private extension GrayBuffer {
         return splitBands.compactMap { band -> [OCRRecognizedText]? in
             let found = cells(in: band, mask: primary, buffer: buffer, bandIndex: 0, darkInk: primaryIsDark)
             let marks = oppositeMarks(in: band, secondary: paintedMarks, existing: found, buffer: buffer, bandIndex: 0)
-            let dump = (found + marks).map { "\($0.character) w\($0.box.width) h\($0.height)" }.joined(separator: " ")
-            let url = URL(fileURLWithPath: "/tmp/576-cells.txt")
-            let prior = (try? String(contentsOf: url)) ?? ""
-            try? (prior + dump + "\n").write(to: url, atomically: true, encoding: .utf8)
             let texts = recognizedGroups(found + marks, width: buffer.width, height: buffer.height)
             return texts.isEmpty ? nil : texts
         }
@@ -530,7 +523,26 @@ private func columnRuns(_ mask: Mask, y0: Int, y1: Int, width: Int) -> [(Int, In
             sums[x] += 1
         }
     }
-    return runs(sums)
+    return runs(sums).flatMap { span in
+        let spanWidth = span.1 - span.0
+        guard spanWidth > 80 else { return [span] }
+        let peak = (span.0..<span.1).map { sums[$0] }.max() ?? 0
+        let floor = max(3, peak / 8)
+        var pieces: [(Int, Int)] = []
+        var start: Int?
+        for x in span.0..<span.1 {
+            if sums[x] >= floor {
+                if start == nil { start = x }
+            } else if let open = start {
+                pieces.append((open, x))
+                start = nil
+            }
+        }
+        if let open = start {
+            pieces.append((open, span.1))
+        }
+        return pieces.isEmpty ? [span] : pieces
+    }
 }
 
 private func tightBox(_ mask: Mask, x0: Int, x1: Int, y0: Int, y1: Int, width: Int) -> PixelBox {
