@@ -98,7 +98,7 @@ extension XCUIElement {
         // Trailing hit for switch — center often lands on the label and does not flip (#515 / #497).
         if elementType == .checkBox || elementType == .switch {
             if elementType == .switch, xcuiHasValidTapFrame {
-                coordinate(withNormalizedOffset: CGVector(dx: 0.92, dy: 0.5)).click()
+                coordinate(withNormalizedOffset: CGVector(dx: 0.92, dy: 0.5)).platformTap()
             } else {
                 click()
             }
