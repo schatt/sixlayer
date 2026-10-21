@@ -465,7 +465,7 @@ private extension GrayBuffer {
         return splitBands.compactMap { band -> [OCRRecognizedText]? in
             let found = cells(in: band, mask: primary, buffer: buffer, bandIndex: 0, darkInk: primaryIsDark)
             let marks = oppositeMarks(in: band, secondary: paintedMarks, existing: found, buffer: buffer, bandIndex: 0)
-            let dump = (found + marks).map { "\($0.character) x\($0.minX) w\($0.box.width) h\($0.height)" }.joined(separator: " | ")
+            let dump = "band \(band.0)-\(band.1) " + (found + marks).map { "\($0.character) x\($0.minX) y\($0.minY) w\($0.box.width) h\($0.height)" }.joined(separator: " | ")
             let url = URL(fileURLWithPath: "/tmp/576-cells.txt")
             let prior = (try? String(contentsOf: url)) ?? ""
             try? (prior + dump + "\n").write(to: url, atomically: true, encoding: .utf8)
