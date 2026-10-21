@@ -12,6 +12,7 @@
 //
 
 import XCTest
+import SixLayerTestKit
 
 /// XCUITest for Issue #150 — binding propagation and user interaction on `StandaloneDropIn150HostView`.
 @MainActor
@@ -272,7 +273,7 @@ final class PlatformStandaloneDropIn150UITests: SixLayerUITestCase {
         let deadline = Date().addingTimeInterval(5.0)
         var focused = false
         while !focused && Date() < deadline {
-            target.tap()
+            target.platformTap()
             RunLoop.current.run(until: Date().addingTimeInterval(0.2))
             focused = (target.value(forKey: "hasKeyboardFocus") as? Bool) == true
         }

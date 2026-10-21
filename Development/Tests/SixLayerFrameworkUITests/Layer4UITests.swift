@@ -750,7 +750,7 @@ final class Layer4UITests: SixLayerUITestCase {
         XCTAssertTrue(element(matchingIdentifier: "L4ContractPhotoPickerOpen").exists,
                       "platformPhotoPicker_L4: L4ContractPhotoPickerOpen must remain available")
         let cancel = app.buttons["Cancel"].firstMatch
-        if cancel.exists { cancel.tap() }
+        if cancel.exists { cancel.platformTap() }
         XCTAssertTrue(element(matchingIdentifier: "L4ContractPhotoPickerOpen").exists,
                       "platformPhotoPicker_L4: must return to contract root after dismiss")
     }
