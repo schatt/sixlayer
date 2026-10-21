@@ -177,36 +177,43 @@ struct SafeVisionOCRView: View {
     }
     
     private func performVisionOCR() async throws -> OCRResult {
-        return try await withCheckedThrowingContinuation { continuation in
+        if strategy.processingMode == .ssocr {
             guard let cgImage = getCGImage(from: image) else {
-                continuation.resume(throwing: OCRError.invalidImage)
-                return
+                throw OCRError.invalidImage
             }
-            
-            let request = VNRecognizeTextRequest { request, error in
-                if let error = error {
-                    continuation.resume(throwing: error)
+            return SevenSegmentOCR.decode(
+                cgImage: cgImage,
+                deskewMaximumDegrees: context.segmentDeskewMaximumDegrees
+            )
+        }
+        return try await withCheckedThrowingContinuation { continuation in
+            // perform(_:) can run the completion and then throw. One claim, so the
+            // second path cannot resume (#574).
+            runVisionRequest(onResume: { continuation.resume(with: $0) }) { resume in
+                guard let cgImage = getCGImage(from: image) else {
+                    resume(.failure(OCRError.invalidImage))
                     return
                 }
-                
-                guard let observations = request.results as? [VNRecognizedTextObservation] else {
-                    continuation.resume(throwing: OCRError.noTextFound)
-                    return
+
+                let request = VNRecognizeTextRequest { request, error in
+                    if let error = error {
+                        resume(.failure(error))
+                        return
+                    }
+
+                    guard let observations = request.results as? [VNRecognizedTextObservation] else {
+                        resume(.failure(OCRError.noTextFound))
+                        return
+                    }
+
+                    let result = processVisionResults(observations, context: context)
+                    resume(.success(result))
                 }
-                
-                let result = processVisionResults(observations, context: context)
-                continuation.resume(returning: result)
-            }
-            
-            // Configure request based on strategy
-            configureVisionRequest(request, context: context, strategy: strategy)
-            
-            // Perform request
-            let handler = VNImageRequestHandler(cgImage: cgImage, options: [:])
-            do {
+
+                configureVisionRequest(request, context: context, strategy: strategy)
+
+                let handler = VNImageRequestHandler(cgImage: cgImage, options: [:])
                 try handler.perform([request])
-            } catch {
-                continuation.resume(throwing: error)
             }
         }
     }
@@ -216,7 +223,17 @@ struct SafeVisionOCRView: View {
         context: OCRContext,
         strategy: OCRStrategy
     ) {
-        request.recognitionLevel = strategy.processingMode == .neural ? .accurate : .fast
+        switch strategy.processingMode {
+        case .fast, .standard, .accurate, .neural, .ssocr:
+            switch strategy.processingMode.safetyVisionRecognition {
+            case .fast:
+                request.recognitionLevel = .fast
+            case .accurate:
+                request.recognitionLevel = .accurate
+            case nil:
+                break
+            }
+        }
         request.usesLanguageCorrection = true
         request.recognitionLanguages = strategy.supportedLanguages.map { $0.rawValue }
         request.minimumTextHeight = context.visionMinimumTextHeight

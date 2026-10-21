@@ -51,6 +51,22 @@ jobs:
           set -euo pipefail
           ./Development/scripts/reclaim-ci-disk.sh --workspace "${{ github.workspace }}"
 
+  catalog-guard:
+    name: String catalog guard
+    if: ${{ github.event_name == 'push' || inputs.reclaim_only != true }}
+    runs-on: self-hosted
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Check Localizable.xcstrings curation (#577)
+        run: |
+          set -euo pipefail
+          export PYTHONDONTWRITEBYTECODE=1
+          python3 scripts/check_xcstrings_catalog.py
+          python3 scripts/test_check_xcstrings_catalog.py
+
   ios-required-tests:
     name: iOS (${{ matrix.label }})
     if: ${{ github.event_name == 'push' || inputs.reclaim_only != true }}

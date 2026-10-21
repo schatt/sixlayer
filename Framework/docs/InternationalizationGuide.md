@@ -104,6 +104,14 @@ The framework uses a JSON-based `.xcstrings` file that contains all languages. E
 
 `InternationalizationService` resolves framework defaults from that catalog. SPM ships it with `.copy` (the JSON is not compiled to `.strings`); the service reads `Localizable.xcstrings` directly when compiled `.strings` are absent. Xcode framework builds still use compiled catalogs first. **Apps do not need to duplicate framework keys.** Override only the keys you want to change; missing keys fall back to the framework catalog.
 
+**The catalog is curated, not build-generated (#577).** Every entry declares `extractionState: "manual"`, so Xcode's build-time `xcstringstool sync` cannot add, prune, or stale-mark entries based on which targets a scheme built. Do not commit catalog rewrites produced by a build; if Xcode modifies the file, that is a bug to investigate, not churn to accept. When adding a framework string, add its catalog entry manually in the same change. Run the guard before committing catalog changes:
+
+```bash
+python3 scripts/check_xcstrings_catalog.py            # curation invariant
+python3 scripts/check_xcstrings_catalog.py --fix      # rewrite into curated form
+python3 scripts/check_xcstrings_catalog.py --baseline <older catalog>  # fail on translation loss
+```
+
 Example structure:
 ```json
 {

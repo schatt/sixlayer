@@ -7,6 +7,7 @@
 //
 
 import XCTest
+import SixLayerTestKit
 
 @MainActor
 final class AccessibilityIdentifierCategoryEUITests: SixLayerUITestCase {
@@ -80,7 +81,7 @@ final class AccessibilityIdentifierCategoryEUITests: SixLayerUITestCase {
     func testCategoryE_clipboardGeneration_updatesVisibleResultState() throws {
         let trigger = app.buttons[IDs.clipboardTriggerButton]
         XCTAssertTrue(trigger.waitForExistence(timeout: 1.5), "Clipboard generation trigger should exist")
-        trigger.tap()
+        trigger.platformTap()
 
         let state = app.descendants(matching: .any)[IDs.clipboardStateLabel]
         XCTAssertTrue(state.waitForExistence(timeout: 1.5), "Clipboard state label should exist")

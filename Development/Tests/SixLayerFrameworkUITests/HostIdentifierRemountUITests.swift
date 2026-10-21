@@ -83,14 +83,14 @@ final class HostIdentifierRemountUITests: SixLayerUITestCase {
 
         let present = element(identifier: IDs.presentSheet)
         XCTAssertTrue(present.waitForExistence(timeout: 2.0), "Present-sheet control should exist")
-        tapByNormalizedCenter(present)
+        present.platformTap()
 
         let sheet = element(identifier: IDs.sheetContent)
         XCTAssertTrue(sheet.waitForExistence(timeout: 2.5), "Sheet content should appear")
 
         let dismiss = element(identifier: IDs.dismissSheet)
         XCTAssertTrue(dismiss.waitForExistence(timeout: 2.0), "Sheet dismiss control should exist")
-        tapByNormalizedCenter(dismiss)
+        dismiss.platformTap()
 
         let sheetGoneDeadline = Date().addingTimeInterval(2.5)
         while sheet.exists, Date() < sheetGoneDeadline {
@@ -100,7 +100,7 @@ final class HostIdentifierRemountUITests: SixLayerUITestCase {
 
         let remount = element(identifier: IDs.remount)
         XCTAssertTrue(remount.waitForExistence(timeout: 2.0), "Remount control should exist on the parent after dismiss")
-        tapByNormalizedCenter(remount)
+        remount.platformTap()
 
         let nestedAfter = element(identifier: IDs.nested)
         XCTAssertTrue(nestedAfter.waitForExistence(timeout: 2.5), "Nested content should exist after .id remount")
@@ -191,14 +191,5 @@ final class HostIdentifierRemountUITests: SixLayerUITestCase {
     @MainActor
     private func element(identifier: String) -> XCUIElement {
         app.elementMatchingAccessibilityIdentifier(identifier)
-    }
-
-    @MainActor
-    private func tapByNormalizedCenter(_ element: XCUIElement) {
-        if element.isHittable {
-            element.tap()
-        } else {
-            element.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
-        }
     }
 }

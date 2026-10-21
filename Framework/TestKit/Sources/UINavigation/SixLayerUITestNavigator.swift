@@ -58,11 +58,7 @@ public final class SixLayerUITestNavigator {
               let element = findFirstExisting(application, elementId, resolverConfiguration),
               element.waitForExistence(timeout: timeout) else { return false }
         if element.isHittable {
-            #if os(macOS)
-            element.click()
-            #else
-            element.tap()
-            #endif
+            element.platformTap()
             return true
         }
         return element.exists
@@ -75,11 +71,7 @@ public final class SixLayerUITestNavigator {
               let element = findFirstExisting(scope, elementId, resolverConfiguration),
               element.waitForExistence(timeout: timeout) else { return false }
         if element.isHittable {
-            #if os(macOS)
-            element.click()
-            #else
-            element.tap()
-            #endif
+            element.platformTap()
             return true
         }
         return element.exists
@@ -111,11 +103,7 @@ public final class SixLayerUITestNavigator {
         for root in searchRoots {
             let back = root.buttons["Back"]
             if back.waitForExistence(timeout: quick), back.isHittable {
-                #if os(macOS)
-                back.click()
-                #else
-                back.tap()
-                #endif
+                back.platformTap()
                 return true
             }
         }
@@ -128,20 +116,12 @@ public final class SixLayerUITestNavigator {
             guard navBar.waitForExistence(timeout: budget) else { continue }
             let named = navBar.buttons["Back"]
             if named.waitForExistence(timeout: quick), named.isHittable {
-                #if os(macOS)
-                named.click()
-                #else
-                named.tap()
-                #endif
+                named.platformTap()
                 return true
             }
             let leading = navBar.buttons.element(boundBy: 0)
             if leading.waitForExistence(timeout: quick), leading.isHittable {
-                #if os(macOS)
-                leading.click()
-                #else
-                leading.tap()
-                #endif
+                leading.platformTap()
                 return true
             }
         }

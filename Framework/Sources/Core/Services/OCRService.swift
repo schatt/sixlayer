@@ -89,6 +89,44 @@ public struct OCRCapabilities {
     }
 }
 
+/// Single-resume claim for a Vision `CheckedContinuation`.
+///
+/// `VNImageRequestHandler.perform` can invoke the request completion and then throw.
+/// Resuming the same continuation from both paths traps the process.
+/// The first claim wins. A later claim is ignored.
+final class VisionContinuationGate: @unchecked Sendable {
+    private let lock = NSLock()
+    private var claimed = false
+
+    func claim() -> Bool {
+        lock.lock()
+        defer { lock.unlock() }
+        if claimed { return false }
+        claimed = true
+        return true
+    }
+}
+
+/// Runs a Vision `perform` whose completion and thrown error both try to resume.
+///
+/// The first claim wins. A later claim does not call `onResume` (#574).
+func runVisionRequest<T>(
+    onResume: @escaping (Result<T, Error>) -> Void,
+    perform: (_ resume: @escaping (Result<T, Error>) -> Void) throws -> Void
+) {
+    let gate = VisionContinuationGate()
+    let resume: (Result<T, Error>) -> Void = { result in
+        guard gate.claim() else { return }
+        onResume(result)
+    }
+    do {
+        try perform(resume)
+    } catch {
+        guard gate.claim() else { return }
+        onResume(.failure(error))
+    }
+}
+
 // MARK: - OCR Service Implementation
 
 /// Main OCR service implementation
@@ -107,6 +145,9 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
     // MARK: - Initialization
     
     public init() {}
+
+    /// Counts `VNRecognizeTextRequest` values created by this instance.
+    private(set) var visionTextRecognitionRequestCount = 0
     
     
     // MARK: - Public Methods
@@ -117,7 +158,16 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
         context: OCRContext,
         strategy: OCRStrategy
     ) async throws -> OCRResult {
-        try await performVisionOCRIfAvailable(
+        if strategy.processingMode == .ssocr {
+            guard let cgImage = getCGImage(from: image) else {
+                throw OCRError.invalidImage
+            }
+            return SevenSegmentOCR.decode(
+                cgImage: cgImage,
+                deskewMaximumDegrees: context.segmentDeskewMaximumDegrees
+            )
+        }
+        return try await performVisionOCRIfAvailable(
             image: image,
             context: context,
             strategy: strategy
@@ -129,10 +179,13 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
         _ image: PlatformImage,
         context: OCRContext
     ) async throws -> OCRResult {
+        if context.processingMode == .ssocr {
+            return try await processSevenSegmentStructured(image, context: context)
+        }
         let structuredStrategy = OCRStrategy(
             supportedTextTypes: context.visionStrategySupportedTextTypes,
             supportedLanguages: [context.language],
-            processingMode: .accurate
+            processingMode: context.processingMode
         )
         let visionOutcome = try await performVisionOCRIfAvailable(
             image: image,
@@ -174,6 +227,60 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
             missingRequiredFields: missingFields,
             adjustedFields: adjustedFields,
             uncategorizedExtractions: uncategorized
+        )
+    }
+
+    private func processSevenSegmentStructured(
+        _ image: PlatformImage,
+        context: OCRContext
+    ) async throws -> OCRResult {
+        guard let cgImage = getCGImage(from: image) else {
+            throw OCRError.invalidImage
+        }
+        let decoded = SevenSegmentOCR.decode(
+            cgImage: cgImage,
+            deskewMaximumDegrees: context.segmentDeskewMaximumDegrees
+        )
+        var labels = context.suppliedLabelFragments
+        if labels.isEmpty {
+            labels = await recognizeLabelFragments(cgImage: cgImage, context: context)
+        }
+        let segments = decoded.recognizedTexts.filter { $0.role == .segment }
+        let merged = OCRSegmentLabelBinding.merge(segments: segments, labels: labels)
+        let base = OCRResult(
+            extractedText: decoded.extractedText,
+            confidence: decoded.confidence,
+            boundingBoxes: segments.map(\.boundingBox),
+            textTypes: decoded.textTypes,
+            language: context.language,
+            recognizedTexts: merged
+        )
+        let pipeline = applyStructuredExtraction(
+            from: base,
+            context: context,
+            recognitionLines: merged
+        )
+        let structuredValues = Set(
+            pipeline.structuredData.values
+                .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+                .filter { !$0.isEmpty }
+        )
+        let uncategorized = OCRUncategorizedExtractionBuilder.build(
+            recognizedLines: merged.map(\.text),
+            structuredValues: structuredValues
+        )
+        return OCRResult(
+            extractedText: base.extractedText,
+            confidence: base.confidence,
+            boundingBoxes: base.boundingBoxes,
+            textTypes: base.textTypes,
+            language: context.language,
+            structuredData: pipeline.structuredData,
+            extractionConfidence: pipeline.extractionConfidence,
+            missingRequiredFields: pipeline.missingRequiredFields,
+            adjustedFields: pipeline.adjustedFields,
+            uncategorizedExtractions: uncategorized,
+            recognizedTexts: merged
         )
     }
     
@@ -256,6 +363,9 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
         recognitionLines: [OCRRecognitionLine]? = nil
     ) -> [String: String] {
         let patterns = getPatterns(for: context)
+        if let recognitionLines, recognitionLines.contains(where: { $0.role == .segment }) {
+            return OCRSegmentLabelBinding.assign(fragments: recognitionLines, patterns: patterns)
+        }
         return OCRLabelAnchoredExtraction.extract(
             from: result.extractedText,
             patterns: patterns,
@@ -979,33 +1089,31 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
     ) async throws -> (result: OCRResult, recognizedLineTexts: [String]) {
         
         return try await withCheckedThrowingContinuation { continuation in
-            let request = VNRecognizeTextRequest { request, error in
-                if let error = error {
-                    continuation.resume(throwing: error)
-                    return
+            runVisionRequest(onResume: { continuation.resume(with: $0) }) { resume in
+                self.visionTextRecognitionRequestCount += 1
+                let request = VNRecognizeTextRequest { request, error in
+                    if let error = error {
+                        resume(.failure(error))
+                        return
+                    }
+
+                    guard let observations = request.results as? [VNRecognizedTextObservation] else {
+                        resume(.failure(OCRError.noTextFound))
+                        return
+                    }
+
+                    let outcome = self.processVisionResults(
+                        observations: observations,
+                        context: context,
+                        strategy: strategy
+                    )
+                    resume(.success(outcome))
                 }
-                
-                guard let observations = request.results as? [VNRecognizedTextObservation] else {
-                    continuation.resume(throwing: OCRError.noTextFound)
-                    return
-                }
-                
-                let outcome = self.processVisionResults(
-                    observations: observations,
-                    context: context,
-                    strategy: strategy
-                )
-                continuation.resume(returning: outcome)
-            }
-            
-            // Configure request based on strategy
-            configureVisionRequest(request, context: context, strategy: strategy)
-            
-            let handler = VNImageRequestHandler(cgImage: cgImage)
-            do {
+
+                configureVisionRequest(request, context: context, strategy: strategy)
+
+                let handler = VNImageRequestHandler(cgImage: cgImage)
                 try handler.perform([request])
-            } catch {
-                continuation.resume(throwing: error)
             }
         }
     }
@@ -1017,14 +1125,15 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
     ) {
         // Configure recognition level
         switch strategy.processingMode {
-        case .fast:
-            request.recognitionLevel = .fast
-        case .standard:
-            request.recognitionLevel = .accurate
-        case .accurate:
-            request.recognitionLevel = .accurate
-        case .neural:
-            request.recognitionLevel = .accurate
+        case .fast, .standard, .accurate, .neural, .ssocr:
+            switch strategy.processingMode.serviceVisionRecognition {
+            case .fast:
+                request.recognitionLevel = .fast
+            case .accurate:
+                request.recognitionLevel = .accurate
+            case nil:
+                break
+            }
         }
         
         // Configure language
@@ -1123,6 +1232,52 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
     }
     #endif
     
+    private func recognizeLabelFragments(cgImage: CGImage, context: OCRContext) async -> [OCRRecognizedText] {
+        #if canImport(Vision) && !os(watchOS)
+        do {
+            return try await withCheckedThrowingContinuation { continuation in
+                runVisionRequest(onResume: { continuation.resume(with: $0) }) { resume in
+                    self.visionTextRecognitionRequestCount += 1
+                    let request = VNRecognizeTextRequest { request, error in
+                        if error != nil {
+                            resume(.success([]))
+                            return
+                        }
+                        let observations = request.results as? [VNRecognizedTextObservation] ?? []
+                        let labels = observations.compactMap { observation -> OCRRecognizedText? in
+                            guard let candidate = observation.topCandidates(1).first else { return nil }
+                            let text = candidate.string.trimmingCharacters(in: .whitespacesAndNewlines)
+                            guard !text.isEmpty else { return nil }
+                            return OCRRecognizedText(
+                                text: text,
+                                boundingBox: observation.boundingBox,
+                                confidence: candidate.confidence,
+                                role: .label
+                            )
+                        }
+                        resume(.success(labels))
+                    }
+                    switch context.labelProcessingMode.labelPassVisionRecognition {
+                    case .fast:
+                        request.recognitionLevel = .fast
+                    case .accurate:
+                        request.recognitionLevel = .accurate
+                    }
+                    request.usesLanguageCorrection = false
+                    request.recognitionLanguages = [context.language.rawValue]
+                    request.minimumTextHeight = context.visionMinimumTextHeight
+                    let handler = VNImageRequestHandler(cgImage: cgImage)
+                    try handler.perform([request])
+                }
+            }
+        } catch {
+            return []
+        }
+        #else
+        return []
+        #endif
+    }
+
     private func getCGImage(from image: PlatformImage) -> CGImage? {
         #if os(iOS)
         return image.uiImage.cgImage
