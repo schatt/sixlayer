@@ -46,6 +46,16 @@ class TranslateStringProtectionTests(unittest.TestCase):
         self.assertEqual(state, "needs_review")
 
 
+class MyMemoryCodeTests(unittest.TestCase):
+    def test_mymemory_requires_full_locale_codes(self):
+        translator = make_translator({"strings": {}})
+        self.assertEqual(translator._get_mymemory_code("en"), "en-GB")
+        self.assertEqual(translator._get_mymemory_code("es"), "es-ES")
+        self.assertEqual(translator._get_mymemory_code("de-CH"), "de-DE")
+        self.assertEqual(translator._get_mymemory_code("zh-Hans"), "zh-CN")
+        self.assertEqual(translator._get_mymemory_code("ja"), "ja-JP")
+
+
 class TranslateXCStringsSkipTests(unittest.TestCase):
     def test_should_translate_false_entries_are_skipped(self):
         catalog = {"sourceLanguage": "en", "strings": {
