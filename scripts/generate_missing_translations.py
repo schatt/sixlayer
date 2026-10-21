@@ -268,7 +268,29 @@ class LocalizationTranslator:
     def _get_translation_code(self, lang_code: str) -> str:
         """Convert Xcode language code to translation API code."""
         return self.LANGUAGE_CODE_MAP.get(lang_code, lang_code.split("-")[0] if "-" in lang_code else lang_code)
-    
+
+    # MyMemory rejects short codes ("en", "es"); it requires full locale codes.
+    MYMEMORY_CODE_MAP = {
+        "en": "en-GB",
+        "da": "da-DK",
+        "de": "de-DE",
+        "de-CH": "de-DE",
+        "es": "es-ES",
+        "es-US": "es-ES",
+        "fr": "fr-FR",
+        "it": "it-IT",
+        "ja": "ja-JP",
+        "ko": "ko-KR",
+        "nl": "nl-NL",
+        "pl": "pl-PL",
+        "sv": "sv-SE",
+        "zh-Hans": "zh-CN",
+    }
+
+    def _get_mymemory_code(self, lang_code: str) -> str:
+        """Convert a catalog language code to the full locale MyMemory requires."""
+        return self.MYMEMORY_CODE_MAP.get(lang_code, lang_code)
+
     @contextmanager
     def _progress_tracker(self, total: int, unit: str = "str"):
         """Context manager yielding a tick() callable for progress. Uses tqdm when available, else print every 10."""
@@ -304,7 +326,10 @@ class LocalizationTranslator:
             return MicrosoftTranslator(api_key=os.getenv("MICROSOFT_TRANSLATOR_API_KEY"),
                                       source=source_code, target=target_code).translate(text)
         if self.provider == "mymemory":
-            return MyMemoryTranslator(source=source_code, target=target_code).translate(text)
+            return MyMemoryTranslator(
+                source=self._get_mymemory_code(self.source_language),
+                target=self._get_mymemory_code(target_code),
+            ).translate(text)
         return None
 
     def _is_untranslatable(self, text: str) -> bool:
@@ -365,7 +390,10 @@ class LocalizationTranslator:
                 return MicrosoftTranslator(api_key=os.getenv("MICROSOFT_TRANSLATOR_API_KEY"),
                                           source=source_code, target=target_code).translate(text)
             if provider == "mymemory":
-                return MyMemoryTranslator(source=source_code, target=target_code).translate(text)
+                return MyMemoryTranslator(
+                    source=self._get_mymemory_code(self.source_language),
+                    target=self._get_mymemory_code(target_lang),
+                ).translate(text)
             return None
 
         primary_error = None
