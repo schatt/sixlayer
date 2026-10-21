@@ -653,23 +653,16 @@ private func median(_ values: [Int]) -> Int? {
 }
 
 private func prefersDark(_ dark: Mask, _ light: Mask) -> Bool {
-    let darkThickness = maskThickness(dark)
-    let lightThickness = maskThickness(light)
-    if darkThickness != lightThickness {
-        return darkThickness > lightThickness
+    // More column runs inside each row. A connected halo is one fat run, so
+    // ink-per-run selects the halo and the digits disappear.
+    let darkRuns = bandedColumnRuns(dark)
+    let lightRuns = bandedColumnRuns(light)
+    if darkRuns != lightRuns {
+        return darkRuns > lightRuns
     }
     let darkInk = dark.rowSums.reduce(Int64(0)) { $0 + Int64($1) }
     let lightInk = light.rowSums.reduce(Int64(0)) { $0 + Int64($1) }
     return darkInk <= lightInk
-}
-
-/// Ink per column run. A stroke is thicker than the halo a tight local
-/// window paints around it, and a halo can have more runs than the digits.
-private func maskThickness(_ mask: Mask) -> Int {
-    let runs = bandedColumnRuns(mask)
-    guard runs > 0 else { return 0 }
-    let ink = mask.rowSums.reduce(0, +)
-    return ink / runs
 }
 
 private func bandedColumnRuns(_ mask: Mask) -> Int {
