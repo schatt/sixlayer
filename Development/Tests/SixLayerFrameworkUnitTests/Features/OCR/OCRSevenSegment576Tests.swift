@@ -109,10 +109,10 @@ struct OCRSevenSegment576Tests {
     @Test func commaTailStaysOnItsRow() {
         let rows = [atoms("1,25"), atoms("30")]
         let result = decode(SegmentPanel.render(rows: rows, padding: 8))
-        #expect(result.extractedText == "1,25\n30", "pieces \(result.recognizedTexts.map(\.text))")
+        #expect(result.extractedText == "1,25\n30")
         let content = SegmentPanel.contentSize(rows: rows)
         let padded = decode(SegmentPanel.render(rows: rows, padding: 4 * max(content.width, content.height)))
-        #expect(padded.extractedText == result.extractedText)
+        #expect(padded.extractedText == "1,25\n30")
     }
 
     // MARK: - Marks
@@ -184,7 +184,7 @@ struct OCRSevenSegment576Tests {
     @Test func glareAndBothPolaritiesDecodeTheSameDigits() {
         let rows = [atoms("31.25")]
         let glared = decode(SegmentPanel.render(rows: rows, glare: true))
-        #expect(glared.extractedText == "31.25", "pieces \(glared.recognizedTexts.map(\.text))")
+        #expect(glared.extractedText == "31.25")
         let dark = decode(SegmentPanel.render(rows: rows, invert: false)).extractedText
         let light = decode(SegmentPanel.render(rows: rows, invert: true)).extractedText
         #expect(light == dark)
