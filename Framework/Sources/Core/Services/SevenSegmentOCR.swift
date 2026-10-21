@@ -318,7 +318,11 @@ private struct GrayBuffer {
                 let mean = Int(sum / UInt64(max(area, 1)))
                 let pixel = Int(pixels[y * width + x])
                 let index = y * width + x
-                dark[index] = pixel + margin < mean
+                // A glare band lifts the background next to it, so those
+                // still-background pixels fall just under the local mean and
+                // bridge the gaps. Glared ink stays darker than that
+                // background, and the ceiling keeps it in the mask.
+                dark[index] = pixel + margin < mean && pixel < 200
                 light[index] = pixel > mean + margin
             }
         }
