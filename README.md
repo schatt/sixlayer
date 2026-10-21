@@ -27,7 +27,7 @@ Navigate to the `Framework/` directory and use it as a Swift Package:
 ```swift
 // In your Package.swift
 dependencies: [
-    .package(url: "https://github.com/schatt/sixlayer.git", from: "8.6.7")
+    .package(url: "https://github.com/schatt/sixlayer.git", from: "8.7.0")
 ]
 ```
 
@@ -41,9 +41,12 @@ dependencies: [
 
 The framework is distributed as a Swift Package from the `Framework/` directory. This ensures that only the essential framework code is included when other projects consume it.
 
-## 🆕 Latest Release: v8.6.7
+## 🆕 Latest Release: v8.7.0
 
-### **Patch release**
+### **Minor release**
+🚀 **Minor**: Seven-segment OCR (`OCRProcessingMode.ssocr`, #576). Optional hints use the unwrapped model name, and `DataBinder` init and bind are public (#581, #585). Vision OCR resumes its continuation once (#563, #574, #578, #579). The string catalog is curated (#577). macOS UITests and generated snippets use `platformTap` (#567, #568, #569, #570, #575, #586, #587). See [RELEASE_v8.7.0.md](Development/RELEASE_v8.7.0.md).
+
+### **Previous Release: v8.6.7 - Patch release**
 🔧 **Patch**: Sidebar column minimum and label inset (#549, #552); signed number entry (#548, #550); alert binding, deferred clear, and RTL Do Not Disturb (#533, #555, #556); focused form editors (#560); settings dismiss (#532); collection and catalog content inset (#557, #559). See [RELEASE_v8.6.7.md](Development/RELEASE_v8.6.7.md).
 
 ### **Previous Release: v8.6.2 - Patch release**
@@ -337,9 +340,9 @@ These guides contain critical information about the Layer 1 Semantic Intent phil
 
 ## 📋 Current Status
 
-**Version**: v8.6.7 (Patch)
-**Phase**: Patch release
-**Next**: v8.7.0
+**Version**: v8.7.0 (Minor)
+**Phase**: Minor release
+**Next**: v8.7.1
 
 ## 🤝 Contributing
 
