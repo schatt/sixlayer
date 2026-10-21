@@ -462,6 +462,11 @@ private extension GrayBuffer {
         let tallHeights = measured.flatMap(\.cells).filter { $0.height > 0 }.map(\.height).sorted()
         let cellHeight = tallHeights.isEmpty ? 1 : tallHeights[tallHeights.count / 2]
         let splitBands = merge(runs(primary.rowSums), whenGapBelow: max(1, cellHeight / 2))
+        let contentZeros = primary.rowSums.enumerated().filter { $0.element == 0 }.map(\.offset)
+        let url = URL(fileURLWithPath: "/tmp/576-cells.txt")
+        let priorHeader = (try? String(contentsOf: url)) ?? ""
+        let header = priorHeader + "h \(buffer.height) w \(buffer.width) zeros \(contentZeros.count) cellH \(cellHeight)\n"
+        try? header.write(to: url, atomically: true, encoding: .utf8)
         return splitBands.compactMap { band -> [OCRRecognizedText]? in
             let found = cells(in: band, mask: primary, buffer: buffer, bandIndex: 0, darkInk: primaryIsDark)
             let marks = oppositeMarks(in: band, secondary: paintedMarks, existing: found, buffer: buffer, bandIndex: 0)
