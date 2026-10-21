@@ -94,9 +94,29 @@ extension IntelligentFormView {
 /// This view analyzes data models and generates appropriate forms using platform extensions
 @MainActor
 public struct IntelligentFormView {
-    
+
+    /// Hints lookup for `generateForm(for:initialData:)` when an instance is present.
+    /// The overload's `initialData` parameter is `T?`. Callers pass the unwrapped value
+    /// and `dataType`, so the hints file is `Model.hints` and Mirror sees the model.
+    struct InitialDataFormHintsLookup {
+        let modelName: String
+        let analysis: DataAnalysisResult
+    }
+
+    static func initialDataFormHintsLookup<T>(
+        dataType: T.Type,
+        initialData: T
+    ) -> InitialDataFormHintsLookup {
+        let modelName = DataIntrospectionEngine.hintsModelName(for: dataType)
+        let analysis = DataIntrospectionEngine.analyze(initialData)
+        return InitialDataFormHintsLookup(
+            modelName: modelName,
+            analysis: analysis
+        )
+    }
+
     // MARK: - Public API
-    
+
     /// Generate a form for creating new data with data binding integration
     ///
     /// **Type-Only Form Generation (New Object Creation)**:
@@ -153,8 +173,7 @@ public struct IntelligentFormView {
     ) -> some View {
         // Try type-only analysis if no initialData provided
         if initialData == nil {
-            let modelName = String(describing: dataType)
-                .components(separatedBy: ".").last ?? String(describing: dataType)
+            let modelName = DataIntrospectionEngine.hintsModelName(for: dataType)
             
             if let analysis = DataIntrospectionEngine.analyzeFromType(dataType, modelName: modelName) {
                 // Type-only form generation: use hints-only analysis
@@ -277,24 +296,24 @@ Text(i18n.localizedString(for: "SixLayerFramework.form.title"))
             }
         }
         
-        // Analyze data - will use hints-first if available, Mirror as fallback
-        let analysis = DataIntrospectionEngine.analyze(initialData)
+        // initialData is non-nil here. Analyze that value, not the optional wrapper.
+        let data = initialData!
+        let lookup = initialDataFormHintsLookup(dataType: dataType, initialData: data)
+        let analysis = lookup.analysis
         let formStrategy = determineFormStrategy(analysis: analysis)
         
         // Auto-create dataBinder if enabled and not provided
-        // Note: initialData is guaranteed to be non-nil here (we checked above)
         let effectiveDataBinder: DataBinder<T>?
         if let providedBinder = dataBinder {
             effectiveDataBinder = providedBinder
-        } else if autoBind && supportsAutoBinding(initialData!, analysis: analysis) {
-            effectiveDataBinder = createAutoDataBinder(for: initialData!, analysis: analysis)
+        } else if autoBind && supportsAutoBinding(data, analysis: analysis) {
+            effectiveDataBinder = createAutoDataBinder(for: data, analysis: analysis)
         } else {
             effectiveDataBinder = nil
         }
         
-        // Load hints for the model type
-        let modelName = String(describing: type(of: initialData))
-            .components(separatedBy: ".").last ?? String(describing: type(of: initialData))
+        // Load hints for the model type (same resolution as analysis above)
+        let modelName = lookup.modelName
         let hintsLoader = FileBasedDataHintsLoader()
         let hintsResult = hintsLoader.loadHintsResult(for: modelName)
         let fieldHints = hintsResult.fieldHints
@@ -443,8 +462,7 @@ Text(i18n.localizedString(for: "SixLayerFramework.form.title"))
         }
         
         // Load hints for the model type
-        let modelName = String(describing: type(of: data))
-            .components(separatedBy: ".").last ?? String(describing: type(of: data))
+        let modelName = DataIntrospectionEngine.hintsModelName(for: type(of: data))
         let hintsLoader = FileBasedDataHintsLoader()
         let hintsResult = hintsLoader.loadHintsResult(for: modelName)
         let fieldHints = hintsResult.fieldHints
@@ -1535,8 +1553,7 @@ private struct TypeOnlyFormWrapper<T>: View {
     
     /// Create a blank entity and populate with defaults from hints
     private func createBlankEntity() {
-        let modelName = String(describing: dataType)
-            .components(separatedBy: ".").last ?? String(describing: dataType)
+        let modelName = DataIntrospectionEngine.hintsModelName(for: dataType)
         
         // Try Core Data first
         #if canImport(CoreData)
