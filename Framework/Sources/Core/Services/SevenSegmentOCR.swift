@@ -387,7 +387,7 @@ private struct GrayBuffer {
         return GrayBuffer(pixels: output, width: newW, height: newH)
     }
 
-    private func cornerFill() -> UInt8 {
+    fileprivate func cornerFill() -> UInt8 {
         let corners = [pixels[0], pixels[width - 1], pixels[(height - 1) * width], pixels[pixels.count - 1]]
         return corners.sorted()[corners.count / 2]
     }
