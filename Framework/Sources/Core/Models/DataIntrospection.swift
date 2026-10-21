@@ -16,7 +16,14 @@ import SwiftData
 
 /// Analyzes data structures to provide intelligent UI recommendations
 public struct DataIntrospectionEngine {
-    
+
+    /// Hints-file stem for a model metatype.
+    /// Callers pass the unwrapped type. This does not strip an `Optional<>` wrapper.
+    static func hintsModelName(for modelType: Any.Type) -> String {
+        let described = String(describing: modelType)
+        return described.components(separatedBy: ".").last ?? described
+    }
+
     /// Analyze a data model from type and hints alone (type-only analysis)
     /// Requires fully declarative hints to work without instance data
     /// - Parameters:
@@ -24,8 +31,7 @@ public struct DataIntrospectionEngine {
     ///   - modelName: Optional model name for hints lookup (defaults to type name)
     /// - Returns: DataAnalysisResult if hints are fully declarative, nil otherwise
     public static func analyzeFromType<T>(_ modelType: T.Type, modelName: String? = nil) -> DataAnalysisResult? {
-        let typeName = modelName ?? String(describing: modelType)
-            .components(separatedBy: ".").last ?? String(describing: modelType)
+        let typeName = modelName ?? hintsModelName(for: modelType)
         
         // Load hints
         let hintsLoader = FileBasedDataHintsLoader()
@@ -140,8 +146,7 @@ public struct DataIntrospectionEngine {
     /// Returns nil if hints are not available or not fully declarative
     private static func tryHintsFirstDiscovery<T>(for data: T) -> DataAnalysisResult? {
         // Determine model name from type
-        let modelName = String(describing: type(of: data))
-            .components(separatedBy: ".").last ?? String(describing: type(of: data))
+        let modelName = hintsModelName(for: type(of: data))
         
         // Load hints
         let hintsLoader = FileBasedDataHintsLoader()
