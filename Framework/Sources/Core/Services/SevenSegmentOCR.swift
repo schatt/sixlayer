@@ -140,9 +140,12 @@ private struct GrayBuffer {
         darkInk: Bool
     ) -> [Cell] {
         let columns = columnRuns(mask, y0: band.0, y1: band.1, width: buffer.width)
-        let boxes = columns.map { span -> PixelBox in
+        let rawBoxes = columns.map { span -> PixelBox in
             tightBox(mask, x0: span.0, x1: span.1, y0: band.0, y1: band.1, width: buffer.width)
-        }.filter { $0.width >= 4 && $0.height >= 4 }
+        }.filter { $0.width > 0 && $0.height > 0 }
+        let tallest = rawBoxes.map(\.height).max() ?? 1
+        let minimum = max(1, tallest / 20)
+        let boxes = rawBoxes.filter { $0.width >= minimum && $0.height >= minimum }
         guard !boxes.isEmpty else { return [] }
         let maxHeight = boxes.map(\.height).max() ?? 1
         let tall = boxes.filter { $0.height * 100 >= maxHeight * 55 }
@@ -175,11 +178,12 @@ private struct GrayBuffer {
     ) -> [Cell] {
         let digitHeight = median(existing.map(\.height)) ?? max(1, band.1 - band.0)
         let baseline = median(existing.map(\.maxY)) ?? band.1
+        let minimum = max(1, digitHeight / 20)
         let expanded = (max(0, band.0 - digitHeight / 2), min(buffer.height, band.1 + digitHeight / 2))
         let columns = columnRuns(secondary, y0: expanded.0, y1: expanded.1, width: buffer.width)
         return columns.compactMap { span -> Cell? in
             let box = tightBox(secondary, x0: span.0, x1: span.1, y0: expanded.0, y1: expanded.1, width: buffer.width)
-            guard box.width >= 4, box.height >= 4 else { return nil }
+            guard box.width >= minimum, box.height >= minimum else { return nil }
             guard box.width < digitHeight * 30 / 100, box.height < digitHeight * 55 / 100 else { return nil }
             if existing.contains(where: { overlap($0.box, box) > 0 }) { return nil }
             let comma = box.maxY > baseline + max(2, digitHeight / 12)
@@ -307,6 +311,8 @@ private struct GrayBuffer {
         var dark = [Bool](repeating: false, count: pixels.count)
         var light = [Bool](repeating: false, count: pixels.count)
         let margin = 14
+        let background = Int(cornerFill())
+        let brightCeiling = background * 93 / 100
         for y in 0..<height {
             for x in 0..<width {
                 let x0 = max(0, x - radius)
@@ -319,10 +325,9 @@ private struct GrayBuffer {
                 let pixel = Int(pixels[y * width + x])
                 let index = y * width + x
                 // A glare band lifts the background next to it, so those
-                // still-background pixels fall just under the local mean and
-                // bridge the gaps. Glared ink stays darker than that
-                // background, and the ceiling keeps it in the mask.
-                dark[index] = pixel + margin < mean && pixel < 200
+                // still-background pixels fall just under the local mean.
+                // Dark ink stays below most of that background.
+                dark[index] = pixel + margin < mean && pixel < brightCeiling
                 light[index] = pixel > mean + margin
             }
         }
@@ -544,7 +549,7 @@ private func columnRuns(_ mask: Mask, y0: Int, y1: Int, width: Int) -> [(Int, In
         let spanWidth = span.1 - span.0
         guard typical > 0, spanWidth > typical * 2 else { return [span] }
         let peak = (span.0..<span.1).map { sums[$0] }.max() ?? 0
-        let floor = max(3, peak / 8)
+        let floor = max(1, peak / 8)
         var pieces: [(Int, Int)] = []
         var start: Int?
         for x in span.0..<span.1 {
@@ -609,12 +614,16 @@ private func inkFraction(_ buffer: GrayBuffer, box: PixelBox, darkInk: Bool) -> 
     let lower = max(0, box.minY)
     let upper = min(buffer.height, box.maxY)
     guard right > left, upper > lower else { return 0 }
+    let background = Int(buffer.cornerFill())
     for y in lower..<upper {
         let start = y * buffer.width
         for x in left..<right {
             total += 1
-            let pixel = buffer.pixels[start + x]
-            if darkInk ? pixel < 96 : pixel > 160 {
+            let pixel = Int(buffer.pixels[start + x])
+            let countsAsInk = darkInk
+                ? pixel * 2 < background
+                : pixel * 2 > background + 255
+            if countsAsInk {
                 ink += 1
             }
         }
