@@ -27,7 +27,7 @@ public final class DataBinder<T> {
     
     // MARK: - Initialization
     
-    init(_ model: T) {
+    public init(_ model: T) {
         self.model = model
     }
     
@@ -37,7 +37,7 @@ public final class DataBinder<T> {
     /// - Parameters:
     ///   - fieldName: The name of the form field
     ///   - keyPath: The key path to the model property
-    func bind<Value>(_ fieldName: String, to keyPath: WritableKeyPath<T, Value>) {
+    public func bind<Value>(_ fieldName: String, to keyPath: WritableKeyPath<T, Value>) {
         let binding = FieldBinding(keyPath: keyPath)
         let currentValue = model[keyPath: keyPath]
         registerBinding(fieldName, binding: binding, initialValue: currentValue)
@@ -48,7 +48,7 @@ public final class DataBinder<T> {
     /// This method is required because @NSManaged properties don't support WritableKeyPath assignment.
     /// Use this method when binding to NSManagedObject instances.
     /// - Parameter fieldName: The name of the form field (must match the CoreData attribute name)
-    func bindKVC(_ fieldName: String) {
+    public func bindKVC(_ fieldName: String) {
         guard let managedObject = model as? NSManagedObject else {
             // Not a CoreData entity, this method shouldn't be called
             return
@@ -66,7 +66,7 @@ public final class DataBinder<T> {
     /// - Parameters:
     ///   - fieldName: The name of the form field
     ///   - keyPath: Optional key path for non-CoreData types (required for non-CoreData)
-    func bindAuto(_ fieldName: String) {
+    public func bindAuto(_ fieldName: String) {
         if isCoreDataEntity {
             bindKVC(fieldName)
         }
@@ -79,7 +79,7 @@ public final class DataBinder<T> {
     /// - Parameters:
     ///   - fieldName: The name of the form field
     ///   - keyPath: Key path for regular Swift types (ignored for CoreData)
-    func bindAuto<Value>(_ fieldName: String, keyPath: WritableKeyPath<T, Value>) {
+    public func bindAuto<Value>(_ fieldName: String, keyPath: WritableKeyPath<T, Value>) {
         if isCoreDataEntity {
             bindKVC(fieldName)
         } else {
@@ -127,7 +127,7 @@ public final class DataBinder<T> {
     /// Check if a field is bound
     /// - Parameter fieldName: The name of the field
     /// - Returns: True if the field is bound, false otherwise
-    func hasBinding(for fieldName: String) -> Bool {
+    public func hasBinding(for fieldName: String) -> Bool {
         return bindings[fieldName] != nil
     }
     

@@ -334,5 +334,24 @@ struct ExternalModuleIntegrationTests {
         let selection = Binding.constant(0)
         let _ = PlatformTabStrip(selection: selection, items: items)
     }
+
+    /// External modules must be able to build a binder and register fields (#581).
+    /// `DataBinder` is public, but `init` and the bind methods were internal, so
+    /// clients could not pass a binder into `generateForm(for:dataBinder:)`.
+    @Test("DataBinder initializer and bind methods are accessible") @MainActor
+    func testDataBinderInitializerAndBindArePublic() {
+        struct Probe {
+            var title: String
+        }
+
+        let model = Probe(title: "Edit")
+        let binder = DataBinder(model)
+        binder.bind("title", to: \Probe.title)
+        binder.bindKVC("title")
+        binder.bindAuto("title")
+        binder.bindAuto("title", keyPath: \Probe.title)
+
+        #expect(binder.hasBinding(for: "title"))
+    }
 }
 
