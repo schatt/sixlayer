@@ -193,7 +193,7 @@ private struct GrayBuffer {
         if vertical.count == 2, box.width * 100 < digitHeight * 45, vertical.allSatisfy({ $0.1 - $0.0 < digitHeight * 45 / 100 }) {
             return Cell(box: box, character: ":", confidence: 1, band: bandIndex)
         }
-        if box.height * 100 >= digitHeight * 55, box.width * 100 <= box.height * 45, vertical.count == 1 {
+        if box.height * 100 >= digitHeight * 55, box.width * 100 <= box.height * 30, vertical.count == 1 {
             return Cell(box: box, character: "1", confidence: 1, band: bandIndex)
         }
         if box.height * 100 >= digitHeight * 50, box.width * 100 >= digitHeight * 40, coverage(mask, box: box, width: width) > 0.62 {
@@ -254,7 +254,8 @@ private struct GrayBuffer {
 
     private static func score(_ buffer: GrayBuffer) -> Int {
         let masks = buffer.masks()
-        return max(score(masks.dark), score(masks.light))
+        let chosen = prefersDark(masks.dark, masks.light) ? masks.dark : masks.light
+        return score(chosen)
     }
 
     private static func score(_ mask: Mask) -> Int {
@@ -420,7 +421,7 @@ private func recognizedGroups(_ cells: [Cell], width: Int, height: Int) -> [OCRR
 private extension GrayBuffer {
     static func fragments(in buffer: GrayBuffer) -> [[OCRRecognizedText]] {
         let masks = buffer.masks()
-        let primaryIsDark = score(masks.dark) >= score(masks.light)
+        let primaryIsDark = prefersDark(masks.dark, masks.light)
         let primary = primaryIsDark ? masks.dark : masks.light
         let secondary = primaryIsDark ? masks.light : masks.dark
         let mergedBands = merge(runs(primary.rowSums), whenGapBelow: 0)
@@ -567,6 +568,17 @@ private func overlap(_ lhs: PixelBox, _ rhs: PixelBox) -> Int {
 private func median(_ values: [Int]) -> Int? {
     guard !values.isEmpty else { return nil }
     return values.sorted()[values.count / 2]
+}
+
+private func prefersDark(_ dark: Mask, _ light: Mask) -> Bool {
+    let darkRuns = columnRuns(dark, y0: 0, y1: dark.height, width: dark.width).count
+    let lightRuns = columnRuns(light, y0: 0, y1: light.height, width: light.width).count
+    if darkRuns != lightRuns {
+        return darkRuns > lightRuns
+    }
+    let darkInk = dark.rowSums.reduce(Int64(0)) { $0 + Int64($1) }
+    let lightInk = light.rowSums.reduce(Int64(0)) { $0 + Int64($1) }
+    return darkInk <= lightInk
 }
 
 private func oddWindow(_ side: Int) -> Int {
