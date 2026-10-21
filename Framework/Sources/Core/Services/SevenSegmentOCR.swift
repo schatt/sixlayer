@@ -462,18 +462,9 @@ private extension GrayBuffer {
         let tallHeights = measured.flatMap(\.cells).filter { $0.height > 0 }.map(\.height).sorted()
         let cellHeight = tallHeights.isEmpty ? 1 : tallHeights[tallHeights.count / 2]
         let splitBands = merge(runs(primary.rowSums), whenGapBelow: max(1, cellHeight / 2))
-        let contentZeros = primary.rowSums.enumerated().filter { $0.element == 0 }.map(\.offset)
-        let url = URL(fileURLWithPath: "/tmp/576-cells.txt")
-        let priorHeader = (try? String(contentsOf: url)) ?? ""
-        let header = priorHeader + "h \(buffer.height) w \(buffer.width) zeros \(contentZeros.count) cellH \(cellHeight)\n"
-        try? header.write(to: url, atomically: true, encoding: .utf8)
         return splitBands.compactMap { band -> [OCRRecognizedText]? in
             let found = cells(in: band, mask: primary, buffer: buffer, bandIndex: 0, darkInk: primaryIsDark)
             let marks = oppositeMarks(in: band, secondary: paintedMarks, existing: found, buffer: buffer, bandIndex: 0)
-            let dump = "band \(band.0)-\(band.1) " + (found + marks).map { "\($0.character) x\($0.minX) y\($0.minY) w\($0.box.width) h\($0.height)" }.joined(separator: " | ")
-            let url = URL(fileURLWithPath: "/tmp/576-cells.txt")
-            let prior = (try? String(contentsOf: url)) ?? ""
-            try? (prior + dump + "\n").write(to: url, atomically: true, encoding: .utf8)
             let texts = recognizedGroups(found + marks, width: buffer.width, height: buffer.height)
             return texts.isEmpty ? nil : texts
         }
@@ -501,7 +492,7 @@ private func merge(_ bands: [(Int, Int)], whenGapBelow limit: Int) -> [(Int, Int
     guard let first = bands.first else { return [] }
     let split = limit > 0 ? limit : {
         let heights = bands.map { $0.1 - $0.0 }.sorted()
-        let medianHeight = heights.isEmpty ? 1 : heights[heights.count / 2]
+        let medianHeight = heights.isEmpty ? 1 : heights[(heights.count - 1) / 2]
         return max(1, medianHeight / 2)
     }()
     var merged = [first]
