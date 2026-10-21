@@ -42,6 +42,7 @@ date -u +%Y-%m-%dT%H:%M:%SZ
 xcodebuild test -project SixLayerFramework.xcodeproj \
   -scheme SLF-macOS-UITests \
   -destination 'platform=macOS,arch=arm64' \
+  CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO \
   -derivedDataPath "$DD" \
   -parallel-testing-enabled YES \
   -only-testing:'SixLayerFrameworkUITests_macOS/SixLayerUITestAppGateTests' \
@@ -52,7 +53,8 @@ echo "=== iOS UITest: SD150 text field ==="
 date -u +%Y-%m-%dT%H:%M:%SZ
 xcodebuild test -project SixLayerFramework.xcodeproj \
   -scheme SLF-iOS-UITests \
-  -destination 'platform=iOS Simulator,name=iPhone 17 Pro Max,OS=latest' \
+  -destination 'platform=iOS Simulator,name=iPhone 17,OS=latest' \
+  CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO \
   -derivedDataPath "$DD" \
   -parallel-testing-enabled YES \
   -only-testing:'SixLayerFrameworkUITests_iOS/PlatformStandaloneDropIn150UITests/test150_platformTextField_typingUpdatesBinding' \
