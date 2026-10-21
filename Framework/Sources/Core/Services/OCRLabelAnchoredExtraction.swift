@@ -8,11 +8,8 @@
 import Foundation
 import CoreGraphics
 
-/// One Vision observation line aligned with its bounding box (reading order).
-struct OCRRecognitionLine: Sendable {
-    let text: String
-    let boundingBox: CGRect
-}
+/// One recognition fragment. Segment groups and printed labels share this shape (#576).
+typealias OCRRecognitionLine = OCRRecognizedText
 
 enum OCRLabelAnchoredExtraction {
     
