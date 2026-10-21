@@ -653,14 +653,29 @@ private func median(_ values: [Int]) -> Int? {
 }
 
 private func prefersDark(_ dark: Mask, _ light: Mask) -> Bool {
-    let darkRuns = columnRuns(dark, y0: 0, y1: dark.height, width: dark.width).count
-    let lightRuns = columnRuns(light, y0: 0, y1: light.height, width: light.width).count
+    let darkRuns = bandedColumnRuns(dark)
+    let lightRuns = bandedColumnRuns(light)
     if darkRuns != lightRuns {
         return darkRuns > lightRuns
     }
     let darkInk = dark.rowSums.reduce(Int64(0)) { $0 + Int64($1) }
     let lightInk = light.rowSums.reduce(Int64(0)) { $0 + Int64($1) }
     return darkInk <= lightInk
+}
+
+private func bandedColumnRuns(_ mask: Mask) -> Int {
+    runs(mask.rowSums).reduce(0) { total, band in
+        var sums = [Int](repeating: 0, count: mask.width)
+        let lower = max(0, band.0)
+        let upper = min(mask.height, band.1)
+        for y in lower..<upper {
+            let start = y * mask.width
+            for x in 0..<mask.width where mask.bits[start + x] {
+                sums[x] += 1
+            }
+        }
+        return total + runs(sums).count
+    }
 }
 
 private func oddWindow(_ side: Int) -> Int {
