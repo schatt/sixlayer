@@ -162,7 +162,8 @@ class LocalizationTranslator:
                     raise ValueError("MICROSOFT_TRANSLATOR_API_KEY environment variable not set")
                 self.translator = MicrosoftTranslator(api_key=api_key)
             elif self.provider == "mymemory":
-                self.translator = MyMemoryTranslator()
+                # Library defaults use short codes MyMemory now rejects (#582).
+                self.translator = MyMemoryTranslator(source="en-GB", target="es-ES")
             else:
                 raise ValueError(f"Unknown provider: {self.provider}")
         except Exception as e:
