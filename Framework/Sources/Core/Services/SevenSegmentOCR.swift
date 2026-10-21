@@ -590,5 +590,11 @@ private func integral(_ pixels: [UInt8], width: Int, height: Int) -> [UInt64] {
 
 private func regionSum(_ table: [UInt64], width: Int, x0: Int, y0: Int, x1: Int, y1: Int) -> UInt64 {
     let stride = width + 1
-    return table[y1 * stride + x1] - table[y0 * stride + x1] - table[y1 * stride + x0] + table[y0 * stride + x0]
+    let bottomRight = table[y1 * stride + x1]
+    let above = table[y0 * stride + x1]
+    let left = table[y1 * stride + x0]
+    let corner = table[y0 * stride + x0]
+    // Either subtracted corner can exceed the partial difference. The region sum
+    // itself stays inside UInt64; wrapping keeps that sum without trapping.
+    return bottomRight &- above &- left &+ corner
 }
