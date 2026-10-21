@@ -181,6 +181,15 @@ struct OCRSevenSegment576Tests {
         #expect(result.recognizedTexts.allSatisfy { $0.role == .segment })
     }
 
+    @Test func lighterInkKeepsTheBaselineDot() {
+        let image = SegmentPanel.render(
+            rows: [atoms("31.25")],
+            inkLevel: 100,
+            backgroundLevel: 240
+        )
+        #expect(decode(image).extractedText == "31.25")
+    }
+
     @Test func glareAndBothPolaritiesDecodeTheSameDigits() {
         let rows = [atoms("31.25")]
         let glared = decode(SegmentPanel.render(rows: rows, glare: true))
@@ -536,11 +545,13 @@ private enum SegmentPanel {
         padding: Int = 16,
         invert: Bool = false,
         glare: Bool = false,
-        tiltDegrees: Double = 0
+        tiltDegrees: Double = 0,
+        inkLevel: UInt8? = nil,
+        backgroundLevel: UInt8? = nil
     ) -> CGImage {
         let laid = layout(rows: rows, padding: padding)
-        let background: UInt8 = invert ? 28 : 214
-        let ink: UInt8 = invert ? 228 : 22
+        let background: UInt8 = backgroundLevel ?? (invert ? 28 : 214)
+        let ink: UInt8 = inkLevel ?? (invert ? 228 : 22)
         let markInk: UInt8 = 255
         var pixels = [UInt8](repeating: background, count: laid.width * laid.height)
         for stroke in laid.strokes where !stroke.opposite {
