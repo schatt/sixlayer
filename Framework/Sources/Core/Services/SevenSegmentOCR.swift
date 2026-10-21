@@ -132,7 +132,13 @@ private struct GrayBuffer {
         return buffer.rotated(degrees: Double(bestAngle))
     }
 
-    private static func cells(in band: (Int, Int), mask: Mask, buffer: GrayBuffer, bandIndex: Int) -> [Cell] {
+    private static func cells(
+        in band: (Int, Int),
+        mask: Mask,
+        buffer: GrayBuffer,
+        bandIndex: Int,
+        darkInk: Bool
+    ) -> [Cell] {
         let columns = columnRuns(mask, y0: band.0, y1: band.1, width: buffer.width)
         let boxes = columns.map { span -> PixelBox in
             tightBox(mask, x0: span.0, x1: span.1, y0: band.0, y1: band.1, width: buffer.width)
@@ -153,7 +159,9 @@ private struct GrayBuffer {
                 digitWidth: digitWidth,
                 baseline: baseline,
                 frameTop: frameTop,
-                bandIndex: bandIndex
+                bandIndex: bandIndex,
+                buffer: buffer,
+                darkInk: darkInk
             )
         }
     }
@@ -187,7 +195,9 @@ private struct GrayBuffer {
         digitWidth: Int,
         baseline: Int,
         frameTop: Int,
-        bandIndex: Int
+        bandIndex: Int,
+        buffer: GrayBuffer,
+        darkInk: Bool
     ) -> Cell? {
         let vertical = verticalRuns(mask, box: box, width: width)
         if vertical.count == 2, box.width * 100 < digitHeight * 45, vertical.allSatisfy({ $0.1 - $0.0 < digitHeight * 45 / 100 }) {
@@ -196,7 +206,9 @@ private struct GrayBuffer {
         if box.height * 100 >= digitHeight * 55, box.width * 100 <= box.height * 30, vertical.count == 1 {
             return Cell(box: box, character: "1", confidence: 1, band: bandIndex)
         }
-        if box.height * 100 >= digitHeight * 50, box.width * 100 >= digitHeight * 40, coverage(mask, box: box, width: width) > 0.62 {
+        if box.height * 100 >= digitHeight * 50,
+           box.width * 100 >= digitHeight * 40,
+           (coverage(mask, box: box, width: width) > 0.62 || inkFraction(buffer, box: box, darkInk: darkInk) > 0.62) {
             return nil
         }
         if box.height * 100 < digitHeight * 45, box.width * 100 < digitHeight * 30 {
@@ -228,7 +240,7 @@ private struct GrayBuffer {
             (.g, 0.24, 0.40, 0.76, 0.60)
         ]
         return windows.reduce(into: SevenSegmentPattern()) { pattern, window in
-            if regionCoverage(mask, box: box, width: width, window: window) > 0.22 {
+            if regionCoverage(mask, box: box, width: width, window: window) > 0.30 {
                 pattern.formUnion(window.0)
             }
         }
@@ -240,16 +252,26 @@ private struct GrayBuffer {
         guard ordered.count > 1 else { return [ordered] }
         let gaps = zip(ordered, ordered.dropFirst()).map { max(0, $1.minX - $0.maxX) }
         let middle = median(gaps) ?? 0
+        let tallest = ordered.map(\.height).max() ?? 1
+        let pitches = ordered.filter { cell in
+            cell.height * 100 >= tallest * 55 && !isMark(cell.character)
+        }.map(\.box.width)
+        let pitch = median(pitches) ?? 0
         var groups: [[Cell]] = [[ordered[0]]]
         for (index, cell) in ordered.dropFirst().enumerated() {
             let gap = gaps[index]
-            if middle > 0, gap >= middle * 2, gap > middle {
+            let wideAsACell = pitch > 0 && gap >= pitch
+            if middle > 0, gap >= middle * 2, gap > middle, wideAsACell {
                 groups.append([cell])
             } else {
                 groups[groups.count - 1].append(cell)
             }
         }
         return groups
+    }
+
+    private static func isMark(_ character: Character) -> Bool {
+        character == "." || character == "," || character == ":" || character == "-"
     }
 
     private static func score(_ buffer: GrayBuffer) -> Int {
@@ -352,6 +374,14 @@ private struct GrayBuffer {
         let corners = [pixels[0], pixels[width - 1], pixels[(height - 1) * width], pixels[pixels.count - 1]]
         return corners.sorted()[corners.count / 2]
     }
+
+    fileprivate func extremeMarkMask() -> Mask {
+        Mask(
+            bits: pixels.map { $0 <= 10 || $0 >= 245 },
+            width: width,
+            height: height
+        )
+    }
 }
 
 private struct Mask {
@@ -423,17 +453,17 @@ private extension GrayBuffer {
         let masks = buffer.masks()
         let primaryIsDark = prefersDark(masks.dark, masks.light)
         let primary = primaryIsDark ? masks.dark : masks.light
-        let secondary = primaryIsDark ? masks.light : masks.dark
+        let paintedMarks = buffer.extremeMarkMask()
         let mergedBands = merge(runs(primary.rowSums), whenGapBelow: 0)
         let measured = mergedBands.map { band -> (band: (Int, Int), cells: [Cell]) in
-            (band, cells(in: band, mask: primary, buffer: buffer, bandIndex: 0))
+            (band, cells(in: band, mask: primary, buffer: buffer, bandIndex: 0, darkInk: primaryIsDark))
         }
         let tallHeights = measured.flatMap(\.cells).filter { $0.height > 0 }.map(\.height).sorted()
         let cellHeight = tallHeights.isEmpty ? 1 : tallHeights[tallHeights.count / 2]
         let splitBands = merge(runs(primary.rowSums), whenGapBelow: max(1, cellHeight / 2))
         return splitBands.compactMap { band -> [OCRRecognizedText]? in
-            let found = cells(in: band, mask: primary, buffer: buffer, bandIndex: 0)
-            let marks = oppositeMarks(in: band, secondary: secondary, existing: found, buffer: buffer, bandIndex: 0)
+            let found = cells(in: band, mask: primary, buffer: buffer, bandIndex: 0, darkInk: primaryIsDark)
+            let marks = oppositeMarks(in: band, secondary: paintedMarks, existing: found, buffer: buffer, bandIndex: 0)
             let texts = recognizedGroups(found + marks, width: buffer.width, height: buffer.height)
             return texts.isEmpty ? nil : texts
         }
@@ -525,6 +555,27 @@ private func verticalRuns(_ mask: Mask, box: PixelBox, width: Int) -> [(Int, Int
         sums[y - box.minY] = count
     }
     return runs(sums).map { ($0.0 + box.minY, $0.1 + box.minY) }
+}
+
+private func inkFraction(_ buffer: GrayBuffer, box: PixelBox, darkInk: Bool) -> Float {
+    var ink = 0
+    var total = 0
+    let left = max(0, box.minX)
+    let right = min(buffer.width, box.maxX)
+    let lower = max(0, box.minY)
+    let upper = min(buffer.height, box.maxY)
+    guard right > left, upper > lower else { return 0 }
+    for y in lower..<upper {
+        let start = y * buffer.width
+        for x in left..<right {
+            total += 1
+            let pixel = buffer.pixels[start + x]
+            if darkInk ? pixel < 96 : pixel > 160 {
+                ink += 1
+            }
+        }
+    }
+    return total == 0 ? 0 : Float(ink) / Float(total)
 }
 
 private func coverage(_ mask: Mask, box: PixelBox, width: Int) -> Float {
