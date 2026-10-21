@@ -200,10 +200,20 @@ private struct GrayBuffer {
         darkInk: Bool
     ) -> Cell? {
         let vertical = verticalRuns(mask, box: box, width: width)
-        if vertical.count == 2, box.width * 100 < digitHeight * 45, vertical.allSatisfy({ $0.1 - $0.0 < digitHeight * 45 / 100 }) {
+        let splitGap = vertical.count == 2 ? vertical[1].0 - vertical[0].1 : 0
+        let shorterRun = vertical.count == 2
+            ? min(vertical[0].1 - vertical[0].0, vertical[1].1 - vertical[1].0)
+            : 0
+        let colonGap = vertical.count == 2 && splitGap >= shorterRun
+        if colonGap,
+           box.width * 100 <= box.height * 30,
+           vertical.allSatisfy({ $0.1 - $0.0 < digitHeight * 45 / 100 }) {
             return Cell(box: box, character: ":", confidence: 1, band: bandIndex)
         }
-        if box.height * 100 >= digitHeight * 55, box.width * 100 <= box.height * 30, vertical.count == 1 {
+        let thinSplit = vertical.count == 2 && splitGap < shorterRun
+        if box.height * 100 >= digitHeight * 55,
+           box.width * 100 <= box.height * 30,
+           vertical.count == 1 || thinSplit {
             return Cell(box: box, character: "1", confidence: 1, band: bandIndex)
         }
         if box.height * 100 >= digitHeight * 50,
@@ -232,13 +242,13 @@ private struct GrayBuffer {
 
     private static func sample(_ mask: Mask, box: PixelBox, width: Int) -> SevenSegmentPattern {
         let windows: [(SevenSegmentPattern, Double, Double, Double, Double)] = [
-            (.a, 0.22, 0.00, 0.78, 0.18),
-            (.b, 0.72, 0.16, 1.00, 0.48),
-            (.c, 0.72, 0.52, 1.00, 0.86),
-            (.d, 0.22, 0.82, 0.78, 1.00),
-            (.e, 0.00, 0.52, 0.28, 0.86),
-            (.f, 0.00, 0.16, 0.28, 0.48),
-            (.g, 0.24, 0.40, 0.76, 0.60)
+            (.a, 0.22, 0.00, 0.78, 0.16),
+            (.b, 0.72, 0.16, 1.00, 0.40),
+            (.c, 0.72, 0.60, 1.00, 0.86),
+            (.d, 0.22, 0.84, 0.78, 1.00),
+            (.e, 0.00, 0.60, 0.28, 0.86),
+            (.f, 0.00, 0.16, 0.28, 0.40),
+            (.g, 0.28, 0.42, 0.72, 0.58)
         ]
         return windows.reduce(into: SevenSegmentPattern()) { pattern, window in
             if regionCoverage(mask, box: box, width: width, window: window) > 0.30 {
