@@ -214,6 +214,12 @@ private struct GrayBuffer {
            vertical.allSatisfy({ $0.1 - $0.0 < digitHeight * 45 / 100 }) {
             return Cell(box: box, character: ":", confidence: 1, band: bandIndex)
         }
+        let dropsBelow = box.maxY > baseline + max(2, digitHeight / 12)
+        if dropsBelow, box.width * 100 < digitHeight * 30 {
+            // A comma tail hangs below the baseline. A digit 1 does not.
+            guard markIsInk(mask, box: box, width: width, buffer: buffer, darkInk: darkInk) else { return nil }
+            return Cell(box: box, character: ",", confidence: 1, band: bandIndex)
+        }
         if box.height * 100 >= digitHeight * 55, box.width * 100 <= box.height * 30 {
             return Cell(box: box, character: "1", confidence: 1, band: bandIndex)
         }
@@ -223,11 +229,9 @@ private struct GrayBuffer {
             return nil
         }
         if box.height * 100 < digitHeight * 45, box.width * 100 < digitHeight * 30 {
-            // Pale glass ink fails the corner ratio. A thin comma tail can
-            // miss the mask while the raw pixels are still ink.
-            let masked = coverage(mask, box: box, width: width) > 0.5
-            let rawInk = inkFraction(buffer, box: box, darkInk: darkInk) > 0.5
-            guard masked || rawInk else { return nil }
+            // A thin comma tail can miss the mask while the raw pixels are
+            // still darker than the glass around the mark.
+            guard markIsInk(mask, box: box, width: width, buffer: buffer, darkInk: darkInk) else { return nil }
             let comma = box.maxY > baseline + max(2, digitHeight / 12)
             return Cell(box: box, character: comma ? "," : ".", confidence: 1, band: bandIndex)
         }
@@ -314,8 +318,6 @@ private struct GrayBuffer {
         let table = integral(pixels, width: width, height: height)
         var dark = [Bool](repeating: false, count: pixels.count)
         var light = [Bool](repeating: false, count: pixels.count)
-        let margin = 14
-        let background = Int(cornerFill())
         for y in 0..<height {
             for x in 0..<width {
                 let x0 = max(0, x - radius)
@@ -327,14 +329,10 @@ private struct GrayBuffer {
                 let mean = Int(sum / UInt64(max(area, 1)))
                 let pixel = Int(pixels[y * width + x])
                 let index = y * width + x
-                // The corner is the glass on a tight panel, and a dark bezel
-                // on a pump crop. A bezel ceiling sits below the digits.
-                // Use whichever is brighter as the panel, so glare fringe
-                // (still the corner color) stays out and washed ink stays in.
-                let panel = max(background, mean)
-                let brightCeiling = panel * 93 / 100
-                dark[index] = pixel + margin < mean && pixel < brightCeiling
-                light[index] = pixel > mean + margin
+                // Local glass only. A corner is the bezel on a pump crop and
+                // sits below the digits, so it cannot be the ceiling.
+                dark[index] = pixel + inkMargin < mean
+                light[index] = pixel > mean + inkMargin
             }
         }
         return (Mask(bits: dark, width: width, height: height), Mask(bits: light, width: width, height: height))
@@ -666,6 +664,12 @@ private func verticalRuns(_ mask: Mask, box: PixelBox, width: Int) -> [(Int, Int
     return runs(sums).map { ($0.0 + box.minY, $0.1 + box.minY) }
 }
 
+private let inkMargin = 14
+
+private func markIsInk(_ mask: Mask, box: PixelBox, width: Int, buffer: GrayBuffer, darkInk: Bool) -> Bool {
+    coverage(mask, box: box, width: width) > 0.5 || inkFraction(buffer, box: box, darkInk: darkInk) > 0.5
+}
+
 private func inkFraction(_ buffer: GrayBuffer, box: PixelBox, darkInk: Bool) -> Float {
     var ink = 0
     var total = 0
@@ -674,21 +678,43 @@ private func inkFraction(_ buffer: GrayBuffer, box: PixelBox, darkInk: Bool) -> 
     let lower = max(0, box.minY)
     let upper = min(buffer.height, box.maxY)
     guard right > left, upper > lower else { return 0 }
-    let background = Int(buffer.cornerFill())
+    let surround = surroundingLevel(buffer, box: box)
     for y in lower..<upper {
         let start = y * buffer.width
         for x in left..<right {
             total += 1
             let pixel = Int(buffer.pixels[start + x])
             let countsAsInk = darkInk
-                ? pixel * 2 < background
-                : pixel * 2 > background + 255
+                ? pixel + inkMargin < surround
+                : pixel > surround + inkMargin
             if countsAsInk {
                 ink += 1
             }
         }
     }
     return total == 0 ? 0 : Float(ink) / Float(total)
+}
+
+private func surroundingLevel(_ buffer: GrayBuffer, box: PixelBox) -> Int {
+    var samples: [Int] = []
+    func add(_ x: Int, _ y: Int) {
+        guard x >= 0, y >= 0, x < buffer.width, y < buffer.height else { return }
+        samples.append(Int(buffer.pixels[y * buffer.width + x]))
+    }
+    let left = box.minX - 1
+    let right = box.maxX
+    if box.minY - 1 >= 0 {
+        for x in left...right { add(x, box.minY - 1) }
+    }
+    if box.maxY < buffer.height {
+        for x in left...right { add(x, box.maxY) }
+    }
+    for y in box.minY..<box.maxY {
+        add(left, y)
+        add(right, y)
+    }
+    guard !samples.isEmpty else { return Int(buffer.cornerFill()) }
+    return samples.sorted()[samples.count / 2]
 }
 
 private func coverage(_ mask: Mask, box: PixelBox, width: Int) -> Float {
@@ -757,7 +783,7 @@ private func bandedColumnRuns(_ mask: Mask) -> Int {
 private func oddWindow(_ side: Int) -> Int {
     var window = max(21, side / 8)
     if window % 2 == 0 { window += 1 }
-    return min(window, 41)
+    return window
 }
 
 private func integral(_ pixels: [UInt8], width: Int, height: Int) -> [UInt64] {
