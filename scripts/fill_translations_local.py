@@ -82,13 +82,15 @@ T = {
  "• Adaptive spacing": {"da":"• Tilpasset afstand","de":"• Adaptiver Abstand","es":"• Espaciado adaptable","fr":"• Espacement adaptatif","it":"• Spaziatura adattiva","ja":"• 適応型スペーシング","ko":"• 적응형 간격","nl":"• Adaptieve afstand","pl":"• Odstępy adaptacyjne","sv":"• Adaptivt avstånd","zh-Hans":"• 自适应间距"},
  "• Optimal component sizing": {"da":"• Optimal komponentstørrelse","de":"• Optimale Komponentengröße","es":"• Tamaño óptimo de componentes","fr":"• Dimensionnement optimal des composants","it":"• Dimensionamento ottimale dei componenti","ja":"• 最適なコンポーネントサイズ","ko":"• 최적의 구성 요소 크기","nl":"• Optimale componentgrootte","pl":"• Optymalny rozmiar komponentów","sv":"• Optimal komponentstorlek","zh-Hans":"• 最佳组件大小"},
  "• Platform-specific layouts": {"da":"• Platformspecifikke layout","de":"• Plattformspezifische Layouts","es":"• Diseños específicos de la plataforma","fr":"• Dispositions spécifiques à la plateforme","it":"• Layout specifici della piattaforma","ja":"• プラットフォーム固有のレイアウト","ko":"• 플랫폼별 레이아웃","nl":"• Platformspecifieke indelingen","pl":"• Układy specyficzne dla platformy","sv":"• Plattformsspecifika layouter","zh-Hans":"• 平台特定布局"},
- "Accessibility Testing": {"da":"Tilgængelighedstest"},
- "Confidence": {"da":"Tiltro"},
- "Array": {"zh-Hans":"数组","ko":"배열","ja":"配列"},
- "Email": {"zh-Hans":"电子邮件","ja":"メール"},
- "Error": {"ja":"エラー","zh-Hans":"错误"},
- "Name": {"zh-Hans":"名称","da":"Navn","ko":"이름"},
- "Navigation": {"zh-Hans":"导航","ja":"ナビゲーション","ko":"탐색"},
+ "Accessibility Testing": {"da":"Tilgængelighedstest","it":"Test di accessibilità"},
+ "Confidence": {"da":"Tiltro","it":"Attendibilità"},
+ "Array": {"zh-Hans":"数组","ko":"배열","ja":"配列","da":"Array","nl":"Array","sv":"Array"},
+ "Email": {"zh-Hans":"电子邮件","ja":"メール","de":"E-Mail"},
+ "Error": {"ja":"エラー","zh-Hans":"错误","es":"Error"},
+ "Name": {"zh-Hans":"名称","da":"Navn","ko":"이름","de":"Name"},
+ "Navigation": {"zh-Hans":"导航","ja":"ナビゲーション","ko":"탐색","de":"Navigation","fr":"Navigation"},
+ "This content is revealed when the card is expanded.": {"da":"Dette indhold vises, når kortet udvides.","de":"Dieser Inhalt wird angezeigt, wenn die Karte erweitert wird.","es":"Este contenido se muestra cuando la tarjeta se expande.","fr":"Ce contenu est révélé lorsque la carte est développée.","it":"Questo contenuto viene mostrato quando la scheda viene espansa.","ja":"このコンテンツは、カードを展開したときに表示されます。","ko":"이 콘텐츠는 카드가 확장될 때 표시됩니다.","nl":"Deze inhoud wordt weergegeven wanneer de kaart wordt uitgevouwen.","pl":"Ta treść jest ujawniana po rozwinięciu karty.","sv":"Detta innehåll visas när kortet expanderas.","zh-Hans":"此内容在卡片展开时显示。"},
+ "This content is revealed when the card is expanded. It can contain additional information, actions, or interactive elements.": {"da":"Dette indhold vises, når kortet udvides. Det kan indeholde yderligere oplysninger, handlinger eller interaktive elementer.","de":"Dieser Inhalt wird angezeigt, wenn die Karte erweitert wird. Er kann zusätzliche Informationen, Aktionen oder interaktive Elemente enthalten.","es":"Este contenido se muestra cuando la tarjeta se expande. Puede contener información adicional, acciones o elementos interactivos.","fr":"Ce contenu est révélé lorsque la carte est développée. Il peut contenir des informations supplémentaires, des actions ou des éléments interactifs.","it":"Questo contenuto viene mostrato quando la scheda viene espansa. Può contenere informazioni aggiuntive, azioni o elementi interattivi.","ja":"このコンテンツは、カードを展開したときに表示されます。追加情報、アクション、またはインタラクティブ要素を含む場合があります。","ko":"이 콘텐츠는 카드가 확장될 때 표시됩니다. 추가 정보, 작업 또는 대화형 요소를 포함할 수 있습니다.","nl":"Deze inhoud wordt weergegeven wanneer de kaart wordt uitgevouwen. Deze kan aanvullende informatie, acties of interactieve elementen bevatten.","pl":"Ta treść jest ujawniana po rozwinięciu karty. Może zawierać dodatkowe informacje, działania lub elementy interaktywne.","sv":"Detta innehåll visas när kortet expanderas. Det kan innehålla ytterligare information, åtgärder eller interaktiva element.","zh-Hans":"此内容在卡片展开时显示。它可以包含其他信息、操作或交互元素。"},
 }
 
 
