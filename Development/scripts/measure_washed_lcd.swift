@@ -317,6 +317,90 @@ for component in components.prefix(8) {
     print("component \(component.area) @\(component.minX),\(component.minY) \(w)x\(h)")
 }
 
+func largestSealed(in ink: [Bool]) -> (area: Int, minX: Int, minY: Int, maxX: Int, maxY: Int) {
+    var reached = [Bool](repeating: false, count: ink.count)
+    var queue: [Int] = []
+    func push(_ x: Int, _ y: Int) {
+        guard x >= 0, y >= 0, x < cropW, y < cropH else { return }
+        let index = y * cropW + x
+        guard !ink[index], !reached[index] else { return }
+        reached[index] = true
+        queue.append(index)
+    }
+    for x in 0..<cropW {
+        push(x, 0)
+        push(x, cropH - 1)
+    }
+    for y in 0..<cropH {
+        push(0, y)
+        push(cropW - 1, y)
+    }
+    var head = 0
+    while head < queue.count {
+        let index = queue[head]
+        head += 1
+        let x = index % cropW
+        let y = index / cropW
+        push(x - 1, y)
+        push(x + 1, y)
+        push(x, y - 1)
+        push(x, y + 1)
+    }
+    var seen = [Bool](repeating: false, count: ink.count)
+    var best = (area: 0, minX: 0, minY: 0, maxX: 0, maxY: 0)
+    for start in 0..<ink.count where !ink[start] && !reached[start] && !seen[start] {
+        var component = [start]
+        seen[start] = true
+        var compHead = 0
+        var minX = start % cropW
+        var maxX = minX
+        var minY = start / cropW
+        var maxY = minY
+        while compHead < component.count {
+            let index = component[compHead]
+            compHead += 1
+            let x = index % cropW
+            let y = index / cropW
+            minX = min(minX, x)
+            maxX = max(maxX, x)
+            minY = min(minY, y)
+            maxY = max(maxY, y)
+            for (nx, ny) in [(x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)] {
+                guard nx >= 0, ny >= 0, nx < cropW, ny < cropH else { continue }
+                let next = ny * cropW + nx
+                guard !ink[next], !reached[next], !seen[next] else { continue }
+                seen[next] = true
+                component.append(next)
+            }
+        }
+        if component.count > best.area {
+            best = (component.count, minX, minY, maxX, maxY)
+        }
+    }
+    return best
+}
+
+var dilated = grown
+for radius in 1...24 {
+    var next = dilated
+    for y in 0..<cropH {
+        for x in 0..<cropW where dilated[y * cropW + x] {
+            if x > 0 { next[y * cropW + x - 1] = true }
+            if x + 1 < cropW { next[y * cropW + x + 1] = true }
+            if y > 0 { next[(y - 1) * cropW + x] = true }
+            if y + 1 < cropH { next[(y + 1) * cropW + x] = true }
+        }
+    }
+    dilated = next
+    if radius == 1 || radius == 2 || radius % 4 == 0 {
+        let sealed = largestSealed(in: dilated)
+        let w = sealed.area == 0 ? 0 : sealed.maxX - sealed.minX + 1
+        let h = sealed.area == 0 ? 0 : sealed.maxY - sealed.minY + 1
+        let glass = sealed.area * 8 >= count
+        print("dilate \(radius) sealed \(sealed.area) @\(sealed.minX),\(sealed.minY) \(w)x\(h) glass \(glass)")
+    }
+}
+
 let scale = 4
 let outW = max(1, (cropW + scale - 1) / scale)
 let outH = max(1, (cropH + scale - 1) / scale)
