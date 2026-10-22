@@ -214,12 +214,6 @@ private struct GrayBuffer {
            vertical.allSatisfy({ $0.1 - $0.0 < digitHeight * 45 / 100 }) {
             return Cell(box: box, character: ":", confidence: 1, band: bandIndex)
         }
-        let dropsBelow = box.maxY > baseline + max(2, digitHeight / 12)
-        if dropsBelow, box.width * 100 < digitHeight * 30 {
-            // A comma tail hangs below the baseline. A digit 1 does not.
-            guard markIsInk(mask, box: box, width: width, buffer: buffer, darkInk: darkInk) else { return nil }
-            return Cell(box: box, character: ",", confidence: 1, band: bandIndex)
-        }
         if box.height * 100 >= digitHeight * 55, box.width * 100 <= box.height * 30 {
             return Cell(box: box, character: "1", confidence: 1, band: bandIndex)
         }
@@ -454,9 +448,7 @@ private struct Cell {
 private func recognizedGroups(_ cells: [Cell], width: Int, height: Int) -> [OCRRecognizedText] {
     let pieces = GrayBuffer.group(cells)
     return pieces.map { group in
-        let text = group.map { cell in
-            "\(cell.character)[\(cell.minX),\(cell.minY),\(cell.box.width)x\(cell.box.height)]"
-        }.joined(separator: " ")
+        let text = String(group.map(\.character))
         let confidence = group.map(\.confidence).min() ?? 0
         let minX = group.map(\.minX).min() ?? 0
         let maxX = group.map(\.maxX).max() ?? 0
