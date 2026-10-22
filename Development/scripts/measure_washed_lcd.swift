@@ -438,6 +438,30 @@ for percent in [95, 85, 70, 50] {
     }
 }
 
+let centerX0 = cropW / 5
+let centerX1 = cropW * 4 / 5
+print("central columns \(centerX0)-\(centerX1)")
+for bandY in stride(from: 0, to: cropH, by: 40) {
+    let bandEnd = min(cropH, bandY + 40)
+    var loose = 0
+    var strict = 0
+    for y in bandY..<bandEnd {
+        for x in centerX0..<centerX1 {
+            let index = y * cropW + x
+            if grown[index] { loose += 1 }
+            let x0 = max(0, x - radius)
+            let y0 = max(0, y - radius)
+            let x1 = min(cropW, x + radius + 1)
+            let y1 = min(cropH, y + radius + 1)
+            let area = (x1 - x0) * (y1 - y0)
+            let mean = Int(regionSum(x0, y0, x1, y1) / UInt64(max(area, 1)))
+            let pixel = Int(pixels[index])
+            if pixel + 40 < mean && pixel < mean * 80 / 100 { strict += 1 }
+        }
+    }
+    print("y \(bandY)-\(bandEnd) loose \(loose) strict \(strict)")
+}
+
 let scale = 4
 let outW = max(1, (cropW + scale - 1) / scale)
 let outH = max(1, (cropH + scale - 1) / scale)
