@@ -1,5 +1,5 @@
 #!/usr/bin/env swift
-// Measure why SevenSegmentOCR drops washed LCD ink (#591).
+// Measure the washed-LCD dark mask (#591).
 //
 // The pump photos stay in schatt/CarManager. Do not copy them into this repo.
 // Another machine with that checkout can rerun:
@@ -10,15 +10,13 @@
 // A hand-sized crop of its glass, including the dark bezel, is
 // x=775 y=785 w=2390 h=1130.
 //
-// Measured on that crop, 2026-10-22:
-//   corners 111, 113, 123, 169 → corner background 123, ceiling 114
-//   glass behind the digits is about 160–220
-//   digit cores are about 45–140, so many of them are darker than the glass
-//   and still brighter than the corner ceiling
+// 8.7.0 used a 41-pixel window and a corner ceiling. On that crop the corners
+// were 111, 113, 123, 169, so the ceiling was 114 while the glass was about
+// 160–220 and digit cores were about 45–140.
 //
-// The script counts pixels the 8.7.0 mask would keep. "Ceiling rejected" means
-// the pixel is darker than its local mean by the margin, and brighter than
-// cornerFill * 93/100. Those are the digits the corner gate drops.
+// This script counts seeds of the current mask: 14 levels under the local
+// mean, and under 93% of that mean. The window is max(21, min(side)/8), odd,
+// with no cap. It does not grow same-level ink or clear a bezel.
 
 import CoreGraphics
 import Foundation
@@ -90,12 +88,11 @@ let corners = [
     pixels[(cropH - 1) * cropW],
     pixels[pixels.count - 1]
 ].sorted()
-let background = Int(corners[corners.count / 2])
-let ceiling = background * 93 / 100
+let cornerBackground = Int(corners[corners.count / 2])
+let cornerCeiling = cornerBackground * 93 / 100
 let margin = 14
 var window = max(21, min(cropW, cropH) / 8)
 if window % 2 == 0 { window += 1 }
-window = min(window, 41)
 let radius = window / 2
 
 let stride = cropW + 1
@@ -116,9 +113,8 @@ func regionSum(_ x0: Int, _ y0: Int, _ x1: Int, _ y1: Int) -> UInt64 {
     return bottomRight &- above &- left &+ corner
 }
 
-var marked = 0
-var marginHits = 0
-var ceilingRejected = 0
+var seeds = 0
+var cornerWouldDrop = 0
 var rowsWithInk = 0
 for y in 0..<cropH {
     var rowInk = 0
@@ -131,11 +127,11 @@ for y in 0..<cropH {
         let sum = regionSum(x0, y0, x1, y1)
         let mean = Int(sum / UInt64(max(area, 1)))
         let pixel = Int(pixels[y * cropW + x])
-        let darker = pixel + margin < mean
-        if darker { marginHits += 1 }
-        if darker && pixel >= ceiling { ceilingRejected += 1 }
-        if darker && pixel < ceiling {
-            marked += 1
+        let localCeiling = mean * 93 / 100
+        let seed = pixel + margin < mean && pixel < localCeiling
+        if seed && pixel >= cornerCeiling { cornerWouldDrop += 1 }
+        if seed {
+            seeds += 1
             rowInk += 1
         }
     }
@@ -144,8 +140,8 @@ for y in 0..<cropH {
 
 print("image \(fullW)x\(fullH) crop \(cropX),\(cropY) \(cropW)x\(cropH)")
 print("corners \(corners.map(String.init).joined(separator: ","))")
-print("corner background \(background) ceiling \(ceiling) window \(window) margin \(margin)")
-print("margin hits \(marginHits)")
-print("ceiling rejected \(ceilingRejected)")
-print("marked \(marked)")
+print("corner background \(cornerBackground) old ceiling \(cornerCeiling)")
+print("window \(window) margin \(margin)")
+print("seeds \(seeds)")
+print("seeds the corner ceiling would drop \(cornerWouldDrop)")
 print("rows with ink \(rowsWithInk)")
