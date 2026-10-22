@@ -317,6 +317,7 @@ private struct GrayBuffer {
         let radius = window / 2
         let table = integral(pixels, width: width, height: height)
         var dark = [Bool](repeating: false, count: pixels.count)
+        var darkReach = [Bool](repeating: false, count: pixels.count)
         var light = [Bool](repeating: false, count: pixels.count)
         for y in 0..<height {
             for x in 0..<width {
@@ -329,12 +330,16 @@ private struct GrayBuffer {
                 let mean = Int(sum / UInt64(max(area, 1)))
                 let pixel = Int(pixels[y * width + x])
                 let index = y * width + x
-                // Local glass only. A corner is the bezel on a pump crop and
-                // sits below the digits, so it cannot be the ceiling.
-                dark[index] = pixel + inkMargin < mean
+                // Local glass only. The corner is a bezel on a pump crop.
+                // Seven percent under the local mean keeps a glare fringe out
+                // without using that corner as the ceiling.
+                let underGlass = pixel * 100 < mean * 93
+                dark[index] = underGlass && pixel + inkMargin < mean
+                darkReach[index] = underGlass
                 light[index] = pixel > mean + inkMargin
             }
         }
+        dark = grow(dark, within: darkReach, width: width)
         return (Mask(bits: dark, width: width, height: height), Mask(bits: light, width: width, height: height))
     }
 
@@ -449,9 +454,7 @@ private struct Cell {
 private func recognizedGroups(_ cells: [Cell], width: Int, height: Int) -> [OCRRecognizedText] {
     let pieces = GrayBuffer.group(cells)
     return pieces.map { group in
-        let text = group.map { cell in
-            "\(cell.character)[\(cell.minX),\(cell.minY),\(cell.box.width)x\(cell.box.height)]"
-        }.joined(separator: " ")
+        let text = String(group.map(\.character))
         let confidence = group.map(\.confidence).min() ?? 0
         let minX = group.map(\.minX).min() ?? 0
         let maxX = group.map(\.maxX).max() ?? 0
@@ -530,10 +533,18 @@ private func clearingBorderComponents(_ mask: Mask) -> Mask {
         }
         let boxW = maxX - minX + 1
         let boxH = maxY - minY + 1
-        // A bezel outlines the glass. A comma tail can touch the edge and stay.
+        // A bezel outlines the glass. A comma tail can touch the edge and stay,
+        // including when the tail joins the bezel. Clear the frame, not the
+        // stroke that runs inward past it.
         guard boxW * 2 > width, boxH * 2 > height else { return }
+        let thickness = frameThickness(queue, width: width, height: height)
         for index in queue {
-            bits[index] = false
+            let x = index % width
+            let y = index / width
+            let distance = min(x, y, width - 1 - x, height - 1 - y)
+            if distance < thickness {
+                bits[index] = false
+            }
         }
     }
     for x in 0..<width {
@@ -545,6 +556,57 @@ private func clearingBorderComponents(_ mask: Mask) -> Mask {
         consider(y * width + width - 1)
     }
     return Mask(bits: bits, width: width, height: height)
+}
+
+private func grow(_ seeds: [Bool], within reach: [Bool], width: Int) -> [Bool] {
+    var mask = seeds
+    var queue = seeds.indices.filter { seeds[$0] }
+    var head = 0
+    let height = width == 0 ? 0 : mask.count / width
+    while head < queue.count {
+        let index = queue[head]
+        head += 1
+        let x = index % width
+        let y = index / width
+        for (nx, ny) in [(x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)] {
+            guard nx >= 0, ny >= 0, nx < width, ny < height else { continue }
+            let next = ny * width + nx
+            guard reach[next], !mask[next] else { continue }
+            mask[next] = true
+            queue.append(next)
+        }
+    }
+    return mask
+}
+
+private func frameThickness(_ pixels: [Int], width: Int, height: Int) -> Int {
+    let member = Set(pixels)
+    var lengths: [Int] = []
+    func run(_ x: Int, _ y: Int, _ dx: Int, _ dy: Int) {
+        var length = 0
+        var cx = x
+        var cy = y
+        while cx >= 0, cy >= 0, cx < width, cy < height, member.contains(cy * width + cx) {
+            length += 1
+            cx += dx
+            cy += dy
+        }
+        if length > 0 {
+            lengths.append(length)
+        }
+    }
+    for x in 0..<width {
+        if member.contains(x) { run(x, 0, 0, 1) }
+        let bottom = (height - 1) * width + x
+        if member.contains(bottom) { run(x, height - 1, 0, -1) }
+    }
+    for y in 0..<height {
+        if member.contains(y * width) { run(0, y, 1, 0) }
+        let right = y * width + width - 1
+        if member.contains(right) { run(width - 1, y, -1, 0) }
+    }
+    guard !lengths.isEmpty else { return 0 }
+    return lengths.sorted()[lengths.count / 2]
 }
 
 private func runs(_ sums: [Int]) -> [(Int, Int)] {
