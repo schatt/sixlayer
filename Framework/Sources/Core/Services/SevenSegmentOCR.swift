@@ -223,10 +223,11 @@ private struct GrayBuffer {
             return nil
         }
         if box.height * 100 < digitHeight * 45, box.width * 100 < digitHeight * 30 {
-            // The mask already decided this pixel is ink. A pale digit on bright
-            // glass is not half as dark as a bezel corner, so the corner ratio
-            // would drop the decimal.
-            guard coverage(mask, box: box, width: width) > 0.5 else { return nil }
+            // Pale glass ink fails the corner ratio. A thin comma tail can
+            // miss the mask while the raw pixels are still ink.
+            let masked = coverage(mask, box: box, width: width) > 0.5
+            let rawInk = inkFraction(buffer, box: box, darkInk: darkInk) > 0.5
+            guard masked || rawInk else { return nil }
             let comma = box.maxY > baseline + max(2, digitHeight / 12)
             return Cell(box: box, character: comma ? "," : ".", confidence: 1, band: bandIndex)
         }
