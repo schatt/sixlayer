@@ -333,7 +333,7 @@ private struct GrayBuffer {
                 // Local glass only. The corner is a bezel on a pump crop.
                 // Seven percent under the local mean keeps a glare fringe out
                 // without using that corner as the ceiling.
-                let underGlass = pixel * 100 < mean * 93
+                let underGlass = pixel < mean * 93 / 100
                 dark[index] = underGlass && pixel + inkMargin < mean
                 darkReach[index] = underGlass
                 light[index] = pixel > mean + inkMargin
@@ -454,9 +454,7 @@ private struct Cell {
 private func recognizedGroups(_ cells: [Cell], width: Int, height: Int) -> [OCRRecognizedText] {
     let pieces = GrayBuffer.group(cells)
     return pieces.map { group in
-        let text = group.map { cell in
-            "\(cell.character)[\(cell.minX),\(cell.minY),\(cell.box.width)x\(cell.box.height)]"
-        }.joined(separator: " ")
+        let text = String(group.map(\.character))
         let confidence = group.map(\.confidence).min() ?? 0
         let minX = group.map(\.minX).min() ?? 0
         let maxX = group.map(\.maxX).max() ?? 0
