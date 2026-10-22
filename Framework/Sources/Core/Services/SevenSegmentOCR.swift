@@ -449,7 +449,9 @@ private struct Cell {
 private func recognizedGroups(_ cells: [Cell], width: Int, height: Int) -> [OCRRecognizedText] {
     let pieces = GrayBuffer.group(cells)
     return pieces.map { group in
-        let text = String(group.map(\.character))
+        let text = group.map { cell in
+            "\(cell.character)[\(cell.minX),\(cell.minY),\(cell.box.width)x\(cell.box.height)]"
+        }.joined(separator: " ")
         let confidence = group.map(\.confidence).min() ?? 0
         let minX = group.map(\.minX).min() ?? 0
         let maxX = group.map(\.maxX).max() ?? 0
@@ -486,9 +488,6 @@ private extension GrayBuffer {
         let splitBands = merge(runs(primary.rowSums), whenGapBelow: max(1, cellHeight / 2))
         return splitBands.compactMap { band -> [OCRRecognizedText]? in
             let found = cells(in: band, mask: primary, buffer: buffer, bandIndex: 0, darkInk: primaryIsDark)
-            for cell in found {
-                print("CELL \(cell.character) \(cell.box.minX),\(cell.box.minY) \(cell.box.width)x\(cell.box.height) below=\(cell.box.maxY)")
-            }
             let marks = oppositeMarks(in: band, secondary: paintedMarks, existing: found, buffer: buffer, bandIndex: 0)
             let texts = recognizedGroups(found + marks, width: buffer.width, height: buffer.height)
             return texts.isEmpty ? nil : texts
