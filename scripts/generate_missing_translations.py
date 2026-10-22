@@ -55,6 +55,12 @@ from pathlib import Path
 from typing import Dict, Set, List, Optional, Tuple
 import re
 
+_SCRIPT_DIR = Path(__file__).resolve().parent
+if str(_SCRIPT_DIR) not in sys.path:
+    sys.path.insert(0, str(_SCRIPT_DIR))
+
+from format_specifier_guard import translate_with_format_protection  # noqa: E402
+
 # Timeout for a single translation request (avoids hanging on throttled/stuck API)
 TRANSLATE_REQUEST_TIMEOUT_SECONDS = 30
 
@@ -156,7 +162,8 @@ class LocalizationTranslator:
                     raise ValueError("MICROSOFT_TRANSLATOR_API_KEY environment variable not set")
                 self.translator = MicrosoftTranslator(api_key=api_key)
             elif self.provider == "mymemory":
-                self.translator = MyMemoryTranslator()
+                # Library defaults use short codes MyMemory now rejects (#582).
+                self.translator = MyMemoryTranslator(source="en-GB", target="es-ES")
             else:
                 raise ValueError(f"Unknown provider: {self.provider}")
         except Exception as e:
@@ -262,7 +269,29 @@ class LocalizationTranslator:
     def _get_translation_code(self, lang_code: str) -> str:
         """Convert Xcode language code to translation API code."""
         return self.LANGUAGE_CODE_MAP.get(lang_code, lang_code.split("-")[0] if "-" in lang_code else lang_code)
-    
+
+    # MyMemory rejects short codes ("en", "es"); it requires full locale codes.
+    MYMEMORY_CODE_MAP = {
+        "en": "en-GB",
+        "da": "da-DK",
+        "de": "de-DE",
+        "de-CH": "de-DE",
+        "es": "es-ES",
+        "es-US": "es-ES",
+        "fr": "fr-FR",
+        "it": "it-IT",
+        "ja": "ja-JP",
+        "ko": "ko-KR",
+        "nl": "nl-NL",
+        "pl": "pl-PL",
+        "sv": "sv-SE",
+        "zh-Hans": "zh-CN",
+    }
+
+    def _get_mymemory_code(self, lang_code: str) -> str:
+        """Convert a catalog language code to the full locale MyMemory requires."""
+        return self.MYMEMORY_CODE_MAP.get(lang_code, lang_code)
+
     @contextmanager
     def _progress_tracker(self, total: int, unit: str = "str"):
         """Context manager yielding a tick() callable for progress. Uses tqdm when available, else print every 10."""
@@ -298,7 +327,10 @@ class LocalizationTranslator:
             return MicrosoftTranslator(api_key=os.getenv("MICROSOFT_TRANSLATOR_API_KEY"),
                                       source=source_code, target=target_code).translate(text)
         if self.provider == "mymemory":
-            return MyMemoryTranslator(source=source_code, target=target_code).translate(text)
+            return MyMemoryTranslator(
+                source=self._get_mymemory_code(self.source_language),
+                target=self._get_mymemory_code(target_code),
+            ).translate(text)
         return None
 
     def _is_untranslatable(self, text: str) -> bool:
@@ -317,17 +349,35 @@ class LocalizationTranslator:
             return True
         return False
 
-    def _translate_string(self, text: str, target_lang: str) -> Optional[str]:
-        """Translate a single string to target language. Tries primary provider, then MyMemory as fallback.
-        For untranslatable strings (e.g. '*', symbols), returns the source string so the catalog is filled with the same value.
+    def _translate_string(self, text: str, target_lang: str) -> Tuple[Optional[str], str]:
+        """Translate a string through format-specifier protection (#582).
+
+        Returns (value, state): state is 'translated' only when machine
+        translation succeeded with specifiers intact (and the caller asked
+        to mark MT output translated); anything else is 'needs_review'.
+        Format specifiers are masked before MT and validated on restore;
+        unreconcilable corruption falls back to the English source.
+        For untranslatable strings (e.g. '*', symbols), returns the source
+        string so the catalog is filled with the same value.
         """
         if not text or not text.strip():
-            return None
+            return None, "needs_review"
 
-        # Untranslatable: use source as "translation" so the slot is filled (e.g. "*" in all languages)
+        # Untranslatable: identical in every locale, so genuinely "translated".
         if self._is_untranslatable(text):
-            return text
+            return text, "translated"
 
+        value, protection_state = translate_with_format_protection(
+            self._translate_masked_string, text, target_lang
+        )
+        if value is None or protection_state == "needs_review":
+            return value, "needs_review"
+        return value, "translated" if self.mark_as_translated else "needs_review"
+
+    def _translate_masked_string(self, text: str, target_lang: str) -> Optional[str]:
+        """Translate text whose format specifiers have been masked (#582).
+        Tries primary provider, then MyMemory as fallback.
+        """
         target_code = self._get_translation_code(target_lang)
         source_code = self._get_translation_code(self.source_language)
 
@@ -341,7 +391,10 @@ class LocalizationTranslator:
                 return MicrosoftTranslator(api_key=os.getenv("MICROSOFT_TRANSLATOR_API_KEY"),
                                           source=source_code, target=target_code).translate(text)
             if provider == "mymemory":
-                return MyMemoryTranslator(source=source_code, target=target_code).translate(text)
+                return MyMemoryTranslator(
+                    source=self._get_mymemory_code(self.source_language),
+                    target=self._get_mymemory_code(target_lang),
+                ).translate(text)
             return None
 
         primary_error = None
@@ -400,7 +453,9 @@ class LocalizationTranslator:
             return
         
         strings = self.catalog.get("strings", {})
-        total = len([k for k, v in strings.items() if self._extract_source_string(v, k) is not None])
+        total = len([k for k, v in strings.items()
+                     if v.get("shouldTranslate") is not False
+                     and self._extract_source_string(v, k) is not None])
         self.stats["total_strings"] = total
         num_languages = len(self.target_languages)
         total_translations = total * num_languages
@@ -409,6 +464,8 @@ class LocalizationTranslator:
         existing_count = 0
         incomplete_string_count = 0
         for key, entry in strings.items():
+            if entry.get("shouldTranslate") is False:
+                continue
             source_text = self._extract_source_string(entry, key)
             if not source_text:
                 continue
@@ -446,6 +503,8 @@ class LocalizationTranslator:
 
         with self._progress_tracker(translations_remaining, unit="trans") as tick:
             for key, entry in strings.items():
+                if entry.get("shouldTranslate") is False:
+                    continue
                 source_text = self._extract_source_string(entry, key)
                 if not source_text:
                     continue
@@ -468,14 +527,12 @@ class LocalizationTranslator:
                                 continue
 
                     # Translate (this is the work we're tracking)
-                    translated = self._translate_string(source_text, target_lang)
+                    translated, translation_state = self._translate_string(source_text, target_lang)
                     tick()
                     # Use source as fallback when translation fails so the slot is filled (no missing translation)
                     if not translated:
                         translated = source_text
                         translation_state = "needs_review"
-                    else:
-                        translation_state = "translated" if self.mark_as_translated else "needs_review"
                     if translated:
                         # Create localization entry
                         if target_lang not in entry["localizations"]:
@@ -578,7 +635,7 @@ class LocalizationTranslator:
                     continue
                 
                 # Translate
-                translated = self._translate_string(english_value, lang_code)
+                translated, _state = self._translate_string(english_value, lang_code)
                 if translated:
                     lang_strings[key] = translated
                     self.stats["translated"] += 1
