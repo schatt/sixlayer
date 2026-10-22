@@ -401,6 +401,43 @@ for radius in 1...24 {
     }
 }
 
+var columnInk = [Int](repeating: 0, count: cropW)
+for index in grown.indices where grown[index] {
+    columnInk[index % cropW] += 1
+}
+for percent in [95, 85, 70, 50] {
+    var rowInk = [Int](repeating: 0, count: cropH)
+    var keptColumns = 0
+    for x in 0..<cropW where columnInk[x] * 100 < cropH * percent {
+        keptColumns += 1
+        for y in 0..<cropH where grown[y * cropW + x] {
+            rowInk[y] += 1
+        }
+    }
+    func bands(where floor: Int) -> [(Int, Int, Int)] {
+        var found: [(Int, Int, Int)] = []
+        var start: Int?
+        var peak = 0
+        for y in 0..<cropH {
+            if rowInk[y] >= floor {
+                if start == nil { start = y }
+                peak = max(peak, rowInk[y])
+            } else if let open = start {
+                found.append((open, y, peak))
+                start = nil
+                peak = 0
+            }
+        }
+        if let open = start { found.append((open, cropH, peak)) }
+        return found
+    }
+    for floor in [1, 40, 120] {
+        let found = bands(where: floor)
+        let described = found.map { "\($0.0)-\($0.1) peak \($0.2)" }.joined(separator: " | ")
+        print("drop columns >= \(percent)% ink, floor \(floor), kept \(keptColumns), bands \(found.count): \(described)")
+    }
+}
+
 let scale = 4
 let outW = max(1, (cropW + scale - 1) / scale)
 let outH = max(1, (cropH + scale - 1) / scale)
