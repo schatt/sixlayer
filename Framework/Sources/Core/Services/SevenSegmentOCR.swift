@@ -471,8 +471,10 @@ private func recognizedGroups(_ cells: [Cell], width: Int, height: Int) -> [OCRR
 private extension GrayBuffer {
     static func fragments(in buffer: GrayBuffer) -> [[OCRRecognizedText]] {
         let raw = buffer.masks()
-        // A dark bezel touches the crop edge and would outline the glass as one zero.
-        let masks = (dark: clearingBorderComponents(raw.dark), light: clearingBorderComponents(raw.light))
+        // A frame inside the crop seals the glass. Ink outside that glass is the bezel.
+        let sealed = (dark: keepingInteriorInk(raw.dark), light: keepingInteriorInk(raw.light))
+        // A dark bezel that does touch the crop edge would outline the glass as one zero.
+        let masks = (dark: clearingBorderComponents(sealed.dark), light: clearingBorderComponents(sealed.light))
         let primaryIsDark = prefersDark(masks.dark, masks.light)
         let primary = primaryIsDark ? masks.dark : masks.light
         let paintedMarks = buffer.extremeMarkMask()
@@ -490,6 +492,93 @@ private extension GrayBuffer {
             return texts.isEmpty ? nil : texts
         }
     }
+}
+
+private func keepingInteriorInk(_ mask: Mask) -> Mask {
+    let width = mask.width
+    let height = mask.height
+    let count = width * height
+    guard width > 0, height > 0, mask.bits.count == count else { return mask }
+    var outside = [Bool](repeating: false, count: count)
+    var queue: [Int] = []
+    func push(_ x: Int, _ y: Int) {
+        guard x >= 0, y >= 0, x < width, y < height else { return }
+        let index = y * width + x
+        guard !mask.bits[index], !outside[index] else { return }
+        outside[index] = true
+        queue.append(index)
+    }
+    for x in 0..<width {
+        push(x, 0)
+        push(x, height - 1)
+    }
+    for y in 0..<height {
+        push(0, y)
+        push(width - 1, y)
+    }
+    var head = 0
+    while head < queue.count {
+        let index = queue[head]
+        head += 1
+        let x = index % width
+        let y = index / width
+        push(x - 1, y)
+        push(x + 1, y)
+        push(x, y - 1)
+        push(x, y + 1)
+    }
+    var seen = [Bool](repeating: false, count: count)
+    var bestArea = 0
+    var bestMinX = 0
+    var bestMinY = 0
+    var bestMaxX = 0
+    var bestMaxY = 0
+    for start in 0..<count where !mask.bits[start] && !outside[start] && !seen[start] {
+        var component = [start]
+        seen[start] = true
+        var compHead = 0
+        let sx = start % width
+        let sy = start / width
+        var minX = sx
+        var maxX = sx
+        var minY = sy
+        var maxY = sy
+        while compHead < component.count {
+            let index = component[compHead]
+            compHead += 1
+            let x = index % width
+            let y = index / width
+            minX = min(minX, x)
+            maxX = max(maxX, x)
+            minY = min(minY, y)
+            maxY = max(maxY, y)
+            for (nx, ny) in [(x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)] {
+                guard nx >= 0, ny >= 0, nx < width, ny < height else { continue }
+                let next = ny * width + nx
+                guard !mask.bits[next], !outside[next], !seen[next] else { continue }
+                seen[next] = true
+                component.append(next)
+            }
+        }
+        if component.count > bestArea {
+            bestArea = component.count
+            bestMinX = minX
+            bestMinY = minY
+            bestMaxX = maxX
+            bestMaxY = maxY
+        }
+    }
+    // Counters inside an 8 are sealed too. Only a glass-sized region counts.
+    guard bestArea * 8 >= count else { return mask }
+    var bits = mask.bits
+    for index in bits.indices where bits[index] {
+        let x = index % width
+        let y = index / width
+        if x < bestMinX || x > bestMaxX || y < bestMinY || y > bestMaxY {
+            bits[index] = false
+        }
+    }
+    return Mask(bits: bits, width: width, height: height)
 }
 
 private func clearingBorderComponents(_ mask: Mask) -> Mask {
