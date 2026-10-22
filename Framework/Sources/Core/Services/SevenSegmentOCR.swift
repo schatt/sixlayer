@@ -553,6 +553,8 @@ private func clearingBorderComponents(_ mask: Mask) -> Mask {
 }
 
 private func grow(_ seeds: [Bool], within reach: [Bool], pixels: [UInt8], width: Int) -> [Bool] {
+    // A junction sits inside its own stroke, so the margin misses it.
+    // Extend a seed only into the same gray, and only under the local ceiling.
     var mask = seeds
     var queue: [(index: Int, level: Int)] = []
     for index in seeds.indices where seeds[index] {
@@ -569,7 +571,7 @@ private func grow(_ seeds: [Bool], within reach: [Bool], pixels: [UInt8], width:
             guard nx >= 0, ny >= 0, nx < width, ny < height else { continue }
             let next = ny * width + nx
             let level = Int(pixels[next])
-            guard reach[next], !mask[next], abs(level - current.level) <= 4 else { continue }
+            guard reach[next], !mask[next], abs(level - current.level) <= sameInk else { continue }
             mask[next] = true
             queue.append((next, current.level))
         }
@@ -727,6 +729,7 @@ private func verticalRuns(_ mask: Mask, box: PixelBox, width: Int) -> [(Int, Int
 }
 
 private let inkMargin = 14
+private let sameInk = 4
 
 private func markIsInk(_ mask: Mask, box: PixelBox, width: Int, buffer: GrayBuffer, darkInk: Bool) -> Bool {
     coverage(mask, box: box, width: width) > 0.5 || inkFraction(buffer, box: box, darkInk: darkInk) > 0.5
