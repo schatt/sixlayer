@@ -339,7 +339,7 @@ private struct GrayBuffer {
                 light[index] = pixel > mean + inkMargin
             }
         }
-        dark = grow(dark, within: darkReach, width: width)
+        dark = grow(dark, within: darkReach, pixels: pixels, width: width)
         return (Mask(bits: dark, width: width, height: height), Mask(bits: light, width: width, height: height))
     }
 
@@ -558,22 +558,26 @@ private func clearingBorderComponents(_ mask: Mask) -> Mask {
     return Mask(bits: bits, width: width, height: height)
 }
 
-private func grow(_ seeds: [Bool], within reach: [Bool], width: Int) -> [Bool] {
+private func grow(_ seeds: [Bool], within reach: [Bool], pixels: [UInt8], width: Int) -> [Bool] {
     var mask = seeds
-    var queue = seeds.indices.filter { seeds[$0] }
+    var queue: [(index: Int, level: Int)] = []
+    for index in seeds.indices where seeds[index] {
+        queue.append((index, Int(pixels[index])))
+    }
     var head = 0
     let height = width == 0 ? 0 : mask.count / width
     while head < queue.count {
-        let index = queue[head]
+        let current = queue[head]
         head += 1
-        let x = index % width
-        let y = index / width
+        let x = current.index % width
+        let y = current.index / width
         for (nx, ny) in [(x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)] {
             guard nx >= 0, ny >= 0, nx < width, ny < height else { continue }
             let next = ny * width + nx
-            guard reach[next], !mask[next] else { continue }
+            let level = Int(pixels[next])
+            guard reach[next], !mask[next], abs(level - current.level) <= 4 else { continue }
             mask[next] = true
-            queue.append(next)
+            queue.append((next, current.level))
         }
     }
     return mask
