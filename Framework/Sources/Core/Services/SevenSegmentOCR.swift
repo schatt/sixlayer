@@ -223,7 +223,10 @@ private struct GrayBuffer {
             return nil
         }
         if box.height * 100 < digitHeight * 45, box.width * 100 < digitHeight * 30 {
-            guard inkFraction(buffer, box: box, darkInk: darkInk) > 0.5 else { return nil }
+            // The mask already decided this pixel is ink. A pale digit on bright
+            // glass is not half as dark as a bezel corner, so the corner ratio
+            // would drop the decimal.
+            guard coverage(mask, box: box, width: width) > 0.5 else { return nil }
             let comma = box.maxY > baseline + max(2, digitHeight / 12)
             return Cell(box: box, character: comma ? "," : ".", confidence: 1, band: bandIndex)
         }
@@ -312,7 +315,6 @@ private struct GrayBuffer {
         var light = [Bool](repeating: false, count: pixels.count)
         let margin = 14
         let background = Int(cornerFill())
-        let brightCeiling = background * 93 / 100
         for y in 0..<height {
             for x in 0..<width {
                 let x0 = max(0, x - radius)
@@ -324,9 +326,12 @@ private struct GrayBuffer {
                 let mean = Int(sum / UInt64(max(area, 1)))
                 let pixel = Int(pixels[y * width + x])
                 let index = y * width + x
-                // A glare band lifts the background next to it, so those
-                // still-background pixels fall just under the local mean.
-                // Dark ink stays below most of that background.
+                // The corner is the glass on a tight panel, and a dark bezel
+                // on a pump crop. A bezel ceiling sits below the digits.
+                // Use whichever is brighter as the panel, so glare fringe
+                // (still the corner color) stays out and washed ink stays in.
+                let panel = max(background, mean)
+                let brightCeiling = panel * 93 / 100
                 dark[index] = pixel + margin < mean && pixel < brightCeiling
                 light[index] = pixel > mean + margin
             }
