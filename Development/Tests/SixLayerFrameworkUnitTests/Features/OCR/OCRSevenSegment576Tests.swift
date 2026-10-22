@@ -205,6 +205,18 @@ struct OCRSevenSegment576Tests {
         #expect(segmentTexts(result) == ["32.88", "8.022"])
     }
 
+    @Test func inkCloserThanTheMarginIsNotADigit() {
+        // Six levels under the glass is below the margin. Guessing a digit here is worse than silence.
+        let image = SegmentPanel.render(
+            rows: [atoms("32.88"), atoms("8.022")],
+            inkLevel: 194,
+            backgroundLevel: 200
+        )
+        let result = decode(image)
+        #expect(result.extractedText == "")
+        #expect(result.recognizedTexts.isEmpty)
+    }
+
     @Test func glareAndBothPolaritiesDecodeTheSameDigits() {
         let rows = [atoms("31.25")]
         let glared = decode(SegmentPanel.render(rows: rows, glare: true))
