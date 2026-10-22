@@ -190,6 +190,21 @@ struct OCRSevenSegment576Tests {
         #expect(decode(image).extractedText == "31.25")
     }
 
+    @Test func bezelDarkerThanTheGlassKeepsWashedDigits() {
+        // Scenario 1 hand crop, 2026-10-22: corners 123, glass ~200, digit cores ~140.
+        // The corner ceiling is 114, so this ink is dropped even though it is darker than the glass.
+        let image = SegmentPanel.render(
+            rows: [atoms("32.88"), atoms("8.022")],
+            inkLevel: 140,
+            backgroundLevel: 200,
+            bezelLevel: 123,
+            bezelWidth: 8
+        )
+        let result = decode(image)
+        #expect(result.extractedText == "32.88\n8.022")
+        #expect(segmentTexts(result) == ["32.88", "8.022"])
+    }
+
     @Test func glareAndBothPolaritiesDecodeTheSameDigits() {
         let rows = [atoms("31.25")]
         let glared = decode(SegmentPanel.render(rows: rows, glare: true))
@@ -547,13 +562,22 @@ private enum SegmentPanel {
         glare: Bool = false,
         tiltDegrees: Double = 0,
         inkLevel: UInt8? = nil,
-        backgroundLevel: UInt8? = nil
+        backgroundLevel: UInt8? = nil,
+        bezelLevel: UInt8? = nil,
+        bezelWidth: Int = 0
     ) -> CGImage {
         let laid = layout(rows: rows, padding: padding)
         let background: UInt8 = backgroundLevel ?? (invert ? 28 : 214)
         let ink: UInt8 = inkLevel ?? (invert ? 228 : 22)
         let markInk: UInt8 = 255
         var pixels = [UInt8](repeating: background, count: laid.width * laid.height)
+        if bezelWidth > 0, let bezelLevel {
+            let band = min(bezelWidth, min(laid.width, laid.height) / 2)
+            fill(&pixels, width: laid.width, height: laid.height, rect: CGRect(x: 0, y: 0, width: laid.width, height: band), value: bezelLevel)
+            fill(&pixels, width: laid.width, height: laid.height, rect: CGRect(x: 0, y: laid.height - band, width: laid.width, height: band), value: bezelLevel)
+            fill(&pixels, width: laid.width, height: laid.height, rect: CGRect(x: 0, y: 0, width: band, height: laid.height), value: bezelLevel)
+            fill(&pixels, width: laid.width, height: laid.height, rect: CGRect(x: laid.width - band, y: 0, width: band, height: laid.height), value: bezelLevel)
+        }
         for stroke in laid.strokes where !stroke.opposite {
             fill(&pixels, width: laid.width, height: laid.height, rect: stroke.rect, value: ink)
         }
