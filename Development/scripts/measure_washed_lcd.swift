@@ -464,6 +464,24 @@ while bandY < cropH {
     bandY += 40
 }
 
+bandY = 0
+while bandY < cropH {
+    let bandEnd = min(cropH, bandY + 40)
+    var samples: [UInt8] = []
+    samples.reserveCapacity((bandEnd - bandY) * (centerX1 - centerX0))
+    for y in bandY..<bandEnd {
+        for x in centerX0..<centerX1 {
+            samples.append(pixels[y * cropW + x])
+        }
+    }
+    samples.sort()
+    let minLevel = Int(samples.first ?? 0)
+    let p10 = Int(samples[samples.count / 10])
+    let p50 = Int(samples[samples.count / 2])
+    print("y \(bandY)-\(bandEnd) gray min \(minLevel) p10 \(p10) p50 \(p50)")
+    bandY += 40
+}
+
 let scale = 4
 let outW = max(1, (cropW + scale - 1) / scale)
 let outH = max(1, (cropH + scale - 1) / scale)
@@ -505,5 +523,40 @@ if let provider = CGDataProvider(data: Data(preview) as CFData),
     CGImageDestinationAddImage(destination, cg, nil)
     if CGImageDestinationFinalize(destination) {
         print("mask \(previewURL.path) \(outW)x\(outH)")
+    }
+}
+
+var graySums = [Int](repeating: 0, count: outW * outH)
+var grayCounts = [Int](repeating: 0, count: outW * outH)
+for y in 0..<cropH {
+    for x in 0..<cropW {
+        let out = (y / scale) * outW + (x / scale)
+        graySums[out] += Int(pixels[y * cropW + x])
+        grayCounts[out] += 1
+    }
+}
+var grayPreview = [UInt8](repeating: 0, count: outW * outH)
+for index in grayPreview.indices where grayCounts[index] > 0 {
+    grayPreview[index] = UInt8(graySums[index] / grayCounts[index])
+}
+let grayURL = URL(fileURLWithPath: "build/washed-lcd-gray.png")
+if let provider = CGDataProvider(data: Data(grayPreview) as CFData),
+   let cg = CGImage(
+    width: outW,
+    height: outH,
+    bitsPerComponent: 8,
+    bitsPerPixel: 8,
+    bytesPerRow: outW,
+    space: CGColorSpaceCreateDeviceGray(),
+    bitmapInfo: CGBitmapInfo(rawValue: CGImageAlphaInfo.none.rawValue),
+    provider: provider,
+    decode: nil,
+    shouldInterpolate: false,
+    intent: .defaultIntent
+   ),
+   let destination = CGImageDestinationCreateWithURL(grayURL as CFURL, "public.png" as CFString, 1, nil) {
+    CGImageDestinationAddImage(destination, cg, nil)
+    if CGImageDestinationFinalize(destination) {
+        print("gray \(grayURL.path)")
     }
 }
