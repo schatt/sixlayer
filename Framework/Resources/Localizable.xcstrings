@@ -849,6 +849,12 @@
             "value" : "Test d'accessibilité"
           }
         },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Test di accessibilità"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -1222,6 +1228,12 @@
     "Array" : {
       "extractionState" : "manual",
       "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Array"
+          }
+        },
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -1270,10 +1282,22 @@
             "value" : "배열"
           }
         },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Array"
+          }
+        },
         "pl" : {
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Tablica"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Array"
           }
         },
         "zh-Hans" : {
@@ -2236,6 +2260,12 @@
             "value" : "Confiance"
           }
         },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Attendibilità"
+          }
+        },
         "ja" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -3030,6 +3060,18 @@
             "value" : "Mail til kontaktperson"
           }
         },
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "E-Mail"
+          }
+        },
+        "de-CH" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "E-Mail"
+          }
+        },
         "es" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -3194,6 +3236,18 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Fehler"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Error"
+          }
+        },
+        "es-US" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Error"
           }
         },
         "fr" : {
@@ -4500,6 +4554,18 @@
             "value" : "Navn"
           }
         },
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Name"
+          }
+        },
+        "de-CH" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Name"
+          }
+        },
         "es" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -4571,6 +4637,18 @@
             "value" : "Hovedmenu"
           }
         },
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Navigation"
+          }
+        },
+        "de-CH" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Navigation"
+          }
+        },
         "es" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -4581,6 +4659,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Navegación"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Navigation"
           }
         },
         "it" : {
@@ -33363,11 +33447,169 @@
     },
     "This content is revealed when the card is expanded." : {
       "extractionState" : "manual",
-      "localizations" : {}
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dette indhold vises, når kortet udvides."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dieser Inhalt wird angezeigt, wenn die Karte erweitert wird."
+          }
+        },
+        "de-CH" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dieser Inhalt wird angezeigt, wenn die Karte erweitert wird."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Este contenido se muestra cuando la tarjeta se expande."
+          }
+        },
+        "es-US" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Este contenido se muestra cuando la tarjeta se expande."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ce contenu est révélé lorsque la carte est développée."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Questo contenuto viene mostrato quando la scheda viene espansa."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "このコンテンツは、カードを展開したときに表示されます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "이 콘텐츠는 카드가 확장될 때 표시됩니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Deze inhoud wordt weergegeven wanneer de kaart wordt uitgevouwen."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ta treść jest ujawniana po rozwinięciu karty."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Detta innehåll visas när kortet expanderas."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "此内容在卡片展开时显示。"
+          }
+        }
+      }
     },
     "This content is revealed when the card is expanded. It can contain additional information, actions, or interactive elements." : {
       "extractionState" : "manual",
-      "localizations" : {}
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dette indhold vises, når kortet udvides. Det kan indeholde yderligere oplysninger, handlinger eller interaktive elementer."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dieser Inhalt wird angezeigt, wenn die Karte erweitert wird. Er kann zusätzliche Informationen, Aktionen oder interaktive Elemente enthalten."
+          }
+        },
+        "de-CH" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dieser Inhalt wird angezeigt, wenn die Karte erweitert wird. Er kann zusätzliche Informationen, Aktionen oder interaktive Elemente enthalten."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Este contenido se muestra cuando la tarjeta se expande. Puede contener información adicional, acciones o elementos interactivos."
+          }
+        },
+        "es-US" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Este contenido se muestra cuando la tarjeta se expande. Puede contener información adicional, acciones o elementos interactivos."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ce contenu est révélé lorsque la carte est développée. Il peut contenir des informations supplémentaires, des actions ou des éléments interactifs."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Questo contenuto viene mostrato quando la scheda viene espansa. Può contenere informazioni aggiuntive, azioni o elementi interattivi."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "このコンテンツは、カードを展開したときに表示されます。追加情報、アクション、またはインタラクティブ要素を含む場合があります。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "이 콘텐츠는 카드가 확장될 때 표시됩니다. 추가 정보, 작업 또는 대화형 요소를 포함할 수 있습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Deze inhoud wordt weergegeven wanneer de kaart wordt uitgevouwen. Deze kan aanvullende informatie, acties of interactieve elementen bevatten."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ta treść jest ujawniana po rozwinięciu karty. Może zawierać dodatkowe informacje, działania lub elementy interaktywne."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Detta innehåll visas när kortet expanderas. Det kan innehålla ytterligare information, åtgärder eller interaktiva element."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "此内容在卡片展开时显示。它可以包含其他信息、操作或交互元素。"
+          }
+        }
+      }
     },
     "Type: %@" : {
       "extractionState" : "manual",
