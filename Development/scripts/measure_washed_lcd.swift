@@ -441,7 +441,8 @@ for percent in [95, 85, 70, 50] {
 let centerX0 = cropW / 5
 let centerX1 = cropW * 4 / 5
 print("central columns \(centerX0)-\(centerX1)")
-for bandY in stride(from: 0, to: cropH, by: 40) {
+var bandY = 0
+while bandY < cropH {
     let bandEnd = min(cropH, bandY + 40)
     var loose = 0
     var strict = 0
@@ -460,6 +461,7 @@ for bandY in stride(from: 0, to: cropH, by: 40) {
         }
     }
     print("y \(bandY)-\(bandEnd) loose \(loose) strict \(strict)")
+    bandY += 40
 }
 
 let scale = 4
