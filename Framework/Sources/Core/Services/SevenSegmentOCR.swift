@@ -486,6 +486,9 @@ private extension GrayBuffer {
         let splitBands = merge(runs(primary.rowSums), whenGapBelow: max(1, cellHeight / 2))
         return splitBands.compactMap { band -> [OCRRecognizedText]? in
             let found = cells(in: band, mask: primary, buffer: buffer, bandIndex: 0, darkInk: primaryIsDark)
+            for cell in found {
+                print("CELL \(cell.character) \(cell.box.minX),\(cell.box.minY) \(cell.box.width)x\(cell.box.height) below=\(cell.box.maxY)")
+            }
             let marks = oppositeMarks(in: band, secondary: paintedMarks, existing: found, buffer: buffer, bandIndex: 0)
             let texts = recognizedGroups(found + marks, width: buffer.width, height: buffer.height)
             return texts.isEmpty ? nil : texts
