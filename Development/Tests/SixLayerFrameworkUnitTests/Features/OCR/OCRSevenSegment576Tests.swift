@@ -239,7 +239,12 @@ struct OCRSevenSegment576Tests {
             bezelLevel: 123,
             bezelWidth: 8
         )
-        #expect(decode(image).extractedText == "1,234.56")
+        let result = decode(image)
+        let described = result.recognizedTexts.map { item in
+            let box = item.boundingBox
+            return "\(item.text)@\(Int(box.minX)),\(Int(box.minY)) \(Int(box.width))x\(Int(box.height))"
+        }.joined(separator: " ")
+        #expect(described == "1,234.56")
     }
 
     @Test func glareAndBothPolaritiesDecodeTheSameDigits() {
