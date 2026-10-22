@@ -498,32 +498,51 @@ private extension GrayBuffer {
 private func clearingBorderComponents(_ mask: Mask) -> Mask {
     guard mask.width > 0, mask.height > 0 else { return mask }
     var bits = mask.bits
-    var queue: [Int] = []
-    func enqueue(_ index: Int) {
-        guard bits[index] else { return }
-        bits[index] = false
-        queue.append(index)
-    }
     let width = mask.width
     let height = mask.height
+    var seen = [Bool](repeating: false, count: bits.count)
+    func consider(_ start: Int) {
+        guard bits[start], !seen[start] else { return }
+        var queue = [start]
+        seen[start] = true
+        var head = 0
+        var minX = width
+        var maxX = 0
+        var minY = height
+        var maxY = 0
+        while head < queue.count {
+            let index = queue[head]
+            head += 1
+            let x = index % width
+            let y = index / width
+            minX = min(minX, x)
+            maxX = max(maxX, x)
+            minY = min(minY, y)
+            maxY = max(maxY, y)
+            let neighbors = [index - 1, index + 1, index - width, index + width]
+            for next in neighbors where next >= 0 && next < bits.count {
+                let nx = next % width
+                let ny = next / width
+                guard abs(nx - x) + abs(ny - y) == 1, bits[next], !seen[next] else { continue }
+                seen[next] = true
+                queue.append(next)
+            }
+        }
+        let boxW = maxX - minX + 1
+        let boxH = maxY - minY + 1
+        // A bezel outlines the glass. A comma tail can touch the edge and stay.
+        guard boxW * 2 > width, boxH * 2 > height else { return }
+        for index in queue {
+            bits[index] = false
+        }
+    }
     for x in 0..<width {
-        enqueue(x)
-        enqueue((height - 1) * width + x)
+        consider(x)
+        consider((height - 1) * width + x)
     }
     for y in 0..<height {
-        enqueue(y * width)
-        enqueue(y * width + width - 1)
-    }
-    var head = 0
-    while head < queue.count {
-        let index = queue[head]
-        head += 1
-        let x = index % width
-        let y = index / width
-        if x > 0 { enqueue(index - 1) }
-        if x + 1 < width { enqueue(index + 1) }
-        if y > 0 { enqueue(index - width) }
-        if y + 1 < height { enqueue(index + width) }
+        consider(y * width)
+        consider(y * width + width - 1)
     }
     return Mask(bits: bits, width: width, height: height)
 }
