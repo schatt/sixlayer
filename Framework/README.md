@@ -1,6 +1,6 @@
 # SixLayer Framework
 
-[![Version](https://img.shields.io/badge/version-v8.6.7-blue.svg)](https://github.com/schatt/sixlayer/releases/tag/v8.6.7)
+[![Version](https://img.shields.io/badge/version-v8.7.0-blue.svg)](https://github.com/schatt/sixlayer/releases/tag/v8.7.0)
 [![Platform](https://img.shields.io/badge/platform-iOS%2016%2B%20%7C%20macOS%2013%2B-lightgrey.svg)](https://github.com/schatt/6layer)
 [![Swift](https://img.shields.io/badge/Swift-5.9+-orange.svg)](https://swift.org)
 
@@ -39,6 +39,12 @@ Layer 1: Semantic Intent → Layer 2: Layout Decision → Layer 3: Strategy Sele
 - **Extensible**: Easy to extend with custom layers and strategies
 - **Comprehensively Tested**: 800+ tests with platform-aware testing and mandatory TDD implementation
 - **DRY Architecture**: Define hints once in files, use everywhere automatically
+
+## 🆕 What's New in v8.7.0
+
+### Minor release
+
+`OCRProcessingMode.ssocr` decodes multi-row seven-segment panels (#576). Optional form hints use the unwrapped model name, and `DataBinder` init and bind are public (#581, #585). Vision OCR claims its continuation once (#563, #574, #578, #579). `Localizable.xcstrings` is curated so builds stop rewriting it (#577). macOS UITests and generated snippets call `platformTap` (#567, #568, #569, #570, #575, #586, #587). See [RELEASE_v8.7.0.md](../Development/RELEASE_v8.7.0.md).
 
 ## 🆕 What's New in v8.6.7
 

@@ -181,7 +181,7 @@ public class EnhancedAccessibilityIdentifierConfig: ObservableObject {
         return """
         let element = app.otherElements["\(id)"]
         XCTAssertTrue(element.exists, "Element '\(id)' should exist")
-        element.tap()
+        element.platformTap()
         """
     }
     
@@ -189,7 +189,7 @@ public class EnhancedAccessibilityIdentifierConfig: ObservableObject {
         return """
         let element = app.textFields["\(id)"]
         XCTAssertTrue(element.exists, "Text field '\(id)' should exist")
-        element.tap()
+        element.platformTap()
         element.typeText("\(text)")
         """
     }

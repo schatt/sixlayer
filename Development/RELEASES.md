@@ -1,12 +1,21 @@
 # 🚀 Six-Layer Framework Release History
 
-## 📍 **Current Release: v8.6.7** 🚀
+## 📍 **Current Release: v8.7.0** 🚀
 
-**Release Date**: October 18, 2026
-**Status**: Patch release
-**Previous Release**: v8.6.2 - Patch release
-**Note**: Sidebar column and label inset (#549, #552); signed number entry (#548, #550); alert binding, deferred clear, and RTL Do Not Disturb (#533, #555, #556); focused form editors (#560); settings dismiss (#532); collection and catalog content inset (#557, #559). Tags v8.6.3–v8.6.6 were not published.
-**Next Release**: v8.7.0
+**Release Date**: October 21, 2026
+**Status**: Minor release
+**Previous Release**: v8.6.7 - Patch release
+**Note**: Seven-segment OCR mode (#576); optional hints model name and public DataBinder (#581, #585); Vision continuation claimed once (#563, #574, #578, #579); curated string catalog (#577); platformTap in macOS UITests and snippets (#567, #568, #569, #570, #575, #580, #586, #587); retire script tolerates a missing wip ref (#564).
+**Next Release**: v8.7.1
+
+---
+
+## 🎯 **v8.7.0 - seven-segment OCR** (October 21, 2026)
+
+### **What's in v8.7.0:**
+- Minor release (#563, #564, #567, #568, #569, #570, #574, #575, #576, #577, #578, #579, #580, #581, #585, #586, #587, #590). See [RELEASE_v8.7.0.md](RELEASE_v8.7.0.md) for details.
+
+**See [RELEASE_v8.7.0.md](RELEASE_v8.7.0.md) for complete release notes.**
 
 ---
 

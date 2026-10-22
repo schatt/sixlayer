@@ -41,7 +41,7 @@ extension XCUIApplication {
             toolbars.buttons["Done"]
         ].first(where: \.exists)
         if let dismissControl {
-            dismissControl.tap()
+            dismissControl.platformTap()
         } else {
             let host = collectionViews.firstMatch.exists
                 ? collectionViews.firstMatch
@@ -98,7 +98,7 @@ extension XCUIElement {
         // Trailing hit for switch — center often lands on the label and does not flip (#515 / #497).
         if elementType == .checkBox || elementType == .switch {
             if elementType == .switch, xcuiHasValidTapFrame {
-                coordinate(withNormalizedOffset: CGVector(dx: 0.92, dy: 0.5)).click()
+                coordinate(withNormalizedOffset: CGVector(dx: 0.92, dy: 0.5)).platformTap()
             } else {
                 click()
             }
@@ -109,14 +109,14 @@ extension XCUIElement {
         #if os(iOS)
         if elementType == .secureTextField {
             let center = coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
-            center.tap()
+            center.platformTap()
             RunLoop.current.run(until: Date().addingTimeInterval(0.2))
-            center.tap()
+            center.platformTap()
             RunLoop.current.run(until: Date().addingTimeInterval(0.3))
             return
         }
         if elementType == .switch {
-            coordinate(withNormalizedOffset: CGVector(dx: 0.92, dy: 0.5)).tap()
+            coordinate(withNormalizedOffset: CGVector(dx: 0.92, dy: 0.5)).platformTap()
             RunLoop.current.run(until: Date().addingTimeInterval(0.25))
             return
         }

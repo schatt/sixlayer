@@ -26,7 +26,6 @@ struct IntelligentFormViewOptionalInitialDataHintsTests {
         )
 
         #expect(lookup.modelName == "OptionalHintsProbe581")
-        #expect(!lookup.modelName.contains("Optional<"))
-        #expect(lookup.fieldNames.contains("title"))
+        #expect(lookup.analysis.fields.contains { $0.name == "title" })
     }
 }

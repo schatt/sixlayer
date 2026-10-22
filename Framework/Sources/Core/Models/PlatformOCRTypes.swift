@@ -205,6 +205,36 @@ public enum OCRVisionDefaults: Sendable {
     public static let minimumTextHeight: Float = 0.003
 }
 
+// MARK: - Recognized fragment
+
+/// One recognized fragment and the box it occupied.
+///
+/// ``Role/segment`` is a seven-segment group. ``Role/label`` is printed text from Vision or the caller.
+/// The box is Vision-normalized with its origin at the bottom left.
+public struct OCRRecognizedText: Sendable, Equatable {
+    public enum Role: String, Sendable, Equatable {
+        case segment
+        case label
+    }
+
+    public let text: String
+    public let boundingBox: CGRect
+    public let confidence: Float
+    public let role: Role
+
+    public init(
+        text: String,
+        boundingBox: CGRect,
+        confidence: Float = 1,
+        role: Role = .label
+    ) {
+        self.text = text
+        self.boundingBox = boundingBox
+        self.confidence = confidence
+        self.role = role
+    }
+}
+
 // MARK: - OCR Context
 
 /// Context information for OCR operations
@@ -259,6 +289,20 @@ public struct OCRContext: Sendable {
     /// Vision `VNRecognizeTextRequest.minimumTextHeight` (fraction of image height).
     /// Lower values retain small pump LCD digits on full-resolution photos (#288).
     public let visionMinimumTextHeight: Float
+
+    /// Recognizer used by ``OCRService/processStructuredExtraction(_:_:)``.
+    /// Defaults to ``OCRProcessingMode/accurate``, which is the 8.6.7 structured path.
+    public let processingMode: OCRProcessingMode
+
+    /// Vision level for the printed-label pass that runs beside ``OCRProcessingMode/ssocr``.
+    public let labelProcessingMode: OCRProcessingMode
+
+    /// Largest deskew angle, in degrees, the segment decoder may search. The default is 3.
+    public let segmentDeskewMaximumDegrees: Double
+
+    /// Printed-word fragments already in hand. When this is non-empty, the segment path
+    /// does not run a Vision label pass.
+    public let suppliedLabelFragments: [OCRRecognizedText]
     
     public init(
         textTypes: [TextType] = [.general],
@@ -273,7 +317,11 @@ public struct OCRContext: Sendable {
         fieldRanges: [String: ValueRange]? = nil,
         fieldAverages: [String: Double]? = nil,
         strictVisionTextTypeFiltering: Bool = false,
-        visionMinimumTextHeight: Float = OCRVisionDefaults.minimumTextHeight
+        visionMinimumTextHeight: Float = OCRVisionDefaults.minimumTextHeight,
+        processingMode: OCRProcessingMode = .accurate,
+        labelProcessingMode: OCRProcessingMode = .accurate,
+        segmentDeskewMaximumDegrees: Double = 3,
+        suppliedLabelFragments: [OCRRecognizedText] = []
     ) {
         self.textTypes = textTypes
         self.language = language
@@ -288,6 +336,10 @@ public struct OCRContext: Sendable {
         self.fieldAverages = fieldAverages
         self.strictVisionTextTypeFiltering = strictVisionTextTypeFiltering
         self.visionMinimumTextHeight = visionMinimumTextHeight
+        self.processingMode = processingMode
+        self.labelProcessingMode = labelProcessingMode
+        self.segmentDeskewMaximumDegrees = segmentDeskewMaximumDegrees
+        self.suppliedLabelFragments = suppliedLabelFragments
     }
     
     /// Text types supplied to Vision for observation filtering. Empty means **no** per-line type filter.
@@ -356,6 +408,9 @@ public struct OCRResult: Sendable {
     
     /// Typed fragments that did not become ``structuredData`` entries (reading order; GitHub #279).
     public let uncategorizedExtractions: [UncategorizedOCRExtraction]
+
+    /// Segment groups and printed labels. Empty for ``OCRProcessingMode/fast`` and ``OCRProcessingMode/accurate``.
+    public let recognizedTexts: [OCRRecognizedText]
     
     public init(
         extractedText: String,
@@ -369,6 +424,7 @@ public struct OCRResult: Sendable {
         missingRequiredFields: [String] = [],
         adjustedFields: [String: String] = [:],
         uncategorizedExtractions: [UncategorizedOCRExtraction] = [],
+        recognizedTexts: [OCRRecognizedText] = [],
         isValid: Bool? = nil,
         validationReason: String? = nil
     ) {
@@ -383,6 +439,7 @@ public struct OCRResult: Sendable {
         self.missingRequiredFields = missingRequiredFields
         self.adjustedFields = adjustedFields
         self.uncategorizedExtractions = uncategorizedExtractions
+        self.recognizedTexts = recognizedTexts
         
         // Set validation properties - use provided value or compute from confidence
         self.isValid = isValid ?? (confidence >= 0.5)
@@ -585,6 +642,7 @@ public enum OCRProcessingMode: String, CaseIterable, Sendable {
     case standard = "standard"
     case accurate = "accurate"
     case neural = "neural"
+    case ssocr = "ssocr"
     
     public var displayName: String {
         switch self {
@@ -592,8 +650,48 @@ public enum OCRProcessingMode: String, CaseIterable, Sendable {
         case .standard: return "Standard"
         case .accurate: return "Accurate"
         case .neural: return "Neural Engine"
+        case .ssocr: return "Seven-segment"
         }
     }
+
+    /// Vision level selected by ``OCRService`` on 8.6.7. ``ssocr`` is not a Vision level.
+    var serviceVisionRecognition: OCRVisionRecognitionChoice? {
+        switch self {
+        case .fast:
+            return .fast
+        case .standard, .accurate, .neural:
+            return .accurate
+        case .ssocr:
+            return nil
+        }
+    }
+
+    /// Vision level selected by the safety wrapper on 8.6.7. ``ssocr`` is not a Vision level.
+    var safetyVisionRecognition: OCRVisionRecognitionChoice? {
+        switch self {
+        case .neural:
+            return .accurate
+        case .fast, .standard, .accurate:
+            return .fast
+        case .ssocr:
+            return nil
+        }
+    }
+
+    /// Printed-label pass beside a segment decode. Only ``fast`` selects the fast Vision level.
+    var labelPassVisionRecognition: OCRVisionRecognitionChoice {
+        switch self {
+        case .fast:
+            return .fast
+        case .standard, .accurate, .neural, .ssocr:
+            return .accurate
+        }
+    }
+}
+
+enum OCRVisionRecognitionChoice: Equatable {
+    case fast
+    case accurate
 }
 
 // MARK: - OCR UI Configuration

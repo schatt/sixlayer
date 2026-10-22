@@ -301,7 +301,7 @@ public final class AccessibilityIdentifierConfig: @unchecked Sendable {
     
     /// Generate tap action for UI testing
     public func generateTapAction(_ identifier: String) -> String {
-        return "app.otherElements[\"\(identifier)\"].element.tap()"
+        return "app.otherElements[\"\(identifier)\"].element.platformTap()"
     }
     
     /// Generate text input action for UI testing
