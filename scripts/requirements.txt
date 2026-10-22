@@ -1,5 +1,5 @@
 # Python dependencies for sixlayer scripts
 
 # Translation script dependencies (generate_missing_translations.py)
-deep-translator>=1.11.4
+deep-translator==1.11.4
 tqdm>=4.66.0
