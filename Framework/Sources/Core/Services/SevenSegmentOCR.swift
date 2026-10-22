@@ -472,7 +472,9 @@ private func recognizedGroups(_ cells: [Cell], width: Int, height: Int) -> [OCRR
 
 private extension GrayBuffer {
     static func fragments(in buffer: GrayBuffer) -> [[OCRRecognizedText]] {
-        let masks = buffer.masks()
+        let raw = buffer.masks()
+        // A dark bezel touches the crop edge and would outline the glass as one zero.
+        let masks = (dark: clearingBorderComponents(raw.dark), light: clearingBorderComponents(raw.light))
         let primaryIsDark = prefersDark(masks.dark, masks.light)
         let primary = primaryIsDark ? masks.dark : masks.light
         let paintedMarks = buffer.extremeMarkMask()
@@ -490,6 +492,39 @@ private extension GrayBuffer {
             return texts.isEmpty ? nil : texts
         }
     }
+}
+
+private func clearingBorderComponents(_ mask: Mask) -> Mask {
+    guard mask.width > 0, mask.height > 0 else { return mask }
+    var bits = mask.bits
+    var queue: [Int] = []
+    func enqueue(_ index: Int) {
+        guard bits[index] else { return }
+        bits[index] = false
+        queue.append(index)
+    }
+    let width = mask.width
+    let height = mask.height
+    for x in 0..<width {
+        enqueue(x)
+        enqueue((height - 1) * width + x)
+    }
+    for y in 0..<height {
+        enqueue(y * width)
+        enqueue(y * width + width - 1)
+    }
+    var head = 0
+    while head < queue.count {
+        let index = queue[head]
+        head += 1
+        let x = index % width
+        let y = index / width
+        if x > 0 { enqueue(index - 1) }
+        if x + 1 < width { enqueue(index + 1) }
+        if y > 0 { enqueue(index - width) }
+        if y + 1 < height { enqueue(index + width) }
+    }
+    return Mask(bits: bits, width: width, height: height)
 }
 
 private func runs(_ sums: [Int]) -> [(Int, Int)] {
