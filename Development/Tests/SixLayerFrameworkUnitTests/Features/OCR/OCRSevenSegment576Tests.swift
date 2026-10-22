@@ -217,6 +217,31 @@ struct OCRSevenSegment576Tests {
         #expect(result.recognizedTexts.isEmpty)
     }
 
+    @Test func thickStrokesDecodeWhenTheWindowWouldHaveCapped() {
+        // A 12-pixel stroke scaled by 4 is 48 pixels, wider than the 41-pixel window.
+        let image = SegmentPanel.render(
+            rows: [atoms("32.88"), atoms("8.022")],
+            inkLevel: 140,
+            backgroundLevel: 200,
+            bezelLevel: 123,
+            bezelWidth: 8,
+            scale: 4
+        )
+        #expect(decode(image).extractedText == "32.88\n8.022")
+    }
+
+    @Test func paleCommaDoesNotAskTheCorner() {
+        // Ink 140 on glass 200 is not half of a bezel corner at 123.
+        let image = SegmentPanel.render(
+            rows: [atoms("1,234.56")],
+            inkLevel: 140,
+            backgroundLevel: 200,
+            bezelLevel: 123,
+            bezelWidth: 8
+        )
+        #expect(decode(image).extractedText == "1,234.56")
+    }
+
     @Test func glareAndBothPolaritiesDecodeTheSameDigits() {
         let rows = [atoms("31.25")]
         let glared = decode(SegmentPanel.render(rows: rows, glare: true))
@@ -576,7 +601,8 @@ private enum SegmentPanel {
         inkLevel: UInt8? = nil,
         backgroundLevel: UInt8? = nil,
         bezelLevel: UInt8? = nil,
-        bezelWidth: Int = 0
+        bezelWidth: Int = 0,
+        scale: Int = 1
     ) -> CGImage {
         let laid = layout(rows: rows, padding: padding)
         let background: UInt8 = backgroundLevel ?? (invert ? 28 : 214)
@@ -606,11 +632,33 @@ private enum SegmentPanel {
                 }
             }
         }
+        var width = laid.width
+        var height = laid.height
         if abs(tiltDegrees) > 0.01 {
-            let turned = rotate(pixels: pixels, width: laid.width, height: laid.height, degrees: tiltDegrees, fill: background)
-            return image(pixels: turned.pixels, width: turned.width, height: turned.height)
+            let turned = rotate(pixels: pixels, width: width, height: height, degrees: tiltDegrees, fill: background)
+            pixels = turned.pixels
+            width = turned.width
+            height = turned.height
         }
-        return image(pixels: pixels, width: laid.width, height: laid.height)
+        if scale > 1 {
+            let grown = scalePixels(pixels, width: width, height: height, factor: scale)
+            pixels = grown.pixels
+            width = grown.width
+            height = grown.height
+        }
+        return image(pixels: pixels, width: width, height: height)
+    }
+
+    private static func scalePixels(_ pixels: [UInt8], width: Int, height: Int, factor: Int) -> (pixels: [UInt8], width: Int, height: Int) {
+        let newW = width * factor
+        let newH = height * factor
+        var output = [UInt8](repeating: 0, count: newW * newH)
+        for y in 0..<newH {
+            for x in 0..<newW {
+                output[y * newW + x] = pixels[(y / factor) * width + (x / factor)]
+            }
+        }
+        return (output, newW, newH)
     }
 
     private struct Stroke {
