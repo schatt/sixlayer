@@ -16,7 +16,10 @@
 //
 // This script counts seeds of the current mask: 14 levels under the local
 // mean, and under 93% of that mean. The window is max(21, min(side)/8), odd,
-// with no cap. It does not grow same-level ink or clear a bezel.
+// with no cap. It then grows same-level ink and reports whether a sealed
+// glass is large enough to drop the ink outside it. A downscaled mask is
+// written to build/washed-lcd-mask.png (kept ink black, dropped ink dark
+// gray, sealed glass light gray, outside white).
 
 import CoreGraphics
 import Foundation
@@ -145,3 +148,215 @@ print("window \(window) margin \(margin)")
 print("seeds \(seeds)")
 print("seeds the corner ceiling would drop \(cornerWouldDrop)")
 print("rows with ink \(rowsWithInk)")
+
+let sameInk = 4
+var dark = [Bool](repeating: false, count: pixels.count)
+var reach = [Bool](repeating: false, count: pixels.count)
+for y in 0..<cropH {
+    for x in 0..<cropW {
+        let x0 = max(0, x - radius)
+        let y0 = max(0, y - radius)
+        let x1 = min(cropW, x + radius + 1)
+        let y1 = min(cropH, y + radius + 1)
+        let area = (x1 - x0) * (y1 - y0)
+        let sum = regionSum(x0, y0, x1, y1)
+        let mean = Int(sum / UInt64(max(area, 1)))
+        let pixel = Int(pixels[y * cropW + x])
+        let index = y * cropW + x
+        let underGlass = pixel < mean * 93 / 100
+        dark[index] = underGlass && pixel + margin < mean
+        reach[index] = underGlass
+    }
+}
+var grown = dark
+var growQueue: [(index: Int, level: Int)] = []
+for index in dark.indices where dark[index] {
+    growQueue.append((index, Int(pixels[index])))
+}
+var growHead = 0
+while growHead < growQueue.count {
+    let current = growQueue[growHead]
+    growHead += 1
+    let x = current.index % cropW
+    let y = current.index / cropW
+    for (nx, ny) in [(x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)] {
+        guard nx >= 0, ny >= 0, nx < cropW, ny < cropH else { continue }
+        let next = ny * cropW + nx
+        let level = Int(pixels[next])
+        guard reach[next], !grown[next], abs(level - current.level) <= sameInk else { continue }
+        grown[next] = true
+        growQueue.append((next, current.level))
+    }
+}
+
+var outside = [Bool](repeating: false, count: pixels.count)
+var borderQueue: [Int] = []
+func pushOutside(_ x: Int, _ y: Int) {
+    guard x >= 0, y >= 0, x < cropW, y < cropH else { return }
+    let index = y * cropW + x
+    guard !grown[index], !outside[index] else { return }
+    outside[index] = true
+    borderQueue.append(index)
+}
+for x in 0..<cropW {
+    pushOutside(x, 0)
+    pushOutside(x, cropH - 1)
+}
+for y in 0..<cropH {
+    pushOutside(0, y)
+    pushOutside(cropW - 1, y)
+}
+var borderHead = 0
+while borderHead < borderQueue.count {
+    let index = borderQueue[borderHead]
+    borderHead += 1
+    let x = index % cropW
+    let y = index / cropW
+    pushOutside(x - 1, y)
+    pushOutside(x + 1, y)
+    pushOutside(x, y - 1)
+    pushOutside(x, y + 1)
+}
+
+var seenGlass = [Bool](repeating: false, count: pixels.count)
+var bestArea = 0
+var bestMinX = 0
+var bestMinY = 0
+var bestMaxX = 0
+var bestMaxY = 0
+for start in 0..<pixels.count where !grown[start] && !outside[start] && !seenGlass[start] {
+    var component = [start]
+    seenGlass[start] = true
+    var compHead = 0
+    var minX = start % cropW
+    var maxX = minX
+    var minY = start / cropW
+    var maxY = minY
+    while compHead < component.count {
+        let index = component[compHead]
+        compHead += 1
+        let x = index % cropW
+        let y = index / cropW
+        minX = min(minX, x)
+        maxX = max(maxX, x)
+        minY = min(minY, y)
+        maxY = max(maxY, y)
+        for (nx, ny) in [(x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)] {
+            guard nx >= 0, ny >= 0, nx < cropW, ny < cropH else { continue }
+            let next = ny * cropW + nx
+            guard !grown[next], !outside[next], !seenGlass[next] else { continue }
+            seenGlass[next] = true
+            component.append(next)
+        }
+    }
+    if component.count > bestArea {
+        bestArea = component.count
+        bestMinX = minX
+        bestMinY = minY
+        bestMaxX = maxX
+        bestMaxY = maxY
+    }
+}
+
+let count = pixels.count
+let keepsGlass = bestArea * 8 >= count
+var kept = grown
+var dropped = 0
+if keepsGlass {
+    for index in kept.indices where kept[index] {
+        let x = index % cropW
+        let y = index / cropW
+        if x < bestMinX || x > bestMaxX || y < bestMinY || y > bestMaxY {
+            kept[index] = false
+            dropped += 1
+        }
+    }
+}
+
+var seenInk = [Bool](repeating: false, count: pixels.count)
+var components: [(area: Int, minX: Int, minY: Int, maxX: Int, maxY: Int)] = []
+for start in 0..<pixels.count where kept[start] && !seenInk[start] {
+    var queue = [start]
+    seenInk[start] = true
+    var head = 0
+    var minX = start % cropW
+    var maxX = minX
+    var minY = start / cropW
+    var maxY = minY
+    while head < queue.count {
+        let index = queue[head]
+        head += 1
+        let x = index % cropW
+        let y = index / cropW
+        minX = min(minX, x)
+        maxX = max(maxX, x)
+        minY = min(minY, y)
+        maxY = max(maxY, y)
+        for (nx, ny) in [(x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)] {
+            guard nx >= 0, ny >= 0, nx < cropW, ny < cropH else { continue }
+            let next = ny * cropW + nx
+            guard kept[next], !seenInk[next] else { continue }
+            seenInk[next] = true
+            queue.append(next)
+        }
+    }
+    components.append((queue.count, minX, minY, maxX, maxY))
+}
+components.sort { $0.area > $1.area }
+
+let grownInk = grown.filter { $0 }.count
+let outsideCount = outside.filter { $0 }.count
+print("grown ink \(grownInk)")
+print("outside non-ink \(outsideCount)")
+print("best sealed area \(bestArea) box \(bestMinX),\(bestMinY) \(bestMaxX - bestMinX + 1)x\(bestMaxY - bestMinY + 1)")
+print("keeps glass \(keepsGlass) dropped ink \(dropped)")
+print("components \(components.count)")
+for component in components.prefix(8) {
+    let w = component.maxX - component.minX + 1
+    let h = component.maxY - component.minY + 1
+    print("component \(component.area) @\(component.minX),\(component.minY) \(w)x\(h)")
+}
+
+let scale = 4
+let outW = max(1, (cropW + scale - 1) / scale)
+let outH = max(1, (cropH + scale - 1) / scale)
+var preview = [UInt8](repeating: 255, count: outW * outH)
+for y in 0..<cropH {
+    for x in 0..<cropW {
+        let index = y * cropW + x
+        let value: UInt8
+        if kept[index] {
+            value = 0
+        } else if grown[index] {
+            value = 70
+        } else if !outside[index] {
+            value = 180
+        } else {
+            value = 255
+        }
+        let out = (y / scale) * outW + (x / scale)
+        if value < preview[out] { preview[out] = value }
+    }
+}
+try? FileManager.default.createDirectory(atPath: "build", withIntermediateDirectories: true)
+let previewURL = URL(fileURLWithPath: "build/washed-lcd-mask.png")
+if let provider = CGDataProvider(data: Data(preview) as CFData),
+   let cg = CGImage(
+    width: outW,
+    height: outH,
+    bitsPerComponent: 8,
+    bitsPerPixel: 8,
+    bytesPerRow: outW,
+    space: CGColorSpaceCreateDeviceGray(),
+    bitmapInfo: CGImageAlphaInfo.none,
+    provider: provider,
+    decode: nil,
+    shouldInterpolate: false,
+    intent: .defaultIntent
+   ),
+   let destination = CGImageDestinationCreateWithURL(previewURL as CFURL, "public.png" as CFString, 1, nil) {
+    CGImageDestinationAddImage(destination, cg, nil)
+    if CGImageDestinationFinalize(destination) {
+        print("mask \(previewURL.path) \(outW)x\(outH)")
+    }
+}
