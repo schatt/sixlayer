@@ -190,6 +190,22 @@ struct OCRSevenSegment576Tests {
         #expect(decode(image).extractedText == "31.25")
     }
 
+    @Test func insetBezelStaysOutsideTheGlass() {
+        // The frame is inside the crop. It does not touch the image edge,
+        // so a border clear leaves it wrapped around the digits.
+        let image = SegmentPanel.render(
+            rows: [atoms("32.88"), atoms("8.022")],
+            inkLevel: 140,
+            backgroundLevel: 200,
+            bezelLevel: 123,
+            bezelWidth: 8,
+            outerMargin: 24
+        )
+        let result = decode(image)
+        #expect(result.extractedText == "32.88\n8.022")
+        #expect(segmentTexts(result) == ["32.88", "8.022"])
+    }
+
     @Test func bezelDarkerThanTheGlassKeepsWashedDigits() {
         // Scenario 1 hand crop, 2026-10-22: corners 123, glass ~200, digit cores ~140.
         // The corner ceiling is 114, so this ink is dropped even though it is darker than the glass.
@@ -603,6 +619,7 @@ private enum SegmentPanel {
         backgroundLevel: UInt8? = nil,
         bezelLevel: UInt8? = nil,
         bezelWidth: Int = 0,
+        outerMargin: Int = 0,
         scale: Int = 1
     ) -> CGImage {
         let laid = layout(rows: rows, padding: padding)
@@ -646,6 +663,19 @@ private enum SegmentPanel {
             pixels = grown.pixels
             width = grown.width
             height = grown.height
+        }
+        if outerMargin > 0 {
+            let paddedW = width + outerMargin * 2
+            let paddedH = height + outerMargin * 2
+            var padded = [UInt8](repeating: background, count: paddedW * paddedH)
+            for y in 0..<height {
+                for x in 0..<width {
+                    padded[(y + outerMargin) * paddedW + (x + outerMargin)] = pixels[y * width + x]
+                }
+            }
+            pixels = padded
+            width = paddedW
+            height = paddedH
         }
         return image(pixels: pixels, width: width, height: height)
     }
