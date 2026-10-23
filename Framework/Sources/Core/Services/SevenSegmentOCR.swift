@@ -622,6 +622,10 @@ private extension GrayBuffer {
             : merge(foundBands, whenGapBelow: max(1, cellHeight / 2))
         return splitBands.compactMap { band -> [Cell]? in
             let found = cells(in: band, mask: glyphs, buffer: buffer, bandIndex: 0, darkInk: primaryIsDark)
+            if buffer.width > 1500 {
+                let desc = found.map { "\($0.character)@\($0.minX)-\($0.maxX),\($0.minY)-\($0.maxY)" }.joined(separator: " ")
+                fputs("cells \(band.0)-\(band.1) \(desc)\n", stderr)
+            }
             let marks = opened
                 ? []
                 : oppositeMarks(in: band, secondary: paintedMarks, existing: found, buffer: buffer, bandIndex: 0)
