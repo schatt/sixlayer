@@ -557,26 +557,19 @@ private extension GrayBuffer {
         let masks = (dark: clearingBorderComponents(sealed.dark), light: clearingBorderComponents(sealed.light))
         let sealedCore = (dark: keepingInteriorInk(raw.darkCore), light: keepingInteriorInk(raw.lightCore))
         let cores = (dark: clearingBorderComponents(sealedCore.dark), light: clearingBorderComponents(sealedCore.light))
-        let primaryIsDark = prefersDark(masks.dark, masks.light)
-        let loose = primaryIsDark ? masks.dark : masks.light
-        let core = primaryIsDark ? cores.dark : cores.light
-        let looseBands = runs(loose.rowSums)
-        let looseTall = looseBands.map { $0.1 - $0.0 }.max() ?? 0
-        // A bezel edge keeps the full-width core in one tall band. The digit
-        // columns are the ones with some core but not a rail. Limit to those
-        // before deciding whether the core opens shorter rows.
-        let span = digitColumnSpan(core)
-        let limitedCore = span.map { cleared($0, mask: core) } ?? core
-        let limitedBands = runs(limitedCore.rowSums)
-        let limitedTall = limitedBands.map { $0.1 - $0.0 }.max() ?? 0
-        let looseFillsTheImage = looseTall * 100 > buffer.height * 70
-        let coreOpensShorterRows = span != nil && !limitedBands.isEmpty && limitedTall * 2 < looseTall
-        fputs(
-            "span \(String(describing: span)) looseTall \(looseTall) limitedTall \(limitedTall) bands \(limitedBands.count) open \(coreOpensShorterRows) dark \(primaryIsDark)\n",
-            stderr
-        )
-        let bandSource = looseFillsTheImage && coreOpensShorterRows ? limitedCore : loose
-        let glyphs = looseFillsTheImage && coreOpensShorterRows ? cleared(span!, mask: loose) : loose
+        let darkChoice = polarity(isDark: true, loose: masks.dark, core: cores.dark)
+        let lightChoice = polarity(isDark: false, loose: masks.light, core: cores.light)
+        let chosen: (isDark: Bool, glyphs: Mask, bandSource: Mask)
+        if darkChoice.opens != lightChoice.opens {
+            chosen = darkChoice.opens ? darkChoice.reading : lightChoice.reading
+        } else if prefersDark(masks.dark, masks.light) {
+            chosen = darkChoice.reading
+        } else {
+            chosen = lightChoice.reading
+        }
+        let primaryIsDark = chosen.isDark
+        let glyphs = chosen.glyphs
+        let bandSource = chosen.bandSource
         let paintedMarks = buffer.extremeMarkMask()
         let mergedBands = merge(runs(bandSource.rowSums), whenGapBelow: 0)
         let measured = mergedBands.map { band -> (band: (Int, Int), cells: [Cell]) in
@@ -831,6 +824,22 @@ private func merge(_ bands: [(Int, Int)], whenGapBelow limit: Int) -> [(Int, Int
         }
     }
     return merged
+}
+
+private func polarity(
+    isDark: Bool,
+    loose: Mask,
+    core: Mask
+) -> (opens: Bool, reading: (isDark: Bool, glyphs: Mask, bandSource: Mask)) {
+    let span = digitColumnSpan(core)
+    let limitedCore = span.map { cleared($0, mask: core) } ?? core
+    let looseTall = runs(loose.rowSums).map { $0.1 - $0.0 }.max() ?? 0
+    let limitedTall = runs(limitedCore.rowSums).map { $0.1 - $0.0 }.max() ?? 0
+    let fills = looseTall * 100 > loose.height * 70
+    guard let span, fills, limitedTall * 2 < looseTall else {
+        return (false, (isDark, loose, loose))
+    }
+    return (true, (isDark, cleared(span, mask: loose), limitedCore))
 }
 
 private func digitColumnSpan(_ mask: Mask) -> (Int, Int)? {
