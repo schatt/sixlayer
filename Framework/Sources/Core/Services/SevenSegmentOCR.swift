@@ -155,9 +155,10 @@ private struct GrayBuffer {
             return left.element.confidence < right.element.confidence
         }?.offset ?? 0
         guard bestTurns != 0 else { return buffer }
-        // A small tilt still belongs to the fine deskew. Only a quarter turn
-        // that reads at least two more wide digits is allowed to win.
-        guard scores[bestTurns].wideDigits >= scores[0].wideDigits + 2 else { return buffer }
+        // A small tilt still belongs to the fine deskew. A couple of wide
+        // false digits must not spin an upright panel onto its side.
+        let enough = scores[bestTurns].wideDigits >= max(scores[0].wideDigits + 2, 4)
+        guard enough else { return buffer }
         return buffer.rotated(degrees: Double(bestTurns * 90))
     }
 
@@ -839,14 +840,19 @@ private func polarity(
     guard let span, fills, limitedTall * 2 < looseTall else {
         return (false, (isDark, loose, loose))
     }
-    return (true, (isDark, cleared(span, mask: loose), limitedCore))
+    // The loose mask still fills the gap inside the span. The core is the
+    // stroke, so both the rows and the glyphs come from it.
+    return (true, (isDark, limitedCore, limitedCore))
 }
 
 private func digitColumnSpan(_ mask: Mask) -> (Int, Int)? {
     let sums = columnSums(mask, y0: 0, y1: mask.height, width: mask.width)
+    // A low floor keeps bezel-edge columns, and those columns join the digit
+    // rows back into one band. Stroke columns carry more of the core.
+    let floor = max(12, mask.height / 18)
     let active = sums.indices.filter { index in
         let sum = sums[index]
-        return sum >= 12 && sum * 2 < mask.height
+        return sum >= floor && sum * 2 < mask.height
     }
     guard !active.isEmpty else { return nil }
     let gapLimit = max(8, mask.height / 10)
