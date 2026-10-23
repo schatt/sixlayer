@@ -549,6 +549,33 @@ for y in 0...cropH {
     }
 }
 
+let digitX0 = 1169
+let digitX1 = 1700
+for (label, y0, y1) in [("digit", 690, 760), ("gap", 790, 850), ("digit2", 900, 970)] {
+    var levels: [Int] = []
+    var means: [Int] = []
+    var y = y0
+    while y < y1 {
+        var x = digitX0
+        while x < digitX1 {
+            let x0 = max(0, x - radius)
+            let yy0 = max(0, y - radius)
+            let x1 = min(cropW, x + radius + 1)
+            let yy1 = min(cropH, y + radius + 1)
+            let area = (x1 - x0) * (yy1 - yy0)
+            let mean = Int(regionSum(x0, yy0, x1, yy1) / UInt64(max(area, 1)))
+            levels.append(Int(pixels[y * cropW + x]))
+            means.append(mean)
+            x += 8
+        }
+        y += 4
+    }
+    levels.sort()
+    means.sort()
+    let mid = levels.count / 2
+    print("\(label) y \(y0)-\(y1) pixel p10 \(levels[levels.count / 10]) p50 \(levels[mid]) mean p50 \(means[mid])")
+}
+
 let scale = 4
 let outW = max(1, (cropW + scale - 1) / scale)
 let outH = max(1, (cropH + scale - 1) / scale)
