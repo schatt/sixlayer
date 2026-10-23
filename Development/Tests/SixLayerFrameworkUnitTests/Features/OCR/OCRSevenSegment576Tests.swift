@@ -278,6 +278,18 @@ struct OCRSevenSegment576Tests {
         #expect(decode(tilted, maximum: 6).extractedText == "31.25")
     }
 
+    @Test func quarterTurnStillReadsTheDigits() {
+        // The scenario 1 crop stores the LCD on its side. A few degrees of
+        // deskew cannot stand that up.
+        let image = SegmentPanel.render(
+            rows: [atoms("32.88"), atoms("8.022")],
+            tiltDegrees: 90
+        )
+        let result = decode(image)
+        #expect(result.extractedText == "32.88\n8.022")
+        #expect(segmentTexts(result) == ["32.88", "8.022"])
+    }
+
     @Test func decoderSourceDoesNotNameFields() throws {
         let source = try decoderSource()
         for word in ["This Sale", "Gallons", "FuelPurchase", "sale"] {
