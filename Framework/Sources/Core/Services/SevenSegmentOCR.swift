@@ -113,9 +113,10 @@ private struct GrayBuffer {
     }
 
     static func deskew(_ buffer: GrayBuffer, maximumDegrees: Double) -> GrayBuffer {
+        let turned = standingUp(buffer)
         let limit = Int(max(0, maximumDegrees).rounded(.down))
-        guard limit > 0 else { return buffer }
-        let small = buffer.fitted(maxSide: 280)
+        guard limit > 0 else { return turned }
+        let small = turned.fitted(maxSide: 280)
         let uprightScore = score(small)
         var bestAngle = 0
         var bestScore = uprightScore
@@ -127,9 +128,30 @@ private struct GrayBuffer {
             }
         }
         if bestAngle == 0 || uprightScore * 100 >= bestScore * 98 {
-            return buffer
+            return turned
         }
-        return buffer.rotated(degrees: Double(bestAngle))
+        return turned.rotated(degrees: Double(bestAngle))
+    }
+
+    /// A pump photo can store the LCD on its side. A few degrees of deskew
+    /// never reaches that. Pick the quarter turn that reads the most digits.
+    private static func standingUp(_ buffer: GrayBuffer) -> GrayBuffer {
+        let small = buffer.fitted(maxSide: 480)
+        let counts = (0...3).map { turns -> Int in
+            let sample = turns == 0 ? small : small.rotated(degrees: Double(turns * 90))
+            return digitCount(in: sample)
+        }
+        let bestTurns = counts.enumerated().max { $0.element < $1.element }?.offset ?? 0
+        guard bestTurns != 0 else { return buffer }
+        return buffer.rotated(degrees: Double(bestTurns * 90))
+    }
+
+    private static func digitCount(in buffer: GrayBuffer) -> Int {
+        fragments(in: buffer).reduce(0) { partial, row in
+            partial + row.reduce(0) { count, text in
+                count + text.text.reduce(0) { $0 + ($1.isNumber ? 1 : 0) }
+            }
+        }
     }
 
     private static func cells(
