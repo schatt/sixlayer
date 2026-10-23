@@ -367,13 +367,15 @@ private struct GrayBuffer {
         }
     }
 
-    private func masks() -> (dark: Mask, light: Mask) {
+    private func masks() -> (dark: Mask, light: Mask, darkCore: Mask, lightCore: Mask) {
         let window = oddWindow(min(width, height))
         let radius = window / 2
         let table = integral(pixels, width: width, height: height)
         var dark = [Bool](repeating: false, count: pixels.count)
         var darkReach = [Bool](repeating: false, count: pixels.count)
+        var darkCore = [Bool](repeating: false, count: pixels.count)
         var light = [Bool](repeating: false, count: pixels.count)
+        var lightCore = [Bool](repeating: false, count: pixels.count)
         for y in 0..<height {
             for x in 0..<width {
                 let x0 = max(0, x - radius)
@@ -391,11 +393,18 @@ private struct GrayBuffer {
                 let underGlass = pixel < mean * 93 / 100
                 dark[index] = underGlass && pixel + inkMargin < mean
                 darkReach[index] = underGlass
+                darkCore[index] = underGlass && pixel + coreMargin < mean
                 light[index] = pixel > mean + inkMargin
+                lightCore[index] = pixel > mean + coreMargin
             }
         }
         dark = grow(dark, within: darkReach, pixels: pixels, width: width)
-        return (Mask(bits: dark, width: width, height: height), Mask(bits: light, width: width, height: height))
+        return (
+            Mask(bits: dark, width: width, height: height),
+            Mask(bits: light, width: width, height: height),
+            Mask(bits: darkCore, width: width, height: height),
+            Mask(bits: lightCore, width: width, height: height)
+        )
     }
 
     private func fitted(maxSide: Int) -> GrayBuffer {
@@ -543,8 +552,14 @@ private extension GrayBuffer {
         let sealed = (dark: keepingInteriorInk(raw.dark), light: keepingInteriorInk(raw.light))
         // A dark bezel that does touch the crop edge would outline the glass as one zero.
         let masks = (dark: clearingBorderComponents(sealed.dark), light: clearingBorderComponents(sealed.light))
+        let sealedCore = (dark: keepingInteriorInk(raw.darkCore), light: keepingInteriorInk(raw.lightCore))
+        let cores = (dark: clearingBorderComponents(sealedCore.dark), light: clearingBorderComponents(sealedCore.light))
         let primaryIsDark = prefersDark(masks.dark, masks.light)
-        let primary = primaryIsDark ? masks.dark : masks.light
+        let loose = primaryIsDark ? masks.dark : masks.light
+        let core = primaryIsDark ? cores.dark : cores.light
+        // The loose mask marks glare in the gap and glues the two digit rows
+        // into one band. The core is only pixels far under the local glass.
+        let primary = score(core) > score(loose) ? core : loose
         let paintedMarks = buffer.extremeMarkMask()
         let mergedBands = merge(runs(primary.rowSums), whenGapBelow: 0)
         let measured = mergedBands.map { band -> (band: (Int, Int), cells: [Cell]) in
@@ -886,6 +901,7 @@ private func verticalRuns(_ mask: Mask, box: PixelBox, width: Int) -> [(Int, Int
 }
 
 private let inkMargin = 14
+private let coreMargin = 48
 private let sameInk = 4
 
 private func markIsInk(_ mask: Mask, box: PixelBox, width: Int, buffer: GrayBuffer, darkInk: Bool) -> Bool {
