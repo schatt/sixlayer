@@ -130,7 +130,13 @@ private struct GrayBuffer {
         if bestAngle == 0 || uprightScore * 100 >= bestScore * 98 {
             return turned
         }
-        return turned.rotated(degrees: Double(bestAngle))
+        let tilted = turned.rotated(degrees: Double(bestAngle))
+        // The loose mask can prefer a tilt that smears the digit rows back
+        // together. Keep the upright crop when that tilt closes the core.
+        if coreStaysOpen(turned), !coreStaysOpen(tilted) {
+            return turned
+        }
+        return tilted
     }
 
     /// A pump photo can store the LCD on its side. A few degrees of deskew
@@ -580,7 +586,9 @@ private extension GrayBuffer {
         let primaryIsDark = chosen.isDark
         let glyphs = chosen.glyphs
         let bandSource = chosen.bandSource
-        let rawBands = runs(bandSource.rowSums)
+        let opened = darkChoice.opens || lightChoice.opens
+        let bandSums = opened ? digitRowSums(bandSource.rowSums) : bandSource.rowSums
+        let rawBands = runs(bandSums)
         let tallBands = rawBands.filter { ($0.1 - $0.0) * 20 >= buffer.height }
         let bandText = tallBands.map { "\($0.0)-\($0.1)" }.joined(separator: " ")
         fputs(
@@ -588,13 +596,15 @@ private extension GrayBuffer {
             stderr
         )
         let paintedMarks = buffer.extremeMarkMask()
-        let mergedBands = merge(runs(bandSource.rowSums), whenGapBelow: 0)
+        let rowGap = opened ? max(2, buffer.height / 80) : 0
+        let mergedBands = merge(runs(bandSums), whenGapBelow: rowGap)
         let measured = mergedBands.map { band -> (band: (Int, Int), cells: [Cell]) in
             (band, cells(in: band, mask: glyphs, buffer: buffer, bandIndex: 0, darkInk: primaryIsDark))
         }
         let tallHeights = measured.flatMap(\.cells).filter { $0.height > 0 }.map(\.height).sorted()
         let cellHeight = tallHeights.isEmpty ? 1 : tallHeights[tallHeights.count / 2]
-        let splitBands = merge(runs(bandSource.rowSums), whenGapBelow: max(1, cellHeight / 2))
+        let splitLimit = opened ? rowGap : max(1, cellHeight / 2)
+        let splitBands = merge(runs(bandSums), whenGapBelow: splitLimit)
         return splitBands.compactMap { band -> [Cell]? in
             let found = cells(in: band, mask: glyphs, buffer: buffer, bandIndex: 0, darkInk: primaryIsDark)
             let marks = oppositeMarks(in: band, secondary: paintedMarks, existing: found, buffer: buffer, bandIndex: 0)
@@ -806,6 +816,25 @@ private func frameThickness(_ pixels: [Int], width: Int, height: Int) -> Int {
     }
     guard !lengths.isEmpty else { return 0 }
     return lengths.sorted()[lengths.count / 2]
+}
+
+private func digitRowSums(_ sums: [Int]) -> [Int] {
+    let peak = sums.max() ?? 0
+    // A gap row on a washed LCD still holds a few core pixels. Digit rows
+    // hold many more. Leaving the gap at sum > 0 joins the two lines.
+    let floor = max(8, peak / 20)
+    return sums.map { $0 >= floor ? $0 : 0 }
+}
+
+private func coreStaysOpen(_ buffer: GrayBuffer) -> Bool {
+    let raw = buffer.masks()
+    let sealed = (dark: keepingInteriorInk(raw.dark), light: keepingInteriorInk(raw.light))
+    let masks = (dark: clearingBorderComponents(sealed.dark), light: clearingBorderComponents(sealed.light))
+    let sealedCore = (dark: keepingInteriorInk(raw.darkCore), light: keepingInteriorInk(raw.lightCore))
+    let cores = (dark: clearingBorderComponents(sealedCore.dark), light: clearingBorderComponents(sealedCore.light))
+    let dark = polarity(isDark: true, loose: masks.dark, core: cores.dark)
+    let light = polarity(isDark: false, loose: masks.light, core: cores.light)
+    return dark.opens || light.opens
 }
 
 private func runs(_ sums: [Int]) -> [(Int, Int)] {
