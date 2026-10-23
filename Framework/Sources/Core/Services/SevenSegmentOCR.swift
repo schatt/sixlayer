@@ -832,12 +832,30 @@ private func digitColumnSpan(_ mask: Mask) -> (Int, Int)? {
     let sums = columnSums(mask, y0: 0, y1: mask.height, width: mask.width)
     let active = sums.indices.filter { index in
         let sum = sums[index]
-        return sum >= 12 && sum * 5 < mask.height
+        return sum >= 12 && sum * 2 < mask.height
     }
-    guard let first = active.first, let last = active.last else { return nil }
-    let span = last - first
+    guard !active.isEmpty else { return nil }
+    let gapLimit = max(8, mask.height / 10)
+    var runs: [(start: Int, end: Int, ink: Int)] = []
+    var start = active[0]
+    var end = active[0]
+    var ink = sums[active[0]]
+    for index in active.dropFirst() {
+        if index - end <= gapLimit {
+            end = index
+            ink += sums[index]
+        } else {
+            runs.append((start, end, ink))
+            start = index
+            end = index
+            ink = sums[index]
+        }
+    }
+    runs.append((start, end, ink))
+    guard let best = runs.max(by: { $0.ink < $1.ink }) else { return nil }
+    let span = best.end - best.start
     guard span > mask.height / 10, span * 100 < mask.width * 80 else { return nil }
-    return (first, last + 1)
+    return (best.start, best.end + 1)
 }
 
 private func cleared(_ span: (Int, Int), mask: Mask) -> Mask {
