@@ -154,14 +154,12 @@ private struct GrayBuffer {
             }
             return left.element.confidence < right.element.confidence
         }?.offset ?? 0
-        guard bestTurns != 0 else {
-            fputs("standing \(buffer.width)x\(buffer.height) wide=\(scores.map(\.wideDigits)) best=0\n", stderr)
-            return buffer
-        }
+        let lines = scores.map { "\($0.wideDigits):\($0.text)" }.joined(separator: " | ")
+        fputs("standing \(buffer.width)x\(buffer.height) \(lines) best=\(bestTurns)\n", stderr)
+        guard bestTurns != 0 else { return buffer }
         // A small tilt still belongs to the fine deskew. A couple of wide
         // false digits must not spin an upright panel onto its side.
         let enough = scores[bestTurns].wideDigits >= max(scores[0].wideDigits + 2, 4)
-        fputs("standing \(buffer.width)x\(buffer.height) wide=\(scores.map(\.wideDigits)) best=\(bestTurns) enough=\(enough)\n", stderr)
         guard enough else { return buffer }
         return buffer.rotated(degrees: Double(bestTurns * 90))
     }
@@ -171,12 +169,14 @@ private struct GrayBuffer {
         var marksBelow: Int
         var rowVariance: Int
         var confidence: Float
+        var text: String
     }
 
     /// A real digit is wider than the narrow slice the decoder calls "1".
     /// A decimal sits under that digit, so an upside-down read puts it above.
     private static func orientationScore(in buffer: GrayBuffer) -> OrientationScore {
-        let placed = readRows(in: buffer).flatMap { row -> [(cell: Cell, markBelow: Bool)] in
+        let rows = readRows(in: buffer)
+        let placed = rows.flatMap { row -> [(cell: Cell, markBelow: Bool)] in
             let tall = row.filter { $0.character.isNumber && $0.height > 0 }
             let digitMid = median(tall.map { ($0.minY + $0.maxY) / 2 })
             return row.map { cell in
@@ -197,7 +197,8 @@ private struct GrayBuffer {
             wideDigits: wideDigits,
             marksBelow: placed.filter(\.markBelow).count,
             rowVariance: score(buffer),
-            confidence: placed.reduce(Float(0)) { $0 + $1.cell.confidence }
+            confidence: placed.reduce(Float(0)) { $0 + $1.cell.confidence },
+            text: rows.map { $0.map(\.character).joined() }.joined(separator: "/")
         )
     }
 
