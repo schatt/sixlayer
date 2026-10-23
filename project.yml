@@ -46,7 +46,8 @@ settings:
 packages:
   ViewInspector:
     url: https://github.com/nalexn/ViewInspector
-    from: "0.10.6"
+    # 0.10.6 is a branch. There is no 0.10.6 tag, so `from:` cannot resolve.
+    branch: "0.10.6"
 
 targets:
   # Main framework target - supports both iOS and macOS
