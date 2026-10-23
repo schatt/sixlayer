@@ -137,20 +137,54 @@ private struct GrayBuffer {
     /// never reaches that. Pick the quarter turn that reads the most digits.
     private static func standingUp(_ buffer: GrayBuffer) -> GrayBuffer {
         let small = buffer.fitted(maxSide: 480)
-        let counts = (0...3).map { turns -> Int in
+        let scores = (0...3).map { turns -> OrientationScore in
             let sample = turns == 0 ? small : small.rotated(degrees: Double(turns * 90))
-            return digitCount(in: sample)
+            return orientationScore(in: sample)
         }
-        let bestTurns = counts.enumerated().max { $0.element < $1.element }?.offset ?? 0
+        let bestTurns = scores.enumerated().max { left, right in
+            if left.element.digits != right.element.digits {
+                return left.element.digits < right.element.digits
+            }
+            if left.element.marksBelow != right.element.marksBelow {
+                return left.element.marksBelow < right.element.marksBelow
+            }
+            return left.element.confidence < right.element.confidence
+        }?.offset ?? 0
         guard bestTurns != 0 else { return buffer }
         return buffer.rotated(degrees: Double(bestTurns * 90))
     }
 
-    private static func digitCount(in buffer: GrayBuffer) -> Int {
-        fragments(in: buffer).reduce(0) { partial, row in
-            partial + row.reduce(0) { count, text in
-                count + text.text.reduce(0) { $0 + ($1.isNumber ? 1 : 0) }
+    private struct OrientationScore {
+        var digits: Int
+        var confidence: Float
+        var marksBelow: Int
+    }
+
+    /// Digits break a tie between upright and upside down: a decimal sits
+    /// under the digit, so the upside-down read puts it above.
+    private static func orientationScore(in buffer: GrayBuffer) -> OrientationScore {
+        readRows(in: buffer).reduce(OrientationScore(digits: 0, confidence: 0, marksBelow: 0)) { partial, row in
+            let tall = row.filter { $0.character.isNumber && $0.height > 0 }
+            let digitMid = median(tall.map { ($0.minY + $0.maxY) / 2 })
+            let added = row.reduce(OrientationScore(digits: 0, confidence: 0, marksBelow: 0)) { count, cell in
+                let markBelow: Int
+                if let digitMid, cell.character == "." || cell.character == "," {
+                    let mid = (cell.minY + cell.maxY) / 2
+                    markBelow = mid > digitMid ? 1 : 0
+                } else {
+                    markBelow = 0
+                }
+                return OrientationScore(
+                    digits: count.digits + (cell.character.isNumber ? 1 : 0),
+                    confidence: count.confidence + cell.confidence,
+                    marksBelow: count.marksBelow + markBelow
+                )
             }
+            return OrientationScore(
+                digits: partial.digits + added.digits,
+                confidence: partial.confidence + added.confidence,
+                marksBelow: partial.marksBelow + added.marksBelow
+            )
         }
     }
 
@@ -492,6 +526,13 @@ private func recognizedGroups(_ cells: [Cell], width: Int, height: Int) -> [OCRR
 
 private extension GrayBuffer {
     static func fragments(in buffer: GrayBuffer) -> [[OCRRecognizedText]] {
+        readRows(in: buffer).compactMap { row in
+            let texts = recognizedGroups(row, width: buffer.width, height: buffer.height)
+            return texts.isEmpty ? nil : texts
+        }
+    }
+
+    static func readRows(in buffer: GrayBuffer) -> [[Cell]] {
         let raw = buffer.masks()
         // A frame inside the crop seals the glass. Ink outside that glass is the bezel.
         let sealed = (dark: keepingInteriorInk(raw.dark), light: keepingInteriorInk(raw.light))
@@ -507,11 +548,11 @@ private extension GrayBuffer {
         let tallHeights = measured.flatMap(\.cells).filter { $0.height > 0 }.map(\.height).sorted()
         let cellHeight = tallHeights.isEmpty ? 1 : tallHeights[tallHeights.count / 2]
         let splitBands = merge(runs(primary.rowSums), whenGapBelow: max(1, cellHeight / 2))
-        return splitBands.compactMap { band -> [OCRRecognizedText]? in
+        return splitBands.compactMap { band -> [Cell]? in
             let found = cells(in: band, mask: primary, buffer: buffer, bandIndex: 0, darkInk: primaryIsDark)
             let marks = oppositeMarks(in: band, secondary: paintedMarks, existing: found, buffer: buffer, bandIndex: 0)
-            let texts = recognizedGroups(found + marks, width: buffer.width, height: buffer.height)
-            return texts.isEmpty ? nil : texts
+            let row = found + marks
+            return row.isEmpty ? nil : row
         }
     }
 }
