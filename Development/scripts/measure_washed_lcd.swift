@@ -631,6 +631,65 @@ print("core columns active \(active.count) rail \(half) quiet \(quiet)")
 if let first = active.first, let last = active.last {
     print("core active ends \(first)-\(last) ink \(active.reduce(0) { $0 + coreSums[$1] })")
 }
+for floor in [12, 30, 60, 100] {
+    let cols = coreSums.indices.filter { coreSums[$0] >= floor && coreSums[$0] * 2 < cropH }
+    guard !cols.isEmpty else {
+        print("floor \(floor) no columns")
+        continue
+    }
+    let gapLimit = max(8, cropH / 10)
+    var bestStart = cols[0]
+    var bestEnd = cols[0]
+    var bestInk = 0
+    var start = cols[0]
+    var end = cols[0]
+    var ink = coreSums[cols[0]]
+    func consider() {
+        if ink > bestInk {
+            bestInk = ink
+            bestStart = start
+            bestEnd = end
+        }
+    }
+    for index in cols.dropFirst() {
+        if index - end <= gapLimit {
+            end = index
+            ink += coreSums[index]
+        } else {
+            consider()
+            start = index
+            end = index
+            ink = coreSums[index]
+        }
+    }
+    consider()
+    var rowInk = [Int](repeating: 0, count: cropH)
+    for x in bestStart...bestEnd where coreSums[x] >= floor {
+        for y in 0..<cropH {
+            let x0 = max(0, x - radius)
+            let y0 = max(0, y - radius)
+            let x1 = min(cropW, x + radius + 1)
+            let y1 = min(cropH, y + radius + 1)
+            let area = (x1 - x0) * (y1 - y0)
+            let mean = Int(regionSum(x0, y0, x1, y1) / UInt64(max(area, 1)))
+            let pixel = Int(pixels[y * cropW + x])
+            if pixel + 48 < mean && pixel < mean * 93 / 100 {
+                rowInk[y] += 1
+            }
+        }
+    }
+    var bands: [String] = []
+    var bandStart: Int?
+    for y in 0...cropH {
+        if y < cropH && rowInk[y] >= 8 {
+            if bandStart == nil { bandStart = y }
+        } else if let open = bandStart {
+            if y - open >= 40 { bands.append("\(open)-\(y)") }
+            bandStart = nil
+        }
+    }
+    print("floor \(floor) span \(bestStart)-\(bestEnd) ink \(bestInk) bands \(bands.joined(separator: " "))")
+}
 
 let scale = 4
 let outW = max(1, (cropW + scale - 1) / scale)
