@@ -911,13 +911,15 @@ private func polarity(
 private func digitColumnSpan(_ mask: Mask) -> (Int, Int)? {
     let profile = columnProfile(mask)
     let sums = profile.sums
-    // Stroke columns are the core. A faint digit still counts when its
-    // longest run is a stroke, not a bezel that joins the rows.
-    let floor = max(8, mask.height / 40)
-    let runLimit = max(floor + 1, mask.height / 4)
+    // A low floor pulls in bezel columns and the rows become one band.
+    // Stroke columns use the high floor. Faint digits to the right of that
+    // run are added only while they stay a short stroke.
+    let floor = max(12, mask.height / 18)
+    let faintFloor = max(8, mask.height / 40)
+    let runLimit = max(faintFloor + 1, mask.height / 4)
     let active = sums.indices.filter { index in
         let sum = sums[index]
-        return sum >= floor && sum * 2 < mask.height && profile.longest[index] < runLimit
+        return sum >= floor && sum * 2 < mask.height
     }
     guard !active.isEmpty else { return nil }
     let gapLimit = max(8, mask.height / 10)
@@ -942,7 +944,21 @@ private func digitColumnSpan(_ mask: Mask) -> (Int, Int)? {
         return span > mask.height / 10 && span * 100 < mask.width * 80
     }
     guard let best = wide.max(by: { $0.ink < $1.ink }) else { return nil }
-    return (best.start, best.end + 1)
+    var end = best.end
+    var gap = 0
+    var x = end + 1
+    while x < mask.width && gap <= 40 {
+        let sum = sums[x]
+        let faint = sum >= faintFloor && sum * 2 < mask.height && profile.longest[x] < runLimit
+        if faint {
+            end = x
+            gap = 0
+        } else {
+            gap += 1
+        }
+        x += 1
+    }
+    return (best.start, end + 1)
 }
 
 private func dilate(_ mask: Mask, radius: Int) -> Mask {
