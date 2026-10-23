@@ -9,7 +9,7 @@
 //     build/decode_washed_lcd <photo.jpg> [x y w h]
 //
 // Omit the crop to use the whole image. Scenario 1 hand crop:
-//   x=775 y=785 w=2390 h=1130
+//   x=775 y=785 w=2390 h=1130 [deskew degrees]
 
 import CoreGraphics
 import Foundation
@@ -17,8 +17,8 @@ import ImageIO
 import SixLayerFramework
 
 let args = CommandLine.arguments
-guard args.count == 2 || args.count == 6 else {
-    fputs("usage: decode_washed_lcd <image> [x y w h]\n", stderr)
+guard args.count == 2 || args.count == 6 || args.count == 7 else {
+    fputs("usage: decode_washed_lcd <image> [x y w h [degrees]]\n", stderr)
     exit(2)
 }
 
@@ -95,7 +95,10 @@ guard let provider = CGDataProvider(data: data),
 }
 
 let started = Date()
-let result = SevenSegmentOCR.decode(cgImage: gray)
+let result = SevenSegmentOCR.decode(
+    cgImage: gray,
+    deskewMaximumDegrees: args.count == 7 ? Double(args[6]) ?? 3 : 3
+)
 let seconds = Date().timeIntervalSince(started)
 print("image \(fullW)x\(fullH) crop \(cropX),\(cropY) \(cropW)x\(cropH) \(String(format: "%.2f", seconds))s")
 print("confidence \(result.confidence)")
