@@ -181,7 +181,7 @@ private struct GrayBuffer {
         // upright panel. A real quarter turn is mostly digits.
         let glyphs = scores[bestTurns].text.filter { $0 != "/" }
         let numbers = glyphs.filter(\.isNumber).count
-        let mostlyNumbers = !glyphs.isEmpty && numbers * 2 >= glyphs.count
+        let mostlyNumbers = !glyphs.isEmpty && numbers * 2 > glyphs.count
         let enough = mostlyNumbers && scores[bestTurns].wideDigits >= max(scores[0].wideDigits + 2, 4)
         guard enough else { return buffer }
         return buffer.rotated(degrees: Double(bestTurns * 90))
