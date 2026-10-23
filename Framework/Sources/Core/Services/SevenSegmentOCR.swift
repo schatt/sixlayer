@@ -944,21 +944,21 @@ private func digitColumnSpan(_ mask: Mask) -> (Int, Int)? {
         return span > mask.height / 10 && span * 100 < mask.width * 80
     }
     guard let best = wide.max(by: { $0.ink < $1.ink }) else { return nil }
-    var end = best.end
+    var extended = best.end
     var gap = 0
-    var x = end + 1
+    var x = extended + 1
     while x < mask.width && gap <= 40 {
         let sum = sums[x]
         let faint = sum >= faintFloor && sum * 2 < mask.height && profile.longest[x] < runLimit
         if faint {
-            end = x
+            extended = x
             gap = 0
         } else {
             gap += 1
         }
         x += 1
     }
-    return (best.start, end + 1)
+    return (best.start, extended + 1)
 }
 
 private func dilate(_ mask: Mask, radius: Int) -> Mask {
