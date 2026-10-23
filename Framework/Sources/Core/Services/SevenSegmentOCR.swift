@@ -157,9 +157,13 @@ private struct GrayBuffer {
         let lines = scores.map { "\($0.wideDigits):\($0.text)" }.joined(separator: " | ")
         fputs("standing \(buffer.width)x\(buffer.height) \(lines) best=\(bestTurns)\n", stderr)
         guard bestTurns != 0 else { return buffer }
-        // A small tilt still belongs to the fine deskew. A couple of wide
-        // false digits must not spin an upright panel onto its side.
-        let enough = scores[bestTurns].wideDigits >= max(scores[0].wideDigits + 2, 4)
+        // A small tilt still belongs to the fine deskew. Speck rows on a
+        // sideways sample read as a few wide glyphs and must not spin an
+        // upright panel. A real quarter turn is mostly digits.
+        let glyphs = scores[bestTurns].text.filter { $0 != "/" }
+        let numbers = glyphs.filter(\.isNumber).count
+        let mostlyNumbers = !glyphs.isEmpty && numbers * 2 >= glyphs.count
+        let enough = mostlyNumbers && scores[bestTurns].wideDigits >= max(scores[0].wideDigits + 2, 4)
         guard enough else { return buffer }
         return buffer.rotated(degrees: Double(bestTurns * 90))
     }
