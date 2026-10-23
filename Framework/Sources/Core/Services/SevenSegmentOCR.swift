@@ -558,18 +558,19 @@ private extension GrayBuffer {
         let loose = primaryIsDark ? masks.dark : masks.light
         let core = primaryIsDark ? cores.dark : cores.light
         // The loose mask marks glare in the gap and glues the two digit rows
-        // into one band. The core is only pixels far under the local glass.
-        let primary = score(core) > score(loose) ? core : loose
+        // into one band. Band on the core when that actually opens more rows.
+        // Glyphs still come from the loose mask, which has the full stroke.
+        let bandSource = runs(core.rowSums).count > runs(loose.rowSums).count ? core : loose
         let paintedMarks = buffer.extremeMarkMask()
-        let mergedBands = merge(runs(primary.rowSums), whenGapBelow: 0)
+        let mergedBands = merge(runs(bandSource.rowSums), whenGapBelow: 0)
         let measured = mergedBands.map { band -> (band: (Int, Int), cells: [Cell]) in
-            (band, cells(in: band, mask: primary, buffer: buffer, bandIndex: 0, darkInk: primaryIsDark))
+            (band, cells(in: band, mask: loose, buffer: buffer, bandIndex: 0, darkInk: primaryIsDark))
         }
         let tallHeights = measured.flatMap(\.cells).filter { $0.height > 0 }.map(\.height).sorted()
         let cellHeight = tallHeights.isEmpty ? 1 : tallHeights[tallHeights.count / 2]
-        let splitBands = merge(runs(primary.rowSums), whenGapBelow: max(1, cellHeight / 2))
+        let splitBands = merge(runs(bandSource.rowSums), whenGapBelow: max(1, cellHeight / 2))
         return splitBands.compactMap { band -> [Cell]? in
-            let found = cells(in: band, mask: primary, buffer: buffer, bandIndex: 0, darkInk: primaryIsDark)
+            let found = cells(in: band, mask: loose, buffer: buffer, bandIndex: 0, darkInk: primaryIsDark)
             let marks = oppositeMarks(in: band, secondary: paintedMarks, existing: found, buffer: buffer, bandIndex: 0)
             let row = found + marks
             return row.isEmpty ? nil : row
