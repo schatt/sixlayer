@@ -853,9 +853,11 @@ private func digitColumnSpan(_ mask: Mask) -> (Int, Int)? {
         }
     }
     runs.append((start, end, ink))
-    guard let best = runs.max(by: { $0.ink < $1.ink }) else { return nil }
-    let span = best.end - best.start
-    guard span > mask.height / 10, span * 100 < mask.width * 80 else { return nil }
+    let wide = runs.filter { run in
+        let span = run.end - run.start
+        return span > mask.height / 10 && span * 100 < mask.width * 80
+    }
+    guard let best = wide.max(by: { $0.ink < $1.ink }) else { return nil }
     return (best.start, best.end + 1)
 }
 
