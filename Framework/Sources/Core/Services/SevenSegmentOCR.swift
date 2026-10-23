@@ -601,26 +601,30 @@ private extension GrayBuffer {
         let bandSource = chosen.bandSource
         let opened = darkChoice.opens || lightChoice.opens
         let bandSums = opened ? digitRowSums(bandSource.rowSums) : bandSource.rowSums
-        let rawBands = runs(bandSums)
-        let tallBands = rawBands.filter { ($0.1 - $0.0) * 20 >= buffer.height }
-        let bandText = tallBands.map { "\($0.0)-\($0.1)" }.joined(separator: " ")
+        let foundBands = runs(bandSums)
+        let solidBands = opened
+            ? foundBands.filter { ($0.1 - $0.0) * 20 >= buffer.height }
+            : foundBands
+        let bandText = solidBands.map { "\($0.0)-\($0.1)" }.joined(separator: " ")
         fputs(
             "chosen \(buffer.width)x\(buffer.height) darkOpen=\(darkChoice.opens) lightOpen=\(lightChoice.opens) tall=\(bandText)\n",
             stderr
         )
         let paintedMarks = buffer.extremeMarkMask()
-        let rowGap = opened ? max(2, buffer.height / 80) : 0
-        let mergedBands = merge(runs(bandSums), whenGapBelow: rowGap)
-        let measured = mergedBands.map { band -> (band: (Int, Int), cells: [Cell]) in
+        let measuredBands = opened ? solidBands : merge(foundBands, whenGapBelow: 0)
+        let measured = measuredBands.map { band -> (band: (Int, Int), cells: [Cell]) in
             (band, cells(in: band, mask: glyphs, buffer: buffer, bandIndex: 0, darkInk: primaryIsDark))
         }
         let tallHeights = measured.flatMap(\.cells).filter { $0.height > 0 }.map(\.height).sorted()
         let cellHeight = tallHeights.isEmpty ? 1 : tallHeights[tallHeights.count / 2]
-        let splitLimit = opened ? rowGap : max(1, cellHeight / 2)
-        let splitBands = merge(runs(bandSums), whenGapBelow: splitLimit)
+        let splitBands = opened
+            ? merge(solidBands, whenGapBelow: 2)
+            : merge(foundBands, whenGapBelow: max(1, cellHeight / 2))
         return splitBands.compactMap { band -> [Cell]? in
             let found = cells(in: band, mask: glyphs, buffer: buffer, bandIndex: 0, darkInk: primaryIsDark)
-            let marks = oppositeMarks(in: band, secondary: paintedMarks, existing: found, buffer: buffer, bandIndex: 0)
+            let marks = opened
+                ? []
+                : oppositeMarks(in: band, secondary: paintedMarks, existing: found, buffer: buffer, bandIndex: 0)
             let row = found + marks
             return row.isEmpty ? nil : row
         }
@@ -893,8 +897,11 @@ private func polarity(
         return (false, (isDark, loose, loose))
     }
     // The loose mask still fills the gap inside the span. The core is the
-    // stroke, so both the rows and the glyphs come from it.
-    return (true, (isDark, limitedCore, limitedCore))
+    // stroke. A few pixels of thickness makes the stroke solid without
+    // crossing the gap between the rows.
+    let radius = max(2, core.height / 180)
+    let thick = cleared(span, mask: dilate(limitedCore, radius: radius))
+    return (true, (isDark, thick, thick))
 }
 
 private func digitColumnSpan(_ mask: Mask) -> (Int, Int)? {
@@ -930,6 +937,26 @@ private func digitColumnSpan(_ mask: Mask) -> (Int, Int)? {
     }
     guard let best = wide.max(by: { $0.ink < $1.ink }) else { return nil }
     return (best.start, best.end + 1)
+}
+
+private func dilate(_ mask: Mask, radius: Int) -> Mask {
+    guard radius > 0, mask.width > 0, mask.height > 0 else { return mask }
+    var bits = [Bool](repeating: false, count: mask.bits.count)
+    for y in 0..<mask.height {
+        let y0 = max(0, y - radius)
+        let y1 = min(mask.height - 1, y + radius)
+        for x in 0..<mask.width where mask.bits[y * mask.width + x] {
+            let x0 = max(0, x - radius)
+            let x1 = min(mask.width - 1, x + radius)
+            for ny in y0...y1 {
+                let start = ny * mask.width
+                for nx in x0...x1 {
+                    bits[start + nx] = true
+                }
+            }
+        }
+    }
+    return Mask(bits: bits, width: mask.width, height: mask.height)
 }
 
 private func cleared(_ span: (Int, Int), mask: Mask) -> Mask {
