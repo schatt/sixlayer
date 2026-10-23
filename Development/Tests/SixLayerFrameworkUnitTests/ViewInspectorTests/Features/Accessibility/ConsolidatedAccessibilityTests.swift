@@ -13546,7 +13546,7 @@ open class ConsolidatedAccessibilityTests: BaseTestClass {
         // Test tap action generation
         let tapAction = config.generateTapAction("app.test.button")
         #expect(tapAction.contains("app.otherElements[\"app.test.button\"]"))
-        #expect(tapAction.contains("element.tap()"))
+        #expect(tapAction.contains("element.platformTap()"))
             
         // Test text input action generation
         let textAction = config.generateTextInputAction("app.test.field", text: "test text")

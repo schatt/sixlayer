@@ -128,7 +128,7 @@ public extension XCUIElement {
         #if os(tvOS)
         XCTFail(PlatformTapRejection.tvOSElementTapUnavailable.failureDescription)
         #else
-        performPreferringHittable(element: { tap() }, center: { $0.tap() })
+        performPreferringHittable(element: { tap() }, center: { $0.platformTap() })
         #endif
     }
 
@@ -145,7 +145,7 @@ public extension XCUIElement {
 
     private func platformPerformClick() {
         #if os(macOS)
-        performPreferringHittable(element: { click() }, center: { $0.click() })
+        performPreferringHittable(element: { click() }, center: { $0.platformTap() })
         #else
         XCTFail("click() is only the macOS platformTap path")
         #endif
@@ -191,6 +191,38 @@ public extension XCUIElement {
             && elementFrame.width > 0 && elementFrame.height > 0
         guard usable else { return nil }
         return coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
+    }
+}
+
+public extension XCUICoordinate {
+    /// One activation at this exact coordinate.
+    ///
+    /// ``XCUIElement/platformTap(numberOfTaps:numberOfTouches:)`` chooses the center itself.
+    /// Use this when the hit point is the caller's (switch thumb, secure-field center).
+    /// macOS clicks. Other platforms tap. tvOS fails.
+    func platformTap() {
+        switch PlatformTapCall.plan(
+            for: SixLayerPlatform.current,
+            numberOfTaps: 1,
+            numberOfTouches: 1
+        ) {
+        case .click:
+            #if os(macOS)
+            click()
+            #else
+            XCTFail("click() is only the macOS coordinate platformTap path")
+            #endif
+        case .singleTap:
+            #if os(tvOS)
+            XCTFail(PlatformTapRejection.tvOSElementTapUnavailable.failureDescription)
+            #else
+            tap()
+            #endif
+        case .unsupported(let reason):
+            XCTFail(reason.failureDescription)
+        case .tapWithNumberOfTaps, .doubleClick, .doubleTap:
+            XCTFail("coordinate platformTap only performs one activation")
+        }
     }
 }
 #endif

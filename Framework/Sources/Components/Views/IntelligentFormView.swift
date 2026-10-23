@@ -94,20 +94,12 @@ extension IntelligentFormView {
 /// This view analyzes data models and generates appropriate forms using platform extensions
 @MainActor
 public struct IntelligentFormView {
-    
-    // MARK: - Public API
-
-    static func hintsModelName<T>(for dataType: T.Type) -> String {
-        let described = String(describing: dataType)
-        return described.components(separatedBy: ".").last ?? described
-    }
 
     /// Hints lookup for `generateForm(for:initialData:)` when an instance is present.
     /// The overload's `initialData` parameter is `T?`. Callers pass the unwrapped value
     /// and `dataType`, so the hints file is `Model.hints` and Mirror sees the model.
     struct InitialDataFormHintsLookup {
         let modelName: String
-        let fieldNames: [String]
         let analysis: DataAnalysisResult
     }
 
@@ -115,15 +107,16 @@ public struct IntelligentFormView {
         dataType: T.Type,
         initialData: T
     ) -> InitialDataFormHintsLookup {
-        let modelName = hintsModelName(for: dataType)
+        let modelName = DataIntrospectionEngine.hintsModelName(for: dataType)
         let analysis = DataIntrospectionEngine.analyze(initialData)
         return InitialDataFormHintsLookup(
             modelName: modelName,
-            fieldNames: analysis.fields.map(\.name),
             analysis: analysis
         )
     }
-    
+
+    // MARK: - Public API
+
     /// Generate a form for creating new data with data binding integration
     ///
     /// **Type-Only Form Generation (New Object Creation)**:
@@ -180,7 +173,7 @@ public struct IntelligentFormView {
     ) -> some View {
         // Try type-only analysis if no initialData provided
         if initialData == nil {
-            let modelName = hintsModelName(for: dataType)
+            let modelName = DataIntrospectionEngine.hintsModelName(for: dataType)
             
             if let analysis = DataIntrospectionEngine.analyzeFromType(dataType, modelName: modelName) {
                 // Type-only form generation: use hints-only analysis
@@ -469,8 +462,7 @@ Text(i18n.localizedString(for: "SixLayerFramework.form.title"))
         }
         
         // Load hints for the model type
-        let modelName = String(describing: type(of: data))
-            .components(separatedBy: ".").last ?? String(describing: type(of: data))
+        let modelName = DataIntrospectionEngine.hintsModelName(for: type(of: data))
         let hintsLoader = FileBasedDataHintsLoader()
         let hintsResult = hintsLoader.loadHintsResult(for: modelName)
         let fieldHints = hintsResult.fieldHints
@@ -1561,7 +1553,7 @@ private struct TypeOnlyFormWrapper<T>: View {
     
     /// Create a blank entity and populate with defaults from hints
     private func createBlankEntity() {
-        let modelName = IntelligentFormView.hintsModelName(for: dataType)
+        let modelName = DataIntrospectionEngine.hintsModelName(for: dataType)
         
         // Try Core Data first
         #if canImport(CoreData)
