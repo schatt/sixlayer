@@ -134,7 +134,8 @@ private struct GrayBuffer {
     }
 
     /// A pump photo can store the LCD on its side. A few degrees of deskew
-    /// never reaches that. Pick the quarter turn that reads the most digits.
+    /// never reaches that. A field of narrow slices reads as ones, so the
+    /// turn with wide digits wins, then the one whose decimals sit below.
     private static func standingUp(_ buffer: GrayBuffer) -> GrayBuffer {
         let small = buffer.fitted(maxSide: 480)
         let scores = (0...3).map { turns -> OrientationScore in
@@ -142,11 +143,14 @@ private struct GrayBuffer {
             return orientationScore(in: sample)
         }
         let bestTurns = scores.enumerated().max { left, right in
-            if left.element.digits != right.element.digits {
-                return left.element.digits < right.element.digits
+            if left.element.wideDigits != right.element.wideDigits {
+                return left.element.wideDigits < right.element.wideDigits
             }
             if left.element.marksBelow != right.element.marksBelow {
                 return left.element.marksBelow < right.element.marksBelow
+            }
+            if left.element.rowVariance != right.element.rowVariance {
+                return left.element.rowVariance < right.element.rowVariance
             }
             return left.element.confidence < right.element.confidence
         }?.offset ?? 0
@@ -155,37 +159,38 @@ private struct GrayBuffer {
     }
 
     private struct OrientationScore {
-        var digits: Int
-        var confidence: Float
+        var wideDigits: Int
         var marksBelow: Int
+        var rowVariance: Int
+        var confidence: Float
     }
 
-    /// Digits break a tie between upright and upside down: a decimal sits
-    /// under the digit, so the upside-down read puts it above.
+    /// A real digit is wider than the narrow slice the decoder calls "1".
+    /// A decimal sits under that digit, so an upside-down read puts it above.
     private static func orientationScore(in buffer: GrayBuffer) -> OrientationScore {
-        readRows(in: buffer).reduce(OrientationScore(digits: 0, confidence: 0, marksBelow: 0)) { partial, row in
+        let placed = readRows(in: buffer).flatMap { row -> [(cell: Cell, markBelow: Bool)] in
             let tall = row.filter { $0.character.isNumber && $0.height > 0 }
             let digitMid = median(tall.map { ($0.minY + $0.maxY) / 2 })
-            let added = row.reduce(OrientationScore(digits: 0, confidence: 0, marksBelow: 0)) { count, cell in
-                let markBelow: Int
+            return row.map { cell in
+                let markBelow: Bool
                 if let digitMid, cell.character == "." || cell.character == "," {
-                    let mid = (cell.minY + cell.maxY) / 2
-                    markBelow = mid > digitMid ? 1 : 0
+                    markBelow = (cell.minY + cell.maxY) / 2 > digitMid
                 } else {
-                    markBelow = 0
+                    markBelow = false
                 }
-                return OrientationScore(
-                    digits: count.digits + (cell.character.isNumber ? 1 : 0),
-                    confidence: count.confidence + cell.confidence,
-                    marksBelow: count.marksBelow + markBelow
-                )
+                return (cell, markBelow)
             }
-            return OrientationScore(
-                digits: partial.digits + added.digits,
-                confidence: partial.confidence + added.confidence,
-                marksBelow: partial.marksBelow + added.marksBelow
-            )
         }
+        let wideDigits = placed.filter { item in
+            let cell = item.cell
+            return cell.character.isNumber && cell.height > 0 && cell.box.width * 100 > cell.height * 30
+        }.count
+        return OrientationScore(
+            wideDigits: wideDigits,
+            marksBelow: placed.filter(\.markBelow).count,
+            rowVariance: score(buffer),
+            confidence: placed.reduce(Float(0)) { $0 + $1.cell.confidence }
+        )
     }
 
     private static func cells(
