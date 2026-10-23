@@ -569,17 +569,19 @@ private extension GrayBuffer {
         // loose mask already has digit-height bands keeps that mask.
         let looseFillsTheImage = looseTall * 100 > buffer.height * 70
         let coreOpensShorterRows = !coreBands.isEmpty && coreTall * 2 < looseTall
-        let bandSource = looseFillsTheImage && coreOpensShorterRows ? core : loose
+        let span = looseFillsTheImage && coreOpensShorterRows ? digitColumnSpan(core) : nil
+        let bandSource = span.map { cleared($0, mask: core) } ?? loose
+        let glyphs = span.map { cleared($0, mask: loose) } ?? loose
         let paintedMarks = buffer.extremeMarkMask()
         let mergedBands = merge(runs(bandSource.rowSums), whenGapBelow: 0)
         let measured = mergedBands.map { band -> (band: (Int, Int), cells: [Cell]) in
-            (band, cells(in: band, mask: loose, buffer: buffer, bandIndex: 0, darkInk: primaryIsDark))
+            (band, cells(in: band, mask: glyphs, buffer: buffer, bandIndex: 0, darkInk: primaryIsDark))
         }
         let tallHeights = measured.flatMap(\.cells).filter { $0.height > 0 }.map(\.height).sorted()
         let cellHeight = tallHeights.isEmpty ? 1 : tallHeights[tallHeights.count / 2]
         let splitBands = merge(runs(bandSource.rowSums), whenGapBelow: max(1, cellHeight / 2))
         return splitBands.compactMap { band -> [Cell]? in
-            let found = cells(in: band, mask: loose, buffer: buffer, bandIndex: 0, darkInk: primaryIsDark)
+            let found = cells(in: band, mask: glyphs, buffer: buffer, bandIndex: 0, darkInk: primaryIsDark)
             let marks = oppositeMarks(in: band, secondary: paintedMarks, existing: found, buffer: buffer, bandIndex: 0)
             let row = found + marks
             return row.isEmpty ? nil : row
@@ -824,6 +826,32 @@ private func merge(_ bands: [(Int, Int)], whenGapBelow limit: Int) -> [(Int, Int
         }
     }
     return merged
+}
+
+private func digitColumnSpan(_ mask: Mask) -> (Int, Int)? {
+    let sums = columnSums(mask, y0: 0, y1: mask.height, width: mask.width)
+    let active = sums.indices.filter { index in
+        let sum = sums[index]
+        return sum >= 12 && sum * 5 < mask.height
+    }
+    guard let first = active.first, let last = active.last else { return nil }
+    let span = last - first
+    guard span > mask.height / 10, span * 100 < mask.width * 80 else { return nil }
+    return (first, last + 1)
+}
+
+private func cleared(_ span: (Int, Int), mask: Mask) -> Mask {
+    var bits = mask.bits
+    for y in 0..<mask.height {
+        let start = y * mask.width
+        for x in 0..<span.0 {
+            bits[start + x] = false
+        }
+        for x in span.1..<mask.width {
+            bits[start + x] = false
+        }
+    }
+    return Mask(bits: bits, width: mask.width, height: mask.height)
 }
 
 private func columnSums(_ mask: Mask, y0: Int, y1: Int, width: Int) -> [Int] {
