@@ -571,6 +571,10 @@ private extension GrayBuffer {
         let limitedTall = limitedBands.map { $0.1 - $0.0 }.max() ?? 0
         let looseFillsTheImage = looseTall * 100 > buffer.height * 70
         let coreOpensShorterRows = span != nil && !limitedBands.isEmpty && limitedTall * 2 < looseTall
+        fputs(
+            "span \(String(describing: span)) looseTall \(looseTall) limitedTall \(limitedTall) bands \(limitedBands.count) open \(coreOpensShorterRows) dark \(primaryIsDark)\n",
+            stderr
+        )
         let bandSource = looseFillsTheImage && coreOpensShorterRows ? limitedCore : loose
         let glyphs = looseFillsTheImage && coreOpensShorterRows ? cleared(span!, mask: loose) : loose
         let paintedMarks = buffer.extremeMarkMask()
