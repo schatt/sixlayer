@@ -482,6 +482,37 @@ while bandY < cropH {
     bandY += 40
 }
 
+let glassY0 = 220
+let glassY1 = 1050
+let glassX0 = 700
+let glassX1 = 1700
+for ceiling in [80, 100, 120] {
+    var rowInk = [Int](repeating: 0, count: glassY1 - glassY0)
+    var columnInk = [Int](repeating: 0, count: glassX1 - glassX0)
+    for y in glassY0..<glassY1 {
+        for x in glassX0..<glassX1 where Int(pixels[y * cropW + x]) < ceiling {
+            rowInk[y - glassY0] += 1
+            columnInk[x - glassX0] += 1
+        }
+    }
+    func describe(_ sums: [Int], origin: Int, floor: Int) -> String {
+        var found: [(Int, Int)] = []
+        var start: Int?
+        for index in sums.indices {
+            if sums[index] >= floor {
+                if start == nil { start = index }
+            } else if let open = start {
+                found.append((origin + open, origin + index))
+                start = nil
+            }
+        }
+        if let open = start { found.append((origin + open, origin + sums.count)) }
+        return found.map { "\($0.0)-\($0.1)" }.joined(separator: " ")
+    }
+    print("ceiling \(ceiling) rows \(describe(rowInk, origin: glassY0, floor: 30))")
+    print("ceiling \(ceiling) cols \(describe(columnInk, origin: glassX0, floor: 30))")
+}
+
 let scale = 4
 let outW = max(1, (cropW + scale - 1) / scale)
 let outH = max(1, (cropH + scale - 1) / scale)
