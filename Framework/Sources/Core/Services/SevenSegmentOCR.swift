@@ -139,6 +139,19 @@ private struct GrayBuffer {
         return tilted
     }
 
+    /// True when one polarity's core splits a full-height loose mask into
+    /// shorter rows. Deskew uses this so a tilt cannot smear those rows shut.
+    private static func coreStaysOpen(_ buffer: GrayBuffer) -> Bool {
+        let raw = buffer.masks()
+        let sealed = (dark: keepingInteriorInk(raw.dark), light: keepingInteriorInk(raw.light))
+        let masks = (dark: clearingBorderComponents(sealed.dark), light: clearingBorderComponents(sealed.light))
+        let sealedCore = (dark: keepingInteriorInk(raw.darkCore), light: keepingInteriorInk(raw.lightCore))
+        let cores = (dark: clearingBorderComponents(sealedCore.dark), light: clearingBorderComponents(sealedCore.light))
+        let dark = polarity(isDark: true, loose: masks.dark, core: cores.dark)
+        let light = polarity(isDark: false, loose: masks.light, core: cores.light)
+        return dark.opens || light.opens
+    }
+
     /// A pump photo can store the LCD on its side. A few degrees of deskew
     /// never reaches that. A field of narrow slices reads as ones, so the
     /// turn with wide digits wins, then the one whose decimals sit below.
@@ -824,17 +837,6 @@ private func digitRowSums(_ sums: [Int]) -> [Int] {
     // hold many more. Leaving the gap at sum > 0 joins the two lines.
     let floor = max(8, peak / 20)
     return sums.map { $0 >= floor ? $0 : 0 }
-}
-
-private func coreStaysOpen(_ buffer: GrayBuffer) -> Bool {
-    let raw = buffer.masks()
-    let sealed = (dark: keepingInteriorInk(raw.dark), light: keepingInteriorInk(raw.light))
-    let masks = (dark: clearingBorderComponents(sealed.dark), light: clearingBorderComponents(sealed.light))
-    let sealedCore = (dark: keepingInteriorInk(raw.darkCore), light: keepingInteriorInk(raw.lightCore))
-    let cores = (dark: clearingBorderComponents(sealedCore.dark), light: clearingBorderComponents(sealedCore.light))
-    let dark = polarity(isDark: true, loose: masks.dark, core: cores.dark)
-    let light = polarity(isDark: false, loose: masks.light, core: cores.light)
-    return dark.opens || light.opens
 }
 
 private func runs(_ sums: [Int]) -> [(Int, Int)] {
