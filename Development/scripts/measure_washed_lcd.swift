@@ -609,6 +609,29 @@ for extra in [24, 36, 48] {
     print("margin \(extra) digit-x bands \(bands.joined(separator: " "))")
 }
 
+var coreSums = [Int](repeating: 0, count: cropW)
+for y in 0..<cropH {
+    for x in 0..<cropW {
+        let x0 = max(0, x - radius)
+        let y0 = max(0, y - radius)
+        let x1 = min(cropW, x + radius + 1)
+        let y1 = min(cropH, y + radius + 1)
+        let area = (x1 - x0) * (y1 - y0)
+        let mean = Int(regionSum(x0, y0, x1, y1) / UInt64(max(area, 1)))
+        let pixel = Int(pixels[y * cropW + x])
+        if pixel + 48 < mean && pixel < mean * 93 / 100 {
+            coreSums[x] += 1
+        }
+    }
+}
+let active = coreSums.indices.filter { coreSums[$0] >= 12 && coreSums[$0] * 2 < cropH }
+let half = coreSums.indices.filter { coreSums[$0] * 2 >= cropH && coreSums[$0] > 0 }.count
+let quiet = coreSums.filter { $0 < 12 }.count
+print("core columns active \(active.count) rail \(half) quiet \(quiet)")
+if let first = active.first, let last = active.last {
+    print("core active ends \(first)-\(last) ink \(active.reduce(0) { $0 + coreSums[$1] })")
+}
+
 let scale = 4
 let outW = max(1, (cropW + scale - 1) / scale)
 let outH = max(1, (cropH + scale - 1) / scale)
