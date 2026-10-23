@@ -576,6 +576,39 @@ for (label, y0, y1) in [("digit", 690, 760), ("gap", 790, 850), ("digit2", 900, 
     print("\(label) y \(y0)-\(y1) pixel p10 \(levels[levels.count / 10]) p50 \(levels[mid]) mean p50 \(means[mid])")
 }
 
+for extra in [24, 36, 48] {
+    var rowInk = [Int](repeating: 0, count: cropH)
+    var y = 0
+    while y < cropH {
+        var x = digitX0
+        while x < digitX1 {
+            let x0 = max(0, x - radius)
+            let y0 = max(0, y - radius)
+            let x1 = min(cropW, x + radius + 1)
+            let y1 = min(cropH, y + radius + 1)
+            let area = (x1 - x0) * (y1 - y0)
+            let mean = Int(regionSum(x0, y0, x1, y1) / UInt64(max(area, 1)))
+            let pixel = Int(pixels[y * cropW + x])
+            if pixel + extra < mean && pixel < mean * 93 / 100 {
+                rowInk[y] += 1
+            }
+            x += 1
+        }
+        y += 1
+    }
+    var bands: [String] = []
+    var start: Int?
+    for index in 0...cropH {
+        if index < cropH && rowInk[index] >= 10 {
+            if start == nil { start = index }
+        } else if let open = start {
+            if index - open >= 30 { bands.append("\(open)-\(index)") }
+            start = nil
+        }
+    }
+    print("margin \(extra) digit-x bands \(bands.joined(separator: " "))")
+}
+
 let scale = 4
 let outW = max(1, (cropW + scale - 1) / scale)
 let outH = max(1, (cropH + scale - 1) / scale)
