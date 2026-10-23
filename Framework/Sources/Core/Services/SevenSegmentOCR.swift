@@ -896,12 +896,12 @@ private func polarity(
     guard let span, fills, limitedTall * 2 < looseTall else {
         return (false, (isDark, loose, loose))
     }
-    // The loose mask still fills the gap inside the span. The core is the
-    // stroke. A few pixels of thickness makes the stroke solid without
-    // crossing the gap between the rows.
+    // The loose mask still fills the gap inside the span. Row boundaries
+    // stay on the thin core so gap specks are not thickened into a join.
+    // Glyphs use a few pixels of thickness so the stroke is solid.
     let radius = max(2, core.height / 180)
     let thick = cleared(span, mask: dilate(limitedCore, radius: radius))
-    return (true, (isDark, thick, thick))
+    return (true, (isDark, thick, limitedCore))
 }
 
 private func digitColumnSpan(_ mask: Mask) -> (Int, Int)? {
