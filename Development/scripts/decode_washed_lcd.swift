@@ -35,7 +35,7 @@ let cropX: Int
 let cropY: Int
 let cropW: Int
 let cropH: Int
-if args.count == 6 {
+if args.count >= 6 {
     cropX = Int(args[2]) ?? -1
     cropY = Int(args[3]) ?? -1
     cropW = Int(args[4]) ?? -1
