@@ -198,7 +198,7 @@ private struct GrayBuffer {
             marksBelow: placed.filter(\.markBelow).count,
             rowVariance: score(buffer),
             confidence: placed.reduce(Float(0)) { $0 + $1.cell.confidence },
-            text: rows.map { $0.map(\.character).joined() }.joined(separator: "/")
+            text: rows.map { String($0.map(\.character)) }.joined(separator: "/")
         )
     }
 
