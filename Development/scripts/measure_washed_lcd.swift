@@ -513,6 +513,42 @@ for ceiling in [80, 100, 120] {
     print("ceiling \(ceiling) cols \(describe(columnInk, origin: glassX0, floor: 30))")
 }
 
+var coreRows = [Int](repeating: 0, count: cropH)
+for y in 0..<cropH {
+    for x in 0..<cropW where pixels[y * cropW + x] < 80 {
+        coreRows[y] += 1
+    }
+}
+var coreBandStart: Int?
+for y in 0...cropH {
+    let inside = y < cropH && coreRows[y] >= 20
+    if inside {
+        if coreBandStart == nil { coreBandStart = y }
+    } else if let open = coreBandStart {
+        let height = y - open
+        if height >= 40 {
+            var cols = [Int](repeating: 0, count: cropW)
+            for yy in open..<y {
+                for x in 0..<cropW where pixels[yy * cropW + x] < 80 {
+                    cols[x] += 1
+                }
+            }
+            var runs: [String] = []
+            var x0: Int?
+            for x in 0...cropW {
+                if x < cropW && cols[x] >= 8 {
+                    if x0 == nil { x0 = x }
+                } else if let start = x0 {
+                    runs.append("\(start)-\(x)")
+                    x0 = nil
+                }
+            }
+            print("core band \(open)-\(y) h \(height) cols \(runs.joined(separator: " "))")
+        }
+        coreBandStart = nil
+    }
+}
+
 let scale = 4
 let outW = max(1, (cropW + scale - 1) / scale)
 let outH = max(1, (cropH + scale - 1) / scale)
