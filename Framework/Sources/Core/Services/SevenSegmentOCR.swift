@@ -561,17 +561,18 @@ private extension GrayBuffer {
         let loose = primaryIsDark ? masks.dark : masks.light
         let core = primaryIsDark ? cores.dark : cores.light
         let looseBands = runs(loose.rowSums)
-        let coreBands = runs(core.rowSums)
         let looseTall = looseBands.map { $0.1 - $0.0 }.max() ?? 0
-        let coreTall = coreBands.map { $0.1 - $0.0 }.max() ?? 0
-        // The loose mask glues a photo into one band as tall as the crop.
-        // Use the core only then, when it opens shorter rows. A panel whose
-        // loose mask already has digit-height bands keeps that mask.
+        // A bezel edge keeps the full-width core in one tall band. The digit
+        // columns are the ones with some core but not a rail. Limit to those
+        // before deciding whether the core opens shorter rows.
+        let span = digitColumnSpan(core)
+        let limitedCore = span.map { cleared($0, mask: core) } ?? core
+        let limitedBands = runs(limitedCore.rowSums)
+        let limitedTall = limitedBands.map { $0.1 - $0.0 }.max() ?? 0
         let looseFillsTheImage = looseTall * 100 > buffer.height * 70
-        let coreOpensShorterRows = !coreBands.isEmpty && coreTall * 2 < looseTall
-        let span = looseFillsTheImage && coreOpensShorterRows ? digitColumnSpan(core) : nil
-        let bandSource = span.map { cleared($0, mask: core) } ?? loose
-        let glyphs = span.map { cleared($0, mask: loose) } ?? loose
+        let coreOpensShorterRows = span != nil && !limitedBands.isEmpty && limitedTall * 2 < looseTall
+        let bandSource = looseFillsTheImage && coreOpensShorterRows ? limitedCore : loose
+        let glyphs = looseFillsTheImage && coreOpensShorterRows ? cleared(span!, mask: loose) : loose
         let paintedMarks = buffer.extremeMarkMask()
         let mergedBands = merge(runs(bandSource.rowSums), whenGapBelow: 0)
         let measured = mergedBands.map { band -> (band: (Int, Int), cells: [Cell]) in
