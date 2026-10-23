@@ -154,10 +154,14 @@ private struct GrayBuffer {
             }
             return left.element.confidence < right.element.confidence
         }?.offset ?? 0
-        guard bestTurns != 0 else { return buffer }
+        guard bestTurns != 0 else {
+            fputs("standing \(buffer.width)x\(buffer.height) wide=\(scores.map(\.wideDigits)) best=0\n", stderr)
+            return buffer
+        }
         // A small tilt still belongs to the fine deskew. A couple of wide
         // false digits must not spin an upright panel onto its side.
         let enough = scores[bestTurns].wideDigits >= max(scores[0].wideDigits + 2, 4)
+        fputs("standing \(buffer.width)x\(buffer.height) wide=\(scores.map(\.wideDigits)) best=\(bestTurns) enough=\(enough)\n", stderr)
         guard enough else { return buffer }
         return buffer.rotated(degrees: Double(bestTurns * 90))
     }
@@ -837,6 +841,11 @@ private func polarity(
     let looseTall = runs(loose.rowSums).map { $0.1 - $0.0 }.max() ?? 0
     let limitedTall = runs(limitedCore.rowSums).map { $0.1 - $0.0 }.max() ?? 0
     let fills = looseTall * 100 > loose.height * 70
+    let spanText = span.map { "\($0.0)-\($0.1)" } ?? "nil"
+    fputs(
+        "polarity \(isDark ? "dark" : "light") \(loose.width)x\(loose.height) span=\(spanText) looseTall=\(looseTall) limitedTall=\(limitedTall) fills=\(fills)\n",
+        stderr
+    )
     guard let span, fills, limitedTall * 2 < looseTall else {
         return (false, (isDark, loose, loose))
     }
