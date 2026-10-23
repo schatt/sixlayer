@@ -580,6 +580,13 @@ private extension GrayBuffer {
         let primaryIsDark = chosen.isDark
         let glyphs = chosen.glyphs
         let bandSource = chosen.bandSource
+        let rawBands = runs(bandSource.rowSums)
+        let tallBands = rawBands.filter { ($0.1 - $0.0) * 20 >= buffer.height }
+        let bandText = tallBands.map { "\($0.0)-\($0.1)" }.joined(separator: " ")
+        fputs(
+            "chosen \(buffer.width)x\(buffer.height) darkOpen=\(darkChoice.opens) lightOpen=\(lightChoice.opens) tall=\(bandText)\n",
+            stderr
+        )
         let paintedMarks = buffer.extremeMarkMask()
         let mergedBands = merge(runs(bandSource.rowSums), whenGapBelow: 0)
         let measured = mergedBands.map { band -> (band: (Int, Int), cells: [Cell]) in
