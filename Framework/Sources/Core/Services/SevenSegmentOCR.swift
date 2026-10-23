@@ -155,6 +155,9 @@ private struct GrayBuffer {
             return left.element.confidence < right.element.confidence
         }?.offset ?? 0
         guard bestTurns != 0 else { return buffer }
+        // A small tilt still belongs to the fine deskew. Only a quarter turn
+        // that reads at least two more wide digits is allowed to win.
+        guard scores[bestTurns].wideDigits >= scores[0].wideDigits + 2 else { return buffer }
         return buffer.rotated(degrees: Double(bestTurns * 90))
     }
 
@@ -557,10 +560,16 @@ private extension GrayBuffer {
         let primaryIsDark = prefersDark(masks.dark, masks.light)
         let loose = primaryIsDark ? masks.dark : masks.light
         let core = primaryIsDark ? cores.dark : cores.light
-        // The loose mask marks glare in the gap and glues the two digit rows
-        // into one band. Band on the core when that actually opens more rows.
-        // Glyphs still come from the loose mask, which has the full stroke.
-        let bandSource = runs(core.rowSums).count > runs(loose.rowSums).count ? core : loose
+        let looseBands = runs(loose.rowSums)
+        let coreBands = runs(core.rowSums)
+        let looseTall = looseBands.map { $0.1 - $0.0 }.max() ?? 0
+        let coreTall = coreBands.map { $0.1 - $0.0 }.max() ?? 0
+        // The loose mask glues a photo into one band as tall as the crop.
+        // Use the core only then, when it opens shorter rows. A panel whose
+        // loose mask already has digit-height bands keeps that mask.
+        let looseFillsTheImage = looseTall * 100 > buffer.height * 70
+        let coreOpensShorterRows = !coreBands.isEmpty && coreTall * 2 < looseTall
+        let bandSource = looseFillsTheImage && coreOpensShorterRows ? core : loose
         let paintedMarks = buffer.extremeMarkMask()
         let mergedBands = merge(runs(bandSource.rowSums), whenGapBelow: 0)
         let measured = mergedBands.map { band -> (band: (Int, Int), cells: [Cell]) in
