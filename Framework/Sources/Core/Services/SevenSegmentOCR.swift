@@ -618,7 +618,7 @@ private extension GrayBuffer {
         let tallHeights = measured.flatMap(\.cells).filter { $0.height > 0 }.map(\.height).sorted()
         let cellHeight = tallHeights.isEmpty ? 1 : tallHeights[tallHeights.count / 2]
         let splitBands = opened
-            ? merge(solidBands, whenGapBelow: 2)
+            ? merge(solidBands, whenGapBelow: max(2, buffer.height / 40))
             : merge(foundBands, whenGapBelow: max(1, cellHeight / 2))
         return splitBands.compactMap { band -> [Cell]? in
             let found = cells(in: band, mask: glyphs, buffer: buffer, bandIndex: 0, darkInk: primaryIsDark)
@@ -909,13 +909,15 @@ private func polarity(
 }
 
 private func digitColumnSpan(_ mask: Mask) -> (Int, Int)? {
-    let sums = columnSums(mask, y0: 0, y1: mask.height, width: mask.width)
-    // A low floor keeps bezel-edge columns, and those columns join the digit
-    // rows back into one band. Stroke columns carry more of the core.
-    let floor = max(12, mask.height / 18)
+    let profile = columnProfile(mask)
+    let sums = profile.sums
+    // Stroke columns are the core. A faint digit still counts when its
+    // longest run is a stroke, not a bezel that joins the rows.
+    let floor = max(8, mask.height / 40)
+    let runLimit = max(floor + 1, mask.height / 4)
     let active = sums.indices.filter { index in
         let sum = sums[index]
-        return sum >= floor && sum * 2 < mask.height
+        return sum >= floor && sum * 2 < mask.height && profile.longest[index] < runLimit
     }
     guard !active.isEmpty else { return nil }
     let gapLimit = max(8, mask.height / 10)
@@ -990,6 +992,25 @@ private func columnSums(_ mask: Mask, y0: Int, y1: Int, width: Int) -> [Int] {
     return sums
 }
 
+private func columnProfile(_ mask: Mask) -> (sums: [Int], longest: [Int]) {
+    var sums = [Int](repeating: 0, count: mask.width)
+    var longest = [Int](repeating: 0, count: mask.width)
+    var current = [Int](repeating: 0, count: mask.width)
+    for y in 0..<mask.height {
+        let start = y * mask.width
+        for x in 0..<mask.width {
+            if mask.bits[start + x] {
+                current[x] += 1
+                sums[x] += 1
+                if current[x] > longest[x] { longest[x] = current[x] }
+            } else {
+                current[x] = 0
+            }
+        }
+    }
+    return (sums, longest)
+}
+
 private func columnRuns(_ mask: Mask, y0: Int, y1: Int, width: Int) -> [(Int, Int)] {
     let sums = columnSums(mask, y0: y0, y1: y1, width: width)
     let raw = runs(sums)
@@ -1000,11 +1021,13 @@ private func columnRuns(_ mask: Mask, y0: Int, y1: Int, width: Int) -> [(Int, In
         return span.1 - span.0
     }.sorted()
     let typical = digitWidths.isEmpty ? 0 : digitWidths[(digitWidths.count - 1) / 2]
+    let bandHeight = max(1, y1 - y0)
     return raw.flatMap { span in
         let spanWidth = span.1 - span.0
-        guard typical > 0, spanWidth > typical * 2 else { return [span] }
+        let widerThanADigit = spanWidth * 10 > bandHeight * 7
+        guard widerThanADigit || (typical > 0 && spanWidth > typical * 2) else { return [span] }
         let peak = (span.0..<span.1).map { sums[$0] }.max() ?? 0
-        let floor = max(1, peak / 8)
+        let floor = max(1, widerThanADigit ? peak / 5 : peak / 8)
         var pieces: [(Int, Int)] = []
         var start: Int?
         for x in span.0..<span.1 {
