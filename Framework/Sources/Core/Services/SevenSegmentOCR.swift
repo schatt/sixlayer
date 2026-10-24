@@ -504,6 +504,29 @@ private struct GrayBuffer {
             height: height
         )
     }
+
+    /// ssocr's dynamic threshold at about one stroke. The side/8 window is
+    /// wider than the gap between digits on a pump LCD, so that gap becomes ink.
+    fileprivate func strokeMask() -> Mask {
+        let radius = 10
+        let margin = 18
+        let table = integral(pixels, width: width, height: height)
+        var bits = [Bool](repeating: false, count: pixels.count)
+        for y in 0..<height {
+            for x in 0..<width {
+                let x0 = max(0, x - radius)
+                let y0 = max(0, y - radius)
+                let x1 = min(width, x + radius + 1)
+                let y1 = min(height, y + radius + 1)
+                let area = (x1 - x0) * (y1 - y0)
+                let sum = regionSum(table, width: width, x0: x0, y0: y0, x1: x1, y1: y1)
+                let mean = Int(sum / UInt64(max(area, 1)))
+                let pixel = Int(pixels[y * width + x])
+                bits[y * width + x] = pixel + margin < mean && pixel < mean * 93 / 100
+            }
+        }
+        return Mask(bits: bits, width: width, height: height)
+    }
 }
 
 private struct Mask {
@@ -598,6 +621,7 @@ private extension GrayBuffer {
         }
         let primaryIsDark = chosen.isDark
         let glyphs = chosen.glyphs
+        let stroke = buffer.strokeMask()
         let bandSource = chosen.bandSource
         let opened = darkChoice.opens || lightChoice.opens
         let bandSums = opened ? digitRowSums(bandSource.rowSums) : bandSource.rowSums
@@ -613,7 +637,8 @@ private extension GrayBuffer {
         let paintedMarks = buffer.extremeMarkMask()
         let measuredBands = opened ? solidBands : merge(foundBands, whenGapBelow: 0)
         let measured = measuredBands.map { band -> (band: (Int, Int), cells: [Cell]) in
-            (band, cells(in: band, mask: glyphs, buffer: buffer, bandIndex: 0, darkInk: primaryIsDark))
+            let mask = columnMask(glyphs: glyphs, stroke: stroke, band: band)
+            return (band, cells(in: band, mask: mask, buffer: buffer, bandIndex: 0, darkInk: primaryIsDark))
         }
         let tallHeights = measured.flatMap(\.cells).filter { $0.height > 0 }.map(\.height).sorted()
         let cellHeight = tallHeights.isEmpty ? 1 : tallHeights[tallHeights.count / 2]
@@ -621,7 +646,13 @@ private extension GrayBuffer {
             ? merge(solidBands, whenGapBelow: max(2, buffer.height / 40))
             : merge(foundBands, whenGapBelow: max(1, cellHeight / 2))
         return splitBands.compactMap { band -> [Cell]? in
-            let found = cells(in: band, mask: glyphs, buffer: buffer, bandIndex: 0, darkInk: primaryIsDark)
+            let found = cells(
+                in: band,
+                mask: columnMask(glyphs: glyphs, stroke: stroke, band: band),
+                buffer: buffer,
+                bandIndex: 0,
+                darkInk: primaryIsDark
+            )
             if buffer.width > 1500 {
                 let desc = found.map { "\($0.character)@\($0.minX)-\($0.maxX),\($0.minY)-\($0.maxY)" }.joined(separator: " ")
                 fputs("cells \(band.0)-\(band.1) \(desc)\n", stderr)
@@ -1025,6 +1056,16 @@ private func columnProfile(_ mask: Mask) -> (sums: [Int], longest: [Int]) {
         }
     }
     return (sums, longest)
+}
+
+/// The wide window glues neighboring digits into one run. The stroke window
+/// keeps the gap. Use it when it actually splits that run.
+private func columnMask(glyphs: Mask, stroke: Mask, band: (Int, Int)) -> Mask {
+    let wide = columnRuns(glyphs, y0: band.0, y1: band.1, width: glyphs.width).map { $0.1 - $0.0 }.max() ?? 0
+    let fineRuns = columnRuns(stroke, y0: band.0, y1: band.1, width: stroke.width)
+    let fine = fineRuns.map { $0.1 - $0.0 }.max() ?? 0
+    guard fine > 0, fineRuns.count > 1, wide > fine * 2 else { return glyphs }
+    return stroke
 }
 
 private func columnRuns(_ mask: Mask, y0: Int, y1: Int, width: Int) -> [(Int, Int)] {
