@@ -206,6 +206,21 @@ struct OCRSevenSegment576Tests {
         #expect(segmentTexts(result) == ["32.88", "8.022"])
     }
 
+    @Test func strokeSizedWindowSeparatesAdjacentDigits() {
+        // A window of one eighth of this crop is wider than the gap between digits.
+        // The lit strokes are only a few levels darker than that gap, so the wide
+        // window marks the gap as ink and the row becomes one blob.
+        let image = SegmentPanel.render(
+            rows: [atoms("32.88"), atoms("8.022")],
+            inkLevel: 100,
+            backgroundLevel: 130,
+            scale: 4
+        )
+        let result = decode(image)
+        #expect(result.extractedText == "32.88\n8.022")
+        #expect(segmentTexts(result) == ["32.88", "8.022"])
+    }
+
     @Test func bezelDarkerThanTheGlassKeepsWashedDigits() {
         // Scenario 1 hand crop, 2026-10-22: corners 123, glass ~200, digit cores ~140.
         // The corner ceiling is 114, so this ink is dropped even though it is darker than the glass.
