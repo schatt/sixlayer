@@ -572,6 +572,17 @@ public extension PlatformImage {
         )
         #endif
     }
+
+    /// Bitmap in display orientation. This returns the stored pixels; the orientation tag is not applied yet.
+    public func orientedCGImage() -> CGImage? {
+        #if os(iOS) || os(tvOS) || os(visionOS) || os(watchOS)
+        return uiImage.cgImage
+        #elseif os(macOS)
+        return nsImage.cgImage(forProposedRect: nil, context: nil, hints: nil)
+        #else
+        return nil
+        #endif
+    }
 }
 
 // MARK: - Platform-Specific Image Extensions for Conversion
