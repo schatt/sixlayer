@@ -400,29 +400,67 @@ private struct GrayBuffer {
     }
 
     private func masks() -> (dark: Mask, light: Mask, darkCore: Mask, lightCore: Mask) {
-        // ssocr's default cut: halfway from the darkest pixel to the brightest.
-        // A picture whose whole range is inside the ink margin has no digit.
-        var minLevel = 255
-        var maxLevel = 0
-        for pixel in pixels {
-            let level = Int(pixel)
-            if level < minLevel { minLevel = level }
-            if level > maxLevel { maxLevel = level }
-        }
-        let separated = maxLevel - minLevel > inkMargin
-        let mid = minLevel + (maxLevel - minLevel) / 2
+        // ssocr dynamic_threshold: halfway from the local minimum to the local
+        // maximum. The mean of a wide window marks the gap between digits as ink.
+        // The window stays near a stroke so one row does not set the cut for the next.
+        let radius = max(4, min(width, height) / 40)
+        let range = localRange(radius: radius)
         var dark = [Bool](repeating: false, count: pixels.count)
         var light = [Bool](repeating: false, count: pixels.count)
-        if separated {
-            for index in pixels.indices {
-                let pixel = Int(pixels[index])
-                dark[index] = pixel < mid && pixel + inkMargin <= maxLevel
-                light[index] = pixel > mid && pixel >= minLevel + inkMargin
-            }
+        for index in pixels.indices {
+            let pixel = Int(pixels[index])
+            let low = range.low[index]
+            let high = range.high[index]
+            guard high - low > inkMargin else { continue }
+            let mid = low + (high - low) / 2
+            dark[index] = pixel < mid && pixel + inkMargin <= high
+            light[index] = pixel > mid && pixel >= low + inkMargin
         }
         let darkMask = Mask(bits: dark, width: width, height: height)
         let lightMask = Mask(bits: light, width: width, height: height)
         return (darkMask, lightMask, darkMask, lightMask)
+    }
+
+    /// Min and max inside a square window. A square window separates into a
+    /// horizontal pass and a vertical pass.
+    private func localRange(radius: Int) -> (low: [Int], high: [Int]) {
+        var horizontalLow = [Int](repeating: 255, count: pixels.count)
+        var horizontalHigh = [Int](repeating: 0, count: pixels.count)
+        for y in 0..<height {
+            let row = y * width
+            for x in 0..<width {
+                let x0 = max(0, x - radius)
+                let x1 = min(width - 1, x + radius)
+                var low = 255
+                var high = 0
+                for sample in x0...x1 {
+                    let level = Int(pixels[row + sample])
+                    if level < low { low = level }
+                    if level > high { high = level }
+                }
+                horizontalLow[row + x] = low
+                horizontalHigh[row + x] = high
+            }
+        }
+        var low = [Int](repeating: 255, count: pixels.count)
+        var high = [Int](repeating: 0, count: pixels.count)
+        for x in 0..<width {
+            for y in 0..<height {
+                let y0 = max(0, y - radius)
+                let y1 = min(height - 1, y + radius)
+                var columnLow = 255
+                var columnHigh = 0
+                for sample in y0...y1 {
+                    let index = sample * width + x
+                    if horizontalLow[index] < columnLow { columnLow = horizontalLow[index] }
+                    if horizontalHigh[index] > columnHigh { columnHigh = horizontalHigh[index] }
+                }
+                let index = y * width + x
+                low[index] = columnLow
+                high[index] = columnHigh
+            }
+        }
+        return (low, high)
     }
 
     private func fitted(maxSide: Int) -> GrayBuffer {
