@@ -400,10 +400,14 @@ private struct GrayBuffer {
     }
 
     private func masks() -> (dark: Mask, light: Mask, darkCore: Mask, lightCore: Mask) {
-        // ssocr dynamic_threshold: halfway from the local minimum to the local
-        // maximum. The mean of a wide window marks the gap between digits as ink.
-        // The window stays near a stroke so one row does not set the cut for the next.
-        let radius = max(4, min(width, height) / 40)
+        // ssocr dynamic_threshold, with the cut seven tenths of the way from
+        // the local dark to the local bright. Half of that range drops a
+        // stroke once glare has lifted it and a darker part of the same
+        // stroke is still in the window. The window is an eighth of the
+        // short side, capped, so the center of a stroke still sees glass
+        // and a glare fringe still sees a real stroke. The gap before the
+        // next row is wider than this on the fixtures.
+        let radius = min(48, max(8, min(width, height) / 8))
         let range = localRange(radius: radius)
         var dark = [Bool](repeating: false, count: pixels.count)
         var light = [Bool](repeating: false, count: pixels.count)
@@ -412,9 +416,11 @@ private struct GrayBuffer {
             let low = range.low[index]
             let high = range.high[index]
             guard high - low > inkMargin else { continue }
-            let mid = low + (high - low) / 2
-            dark[index] = pixel < mid && pixel + inkMargin <= high
-            light[index] = pixel > mid && pixel >= low + inkMargin
+            let span = high - low
+            let darkCut = low + span * 7 / 10
+            let lightCut = low + span * 3 / 10
+            dark[index] = pixel < darkCut && pixel + inkMargin <= high
+            light[index] = pixel > lightCut && pixel >= low + inkMargin
         }
         let darkMask = Mask(bits: dark, width: width, height: height)
         let lightMask = Mask(bits: light, width: width, height: height)
@@ -652,19 +658,6 @@ private extension GrayBuffer {
                 bandIndex: 0,
                 darkInk: primaryIsDark
             )
-            let desc = found.map { "\($0.character)@\($0.minX)-\($0.maxX),\($0.minY)-\($0.maxY) h=\($0.height)" }.joined(separator: " ")
-            let line = "cells \(buffer.width)x\(buffer.height) \(band.0)-\(band.1) \(desc)\n"
-            if let data = line.data(using: .utf8) {
-                let url = URL(fileURLWithPath: "/tmp/slf-591-cells.txt")
-                if FileManager.default.fileExists(atPath: url.path),
-                   let handle = try? FileHandle(forWritingTo: url) {
-                    _ = try? handle.seekToEnd()
-                    try? handle.write(contentsOf: data)
-                    try? handle.close()
-                } else {
-                    try? data.write(to: url)
-                }
-            }
             let marks = opened
                 ? []
                 : oppositeMarks(in: band, secondary: paintedMarks, existing: found, buffer: buffer, bandIndex: 0)
@@ -1052,7 +1045,11 @@ private func columnRuns(_ mask: Mask, y0: Int, y1: Int, width: Int) -> [(Int, In
     let bandHeight = max(1, y1 - y0)
     return raw.flatMap { span in
         let spanWidth = span.1 - span.0
-        let widerThanADigit = spanWidth * 10 > bandHeight * 7
+        // A digit is taller than it is wide. A 4 has no top or bottom bar, so
+        // its ink band is shorter than the cell, and the old 0.7 ratio split
+        // that one glyph at the crossbar. Two digits side by side are wider
+        // than the band is tall.
+        let widerThanADigit = spanWidth > bandHeight
         guard widerThanADigit || (typical > 0 && spanWidth > typical * 2) else { return [span] }
         let peak = (span.0..<span.1).map { sums[$0] }.max() ?? 0
         let floor = max(1, widerThanADigit ? peak / 5 : peak / 8)
