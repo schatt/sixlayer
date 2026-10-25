@@ -312,6 +312,21 @@ private struct GrayBuffer {
         // dots are the same height, so this only drops the short band.
         let topHeight = vertical.count == 2 ? vertical[0].1 - vertical[0].0 : 0
         let lowerHeight = vertical.count == 2 ? vertical[1].1 - vertical[1].0 : 0
+        if box.minX >= 80, box.maxX <= 120, box.height > 20 {
+            let runs = vertical.map { "\($0.0)-\($0.1)" }.joined(separator: ",")
+            let line = "fringe \(box.minX)-\(box.maxX),\(box.minY)-\(box.maxY) runs=\(vertical.count) [\(runs)] top=\(topHeight) lower=\(lowerHeight) digitH=\(digitHeight)\n"
+            if let data = line.data(using: .utf8) {
+                let url = URL(fileURLWithPath: "/tmp/slf-591-fringe.txt")
+                if FileManager.default.fileExists(atPath: url.path),
+                   let handle = try? FileHandle(forWritingTo: url) {
+                    _ = try? handle.seekToEnd()
+                    try? handle.write(contentsOf: data)
+                    try? handle.close()
+                } else {
+                    try? data.write(to: url)
+                }
+            }
+        }
         if topHeight > 0, topHeight * 2 < lowerHeight, topHeight * 5 < digitHeight, splitGap > topHeight {
             let lower = PixelBox(
                 minX: box.minX,
