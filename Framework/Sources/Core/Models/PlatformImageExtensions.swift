@@ -8,6 +8,7 @@
 import Foundation
 import SwiftUI
 import CoreGraphics
+import ImageIO
 #if canImport(CoreImage)
 import CoreImage
 #endif
@@ -575,6 +576,9 @@ public extension PlatformImage {
 
     /// Bitmap in display orientation. This returns the stored pixels; the orientation tag is not applied yet.
     public func orientedCGImage() -> CGImage? {
+        if let data = originalEncodedData, let opened = Self.cgImage(opening: data) {
+            return opened
+        }
         #if os(iOS) || os(tvOS) || os(visionOS) || os(watchOS)
         return uiImage.cgImage
         #elseif os(macOS)
@@ -582,6 +586,12 @@ public extension PlatformImage {
         #else
         return nil
         #endif
+    }
+
+    /// Pixels from encoded photo bytes, ignoring the orientation tag.
+    public static func cgImage(opening data: Data) -> CGImage? {
+        guard let source = CGImageSourceCreateWithData(data as CFData, nil) else { return nil }
+        return CGImageSourceCreateImageAtIndex(source, 0, nil)
     }
 }
 
