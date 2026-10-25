@@ -685,7 +685,8 @@ private extension GrayBuffer {
         let splitBands = opened
             ? merge(solidBands, whenGapBelow: max(2, buffer.height / 40))
             : merge(foundBands, whenGapBelow: max(1, cellHeight / 2))
-        return splitBands.compactMap { band -> [Cell]? in
+        let rowBands = splitBands.flatMap { splitOnValleys(bandSums, band: $0) }
+        return rowBands.compactMap { band -> [Cell]? in
             let found = cells(
                 in: band,
                 mask: glyphs,
@@ -887,6 +888,42 @@ private func digitRowSums(_ sums: [Int]) -> [Int] {
     // hold many more. Leaving the gap at sum > 0 joins the two lines.
     let floor = max(8, peak / 20)
     return sums.map { $0 >= floor ? $0 : 0 }
+}
+
+/// The gap between two washed rows never reaches zero. Split a tall band
+/// where the ink falls to under two fifths of the peak and both sides
+/// still look like a row. A thin spot inside one digit fails that.
+private func splitOnValleys(_ sums: [Int], band: (Int, Int)) -> [(Int, Int)] {
+    let height = band.1 - band.0
+    guard height > 30, band.1 <= sums.count else { return [band] }
+    let peak = (band.0..<band.1).map { sums[$0] }.max() ?? 0
+    guard peak > 8 else { return [band] }
+    let floor = max(1, peak * 2 / 5)
+    var gaps: [(Int, Int)] = []
+    var start: Int?
+    for y in band.0...band.1 {
+        let low = y < band.1 && sums[y] <= floor
+        if low {
+            if start == nil { start = y }
+        } else if let open = start {
+            gaps.append((open, y))
+            start = nil
+        }
+    }
+    let splits = gaps.filter { gap in
+        let above = gap.0 - band.0
+        let below = band.1 - gap.1
+        return gap.1 - gap.0 >= 2 && above * 4 >= height && below * 4 >= height
+    }
+    guard !splits.isEmpty else { return [band] }
+    var pieces: [(Int, Int)] = []
+    var cursor = band.0
+    for gap in splits {
+        pieces.append((cursor, gap.0))
+        cursor = gap.1
+    }
+    pieces.append((cursor, band.1))
+    return pieces.filter { $0.1 - $0.0 > 2 }
 }
 
 private func runs(_ sums: [Int]) -> [(Int, Int)] {
