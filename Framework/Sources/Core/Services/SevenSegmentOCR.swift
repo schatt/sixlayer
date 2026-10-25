@@ -8,6 +8,21 @@
 import CoreGraphics
 import Foundation
 
+private enum SevenSegmentTrace {
+    static func line(_ text: String) {
+        let url = URL(fileURLWithPath: "/tmp/slf-591-decode.txt")
+        let data = Data((text + "\n").utf8)
+        if FileManager.default.fileExists(atPath: url.path),
+           let handle = try? FileHandle(forWritingTo: url) {
+            _ = try? handle.seekToEnd()
+            try? handle.write(contentsOf: data)
+            try? handle.close()
+        } else {
+            try? data.write(to: url)
+        }
+    }
+}
+
 public struct SevenSegmentPattern: OptionSet, Sendable, Equatable {
     public let rawValue: UInt8
 
@@ -173,6 +188,8 @@ private struct GrayBuffer {
             }
             return left.element.confidence < right.element.confidence
         }?.offset ?? 0
+        let lines = scores.map { "\($0.wideDigits):\($0.text)" }.joined(separator: " | ")
+        SevenSegmentTrace.line("standing \(buffer.width)x\(buffer.height) \(lines) best=\(bestTurns)")
         guard bestTurns != 0 else { return buffer }
         // A small tilt still belongs to the fine deskew. Speck rows on a
         // sideways sample read as a few wide glyphs and must not spin an
@@ -648,6 +665,11 @@ private extension GrayBuffer {
         let glyphs = chosen.glyphs
         let bandSource = chosen.bandSource
         let opened = darkChoice.opens || lightChoice.opens
+        let darkInk = masks.dark.bits.lazy.filter { $0 }.count
+        let lightInk = masks.light.bits.lazy.filter { $0 }.count
+        SevenSegmentTrace.line(
+            "chosen \(buffer.width)x\(buffer.height) darkOpen=\(darkChoice.opens) lightOpen=\(lightChoice.opens) darkInk=\(darkInk) lightInk=\(lightInk) primaryDark=\(primaryIsDark)"
+        )
         let bandSums = opened ? digitRowSums(bandSource.rowSums) : bandSource.rowSums
         let foundBands = runs(bandSums)
         let solidBands = opened
@@ -671,6 +693,8 @@ private extension GrayBuffer {
                 bandIndex: 0,
                 darkInk: primaryIsDark
             )
+            let desc = found.map(\.character).map(String.init).joined()
+            SevenSegmentTrace.line("cells \(buffer.width)x\(buffer.height) \(band.0)-\(band.1) \(desc)")
             let marks = opened
                 ? []
                 : oppositeMarks(in: band, secondary: paintedMarks, existing: found, buffer: buffer, bandIndex: 0)
