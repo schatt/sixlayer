@@ -307,6 +307,31 @@ private struct GrayBuffer {
            vertical.allSatisfy({ $0.1 - $0.0 < digitHeight * 45 / 100 }) {
             return Cell(box: box, character: ":", confidence: 1, band: bandIndex)
         }
+        // Glare lifts the glass just outside its band, so that fringe shares
+        // the decimal's columns and the two become one tall unknown. A colon's
+        // dots are the same height, so this only drops the short band.
+        let topHeight = vertical.count == 2 ? vertical[0].1 - vertical[0].0 : 0
+        let lowerHeight = vertical.count == 2 ? vertical[1].1 - vertical[1].0 : 0
+        if topHeight > 0, topHeight * 2 < lowerHeight, topHeight * 5 < digitHeight, splitGap > topHeight {
+            let lower = PixelBox(
+                minX: box.minX,
+                minY: vertical[1].0,
+                maxX: box.maxX,
+                maxY: vertical[1].1
+            )
+            return classify(
+                lower,
+                mask: mask,
+                width: width,
+                digitHeight: digitHeight,
+                digitWidth: digitWidth,
+                baseline: baseline,
+                frameTop: frameTop,
+                bandIndex: bandIndex,
+                buffer: buffer,
+                darkInk: darkInk
+            )
+        }
         if box.height * 100 >= digitHeight * 55, box.width * 100 <= box.height * 30 {
             return Cell(box: box, character: "1", confidence: 1, band: bandIndex)
         }
@@ -400,14 +425,11 @@ private struct GrayBuffer {
     }
 
     private func masks() -> (dark: Mask, light: Mask, darkCore: Mask, lightCore: Mask) {
-        // ssocr dynamic_threshold, with the cut seven tenths of the way from
-        // the local dark to the local bright. Half of that range drops a
-        // stroke once glare has lifted it and a darker part of the same
-        // stroke is still in the window. The window is an eighth of the
-        // short side, capped, so the center of a stroke still sees glass
-        // and a glare fringe still sees a real stroke. The gap before the
-        // next row is wider than this on the fixtures.
-        let radius = min(48, max(8, min(width, height) / 8))
+        // ssocr dynamic_threshold: halfway from the local minimum to the
+        // local maximum. A wider cut marks the glass beside a glared stroke.
+        // The window stays near a stroke so the gap between digits, and the
+        // next row, do not set the cut.
+        let radius = max(4, min(width, height) / 40)
         let range = localRange(radius: radius)
         var dark = [Bool](repeating: false, count: pixels.count)
         var light = [Bool](repeating: false, count: pixels.count)
@@ -416,11 +438,9 @@ private struct GrayBuffer {
             let low = range.low[index]
             let high = range.high[index]
             guard high - low > inkMargin else { continue }
-            let span = high - low
-            let darkCut = low + span * 7 / 10
-            let lightCut = low + span * 3 / 10
-            dark[index] = pixel < darkCut && pixel + inkMargin <= high
-            light[index] = pixel > lightCut && pixel >= low + inkMargin
+            let mid = low + (high - low) / 2
+            dark[index] = pixel < mid && pixel + inkMargin <= high
+            light[index] = pixel > mid && pixel >= low + inkMargin
         }
         let darkMask = Mask(bits: dark, width: width, height: height)
         let lightMask = Mask(bits: light, width: width, height: height)
