@@ -8,21 +8,6 @@
 import CoreGraphics
 import Foundation
 
-private enum SevenSegmentTrace {
-    static func line(_ text: String) {
-        let url = URL(fileURLWithPath: "/tmp/slf-591-decode.txt")
-        let data = Data((text + "\n").utf8)
-        if FileManager.default.fileExists(atPath: url.path),
-           let handle = try? FileHandle(forWritingTo: url) {
-            _ = try? handle.seekToEnd()
-            try? handle.write(contentsOf: data)
-            try? handle.close()
-        } else {
-            try? data.write(to: url)
-        }
-    }
-}
-
 public struct SevenSegmentPattern: OptionSet, Sendable, Equatable {
     public let rawValue: UInt8
 
@@ -188,8 +173,6 @@ private struct GrayBuffer {
             }
             return left.element.confidence < right.element.confidence
         }?.offset ?? 0
-        let lines = scores.map { "\($0.wideDigits):\($0.text)" }.joined(separator: " | ")
-        SevenSegmentTrace.line("standing \(buffer.width)x\(buffer.height) \(lines) best=\(bestTurns)")
         guard bestTurns != 0 else { return buffer }
         // A small tilt still belongs to the fine deskew. Speck rows on a
         // sideways sample read as a few wide glyphs and must not spin an
@@ -665,11 +648,6 @@ private extension GrayBuffer {
         let glyphs = chosen.glyphs
         let bandSource = chosen.bandSource
         let opened = darkChoice.opens || lightChoice.opens
-        let darkInk = masks.dark.bits.lazy.filter { $0 }.count
-        let lightInk = masks.light.bits.lazy.filter { $0 }.count
-        SevenSegmentTrace.line(
-            "chosen \(buffer.width)x\(buffer.height) darkOpen=\(darkChoice.opens) lightOpen=\(lightChoice.opens) darkInk=\(darkInk) lightInk=\(lightInk) primaryDark=\(primaryIsDark)"
-        )
         let bandSums = opened ? digitRowSums(bandSource.rowSums) : bandSource.rowSums
         let foundBands = runs(bandSums)
         let solidBands = opened
@@ -685,8 +663,7 @@ private extension GrayBuffer {
         let splitBands = opened
             ? merge(solidBands, whenGapBelow: max(2, buffer.height / 40))
             : merge(foundBands, whenGapBelow: max(1, cellHeight / 2))
-        let rowBands = splitBands.flatMap { splitOnValleys(bandSums, band: $0) }
-        return rowBands.compactMap { band -> [Cell]? in
+        return splitBands.compactMap { band -> [Cell]? in
             let found = cells(
                 in: band,
                 mask: glyphs,
@@ -694,8 +671,6 @@ private extension GrayBuffer {
                 bandIndex: 0,
                 darkInk: primaryIsDark
             )
-            let desc = found.map(\.character).map(String.init).joined()
-            SevenSegmentTrace.line("cells \(buffer.width)x\(buffer.height) \(band.0)-\(band.1) \(desc)")
             let marks = opened
                 ? []
                 : oppositeMarks(in: band, secondary: paintedMarks, existing: found, buffer: buffer, bandIndex: 0)
@@ -888,42 +863,6 @@ private func digitRowSums(_ sums: [Int]) -> [Int] {
     // hold many more. Leaving the gap at sum > 0 joins the two lines.
     let floor = max(8, peak / 20)
     return sums.map { $0 >= floor ? $0 : 0 }
-}
-
-/// The gap between two washed rows never reaches zero. Split a tall band
-/// where the ink falls to under two fifths of the peak and both sides
-/// still look like a row. A thin spot inside one digit fails that.
-private func splitOnValleys(_ sums: [Int], band: (Int, Int)) -> [(Int, Int)] {
-    let height = band.1 - band.0
-    guard height > 30, band.1 <= sums.count else { return [band] }
-    let peak = (band.0..<band.1).map { sums[$0] }.max() ?? 0
-    guard peak > 8 else { return [band] }
-    let floor = max(1, peak * 2 / 5)
-    var gaps: [(Int, Int)] = []
-    var start: Int?
-    for y in band.0...band.1 {
-        let low = y < band.1 && sums[y] <= floor
-        if low {
-            if start == nil { start = y }
-        } else if let open = start {
-            gaps.append((open, y))
-            start = nil
-        }
-    }
-    let splits = gaps.filter { gap in
-        let above = gap.0 - band.0
-        let below = band.1 - gap.1
-        return gap.1 - gap.0 >= 2 && above * 4 >= height && below * 4 >= height
-    }
-    guard !splits.isEmpty else { return [band] }
-    var pieces: [(Int, Int)] = []
-    var cursor = band.0
-    for gap in splits {
-        pieces.append((cursor, gap.0))
-        cursor = gap.1
-    }
-    pieces.append((cursor, band.1))
-    return pieces.filter { $0.1 - $0.0 > 2 }
 }
 
 private func runs(_ sums: [Int]) -> [(Int, Int)] {
