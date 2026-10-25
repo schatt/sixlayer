@@ -173,8 +173,6 @@ private struct GrayBuffer {
             }
             return left.element.confidence < right.element.confidence
         }?.offset ?? 0
-        let lines = scores.map { "\($0.wideDigits):\($0.text)" }.joined(separator: " | ")
-        fputs("standing \(buffer.width)x\(buffer.height) \(lines) best=\(bestTurns)\n", stderr)
         guard bestTurns != 0 else { return buffer }
         // A small tilt still belongs to the fine deskew. Speck rows on a
         // sideways sample read as a few wide glyphs and must not spin an
@@ -655,11 +653,6 @@ private extension GrayBuffer {
         let solidBands = opened
             ? foundBands.filter { ($0.1 - $0.0) * 20 >= buffer.height }
             : foundBands
-        let bandText = solidBands.map { "\($0.0)-\($0.1)" }.joined(separator: " ")
-        fputs(
-            "chosen \(buffer.width)x\(buffer.height) darkOpen=\(darkChoice.opens) lightOpen=\(lightChoice.opens) tall=\(bandText)\n",
-            stderr
-        )
         let paintedMarks = buffer.extremeMarkMask()
         let measuredBands = opened ? solidBands : merge(foundBands, whenGapBelow: 0)
         let measured = measuredBands.map { band -> (band: (Int, Int), cells: [Cell]) in
@@ -917,11 +910,6 @@ private func polarity(
     let looseTall = runs(loose.rowSums).map { $0.1 - $0.0 }.max() ?? 0
     let limitedTall = runs(limitedCore.rowSums).map { $0.1 - $0.0 }.max() ?? 0
     let fills = looseTall * 100 > loose.height * 70
-    let spanText = span.map { "\($0.0)-\($0.1)" } ?? "nil"
-    fputs(
-        "polarity \(isDark ? "dark" : "light") \(loose.width)x\(loose.height) span=\(spanText) looseTall=\(looseTall) limitedTall=\(limitedTall) fills=\(fills)\n",
-        stderr
-    )
     guard let span, fills, limitedTall * 2 < looseTall else {
         return (false, (isDark, loose, loose))
     }
