@@ -8,12 +8,11 @@
 //   DYLD_FRAMEWORK_PATH=build/derived/Build/Products/Debug \
 //     build/decode_washed_lcd <photo.jpg> [x y w h]
 //
-// Omit the crop to use the whole image. Scenario 1 hand crop:
-//   x=775 y=785 w=2390 h=1130 [deskew degrees]
+// The photo is opened in display orientation. Crop coordinates are in that
+// upright bitmap. Omit the crop to use the whole image.
 
 import CoreGraphics
 import Foundation
-import ImageIO
 import SixLayerFramework
 
 let args = CommandLine.arguments
@@ -23,8 +22,8 @@ guard args.count == 2 || args.count == 6 || args.count == 7 else {
 }
 
 let url = URL(fileURLWithPath: args[1])
-guard let source = CGImageSourceCreateWithURL(url as CFURL, nil),
-      let image = CGImageSourceCreateImageAtIndex(source, 0, nil) else {
+guard let file = try? Data(contentsOf: url),
+      let image = PlatformImage.cgImage(opening: file) else {
     fputs("unreadable image\n", stderr)
     exit(1)
 }
