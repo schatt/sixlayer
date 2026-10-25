@@ -574,12 +574,15 @@ public extension PlatformImage {
         #endif
     }
 
-    /// Bitmap in display orientation. This returns the stored pixels; the orientation tag is not applied yet.
+    /// Bitmap in display orientation. Encoded photos use the orientation tag.
+    /// A platform image built from pixels that are already upright is returned as stored.
     public func orientedCGImage() -> CGImage? {
         if let data = originalEncodedData, let opened = Self.cgImage(opening: data) {
             return opened
         }
-        #if os(iOS) || os(tvOS) || os(visionOS) || os(watchOS)
+        #if os(iOS) || os(tvOS) || os(visionOS)
+        return uiImage.cgImageApplyingDisplayOrientation()
+        #elseif os(watchOS)
         return uiImage.cgImage
         #elseif os(macOS)
         return nsImage.cgImage(forProposedRect: nil, context: nil, hints: nil)
@@ -588,10 +591,28 @@ public extension PlatformImage {
         #endif
     }
 
-    /// Pixels from encoded photo bytes, ignoring the orientation tag.
+    /// Pixels from encoded photo bytes, turned so the orientation tag is upright.
     public static func cgImage(opening data: Data) -> CGImage? {
         guard let source = CGImageSourceCreateWithData(data as CFData, nil) else { return nil }
-        return CGImageSourceCreateImageAtIndex(source, 0, nil)
+        let props = CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [String: Any]
+        let width = intProperty(props, kCGImagePropertyPixelWidth)
+        let height = intProperty(props, kCGImagePropertyPixelHeight)
+        let maxSide = max(width, height)
+        guard maxSide > 0 else { return CGImageSourceCreateImageAtIndex(source, 0, nil) }
+        let options: [CFString: Any] = [
+            kCGImageSourceCreateThumbnailFromImageAlways: true,
+            kCGImageSourceCreateThumbnailWithTransform: true,
+            kCGImageSourceThumbnailMaxPixelSize: maxSide
+        ]
+        return CGImageSourceCreateThumbnailAtIndex(source, 0, options as CFDictionary)
+            ?? CGImageSourceCreateImageAtIndex(source, 0, nil)
+    }
+
+    private static func intProperty(_ props: [String: Any]?, _ key: CFString) -> Int {
+        let value = props?[key as String]
+        if let number = value as? NSNumber { return number.intValue }
+        if let int = value as? Int { return int }
+        return 0
     }
 }
 
@@ -608,7 +629,25 @@ public extension UIImage {
         return platformImage.uiImage
     }
 }
-#elseif os(macOS)
+#endif
+
+#if os(iOS) || os(tvOS) || os(visionOS)
+extension UIImage {
+    /// Draw the image so `imageOrientation` is baked into the pixels.
+    func cgImageApplyingDisplayOrientation() -> CGImage? {
+        if imageOrientation == .up { return cgImage }
+        let format = UIGraphicsImageRendererFormat()
+        format.scale = scale
+        format.opaque = false
+        let renderer = UIGraphicsImageRenderer(size: size, format: format)
+        return renderer.image { _ in
+            draw(in: CGRect(origin: .zero, size: size))
+        }.cgImage
+    }
+}
+#endif
+
+#if os(macOS)
 public extension NSImage {
     /// Conversion from PlatformImage to NSImage (macOS only)
     /// This enables the currency exchange model: PlatformImage → NSImage at system boundary
