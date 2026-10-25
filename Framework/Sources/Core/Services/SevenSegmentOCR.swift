@@ -307,45 +307,30 @@ private struct GrayBuffer {
            vertical.allSatisfy({ $0.1 - $0.0 < digitHeight * 45 / 100 }) {
             return Cell(box: box, character: ":", confidence: 1, band: bandIndex)
         }
-        // Glare lifts the glass just outside its band, so that fringe shares
-        // the decimal's columns and the two become one tall unknown. A colon's
-        // dots are the same height, so this only drops the short band.
-        let topHeight = vertical.count == 2 ? vertical[0].1 - vertical[0].0 : 0
-        let lowerHeight = vertical.count == 2 ? vertical[1].1 - vertical[1].0 : 0
-        if box.minX >= 80, box.maxX <= 120, box.height > 20 {
-            let runs = vertical.map { "\($0.0)-\($0.1)" }.joined(separator: ",")
-            let line = "fringe \(box.minX)-\(box.maxX),\(box.minY)-\(box.maxY) runs=\(vertical.count) [\(runs)] top=\(topHeight) lower=\(lowerHeight) digitH=\(digitHeight)\n"
-            if let data = line.data(using: .utf8) {
-                let url = URL(fileURLWithPath: "/tmp/slf-591-fringe.txt")
-                if FileManager.default.fileExists(atPath: url.path),
-                   let handle = try? FileHandle(forWritingTo: url) {
-                    _ = try? handle.seekToEnd()
-                    try? handle.write(contentsOf: data)
-                    try? handle.close()
-                } else {
-                    try? data.write(to: url)
-                }
+        // Glare lifts the glass on both sides of its band. Those short bands
+        // share the decimal's columns, so the three reads as one unknown.
+        // A colon's dots are the same height and stay one mark.
+        if vertical.count >= 2, let kept = vertical.last {
+            let keptHeight = kept.1 - kept.0
+            let fringe = vertical.dropLast().allSatisfy { run in
+                let height = run.1 - run.0
+                return height * 2 < keptHeight && height * 5 < digitHeight && kept.0 - run.1 > height
             }
-        }
-        if topHeight > 0, topHeight * 2 < lowerHeight, topHeight * 5 < digitHeight, splitGap > topHeight {
-            let lower = PixelBox(
-                minX: box.minX,
-                minY: vertical[1].0,
-                maxX: box.maxX,
-                maxY: vertical[1].1
-            )
-            return classify(
-                lower,
-                mask: mask,
-                width: width,
-                digitHeight: digitHeight,
-                digitWidth: digitWidth,
-                baseline: baseline,
-                frameTop: frameTop,
-                bandIndex: bandIndex,
-                buffer: buffer,
-                darkInk: darkInk
-            )
+            if fringe {
+                let lower = PixelBox(minX: box.minX, minY: kept.0, maxX: box.maxX, maxY: kept.1)
+                return classify(
+                    lower,
+                    mask: mask,
+                    width: width,
+                    digitHeight: digitHeight,
+                    digitWidth: digitWidth,
+                    baseline: baseline,
+                    frameTop: frameTop,
+                    bandIndex: bandIndex,
+                    buffer: buffer,
+                    darkInk: darkInk
+                )
+            }
         }
         if box.height * 100 >= digitHeight * 55, box.width * 100 <= box.height * 30 {
             return Cell(box: box, character: "1", confidence: 1, band: bandIndex)
