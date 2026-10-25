@@ -652,9 +652,18 @@ private extension GrayBuffer {
                 bandIndex: 0,
                 darkInk: primaryIsDark
             )
-            if buffer.width > 1500 {
-                let desc = found.map { "\($0.character)@\($0.minX)-\($0.maxX),\($0.minY)-\($0.maxY)" }.joined(separator: " ")
-                fputs("cells \(band.0)-\(band.1) \(desc)\n", stderr)
+            let desc = found.map { "\($0.character)@\($0.minX)-\($0.maxX),\($0.minY)-\($0.maxY) h=\($0.height)" }.joined(separator: " ")
+            let line = "cells \(buffer.width)x\(buffer.height) \(band.0)-\(band.1) \(desc)\n"
+            if let data = line.data(using: .utf8) {
+                let url = URL(fileURLWithPath: "/tmp/slf-591-cells.txt")
+                if FileManager.default.fileExists(atPath: url.path),
+                   let handle = try? FileHandle(forWritingTo: url) {
+                    _ = try? handle.seekToEnd()
+                    try? handle.write(contentsOf: data)
+                    try? handle.close()
+                } else {
+                    try? data.write(to: url)
+                }
             }
             let marks = opened
                 ? []
