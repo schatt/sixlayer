@@ -400,43 +400,29 @@ private struct GrayBuffer {
     }
 
     private func masks() -> (dark: Mask, light: Mask, darkCore: Mask, lightCore: Mask) {
-        let window = oddWindow(min(width, height))
-        let radius = window / 2
-        let table = integral(pixels, width: width, height: height)
+        // ssocr's default cut: halfway from the darkest pixel to the brightest.
+        // A picture whose whole range is inside the ink margin has no digit.
+        var minLevel = 255
+        var maxLevel = 0
+        for pixel in pixels {
+            let level = Int(pixel)
+            if level < minLevel { minLevel = level }
+            if level > maxLevel { maxLevel = level }
+        }
+        let separated = maxLevel - minLevel > inkMargin
+        let mid = minLevel + (maxLevel - minLevel) / 2
         var dark = [Bool](repeating: false, count: pixels.count)
-        var darkReach = [Bool](repeating: false, count: pixels.count)
-        var darkCore = [Bool](repeating: false, count: pixels.count)
         var light = [Bool](repeating: false, count: pixels.count)
-        var lightCore = [Bool](repeating: false, count: pixels.count)
-        for y in 0..<height {
-            for x in 0..<width {
-                let x0 = max(0, x - radius)
-                let y0 = max(0, y - radius)
-                let x1 = min(width, x + radius + 1)
-                let y1 = min(height, y + radius + 1)
-                let area = (x1 - x0) * (y1 - y0)
-                let sum = regionSum(table, width: width, x0: x0, y0: y0, x1: x1, y1: y1)
-                let mean = Int(sum / UInt64(max(area, 1)))
-                let pixel = Int(pixels[y * width + x])
-                let index = y * width + x
-                // Local glass only. The corner is a bezel on a pump crop.
-                // Seven percent under the local mean keeps a glare fringe out
-                // without using that corner as the ceiling.
-                let underGlass = pixel < mean * 93 / 100
-                dark[index] = underGlass && pixel + inkMargin < mean
-                darkReach[index] = underGlass
-                darkCore[index] = underGlass && pixel + coreMargin < mean
-                light[index] = pixel > mean + inkMargin
-                lightCore[index] = pixel > mean + coreMargin
+        if separated {
+            for index in pixels.indices {
+                let pixel = Int(pixels[index])
+                dark[index] = pixel < mid && pixel + inkMargin <= maxLevel
+                light[index] = pixel > mid && pixel >= minLevel + inkMargin
             }
         }
-        dark = grow(dark, within: darkReach, pixels: pixels, width: width)
-        return (
-            Mask(bits: dark, width: width, height: height),
-            Mask(bits: light, width: width, height: height),
-            Mask(bits: darkCore, width: width, height: height),
-            Mask(bits: lightCore, width: width, height: height)
-        )
+        let darkMask = Mask(bits: dark, width: width, height: height)
+        let lightMask = Mask(bits: light, width: width, height: height)
+        return (darkMask, lightMask, darkMask, lightMask)
     }
 
     private func fitted(maxSide: Int) -> GrayBuffer {
@@ -503,29 +489,6 @@ private struct GrayBuffer {
             width: width,
             height: height
         )
-    }
-
-    /// ssocr's dynamic threshold at about one stroke. The side/8 window is
-    /// wider than the gap between digits on a pump LCD, so that gap becomes ink.
-    fileprivate func strokeMask() -> Mask {
-        let radius = 10
-        let margin = 18
-        let table = integral(pixels, width: width, height: height)
-        var bits = [Bool](repeating: false, count: pixels.count)
-        for y in 0..<height {
-            for x in 0..<width {
-                let x0 = max(0, x - radius)
-                let y0 = max(0, y - radius)
-                let x1 = min(width, x + radius + 1)
-                let y1 = min(height, y + radius + 1)
-                let area = (x1 - x0) * (y1 - y0)
-                let sum = regionSum(table, width: width, x0: x0, y0: y0, x1: x1, y1: y1)
-                let mean = Int(sum / UInt64(max(area, 1)))
-                let pixel = Int(pixels[y * width + x])
-                bits[y * width + x] = pixel + margin < mean && pixel < mean * 93 / 100
-            }
-        }
-        return Mask(bits: bits, width: width, height: height)
     }
 }
 
@@ -621,7 +584,6 @@ private extension GrayBuffer {
         }
         let primaryIsDark = chosen.isDark
         let glyphs = chosen.glyphs
-        let stroke = buffer.strokeMask()
         let bandSource = chosen.bandSource
         let opened = darkChoice.opens || lightChoice.opens
         let bandSums = opened ? digitRowSums(bandSource.rowSums) : bandSource.rowSums
@@ -637,8 +599,7 @@ private extension GrayBuffer {
         let paintedMarks = buffer.extremeMarkMask()
         let measuredBands = opened ? solidBands : merge(foundBands, whenGapBelow: 0)
         let measured = measuredBands.map { band -> (band: (Int, Int), cells: [Cell]) in
-            let mask = columnMask(glyphs: glyphs, stroke: stroke, band: band)
-            return (band, cells(in: band, mask: mask, buffer: buffer, bandIndex: 0, darkInk: primaryIsDark))
+            return (band, cells(in: band, mask: glyphs, buffer: buffer, bandIndex: 0, darkInk: primaryIsDark))
         }
         let tallHeights = measured.flatMap(\.cells).filter { $0.height > 0 }.map(\.height).sorted()
         let cellHeight = tallHeights.isEmpty ? 1 : tallHeights[tallHeights.count / 2]
@@ -648,7 +609,7 @@ private extension GrayBuffer {
         return splitBands.compactMap { band -> [Cell]? in
             let found = cells(
                 in: band,
-                mask: columnMask(glyphs: glyphs, stroke: stroke, band: band),
+                mask: glyphs,
                 buffer: buffer,
                 bandIndex: 0,
                 darkInk: primaryIsDark
@@ -811,33 +772,6 @@ private func clearingBorderComponents(_ mask: Mask) -> Mask {
         consider(y * width + width - 1)
     }
     return Mask(bits: bits, width: width, height: height)
-}
-
-private func grow(_ seeds: [Bool], within reach: [Bool], pixels: [UInt8], width: Int) -> [Bool] {
-    // A junction sits inside its own stroke, so the margin misses it.
-    // Extend a seed only into the same gray, and only under the local ceiling.
-    var mask = seeds
-    var queue: [(index: Int, level: Int)] = []
-    for index in seeds.indices where seeds[index] {
-        queue.append((index, Int(pixels[index])))
-    }
-    var head = 0
-    let height = width == 0 ? 0 : mask.count / width
-    while head < queue.count {
-        let current = queue[head]
-        head += 1
-        let x = current.index % width
-        let y = current.index / width
-        for (nx, ny) in [(x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)] {
-            guard nx >= 0, ny >= 0, nx < width, ny < height else { continue }
-            let next = ny * width + nx
-            let level = Int(pixels[next])
-            guard reach[next], !mask[next], abs(level - current.level) <= sameInk else { continue }
-            mask[next] = true
-            queue.append((next, current.level))
-        }
-    }
-    return mask
 }
 
 private func frameThickness(_ pixels: [Int], width: Int, height: Int) -> Int {
@@ -1058,16 +992,6 @@ private func columnProfile(_ mask: Mask) -> (sums: [Int], longest: [Int]) {
     return (sums, longest)
 }
 
-/// The wide window glues neighboring digits into one run. The stroke window
-/// keeps the gap. Use it when it actually splits that run.
-private func columnMask(glyphs: Mask, stroke: Mask, band: (Int, Int)) -> Mask {
-    let wide = columnRuns(glyphs, y0: band.0, y1: band.1, width: glyphs.width).map { $0.1 - $0.0 }.max() ?? 0
-    let fineRuns = columnRuns(stroke, y0: band.0, y1: band.1, width: stroke.width)
-    let fine = fineRuns.map { $0.1 - $0.0 }.max() ?? 0
-    guard fine > 0, fineRuns.count > 1, wide > fine * 2 else { return glyphs }
-    return stroke
-}
-
 private func columnRuns(_ mask: Mask, y0: Int, y1: Int, width: Int) -> [(Int, Int)] {
     let sums = columnSums(mask, y0: y0, y1: y1, width: width)
     let raw = runs(sums)
@@ -1142,8 +1066,6 @@ private func verticalRuns(_ mask: Mask, box: PixelBox, width: Int) -> [(Int, Int
 }
 
 private let inkMargin = 14
-private let coreMargin = 48
-private let sameInk = 4
 
 private func markIsInk(_ mask: Mask, box: PixelBox, width: Int, buffer: GrayBuffer, darkInk: Bool) -> Bool {
     coverage(mask, box: box, width: width) > 0.5 || inkFraction(buffer, box: box, darkInk: darkInk) > 0.5
@@ -1257,34 +1179,4 @@ private func bandedColumnRuns(_ mask: Mask) -> Int {
         let sums = columnSums(mask, y0: band.0, y1: band.1, width: mask.width)
         return total + runs(sums).count
     }
-}
-
-private func oddWindow(_ side: Int) -> Int {
-    var window = max(21, side / 8)
-    if window % 2 == 0 { window += 1 }
-    return window
-}
-
-private func integral(_ pixels: [UInt8], width: Int, height: Int) -> [UInt64] {
-    let stride = width + 1
-    var table = [UInt64](repeating: 0, count: stride * (height + 1))
-    for y in 1...height {
-        var row = UInt64(0)
-        for x in 1...width {
-            row += UInt64(pixels[(y - 1) * width + (x - 1)])
-            table[y * stride + x] = table[(y - 1) * stride + x] + row
-        }
-    }
-    return table
-}
-
-private func regionSum(_ table: [UInt64], width: Int, x0: Int, y0: Int, x1: Int, y1: Int) -> UInt64 {
-    let stride = width + 1
-    let bottomRight = table[y1 * stride + x1]
-    let above = table[y0 * stride + x1]
-    let left = table[y1 * stride + x0]
-    let corner = table[y0 * stride + x0]
-    // Either subtracted corner can exceed the partial difference. The region sum
-    // itself stays inside UInt64; wrapping keeps that sum without trapping.
-    return bottomRight &- above &- left &+ corner
 }
