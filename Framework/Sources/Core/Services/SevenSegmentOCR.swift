@@ -771,6 +771,9 @@ private extension GrayBuffer {
         let opened = darkChoice.opens || lightChoice.opens
         let bandSums = opened ? digitRowSums(bandSource.rowSums) : bandSource.rowSums
         let foundBands = runs(bandSums)
+        // Scratches between two washed rows keep a few pixels, so the gap never
+        // hits zero. Split only when both sides are a full row of digits.
+        let separated = (!opened && foundBands.count <= 1) ? rowGapBands(bandSource) : foundBands
         let solidBands = opened
             ? foundBands.filter { ($0.1 - $0.0) * 20 >= buffer.height }
             : foundBands
@@ -783,7 +786,7 @@ private extension GrayBuffer {
         let cellHeight = tallHeights.isEmpty ? 1 : tallHeights[tallHeights.count / 2]
         let splitBands = opened
             ? merge(solidBands, whenGapBelow: max(2, buffer.height / 40))
-            : merge(foundBands, whenGapBelow: max(1, cellHeight / 2))
+            : merge(separated, whenGapBelow: separated.count > foundBands.count ? 0 : max(1, cellHeight / 2))
         return splitBands.compactMap { band -> [Cell]? in
             let found = cells(
                 in: band,
@@ -985,6 +988,53 @@ private func digitRowSums(_ sums: [Int]) -> [Int] {
     // hold many more. Leaving the gap at sum > 0 joins the two lines.
     let floor = max(8, peak / 20)
     return sums.map { $0 >= floor ? $0 : 0 }
+}
+
+/// Two digit rows joined by scratches. The valley has to sit between two
+/// stretches that are each a full row; a cavity inside one digit does not.
+private func rowGapBands(_ mask: Mask) -> [(Int, Int)] {
+    let width = mask.width
+    let height = mask.height
+    guard width > 0, height > 40 else { return [(0, height)] }
+    let columns = columnSums(mask, y0: 0, y1: height, width: width)
+    let ceiling = height * 85 / 100
+    let columnFloor = max(8, height / 40)
+    var rows = [Int](repeating: 0, count: height)
+    var used = 0
+    for x in 0..<width where columns[x] >= columnFloor && columns[x] <= ceiling {
+        used += 1
+        let start = x
+        for y in 0..<height where mask.bits[y * width + start] {
+            rows[y] += 1
+        }
+    }
+    guard used > width / 10 else { return [(0, height)] }
+    let peak = rows.max() ?? 0
+    guard peak > 0 else { return [(0, height)] }
+    let cut = max(8, peak / 5)
+    let minSide = height / 4
+    let minValley = max(6, height / 40)
+    var bands: [(Int, Int)] = []
+    var origin = 0
+    var y = 0
+    while y < height {
+        if rows[y] >= cut {
+            y += 1
+            continue
+        }
+        let valley = y
+        while y < height, rows[y] < cut {
+            y += 1
+        }
+        let above = valley - origin
+        let below = height - y
+        if y - valley >= minValley, above >= minSide, below >= minSide {
+            bands.append((origin, valley))
+            origin = y
+        }
+    }
+    bands.append((origin, height))
+    return bands.count > 1 ? bands : [(0, height)]
 }
 
 private func runs(_ sums: [Int]) -> [(Int, Int)] {
