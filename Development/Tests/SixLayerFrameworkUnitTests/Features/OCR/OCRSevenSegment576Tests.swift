@@ -206,6 +206,15 @@ struct OCRSevenSegment576Tests {
         #expect(segmentTexts(result) == ["32.88", "8.022"])
     }
 
+    @Test func diagonalBridgeKeepsTheTwoWhole() {
+        // The price-row mask shows a 2 whose halves meet at a diagonal of 28
+        // ink pixels. The split floor is a fifth of a 349-pixel stem, so that
+        // diagonal is cut and each half is read as 1. The stroke is still one glyph.
+        let image = priceRowWhoseTwoMeetsOnAThinBridge()
+        let result = decode(image, maximum: 0)
+        #expect(result.extractedText == "32.88")
+    }
+
     @Test func strokeSizedWindowSeparatesAdjacentDigits() {
         // A window of one eighth of this crop is wider than the gap between digits.
         // The lit strokes are only a few levels darker than that gap, so the wide
@@ -538,6 +547,55 @@ struct OCRSevenSegment576Tests {
 
     private func panel(_ rows: [String]) -> CGImage {
         SegmentPanel.render(rows: rows.map(atoms))
+    }
+
+    /// "32.88" with every empty column speckled so the row is one span, and the
+    /// center column of the 2 reduced to a four-pixel bridge.
+    private func priceRowWhoseTwoMeetsOnAThinBridge() -> CGImage {
+        let ink: UInt8 = 40
+        let background: UInt8 = 210
+        let rendered = SegmentPanel.render(
+            rows: [atoms("32.88")],
+            inkLevel: ink,
+            backgroundLevel: background
+        )
+        let width = rendered.width
+        let height = rendered.height
+        var pixels = [UInt8](repeating: background, count: width * height)
+        let pointer = UnsafeMutablePointer<UInt8>.allocate(capacity: pixels.count)
+        defer { pointer.deallocate() }
+        guard let context = CGContext(
+            data: pointer,
+            width: width,
+            height: height,
+            bitsPerComponent: 8,
+            bytesPerRow: width,
+            space: CGColorSpaceCreateDeviceGray(),
+            bitmapInfo: CGImageAlphaInfo.none.rawValue
+        ) else {
+            return rendered
+        }
+        context.draw(rendered, in: CGRect(x: 0, y: 0, width: width, height: height))
+        pixels = Array(UnsafeBufferPointer(start: pointer, count: pixels.count))
+        let twoX = 16 + SegmentPanel.cellW + SegmentPanel.intra
+        let bridgeX = twoX + SegmentPanel.cellW / 2
+        let bridgeY = 16 + SegmentPanel.cellH / 2 - SegmentPanel.stroke / 2
+        for y in 0..<height {
+            pixels[y * width + bridgeX] = background
+        }
+        for y in bridgeY..<(bridgeY + 4) {
+            pixels[y * width + bridgeX] = ink
+        }
+        for x in 0..<width {
+            var sum = 0
+            for y in 0..<height where pixels[y * width + x] == ink {
+                sum += 1
+            }
+            if sum == 0 {
+                pixels[x] = ink
+            }
+        }
+        return SegmentPanel.image(pixels: pixels, width: width, height: height)
     }
 
     private func atoms(_ text: String) -> [SegmentPanel.Atom] {
