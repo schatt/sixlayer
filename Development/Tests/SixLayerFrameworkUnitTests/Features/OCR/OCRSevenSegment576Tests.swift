@@ -212,6 +212,7 @@ struct OCRSevenSegment576Tests {
         // diagonal is cut and each half is read as 1. The stroke is still one glyph.
         let image = priceRowWhoseTwoMeetsOnAThinBridge()
         let result = decode(image, maximum: 0)
+        print("bridge read \(result.extractedText) size \(image.width)x\(image.height)")
         #expect(result.extractedText == "32.88")
     }
 
@@ -595,6 +596,15 @@ struct OCRSevenSegment576Tests {
                 pixels[x] = ink
             }
         }
+        var sums = ""
+        for x in (bridgeX - 4)...(bridgeX + 4) {
+            var sum = 0
+            for y in 0..<height where pixels[y * width + x] < 80 {
+                sum += 1
+            }
+            sums += " \(x):\(sum)"
+        }
+        print("bridge sums\(sums) canvas \(width)x\(height)")
         return SegmentPanel.image(pixels: pixels, width: width, height: height)
     }
 
