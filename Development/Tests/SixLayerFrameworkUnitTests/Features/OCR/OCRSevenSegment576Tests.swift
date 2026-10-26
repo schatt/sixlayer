@@ -897,7 +897,7 @@ private enum SegmentPanel {
         }
     }
 
-    private static func image(pixels: [UInt8], width: Int, height: Int) -> CGImage {
+    fileprivate static func image(pixels: [UInt8], width: Int, height: Int) -> CGImage {
         let colorSpace = CGColorSpaceCreateDeviceGray()
         let data = Data(pixels) as CFData
         guard let provider = CGDataProvider(data: data) else {
