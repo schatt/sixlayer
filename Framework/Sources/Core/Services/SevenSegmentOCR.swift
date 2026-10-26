@@ -245,7 +245,7 @@ private struct GrayBuffer {
         let baseline = median(tall.map(\.maxY)) ?? band.1
         let frameTop = median(tall.map(\.minY)) ?? band.0
         return boxes.compactMap { box in
-            classify(
+            let cell = classify(
                 box,
                 mask: mask,
                 width: buffer.width,
@@ -257,6 +257,16 @@ private struct GrayBuffer {
                 buffer: buffer,
                 darkInk: darkInk
             )
+            if buffer.width >= 1000 {
+                let pattern = sample(mask, box: box, width: buffer.width)
+                let cover = coverage(mask, box: box, width: buffer.width)
+                let name = cell.map { String($0.character) } ?? "drop"
+                fputs(
+                    "cell \(name) box \(box.minX),\(box.minY) \(box.width)x\(box.height) pat \(pattern.rawValue) cov \(cover) h \(digitHeight)\n",
+                    stderr
+                )
+            }
+            return cell
         }
     }
 
@@ -650,6 +660,13 @@ private extension GrayBuffer {
         let glyphs = chosen.glyphs
         let bandSource = chosen.bandSource
         let opened = darkChoice.opens || lightChoice.opens
+        if buffer.width >= 1000 {
+            let ink = glyphs.bits.filter { $0 }.count
+            fputs(
+                "read \(buffer.width)x\(buffer.height) dark=\(primaryIsDark) opened=\(opened) ink=\(ink)\n",
+                stderr
+            )
+        }
         let bandSums = opened ? digitRowSums(bandSource.rowSums) : bandSource.rowSums
         let foundBands = runs(bandSums)
         let solidBands = opened
@@ -665,6 +682,10 @@ private extension GrayBuffer {
         let splitBands = opened
             ? merge(solidBands, whenGapBelow: max(2, buffer.height / 40))
             : merge(foundBands, whenGapBelow: max(1, cellHeight / 2))
+        if buffer.width >= 1000 {
+            let listed = splitBands.map { "\($0.0)-\($0.1)" }.joined(separator: ",")
+            fputs("bands \(listed)\n", stderr)
+        }
         return splitBands.compactMap { band -> [Cell]? in
             let found = cells(
                 in: band,
