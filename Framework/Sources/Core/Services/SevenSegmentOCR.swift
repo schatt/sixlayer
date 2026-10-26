@@ -245,6 +245,11 @@ private struct GrayBuffer {
                 return "\(lo)-\(end) min \(best)@\(bestX) floor \(max(1, peak / 5))"
             }
             fputs("peak \(peak) \(valley(288, 463)) | \(valley(474, 838)) | \(valley(848, 1104)) | \(valley(1117, 1300))\n", stderr)
+            var bytes = [UInt8](repeating: 255, count: mask.bits.count)
+            for index in mask.bits.indices where mask.bits[index] { bytes[index] = 0 }
+            var file = Data("P5\n\(mask.width) \(mask.height)\n255\n".utf8)
+            file.append(contentsOf: bytes)
+            try? file.write(to: URL(fileURLWithPath: "/tmp/slf-591-decoder.pgm"))
         }
         let rawBoxes = columns.map { span -> PixelBox in
             tightBox(mask, x0: span.0, x1: span.1, y0: band.0, y1: band.1, width: buffer.width)
