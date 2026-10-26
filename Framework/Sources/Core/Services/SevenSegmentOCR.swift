@@ -341,7 +341,7 @@ private struct GrayBuffer {
         }
         if box.height * 100 >= digitHeight * 50,
            box.width * 100 >= digitHeight * 40,
-           (coverage(mask, box: box, width: width) > 0.62 || inkFraction(buffer, box: box, darkInk: darkInk) > 0.62) {
+           (coverage(mask, box: box, width: width) > 0.80 || inkFraction(buffer, box: box, darkInk: darkInk) > 0.80) {
             return nil
         }
         if box.height * 100 < digitHeight * 45, box.width * 100 < digitHeight * 30 {
@@ -357,7 +357,7 @@ private struct GrayBuffer {
             maxX: box.midX + max(digitWidth, box.width) / 2,
             maxY: frameTop + max(digitHeight, 1)
         )
-        if box.height * 100 < digitHeight * 70, coverage(mask, box: frame, width: width) > 0.62 {
+        if box.height * 100 < digitHeight * 70, coverage(mask, box: frame, width: width) > 0.80 {
             return nil
         }
         let pattern = sample(mask, box: box.height * 100 < digitHeight * 70 ? frame : box, width: width)
