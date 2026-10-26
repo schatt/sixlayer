@@ -1107,6 +1107,8 @@ private func joiningBridgedPieces(
 ) -> [(Int, Int)] {
     guard var previous = pieces.first else { return [] }
     var merged: [(Int, Int)] = []
+    // Both halves have to be narrower than a finished digit. The reflection
+    // beside the 3 is as wide as a digit and must not be pulled in with it.
     let narrow = bandHeight / 2
     let gapLimit = max(1, bandHeight / 8)
     for piece in pieces.dropFirst() {
