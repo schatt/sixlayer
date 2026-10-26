@@ -231,10 +231,20 @@ private struct GrayBuffer {
         darkInk: Bool
     ) -> [Cell] {
         let columns = columnRuns(mask, y0: band.0, y1: band.1, width: buffer.width)
-        if buffer.height > 300 {
+        if buffer.height > 300, buffer.width > 1000 {
             let sums = columnSums(mask, y0: band.0, y1: band.1, width: buffer.width)
             let peak = sums.max() ?? 0
-            fputs("band \(band.0)-\(band.1) h \(buffer.height) peak \(peak) pieces \(columns)\n", stderr)
+            func valley(_ lo: Int, _ hi: Int) -> String {
+                let end = min(hi, sums.count)
+                var bestX = lo
+                var best = Int.max
+                for x in lo..<end where sums[x] < best {
+                    best = sums[x]
+                    bestX = x
+                }
+                return "\(lo)-\(end) min \(best)@\(bestX) floor \(max(1, peak / 5))"
+            }
+            fputs("peak \(peak) \(valley(288, 463)) | \(valley(474, 838)) | \(valley(848, 1104)) | \(valley(1117, 1300))\n", stderr)
         }
         let rawBoxes = columns.map { span -> PixelBox in
             tightBox(mask, x0: span.0, x1: span.1, y0: band.0, y1: band.1, width: buffer.width)
