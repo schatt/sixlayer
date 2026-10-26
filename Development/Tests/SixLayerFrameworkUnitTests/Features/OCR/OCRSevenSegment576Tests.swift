@@ -751,8 +751,7 @@ private enum SegmentPanel {
                     x += extra
                 case .digit(let pattern):
                     strokes.append(contentsOf: digitStrokes(pattern, x: x, y: y, opposite: false))
-                    let advance = isNarrowOne(pattern) ? stroke : cellW
-                    x += advance + intra
+                    x += cellW + intra
                 case .period:
                     strokes.append(Stroke(rect: periodRect(x: x, y: y), opposite: false))
                     x += stroke + intra
@@ -820,8 +819,9 @@ private enum SegmentPanel {
         if pattern.contains(.e) { rects.append(CGRect(x: x, y: y + cellH / 2, width: stroke, height: cellH / 2 - stroke)) }
         if pattern.contains(.f) { rects.append(CGRect(x: x, y: y + stroke, width: stroke, height: cellH / 2 - stroke)) }
         if pattern.contains(.g) { rects.append(CGRect(x: x + stroke, y: mid, width: cellW - 2 * stroke, height: stroke)) }
-        if pattern.contains(.b) && pattern.contains(.c) && !pattern.contains(.a) && !pattern.contains(.d) && !pattern.contains(.e) && !pattern.contains(.f) && !pattern.contains(.g) {
-            rects = [CGRect(x: x, y: y, width: stroke, height: cellH)]
+        // A one is a full cell. The stem is the right edge, not a narrower glyph.
+        if isNarrowOne(pattern) {
+            rects = [CGRect(x: x + cellW - stroke, y: y, width: stroke, height: cellH)]
         }
         return rects.map { Stroke(rect: $0, opposite: opposite) }
     }
