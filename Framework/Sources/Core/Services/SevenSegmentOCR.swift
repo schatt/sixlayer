@@ -251,10 +251,14 @@ private struct GrayBuffer {
         let maxHeight = boxes.map(\.height).max() ?? 1
         let tall = boxes.filter { $0.height * 100 >= maxHeight * 55 }
         let digitHeight = median(tall.map(\.height)) ?? maxHeight
-        let digitWidth = median(tall.map(\.width)) ?? digitHeight
         let baseline = median(tall.map(\.maxY)) ?? band.1
         let frameTop = median(tall.map(\.minY)) ?? band.0
-        return boxes.compactMap { box in
+        // One horizontal bar sets the box. Every digit is rewritten to that
+        // width before any of them is read. A one is the same box, shifted
+        // so the stem sits on the right edge.
+        let aligned = alignedDigitBoxes(boxes, mask: mask, band: band)
+        let digitWidth = aligned.width ?? (median(tall.map(\.width)) ?? digitHeight)
+        return aligned.boxes.compactMap { box in
             classify(
                 box,
                 mask: mask,
@@ -399,6 +403,7 @@ private struct GrayBuffer {
                 )
             }
         }
+        // A row of only ones has no bar to measure, so the stem is the box.
         if box.height * 100 >= digitHeight * 55, box.width * 100 <= box.height * 30 {
             return Cell(box: box, character: "1", confidence: 1, band: bandIndex)
         }
@@ -428,54 +433,9 @@ private struct GrayBuffer {
             return nil
         }
         let sampledBox = box.height * 100 < digitHeight * 70 ? frame : box
-        let seeded = sample(mask, box: sampledBox, width: width)
-        let pattern = settledPattern(mask, box: sampledBox, width: width, fallback: seeded)
+        let pattern = sample(mask, box: sampledBox, width: width)
         guard let glyph = SevenSegmentGlyph.match(pattern) else { return nil }
         return Cell(box: box, character: glyph.character, confidence: glyph.confidence, band: bandIndex)
-    }
-
-    /// A tied read on a washed digit is a box that is a few pixels off the strokes.
-    /// Nudge the edges and keep the closest template. A read that is already one
-    /// glyph stays put, so a real one-segment miss is not repaired into another digit.
-    private static func settledPattern(
-        _ mask: Mask,
-        box: PixelBox,
-        width: Int,
-        fallback: SevenSegmentPattern
-    ) -> SevenSegmentPattern {
-        if fallback.rawValue == 0 || SevenSegmentGlyph.nearest(fallback) != nil {
-            return fallback
-        }
-        let shifts = [-16, -8, 0, 8, 16]
-        var bestDistance = Int.max
-        var bestMove = Int.max
-        var best = fallback
-        let boxWidth = box.width
-        let boxHeight = box.height
-        guard boxWidth > 4, boxHeight > 4 else { return fallback }
-        for left in shifts {
-            for right in shifts {
-                for top in shifts {
-                    for bottom in shifts {
-                        let minX = box.minX + boxWidth * left / 100
-                        let maxX = box.maxX - boxWidth * right / 100
-                        let minY = box.minY + boxHeight * top / 100
-                        let maxY = box.maxY - boxHeight * bottom / 100
-                        guard maxX - minX > boxWidth / 2, maxY - minY > boxHeight / 2 else { continue }
-                        let moved = PixelBox(minX: minX, minY: minY, maxX: maxX, maxY: maxY)
-                        let pattern = sample(mask, box: moved, width: width)
-                        guard let found = SevenSegmentGlyph.nearest(pattern) else { continue }
-                        let move = abs(minX - box.minX) + abs(maxX - box.maxX) + abs(minY - box.minY) + abs(maxY - box.maxY)
-                        if found.distance < bestDistance || (found.distance == bestDistance && move < bestMove) {
-                            bestDistance = found.distance
-                            bestMove = move
-                            best = pattern
-                        }
-                    }
-                }
-            }
-        }
-        return best
     }
 
     private static func sample(_ mask: Mask, box: PixelBox, width: Int) -> SevenSegmentPattern {
@@ -1039,7 +999,11 @@ private func rowGapBands(_ mask: Mask) -> [(Int, Int)] {
         }
         let above = valley
         let below = height - y
-        guard y - valley >= minValley, above >= minSide, below >= minSide, floor < bestFloor else { continue }
+        let length = y - valley
+        // A cavity inside the only row of digits is a large fraction of the
+        // crop. The gap between two rows is a thin band.
+        guard length >= minValley, length * 8 <= height else { continue }
+        guard above >= minSide, below >= minSide, floor < bestFloor else { continue }
         bestFloor = floor
         bestValley = valley
         bestEnd = y
@@ -1221,6 +1185,168 @@ private func columnProfile(_ mask: Mask) -> (sums: [Int], longest: [Int]) {
         }
     }
     return (sums, longest)
+}
+
+private struct HorizontalBar {
+    var minX: Int
+    var maxX: Int
+    var minY: Int
+    var maxY: Int
+
+    var width: Int { maxX - minX }
+    var height: Int { maxY - minY }
+    var midX: Int { (minX + maxX) / 2 }
+}
+
+/// The row has one digit width. A bar that already includes its stems is that
+/// width; a bar inset from the stems grows by one stroke on each side.
+private func alignedDigitBoxes(
+    _ boxes: [PixelBox],
+    mask: Mask,
+    band: (Int, Int)
+) -> (boxes: [PixelBox], width: Int?) {
+    let bandHeight = max(1, band.1 - band.0)
+    let maxHeight = boxes.map(\.height).max() ?? 1
+    let tall = boxes.filter { $0.height * 100 >= maxHeight * 55 }
+    let bars = horizontalBars(in: mask, band: band).filter { bar in
+        tall.contains { $0.minX <= bar.midX && bar.midX < $0.maxX }
+    }
+    guard let width = sharedDigitWidth(bars.map { outerDigitWidth($0, mask: mask) }),
+          width > 4,
+          width < bandHeight
+    else {
+        return (boxes, nil)
+    }
+    let placed = boxes.map { box -> PixelBox in
+        guard box.height * 100 >= maxHeight * 55 else { return box }
+        // A reflection is wider than a digit and has no place in the row.
+        if box.width > width * 3 / 2, box.width * 5 > box.height * 4 { return box }
+        return fittedDigitBox(box, width: width, bars: bars, limit: mask.width)
+    }
+    return (placed, width)
+}
+
+private func fittedDigitBox(
+    _ box: PixelBox,
+    width: Int,
+    bars: [HorizontalBar],
+    limit: Int
+) -> PixelBox {
+    let centers = bars
+        .filter { box.minX <= $0.midX && $0.midX < box.maxX }
+        .map(\.midX)
+        .sorted()
+    let origin: Int
+    if !centers.isEmpty {
+        origin = centers[(centers.count - 1) / 2] - width / 2
+    } else if box.width * 2 < width {
+        // No bar: the ink is the right-hand stem of a full digit.
+        origin = box.maxX - width
+    } else {
+        origin = box.midX - width / 2
+    }
+    let minX: Int
+    if origin < 0 {
+        minX = 0
+    } else if origin + width > limit {
+        minX = max(0, limit - width)
+    } else {
+        minX = origin
+    }
+    return PixelBox(minX: minX, minY: box.minY, maxX: minX + width, maxY: box.maxY)
+}
+
+private func outerDigitWidth(_ bar: HorizontalBar, mask: Mask) -> Int {
+    let stroke = max(1, bar.height)
+    let left = columnIsStem(mask, x: bar.minX - 1, bar: bar)
+    let right = columnIsStem(mask, x: bar.maxX, bar: bar)
+    if left || right {
+        return bar.width + stroke * 2
+    }
+    return bar.width
+}
+
+private func columnIsStem(_ mask: Mask, x: Int, bar: HorizontalBar) -> Bool {
+    guard x >= 0, x < mask.width else { return false }
+    let stroke = max(1, bar.height)
+    let y0 = max(0, bar.minY - stroke)
+    let y1 = min(mask.height, bar.maxY + stroke)
+    guard y1 > y0 else { return false }
+    var ink = 0
+    for y in y0..<y1 where mask.bits[y * mask.width + x] {
+        ink += 1
+    }
+    return ink * 3 >= y1 - y0
+}
+
+private func sharedDigitWidth(_ widths: [Int]) -> Int? {
+    guard let mid = median(widths) else { return nil }
+    let kept = widths.filter { $0 * 5 >= mid * 3 && $0 * 2 <= mid * 3 }
+    return median(kept.isEmpty ? widths : kept)
+}
+
+private func horizontalBars(in mask: Mask, band: (Int, Int)) -> [HorizontalBar] {
+    let width = mask.width
+    let y0 = max(0, band.0)
+    let y1 = min(mask.height, band.1)
+    guard y1 > y0, width > 0 else { return [] }
+    let bandHeight = y1 - y0
+    var open: [HorizontalBar] = []
+    var finished: [HorizontalBar] = []
+    func close(_ bar: HorizontalBar) {
+        let span = bar.width
+        let thick = bar.height
+        guard span > 6, thick > 0, span >= thick * 2, span * 2 < bandHeight * 3 else { return }
+        finished.append(bar)
+    }
+    for y in y0..<y1 {
+        var runs: [(Int, Int)] = []
+        var x = 0
+        let row = y * width
+        while x < width {
+            while x < width, !mask.bits[row + x] { x += 1 }
+            if x >= width { break }
+            let start = x
+            while x < width, mask.bits[row + x] { x += 1 }
+            if x - start > 6 { runs.append((start, x)) }
+        }
+        var next: [HorizontalBar] = []
+        var used = [Bool](repeating: false, count: open.count)
+        for run in runs {
+            let runWidth = run.1 - run.0
+            var match: Int?
+            for index in open.indices where !used[index] {
+                let bar = open[index]
+                let overlap = min(bar.maxX, run.1) - max(bar.minX, run.0)
+                let smaller = min(bar.width, runWidth)
+                let wider = max(bar.width, runWidth)
+                if overlap * 2 > smaller, smaller * 2 > wider {
+                    match = index
+                    break
+                }
+            }
+            if let match {
+                used[match] = true
+                let bar = open[match]
+                next.append(HorizontalBar(
+                    minX: min(bar.minX, run.0),
+                    maxX: max(bar.maxX, run.1),
+                    minY: bar.minY,
+                    maxY: y + 1
+                ))
+            } else {
+                next.append(HorizontalBar(minX: run.0, maxX: run.1, minY: y, maxY: y + 1))
+            }
+        }
+        for index in open.indices where !used[index] {
+            close(open[index])
+        }
+        open = next
+    }
+    for bar in open {
+        close(bar)
+    }
+    return finished
 }
 
 private func columnRuns(_ mask: Mask, y0: Int, y1: Int, width: Int) -> [(Int, Int)] {
