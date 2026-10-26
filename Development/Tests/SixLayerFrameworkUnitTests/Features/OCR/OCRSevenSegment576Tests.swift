@@ -220,6 +220,23 @@ struct OCRSevenSegment576Tests {
         #expect(result.extractedText == "2")
     }
 
+    @Test func narrowExactThreeStaysAThree() throws {
+        // The price-row 3 is only its right side. That box is under 30% as
+        // wide as it is tall, so the stem rule calls it 1. The strokes are a 3.
+        // Digit ink is x 16..<66, y 16..<106. Cutting at 40 leaves a 26×90 box.
+        let image = SegmentPanel.render(
+            rows: [atoms("3")],
+            inkLevel: 40,
+            backgroundLevel: 210
+        )
+        let cropX = 40
+        let cropped = try #require(
+            image.cropping(to: CGRect(x: cropX, y: 0, width: image.width - cropX, height: image.height))
+        )
+        let result = decode(cropped, maximum: 0)
+        #expect(result.extractedText == "3")
+    }
+
     @Test func strokeSizedWindowSeparatesAdjacentDigits() {
         // A window of one eighth of this crop is wider than the gap between digits.
         // The lit strokes are only a few levels darker than that gap, so the wide
