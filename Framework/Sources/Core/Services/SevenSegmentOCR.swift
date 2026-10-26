@@ -161,6 +161,7 @@ private struct GrayBuffer {
             let sample = turns == 0 ? small : small.rotated(degrees: Double(turns * 90))
             return orientationScore(in: sample)
         }
+        fputs("orient \(scores.map(\.text).joined(separator: " | "))\n", stderr)
         let bestTurns = scores.enumerated().max { left, right in
             if left.element.wideDigits != right.element.wideDigits {
                 return left.element.wideDigits < right.element.wideDigits
@@ -245,7 +246,7 @@ private struct GrayBuffer {
         let baseline = median(tall.map(\.maxY)) ?? band.1
         let frameTop = median(tall.map(\.minY)) ?? band.0
         return boxes.compactMap { box in
-            classify(
+            let cell = classify(
                 box,
                 mask: mask,
                 width: buffer.width,
@@ -257,6 +258,9 @@ private struct GrayBuffer {
                 buffer: buffer,
                 darkInk: darkInk
             )
+            let name = cell.map { String($0.character) } ?? "nil"
+            fputs("cell \(name) \(box.minX),\(box.minY) \(box.width)x\(box.height)\n", stderr)
+            return cell
         }
     }
 
