@@ -1011,7 +1011,9 @@ private func rowGapBands(_ mask: Mask) -> [(Int, Int)] {
     guard used > width / 10 else { return [(0, height)] }
     let peak = rows.max() ?? 0
     guard peak > 0 else { return [(0, height)] }
-    let cut = max(8, peak / 5)
+    // peak/5 still counts the scratched gap as a digit row. peak/4 clears
+    // that gap. A cavity inside one digit fails the side-length test below.
+    let cut = max(8, peak / 4)
     let minSide = height / 4
     let minValley = max(6, height / 40)
     var bands: [(Int, Int)] = []
