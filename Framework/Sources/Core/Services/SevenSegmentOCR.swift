@@ -787,9 +787,13 @@ private extension GrayBuffer {
         }
         let tallHeights = measured.flatMap(\.cells).filter { $0.height > 0 }.map(\.height).sorted()
         let cellHeight = tallHeights.isEmpty ? 1 : tallHeights[tallHeights.count / 2]
+        // merge treats a zero limit as "pick a default", which would close
+        // the gap this split just opened.
         let splitBands = opened
             ? merge(solidBands, whenGapBelow: max(2, buffer.height / 40))
-            : merge(separated, whenGapBelow: separated.count > foundBands.count ? 0 : max(1, cellHeight / 2))
+            : (separated.count > foundBands.count
+                ? separated
+                : merge(separated, whenGapBelow: max(1, cellHeight / 2)))
         return splitBands.compactMap { band -> [Cell]? in
             let found = cells(
                 in: band,
@@ -1019,8 +1023,11 @@ private func rowGapBands(_ mask: Mask) -> [(Int, Int)] {
     let cut = max(8, peak / 4)
     let minSide = height / 4
     let minValley = max(6, height / 40)
-    var bands: [(Int, Int)] = []
-    var origin = 0
+    // A cavity inside a digit can pass the length test. The gap between two
+    // rows is the deepest of those valleys, so only that one splits the crop.
+    var bestValley = 0
+    var bestEnd = 0
+    var bestFloor = Int.max
     var y = 0
     while y < height {
         if rows[y] >= cut {
@@ -1028,22 +1035,23 @@ private func rowGapBands(_ mask: Mask) -> [(Int, Int)] {
             continue
         }
         let valley = y
+        var floor = rows[y]
         while y < height, rows[y] < cut {
+            floor = min(floor, rows[y])
             y += 1
         }
-        let above = valley - origin
+        let above = valley
         let below = height - y
-        if y - valley >= minValley, above >= minSide, below >= minSide {
-            bands.append((origin, valley))
-            origin = y
-        }
+        guard y - valley >= minValley, above >= minSide, below >= minSide, floor < bestFloor else { continue }
+        bestFloor = floor
+        bestValley = valley
+        bestEnd = y
     }
-    bands.append((origin, height))
+    guard bestFloor < Int.max else { return [(0, height)] }
     if height > 600 {
-        let shown = bands.map { "\($0.0)-\($0.1)" }.joined(separator: ",")
-        fputs("rowgap used \(used) peak \(peak) cut \(cut) bands \(shown)\n", stderr)
+        fputs("rowgap split \(bestValley)-\(bestEnd) floor \(bestFloor) cut \(cut)\n", stderr)
     }
-    return bands.count > 1 ? bands : [(0, height)]
+    return [(0, bestValley), (bestEnd, height)]
 }
 
 private func runs(_ sums: [Int]) -> [(Int, Int)] {
