@@ -1068,10 +1068,10 @@ private func columnRuns(_ mask: Mask, y0: Int, y1: Int, width: Int) -> [(Int, In
         let widerThanADigit = spanWidth > bandHeight
         guard widerThanADigit || (typical > 0 && spanWidth > typical * 2) else { return [span] }
         let peak = (span.0..<span.1).map { sums[$0] }.max() ?? 0
-        // A washed gap still holds a smear, so a fifth of the peak stays
-        // connected. A tenth opens that gap and a single 4 never reaches
-        // this split: it is not wider than the band.
-        let floor = max(1, widerThanADigit ? peak / 10 : peak / 8)
+        // The smear between washed digits stays above a fifth of the peak,
+        // so the 2 and the next 8 were one box. A third drops that smear.
+        // A single 4 is not wider than the band, so it never reaches this split.
+        let floor = max(1, widerThanADigit ? peak / 3 : peak / 8)
         var pieces: [(Int, Int)] = []
         var start: Int?
         for x in span.0..<span.1 {
