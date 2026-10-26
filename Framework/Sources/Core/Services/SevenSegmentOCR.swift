@@ -648,14 +648,9 @@ private extension GrayBuffer {
         let cores = (dark: clearingBorderComponents(sealedCore.dark), light: clearingBorderComponents(sealedCore.light))
         let darkChoice = polarity(isDark: true, loose: masks.dark, core: cores.dark)
         let lightChoice = polarity(isDark: false, loose: masks.light, core: cores.light)
-        let chosen: (isDark: Bool, glyphs: Mask, bandSource: Mask)
-        if darkChoice.opens != lightChoice.opens {
-            chosen = darkChoice.opens ? darkChoice.reading : lightChoice.reading
-        } else if prefersDark(masks.dark, masks.light) {
-            chosen = darkChoice.reading
-        } else {
-            chosen = lightChoice.reading
-        }
+        // Probe: read the dark mask. The price-row strokes are on it.
+        // Revert after the crop is decoded; light-on-dark panels need the choice.
+        let chosen = darkChoice.reading
         let primaryIsDark = chosen.isDark
         let glyphs = chosen.glyphs
         let bandSource = chosen.bandSource
