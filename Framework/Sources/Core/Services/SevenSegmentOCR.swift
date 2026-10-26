@@ -425,9 +425,10 @@ private struct GrayBuffer {
     private func masks() -> (dark: Mask, light: Mask, darkCore: Mask, lightCore: Mask) {
         // ssocr dynamic_threshold: halfway from the local minimum to the
         // local maximum. A wider cut marks the glass beside a glared stroke.
-        // The window stays near a stroke so the gap between digits, and the
-        // next row, do not set the cut.
-        let radius = max(4, min(width, height) / 40)
+        // The window is a twentieth of the short side: wide enough to see
+        // glass from the middle of a washed stroke, and still inside a
+        // glare band, whose height is the stroke itself.
+        let radius = max(4, min(width, height) / 20)
         let range = localRange(radius: radius)
         var dark = [Bool](repeating: false, count: pixels.count)
         var light = [Bool](repeating: false, count: pixels.count)
