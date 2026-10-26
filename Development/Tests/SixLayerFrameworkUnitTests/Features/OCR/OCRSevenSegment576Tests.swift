@@ -220,20 +220,16 @@ struct OCRSevenSegment576Tests {
         #expect(result.extractedText == "2")
     }
 
-    @Test func narrowExactThreeStaysAThree() throws {
+    @Test func narrowExactThreeStaysAThree() {
         // The price-row 3 is only its right side. That box is under 30% as
         // wide as it is tall, so the stem rule calls it 1. The strokes are a 3.
-        // Digit ink is x 16..<66, y 16..<106. Cutting at 40 leaves a 26×90 box.
         let image = SegmentPanel.render(
             rows: [atoms("3")],
             inkLevel: 40,
-            backgroundLevel: 210
+            backgroundLevel: 210,
+            rightHandThree: true
         )
-        let cropX = 40
-        let cropped = try #require(
-            image.cropping(to: CGRect(x: cropX, y: 0, width: image.width - cropX, height: image.height))
-        )
-        let result = decode(cropped, maximum: 0)
+        let result = decode(image, maximum: 0)
         #expect(result.extractedText == "3")
     }
 
@@ -679,7 +675,8 @@ private enum SegmentPanel {
         bezelWidth: Int = 0,
         outerMargin: Int = 0,
         scale: Int = 1,
-        thinTwoBridge: Bool = false
+        thinTwoBridge: Bool = false,
+        rightHandThree: Bool = false
     ) -> CGImage {
         let laid = layout(rows: rows, padding: padding)
         let background: UInt8 = backgroundLevel ?? (invert ? 28 : 214)
@@ -701,6 +698,9 @@ private enum SegmentPanel {
         }
         if thinTwoBridge {
             pixels = wideThinTwo(pixels, width: laid.width, height: laid.height, padding: padding, ink: ink, background: background)
+        }
+        if rightHandThree {
+            pixels = insetRightHandThree(pixels, width: laid.width, height: laid.height, background: background)
         }
         if glare, let band = laid.rowBands.first {
             let y0 = max(0, band.midY - stroke)
@@ -872,6 +872,28 @@ private enum SegmentPanel {
                 pixels[y * width + x] = value
             }
         }
+    }
+
+    /// The right side of a 3, inset so the cut does not sit on the image edge.
+    /// Digit ink is x 16..<66 and y 16..<106. Keeping x >= 40 leaves a 26×90 box.
+    private static func insetRightHandThree(
+        _ pixels: [UInt8],
+        width: Int,
+        height: Int,
+        background: UInt8
+    ) -> [UInt8] {
+        let clipX = 40
+        let margin = 24
+        let croppedW = max(0, width - clipX)
+        let newW = croppedW + margin
+        var output = [UInt8](repeating: background, count: newW * height)
+        guard croppedW > 0 else { return output }
+        for y in 0..<height {
+            for x in 0..<croppedW {
+                output[y * newW + (x + margin)] = pixels[y * width + (x + clipX)]
+            }
+        }
+        return output
     }
 
     /// A 2 whose center column is a four-pixel bridge, on a span wider than the band.
