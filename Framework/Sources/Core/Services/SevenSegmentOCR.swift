@@ -1092,8 +1092,84 @@ private func columnRuns(_ mask: Mask, y0: Int, y1: Int, width: Int) -> [(Int, In
         if let open = start {
             pieces.append((open, span.1))
         }
-        return pieces.isEmpty ? [span] : pieces
+        let split = pieces.isEmpty ? [span] : pieces
+        return joiningBridgedPieces(split, mask: mask, y0: y0, y1: y1, bandHeight: bandHeight)
     }
+}
+
+/// A projection floor cuts the diagonal of a 2. The halves are still one stroke.
+private func joiningBridgedPieces(
+    _ pieces: [(Int, Int)],
+    mask: Mask,
+    y0: Int,
+    y1: Int,
+    bandHeight: Int
+) -> [(Int, Int)] {
+    guard var previous = pieces.first else { return [] }
+    var merged: [(Int, Int)] = []
+    let narrow = bandHeight / 2
+    let gapLimit = max(1, bandHeight / 8)
+    for piece in pieces.dropFirst() {
+        let gap = piece.0 - previous.1
+        let leftWidth = previous.1 - previous.0
+        let rightWidth = piece.1 - piece.0
+        let combined = piece.1 - previous.0
+        let bridged = leftWidth < narrow
+            && rightWidth < narrow
+            && combined < bandHeight
+            && gap > 0
+            && gap < gapLimit
+            && strokeConnects(previous, piece, mask: mask, y0: y0, y1: y1)
+        if bridged {
+            previous.1 = piece.1
+        } else {
+            merged.append(previous)
+            previous = piece
+        }
+    }
+    merged.append(previous)
+    return merged
+}
+
+private func strokeConnects(
+    _ left: (Int, Int),
+    _ right: (Int, Int),
+    mask: Mask,
+    y0: Int,
+    y1: Int
+) -> Bool {
+    let width = mask.width
+    let lower = max(0, y0)
+    let upper = min(mask.height, y1)
+    let xStart = max(0, left.0)
+    let xEnd = min(width, right.1)
+    guard xEnd > xStart, upper > lower else { return false }
+    let span = xEnd - xStart
+    var seen = [Bool](repeating: false, count: span * (upper - lower))
+    func slot(_ x: Int, _ y: Int) -> Int { (y - lower) * span + (x - xStart) }
+    var queue: [(Int, Int)] = []
+    for y in lower..<upper {
+        let row = y * width
+        for x in max(xStart, left.0)..<min(xEnd, left.1) where mask.bits[row + x] {
+            seen[slot(x, y)] = true
+            queue.append((x, y))
+        }
+    }
+    var head = 0
+    while head < queue.count {
+        let (x, y) = queue[head]
+        head += 1
+        if x >= right.0 && x < right.1 { return true }
+        for ny in max(lower, y - 1)...min(upper - 1, y + 1) {
+            for nx in max(xStart, x - 1)...min(xEnd - 1, x + 1) {
+                let index = slot(nx, ny)
+                if seen[index] || !mask.bits[ny * width + nx] { continue }
+                seen[index] = true
+                queue.append((nx, ny))
+            }
+        }
+    }
+    return false
 }
 
 private func tightBox(_ mask: Mask, x0: Int, x1: Int, y0: Int, y1: Int, width: Int) -> PixelBox {
