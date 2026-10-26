@@ -47,20 +47,30 @@ public enum SevenSegmentGlyph {
         ("-", SevenSegmentPattern.g.rawValue)
     ]
 
+    /// Nil when the pattern is empty or two templates share the best distance.
+    fileprivate static func nearest(_ pattern: SevenSegmentPattern) -> (character: Character, distance: Int)? {
+        if pattern.rawValue == 0 { return nil }
+        var bestDistance = Int.max
+        var winner: (Character, Int)?
+        var tied = false
+        for template in templates {
+            let distance = (template.1 ^ pattern.rawValue).nonzeroBitCount
+            if distance < bestDistance {
+                bestDistance = distance
+                winner = (template.0, distance)
+                tied = false
+            } else if distance == bestDistance {
+                tied = true
+            }
+        }
+        return tied ? nil : winner
+    }
+
     fileprivate static func match(_ pattern: SevenSegmentPattern) -> (character: Character, confidence: Float)? {
-        if pattern.rawValue == 0 {
-            return nil
-        }
-        let scored = templates.map { (character: $0.0, distance: ($0.1 ^ pattern.rawValue).nonzeroBitCount) }
-        guard let best = scored.map(\.distance).min() else { return nil }
-        let winners = scored.filter { $0.distance == best }
-        guard winners.count == 1, let winner = winners.first else {
-            return ("_", 0)
-        }
-        if best == 0 {
-            return (winner.character, 1)
-        }
-        return (winner.character, Float(7 - best) / 7)
+        if pattern.rawValue == 0 { return nil }
+        guard let found = nearest(pattern) else { return ("_", 0) }
+        if found.distance == 0 { return (found.character, 1) }
+        return (found.character, Float(7 - found.distance) / 7)
     }
 }
 
@@ -231,26 +241,6 @@ private struct GrayBuffer {
         darkInk: Bool
     ) -> [Cell] {
         let columns = columnRuns(mask, y0: band.0, y1: band.1, width: buffer.width)
-        if buffer.height > 300, buffer.width > 1000 {
-            let sums = columnSums(mask, y0: band.0, y1: band.1, width: buffer.width)
-            let peak = sums.max() ?? 0
-            func valley(_ lo: Int, _ hi: Int) -> String {
-                let end = min(hi, sums.count)
-                var bestX = lo
-                var best = Int.max
-                for x in lo..<end where sums[x] < best {
-                    best = sums[x]
-                    bestX = x
-                }
-                return "\(lo)-\(end) min \(best)@\(bestX) floor \(max(1, peak / 5))"
-            }
-            fputs("peak \(peak) \(valley(288, 463)) | \(valley(474, 838)) | \(valley(848, 1104)) | \(valley(1117, 1300))\n", stderr)
-            var bytes = [UInt8](repeating: 255, count: mask.bits.count)
-            for index in mask.bits.indices where mask.bits[index] { bytes[index] = 0 }
-            var file = Data("P5\n\(mask.width) \(mask.height)\n255\n".utf8)
-            file.append(contentsOf: bytes)
-            try? file.write(to: URL(fileURLWithPath: "/tmp/slf-591-decoder.pgm"))
-        }
         let rawBoxes = columns.map { span -> PixelBox in
             tightBox(mask, x0: span.0, x1: span.1, y0: band.0, y1: band.1, width: buffer.width)
         }.filter { $0.width > 0 && $0.height > 0 }
@@ -374,9 +364,59 @@ private struct GrayBuffer {
         if box.height * 100 < digitHeight * 70, coverage(mask, box: frame, width: width) > 0.80 {
             return nil
         }
-        let pattern = sample(mask, box: box.height * 100 < digitHeight * 70 ? frame : box, width: width)
+        // A reflection beside the digits is wider than a glyph. A digit is taller than it is wide.
+        if box.height * 100 >= digitHeight * 50, box.width * 5 > box.height * 4 {
+            return nil
+        }
+        let sampledBox = box.height * 100 < digitHeight * 70 ? frame : box
+        let seeded = sample(mask, box: sampledBox, width: width)
+        let pattern = settledPattern(mask, box: sampledBox, width: width, fallback: seeded)
         guard let glyph = SevenSegmentGlyph.match(pattern) else { return nil }
         return Cell(box: box, character: glyph.character, confidence: glyph.confidence, band: bandIndex)
+    }
+
+    /// A tied read on a washed digit is a box that is a few pixels off the strokes.
+    /// Nudge the edges and keep the closest template. A read that is already one
+    /// glyph stays put, so a real one-segment miss is not repaired into another digit.
+    private static func settledPattern(
+        _ mask: Mask,
+        box: PixelBox,
+        width: Int,
+        fallback: SevenSegmentPattern
+    ) -> SevenSegmentPattern {
+        if fallback.rawValue == 0 || SevenSegmentGlyph.nearest(fallback) != nil {
+            return fallback
+        }
+        let shifts = [-16, -8, 0, 8, 16]
+        var bestDistance = Int.max
+        var bestMove = Int.max
+        var best = fallback
+        let boxWidth = box.width
+        let boxHeight = box.height
+        guard boxWidth > 4, boxHeight > 4 else { return fallback }
+        for left in shifts {
+            for right in shifts {
+                for top in shifts {
+                    for bottom in shifts {
+                        let minX = box.minX + boxWidth * left / 100
+                        let maxX = box.maxX - boxWidth * right / 100
+                        let minY = box.minY + boxHeight * top / 100
+                        let maxY = box.maxY - boxHeight * bottom / 100
+                        guard maxX - minX > boxWidth / 2, maxY - minY > boxHeight / 2 else { continue }
+                        let moved = PixelBox(minX: minX, minY: minY, maxX: maxX, maxY: maxY)
+                        let pattern = sample(mask, box: moved, width: width)
+                        guard let found = SevenSegmentGlyph.nearest(pattern) else { continue }
+                        let move = abs(minX - box.minX) + abs(maxX - box.maxX) + abs(minY - box.minY) + abs(maxY - box.maxY)
+                        if found.distance < bestDistance || (found.distance == bestDistance && move < bestMove) {
+                            bestDistance = found.distance
+                            bestMove = move
+                            best = pattern
+                        }
+                    }
+                }
+            }
+        }
+        return best
     }
 
     private static func sample(_ mask: Mask, box: PixelBox, width: Int) -> SevenSegmentPattern {
@@ -649,11 +689,6 @@ private extension GrayBuffer {
     }
 
     static func readRows(in buffer: GrayBuffer) -> [[Cell]] {
-        if buffer.width > 1000, buffer.height > 300 {
-            var file = Data("P5\n\(buffer.width) \(buffer.height)\n255\n".utf8)
-            file.append(contentsOf: buffer.pixels)
-            try? file.write(to: URL(fileURLWithPath: "/tmp/slf-591-gray.pgm"))
-        }
         let raw = buffer.masks()
         // A frame inside the crop seals the glass. Ink outside that glass is the bezel.
         let sealed = (dark: keepingInteriorInk(raw.dark), light: keepingInteriorInk(raw.light))
@@ -672,14 +707,6 @@ private extension GrayBuffer {
             chosen = lightChoice.reading
         }
         let primaryIsDark = chosen.isDark
-        if buffer.width > 1000, buffer.height > 300 {
-            let darkInk = masks.dark.rowSums.reduce(0, +)
-            let lightInk = masks.light.rowSums.reduce(0, +)
-            fputs(
-                "polarity darkOpens \(darkChoice.opens) lightOpens \(lightChoice.opens) chosenDark \(primaryIsDark) darkRuns \(bandedColumnRuns(masks.dark)) lightRuns \(bandedColumnRuns(masks.light)) darkInk \(darkInk) lightInk \(lightInk)\n",
-                stderr
-            )
-        }
         let glyphs = chosen.glyphs
         let bandSource = chosen.bandSource
         let opened = darkChoice.opens || lightChoice.opens
@@ -1095,7 +1122,10 @@ private func columnRuns(_ mask: Mask, y0: Int, y1: Int, width: Int) -> [(Int, In
         let widerThanADigit = spanWidth > bandHeight
         guard widerThanADigit || (typical > 0 && spanWidth > typical * 2) else { return [span] }
         let peak = (span.0..<span.1).map { sums[$0] }.max() ?? 0
-        let floor = max(1, widerThanADigit ? peak / 5 : peak / 8)
+        // A horizontal bar is much thinner than a flooded stem. peak/5 cut the
+        // bar and split one washed digit. The gap between digits still falls
+        // through a lower floor.
+        let floor = max(1, widerThanADigit ? peak / 15 : peak / 8)
         var pieces: [(Int, Int)] = []
         var start: Int?
         for x in span.0..<span.1 {
@@ -1255,13 +1285,13 @@ private func median(_ values: [Int]) -> Int? {
 }
 
 private func prefersDark(_ dark: Mask, _ light: Mask) -> Bool {
-    // More column runs inside each row. A connected halo is one fat run, so
-    // ink-per-run selects the halo and the digits disappear.
+    // A halo is one fat run, so a two-to-one lead still wins. The glass split
+    // by the strokes can have a few more runs than the strokes. When the
+    // counts are that close, the thinner mask is the ink.
     let darkRuns = bandedColumnRuns(dark)
     let lightRuns = bandedColumnRuns(light)
-    if darkRuns != lightRuns {
-        return darkRuns > lightRuns
-    }
+    if darkRuns >= lightRuns * 2 { return true }
+    if lightRuns >= darkRuns * 2 { return false }
     let darkInk = dark.rowSums.reduce(Int64(0)) { $0 + Int64($1) }
     let lightInk = light.rowSums.reduce(Int64(0)) { $0 + Int64($1) }
     return darkInk <= lightInk
