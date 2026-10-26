@@ -306,13 +306,16 @@ private struct GrayBuffer {
         let narrow = digitWidth / 4
         let gapTop = max(band.0, top - max(4, digitHeight / 10))
         let above = columnSums(mask, y0: gapTop, y1: top, width: width)
+        let bodies = spans.filter { $0.1 - $0.0 > 4 }
         var dots: [Cell] = []
-        for (index, span) in spans.enumerated() {
+        for (index, span) in bodies.enumerated() {
             let spanWidth = span.1 - span.0
-            guard spanWidth > 2, spanWidth < narrow else { continue }
-            let leftIsWide = spans[..<index].contains { $0.1 - $0.0 >= wide && span.0 - $0.1 < digitWidth }
-            let rightIsWide = spans.dropFirst(index + 1).contains { $0.1 - $0.0 >= wide && $0.0 - span.1 < digitWidth }
-            guard leftIsWide, rightIsWide else { continue }
+            guard spanWidth < narrow else { continue }
+            guard let left = bodies[..<index].last, let right = bodies.dropFirst(index + 1).first else { continue }
+            let leftWidth = left.1 - left.0
+            let rightWidth = right.1 - right.0
+            guard leftWidth >= wide, rightWidth >= wide else { continue }
+            guard span.0 - left.1 < digitWidth, right.0 - span.1 < digitWidth else { continue }
             let aboveInk = (span.0..<span.1).reduce(0) { $0 + above[$1] }
             let room = max(1, (top - gapTop) * spanWidth)
             guard aboveInk * 5 < room else { continue }
