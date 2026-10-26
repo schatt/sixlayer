@@ -1091,17 +1091,23 @@ private func tightBox(_ mask: Mask, x0: Int, x1: Int, y0: Int, y1: Int, width: I
     let upper = min(mask.height, y1)
     let left = max(0, x0)
     let right = min(width, x1)
+    var counts = [Int](repeating: 0, count: max(0, upper - lower))
     for y in lower..<upper {
         let start = y * width
-        var hit = false
+        var count = 0
         for x in left..<right where mask.bits[start + x] {
-            hit = true
-            break
+            count += 1
         }
-        if hit {
-            minY = min(minY, y)
-            maxY = max(maxY, y + 1)
-        }
+        counts[y - lower] = count
+    }
+    let peak = counts.max() ?? 0
+    // A reflection above the digit is a few pixels. It used to stretch the
+    // box to the whole crop, and the segment windows then missed the glyph.
+    let floor = max(1, peak / 5)
+    for (offset, count) in counts.enumerated() where count >= floor {
+        let y = lower + offset
+        minY = min(minY, y)
+        maxY = max(maxY, y + 1)
     }
     if minY >= maxY {
         return PixelBox(minX: left, minY: lower, maxX: right, maxY: upper)
