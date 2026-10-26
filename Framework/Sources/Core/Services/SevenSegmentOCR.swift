@@ -259,7 +259,9 @@ private struct GrayBuffer {
                 darkInk: darkInk
             )
             let name = cell.map { String($0.character) } ?? "nil"
-            fputs("cell \(name) \(box.minX),\(box.minY) \(box.width)x\(box.height)\n", stderr)
+            let ink = coverage(mask, box: box, width: buffer.width)
+            let pattern = Self.sample(mask, box: box, width: buffer.width)
+            fputs("cell \(name) \(box.minX),\(box.minY) \(box.width)x\(box.height) cov \(ink) pat \(pattern.rawValue)\n", stderr)
             return cell
         }
     }
