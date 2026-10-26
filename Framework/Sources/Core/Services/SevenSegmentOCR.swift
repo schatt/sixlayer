@@ -424,18 +424,21 @@ private struct GrayBuffer {
 
     private func masks() -> (dark: Mask, light: Mask, darkCore: Mask, lightCore: Mask) {
         // ssocr dynamic_threshold: halfway from the local minimum to the
-        // local maximum. A wider cut marks the glass beside a glared stroke.
-        // The window is a twentieth of the short side: wide enough to see
-        // glass from the middle of a washed stroke, and still inside a
-        // glare band, whose height is the stroke itself.
-        let radius = max(4, min(width, height) / 20)
-        let range = localRange(radius: radius)
+        // local maximum. A wider cut marks the glass beside a glared stroke,
+        // so a neighborhood that already has contrast keeps the tight window.
+        // A washed stroke is flat inside that window and would otherwise stay
+        // unmarked. The wide window sees the glass and fills the core.
+        let fineRadius = max(4, min(width, height) / 40)
+        let wideRadius = max(fineRadius, min(width, height) / 20)
+        let fine = localRange(radius: fineRadius)
+        let wide = wideRadius == fineRadius ? fine : localRange(radius: wideRadius)
         var dark = [Bool](repeating: false, count: pixels.count)
         var light = [Bool](repeating: false, count: pixels.count)
         for index in pixels.indices {
             let pixel = Int(pixels[index])
-            let low = range.low[index]
-            let high = range.high[index]
+            let contrasted = fine.high[index] - fine.low[index] > inkMargin
+            let low = contrasted ? fine.low[index] : wide.low[index]
+            let high = contrasted ? fine.high[index] : wide.high[index]
             guard high - low > inkMargin else { continue }
             let mid = low + (high - low) / 2
             dark[index] = pixel < mid && pixel + inkMargin <= high
