@@ -672,6 +672,14 @@ private extension GrayBuffer {
             chosen = lightChoice.reading
         }
         let primaryIsDark = chosen.isDark
+        if buffer.width > 1000, buffer.height > 300 {
+            let darkInk = masks.dark.rowSums.reduce(0, +)
+            let lightInk = masks.light.rowSums.reduce(0, +)
+            fputs(
+                "polarity darkOpens \(darkChoice.opens) lightOpens \(lightChoice.opens) chosenDark \(primaryIsDark) darkRuns \(bandedColumnRuns(masks.dark)) lightRuns \(bandedColumnRuns(masks.light)) darkInk \(darkInk) lightInk \(lightInk)\n",
+                stderr
+            )
+        }
         let glyphs = chosen.glyphs
         let bandSource = chosen.bandSource
         let opened = darkChoice.opens || lightChoice.opens
