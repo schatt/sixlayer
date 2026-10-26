@@ -161,7 +161,6 @@ private struct GrayBuffer {
             let sample = turns == 0 ? small : small.rotated(degrees: Double(turns * 90))
             return orientationScore(in: sample)
         }
-        fputs("orient \(scores.map(\.text).joined(separator: " | "))\n", stderr)
         let bestTurns = scores.enumerated().max { left, right in
             if left.element.wideDigits != right.element.wideDigits {
                 return left.element.wideDigits < right.element.wideDigits
@@ -246,7 +245,7 @@ private struct GrayBuffer {
         let baseline = median(tall.map(\.maxY)) ?? band.1
         let frameTop = median(tall.map(\.minY)) ?? band.0
         return boxes.compactMap { box in
-            let cell = classify(
+            classify(
                 box,
                 mask: mask,
                 width: buffer.width,
@@ -258,11 +257,6 @@ private struct GrayBuffer {
                 buffer: buffer,
                 darkInk: darkInk
             )
-            let name = cell.map { String($0.character) } ?? "nil"
-            let ink = coverage(mask, box: box, width: buffer.width)
-            let pattern = Self.sample(mask, box: box, width: buffer.width)
-            fputs("cell \(name) \(box.minX),\(box.minY) \(box.width)x\(box.height) cov \(ink) pat \(pattern.rawValue)\n", stderr)
-            return cell
         }
     }
 
@@ -1068,10 +1062,7 @@ private func columnRuns(_ mask: Mask, y0: Int, y1: Int, width: Int) -> [(Int, In
         let widerThanADigit = spanWidth > bandHeight
         guard widerThanADigit || (typical > 0 && spanWidth > typical * 2) else { return [span] }
         let peak = (span.0..<span.1).map { sums[$0] }.max() ?? 0
-        // The smear between washed digits stays above a fifth of the peak,
-        // so the 2 and the next 8 were one box. A third drops that smear.
-        // A single 4 is not wider than the band, so it never reaches this split.
-        let floor = max(1, widerThanADigit ? peak / 3 : peak / 8)
+        let floor = max(1, widerThanADigit ? peak / 5 : peak / 8)
         var pieces: [(Int, Int)] = []
         var start: Int?
         for x in span.0..<span.1 {
