@@ -210,9 +210,13 @@ struct OCRSevenSegment576Tests {
         // The price-row mask shows a 2 whose halves meet at a diagonal of 28
         // ink pixels. The split floor is a fifth of a 349-pixel stem, so that
         // diagonal is cut and each half is read as 1. The stroke is still one glyph.
-        let image = priceRowWhoseTwoMeetsOnAThinBridge()
+        let image = SegmentPanel.render(
+            rows: [atoms("32.88")],
+            inkLevel: 40,
+            backgroundLevel: 210,
+            thinTwoBridge: true
+        )
         let result = decode(image, maximum: 0)
-        print("bridge read \(result.extractedText) size \(image.width)x\(image.height)")
         #expect(result.extractedText == "32.88")
     }
 
@@ -550,64 +554,6 @@ struct OCRSevenSegment576Tests {
         SegmentPanel.render(rows: rows.map(atoms))
     }
 
-    /// "32.88" with every empty column speckled so the row is one span, and the
-    /// center column of the 2 reduced to a four-pixel bridge.
-    private func priceRowWhoseTwoMeetsOnAThinBridge() -> CGImage {
-        let ink: UInt8 = 40
-        let background: UInt8 = 210
-        let rendered = SegmentPanel.render(
-            rows: [atoms("32.88")],
-            inkLevel: ink,
-            backgroundLevel: background
-        )
-        let width = rendered.width
-        let height = rendered.height
-        var pixels = [UInt8](repeating: background, count: width * height)
-        let pointer = UnsafeMutablePointer<UInt8>.allocate(capacity: pixels.count)
-        defer { pointer.deallocate() }
-        guard let context = CGContext(
-            data: pointer,
-            width: width,
-            height: height,
-            bitsPerComponent: 8,
-            bytesPerRow: width,
-            space: CGColorSpaceCreateDeviceGray(),
-            bitmapInfo: CGImageAlphaInfo.none.rawValue
-        ) else {
-            return rendered
-        }
-        context.draw(rendered, in: CGRect(x: 0, y: 0, width: width, height: height))
-        pixels = Array(UnsafeBufferPointer(start: pointer, count: pixels.count))
-        let twoX = 16 + SegmentPanel.cellW + SegmentPanel.intra
-        let bridgeX = twoX + SegmentPanel.cellW / 2
-        let bridgeY = 16 + SegmentPanel.cellH / 2 - SegmentPanel.stroke / 2
-        for y in 0..<height {
-            pixels[y * width + bridgeX] = background
-        }
-        for y in bridgeY..<(bridgeY + 4) {
-            pixels[y * width + bridgeX] = ink
-        }
-        for x in 0..<width {
-            var sum = 0
-            for y in 0..<height where pixels[y * width + x] == ink {
-                sum += 1
-            }
-            if sum == 0 {
-                pixels[x] = ink
-            }
-        }
-        var sums = ""
-        for x in (bridgeX - 4)...(bridgeX + 4) {
-            var sum = 0
-            for y in 0..<height where pixels[y * width + x] < 80 {
-                sum += 1
-            }
-            sums += " \(x):\(sum)"
-        }
-        print("bridge sums\(sums) canvas \(width)x\(height)")
-        return SegmentPanel.image(pixels: pixels, width: width, height: height)
-    }
-
     private func atoms(_ text: String) -> [SegmentPanel.Atom] {
         text.map { character in
             switch character {
@@ -715,7 +661,8 @@ private enum SegmentPanel {
         bezelLevel: UInt8? = nil,
         bezelWidth: Int = 0,
         outerMargin: Int = 0,
-        scale: Int = 1
+        scale: Int = 1,
+        thinTwoBridge: Bool = false
     ) -> CGImage {
         let laid = layout(rows: rows, padding: padding)
         let background: UInt8 = backgroundLevel ?? (invert ? 28 : 214)
@@ -734,6 +681,9 @@ private enum SegmentPanel {
         }
         for stroke in laid.strokes where stroke.opposite {
             fill(&pixels, width: laid.width, height: laid.height, rect: stroke.rect, value: markInk)
+        }
+        if thinTwoBridge {
+            thinTheSecondDigitBridge(&pixels, width: laid.width, height: laid.height, padding: padding, ink: ink, background: background)
         }
         if glare, let band = laid.rowBands.first {
             let y0 = max(0, band.midY - stroke)
@@ -907,7 +857,49 @@ private enum SegmentPanel {
         }
     }
 
-    fileprivate static func image(pixels: [UInt8], width: Int, height: Int) -> CGImage {
+    /// One span across the row, with the 2's center column reduced to a four-pixel bridge.
+    private static func thinTheSecondDigitBridge(
+        _ pixels: inout [UInt8],
+        width: Int,
+        height: Int,
+        padding: Int,
+        ink: UInt8,
+        background: UInt8
+    ) {
+        let twoX = padding + cellW + intra
+        let bridgeX = twoX + cellW / 2
+        let bridgeY = padding + cellH / 2 - stroke / 2
+        guard bridgeX >= 0, bridgeX < width else { return }
+        for y in 0..<height {
+            pixels[y * width + bridgeX] = background
+        }
+        for y in bridgeY..<(bridgeY + 4) where y >= 0 && y < height {
+            pixels[y * width + bridgeX] = ink
+        }
+        var first = width
+        var last = 0
+        for x in 0..<width {
+            for y in 0..<height where pixels[y * width + x] == ink {
+                first = min(first, x)
+                last = max(last, x)
+                break
+            }
+        }
+        guard first <= last else { return }
+        let speckY = padding + cellH / 2
+        guard speckY >= 0, speckY < height else { return }
+        for x in first...last {
+            var sum = 0
+            for y in 0..<height where pixels[y * width + x] == ink {
+                sum += 1
+            }
+            if sum == 0 {
+                pixels[speckY * width + x] = ink
+            }
+        }
+    }
+
+    private static func image(pixels: [UInt8], width: Int, height: Int) -> CGImage {
         let colorSpace = CGColorSpaceCreateDeviceGray()
         let data = Data(pixels) as CFData
         guard let provider = CGDataProvider(data: data) else {
