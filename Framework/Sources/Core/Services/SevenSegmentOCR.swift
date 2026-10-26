@@ -774,9 +774,6 @@ private extension GrayBuffer {
         // Scratches between two washed rows keep a few pixels, so the gap never
         // hits zero. Split only when both sides are a full row of digits.
         let separated = (!opened && foundBands.count <= 1) ? rowGapBands(bandSource) : foundBands
-        if buffer.height > 600 {
-            fputs("opened \(opened) found \(foundBands.count) separated \(separated.count)\n", stderr)
-        }
         let solidBands = opened
             ? foundBands.filter { ($0.1 - $0.0) * 20 >= buffer.height }
             : foundBands
@@ -1048,9 +1045,6 @@ private func rowGapBands(_ mask: Mask) -> [(Int, Int)] {
         bestEnd = y
     }
     guard bestFloor < Int.max else { return [(0, height)] }
-    if height > 600 {
-        fputs("rowgap split \(bestValley)-\(bestEnd) floor \(bestFloor) cut \(cut)\n", stderr)
-    }
     return [(0, bestValley), (bestEnd, height)]
 }
 
