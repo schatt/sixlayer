@@ -207,8 +207,8 @@ struct OCRSevenSegment576Tests {
     }
 
     @Test func diagonalBridgeKeepsTheTwoWhole() {
-        // The price-row mask shows a 2 whose halves meet at a diagonal of 28
-        // ink pixels. The split floor is a fifth of a 349-pixel stem, so that
+        // The price-row mask shows a 2 whose halves meet at a diagonal below
+        // the projection floor. The span is wider than the band, so that
         // diagonal is cut and each half is read as 1. The stroke is still one glyph.
         let image = SegmentPanel.render(
             rows: [atoms("2")],
