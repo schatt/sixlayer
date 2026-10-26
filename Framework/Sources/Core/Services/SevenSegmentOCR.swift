@@ -649,6 +649,11 @@ private extension GrayBuffer {
     }
 
     static func readRows(in buffer: GrayBuffer) -> [[Cell]] {
+        if buffer.width > 1000, buffer.height > 300 {
+            var file = Data("P5\n\(buffer.width) \(buffer.height)\n255\n".utf8)
+            file.append(contentsOf: buffer.pixels)
+            try? file.write(to: URL(fileURLWithPath: "/tmp/slf-591-gray.pgm"))
+        }
         let raw = buffer.masks()
         // A frame inside the crop seals the glass. Ink outside that glass is the bezel.
         let sealed = (dark: keepingInteriorInk(raw.dark), light: keepingInteriorInk(raw.light))
