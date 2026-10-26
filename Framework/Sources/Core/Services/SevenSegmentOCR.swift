@@ -341,6 +341,12 @@ private struct GrayBuffer {
             }
         }
         if box.height * 100 >= digitHeight * 55, box.width * 100 <= box.height * 30 {
+            // A stem is a 1. The right side of a 3 is just as narrow, and its
+            // windows are still an exact 3. An exact other glyph wins.
+            let pattern = sample(mask, box: box, width: width)
+            if let glyph = SevenSegmentGlyph.match(pattern), glyph.confidence == 1, glyph.character != "1" {
+                return Cell(box: box, character: glyph.character, confidence: glyph.confidence, band: bandIndex)
+            }
             return Cell(box: box, character: "1", confidence: 1, band: bandIndex)
         }
         if box.height * 100 >= digitHeight * 50,
