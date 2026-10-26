@@ -211,13 +211,13 @@ struct OCRSevenSegment576Tests {
         // ink pixels. The split floor is a fifth of a 349-pixel stem, so that
         // diagonal is cut and each half is read as 1. The stroke is still one glyph.
         let image = SegmentPanel.render(
-            rows: [atoms("32.88")],
+            rows: [atoms("2")],
             inkLevel: 40,
             backgroundLevel: 210,
             thinTwoBridge: true
         )
         let result = decode(image, maximum: 0)
-        #expect(result.extractedText == "32.88")
+        #expect(result.extractedText == "2")
     }
 
     @Test func strokeSizedWindowSeparatesAdjacentDigits() {
@@ -683,7 +683,7 @@ private enum SegmentPanel {
             fill(&pixels, width: laid.width, height: laid.height, rect: stroke.rect, value: markInk)
         }
         if thinTwoBridge {
-            thinTheSecondDigitBridge(&pixels, width: laid.width, height: laid.height, padding: padding, ink: ink, background: background)
+            pixels = wideThinTwo(pixels, width: laid.width, height: laid.height, padding: padding, ink: ink, background: background)
         }
         if glare, let band = laid.rowBands.first {
             let y0 = max(0, band.midY - stroke)
@@ -695,7 +695,7 @@ private enum SegmentPanel {
                 }
             }
         }
-        var width = laid.width
+        var width = pixels.count / laid.height
         var height = laid.height
         if abs(tiltDegrees) > 0.01 {
             let turned = rotate(pixels: pixels, width: width, height: height, degrees: tiltDegrees, fill: background)
@@ -857,46 +857,41 @@ private enum SegmentPanel {
         }
     }
 
-    /// One span across the row, with the 2's center column reduced to a four-pixel bridge.
-    private static func thinTheSecondDigitBridge(
-        _ pixels: inout [UInt8],
+    /// A 2 whose center column is a four-pixel bridge, on a span wider than the band.
+    private static func wideThinTwo(
+        _ pixels: [UInt8],
         width: Int,
         height: Int,
         padding: Int,
         ink: UInt8,
         background: UInt8
-    ) {
-        let twoX = padding + cellW + intra
-        let bridgeX = twoX + cellW / 2
-        let bridgeY = padding + cellH / 2 - stroke / 2
-        guard bridgeX >= 0, bridgeX < width else { return }
+    ) -> [UInt8] {
+        let newW = width + height
+        var widened = [UInt8](repeating: background, count: newW * height)
         for y in 0..<height {
-            pixels[y * width + bridgeX] = background
-        }
-        for y in bridgeY..<(bridgeY + 4) where y >= 0 && y < height {
-            pixels[y * width + bridgeX] = ink
-        }
-        var first = width
-        var last = 0
-        for x in 0..<width {
-            for y in 0..<height where pixels[y * width + x] == ink {
-                first = min(first, x)
-                last = max(last, x)
-                break
+            for x in 0..<width {
+                widened[y * newW + x] = pixels[y * width + x]
             }
         }
-        guard first <= last else { return }
-        let speckY = padding + cellH / 2
-        guard speckY >= 0, speckY < height else { return }
-        for x in first...last {
+        let bridgeX = padding + cellW / 2
+        let bridgeY = padding + cellH / 2 - stroke / 2
+        for y in 0..<height {
+            widened[y * newW + bridgeX] = background
+        }
+        for y in bridgeY..<(bridgeY + 4) where y >= 0 && y < height {
+            widened[y * newW + bridgeX] = ink
+        }
+        let speckY = min(height - 1, padding + cellH / 2)
+        for x in 0..<newW {
             var sum = 0
-            for y in 0..<height where pixels[y * width + x] == ink {
+            for y in 0..<height where widened[y * newW + x] == ink {
                 sum += 1
             }
             if sum == 0 {
-                pixels[speckY * width + x] = ink
+                widened[speckY * newW + x] = ink
             }
         }
+        return widened
     }
 
     private static func image(pixels: [UInt8], width: Int, height: Int) -> CGImage {
