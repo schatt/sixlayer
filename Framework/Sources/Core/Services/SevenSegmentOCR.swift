@@ -270,6 +270,62 @@ private struct GrayBuffer {
         }
     }
 
+    /// A washed decimal shares its columns with the digit beside it, so the
+    /// column walk never gives it a box. It is a short run on the baseline
+    /// sitting in the gap between two digit bars, with empty glass above it.
+    private static func baselineDots(
+        in band: (Int, Int),
+        mask: Mask,
+        cells: [Cell],
+        width: Int,
+        bandIndex: Int
+    ) -> [Cell] {
+        let digits = cells.filter { $0.character.isNumber && $0.height > 0 }
+        guard digits.count >= 2 else { return [] }
+        let digitWidth = median(digits.map(\.box.width)) ?? 0
+        let digitHeight = median(digits.map(\.height)) ?? 0
+        guard digitWidth > 8, digitHeight > 8 else { return [] }
+        let baseline = median(digits.map(\.maxY)) ?? band.1
+        let top = max(band.0, baseline - max(4, digitHeight / 8))
+        let bottom = min(mask.height, max(baseline, band.1))
+        guard bottom > top else { return [] }
+        let sums = columnSums(mask, y0: top, y1: bottom, width: width)
+        let floor = max(2, (bottom - top) / 4)
+        var spans: [(Int, Int)] = []
+        var start: Int?
+        for x in 0...width {
+            let on = x < width && sums[x] >= floor
+            if on {
+                if start == nil { start = x }
+            } else if let open = start {
+                spans.append((open, x))
+                start = nil
+            }
+        }
+        let wide = digitWidth / 2
+        let narrow = digitWidth / 4
+        let gapTop = max(band.0, top - max(4, digitHeight / 10))
+        let above = columnSums(mask, y0: gapTop, y1: top, width: width)
+        var dots: [Cell] = []
+        for (index, span) in spans.enumerated() {
+            let spanWidth = span.1 - span.0
+            guard spanWidth > 2, spanWidth < narrow else { continue }
+            let leftIsWide = spans[..<index].contains { $0.1 - $0.0 >= wide && span.0 - $0.1 < digitWidth }
+            let rightIsWide = spans.dropFirst(index + 1).contains { $0.1 - $0.0 >= wide && $0.0 - span.1 < digitWidth }
+            guard leftIsWide, rightIsWide else { continue }
+            let aboveInk = (span.0..<span.1).reduce(0) { $0 + above[$1] }
+            let room = max(1, (top - gapTop) * spanWidth)
+            guard aboveInk * 5 < room else { continue }
+            let box = tightBox(mask, x0: span.0, x1: span.1, y0: top, y1: bottom, width: width)
+            let alreadyMarked = cells.contains { cell in
+                (cell.character == "." || cell.character == ",") && overlap(cell.box, box) > 0
+            }
+            if alreadyMarked { continue }
+            dots.append(Cell(box: box, character: ".", confidence: 1, band: bandIndex))
+        }
+        return dots
+    }
+
     private static func oppositeMarks(
         in band: (Int, Int),
         secondary: Mask,
@@ -736,7 +792,8 @@ private extension GrayBuffer {
             let marks = opened
                 ? []
                 : oppositeMarks(in: band, secondary: paintedMarks, existing: found, buffer: buffer, bandIndex: 0)
-            let row = found + marks
+            let dots = baselineDots(in: band, mask: glyphs, cells: found, width: buffer.width, bandIndex: 0)
+            let row = found + marks + dots
             return row.isEmpty ? nil : row
         }
     }
