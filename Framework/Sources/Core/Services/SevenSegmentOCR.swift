@@ -346,11 +346,16 @@ private struct GrayBuffer {
             // but it is not solid, and its windows are an exact 3.
             let pattern = sample(mask, box: box, width: width)
             let cover = coverage(mask, box: box, width: width)
-            if let glyph = SevenSegmentGlyph.match(pattern),
-               glyph.confidence == 1,
-               glyph.character != "1",
-               cover < 0.80 {
-                fputs("stem-exact \(glyph.character) \(box.width)x\(box.height) pat \(pattern.rawValue) cov \(cover)\n", stderr)
+            let glyph = SevenSegmentGlyph.match(pattern)
+            let note = "narrow \(box.width)x\(box.height) pat \(pattern.rawValue) cov \(cover) glyph \(glyph.map { "\($0.character):\($0.confidence)" } ?? "nil")\n"
+            if let handle = FileHandle(forWritingAtPath: "/tmp/stem-exact.log") {
+                handle.seekToEndOfFile()
+                handle.write(Data(note.utf8))
+                try? handle.close()
+            } else {
+                try? Data(note.utf8).write(to: URL(fileURLWithPath: "/tmp/stem-exact.log"))
+            }
+            if let glyph, glyph.confidence == 1, glyph.character != "1", cover < 0.80 {
                 return Cell(box: box, character: glyph.character, confidence: glyph.confidence, band: bandIndex)
             }
             return Cell(box: box, character: "1", confidence: 1, band: bandIndex)
