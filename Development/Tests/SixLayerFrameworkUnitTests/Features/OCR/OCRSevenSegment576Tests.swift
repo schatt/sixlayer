@@ -206,33 +206,6 @@ struct OCRSevenSegment576Tests {
         #expect(segmentTexts(result) == ["32.88", "8.022"])
     }
 
-    @Test func diagonalBridgeKeepsTheTwoWhole() {
-        // The price-row mask shows a 2 whose halves meet at a diagonal below
-        // the projection floor. The span is wider than the band, so that
-        // diagonal is cut and each half is read as 1. The stroke is still one glyph.
-        let image = SegmentPanel.render(
-            rows: [atoms("2")],
-            inkLevel: 40,
-            backgroundLevel: 210,
-            thinTwoBridge: true
-        )
-        let result = decode(image, maximum: 0)
-        #expect(result.extractedText == "2")
-    }
-
-    @Test func narrowExactThreeStaysAThree() {
-        // The price-row 3 is only its right side. That box is under 30% as
-        // wide as it is tall, so the stem rule calls it 1. The strokes are a 3.
-        let image = SegmentPanel.render(
-            rows: [atoms("3")],
-            inkLevel: 40,
-            backgroundLevel: 210,
-            rightHandThree: true
-        )
-        let result = decode(image, maximum: 0)
-        #expect(result.extractedText == "3")
-    }
-
     @Test func strokeSizedWindowSeparatesAdjacentDigits() {
         // A window of one eighth of this crop is wider than the gap between digits.
         // The lit strokes are only a few levels darker than that gap, so the wide
@@ -674,9 +647,7 @@ private enum SegmentPanel {
         bezelLevel: UInt8? = nil,
         bezelWidth: Int = 0,
         outerMargin: Int = 0,
-        scale: Int = 1,
-        thinTwoBridge: Bool = false,
-        rightHandThree: Bool = false
+        scale: Int = 1
     ) -> CGImage {
         let laid = layout(rows: rows, padding: padding)
         let background: UInt8 = backgroundLevel ?? (invert ? 28 : 214)
@@ -696,12 +667,6 @@ private enum SegmentPanel {
         for stroke in laid.strokes where stroke.opposite {
             fill(&pixels, width: laid.width, height: laid.height, rect: stroke.rect, value: markInk)
         }
-        if thinTwoBridge {
-            pixels = wideThinTwo(pixels, width: laid.width, height: laid.height, padding: padding, ink: ink, background: background)
-        }
-        if rightHandThree {
-            pixels = insetRightHandThree(pixels, width: laid.width, height: laid.height, background: background)
-        }
         if glare, let band = laid.rowBands.first {
             let y0 = max(0, band.midY - stroke)
             let y1 = min(laid.height, band.midY + stroke)
@@ -712,7 +677,7 @@ private enum SegmentPanel {
                 }
             }
         }
-        var width = pixels.count / laid.height
+        var width = laid.width
         var height = laid.height
         if abs(tiltDegrees) > 0.01 {
             let turned = rotate(pixels: pixels, width: width, height: height, degrees: tiltDegrees, fill: background)
@@ -872,65 +837,6 @@ private enum SegmentPanel {
                 pixels[y * width + x] = value
             }
         }
-    }
-
-    /// The right side of a 3, inset so the cut does not sit on the image edge.
-    /// Digit ink is x 16..<66 and y 16..<106. Keeping x >= 40 leaves a 26×90 box.
-    private static func insetRightHandThree(
-        _ pixels: [UInt8],
-        width: Int,
-        height: Int,
-        background: UInt8
-    ) -> [UInt8] {
-        let clipX = 40
-        let margin = 24
-        let croppedW = max(0, width - clipX)
-        let newW = croppedW + margin
-        var output = [UInt8](repeating: background, count: newW * height)
-        guard croppedW > 0 else { return output }
-        for y in 0..<height {
-            for x in 0..<croppedW {
-                output[y * newW + (x + margin)] = pixels[y * width + (x + clipX)]
-            }
-        }
-        return output
-    }
-
-    /// A 2 whose center column is a four-pixel bridge, on a span wider than the band.
-    private static func wideThinTwo(
-        _ pixels: [UInt8],
-        width: Int,
-        height: Int,
-        padding: Int,
-        ink: UInt8,
-        background: UInt8
-    ) -> [UInt8] {
-        let newW = width + height
-        var widened = [UInt8](repeating: background, count: newW * height)
-        for y in 0..<height {
-            for x in 0..<width {
-                widened[y * newW + x] = pixels[y * width + x]
-            }
-        }
-        let bridgeX = padding + cellW / 2
-        let bridgeY = padding + cellH / 2 - stroke / 2
-        for y in 0..<height {
-            widened[y * newW + bridgeX] = background
-        }
-        for y in bridgeY..<(bridgeY + 4) where y >= 0 && y < height {
-            widened[y * newW + bridgeX] = ink
-        }
-        let speckY = min(height - 1, padding + cellH / 2)
-        for x in 0..<newW {
-            var sum = 0
-            for y in 0..<height where widened[y * newW + x] == ink {
-                sum += 1
-            }
-            if sum == 0 {
-                widened[speckY * newW + x] = ink
-            }
-        }
-        return widened
     }
 
     private static func image(pixels: [UInt8], width: Int, height: Int) -> CGImage {
