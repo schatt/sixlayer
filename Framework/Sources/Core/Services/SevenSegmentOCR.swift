@@ -288,6 +288,22 @@ private struct GrayBuffer {
                     stderr
                 )
             }
+            if buffer.height < 200 {
+                let pattern = sample(mask, box: box, width: buffer.width)
+                let name = cell.map { String($0.character) } ?? "drop"
+                let line = "cell \(name) box \(box.minX),\(box.minY) \(box.width)x\(box.height) pat \(pattern.rawValue) h \(digitHeight)\n"
+                if let data = line.data(using: .utf8) {
+                    let url = URL(fileURLWithPath: "/tmp/slf-591-glare.txt")
+                    if FileManager.default.fileExists(atPath: url.path),
+                       let handle = try? FileHandle(forWritingTo: url) {
+                        handle.seekToEndOfFile()
+                        handle.write(data)
+                        try? handle.close()
+                    } else {
+                        try? data.write(to: url)
+                    }
+                }
+            }
             return cell
         }
     }
