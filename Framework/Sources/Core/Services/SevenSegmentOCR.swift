@@ -288,22 +288,6 @@ private struct GrayBuffer {
                     stderr
                 )
             }
-            if buffer.height < 200 {
-                let pattern = sample(mask, box: box, width: buffer.width)
-                let name = cell.map { String($0.character) } ?? "drop"
-                let line = "cell \(name) box \(box.minX),\(box.minY) \(box.width)x\(box.height) pat \(pattern.rawValue) h \(digitHeight)\n"
-                if let data = line.data(using: .utf8) {
-                    let url = URL(fileURLWithPath: "/tmp/slf-591-glare.txt")
-                    if FileManager.default.fileExists(atPath: url.path),
-                       let handle = try? FileHandle(forWritingTo: url) {
-                        handle.seekToEndOfFile()
-                        handle.write(data)
-                        try? handle.close()
-                    } else {
-                        try? data.write(to: url)
-                    }
-                }
-            }
             return cell
         }
     }
@@ -573,7 +557,10 @@ private struct GrayBuffer {
             let pixel = Int(pixels[index])
             let low = range.low[index]
             let high = range.high[index]
-            guard high - low > inkMargin else { continue }
+            // Two nearby glass levels (a glare band and the glass beside it)
+            // are only a few counts apart. A stroke is a much larger share of
+            // the brighter level. The halfway cut alone marks that glass.
+            guard high - low > inkMargin, (high - low) * 5 > high else { continue }
             let mid = low + (high - low) / 2
             dark[index] = pixel < mid && pixel + inkMargin <= high
             light[index] = pixel > mid && pixel >= low + inkMargin
@@ -1293,23 +1280,7 @@ private func columnRuns(_ mask: Mask, y0: Int, y1: Int, width: Int) -> [(Int, In
             pieces.append((open, span.1))
         }
         let split = pieces.isEmpty ? [span] : pieces
-        let joined = joiningBridgedPieces(split, mask: mask, y0: y0, y1: y1, bandHeight: bandHeight)
-        if mask.height < 200, spanWidth > bandHeight {
-            let sumsText = (span.0..<span.1).map { String(sums[$0]) }.joined(separator: ",")
-            let line = "span \(span.0)-\(span.1) floor \(floor) peak \(peak) split \(split) joined \(joined) sums \(sumsText)\n"
-            if let data = line.data(using: .utf8) {
-                let url = URL(fileURLWithPath: "/tmp/slf-591-spans.txt")
-                if FileManager.default.fileExists(atPath: url.path),
-                   let handle = try? FileHandle(forWritingTo: url) {
-                    handle.seekToEndOfFile()
-                    handle.write(data)
-                    try? handle.close()
-                } else {
-                    try? data.write(to: url)
-                }
-            }
-        }
-        return joined
+        return joiningBridgedPieces(split, mask: mask, y0: y0, y1: y1, bandHeight: bandHeight)
     }
 }
 
