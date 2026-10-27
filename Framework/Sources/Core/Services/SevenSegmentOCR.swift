@@ -1293,7 +1293,23 @@ private func columnRuns(_ mask: Mask, y0: Int, y1: Int, width: Int) -> [(Int, In
             pieces.append((open, span.1))
         }
         let split = pieces.isEmpty ? [span] : pieces
-        return joiningBridgedPieces(split, mask: mask, y0: y0, y1: y1, bandHeight: bandHeight)
+        let joined = joiningBridgedPieces(split, mask: mask, y0: y0, y1: y1, bandHeight: bandHeight)
+        if mask.height < 200, spanWidth > bandHeight {
+            let sumsText = (span.0..<span.1).map { String(sums[$0]) }.joined(separator: ",")
+            let line = "span \(span.0)-\(span.1) floor \(floor) peak \(peak) split \(split) joined \(joined) sums \(sumsText)\n"
+            if let data = line.data(using: .utf8) {
+                let url = URL(fileURLWithPath: "/tmp/slf-591-spans.txt")
+                if FileManager.default.fileExists(atPath: url.path),
+                   let handle = try? FileHandle(forWritingTo: url) {
+                    handle.seekToEndOfFile()
+                    handle.write(data)
+                    try? handle.close()
+                } else {
+                    try? data.write(to: url)
+                }
+            }
+        }
+        return joined
     }
 }
 
