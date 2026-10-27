@@ -128,11 +128,15 @@ private struct GrayBuffer {
         guard limit > 0 else { return turned }
         let small = turned.fitted(maxSide: 280)
         let uprightScore = score(small)
+        let uprightConfidence = readConfidence(small)
         var bestAngle = 0
         var bestScore = uprightScore
         for angle in -limit...limit where angle != 0 {
-            let value = score(small.rotated(degrees: Double(angle)))
-            if value > bestScore {
+            let turnedSample = small.rotated(degrees: Double(angle))
+            let value = score(turnedSample)
+            // A tilt that lights an extra segment is a worse read, even when
+            // the row sums vary more.
+            if value > bestScore, readConfidence(turnedSample) >= uprightConfidence {
                 bestScore = value
                 bestAngle = angle
             }
@@ -147,6 +151,14 @@ private struct GrayBuffer {
             return turned
         }
         return tilted
+    }
+
+    /// Lowest cell confidence. A tilt that only adds row-sum noise scores
+    /// higher and still reads worse; deskew keeps the surer angle.
+    private static func readConfidence(_ buffer: GrayBuffer) -> Float {
+        let cells = readRows(in: buffer).flatMap { $0 }
+        guard !cells.isEmpty else { return 0 }
+        return cells.map(\.confidence).min() ?? 0
     }
 
     /// True when one polarity's core splits a full-height loose mask into
@@ -440,18 +452,6 @@ private struct GrayBuffer {
         }
         let sampledBox = box.height * 100 < digitHeight * 70 ? frame : box
         let pattern = sample(mask, box: sampledBox, width: width)
-        let line = "scan \(box.minX),\(box.minY) \(box.width)x\(box.height) pat \(pattern.rawValue)\n"
-        if let data = line.data(using: .utf8) {
-            let url = URL(fileURLWithPath: "/tmp/slf-591-scan.txt")
-            if FileManager.default.fileExists(atPath: url.path),
-               let handle = try? FileHandle(forWritingTo: url) {
-                handle.seekToEndOfFile()
-                handle.write(data)
-                try? handle.close()
-            } else {
-                try? data.write(to: url)
-            }
-        }
         guard let glyph = SevenSegmentGlyph.match(pattern) else { return nil }
         return Cell(box: box, character: glyph.character, confidence: glyph.confidence, band: bandIndex)
     }
