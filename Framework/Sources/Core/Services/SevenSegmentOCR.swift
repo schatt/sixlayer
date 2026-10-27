@@ -544,12 +544,12 @@ private struct GrayBuffer {
 
     private func masks() -> (dark: Mask, light: Mask, darkCore: Mask, lightCore: Mask) {
         // ssocr dynamic_threshold: halfway from the local minimum to the
-        // local maximum. A wider cut marks the glass beside a glared stroke.
-        // A short crop (the glare fixture is 122 on its short side) stays at
-        // the tight window. A larger crop opens toward a washed stroke, and
-        // the cap stays under a scaled stroke so the bezel does not swallow it.
+        // local maximum. The window has to see a washed stroke and still
+        // miss the next digit. On the price row the gap is about 40 pixels,
+        // and a 35-pixel window meets across it. A short crop (the glare
+        // fixture is 122 on its short side) stays at the tight window.
         let shortSide = min(width, height)
-        let radius = min(36, max(4, (shortSide - 96) / 8))
+        let radius = min(36, max(4, (shortSide - 96) / 24))
         let range = localRange(radius: radius)
         var dark = [Bool](repeating: false, count: pixels.count)
         var light = [Bool](repeating: false, count: pixels.count)
