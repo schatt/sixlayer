@@ -352,14 +352,14 @@ private struct GrayBuffer {
                glyph.confidence == 1,
                glyph.character != "1",
                widerThanAStem,
-               cover < 0.80 {
+               cover < solidCoverage {
                 return Cell(box: box, character: glyph.character, confidence: glyph.confidence, band: bandIndex)
             }
             return Cell(box: box, character: "1", confidence: 1, band: bandIndex)
         }
         if box.height * 100 >= digitHeight * 50,
            box.width * 100 >= digitHeight * 40,
-           (coverage(mask, box: box, width: width) > 0.80 || inkFraction(buffer, box: box, darkInk: darkInk) > 0.80) {
+           (coverage(mask, box: box, width: width) > solidCoverage || inkFraction(buffer, box: box, darkInk: darkInk) > solidCoverage) {
             return nil
         }
         if box.height * 100 < digitHeight * 45, box.width * 100 < digitHeight * 30 {
@@ -375,7 +375,7 @@ private struct GrayBuffer {
             maxX: box.midX + max(digitWidth, box.width) / 2,
             maxY: frameTop + max(digitHeight, 1)
         )
-        if box.height * 100 < digitHeight * 70, coverage(mask, box: frame, width: width) > 0.80 {
+        if box.height * 100 < digitHeight * 70, coverage(mask, box: frame, width: width) > solidCoverage {
             return nil
         }
         let pattern = sample(mask, box: box.height * 100 < digitHeight * 70 ? frame : box, width: width)
@@ -1239,6 +1239,7 @@ private func verticalRuns(_ mask: Mask, box: PixelBox, width: Int) -> [(Int, Int
 }
 
 private let inkMargin = 14
+private let solidCoverage: Float = 0.80
 
 private func markIsInk(_ mask: Mask, box: PixelBox, width: Int, buffer: GrayBuffer, darkInk: Bool) -> Bool {
     coverage(mask, box: box, width: width) > 0.5 || inkFraction(buffer, box: box, darkInk: darkInk) > 0.5
