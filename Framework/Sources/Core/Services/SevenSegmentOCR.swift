@@ -557,10 +557,10 @@ private struct GrayBuffer {
             let pixel = Int(pixels[index])
             let low = range.low[index]
             let high = range.high[index]
-            // Two nearby glass levels (a glare band and the glass beside it)
-            // are only a few counts apart. A stroke is a much larger share of
-            // the brighter level. The halfway cut alone marks that glass.
-            guard high - low > inkMargin, (high - low) * 5 > high else { continue }
+            // Glare glass varies, but only by a small share of its level.
+            // A stroke is at least a quarter of the brighter level darker
+            // than that level. The halfway cut alone marks the glare.
+            guard high - low > inkMargin, (high - low) * 4 > high else { continue }
             let mid = low + (high - low) / 2
             dark[index] = pixel < mid && pixel + inkMargin <= high
             light[index] = pixel > mid && pixel >= low + inkMargin
