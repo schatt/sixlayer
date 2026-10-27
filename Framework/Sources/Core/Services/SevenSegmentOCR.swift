@@ -565,6 +565,31 @@ private struct GrayBuffer {
             dark[index] = pixel < mid && pixel + inkMargin <= high
             light[index] = pixel > mid && pixel >= low + inkMargin
         }
+        // The middle of a wide pale bar matches itself, so the halfway cut
+        // never marks it. The edges of that bar are already ink. Fill the
+        // middle only in those columns, and only when the pixel is darker
+        // than a wide average. An open hole is not darker than that average.
+        let meanRadius = min(64, max(24, shortSide / 8))
+        let mean = boxMean(radius: meanRadius)
+        var darkColumns = [Int](repeating: 0, count: width)
+        var lightColumns = [Int](repeating: 0, count: width)
+        for index in dark.indices {
+            let column = index % width
+            if dark[index] { darkColumns[column] += 1 }
+            if light[index] { lightColumns[column] += 1 }
+        }
+        let columnFloor = max(4, height / 40)
+        for index in pixels.indices {
+            let column = index % width
+            let pixel = Int(pixels[index])
+            let average = mean[index]
+            if darkColumns[column] >= columnFloor, pixel + paleBarMargin < average {
+                dark[index] = true
+            }
+            if lightColumns[column] >= columnFloor, pixel > average + paleBarMargin {
+                light[index] = true
+            }
+        }
         let darkMask = Mask(bits: dark, width: width, height: height)
         let lightMask = Mask(bits: light, width: width, height: height)
         return (darkMask, lightMask, darkMask, lightMask)
@@ -610,6 +635,36 @@ private struct GrayBuffer {
             }
         }
         return (low, high)
+    }
+
+    /// Mean of a square window, as a horizontal pass and then a vertical pass.
+    private func boxMean(radius: Int) -> [Int] {
+        var horizontal = [Int](repeating: 0, count: pixels.count)
+        for y in 0..<height {
+            var prefix = [Int](repeating: 0, count: width + 1)
+            let row = y * width
+            for x in 0..<width {
+                prefix[x + 1] = prefix[x] + Int(pixels[row + x])
+            }
+            for x in 0..<width {
+                let start = max(0, x - radius)
+                let end = min(width - 1, x + radius)
+                horizontal[row + x] = (prefix[end + 1] - prefix[start]) / (end - start + 1)
+            }
+        }
+        var mean = [Int](repeating: 0, count: pixels.count)
+        for x in 0..<width {
+            var prefix = [Int](repeating: 0, count: height + 1)
+            for y in 0..<height {
+                prefix[y + 1] = prefix[y] + horizontal[y * width + x]
+            }
+            for y in 0..<height {
+                let start = max(0, y - radius)
+                let end = min(height - 1, y + radius)
+                mean[y * width + x] = (prefix[end + 1] - prefix[start]) / (end - start + 1)
+            }
+        }
+        return mean
     }
 
     private func fitted(maxSide: Int) -> GrayBuffer {
@@ -1407,6 +1462,8 @@ private func verticalRuns(_ mask: Mask, box: PixelBox, width: Int) -> [(Int, Int
 }
 
 private let inkMargin = 14
+/// A pale bar sits only a few counts under the wide average. The glare beside it does not.
+private let paleBarMargin = 8
 private let solidCoverage: Float = 0.80
 
 private func markIsInk(_ mask: Mask, box: PixelBox, width: Int, buffer: GrayBuffer, darkInk: Bool) -> Bool {
