@@ -341,21 +341,18 @@ private struct GrayBuffer {
             }
         }
         if box.height * 100 >= digitHeight * 55, box.width * 100 <= box.height * 30 {
-            // A solid stem is a 1. Sampling it lights every window, so the
-            // pattern is an exact 8. The right side of a 3 is just as narrow
-            // but it is not solid, and its windows are an exact 3.
+            // A stem is under about a fifth of its height. Sampling the 12×90
+            // stroke lights every window (pattern 127, coverage 0.70). With a
+            // few pixels of neighbor it is 17×90 and an exact 5. The price-row
+            // 3 is 100×380, pattern 79, and not a solid stem.
             let pattern = sample(mask, box: box, width: width)
             let cover = coverage(mask, box: box, width: width)
-            let glyph = SevenSegmentGlyph.match(pattern)
-            let note = "narrow \(box.width)x\(box.height) pat \(pattern.rawValue) cov \(cover) glyph \(glyph.map { "\($0.character):\($0.confidence)" } ?? "nil")\n"
-            if let handle = FileHandle(forWritingAtPath: "/tmp/stem-exact.log") {
-                handle.seekToEndOfFile()
-                handle.write(Data(note.utf8))
-                try? handle.close()
-            } else {
-                try? Data(note.utf8).write(to: URL(fileURLWithPath: "/tmp/stem-exact.log"))
-            }
-            if let glyph, glyph.confidence == 1, glyph.character != "1", cover < 0.80 {
+            let widerThanAStem = box.width * 100 > box.height * 22
+            if let glyph = SevenSegmentGlyph.match(pattern),
+               glyph.confidence == 1,
+               glyph.character != "1",
+               widerThanAStem,
+               cover < 0.80 {
                 return Cell(box: box, character: glyph.character, confidence: glyph.confidence, band: bandIndex)
             }
             return Cell(box: box, character: "1", confidence: 1, band: bandIndex)
