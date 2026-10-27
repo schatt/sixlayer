@@ -1233,8 +1233,9 @@ private struct HorizontalBar {
     var midX: Int { (minX + maxX) / 2 }
 }
 
-/// The row has one digit width. A bar that already includes its stems is that
-/// width; a bar inset from the stems grows by one stroke on each side.
+/// One horizontal bar sets the digit width. Every tall box in the row is that
+/// width, and the starts sit on one pitch. A one has no bar: its stem is the
+/// right edge of the same box, then the whole row is snapped back onto the pitch.
 private func alignedDigitBoxes(
     _ boxes: [PixelBox],
     mask: Mask,
@@ -1242,53 +1243,89 @@ private func alignedDigitBoxes(
 ) -> (boxes: [PixelBox], width: Int?) {
     let bandHeight = max(1, band.1 - band.0)
     let maxHeight = boxes.map(\.height).max() ?? 1
-    let tall = boxes.filter { $0.height * 100 >= maxHeight * 55 }
+    let minBar = max(8, maxHeight / 4)
     let bars = horizontalBars(in: mask, band: band).filter { bar in
-        tall.contains { $0.minX <= bar.midX && bar.midX < $0.maxX }
+        bar.width >= minBar
+            && bar.width * 2 < maxHeight * 3
+            && boxes.contains { box in
+                box.height * 100 >= maxHeight * 55
+                    && box.minX <= bar.midX
+                    && bar.midX < box.maxX
+            }
     }
     guard let width = sharedDigitWidth(bars.map { outerDigitWidth($0, mask: mask) }),
-          width > 4,
+          width >= minBar,
           width < bandHeight
     else {
         return (boxes, nil)
     }
-    let placed = boxes.map { box -> PixelBox in
-        guard box.height * 100 >= maxHeight * 55 else { return box }
-        // A reflection is wider than a digit and has no place in the row.
-        if box.width > width * 3 / 2, box.width * 5 > box.height * 4 { return box }
-        return fittedDigitBox(box, width: width, bars: bars, limit: mask.width)
+    let proposals = boxes.map { proposedDigitOrigin($0, width: width, bars: bars, maxHeight: maxHeight) }
+    let digitOrigins = zip(boxes, proposals).compactMap { box, origin -> Int? in
+        guard isDigitSlot(box, width: width, maxHeight: maxHeight), let origin else { return nil }
+        return origin
+    }
+    let snapped = snappedOrigins(digitOrigins, width: width)
+    var slot = 0
+    let placed = zip(boxes, proposals).map { box, origin -> PixelBox in
+        guard isDigitSlot(box, width: width, maxHeight: maxHeight), origin != nil else { return box }
+        let start = snapped[slot]
+        slot += 1
+        let minX = clampedOrigin(start, width: width, limit: mask.width)
+        return PixelBox(minX: minX, minY: box.minY, maxX: minX + width, maxY: box.maxY)
     }
     return (placed, width)
 }
 
-private func fittedDigitBox(
+private func isDigitSlot(_ box: PixelBox, width: Int, maxHeight: Int) -> Bool {
+    guard box.height * 100 >= maxHeight * 55 else { return false }
+    // A reflection is wider than a digit and stays wide so it can be dropped.
+    if box.width > width * 3 / 2, box.width * 5 > box.height * 4 { return false }
+    return true
+}
+
+private func proposedDigitOrigin(
     _ box: PixelBox,
     width: Int,
     bars: [HorizontalBar],
-    limit: Int
-) -> PixelBox {
+    maxHeight: Int
+) -> Int? {
+    guard isDigitSlot(box, width: width, maxHeight: maxHeight) else { return nil }
     let centers = bars
         .filter { box.minX <= $0.midX && $0.midX < box.maxX }
         .map(\.midX)
         .sorted()
-    let origin: Int
     if !centers.isEmpty {
-        origin = centers[(centers.count - 1) / 2] - width / 2
-    } else if box.width * 2 < width {
-        // No bar: the ink is the right-hand stem of a full digit.
-        origin = box.maxX - width
-    } else {
-        origin = box.midX - width / 2
+        return centers[(centers.count - 1) / 2] - width / 2
     }
-    let minX: Int
-    if origin < 0 {
-        minX = 0
-    } else if origin + width > limit {
-        minX = max(0, limit - width)
-    } else {
-        minX = origin
+    if box.width * 2 < width {
+        // No bar. The ink is the right-hand stem of a full digit.
+        return box.maxX - width
     }
-    return PixelBox(minX: minX, minY: box.minY, maxX: minX + width, maxY: box.maxY)
+    return box.midX - width / 2
+}
+
+/// Starts of one row differ by the same pitch. A gap between groups is more
+/// than one step, so it does not set the pitch.
+private func snappedOrigins(_ origins: [Int], width: Int) -> [Int] {
+    guard origins.count >= 2 else { return origins }
+    let order = origins.sorted()
+    let gaps = zip(order, order.dropFirst()).map { $1 - $0 }.filter { $0 > 0 }
+    let steps = gaps.filter { $0 * 4 >= width * 3 && $0 * 2 <= width * 3 }
+    guard let pitch = median(steps), pitch > 0 else { return origins }
+    let base = order[0]
+    let residues = origins.map { ($0 - base) % pitch }
+    let phase = median(residues) ?? 0
+    return origins.map { origin in
+        let delta = origin - (base + phase)
+        let stepsAway = Int((Double(delta) / Double(pitch)).rounded())
+        return base + phase + stepsAway * pitch
+    }
+}
+
+private func clampedOrigin(_ origin: Int, width: Int, limit: Int) -> Int {
+    if origin < 0 { return 0 }
+    if origin + width > limit { return max(0, limit - width) }
+    return origin
 }
 
 private func outerDigitWidth(_ bar: HorizontalBar, mask: Mask) -> Int {
