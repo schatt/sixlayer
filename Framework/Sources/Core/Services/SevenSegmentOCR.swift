@@ -440,7 +440,18 @@ private struct GrayBuffer {
         }
         let sampledBox = box.height * 100 < digitHeight * 70 ? frame : box
         let pattern = sample(mask, box: sampledBox, width: width)
-        fputs("scan \(box.minX),\(box.minY) \(box.width)x\(box.height) pat \(pattern.rawValue)\n", stderr)
+        let line = "scan \(box.minX),\(box.minY) \(box.width)x\(box.height) pat \(pattern.rawValue)\n"
+        if let data = line.data(using: .utf8) {
+            let url = URL(fileURLWithPath: "/tmp/slf-591-scan.txt")
+            if FileManager.default.fileExists(atPath: url.path),
+               let handle = try? FileHandle(forWritingTo: url) {
+                handle.seekToEndOfFile()
+                handle.write(data)
+                try? handle.close()
+            } else {
+                try? data.write(to: url)
+            }
+        }
         guard let glyph = SevenSegmentGlyph.match(pattern) else { return nil }
         return Cell(box: box, character: glyph.character, confidence: glyph.confidence, band: bandIndex)
     }
