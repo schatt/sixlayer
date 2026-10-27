@@ -1125,6 +1125,9 @@ private func rowGapBands(_ mask: Mask) -> [(Int, Int)] {
         // crop. The gap between two rows is a thin band.
         guard length >= minValley, length * 8 <= height else { continue }
         guard above >= minSide, below >= minSide, floor < bestFloor else { continue }
+        // A glare line through one row leaves a short stub. Two rows are
+        // about the same height.
+        guard min(above, below) * 2 >= max(above, below) else { continue }
         bestFloor = floor
         bestValley = valley
         bestEnd = y
