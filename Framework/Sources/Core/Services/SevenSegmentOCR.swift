@@ -253,12 +253,8 @@ private struct GrayBuffer {
         let digitHeight = median(tall.map(\.height)) ?? maxHeight
         let baseline = median(tall.map(\.maxY)) ?? band.1
         let frameTop = median(tall.map(\.minY)) ?? band.0
-        // One horizontal bar sets the box. Every digit is rewritten to that
-        // width before any of them is read. A one is the same box, shifted
-        // so the stem sits on the right edge.
-        let aligned = alignedDigitBoxes(boxes, mask: mask, band: band)
-        let digitWidth = aligned.width ?? (median(tall.map(\.width)) ?? digitHeight)
-        return aligned.boxes.compactMap { box in
+        let digitWidth = median(tall.map(\.width)) ?? digitHeight
+        return boxes.compactMap { box in
             let cell = classify(
                 box,
                 mask: mask,
@@ -413,22 +409,8 @@ private struct GrayBuffer {
                 )
             }
         }
-        // A row of only ones has no bar to measure, so the stem is the box.
-        if box.height * 100 >= digitHeight * 55, box.width * 100 <= box.height * 30 {
-            // A stem is under about a fifth of its height. Sampling the 12×90
-            // stroke lights every window (pattern 127, coverage 0.70). With a
-            // few pixels of neighbor it is 17×90 and an exact 5. The price-row
-            // 3 is 100×380, pattern 79, and not a solid stem.
-            let pattern = sample(mask, box: box, width: width)
-            let cover = coverage(mask, box: box, width: width)
-            let widerThanAStem = box.width * 100 > box.height * 22
-            if let glyph = SevenSegmentGlyph.match(pattern),
-               glyph.confidence == 1,
-               glyph.character != "1",
-               widerThanAStem,
-               cover < solidCoverage {
-                return Cell(box: box, character: glyph.character, confidence: glyph.confidence, band: bandIndex)
-            }
+        // ssocr: a box narrower than a quarter of its height is a one.
+        if box.height * 100 >= digitHeight * 55, box.width * 4 < box.height {
             return Cell(box: box, character: "1", confidence: 1, band: bandIndex)
         }
         if box.height * 100 >= digitHeight * 50,
@@ -462,21 +444,44 @@ private struct GrayBuffer {
         return Cell(box: box, character: glyph.character, confidence: glyph.confidence, band: bandIndex)
     }
 
+    /// Six scanlines, as ssocr does. The center column is split into thirds
+    /// for the top, middle, and bottom bars. Lines a quarter down from the
+    /// top and a quarter up from the bottom are split into halves for the
+    /// stems. One foreground pixel lights a segment.
     private static func sample(_ mask: Mask, box: PixelBox, width: Int) -> SevenSegmentPattern {
-        let windows: [(SevenSegmentPattern, Double, Double, Double, Double)] = [
-            (.a, 0.22, 0.00, 0.78, 0.16),
-            (.b, 0.72, 0.16, 1.00, 0.40),
-            (.c, 0.72, 0.60, 1.00, 0.86),
-            (.d, 0.22, 0.84, 0.78, 1.00),
-            (.e, 0.00, 0.60, 0.28, 0.86),
-            (.f, 0.00, 0.16, 0.28, 0.40),
-            (.g, 0.28, 0.42, 0.72, 0.58)
-        ]
-        return windows.reduce(into: SevenSegmentPattern()) { pattern, window in
-            if regionCoverage(mask, box: box, width: width, window: window) > 0.30 {
-                pattern.formUnion(window.0)
-            }
+        let boxWidth = box.width
+        let boxHeight = box.height
+        guard boxWidth > 1, boxHeight > 2, width > 0 else { return [] }
+        var pattern = SevenSegmentPattern()
+        let midX = box.minX + boxWidth / 2
+        let third = max(1, boxHeight / 3)
+        if foregroundCount(mask, x: midX, y: box.minY, length: third, vertical: true) > 0 {
+            pattern.formUnion(.a)
         }
+        if foregroundCount(mask, x: midX, y: box.minY + third, length: third, vertical: true) > 0 {
+            pattern.formUnion(.g)
+        }
+        let lower = box.minY + third * 2
+        if foregroundCount(mask, x: midX, y: lower, length: max(1, box.maxY - lower), vertical: true) > 0 {
+            pattern.formUnion(.d)
+        }
+        let quarter = box.minY + boxHeight / 4
+        let threeQuarters = box.minY + (boxHeight * 3) / 4
+        let half = boxWidth / 2
+        let right = max(1, box.maxX - (midX + 1))
+        if foregroundCount(mask, x: box.minX, y: quarter, length: half, vertical: false) > 0 {
+            pattern.formUnion(.f)
+        }
+        if foregroundCount(mask, x: midX + 1, y: quarter, length: right, vertical: false) > 0 {
+            pattern.formUnion(.b)
+        }
+        if foregroundCount(mask, x: box.minX, y: threeQuarters, length: half, vertical: false) > 0 {
+            pattern.formUnion(.e)
+        }
+        if foregroundCount(mask, x: midX + 1, y: threeQuarters, length: right, vertical: false) > 0 {
+            pattern.formUnion(.c)
+        }
+        return pattern
     }
 
     fileprivate static func group(_ cells: [Cell]) -> [[Cell]] {
@@ -1222,205 +1227,6 @@ private func columnProfile(_ mask: Mask) -> (sums: [Int], longest: [Int]) {
     return (sums, longest)
 }
 
-private struct HorizontalBar {
-    var minX: Int
-    var maxX: Int
-    var minY: Int
-    var maxY: Int
-
-    var width: Int { maxX - minX }
-    var height: Int { maxY - minY }
-    var midX: Int { (minX + maxX) / 2 }
-}
-
-/// One horizontal bar sets the digit width. Every tall box in the row is that
-/// width, and the starts sit on one pitch. A one has no bar: its stem is the
-/// right edge of the same box, then the whole row is snapped back onto the pitch.
-private func alignedDigitBoxes(
-    _ boxes: [PixelBox],
-    mask: Mask,
-    band: (Int, Int)
-) -> (boxes: [PixelBox], width: Int?) {
-    let bandHeight = max(1, band.1 - band.0)
-    let maxHeight = boxes.map(\.height).max() ?? 1
-    let minBar = max(8, maxHeight / 4)
-    let bars = horizontalBars(in: mask, band: band).filter { bar in
-        bar.width >= minBar
-            && bar.width * 2 < maxHeight * 3
-            && boxes.contains { box in
-                box.height * 100 >= maxHeight * 55
-                    && box.minX <= bar.midX
-                    && bar.midX < box.maxX
-            }
-    }
-    guard let width = sharedDigitWidth(bars.map { outerDigitWidth($0, mask: mask) }),
-          width >= minBar,
-          width < bandHeight
-    else {
-        return (boxes, nil)
-    }
-    let proposals = boxes.map { proposedDigitOrigin($0, width: width, bars: bars, maxHeight: maxHeight) }
-    let digitOrigins = zip(boxes, proposals).compactMap { box, origin -> Int? in
-        guard isDigitSlot(box, width: width, maxHeight: maxHeight), let origin else { return nil }
-        return origin
-    }
-    let snapped = snappedOrigins(digitOrigins, width: width)
-    var slot = 0
-    let placed = zip(boxes, proposals).map { box, origin -> PixelBox in
-        guard isDigitSlot(box, width: width, maxHeight: maxHeight), origin != nil else { return box }
-        let start = snapped[slot]
-        slot += 1
-        let minX = clampedOrigin(start, width: width, limit: mask.width)
-        return PixelBox(minX: minX, minY: box.minY, maxX: minX + width, maxY: box.maxY)
-    }
-    return (placed, width)
-}
-
-private func isDigitSlot(_ box: PixelBox, width: Int, maxHeight: Int) -> Bool {
-    guard box.height * 100 >= maxHeight * 55 else { return false }
-    // A reflection is wider than a digit and stays wide so it can be dropped.
-    if box.width > width * 3 / 2, box.width * 5 > box.height * 4 { return false }
-    return true
-}
-
-private func proposedDigitOrigin(
-    _ box: PixelBox,
-    width: Int,
-    bars: [HorizontalBar],
-    maxHeight: Int
-) -> Int? {
-    guard isDigitSlot(box, width: width, maxHeight: maxHeight) else { return nil }
-    let centers = bars
-        .filter { box.minX <= $0.midX && $0.midX < box.maxX }
-        .map(\.midX)
-        .sorted()
-    if !centers.isEmpty {
-        return centers[(centers.count - 1) / 2] - width / 2
-    }
-    if box.width * 2 < width {
-        // No bar. The ink is the right-hand stem of a full digit.
-        return box.maxX - width
-    }
-    return box.midX - width / 2
-}
-
-/// Starts of one row differ by the same pitch. A gap between groups is more
-/// than one step, so it does not set the pitch.
-private func snappedOrigins(_ origins: [Int], width: Int) -> [Int] {
-    guard origins.count >= 2 else { return origins }
-    let order = origins.sorted()
-    let gaps = zip(order, order.dropFirst()).map { $1 - $0 }.filter { $0 > 0 }
-    let steps = gaps.filter { $0 * 4 >= width * 3 && $0 * 2 <= width * 3 }
-    guard let pitch = median(steps), pitch > 0 else { return origins }
-    let base = order[0]
-    let residues = origins.map { ($0 - base) % pitch }
-    let phase = median(residues) ?? 0
-    return origins.map { origin in
-        let delta = origin - (base + phase)
-        let stepsAway = Int((Double(delta) / Double(pitch)).rounded())
-        return base + phase + stepsAway * pitch
-    }
-}
-
-private func clampedOrigin(_ origin: Int, width: Int, limit: Int) -> Int {
-    if origin < 0 { return 0 }
-    if origin + width > limit { return max(0, limit - width) }
-    return origin
-}
-
-private func outerDigitWidth(_ bar: HorizontalBar, mask: Mask) -> Int {
-    let stroke = max(1, bar.height)
-    let left = columnIsStem(mask, x: bar.minX - 1, bar: bar)
-    let right = columnIsStem(mask, x: bar.maxX, bar: bar)
-    if left || right {
-        return bar.width + stroke * 2
-    }
-    return bar.width
-}
-
-private func columnIsStem(_ mask: Mask, x: Int, bar: HorizontalBar) -> Bool {
-    guard x >= 0, x < mask.width else { return false }
-    let stroke = max(1, bar.height)
-    let y0 = max(0, bar.minY - stroke)
-    let y1 = min(mask.height, bar.maxY + stroke)
-    guard y1 > y0 else { return false }
-    var ink = 0
-    for y in y0..<y1 where mask.bits[y * mask.width + x] {
-        ink += 1
-    }
-    return ink * 3 >= y1 - y0
-}
-
-private func sharedDigitWidth(_ widths: [Int]) -> Int? {
-    guard let mid = median(widths) else { return nil }
-    let kept = widths.filter { $0 * 5 >= mid * 3 && $0 * 2 <= mid * 3 }
-    return median(kept.isEmpty ? widths : kept)
-}
-
-private func horizontalBars(in mask: Mask, band: (Int, Int)) -> [HorizontalBar] {
-    let width = mask.width
-    let y0 = max(0, band.0)
-    let y1 = min(mask.height, band.1)
-    guard y1 > y0, width > 0 else { return [] }
-    let bandHeight = y1 - y0
-    var open: [HorizontalBar] = []
-    var finished: [HorizontalBar] = []
-    func close(_ bar: HorizontalBar) {
-        let span = bar.width
-        let thick = bar.height
-        guard span > 6, thick > 0, span >= thick * 2, span * 2 < bandHeight * 3 else { return }
-        finished.append(bar)
-    }
-    for y in y0..<y1 {
-        var runs: [(Int, Int)] = []
-        var x = 0
-        let row = y * width
-        while x < width {
-            while x < width, !mask.bits[row + x] { x += 1 }
-            if x >= width { break }
-            let start = x
-            while x < width, mask.bits[row + x] { x += 1 }
-            if x - start > 6 { runs.append((start, x)) }
-        }
-        var next: [HorizontalBar] = []
-        var used = [Bool](repeating: false, count: open.count)
-        for run in runs {
-            let runWidth = run.1 - run.0
-            var match: Int?
-            for index in open.indices where !used[index] {
-                let bar = open[index]
-                let overlap = min(bar.maxX, run.1) - max(bar.minX, run.0)
-                let smaller = min(bar.width, runWidth)
-                let wider = max(bar.width, runWidth)
-                if overlap * 2 > smaller, smaller * 2 > wider {
-                    match = index
-                    break
-                }
-            }
-            if let match {
-                used[match] = true
-                let bar = open[match]
-                next.append(HorizontalBar(
-                    minX: min(bar.minX, run.0),
-                    maxX: max(bar.maxX, run.1),
-                    minY: bar.minY,
-                    maxY: y + 1
-                ))
-            } else {
-                next.append(HorizontalBar(minX: run.0, maxX: run.1, minY: y, maxY: y + 1))
-            }
-        }
-        for index in open.indices where !used[index] {
-            close(open[index])
-        }
-        open = next
-    }
-    for bar in open {
-        close(bar)
-    }
-    return finished
-}
-
 private func columnRuns(_ mask: Mask, y0: Int, y1: Int, width: Int) -> [(Int, Int)] {
     let sums = columnSums(mask, y0: y0, y1: y1, width: width)
     let raw = runs(sums)
@@ -1657,17 +1463,32 @@ private func coverage(_ mask: Mask, box: PixelBox, width: Int) -> Float {
     return total == 0 ? 0 : Float(ink) / Float(total)
 }
 
-private func regionCoverage(
+private func foregroundCount(
     _ mask: Mask,
-    box: PixelBox,
-    width: Int,
-    window: (SevenSegmentPattern, Double, Double, Double, Double)
-) -> Float {
-    let x0 = box.minX + Int((window.1 * Double(box.width)).rounded(.down))
-    let y0 = box.minY + Int((window.2 * Double(box.height)).rounded(.down))
-    let x1 = box.minX + Int((window.3 * Double(box.width)).rounded(.up))
-    let y1 = box.minY + Int((window.4 * Double(box.height)).rounded(.up))
-    return coverage(mask, box: PixelBox(minX: x0, minY: y0, maxX: max(x0 + 1, x1), maxY: max(y0 + 1, y1)), width: width)
+    x: Int,
+    y: Int,
+    length: Int,
+    vertical: Bool
+) -> Int {
+    guard length > 0 else { return 0 }
+    var count = 0
+    if vertical {
+        guard x >= 0, x < mask.width else { return 0 }
+        let start = max(0, y)
+        let end = min(mask.height, y + length)
+        for row in start..<end where mask.bits[row * mask.width + x] {
+            count += 1
+        }
+    } else {
+        guard y >= 0, y < mask.height else { return 0 }
+        let start = max(0, x)
+        let end = min(mask.width, x + length)
+        let offset = y * mask.width
+        for column in start..<end where mask.bits[offset + column] {
+            count += 1
+        }
+    }
+    return count
 }
 
 private func overlap(_ lhs: PixelBox, _ rhs: PixelBox) -> Int {
