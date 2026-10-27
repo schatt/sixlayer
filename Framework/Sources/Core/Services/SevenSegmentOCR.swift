@@ -440,6 +440,7 @@ private struct GrayBuffer {
         }
         let sampledBox = box.height * 100 < digitHeight * 70 ? frame : box
         let pattern = sample(mask, box: sampledBox, width: width)
+        fputs("scan \(box.minX),\(box.minY) \(box.width)x\(box.height) pat \(pattern.rawValue)\n", stderr)
         guard let glyph = SevenSegmentGlyph.match(pattern) else { return nil }
         return Cell(box: box, character: glyph.character, confidence: glyph.confidence, band: bandIndex)
     }
