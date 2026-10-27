@@ -350,6 +350,7 @@ private struct GrayBuffer {
                glyph.confidence == 1,
                glyph.character != "1",
                cover < 0.80 {
+                fputs("stem-exact \(glyph.character) \(box.width)x\(box.height) pat \(pattern.rawValue) cov \(cover)\n", stderr)
                 return Cell(box: box, character: glyph.character, confidence: glyph.confidence, band: bandIndex)
             }
             return Cell(box: box, character: "1", confidence: 1, band: bandIndex)
