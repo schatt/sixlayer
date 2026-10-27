@@ -571,25 +571,8 @@ private struct GrayBuffer {
         // than a wide average. An open hole is not darker than that average.
         let meanRadius = min(64, max(24, shortSide / 8))
         let mean = boxMean(radius: meanRadius)
-        var darkColumns = [Int](repeating: 0, count: width)
-        var lightColumns = [Int](repeating: 0, count: width)
-        for index in dark.indices {
-            let column = index % width
-            if dark[index] { darkColumns[column] += 1 }
-            if light[index] { lightColumns[column] += 1 }
-        }
-        let columnFloor = max(4, height / 40)
-        for index in pixels.indices {
-            let column = index % width
-            let pixel = Int(pixels[index])
-            let average = mean[index]
-            if darkColumns[column] >= columnFloor, pixel + paleBarMargin < average {
-                dark[index] = true
-            }
-            if lightColumns[column] >= columnFloor, pixel > average + paleBarMargin {
-                light[index] = true
-            }
-        }
+        fillPaleBar(into: &dark, mean: mean, darker: true)
+        fillPaleBar(into: &light, mean: mean, darker: false)
         let darkMask = Mask(bits: dark, width: width, height: height)
         let lightMask = Mask(bits: light, width: width, height: height)
         return (darkMask, lightMask, darkMask, lightMask)
@@ -665,6 +648,34 @@ private struct GrayBuffer {
             }
         }
         return mean
+    }
+
+    /// Close a pale bar between stroke pixels on the same row. A hole between
+    /// the stems is not darker than the wide average, so it stays open.
+    private func fillPaleBar(into mask: inout [Bool], mean: [Int], darker: Bool) {
+        for y in 0..<height {
+            let row = y * width
+            var inkOnLeft = [Bool](repeating: false, count: width)
+            var seen = false
+            for x in 0..<width {
+                inkOnLeft[x] = seen
+                if mask[row + x] { seen = true }
+            }
+            var inkOnRight = false
+            for x in stride(from: width - 1, through: 0, by: -1) {
+                let index = row + x
+                let wasInk = mask[index]
+                if inkOnLeft[x], inkOnRight, !wasInk {
+                    let pixel = Int(pixels[index])
+                    let average = mean[index]
+                    let pale = darker
+                        ? pixel + paleBarMargin < average
+                        : pixel > average + paleBarMargin
+                    if pale { mask[index] = true }
+                }
+                if wasInk { inkOnRight = true }
+            }
+        }
     }
 
     private func fitted(maxSide: Int) -> GrayBuffer {
