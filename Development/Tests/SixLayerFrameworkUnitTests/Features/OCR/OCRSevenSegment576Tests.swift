@@ -7,6 +7,7 @@
 
 import CoreGraphics
 import Foundation
+import ImageIO
 import Testing
 @testable import SixLayerFramework
 
@@ -88,6 +89,11 @@ struct OCRSevenSegment576Tests {
             rows: [atoms("32.88"), atoms("8.022")],
             gluingBars: 16
         )
+        let url = URL(fileURLWithPath: "/tmp/glue-fixture.png")
+        if let dest = CGImageDestinationCreateWithURL(url as CFURL, "public.png" as CFString, 1, nil) {
+            CGImageDestinationAddImage(dest, image, nil)
+            CGImageDestinationFinalize(dest)
+        }
         #expect(decode(image).extractedText == "32.88\n8.022")
     }
 
