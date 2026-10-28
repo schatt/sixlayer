@@ -1177,15 +1177,30 @@ private func readingSpan(_ mask: Mask, bands: [(Int, Int)]) -> (Int, Int)? {
     }
     guard !valleys.isEmpty else { return nil }
     var keep = [Bool](repeating: false, count: width)
+    var columnInk = [Int](repeating: 0, count: width)
     for x in 0..<width {
-        let valleyInk = valleys.contains { valley in
-            (valley.0..<valley.1).contains { y in mask.bits[y * width + x] }
+        let edge = valleys.contains { valley in
+            // A speck in the gap is not the bezel. The edge is ink through it.
+            let limit = max(4, (valley.1 - valley.0) / 3)
+            var count = 0
+            for y in valley.0..<valley.1 where mask.bits[y * width + x] {
+                count += 1
+                if count > limit { return true }
+            }
+            return false
         }
-        if valleyInk { continue }
-        keep[x] = bands.contains { band in
+        if edge { continue }
+        var ink = 0
+        for band in bands {
             let y0 = max(0, band.0)
             let y1 = min(height, band.1)
-            return (y0..<y1).contains { y in mask.bits[y * width + x] }
+            for y in y0..<y1 where mask.bits[y * width + x] {
+                ink += 1
+            }
+        }
+        if ink > 0 {
+            keep[x] = true
+            columnInk[x] = ink
         }
     }
     let active = keep.indices.filter { keep[$0] }
@@ -1194,16 +1209,16 @@ private func readingSpan(_ mask: Mask, bands: [(Int, Int)]) -> (Int, Int)? {
     var runs: [(start: Int, end: Int, ink: Int)] = []
     var start = first
     var end = first
-    var ink = 1
+    var ink = columnInk[first]
     for index in active.dropFirst() {
         if index - end <= gapLimit {
             end = index
-            ink += 1
+            ink += columnInk[index]
         } else {
             runs.append((start, end + 1, ink))
             start = index
             end = index
-            ink = 1
+            ink = columnInk[index]
         }
     }
     runs.append((start, end + 1, ink))
