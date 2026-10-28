@@ -784,6 +784,20 @@ private struct Cell {
     var minY: Int { box.minY }
     var maxY: Int { box.maxY }
     var height: Int { box.height }
+
+    func shifted(dx: Int, dy: Int) -> Cell {
+        Cell(
+            box: PixelBox(
+                minX: box.minX + dx,
+                minY: box.minY + dy,
+                maxX: box.maxX + dx,
+                maxY: box.maxY + dy
+            ),
+            character: character,
+            confidence: confidence,
+            band: band
+        )
+    }
 }
 
 private func recognizedGroups(_ cells: [Cell], width: Int, height: Int) -> [OCRRecognizedText] {
@@ -817,7 +831,26 @@ private extension GrayBuffer {
         }
     }
 
-    static func readRows(in buffer: GrayBuffer) -> [[Cell]] {
+    func cropped(x0: Int, y0: Int, x1: Int, y1: Int) -> GrayBuffer {
+        let left = max(0, min(width, x0))
+        let top = max(0, min(height, y0))
+        let right = max(left, min(width, x1))
+        let bottom = max(top, min(height, y1))
+        let newW = right - left
+        let newH = bottom - top
+        guard newW > 0, newH > 0 else { return GrayBuffer(pixels: [], width: 0, height: 0) }
+        var out = [UInt8](repeating: 0, count: newW * newH)
+        for y in 0..<newH {
+            let source = (top + y) * width + left
+            out.replaceSubrange(
+                (y * newW)..<((y + 1) * newW),
+                with: pixels[source..<(source + newW)]
+            )
+        }
+        return GrayBuffer(pixels: out, width: newW, height: newH)
+    }
+
+    static func readRows(in buffer: GrayBuffer, splittingRows: Bool = true) -> [[Cell]] {
         let raw = buffer.masks()
         // A frame inside the crop seals the glass. Ink outside that glass is the bezel.
         let sealed = (dark: keepingInteriorInk(raw.dark), light: keepingInteriorInk(raw.light))
@@ -871,6 +904,23 @@ private extension GrayBuffer {
         if buffer.width >= 1000 {
             let listed = splitBands.map { "\($0.0)-\($0.1)" }.joined(separator: ",")
             fputs("bands \(listed)\n", stderr)
+        }
+        // The window is sized from the whole crop. Two rows make it wide
+        // enough to mark the glass between digits. Read each row from a
+        // crop of that row so the window matches a tight crop.
+        if splittingRows, splitBands.count > 1 {
+            let span = readingSpan(glyphs, bands: splitBands)
+            return splitBands.compactMap { band -> [Cell]? in
+                let y0 = max(0, band.0 - 4)
+                let y1 = min(buffer.height, band.1 + 4)
+                let x0 = max(0, (span?.0 ?? 0) - 8)
+                let x1 = min(buffer.width, (span?.1 ?? buffer.width) + 8)
+                let crop = buffer.cropped(x0: x0, y0: y0, x1: x1, y1: y1)
+                guard crop.width > 8, crop.height > 8 else { return nil }
+                let found = readRows(in: crop, splittingRows: false).flatMap { $0 }
+                let shifted = found.map { $0.shifted(dx: x0, dy: y0) }
+                return shifted.isEmpty ? nil : shifted
+            }
         }
         return splitBands.compactMap { band -> [Cell]? in
             let found = cells(
@@ -1073,6 +1123,56 @@ private func digitRowSums(_ sums: [Int]) -> [Int] {
     // hold many more. Leaving the gap at sum > 0 joins the two lines.
     let floor = max(8, peak / 20)
     return sums.map { $0 >= floor ? $0 : 0 }
+}
+
+/// Columns that hold digit ink and stay empty in the gap between rows.
+/// A strip that is ink on that gap is the bezel edge, not a stroke.
+private func readingSpan(_ mask: Mask, bands: [(Int, Int)]) -> (Int, Int)? {
+    let width = mask.width
+    let height = mask.height
+    guard width > 0, height > 0, bands.count >= 2 else { return nil }
+    let valleys = zip(bands, bands.dropFirst()).compactMap { pair -> (Int, Int)? in
+        let top = pair.0.1
+        let bottom = pair.1.0
+        guard bottom > top else { return nil }
+        return (top, bottom)
+    }
+    guard !valleys.isEmpty else { return nil }
+    var keep = [Bool](repeating: false, count: width)
+    for x in 0..<width {
+        let valleyInk = valleys.contains { valley in
+            (valley.0..<valley.1).contains { y in mask.bits[y * width + x] }
+        }
+        if valleyInk { continue }
+        keep[x] = bands.contains { band in
+            let y0 = max(0, band.0)
+            let y1 = min(height, band.1)
+            return (y0..<y1).contains { y in mask.bits[y * width + x] }
+        }
+    }
+    let active = keep.indices.filter { keep[$0] }
+    guard let first = active.first else { return nil }
+    let gapLimit = max(8, height / 15)
+    var runs: [(start: Int, end: Int, ink: Int)] = []
+    var start = first
+    var end = first
+    var ink = 1
+    for index in active.dropFirst() {
+        if index - end <= gapLimit {
+            end = index
+            ink += 1
+        } else {
+            runs.append((start, end + 1, ink))
+            start = index
+            end = index
+            ink = 1
+        }
+    }
+    runs.append((start, end + 1, ink))
+    guard let best = runs.max(by: { $0.ink < $1.ink }) else { return nil }
+    let span = best.end - best.start
+    guard span > max(12, height / 10) else { return nil }
+    return (best.start, best.end)
 }
 
 /// Two digit rows joined by scratches. The valley has to sit between two
