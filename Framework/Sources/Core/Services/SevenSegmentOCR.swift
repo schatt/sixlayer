@@ -919,6 +919,14 @@ private extension GrayBuffer {
                 guard crop.width > 8, crop.height > 8 else { return nil }
                 let found = readRows(in: crop, splittingRows: false).flatMap { $0 }
                 let shifted = found.map { $0.shifted(dx: x0, dy: y0) }
+                if let handle = fopen("/tmp/rescan.log", "a") {
+                    let text = String(shifted.map(\.character))
+                    fputs(
+                        "rescan \(buffer.width)x\(buffer.height) crop \(x0),\(y0) \(crop.width)x\(crop.height) [\(text)]\n",
+                        handle
+                    )
+                    fclose(handle)
+                }
                 return shifted.isEmpty ? nil : shifted
             }
         }
