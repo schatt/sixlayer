@@ -917,6 +917,9 @@ private extension GrayBuffer {
         if splittingRows, splitBands.count > 1 {
             let span = readingSpan(glyphs, bands: splitBands)
             let parentRadius = windowRadius(width: buffer.width, height: buffer.height)
+            if buffer.width >= 1000 {
+                fputs("span \(String(describing: span)) radius \(parentRadius)\n", stderr)
+            }
             var windowNarrows = true
             var rescanned: [[Cell]] = []
             for band in splitBands {
@@ -936,6 +939,12 @@ private extension GrayBuffer {
                 }
                 let found = readRows(in: crop, splittingRows: false).flatMap { $0 }
                 let shifted = found.map { $0.shifted(dx: x0, dy: y0) }
+                if buffer.width >= 1000 {
+                    fputs(
+                        "rowcrop \(x0),\(y0) \(crop.width)x\(crop.height) [\(String(shifted.map(\.character)))]\n",
+                        stderr
+                    )
+                }
                 if !shifted.isEmpty {
                     rescanned.append(shifted)
                 }
