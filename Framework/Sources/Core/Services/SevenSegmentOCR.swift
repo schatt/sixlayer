@@ -905,6 +905,14 @@ private extension GrayBuffer {
             let listed = splitBands.map { "\($0.0)-\($0.1)" }.joined(separator: ",")
             fputs("bands \(listed)\n", stderr)
         }
+        if let handle = fopen("/tmp/rescan.log", "a") {
+            let listed = splitBands.map { "\($0.0)-\($0.1)" }.joined(separator: ",")
+            fputs(
+                "plan \(buffer.width)x\(buffer.height) found \(foundBands.count) split \(listed) opened \(opened)\n",
+                handle
+            )
+            fclose(handle)
+        }
         // The window is sized from the whole crop. Two rows make it wide
         // enough to mark the glass between digits. Read each row from a
         // crop of that row so the window matches a tight crop.
@@ -921,8 +929,9 @@ private extension GrayBuffer {
                 let shifted = found.map { $0.shifted(dx: x0, dy: y0) }
                 if let handle = fopen("/tmp/rescan.log", "a") {
                     let text = String(shifted.map(\.character))
+                    let boxes = shifted.map { "\($0.character)@\($0.minX),\($0.minY) \($0.box.width)x\($0.height)" }.joined(separator: " ")
                     fputs(
-                        "rescan \(buffer.width)x\(buffer.height) crop \(x0),\(y0) \(crop.width)x\(crop.height) [\(text)]\n",
+                        "rescan \(buffer.width)x\(buffer.height) crop \(x0),\(y0) \(crop.width)x\(crop.height) [\(text)] \(boxes)\n",
                         handle
                     )
                     fclose(handle)
