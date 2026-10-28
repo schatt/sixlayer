@@ -925,6 +925,19 @@ private extension GrayBuffer {
                 let x1 = min(buffer.width, (span?.1 ?? buffer.width) + 8)
                 let crop = buffer.cropped(x0: x0, y0: y0, x1: x1, y1: y1)
                 guard crop.width > 8, crop.height > 8 else { return nil }
+                if buffer.width == 276, y0 < 50, crop.height == 98,
+                   let handle = fopen("/tmp/rescan.log", "a") {
+                    let parent = buffer.pixels[16 * buffer.width + 28]
+                    let local = crop.pixels[4 * crop.width + (28 - x0)]
+                    var top = 0
+                    var mid = 0
+                    for x in 0..<crop.width {
+                        if crop.pixels[4 * crop.width + x] < 80 { top += 1 }
+                        if crop.pixels[40 * crop.width + x] < 80 { mid += 1 }
+                    }
+                    fputs("sample parent \(parent) crop \(local) topInk \(top) midInk \(mid) x0 \(x0)\n", handle)
+                    fclose(handle)
+                }
                 let found = readRows(in: crop, splittingRows: false).flatMap { $0 }
                 let shifted = found.map { $0.shifted(dx: x0, dy: y0) }
                 if let handle = fopen("/tmp/rescan.log", "a") {
