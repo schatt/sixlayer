@@ -82,9 +82,9 @@ struct OCRSevenSegment576Tests {
 
     @Test func tallCropReadsEachRowAtItsOwnWindow() {
         // Empty margin makes the threshold window wide enough to see a bright
-        // speck above the gap between digits. That glass is then darker than
-        // the halfway point, so the digits join. A crop of one row uses a
-        // window that does not reach the speck.
+        // line just above each row. The glass under that line is then darker
+        // than the halfway point, so the digits join. A crop of the row's ink
+        // does not include the line.
         let image = SegmentPanel.render(
             rows: [atoms("32.88"), atoms("8.022")],
             inkLevel: 30,
@@ -696,7 +696,7 @@ private enum SegmentPanel {
         var width = laid.width
         var height = laid.height
         if gapGlare {
-            paintGapGlare(&pixels, width: width, height: height, bands: laid.rowBands, background: background)
+            paintGapGlare(&pixels, width: width, height: height, bands: laid.rowBands)
         }
         if abs(tiltDegrees) > 0.01 {
             let turned = rotate(pixels: pixels, width: width, height: height, degrees: tiltDegrees, fill: background)
@@ -726,40 +726,22 @@ private enum SegmentPanel {
         return image(pixels: pixels, width: width, height: height)
     }
 
-    /// A bright speck just above each gap between digits. A wide threshold
-    /// window reaches it and marks the glass. A window the size of one row does not.
+    /// A bright line just above each digit row. A wide threshold window reaches
+    /// it and marks the glass. A crop of the row's own ink does not include it.
     private static func paintGapGlare(
         _ pixels: inout [UInt8],
         width: Int,
         height: Int,
-        bands: [RowBand],
-        background: UInt8
+        bands: [RowBand]
     ) {
         for band in bands {
-            let yGap = band.midY
-            let yBright = band.midY - 18
-            guard yGap >= 0, yGap < height, yBright >= 0 else { continue }
-            var x = 0
-            while x < width {
-                if pixels[yGap * width + x] != background {
-                    x += 1
-                    continue
-                }
-                let start = x
-                while x < width, pixels[yGap * width + x] == background {
-                    x += 1
-                }
-                let run = x - start
-                guard run >= 4, run <= 24, start > 0, x < width else { continue }
-                let bx = start + run / 2
-                for dy in 0..<3 {
-                    let yy = yBright + dy
-                    guard yy >= 0, yy < height else { continue }
-                    for dx in -1...1 {
-                        let xx = bx + dx
-                        guard xx >= 0, xx < width else { continue }
-                        pixels[yy * width + xx] = 255
-                    }
+            let y = band.minY - 16
+            guard y >= 0, y + 2 < height else { continue }
+            let x0 = min(width, 8)
+            let x1 = max(x0, width - 8)
+            for dy in 0..<3 {
+                for x in x0..<x1 {
+                    pixels[(y + dy) * width + x] = 255
                 }
             }
         }
