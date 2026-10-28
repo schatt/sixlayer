@@ -905,11 +905,9 @@ private extension GrayBuffer {
             let listed = splitBands.map { "\($0.0)-\($0.1)" }.joined(separator: ",")
             fputs("bands \(listed)\n", stderr)
         }
-        if buffer.width >= 1000 || buffer.height >= 400 || buffer.width == 304 {
-            if let handle = fopen("/tmp/rescan.log", "a") {
-                fputs("enter \(buffer.width)x\(buffer.height) bands \(splitBands.count)\n", handle)
-                fclose(handle)
-            }
+        if buffer.width >= 1000 {
+            let listed = splitBands.map { "\($0.0)-\($0.1)" }.joined(separator: ",")
+            fputs("bands \(listed)\n", stderr)
         }
         // The window is sized from the whole crop. Two rows make it wide
         // enough to mark the glass between digits. Read each row from a
@@ -919,28 +917,31 @@ private extension GrayBuffer {
         if splittingRows, splitBands.count > 1 {
             let span = readingSpan(glyphs, bands: splitBands)
             let parentRadius = min(36, max(4, (min(buffer.width, buffer.height) - 96) / 24))
-            let rescanned = splitBands.compactMap { band -> [Cell]? in
+            var windowNarrows = true
+            var rescanned: [[Cell]] = []
+            for band in splitBands {
                 let y0 = max(0, band.0 - 4)
                 let y1 = min(buffer.height, band.1 + 4)
                 let x0 = max(0, (span?.0 ?? 0) - 8)
                 let x1 = min(buffer.width, (span?.1 ?? buffer.width) + 8)
                 let crop = buffer.cropped(x0: x0, y0: y0, x1: x1, y1: y1)
-                guard crop.width > 8, crop.height > 8 else { return nil }
+                guard crop.width > 8, crop.height > 8 else {
+                    windowNarrows = false
+                    break
+                }
                 let cropRadius = min(36, max(4, (min(crop.width, crop.height) - 96) / 24))
-                guard parentRadius >= cropRadius + 8 else { return nil }
+                if parentRadius < cropRadius + 8 {
+                    windowNarrows = false
+                    break
+                }
                 let found = readRows(in: crop, splittingRows: false).flatMap { $0 }
                 let shifted = found.map { $0.shifted(dx: x0, dy: y0) }
-                return shifted.isEmpty ? nil : shifted
+                if !shifted.isEmpty {
+                    rescanned.append(shifted)
+                }
             }
-            if rescanned.count == splitBands.count {
+            if windowNarrows, !rescanned.isEmpty {
                 return rescanned
-            }
-            if let handle = fopen("/tmp/rescan.log", "a") {
-                fputs(
-                    "fallback \(buffer.width)x\(buffer.height) bands \(splitBands.count) kept \(rescanned.count) radius \(parentRadius)\n",
-                    handle
-                )
-                fclose(handle)
             }
         }
         return splitBands.compactMap { band -> [Cell]? in
