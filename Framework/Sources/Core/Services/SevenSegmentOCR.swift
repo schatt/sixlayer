@@ -908,7 +908,7 @@ private extension GrayBuffer {
         // The window is sized from the whole crop. Two rows make it wide
         // enough to mark the glass between digits. Read each row from a
         // crop of that row so the window matches a tight crop.
-        if splittingRows, splitBands.count > 1 {
+        if false, splittingRows, splitBands.count > 1 {
             let span = readingSpan(glyphs, bands: splitBands)
             return splitBands.compactMap { band -> [Cell]? in
                 let y0 = max(0, band.0 - 4)
