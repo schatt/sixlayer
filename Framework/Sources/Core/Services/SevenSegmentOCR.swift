@@ -905,51 +905,29 @@ private extension GrayBuffer {
             let listed = splitBands.map { "\($0.0)-\($0.1)" }.joined(separator: ",")
             fputs("bands \(listed)\n", stderr)
         }
-        if let handle = fopen("/tmp/rescan.log", "a") {
-            let listed = splitBands.map { "\($0.0)-\($0.1)" }.joined(separator: ",")
-            fputs(
-                "plan \(buffer.width)x\(buffer.height) found \(foundBands.count) split \(listed) opened \(opened)\n",
-                handle
-            )
-            fclose(handle)
-        }
         // The window is sized from the whole crop. Two rows make it wide
         // enough to mark the glass between digits. Read each row from a
-        // crop of that row so the window matches a tight crop.
+        // crop of that row when that crop's window is actually narrower.
+        // A window that fits inside a stroke drops the middle of the bar,
+        // so a row that is already on the small window stays on this mask.
         if splittingRows, splitBands.count > 1 {
             let span = readingSpan(glyphs, bands: splitBands)
-            return splitBands.compactMap { band -> [Cell]? in
+            let parentRadius = min(36, max(4, (min(buffer.width, buffer.height) - 96) / 24))
+            let rescanned = splitBands.compactMap { band -> [Cell]? in
                 let y0 = max(0, band.0 - 4)
                 let y1 = min(buffer.height, band.1 + 4)
                 let x0 = max(0, (span?.0 ?? 0) - 8)
                 let x1 = min(buffer.width, (span?.1 ?? buffer.width) + 8)
                 let crop = buffer.cropped(x0: x0, y0: y0, x1: x1, y1: y1)
                 guard crop.width > 8, crop.height > 8 else { return nil }
-                if buffer.width == 276, y0 < 50, crop.height == 98,
-                   let handle = fopen("/tmp/rescan.log", "a") {
-                    let parent = buffer.pixels[16 * buffer.width + 28]
-                    let local = crop.pixels[4 * crop.width + (28 - x0)]
-                    var top = 0
-                    var mid = 0
-                    for x in 0..<crop.width {
-                        if crop.pixels[4 * crop.width + x] < 80 { top += 1 }
-                        if crop.pixels[40 * crop.width + x] < 80 { mid += 1 }
-                    }
-                    fputs("sample parent \(parent) crop \(local) topInk \(top) midInk \(mid) x0 \(x0)\n", handle)
-                    fclose(handle)
-                }
+                let cropRadius = min(36, max(4, (min(crop.width, crop.height) - 96) / 24))
+                guard parentRadius >= cropRadius + 8 else { return nil }
                 let found = readRows(in: crop, splittingRows: false).flatMap { $0 }
                 let shifted = found.map { $0.shifted(dx: x0, dy: y0) }
-                if let handle = fopen("/tmp/rescan.log", "a") {
-                    let text = String(shifted.map(\.character))
-                    let boxes = shifted.map { "\($0.character)@\($0.minX),\($0.minY) \($0.box.width)x\($0.height)" }.joined(separator: " ")
-                    fputs(
-                        "rescan \(buffer.width)x\(buffer.height) crop \(x0),\(y0) \(crop.width)x\(crop.height) [\(text)] \(boxes)\n",
-                        handle
-                    )
-                    fclose(handle)
-                }
                 return shifted.isEmpty ? nil : shifted
+            }
+            if rescanned.count == splitBands.count {
+                return rescanned
             }
         }
         return splitBands.compactMap { band -> [Cell]? in
