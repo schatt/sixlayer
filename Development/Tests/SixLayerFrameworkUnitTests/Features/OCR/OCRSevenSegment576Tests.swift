@@ -7,7 +7,6 @@
 
 import CoreGraphics
 import Foundation
-import ImageIO
 import Testing
 @testable import SixLayerFramework
 
@@ -81,20 +80,19 @@ struct OCRSevenSegment576Tests {
         #expect(decode(panel(["11", "22", "33", "44"])).extractedText == "11\n22\n33\n44")
     }
 
-    @Test func dirtyEdgeBetweenRowsStillReadsEachRow() {
-        // A column that is ink on every row is already ignored. These bars
-        // stay under that ceiling and are ink on the gap, so a full-width
-        // row sum never sees the white between the two digit rows.
+    @Test func tallCropReadsEachRowAtItsOwnWindow() {
+        // Empty margin makes the threshold window wide enough to see a bright
+        // speck above the gap between digits. That glass is then darker than
+        // the halfway point, so the digits join. A crop of one row uses a
+        // window that does not reach the speck.
         let image = SegmentPanel.render(
             rows: [atoms("32.88"), atoms("8.022")],
-            gluingBars: 16
+            inkLevel: 30,
+            backgroundLevel: 130,
+            outerMargin: 200,
+            gapGlare: true
         )
-        let url = URL(fileURLWithPath: "/tmp/glue-fixture.png")
-        if let dest = CGImageDestinationCreateWithURL(url as CFURL, "public.png" as CFString, 1, nil) {
-            CGImageDestinationAddImage(dest, image, nil)
-            CGImageDestinationFinalize(dest)
-        }
-        #expect(decode(image).extractedText == "32.88\n8.022")
+        #expect(decode(image, maximum: 0).extractedText == "32.88\n8.022")
     }
 
     @Test func wideGapSplitsGroupsAndAnEqualGapDoesNot() {
@@ -665,7 +663,7 @@ private enum SegmentPanel {
         bezelWidth: Int = 0,
         outerMargin: Int = 0,
         scale: Int = 1,
-        gluingBars: Int = 0
+        gapGlare: Bool = false
     ) -> CGImage {
         let laid = layout(rows: rows, padding: padding)
         let background: UInt8 = backgroundLevel ?? (invert ? 28 : 214)
@@ -697,19 +695,8 @@ private enum SegmentPanel {
         }
         var width = laid.width
         var height = laid.height
-        if gluingBars > 0, laid.rowBands.count >= 2 {
-            let glued = glueEdge(
-                pixels: pixels,
-                width: width,
-                height: height,
-                bars: gluingBars,
-                ink: ink,
-                background: background,
-                gapTop: laid.rowBands[0].maxY,
-                gapBottom: laid.rowBands[1].minY
-            )
-            pixels = glued.pixels
-            width = glued.width
+        if gapGlare {
+            paintGapGlare(&pixels, width: width, height: height, bands: laid.rowBands, background: background)
         }
         if abs(tiltDegrees) > 0.01 {
             let turned = rotate(pixels: pixels, width: width, height: height, degrees: tiltDegrees, fill: background)
@@ -739,47 +726,43 @@ private enum SegmentPanel {
         return image(pixels: pixels, width: width, height: height)
     }
 
-    /// Bars to the right of the digits. Each bar is ink in every vertical third
-    /// and across the row gap, but not on enough rows to be a solid column.
-    /// The bars are separated so they are not one wide stroke.
-    private static func glueEdge(
-        pixels: [UInt8],
+    /// A bright speck just above each gap between digits. A wide threshold
+    /// window reaches it and marks the glass. A window the size of one row does not.
+    private static func paintGapGlare(
+        _ pixels: inout [UInt8],
         width: Int,
         height: Int,
-        bars: Int,
-        ink: UInt8,
-        background: UInt8,
-        gapTop: Int,
-        gapBottom: Int
-    ) -> (pixels: [UInt8], width: Int) {
-        let barWidth = 8
-        let separation = 48
-        let margin = 2
-        let extra = separation + bars * (barWidth + separation) + margin
-        let newW = width + extra
-        var expanded = [UInt8](repeating: background, count: newW * height)
-        for y in 0..<height {
-            for x in 0..<width {
-                expanded[y * newW + x] = pixels[y * width + x]
-            }
-        }
-        let third = max(1, height / 3)
-        let depth = max(8, third * 40 / 100) + 8
-        for bar in 0..<bars {
-            let x0 = width + separation + bar * (barWidth + separation)
-            let x1 = min(newW - margin, x0 + barWidth)
-            guard x1 > x0 else { continue }
-            for y in 0..<height {
-                let top = y >= 1 && y < depth
-                let gap = y >= gapTop && y < gapBottom
-                let bottom = y >= height - 1 - depth && y < height - 1
-                guard top || gap || bottom else { continue }
-                for x in x0..<x1 {
-                    expanded[y * newW + x] = ink
+        bands: [RowBand],
+        background: UInt8
+    ) {
+        for band in bands {
+            let yGap = band.midY
+            let yBright = band.midY - 18
+            guard yGap >= 0, yGap < height, yBright >= 0 else { continue }
+            var x = 0
+            while x < width {
+                if pixels[yGap * width + x] != background {
+                    x += 1
+                    continue
+                }
+                let start = x
+                while x < width, pixels[yGap * width + x] == background {
+                    x += 1
+                }
+                let run = x - start
+                guard run >= 4, run <= 24, start > 0, x < width else { continue }
+                let bx = start + run / 2
+                for dy in 0..<3 {
+                    let yy = yBright + dy
+                    guard yy >= 0, yy < height else { continue }
+                    for dx in -1...1 {
+                        let xx = bx + dx
+                        guard xx >= 0, xx < width else { continue }
+                        pixels[yy * width + xx] = 255
+                    }
                 }
             }
         }
-        return (expanded, newW)
     }
 
     private static func scalePixels(_ pixels: [UInt8], width: Int, height: Int, factor: Int) -> (pixels: [UInt8], width: Int, height: Int) {
