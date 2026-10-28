@@ -905,6 +905,12 @@ private extension GrayBuffer {
             let listed = splitBands.map { "\($0.0)-\($0.1)" }.joined(separator: ",")
             fputs("bands \(listed)\n", stderr)
         }
+        if buffer.width >= 1000 || buffer.height >= 400 || buffer.width == 304 {
+            if let handle = fopen("/tmp/rescan.log", "a") {
+                fputs("enter \(buffer.width)x\(buffer.height) bands \(splitBands.count)\n", handle)
+                fclose(handle)
+            }
+        }
         // The window is sized from the whole crop. Two rows make it wide
         // enough to mark the glass between digits. Read each row from a
         // crop of that row when that crop's window is actually narrower.
@@ -928,6 +934,13 @@ private extension GrayBuffer {
             }
             if rescanned.count == splitBands.count {
                 return rescanned
+            }
+            if let handle = fopen("/tmp/rescan.log", "a") {
+                fputs(
+                    "fallback \(buffer.width)x\(buffer.height) bands \(splitBands.count) kept \(rescanned.count) radius \(parentRadius)\n",
+                    handle
+                )
+                fclose(handle)
             }
         }
         return splitBands.compactMap { band -> [Cell]? in
