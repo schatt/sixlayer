@@ -80,6 +80,17 @@ struct OCRSevenSegment576Tests {
         #expect(decode(panel(["11", "22", "33", "44"])).extractedText == "11\n22\n33\n44")
     }
 
+    @Test func dirtyEdgeBetweenRowsStillReadsEachRow() {
+        // A column that is ink on every row is already ignored. These bars
+        // stay under that ceiling and are ink on the gap, so a full-width
+        // row sum never sees the white between the two digit rows.
+        let image = SegmentPanel.render(
+            rows: [atoms("32.88"), atoms("8.022")],
+            gluingBars: 16
+        )
+        #expect(decode(image).extractedText == "32.88\n8.022")
+    }
+
     @Test func wideGapSplitsGroupsAndAnEqualGapDoesNot() {
         let split = decode(panel(["12 34"]))
         #expect(split.extractedText == "12  34")
@@ -647,7 +658,8 @@ private enum SegmentPanel {
         bezelLevel: UInt8? = nil,
         bezelWidth: Int = 0,
         outerMargin: Int = 0,
-        scale: Int = 1
+        scale: Int = 1,
+        gluingBars: Int = 0
     ) -> CGImage {
         let laid = layout(rows: rows, padding: padding)
         let background: UInt8 = backgroundLevel ?? (invert ? 28 : 214)
@@ -679,6 +691,20 @@ private enum SegmentPanel {
         }
         var width = laid.width
         var height = laid.height
+        if gluingBars > 0, laid.rowBands.count >= 2 {
+            let glued = glueEdge(
+                pixels: pixels,
+                width: width,
+                height: height,
+                bars: gluingBars,
+                ink: ink,
+                background: background,
+                gapTop: laid.rowBands[0].maxY,
+                gapBottom: laid.rowBands[1].minY
+            )
+            pixels = glued.pixels
+            width = glued.width
+        }
         if abs(tiltDegrees) > 0.01 {
             let turned = rotate(pixels: pixels, width: width, height: height, degrees: tiltDegrees, fill: background)
             pixels = turned.pixels
@@ -705,6 +731,49 @@ private enum SegmentPanel {
             height = paddedH
         }
         return image(pixels: pixels, width: width, height: height)
+    }
+
+    /// Bars to the right of the digits. Each bar is ink in every vertical third
+    /// and across the row gap, but not on enough rows to be a solid column.
+    /// The bars are separated so they are not one wide stroke.
+    private static func glueEdge(
+        pixels: [UInt8],
+        width: Int,
+        height: Int,
+        bars: Int,
+        ink: UInt8,
+        background: UInt8,
+        gapTop: Int,
+        gapBottom: Int
+    ) -> (pixels: [UInt8], width: Int) {
+        let barWidth = 8
+        let separation = 48
+        let margin = 2
+        let extra = separation + bars * (barWidth + separation) + margin
+        let newW = width + extra
+        var expanded = [UInt8](repeating: background, count: newW * height)
+        for y in 0..<height {
+            for x in 0..<width {
+                expanded[y * newW + x] = pixels[y * width + x]
+            }
+        }
+        let third = max(1, height / 3)
+        let depth = max(8, third * 40 / 100) + 8
+        for bar in 0..<bars {
+            let x0 = width + separation + bar * (barWidth + separation)
+            let x1 = min(newW - margin, x0 + barWidth)
+            guard x1 > x0 else { continue }
+            for y in 0..<height {
+                let top = y >= 1 && y < depth
+                let gap = y >= gapTop && y < gapBottom
+                let bottom = y >= height - 1 - depth && y < height - 1
+                guard top || gap || bottom else { continue }
+                for x in x0..<x1 {
+                    expanded[y * newW + x] = ink
+                }
+            }
+        }
+        return (expanded, newW)
     }
 
     private static func scalePixels(_ pixels: [UInt8], width: Int, height: Int, factor: Int) -> (pixels: [UInt8], width: Int, height: Int) {
