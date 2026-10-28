@@ -549,7 +549,7 @@ private struct GrayBuffer {
         // and a 35-pixel window meets across it. A short crop (the glare
         // fixture is 122 on its short side) stays at the tight window.
         let shortSide = min(width, height)
-        let radius = min(36, max(4, (shortSide - 96) / 24))
+        let radius = windowRadius(width: width, height: height)
         let range = localRange(radius: radius)
         var dark = [Bool](repeating: false, count: pixels.count)
         var light = [Bool](repeating: false, count: pixels.count)
@@ -916,7 +916,7 @@ private extension GrayBuffer {
         // so a row that is already on the small window stays on this mask.
         if splittingRows, splitBands.count > 1 {
             let span = readingSpan(glyphs, bands: splitBands)
-            let parentRadius = min(36, max(4, (min(buffer.width, buffer.height) - 96) / 24))
+            let parentRadius = windowRadius(width: buffer.width, height: buffer.height)
             var windowNarrows = true
             var rescanned: [[Cell]] = []
             for band in splitBands {
@@ -929,7 +929,7 @@ private extension GrayBuffer {
                     windowNarrows = false
                     break
                 }
-                let cropRadius = min(36, max(4, (min(crop.width, crop.height) - 96) / 24))
+                let cropRadius = windowRadius(width: crop.width, height: crop.height)
                 if parentRadius < cropRadius + 8 {
                     windowNarrows = false
                     break
@@ -1145,6 +1145,13 @@ private func digitRowSums(_ sums: [Int]) -> [Int] {
     // hold many more. Leaving the gap at sum > 0 joins the two lines.
     let floor = max(8, peak / 20)
     return sums.map { $0 >= floor ? $0 : 0 }
+}
+
+/// ssocr dynamic threshold window. A short crop stays tight. A tall crop
+/// grows until the window would meet across the gap between digits.
+private func windowRadius(width: Int, height: Int) -> Int {
+    let shortSide = min(width, height)
+    return min(36, max(4, (shortSide - 96) / 24))
 }
 
 /// Columns that hold digit ink and stay empty in the gap between rows.
