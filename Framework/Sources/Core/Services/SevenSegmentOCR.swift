@@ -1667,9 +1667,10 @@ private func primaryInkBandY(_ mask: Mask, x0: Int, x1: Int, y0: Int, y1: Int) -
     return (minY, maxY)
 }
 
-/// Vertical window of digit height with the most ink. Glare above the top bar
-/// is dense but short; the window sits on the glyph. Near-ties prefer the
-/// lower window because that fringe is above the digits.
+/// Vertical window of digit height on the glyph. Glare above the top bar is
+/// often denser than a stroke, so a max-sum window would sit on the fringe.
+/// Keep the lower digit-tall slice (baseline stays put); only slide up when a
+/// higher window holds clearly more ink than that lower slice.
 private func densestInkBand(
     _ mask: Mask,
     box: PixelBox,
@@ -1680,23 +1681,26 @@ private func densestInkBand(
     let sums = profile.sums
     let height = sums.count
     guard height > 2 else { return box }
-    // A seven-segment digit is about 1.5× as tall as it is wide. Glare above
-    // the top bar makes the box taller than that; the window sits on the glyph.
+    // A seven-segment digit is about 1.5× as tall as it is wide.
     let aspect = max(8, box.width * 3 / 2)
     let medianCap = digitHeight > 8 ? max(aspect, digitHeight * 4 / 5) : aspect
     let target = min(height, medianCap)
     if target >= height { return box }
-    var running = sums[0..<target].reduce(0, +)
+    let bottomStart = height - target
+    var running = sums[bottomStart..<height].reduce(0, +)
     var bestSum = running
-    var bestStart = 0
-    for start in 1...(height - target) {
-        running += sums[start + target - 1] - sums[start - 1]
-        if running > bestSum {
-            bestSum = running
-            bestStart = start
-        } else if running * 100 >= bestSum * 97 {
-            // Prefer a lower band when the ink totals are close: glare sits above.
-            bestStart = start
+    var bestStart = bottomStart
+    running = sums[0..<target].reduce(0, +)
+    if bottomStart > 0 {
+        for start in 0..<bottomStart {
+            if start > 0 {
+                running += sums[start + target - 1] - sums[start - 1]
+            }
+            // Solid glare above can out-sum the glyph; require a clear gain.
+            if running * 100 > bestSum * 115 {
+                bestSum = running
+                bestStart = start
+            }
         }
     }
     let minY = profile.lower + bestStart
