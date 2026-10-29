@@ -813,8 +813,8 @@ private enum SegmentPanel {
             let y1 = band.minY
             let y0 = max(0, y1 - glareHeight)
             guard y1 > y0 else { continue }
-            let topBars = digitStrokes.filter { stroke in
-                let rect = stroke.rect
+            let topBars = digitStrokes.filter { painted in
+                let rect = painted.rect
                 let minY = Int(rect.minY)
                 let barH = Int(rect.height.rounded(.up))
                 return minY >= band.minY
