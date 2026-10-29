@@ -459,7 +459,6 @@ private struct GrayBuffer {
                 mask,
                 box: sampledBox,
                 width: width,
-                digitHeight: digitHeight,
                 digitWidth: digitWidth
             ),
             width: width
@@ -1687,7 +1686,6 @@ private func densestInkBand(
     _ mask: Mask,
     box: PixelBox,
     width: Int,
-    digitHeight: Int,
     digitWidth: Int
 ) -> PixelBox {
     let profile = rowInkSums(mask, x0: box.minX, x1: box.maxX, y0: box.minY, y1: box.maxY)
@@ -1698,12 +1696,13 @@ private func densestInkBand(
     if box.width * 4 < height {
         return box
     }
-    // Use the median digit width so a broken 3 that tightens narrowly is not
-    // treated as taller than a digit. Washed pump digits are ~1.5–2× that wide.
-    let typicalWidth = max(box.width, digitWidth)
-    let maxDigit = max(8, typicalWidth * 2)
-    let slack = max(4, maxDigit / 12)
-    if height <= maxDigit + slack {
+    // Cap by this box's width. A broken 3 can tighten narrowly; then the
+    // median digit width decides whether it is still a normal-height glyph.
+    let ownCap = max(8, box.width * 2)
+    let narrow = digitWidth > 8 && box.width * 5 < digitWidth * 4
+    let earlyCap = narrow ? max(ownCap, digitWidth * 2) : ownCap
+    let slack = max(4, earlyCap / 12)
+    if height <= earlyCap + slack {
         return box
     }
     var start = 0
@@ -1722,14 +1721,10 @@ private func densestInkBand(
     var minY = profile.lower + start
     var maxY = profile.lower + end
     let remaining = maxY - minY
-    if remaining <= maxDigit + slack {
+    if remaining <= ownCap + max(4, ownCap / 12) {
         return PixelBox(minX: box.minX, minY: minY, maxX: box.maxX, maxY: maxY)
     }
-    // Median height is also inflated when every box grew into the glare.
-    let target = min(
-        remaining,
-        max(maxDigit, digitHeight > 8 && digitHeight <= maxDigit + slack ? digitHeight : maxDigit)
-    )
+    let target = min(remaining, ownCap)
     minY = maxY - target
     return PixelBox(minX: box.minX, minY: minY, maxX: box.maxX, maxY: maxY)
 }
