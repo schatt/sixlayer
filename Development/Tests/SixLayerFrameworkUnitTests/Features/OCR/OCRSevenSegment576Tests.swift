@@ -95,6 +95,21 @@ struct OCRSevenSegment576Tests {
         #expect(decode(image, maximum: 0).extractedText == "32.88\n8.022")
     }
 
+    @Test func edgeStripAcrossTheRowGapIsNotADigit() {
+        // A bezel strip just past the digits is ink through the gap between
+        // the rows. It is not a stroke. Padding the digit columns must not
+        // pull that strip back in as a one.
+        let image = SegmentPanel.render(
+            rows: [atoms("32.88"), atoms("8.022")],
+            inkLevel: 30,
+            backgroundLevel: 130,
+            outerMargin: 200,
+            gapGlare: true,
+            edgeStrip: true
+        )
+        #expect(decode(image, maximum: 0).extractedText == "32.88\n8.022")
+    }
+
     @Test func wideGapSplitsGroupsAndAnEqualGapDoesNot() {
         let split = decode(panel(["12 34"]))
         #expect(split.extractedText == "12  34")
@@ -663,7 +678,8 @@ private enum SegmentPanel {
         bezelWidth: Int = 0,
         outerMargin: Int = 0,
         scale: Int = 1,
-        gapGlare: Bool = false
+        gapGlare: Bool = false,
+        edgeStrip: Bool = false
     ) -> CGImage {
         let laid = layout(rows: rows, padding: padding)
         let background: UInt8 = backgroundLevel ?? (invert ? 28 : 214)
@@ -697,6 +713,9 @@ private enum SegmentPanel {
         var height = laid.height
         if gapGlare {
             paintGapGlare(&pixels, width: width, height: height, bands: laid.rowBands)
+        }
+        if edgeStrip {
+            paintEdgeStrip(&pixels, width: width, height: height, ink: ink, padding: padding)
         }
         if abs(tiltDegrees) > 0.01 {
             let turned = rotate(pixels: pixels, width: width, height: height, degrees: tiltDegrees, fill: background)
@@ -743,6 +762,25 @@ private enum SegmentPanel {
                 for x in x0..<x1 {
                     pixels[(y + dy) * width + x] = 255
                 }
+            }
+        }
+    }
+
+    /// Ink through the gap, a few pixels past the last stroke. That is the
+    /// bezel, not another digit.
+    private static func paintEdgeStrip(
+        _ pixels: inout [UInt8],
+        width: Int,
+        height: Int,
+        ink: UInt8,
+        padding: Int
+    ) {
+        let x0 = max(0, width - padding + 4)
+        let x1 = min(width, x0 + 6)
+        guard x1 > x0 else { return }
+        for y in 0..<height {
+            for x in x0..<x1 {
+                pixels[y * width + x] = ink
             }
         }
     }
