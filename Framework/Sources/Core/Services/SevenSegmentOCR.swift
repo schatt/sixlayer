@@ -455,7 +455,13 @@ private struct GrayBuffer {
         // on the glyph the way a tight price-row crop already does.
         let pattern = sample(
             mask,
-            box: densestInkBand(mask, box: sampledBox, width: width, digitHeight: digitHeight),
+            box: densestInkBand(
+                mask,
+                box: sampledBox,
+                width: width,
+                digitHeight: digitHeight,
+                digitWidth: digitWidth
+            ),
             width: width
         )
         guard let glyph = SevenSegmentGlyph.match(pattern) else { return nil }
@@ -1676,7 +1682,8 @@ private func densestInkBand(
     _ mask: Mask,
     box: PixelBox,
     width: Int,
-    digitHeight: Int
+    digitHeight: Int,
+    digitWidth: Int
 ) -> PixelBox {
     let profile = rowInkSums(mask, x0: box.minX, x1: box.maxX, y0: box.minY, y1: box.maxY)
     let sums = profile.sums
@@ -1686,8 +1693,10 @@ private func densestInkBand(
     if box.width * 4 < height {
         return box
     }
-    // Washed pump digits are about 1.5–2× as tall as they are wide.
-    let maxDigit = max(8, box.width * 2)
+    // Use the median digit width so a broken 3 that tightens narrowly is not
+    // treated as taller than a digit. Washed pump digits are ~1.5–2× that wide.
+    let typicalWidth = max(box.width, digitWidth)
+    let maxDigit = max(8, typicalWidth * 2)
     let slack = max(4, maxDigit / 12)
     if height <= maxDigit + slack {
         return box
@@ -1712,7 +1721,10 @@ private func densestInkBand(
         return PixelBox(minX: box.minX, minY: minY, maxX: box.maxX, maxY: maxY)
     }
     // Median height is also inflated when every box grew into the glare.
-    let target = min(remaining, max(maxDigit, digitHeight > 8 && digitHeight <= maxDigit + slack ? digitHeight : maxDigit))
+    let target = min(
+        remaining,
+        max(maxDigit, digitHeight > 8 && digitHeight <= maxDigit + slack ? digitHeight : maxDigit)
+    )
     minY = maxY - target
     return PixelBox(minX: box.minX, minY: minY, maxX: box.maxX, maxY: maxY)
 }
