@@ -1328,7 +1328,10 @@ private func priceMatchedLeft(
     let peak = (bestStart..<(bestStart + window)).map { columnInk[$0] }.max() ?? 0
     let floor = max(1, peak / 5)
     // Jump gaps up to a digit pitch so inter-digit space does not stop the walk.
+    // Do not jump a short gap into a thin left scratch — that gap is only a
+    // few pixels, shorter than the inter-digit pitch.
     let shortGap = max(8, (y1 - y0) / 10)
+    let scratchCap = max(24, (y1 - y0) / 2)
     var lo = bestStart
     while lo > sharedLeft {
         if columnInk[lo - 1] >= floor {
@@ -1339,14 +1342,15 @@ private func priceMatchedLeft(
         while gapStart > sharedLeft, columnInk[gapStart - 1] < floor {
             gapStart -= 1
         }
-        if lo - gapStart > shortGap {
+        let gap = lo - gapStart
+        let leftWidth = gapStart - sharedLeft
+        if gap > shortGap || leftWidth <= scratchCap {
             break
         }
         lo = gapStart
     }
     let peeled = lo - sharedLeft
     // A left scratch is a thin strip; a clipped leading digit peels much more.
-    let scratchCap = max(24, (y1 - y0) / 2)
     guard peeled > 8, peeled <= scratchCap else { return sharedLeft }
     let scratchInk = (sharedLeft..<lo).reduce(0) { $0 + columnInk[$1] }
     guard scratchInk > 0 else { return sharedLeft }
