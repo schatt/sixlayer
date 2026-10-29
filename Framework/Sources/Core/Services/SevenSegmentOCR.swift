@@ -1200,9 +1200,82 @@ private extension GrayBuffer {
                 ? []
                 : oppositeMarks(in: band, secondary: paintedMarks, existing: found, buffer: buffer, bandIndex: 0)
             let dots = baselineDots(in: band, mask: glyphs, cells: found, width: buffer.width, bandIndex: 0)
-            let row = found + marks + dots
+            var row = found + marks + dots
+            // Pitch volume often washes the glass above the real decimal, so
+            // baselineDots misses it and a trailing noise mark can survive.
+            // Keep only marks between digits; if none, place one in the
+            // clearest inter-digit gap that still has baseline ink.
+            if preferredPitch != nil {
+                row = pitchRowMarks(row, mask: glyphs, band: band, width: buffer.width)
+            }
             return row.isEmpty ? nil : row
         }
+    }
+
+    /// Prefer a decimal between digit boxes on pitch-driven rows. Drop marks
+    /// that sit before the first digit or after the last.
+    private static func pitchRowMarks(
+        _ row: [Cell],
+        mask: Mask,
+        band: (Int, Int),
+        width: Int
+    ) -> [Cell] {
+        let digits = row.filter { $0.character.isNumber && $0.height > 0 }
+            .sorted { $0.minX < $1.minX }
+        let marks = row.filter { $0.character == "." || $0.character == "," }
+        let other = row.filter { cell in
+            !cell.character.isNumber && cell.character != "." && cell.character != ","
+        }
+        guard digits.count >= 2 else { return row }
+        let between = marks.filter { mark in
+            digits.indices.dropLast().contains { i in
+                mark.box.midX >= digits[i].maxX && mark.box.midX <= digits[i + 1].minX
+            }
+        }
+        if !between.isEmpty {
+            return (digits + between + other).sorted { $0.minX < $1.minX }
+        }
+        let digitWidth = median(digits.map(\.box.width)) ?? 0
+        let digitHeight = median(digits.map(\.height)) ?? 0
+        guard digitWidth > 8, digitHeight > 8 else {
+            return (digits + other).sorted { $0.minX < $1.minX }
+        }
+        let baseline = median(digits.map(\.maxY)) ?? band.1
+        let top = max(band.0, baseline - max(4, digitHeight / 8))
+        let bottom = min(mask.height, max(baseline, band.1))
+        guard bottom > top else { return (digits + other).sorted { $0.minX < $1.minX } }
+        let sums = columnSums(mask, y0: top, y1: bottom, width: width)
+        let gapTop = max(band.0, top - max(4, digitHeight / 10))
+        let above = columnSums(mask, y0: gapTop, y1: top, width: width)
+        let floor = max(1, (bottom - top) / 6)
+        var best: (x0: Int, x1: Int, score: Int)?
+        for i in digits.indices.dropLast() {
+            let left = digits[i].maxX
+            let right = digits[i + 1].minX
+            let gap = right - left
+            guard gap > 2, gap < digitWidth else { continue }
+            let ink = (left..<right).reduce(0) { $0 + sums[$1] }
+            guard ink >= floor else { continue }
+            let aboveInk = (left..<right).reduce(0) { $0 + above[$1] }
+            // Prefer baseline ink with the least glass wash above.
+            let score = ink * 4 - aboveInk
+            if best == nil || score > best!.score {
+                best = (left, right, score)
+            }
+        }
+        var placed = digits + other
+        if let best, best.x1 > best.x0 {
+            let mid = (best.x0 + best.x1) / 2
+            let pad = max(1, (best.x1 - best.x0) / 4)
+            let box = PixelBox(
+                minX: max(best.x0, mid - pad),
+                minY: top,
+                maxX: min(best.x1, mid + pad),
+                maxY: bottom
+            )
+            placed.append(Cell(box: box, character: ".", confidence: 1, band: 0))
+        }
+        return placed.sorted { $0.minX < $1.minX }
     }
 }
 
