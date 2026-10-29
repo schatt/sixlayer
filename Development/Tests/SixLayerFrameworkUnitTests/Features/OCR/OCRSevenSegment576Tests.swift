@@ -108,10 +108,9 @@ struct OCRSevenSegment576Tests {
     }
 
     @Test func washBetweenDigitsDoesNotMergeThem() {
-        // A washed LCD leaves a few ink columns in the gap between digits.
-        // Those columns keep the projection as one span, and the span is not
-        // wider than the band, so the splitter never cuts. The pump volume
-        // row fails the same way (~200px blobs).
+        // A washed LCD leaves a thin ink bridge in the gap between digits.
+        // The projection stays one span; the floor cuts the bridge; joining
+        // must not glue two finished digits back into a ~200px blob.
         let image = SegmentPanel.render(
             rows: [atoms("32.88"), atoms("8.022")],
             washGaps: true
@@ -765,9 +764,9 @@ private enum SegmentPanel {
         return image(pixels: pixels, width: width, height: height)
     }
 
-    /// A short wash across the gap between glyphs. Column sums stay above
-    /// zero there, so adjacent digits look like one run, but the bridge is
-    /// thinner than a stem so a higher projection floor can still cut it.
+    /// A one-pixel wash across the gap between glyphs. Column sums stay
+    /// above zero, so the projection is one run; the floor cuts the bridge,
+    /// and only a one-glyph combinedLimit keeps the halves from rejoining.
     private static func paintWashGaps(
         _ pixels: inout [UInt8],
         width: Int,
@@ -778,14 +777,10 @@ private enum SegmentPanel {
         for gap in gaps {
             let x0 = max(0, gap.minX)
             let x1 = min(width, gap.maxX)
-            let mid = (gap.minY + gap.maxY) / 2
-            let y0 = max(0, mid - stroke / 4)
-            let y1 = min(height, mid + max(1, stroke / 4))
-            guard x1 > x0, y1 > y0 else { continue }
-            for y in y0..<y1 {
-                for x in x0..<x1 {
-                    pixels[y * width + x] = ink
-                }
+            let y = min(height - 1, max(0, (gap.minY + gap.maxY) / 2))
+            guard x1 > x0 else { continue }
+            for x in x0..<x1 {
+                pixels[y * width + x] = ink
             }
         }
     }
