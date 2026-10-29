@@ -1802,15 +1802,20 @@ private func columnRuns(
             stride: max(max(1, $0.body), $0.stride)
         )
     }
-    // When pitch-driving, drop thin glare stems, but only collapse to one
-    // "main" span when that span is clearly a fused multi-digit field.
-    // Separate clean digits must stay separate or a whole row becomes one 8.
+    // When pitch-driving: keep narrow runs that sit between digit bodies
+    // (decimals), drop leading/trailing thin stems outside the digit field,
+    // and collapse to one main span only when that span is clearly fused.
     let spans: [(Int, Int)]
     if let pitch = copied {
         let wideEnough = raw.filter { $0.1 - $0.0 > pitch.body / 2 }
         if let main = wideEnough.max(by: { ($0.1 - $0.0) < ($1.1 - $1.0) }),
            main.1 - main.0 > pitch.body + pitch.body / 2 {
             spans = [main]
+        } else if let first = wideEnough.first, let last = wideEnough.last {
+            spans = raw.filter { span in
+                if span.1 - span.0 > pitch.body / 2 { return true }
+                return span.0 >= first.0 && span.1 <= last.1
+            }
         } else {
             spans = wideEnough.isEmpty ? raw : wideEnough
         }
@@ -1859,10 +1864,11 @@ private func columnRuns(
     }
 }
 
-/// Place `count` body-wide windows at even pitch across a fused span.
-/// Extra width (wash / decimal) becomes inter-digit gaps. Fixed geometry —
-/// densest-ink sliding is avoided because solid wash makes every column hot
-/// and pulls windows off hollow glyphs like 0. Not ink valleys.
+/// Place `count` body-wide windows across a fused volume span. Pump volume
+/// puts the decimal after the first digit (`8.022`), so the first body sits
+/// at the left, a decimal-sized hole is skipped, and the remaining bodies
+/// share the rest evenly. Fixed geometry — not ink valleys, not densest
+/// sliding (solid wash makes every column hot and pulls off hollow 0s).
 private func splitAtExpectedPitch(
     _ span: (Int, Int),
     sums: [Int],
@@ -1873,15 +1879,25 @@ private func splitAtExpectedPitch(
     let count = max(2, pitch.count)
     let width = span.1 - span.0
     guard width > body + body / 4 else { return [span] }
-    let gap = count > 1 ? max(0, (width - count * body) / (count - 1)) : 0
     var pieces: [(Int, Int)] = []
-    var x = span.0
-    for _ in 0..<count {
+    let firstEnd = min(span.1, span.0 + body)
+    pieces.append((span.0, firstEnd))
+    guard count > 1 else { return pieces }
+    // Clear a decimal / wash hole after the leading digit.
+    let hole = max(body / 2, max(1, pitch.stride - body))
+    let restStart = min(span.1, firstEnd + hole)
+    let restCount = count - 1
+    let restWidth = max(0, span.1 - restStart)
+    let restGap = restCount > 1
+        ? max(0, (restWidth - restCount * body) / (restCount - 1))
+        : 0
+    var x = restStart
+    for _ in 0..<restCount {
         let end = min(span.1, x + body)
         if end - x >= max(2, body / 5) {
             pieces.append((x, end))
         }
-        x += body + gap
+        x += body + restGap
         if x >= span.1 { break }
     }
     return pieces.isEmpty ? [span] : pieces
