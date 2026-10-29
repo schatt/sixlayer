@@ -1772,8 +1772,12 @@ private func columnRuns(
     let typical = digitWidths.isEmpty ? 0 : digitWidths[(digitWidths.count - 1) / 2]
     let bandHeight = max(1, y1 - y0)
     // Approach D: 7-seg digit ≈ twice as tall as wide. Prefer a pitch copied
-    // from a known-good price row when the caller has one.
-    let pitch = max(1, preferredDigitWidth ?? bandHeight / 2)
+    // from a known-good price row. Otherwise use the tallest ink column as the
+    // digit height — not the crop height (price-matched crops are ~380px with
+    // empty pad, which would make pitch far too wide and under-split).
+    let inkHeight = max(1, tallest)
+    let aspectPitch = max(1, inkHeight / 2)
+    let pitch = max(1, preferredDigitWidth ?? aspectPitch)
     return raw.flatMap { span in
         let spanWidth = span.1 - span.0
         // A digit is taller than it is wide. A 4 has no top or bottom bar, so
