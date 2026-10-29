@@ -1666,6 +1666,9 @@ private func joiningBridgedPieces(
     // do not glue those back even when a thin bridge still connects them.
     let narrow = bandHeight / 2
     let digitWide = max(1, bandHeight / 2)
+    // A floor cut can leave a stem-thin strip beside a digit. Pull that
+    // strip back in; bothFinished would otherwise leave it as a false 1.
+    let thinStem = max(2, digitWide / 5)
     let gapLimit = max(1, bandHeight / 8)
     for piece in pieces.dropFirst() {
         let gap = piece.0 - previous.1
@@ -1673,13 +1676,20 @@ private func joiningBridgedPieces(
         let rightWidth = piece.1 - piece.0
         let combined = piece.1 - previous.0
         let bothFinished = leftWidth * 5 >= digitWide * 3 && rightWidth * 5 >= digitWide * 3
-        let bridged = !bothFinished
-            && leftWidth < narrow
-            && rightWidth < narrow
-            && combined < bandHeight
-            && gap > 0
+        let absorbThin = (leftWidth < thinStem || rightWidth < thinStem)
+            && combined < digitWide + digitWide / 2
+        let bridged = gap > 0
             && gap < gapLimit
             && strokeConnects(previous, piece, mask: mask, y0: y0, y1: y1)
+            && (
+                absorbThin
+                    || (
+                        !bothFinished
+                            && leftWidth < narrow
+                            && rightWidth < narrow
+                            && combined < bandHeight
+                    )
+            )
         if bridged {
             previous.1 = piece.1
         } else {
