@@ -1045,7 +1045,11 @@ private extension GrayBuffer {
                         cell.character.isNumber && cell.height > 0
                     }.sorted { $0.minX < $1.minX }
                     if let body = median(digits.map(\.box.width)), body > 0, digits.count >= 2 {
-                        rowPitch = PreferredDigitPitch(body: body, count: digits.count)
+                        let spacings = zip(digits, digits.dropFirst()).map { left, right in
+                            right.box.midX - left.box.midX
+                        }
+                        let stride = median(spacings.filter { $0 > 0 }) ?? (body + max(1, body / 6))
+                        rowPitch = PreferredDigitPitch(body: body, count: digits.count, stride: max(body, stride))
                     }
                 }
             }
@@ -1763,10 +1767,12 @@ private func columnProfile(_ mask: Mask) -> (sums: [Int], longest: [Int]) {
     return (sums, longest)
 }
 
-/// Digit body width and count copied from a known-good price rowcrop.
+/// Digit geometry copied from a known-good price rowcrop.
 private struct PreferredDigitPitch {
     var body: Int
     var count: Int
+    /// Center-to-center step when known; otherwise body + a small gap.
+    var stride: Int
 }
 
 private func columnRuns(
@@ -1789,16 +1795,25 @@ private func columnRuns(
     // Approach D: a preferred pitch copied from a known-good price row forces
     // digit-sized cuts. Without it, keep the existing valley path so clean
     // synthetics do not over-split.
-    let copied = preferredPitch.map { PreferredDigitPitch(body: max(1, $0.body), count: max(2, $0.count)) }
-    // When pitch-driving, keep only runs that can hold a digit body so left
-    // glare stems are not packed into extra slots.
+    let copied = preferredPitch.map {
+        PreferredDigitPitch(
+            body: max(1, $0.body),
+            count: max(2, $0.count),
+            stride: max(max(1, $0.body), $0.stride)
+        )
+    }
+    // When pitch-driving, drop thin glare stems, but only collapse to one
+    // "main" span when that span is clearly a fused multi-digit field.
+    // Separate clean digits must stay separate or a whole row becomes one 8.
     let spans: [(Int, Int)]
     if let pitch = copied {
         let wideEnough = raw.filter { $0.1 - $0.0 > pitch.body / 2 }
-        let main = wideEnough.max { left, right in
-            (left.1 - left.0) < (right.1 - right.0)
+        if let main = wideEnough.max(by: { ($0.1 - $0.0) < ($1.1 - $1.0) }),
+           main.1 - main.0 > pitch.body + pitch.body / 2 {
+            spans = [main]
+        } else {
+            spans = wideEnough.isEmpty ? raw : wideEnough
         }
-        spans = main.map { [$0] } ?? wideEnough
     } else {
         spans = raw
     }
@@ -1844,62 +1859,32 @@ private func columnRuns(
     }
 }
 
-/// Place `count` body-wide windows across a fused span. Each slot keeps the
-/// densest body-wide column window near its pitch center — not ink valleys.
+/// Place `count` body-wide windows at even pitch across a fused span.
+/// Extra width (wash / decimal) becomes inter-digit gaps. Fixed geometry —
+/// densest-ink sliding is avoided because solid wash makes every column hot
+/// and pulls windows off hollow glyphs like 0. Not ink valleys.
 private func splitAtExpectedPitch(
     _ span: (Int, Int),
     sums: [Int],
     pitch: PreferredDigitPitch
 ) -> [(Int, Int)] {
+    _ = sums
     let body = max(1, pitch.body)
     let count = max(2, pitch.count)
     let width = span.1 - span.0
     guard width > body + body / 4 else { return [span] }
-    let slot = max(body, width / count)
+    let gap = count > 1 ? max(0, (width - count * body) / (count - 1)) : 0
     var pieces: [(Int, Int)] = []
-    for i in 0..<count {
-        let slot0 = span.0 + i * slot
-        let slot1 = min(span.1, i == count - 1 ? span.1 : span.0 + (i + 1) * slot)
-        let search0 = max(span.0, slot0 - max(1, slot / 5))
-        let search1 = min(span.1, max(slot1, slot0 + body) + max(1, slot / 5))
-        if let window = densestColumnWindow(sums, from: search0, to: search1, width: body) {
-            pieces.append(window)
-        } else {
-            let mid = (slot0 + slot1) / 2
-            let start = max(span.0, min(span.1 - body, mid - body / 2))
-            pieces.append((start, start + body))
+    var x = span.0
+    for _ in 0..<count {
+        let end = min(span.1, x + body)
+        if end - x >= max(2, body / 5) {
+            pieces.append((x, end))
         }
+        x += body + gap
+        if x >= span.1 { break }
     }
     return pieces.isEmpty ? [span] : pieces
-}
-
-/// Sliding body-wide window with the most column ink inside [from, to).
-private func densestColumnWindow(
-    _ sums: [Int],
-    from: Int,
-    to: Int,
-    width: Int
-) -> (Int, Int)? {
-    let left = max(0, from)
-    let right = min(sums.count, to)
-    guard width > 0, right - left >= width else { return nil }
-    var run = 0
-    for x in left..<(left + width) {
-        run += sums[x]
-    }
-    var best = left
-    var bestSum = run
-    if left + width < right {
-        for x in (left + 1)...(right - width) {
-            run += sums[x + width - 1] - sums[x - 1]
-            if run > bestSum {
-                bestSum = run
-                best = x
-            }
-        }
-    }
-    guard bestSum > 0 else { return nil }
-    return (best, best + width)
 }
 
 /// Cut a span that still holds two digit peaks with a wash bridge between them.
