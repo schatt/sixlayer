@@ -1281,9 +1281,11 @@ private func priceMatchedBand(_ sums: [Int], in band: (Int, Int), targetHeight: 
     return (bestStart, bestStart + targetHeight)
 }
 
-/// Raise the left crop edge to the densest digit run. A left scratch or glare
-/// strip can out-score a short prefix drop; the window that holds most of the
-/// digit ink starts on the digits, not on that fringe.
+/// Raise the left crop edge past a thin left scratch. Drop a short prefix of
+/// active columns when a gap separates that scratch from digit columns that
+/// still hold most of the ink. A densest-window slide alone can stop on an
+/// inter-digit gap and clip the leading glyph when a right-hand strip pulls
+/// the window.
 private func priceMatchedLeft(
     _ mask: Mask,
     band: (Int, Int),
@@ -1293,8 +1295,7 @@ private func priceMatchedLeft(
     let width = mask.width
     let y0 = max(0, band.0)
     let y1 = min(mask.height, band.1)
-    let spanWidth = sharedRight - sharedLeft
-    guard width > 0, y1 > y0, spanWidth > 48 else { return sharedLeft }
+    guard width > 0, y1 > y0, sharedRight > sharedLeft + 24 else { return sharedLeft }
     var columnInk = [Int](repeating: 0, count: width)
     for x in sharedLeft..<min(width, sharedRight) {
         var ink = 0
@@ -1303,44 +1304,34 @@ private func priceMatchedLeft(
         }
         columnInk[x] = ink
     }
-    // Cover most of a price-like digit row; leave room to slide past a fringe.
-    let window = max(48, min(spanWidth - 24, spanWidth * 3 / 4))
-    guard window + 24 < spanWidth else { return sharedLeft }
-    var bestStart = sharedLeft
-    var bestInk = Int.min
-    let lastStart = sharedRight - window
-    var start = sharedLeft
-    while start <= lastStart {
-        var ink = 0
-        for x in start..<(start + window) {
-            ink += columnInk[x]
+    let active = (sharedLeft..<min(width, sharedRight)).filter { columnInk[$0] > 0 }
+    guard active.count > 16 else { return sharedLeft }
+    let totalInk = active.reduce(0) { $0 + columnInk[$1] }
+    var dropped = 0
+    var droppedInk = 0
+    var index = 0
+    let dropLimit = max(12, (y1 - y0) / 10)
+    while index < active.count {
+        let remaining = active.count - index
+        let remainingInk = totalInk - droppedInk
+        let gapBefore = index > 0 ? active[index] - active[index - 1] : 0
+        // A scratch is a short prefix separated by a gap from the digits.
+        if index > 0,
+           gapBefore > 4,
+           remaining * 5 >= active.count * 4,
+           remainingInk * 5 >= totalInk * 4,
+           active[index] > sharedLeft + 8,
+           dropped * 4 <= remaining,
+           dropped <= dropLimit,
+           (active[index] - sharedLeft) * 4 <= (sharedRight - active[index]) {
+            return active[index]
         }
-        if ink > bestInk {
-            bestInk = ink
-            bestStart = start
-        }
-        start += 1
+        dropped += 1
+        droppedInk += columnInk[active[index]]
+        index += 1
+        if dropped > dropLimit { break }
     }
-    guard bestStart > sharedLeft + 16 else { return sharedLeft }
-    // Nudge left to the first ink of this run so a leading stem is not clipped.
-    let peak = (bestStart..<(bestStart + window)).map { columnInk[$0] }.max() ?? 0
-    let floor = max(1, peak / 5)
-    var lo = bestStart
-    while lo > sharedLeft, columnInk[lo - 1] >= floor {
-        lo -= 1
-    }
-    // A right-hand edge strip can pull the densest window past a leading
-    // digit. Only raise the left edge when a real valley separates a left
-    // scratch from the digit run we kept.
-    guard lo > sharedLeft + 8 else { return sharedLeft }
-    var gapStart = lo
-    while gapStart > sharedLeft, columnInk[gapStart - 1] < floor {
-        gapStart -= 1
-    }
-    guard lo - gapStart > 4 else { return sharedLeft }
-    let scratchInk = (sharedLeft..<gapStart).reduce(0) { $0 + columnInk[$1] }
-    guard scratchInk > 0 else { return sharedLeft }
-    return lo
+    return sharedLeft
 }
 
 /// Two digit rows joined by scratches. The valley has to sit between two
@@ -1823,34 +1814,53 @@ private func densestInkBand(
     let slack = max(4, earlyCap / 12)
     // A top bar spans the interior, not the full cell. A glare cap fills it.
     let solid = max(2, box.width * 9 / 10)
+    var lo = 0
+    var hi = height
+    while lo < height - 3 && sums[lo] >= solid {
+        lo += 1
+    }
+    // A stem fills the box. A glare cap is a minority of the height.
+    if lo * 2 > height { lo = 0 }
+    while hi - lo > 3 && sums[hi - 1] >= solid {
+        hi -= 1
+    }
+    if (height - hi) * 2 > height { hi = height }
     if height <= earlyCap + slack {
         // Price-like: only peel a short solid glare fringe.
-        var start = 0
-        while start < height - 3 && sums[start] >= solid {
-            start += 1
-        }
-        if start * 2 > height { start = 0 }
-        guard start > 0, start * 5 <= height else { return box }
+        guard lo > 0, lo * 5 <= height else { return box }
         return PixelBox(
             minX: box.minX,
-            minY: profile.lower + start,
+            minY: profile.lower + lo,
             maxX: box.maxX,
             maxY: box.maxY
         )
     }
-    // Tall box: densest digit-tall window. Prefer the lower window on ties so
-    // glare above the top bar loses to the glyph.
-    let target = min(height, ownCap)
-    var bestStart = 0
+    // Tall box: after dropping solid caps, keep a digit-tall window. Prefer
+    // the lower window on near-ties so residual washed glare above the top
+    // bar loses to the glyph (a solid glare cap is denser than stroke ink).
+    let remaining = hi - lo
+    let target = min(remaining, ownCap)
+    guard remaining > target + max(4, ownCap / 12) else {
+        return PixelBox(
+            minX: box.minX,
+            minY: profile.lower + lo,
+            maxX: box.maxX,
+            maxY: profile.lower + hi
+        )
+    }
+    var bestStart = hi - target
     var bestInk = Int.min
-    var start = 0
-    let lastStart = height - target
+    var start = lo
+    let lastStart = hi - target
     while start <= lastStart {
         var ink = 0
         for row in start..<(start + target) {
             ink += sums[row]
         }
-        if ink > bestInk || (ink == bestInk && start > bestStart) {
+        // Prefer the lower window unless a higher one is clearly denser —
+        // washed glare above the top bar can out-sum stroke ink.
+        let clearlyBetter = bestInk == Int.min || ink > bestInk + max(1, bestInk / 10)
+        if clearlyBetter || (ink + max(1, ink / 10) >= bestInk && start >= bestStart) {
             bestInk = ink
             bestStart = start
         }
