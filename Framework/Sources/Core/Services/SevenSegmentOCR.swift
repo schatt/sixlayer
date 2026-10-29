@@ -1327,14 +1327,13 @@ private func priceMatchedLeftByDenseWindow(
         }
         columnInk[x] = ink
     }
-    // A fully solid left blob fills every row. A digit stem leaves gaps
-    // (segment cavities). Score columns that are ink but not a solid fill.
-    var digitLike = [Bool](repeating: false, count: width)
-    for x in sharedLeft..<min(width, sharedRight) {
-        let ink = columnInk[x]
-        digitLike[x] = ink * 10 >= bandHeight && ink < bandHeight
-    }
-    let window = max(48, min(spanWidth - 24, spanWidth * 3 / 4))
+    // Score only non-solid ink. A left glare blob that fills most of the
+    // band must not outrank the digit field; fully solid columns contribute
+    // nothing. Prefer the rightmost best window so a wide span that covers
+    // the digits from many starts settles on digit ink, not the blob.
+    let solidFloor = bandHeight * 4 / 5
+    let speckFloor = max(2, bandHeight / 16)
+    let window = max(48, min(spanWidth - 24, spanWidth * 2 / 3))
     guard window + 24 < spanWidth else { return sharedLeft }
     var bestStart = sharedLeft
     var bestScore = Int.min
@@ -1342,22 +1341,25 @@ private func priceMatchedLeftByDenseWindow(
     var start = sharedLeft
     while start <= lastStart {
         var score = 0
-        for x in start..<(start + window) where digitLike[x] {
-            score += 1
+        for x in start..<(start + window) {
+            let ink = columnInk[x]
+            if ink >= speckFloor, ink < solidFloor {
+                score += ink
+            }
         }
-        if score > bestScore {
+        if score > bestScore || (score == bestScore && start > bestStart) {
             bestScore = score
             bestStart = start
         }
         start += 1
     }
-    guard bestStart > sharedLeft + 16, bestScore > 8 else { return sharedLeft }
+    guard bestStart > sharedLeft + 16, bestScore > speckFloor * 8 else { return sharedLeft }
     let peak = (bestStart..<(bestStart + window)).map { columnInk[$0] }.max() ?? 0
     let floor = max(1, peak / 5)
     var lo = bestStart
     while lo > sharedLeft, columnInk[lo - 1] >= floor {
         // Do not walk back into a solid blob fringe.
-        if columnInk[lo - 1] * 5 > bandHeight * 4 { break }
+        if columnInk[lo - 1] >= solidFloor { break }
         lo -= 1
     }
     return lo
