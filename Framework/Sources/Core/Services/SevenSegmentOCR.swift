@@ -1279,9 +1279,9 @@ private func priceMatchedBand(_ sums: [Int], in band: (Int, Int), targetHeight: 
     return (bestStart, bestStart + targetHeight)
 }
 
-/// Raise the left crop edge past a thin left scratch. A solid scratch column
-/// out-scores digit strokes, so a densest-window slide keeps the scratch.
-/// Drop a short active prefix when a small gap separates it from digit ink.
+/// Raise the left crop edge past a thin left scratch. Scratch columns fill
+/// most of the band height; digit strokes do not. Tall haze can bridge the
+/// scratch-to-digit gap, so density — not a valley — marks the scratch.
 private func priceMatchedLeft(
     _ mask: Mask,
     band: (Int, Int),
@@ -1291,7 +1291,8 @@ private func priceMatchedLeft(
     let width = mask.width
     let y0 = max(0, band.0)
     let y1 = min(mask.height, band.1)
-    guard width > 0, y1 > y0, sharedRight > sharedLeft + 24 else { return sharedLeft }
+    let bandHeight = y1 - y0
+    guard width > 0, bandHeight > 0, sharedRight > sharedLeft + 24 else { return sharedLeft }
     var columnInk = [Int](repeating: 0, count: width)
     for x in sharedLeft..<min(width, sharedRight) {
         var ink = 0
@@ -1300,35 +1301,23 @@ private func priceMatchedLeft(
         }
         columnInk[x] = ink
     }
-    let active = (sharedLeft..<min(width, sharedRight)).filter { columnInk[$0] > 0 }
-    guard active.count > 16 else { return sharedLeft }
-    var dropped = 0
-    var index = 0
-    let dropLimit = max(12, (y1 - y0) / 10)
-    // Scratch-to-digit clearance is only a few pixels; inter-digit pitch is
-    // larger (~8). Accept a 4-pixel valley, but only when the peeled prefix
-    // is thin — so a leading digit before an inter-digit gap is kept.
-    // Do not score on ink totals: a solid scratch out-sums digit strokes.
-    let scratchCap = max(16, min(40, (y1 - y0) / 8))
-    while index < active.count {
-        let remaining = active.count - index
-        let gapBefore = index > 0 ? active[index] - active[index - 1] : 0
-        let peeledWidth = active[index] - sharedLeft
-        if index > 0,
-           gapBefore >= 4,
-           peeledWidth > 4,
-           peeledWidth <= scratchCap,
-           remaining * 5 >= active.count * 4,
-           active[index] > sharedLeft + 8,
-           dropped * 4 <= remaining,
-           dropped <= dropLimit {
-            return active[index]
-        }
-        dropped += 1
-        index += 1
-        if dropped > dropLimit { break }
+    // A left scratch fills the band; a digit stem covers a fraction of it.
+    let solid = max(4, bandHeight * 2 / 3)
+    let scratchCap = max(16, min(40, bandHeight / 8))
+    var x = sharedLeft
+    // Skip leading empty padding.
+    while x < sharedRight, columnInk[x] == 0 { x += 1 }
+    let scratchStart = x
+    while x < sharedRight, x - scratchStart <= scratchCap, columnInk[x] >= solid {
+        x += 1
     }
-    return sharedLeft
+    let scratchEnd = x
+    let peeled = scratchEnd - sharedLeft
+    guard peeled > 4, peeled <= scratchCap + 8 else { return sharedLeft }
+    // Require digit ink after the scratch so we do not peel an empty crop.
+    while x < sharedRight, columnInk[x] < max(1, solid / 4) { x += 1 }
+    guard x < sharedRight, columnInk[x] > 0 else { return sharedLeft }
+    return scratchEnd
 }
 
 /// Two digit rows joined by scratches. The valley has to sit between two
