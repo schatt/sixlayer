@@ -1290,7 +1290,8 @@ private func priceMatchedBand(_ sums: [Int], in band: (Int, Int), targetHeight: 
         start += 1
     }
     // Drop residual top haze when a lower window keeps nearly the same ink.
-    let floorInk = bestInk - max(bestInk / 50, 1)
+    // Price Y is sensitive to a few pixels of top haze; allow a 2% ink slip.
+    let floorInk = bestInk * 98 / 100
     start = bestStart
     while start <= lastStart {
         var ink = 0
