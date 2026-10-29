@@ -734,17 +734,6 @@ private enum SegmentPanel {
         if gapGlare {
             paintGapGlare(&pixels, width: width, height: height, bands: laid.rowBands)
         }
-        if leftScratch {
-            paintLeftScratch(
-                &pixels,
-                width: width,
-                height: height,
-                ink: ink,
-                background: background,
-                padding: padding,
-                bands: laid.rowBands
-            )
-        }
         if edgeStrip {
             paintEdgeStrip(
                 &pixels,
@@ -779,6 +768,32 @@ private enum SegmentPanel {
             pixels = padded
             width = paddedW
             height = paddedH
+            if leftScratch {
+                // Scratch lives in the left margin, far from the digits, the
+                // way glare sits left of the price crop on the pump photo.
+                let shifted = laid.rowBands.map {
+                    RowBand(minY: $0.minY + outerMargin, maxY: $0.maxY + outerMargin)
+                }
+                paintLeftScratch(
+                    &pixels,
+                    width: width,
+                    height: height,
+                    ink: ink,
+                    background: background,
+                    padding: max(24, outerMargin / 4),
+                    bands: shifted
+                )
+            }
+        } else if leftScratch {
+            paintLeftScratch(
+                &pixels,
+                width: width,
+                height: height,
+                ink: ink,
+                background: background,
+                padding: padding,
+                bands: laid.rowBands
+            )
         }
         return image(pixels: pixels, width: width, height: height)
     }
