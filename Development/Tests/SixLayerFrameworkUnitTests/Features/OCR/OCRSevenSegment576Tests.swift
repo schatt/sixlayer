@@ -123,13 +123,13 @@ struct OCRSevenSegment576Tests {
     }
 
     @Test func digitPitchCutsASolidWashBridge() {
-        // Approach D (#591): a full-height wash fills each intra-digit gap, so
-        // column sums stay high across the bridge and valley hunting has no
-        // dip to cut. Force digit-sized slots from the 7-seg aspect
-        // (width ≈ height/2), not ink valleys.
+        // Approach D (#591): price row stays clean; volume gaps get a full-height
+        // wash so column sums stay high and valley hunting has no dip. The
+        // decoder copies measured digit widths from the price rowcrop and
+        // force-cuts the volume blob at that pitch — not ink valleys.
         let image = SegmentPanel.render(
             rows: [atoms("32.88"), atoms("8.022")],
-            solidGapWash: true
+            solidGapWashVolumeOnly: true
         )
         #expect(decode(image, maximum: 0).extractedText == "32.88\n8.022")
     }
@@ -728,7 +728,7 @@ private enum SegmentPanel {
         aboveDigitGlare: Bool = false,
         leftScratch: Bool = false,
         tallHaze: Bool = false,
-        solidGapWash: Bool = false
+        solidGapWashVolumeOnly: Bool = false
     ) -> CGImage {
         let laid = layout(rows: rows, padding: padding)
         let background: UInt8 = backgroundLevel ?? (invert ? 28 : 214)
@@ -760,8 +760,12 @@ private enum SegmentPanel {
         }
         var width = laid.width
         var height = laid.height
-        if solidGapWash {
-            paintSolidGapWash(&pixels, width: width, height: height, ink: ink, gaps: laid.gaps)
+        if solidGapWashVolumeOnly {
+            let volumeGaps = laid.gaps.filter { gap in
+                guard let volume = laid.rowBands.dropFirst().first else { return false }
+                return gap.minY >= volume.minY && gap.maxY <= volume.maxY
+            }
+            paintSolidGapWash(&pixels, width: width, height: height, ink: ink, gaps: volumeGaps)
         }
         if tallHaze {
             paintTallHaze(
@@ -835,9 +839,9 @@ private enum SegmentPanel {
         return image(pixels: pixels, width: width, height: height)
     }
 
-    /// Fill each intra-digit gap to the full cell height. Column sums stay high
-    /// across the bridge, so a valley cut has nothing to find. Approach D must
-    /// still recover digit-sized slots from the row's 7-seg pitch.
+    /// Fill volume-row intra-digit gaps to the full cell height. Column sums
+    /// stay high across the bridge, so a valley cut has nothing to find.
+    /// Approach D copies price-row digit pitch and force-cuts those slots.
     private static func paintSolidGapWash(
         _ pixels: inout [UInt8],
         width: Int,
