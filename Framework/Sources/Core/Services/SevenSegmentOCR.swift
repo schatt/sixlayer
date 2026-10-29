@@ -390,18 +390,15 @@ private struct GrayBuffer {
             ? min(vertical[0].1 - vertical[0].0, vertical[1].1 - vertical[1].0)
             : 0
         let colonGap = vertical.count == 2 && splitGap >= shorterRun
-        // A mid-row glare stripe can punch a colon-sized hole in a stem. Prefer
-        // a one when the box is stem-narrow and either run is still stem-tall.
-        let stemAspect = box.width * 4 < box.height
-        let tallRun = vertical.contains { $0.1 - $0.0 >= digitHeight * 35 / 100 }
-        if box.height * 100 >= digitHeight * 55, stemAspect, vertical.count == 1 || !colonGap || tallRun {
-            return Cell(box: box, character: "1", confidence: 1, band: bandIndex)
-        }
+        // Colon dots are short; a glare-split stem keeps taller halves. The old
+        // 45% ceiling treated those halves as colon dots.
         if colonGap,
            box.width * 100 <= box.height * 30,
-           vertical.allSatisfy({ $0.1 - $0.0 < digitHeight * 45 / 100 }) {
+           vertical.allSatisfy({ $0.1 - $0.0 < digitHeight * 30 / 100 }) {
             return Cell(box: box, character: ":", confidence: 1, band: bandIndex)
         }
+        let stemAspect = box.width * 4 < box.height
+        let thinSplit = vertical.count == 2 && splitGap < shorterRun
         // Glare lifts the glass on both sides of its band. Those short bands
         // share the decimal's columns, so the three reads as one unknown.
         // A colon's dots are the same height and stay one mark.
@@ -428,7 +425,10 @@ private struct GrayBuffer {
             }
         }
         // ssocr: a box narrower than a quarter of its height is a one.
-        if box.height * 100 >= digitHeight * 55, stemAspect {
+        // A thin mid-glare slit leaves two tall runs — still a one.
+        if box.height * 100 >= digitHeight * 55,
+           stemAspect,
+           vertical.count <= 1 || thinSplit || vertical.count == 2 {
             return Cell(box: box, character: "1", confidence: 1, band: bandIndex)
         }
         if box.height * 100 >= digitHeight * 50,
@@ -1281,11 +1281,9 @@ private func priceMatchedBand(_ sums: [Int], in band: (Int, Int), targetHeight: 
     return (bestStart, bestStart + targetHeight)
 }
 
-/// Raise the left crop edge past a thin left scratch. Drop a short prefix of
-/// active columns when a gap separates that scratch from digit columns that
-/// still hold most of the ink. A densest-window slide alone can stop on an
-/// inter-digit gap and clip the leading glyph when a right-hand strip pulls
-/// the window.
+/// Raise the left crop edge to the densest digit run, walking left across
+/// short inter-digit gaps so a right-hand strip cannot clip a leading glyph.
+/// Only keep that raise when a longer valley separates a left scratch.
 private func priceMatchedLeft(
     _ mask: Mask,
     band: (Int, Int),
@@ -1295,7 +1293,8 @@ private func priceMatchedLeft(
     let width = mask.width
     let y0 = max(0, band.0)
     let y1 = min(mask.height, band.1)
-    guard width > 0, y1 > y0, sharedRight > sharedLeft + 24 else { return sharedLeft }
+    let spanWidth = sharedRight - sharedLeft
+    guard width > 0, y1 > y0, spanWidth > 48 else { return sharedLeft }
     var columnInk = [Int](repeating: 0, count: width)
     for x in sharedLeft..<min(width, sharedRight) {
         var ink = 0
@@ -1304,32 +1303,46 @@ private func priceMatchedLeft(
         }
         columnInk[x] = ink
     }
-    let active = (sharedLeft..<min(width, sharedRight)).filter { columnInk[$0] > 0 }
-    guard active.count > 16 else { return sharedLeft }
-    let totalInk = active.reduce(0) { $0 + columnInk[$1] }
-    var dropped = 0
-    var droppedInk = 0
-    var index = 0
-    let dropLimit = max(12, (y1 - y0) / 10)
-    while index < active.count {
-        let remaining = active.count - index
-        let remainingInk = totalInk - droppedInk
-        let gapBefore = index > 0 ? active[index] - active[index - 1] : 0
-        // A scratch is a short prefix separated by a gap from the digits.
-        if index > 0,
-           gapBefore > 4,
-           remaining * 5 >= active.count * 4,
-           remainingInk * 5 >= totalInk * 4,
-           active[index] > sharedLeft + 8,
-           dropped * 4 <= remaining,
-           dropped <= dropLimit,
-           (active[index] - sharedLeft) * 4 <= (sharedRight - active[index]) {
-            return active[index]
+    // Cover most of a price-like digit row; leave room to slide past a fringe.
+    let window = max(48, min(spanWidth - 24, spanWidth * 3 / 4))
+    guard window + 24 < spanWidth else { return sharedLeft }
+    var bestStart = sharedLeft
+    var bestInk = Int.min
+    let lastStart = sharedRight - window
+    var start = sharedLeft
+    while start <= lastStart {
+        var ink = 0
+        for x in start..<(start + window) {
+            ink += columnInk[x]
         }
-        dropped += 1
-        droppedInk += columnInk[active[index]]
-        index += 1
-        if dropped > dropLimit { break }
+        if ink > bestInk {
+            bestInk = ink
+            bestStart = start
+        }
+        start += 1
+    }
+    guard bestStart > sharedLeft + 16 else { return sharedLeft }
+    let peak = (bestStart..<(bestStart + window)).map { columnInk[$0] }.max() ?? 0
+    let floor = max(1, peak / 5)
+    // Walk left across digit ink and short gaps; stop before a scratch valley.
+    var lo = bestStart
+    while lo > sharedLeft {
+        if columnInk[lo - 1] >= floor {
+            lo -= 1
+            continue
+        }
+        var gapStart = lo
+        while gapStart > sharedLeft, columnInk[gapStart - 1] < floor {
+            gapStart -= 1
+        }
+        let gap = lo - gapStart
+        // Inter-digit gaps are small; a left scratch leaves a wider valley.
+        if gap > 4 {
+            let scratchInk = (sharedLeft..<gapStart).reduce(0) { $0 + columnInk[$1] }
+            guard scratchInk > 0, gapStart > sharedLeft else { return sharedLeft }
+            return lo
+        }
+        lo = gapStart
     }
     return sharedLeft
 }
