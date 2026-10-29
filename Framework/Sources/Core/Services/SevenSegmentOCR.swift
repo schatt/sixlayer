@@ -421,12 +421,9 @@ private struct GrayBuffer {
             }
         }
         // ssocr: a box narrower than a quarter of its height is a one.
-        // A thin mid-glare slit (gap shorter than the remaining stem) still
-        // counts as a one — same rule as the #576 glare-band fix.
-        let thinSplit = vertical.count == 2 && splitGap < shorterRun
-        if box.height * 100 >= digitHeight * 55,
-           box.width * 4 < box.height,
-           vertical.count == 1 || thinSplit {
+        // Mid-glare may punch the stem into two runs; aspect still wins over
+        // sampling those halves (which can match an 8).
+        if box.height * 100 >= digitHeight * 55, box.width * 4 < box.height {
             return Cell(box: box, character: "1", confidence: 1, band: bandIndex)
         }
         if box.height * 100 >= digitHeight * 50,
