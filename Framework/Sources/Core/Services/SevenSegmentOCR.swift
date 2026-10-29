@@ -390,11 +390,9 @@ private struct GrayBuffer {
             ? min(vertical[0].1 - vertical[0].0, vertical[1].1 - vertical[1].0)
             : 0
         let colonGap = vertical.count == 2 && splitGap >= shorterRun
-        // Colon dots are short; a glare-split stem keeps taller halves. The old
-        // 45% ceiling treated those halves as colon dots.
         if colonGap,
            box.width * 100 <= box.height * 30,
-           vertical.allSatisfy({ $0.1 - $0.0 < digitHeight * 30 / 100 }) {
+           vertical.allSatisfy({ $0.1 - $0.0 < digitHeight * 45 / 100 }) {
             return Cell(box: box, character: ":", confidence: 1, band: bandIndex)
         }
         // Glare lifts the glass on both sides of its band. Those short bands
@@ -1304,18 +1302,16 @@ private func priceMatchedLeft(
     }
     let active = (sharedLeft..<min(width, sharedRight)).filter { columnInk[$0] > 0 }
     guard active.count > 16 else { return sharedLeft }
-    let totalInk = active.reduce(0) { $0 + columnInk[$1] }
     var dropped = 0
-    var droppedInk = 0
     var index = 0
     let dropLimit = max(12, (y1 - y0) / 10)
     // Scratch-to-digit clearance is only a few pixels; inter-digit pitch is
     // larger (~8). Accept a 4-pixel valley, but only when the peeled prefix
     // is thin — so a leading digit before an inter-digit gap is kept.
+    // Do not score on ink totals: a solid scratch out-sums digit strokes.
     let scratchCap = max(16, min(40, (y1 - y0) / 8))
     while index < active.count {
         let remaining = active.count - index
-        let remainingInk = totalInk - droppedInk
         let gapBefore = index > 0 ? active[index] - active[index - 1] : 0
         let peeledWidth = active[index] - sharedLeft
         if index > 0,
@@ -1323,14 +1319,12 @@ private func priceMatchedLeft(
            peeledWidth > 4,
            peeledWidth <= scratchCap,
            remaining * 5 >= active.count * 4,
-           remainingInk * 5 >= totalInk * 4,
            active[index] > sharedLeft + 8,
            dropped * 4 <= remaining,
            dropped <= dropLimit {
             return active[index]
         }
         dropped += 1
-        droppedInk += columnInk[active[index]]
         index += 1
         if dropped > dropLimit { break }
     }
