@@ -1482,14 +1482,21 @@ private func columnRuns(_ mask: Mask, y0: Int, y1: Int, width: Int) -> [(Int, In
         // A digit is taller than it is wide. A 4 has no top or bottom bar, so
         // its ink band is shorter than the cell, and the old 0.7 ratio split
         // that one glyph at the crossbar. Two digits side by side are wider
-        // than the band is tall.
+        // than the band is tall. A washed bridge can also leave one blob that
+        // is only a little wider than one digit; still cut that.
+        let digitWide = max(1, bandHeight / 2)
         let widerThanADigit = spanWidth > bandHeight
-        guard widerThanADigit || (typical > 0 && spanWidth > typical * 2) else { return [span] }
+        let widerThanOneGlyph = spanWidth > digitWide + digitWide / 2
+        let typicalLooksLikeOneGlyph = typical > 0 && typical <= digitWide + digitWide / 2
+        guard widerThanADigit
+            || widerThanOneGlyph
+            || (typicalLooksLikeOneGlyph && spanWidth > typical * 2)
+        else { return [span] }
         let peak = (span.0..<span.1).map { sums[$0] }.max() ?? 0
-        // A horizontal bar is much thinner than a flooded stem. peak/5 cut the
-        // bar and split one washed digit. The gap between digits still falls
-        // through a lower floor.
-        let floor = max(1, widerThanADigit ? peak / 15 : peak / 8)
+        // A horizontal bar is thinner than a stem, but a washed gap between
+        // digits is thinner still. peak/15 left those bridges in place and
+        // the join step glued full digits back together.
+        let floor = max(1, peak / 8)
         var pieces: [(Int, Int)] = []
         var start: Int?
         for x in span.0..<span.1 {
@@ -1518,9 +1525,11 @@ private func joiningBridgedPieces(
 ) -> [(Int, Int)] {
     guard var previous = pieces.first else { return [] }
     var merged: [(Int, Int)] = []
-    // Both halves have to be narrower than a finished digit. The reflection
-    // beside the 3 is as wide as a digit and must not be pulled in with it.
-    let narrow = bandHeight / 2
+    // Only rejoin half-glyphs (a 2 cut on its diagonal). bandHeight/2 also
+    // matched a finished digit, so a washed bridge between two digits pulled
+    // them back into one ~200px blob.
+    let narrow = (bandHeight * 2) / 5
+    let combinedLimit = (bandHeight * 2) / 3
     let gapLimit = max(1, bandHeight / 8)
     for piece in pieces.dropFirst() {
         let gap = piece.0 - previous.1
@@ -1529,7 +1538,7 @@ private func joiningBridgedPieces(
         let combined = piece.1 - previous.0
         let bridged = leftWidth < narrow
             && rightWidth < narrow
-            && combined < bandHeight
+            && combined < combinedLimit
             && gap > 0
             && gap < gapLimit
             && strokeConnects(previous, piece, mask: mask, y0: y0, y1: y1)
