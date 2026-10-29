@@ -115,10 +115,9 @@ struct OCRSevenSegment576Tests {
         // include the scratch from x0 or the haze that widens the window.
         let image = SegmentPanel.render(
             rows: [atoms("32.88"), atoms("8.022")],
-            // Padding keeps >8px between the left scratch and the first digit
-            // so a price-matched left edge can drop the scratch without
-            // splitting "32.88" on the intra-digit gap.
-            padding: 48,
+            // Padding keeps the left scratch beyond the readingSpan join gap
+            // so the digit span starts on digit ink, not the scratch.
+            padding: 80,
             inkLevel: 30,
             backgroundLevel: 130,
             outerMargin: 200,
