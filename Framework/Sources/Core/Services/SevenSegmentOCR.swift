@@ -48,27 +48,44 @@ public enum SevenSegmentGlyph {
     ]
 
     /// Nil when the pattern is empty or two templates share the best distance.
-    fileprivate static func nearest(_ pattern: SevenSegmentPattern) -> (character: Character, distance: Int)? {
+    /// `preferMissing`: on a Hamming tie, prefer a template that only needs
+    /// missing segments (pattern ⊆ template) over one that needs clearing lit
+    /// bits — e.g. abcdeg ties 8 (missing f) and 3 (extra e); pick 8.
+    fileprivate static func nearest(
+        _ pattern: SevenSegmentPattern,
+        preferMissing: Bool = false
+    ) -> (character: Character, distance: Int)? {
         if pattern.rawValue == 0 { return nil }
         var bestDistance = Int.max
-        var winner: (Character, Int)?
-        var tied = false
+        var winner: (Character, Int, Bool)?
         for template in templates {
             let distance = (template.1 ^ pattern.rawValue).nonzeroBitCount
+            let extras = pattern.rawValue & ~template.1
+            let missingOnly = extras == 0
             if distance < bestDistance {
                 bestDistance = distance
-                winner = (template.0, distance)
-                tied = false
+                winner = (template.0, distance, missingOnly)
             } else if distance == bestDistance {
-                tied = true
+                guard let current = winner else { continue }
+                if preferMissing, missingOnly, !current.2 {
+                    winner = (template.0, distance, true)
+                } else if preferMissing, missingOnly == current.2 {
+                    winner = nil
+                } else if !preferMissing {
+                    winner = nil
+                }
             }
         }
-        return tied ? nil : winner
+        guard let found = winner else { return nil }
+        return (found.0, found.1)
     }
 
-    fileprivate static func match(_ pattern: SevenSegmentPattern) -> (character: Character, confidence: Float)? {
+    fileprivate static func match(
+        _ pattern: SevenSegmentPattern,
+        preferMissing: Bool = false
+    ) -> (character: Character, confidence: Float)? {
         if pattern.rawValue == 0 { return nil }
-        guard let found = nearest(pattern) else { return ("_", 0) }
+        guard let found = nearest(pattern, preferMissing: preferMissing) else { return ("_", 0) }
         if found.distance == 0 { return (found.character, 1) }
         return (found.character, Float(7 - found.distance) / 7)
     }
@@ -522,9 +539,47 @@ private struct GrayBuffer {
             digitWidth: digitWidth,
             forceDigitTall: washAwareStems
         )
-        let pattern = sample(mask, box: trimmed, width: width, washAwareStems: washAwareStems)
-        guard let glyph = SevenSegmentGlyph.match(pattern) else { return nil }
+        let trimmedPattern = sample(mask, box: trimmed, width: width, washAwareStems: washAwareStems)
+        // Pitch volume: Y-trim can clip `c` and mint an exact 2 while the
+        // untrimmed box is abcdeg (one f from 8). Prefer a near-8 that still
+        // has `c` over that false exact 2.
+        let pattern: SevenSegmentPattern
+        if washAwareStems {
+            let fullPattern = sample(
+                mask, box: sampledBox, width: width, washAwareStems: washAwareStems
+            )
+            pattern = preferWashAwarePattern(trimmedPattern, fullPattern)
+        } else {
+            pattern = trimmedPattern
+        }
+        guard let glyph = SevenSegmentGlyph.match(pattern, preferMissing: washAwareStems) else {
+            return nil
+        }
         return Cell(box: box, character: glyph.character, confidence: glyph.confidence, band: bandIndex)
+    }
+
+    /// Prefer a near-8 that still has the right stem over an exact 2 from a
+    /// Y-trim that clipped `c`. Otherwise keep the denser-band pattern.
+    private static func preferWashAwarePattern(
+        _ trimmed: SevenSegmentPattern,
+        _ full: SevenSegmentPattern
+    ) -> SevenSegmentPattern {
+        func nearEightWithC(_ pattern: SevenSegmentPattern) -> Bool {
+            guard pattern.contains(.c) else { return false }
+            guard let found = SevenSegmentGlyph.nearest(pattern, preferMissing: true) else {
+                return false
+            }
+            return found.character == "8" && found.distance <= 1
+        }
+        func exactTwoWithoutC(_ pattern: SevenSegmentPattern) -> Bool {
+            !pattern.contains(.c)
+                && SevenSegmentGlyph.nearest(pattern)?.distance == 0
+                && SevenSegmentGlyph.nearest(pattern)?.character == "2"
+        }
+        if nearEightWithC(full), exactTwoWithoutC(trimmed) { return full }
+        if nearEightWithC(trimmed) { return trimmed }
+        if nearEightWithC(full) { return full }
+        return trimmed
     }
 
     /// Six scanlines, as ssocr does. The center column is split into thirds
