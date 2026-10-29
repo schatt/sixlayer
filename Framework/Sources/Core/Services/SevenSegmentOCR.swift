@@ -1814,36 +1814,79 @@ private func columnRuns(
             stride: max(max(1, $0.body), $0.stride)
         )
     }
-    // When pitch-driving: only union into one field when runs look wash-fused
-    // (a blob wider than ~1.5 body, or gaps between wide runs under body/10).
-    // Clean synthetic digits keep ~body/6 gaps (intra=8 on body≈50); body/3
-    // falsely fused those and re-packed edgeStrip into 8_22. Wash bridges on
-    // the photo are a few pixels. Without preferred pitch, valley.
+    // When pitch-driving: cluster wide runs that are wash-bridged (gap under
+    // body/10). A wide blob must not union across a real inter-digit gap
+    // later in the row (photo 555→593 is ~38px — that is not wash). Clean
+    // synthetics keep ~body/6 gaps so each digit stays its own cluster.
+    // Without preferred pitch, valley.
     let spans: [(Int, Int)]
+    var pitchBySpan: [String: PreferredDigitPitch] = [:]
     if let pitch = copied {
         let wideEnough = raw.filter { $0.1 - $0.0 > pitch.body / 2 }
-        let hasWideBlob = wideEnough.contains { $0.1 - $0.0 > pitch.body + pitch.body / 2 }
-        let gaps = zip(wideEnough, wideEnough.dropFirst()).map { $1.0 - $0.1 }
         let bridgeLimit = max(2, pitch.body / 10)
-        let bridged = gaps.contains { $0 >= 0 && $0 < bridgeLimit }
-        if (hasWideBlob || bridged),
-           let first = wideEnough.first,
-           let last = wideEnough.last {
-            spans = [(first.0, last.1)]
-        } else if let first = wideEnough.first, let last = wideEnough.last {
-            // Keep narrow in-field runs (decimals); drop leading/trailing stems.
-            spans = raw.filter { span in
-                if span.1 - span.0 > pitch.body / 2 { return true }
-                return span.0 >= first.0 && span.1 <= last.1
+        var clusters: [[(Int, Int)]] = []
+        for run in wideEnough {
+            if var last = clusters.last, let prev = last.last,
+               run.0 - prev.1 >= 0, run.0 - prev.1 < bridgeLimit {
+                last.append(run)
+                clusters[clusters.count - 1] = last
+            } else {
+                clusters.append([run])
             }
+        }
+        if clusters.isEmpty {
+            spans = raw
         } else {
-            spans = wideEnough.isEmpty ? raw : wideEnough
+            // Distribute price-row digit count across clusters by ink width.
+            let widths = clusters.map { cluster -> Int in
+                guard let first = cluster.first, let last = cluster.last else { return 0 }
+                return last.1 - first.0
+            }
+            let totalWidth = max(1, widths.reduce(0, +))
+            var remaining = max(2, pitch.count)
+            var built: [(Int, Int)] = []
+            for (index, cluster) in clusters.enumerated() {
+                guard let first = cluster.first, let last = cluster.last else { continue }
+                let field = (first.0, last.1)
+                let share: Int
+                if index == clusters.count - 1 {
+                    share = max(1, remaining)
+                } else {
+                    let nominal = max(
+                        1,
+                        Int((Double(widths[index]) / Double(totalWidth) * Double(pitch.count)).rounded())
+                    )
+                    share = min(remaining - (clusters.count - 1 - index), max(1, nominal))
+                }
+                remaining -= share
+                built.append(field)
+                if share >= 2 || field.1 - field.0 > pitch.body + pitch.body / 4 {
+                    pitchBySpan["\(field.0):\(field.1)"] = PreferredDigitPitch(
+                        body: pitch.body,
+                        count: max(2, share),
+                        stride: pitch.stride
+                    )
+                }
+            }
+            // Narrow in-field decimals between the overall first and last.
+            if let overallFirst = wideEnough.first, let overallLast = wideEnough.last {
+                let extras = raw.filter { span in
+                    let wide = span.1 - span.0 > pitch.body / 2
+                    if wide { return false }
+                    return span.0 >= overallFirst.0 && span.1 <= overallLast.1
+                        && !built.contains { span.0 >= $0.0 && span.1 <= $0.1 }
+                }
+                spans = (built + extras).sorted { $0.0 < $1.0 }
+            } else {
+                spans = built
+            }
         }
         if width >= 400 {
             let listed = raw.map { "\($0.0)-\($0.1)" }.joined(separator: ",")
             let field = spans.map { "\($0.0)-\($0.1)" }.joined(separator: ",")
+            let shares = pitchBySpan.map { "\($0.key)x\($0.value.count)" }.sorted().joined(separator: ",")
             trace(
-                "pitch field raw[\(listed)] → [\(field)] body\(pitch.body)x\(pitch.count) fused=\(hasWideBlob || bridged)\n"
+                "pitch clusters raw[\(listed)] → [\(field)] body\(pitch.body) shares[\(shares)]\n"
             )
         }
     } else {
@@ -1856,11 +1899,18 @@ private func columnRuns(
         // that one glyph at the crossbar. Two digits side by side are wider
         // than the band is tall — or wider than a copied price-row pitch.
         let widerThanADigit = spanWidth > bandHeight
-        let widerThanCopied = copied.map { spanWidth > $0.body + $0.body / 4 } ?? false
+        let localPitch = copied.flatMap { pitch in
+            pitchBySpan["\(span.0):\(span.1)"] ?? (
+                spanWidth > pitch.body + pitch.body / 4
+                    ? PreferredDigitPitch(body: pitch.body, count: max(2, pitch.count), stride: pitch.stride)
+                    : nil
+            )
+        }
+        let widerThanCopied = localPitch.map { spanWidth > $0.body + $0.body / 4 } ?? false
         guard widerThanADigit || widerThanCopied || (typical > 0 && spanWidth > typical * 2) else {
             return [span]
         }
-        if let pitch = copied {
+        if let pitch = localPitch {
             // Pitch owns the split. Floor/join would glue wash bridges.
             return splitAtExpectedPitch(span, sums: sums, pitch: pitch)
         }
