@@ -310,8 +310,17 @@ private struct GrayBuffer {
                 let cover = coverage(mask, box: box, width: buffer.width)
                 let name = cell.map { String($0.character) } ?? "drop"
                 let pitchNote = preferredPitch.map { " pitch \($0.body)x\($0.count)" } ?? ""
+                let bits = [
+                    pattern.contains(.a) ? "a" : "",
+                    pattern.contains(.b) ? "b" : "",
+                    pattern.contains(.c) ? "c" : "",
+                    pattern.contains(.d) ? "d" : "",
+                    pattern.contains(.e) ? "e" : "",
+                    pattern.contains(.f) ? "f" : "",
+                    pattern.contains(.g) ? "g" : ""
+                ].joined()
                 trace(
-                    "cell \(name) box \(box.minX),\(box.minY) \(box.width)x\(box.height) pat \(pattern.rawValue) cov \(cover) h \(digitHeight)\(pitchNote)\n"
+                    "cell \(name) box \(box.minX),\(box.minY) \(box.width)x\(box.height) pat \(pattern.rawValue) [\(bits)] cov \(cover) h \(digitHeight)\(pitchNote)\n"
                 )
             }
             return cell
@@ -1884,11 +1893,12 @@ private func columnRuns(
 /// Place `count` body-wide windows across a fused span. Pack from the right:
 /// pump volume/price digits sit on the right of washed leading junk, and a
 /// digit-hollow "decimal" column is not trustworthy for left/right splits.
-/// Baseline dots still own the mark. Windows are inset so a solid wash
-/// bridge on the glyph edge cannot mint stems. Not ink valleys.
+/// Each nominal window then snaps sideways onto the strongest stem-like
+/// column profile in a ±body/4 neighborhood so sampling hits real glyphs
+/// instead of wash. Baseline dots still own the mark.
 private func splitAtExpectedPitch(
     _ span: (Int, Int),
-    sums _: [Int],
+    sums: [Int],
     pitch: PreferredDigitPitch
 ) -> [(Int, Int)] {
     let body = max(1, pitch.body)
@@ -1901,6 +1911,34 @@ private func splitAtExpectedPitch(
         let end = min(span.1, x + body - inset)
         guard end - start >= max(2, body / 5) else { return nil }
         return (start, end)
+    }
+    /// Left+right third peaks (stems) minus a flat mid — wash is flat; digits
+    /// keep stem energy even when the gap is filled.
+    func stemScore(from x: Int) -> Int {
+        let end = min(span.1, x + body)
+        guard end - x >= max(2, body / 5) else { return -1 }
+        let third = max(1, (end - x) / 3)
+        let left = (x..<x + third).map { sums[$0] }.max() ?? 0
+        let mid = (x + third..<x + 2 * third).map { sums[$0] }.max() ?? 0
+        let right = (x + 2 * third..<end).map { sums[$0] }.max() ?? 0
+        return left + right - mid / 2
+    }
+    func snap(_ proposed: Int) -> Int {
+        let lo = max(span.0, proposed - body / 4)
+        let hi = min(span.1 - body, proposed + body / 4)
+        guard hi >= lo else { return proposed }
+        var bestX = proposed
+        var best = stemScore(from: proposed)
+        var x = lo
+        while x <= hi {
+            let score = stemScore(from: x)
+            if score > best {
+                best = score
+                bestX = x
+            }
+            x += 1
+        }
+        return bestX
     }
     // Prefer a tight body step over price center-spacing: wash fills the
     // inter-digit gaps, so the copied stride overshoots the fused field.
@@ -1917,13 +1955,21 @@ private func splitAtExpectedPitch(
     var starts: [Int] = []
     var x = span.1 - body
     for _ in 0..<count {
-        starts.append(max(span.0, x))
+        starts.append(max(span.0, snap(x)))
         x -= step
     }
-    let pieces = starts.reversed().compactMap { window(at: $0) }
+    // Keep left-to-right order and avoid overlapping snaps stealing a neighbor.
+    var ordered = starts.sorted()
+    for i in 1..<ordered.count {
+        if ordered[i] < ordered[i - 1] + body * 3 / 4 {
+            ordered[i] = ordered[i - 1] + max(step, body * 3 / 4)
+        }
+    }
+    let pieces = ordered.compactMap { window(at: $0) }
     if width >= 400 {
         let listed = pieces.map { "\($0.0)-\($0.1)" }.joined(separator: ",")
-        trace("pitch right step\(step) [\(listed)]\n")
+        let scores = ordered.map { stemScore(from: $0) }
+        trace("pitch right step\(step) snap[\(listed)] stem\(scores)\n")
     }
     return pieces.count >= 2 ? pieces : (pieces.isEmpty ? [span] : pieces)
 }
