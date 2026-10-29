@@ -1331,7 +1331,9 @@ private func priceMatchedLeft(
     // Do not jump a short gap into a thin left scratch — that gap is only a
     // few pixels, shorter than the inter-digit pitch.
     let shortGap = max(8, (y1 - y0) / 10)
-    let scratchCap = max(24, (y1 - y0) / 2)
+    // A left scratch is a thin strip; a leading digit cell is wider (~50px
+    // in the fixtures). Keep this below one glyph so a digit is never peeled.
+    let scratchCap = max(16, min(40, (y1 - y0) / 8))
     var lo = bestStart
     while lo > sharedLeft {
         if columnInk[lo - 1] >= floor {
