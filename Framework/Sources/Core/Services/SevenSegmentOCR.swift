@@ -291,6 +291,10 @@ private struct GrayBuffer {
                 maxY: box.maxY
             )
         }
+        // Pitch-driven volume rows have solid wash bridges. Left-half stem
+        // scans light false `f` on that fringe (pat 123 → 2/8 tie). Gate the
+        // tighter stem sample on preferredPitch so clean price rows stay put.
+        let washAwareStems = preferredPitch != nil
         let classified = capped.compactMap { box -> Cell? in
             let cell = classify(
                 box,
@@ -302,11 +306,23 @@ private struct GrayBuffer {
                 frameTop: frameTop,
                 bandIndex: bandIndex,
                 buffer: buffer,
-                darkInk: darkInk
+                darkInk: darkInk,
+                washAwareStems: washAwareStems
             )
             // Volume rowcrops are ~980px; keep traces on those for #591.
             if buffer.width >= 900 {
-                let pattern = sample(mask, box: box, width: buffer.width)
+                let pattern = sample(
+                    mask,
+                    box: densestInkBand(
+                        mask,
+                        box: box,
+                        width: buffer.width,
+                        digitWidth: digitWidth,
+                        forceDigitTall: washAwareStems
+                    ),
+                    width: buffer.width,
+                    washAwareStems: washAwareStems
+                )
                 let cover = coverage(mask, box: box, width: buffer.width)
                 let name = cell.map { String($0.character) } ?? "drop"
                 let pitchNote = preferredPitch.map { " pitch \($0.body)x\($0.count)" } ?? ""
@@ -426,7 +442,8 @@ private struct GrayBuffer {
         frameTop: Int,
         bandIndex: Int,
         buffer: GrayBuffer,
-        darkInk: Bool
+        darkInk: Bool,
+        washAwareStems: Bool = false
     ) -> Cell? {
         let vertical = verticalRuns(mask, box: box, width: width)
         let splitGap = vertical.count == 2 ? vertical[1].0 - vertical[0].1 : 0
@@ -460,7 +477,8 @@ private struct GrayBuffer {
                     frameTop: frameTop,
                     bandIndex: bandIndex,
                     buffer: buffer,
-                    darkInk: darkInk
+                    darkInk: darkInk,
+                    washAwareStems: washAwareStems
                 )
             }
         }
@@ -497,16 +515,14 @@ private struct GrayBuffer {
         // Glare above the top bar stretches the box. Upper stem scans then sit
         // in that fringe and light a/f. A digit-tall ink band keeps the scan
         // on the glyph the way a tight price-row crop already does.
-        let pattern = sample(
+        let trimmed = densestInkBand(
             mask,
-            box: densestInkBand(
-                mask,
-                box: sampledBox,
-                width: width,
-                digitWidth: digitWidth
-            ),
-            width: width
+            box: sampledBox,
+            width: width,
+            digitWidth: digitWidth,
+            forceDigitTall: washAwareStems
         )
+        let pattern = sample(mask, box: trimmed, width: width, washAwareStems: washAwareStems)
         guard let glyph = SevenSegmentGlyph.match(pattern) else { return nil }
         return Cell(box: box, character: glyph.character, confidence: glyph.confidence, band: bandIndex)
     }
@@ -515,7 +531,16 @@ private struct GrayBuffer {
     /// for the top, middle, and bottom bars. Lines a quarter down from the
     /// top and a quarter up from the bottom are split into halves for the
     /// stems. One foreground pixel lights a segment.
-    private static func sample(_ mask: Mask, box: PixelBox, width: Int) -> SevenSegmentPattern {
+    ///
+    /// `washAwareStems`: skip the outer left fringe on f/e scans so a solid
+    /// wash bridge beside the glyph cannot mint a false upper/lower-left stem.
+    /// Does not invent ink on the right (c/b).
+    private static func sample(
+        _ mask: Mask,
+        box: PixelBox,
+        width: Int,
+        washAwareStems: Bool = false
+    ) -> SevenSegmentPattern {
         let boxWidth = box.width
         let boxHeight = box.height
         guard boxWidth > 1, boxHeight > 2, width > 0 else { return [] }
@@ -536,13 +561,18 @@ private struct GrayBuffer {
         let threeQuarters = box.minY + (boxHeight * 3) / 4
         let half = boxWidth / 2
         let right = max(1, box.maxX - (midX + 1))
-        if foregroundCount(mask, x: box.minX, y: quarter, length: half, vertical: false) > 0 {
+        // Wash bridges sit on the left of a pitch window. Start f/e past that
+        // fringe; a real left stem still lives near the inner left third.
+        let leftFringe = washAwareStems ? max(1, boxWidth / 6) : 0
+        let leftStem = box.minX + leftFringe
+        let leftSpan = max(1, half - leftFringe)
+        if foregroundCount(mask, x: leftStem, y: quarter, length: leftSpan, vertical: false) > 0 {
             pattern.formUnion(.f)
         }
         if foregroundCount(mask, x: midX + 1, y: quarter, length: right, vertical: false) > 0 {
             pattern.formUnion(.b)
         }
-        if foregroundCount(mask, x: box.minX, y: threeQuarters, length: half, vertical: false) > 0 {
+        if foregroundCount(mask, x: leftStem, y: threeQuarters, length: leftSpan, vertical: false) > 0 {
             pattern.formUnion(.e)
         }
         if foregroundCount(mask, x: midX + 1, y: threeQuarters, length: right, vertical: false) > 0 {
@@ -2212,11 +2242,16 @@ private func rowInkSums(_ mask: Mask, x0: Int, x1: Int, y0: Int, y1: Int) -> (lo
 /// then keep the lower digit-tall slice. Boxes that already fit a digit are
 /// left alone — shrinking them clips the top bar. A stem fills its narrow box
 /// and is never treated as a glare cap.
+///
+/// `forceDigitTall`: pitch-driven volume boxes are often under 2× width yet
+/// still carry wash above the glyph; still snap to the top bar / lower slice
+/// so upper stem scans are not in the fringe.
 private func densestInkBand(
     _ mask: Mask,
     box: PixelBox,
     width: Int,
-    digitWidth: Int
+    digitWidth: Int,
+    forceDigitTall: Bool = false
 ) -> PixelBox {
     let profile = rowInkSums(mask, x0: box.minX, x1: box.maxX, y0: box.minY, y1: box.maxY)
     let sums = profile.sums
@@ -2233,8 +2268,9 @@ private func densestInkBand(
     let earlyCap = narrow ? max(ownCap, digitWidth * 2) : ownCap
     let slack = max(4, earlyCap / 12)
     // Price-like boxes are left alone. Snapping every wide glyph to a "top
-    // bar" misreads the mid-row glare fixture as a colon.
-    if height <= earlyCap + slack {
+    // bar" misreads the mid-row glare fixture as a colon. Pitch volume rows
+    // opt in via forceDigitTall even when already under the aspect cap.
+    if !forceDigitTall, height <= earlyCap + slack {
         return box
     }
     var start = 0
