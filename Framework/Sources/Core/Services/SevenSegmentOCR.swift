@@ -1327,39 +1327,46 @@ private func priceMatchedLeftByDenseWindow(
         }
         columnInk[x] = ink
     }
-    // Score only non-solid ink. A left glare blob that fills most of the
-    // band must not outrank the digit field; fully solid columns contribute
-    // nothing. Prefer the rightmost best window so a wide span that covers
-    // the digits from many starts settles on digit ink, not the blob.
-    let solidFloor = bandHeight * 4 / 5
-    let speckFloor = max(2, bandHeight / 16)
-    let window = max(48, min(spanWidth - 24, spanWidth * 2 / 3))
+    // Count digit-stem columns (ink with segment cavities). Fat glare fills
+    // and empty haze score zero, so a washed volume row's left blob cannot
+    // outrank the thinner digit field. Window width tracks a price-like
+    // digit run (~2.5× band height), not most of the washed span.
+    let solidFloor = bandHeight * 7 / 10
+    let speckFloor = max(2, bandHeight / 12)
+    let window = max(48, min(spanWidth - 24, max(spanWidth / 2, bandHeight * 5 / 2)))
     guard window + 24 < spanWidth else { return sharedLeft }
-    var bestStart = sharedLeft
+    func stemColumn(_ ink: Int) -> Bool {
+        ink >= speckFloor && ink < solidFloor
+    }
+    // Peel a leading weak prefix before the sliding search.
+    var origin = sharedLeft
+    let probe = min(48, window / 4)
+    while origin + window < sharedRight {
+        var stems = 0
+        for x in origin..<(origin + probe) where stemColumn(columnInk[x]) {
+            stems += 1
+        }
+        if stems * 4 >= probe { break }
+        origin += 1
+    }
+    var bestStart = origin
     var bestScore = Int.min
     let lastStart = sharedRight - window
-    var start = sharedLeft
+    var start = origin
     while start <= lastStart {
         var score = 0
-        for x in start..<(start + window) {
-            let ink = columnInk[x]
-            if ink >= speckFloor, ink < solidFloor {
-                score += ink
-            }
+        for x in start..<(start + window) where stemColumn(columnInk[x]) {
+            score += 1
         }
-        if score > bestScore || (score == bestScore && start > bestStart) {
+        if score > bestScore {
             bestScore = score
             bestStart = start
         }
         start += 1
     }
-    guard bestStart > sharedLeft + 16, bestScore > speckFloor * 8 else { return sharedLeft }
-    let peak = (bestStart..<(bestStart + window)).map { columnInk[$0] }.max() ?? 0
-    let floor = max(1, peak / 5)
+    guard bestStart > sharedLeft + 16, bestScore > 8 else { return sharedLeft }
     var lo = bestStart
-    while lo > sharedLeft, columnInk[lo - 1] >= floor {
-        // Do not walk back into a solid blob fringe.
-        if columnInk[lo - 1] >= solidFloor { break }
+    while lo > sharedLeft, stemColumn(columnInk[lo - 1]) {
         lo -= 1
     }
     return lo
