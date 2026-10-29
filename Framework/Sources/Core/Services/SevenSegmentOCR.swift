@@ -397,8 +397,6 @@ private struct GrayBuffer {
            vertical.allSatisfy({ $0.1 - $0.0 < digitHeight * 30 / 100 }) {
             return Cell(box: box, character: ":", confidence: 1, band: bandIndex)
         }
-        let stemAspect = box.width * 4 < box.height
-        let thinSplit = vertical.count == 2 && splitGap < shorterRun
         // Glare lifts the glass on both sides of its band. Those short bands
         // share the decimal's columns, so the three reads as one unknown.
         // A colon's dots are the same height and stay one mark.
@@ -425,10 +423,14 @@ private struct GrayBuffer {
             }
         }
         // ssocr: a box narrower than a quarter of its height is a one.
-        // A thin mid-glare slit leaves two tall runs — still a one.
+        // A mid-glare slit can leave two stem-tall runs with a colon-sized
+        // gap; those already failed the short-dot colon check above.
+        let thinSplit = vertical.count == 2 && splitGap < shorterRun
+        let glareSplitStem = vertical.count == 2
+            && vertical.contains { $0.1 - $0.0 >= digitHeight * 30 / 100 }
         if box.height * 100 >= digitHeight * 55,
-           stemAspect,
-           vertical.count <= 1 || thinSplit || vertical.count == 2 {
+           box.width * 4 < box.height,
+           vertical.count == 1 || thinSplit || glareSplitStem {
             return Cell(box: box, character: "1", confidence: 1, band: bandIndex)
         }
         if box.height * 100 >= digitHeight * 50,
@@ -1281,9 +1283,10 @@ private func priceMatchedBand(_ sums: [Int], in band: (Int, Int), targetHeight: 
     return (bestStart, bestStart + targetHeight)
 }
 
-/// Raise the left crop edge to the densest digit run, walking left across
-/// short inter-digit gaps so a right-hand strip cannot clip a leading glyph.
-/// Only keep that raise when a longer valley separates a left scratch.
+/// Raise the left crop edge to the densest digit run. Walk left across digit
+/// ink and short gaps; keep the raise only when the peeled prefix is a thin
+/// left scratch (not a leading digit clipped because a right strip pulled the
+/// densest window).
 private func priceMatchedLeft(
     _ mask: Mask,
     band: (Int, Int),
@@ -1324,7 +1327,8 @@ private func priceMatchedLeft(
     guard bestStart > sharedLeft + 16 else { return sharedLeft }
     let peak = (bestStart..<(bestStart + window)).map { columnInk[$0] }.max() ?? 0
     let floor = max(1, peak / 5)
-    // Walk left across digit ink and short gaps; stop before a scratch valley.
+    // Jump gaps up to a digit pitch so inter-digit space does not stop the walk.
+    let shortGap = max(8, (y1 - y0) / 10)
     var lo = bestStart
     while lo > sharedLeft {
         if columnInk[lo - 1] >= floor {
@@ -1335,16 +1339,18 @@ private func priceMatchedLeft(
         while gapStart > sharedLeft, columnInk[gapStart - 1] < floor {
             gapStart -= 1
         }
-        let gap = lo - gapStart
-        // Inter-digit gaps are small; a left scratch leaves a wider valley.
-        if gap > 4 {
-            let scratchInk = (sharedLeft..<gapStart).reduce(0) { $0 + columnInk[$1] }
-            guard scratchInk > 0, gapStart > sharedLeft else { return sharedLeft }
-            return lo
+        if lo - gapStart > shortGap {
+            break
         }
         lo = gapStart
     }
-    return sharedLeft
+    let peeled = lo - sharedLeft
+    // A left scratch is a thin strip; a clipped leading digit peels much more.
+    let scratchCap = max(24, (y1 - y0) / 2)
+    guard peeled > 8, peeled <= scratchCap else { return sharedLeft }
+    let scratchInk = (sharedLeft..<lo).reduce(0) { $0 + columnInk[$1] }
+    guard scratchInk > 0 else { return sharedLeft }
+    return lo
 }
 
 /// Two digit rows joined by scratches. The valley has to sit between two
