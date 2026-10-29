@@ -938,24 +938,38 @@ private extension GrayBuffer {
             var windowNarrows = true
             var rescanned: [[Cell]] = []
             let rowProfile = glyphs.rowSums
-            // A known-good single-row price crop is ~380px (window radius 11).
-            let priceBandHeight = 96 + 11 * 24
+            // Known-good price crop is 380px tall. Reach into the row gap so
+            // each window can sit on a price-like Y (top drops haze; bottom
+            // borrows gap above when the buffer is short below).
+            let priceBandHeight = 380
+            let gapPad = max(24, priceBandHeight / 8)
             for band in splitBands {
-                let tight = priceMatchedBand(rowProfile, in: band, targetHeight: priceBandHeight)
-                let y0 = max(0, tight.0 - 4)
-                let y1 = min(buffer.height, tight.1 + 4)
+                let expanded = (
+                    max(0, band.0 - gapPad),
+                    min(buffer.height, band.1 + gapPad)
+                )
+                let tight = priceMatchedBand(
+                    rowProfile,
+                    in: expanded,
+                    targetHeight: priceBandHeight
+                )
+                let y0 = tight.0
+                let y1 = tight.1
                 let sharedLeft = span?.0 ?? 0
                 let sharedRight = span?.1 ?? buffer.width
+                // Left edge scores digit stems in the ink band, not the gap
+                // pad that the Y window may borrow above/below.
+                let leftBand = (
+                    max(band.0, tight.0),
+                    min(band.1, tight.1)
+                )
                 let left = priceMatchedLeft(
                     glyphs,
-                    band: tight,
+                    band: leftBand.1 > leftBand.0 ? leftBand : band,
                     sharedLeft: sharedLeft,
                     sharedRight: sharedRight
                 )
-                // A peeled left edge already sits on digit ink; padding back
-                // by a full stem would re-include the left scratch we dropped.
-                let leftPad = left > sharedLeft + 8 ? 2 : 8
-                let x0 = max(0, left - leftPad)
+                let x0 = max(0, left - 8)
                 let x1 = min(buffer.width, sharedRight + 8)
                 let crop = buffer.cropped(x0: x0, y0: y0, x1: x1, y1: y1)
                 guard crop.width > 8, crop.height > 8 else {
@@ -1238,7 +1252,9 @@ private func readingSpan(_ mask: Mask, bands: [(Int, Int)]) -> (Int, Int)? {
     }
     let active = keep.indices.filter { keep[$0] }
     guard let first = active.first else { return nil }
-    let gapLimit = max(8, height / 15)
+    // Keep digits across the intra-digit gap (8px). Do not jump a left
+    // scratch that sits farther away on a tall outer-margin crop.
+    let gapLimit = max(8, min(16, height / 40))
     var runs: [(start: Int, end: Int, ink: Int)] = []
     var start = first
     var end = first
@@ -1263,7 +1279,9 @@ private func readingSpan(_ mask: Mask, bands: [(Int, Int)]) -> (Int, Int)? {
 }
 
 /// When a row band is taller than a price crop, keep the densest window of
-/// that height. Synthetic digit bands are already short — leave them alone.
+/// that height. Prefer a lower start among near-ties so top haze is dropped
+/// and the crop lines up with a known-good price Y. Synthetic digit bands
+/// that are already short are left alone.
 private func priceMatchedBand(_ sums: [Int], in band: (Int, Int), targetHeight: Int) -> (Int, Int) {
     let y0 = max(0, band.0)
     let y1 = min(sums.count, band.1)
@@ -1284,13 +1302,47 @@ private func priceMatchedBand(_ sums: [Int], in band: (Int, Int), targetHeight: 
         }
         start += 1
     }
+    // Drop a little top haze. 5% overshoots into the gap (32.89); 1% leaves
+    // the broken 3_.88 Y. 3% lands on the known-good price crop Y.
+    let floorInk = bestInk * 97 / 100
+    start = bestStart
+    while start <= lastStart {
+        var ink = 0
+        for y in start..<(start + targetHeight) {
+            ink += sums[y]
+        }
+        if ink >= floorInk {
+            bestStart = start
+        }
+        start += 1
+    }
     return (bestStart, bestStart + targetHeight)
 }
 
-/// Raise the left crop edge past a thin left scratch. Scratch columns fill
-/// most of the band height; digit strokes do not. Tall haze can bridge the
-/// scratch-to-digit gap, so density — not a valley — marks the scratch.
 private func priceMatchedLeft(
+    _ mask: Mask,
+    band: (Int, Int),
+    sharedLeft: Int,
+    sharedRight: Int
+) -> Int {
+    let spanWidth = sharedRight - sharedLeft
+    if spanWidth > 800 {
+        return priceMatchedLeftByDenseWindow(
+            mask,
+            band: band,
+            sharedLeft: sharedLeft,
+            sharedRight: sharedRight
+        )
+    }
+    return priceMatchedLeftByScratchPrefix(
+        mask,
+        band: band,
+        sharedLeft: sharedLeft,
+        sharedRight: sharedRight
+    )
+}
+
+private func priceMatchedLeftByDenseWindow(
     _ mask: Mask,
     band: (Int, Int),
     sharedLeft: Int,
@@ -1299,8 +1351,9 @@ private func priceMatchedLeft(
     let width = mask.width
     let y0 = max(0, band.0)
     let y1 = min(mask.height, band.1)
-    let bandHeight = y1 - y0
-    guard width > 0, bandHeight > 0, sharedRight > sharedLeft + 24 else { return sharedLeft }
+    let spanWidth = sharedRight - sharedLeft
+    let bandHeight = max(1, y1 - y0)
+    guard width > 0, y1 > y0, spanWidth > 48 else { return sharedLeft }
     var columnInk = [Int](repeating: 0, count: width)
     for x in sharedLeft..<min(width, sharedRight) {
         var ink = 0
@@ -1309,27 +1362,111 @@ private func priceMatchedLeft(
         }
         columnInk[x] = ink
     }
-    // A left scratch fills most of the band; digit strokes cover much less.
-    // Use half-band so a price-matched window still sees the scratch as solid.
-    let solid = max(4, bandHeight / 2)
-    let scratchCap = max(16, min(40, bandHeight / 8))
-    var x = sharedLeft
-    // Skip leading empty padding.
-    while x < sharedRight, columnInk[x] == 0 { x += 1 }
-    let scratchStart = x
-    while x < sharedRight, x - scratchStart <= scratchCap, columnInk[x] >= solid {
-        x += 1
+    // Thresholds are relative to the band's peak column. A left glare blob
+    // often *is* the peak; digit stems sit well below it. Penalize near-peak
+    // fills so the digit field wins. Window ~ price digit run width.
+    let peak = (sharedLeft..<min(width, sharedRight)).map { columnInk[$0] }.max() ?? 0
+    let speckFloor = max(2, bandHeight / 12)
+    let solidFloor = max(speckFloor + 1, peak * 4 / 5)
+    let stemHi = max(speckFloor + 1, peak * 11 / 20)
+    let window = max(48, min(spanWidth - 24, max(spanWidth / 2, bandHeight * 5 / 2)))
+    guard window + 24 < spanWidth, peak >= speckFloor else { return sharedLeft }
+    func stemColumn(_ ink: Int) -> Bool {
+        ink >= speckFloor && ink < stemHi
     }
-    let scratchEnd = x
-    let peeled = scratchEnd - sharedLeft
-    guard peeled > 4, peeled <= scratchCap + 8, scratchEnd > scratchStart else {
-        return sharedLeft
+    var bestStart = sharedLeft
+    var bestScore = Int.min
+    let lastStart = sharedRight - window
+    let lead = min(64, max(24, window / 8))
+    var start = sharedLeft
+    while start <= lastStart {
+        var leadStems = 0
+        for x in start..<(start + lead) where stemColumn(columnInk[x]) {
+            leadStems += 1
+        }
+        // Crop must open on digit ink, not empty margin or glare.
+        if leadStems * 4 < lead {
+            start += 1
+            continue
+        }
+        var stems = 0
+        var fat = 0
+        for x in start..<(start + window) {
+            let ink = columnInk[x]
+            if ink >= solidFloor {
+                fat += 1
+            } else if stemColumn(ink) {
+                stems += 1
+            }
+        }
+        let score = stems - fat * 3
+        if score > bestScore {
+            bestScore = score
+            bestStart = start
+        }
+        start += 1
     }
-    // Require digit ink after the scratch so we do not peel an empty crop.
-    while x < sharedRight, columnInk[x] < max(1, solid / 4) { x += 1 }
-    guard x < sharedRight, columnInk[x] > 0 else { return sharedLeft }
-    return scratchEnd
+    guard bestStart > sharedLeft + 16, bestScore > 8 else { return sharedLeft }
+    var lo = bestStart
+    while lo > sharedLeft, stemColumn(columnInk[lo - 1]) {
+        lo -= 1
+    }
+    // Price crops keep a short empty margin before the first stem.
+    let margin = min(48, lo - sharedLeft)
+    return lo - margin
 }
+
+private func priceMatchedLeftByScratchPrefix(
+    _ mask: Mask,
+    band: (Int, Int),
+    sharedLeft: Int,
+    sharedRight: Int
+) -> Int {
+    let width = mask.width
+    let y0 = max(0, band.0)
+    let y1 = min(mask.height, band.1)
+    guard width > 0, y1 > y0, sharedRight > sharedLeft + 24 else { return sharedLeft }
+    var columnInk = [Int](repeating: 0, count: width)
+    for x in sharedLeft..<min(width, sharedRight) {
+        var ink = 0
+        for y in y0..<y1 where mask.bits[y * width + x] {
+            ink += 1
+        }
+        columnInk[x] = ink
+    }
+    // Ignore haze specks: a digit stem covers a real fraction of the band.
+    let minCol = max(2, (y1 - y0) / 8)
+    let active = (sharedLeft..<min(width, sharedRight)).filter { columnInk[$0] >= minCol }
+    guard active.count > 16 else { return sharedLeft }
+    let totalInk = active.reduce(0) { $0 + columnInk[$1] }
+    var dropped = 0
+    var droppedInk = 0
+    var index = 0
+    let dropLimit = max(12, (y1 - y0) / 10)
+    while index < active.count {
+        let remaining = active.count - index
+        let remainingInk = totalInk - droppedInk
+        let gapBefore = index > 0 ? active[index] - active[index - 1] : 0
+        // Intra-digit gaps are ≤8px; a left scratch sits farther left.
+        if index > 0,
+           gapBefore > 8,
+           remaining * 5 >= active.count * 4,
+           remainingInk * 5 >= totalInk * 4,
+           active[index] > sharedLeft + 8,
+           dropped * 4 <= remaining,
+           dropped <= dropLimit,
+           (active[index] - sharedLeft) * 4 <= (sharedRight - active[index]) {
+            return active[index]
+        }
+        dropped += 1
+        droppedInk += columnInk[active[index]]
+        index += 1
+        if dropped > dropLimit { break }
+    }
+    return sharedLeft
+}
+
+/// Two digit rows joined by scratches. The valley has to sit between two
 
 /// Two digit rows joined by scratches. The valley has to sit between two
 /// stretches that are each a full row; a cavity inside one digit does not.
