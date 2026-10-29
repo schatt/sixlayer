@@ -1178,6 +1178,9 @@ private func readingSpan(_ mask: Mask, bands: [(Int, Int)]) -> (Int, Int)? {
         return (top, bottom)
     }
     guard !valleys.isEmpty else { return nil }
+    // Score columns on each row's densest ink so tall haze above the digits
+    // cannot bridge a left scratch into the span.
+    let denseBands = bands.map { densestInkBand(mask.rowSums, in: $0) }
     var keep = [Bool](repeating: false, count: width)
     var edgeColumn = [Bool](repeating: false, count: width)
     var columnInk = [Int](repeating: 0, count: width)
@@ -1197,7 +1200,7 @@ private func readingSpan(_ mask: Mask, bands: [(Int, Int)]) -> (Int, Int)? {
             continue
         }
         var ink = 0
-        for band in bands {
+        for band in denseBands {
             let y0 = max(0, band.0)
             let y1 = min(height, band.1)
             for y in y0..<y1 where mask.bits[y * width + x] {
@@ -1230,8 +1233,8 @@ private func readingSpan(_ mask: Mask, bands: [(Int, Int)]) -> (Int, Int)? {
     }
     runs.append((start, end + 1, ink))
     guard let best = runs.max(by: { $0.ink < $1.ink }) else { return nil }
-    // A left scratch can join the digits across an empty gap. Peel a narrow
-    // leading island so the crop starts on digit ink, not the scratch.
+    // A left scratch can join the digits across an empty gap. Peel narrow
+    // leading islands so the crop starts on digit ink, not the scratch.
     let core = peelingLeadingScratch(
         active: active,
         columnInk: columnInk,
@@ -1240,15 +1243,9 @@ private func readingSpan(_ mask: Mask, bands: [(Int, Int)]) -> (Int, Int)? {
         height: height,
         joinGap: gapLimit
     )
-    let peak = (core.0..<core.1).map { columnInk[$0] }.max() ?? 0
-    let colFloor = max(1, peak / 4)
-    var lo = core.0
-    while lo < core.1, columnInk[lo] < colFloor { lo += 1 }
-    var hi = core.1
-    while hi > lo, columnInk[hi - 1] < colFloor { hi -= 1 }
-    let span = hi - lo
+    let span = core.1 - core.0
     guard span > max(12, height / 10) else { return nil }
-    return (lo, hi)
+    return core
 }
 
 /// Densest contiguous ink inside a row band. Sparse haze above washed digits
@@ -1315,16 +1312,19 @@ private func peelingLeadingScratch(
         }
     }
     islands.append((islandStart, islandEnd + 1, ink))
-    guard islands.count >= 2 else { return (start, end) }
-    let lead = islands[0]
-    let leadWidth = lead.end - lead.start
-    let restInk = islands.dropFirst().reduce(0) { $0 + $1.ink }
-    let restWidth = islands.last!.end - islands[1].start
-    let narrow = leadWidth * 4 <= max(restWidth, height / 8)
-    if narrow, restInk > lead.ink, restWidth > max(12, height / 10) {
-        return (islands[1].start, end)
+    var lo = start
+    var remaining = islands
+    while remaining.count >= 2 {
+        let lead = remaining[0]
+        let leadWidth = lead.end - lead.start
+        let restInk = remaining.dropFirst().reduce(0) { $0 + $1.ink }
+        let restWidth = remaining.last!.end - remaining[1].start
+        let narrow = leadWidth * 4 <= max(restWidth, height / 8)
+        guard narrow, restInk > lead.ink, restWidth > max(12, height / 10) else { break }
+        lo = remaining[1].start
+        remaining = Array(remaining.dropFirst())
     }
-    return (start, end)
+    return (lo, end)
 }
 
 /// Two digit rows joined by scratches. The valley has to sit between two
