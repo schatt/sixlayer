@@ -928,15 +928,8 @@ private extension GrayBuffer {
                 let tight = densestInkBand(rowProfile, in: band)
                 let y0 = max(0, tight.0 - 4)
                 let y1 = min(buffer.height, tight.1 + 4)
-                // Shared span still stops at a bezel edge. Raise the left
-                // edge only when this row's digit ink starts clearly later
-                // than the shared span (a left scratch island).
-                let sharedLeft = span?.0 ?? 0
-                let sharedRight = span?.1 ?? buffer.width
-                let rowLeft = rowReadingSpan(glyphs, band: tight)?.0 ?? sharedLeft
-                let left = rowLeft > sharedLeft + 16 ? rowLeft : sharedLeft
-                let x0 = max(0, left - 8)
-                let x1 = min(buffer.width, sharedRight + 8)
+                let x0 = max(0, (span?.0 ?? 0) - 8)
+                let x1 = min(buffer.width, (span?.1 ?? buffer.width) + 8)
                 let crop = buffer.cropped(x0: x0, y0: y0, x1: x1, y1: y1)
                 guard crop.width > 8, crop.height > 8 else {
                     windowNarrows = false
@@ -1250,16 +1243,19 @@ private func densestInkBand(_ sums: [Int], in band: (Int, Int)) -> (Int, Int) {
     guard y1 > y0 else { return band }
     let peak = (y0..<y1).map { sums[$0] }.max() ?? 0
     guard peak > 0 else { return band }
-    let floor = max(8, peak / 5)
+    // A digit row's own top/bottom strokes are weaker than the mid bars.
+    // Only treat near-empty rows as haze.
+    let floor = max(8, peak / 10)
     var lo = y0
     while lo < y1, sums[lo] < floor { lo += 1 }
     var hi = y1
     while hi > lo, sums[hi - 1] < floor { hi -= 1 }
     guard hi > lo else { return band }
-    // A clean row needs no trim. Only tighten when haze opened the band.
-    let denseHeight = hi - lo
+    let lead = lo - y0
+    let trail = y1 - hi
     let bandHeight = y1 - y0
-    guard denseHeight * 5 <= bandHeight * 4 else { return band }
+    // Only tighten when a real haze fringe is present.
+    guard lead + trail >= max(12, bandHeight / 8) else { return band }
     return (lo, hi)
 }
 
