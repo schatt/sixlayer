@@ -952,9 +952,15 @@ private extension GrayBuffer {
                 let y1 = tight.1
                 let sharedLeft = span?.0 ?? 0
                 let sharedRight = span?.1 ?? buffer.width
+                // Left edge scores digit stems in the ink band, not the gap
+                // pad that the Y window may borrow above/below.
+                let leftBand = (
+                    max(band.0, tight.0),
+                    min(band.1, tight.1)
+                )
                 let left = priceMatchedLeft(
                     glyphs,
-                    band: tight,
+                    band: leftBand.1 > leftBand.0 ? leftBand : band,
                     sharedLeft: sharedLeft,
                     sharedRight: sharedRight
                 )
