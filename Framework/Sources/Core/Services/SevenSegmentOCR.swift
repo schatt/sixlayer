@@ -1973,23 +1973,6 @@ private func splitAtExpectedPitch(
         let right = (x + 2 * third..<end).map { sums[$0] }.max() ?? 0
         return left + right - mid / 2
     }
-    func snap(_ proposed: Int) -> Int {
-        let lo = max(span.0, proposed - body / 4)
-        let hi = min(span.1 - body, proposed + body / 4)
-        guard hi >= lo else { return proposed }
-        var bestX = proposed
-        var best = stemScore(from: proposed)
-        var x = lo
-        while x <= hi {
-            let score = stemScore(from: x)
-            if score > best {
-                best = score
-                bestX = x
-            }
-            x += 1
-        }
-        return bestX
-    }
     // Prefer a tight body step over price center-spacing: wash fills the
     // inter-digit gaps, so the copied stride overshoots the fused field.
     let needed = count * body
@@ -2002,19 +1985,31 @@ private func splitAtExpectedPitch(
     let step = body + max(0, gap)
     // Right-pack: last window ends at span.1, earlier ones step left. Leading
     // wash/junk left of the pack is ignored instead of shifting every slot.
+    // Right-pack without stem-snap first: snap was pulling the rightmost
+    // slot of a 3-digit cluster left from the 0-run (380-555) onto the 8.
+    // Only nudge a window when the move stays inside its nominal slot
+    // (±step/4) so neighbors keep their glyph ink.
     var starts: [Int] = []
     var x = span.1 - body
     for _ in 0..<count {
-        starts.append(max(span.0, snap(x)))
+        let nominal = max(span.0, x)
+        let lo = max(span.0, nominal - max(1, step / 4))
+        let hi = min(span.1 - body, nominal + max(1, step / 4))
+        var bestX = nominal
+        var best = stemScore(from: nominal)
+        var probe = lo
+        while probe <= hi {
+            let score = stemScore(from: probe)
+            if score > best {
+                best = score
+                bestX = probe
+            }
+            probe += 1
+        }
+        starts.append(bestX)
         x -= step
     }
-    // Keep left-to-right order and avoid overlapping snaps stealing a neighbor.
-    var ordered = starts.sorted()
-    for i in 1..<ordered.count {
-        if ordered[i] < ordered[i - 1] + body * 3 / 4 {
-            ordered[i] = ordered[i - 1] + max(step, body * 3 / 4)
-        }
-    }
+    let ordered = starts.sorted()
     let pieces = ordered.compactMap { window(at: $0) }
     if width >= 400 {
         let listed = pieces.map { "\($0.0)-\($0.1)" }.joined(separator: ",")
