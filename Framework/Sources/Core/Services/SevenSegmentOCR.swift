@@ -1343,6 +1343,7 @@ private func priceMatchedLeftByDenseWindow(
     var bestScore = Int.min
     let lastStart = sharedRight - window
     var start = sharedLeft
+    var scores = [Int](repeating: Int.min, count: width)
     while start <= lastStart {
         var stems = 0
         var fat = 0
@@ -1355,11 +1356,26 @@ private func priceMatchedLeftByDenseWindow(
             }
         }
         let score = stems - fat * 3
+        scores[start] = score
         if score > bestScore {
             bestScore = score
             bestStart = start
         }
         start += 1
+    }
+    // When the peak is digit ink (no fat left blob), many early starts tie.
+    // Prefer the rightmost near-best so the crop still opens on the field.
+    if bestStart <= sharedLeft + 32 {
+        let floorScore = bestScore - 5
+        var raised = bestStart
+        start = sharedLeft
+        while start <= lastStart {
+            if scores[start] >= floorScore {
+                raised = start
+            }
+            start += 1
+        }
+        bestStart = raised
     }
     guard bestStart > sharedLeft + 16, bestScore > 8 else { return sharedLeft }
     var lo = bestStart
