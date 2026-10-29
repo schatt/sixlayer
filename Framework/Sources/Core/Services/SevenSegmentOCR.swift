@@ -1178,8 +1178,6 @@ private func readingSpan(_ mask: Mask, bands: [(Int, Int)]) -> (Int, Int)? {
         return (top, bottom)
     }
     guard !valleys.isEmpty else { return nil }
-    let rowProfile = mask.rowSums
-    let denseBands = bands.map { densestInkBand(rowProfile, in: $0) }
     var keep = [Bool](repeating: false, count: width)
     var edgeColumn = [Bool](repeating: false, count: width)
     var columnInk = [Int](repeating: 0, count: width)
@@ -1199,31 +1197,21 @@ private func readingSpan(_ mask: Mask, bands: [(Int, Int)]) -> (Int, Int)? {
             continue
         }
         var ink = 0
-        var presentInAll = true
-        for band in denseBands {
+        for band in bands {
             let y0 = max(0, band.0)
             let y1 = min(height, band.1)
-            let bandHeight = max(1, y1 - y0)
-            var bandInk = 0
             for y in y0..<y1 where mask.bits[y * width + x] {
-                bandInk += 1
-            }
-            ink += bandInk
-            // Scratch/glare often lights only one row or a short fringe.
-            // Digit stems have ink through each row's densest band.
-            if bandInk * 5 < bandHeight {
-                presentInAll = false
+                ink += 1
             }
         }
-        if ink > 0, presentInAll {
+        if ink > 0 {
             keep[x] = true
             columnInk[x] = ink
         }
     }
     let active = keep.indices.filter { keep[$0] }
     guard let first = active.first else { return nil }
-    // Intra-digit gaps are a few pixels; a washed scratch sits farther left.
-    let gapLimit = max(8, min(16, height / 30))
+    let gapLimit = max(8, height / 15)
     var runs: [(start: Int, end: Int, ink: Int)] = []
     var start = first
     var end = first
@@ -1242,14 +1230,15 @@ private func readingSpan(_ mask: Mask, bands: [(Int, Int)]) -> (Int, Int)? {
     }
     runs.append((start, end + 1, ink))
     guard let best = runs.max(by: { $0.ink < $1.ink }) else { return nil }
-    // A left scratch can join the digits across a short empty gap. Peel a
-    // narrow leading island so the crop starts on digit ink.
+    // A left scratch can join the digits across an empty gap. Peel a narrow
+    // leading island so the crop starts on digit ink, not the scratch.
     let core = peelingLeadingScratch(
         active: active,
         columnInk: columnInk,
         start: best.start,
         end: best.end,
-        height: height
+        height: height,
+        joinGap: gapLimit
     )
     let peak = (core.0..<core.1).map { columnInk[$0] }.max() ?? 0
     let colFloor = max(1, peak / 4)
@@ -1302,16 +1291,20 @@ private func peelingLeadingScratch(
     columnInk: [Int],
     start: Int,
     end: Int,
-    height: Int
+    height: Int,
+    joinGap: Int
 ) -> (Int, Int) {
     let inside = active.filter { $0 >= start && $0 < end }
     guard let first = inside.first else { return (start, end) }
+    // Join at the intra-digit gap so one number stays one island. A scratch
+    // farther left than that gap stays its own island and can be peeled.
+    let stemGap = min(8, joinGap)
     var islands: [(start: Int, end: Int, ink: Int)] = []
     var islandStart = first
     var islandEnd = first
     var ink = columnInk[first]
     for index in inside.dropFirst() {
-        if index - islandEnd <= 2 {
+        if index - islandEnd <= stemGap {
             islandEnd = index
             ink += columnInk[index]
         } else {
@@ -1327,7 +1320,6 @@ private func peelingLeadingScratch(
     let leadWidth = lead.end - lead.start
     let restInk = islands.dropFirst().reduce(0) { $0 + $1.ink }
     let restWidth = islands.last!.end - islands[1].start
-    // A scratch is a thin strip; the digit run is much wider and holds more ink.
     let narrow = leadWidth * 4 <= max(restWidth, height / 8)
     if narrow, restInk > lead.ink, restWidth > max(12, height / 10) {
         return (islands[1].start, end)
