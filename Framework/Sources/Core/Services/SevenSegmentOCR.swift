@@ -1033,19 +1033,12 @@ private extension GrayBuffer {
                     rescanned.append(shifted)
                 }
                 if rowPitch == nil {
-                    // Center-to-center includes the intra-digit gap. Cutting by
-                    // body width alone drifts across each wash bridge.
+                    // Body width from the price digits. splitAtExpectedPitch
+                    // adds a small stride gap and packs windows from the right.
                     let digits = found.filter { cell in
                         cell.character.isNumber && cell.height > 0
-                    }.sorted { $0.minX < $1.minX }
-                    let spacings = zip(digits, digits.dropFirst()).map { left, right in
-                        right.box.midX - left.box.midX
                     }
-                    if let spacing = median(spacings), spacing > 0 {
-                        rowPitch = spacing
-                    } else {
-                        rowPitch = median(digits.map(\.box.width))
-                    }
+                    rowPitch = median(digits.map(\.box.width))
                 }
             }
             if windowNarrows, !rescanned.isEmpty {
@@ -1823,26 +1816,39 @@ private func columnRuns(
     }
 }
 
-/// Force digit-sized slots from a copied price-row pitch. Cuts advance by
-/// that width from the left — not ink valleys, not equal slices of the blob.
+/// Force digit-sized slots from a copied price-row body width. Pack
+/// body-wide windows from the right (volume shares a right edge with the
+/// price digits) with a small stride gap so a leading decimal does not
+/// drift every cut. Not ink valleys.
 private func splitAtExpectedPitch(
     _ span: (Int, Int),
     expectedWidth: Int
 ) -> [(Int, Int)] {
-    let expected = max(1, expectedWidth)
+    let body = max(1, expectedWidth)
+    // Intra-digit gap is a fraction of the body on these panels.
+    let stride = body + max(1, body / 6)
     let width = span.1 - span.0
     // Need room for a second digit; do not bisect a slightly wide glyph.
-    guard width > expected + expected / 4 else { return [span] }
+    guard width > body + body / 4 else { return [span] }
     var pieces: [(Int, Int)] = []
-    var start = span.0
-    let minimum = max(2, expected / 5)
-    while span.1 - start > expected + expected / 4 {
-        let cut = start + expected
-        guard cut - start >= minimum, span.1 - cut >= minimum else { break }
-        pieces.append((start, cut))
-        start = cut
+    var end = span.1
+    let minimum = max(2, body / 5)
+    while end - span.0 >= body {
+        let start = end - body
+        if end - start >= minimum {
+            pieces.insert((start, end), at: 0)
+        }
+        let next = end - stride
+        if next >= end { break }
+        end = next
+        if end <= span.0 { break }
     }
-    pieces.append((start, span.1))
+    if let first = pieces.first, first.0 > span.0 + minimum {
+        // Leading remnant (often the first volume digit left of the pack).
+        pieces.insert((span.0, first.0), at: 0)
+    } else if pieces.isEmpty {
+        pieces.append(span)
+    }
     return pieces
 }
 
