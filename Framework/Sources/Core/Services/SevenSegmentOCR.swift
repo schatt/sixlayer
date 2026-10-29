@@ -1238,36 +1238,34 @@ private extension GrayBuffer {
         let bottom = min(mask.height, max(baseline, band.1))
         guard bottom > top else { return (digits + other).sorted { $0.minX < $1.minX } }
         let sums = columnSums(mask, y0: top, y1: bottom, width: width)
-        let gapTop = max(band.0, top - max(4, digitHeight / 10))
-        let above = columnSums(mask, y0: gapTop, y1: top, width: width)
-        // Emptiest gap: real mark is wash-hidden or tiny; bridges flood the
-        // sums. Leftmost on ties → X.xxx under uniform wash.
-        var best: (x0: Int, x1: Int, score: Int)?
+        // Photo volume: gap after 8 has baseline ink 0 (wash hid the mark) and
+        // later gaps hold a wash blob (ink 191) or near-empty (ink 2). Pick the
+        // leftmost gap that is not flooded — X.xxx — instead of maximizing ink
+        // (→ 80.22) or minimizing ink+above (→ 802.2 from above-wash penalty).
+        let washFlood = max(8, digitHeight / 3)
+        var gaps: [(x0: Int, x1: Int, ink: Int)] = []
         for i in digits.indices.dropLast() {
             let left = digits[i].maxX
             let right = digits[i + 1].minX
             let gap = right - left
             guard gap > 2, gap < digitWidth else { continue }
-            let cols = left..<right
-            let ink = cols.reduce(0) { $0 + sums[$1] }
-            let aboveInk = cols.reduce(0) { $0 + above[$1] }
-            let score = -(ink + aboveInk)
-            trace("pitch gap \(i)+\(i + 1) \(left)-\(right) ink\(ink) above\(aboveInk) empty\(score)\n")
-            if best == nil || score > best!.score || (score == best!.score && left < best!.x0) {
-                best = (left, right, score)
-            }
+            let ink = (left..<right).reduce(0) { $0 + sums[$1] }
+            trace("pitch gap \(i)+\(i + 1) \(left)-\(right) ink\(ink) flood\(washFlood)\n")
+            gaps.append((left, right, ink))
         }
+        let clear = gaps.filter { $0.ink < washFlood }
+        let chosen = clear.first ?? gaps.min(by: { $0.ink < $1.ink })
         var placed = digits + other
-        if let best, best.x1 > best.x0 {
-            let mid = (best.x0 + best.x1) / 2
-            let pad = max(1, (best.x1 - best.x0) / 4)
+        if let chosen, chosen.x1 > chosen.x0 {
+            let mid = (chosen.x0 + chosen.x1) / 2
+            let pad = max(1, (chosen.x1 - chosen.x0) / 4)
             let box = PixelBox(
-                minX: max(best.x0, mid - pad),
+                minX: max(chosen.x0, mid - pad),
                 minY: top,
-                maxX: min(best.x1, mid + pad),
+                maxX: min(chosen.x1, mid + pad),
                 maxY: bottom
             )
-            trace("pitch marks place . @\(mid) emptyScore\(best.score)\n")
+            trace("pitch marks place . @\(mid) ink\(chosen.ink)\n")
             placed.append(Cell(box: box, character: ".", confidence: 1, band: 0))
         }
         return placed.sorted { $0.minX < $1.minX }
