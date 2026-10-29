@@ -1486,10 +1486,10 @@ private func columnRuns(_ mask: Mask, y0: Int, y1: Int, width: Int) -> [(Int, In
         let widerThanADigit = spanWidth > bandHeight
         guard widerThanADigit || (typical > 0 && spanWidth > typical * 2) else { return [span] }
         let peak = (span.0..<span.1).map { sums[$0] }.max() ?? 0
-        // A horizontal bar is thinner than a stem, but a washed gap between
-        // digits is thinner still. peak/15 left those bridges in place and
-        // the join step glued full digits back together.
-        let floor = max(1, peak / 8)
+        // A horizontal bar is much thinner than a flooded stem. peak/5 cut the
+        // bar and split one washed digit. The gap between digits still falls
+        // through a lower floor; joining refuses to glue two finished digits.
+        let floor = max(1, widerThanADigit ? peak / 15 : peak / 8)
         var pieces: [(Int, Int)] = []
         var start: Int?
         for x in span.0..<span.1 {
