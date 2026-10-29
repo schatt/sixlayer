@@ -1821,10 +1821,14 @@ private func columnRuns(
            let first = wideEnough.first,
            let last = wideEnough.last {
             spans = [(first.0, last.1)]
-        } else if !wideEnough.isEmpty {
-            spans = wideEnough
+        } else if let first = wideEnough.first, let last = wideEnough.last {
+            // Keep narrow in-field runs (decimals); drop leading/trailing stems.
+            spans = raw.filter { span in
+                if span.1 - span.0 > pitch.body / 2 { return true }
+                return span.0 >= first.0 && span.1 <= last.1
+            }
         } else {
-            spans = raw
+            spans = wideEnough.isEmpty ? raw : wideEnough
         }
         if width >= 400 {
             let listed = raw.map { "\($0.0)-\($0.1)" }.joined(separator: ",")
