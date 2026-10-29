@@ -1956,7 +1956,13 @@ private func packClusterRuns(
     var pieces: [(Int, Int)] = []
     for (run, n) in zip(runs, runShare) {
         if n <= 1 {
-            pieces.append(run)
+            // Left-inset single-digit runs: wash bridges light false `f` on
+            // the left stem scan and clip `c` on the right (pat 123 → 2/8 tie).
+            let width = run.1 - run.0
+            let lead = max(0, min(width / 8, max(2, packBody / 12)))
+            let core = min(width - lead, packBody)
+            let start = run.0 + lead
+            pieces.append((start, min(run.1, start + max(2, core))))
         } else {
             // Peel leading wash: keep only the rightmost n packBody slots.
             let needed = n * packBody
