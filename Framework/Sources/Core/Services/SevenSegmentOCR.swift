@@ -1652,25 +1652,30 @@ private func rowInkSums(_ mask: Mask, x0: Int, x1: Int, y0: Int, y1: Int) -> (lo
     return (lower, sums)
 }
 
-/// Tallest ink run in a row band. A short glare fringe above the digits is
-/// dropped so a multi-row crop re-reads each row at about price-crop height.
+/// Drop a short glare fringe above the digits in a row band. Washed strokes
+/// leave valleys inside a digit, so a "tallest run" alone can shrink the crop
+/// to a middle slice. Only raise the top when the kept run is still most of
+/// the band (about price-crop height on the pump photo).
 private func primaryInkBandY(_ mask: Mask, x0: Int, x1: Int, y0: Int, y1: Int) -> (Int, Int) {
     let profile = rowInkSums(mask, x0: x0, x1: x1, y0: y0, y1: y1)
     let sums = profile.sums
     guard !sums.isEmpty else { return (y0, y1) }
     let peak = sums.max() ?? 0
     guard peak > 0 else { return (y0, y1) }
-    let floor = max(1, peak / 4)
+    let bandHeight = max(1, y1 - y0)
+    let floor = max(1, peak / 5)
     let gated = sums.map { $0 >= floor ? $0 : 0 }
     let found = runs(gated)
     guard let best = found.max(by: { ($0.1 - $0.0) < ($1.1 - $1.0) }) else {
         return (y0, y1)
     }
-    let minY = profile.lower + best.0
-    let maxY = profile.lower + best.1
-    // Keep the caller's band when the run is only a thin fringe.
-    if (maxY - minY) * 2 < (y1 - y0) { return (y0, y1) }
-    return (minY, maxY)
+    let runHeight = best.1 - best.0
+    let topFringe = best.0
+    // Short fringe above, and the run still covers most of the band.
+    if topFringe > 0, topFringe * 5 <= bandHeight, runHeight * 5 >= bandHeight * 4 {
+        return (profile.lower + best.0, min(y1, profile.lower + best.1))
+    }
+    return (y0, y1)
 }
 
 /// Vertical span of digit ink for segment sampling. Glare above the top bar
