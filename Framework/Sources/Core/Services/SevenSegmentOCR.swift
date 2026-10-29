@@ -920,11 +920,23 @@ private extension GrayBuffer {
             }
             var windowNarrows = true
             var rescanned: [[Cell]] = []
+            let rowProfile = glyphs.rowSums
+            // A known-good single-row price crop is ~380px (window radius 11).
+            let priceBandHeight = 96 + 11 * 24
             for band in splitBands {
-                let y0 = max(0, band.0 - 4)
-                let y1 = min(buffer.height, band.1 + 4)
-                let x0 = max(0, (span?.0 ?? 0) - 8)
-                let x1 = min(buffer.width, (span?.1 ?? buffer.width) + 8)
+                let tight = priceMatchedBand(rowProfile, in: band, targetHeight: priceBandHeight)
+                let y0 = max(0, tight.0 - 4)
+                let y1 = min(buffer.height, tight.1 + 4)
+                let sharedLeft = span?.0 ?? 0
+                let sharedRight = span?.1 ?? buffer.width
+                let left = priceMatchedLeft(
+                    glyphs,
+                    band: tight,
+                    sharedLeft: sharedLeft,
+                    sharedRight: sharedRight
+                )
+                let x0 = max(0, left - 8)
+                let x1 = min(buffer.width, sharedRight + 8)
                 let crop = buffer.cropped(x0: x0, y0: y0, x1: x1, y1: y1)
                 guard crop.width > 8, crop.height > 8 else {
                     windowNarrows = false
@@ -1228,6 +1240,84 @@ private func readingSpan(_ mask: Mask, bands: [(Int, Int)]) -> (Int, Int)? {
     let span = best.end - best.start
     guard span > max(12, height / 10) else { return nil }
     return (best.start, best.end)
+}
+
+/// When a row band is taller than a price crop, keep the densest window of
+/// that height. Synthetic digit bands are already short — leave them alone.
+private func priceMatchedBand(_ sums: [Int], in band: (Int, Int), targetHeight: Int) -> (Int, Int) {
+    let y0 = max(0, band.0)
+    let y1 = min(sums.count, band.1)
+    let bandHeight = y1 - y0
+    guard bandHeight > targetHeight + 16 else { return band }
+    var bestStart = y0
+    var bestInk = Int.min
+    let lastStart = y1 - targetHeight
+    var start = y0
+    while start <= lastStart {
+        var ink = 0
+        for y in start..<(start + targetHeight) {
+            ink += sums[y]
+        }
+        if ink > bestInk {
+            bestInk = ink
+            bestStart = start
+        }
+        start += 1
+    }
+    return (bestStart, bestStart + targetHeight)
+}
+
+/// Raise the left crop edge past a narrow left scratch island. Keep the
+/// shared span when there is no such island (bezel / edge-strip cases).
+private func priceMatchedLeft(
+    _ mask: Mask,
+    band: (Int, Int),
+    sharedLeft: Int,
+    sharedRight: Int
+) -> Int {
+    let width = mask.width
+    let y0 = max(0, band.0)
+    let y1 = min(mask.height, band.1)
+    guard width > 0, y1 > y0, sharedRight > sharedLeft else { return sharedLeft }
+    var columnInk = [Int](repeating: 0, count: width)
+    for x in sharedLeft..<min(width, sharedRight) {
+        var ink = 0
+        for y in y0..<y1 where mask.bits[y * width + x] {
+            ink += 1
+        }
+        columnInk[x] = ink
+    }
+    let active = (sharedLeft..<min(width, sharedRight)).filter { columnInk[$0] > 0 }
+    guard let first = active.first else { return sharedLeft }
+    let stemGap = 8
+    var islands: [(start: Int, end: Int, ink: Int)] = []
+    var islandStart = first
+    var islandEnd = first
+    var ink = columnInk[first]
+    for index in active.dropFirst() {
+        if index - islandEnd <= stemGap {
+            islandEnd = index
+            ink += columnInk[index]
+        } else {
+            islands.append((islandStart, islandEnd + 1, ink))
+            islandStart = index
+            islandEnd = index
+            ink = columnInk[index]
+        }
+    }
+    islands.append((islandStart, islandEnd + 1, ink))
+    guard islands.count >= 2 else { return sharedLeft }
+    let lead = islands[0]
+    let leadWidth = lead.end - lead.start
+    let restInk = islands.dropFirst().reduce(0) { $0 + $1.ink }
+    let restWidth = islands.last!.end - islands[1].start
+    let bandHeight = y1 - y0
+    // Scratch is a thin strip; digit ink is much wider.
+    guard leadWidth * 4 <= max(restWidth, bandHeight / 4) else { return sharedLeft }
+    guard restInk > lead.ink, restWidth > max(12, bandHeight / 5) else { return sharedLeft }
+    // Only move the left edge when the scratch is clearly separated.
+    guard islands[1].start > sharedLeft + max(12, leadWidth) else { return sharedLeft }
+    return islands[1].start
 }
 
 /// Two digit rows joined by scratches. The valley has to sit between two
