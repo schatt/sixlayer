@@ -1222,19 +1222,12 @@ private extension GrayBuffer {
     ) -> [Cell] {
         let digits = row.filter { $0.character.isNumber && $0.height > 0 }
             .sorted { $0.minX < $1.minX }
-        let marks = row.filter { $0.character == "." || $0.character == "," }
         let other = row.filter { cell in
             !cell.character.isNumber && cell.character != "." && cell.character != ","
         }
         guard digits.count >= 2 else { return row }
-        let between = marks.filter { mark in
-            digits.indices.dropLast().contains { i in
-                mark.box.midX >= digits[i].maxX && mark.box.midX <= digits[i + 1].minX
-            }
-        }
-        if !between.isEmpty {
-            return (digits + between + other).sorted { $0.minX < $1.minX }
-        }
+        // Drop existing ./, marks: a late false baselineDot in a wash blob
+        // made 80.22. Re-place from inter-digit geometry only — no invented ink.
         let digitWidth = median(digits.map(\.box.width)) ?? 0
         let digitHeight = median(digits.map(\.height)) ?? 0
         guard digitWidth > 8, digitHeight > 8 else {
@@ -1247,13 +1240,9 @@ private extension GrayBuffer {
         let sums = columnSums(mask, y0: top, y1: bottom, width: width)
         let gapTop = max(band.0, top - max(4, digitHeight / 10))
         let above = columnSums(mask, y0: gapTop, y1: top, width: width)
-        let floor = max(1, (bottom - top) / 6)
-        // Maximizing baseline ink picked wash-filled gaps (photo 80.22) over
-        // the real mark. Prefer a compact baseline peak (dot); if wash erased
-        // every peak, fall back to the emptiest gap — bridges score worse.
-        // Leftmost wins ties (volume X.xxx vs XX.xx when both look empty).
-        var bestDot: (x0: Int, x1: Int, score: Int)?
-        var bestEmpty: (x0: Int, x1: Int, score: Int)?
+        // Emptiest gap: real mark is wash-hidden or tiny; bridges flood the
+        // sums. Leftmost on ties → X.xxx under uniform wash.
+        var best: (x0: Int, x1: Int, score: Int)?
         for i in digits.indices.dropLast() {
             let left = digits[i].maxX
             let right = digits[i + 1].minX
@@ -1262,21 +1251,12 @@ private extension GrayBuffer {
             let cols = left..<right
             let ink = cols.reduce(0) { $0 + sums[$1] }
             let aboveInk = cols.reduce(0) { $0 + above[$1] }
-            let peak = cols.map { sums[$0] }.max() ?? 0
-            let emptyScore = -(ink + aboveInk)
-            if bestEmpty == nil || emptyScore > bestEmpty!.score
-                || (emptyScore == bestEmpty!.score && left < bestEmpty!.x0) {
-                bestEmpty = (left, right, emptyScore)
-            }
-            guard peak >= floor else { continue }
-            // Compact blob: high peak, low spread, little wash above.
-            let score = peak * gap - ink - aboveInk
-            if bestDot == nil || score > bestDot!.score
-                || (score == bestDot!.score && left < bestDot!.x0) {
-                bestDot = (left, right, score)
+            let score = -(ink + aboveInk)
+            trace("pitch gap \(i)+\(i + 1) \(left)-\(right) ink\(ink) above\(aboveInk) empty\(score)\n")
+            if best == nil || score > best!.score || (score == best!.score && left < best!.x0) {
+                best = (left, right, score)
             }
         }
-        let best = bestDot ?? bestEmpty
         var placed = digits + other
         if let best, best.x1 > best.x0 {
             let mid = (best.x0 + best.x1) / 2
@@ -1287,6 +1267,7 @@ private extension GrayBuffer {
                 maxX: min(best.x1, mid + pad),
                 maxY: bottom
             )
+            trace("pitch marks place . @\(mid) emptyScore\(best.score)\n")
             placed.append(Cell(box: box, character: ".", confidence: 1, band: 0))
         }
         return placed.sorted { $0.minX < $1.minX }
