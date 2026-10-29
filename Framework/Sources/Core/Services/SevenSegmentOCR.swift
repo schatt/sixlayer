@@ -1327,10 +1327,9 @@ private func priceMatchedLeftByDenseWindow(
         }
         columnInk[x] = ink
     }
-    // Count digit-stem columns (ink with segment cavities). Fat glare fills
-    // and empty haze score zero, so a washed volume row's left blob cannot
-    // outrank the thinner digit field. Window width tracks a price-like
-    // digit run (~2.5× band height), not most of the washed span.
+    // Count digit-stem columns and penalize fat glare fills. A washed volume
+    // row's left blob is thick ink; digit stems are thinner. Window width
+    // tracks a price-like digit run (~2.5× band height).
     let solidFloor = bandHeight * 7 / 10
     let speckFloor = max(2, bandHeight / 12)
     let window = max(48, min(spanWidth - 24, max(spanWidth / 2, bandHeight * 5 / 2)))
@@ -1338,26 +1337,22 @@ private func priceMatchedLeftByDenseWindow(
     func stemColumn(_ ink: Int) -> Bool {
         ink >= speckFloor && ink < solidFloor
     }
-    // Peel a leading weak prefix before the sliding search.
-    var origin = sharedLeft
-    let probe = min(48, window / 4)
-    while origin + window < sharedRight {
-        var stems = 0
-        for x in origin..<(origin + probe) where stemColumn(columnInk[x]) {
-            stems += 1
-        }
-        if stems * 4 >= probe { break }
-        origin += 1
-    }
-    var bestStart = origin
+    var bestStart = sharedLeft
     var bestScore = Int.min
     let lastStart = sharedRight - window
-    var start = origin
+    var start = sharedLeft
     while start <= lastStart {
-        var score = 0
-        for x in start..<(start + window) where stemColumn(columnInk[x]) {
-            score += 1
+        var stems = 0
+        var fat = 0
+        for x in start..<(start + window) {
+            let ink = columnInk[x]
+            if ink >= solidFloor {
+                fat += 1
+            } else if stemColumn(ink) {
+                stems += 1
+            }
         }
+        let score = stems - fat * 3
         if score > bestScore {
             bestScore = score
             bestStart = start
@@ -1369,7 +1364,9 @@ private func priceMatchedLeftByDenseWindow(
     while lo > sharedLeft, stemColumn(columnInk[lo - 1]) {
         lo -= 1
     }
-    return lo
+    // Price crops keep a short empty margin before the first stem.
+    let margin = min(48, lo - sharedLeft)
+    return lo - margin
 }
 
 private func priceMatchedLeftByScratchPrefix(
