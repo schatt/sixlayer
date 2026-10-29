@@ -115,6 +115,10 @@ struct OCRSevenSegment576Tests {
         // include the scratch from x0 or the haze that widens the window.
         let image = SegmentPanel.render(
             rows: [atoms("32.88"), atoms("8.022")],
+            // Padding keeps >8px between the left scratch and the first digit
+            // so a price-matched left edge can drop the scratch without
+            // splitting "32.88" on the intra-digit gap.
+            padding: 48,
             inkLevel: 30,
             backgroundLevel: 130,
             outerMargin: 200,
@@ -729,7 +733,14 @@ private enum SegmentPanel {
         var width = laid.width
         var height = laid.height
         if tallHaze {
-            paintTallHaze(&pixels, width: width, height: height, ink: ink, bands: laid.rowBands)
+            paintTallHaze(
+                &pixels,
+                width: width,
+                height: height,
+                ink: ink,
+                bands: laid.rowBands,
+                padding: padding
+            )
         }
         if gapGlare {
             paintGapGlare(&pixels, width: width, height: height, bands: laid.rowBands)
@@ -806,19 +817,21 @@ private enum SegmentPanel {
 
     /// Sparse dark marks above each digit row that keep the ink run open, so
     /// the detected band is taller than the digit cells (price-like height
-    /// would be the densest stretch inside that band).
+    /// would be the densest stretch inside that band). Stay over the digit
+    /// columns — do not bridge a left scratch across the padding gap.
     private static func paintTallHaze(
         _ pixels: inout [UInt8],
         width: Int,
         height: Int,
         ink: UInt8,
-        bands: [RowBand]
+        bands: [RowBand],
+        padding: Int = 16
     ) {
         let haze = max(48, cellH / 2)
         for band in bands {
             let top = max(0, band.minY - haze)
             guard top < band.minY else { continue }
-            let x0 = min(8, width)
+            let x0 = min(width, max(padding, 8))
             let x1 = max(x0, width - 8)
             for y in top..<band.minY {
                 for x in stride(from: x0, to: x1, by: 11) {
@@ -841,13 +854,14 @@ private enum SegmentPanel {
         padding: Int,
         bands: [RowBand]
     ) {
-        let scratchEnd = min(width, max(12, padding / 2))
+        // Keep the scratch in the left padding with a clear gap before digits.
+        let scratchEnd = min(width / 4, max(8, padding / 3))
         let haze = max(48, cellH / 2)
         guard scratchEnd > 4, let first = bands.first, let last = bands.last else { return }
         for band in bands {
             let top = max(0, band.minY - haze)
             for y in top..<band.maxY {
-                for x in 4..<scratchEnd {
+                for x in 2..<scratchEnd {
                     pixels[y * width + x] = ink
                 }
             }
