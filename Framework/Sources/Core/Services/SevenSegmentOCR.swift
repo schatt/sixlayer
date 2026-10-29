@@ -1806,15 +1806,17 @@ private func columnRuns(
         )
     }
     // When pitch-driving: only union into one field when runs look wash-fused
-    // (a blob wider than ~1.5 body, or gaps between wide runs under body/3).
-    // Clean separated digits (edgeStrip) keep their natural runs so pitch
-    // does not re-pack them off their stems. Without preferred pitch, valley.
+    // (a blob wider than ~1.5 body, or gaps between wide runs under body/10).
+    // Clean synthetic digits keep ~body/6 gaps (intra=8 on body≈50); body/3
+    // falsely fused those and re-packed edgeStrip into 8_22. Wash bridges on
+    // the photo are a few pixels. Without preferred pitch, valley.
     let spans: [(Int, Int)]
     if let pitch = copied {
         let wideEnough = raw.filter { $0.1 - $0.0 > pitch.body / 2 }
         let hasWideBlob = wideEnough.contains { $0.1 - $0.0 > pitch.body + pitch.body / 2 }
         let gaps = zip(wideEnough, wideEnough.dropFirst()).map { $1.0 - $0.1 }
-        let bridged = gaps.contains { $0 >= 0 && $0 < pitch.body / 3 }
+        let bridgeLimit = max(2, pitch.body / 10)
+        let bridged = gaps.contains { $0 >= 0 && $0 < bridgeLimit }
         if (hasWideBlob || bridged),
            let first = wideEnough.first,
            let last = wideEnough.last {
