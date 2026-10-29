@@ -932,14 +932,23 @@ private extension GrayBuffer {
             }
             var windowNarrows = true
             var rescanned: [[Cell]] = []
+            let rowProfile = glyphs.rowSums
+            // A known-good single-row price crop is ~380px (window radius 11).
+            let priceBandHeight = 96 + 11 * 24
             for band in splitBands {
-                let x0 = max(0, (span?.0 ?? 0) - 8)
-                let x1 = min(buffer.width, (span?.1 ?? buffer.width) + 8)
-                // Drop a short glare fringe above the digits so the crop is
-                // about as tall as a known-good single-row price crop.
-                let inkY = primaryInkBandY(glyphs, x0: x0, x1: x1, y0: band.0, y1: band.1)
-                let y0 = max(0, inkY.0 - 4)
-                let y1 = min(buffer.height, inkY.1 + 4)
+                let tight = priceMatchedBand(rowProfile, in: band, targetHeight: priceBandHeight)
+                let y0 = max(0, tight.0 - 4)
+                let y1 = min(buffer.height, tight.1 + 4)
+                let sharedLeft = span?.0 ?? 0
+                let sharedRight = span?.1 ?? buffer.width
+                let left = priceMatchedLeft(
+                    glyphs,
+                    band: tight,
+                    sharedLeft: sharedLeft,
+                    sharedRight: sharedRight
+                )
+                let x0 = max(0, left - 8)
+                let x1 = min(buffer.width, sharedRight + 8)
                 let crop = buffer.cropped(x0: x0, y0: y0, x1: x1, y1: y1)
                 guard crop.width > 8, crop.height > 8 else {
                     windowNarrows = false
@@ -1245,6 +1254,81 @@ private func readingSpan(_ mask: Mask, bands: [(Int, Int)]) -> (Int, Int)? {
     return (best.start, best.end)
 }
 
+/// When a row band is taller than a price crop, keep the densest window of
+/// that height. Synthetic digit bands are already short — leave them alone.
+private func priceMatchedBand(_ sums: [Int], in band: (Int, Int), targetHeight: Int) -> (Int, Int) {
+    let y0 = max(0, band.0)
+    let y1 = min(sums.count, band.1)
+    let bandHeight = y1 - y0
+    guard bandHeight > targetHeight + 16 else { return band }
+    var bestStart = y0
+    var bestInk = Int.min
+    let lastStart = y1 - targetHeight
+    var start = y0
+    while start <= lastStart {
+        var ink = 0
+        for y in start..<(start + targetHeight) {
+            ink += sums[y]
+        }
+        if ink > bestInk {
+            bestInk = ink
+            bestStart = start
+        }
+        start += 1
+    }
+    return (bestStart, bestStart + targetHeight)
+}
+
+/// Raise the left crop edge past a thin left scratch. Drop a short prefix of
+/// active columns when the remaining digit columns still hold most of the ink.
+private func priceMatchedLeft(
+    _ mask: Mask,
+    band: (Int, Int),
+    sharedLeft: Int,
+    sharedRight: Int
+) -> Int {
+    let width = mask.width
+    let y0 = max(0, band.0)
+    let y1 = min(mask.height, band.1)
+    guard width > 0, y1 > y0, sharedRight > sharedLeft + 24 else { return sharedLeft }
+    var columnInk = [Int](repeating: 0, count: width)
+    for x in sharedLeft..<min(width, sharedRight) {
+        var ink = 0
+        for y in y0..<y1 where mask.bits[y * width + x] {
+            ink += 1
+        }
+        columnInk[x] = ink
+    }
+    let active = (sharedLeft..<min(width, sharedRight)).filter { columnInk[$0] > 0 }
+    guard active.count > 16 else { return sharedLeft }
+    let totalInk = active.reduce(0) { $0 + columnInk[$1] }
+    var dropped = 0
+    var droppedInk = 0
+    var index = 0
+    let dropLimit = max(12, (y1 - y0) / 10)
+    while index < active.count {
+        let remaining = active.count - index
+        let remainingInk = totalInk - droppedInk
+        let gapBefore = index > 0 ? active[index] - active[index - 1] : 0
+        // A scratch is a short prefix separated by a gap from the digits.
+        if index > 0,
+           gapBefore > 4,
+           remaining * 5 >= active.count * 4,
+           remainingInk * 5 >= totalInk * 4,
+           active[index] > sharedLeft + 8,
+           dropped * 4 <= remaining,
+           dropped <= dropLimit,
+           (active[index] - sharedLeft) * 4 <= (sharedRight - active[index]) {
+            return active[index]
+        }
+        dropped += 1
+        droppedInk += columnInk[active[index]]
+        index += 1
+        if dropped > dropLimit { break }
+    }
+    return sharedLeft
+}
+
 /// Two digit rows joined by scratches. The valley has to sit between two
 /// stretches that are each a full row; a cavity inside one digit does not.
 private func rowGapBands(_ mask: Mask) -> [(Int, Int)] {
@@ -1503,7 +1587,8 @@ private func columnRuns(_ mask: Mask, y0: Int, y1: Int, width: Int) -> [(Int, In
         let peak = (span.0..<span.1).map { sums[$0] }.max() ?? 0
         // A horizontal bar is much thinner than a flooded stem. peak/5 cut the
         // bar and split one washed digit. The gap between digits still falls
-        // through a lower floor.
+        // through a lower floor; valleys between digit-sized peaks catch a
+        // wash bridge that stays above that floor.
         let floor = max(1, widerThanADigit ? peak / 15 : peak / 8)
         var pieces: [(Int, Int)] = []
         var start: Int?
@@ -1519,8 +1604,49 @@ private func columnRuns(_ mask: Mask, y0: Int, y1: Int, width: Int) -> [(Int, In
             pieces.append((open, span.1))
         }
         let split = pieces.isEmpty ? [span] : pieces
-        return joiningBridgedPieces(split, mask: mask, y0: y0, y1: y1, bandHeight: bandHeight)
+        let joined = joiningBridgedPieces(split, mask: mask, y0: y0, y1: y1, bandHeight: bandHeight)
+        return joined.flatMap { piece in
+            splitAtDigitValleys(piece, sums: sums, bandHeight: bandHeight)
+        }
     }
+}
+
+/// Cut a span that still holds two digit peaks with a wash bridge between them.
+private func splitAtDigitValleys(
+    _ span: (Int, Int),
+    sums: [Int],
+    bandHeight: Int
+) -> [(Int, Int)] {
+    let digitWide = max(1, bandHeight / 2)
+    let width = span.1 - span.0
+    guard width > digitWide + digitWide / 3 else { return [span] }
+    var cuts: [Int] = []
+    var x = span.0 + digitWide / 2
+    while x < span.1 - digitWide / 2 {
+        let leftPeak = (span.0..<x).map { sums[$0] }.max() ?? 0
+        let rightPeak = (x..<span.1).map { sums[$0] }.max() ?? 0
+        let valley = sums[x]
+        let deep = leftPeak > 0
+            && rightPeak > 0
+            && valley * 3 < leftPeak
+            && valley * 3 < rightPeak
+        if deep {
+            cuts.append(x)
+            x += digitWide * 2 / 3
+        } else {
+            x += 1
+        }
+    }
+    guard !cuts.isEmpty else { return [span] }
+    var pieces: [(Int, Int)] = []
+    var start = span.0
+    for cut in cuts {
+        if cut > start { pieces.append((start, cut)) }
+        start = cut
+    }
+    if span.1 > start { pieces.append((start, span.1)) }
+    let kept = pieces.filter { $0.1 - $0.0 >= max(2, digitWide / 5) }
+    return kept.isEmpty ? [span] : kept
 }
 
 /// A projection floor cuts the diagonal of a 2. The halves are still one stroke.
@@ -1535,14 +1661,19 @@ private func joiningBridgedPieces(
     var merged: [(Int, Int)] = []
     // Both halves have to be narrower than a finished digit. The reflection
     // beside the 3 is as wide as a digit and must not be pulled in with it.
+    // Two washed digits cut apart by the floor are each already ~digit-wide;
+    // do not glue those back even when a thin bridge still connects them.
     let narrow = bandHeight / 2
+    let digitWide = max(1, bandHeight / 2)
     let gapLimit = max(1, bandHeight / 8)
     for piece in pieces.dropFirst() {
         let gap = piece.0 - previous.1
         let leftWidth = previous.1 - previous.0
         let rightWidth = piece.1 - piece.0
         let combined = piece.1 - previous.0
-        let bridged = leftWidth < narrow
+        let bothFinished = leftWidth * 5 >= digitWide * 3 && rightWidth * 5 >= digitWide * 3
+        let bridged = !bothFinished
+            && leftWidth < narrow
             && rightWidth < narrow
             && combined < bandHeight
             && gap > 0
