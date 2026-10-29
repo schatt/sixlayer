@@ -101,7 +101,7 @@ struct OCRSevenSegment576Tests {
         // is not a stroke.
         let image = SegmentPanel.render(
             rows: [atoms("32.88"), atoms("8.022")],
-            padding: 80,
+            padding: 160,
             edgeStrip: true
         )
         #expect(decode(image, maximum: 0).extractedText == "32.88\n8.022")
@@ -783,7 +783,7 @@ private enum SegmentPanel {
     ) {
         guard let first = bands.first, let last = bands.last else { return }
         let contentEnd = width - padding
-        let stripX = contentEnd + 16
+        let stripX = contentEnd + 24
         let stripEnd = min(width, stripX + 6)
         guard stripEnd > stripX else { return }
         for y in first.minY..<last.maxY {
