@@ -1317,6 +1317,7 @@ private func priceMatchedLeftByDenseWindow(
     let y0 = max(0, band.0)
     let y1 = min(mask.height, band.1)
     let spanWidth = sharedRight - sharedLeft
+    let bandHeight = max(1, y1 - y0)
     guard width > 0, y1 > y0, spanWidth > 48 else { return sharedLeft }
     var columnInk = [Int](repeating: 0, count: width)
     for x in sharedLeft..<min(width, sharedRight) {
@@ -1326,28 +1327,37 @@ private func priceMatchedLeftByDenseWindow(
         }
         columnInk[x] = ink
     }
+    // A solid left blob fills nearly every row. A digit stem fills a
+    // fraction of the band. Score digit-like columns, not total ink.
+    var digitLike = [Bool](repeating: false, count: width)
+    for x in sharedLeft..<min(width, sharedRight) {
+        let ink = columnInk[x]
+        digitLike[x] = ink * 5 >= bandHeight && ink * 5 <= bandHeight * 4
+    }
     let window = max(48, min(spanWidth - 24, spanWidth * 3 / 4))
     guard window + 24 < spanWidth else { return sharedLeft }
     var bestStart = sharedLeft
-    var bestInk = Int.min
+    var bestScore = Int.min
     let lastStart = sharedRight - window
     var start = sharedLeft
     while start <= lastStart {
-        var ink = 0
-        for x in start..<(start + window) {
-            ink += columnInk[x]
+        var score = 0
+        for x in start..<(start + window) where digitLike[x] {
+            score += 1
         }
-        if ink > bestInk {
-            bestInk = ink
+        if score > bestScore {
+            bestScore = score
             bestStart = start
         }
         start += 1
     }
-    guard bestStart > sharedLeft + 16 else { return sharedLeft }
+    guard bestStart > sharedLeft + 16, bestScore > 8 else { return sharedLeft }
     let peak = (bestStart..<(bestStart + window)).map { columnInk[$0] }.max() ?? 0
     let floor = max(1, peak / 5)
     var lo = bestStart
     while lo > sharedLeft, columnInk[lo - 1] >= floor {
+        // Do not walk back into a solid blob fringe.
+        if columnInk[lo - 1] * 5 > bandHeight * 4 { break }
         lo -= 1
     }
     return lo
