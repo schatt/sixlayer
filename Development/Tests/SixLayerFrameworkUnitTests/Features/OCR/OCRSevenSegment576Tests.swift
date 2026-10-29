@@ -796,8 +796,9 @@ private enum SegmentPanel {
         }
     }
 
-    /// Dense ink in the digit columns, sitting just above the top bar. The
-    /// box grows into that glare, so the upper stem scanlines leave the glyph.
+    /// Dense ink in each digit's own columns, sitting just above the top bar.
+    /// The box grows into that glare, so the upper stem scanlines leave the
+    /// glyph. Digits stay separated; a full-width slab would fuse them.
     private static func paintAboveDigitGlare(
         _ pixels: inout [UInt8],
         width: Int,
@@ -807,23 +808,29 @@ private enum SegmentPanel {
         strokes: [Stroke]
     ) {
         let digitStrokes = strokes.filter { !$0.opposite }
+        let glareHeight = max(28, cellH * 2 / 5)
         for band in bands {
-            let glareHeight = max(28, cellH / 2)
             let y1 = band.minY
             let y0 = max(0, y1 - glareHeight)
             guard y1 > y0 else { continue }
-            let xs = digitStrokes.compactMap { stroke -> (Int, Int)? in
+            let topBars = digitStrokes.filter { stroke in
                 let rect = stroke.rect
-                let midY = Int(rect.midY)
-                guard midY >= band.minY, midY < band.maxY else { return nil }
-                return (max(0, Int(rect.minX)), min(width, Int(rect.maxX.rounded(.up))))
+                let minY = Int(rect.minY)
+                let barH = Int(rect.height.rounded(.up))
+                return minY >= band.minY
+                    && minY < band.minY + stroke * 2
+                    && barH <= stroke + 2
+                    && Int(rect.width) > stroke
             }
-            guard let left = xs.map(\.0).min(), let right = xs.map(\.1).max(), right > left else {
-                continue
-            }
-            for y in y0..<y1 {
-                for x in left..<right {
-                    pixels[y * width + x] = ink
+            for bar in topBars {
+                let rect = bar.rect
+                let left = max(0, Int(rect.minX) - stroke)
+                let right = min(width, Int(rect.maxX.rounded(.up)) + stroke)
+                guard right > left else { continue }
+                for y in y0..<y1 {
+                    for x in left..<right {
+                        pixels[y * width + x] = ink
+                    }
                 }
             }
         }
