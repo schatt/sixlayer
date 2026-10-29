@@ -1518,10 +1518,11 @@ private func joiningBridgedPieces(
 ) -> [(Int, Int)] {
     guard var previous = pieces.first else { return [] }
     var merged: [(Int, Int)] = []
-    // Only rejoin half-glyphs (a 2 cut on its diagonal). bandHeight/2 also
-    // matched a finished digit, so a washed bridge between two digits pulled
-    // them back into one ~200px blob.
-    let narrow = (bandHeight * 2) / 5
+    // Both halves have to be narrower than a finished digit. The reflection
+    // beside the 3 is as wide as a digit and must not be pulled in with it.
+    // combined must still look like one glyph: two washed digits glued by a
+    // bridge are each about half the band, so bandHeight alone let them join.
+    let narrow = bandHeight / 2
     let combinedLimit = (bandHeight * 2) / 3
     let gapLimit = max(1, bandHeight / 8)
     for piece in pieces.dropFirst() {
