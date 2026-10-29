@@ -563,7 +563,9 @@ private struct GrayBuffer {
         let right = max(1, box.maxX - (midX + 1))
         // Wash bridges sit on the left of a pitch window. Start f/e past that
         // fringe; a real left stem still lives near the inner left third.
-        let leftFringe = washAwareStems ? max(1, boxWidth / 6) : 0
+        // /6 cleared the last volume 2 (pat 123→91) but not the first after
+        // the decimal (still 123); /4 reaches deeper into the bridge smear.
+        let leftFringe = washAwareStems ? max(1, boxWidth / 4) : 0
         let leftStem = box.minX + leftFringe
         let leftSpan = max(1, half - leftFringe)
         if foregroundCount(mask, x: leftStem, y: quarter, length: leftSpan, vertical: false) > 0 {
