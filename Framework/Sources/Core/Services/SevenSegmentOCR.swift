@@ -395,7 +395,12 @@ private struct GrayBuffer {
         // tall (~13% of a digit); keep the ceiling near that.
         if colonGap,
            box.width * 100 <= box.height * 30,
-           vertical.allSatisfy({ $0.1 - $0.0 < digitHeight * 25 / 100 }) {
+           vertical.allSatisfy({
+               let run = $0.1 - $0.0
+               // Colon dots are about as tall as they are wide; glare-split
+               // stems stay much taller than the narrow box.
+               return run < digitHeight * 25 / 100 && run <= box.width + 2
+           }) {
             return Cell(box: box, character: ":", confidence: 1, band: bandIndex)
         }
         // Glare lifts the glass on both sides of its band. Those short bands
@@ -947,7 +952,10 @@ private extension GrayBuffer {
                     sharedLeft: sharedLeft,
                     sharedRight: sharedRight
                 )
-                let x0 = max(0, left - 8)
+                // A peeled left edge already sits on digit ink; padding back
+                // by a full stem would re-include the left scratch we dropped.
+                let leftPad = left > sharedLeft + 8 ? 2 : 8
+                let x0 = max(0, left - leftPad)
                 let x1 = min(buffer.width, sharedRight + 8)
                 let crop = buffer.cropped(x0: x0, y0: y0, x1: x1, y1: y1)
                 guard crop.width > 8, crop.height > 8 else {
