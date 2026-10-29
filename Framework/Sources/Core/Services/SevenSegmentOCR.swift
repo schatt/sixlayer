@@ -1267,9 +1267,8 @@ private func priceMatchedBand(_ sums: [Int], in band: (Int, Int), targetHeight: 
     return (bestStart, bestStart + targetHeight)
 }
 
-/// Raise the left crop edge past a thin left scratch. A digit run fills many
-/// columns in a window; a scratch fills only a few. Do not use stem islands —
-/// seven-segment cavities would split a real digit.
+/// Raise the left crop edge past a thin left scratch. Drop a short prefix of
+/// active columns when the remaining digit columns still hold most of the ink.
 private func priceMatchedLeft(
     _ mask: Mask,
     band: (Int, Int),
@@ -1288,26 +1287,29 @@ private func priceMatchedLeft(
         }
         columnInk[x] = ink
     }
-    let bandHeight = y1 - y0
-    let window = max(24, min(bandHeight / 2, (sharedRight - sharedLeft) / 3))
-    let needColumns = max(8, window / 3)
-    var x = sharedLeft
-    let last = min(width, sharedRight) - window
-    guard last > sharedLeft else { return sharedLeft }
-    while x <= last {
-        var filled = 0
-        for col in x..<(x + window) where columnInk[col] > 0 {
-            filled += 1
+    let active = (sharedLeft..<min(width, sharedRight)).filter { columnInk[$0] > 0 }
+    guard active.count > 16 else { return sharedLeft }
+    let totalInk = active.reduce(0) { $0 + columnInk[$1] }
+    var dropped = 0
+    var droppedInk = 0
+    var index = 0
+    while index < active.count {
+        let remaining = active.count - index
+        let remainingInk = totalInk - droppedInk
+        // A scratch is a short prefix; digits keep most columns and ink.
+        if index > 0,
+           remaining * 5 >= active.count * 4,
+           remainingInk * 5 >= totalInk * 4,
+           active[index] > sharedLeft + 8,
+           dropped * 4 <= remaining,
+           (active[index] - sharedLeft) * 4 <= (sharedRight - active[index]) {
+            return active[index]
         }
-        if filled >= needColumns {
-            // Only move when the lead before this window was a thin scratch.
-            let leadFilled = (sharedLeft..<x).filter { columnInk[$0] > 0 }.count
-            if x > sharedLeft + 8, leadFilled > 0, leadFilled * 3 <= needColumns {
-                return x
-            }
-            return sharedLeft
-        }
-        x += 1
+        dropped += 1
+        droppedInk += columnInk[active[index]]
+        index += 1
+        // Never drop more than a thin scratch's worth of columns.
+        if dropped > max(16, (y1 - y0) / 6) { break }
     }
     return sharedLeft
 }
