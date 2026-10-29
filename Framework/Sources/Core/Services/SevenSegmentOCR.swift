@@ -1759,9 +1759,9 @@ private func topBarRow(
     let mid1 = right - span / 4
     var bestRow: Int?
     var bestScore = Int.min
-    for offset in from..<min(to, box.maxY - lower) {
+    for offset in from..<to {
         let y = lower + offset
-        guard y >= 0, y < mask.height else { continue }
+        guard y >= box.minY, y < box.maxY, y < mask.height else { continue }
         let row = y * width
         var center = 0
         var edge = 0
