@@ -1805,24 +1805,31 @@ private func columnRuns(
             stride: max(max(1, $0.body), $0.stride)
         )
     }
-    // When pitch-driving: the price-row count owns the cut. Separate under-
-    // fused runs still sit on the wrong sides of wash, so union the digit
-    // field (first wide run through last) and always pitch-pack that span.
-    // Without a preferred pitch, keep every raw run for the valley path.
+    // When pitch-driving: only union into one field when runs look wash-fused
+    // (a blob wider than ~1.5 body, or gaps between wide runs under body/3).
+    // Clean separated digits (edgeStrip) keep their natural runs so pitch
+    // does not re-pack them off their stems. Without preferred pitch, valley.
     let spans: [(Int, Int)]
     if let pitch = copied {
         let wideEnough = raw.filter { $0.1 - $0.0 > pitch.body / 2 }
-        if let first = wideEnough.first, let last = wideEnough.last {
+        let hasWideBlob = wideEnough.contains { $0.1 - $0.0 > pitch.body + pitch.body / 2 }
+        let gaps = zip(wideEnough, wideEnough.dropFirst()).map { $1.0 - $0.1 }
+        let bridged = gaps.contains { $0 >= 0 && $0 < pitch.body / 3 }
+        if (hasWideBlob || bridged),
+           let first = wideEnough.first,
+           let last = wideEnough.last {
             spans = [(first.0, last.1)]
-        } else if let first = raw.first, let last = raw.last {
-            spans = [(first.0, last.1)]
+        } else if !wideEnough.isEmpty {
+            spans = wideEnough
         } else {
             spans = raw
         }
         if width >= 400 {
             let listed = raw.map { "\($0.0)-\($0.1)" }.joined(separator: ",")
             let field = spans.map { "\($0.0)-\($0.1)" }.joined(separator: ",")
-            trace("pitch field raw[\(listed)] → [\(field)] body\(pitch.body)x\(pitch.count)\n")
+            trace(
+                "pitch field raw[\(listed)] → [\(field)] body\(pitch.body)x\(pitch.count) fused=\(hasWideBlob || bridged)\n"
+            )
         }
     } else {
         spans = raw
