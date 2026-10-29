@@ -279,7 +279,7 @@ private struct GrayBuffer {
                 buffer: buffer,
                 darkInk: darkInk
             )
-            if buffer.width >= 400 {
+            if buffer.width >= 1000 {
                 let pattern = sample(mask, box: box, width: buffer.width)
                 let cover = coverage(mask, box: box, width: buffer.width)
                 let name = cell.map { String($0.character) } ?? "drop"
@@ -746,10 +746,6 @@ private struct GrayBuffer {
 
 private func trace(_ message: String) {
     fputs(message, stderr)
-    if let file = fopen("/tmp/ocr-591.log", "a") {
-        fputs(message, file)
-        fclose(file)
-    }
 }
 
 private struct Mask {
@@ -879,7 +875,7 @@ private extension GrayBuffer {
         let glyphs = chosen.glyphs
         let bandSource = chosen.bandSource
         let opened = darkChoice.opens || lightChoice.opens
-        if buffer.width >= 400 {
+        if buffer.width >= 1000 {
             let ink = glyphs.bits.filter { $0 }.count
             trace(
                 "read \(buffer.width)x\(buffer.height) dark=\(primaryIsDark) opened=\(opened) ink=\(ink)\n"
@@ -907,13 +903,9 @@ private extension GrayBuffer {
             : (separated.count > foundBands.count
                 ? separated
                 : merge(separated, whenGapBelow: max(1, cellHeight / 2)))
-        if buffer.width >= 400 {
-            let listed = splitBands.map { "\($0.0)-\($0.1)" }.joined(separator: ",")
-            trace("bands \(listed)\n")
-        }
         if buffer.width >= 1000 {
             let listed = splitBands.map { "\($0.0)-\($0.1)" }.joined(separator: ",")
-            fputs("bands \(listed)\n", stderr)
+            trace("bands \(listed)\n")
         }
         // The window is sized from the whole crop. Two rows make it wide
         // enough to mark the glass between digits. Read each row from a
@@ -923,7 +915,7 @@ private extension GrayBuffer {
         if splittingRows, splitBands.count > 1 {
             let span = readingSpan(glyphs, bands: splitBands)
             let parentRadius = windowRadius(width: buffer.width, height: buffer.height)
-            if buffer.width >= 400 {
+            if buffer.width >= 1000 {
                 trace("span \(String(describing: span)) radius \(parentRadius)\n")
             }
             var windowNarrows = true
@@ -945,7 +937,7 @@ private extension GrayBuffer {
                 }
                 let found = readRows(in: crop, splittingRows: false).flatMap { $0 }
                 let shifted = found.map { $0.shifted(dx: x0, dy: y0) }
-                if buffer.width >= 400 {
+                if buffer.width >= 1000 {
                     trace(
                         "rowcrop \(x0),\(y0) \(crop.width)x\(crop.height) [\(String(shifted.map(\.character)))]\n"
                     )
@@ -1182,6 +1174,7 @@ private func readingSpan(_ mask: Mask, bands: [(Int, Int)]) -> (Int, Int)? {
     }
     guard !valleys.isEmpty else { return nil }
     var keep = [Bool](repeating: false, count: width)
+    var edgeColumn = [Bool](repeating: false, count: width)
     var columnInk = [Int](repeating: 0, count: width)
     for x in 0..<width {
         let edge = valleys.contains { valley in
@@ -1194,7 +1187,10 @@ private func readingSpan(_ mask: Mask, bands: [(Int, Int)]) -> (Int, Int)? {
             }
             return false
         }
-        if edge { continue }
+        if edge {
+            edgeColumn[x] = true
+            continue
+        }
         var ink = 0
         for band in bands {
             let y0 = max(0, band.0)
@@ -1216,7 +1212,8 @@ private func readingSpan(_ mask: Mask, bands: [(Int, Int)]) -> (Int, Int)? {
     var end = first
     var ink = columnInk[first]
     for index in active.dropFirst() {
-        if index - end <= gapLimit {
+        let crossesBezel = (end + 1..<index).contains { edgeColumn[$0] }
+        if index - end <= gapLimit, !crossesBezel {
             end = index
             ink += columnInk[index]
         } else {
