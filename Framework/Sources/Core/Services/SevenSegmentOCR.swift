@@ -1696,6 +1696,17 @@ private func densestInkBand(
     if box.width * 4 < height {
         return box
     }
+    // Cap by this box's width. A broken 3 can tighten narrowly; then the
+    // median digit width decides whether it is still a normal-height glyph.
+    let ownCap = max(8, box.width * 2)
+    let narrow = digitWidth > 8 && box.width * 5 < digitWidth * 4
+    let earlyCap = narrow ? max(ownCap, digitWidth * 2) : ownCap
+    let slack = max(4, earlyCap / 12)
+    // Price-like boxes are left alone. Snapping every wide glyph to a "top
+    // bar" misreads the mid-row glare fixture as a colon.
+    if height <= earlyCap + slack {
+        return box
+    }
     var start = 0
     var end = height
     // A top bar spans the interior, not the full cell. A glare cap fills it.
@@ -1709,8 +1720,8 @@ private func densestInkBand(
         end -= 1
     }
     if (height - end) * 2 > height { end = height }
-    // Always snap to the top bar for wide glyphs. Washed glare above it may
-    // sit inside a price-like aspect, so an early height check would skip it.
+    // Washed glare above the top bar may not be solid. Snap to the strongest
+    // center bar in the upper half so upper stem scans start on the glyph.
     let topBar = topBarRow(
         mask,
         box: box,
@@ -1723,18 +1734,12 @@ private func densestInkBand(
     }
     var minY = profile.lower + start
     var maxY = profile.lower + end
-    // Cap by this box's width. A broken 3 can tighten narrowly; then the
-    // median digit width decides whether it is still a normal-height glyph.
-    let ownCap = max(8, box.width * 2)
-    let narrow = digitWidth > 8 && box.width * 5 < digitWidth * 4
-    let heightCap = narrow ? max(ownCap, digitWidth * 2) : ownCap
     let remaining = maxY - minY
-    if remaining > heightCap + max(4, heightCap / 12) {
-        minY = maxY - min(remaining, ownCap)
+    if remaining <= ownCap + max(4, ownCap / 12) {
+        return PixelBox(minX: box.minX, minY: minY, maxX: box.maxX, maxY: maxY)
     }
-    if minY == box.minY, maxY == box.maxY {
-        return box
-    }
+    let target = min(remaining, ownCap)
+    minY = maxY - target
     return PixelBox(minX: box.minX, minY: minY, maxX: box.maxX, maxY: maxY)
 }
 
