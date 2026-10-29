@@ -933,12 +933,21 @@ private extension GrayBuffer {
             var windowNarrows = true
             var rescanned: [[Cell]] = []
             let rowProfile = glyphs.rowSums
-            // A known-good single-row price crop is ~380px (window radius 11).
-            let priceBandHeight = 96 + 11 * 24
+            // Known-good price crop is 380px tall. Allow a little of the row
+            // gap below the ink band so the window can sit on that crop's Y.
+            let priceBandHeight = 380
             for band in splitBands {
-                let tight = priceMatchedBand(rowProfile, in: band, targetHeight: priceBandHeight)
-                let y0 = max(0, tight.0 - 4)
-                let y1 = min(buffer.height, tight.1 + 4)
+                let expanded = (
+                    band.0,
+                    min(buffer.height, max(band.1, band.0 + priceBandHeight + 8))
+                )
+                let tight = priceMatchedBand(
+                    rowProfile,
+                    in: expanded,
+                    targetHeight: priceBandHeight
+                )
+                let y0 = tight.0
+                let y1 = tight.1
                 let sharedLeft = span?.0 ?? 0
                 let sharedRight = span?.1 ?? buffer.width
                 let left = priceMatchedLeft(
@@ -1257,7 +1266,9 @@ private func readingSpan(_ mask: Mask, bands: [(Int, Int)]) -> (Int, Int)? {
 }
 
 /// When a row band is taller than a price crop, keep the densest window of
-/// that height. Synthetic digit bands are already short — leave them alone.
+/// that height. Prefer a lower start among near-ties so top haze is dropped
+/// and the crop lines up with a known-good price Y. Synthetic digit bands
+/// that are already short are left alone.
 private func priceMatchedBand(_ sums: [Int], in band: (Int, Int), targetHeight: Int) -> (Int, Int) {
     let y0 = max(0, band.0)
     let y1 = min(sums.count, band.1)
@@ -1274,6 +1285,19 @@ private func priceMatchedBand(_ sums: [Int], in band: (Int, Int), targetHeight: 
         }
         if ink > bestInk {
             bestInk = ink
+            bestStart = start
+        }
+        start += 1
+    }
+    // Drop residual top haze when a lower window keeps nearly the same ink.
+    let floorInk = bestInk - max(bestInk / 50, 1)
+    start = bestStart
+    while start <= lastStart {
+        var ink = 0
+        for y in start..<(start + targetHeight) {
+            ink += sums[y]
+        }
+        if ink >= floorInk {
             bestStart = start
         }
         start += 1
