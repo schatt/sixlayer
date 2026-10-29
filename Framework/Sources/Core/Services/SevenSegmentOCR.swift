@@ -928,12 +928,14 @@ private extension GrayBuffer {
                 let tight = densestInkBand(rowProfile, in: band)
                 let y0 = max(0, tight.0 - 4)
                 let y1 = min(buffer.height, tight.1 + 4)
-                // Shared span still stops at a bezel edge. The row span only
-                // raises the left edge so a left scratch stays out of the crop.
+                // Shared span still stops at a bezel edge. Raise the left
+                // edge only when this row's digit ink starts clearly later
+                // than the shared span (a left scratch island).
                 let sharedLeft = span?.0 ?? 0
                 let sharedRight = span?.1 ?? buffer.width
                 let rowLeft = rowReadingSpan(glyphs, band: tight)?.0 ?? sharedLeft
-                let x0 = max(0, max(sharedLeft, rowLeft) - 8)
+                let left = rowLeft > sharedLeft + 16 ? rowLeft : sharedLeft
+                let x0 = max(0, left - 8)
                 let x1 = min(buffer.width, sharedRight + 8)
                 let crop = buffer.cropped(x0: x0, y0: y0, x1: x1, y1: y1)
                 guard crop.width > 8, crop.height > 8 else {
@@ -1240,8 +1242,8 @@ private func readingSpan(_ mask: Mask, bands: [(Int, Int)]) -> (Int, Int)? {
     return (best.start, best.end)
 }
 
-/// Densest contiguous ink inside a row band. Sparse haze above washed digits
-/// keeps the band open; the price-sized crop is this denser stretch.
+/// Trim sparse haze above/below digit ink inside a row band. Do not split on
+/// the empty rows inside a seven-segment glyph — those cavities are not haze.
 private func densestInkBand(_ sums: [Int], in band: (Int, Int)) -> (Int, Int) {
     let y0 = max(0, band.0)
     let y1 = min(sums.count, band.1)
@@ -1249,34 +1251,16 @@ private func densestInkBand(_ sums: [Int], in band: (Int, Int)) -> (Int, Int) {
     let peak = (y0..<y1).map { sums[$0] }.max() ?? 0
     guard peak > 0 else { return band }
     let floor = max(8, peak / 5)
-    var bestStart = y0
-    var bestEnd = y1
-    var bestInk = 0
-    var index = y0
-    while index < y1 {
-        if sums[index] < floor {
-            index += 1
-            continue
-        }
-        let start = index
-        var ink = 0
-        while index < y1, sums[index] >= floor {
-            ink += sums[index]
-            index += 1
-        }
-        if ink > bestInk {
-            bestInk = ink
-            bestStart = start
-            bestEnd = index
-        }
-    }
-    guard bestInk > 0 else { return band }
-    // A clean row's densest stretch is the whole band. Only tighten when
-    // haze/scratch opened the band well past the digit cells.
-    let denseHeight = bestEnd - bestStart
+    var lo = y0
+    while lo < y1, sums[lo] < floor { lo += 1 }
+    var hi = y1
+    while hi > lo, sums[hi - 1] < floor { hi -= 1 }
+    guard hi > lo else { return band }
+    // A clean row needs no trim. Only tighten when haze opened the band.
+    let denseHeight = hi - lo
     let bandHeight = y1 - y0
     guard denseHeight * 5 <= bandHeight * 4 else { return band }
-    return (bestStart, bestEnd)
+    return (lo, hi)
 }
 
 /// Horizontal digit ink inside one densest row band. Peels a left scratch
