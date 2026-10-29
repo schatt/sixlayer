@@ -1879,13 +1879,23 @@ private func splitAtExpectedPitch(
     let count = max(2, pitch.count)
     let width = span.1 - span.0
     guard width > body + body / 4 else { return [span] }
+    // Inset so a solid wash bridge on the glyph edge cannot light extra
+    // stems and turn a 0 into an 8.
+    let inset = max(1, body / 12)
+    func window(at x: Int) -> (Int, Int)? {
+        let start = max(span.0, x + inset)
+        let end = min(span.1, x + body - inset)
+        guard end - start >= max(2, body / 5) else { return nil }
+        return (start, end)
+    }
     var pieces: [(Int, Int)] = []
-    let firstEnd = min(span.1, span.0 + body)
-    pieces.append((span.0, firstEnd))
-    guard count > 1 else { return pieces }
+    if let first = window(at: span.0) {
+        pieces.append(first)
+    }
+    guard count > 1 else { return pieces.isEmpty ? [span] : pieces }
     // Clear a decimal / wash hole after the leading digit.
-    let hole = max(body / 2, max(1, pitch.stride - body))
-    let restStart = min(span.1, firstEnd + hole)
+    let hole = max(body * 2 / 3, max(1, pitch.stride - body))
+    let restStart = min(span.1, span.0 + body + hole)
     let restCount = count - 1
     let restWidth = max(0, span.1 - restStart)
     let restGap = restCount > 1
@@ -1893,9 +1903,8 @@ private func splitAtExpectedPitch(
         : 0
     var x = restStart
     for _ in 0..<restCount {
-        let end = min(span.1, x + body)
-        if end - x >= max(2, body / 5) {
-            pieces.append((x, end))
+        if let piece = window(at: x) {
+            pieces.append(piece)
         }
         x += body + restGap
         if x >= span.1 { break }
