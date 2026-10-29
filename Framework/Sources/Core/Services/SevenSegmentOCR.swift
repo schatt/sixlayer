@@ -1667,10 +1667,11 @@ private func primaryInkBandY(_ mask: Mask, x0: Int, x1: Int, y0: Int, y1: Int) -
     return (minY, maxY)
 }
 
-/// Vertical span of digit ink for segment sampling. A short solid glare cap
-/// above the top bar is dropped when the box is taller than a digit. A stem
-/// (a one) fills its narrow box and must not be stripped. If the box is still
-/// tall, keep the lower digit-tall slice so upper stem scans stay on the glyph.
+/// Vertical span of digit ink for segment sampling. Glare above the top bar
+/// makes a box taller than a real digit (~2× width). Drop a short solid cap,
+/// then keep the lower digit-tall slice. Boxes that already fit a digit are
+/// left alone — shrinking them clips the top bar. A stem fills its narrow box
+/// and is never treated as a glare cap.
 private func densestInkBand(
     _ mask: Mask,
     box: PixelBox,
@@ -1681,28 +1682,33 @@ private func densestInkBand(
     let sums = profile.sums
     let height = sums.count
     guard height > 2 else { return box }
-    let aspect = max(8, box.width * 3 / 2)
+    // Washed pump digits are about 1.5–2× as tall as they are wide.
+    let maxDigit = max(8, box.width * 2)
+    let slack = max(4, maxDigit / 12)
+    if height <= maxDigit + slack {
+        return box
+    }
     var start = 0
     var end = height
-    // Only look for a glare cap when the box is taller than a digit aspect.
-    if height > aspect + max(4, aspect / 8) {
-        let solid = max(2, box.width * 2 / 3)
-        while start < height - 3 && sums[start] >= solid {
-            start += 1
-        }
-        // A stem fills the box. A glare cap is a minority of the height.
-        if start * 2 > height { start = 0 }
-        while end - start > 3 && sums[end - 1] >= solid {
-            end -= 1
-        }
-        if (height - end) * 2 > height { end = height }
+    let solid = max(2, box.width * 2 / 3)
+    while start < height - 3 && sums[start] >= solid {
+        start += 1
     }
+    // A stem fills the box. A glare cap is a minority of the height.
+    if start * 2 > height { start = 0 }
+    while end - start > 3 && sums[end - 1] >= solid {
+        end -= 1
+    }
+    if (height - end) * 2 > height { end = height }
     var minY = profile.lower + start
     var maxY = profile.lower + end
-    let target = max(aspect, digitHeight > 8 ? digitHeight * 4 / 5 : aspect)
-    if maxY - minY > target {
-        minY = maxY - target
+    let remaining = maxY - minY
+    if remaining <= maxDigit + slack {
+        return PixelBox(minX: box.minX, minY: minY, maxX: box.maxX, maxY: maxY)
     }
+    // Median height is also inflated when every box grew into the glare.
+    let target = min(remaining, max(maxDigit, digitHeight > 8 && digitHeight <= maxDigit + slack ? digitHeight : maxDigit))
+    minY = maxY - target
     return PixelBox(minX: box.minX, minY: minY, maxX: box.maxX, maxY: maxY)
 }
 
