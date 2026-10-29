@@ -122,6 +122,18 @@ struct OCRSevenSegment576Tests {
         #expect(decode(image, maximum: 0).extractedText == "32.88\n8.022")
     }
 
+    @Test func digitPitchCutsASolidWashBridge() {
+        // Approach D (#591): a full-height wash fills each intra-digit gap, so
+        // column sums stay high across the bridge and valley hunting has no
+        // dip to cut. Force digit-sized slots from the 7-seg aspect
+        // (width ≈ height/2), not ink valleys.
+        let image = SegmentPanel.render(
+            rows: [atoms("32.88"), atoms("8.022")],
+            solidGapWash: true
+        )
+        #expect(decode(image, maximum: 0).extractedText == "32.88\n8.022")
+    }
+
     @Test func rescannedRowCropMatchesPriceBandGeometry() {
         // Approach B (#591): a left scratch sits in the digit bands but not
         // through the row gap, and a tall haze above each row stretches the
@@ -715,7 +727,8 @@ private enum SegmentPanel {
         edgeStrip: Bool = false,
         aboveDigitGlare: Bool = false,
         leftScratch: Bool = false,
-        tallHaze: Bool = false
+        tallHaze: Bool = false,
+        solidGapWash: Bool = false
     ) -> CGImage {
         let laid = layout(rows: rows, padding: padding)
         let background: UInt8 = backgroundLevel ?? (invert ? 28 : 214)
@@ -747,6 +760,9 @@ private enum SegmentPanel {
         }
         var width = laid.width
         var height = laid.height
+        if solidGapWash {
+            paintSolidGapWash(&pixels, width: width, height: height, ink: ink, gaps: laid.gaps)
+        }
         if tallHaze {
             paintTallHaze(
                 &pixels,
@@ -817,6 +833,30 @@ private enum SegmentPanel {
             height = paddedH
         }
         return image(pixels: pixels, width: width, height: height)
+    }
+
+    /// Fill each intra-digit gap to the full cell height. Column sums stay high
+    /// across the bridge, so a valley cut has nothing to find. Approach D must
+    /// still recover digit-sized slots from the row's 7-seg pitch.
+    private static func paintSolidGapWash(
+        _ pixels: inout [UInt8],
+        width: Int,
+        height: Int,
+        ink: UInt8,
+        gaps: [Gap]
+    ) {
+        for gap in gaps {
+            let x0 = max(0, gap.minX)
+            let x1 = min(width, gap.maxX)
+            let y0 = max(0, gap.minY)
+            let y1 = min(height, gap.maxY)
+            guard x1 > x0, y1 > y0 else { continue }
+            for y in y0..<y1 {
+                for x in x0..<x1 {
+                    pixels[y * width + x] = ink
+                }
+            }
+        }
     }
 
     /// A bright line just above each digit row. A wide threshold window reaches
@@ -1001,51 +1041,95 @@ private enum SegmentPanel {
         var midY: Int { (minY + maxY) / 2 }
     }
 
+    private struct Gap {
+        var minX: Int
+        var maxX: Int
+        var minY: Int
+        var maxY: Int
+    }
+
     private struct Layout {
         var width: Int
         var height: Int
         var strokes: [Stroke]
         var rowBands: [RowBand]
+        var gaps: [Gap]
     }
 
     private static func layout(rows: [[Atom]], padding: Int) -> Layout {
         var strokes: [Stroke] = []
         var bands: [RowBand] = []
+        var gaps: [Gap] = []
         var y = padding
         var maxX = padding
         for row in rows {
             var x = padding
             let rowTop = y
+            var previousEnd: Int?
             for atom in row {
                 switch atom {
                 case .gap(let extra):
+                    previousEnd = nil
                     x += extra
                 case .digit(let pattern):
+                    if let end = previousEnd, end < x {
+                        gaps.append(Gap(minX: end, maxX: x, minY: rowTop, maxY: rowTop + cellH))
+                    }
                     strokes.append(contentsOf: digitStrokes(pattern, x: x, y: y, opposite: false))
+                    previousEnd = x + cellW
                     x += cellW + intra
                 case .period:
+                    if let end = previousEnd, end < x {
+                        gaps.append(Gap(minX: end, maxX: x, minY: rowTop, maxY: rowTop + cellH))
+                    }
                     strokes.append(Stroke(rect: periodRect(x: x, y: y), opposite: false))
+                    previousEnd = x + stroke
                     x += stroke + intra
                 case .comma:
+                    if let end = previousEnd, end < x {
+                        gaps.append(Gap(minX: end, maxX: x, minY: rowTop, maxY: rowTop + cellH))
+                    }
                     strokes.append(contentsOf: commaStrokes(x: x, y: y, opposite: false))
+                    previousEnd = x + stroke
                     x += stroke + intra
                 case .colon:
+                    if let end = previousEnd, end < x {
+                        gaps.append(Gap(minX: end, maxX: x, minY: rowTop, maxY: rowTop + cellH))
+                    }
                     strokes.append(contentsOf: colonStrokes(x: x, y: y))
+                    previousEnd = x + stroke
                     x += stroke + intra
                 case .hyphen:
+                    if let end = previousEnd, end < x {
+                        gaps.append(Gap(minX: end, maxX: x, minY: rowTop, maxY: rowTop + cellH))
+                    }
                     strokes.append(Stroke(rect: CGRect(x: x, y: y + cellH / 2 - stroke / 2, width: cellW, height: stroke), opposite: false))
+                    previousEnd = x + cellW
                     x += cellW + intra
                 case .topBar:
+                    if let end = previousEnd, end < x {
+                        gaps.append(Gap(minX: end, maxX: x, minY: rowTop, maxY: rowTop + cellH))
+                    }
                     strokes.append(Stroke(rect: CGRect(x: x, y: y, width: cellW, height: stroke), opposite: false))
+                    previousEnd = x + cellW
                     x += cellW + intra
                 case .fill(let width, let height):
+                    previousEnd = nil
                     strokes.append(Stroke(rect: CGRect(x: x, y: y + max(0, (cellH - height) / 2), width: width, height: height), opposite: false))
                     x += width + intra
                 case .oppositePeriod:
+                    if let end = previousEnd, end < x {
+                        gaps.append(Gap(minX: end, maxX: x, minY: rowTop, maxY: rowTop + cellH))
+                    }
                     strokes.append(Stroke(rect: periodRect(x: x, y: y), opposite: true))
+                    previousEnd = x + stroke
                     x += stroke + intra
                 case .oppositeComma:
+                    if let end = previousEnd, end < x {
+                        gaps.append(Gap(minX: end, maxX: x, minY: rowTop, maxY: rowTop + cellH))
+                    }
                     strokes.append(contentsOf: commaStrokes(x: x, y: y, opposite: true))
+                    previousEnd = x + stroke
                     x += stroke + intra
                 }
             }
@@ -1055,7 +1139,7 @@ private enum SegmentPanel {
         }
         let height = max(padding, y - rowGap + padding)
         let width = max(padding, maxX - intra + padding)
-        return Layout(width: max(width, 1), height: max(height, 1), strokes: strokes, rowBands: bands)
+        return Layout(width: max(width, 1), height: max(height, 1), strokes: strokes, rowBands: bands, gaps: gaps)
     }
 
     private static func isNarrowOne(_ pattern: SevenSegmentPattern) -> Bool {
