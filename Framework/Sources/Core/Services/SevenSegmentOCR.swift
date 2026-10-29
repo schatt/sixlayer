@@ -279,13 +279,12 @@ private struct GrayBuffer {
                 buffer: buffer,
                 darkInk: darkInk
             )
-            if buffer.width >= 1000 {
+            if buffer.width >= 400 {
                 let pattern = sample(mask, box: box, width: buffer.width)
                 let cover = coverage(mask, box: box, width: buffer.width)
                 let name = cell.map { String($0.character) } ?? "drop"
-                fputs(
-                    "cell \(name) box \(box.minX),\(box.minY) \(box.width)x\(box.height) pat \(pattern.rawValue) cov \(cover) h \(digitHeight)\n",
-                    stderr
+                trace(
+                    "cell \(name) box \(box.minX),\(box.minY) \(box.width)x\(box.height) pat \(pattern.rawValue) cov \(cover) h \(digitHeight)\n"
                 )
             }
             return cell
@@ -745,6 +744,14 @@ private struct GrayBuffer {
     }
 }
 
+private func trace(_ message: String) {
+    fputs(message, stderr)
+    if let file = fopen("/tmp/ocr-591.log", "a") {
+        fputs(message, file)
+        fclose(file)
+    }
+}
+
 private struct Mask {
     var bits: [Bool]
     var width: Int
@@ -872,11 +879,10 @@ private extension GrayBuffer {
         let glyphs = chosen.glyphs
         let bandSource = chosen.bandSource
         let opened = darkChoice.opens || lightChoice.opens
-        if buffer.width >= 1000 {
+        if buffer.width >= 400 {
             let ink = glyphs.bits.filter { $0 }.count
-            fputs(
-                "read \(buffer.width)x\(buffer.height) dark=\(primaryIsDark) opened=\(opened) ink=\(ink)\n",
-                stderr
+            trace(
+                "read \(buffer.width)x\(buffer.height) dark=\(primaryIsDark) opened=\(opened) ink=\(ink)\n"
             )
         }
         let bandSums = opened ? digitRowSums(bandSource.rowSums) : bandSource.rowSums
@@ -901,9 +907,9 @@ private extension GrayBuffer {
             : (separated.count > foundBands.count
                 ? separated
                 : merge(separated, whenGapBelow: max(1, cellHeight / 2)))
-        if buffer.width >= 1000 {
+        if buffer.width >= 400 {
             let listed = splitBands.map { "\($0.0)-\($0.1)" }.joined(separator: ",")
-            fputs("bands \(listed)\n", stderr)
+            trace("bands \(listed)\n")
         }
         if buffer.width >= 1000 {
             let listed = splitBands.map { "\($0.0)-\($0.1)" }.joined(separator: ",")
@@ -917,8 +923,8 @@ private extension GrayBuffer {
         if splittingRows, splitBands.count > 1 {
             let span = readingSpan(glyphs, bands: splitBands)
             let parentRadius = windowRadius(width: buffer.width, height: buffer.height)
-            if buffer.width >= 1000 {
-                fputs("span \(String(describing: span)) radius \(parentRadius)\n", stderr)
+            if buffer.width >= 400 {
+                trace("span \(String(describing: span)) radius \(parentRadius)\n")
             }
             var windowNarrows = true
             var rescanned: [[Cell]] = []
@@ -939,10 +945,9 @@ private extension GrayBuffer {
                 }
                 let found = readRows(in: crop, splittingRows: false).flatMap { $0 }
                 let shifted = found.map { $0.shifted(dx: x0, dy: y0) }
-                if buffer.width >= 1000 {
-                    fputs(
-                        "rowcrop \(x0),\(y0) \(crop.width)x\(crop.height) [\(String(shifted.map(\.character)))]\n",
-                        stderr
+                if buffer.width >= 400 {
+                    trace(
+                        "rowcrop \(x0),\(y0) \(crop.width)x\(crop.height) [\(String(shifted.map(\.character)))]\n"
                     )
                 }
                 if !shifted.isEmpty {
