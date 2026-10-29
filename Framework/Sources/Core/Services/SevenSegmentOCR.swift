@@ -1226,46 +1226,32 @@ private extension GrayBuffer {
             !cell.character.isNumber && cell.character != "." && cell.character != ","
         }
         guard digits.count >= 2 else { return row }
-        // Drop existing ./, marks: a late false baselineDot in a wash blob
-        // made 80.22. Re-place from inter-digit geometry only — no invented ink.
-        let digitWidth = median(digits.map(\.box.width)) ?? 0
+        // Pitch rows copy a price body count onto washed volume (Approach D).
+        // That volume is X.xxx gallons: place the mark in the first inter-digit
+        // gap. Ink scoring mis-fired on this photo (max → 80.22, empty → 802.2,
+        // non-flood → broke edgeStrip when the real dot itself looked "flooded").
+        // Drop stale ./, marks; do not invent stroke ink — only a gap anchor.
         let digitHeight = median(digits.map(\.height)) ?? 0
-        guard digitWidth > 8, digitHeight > 8 else {
+        guard digitHeight > 8 else {
             return (digits + other).sorted { $0.minX < $1.minX }
         }
         let baseline = median(digits.map(\.maxY)) ?? band.1
         let top = max(band.0, baseline - max(4, digitHeight / 8))
         let bottom = min(mask.height, max(baseline, band.1))
         guard bottom > top else { return (digits + other).sorted { $0.minX < $1.minX } }
-        let sums = columnSums(mask, y0: top, y1: bottom, width: width)
-        // Photo volume: gap after 8 has baseline ink 0 (wash hid the mark) and
-        // later gaps hold a wash blob (ink 191) or near-empty (ink 2). Pick the
-        // leftmost gap that is not flooded — X.xxx — instead of maximizing ink
-        // (→ 80.22) or minimizing ink+above (→ 802.2 from above-wash penalty).
-        let washFlood = max(8, digitHeight / 3)
-        var gaps: [(x0: Int, x1: Int, ink: Int)] = []
-        for i in digits.indices.dropLast() {
-            let left = digits[i].maxX
-            let right = digits[i + 1].minX
-            let gap = right - left
-            guard gap > 2, gap < digitWidth else { continue }
-            let ink = (left..<right).reduce(0) { $0 + sums[$1] }
-            trace("pitch gap \(i)+\(i + 1) \(left)-\(right) ink\(ink) flood\(washFlood)\n")
-            gaps.append((left, right, ink))
-        }
-        let clear = gaps.filter { $0.ink < washFlood }
-        let chosen = clear.first ?? gaps.min(by: { $0.ink < $1.ink })
+        let left = digits[0].maxX
+        let right = digits[1].minX
         var placed = digits + other
-        if let chosen, chosen.x1 > chosen.x0 {
-            let mid = (chosen.x0 + chosen.x1) / 2
-            let pad = max(1, (chosen.x1 - chosen.x0) / 4)
+        if right - left > 2 {
+            let mid = (left + right) / 2
+            let pad = max(1, (right - left) / 4)
             let box = PixelBox(
-                minX: max(chosen.x0, mid - pad),
+                minX: max(left, mid - pad),
                 minY: top,
-                maxX: min(chosen.x1, mid + pad),
+                maxX: min(right, mid + pad),
                 maxY: bottom
             )
-            trace("pitch marks place . @\(mid) ink\(chosen.ink)\n")
+            trace("pitch marks place . @\(mid) first-gap \(left)-\(right)\n")
             placed.append(Cell(box: box, character: ".", confidence: 1, band: 0))
         }
         return placed.sorted { $0.minX < $1.minX }
