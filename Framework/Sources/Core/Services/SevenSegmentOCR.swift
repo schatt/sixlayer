@@ -1613,6 +1613,9 @@ private func columnRuns(_ mask: Mask, y0: Int, y1: Int, width: Int) -> [(Int, In
 }
 
 /// Cut a span that still holds two digit peaks with a wash bridge between them.
+/// Peaks are local maxima about a digit apart — comparing against the global
+/// max on each side made every interior dip look deep and carved stems out of
+/// the volume row (~28px "1" between digits).
 private func splitAtDigitValleys(
     _ span: (Int, Int),
     sums: [Int],
@@ -1621,22 +1624,39 @@ private func splitAtDigitValleys(
     let digitWide = max(1, bandHeight / 2)
     let width = span.1 - span.0
     guard width > digitWide + digitWide / 3 else { return [span] }
+    let minPeakGap = max(2, (digitWide * 2) / 3)
+    var peaks: [Int] = []
+    var x = span.0 + 1
+    while x < span.1 - 1 {
+        let value = sums[x]
+        if value > 0, value >= sums[x - 1], value >= sums[x + 1] {
+            if let last = peaks.last, x - last < minPeakGap {
+                if value > sums[last] { peaks[peaks.count - 1] = x }
+            } else {
+                peaks.append(x)
+            }
+        }
+        x += 1
+    }
+    guard peaks.count >= 2 else { return [span] }
     var cuts: [Int] = []
-    var x = span.0 + digitWide / 2
-    while x < span.1 - digitWide / 2 {
-        let leftPeak = (span.0..<x).map { sums[$0] }.max() ?? 0
-        let rightPeak = (x..<span.1).map { sums[$0] }.max() ?? 0
-        let valley = sums[x]
+    for index in 0..<(peaks.count - 1) {
+        let left = peaks[index]
+        let right = peaks[index + 1]
+        guard right - left >= minPeakGap else { continue }
+        var bestX = left
+        var bestValley = Int.max
+        for column in left..<right where sums[column] < bestValley {
+            bestValley = sums[column]
+            bestX = column
+        }
+        let leftPeak = sums[left]
+        let rightPeak = sums[right]
         let deep = leftPeak > 0
             && rightPeak > 0
-            && valley * 3 < leftPeak
-            && valley * 3 < rightPeak
-        if deep {
-            cuts.append(x)
-            x += digitWide * 2 / 3
-        } else {
-            x += 1
-        }
+            && bestValley * 3 < leftPeak
+            && bestValley * 3 < rightPeak
+        if deep { cuts.append(bestX) }
     }
     guard !cuts.isEmpty else { return [span] }
     var pieces: [(Int, Int)] = []
@@ -1666,6 +1686,7 @@ private func joiningBridgedPieces(
     // do not glue those back even when a thin bridge still connects them.
     let narrow = bandHeight / 2
     let digitWide = max(1, bandHeight / 2)
+    let thinStem = max(2, digitWide / 5)
     let gapLimit = max(1, bandHeight / 8)
     for piece in pieces.dropFirst() {
         let gap = piece.0 - previous.1
@@ -1673,13 +1694,20 @@ private func joiningBridgedPieces(
         let rightWidth = piece.1 - piece.0
         let combined = piece.1 - previous.0
         let bothFinished = leftWidth * 5 >= digitWide * 3 && rightWidth * 5 >= digitWide * 3
-        let bridged = !bothFinished
-            && leftWidth < narrow
-            && rightWidth < narrow
-            && combined < bandHeight
-            && gap > 0
+        let absorbThin = (leftWidth < thinStem || rightWidth < thinStem)
+            && combined < digitWide + digitWide / 2
+        let bridged = gap > 0
             && gap < gapLimit
             && strokeConnects(previous, piece, mask: mask, y0: y0, y1: y1)
+            && (
+                absorbThin
+                    || (
+                        !bothFinished
+                            && leftWidth < narrow
+                            && rightWidth < narrow
+                            && combined < bandHeight
+                    )
+            )
         if bridged {
             previous.1 = piece.1
         } else {
