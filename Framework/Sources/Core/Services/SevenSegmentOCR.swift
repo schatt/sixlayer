@@ -1033,11 +1033,19 @@ private extension GrayBuffer {
                     rescanned.append(shifted)
                 }
                 if rowPitch == nil {
-                    let digitWidths = found.compactMap { cell -> Int? in
-                        guard cell.character.isNumber, cell.height > 0 else { return nil }
-                        return cell.box.width
+                    // Center-to-center includes the intra-digit gap. Cutting by
+                    // body width alone drifts across each wash bridge.
+                    let digits = found.filter { cell in
+                        cell.character.isNumber && cell.height > 0
+                    }.sorted { $0.minX < $1.minX }
+                    let spacings = zip(digits, digits.dropFirst()).map { left, right in
+                        right.box.midX - left.box.midX
                     }
-                    rowPitch = median(digitWidths)
+                    if let spacing = median(spacings), spacing > 0 {
+                        rowPitch = spacing
+                    } else {
+                        rowPitch = median(digits.map(\.box.width))
+                    }
                 }
             }
             if windowNarrows, !rescanned.isEmpty {
