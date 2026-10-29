@@ -933,13 +933,13 @@ private extension GrayBuffer {
             var windowNarrows = true
             var rescanned: [[Cell]] = []
             let rowProfile = glyphs.rowSums
-            // Known-good price crop is 380px tall. Allow a little of the row
-            // gap below the ink band so the window can sit on that crop's Y.
+            // Known-good price crop is 380px tall. Reach into the row gap so
+            // the window can sit on that crop's Y (not only inside ink).
             let priceBandHeight = 380
             for band in splitBands {
                 let expanded = (
                     band.0,
-                    min(buffer.height, max(band.1, band.0 + priceBandHeight + 8))
+                    min(buffer.height, band.1 + max(24, priceBandHeight / 8))
                 )
                 let tight = priceMatchedBand(
                     rowProfile,
