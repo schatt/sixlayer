@@ -390,9 +390,12 @@ private struct GrayBuffer {
             ? min(vertical[0].1 - vertical[0].0, vertical[1].1 - vertical[1].0)
             : 0
         let colonGap = vertical.count == 2 && splitGap >= shorterRun
+        // Mid-row glare can split a 3's right stems into two short runs that
+        // look like a colon at the 45% ceiling. Real colon dots are ~stroke
+        // tall (~13% of a digit); keep the ceiling near that.
         if colonGap,
            box.width * 100 <= box.height * 30,
-           vertical.allSatisfy({ $0.1 - $0.0 < digitHeight * 45 / 100 }) {
+           vertical.allSatisfy({ $0.1 - $0.0 < digitHeight * 25 / 100 }) {
             return Cell(box: box, character: ":", confidence: 1, band: bandIndex)
         }
         // Glare lifts the glass on both sides of its band. Those short bands
@@ -1298,8 +1301,9 @@ private func priceMatchedLeft(
         }
         columnInk[x] = ink
     }
-    // A left scratch fills the band; a digit stem covers a fraction of it.
-    let solid = max(4, bandHeight * 2 / 3)
+    // A left scratch fills most of the band; digit strokes cover much less.
+    // Use half-band so a price-matched window still sees the scratch as solid.
+    let solid = max(4, bandHeight / 2)
     let scratchCap = max(16, min(40, bandHeight / 8))
     var x = sharedLeft
     // Skip leading empty padding.
@@ -1310,7 +1314,9 @@ private func priceMatchedLeft(
     }
     let scratchEnd = x
     let peeled = scratchEnd - sharedLeft
-    guard peeled > 4, peeled <= scratchCap + 8 else { return sharedLeft }
+    guard peeled > 4, peeled <= scratchCap + 8, scratchEnd > scratchStart else {
+        return sharedLeft
+    }
     // Require digit ink after the scratch so we do not peel an empty crop.
     while x < sharedRight, columnInk[x] < max(1, solid / 4) { x += 1 }
     guard x < sharedRight, columnInk[x] > 0 else { return sharedLeft }
