@@ -1357,7 +1357,9 @@ private func priceMatchedLeftByScratchPrefix(
         }
         columnInk[x] = ink
     }
-    let active = (sharedLeft..<min(width, sharedRight)).filter { columnInk[$0] > 0 }
+    // Ignore haze specks: a digit stem covers a real fraction of the band.
+    let minCol = max(2, (y1 - y0) / 8)
+    let active = (sharedLeft..<min(width, sharedRight)).filter { columnInk[$0] >= minCol }
     guard active.count > 16 else { return sharedLeft }
     let totalInk = active.reduce(0) { $0 + columnInk[$1] }
     var dropped = 0
@@ -1368,8 +1370,9 @@ private func priceMatchedLeftByScratchPrefix(
         let remaining = active.count - index
         let remainingInk = totalInk - droppedInk
         let gapBefore = index > 0 ? active[index] - active[index - 1] : 0
+        // Intra-digit gaps are ≤8px; a left scratch sits farther left.
         if index > 0,
-           gapBefore > 4,
+           gapBefore > 8,
            remaining * 5 >= active.count * 4,
            remainingInk * 5 >= totalInk * 4,
            active[index] > sharedLeft + 8,
