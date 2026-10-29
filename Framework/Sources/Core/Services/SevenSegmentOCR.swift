@@ -561,34 +561,15 @@ private struct GrayBuffer {
         let threeQuarters = box.minY + (boxHeight * 3) / 4
         let half = boxWidth / 2
         let right = max(1, box.maxX - (midX + 1))
-        // Wash bridges sit on the left of a pitch window. False `f` is the
-        // upper-left scan catching that smear (pat 123 → 2/8 tie). On
-        // pitch-driven rows, require stem-zone ink and reject when the outer
-        // fringe is at least as inked as the stem zone (flat wash). Keep a
-        // shallow e fringe so real lower-left stems still light.
-        let eFringe = washAwareStems ? max(1, boxWidth / 6) : 0
-        if washAwareStems {
-            let fringe = max(1, boxWidth / 5)
-            let edgeInk = foregroundCount(
-                mask, x: box.minX, y: quarter, length: fringe, vertical: false
-            )
-            let stemInk = foregroundCount(
-                mask,
-                x: box.minX + fringe,
-                y: quarter,
-                length: max(1, half - fringe),
-                vertical: false
-            )
-            let washDominated = edgeInk >= stemInk && edgeInk * 2 >= fringe
-            if stemInk > 0, !washDominated {
-                pattern.formUnion(.f)
-            }
-        } else if foregroundCount(mask, x: box.minX, y: quarter, length: half, vertical: false) > 0 {
-            pattern.formUnion(.f)
-        }
+        // Right stems first so wash-aware `f` can see whether `c` is present
+        // (8-candidates keep f; 2-like glyphs drop wash f).
         if foregroundCount(mask, x: midX + 1, y: quarter, length: right, vertical: false) > 0 {
             pattern.formUnion(.b)
         }
+        if foregroundCount(mask, x: midX + 1, y: threeQuarters, length: right, vertical: false) > 0 {
+            pattern.formUnion(.c)
+        }
+        let eFringe = washAwareStems ? max(1, boxWidth / 6) : 0
         if foregroundCount(
             mask,
             x: box.minX + eFringe,
@@ -598,18 +579,37 @@ private struct GrayBuffer {
         ) > 0 {
             pattern.formUnion(.e)
         }
-        if foregroundCount(mask, x: midX + 1, y: threeQuarters, length: right, vertical: false) > 0 {
-            pattern.formUnion(.c)
-        }
-        // Wash can still light `f` inside the stem zone (photo post-decimal
-        // slot stays pat 123). If dropping f leaves an exact template, the
-        // fringe was wash — not a real left stem. Real 8/5/6/9 keep f because
-        // the remainder is not an exact glyph.
-        if washAwareStems, pattern.contains(.f) {
-            var withoutF = pattern
-            withoutF.remove(.f)
-            if let exact = SevenSegmentGlyph.nearest(withoutF), exact.distance == 0 {
-                pattern = withoutF
+        // Wash bridges light false `f` on 2-like glyphs (pat 123 → 2/8 tie).
+        // When `c` is already lit the glyph may be 8/0/9/… — scan f like price
+        // (no fringe) so a real left stem at the box edge still lights. When
+        // `c` is dark, require stem-zone ink, reject fringe-dominated wash,
+        // and drop f if the remainder is an exact digit.
+        if !washAwareStems || pattern.contains(.c) {
+            if foregroundCount(mask, x: box.minX, y: quarter, length: half, vertical: false) > 0 {
+                pattern.formUnion(.f)
+            }
+        } else {
+            let fFringe = max(1, boxWidth / 5)
+            let fEdge = foregroundCount(
+                mask, x: box.minX, y: quarter, length: fFringe, vertical: false
+            )
+            let fStem = foregroundCount(
+                mask,
+                x: box.minX + fFringe,
+                y: quarter,
+                length: max(1, half - fFringe),
+                vertical: false
+            )
+            let washDominated = fEdge >= fStem && fEdge * 2 >= fFringe
+            if fStem > 0, !washDominated {
+                pattern.formUnion(.f)
+            }
+            if pattern.contains(.f) {
+                var withoutF = pattern
+                withoutF.remove(.f)
+                if let exact = SevenSegmentGlyph.nearest(withoutF), exact.distance == 0 {
+                    pattern = withoutF
+                }
             }
         }
         return pattern
