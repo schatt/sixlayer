@@ -1033,11 +1033,12 @@ private extension GrayBuffer {
                     rescanned.append(shifted)
                 }
                 if rowPitch == nil {
-                    // Body width from the price digits. splitAtExpectedPitch
-                    // adds a small stride gap and packs windows from the right.
+                    // Body width from the price digits. Stride (center gap) is
+                    // recovered inside splitAtExpectedPitch as body + body/6
+                    // when only a width is available.
                     let digits = found.filter { cell in
                         cell.character.isNumber && cell.height > 0
-                    }
+                    }.sorted { $0.minX < $1.minX }
                     rowPitch = median(digits.map(\.box.width))
                 }
             }
@@ -1806,50 +1807,46 @@ private func columnRuns(
             pieces.append((open, span.1))
         }
         let split = pieces.isEmpty ? [span] : pieces
+        if let pitch = copiedPitch {
+            // Do not rejoin wash-bridged floor pieces when a price pitch is
+            // driving the cut — join would glue them back into one blob.
+            let source = split.isEmpty ? [span] : split
+            return source.flatMap { piece in
+                splitAtExpectedPitch(piece, expectedWidth: pitch)
+            }
+        }
         let joined = joiningBridgedPieces(split, mask: mask, y0: y0, y1: y1, bandHeight: bandHeight)
         return joined.flatMap { piece in
-            if let pitch = copiedPitch {
-                return splitAtExpectedPitch(piece, expectedWidth: pitch)
-            }
-            return splitAtDigitValleys(piece, sums: sums, bandHeight: bandHeight)
+            splitAtDigitValleys(piece, sums: sums, bandHeight: bandHeight)
         }
     }
 }
 
-/// Force digit-sized slots from a copied price-row body width. Pack
-/// body-wide windows from the right (volume shares a right edge with the
-/// price digits) with a small stride gap so a leading decimal does not
-/// drift every cut. Not ink valleys.
+/// Force digit-sized slots from a copied price-row body width. Pack a
+/// stride-count of body-wide windows from the right (volume shares a right
+/// edge with the price digits). Not ink valleys.
 private func splitAtExpectedPitch(
     _ span: (Int, Int),
     expectedWidth: Int
 ) -> [(Int, Int)] {
     let body = max(1, expectedWidth)
-    // Intra-digit gap is a fraction of the body on these panels.
     let stride = body + max(1, body / 6)
     let width = span.1 - span.0
     // Need room for a second digit; do not bisect a slightly wide glyph.
     guard width > body + body / 4 else { return [span] }
+    let count = max(2, (width + stride / 2) / stride)
     var pieces: [(Int, Int)] = []
     var end = span.1
     let minimum = max(2, body / 5)
-    while end - span.0 >= body {
-        let start = end - body
+    for _ in 0..<count {
+        let start = max(span.0, end - body)
         if end - start >= minimum {
             pieces.insert((start, end), at: 0)
         }
-        let next = end - stride
-        if next >= end { break }
-        end = next
+        end -= stride
         if end <= span.0 { break }
     }
-    if let first = pieces.first, first.0 > span.0 + minimum {
-        // Leading remnant (often the first volume digit left of the pack).
-        pieces.insert((span.0, first.0), at: 0)
-    } else if pieces.isEmpty {
-        pieces.append(span)
-    }
-    return pieces
+    return pieces.isEmpty ? [span] : pieces
 }
 
 /// Cut a span that still holds two digit peaks with a wash bridge between them.
