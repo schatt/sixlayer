@@ -839,10 +839,9 @@ private enum SegmentPanel {
         return image(pixels: pixels, width: width, height: height)
     }
 
-    /// Fill volume-row intra-digit gaps with a tall wash bridge. Column sums
-    /// stay high so a valley cut has nothing to find, but a one-pixel gutter
-    /// at each gap edge keeps the wash out of the digit body windows that
-    /// Approach D packs from the price-row pitch.
+    /// Fill volume-row intra-digit gaps to the full cell height. Column sums
+    /// stay high across the bridge, so a valley cut has nothing to find.
+    /// Approach D copies price-row digit pitch and force-cuts those slots.
     private static func paintSolidGapWash(
         _ pixels: inout [UInt8],
         width: Int,
@@ -851,11 +850,10 @@ private enum SegmentPanel {
         gaps: [Gap]
     ) {
         for gap in gaps {
-            let x0 = max(0, gap.minX + 1)
-            let x1 = min(width, gap.maxX - 1)
-            let pad = max(1, (gap.maxY - gap.minY) / 10)
-            let y0 = max(0, gap.minY + pad)
-            let y1 = min(height, gap.maxY - pad)
+            let x0 = max(0, gap.minX)
+            let x1 = min(width, gap.maxX)
+            let y0 = max(0, gap.minY)
+            let y1 = min(height, gap.maxY)
             guard x1 > x0, y1 > y0 else { continue }
             for y in y0..<y1 {
                 for x in x0..<x1 {
