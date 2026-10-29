@@ -561,20 +561,31 @@ private struct GrayBuffer {
         let threeQuarters = box.minY + (boxHeight * 3) / 4
         let half = boxWidth / 2
         let right = max(1, box.maxX - (midX + 1))
-        // Wash bridges sit on the left of a pitch window. Start f/e past that
-        // fringe; a real left stem still lives near the inner left third.
-        // /6 cleared the last volume 2 (pat 123→91) but not the first after
-        // the decimal (still 123); /4 reaches deeper into the bridge smear.
-        let leftFringe = washAwareStems ? max(1, boxWidth / 4) : 0
-        let leftStem = box.minX + leftFringe
-        let leftSpan = max(1, half - leftFringe)
-        if foregroundCount(mask, x: leftStem, y: quarter, length: leftSpan, vertical: false) > 0 {
+        // Wash bridges sit on the left of a pitch window. False `f` is the
+        // upper-left scan catching that smear (pat 123 → 2/8 tie). Deeper
+        // fringe for f only — matching fringe on e killed real lower-left
+        // stems (/4 → pat 75, lost the trailing 2).
+        let fFringe = washAwareStems ? max(1, boxWidth / 4) : 0
+        let eFringe = washAwareStems ? max(1, boxWidth / 6) : 0
+        if foregroundCount(
+            mask,
+            x: box.minX + fFringe,
+            y: quarter,
+            length: max(1, half - fFringe),
+            vertical: false
+        ) > 0 {
             pattern.formUnion(.f)
         }
         if foregroundCount(mask, x: midX + 1, y: quarter, length: right, vertical: false) > 0 {
             pattern.formUnion(.b)
         }
-        if foregroundCount(mask, x: leftStem, y: threeQuarters, length: leftSpan, vertical: false) > 0 {
+        if foregroundCount(
+            mask,
+            x: box.minX + eFringe,
+            y: threeQuarters,
+            length: max(1, half - eFringe),
+            vertical: false
+        ) > 0 {
             pattern.formUnion(.e)
         }
         if foregroundCount(mask, x: midX + 1, y: threeQuarters, length: right, vertical: false) > 0 {
