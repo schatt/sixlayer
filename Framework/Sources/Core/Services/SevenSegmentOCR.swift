@@ -562,18 +562,28 @@ private struct GrayBuffer {
         let half = boxWidth / 2
         let right = max(1, box.maxX - (midX + 1))
         // Wash bridges sit on the left of a pitch window. False `f` is the
-        // upper-left scan catching that smear (pat 123 → 2/8 tie). Deeper
-        // fringe for f only — matching fringe on e killed real lower-left
-        // stems (/4 → pat 75, lost the trailing 2).
-        let fFringe = washAwareStems ? max(1, boxWidth / 4) : 0
+        // upper-left scan catching that smear (pat 123 → 2/8 tie). On
+        // pitch-driven rows, require stem-zone ink and reject when the outer
+        // fringe is at least as inked as the stem zone (flat wash). Keep a
+        // shallow e fringe so real lower-left stems still light.
         let eFringe = washAwareStems ? max(1, boxWidth / 6) : 0
-        if foregroundCount(
-            mask,
-            x: box.minX + fFringe,
-            y: quarter,
-            length: max(1, half - fFringe),
-            vertical: false
-        ) > 0 {
+        if washAwareStems {
+            let fringe = max(1, boxWidth / 5)
+            let edgeInk = foregroundCount(
+                mask, x: box.minX, y: quarter, length: fringe, vertical: false
+            )
+            let stemInk = foregroundCount(
+                mask,
+                x: box.minX + fringe,
+                y: quarter,
+                length: max(1, half - fringe),
+                vertical: false
+            )
+            let washDominated = edgeInk >= stemInk && edgeInk * 2 >= fringe
+            if stemInk > 0, !washDominated {
+                pattern.formUnion(.f)
+            }
+        } else if foregroundCount(mask, x: box.minX, y: quarter, length: half, vertical: false) > 0 {
             pattern.formUnion(.f)
         }
         if foregroundCount(mask, x: midX + 1, y: quarter, length: right, vertical: false) > 0 {
