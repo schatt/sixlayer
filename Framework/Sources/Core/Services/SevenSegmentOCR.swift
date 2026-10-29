@@ -1327,15 +1327,17 @@ private func priceMatchedLeftByDenseWindow(
         }
         columnInk[x] = ink
     }
-    // Count digit-stem columns and penalize fat glare fills. A washed volume
-    // row's left blob is thick ink; digit stems are thinner. Window width
-    // tracks a price-like digit run (~2.5× band height).
-    let solidFloor = bandHeight * 7 / 10
+    // Thresholds are relative to the band's peak column. A left glare blob
+    // often *is* the peak; digit stems sit well below it. Penalize near-peak
+    // fills so the digit field wins. Window ~ price digit run width.
+    let peak = (sharedLeft..<min(width, sharedRight)).map { columnInk[$0] }.max() ?? 0
     let speckFloor = max(2, bandHeight / 12)
+    let solidFloor = max(speckFloor + 1, peak * 4 / 5)
+    let stemHi = max(speckFloor + 1, peak * 11 / 20)
     let window = max(48, min(spanWidth - 24, max(spanWidth / 2, bandHeight * 5 / 2)))
-    guard window + 24 < spanWidth else { return sharedLeft }
+    guard window + 24 < spanWidth, peak >= speckFloor else { return sharedLeft }
     func stemColumn(_ ink: Int) -> Bool {
-        ink >= speckFloor && ink < solidFloor
+        ink >= speckFloor && ink < stemHi
     }
     var bestStart = sharedLeft
     var bestScore = Int.min
