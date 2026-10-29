@@ -1482,16 +1482,9 @@ private func columnRuns(_ mask: Mask, y0: Int, y1: Int, width: Int) -> [(Int, In
         // A digit is taller than it is wide. A 4 has no top or bottom bar, so
         // its ink band is shorter than the cell, and the old 0.7 ratio split
         // that one glyph at the crossbar. Two digits side by side are wider
-        // than the band is tall. A washed bridge can also leave one blob that
-        // is only a little wider than one digit; still cut that.
-        let digitWide = max(1, bandHeight / 2)
+        // than the band is tall.
         let widerThanADigit = spanWidth > bandHeight
-        let widerThanOneGlyph = spanWidth > digitWide + digitWide / 2
-        let typicalLooksLikeOneGlyph = typical > 0 && typical <= digitWide + digitWide / 2
-        guard widerThanADigit
-            || widerThanOneGlyph
-            || (typicalLooksLikeOneGlyph && spanWidth > typical * 2)
-        else { return [span] }
+        guard widerThanADigit || (typical > 0 && spanWidth > typical * 2) else { return [span] }
         let peak = (span.0..<span.1).map { sums[$0] }.max() ?? 0
         // A horizontal bar is thinner than a stem, but a washed gap between
         // digits is thinner still. peak/15 left those bridges in place and
