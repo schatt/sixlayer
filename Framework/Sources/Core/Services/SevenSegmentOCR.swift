@@ -934,12 +934,14 @@ private extension GrayBuffer {
             var rescanned: [[Cell]] = []
             let rowProfile = glyphs.rowSums
             // Known-good price crop is 380px tall. Reach into the row gap so
-            // the window can sit on that crop's Y (not only inside ink).
+            // each window can sit on a price-like Y (top drops haze; bottom
+            // borrows gap above when the buffer is short below).
             let priceBandHeight = 380
+            let gapPad = max(24, priceBandHeight / 8)
             for band in splitBands {
                 let expanded = (
-                    band.0,
-                    min(buffer.height, band.1 + max(24, priceBandHeight / 8))
+                    max(0, band.0 - gapPad),
+                    min(buffer.height, band.1 + gapPad)
                 )
                 let tight = priceMatchedBand(
                     rowProfile,
