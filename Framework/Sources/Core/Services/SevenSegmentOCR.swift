@@ -450,7 +450,14 @@ private struct GrayBuffer {
             return nil
         }
         let sampledBox = box.height * 100 < digitHeight * 70 ? frame : box
-        let pattern = sample(mask, box: sampledBox, width: width)
+        // Glare above the top bar stretches the box. Upper stem scans then sit
+        // in that fringe and light a/f. A digit-tall ink band keeps the scan
+        // on the glyph the way a tight price-row crop already does.
+        let pattern = sample(
+            mask,
+            box: densestInkBand(mask, box: sampledBox, width: width, digitHeight: digitHeight),
+            width: width
+        )
         guard let glyph = SevenSegmentGlyph.match(pattern) else { return nil }
         return Cell(box: box, character: glyph.character, confidence: glyph.confidence, band: bandIndex)
     }
@@ -921,10 +928,13 @@ private extension GrayBuffer {
             var windowNarrows = true
             var rescanned: [[Cell]] = []
             for band in splitBands {
-                let y0 = max(0, band.0 - 4)
-                let y1 = min(buffer.height, band.1 + 4)
                 let x0 = max(0, (span?.0 ?? 0) - 8)
                 let x1 = min(buffer.width, (span?.1 ?? buffer.width) + 8)
+                // Drop a short glare fringe above the digits so the crop is
+                // about as tall as a known-good single-row price crop.
+                let inkY = primaryInkBandY(glyphs, x0: x0, x1: x1, y0: band.0, y1: band.1)
+                let y0 = max(0, inkY.0 - 4)
+                let y1 = min(buffer.height, inkY.1 + 4)
                 let crop = buffer.cropped(x0: x0, y0: y0, x1: x1, y1: y1)
                 guard crop.width > 8, crop.height > 8 else {
                     windowNarrows = false
@@ -1614,6 +1624,84 @@ private func tightBox(_ mask: Mask, x0: Int, x1: Int, y0: Int, y1: Int, width: I
         return PixelBox(minX: left, minY: lower, maxX: right, maxY: upper)
     }
     return PixelBox(minX: left, minY: minY, maxX: right, maxY: maxY)
+}
+
+/// Row sums inside a column span. Used to pick the digit ink band.
+private func rowInkSums(_ mask: Mask, x0: Int, x1: Int, y0: Int, y1: Int) -> (lower: Int, sums: [Int]) {
+    let width = mask.width
+    let lower = max(0, y0)
+    let upper = min(mask.height, y1)
+    let left = max(0, x0)
+    let right = min(width, x1)
+    guard upper > lower, right > left else { return (lower, []) }
+    var sums = [Int](repeating: 0, count: upper - lower)
+    for y in lower..<upper {
+        let start = y * width
+        var count = 0
+        for x in left..<right where mask.bits[start + x] {
+            count += 1
+        }
+        sums[y - lower] = count
+    }
+    return (lower, sums)
+}
+
+/// Tallest ink run in a row band. A short glare fringe above the digits is
+/// dropped so a multi-row crop re-reads each row at about price-crop height.
+private func primaryInkBandY(_ mask: Mask, x0: Int, x1: Int, y0: Int, y1: Int) -> (Int, Int) {
+    let profile = rowInkSums(mask, x0: x0, x1: x1, y0: y0, y1: y1)
+    let sums = profile.sums
+    guard !sums.isEmpty else { return (y0, y1) }
+    let peak = sums.max() ?? 0
+    guard peak > 0 else { return (y0, y1) }
+    let floor = max(1, peak / 4)
+    let gated = sums.map { $0 >= floor ? $0 : 0 }
+    let found = runs(gated)
+    guard let best = found.max(by: { ($0.1 - $0.0) < ($1.1 - $1.0) }) else {
+        return (y0, y1)
+    }
+    let minY = profile.lower + best.0
+    let maxY = profile.lower + best.1
+    // Keep the caller's band when the run is only a thin fringe.
+    if (maxY - minY) * 2 < (y1 - y0) { return (y0, y1) }
+    return (minY, maxY)
+}
+
+/// Vertical window of digit height with the most ink. Glare above the top bar
+/// is dense but short; the window sits on the glyph. Near-ties prefer the
+/// lower window because that fringe is above the digits.
+private func densestInkBand(
+    _ mask: Mask,
+    box: PixelBox,
+    width: Int,
+    digitHeight: Int
+) -> PixelBox {
+    let profile = rowInkSums(mask, x0: box.minX, x1: box.maxX, y0: box.minY, y1: box.maxY)
+    let sums = profile.sums
+    let height = sums.count
+    guard height > 2 else { return box }
+    // A seven-segment digit is about 1.5× as tall as it is wide. Glare above
+    // the top bar makes the box taller than that; the window sits on the glyph.
+    let aspect = max(8, box.width * 3 / 2)
+    let medianCap = digitHeight > 8 ? max(aspect, digitHeight * 4 / 5) : aspect
+    let target = min(height, medianCap)
+    if target >= height { return box }
+    var running = sums[0..<target].reduce(0, +)
+    var bestSum = running
+    var bestStart = 0
+    for start in 1...(height - target) {
+        running += sums[start + target - 1] - sums[start - 1]
+        if running > bestSum {
+            bestSum = running
+            bestStart = start
+        } else if running * 100 >= bestSum * 97 {
+            // Prefer a lower band when the ink totals are close: glare sits above.
+            bestStart = start
+        }
+    }
+    let minY = profile.lower + bestStart
+    let maxY = minY + target
+    return PixelBox(minX: box.minX, minY: minY, maxX: box.maxX, maxY: maxY)
 }
 
 private func verticalRuns(_ mask: Mask, box: PixelBox, width: Int) -> [(Int, Int)] {
