@@ -928,11 +928,13 @@ private extension GrayBuffer {
                 let tight = densestInkBand(rowProfile, in: band)
                 let y0 = max(0, tight.0 - 4)
                 let y1 = min(buffer.height, tight.1 + 4)
-                // Prefer this row's own digit columns so a left scratch that
-                // shared the parent span stays out of the price-like crop.
-                let rowSpan = rowReadingSpan(glyphs, band: tight) ?? span
-                let x0 = max(0, (rowSpan?.0 ?? 0) - 8)
-                let x1 = min(buffer.width, (rowSpan?.1 ?? buffer.width) + 8)
+                // Shared span still stops at a bezel edge. The row span only
+                // raises the left edge so a left scratch stays out of the crop.
+                let sharedLeft = span?.0 ?? 0
+                let sharedRight = span?.1 ?? buffer.width
+                let rowLeft = rowReadingSpan(glyphs, band: tight)?.0 ?? sharedLeft
+                let x0 = max(0, max(sharedLeft, rowLeft) - 8)
+                let x1 = min(buffer.width, sharedRight + 8)
                 let crop = buffer.cropped(x0: x0, y0: y0, x1: x1, y1: y1)
                 guard crop.width > 8, crop.height > 8 else {
                     windowNarrows = false
