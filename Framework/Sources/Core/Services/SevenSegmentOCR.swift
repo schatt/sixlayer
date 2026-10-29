@@ -1267,8 +1267,9 @@ private func priceMatchedBand(_ sums: [Int], in band: (Int, Int), targetHeight: 
     return (bestStart, bestStart + targetHeight)
 }
 
-/// Raise the left crop edge past a narrow left scratch island. Keep the
-/// shared span when there is no such island (bezel / edge-strip cases).
+/// Raise the left crop edge past a thin left scratch. A digit run fills many
+/// columns in a window; a scratch fills only a few. Do not use stem islands —
+/// seven-segment cavities would split a real digit.
 private func priceMatchedLeft(
     _ mask: Mask,
     band: (Int, Int),
@@ -1278,7 +1279,7 @@ private func priceMatchedLeft(
     let width = mask.width
     let y0 = max(0, band.0)
     let y1 = min(mask.height, band.1)
-    guard width > 0, y1 > y0, sharedRight > sharedLeft else { return sharedLeft }
+    guard width > 0, y1 > y0, sharedRight > sharedLeft + 24 else { return sharedLeft }
     var columnInk = [Int](repeating: 0, count: width)
     for x in sharedLeft..<min(width, sharedRight) {
         var ink = 0
@@ -1287,37 +1288,28 @@ private func priceMatchedLeft(
         }
         columnInk[x] = ink
     }
-    let active = (sharedLeft..<min(width, sharedRight)).filter { columnInk[$0] > 0 }
-    guard let first = active.first else { return sharedLeft }
-    let stemGap = 8
-    var islands: [(start: Int, end: Int, ink: Int)] = []
-    var islandStart = first
-    var islandEnd = first
-    var ink = columnInk[first]
-    for index in active.dropFirst() {
-        if index - islandEnd <= stemGap {
-            islandEnd = index
-            ink += columnInk[index]
-        } else {
-            islands.append((islandStart, islandEnd + 1, ink))
-            islandStart = index
-            islandEnd = index
-            ink = columnInk[index]
-        }
-    }
-    islands.append((islandStart, islandEnd + 1, ink))
-    guard islands.count >= 2 else { return sharedLeft }
-    let lead = islands[0]
-    let leadWidth = lead.end - lead.start
-    let restInk = islands.dropFirst().reduce(0) { $0 + $1.ink }
-    let restWidth = islands.last!.end - islands[1].start
     let bandHeight = y1 - y0
-    // Scratch is a thin strip; digit ink is much wider.
-    guard leadWidth * 4 <= max(restWidth, bandHeight / 4) else { return sharedLeft }
-    guard restInk > lead.ink, restWidth > max(12, bandHeight / 5) else { return sharedLeft }
-    // Only move the left edge when the scratch is clearly separated.
-    guard islands[1].start > sharedLeft + max(12, leadWidth) else { return sharedLeft }
-    return islands[1].start
+    let window = max(24, min(bandHeight / 2, (sharedRight - sharedLeft) / 3))
+    let needColumns = max(8, window / 3)
+    var x = sharedLeft
+    let last = min(width, sharedRight) - window
+    guard last > sharedLeft else { return sharedLeft }
+    while x <= last {
+        var filled = 0
+        for col in x..<(x + window) where columnInk[col] > 0 {
+            filled += 1
+        }
+        if filled >= needColumns {
+            // Only move when the lead before this window was a thin scratch.
+            let leadFilled = (sharedLeft..<x).filter { columnInk[$0] > 0 }.count
+            if x > sharedLeft + 8, leadFilled > 0, leadFilled * 3 <= needColumns {
+                return x
+            }
+            return sharedLeft
+        }
+        x += 1
+    }
+    return sharedLeft
 }
 
 /// Two digit rows joined by scratches. The valley has to sit between two
