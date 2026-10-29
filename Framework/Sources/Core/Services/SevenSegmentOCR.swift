@@ -450,7 +450,19 @@ private struct GrayBuffer {
             return nil
         }
         let sampledBox = box.height * 100 < digitHeight * 70 ? frame : box
-        let pattern = sample(mask, box: sampledBox, width: width)
+        // Glare above the top bar stretches the box. Upper stem scans then sit
+        // in that fringe and light a/f. A digit-tall ink band keeps the scan
+        // on the glyph the way a tight price-row crop already does.
+        let pattern = sample(
+            mask,
+            box: densestInkBand(
+                mask,
+                box: sampledBox,
+                width: width,
+                digitWidth: digitWidth
+            ),
+            width: width
+        )
         guard let glyph = SevenSegmentGlyph.match(pattern) else { return nil }
         return Cell(box: box, character: glyph.character, confidence: glyph.confidence, band: bandIndex)
     }
@@ -1822,6 +1834,130 @@ private func tightBox(_ mask: Mask, x0: Int, x1: Int, y0: Int, y1: Int, width: I
         return PixelBox(minX: left, minY: lower, maxX: right, maxY: upper)
     }
     return PixelBox(minX: left, minY: minY, maxX: right, maxY: maxY)
+}
+
+/// Row sums inside a column span. Used to pick the digit ink band.
+private func rowInkSums(_ mask: Mask, x0: Int, x1: Int, y0: Int, y1: Int) -> (lower: Int, sums: [Int]) {
+    let width = mask.width
+    let lower = max(0, y0)
+    let upper = min(mask.height, y1)
+    let left = max(0, x0)
+    let right = min(width, x1)
+    guard upper > lower, right > left else { return (lower, []) }
+    var sums = [Int](repeating: 0, count: upper - lower)
+    for y in lower..<upper {
+        let start = y * width
+        var count = 0
+        for x in left..<right where mask.bits[start + x] {
+            count += 1
+        }
+        sums[y - lower] = count
+    }
+    return (lower, sums)
+}
+
+/// Vertical span of digit ink for segment sampling. Glare above the top bar
+/// makes a box taller than a real digit (~2× width). Drop a short solid cap,
+/// then keep the lower digit-tall slice. Boxes that already fit a digit are
+/// left alone — shrinking them clips the top bar. A stem fills its narrow box
+/// and is never treated as a glare cap.
+private func densestInkBand(
+    _ mask: Mask,
+    box: PixelBox,
+    width: Int,
+    digitWidth: Int
+) -> PixelBox {
+    let profile = rowInkSums(mask, x0: box.minX, x1: box.maxX, y0: box.minY, y1: box.maxY)
+    let sums = profile.sums
+    let height = sums.count
+    guard height > 2 else { return box }
+    // A one is a tall stem. Leave it alone; aspect math is for wide glyphs.
+    if box.width * 4 < height {
+        return box
+    }
+    // Cap by this box's width. A broken 3 can tighten narrowly; then the
+    // median digit width decides whether it is still a normal-height glyph.
+    let ownCap = max(8, box.width * 2)
+    let narrow = digitWidth > 8 && box.width * 5 < digitWidth * 4
+    let earlyCap = narrow ? max(ownCap, digitWidth * 2) : ownCap
+    let slack = max(4, earlyCap / 12)
+    // Price-like boxes are left alone. Snapping every wide glyph to a "top
+    // bar" misreads the mid-row glare fixture as a colon.
+    if height <= earlyCap + slack {
+        return box
+    }
+    var start = 0
+    var end = height
+    // A top bar spans the interior, not the full cell. A glare cap fills it.
+    let solid = max(2, box.width * 9 / 10)
+    while start < height - 3 && sums[start] >= solid {
+        start += 1
+    }
+    // A stem fills the box. A glare cap is a minority of the height.
+    if start * 2 > height { start = 0 }
+    while end - start > 3 && sums[end - 1] >= solid {
+        end -= 1
+    }
+    if (height - end) * 2 > height { end = height }
+    // Washed glare above the top bar may not be solid. Snap to the strongest
+    // center bar in the upper half so upper stem scans start on the glyph.
+    let topBar = topBarRow(
+        mask,
+        box: box,
+        width: width,
+        from: start,
+        to: min(end, start + max(1, (end - start) * 2 / 5))
+    )
+    if let topBar, topBar > start {
+        start = max(start, topBar - max(1, box.width / 20))
+    }
+    var minY = profile.lower + start
+    var maxY = profile.lower + end
+    let remaining = maxY - minY
+    if remaining <= ownCap + max(4, ownCap / 12) {
+        return PixelBox(minX: box.minX, minY: minY, maxX: box.maxX, maxY: maxY)
+    }
+    let target = min(remaining, ownCap)
+    minY = maxY - target
+    return PixelBox(minX: box.minX, minY: minY, maxX: box.maxX, maxY: maxY)
+}
+
+/// Row of the strongest center-span bar in [from, to). Glare that fills the
+/// cell scores lower than a seven-segment top bar.
+private func topBarRow(
+    _ mask: Mask,
+    box: PixelBox,
+    width: Int,
+    from: Int,
+    to: Int
+) -> Int? {
+    let lower = max(0, box.minY)
+    let left = max(0, box.minX)
+    let right = min(width, box.maxX)
+    let span = right - left
+    guard span > 4, to > from else { return nil }
+    let mid0 = left + span / 4
+    let mid1 = right - span / 4
+    var bestRow: Int?
+    var bestScore = Int.min
+    for offset in from..<to {
+        let y = lower + offset
+        guard y >= box.minY, y < box.maxY, y < mask.height else { continue }
+        let row = y * width
+        var center = 0
+        var edge = 0
+        for x in left..<mid0 where mask.bits[row + x] { edge += 1 }
+        for x in mid0..<mid1 where mask.bits[row + x] { center += 1 }
+        for x in mid1..<right where mask.bits[row + x] { edge += 1 }
+        // A top bar lights the middle; a glare smear lights the edges too.
+        let score = center * 2 - edge
+        if score > bestScore {
+            bestScore = score
+            bestRow = offset
+        }
+    }
+    guard bestScore > 0, let bestRow else { return nil }
+    return bestRow
 }
 
 private func verticalRuns(_ mask: Mask, box: PixelBox, width: Int) -> [(Int, Int)] {
