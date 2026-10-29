@@ -1248,21 +1248,35 @@ private extension GrayBuffer {
         let gapTop = max(band.0, top - max(4, digitHeight / 10))
         let above = columnSums(mask, y0: gapTop, y1: top, width: width)
         let floor = max(1, (bottom - top) / 6)
-        var best: (x0: Int, x1: Int, score: Int)?
+        // Maximizing baseline ink picked wash-filled gaps (photo 80.22) over
+        // the real mark. Prefer a compact baseline peak (dot); if wash erased
+        // every peak, fall back to the emptiest gap — bridges score worse.
+        // Leftmost wins ties (volume X.xxx vs XX.xx when both look empty).
+        var bestDot: (x0: Int, x1: Int, score: Int)?
+        var bestEmpty: (x0: Int, x1: Int, score: Int)?
         for i in digits.indices.dropLast() {
             let left = digits[i].maxX
             let right = digits[i + 1].minX
             let gap = right - left
             guard gap > 2, gap < digitWidth else { continue }
-            let ink = (left..<right).reduce(0) { $0 + sums[$1] }
-            guard ink >= floor else { continue }
-            let aboveInk = (left..<right).reduce(0) { $0 + above[$1] }
-            // Prefer baseline ink with the least glass wash above.
-            let score = ink * 4 - aboveInk
-            if best == nil || score > best!.score {
-                best = (left, right, score)
+            let cols = left..<right
+            let ink = cols.reduce(0) { $0 + sums[$1] }
+            let aboveInk = cols.reduce(0) { $0 + above[$1] }
+            let peak = cols.map { sums[$0] }.max() ?? 0
+            let emptyScore = -(ink + aboveInk)
+            if bestEmpty == nil || emptyScore > bestEmpty!.score
+                || (emptyScore == bestEmpty!.score && left < bestEmpty!.x0) {
+                bestEmpty = (left, right, emptyScore)
+            }
+            guard peak >= floor else { continue }
+            // Compact blob: high peak, low spread, little wash above.
+            let score = peak * gap - ink - aboveInk
+            if bestDot == nil || score > bestDot!.score
+                || (score == bestDot!.score && left < bestDot!.x0) {
+                bestDot = (left, right, score)
             }
         }
+        let best = bestDot ?? bestEmpty
         var placed = digits + other
         if let best, best.x1 > best.x0 {
             let mid = (best.x0 + best.x1) / 2
