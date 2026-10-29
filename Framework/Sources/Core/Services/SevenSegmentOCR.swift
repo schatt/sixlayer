@@ -1327,12 +1327,12 @@ private func priceMatchedLeftByDenseWindow(
         }
         columnInk[x] = ink
     }
-    // A solid left blob fills nearly every row. A digit stem fills a
-    // fraction of the band. Score digit-like columns, not total ink.
+    // A fully solid left blob fills every row. A digit stem leaves gaps
+    // (segment cavities). Score columns that are ink but not a solid fill.
     var digitLike = [Bool](repeating: false, count: width)
     for x in sharedLeft..<min(width, sharedRight) {
         let ink = columnInk[x]
-        digitLike[x] = ink * 5 >= bandHeight && ink * 5 <= bandHeight * 4
+        digitLike[x] = ink * 10 >= bandHeight && ink < bandHeight
     }
     let window = max(48, min(spanWidth - 24, spanWidth * 3 / 4))
     guard window + 24 < spanWidth else { return sharedLeft }
