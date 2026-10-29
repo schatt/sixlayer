@@ -920,14 +920,9 @@ private extension GrayBuffer {
             }
             var windowNarrows = true
             var rescanned: [[Cell]] = []
-            let rowProfile = glyphs.rowSums
             for band in splitBands {
-                // Haze above a washed row keeps the band open past the digit
-                // ink. Crop the densest stretch so the window matches a
-                // single-row price crop (~radius 11), not the tall parent.
-                let tight = densestInkBand(rowProfile, in: band)
-                let y0 = max(0, tight.0 - 4)
-                let y1 = min(buffer.height, tight.1 + 4)
+                let y0 = max(0, band.0 - 4)
+                let y1 = min(buffer.height, band.1 + 4)
                 let x0 = max(0, (span?.0 ?? 0) - 8)
                 let x1 = min(buffer.width, (span?.1 ?? buffer.width) + 8)
                 let crop = buffer.cropped(x0: x0, y0: y0, x1: x1, y1: y1)
@@ -1233,103 +1228,6 @@ private func readingSpan(_ mask: Mask, bands: [(Int, Int)]) -> (Int, Int)? {
     let span = best.end - best.start
     guard span > max(12, height / 10) else { return nil }
     return (best.start, best.end)
-}
-
-/// Trim sparse haze above/below digit ink inside a row band. Do not split on
-/// the empty rows inside a seven-segment glyph — those cavities are not haze.
-private func densestInkBand(_ sums: [Int], in band: (Int, Int)) -> (Int, Int) {
-    let y0 = max(0, band.0)
-    let y1 = min(sums.count, band.1)
-    guard y1 > y0 else { return band }
-    let peak = (y0..<y1).map { sums[$0] }.max() ?? 0
-    guard peak > 0 else { return band }
-    // A digit row's own top/bottom strokes are weaker than the mid bars.
-    // Only treat near-empty rows as haze.
-    let floor = max(8, peak / 10)
-    var lo = y0
-    while lo < y1, sums[lo] < floor { lo += 1 }
-    var hi = y1
-    while hi > lo, sums[hi - 1] < floor { hi -= 1 }
-    guard hi > lo else { return band }
-    let lead = lo - y0
-    let trail = y1 - hi
-    let bandHeight = y1 - y0
-    // Only tighten when a real haze fringe is present.
-    guard lead + trail >= max(12, bandHeight / 8) else { return band }
-    return (lo, hi)
-}
-
-/// Horizontal digit ink inside one densest row band. Peels a left scratch
-/// island so the row crop matches a price-only framing.
-private func rowReadingSpan(_ mask: Mask, band: (Int, Int)) -> (Int, Int)? {
-    let width = mask.width
-    let height = mask.height
-    let y0 = max(0, band.0)
-    let y1 = min(height, band.1)
-    guard width > 0, y1 > y0 else { return nil }
-    var columnInk = [Int](repeating: 0, count: width)
-    for x in 0..<width {
-        var ink = 0
-        for y in y0..<y1 where mask.bits[y * width + x] {
-            ink += 1
-        }
-        columnInk[x] = ink
-    }
-    let active = columnInk.indices.filter { columnInk[$0] > 0 }
-    guard let first = active.first else { return nil }
-    let gapLimit = max(8, (y1 - y0) / 8)
-    var runs: [(start: Int, end: Int, ink: Int)] = []
-    var start = first
-    var end = first
-    var ink = columnInk[first]
-    for index in active.dropFirst() {
-        if index - end <= gapLimit {
-            end = index
-            ink += columnInk[index]
-        } else {
-            runs.append((start, end + 1, ink))
-            start = index
-            end = index
-            ink = columnInk[index]
-        }
-    }
-    runs.append((start, end + 1, ink))
-    guard let best = runs.max(by: { $0.ink < $1.ink }) else { return nil }
-    let inside = active.filter { $0 >= best.start && $0 < best.end }
-    guard let lead = inside.first else { return (best.start, best.end) }
-    let stemGap = 8
-    var islands: [(start: Int, end: Int, ink: Int)] = []
-    var islandStart = lead
-    var islandEnd = lead
-    var islandInk = columnInk[lead]
-    for index in inside.dropFirst() {
-        if index - islandEnd <= stemGap {
-            islandEnd = index
-            islandInk += columnInk[index]
-        } else {
-            islands.append((islandStart, islandEnd + 1, islandInk))
-            islandStart = index
-            islandEnd = index
-            islandInk = columnInk[index]
-        }
-    }
-    islands.append((islandStart, islandEnd + 1, islandInk))
-    var lo = best.start
-    var remaining = islands
-    let bandHeight = y1 - y0
-    while remaining.count >= 2 {
-        let head = remaining[0]
-        let leadWidth = head.end - head.start
-        let restInk = remaining.dropFirst().reduce(0) { $0 + $1.ink }
-        let restWidth = remaining.last!.end - remaining[1].start
-        let narrow = leadWidth * 4 <= max(restWidth, bandHeight / 4)
-        guard narrow, restInk > head.ink, restWidth > max(12, bandHeight / 5) else { break }
-        lo = remaining[1].start
-        remaining = Array(remaining.dropFirst())
-    }
-    let hi = best.end
-    guard hi - lo > max(12, bandHeight / 5) else { return (best.start, best.end) }
-    return (lo, hi)
 }
 
 /// Two digit rows joined by scratches. The valley has to sit between two
