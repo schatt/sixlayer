@@ -423,14 +423,12 @@ private struct GrayBuffer {
             }
         }
         // ssocr: a box narrower than a quarter of its height is a one.
-        // A mid-glare slit can leave two stem-tall runs with a colon-sized
-        // gap; those already failed the short-dot colon check above.
+        // A thin mid-glare slit (gap shorter than the remaining stem) still
+        // counts as a one — same rule as the #576 glare-band fix.
         let thinSplit = vertical.count == 2 && splitGap < shorterRun
-        let glareSplitStem = vertical.count == 2
-            && vertical.contains { $0.1 - $0.0 >= digitHeight * 30 / 100 }
         if box.height * 100 >= digitHeight * 55,
            box.width * 4 < box.height,
-           vertical.count == 1 || thinSplit || glareSplitStem {
+           vertical.count == 1 || thinSplit {
             return Cell(box: box, character: "1", confidence: 1, band: bandIndex)
         }
         if box.height * 100 >= digitHeight * 50,
@@ -1283,10 +1281,9 @@ private func priceMatchedBand(_ sums: [Int], in band: (Int, Int), targetHeight: 
     return (bestStart, bestStart + targetHeight)
 }
 
-/// Raise the left crop edge to the densest digit run. Walk left across digit
-/// ink and short gaps; keep the raise only when the peeled prefix is a thin
-/// left scratch (not a leading digit clipped because a right strip pulled the
-/// densest window).
+/// Raise the left crop edge past a thin left scratch. A solid scratch column
+/// out-scores digit strokes, so a densest-window slide keeps the scratch.
+/// Drop a short active prefix when a small gap separates it from digit ink.
 private func priceMatchedLeft(
     _ mask: Mask,
     band: (Int, Int),
@@ -1296,8 +1293,7 @@ private func priceMatchedLeft(
     let width = mask.width
     let y0 = max(0, band.0)
     let y1 = min(mask.height, band.1)
-    let spanWidth = sharedRight - sharedLeft
-    guard width > 0, y1 > y0, spanWidth > 48 else { return sharedLeft }
+    guard width > 0, y1 > y0, sharedRight > sharedLeft + 24 else { return sharedLeft }
     var columnInk = [Int](repeating: 0, count: width)
     for x in sharedLeft..<min(width, sharedRight) {
         var ink = 0
@@ -1306,57 +1302,39 @@ private func priceMatchedLeft(
         }
         columnInk[x] = ink
     }
-    // Cover most of a price-like digit row; leave room to slide past a fringe.
-    let window = max(48, min(spanWidth - 24, spanWidth * 3 / 4))
-    guard window + 24 < spanWidth else { return sharedLeft }
-    var bestStart = sharedLeft
-    var bestInk = Int.min
-    let lastStart = sharedRight - window
-    var start = sharedLeft
-    while start <= lastStart {
-        var ink = 0
-        for x in start..<(start + window) {
-            ink += columnInk[x]
-        }
-        if ink > bestInk {
-            bestInk = ink
-            bestStart = start
-        }
-        start += 1
-    }
-    guard bestStart > sharedLeft + 16 else { return sharedLeft }
-    let peak = (bestStart..<(bestStart + window)).map { columnInk[$0] }.max() ?? 0
-    let floor = max(1, peak / 5)
-    // Jump gaps up to a digit pitch so inter-digit space does not stop the walk.
-    // Do not jump a short gap into a thin left scratch — that gap is only a
-    // few pixels, shorter than the inter-digit pitch.
-    let shortGap = max(8, (y1 - y0) / 10)
-    // A left scratch is a thin strip; a leading digit cell is wider (~50px
-    // in the fixtures). Keep this below one glyph so a digit is never peeled.
+    let active = (sharedLeft..<min(width, sharedRight)).filter { columnInk[$0] > 0 }
+    guard active.count > 16 else { return sharedLeft }
+    let totalInk = active.reduce(0) { $0 + columnInk[$1] }
+    var dropped = 0
+    var droppedInk = 0
+    var index = 0
+    let dropLimit = max(12, (y1 - y0) / 10)
+    // Scratch-to-digit clearance is only a few pixels; inter-digit pitch is
+    // larger (~8). Accept a 4-pixel valley, but only when the peeled prefix
+    // is thin — so a leading digit before an inter-digit gap is kept.
     let scratchCap = max(16, min(40, (y1 - y0) / 8))
-    var lo = bestStart
-    while lo > sharedLeft {
-        if columnInk[lo - 1] >= floor {
-            lo -= 1
-            continue
+    while index < active.count {
+        let remaining = active.count - index
+        let remainingInk = totalInk - droppedInk
+        let gapBefore = index > 0 ? active[index] - active[index - 1] : 0
+        let peeledWidth = active[index] - sharedLeft
+        if index > 0,
+           gapBefore >= 4,
+           peeledWidth > 4,
+           peeledWidth <= scratchCap,
+           remaining * 5 >= active.count * 4,
+           remainingInk * 5 >= totalInk * 4,
+           active[index] > sharedLeft + 8,
+           dropped * 4 <= remaining,
+           dropped <= dropLimit {
+            return active[index]
         }
-        var gapStart = lo
-        while gapStart > sharedLeft, columnInk[gapStart - 1] < floor {
-            gapStart -= 1
-        }
-        let gap = lo - gapStart
-        let leftWidth = gapStart - sharedLeft
-        if gap > shortGap || leftWidth <= scratchCap {
-            break
-        }
-        lo = gapStart
+        dropped += 1
+        droppedInk += columnInk[active[index]]
+        index += 1
+        if dropped > dropLimit { break }
     }
-    let peeled = lo - sharedLeft
-    // A left scratch is a thin strip; a clipped leading digit peels much more.
-    guard peeled > 8, peeled <= scratchCap else { return sharedLeft }
-    let scratchInk = (sharedLeft..<lo).reduce(0) { $0 + columnInk[$1] }
-    guard scratchInk > 0 else { return sharedLeft }
-    return lo
+    return sharedLeft
 }
 
 /// Two digit rows joined by scratches. The valley has to sit between two
