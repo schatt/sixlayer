@@ -250,9 +250,16 @@ private struct GrayBuffer {
         mask: Mask,
         buffer: GrayBuffer,
         bandIndex: Int,
-        darkInk: Bool
+        darkInk: Bool,
+        preferredDigitWidth: Int? = nil
     ) -> [Cell] {
-        let columns = columnRuns(mask, y0: band.0, y1: band.1, width: buffer.width)
+        let columns = columnRuns(
+            mask,
+            y0: band.0,
+            y1: band.1,
+            width: buffer.width,
+            preferredDigitWidth: preferredDigitWidth
+        )
         let rawBoxes = columns.map { span -> PixelBox in
             tightBox(mask, x0: span.0, x1: span.1, y0: band.0, y1: band.1, width: buffer.width)
         }.filter { $0.width > 0 && $0.height > 0 }
@@ -265,8 +272,24 @@ private struct GrayBuffer {
         let digitHeight = median(tall.map(\.height)) ?? maxHeight
         let baseline = median(tall.map(\.maxY)) ?? band.1
         let frameTop = median(tall.map(\.minY)) ?? band.0
-        let digitWidth = median(tall.map(\.width)) ?? digitHeight
-        return boxes.compactMap { box in
+        // A fused wash blob inflates the median width. Prefer a pitch copied
+        // from a known-good row, else the 7-seg aspect (≈ height/2).
+        let measured = median(tall.map(\.width)) ?? digitHeight
+        let aspectWidth = max(1, digitHeight / 2)
+        let digitWidth = preferredDigitWidth
+            ?? (measured > aspectWidth + aspectWidth / 4 ? aspectWidth : measured)
+        let capped = boxes.map { box -> PixelBox in
+            guard box.width > digitWidth else { return box }
+            let mid = box.midX
+            let half = digitWidth / 2
+            return PixelBox(
+                minX: mid - half,
+                minY: box.minY,
+                maxX: mid + (digitWidth - half),
+                maxY: box.maxY
+            )
+        }
+        return capped.compactMap { box in
             let cell = classify(
                 box,
                 mask: mask,
@@ -865,7 +888,11 @@ private extension GrayBuffer {
         return GrayBuffer(pixels: out, width: newW, height: newH)
     }
 
-    static func readRows(in buffer: GrayBuffer, splittingRows: Bool = true) -> [[Cell]] {
+    static func readRows(
+        in buffer: GrayBuffer,
+        splittingRows: Bool = true,
+        preferredDigitWidth: Int? = nil
+    ) -> [[Cell]] {
         let raw = buffer.masks()
         // A frame inside the crop seals the glass. Ink outside that glass is the bezel.
         let sealed = (dark: keepingInteriorInk(raw.dark), light: keepingInteriorInk(raw.light))
@@ -904,7 +931,17 @@ private extension GrayBuffer {
         let paintedMarks = buffer.extremeMarkMask()
         let measuredBands = opened ? solidBands : merge(foundBands, whenGapBelow: 0)
         let measured = measuredBands.map { band -> (band: (Int, Int), cells: [Cell]) in
-            return (band, cells(in: band, mask: glyphs, buffer: buffer, bandIndex: 0, darkInk: primaryIsDark))
+            return (
+                band,
+                cells(
+                    in: band,
+                    mask: glyphs,
+                    buffer: buffer,
+                    bandIndex: 0,
+                    darkInk: primaryIsDark,
+                    preferredDigitWidth: preferredDigitWidth
+                )
+            )
         }
         let tallHeights = measured.flatMap(\.cells).filter { $0.height > 0 }.map(\.height).sorted()
         let cellHeight = tallHeights.isEmpty ? 1 : tallHeights[tallHeights.count / 2]
@@ -938,6 +975,9 @@ private extension GrayBuffer {
             // borrows gap above when the buffer is short below).
             let priceBandHeight = 380
             let gapPad = max(24, priceBandHeight / 8)
+            // Approach D: once a price-like row yields digit boxes, copy that
+            // pitch into later rowcrops (volume) so wash bridges still cut.
+            var rowPitch = preferredDigitWidth
             for band in splitBands {
                 let expanded = (
                     max(0, band.0 - gapPad),
@@ -976,7 +1016,11 @@ private extension GrayBuffer {
                     windowNarrows = false
                     break
                 }
-                let found = readRows(in: crop, splittingRows: false).flatMap { $0 }
+                let found = readRows(
+                    in: crop,
+                    splittingRows: false,
+                    preferredDigitWidth: rowPitch
+                ).flatMap { $0 }
                 let shifted = found.map { $0.shifted(dx: x0, dy: y0) }
                 if buffer.width >= 1000 {
                     trace(
@@ -985,6 +1029,13 @@ private extension GrayBuffer {
                 }
                 if !shifted.isEmpty {
                     rescanned.append(shifted)
+                }
+                if rowPitch == nil {
+                    let digitWidths = found.compactMap { cell -> Int? in
+                        guard cell.character.isNumber, cell.height > 0 else { return nil }
+                        return cell.box.width
+                    }
+                    rowPitch = median(digitWidths)
                 }
             }
             if windowNarrows, !rescanned.isEmpty {
@@ -997,7 +1048,8 @@ private extension GrayBuffer {
                 mask: glyphs,
                 buffer: buffer,
                 bandIndex: 0,
-                darkInk: primaryIsDark
+                darkInk: primaryIsDark,
+                preferredDigitWidth: preferredDigitWidth
             )
             let marks = opened
                 ? []
@@ -1700,7 +1752,13 @@ private func columnProfile(_ mask: Mask) -> (sums: [Int], longest: [Int]) {
     return (sums, longest)
 }
 
-private func columnRuns(_ mask: Mask, y0: Int, y1: Int, width: Int) -> [(Int, Int)] {
+private func columnRuns(
+    _ mask: Mask,
+    y0: Int,
+    y1: Int,
+    width: Int,
+    preferredDigitWidth: Int? = nil
+) -> [(Int, Int)] {
     let sums = columnSums(mask, y0: y0, y1: y1, width: width)
     let raw = runs(sums)
     let peaks = raw.map { span in (span.0..<span.1).map { sums[$0] }.max() ?? 0 }
@@ -1711,19 +1769,22 @@ private func columnRuns(_ mask: Mask, y0: Int, y1: Int, width: Int) -> [(Int, In
     }.sorted()
     let typical = digitWidths.isEmpty ? 0 : digitWidths[(digitWidths.count - 1) / 2]
     let bandHeight = max(1, y1 - y0)
+    // Approach D: 7-seg digit ≈ twice as tall as wide. Prefer a pitch copied
+    // from a known-good price row when the caller has one.
+    let pitch = max(1, preferredDigitWidth ?? bandHeight / 2)
     return raw.flatMap { span in
         let spanWidth = span.1 - span.0
         // A digit is taller than it is wide. A 4 has no top or bottom bar, so
         // its ink band is shorter than the cell, and the old 0.7 ratio split
         // that one glyph at the crossbar. Two digits side by side are wider
-        // than the band is tall.
-        let widerThanADigit = spanWidth > bandHeight
+        // than the band is tall — or wider than one expected digit pitch.
+        let widerThanADigit = spanWidth > bandHeight || spanWidth > pitch
         guard widerThanADigit || (typical > 0 && spanWidth > typical * 2) else { return [span] }
         let peak = (span.0..<span.1).map { sums[$0] }.max() ?? 0
         // A horizontal bar is much thinner than a flooded stem. peak/5 cut the
         // bar and split one washed digit. The gap between digits still falls
-        // through a lower floor; valleys between digit-sized peaks catch a
-        // wash bridge that stays above that floor.
+        // through a lower floor; a solid wash bridge stays above it, so pitch
+        // cuts finish the split without hunting ink valleys.
         let floor = max(1, widerThanADigit ? peak / 15 : peak / 8)
         var pieces: [(Int, Int)] = []
         var start: Int?
@@ -1741,47 +1802,39 @@ private func columnRuns(_ mask: Mask, y0: Int, y1: Int, width: Int) -> [(Int, In
         let split = pieces.isEmpty ? [span] : pieces
         let joined = joiningBridgedPieces(split, mask: mask, y0: y0, y1: y1, bandHeight: bandHeight)
         return joined.flatMap { piece in
-            splitAtDigitValleys(piece, sums: sums, bandHeight: bandHeight)
+            splitAtExpectedPitch(piece, expectedWidth: pitch)
         }
     }
 }
 
-/// Cut a span that still holds two digit peaks with a wash bridge between them.
-private func splitAtDigitValleys(
+/// Force digit-sized slots from expected pitch (aspect or a copied price-row
+/// width). Cuts sit on pitch boundaries — not ink valleys.
+private func splitAtExpectedPitch(
     _ span: (Int, Int),
-    sums: [Int],
-    bandHeight: Int
+    expectedWidth: Int
 ) -> [(Int, Int)] {
-    let digitWide = max(1, bandHeight / 2)
+    let expected = max(1, expectedWidth)
     let width = span.1 - span.0
-    guard width > digitWide + digitWide / 3 else { return [span] }
-    var cuts: [Int] = []
-    var x = span.0 + digitWide / 2
-    while x < span.1 - digitWide / 2 {
-        let leftPeak = (span.0..<x).map { sums[$0] }.max() ?? 0
-        let rightPeak = (x..<span.1).map { sums[$0] }.max() ?? 0
-        let valley = sums[x]
-        let deep = leftPeak > 0
-            && rightPeak > 0
-            && valley * 3 < leftPeak
-            && valley * 3 < rightPeak
-        if deep {
-            cuts.append(x)
-            x += digitWide * 2 / 3
-        } else {
-            x += 1
-        }
-    }
-    guard !cuts.isEmpty else { return [span] }
+    guard width > expected else { return [span] }
+    let count = max(2, (width + expected / 2) / expected)
     var pieces: [(Int, Int)] = []
     var start = span.0
-    for cut in cuts {
-        if cut > start { pieces.append((start, cut)) }
-        start = cut
+    let minimum = max(2, expected / 5)
+    for i in 1..<count {
+        let cut = span.0 + (width * i) / count
+        if cut - start >= minimum {
+            pieces.append((start, cut))
+            start = cut
+        }
     }
-    if span.1 > start { pieces.append((start, span.1)) }
-    let kept = pieces.filter { $0.1 - $0.0 >= max(2, digitWide / 5) }
-    return kept.isEmpty ? [span] : kept
+    if span.1 - start >= minimum {
+        pieces.append((start, span.1))
+    } else if !pieces.isEmpty {
+        pieces[pieces.count - 1].1 = span.1
+    } else {
+        pieces.append(span)
+    }
+    return pieces
 }
 
 /// A projection floor cuts the diagonal of a 2. The halves are still one stroke.
