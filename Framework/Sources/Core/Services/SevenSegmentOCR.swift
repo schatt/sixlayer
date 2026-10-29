@@ -1293,23 +1293,26 @@ private func priceMatchedLeft(
     var dropped = 0
     var droppedInk = 0
     var index = 0
+    let dropLimit = max(12, (y1 - y0) / 10)
     while index < active.count {
         let remaining = active.count - index
         let remainingInk = totalInk - droppedInk
-        // A scratch is a short prefix; digits keep most columns and ink.
+        let gapBefore = index > 0 ? active[index] - active[index - 1] : 0
+        // A scratch is a short prefix separated by a gap from the digits.
         if index > 0,
+           gapBefore > 4,
            remaining * 5 >= active.count * 4,
            remainingInk * 5 >= totalInk * 4,
            active[index] > sharedLeft + 8,
            dropped * 4 <= remaining,
+           dropped <= dropLimit,
            (active[index] - sharedLeft) * 4 <= (sharedRight - active[index]) {
             return active[index]
         }
         dropped += 1
         droppedInk += columnInk[active[index]]
         index += 1
-        // Never drop more than a thin scratch's worth of columns.
-        if dropped > max(16, (y1 - y0) / 6) { break }
+        if dropped > dropLimit { break }
     }
     return sharedLeft
 }
