@@ -1575,7 +1575,8 @@ private func columnRuns(_ mask: Mask, y0: Int, y1: Int, width: Int) -> [(Int, In
         let peak = (span.0..<span.1).map { sums[$0] }.max() ?? 0
         // A horizontal bar is much thinner than a flooded stem. peak/5 cut the
         // bar and split one washed digit. The gap between digits still falls
-        // through a lower floor.
+        // through a lower floor; valleys between digit-sized peaks catch a
+        // wash bridge that stays above that floor.
         let floor = max(1, widerThanADigit ? peak / 15 : peak / 8)
         var pieces: [(Int, Int)] = []
         var start: Int?
@@ -1591,8 +1592,49 @@ private func columnRuns(_ mask: Mask, y0: Int, y1: Int, width: Int) -> [(Int, In
             pieces.append((open, span.1))
         }
         let split = pieces.isEmpty ? [span] : pieces
-        return joiningBridgedPieces(split, mask: mask, y0: y0, y1: y1, bandHeight: bandHeight)
+        let joined = joiningBridgedPieces(split, mask: mask, y0: y0, y1: y1, bandHeight: bandHeight)
+        return joined.flatMap { piece in
+            splitAtDigitValleys(piece, sums: sums, bandHeight: bandHeight)
+        }
     }
+}
+
+/// Cut a span that still holds two digit peaks with a wash bridge between them.
+private func splitAtDigitValleys(
+    _ span: (Int, Int),
+    sums: [Int],
+    bandHeight: Int
+) -> [(Int, Int)] {
+    let digitWide = max(1, bandHeight / 2)
+    let width = span.1 - span.0
+    guard width > digitWide + digitWide / 3 else { return [span] }
+    var cuts: [Int] = []
+    var x = span.0 + digitWide / 2
+    while x < span.1 - digitWide / 2 {
+        let leftPeak = (span.0..<x).map { sums[$0] }.max() ?? 0
+        let rightPeak = (x..<span.1).map { sums[$0] }.max() ?? 0
+        let valley = sums[x]
+        let deep = leftPeak > 0
+            && rightPeak > 0
+            && valley * 3 < leftPeak
+            && valley * 3 < rightPeak
+        if deep {
+            cuts.append(x)
+            x += digitWide * 2 / 3
+        } else {
+            x += 1
+        }
+    }
+    guard !cuts.isEmpty else { return [span] }
+    var pieces: [(Int, Int)] = []
+    var start = span.0
+    for cut in cuts {
+        if cut > start { pieces.append((start, cut)) }
+        start = cut
+    }
+    if span.1 > start { pieces.append((start, span.1)) }
+    let kept = pieces.filter { $0.1 - $0.0 >= max(2, digitWide / 5) }
+    return kept.isEmpty ? [span] : kept
 }
 
 /// A projection floor cuts the diagonal of a 2. The halves are still one stroke.
@@ -1607,14 +1649,19 @@ private func joiningBridgedPieces(
     var merged: [(Int, Int)] = []
     // Both halves have to be narrower than a finished digit. The reflection
     // beside the 3 is as wide as a digit and must not be pulled in with it.
+    // Two washed digits cut apart by the floor are each already ~digit-wide;
+    // do not glue those back even when a thin bridge still connects them.
     let narrow = bandHeight / 2
+    let digitWide = max(1, bandHeight / 2)
     let gapLimit = max(1, bandHeight / 8)
     for piece in pieces.dropFirst() {
         let gap = piece.0 - previous.1
         let leftWidth = previous.1 - previous.0
         let rightWidth = piece.1 - piece.0
         let combined = piece.1 - previous.0
-        let bridged = leftWidth < narrow
+        let bothFinished = leftWidth * 5 >= digitWide * 3 && rightWidth * 5 >= digitWide * 3
+        let bridged = !bothFinished
+            && leftWidth < narrow
             && rightWidth < narrow
             && combined < bandHeight
             && gap > 0
