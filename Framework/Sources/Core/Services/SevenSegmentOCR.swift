@@ -390,6 +390,13 @@ private struct GrayBuffer {
             ? min(vertical[0].1 - vertical[0].0, vertical[1].1 - vertical[1].0)
             : 0
         let colonGap = vertical.count == 2 && splitGap >= shorterRun
+        // A mid-row glare stripe can punch a colon-sized hole in a stem. Prefer
+        // a one when the box is stem-narrow and either run is still stem-tall.
+        let stemAspect = box.width * 4 < box.height
+        let tallRun = vertical.contains { $0.1 - $0.0 >= digitHeight * 35 / 100 }
+        if box.height * 100 >= digitHeight * 55, stemAspect, vertical.count == 1 || !colonGap || tallRun {
+            return Cell(box: box, character: "1", confidence: 1, band: bandIndex)
+        }
         if colonGap,
            box.width * 100 <= box.height * 30,
            vertical.allSatisfy({ $0.1 - $0.0 < digitHeight * 45 / 100 }) {
@@ -421,7 +428,7 @@ private struct GrayBuffer {
             }
         }
         // ssocr: a box narrower than a quarter of its height is a one.
-        if box.height * 100 >= digitHeight * 55, box.width * 4 < box.height {
+        if box.height * 100 >= digitHeight * 55, stemAspect {
             return Cell(box: box, character: "1", confidence: 1, band: bandIndex)
         }
         if box.height * 100 >= digitHeight * 50,
@@ -1322,6 +1329,17 @@ private func priceMatchedLeft(
     while lo > sharedLeft, columnInk[lo - 1] >= floor {
         lo -= 1
     }
+    // A right-hand edge strip can pull the densest window past a leading
+    // digit. Only raise the left edge when a real valley separates a left
+    // scratch from the digit run we kept.
+    guard lo > sharedLeft + 8 else { return sharedLeft }
+    var gapStart = lo
+    while gapStart > sharedLeft, columnInk[gapStart - 1] < floor {
+        gapStart -= 1
+    }
+    guard lo - gapStart > 4 else { return sharedLeft }
+    let scratchInk = (sharedLeft..<gapStart).reduce(0) { $0 + columnInk[$1] }
+    guard scratchInk > 0 else { return sharedLeft }
     return lo
 }
 
@@ -1779,16 +1797,16 @@ private func rowInkSums(_ mask: Mask, x0: Int, x1: Int, y0: Int, y1: Int) -> (lo
 }
 
 /// Vertical span of digit ink for segment sampling. Glare above the top bar
-/// makes a box taller than a real digit (~2× width). Drop a short solid cap,
-/// then keep the lower digit-tall slice. Boxes that already fit a digit are
-/// left alone — shrinking them clips the top bar. A stem fills its narrow box
-/// and is never treated as a glare cap.
+/// makes a box taller than a real digit (~2× width). Keep the densest
+/// digit-tall window so upper stem scans sit on the glyph. Boxes that already
+/// fit a digit are left alone — shrinking them clips the top bar. A stem fills
+/// its narrow box and is never treated as a glare cap. Price-like boxes only
+/// peel a short solid fringe above the glyph.
 private func densestInkBand(
     _ mask: Mask,
     box: PixelBox,
     digitWidth: Int
 ) -> PixelBox {
-    return box
     let profile = rowInkSums(mask, x0: box.minX, x1: box.maxX, y0: box.minY, y1: box.maxY)
     let sums = profile.sums
     let height = sums.count
@@ -1803,32 +1821,47 @@ private func densestInkBand(
     let narrow = digitWidth > 8 && box.width * 5 < digitWidth * 4
     let earlyCap = narrow ? max(ownCap, digitWidth * 2) : ownCap
     let slack = max(4, earlyCap / 12)
-    // Price-like boxes (pump sale digits ~2× width) are left alone.
-    if height <= earlyCap + slack {
-        return box
-    }
-    var start = 0
-    var end = height
     // A top bar spans the interior, not the full cell. A glare cap fills it.
     let solid = max(2, box.width * 9 / 10)
-    while start < height - 3 && sums[start] >= solid {
+    if height <= earlyCap + slack {
+        // Price-like: only peel a short solid glare fringe.
+        var start = 0
+        while start < height - 3 && sums[start] >= solid {
+            start += 1
+        }
+        if start * 2 > height { start = 0 }
+        guard start > 0, start * 5 <= height else { return box }
+        return PixelBox(
+            minX: box.minX,
+            minY: profile.lower + start,
+            maxX: box.maxX,
+            maxY: box.maxY
+        )
+    }
+    // Tall box: densest digit-tall window. Prefer the lower window on ties so
+    // glare above the top bar loses to the glyph.
+    let target = min(height, ownCap)
+    var bestStart = 0
+    var bestInk = Int.min
+    var start = 0
+    let lastStart = height - target
+    while start <= lastStart {
+        var ink = 0
+        for row in start..<(start + target) {
+            ink += sums[row]
+        }
+        if ink > bestInk || (ink == bestInk && start > bestStart) {
+            bestInk = ink
+            bestStart = start
+        }
         start += 1
     }
-    // A stem fills the box. A glare cap is a minority of the height.
-    if start * 2 > height { start = 0 }
-    while end - start > 3 && sums[end - 1] >= solid {
-        end -= 1
-    }
-    if (height - end) * 2 > height { end = height }
-    var minY = profile.lower + start
-    var maxY = profile.lower + end
-    let remaining = maxY - minY
-    if remaining <= ownCap + max(4, ownCap / 12) {
-        return PixelBox(minX: box.minX, minY: minY, maxX: box.maxX, maxY: maxY)
-    }
-    let target = min(remaining, ownCap)
-    minY = maxY - target
-    return PixelBox(minX: box.minX, minY: minY, maxX: box.maxX, maxY: maxY)
+    return PixelBox(
+        minX: box.minX,
+        minY: profile.lower + bestStart,
+        maxX: box.maxX,
+        maxY: profile.lower + bestStart + target
+    )
 }
 
 private func verticalRuns(_ mask: Mask, box: PixelBox, width: Int) -> [(Int, Int)] {
