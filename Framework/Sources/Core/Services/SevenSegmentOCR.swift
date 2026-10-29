@@ -1787,6 +1787,7 @@ private func densestInkBand(
     box: PixelBox,
     digitWidth: Int
 ) -> PixelBox {
+    return box
     let profile = rowInkSums(mask, x0: box.minX, x1: box.maxX, y0: box.minY, y1: box.maxY)
     let sums = profile.sums
     let height = sums.count
