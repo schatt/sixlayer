@@ -1941,13 +1941,28 @@ private func packClusterRuns(
         extra -= 1
         cursor += 1
     }
+    // Prefer a pack body from single-digit runs in this cluster when they
+    // are narrower than the copied price body — volume glyphs on the photo
+    // sit under the price width and left-pack with 182 overshoots into wash.
+    let singleWidths = runs.map { $0.1 - $0.0 }.filter {
+        $0 > body / 2 && $0 <= body + body / 4
+    }.sorted()
+    let packBody: Int
+    if singleWidths.isEmpty {
+        packBody = body
+    } else {
+        packBody = singleWidths[(singleWidths.count - 1) / 2]
+    }
     var pieces: [(Int, Int)] = []
     for (run, n) in zip(runs, runShare) {
         if n <= 1 {
             pieces.append(run)
         } else {
-            let local = PreferredDigitPitch(body: body, count: n, stride: pitch.stride)
-            pieces.append(contentsOf: splitAtExpectedPitch(run, sums: sums, pitch: local))
+            // Peel leading wash: keep only the rightmost n packBody slots.
+            let needed = n * packBody
+            let trimmed = (max(run.0, run.1 - needed), run.1)
+            let local = PreferredDigitPitch(body: packBody, count: n, stride: pitch.stride)
+            pieces.append(contentsOf: splitAtExpectedPitch(trimmed, sums: sums, pitch: local))
         }
     }
     return pieces
