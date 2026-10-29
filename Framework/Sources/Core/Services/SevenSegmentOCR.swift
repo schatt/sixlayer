@@ -1218,7 +1218,9 @@ private func readingSpan(_ mask: Mask, bands: [(Int, Int)]) -> (Int, Int)? {
     }
     let active = keep.indices.filter { keep[$0] }
     guard let first = active.first else { return nil }
-    let gapLimit = max(8, height / 15)
+    // Keep digits across the intra-digit gap (8px). Do not jump a left
+    // scratch that sits farther away on a tall outer-margin crop.
+    let gapLimit = max(8, min(16, height / 40))
     var runs: [(start: Int, end: Int, ink: Int)] = []
     var start = first
     var end = first
