@@ -118,6 +118,24 @@ struct OCRSevenSegment576Tests {
         #expect(decode(image, maximum: 0).extractedText == "32.88\n8.022")
     }
 
+    @Test func rescannedRowCropMatchesPriceBandGeometry() {
+        // Approach B (#591): a left scratch sits in the digit bands but not
+        // through the row gap, and a tall haze above each row stretches the
+        // band past the digit ink. The known-good price crop starts on digit
+        // ink at ~radius 11. Each rescanned row crop must do the same — not
+        // include the scratch from x0 or the haze that widens the window.
+        let image = SegmentPanel.render(
+            rows: [atoms("32.88"), atoms("8.022")],
+            inkLevel: 30,
+            backgroundLevel: 130,
+            outerMargin: 200,
+            gapGlare: true,
+            leftScratch: true,
+            tallHaze: true
+        )
+        #expect(decode(image, maximum: 0).extractedText == "32.88\n8.022")
+    }
+
     @Test func wideGapSplitsGroupsAndAnEqualGapDoesNot() {
         let split = decode(panel(["12 34"]))
         #expect(split.extractedText == "12  34")
@@ -688,7 +706,9 @@ private enum SegmentPanel {
         scale: Int = 1,
         gapGlare: Bool = false,
         edgeStrip: Bool = false,
-        washGaps: Bool = false
+        washGaps: Bool = false,
+        leftScratch: Bool = false,
+        tallHaze: Bool = false
     ) -> CGImage {
         let laid = layout(rows: rows, padding: padding)
         let background: UInt8 = backgroundLevel ?? (invert ? 28 : 214)
@@ -723,8 +743,22 @@ private enum SegmentPanel {
         if washGaps {
             paintWashGaps(&pixels, width: width, height: height, ink: ink, gaps: laid.gaps)
         }
+        if tallHaze {
+            paintTallHaze(&pixels, width: width, height: height, ink: ink, bands: laid.rowBands)
+        }
         if gapGlare {
             paintGapGlare(&pixels, width: width, height: height, bands: laid.rowBands)
+        }
+        if leftScratch {
+            paintLeftScratch(
+                &pixels,
+                width: width,
+                height: height,
+                ink: ink,
+                background: background,
+                padding: padding,
+                bands: laid.rowBands
+            )
         }
         if edgeStrip {
             paintEdgeStrip(
@@ -806,6 +840,65 @@ private enum SegmentPanel {
                 for x in x0..<x1 {
                     pixels[(y + dy) * width + x] = 255
                 }
+            }
+        }
+    }
+
+    /// Sparse dark marks above each digit row that keep the ink run open, so
+    /// the detected band is taller than the digit cells (price-like height
+    /// would be the densest stretch inside that band).
+    private static func paintTallHaze(
+        _ pixels: inout [UInt8],
+        width: Int,
+        height: Int,
+        ink: UInt8,
+        bands: [RowBand]
+    ) {
+        let haze = max(48, cellH / 2)
+        for band in bands {
+            let top = max(0, band.minY - haze)
+            guard top < band.minY else { continue }
+            let x0 = min(8, width)
+            let x1 = max(x0, width - 8)
+            for y in top..<band.minY {
+                for x in stride(from: x0, to: x1, by: 11) {
+                    pixels[y * width + x] = ink
+                    if x + 1 < width { pixels[y * width + x + 1] = ink }
+                }
+            }
+        }
+    }
+
+    /// Left scratch inside each digit band, cleared through the row gap so it
+    /// is not a bezel edge. A span that starts at x0 includes it; a span that
+    /// starts on digit ink does not.
+    private static func paintLeftScratch(
+        _ pixels: inout [UInt8],
+        width: Int,
+        height: Int,
+        ink: UInt8,
+        background: UInt8,
+        padding: Int,
+        bands: [RowBand]
+    ) {
+        let scratchEnd = min(width, max(12, padding / 2))
+        let haze = max(48, cellH / 2)
+        guard scratchEnd > 4, let first = bands.first, let last = bands.last else { return }
+        for band in bands {
+            let top = max(0, band.minY - haze)
+            for y in top..<band.maxY {
+                for x in 4..<scratchEnd {
+                    pixels[y * width + x] = ink
+                }
+            }
+        }
+        // Keep the gap empty so readingSpan does not treat the strip as edge.
+        let gapTop = first.maxY
+        let gapBottom = last.minY
+        guard gapBottom > gapTop else { return }
+        for y in gapTop..<gapBottom {
+            for x in 4..<scratchEnd {
+                pixels[y * width + x] = background
             }
         }
     }
