@@ -279,7 +279,9 @@ private struct GrayBuffer {
         let digitWidth = preferredDigitWidth
             ?? (measured > aspectWidth + aspectWidth / 4 ? aspectWidth : measured)
         let capped = boxes.map { box -> PixelBox in
-            guard box.width > digitWidth else { return box }
+            // Cap only blobs clearly wider than one digit; a normal glyph can
+            // sit a few pixels over height/2 without being fused.
+            guard box.width > digitWidth + digitWidth / 4 else { return box }
             let mid = box.midX
             let half = digitWidth / 2
             return PixelBox(
@@ -1777,9 +1779,12 @@ private func columnRuns(
         // A digit is taller than it is wide. A 4 has no top or bottom bar, so
         // its ink band is shorter than the cell, and the old 0.7 ratio split
         // that one glyph at the crossbar. Two digits side by side are wider
-        // than the band is tall — or wider than one expected digit pitch.
-        let widerThanADigit = spanWidth > bandHeight || spanWidth > pitch
-        guard widerThanADigit || (typical > 0 && spanWidth > typical * 2) else { return [span] }
+        // than the band is tall, or clearly wider than one expected digit.
+        let widerThanADigit = spanWidth > bandHeight
+        let widerThanPitch = spanWidth > pitch + pitch / 4
+        guard widerThanADigit || widerThanPitch || (typical > 0 && spanWidth > typical * 2) else {
+            return [span]
+        }
         let peak = (span.0..<span.1).map { sums[$0] }.max() ?? 0
         // A horizontal bar is much thinner than a flooded stem. peak/5 cut the
         // bar and split one washed digit. The gap between digits still falls
@@ -1815,7 +1820,8 @@ private func splitAtExpectedPitch(
 ) -> [(Int, Int)] {
     let expected = max(1, expectedWidth)
     let width = span.1 - span.0
-    guard width > expected else { return [span] }
+    // Need room for a second digit; do not bisect a slightly wide glyph.
+    guard width > expected + expected / 4 else { return [span] }
     let count = max(2, (width + expected / 2) / expected)
     var pieces: [(Int, Int)] = []
     var start = span.0
