@@ -1985,28 +1985,13 @@ private func splitAtExpectedPitch(
     let step = body + max(0, gap)
     // Right-pack: last window ends at span.1, earlier ones step left. Leading
     // wash/junk left of the pack is ignored instead of shifting every slot.
-    // Right-pack without stem-snap first: snap was pulling the rightmost
-    // slot of a 3-digit cluster left from the 0-run (380-555) onto the 8.
-    // Only nudge a window when the move stays inside its nominal slot
-    // (±step/4) so neighbors keep their glyph ink.
+    // Pure right-pack. Stem-snap pulled the last slot of a 3-digit cluster
+    // from the 0-run (nominal ~373 → 380-555) left onto the almost-8 at 342
+    // even within ±step/4 — higher stem score, wrong glyph.
     var starts: [Int] = []
     var x = span.1 - body
     for _ in 0..<count {
-        let nominal = max(span.0, x)
-        let lo = max(span.0, nominal - max(1, step / 4))
-        let hi = min(span.1 - body, nominal + max(1, step / 4))
-        var bestX = nominal
-        var best = stemScore(from: nominal)
-        var probe = lo
-        while probe <= hi {
-            let score = stemScore(from: probe)
-            if score > best {
-                best = score
-                bestX = probe
-            }
-            probe += 1
-        }
-        starts.append(bestX)
+        starts.append(max(span.0, x))
         x -= step
     }
     let ordered = starts.sorted()
@@ -2014,7 +1999,7 @@ private func splitAtExpectedPitch(
     if width >= 400 {
         let listed = pieces.map { "\($0.0)-\($0.1)" }.joined(separator: ",")
         let scores = ordered.map { stemScore(from: $0) }
-        trace("pitch right step\(step) snap[\(listed)] stem\(scores)\n")
+        trace("pitch right step\(step) [\(listed)] stem\(scores)\n")
     }
     return pieces.count >= 2 ? pieces : (pieces.isEmpty ? [span] : pieces)
 }
