@@ -920,9 +920,14 @@ private extension GrayBuffer {
             }
             var windowNarrows = true
             var rescanned: [[Cell]] = []
+            let rowProfile = glyphs.rowSums
             for band in splitBands {
-                let y0 = max(0, band.0 - 4)
-                let y1 = min(buffer.height, band.1 + 4)
+                // Haze above a washed row keeps the band open past the digit
+                // ink. Crop the densest stretch so the window matches a
+                // single-row price crop (~radius 11), not the tall parent.
+                let tight = densestInkBand(rowProfile, in: band)
+                let y0 = max(0, tight.0 - 4)
+                let y1 = min(buffer.height, tight.1 + 4)
                 let x0 = max(0, (span?.0 ?? 0) - 8)
                 let x1 = min(buffer.width, (span?.1 ?? buffer.width) + 8)
                 let crop = buffer.cropped(x0: x0, y0: y0, x1: x1, y1: y1)
@@ -1173,6 +1178,8 @@ private func readingSpan(_ mask: Mask, bands: [(Int, Int)]) -> (Int, Int)? {
         return (top, bottom)
     }
     guard !valleys.isEmpty else { return nil }
+    let rowProfile = mask.rowSums
+    let denseBands = bands.map { densestInkBand(rowProfile, in: $0) }
     var keep = [Bool](repeating: false, count: width)
     var edgeColumn = [Bool](repeating: false, count: width)
     var columnInk = [Int](repeating: 0, count: width)
@@ -1192,21 +1199,31 @@ private func readingSpan(_ mask: Mask, bands: [(Int, Int)]) -> (Int, Int)? {
             continue
         }
         var ink = 0
-        for band in bands {
+        var presentInAll = true
+        for band in denseBands {
             let y0 = max(0, band.0)
             let y1 = min(height, band.1)
+            let bandHeight = max(1, y1 - y0)
+            var bandInk = 0
             for y in y0..<y1 where mask.bits[y * width + x] {
-                ink += 1
+                bandInk += 1
+            }
+            ink += bandInk
+            // Scratch/glare often lights only one row or a short fringe.
+            // Digit stems have ink through each row's densest band.
+            if bandInk * 5 < bandHeight {
+                presentInAll = false
             }
         }
-        if ink > 0 {
+        if ink > 0, presentInAll {
             keep[x] = true
             columnInk[x] = ink
         }
     }
     let active = keep.indices.filter { keep[$0] }
     guard let first = active.first else { return nil }
-    let gapLimit = max(8, height / 15)
+    // Intra-digit gaps are a few pixels; a washed scratch sits farther left.
+    let gapLimit = max(8, min(16, height / 30))
     var runs: [(start: Int, end: Int, ink: Int)] = []
     var start = first
     var end = first
@@ -1225,9 +1242,97 @@ private func readingSpan(_ mask: Mask, bands: [(Int, Int)]) -> (Int, Int)? {
     }
     runs.append((start, end + 1, ink))
     guard let best = runs.max(by: { $0.ink < $1.ink }) else { return nil }
-    let span = best.end - best.start
+    // A left scratch can join the digits across a short empty gap. Peel a
+    // narrow leading island so the crop starts on digit ink.
+    let core = peelingLeadingScratch(
+        active: active,
+        columnInk: columnInk,
+        start: best.start,
+        end: best.end,
+        height: height
+    )
+    let peak = (core.0..<core.1).map { columnInk[$0] }.max() ?? 0
+    let colFloor = max(1, peak / 4)
+    var lo = core.0
+    while lo < core.1, columnInk[lo] < colFloor { lo += 1 }
+    var hi = core.1
+    while hi > lo, columnInk[hi - 1] < colFloor { hi -= 1 }
+    let span = hi - lo
     guard span > max(12, height / 10) else { return nil }
-    return (best.start, best.end)
+    return (lo, hi)
+}
+
+/// Densest contiguous ink inside a row band. Sparse haze above washed digits
+/// keeps the band open; the price-sized crop is this denser stretch.
+private func densestInkBand(_ sums: [Int], in band: (Int, Int)) -> (Int, Int) {
+    let y0 = max(0, band.0)
+    let y1 = min(sums.count, band.1)
+    guard y1 > y0 else { return band }
+    let peak = (y0..<y1).map { sums[$0] }.max() ?? 0
+    guard peak > 0 else { return band }
+    let floor = max(8, peak / 5)
+    var bestStart = y0
+    var bestEnd = y1
+    var bestInk = 0
+    var index = y0
+    while index < y1 {
+        if sums[index] < floor {
+            index += 1
+            continue
+        }
+        let start = index
+        var ink = 0
+        while index < y1, sums[index] >= floor {
+            ink += sums[index]
+            index += 1
+        }
+        if ink > bestInk {
+            bestInk = ink
+            bestStart = start
+            bestEnd = index
+        }
+    }
+    guard bestInk > 0 else { return band }
+    return (bestStart, bestEnd)
+}
+
+/// Drop a narrow left island that joined the digits across a short gap.
+private func peelingLeadingScratch(
+    active: [Int],
+    columnInk: [Int],
+    start: Int,
+    end: Int,
+    height: Int
+) -> (Int, Int) {
+    let inside = active.filter { $0 >= start && $0 < end }
+    guard let first = inside.first else { return (start, end) }
+    var islands: [(start: Int, end: Int, ink: Int)] = []
+    var islandStart = first
+    var islandEnd = first
+    var ink = columnInk[first]
+    for index in inside.dropFirst() {
+        if index - islandEnd <= 2 {
+            islandEnd = index
+            ink += columnInk[index]
+        } else {
+            islands.append((islandStart, islandEnd + 1, ink))
+            islandStart = index
+            islandEnd = index
+            ink = columnInk[index]
+        }
+    }
+    islands.append((islandStart, islandEnd + 1, ink))
+    guard islands.count >= 2 else { return (start, end) }
+    let lead = islands[0]
+    let leadWidth = lead.end - lead.start
+    let restInk = islands.dropFirst().reduce(0) { $0 + $1.ink }
+    let restWidth = islands.last!.end - islands[1].start
+    // A scratch is a thin strip; the digit run is much wider and holds more ink.
+    let narrow = leadWidth * 4 <= max(restWidth, height / 8)
+    if narrow, restInk > lead.ink, restWidth > max(12, height / 10) {
+        return (islands[1].start, end)
+    }
+    return (start, end)
 }
 
 /// Two digit rows joined by scratches. The valley has to sit between two
