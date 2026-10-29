@@ -1284,8 +1284,9 @@ private func priceMatchedBand(_ sums: [Int], in band: (Int, Int), targetHeight: 
         for y in start..<(start + targetHeight) {
             ink += sums[y]
         }
-        // Ink dominates; a higher start drops top haze (price Y is picky).
-        let score = ink * 1000 + start
+        // Ink dominates; a slight start term drops a few pixels of top haze
+        // without sliding into the row gap (which turns a trailing 8 into 9).
+        let score = ink * 10_000 + start
         if score > bestScore {
             bestScore = score
             bestInk = ink
@@ -1293,8 +1294,8 @@ private func priceMatchedBand(_ sums: [Int], in band: (Int, Int), targetHeight: 
         }
         start += 1
     }
-    // Among windows within 5% of peak ink, keep the lowest (highest start).
-    let floorInk = bestInk * 95 / 100
+    // Among windows within 1% of peak ink, keep the lowest (highest start).
+    let floorInk = bestInk * 99 / 100
     start = bestStart
     while start <= lastStart {
         var ink = 0
