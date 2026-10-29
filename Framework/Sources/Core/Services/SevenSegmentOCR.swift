@@ -1834,8 +1834,7 @@ private func columnRuns(
             return [span]
         }
         if let pitch = copied {
-            // Pitch owns the split: densest body windows at copied count.
-            // Floor/join would either glue wash bridges or drop digit pieces.
+            // Pitch owns the split. Floor/join would glue wash bridges.
             return splitAtExpectedPitch(span, sums: sums, pitch: pitch)
         }
         let peak = (span.0..<span.1).map { sums[$0] }.max() ?? 0
@@ -1864,23 +1863,19 @@ private func columnRuns(
     }
 }
 
-/// Place `count` body-wide windows across a fused volume span. Pump volume
-/// puts the decimal after the first digit (`8.022`), so the first body sits
-/// at the left, a decimal-sized hole is skipped, and the remaining bodies
-/// share the rest evenly. Fixed geometry — not ink valleys, not densest
-/// sliding (solid wash makes every column hot and pulls off hollow 0s).
+/// Place `count` body-wide windows across a fused span. If a short decimal
+/// column is found, pack `leftCount` bodies before it and the rest after.
+/// Otherwise pack evenly. Windows are inset so a solid wash bridge on the
+/// glyph edge cannot mint stems. Not ink valleys.
 private func splitAtExpectedPitch(
     _ span: (Int, Int),
     sums: [Int],
     pitch: PreferredDigitPitch
 ) -> [(Int, Int)] {
-    _ = sums
     let body = max(1, pitch.body)
     let count = max(2, pitch.count)
     let width = span.1 - span.0
     guard width > body + body / 4 else { return [span] }
-    // Inset so a solid wash bridge on the glyph edge cannot light extra
-    // stems and turn a 0 into an 8.
     let inset = max(1, body / 12)
     func window(at x: Int) -> (Int, Int)? {
         let start = max(span.0, x + inset)
@@ -1888,28 +1883,57 @@ private func splitAtExpectedPitch(
         guard end - start >= max(2, body / 5) else { return nil }
         return (start, end)
     }
-    var pieces: [(Int, Int)] = []
-    if let first = window(at: span.0) {
-        pieces.append(first)
-    }
-    guard count > 1 else { return pieces.isEmpty ? [span] : pieces }
-    // Clear a decimal / wash hole after the leading digit.
-    let hole = max(body * 2 / 3, max(1, pitch.stride - body))
-    let restStart = min(span.1, span.0 + body + hole)
-    let restCount = count - 1
-    let restWidth = max(0, span.1 - restStart)
-    let restGap = restCount > 1
-        ? max(0, (restWidth - restCount * body) / (restCount - 1))
-        : 0
-    var x = restStart
-    for _ in 0..<restCount {
-        if let piece = window(at: x) {
-            pieces.append(piece)
+    func pack(_ from: Int, _ to: Int, _ n: Int) -> [(Int, Int)] {
+        guard n > 0, to > from else { return [] }
+        let spanWidth = to - from
+        let gap = n > 1 ? max(0, (spanWidth - n * body) / (n - 1)) : 0
+        var out: [(Int, Int)] = []
+        var x = from
+        for _ in 0..<n {
+            if let piece = window(at: x) { out.append(piece) }
+            x += body + gap
+            if x >= to { break }
         }
-        x += body + restGap
-        if x >= span.1 { break }
+        return out
     }
-    return pieces.isEmpty ? [span] : pieces
+    if let decimalX = decimalColumnCenter(sums, span: span, body: body) {
+        let leftWidth = max(0, decimalX - span.0)
+        // Volume `8.022` → one digit before the mark; price-like → about half.
+        let leftCount = leftWidth * 2 < width ? 1 : max(1, count / 2)
+        let rightCount = max(1, count - leftCount)
+        let left = pack(span.0, decimalX, leftCount)
+        let right = pack(min(span.1, decimalX + max(1, body / 4)), span.1, rightCount)
+        let pieces = left + right
+        if pieces.count >= 2 { return pieces }
+    }
+    let even = pack(span.0, span.1, count)
+    return even.isEmpty ? [span] : even
+}
+
+/// Short column between taller neighbors — the decimal in a washed span.
+private func decimalColumnCenter(
+    _ sums: [Int],
+    span: (Int, Int),
+    body: Int
+) -> Int? {
+    let peak = (span.0..<span.1).map { sums[$0] }.max() ?? 0
+    guard peak > 0 else { return nil }
+    var best: (x: Int, score: Int)?
+    let inner0 = span.0 + max(2, body / 4)
+    let inner1 = span.1 - max(2, body / 4)
+    guard inner1 > inner0 else { return nil }
+    for x in inner0..<inner1 {
+        let value = sums[x]
+        guard value > 0, value * 3 < peak else { continue }
+        let left = (max(span.0, x - body)..<x).map { sums[$0] }.max() ?? 0
+        let right = ((x + 1)..<min(span.1, x + body + 1)).map { sums[$0] }.max() ?? 0
+        guard left * 2 >= peak, right * 2 >= peak else { continue }
+        let score = left + right - value
+        if best == nil || score > best!.score {
+            best = (x, score)
+        }
+    }
+    return best?.x
 }
 
 /// Cut a span that still holds two digit peaks with a wash bridge between them.
