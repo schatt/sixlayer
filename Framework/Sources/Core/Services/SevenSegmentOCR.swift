@@ -50,34 +50,33 @@ public enum SevenSegmentGlyph {
     /// Nil when the pattern is empty or two templates share the best distance.
     /// `preferMissing`: on a Hamming tie, prefer a template that only needs
     /// missing segments (pattern ⊆ template) over one that needs clearing lit
-    /// bits — e.g. abcdeg ties 8 (missing f) and 3 (extra e); pick 8.
+    /// bits — e.g. abcdeg ties 2/3/8 at distance 1; only 8 is missing-only.
     fileprivate static func nearest(
         _ pattern: SevenSegmentPattern,
         preferMissing: Bool = false
     ) -> (character: Character, distance: Int)? {
         if pattern.rawValue == 0 { return nil }
         var bestDistance = Int.max
-        var winner: (Character, Int, Bool)?
+        var atBest: [(character: Character, missingOnly: Bool)] = []
         for template in templates {
             let distance = (template.1 ^ pattern.rawValue).nonzeroBitCount
-            let extras = pattern.rawValue & ~template.1
-            let missingOnly = extras == 0
+            let missingOnly = (pattern.rawValue & ~template.1) == 0
             if distance < bestDistance {
                 bestDistance = distance
-                winner = (template.0, distance, missingOnly)
+                atBest = [(template.0, missingOnly)]
             } else if distance == bestDistance {
-                guard let current = winner else { continue }
-                if preferMissing, missingOnly, !current.2 {
-                    winner = (template.0, distance, true)
-                } else if preferMissing, missingOnly == current.2 {
-                    winner = nil
-                } else if !preferMissing {
-                    winner = nil
-                }
+                atBest.append((template.0, missingOnly))
             }
         }
-        guard let found = winner else { return nil }
-        return (found.0, found.1)
+        if atBest.isEmpty { return nil }
+        if atBest.count == 1 { return (atBest[0].character, bestDistance) }
+        if preferMissing {
+            let missingOnly = atBest.filter(\.missingOnly)
+            if missingOnly.count == 1 {
+                return (missingOnly[0].character, bestDistance)
+            }
+        }
+        return nil
     }
 
     fileprivate static func match(
