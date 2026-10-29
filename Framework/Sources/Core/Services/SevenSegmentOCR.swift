@@ -465,9 +465,10 @@ private struct GrayBuffer {
         let boxHeight = box.height
         guard boxWidth > 1, boxHeight > 2, width > 0 else { return [] }
         var pattern = SevenSegmentPattern()
-        // Reject a one-pixel speck; keep a real stem. Washed synthetic bars
-        // are only ~stroke tall on the vertical scan, so stay under that.
-        let strokeNeed = max(2, min(boxWidth, boxHeight) / 24)
+        // A one-pixel glare speck must not invent a bar. Two consecutive ink
+        // pixels is enough for a real stroke on every panel size we ship;
+        // a size-scaled need over-rejected washed synthetics (combined reverted).
+        let strokeNeed = 2
         let midX = box.minX + boxWidth / 2
         let third = max(1, boxHeight / 3)
         if longestForegroundRun(mask, x: midX, y: box.minY, length: third, vertical: true) >= strokeNeed {
