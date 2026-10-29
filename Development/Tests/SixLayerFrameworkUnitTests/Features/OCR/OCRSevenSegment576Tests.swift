@@ -118,6 +118,18 @@ struct OCRSevenSegment576Tests {
         #expect(decode(image, maximum: 0).extractedText == "32.88\n8.022")
     }
 
+    @Test func onePixelSpeckDoesNotLightASegment() {
+        // sample() lights a segment on one foreground pixel. A true 3 with a
+        // one-pixel speck on the upper-left stem scanline becomes an exact 9
+        // (3|f). A segment must need a run about stroke thickness; empty slots
+        // stay off — do not invent missing bars.
+        let image = SegmentPanel.render(
+            rows: [[.digit(digit(3))]],
+            speckUpperLeft: true
+        )
+        #expect(decode(image, maximum: 0).extractedText == "3")
+    }
+
     @Test func rescannedRowCropMatchesPriceBandGeometry() {
         // Approach B (#591): a left scratch sits in the digit bands but not
         // through the row gap, and a tall haze above each row stretches the
@@ -708,7 +720,8 @@ private enum SegmentPanel {
         edgeStrip: Bool = false,
         washGaps: Bool = false,
         leftScratch: Bool = false,
-        tallHaze: Bool = false
+        tallHaze: Bool = false,
+        speckUpperLeft: Bool = false
     ) -> CGImage {
         let laid = layout(rows: rows, padding: padding)
         let background: UInt8 = backgroundLevel ?? (invert ? 28 : 214)
@@ -742,6 +755,14 @@ private enum SegmentPanel {
         var height = laid.height
         if washGaps {
             paintWashGaps(&pixels, width: width, height: height, ink: ink, gaps: laid.gaps)
+        }
+        if speckUpperLeft, let band = laid.rowBands.first {
+            // F-scanline: left half of the cell, a quarter down from the top.
+            let x = padding + 1
+            let y = band.minY + cellH / 4
+            if x < width, y < height {
+                pixels[y * width + x] = ink
+            }
         }
         if tallHaze {
             paintTallHaze(&pixels, width: width, height: height, ink: ink, bands: laid.rowBands)
