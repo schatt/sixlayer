@@ -1279,8 +1279,9 @@ private func priceMatchedBand(_ sums: [Int], in band: (Int, Int), targetHeight: 
     return (bestStart, bestStart + targetHeight)
 }
 
-/// Raise the left crop edge past a thin left scratch. Drop a short prefix of
-/// active columns when the remaining digit columns still hold most of the ink.
+/// Raise the left crop edge to the densest digit run. A left scratch or glare
+/// strip can out-score a short prefix drop; the window that holds most of the
+/// digit ink starts on the digits, not on that fringe.
 private func priceMatchedLeft(
     _ mask: Mask,
     band: (Int, Int),
@@ -1290,7 +1291,8 @@ private func priceMatchedLeft(
     let width = mask.width
     let y0 = max(0, band.0)
     let y1 = min(mask.height, band.1)
-    guard width > 0, y1 > y0, sharedRight > sharedLeft + 24 else { return sharedLeft }
+    let spanWidth = sharedRight - sharedLeft
+    guard width > 0, y1 > y0, spanWidth > 48 else { return sharedLeft }
     var columnInk = [Int](repeating: 0, count: width)
     for x in sharedLeft..<min(width, sharedRight) {
         var ink = 0
@@ -1299,34 +1301,33 @@ private func priceMatchedLeft(
         }
         columnInk[x] = ink
     }
-    let active = (sharedLeft..<min(width, sharedRight)).filter { columnInk[$0] > 0 }
-    guard active.count > 16 else { return sharedLeft }
-    let totalInk = active.reduce(0) { $0 + columnInk[$1] }
-    var dropped = 0
-    var droppedInk = 0
-    var index = 0
-    let dropLimit = max(12, (y1 - y0) / 10)
-    while index < active.count {
-        let remaining = active.count - index
-        let remainingInk = totalInk - droppedInk
-        let gapBefore = index > 0 ? active[index] - active[index - 1] : 0
-        // A scratch is a short prefix separated by a gap from the digits.
-        if index > 0,
-           gapBefore > 4,
-           remaining * 5 >= active.count * 4,
-           remainingInk * 5 >= totalInk * 4,
-           active[index] > sharedLeft + 8,
-           dropped * 4 <= remaining,
-           dropped <= dropLimit,
-           (active[index] - sharedLeft) * 4 <= (sharedRight - active[index]) {
-            return active[index]
+    // Cover most of a price-like digit row; leave room to slide past a fringe.
+    let window = max(48, min(spanWidth - 24, spanWidth * 3 / 4))
+    guard window + 24 < spanWidth else { return sharedLeft }
+    var bestStart = sharedLeft
+    var bestInk = Int.min
+    let lastStart = sharedRight - window
+    var start = sharedLeft
+    while start <= lastStart {
+        var ink = 0
+        for x in start..<(start + window) {
+            ink += columnInk[x]
         }
-        dropped += 1
-        droppedInk += columnInk[active[index]]
-        index += 1
-        if dropped > dropLimit { break }
+        if ink > bestInk {
+            bestInk = ink
+            bestStart = start
+        }
+        start += 1
     }
-    return sharedLeft
+    guard bestStart > sharedLeft + 16 else { return sharedLeft }
+    // Nudge left to the first ink of this run so a leading stem is not clipped.
+    let peak = (bestStart..<(bestStart + window)).map { columnInk[$0] }.max() ?? 0
+    let floor = max(1, peak / 5)
+    var lo = bestStart
+    while lo > sharedLeft, columnInk[lo - 1] >= floor {
+        lo -= 1
+    }
+    return lo
 }
 
 /// Two digit rows joined by scratches. The valley has to sit between two
