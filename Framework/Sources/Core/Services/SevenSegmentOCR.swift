@@ -1718,6 +1718,18 @@ private func densestInkBand(
         end -= 1
     }
     if (height - end) * 2 > height { end = height }
+    // Washed glare above the top bar may not be solid. Snap to the strongest
+    // center bar in the upper half so upper stem scans start on the glyph.
+    let topBar = topBarRow(
+        mask,
+        box: box,
+        width: width,
+        from: start,
+        to: min(end, start + max(1, (end - start) * 2 / 5))
+    )
+    if let topBar, topBar > start {
+        start = max(start, topBar - max(1, box.width / 20))
+    }
     var minY = profile.lower + start
     var maxY = profile.lower + end
     let remaining = maxY - minY
@@ -1727,6 +1739,44 @@ private func densestInkBand(
     let target = min(remaining, ownCap)
     minY = maxY - target
     return PixelBox(minX: box.minX, minY: minY, maxX: box.maxX, maxY: maxY)
+}
+
+/// Row of the strongest center-span bar in [from, to). Glare that fills the
+/// cell scores lower than a seven-segment top bar.
+private func topBarRow(
+    _ mask: Mask,
+    box: PixelBox,
+    width: Int,
+    from: Int,
+    to: Int
+) -> Int? {
+    let lower = max(0, box.minY)
+    let left = max(0, box.minX)
+    let right = min(width, box.maxX)
+    let span = right - left
+    guard span > 4, to > from else { return nil }
+    let mid0 = left + span / 4
+    let mid1 = right - span / 4
+    var bestRow: Int?
+    var bestScore = Int.min
+    for offset in from..<min(to, box.maxY - lower) {
+        let y = lower + offset
+        guard y >= 0, y < mask.height else { continue }
+        let row = y * width
+        var center = 0
+        var edge = 0
+        for x in left..<mid0 where mask.bits[row + x] { edge += 1 }
+        for x in mid0..<mid1 where mask.bits[row + x] { center += 1 }
+        for x in mid1..<right where mask.bits[row + x] { edge += 1 }
+        // A top bar lights the middle; a glare smear lights the edges too.
+        let score = center * 2 - edge
+        if score > bestScore {
+            bestScore = score
+            bestRow = offset
+        }
+    }
+    guard bestScore > 0, let bestRow else { return nil }
+    return bestRow
 }
 
 private func verticalRuns(_ mask: Mask, box: PixelBox, width: Int) -> [(Int, Int)] {
