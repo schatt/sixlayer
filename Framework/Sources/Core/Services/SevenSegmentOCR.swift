@@ -1667,9 +1667,10 @@ private func primaryInkBandY(_ mask: Mask, x0: Int, x1: Int, y0: Int, y1: Int) -
     return (minY, maxY)
 }
 
-/// Vertical span of digit ink for segment sampling. A solid glare cap above
-/// the top bar is dropped first. If the box is still taller than a digit, keep
-/// the lower digit-tall slice so upper stem scans stay on the glyph.
+/// Vertical span of digit ink for segment sampling. A short solid glare cap
+/// above the top bar is dropped when the box is taller than a digit. A stem
+/// (a one) fills its narrow box and must not be stripped. If the box is still
+/// tall, keep the lower digit-tall slice so upper stem scans stay on the glyph.
 private func densestInkBand(
     _ mask: Mask,
     box: PixelBox,
@@ -1680,27 +1681,27 @@ private func densestInkBand(
     let sums = profile.sums
     let height = sums.count
     guard height > 2 else { return box }
-    // A filled glare cap spans most of the cell; a stroke does not.
-    let solid = max(2, box.width * 2 / 3)
+    let aspect = max(8, box.width * 3 / 2)
     var start = 0
-    while start < height - 3 && sums[start] >= solid {
-        start += 1
-    }
     var end = height
-    while end - start > 3 && sums[end - 1] >= solid {
-        end -= 1
+    // Only look for a glare cap when the box is taller than a digit aspect.
+    if height > aspect + max(4, aspect / 8) {
+        let solid = max(2, box.width * 2 / 3)
+        while start < height - 3 && sums[start] >= solid {
+            start += 1
+        }
+        // A stem fills the box. A glare cap is a minority of the height.
+        if start * 2 > height { start = 0 }
+        while end - start > 3 && sums[end - 1] >= solid {
+            end -= 1
+        }
+        if (height - end) * 2 > height { end = height }
     }
     var minY = profile.lower + start
     var maxY = profile.lower + end
-    let aspect = max(8, box.width * 3 / 2)
     let target = max(aspect, digitHeight > 8 ? digitHeight * 4 / 5 : aspect)
     if maxY - minY > target {
         minY = maxY - target
-    }
-    if box.width < 120 {
-        trace(
-            "ytrim box \(box.minX),\(box.minY) \(box.width)x\(box.height) -> \(minY)-\(maxY) solid=\(solid) start=\(start) end=\(end) target=\(target)\n"
-        )
     }
     return PixelBox(minX: box.minX, minY: minY, maxX: box.maxX, maxY: maxY)
 }
