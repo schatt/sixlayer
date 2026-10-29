@@ -2393,7 +2393,14 @@ private func densestInkBand(
         return PixelBox(minX: box.minX, minY: minY, maxX: box.maxX, maxY: maxY)
     }
     let target = min(remaining, ownCap)
-    minY = maxY - target
+    // Pitch volume: keep the top-bar start and take a digit-tall window
+    // downward. The old lower-slice path discarded the top bar we just
+    // snapped to and could mint a false 2 (clipped c / wrong stem lines).
+    if forceDigitTall {
+        maxY = minY + target
+    } else {
+        minY = maxY - target
+    }
     return PixelBox(minX: box.minX, minY: minY, maxX: box.maxX, maxY: maxY)
 }
 
