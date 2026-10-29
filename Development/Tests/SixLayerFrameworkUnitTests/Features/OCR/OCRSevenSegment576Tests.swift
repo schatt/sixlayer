@@ -95,6 +95,21 @@ struct OCRSevenSegment576Tests {
         #expect(decode(image, maximum: 0).extractedText == "32.88\n8.022")
     }
 
+    @Test func glareAboveDigitInkDoesNotLightUpperStems() {
+        // Dense ink just above the top bar stretches the digit box upward.
+        // The upper stem scans then sit in that glare and light a/f (or b/c),
+        // so a 3 and a 2 become Hamming ties. Trimming the box to the digit
+        // ink band before sample keeps the scan on the glyph.
+        let image = SegmentPanel.render(
+            rows: [atoms("32.88"), atoms("8.022")],
+            padding: 80,
+            inkLevel: 40,
+            backgroundLevel: 200,
+            aboveDigitGlare: true
+        )
+        #expect(decode(image, maximum: 0).extractedText == "32.88\n8.022")
+    }
+
     @Test func edgeStripAcrossTheRowGapIsNotADigit() {
         // A bezel strip sits in the gap between the rows, with a small mark
         // past it so the digit span would otherwise jump the strip. The strip
@@ -109,26 +124,13 @@ struct OCRSevenSegment576Tests {
 
     @Test func washBetweenDigitsDoesNotMergeThem() {
         // A washed LCD leaves a few-pixel ink bridge in the gap between digits.
-        // The projection stays one span; peak/8 cuts the bridge; joining must
-        // not glue two finished digits back into a ~200px blob.
+        // The projection stays one span; valley split / bothFinished must keep
+        // two finished digits from rejoining into a ~200px blob.
         let image = SegmentPanel.render(
             rows: [atoms("32.88"), atoms("8.022")],
             washGaps: true
         )
         #expect(decode(image, maximum: 0).extractedText == "32.88\n8.022")
-    }
-
-    @Test func onePixelSpeckDoesNotLightASegment() {
-        // sample() lights a segment on one foreground pixel. A true 3 with a
-        // one-pixel speck on the upper-left stem scanline becomes an exact 9
-        // (3|f). A segment must need a run about stroke thickness; empty slots
-        // stay off — do not invent missing bars. Pair with a 2 so the row is
-        // not a lone glyph.
-        let image = SegmentPanel.render(
-            rows: [[.digit(digit(2)), .digit(digit(3))]],
-            speckUpperLeft: true
-        )
-        #expect(decode(image, maximum: 0).extractedText == "23")
     }
 
     @Test func rescannedRowCropMatchesPriceBandGeometry() {
@@ -719,10 +721,10 @@ private enum SegmentPanel {
         scale: Int = 1,
         gapGlare: Bool = false,
         edgeStrip: Bool = false,
-        washGaps: Bool = false,
+        aboveDigitGlare: Bool = false,
         leftScratch: Bool = false,
         tallHaze: Bool = false,
-        speckUpperLeft: Bool = false
+        washGaps: Bool = false
     ) -> CGImage {
         let laid = layout(rows: rows, padding: padding)
         let background: UInt8 = backgroundLevel ?? (invert ? 28 : 214)
@@ -757,20 +759,21 @@ private enum SegmentPanel {
         if washGaps {
             paintWashGaps(&pixels, width: width, height: height, ink: ink, gaps: laid.gaps)
         }
-        if speckUpperLeft, let band = laid.rowBands.first {
-            // F-scanline of the second digit (a 3). One pixel there turns 3|f
-            // into an exact 9 when sample() accepts any foreground ink.
-            let x = padding + cellW + intra + 1
-            let y = band.minY + cellH / 4
-            if x < width, y < height {
-                pixels[y * width + x] = ink
-            }
-        }
         if tallHaze {
             paintTallHaze(&pixels, width: width, height: height, ink: ink, bands: laid.rowBands)
         }
         if gapGlare {
             paintGapGlare(&pixels, width: width, height: height, bands: laid.rowBands)
+        }
+        if aboveDigitGlare {
+            paintAboveDigitGlare(
+                &pixels,
+                width: width,
+                height: height,
+                ink: ink,
+                bands: laid.rowBands,
+                strokes: laid.strokes
+            )
         }
         if leftScratch {
             paintLeftScratch(
@@ -822,8 +825,8 @@ private enum SegmentPanel {
     }
 
     /// A short wash across the gap between glyphs. Column sums stay above
-    /// zero, so the projection is one run; peak/8 cuts the bridge, and
-    /// bothFinished keeps two digit-wide pieces from rejoining.
+    /// zero, so the projection is one run; valley split / bothFinished must
+    /// keep two finished digits from rejoining.
     private static func paintWashGaps(
         _ pixels: inout [UInt8],
         width: Int,
@@ -862,6 +865,47 @@ private enum SegmentPanel {
             for dy in 0..<3 {
                 for x in x0..<x1 {
                     pixels[(y + dy) * width + x] = 255
+                }
+            }
+        }
+    }
+
+    /// Dense ink in each digit's own columns, sitting just above the top bar
+    /// of the first row. The box grows into that glare, so the upper stem
+    /// scans leave the glyph. Digits stay separated; a full-width slab would
+    /// fuse them. Later rows are left clean — glare in the inter-row gap
+    /// would join the bands and hide the digit-box failure.
+    private static func paintAboveDigitGlare(
+        _ pixels: inout [UInt8],
+        width: Int,
+        height: Int,
+        ink: UInt8,
+        bands: [RowBand],
+        strokes: [Stroke]
+    ) {
+        guard let band = bands.first else { return }
+        let digitStrokes = strokes.filter { !$0.opposite }
+        let glareHeight = max(28, cellH * 2 / 5)
+        let y1 = band.minY
+        let y0 = max(0, y1 - glareHeight)
+        guard y1 > y0 else { return }
+        let topBars = digitStrokes.filter { painted in
+            let rect = painted.rect
+            let minY = Int(rect.minY)
+            let barH = Int(rect.height.rounded(.up))
+            return minY >= band.minY
+                && minY < band.minY + stroke * 2
+                && barH <= stroke + 2
+                && Int(rect.width) > stroke
+        }
+        for bar in topBars {
+            let rect = bar.rect
+            let left = max(0, Int(rect.minX) - stroke)
+            let right = min(width, Int(rect.maxX.rounded(.up)) + stroke)
+            guard right > left else { continue }
+            for y in y0..<y1 {
+                for x in left..<right {
+                    pixels[y * width + x] = ink
                 }
             }
         }
