@@ -1697,6 +1697,11 @@ private func densestInkBand(
     if maxY - minY > target {
         minY = maxY - target
     }
+    if box.width < 120 {
+        trace(
+            "ytrim box \(box.minX),\(box.minY) \(box.width)x\(box.height) -> \(minY)-\(maxY) solid=\(solid) start=\(start) end=\(end) target=\(target)\n"
+        )
+    }
     return PixelBox(minX: box.minX, minY: minY, maxX: box.maxX, maxY: maxY)
 }
 
