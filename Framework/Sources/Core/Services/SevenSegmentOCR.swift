@@ -470,38 +470,40 @@ private struct GrayBuffer {
     /// Six scanlines, as ssocr does. The center column is split into thirds
     /// for the top, middle, and bottom bars. Lines a quarter down from the
     /// top and a quarter up from the bottom are split into halves for the
-    /// stems. One foreground pixel lights a segment.
+    /// stems. A segment needs a run about stroke thickness — one pixel of
+    /// glare must not invent a bar that is not in the mask.
     private static func sample(_ mask: Mask, box: PixelBox, width: Int) -> SevenSegmentPattern {
         let boxWidth = box.width
         let boxHeight = box.height
         guard boxWidth > 1, boxHeight > 2, width > 0 else { return [] }
         var pattern = SevenSegmentPattern()
+        let strokeNeed = max(1, min(boxWidth, boxHeight) / 12)
         let midX = box.minX + boxWidth / 2
         let third = max(1, boxHeight / 3)
-        if foregroundCount(mask, x: midX, y: box.minY, length: third, vertical: true) > 0 {
+        if longestForegroundRun(mask, x: midX, y: box.minY, length: third, vertical: true) >= strokeNeed {
             pattern.formUnion(.a)
         }
-        if foregroundCount(mask, x: midX, y: box.minY + third, length: third, vertical: true) > 0 {
+        if longestForegroundRun(mask, x: midX, y: box.minY + third, length: third, vertical: true) >= strokeNeed {
             pattern.formUnion(.g)
         }
         let lower = box.minY + third * 2
-        if foregroundCount(mask, x: midX, y: lower, length: max(1, box.maxY - lower), vertical: true) > 0 {
+        if longestForegroundRun(mask, x: midX, y: lower, length: max(1, box.maxY - lower), vertical: true) >= strokeNeed {
             pattern.formUnion(.d)
         }
         let quarter = box.minY + boxHeight / 4
         let threeQuarters = box.minY + (boxHeight * 3) / 4
         let half = boxWidth / 2
         let right = max(1, box.maxX - (midX + 1))
-        if foregroundCount(mask, x: box.minX, y: quarter, length: half, vertical: false) > 0 {
+        if longestForegroundRun(mask, x: box.minX, y: quarter, length: half, vertical: false) >= strokeNeed {
             pattern.formUnion(.f)
         }
-        if foregroundCount(mask, x: midX + 1, y: quarter, length: right, vertical: false) > 0 {
+        if longestForegroundRun(mask, x: midX + 1, y: quarter, length: right, vertical: false) >= strokeNeed {
             pattern.formUnion(.b)
         }
-        if foregroundCount(mask, x: box.minX, y: threeQuarters, length: half, vertical: false) > 0 {
+        if longestForegroundRun(mask, x: box.minX, y: threeQuarters, length: half, vertical: false) >= strokeNeed {
             pattern.formUnion(.e)
         }
-        if foregroundCount(mask, x: midX + 1, y: threeQuarters, length: right, vertical: false) > 0 {
+        if longestForegroundRun(mask, x: midX + 1, y: threeQuarters, length: right, vertical: false) >= strokeNeed {
             pattern.formUnion(.c)
         }
         return pattern
@@ -2001,6 +2003,47 @@ private func foregroundCount(
         }
     }
     return count
+}
+
+/// Longest consecutive ink run along a scanline. Used so a glare speck cannot
+/// light a segment the way a stroke-thick bar can.
+private func longestForegroundRun(
+    _ mask: Mask,
+    x: Int,
+    y: Int,
+    length: Int,
+    vertical: Bool
+) -> Int {
+    guard length > 0 else { return 0 }
+    var best = 0
+    var run = 0
+    if vertical {
+        guard x >= 0, x < mask.width else { return 0 }
+        let start = max(0, y)
+        let end = min(mask.height, y + length)
+        for row in start..<end {
+            if mask.bits[row * mask.width + x] {
+                run += 1
+                if run > best { best = run }
+            } else {
+                run = 0
+            }
+        }
+    } else {
+        guard y >= 0, y < mask.height else { return 0 }
+        let start = max(0, x)
+        let end = min(mask.width, x + length)
+        let offset = y * mask.width
+        for column in start..<end {
+            if mask.bits[offset + column] {
+                run += 1
+                if run > best { best = run }
+            } else {
+                run = 0
+            }
+        }
+    }
+    return best
 }
 
 private func overlap(_ lhs: PixelBox, _ rhs: PixelBox) -> Int {
