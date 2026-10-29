@@ -1771,29 +1771,25 @@ private func columnRuns(
     }.sorted()
     let typical = digitWidths.isEmpty ? 0 : digitWidths[(digitWidths.count - 1) / 2]
     let bandHeight = max(1, y1 - y0)
-    // Approach D: 7-seg digit ≈ twice as tall as wide. Prefer a pitch copied
-    // from a known-good price row. Otherwise use the tallest ink column as the
-    // digit height — not the crop height (price-matched crops are ~380px with
-    // empty pad, which would make pitch far too wide and under-split).
-    let inkHeight = max(1, tallest)
-    let aspectPitch = max(1, inkHeight / 2)
-    let pitch = max(1, preferredDigitWidth ?? aspectPitch)
+    // Approach D: a preferred width copied from a known-good price row forces
+    // digit-sized cuts. Without it, keep the existing valley path so clean
+    // synthetics do not over-split.
+    let copiedPitch = preferredDigitWidth.map { max(1, $0) }
     return raw.flatMap { span in
         let spanWidth = span.1 - span.0
         // A digit is taller than it is wide. A 4 has no top or bottom bar, so
         // its ink band is shorter than the cell, and the old 0.7 ratio split
         // that one glyph at the crossbar. Two digits side by side are wider
-        // than the band is tall, or clearly wider than one expected digit.
+        // than the band is tall — or wider than a copied price-row pitch.
         let widerThanADigit = spanWidth > bandHeight
-        let widerThanPitch = spanWidth > pitch + pitch / 4
-        guard widerThanADigit || widerThanPitch || (typical > 0 && spanWidth > typical * 2) else {
+        let widerThanCopied = copiedPitch.map { spanWidth > $0 + $0 / 4 } ?? false
+        guard widerThanADigit || widerThanCopied || (typical > 0 && spanWidth > typical * 2) else {
             return [span]
         }
         let peak = (span.0..<span.1).map { sums[$0] }.max() ?? 0
         // A horizontal bar is much thinner than a flooded stem. peak/5 cut the
         // bar and split one washed digit. The gap between digits still falls
-        // through a lower floor; a solid wash bridge stays above it, so pitch
-        // cuts finish the split without hunting ink valleys.
+        // through a lower floor; a solid wash bridge stays above it.
         let floor = max(1, widerThanADigit ? peak / 15 : peak / 8)
         var pieces: [(Int, Int)] = []
         var start: Int?
@@ -1811,13 +1807,16 @@ private func columnRuns(
         let split = pieces.isEmpty ? [span] : pieces
         let joined = joiningBridgedPieces(split, mask: mask, y0: y0, y1: y1, bandHeight: bandHeight)
         return joined.flatMap { piece in
-            splitAtExpectedPitch(piece, expectedWidth: pitch)
+            if let pitch = copiedPitch {
+                return splitAtExpectedPitch(piece, expectedWidth: pitch)
+            }
+            return splitAtDigitValleys(piece, sums: sums, bandHeight: bandHeight)
         }
     }
 }
 
-/// Force digit-sized slots from expected pitch (aspect or a copied price-row
-/// width). Cuts sit on pitch boundaries — not ink valleys.
+/// Force digit-sized slots from a copied price-row pitch. Cuts advance by
+/// that width from the left — not ink valleys, not equal slices of the blob.
 private func splitAtExpectedPitch(
     _ span: (Int, Int),
     expectedWidth: Int
@@ -1826,25 +1825,55 @@ private func splitAtExpectedPitch(
     let width = span.1 - span.0
     // Need room for a second digit; do not bisect a slightly wide glyph.
     guard width > expected + expected / 4 else { return [span] }
-    let count = max(2, (width + expected / 2) / expected)
     var pieces: [(Int, Int)] = []
     var start = span.0
     let minimum = max(2, expected / 5)
-    for i in 1..<count {
-        let cut = span.0 + (width * i) / count
-        if cut - start >= minimum {
-            pieces.append((start, cut))
-            start = cut
+    while span.1 - start > expected + expected / 4 {
+        let cut = start + expected
+        guard cut - start >= minimum, span.1 - cut >= minimum else { break }
+        pieces.append((start, cut))
+        start = cut
+    }
+    pieces.append((start, span.1))
+    return pieces
+}
+
+/// Cut a span that still holds two digit peaks with a wash bridge between them.
+private func splitAtDigitValleys(
+    _ span: (Int, Int),
+    sums: [Int],
+    bandHeight: Int
+) -> [(Int, Int)] {
+    let digitWide = max(1, bandHeight / 2)
+    let width = span.1 - span.0
+    guard width > digitWide + digitWide / 3 else { return [span] }
+    var cuts: [Int] = []
+    var x = span.0 + digitWide / 2
+    while x < span.1 - digitWide / 2 {
+        let leftPeak = (span.0..<x).map { sums[$0] }.max() ?? 0
+        let rightPeak = (x..<span.1).map { sums[$0] }.max() ?? 0
+        let valley = sums[x]
+        let deep = leftPeak > 0
+            && rightPeak > 0
+            && valley * 3 < leftPeak
+            && valley * 3 < rightPeak
+        if deep {
+            cuts.append(x)
+            x += digitWide * 2 / 3
+        } else {
+            x += 1
         }
     }
-    if span.1 - start >= minimum {
-        pieces.append((start, span.1))
-    } else if !pieces.isEmpty {
-        pieces[pieces.count - 1].1 = span.1
-    } else {
-        pieces.append(span)
+    guard !cuts.isEmpty else { return [span] }
+    var pieces: [(Int, Int)] = []
+    var start = span.0
+    for cut in cuts {
+        if cut > start { pieces.append((start, cut)) }
+        start = cut
     }
-    return pieces
+    if span.1 > start { pieces.append((start, span.1)) }
+    let kept = pieces.filter { $0.1 - $0.0 >= max(2, digitWide / 5) }
+    return kept.isEmpty ? [span] : kept
 }
 
 /// A projection floor cuts the diagonal of a 2. The halves are still one stroke.
