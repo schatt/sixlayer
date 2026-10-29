@@ -96,15 +96,12 @@ struct OCRSevenSegment576Tests {
     }
 
     @Test func edgeStripAcrossTheRowGapIsNotADigit() {
-        // A bezel strip just past the digits is ink through the gap between
-        // the rows. It is not a stroke. Padding the digit columns must not
-        // pull that strip back in as a one.
+        // A bezel strip sits in the gap between the rows, with a small mark
+        // past it so the digit span would otherwise jump the strip. The strip
+        // is not a stroke.
         let image = SegmentPanel.render(
             rows: [atoms("32.88"), atoms("8.022")],
-            inkLevel: 30,
-            backgroundLevel: 130,
-            outerMargin: 200,
-            gapGlare: true,
+            padding: 80,
             edgeStrip: true
         )
         #expect(decode(image, maximum: 0).extractedText == "32.88\n8.022")
@@ -715,7 +712,14 @@ private enum SegmentPanel {
             paintGapGlare(&pixels, width: width, height: height, bands: laid.rowBands)
         }
         if edgeStrip {
-            paintEdgeStrip(&pixels, width: width, height: height, ink: ink, padding: padding)
+            paintEdgeStrip(
+                &pixels,
+                width: width,
+                height: height,
+                ink: ink,
+                padding: padding,
+                bands: laid.rowBands
+            )
         }
         if abs(tiltDegrees) > 0.01 {
             let turned = rotate(pixels: pixels, width: width, height: height, degrees: tiltDegrees, fill: background)
@@ -766,21 +770,37 @@ private enum SegmentPanel {
         }
     }
 
-    /// Ink through the gap, a few pixels past the last stroke. That is the
-    /// bezel, not another digit.
+    /// A full-height strip past the strokes, then a short mark that does not
+    /// enter the gap. The mark is close enough to be grouped with the digits
+    /// unless the strip blocks that jump.
     private static func paintEdgeStrip(
         _ pixels: inout [UInt8],
         width: Int,
         height: Int,
         ink: UInt8,
-        padding: Int
+        padding: Int,
+        bands: [RowBand]
     ) {
-        let x0 = max(0, width - padding + 4)
-        let x1 = min(width, x0 + 6)
-        guard x1 > x0 else { return }
-        for y in 0..<height {
-            for x in x0..<x1 {
+        guard let first = bands.first, let last = bands.last else { return }
+        let contentEnd = width - padding
+        let stripX = contentEnd + 16
+        let stripEnd = min(width, stripX + 6)
+        guard stripEnd > stripX else { return }
+        for y in first.minY..<last.maxY {
+            for x in stripX..<stripEnd {
                 pixels[y * width + x] = ink
+            }
+        }
+        let speckX = stripEnd + 2
+        let speckEnd = min(width, speckX + 4)
+        guard speckEnd > speckX else { return }
+        for band in bands {
+            let top = band.minY + max(1, (band.maxY - band.minY) / 5)
+            let bottom = min(band.maxY, top + max(4, (band.maxY - band.minY) / 3))
+            for y in top..<bottom {
+                for x in speckX..<speckEnd {
+                    pixels[y * width + x] = ink
+                }
             }
         }
     }
