@@ -1486,10 +1486,11 @@ private func columnRuns(_ mask: Mask, y0: Int, y1: Int, width: Int) -> [(Int, In
         let widerThanADigit = spanWidth > bandHeight
         guard widerThanADigit || (typical > 0 && spanWidth > typical * 2) else { return [span] }
         let peak = (span.0..<span.1).map { sums[$0] }.max() ?? 0
-        // A horizontal bar is thinner than a stem; a washed inter-digit bridge
-        // is thinner still. peak/15 left those bridges in the span. peak/8
-        // clears them; joining refuses to glue two finished digits afterward.
-        let floor = max(1, peak / 8)
+        // A horizontal bar is much thinner than a flooded stem. peak/5 cut the
+        // bar and split one washed digit. The gap between digits still falls
+        // through a lower floor; valleys between digit-sized peaks catch a
+        // wash bridge that stays above that floor.
+        let floor = max(1, widerThanADigit ? peak / 15 : peak / 8)
         var pieces: [(Int, Int)] = []
         var start: Int?
         for x in span.0..<span.1 {
@@ -1504,8 +1505,49 @@ private func columnRuns(_ mask: Mask, y0: Int, y1: Int, width: Int) -> [(Int, In
             pieces.append((open, span.1))
         }
         let split = pieces.isEmpty ? [span] : pieces
-        return joiningBridgedPieces(split, mask: mask, y0: y0, y1: y1, bandHeight: bandHeight)
+        let joined = joiningBridgedPieces(split, mask: mask, y0: y0, y1: y1, bandHeight: bandHeight)
+        return joined.flatMap { piece in
+            splitAtDigitValleys(piece, sums: sums, bandHeight: bandHeight)
+        }
     }
+}
+
+/// Cut a span that still holds two digit peaks with a wash bridge between them.
+private func splitAtDigitValleys(
+    _ span: (Int, Int),
+    sums: [Int],
+    bandHeight: Int
+) -> [(Int, Int)] {
+    let digitWide = max(1, bandHeight / 2)
+    let width = span.1 - span.0
+    guard width > digitWide + digitWide / 3 else { return [span] }
+    var cuts: [Int] = []
+    var x = span.0 + digitWide / 2
+    while x < span.1 - digitWide / 2 {
+        let leftPeak = (span.0..<x).map { sums[$0] }.max() ?? 0
+        let rightPeak = (x..<span.1).map { sums[$0] }.max() ?? 0
+        let valley = sums[x]
+        let deep = leftPeak > 0
+            && rightPeak > 0
+            && valley * 3 < leftPeak
+            && valley * 3 < rightPeak
+        if deep {
+            cuts.append(x)
+            x += digitWide * 2 / 3
+        } else {
+            x += 1
+        }
+    }
+    guard !cuts.isEmpty else { return [span] }
+    var pieces: [(Int, Int)] = []
+    var start = span.0
+    for cut in cuts {
+        if cut > start { pieces.append((start, cut)) }
+        start = cut
+    }
+    if span.1 > start { pieces.append((start, span.1)) }
+    let kept = pieces.filter { $0.1 - $0.0 >= max(2, digitWide / 5) }
+    return kept.isEmpty ? [span] : kept
 }
 
 /// A projection floor cuts the diagonal of a 2. The halves are still one stroke.
