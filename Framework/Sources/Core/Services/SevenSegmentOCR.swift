@@ -304,12 +304,14 @@ private struct GrayBuffer {
                 buffer: buffer,
                 darkInk: darkInk
             )
-            if buffer.width >= 1000 {
+            // Volume rowcrops are ~980px; keep traces on those for #591.
+            if buffer.width >= 900 {
                 let pattern = sample(mask, box: box, width: buffer.width)
                 let cover = coverage(mask, box: box, width: buffer.width)
                 let name = cell.map { String($0.character) } ?? "drop"
+                let pitchNote = preferredPitch.map { " pitch \($0.body)x\($0.count)" } ?? ""
                 trace(
-                    "cell \(name) box \(box.minX),\(box.minY) \(box.width)x\(box.height) pat \(pattern.rawValue) cov \(cover) h \(digitHeight)\n"
+                    "cell \(name) box \(box.minX),\(box.minY) \(box.width)x\(box.height) pat \(pattern.rawValue) cov \(cover) h \(digitHeight)\(pitchNote)\n"
                 )
             }
             return cell
@@ -1032,9 +1034,10 @@ private extension GrayBuffer {
                     preferredPitch: rowPitch
                 ).flatMap { $0 }
                 let shifted = found.map { $0.shifted(dx: x0, dy: y0) }
-                if buffer.width >= 1000 {
+                if buffer.width >= 900 {
+                    let pitchNote = rowPitch.map { " pitch \($0.body)x\($0.count)" } ?? ""
                     trace(
-                        "rowcrop \(x0),\(y0) \(crop.width)x\(crop.height) [\(String(shifted.map(\.character)))]\n"
+                        "rowcrop \(x0),\(y0) \(crop.width)x\(crop.height) [\(String(shifted.map(\.character)))]\(pitchNote)\n"
                     )
                 }
                 if !shifted.isEmpty {
@@ -1904,9 +1907,19 @@ private func splitAtExpectedPitch(
         let left = pack(span.0, decimalX, leftCount)
         let right = pack(min(span.1, decimalX + max(1, body / 4)), span.1, rightCount)
         let pieces = left + right
-        if pieces.count >= 2 { return pieces }
+        if pieces.count >= 2 {
+            if width >= 400 {
+                let listed = pieces.map { "\($0.0)-\($0.1)" }.joined(separator: ",")
+                trace("pitch decimal@\(decimalX) L\(leftCount)R\(rightCount) [\(listed)]\n")
+            }
+            return pieces
+        }
     }
     let even = pack(span.0, span.1, count)
+    if width >= 400 {
+        let listed = even.map { "\($0.0)-\($0.1)" }.joined(separator: ",")
+        trace("pitch even [\(listed)]\n")
+    }
     return even.isEmpty ? [span] : even
 }
 
