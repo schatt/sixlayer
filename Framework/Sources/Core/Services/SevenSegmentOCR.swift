@@ -1520,19 +1520,21 @@ private func joiningBridgedPieces(
     var merged: [(Int, Int)] = []
     // Both halves have to be narrower than a finished digit. The reflection
     // beside the 3 is as wide as a digit and must not be pulled in with it.
-    // combined must still look like one glyph: two washed digits glued by a
-    // bridge are each about half the band, so bandHeight alone let them join.
+    // Two washed digits cut apart by the floor are each already ~digit-wide;
+    // do not glue those back even when a thin bridge still connects them.
     let narrow = bandHeight / 2
-    let combinedLimit = (bandHeight * 2) / 3
+    let digitWide = max(1, bandHeight / 2)
     let gapLimit = max(1, bandHeight / 8)
     for piece in pieces.dropFirst() {
         let gap = piece.0 - previous.1
         let leftWidth = previous.1 - previous.0
         let rightWidth = piece.1 - piece.0
         let combined = piece.1 - previous.0
-        let bridged = leftWidth < narrow
+        let bothFinished = leftWidth * 5 >= digitWide * 3 && rightWidth * 5 >= digitWide * 3
+        let bridged = !bothFinished
+            && leftWidth < narrow
             && rightWidth < narrow
-            && combined < combinedLimit
+            && combined < bandHeight
             && gap > 0
             && gap < gapLimit
             && strokeConnects(previous, piece, mask: mask, y0: y0, y1: y1)
