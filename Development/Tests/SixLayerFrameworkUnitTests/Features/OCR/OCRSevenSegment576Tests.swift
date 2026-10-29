@@ -796,9 +796,11 @@ private enum SegmentPanel {
         }
     }
 
-    /// Dense ink in each digit's own columns, sitting just above the top bar.
-    /// The box grows into that glare, so the upper stem scanlines leave the
-    /// glyph. Digits stay separated; a full-width slab would fuse them.
+    /// Dense ink in each digit's own columns, sitting just above the top bar
+    /// of the first row. The box grows into that glare, so the upper stem
+    /// scans leave the glyph. Digits stay separated; a full-width slab would
+    /// fuse them. Later rows are left clean — glare in the inter-row gap
+    /// would join the bands and hide the digit-box failure.
     private static func paintAboveDigitGlare(
         _ pixels: inout [UInt8],
         width: Int,
@@ -807,30 +809,29 @@ private enum SegmentPanel {
         bands: [RowBand],
         strokes: [Stroke]
     ) {
+        guard let band = bands.first else { return }
         let digitStrokes = strokes.filter { !$0.opposite }
         let glareHeight = max(28, cellH * 2 / 5)
-        for band in bands {
-            let y1 = band.minY
-            let y0 = max(0, y1 - glareHeight)
-            guard y1 > y0 else { continue }
-            let topBars = digitStrokes.filter { painted in
-                let rect = painted.rect
-                let minY = Int(rect.minY)
-                let barH = Int(rect.height.rounded(.up))
-                return minY >= band.minY
-                    && minY < band.minY + stroke * 2
-                    && barH <= stroke + 2
-                    && Int(rect.width) > stroke
-            }
-            for bar in topBars {
-                let rect = bar.rect
-                let left = max(0, Int(rect.minX) - stroke)
-                let right = min(width, Int(rect.maxX.rounded(.up)) + stroke)
-                guard right > left else { continue }
-                for y in y0..<y1 {
-                    for x in left..<right {
-                        pixels[y * width + x] = ink
-                    }
+        let y1 = band.minY
+        let y0 = max(0, y1 - glareHeight)
+        guard y1 > y0 else { return }
+        let topBars = digitStrokes.filter { painted in
+            let rect = painted.rect
+            let minY = Int(rect.minY)
+            let barH = Int(rect.height.rounded(.up))
+            return minY >= band.minY
+                && minY < band.minY + stroke * 2
+                && barH <= stroke + 2
+                && Int(rect.width) > stroke
+        }
+        for bar in topBars {
+            let rect = bar.rect
+            let left = max(0, Int(rect.minX) - stroke)
+            let right = min(width, Int(rect.maxX.rounded(.up)) + stroke)
+            guard right > left else { continue }
+            for y in y0..<y1 {
+                for x in left..<right {
+                    pixels[y * width + x] = ink
                 }
             }
         }
