@@ -465,8 +465,9 @@ private struct GrayBuffer {
         let boxHeight = box.height
         guard boxWidth > 1, boxHeight > 2, width > 0 else { return [] }
         var pattern = SevenSegmentPattern()
-        // Reject a one-pixel speck; keep a real stem (about cell/10–12 ink).
-        let strokeNeed = max(2, min(boxWidth, boxHeight) / 16)
+        // Reject a one-pixel speck; keep a real stem. Washed synthetic bars
+        // are only ~stroke tall on the vertical scan, so stay under that.
+        let strokeNeed = max(2, min(boxWidth, boxHeight) / 24)
         let midX = box.minX + boxWidth / 2
         let third = max(1, boxHeight / 3)
         if longestForegroundRun(mask, x: midX, y: box.minY, length: third, vertical: true) >= strokeNeed {
