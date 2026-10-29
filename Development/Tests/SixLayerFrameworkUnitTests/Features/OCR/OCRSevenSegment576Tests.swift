@@ -122,12 +122,13 @@ struct OCRSevenSegment576Tests {
         // sample() lights a segment on one foreground pixel. A true 3 with a
         // one-pixel speck on the upper-left stem scanline becomes an exact 9
         // (3|f). A segment must need a run about stroke thickness; empty slots
-        // stay off — do not invent missing bars.
+        // stay off — do not invent missing bars. Pair with a 2 so the row is
+        // not a lone glyph.
         let image = SegmentPanel.render(
-            rows: [[.digit(digit(3))]],
+            rows: [[.digit(digit(2)), .digit(digit(3))]],
             speckUpperLeft: true
         )
-        #expect(decode(image, maximum: 0).extractedText == "3")
+        #expect(decode(image, maximum: 0).extractedText == "23")
     }
 
     @Test func rescannedRowCropMatchesPriceBandGeometry() {
@@ -757,8 +758,9 @@ private enum SegmentPanel {
             paintWashGaps(&pixels, width: width, height: height, ink: ink, gaps: laid.gaps)
         }
         if speckUpperLeft, let band = laid.rowBands.first {
-            // F-scanline: left half of the cell, a quarter down from the top.
-            let x = padding + 1
+            // F-scanline of the second digit (a 3). One pixel there turns 3|f
+            // into an exact 9 when sample() accepts any foreground ink.
+            let x = padding + cellW + intra + 1
             let y = band.minY + cellH / 4
             if x < width, y < height {
                 pixels[y * width + x] = ink
