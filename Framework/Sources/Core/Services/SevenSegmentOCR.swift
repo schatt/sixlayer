@@ -1815,12 +1815,11 @@ private func columnRuns(
         )
     }
     // When pitch-driving: cluster wide runs that are wash-bridged (gap under
-    // body/10). A wide blob must not union across a real inter-digit gap
-    // later in the row (photo 555→593 is ~38px — that is not wash). Clean
-    // synthetics keep ~body/6 gaps so each digit stays its own cluster.
-    // Without preferred pitch, valley.
-    let spans: [(Int, Int)]
-    var pitchBySpan: [String: PreferredDigitPitch] = [:]
+    // body/10). Share the price digit count across clusters by width, then
+    // anchor one window per raw run when possible — only pitch-split a run
+    // that must hold more than one digit. That keeps the photo's 380-555
+    // 0-run on its own ink instead of a drifted body window. Without
+    // preferred pitch, valley.
     if let pitch = copied {
         let wideEnough = raw.filter { $0.1 - $0.0 > pitch.body / 2 }
         let bridgeLimit = max(2, pitch.body / 10)
@@ -1834,20 +1833,15 @@ private func columnRuns(
                 clusters.append([run])
             }
         }
-        if clusters.isEmpty {
-            spans = raw
-        } else {
-            // Distribute price-row digit count across clusters by ink width.
+        if !clusters.isEmpty {
             let widths = clusters.map { cluster -> Int in
                 guard let first = cluster.first, let last = cluster.last else { return 0 }
                 return last.1 - first.0
             }
             let totalWidth = max(1, widths.reduce(0, +))
             var remaining = max(2, pitch.count)
-            var built: [(Int, Int)] = []
+            var pieces: [(Int, Int)] = []
             for (index, cluster) in clusters.enumerated() {
-                guard let first = cluster.first, let last = cluster.last else { continue }
-                let field = (first.0, last.1)
                 let share: Int
                 if index == clusters.count - 1 {
                     share = max(1, remaining)
@@ -1859,39 +1853,26 @@ private func columnRuns(
                     share = min(remaining - (clusters.count - 1 - index), max(1, nominal))
                 }
                 remaining -= share
-                built.append(field)
-                if share >= 2 || field.1 - field.0 > pitch.body + pitch.body / 4 {
-                    pitchBySpan["\(field.0):\(field.1)"] = PreferredDigitPitch(
-                        body: pitch.body,
-                        count: max(2, share),
-                        stride: pitch.stride
-                    )
-                }
+                pieces.append(contentsOf: packClusterRuns(cluster, share: share, sums: sums, pitch: pitch))
             }
-            // Narrow in-field decimals between the overall first and last.
             if let overallFirst = wideEnough.first, let overallLast = wideEnough.last {
                 let extras = raw.filter { span in
-                    let wide = span.1 - span.0 > pitch.body / 2
-                    if wide { return false }
+                    if span.1 - span.0 > pitch.body / 2 { return false }
                     return span.0 >= overallFirst.0 && span.1 <= overallLast.1
-                        && !built.contains { span.0 >= $0.0 && span.1 <= $0.1 }
+                        && !pieces.contains { span.0 >= $0.0 && span.1 <= $0.1 }
                 }
-                spans = (built + extras).sorted { $0.0 < $1.0 }
-            } else {
-                spans = built
+                pieces.append(contentsOf: extras)
             }
+            pieces.sort { $0.0 < $1.0 }
+            if width >= 400 {
+                let listed = raw.map { "\($0.0)-\($0.1)" }.joined(separator: ",")
+                let packed = pieces.map { "\($0.0)-\($0.1)" }.joined(separator: ",")
+                trace("pitch pack raw[\(listed)] → [\(packed)] body\(pitch.body)x\(pitch.count)\n")
+            }
+            return pieces
         }
-        if width >= 400 {
-            let listed = raw.map { "\($0.0)-\($0.1)" }.joined(separator: ",")
-            let field = spans.map { "\($0.0)-\($0.1)" }.joined(separator: ",")
-            let shares = pitchBySpan.map { "\($0.key)x\($0.value.count)" }.sorted().joined(separator: ",")
-            trace(
-                "pitch clusters raw[\(listed)] → [\(field)] body\(pitch.body) shares[\(shares)]\n"
-            )
-        }
-    } else {
-        spans = raw
     }
+    let spans = raw
     return spans.flatMap { span in
         let spanWidth = span.1 - span.0
         // A digit is taller than it is wide. A 4 has no top or bottom bar, so
@@ -1899,18 +1880,11 @@ private func columnRuns(
         // that one glyph at the crossbar. Two digits side by side are wider
         // than the band is tall — or wider than a copied price-row pitch.
         let widerThanADigit = spanWidth > bandHeight
-        let localPitch = copied.flatMap { pitch in
-            pitchBySpan["\(span.0):\(span.1)"] ?? (
-                spanWidth > pitch.body + pitch.body / 4
-                    ? PreferredDigitPitch(body: pitch.body, count: max(2, pitch.count), stride: pitch.stride)
-                    : nil
-            )
-        }
-        let widerThanCopied = localPitch.map { spanWidth > $0.body + $0.body / 4 } ?? false
+        let widerThanCopied = copied.map { spanWidth > $0.body + $0.body / 4 } ?? false
         guard widerThanADigit || widerThanCopied || (typical > 0 && spanWidth > typical * 2) else {
             return [span]
         }
-        if let pitch = localPitch {
+        if let pitch = copied {
             // Pitch owns the split. Floor/join would glue wash bridges.
             return splitAtExpectedPitch(span, sums: sums, pitch: pitch)
         }
@@ -1940,12 +1914,49 @@ private func columnRuns(
     }
 }
 
+/// Assign `share` digit windows across the wide runs of one wash cluster.
+/// Prefer one window per raw run (keeps single-digit ink bounds). Extra
+/// slots go to the widest runs via right-pack splits.
+private func packClusterRuns(
+    _ runs: [(Int, Int)],
+    share: Int,
+    sums: [Int],
+    pitch: PreferredDigitPitch
+) -> [(Int, Int)] {
+    guard !runs.isEmpty else { return [] }
+    let body = max(1, pitch.body)
+    let want = max(1, share)
+    if want <= runs.count {
+        // Too many runs for the share: keep the rightmost `want` (leading junk first).
+        return Array(runs.suffix(want))
+    }
+    var runShare = Array(repeating: 1, count: runs.count)
+    var extra = want - runs.count
+    let widestFirst = runs.enumerated()
+        .map { (index: $0.offset, width: $0.element.1 - $0.element.0) }
+        .sorted { $0.width > $1.width }
+    var cursor = 0
+    while extra > 0, !widestFirst.isEmpty {
+        runShare[widestFirst[cursor % widestFirst.count].index] += 1
+        extra -= 1
+        cursor += 1
+    }
+    var pieces: [(Int, Int)] = []
+    for (run, n) in zip(runs, runShare) {
+        if n <= 1 {
+            pieces.append(run)
+        } else {
+            let local = PreferredDigitPitch(body: body, count: n, stride: pitch.stride)
+            pieces.append(contentsOf: splitAtExpectedPitch(run, sums: sums, pitch: local))
+        }
+    }
+    return pieces
+}
+
 /// Place `count` body-wide windows across a fused span. Pack from the right:
 /// pump volume/price digits sit on the right of washed leading junk, and a
 /// digit-hollow "decimal" column is not trustworthy for left/right splits.
-/// Each nominal window then snaps sideways onto the strongest stem-like
-/// column profile in a ±body/4 neighborhood so sampling hits real glyphs
-/// instead of wash. Baseline dots still own the mark.
+/// Baseline dots still own the mark.
 private func splitAtExpectedPitch(
     _ span: (Int, Int),
     sums: [Int],
