@@ -1682,6 +1682,10 @@ private func densestInkBand(
     let sums = profile.sums
     let height = sums.count
     guard height > 2 else { return box }
+    // A one is a tall stem. Leave it alone; aspect math is for wide glyphs.
+    if box.width * 4 < height {
+        return box
+    }
     // Washed pump digits are about 1.5–2× as tall as they are wide.
     let maxDigit = max(8, box.width * 2)
     let slack = max(4, maxDigit / 12)
@@ -1690,7 +1694,8 @@ private func densestInkBand(
     }
     var start = 0
     var end = height
-    let solid = max(2, box.width * 2 / 3)
+    // A top bar spans the interior, not the full cell. A glare cap fills it.
+    let solid = max(2, box.width * 9 / 10)
     while start < height - 3 && sums[start] >= solid {
         start += 1
     }
