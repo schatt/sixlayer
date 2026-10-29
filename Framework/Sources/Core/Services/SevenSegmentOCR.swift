@@ -601,6 +601,17 @@ private struct GrayBuffer {
         if foregroundCount(mask, x: midX + 1, y: threeQuarters, length: right, vertical: false) > 0 {
             pattern.formUnion(.c)
         }
+        // Wash can still light `f` inside the stem zone (photo post-decimal
+        // slot stays pat 123). If dropping f leaves an exact template, the
+        // fringe was wash — not a real left stem. Real 8/5/6/9 keep f because
+        // the remainder is not an exact glyph.
+        if washAwareStems, pattern.contains(.f) {
+            var withoutF = pattern
+            withoutF.remove(.f)
+            if let exact = SevenSegmentGlyph.nearest(withoutF), exact.distance == 0 {
+                pattern = withoutF
+            }
+        }
         return pattern
     }
 
