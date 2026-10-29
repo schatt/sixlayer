@@ -115,9 +115,6 @@ struct OCRSevenSegment576Tests {
         // include the scratch from x0 or the haze that widens the window.
         let image = SegmentPanel.render(
             rows: [atoms("32.88"), atoms("8.022")],
-            // Padding leaves >8px between the left scratch and the first
-            // digit so peeling can drop the scratch without splitting "32.88".
-            padding: 40,
             inkLevel: 30,
             backgroundLevel: 130,
             outerMargin: 200,
@@ -844,14 +841,13 @@ private enum SegmentPanel {
         padding: Int,
         bands: [RowBand]
     ) {
-        // Keep the scratch in the left padding with a clear gap before digits.
-        let scratchEnd = min(width / 4, max(8, padding / 3))
+        let scratchEnd = min(width, max(12, padding / 2))
         let haze = max(48, cellH / 2)
         guard scratchEnd > 4, let first = bands.first, let last = bands.last else { return }
         for band in bands {
             let top = max(0, band.minY - haze)
             for y in top..<band.maxY {
-                for x in 2..<scratchEnd {
+                for x in 4..<scratchEnd {
                     pixels[y * width + x] = ink
                 }
             }
