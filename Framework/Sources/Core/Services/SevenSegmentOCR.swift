@@ -2192,8 +2192,11 @@ private func packClusterRuns(
             }
             let leftStem = edgeStem(at: run.0)
             let rightStem = edgeStem(at: max(run.0, run.1 - packBody))
+            // Synth panel bodies are ~50px; photo pitch bodies are ~180px.
+            // Stem peaks on photo volume turned leading 8 → 0 (0.022).
             let fusedSynth = leftStem >= 0
                 && leftStem * 2 >= max(0, rightStem)
+                && packBody <= 80
                 && run.1 - run.0 >= needed
                 && run.1 - run.0 <= needed + packBody
             let trimmed: (Int, Int) = fusedSynth
