@@ -1105,7 +1105,11 @@ private extension GrayBuffer {
                 : merge(separated, whenGapBelow: max(1, cellHeight / 2)))
         if buffer.width >= 400 {
             let listed = splitBands.map { "\($0.0)-\($0.1)" }.joined(separator: ",")
-            trace("bands \(listed)\n")
+            let foundListed = foundBands.map { "\($0.0)-\($0.1)" }.joined(separator: ",")
+            let sepListed = separated.map { "\($0.0)-\($0.1)" }.joined(separator: ",")
+            trace(
+                "bands \(listed) found[\(foundListed)] sep[\(sepListed)] opened=\(opened) cellH=\(cellHeight) size=\(buffer.width)x\(buffer.height)\n"
+            )
         }
         // The window is sized from the whole crop. Two rows make it wide
         // enough to mark the glass between digits. Read each row from a
