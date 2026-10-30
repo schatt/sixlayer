@@ -2164,14 +2164,28 @@ private func packClusterRuns(
             }
             let leftStem = edgeStem(at: run.0)
             let rightStem = edgeStem(at: max(run.0, run.1 - packBody))
+            // Digit-like left + barely-wider-than-needed → solid-gap synth fuse.
+            // Keep the full run and ask for stem peaks. Photo leading wash still
+            // peels and right-packs.
+            let fusedSynth = leftStem >= 0
+                && leftStem * 2 >= max(0, rightStem)
+                && run.1 - run.0 >= needed
+                && run.1 - run.0 <= needed + packBody
             let trimmed: (Int, Int)
-            if leftStem >= 0, leftStem * 2 >= max(0, rightStem), run.1 - run.0 >= needed {
+            if fusedSynth {
                 trimmed = run
             } else {
                 trimmed = (max(run.0, run.1 - needed), run.1)
             }
             let local = PreferredDigitPitch(body: packBody, count: n, stride: pitch.stride)
-            pieces.append(contentsOf: splitAtExpectedPitch(trimmed, sums: sums, pitch: local))
+            pieces.append(
+                contentsOf: splitAtExpectedPitch(
+                    trimmed,
+                    sums: sums,
+                    pitch: local,
+                    preferStemPeaks: fusedSynth
+                )
+            )
         }
     }
     return pieces
@@ -2184,7 +2198,8 @@ private func packClusterRuns(
 private func splitAtExpectedPitch(
     _ span: (Int, Int),
     sums: [Int],
-    pitch: PreferredDigitPitch
+    pitch: PreferredDigitPitch,
+    preferStemPeaks: Bool = false
 ) -> [(Int, Int)] {
     let body = max(1, pitch.body)
     let count = max(2, pitch.count)
@@ -2219,48 +2234,46 @@ private func splitAtExpectedPitch(
     }
     let step = body + max(0, gap)
     // Solid-gap synthetics fuse digits + decimal into one run; uniform
-    // right-pack drifts through the period column (8.022 → 0.832). Walk
-    // left→right, taking the best stem peak in each slot while leaving
-    // room for the remaining bodies. Fall back to right-pack when a slot
-    // has no positive peak (photo leading wash).
-    let sample = max(1, body / 8)
-    // One full body between starts — 3/4 body let the 0/2 boundary steal the
-    // third slot (8._22).
-    let minSep = body
-    var peakStarts: [Int] = []
-    var searchFrom = span.0
-    var peaksOk = true
-    for remaining in stride(from: count, through: 1, by: -1) {
-        let latest = span.1 - body - (remaining - 1) * minSep
-        guard latest >= searchFrom else { peaksOk = false; break }
-        var bestX = searchFrom
-        var bestScore = Int.min
-        var x = searchFrom
-        while x <= latest {
-            let score = stemScore(from: x)
-            if score > bestScore {
-                bestScore = score
-                bestX = x
+    // right-pack drifts through the period column (8.022 → 0.832). When
+    // preferStemPeaks is set, walk left→right taking the best stem peak in
+    // each slot. Photo paths keep right-pack (peaks mis-cut wide wash runs).
+    if preferStemPeaks {
+        let sample = max(1, body / 8)
+        let minSep = body
+        var peakStarts: [Int] = []
+        var searchFrom = span.0
+        var peaksOk = true
+        for remaining in stride(from: count, through: 1, by: -1) {
+            let latest = span.1 - body - (remaining - 1) * minSep
+            guard latest >= searchFrom else { peaksOk = false; break }
+            var bestX = searchFrom
+            var bestScore = Int.min
+            var x = searchFrom
+            while x <= latest {
+                let score = stemScore(from: x)
+                if score > bestScore {
+                    bestScore = score
+                    bestX = x
+                }
+                x += sample
             }
-            x += sample
+            guard bestScore > 0 else { peaksOk = false; break }
+            // First slot: keep the left stem (inset peak turned 8 → 9).
+            if remaining == count, bestX <= span.0 + body / 4 {
+                bestX = span.0
+            }
+            peakStarts.append(bestX)
+            searchFrom = bestX + minSep
         }
-        guard bestScore > 0 else { peaksOk = false; break }
-        // First slot: a digit-like run edge must keep its left stem. Scoring
-        // alone prefers a slightly inset peak (8 → 9 on the solid-gap synth).
-        if remaining == count, bestX <= span.0 + body / 4 {
-            bestX = span.0
+        if peaksOk, peakStarts.count == count {
+            let pieces = peakStarts.compactMap { window(at: $0) }
+            if width >= 400 {
+                let listed = pieces.map { "\($0.0)-\($0.1)" }.joined(separator: ",")
+                let scores = peakStarts.map { stemScore(from: $0) }
+                trace("pitch peaks step~\(step) [\(listed)] stem\(scores)\n")
+            }
+            if pieces.count >= 2 { return pieces }
         }
-        peakStarts.append(bestX)
-        searchFrom = bestX + minSep
-    }
-    if peaksOk, peakStarts.count == count {
-        let pieces = peakStarts.compactMap { window(at: $0) }
-        if width >= 400 {
-            let listed = pieces.map { "\($0.0)-\($0.1)" }.joined(separator: ",")
-            let scores = peakStarts.map { stemScore(from: $0) }
-            trace("pitch peaks step~\(step) [\(listed)] stem\(scores)\n")
-        }
-        if pieces.count >= 2 { return pieces }
     }
     // Right-pack: last window ends at span.1, earlier ones step left. Leading
     // wash/junk left of the pack is ignored instead of shifting every slot.
