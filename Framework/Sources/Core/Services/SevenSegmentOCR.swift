@@ -1184,10 +1184,14 @@ private extension GrayBuffer {
                 }
             }
             if windowNarrows, !rescanned.isEmpty {
+                trace("rowcrop keep \(rescanned.count) rows\n")
                 return rescanned
             }
             // Rowcrop aborted (parent window already tight — digitPitch synth).
             // Copy pitch across top-level bands only — never inside rowcrops.
+            trace(
+                "rowcrop abort narrow=\(windowNarrows) rescued=\(rescanned.count) → bandPitch\n"
+            )
             var bandPitch = preferredPitch
             return splitBands.compactMap { band -> [Cell]? in
                 let found = cells(
