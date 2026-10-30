@@ -1279,13 +1279,7 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
     }
 
     private func getCGImage(from image: PlatformImage) -> CGImage? {
-        #if os(iOS)
-        return image.uiImage.cgImage
-        #elseif os(macOS)
-        return image.nsImage.cgImage(forProposedRect: nil, context: nil, hints: nil)
-        #else
-        return nil
-        #endif
+        image.orientedCGImage()
     }
     
     private func getOCRCapabilities() -> OCRCapabilities {
@@ -1387,13 +1381,7 @@ public class MockOCRService: OCRServiceProtocol {
     // MARK: - Helper Methods
     
     private func getCGImage(from image: PlatformImage) -> CGImage? {
-        #if os(iOS)
-        return image.uiImage.cgImage
-        #elseif os(macOS)
-        return image.nsImage.cgImage(forProposedRect: nil, context: nil, hints: nil)
-        #else
-        return nil
-        #endif
+        image.orientedCGImage()
     }
     
     // MARK: - Structured Extraction Helper Methods
