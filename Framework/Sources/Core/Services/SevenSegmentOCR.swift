@@ -326,7 +326,7 @@ private struct GrayBuffer {
                 washAwareStems: washAwareStems
             )
             // Volume rowcrops are ~980px; keep traces on those for #591.
-            if buffer.width >= 0 {  // DIAG #591
+            if buffer.width >= 900 {
                 let pattern = sample(
                     mask,
                     box: densestInkBand(
@@ -1053,7 +1053,7 @@ private extension GrayBuffer {
         let glyphs = chosen.glyphs
         let bandSource = chosen.bandSource
         let opened = darkChoice.opens || lightChoice.opens
-        if buffer.width >= 0 {  // DIAG #591
+        if buffer.width >= 1000 {
             let ink = glyphs.bits.filter { $0 }.count
             trace(
                 "read \(buffer.width)x\(buffer.height) dark=\(primaryIsDark) opened=\(opened) ink=\(ink)\n"
@@ -1091,7 +1091,7 @@ private extension GrayBuffer {
             : (separated.count > foundBands.count
                 ? separated
                 : merge(separated, whenGapBelow: max(1, cellHeight / 2)))
-        if buffer.width >= 0 {  // DIAG #591
+        if buffer.width >= 1000 {
             let listed = splitBands.map { "\($0.0)-\($0.1)" }.joined(separator: ",")
             trace("bands \(listed)\n")
         }
@@ -1103,7 +1103,7 @@ private extension GrayBuffer {
         if splittingRows, splitBands.count > 1 {
             let span = readingSpan(glyphs, bands: splitBands)
             let parentRadius = windowRadius(width: buffer.width, height: buffer.height)
-            if buffer.width >= 0 {  // DIAG #591
+            if buffer.width >= 1000 {
                 trace("span \(String(describing: span)) radius \(parentRadius)\n")
             }
             var windowNarrows = true
@@ -1161,7 +1161,7 @@ private extension GrayBuffer {
                     preferredPitch: rowPitch
                 ).flatMap { $0 }
                 let shifted = found.map { $0.shifted(dx: x0, dy: y0) }
-                if buffer.width >= 0 {  // DIAG #591
+                if buffer.width >= 900 {
                     let pitchNote = rowPitch.map { " pitch \($0.body)x\($0.count)" } ?? ""
                     trace(
                         "rowcrop \(x0),\(y0) \(crop.width)x\(crop.height) [\(String(shifted.map(\.character)))]\(pitchNote)\n"
@@ -1187,6 +1187,10 @@ private extension GrayBuffer {
                 return rescanned
             }
         }
+        // Small synthetics (digitPitch solid wash) skip rowcrop when the parent
+        // window is already as tight as a row crop. Still copy price-row pitch
+        // into later bands so Approach D cuts the washed volume bridge.
+        var bandPitch = preferredPitch
         return splitBands.compactMap { band -> [Cell]? in
             let found = cells(
                 in: band,
@@ -1194,7 +1198,7 @@ private extension GrayBuffer {
                 buffer: buffer,
                 bandIndex: 0,
                 darkInk: primaryIsDark,
-                preferredPitch: preferredPitch
+                preferredPitch: bandPitch
             )
             let marks = opened
                 ? []
@@ -1205,8 +1209,20 @@ private extension GrayBuffer {
             // baselineDots misses it and a trailing noise mark can survive.
             // Keep only marks between digits; if none, place one in the
             // clearest inter-digit gap that still has baseline ink.
-            if preferredPitch != nil {
+            if bandPitch != nil {
                 row = pitchRowMarks(row, mask: glyphs, band: band, width: buffer.width)
+            }
+            if bandPitch == nil {
+                let digits = found.filter { cell in
+                    cell.character.isNumber && cell.height > 0
+                }.sorted { $0.minX < $1.minX }
+                if let body = median(digits.map(\.box.width)), body > 0, digits.count >= 2 {
+                    let spacings = zip(digits, digits.dropFirst()).map { left, right in
+                        right.box.midX - left.box.midX
+                    }
+                    let stride = median(spacings.filter { $0 > 0 }) ?? (body + max(1, body / 6))
+                    bandPitch = PreferredDigitPitch(body: body, count: digits.count, stride: max(body, stride))
+                }
             }
             return row.isEmpty ? nil : row
         }
@@ -2034,7 +2050,7 @@ private func columnRuns(
                 pieces.append(contentsOf: extras)
             }
             pieces.sort { $0.0 < $1.0 }
-            if width >= 0 {  // DIAG #591
+            if width >= 400 {
                 let listed = raw.map { "\($0.0)-\($0.1)" }.joined(separator: ",")
                 let packed = pieces.map { "\($0.0)-\($0.1)" }.joined(separator: ",")
                 trace("pitch pack raw[\(listed)] → [\(packed)] body\(pitch.body)x\(pitch.count)\n")
@@ -2198,7 +2214,7 @@ private func splitAtExpectedPitch(
     }
     let ordered = starts.sorted()
     let pieces = ordered.compactMap { window(at: $0) }
-    if width >= 0 {  // DIAG #591
+    if width >= 400 {
         let listed = pieces.map { "\($0.0)-\($0.1)" }.joined(separator: ",")
         let scores = ordered.map { stemScore(from: $0) }
         trace("pitch right step\(step) [\(listed)] stem\(scores)\n")
