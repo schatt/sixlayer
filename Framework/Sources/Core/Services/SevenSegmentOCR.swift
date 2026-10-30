@@ -922,6 +922,15 @@ private struct GrayBuffer {
 
 private func trace(_ message: String) {
     fputs(message, stderr)
+    if let handle = FileHandle(forWritingAtPath: "/tmp/591-ocr-trace.txt") {
+        handle.seekToEndOfFile()
+        if let data = message.data(using: .utf8) {
+            handle.write(data)
+        }
+        try? handle.close()
+    } else {
+        FileManager.default.createFile(atPath: "/tmp/591-ocr-trace.txt", contents: message.data(using: .utf8))
+    }
 }
 
 private struct Mask {
