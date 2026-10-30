@@ -1094,7 +1094,7 @@ private extension GrayBuffer {
             : (separated.count > foundBands.count
                 ? separated
                 : merge(separated, whenGapBelow: max(1, cellHeight / 2)))
-        if buffer.width >= 1000 {
+        if buffer.width >= 400 {
             let listed = splitBands.map { "\($0.0)-\($0.1)" }.joined(separator: ",")
             trace("bands \(listed)\n")
         }
@@ -1106,7 +1106,7 @@ private extension GrayBuffer {
         if splittingRows, splitBands.count > 1 {
             let span = readingSpan(glyphs, bands: splitBands)
             let parentRadius = windowRadius(width: buffer.width, height: buffer.height)
-            if buffer.width >= 1000 {
+            if buffer.width >= 400 {
                 trace("span \(String(describing: span)) radius \(parentRadius)\n")
             }
             var windowNarrows = true
@@ -1175,7 +1175,7 @@ private extension GrayBuffer {
                     preferredPitch: rowPitch
                 ).flatMap { $0 }
                 let shifted = found.map { $0.shifted(dx: x0, dy: y0) }
-                if buffer.width >= 900 {
+                if buffer.width >= 400 {
                     let pitchNote = rowPitch.map { " pitch \($0.body)x\($0.count)" } ?? ""
                     trace(
                         "rowcrop \(x0),\(y0) \(crop.width)x\(crop.height) [\(String(shifted.map(\.character)))]\(pitchNote)\n"
