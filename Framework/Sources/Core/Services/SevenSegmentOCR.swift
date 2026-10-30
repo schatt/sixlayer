@@ -1187,10 +1187,6 @@ private extension GrayBuffer {
                 return rescanned
             }
         }
-        // Small synthetics (digitPitch solid wash) skip rowcrop when the parent
-        // window is already as tight as a row crop. Still copy price-row pitch
-        // into later bands so Approach D cuts the washed volume bridge.
-        var bandPitch = preferredPitch
         return splitBands.compactMap { band -> [Cell]? in
             let found = cells(
                 in: band,
@@ -1198,7 +1194,7 @@ private extension GrayBuffer {
                 buffer: buffer,
                 bandIndex: 0,
                 darkInk: primaryIsDark,
-                preferredPitch: bandPitch
+                preferredPitch: preferredPitch
             )
             let marks = opened
                 ? []
@@ -1209,20 +1205,8 @@ private extension GrayBuffer {
             // baselineDots misses it and a trailing noise mark can survive.
             // Keep only marks between digits; if none, place one in the
             // clearest inter-digit gap that still has baseline ink.
-            if bandPitch != nil {
+            if preferredPitch != nil {
                 row = pitchRowMarks(row, mask: glyphs, band: band, width: buffer.width)
-            }
-            if bandPitch == nil {
-                let digits = found.filter { cell in
-                    cell.character.isNumber && cell.height > 0
-                }.sorted { $0.minX < $1.minX }
-                if let body = median(digits.map(\.box.width)), body > 0, digits.count >= 2 {
-                    let spacings = zip(digits, digits.dropFirst()).map { left, right in
-                        right.box.midX - left.box.midX
-                    }
-                    let stride = median(spacings.filter { $0 > 0 }) ?? (body + max(1, body / 6))
-                    bandPitch = PreferredDigitPitch(body: body, count: digits.count, stride: max(body, stride))
-                }
             }
             return row.isEmpty ? nil : row
         }
