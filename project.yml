@@ -46,8 +46,8 @@ settings:
 packages:
   ViewInspector:
     url: https://github.com/nalexn/ViewInspector
-    # Tag 0.10.5 (2dacb6e). Branch 0.10.6 is that commit; no 0.10.6 tag (#439).
-    from: "0.10.5"
+    # 0.10.6 is a branch. There is no 0.10.6 tag, so `from:` cannot resolve.
+    branch: "0.10.6"
 
 targets:
   # Main framework target - supports both iOS and macOS
