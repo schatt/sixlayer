@@ -1191,8 +1191,9 @@ private extension GrayBuffer {
             }
             // Rowcrop aborted (parent window already tight — digitPitch synth).
             // Copy pitch across top-level bands only — never inside rowcrops,
-            // and never during standingUp/deskew scoring (allowBandPitch false).
-            if allowBandPitch {
+            // never during standingUp/deskew scoring (allowBandPitch false),
+            // and only on small panels (tallCrop/gapGlare fixtures are larger).
+            if allowBandPitch, buffer.width < 350, buffer.height < 350 {
                 var bandPitch = preferredPitch
                 return splitBands.compactMap { band -> [Cell]? in
                     let found = cells(
