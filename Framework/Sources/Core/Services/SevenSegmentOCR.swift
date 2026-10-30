@@ -922,15 +922,6 @@ private struct GrayBuffer {
 
 private func trace(_ message: String) {
     fputs(message, stderr)
-    if let handle = FileHandle(forWritingAtPath: "/tmp/591-ocr-trace.txt") {
-        handle.seekToEndOfFile()
-        if let data = message.data(using: .utf8) {
-            handle.write(data)
-        }
-        try? handle.close()
-    } else {
-        FileManager.default.createFile(atPath: "/tmp/591-ocr-trace.txt", contents: message.data(using: .utf8))
-    }
 }
 
 private struct Mask {
@@ -1096,20 +1087,22 @@ private extension GrayBuffer {
         }
         let tallHeights = measured.flatMap(\.cells).filter { $0.height > 0 }.map(\.height).sorted()
         let cellHeight = tallHeights.isEmpty ? 1 : tallHeights[tallHeights.count / 2]
+        // Gap-glare / bezel specks are a few pixels tall. Left in the list they
+        // chip the inter-row gap into pieces smaller than cellHeight/2, so merge
+        // joins both digit rows and tallCrop never gets a per-row window (#591).
+        let minBandHeight = max(6, cellHeight / 6)
+        let substantiveBands = separated.filter { $0.1 - $0.0 >= minBandHeight }
+        let bandsForSplit = substantiveBands.count >= 2 ? substantiveBands : separated
         // merge treats a zero limit as "pick a default", which would close
         // the gap this split just opened.
         let splitBands = opened
             ? merge(solidBands, whenGapBelow: max(2, buffer.height / 40))
-            : (separated.count > foundBands.count
-                ? separated
-                : merge(separated, whenGapBelow: max(1, cellHeight / 2)))
-        if buffer.width >= 400 {
+            : (bandsForSplit.count > foundBands.count
+                ? bandsForSplit
+                : merge(bandsForSplit, whenGapBelow: max(1, cellHeight / 2)))
+        if buffer.width >= 1000 {
             let listed = splitBands.map { "\($0.0)-\($0.1)" }.joined(separator: ",")
-            let foundListed = foundBands.map { "\($0.0)-\($0.1)" }.joined(separator: ",")
-            let sepListed = separated.map { "\($0.0)-\($0.1)" }.joined(separator: ",")
-            trace(
-                "bands \(listed) found[\(foundListed)] sep[\(sepListed)] opened=\(opened) cellH=\(cellHeight) size=\(buffer.width)x\(buffer.height)\n"
-            )
+            trace("bands \(listed)\n")
         }
         // The window is sized from the whole crop. Two rows make it wide
         // enough to mark the glass between digits. Read each row from a
@@ -1119,7 +1112,7 @@ private extension GrayBuffer {
         if splittingRows, splitBands.count > 1 {
             let span = readingSpan(glyphs, bands: splitBands)
             let parentRadius = windowRadius(width: buffer.width, height: buffer.height)
-            if buffer.width >= 400 {
+            if buffer.width >= 1000 {
                 trace("span \(String(describing: span)) radius \(parentRadius)\n")
             }
             var windowNarrows = true
@@ -1188,7 +1181,7 @@ private extension GrayBuffer {
                     preferredPitch: rowPitch
                 ).flatMap { $0 }
                 let shifted = found.map { $0.shifted(dx: x0, dy: y0) }
-                if buffer.width >= 400 {
+                if buffer.width >= 900 {
                     let pitchNote = rowPitch.map { " pitch \($0.body)x\($0.count)" } ?? ""
                     trace(
                         "rowcrop \(x0),\(y0) \(crop.width)x\(crop.height) [\(String(shifted.map(\.character)))]\(pitchNote)\n"
