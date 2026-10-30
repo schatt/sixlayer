@@ -2219,33 +2219,38 @@ private func splitAtExpectedPitch(
     }
     let step = body + max(0, gap)
     // Solid-gap synthetics fuse digits + decimal into one run; uniform
-    // right-pack drifts through the period column (8.022 → 0.832). Prefer
-    // the top stem-score peaks separated by ~2/3 body. Fall back to
-    // right-pack when peaks are too weak (photo leading wash).
+    // right-pack drifts through the period column (8.022 → 0.832). Walk
+    // left→right, taking the best stem peak in each slot while leaving
+    // room for the remaining bodies. Fall back to right-pack when a slot
+    // has no positive peak (photo leading wash).
     let sample = max(1, body / 8)
-    var candidates: [(x: Int, score: Int)] = []
-    var cursor = span.0
-    while cursor + body <= span.1 {
-        candidates.append((cursor, stemScore(from: cursor)))
-        cursor += sample
-    }
-    // Require ~one body of separation so adjacent wash ridges cannot crowd
-    // out the trailing digits (peaks at 26/62/104/140 → 90_6).
-    let minSep = max(body, step - max(1, body / 8))
+    let minSep = max(body * 3 / 4, body - max(0, gap))
     var peakStarts: [Int] = []
-    for candidate in candidates.sorted(by: { $0.score > $1.score }) {
-        guard peakStarts.count < count else { break }
-        guard candidate.score > 0 else { continue }
-        if peakStarts.contains(where: { abs($0 - candidate.x) < minSep }) { continue }
-        peakStarts.append(candidate.x)
+    var searchFrom = span.0
+    var peaksOk = true
+    for remaining in stride(from: count, through: 1, by: -1) {
+        let latest = span.1 - body - (remaining - 1) * minSep
+        guard latest >= searchFrom else { peaksOk = false; break }
+        var bestX = searchFrom
+        var bestScore = Int.min
+        var x = searchFrom
+        while x <= latest {
+            let score = stemScore(from: x)
+            if score > bestScore {
+                bestScore = score
+                bestX = x
+            }
+            x += sample
+        }
+        guard bestScore > 0 else { peaksOk = false; break }
+        peakStarts.append(bestX)
+        searchFrom = bestX + minSep
     }
-    peakStarts.sort()
-    if peakStarts.count >= count {
-        let ordered = Array(peakStarts.prefix(count))
-        let pieces = ordered.compactMap { window(at: $0) }
+    if peaksOk, peakStarts.count == count {
+        let pieces = peakStarts.compactMap { window(at: $0) }
         if true {
             let listed = pieces.map { "\($0.0)-\($0.1)" }.joined(separator: ",")
-            let scores = ordered.map { stemScore(from: $0) }
+            let scores = peakStarts.map { stemScore(from: $0) }
             trace("pitch peaks step~\(step) [\(listed)] stem\(scores)\n")
         }
         if pieces.count >= 2 { return pieces }
