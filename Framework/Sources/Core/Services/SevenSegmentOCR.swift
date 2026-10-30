@@ -2229,7 +2229,9 @@ private func splitAtExpectedPitch(
         candidates.append((cursor, stemScore(from: cursor)))
         cursor += sample
     }
-    let minSep = max(body * 2 / 3, body - max(0, gap))
+    // Require ~one body of separation so adjacent wash ridges cannot crowd
+    // out the trailing digits (peaks at 26/62/104/140 → 90_6).
+    let minSep = max(body, step - max(1, body / 8))
     var peakStarts: [Int] = []
     for candidate in candidates.sorted(by: { $0.score > $1.score }) {
         guard peakStarts.count < count else { break }
