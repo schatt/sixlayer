@@ -1187,10 +1187,6 @@ private extension GrayBuffer {
                 return rescanned
             }
         }
-        // Small synthetics (digitPitch solid wash) skip rowcrop when the parent
-        // window is already as tight as a row crop. Still copy price-row pitch
-        // into later bands so Approach D cuts the washed volume bridge.
-        var bandPitch = preferredPitch
         return splitBands.compactMap { band -> [Cell]? in
             let found = cells(
                 in: band,
@@ -1198,7 +1194,7 @@ private extension GrayBuffer {
                 buffer: buffer,
                 bandIndex: 0,
                 darkInk: primaryIsDark,
-                preferredPitch: bandPitch
+                preferredPitch: preferredPitch
             )
             let marks = opened
                 ? []
@@ -1209,20 +1205,8 @@ private extension GrayBuffer {
             // baselineDots misses it and a trailing noise mark can survive.
             // Keep only marks between digits; if none, place one in the
             // clearest inter-digit gap that still has baseline ink.
-            if bandPitch != nil {
+            if preferredPitch != nil {
                 row = pitchRowMarks(row, mask: glyphs, band: band, width: buffer.width)
-            }
-            if bandPitch == nil {
-                let digits = found.filter { cell in
-                    cell.character.isNumber && cell.height > 0
-                }.sorted { $0.minX < $1.minX }
-                if let body = median(digits.map(\.box.width)), body > 0, digits.count >= 2 {
-                    let spacings = zip(digits, digits.dropFirst()).map { left, right in
-                        right.box.midX - left.box.midX
-                    }
-                    let stride = median(spacings.filter { $0 > 0 }) ?? (body + max(1, body / 6))
-                    bandPitch = PreferredDigitPitch(body: body, count: digits.count, stride: max(body, stride))
-                }
             }
             return row.isEmpty ? nil : row
         }
@@ -2150,42 +2134,11 @@ private func packClusterRuns(
             let start = run.0 + lead
             pieces.append((start, min(run.1, start + max(2, core))))
         } else {
-            // Peel leading wash only when the left edge is flat. A digit already
-            // at run.0 (solid-gap synth fuse) must not lose its left stem.
+            // Peel leading wash: keep only the rightmost n packBody slots.
             let needed = n * packBody
-            func edgeStem(at x: Int) -> Int {
-                let end = min(run.1, x + packBody)
-                guard end - x >= max(2, packBody / 5) else { return -1 }
-                let third = max(1, (end - x) / 3)
-                let left = (x..<x + third).map { sums[$0] }.max() ?? 0
-                let mid = (x + third..<x + 2 * third).map { sums[$0] }.max() ?? 0
-                let right = (x + 2 * third..<end).map { sums[$0] }.max() ?? 0
-                return left + right - mid / 2
-            }
-            let leftStem = edgeStem(at: run.0)
-            let rightStem = edgeStem(at: max(run.0, run.1 - packBody))
-            // Digit-like left + barely-wider-than-needed → solid-gap synth fuse.
-            // Keep the full run and ask for stem peaks. Photo leading wash still
-            // peels and right-packs.
-            let fusedSynth = leftStem >= 0
-                && leftStem * 2 >= max(0, rightStem)
-                && run.1 - run.0 >= needed
-                && run.1 - run.0 <= needed + packBody
-            let trimmed: (Int, Int)
-            if fusedSynth {
-                trimmed = run
-            } else {
-                trimmed = (max(run.0, run.1 - needed), run.1)
-            }
+            let trimmed = (max(run.0, run.1 - needed), run.1)
             let local = PreferredDigitPitch(body: packBody, count: n, stride: pitch.stride)
-            pieces.append(
-                contentsOf: splitAtExpectedPitch(
-                    trimmed,
-                    sums: sums,
-                    pitch: local,
-                    preferStemPeaks: fusedSynth
-                )
-            )
+            pieces.append(contentsOf: splitAtExpectedPitch(trimmed, sums: sums, pitch: local))
         }
     }
     return pieces
@@ -2198,8 +2151,7 @@ private func packClusterRuns(
 private func splitAtExpectedPitch(
     _ span: (Int, Int),
     sums: [Int],
-    pitch: PreferredDigitPitch,
-    preferStemPeaks: Bool = false
+    pitch: PreferredDigitPitch
 ) -> [(Int, Int)] {
     let body = max(1, pitch.body)
     let count = max(2, pitch.count)
@@ -2233,50 +2185,11 @@ private func splitAtExpectedPitch(
         gap = 0
     }
     let step = body + max(0, gap)
-    // Solid-gap synthetics fuse digits + decimal into one run; uniform
-    // right-pack drifts through the period column (8.022 → 0.832). When
-    // preferStemPeaks is set, walk left→right taking the best stem peak in
-    // each slot. Photo paths keep right-pack (peaks mis-cut wide wash runs).
-    if preferStemPeaks {
-        let sample = max(1, body / 8)
-        let minSep = body
-        var peakStarts: [Int] = []
-        var searchFrom = span.0
-        var peaksOk = true
-        for remaining in stride(from: count, through: 1, by: -1) {
-            let latest = span.1 - body - (remaining - 1) * minSep
-            guard latest >= searchFrom else { peaksOk = false; break }
-            var bestX = searchFrom
-            var bestScore = Int.min
-            var x = searchFrom
-            while x <= latest {
-                let score = stemScore(from: x)
-                if score > bestScore {
-                    bestScore = score
-                    bestX = x
-                }
-                x += sample
-            }
-            guard bestScore > 0 else { peaksOk = false; break }
-            // First slot: keep the left stem (inset peak turned 8 → 9).
-            if remaining == count, bestX <= span.0 + body / 4 {
-                bestX = span.0
-            }
-            peakStarts.append(bestX)
-            searchFrom = bestX + minSep
-        }
-        if peaksOk, peakStarts.count == count {
-            let pieces = peakStarts.compactMap { window(at: $0) }
-            if width >= 400 {
-                let listed = pieces.map { "\($0.0)-\($0.1)" }.joined(separator: ",")
-                let scores = peakStarts.map { stemScore(from: $0) }
-                trace("pitch peaks step~\(step) [\(listed)] stem\(scores)\n")
-            }
-            if pieces.count >= 2 { return pieces }
-        }
-    }
     // Right-pack: last window ends at span.1, earlier ones step left. Leading
     // wash/junk left of the pack is ignored instead of shifting every slot.
+    // Pure right-pack. Stem-snap pulled the last slot of a 3-digit cluster
+    // from the 0-run (nominal ~373 → 380-555) left onto the almost-8 at 342
+    // even within ±step/4 — higher stem score, wrong glyph.
     var starts: [Int] = []
     var x = span.1 - body
     for _ in 0..<count {
