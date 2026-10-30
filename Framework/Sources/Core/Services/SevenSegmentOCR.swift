@@ -2243,6 +2243,11 @@ private func splitAtExpectedPitch(
             x += sample
         }
         guard bestScore > 0 else { peaksOk = false; break }
+        // First slot: a digit-like run edge must keep its left stem. Scoring
+        // alone prefers a slightly inset peak (8 → 9 on the solid-gap synth).
+        if remaining == count, bestX <= span.0 + body / 4 {
+            bestX = span.0
+        }
         peakStarts.append(bestX)
         searchFrom = bestX + minSep
     }
