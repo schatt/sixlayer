@@ -1112,26 +1112,37 @@ private extension GrayBuffer {
             var windowNarrows = true
             var rescanned: [[Cell]] = []
             let rowProfile = glyphs.rowSums
-            // Known-good price crop is 380px tall. Reach into the row gap so
-            // each window can sit on a price-like Y (top drops haze; bottom
-            // borrows gap above when the buffer is short below).
+            // Known-good price crop is 380px tall. On haze-tall (photo) bands,
+            // reach into the row gap so each window can sit on a price-like Y.
+            // Short synthetic digit bands must not borrow that gap — gap glare
+            // above each row (tallCrop) then joins into the crop and the read
+            // collapses (got "8" on #591 combined).
             let priceBandHeight = 380
             let gapPad = max(24, priceBandHeight / 8)
             // Approach D: once a price-like row yields digit boxes, copy that
             // pitch into later rowcrops (volume) so wash bridges still cut.
             var rowPitch = preferredPitch
             for band in splitBands {
-                let expanded = (
-                    max(0, band.0 - gapPad),
-                    min(buffer.height, band.1 + gapPad)
-                )
+                let rawHeight = band.1 - band.0
+                let searchBand: (Int, Int)
+                if rawHeight + 16 > priceBandHeight {
+                    searchBand = (
+                        max(0, band.0 - gapPad),
+                        min(buffer.height, band.1 + gapPad)
+                    )
+                } else {
+                    searchBand = band
+                }
                 let tight = priceMatchedBand(
                     rowProfile,
-                    in: expanded,
+                    in: searchBand,
                     targetHeight: priceBandHeight
                 )
-                let y0 = tight.0
-                let y1 = tight.1
+                // Synth short bands keep a few pixels of pad (pre-B geometry).
+                // Photo / haze-tall windows already include gapPad in searchBand.
+                let edgePad = rawHeight + 16 > priceBandHeight ? 0 : 4
+                let y0 = max(0, tight.0 - edgePad)
+                let y1 = min(buffer.height, tight.1 + edgePad)
                 let sharedLeft = span?.0 ?? 0
                 let sharedRight = span?.1 ?? buffer.width
                 // Left edge scores digit stems in the ink band, not the gap
