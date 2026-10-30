@@ -1095,20 +1095,11 @@ private extension GrayBuffer {
         let bandsForSplit = substantiveBands.count >= 2 ? substantiveBands : separated
         // merge treats a zero limit as "pick a default", which would close
         // the gap this split just opened.
-        let mergedForSplit = merge(bandsForSplit, whenGapBelow: max(1, cellHeight / 2))
-        // Tall haze can shrink the remaining inter-row gap below cellHeight/2
-        // while each band is still a full digit row (Approach B fixture). Keep
-        // those row-like bands split so per-row crops still run.
-        let rowLikeFloor = max(24, cellHeight * 2 / 5)
-        let keepRowSplit = !opened
-            && bandsForSplit.count >= 2
-            && mergedForSplit.count < bandsForSplit.count
-            && bandsForSplit.allSatisfy { $0.1 - $0.0 >= rowLikeFloor }
         let splitBands = opened
             ? merge(solidBands, whenGapBelow: max(2, buffer.height / 40))
             : (bandsForSplit.count > foundBands.count
                 ? bandsForSplit
-                : (keepRowSplit ? bandsForSplit : mergedForSplit))
+                : merge(bandsForSplit, whenGapBelow: max(1, cellHeight / 2)))
         if buffer.width >= 1000 {
             let listed = splitBands.map { "\($0.0)-\($0.1)" }.joined(separator: ",")
             trace("bands \(listed)\n")
