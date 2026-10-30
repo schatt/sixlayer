@@ -2050,7 +2050,7 @@ private func columnRuns(
                 pieces.append(contentsOf: extras)
             }
             pieces.sort { $0.0 < $1.0 }
-            if true {
+            if width >= 400 {
                 let listed = raw.map { "\($0.0)-\($0.1)" }.joined(separator: ",")
                 let packed = pieces.map { "\($0.0)-\($0.1)" }.joined(separator: ",")
                 trace("pitch pack raw[\(listed)] → [\(packed)] body\(pitch.body)x\(pitch.count)\n")
@@ -2255,7 +2255,7 @@ private func splitAtExpectedPitch(
     }
     if peaksOk, peakStarts.count == count {
         let pieces = peakStarts.compactMap { window(at: $0) }
-        if true {
+        if width >= 400 {
             let listed = pieces.map { "\($0.0)-\($0.1)" }.joined(separator: ",")
             let scores = peakStarts.map { stemScore(from: $0) }
             trace("pitch peaks step~\(step) [\(listed)] stem\(scores)\n")
@@ -2272,7 +2272,7 @@ private func splitAtExpectedPitch(
     }
     let ordered = starts.sorted()
     let pieces = ordered.compactMap { window(at: $0) }
-    if true {
+    if width >= 400 {
         let listed = pieces.map { "\($0.0)-\($0.1)" }.joined(separator: ",")
         let scores = ordered.map { stemScore(from: $0) }
         trace("pitch right step\(step) [\(listed)] stem\(scores)\n")
