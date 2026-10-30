@@ -2224,7 +2224,9 @@ private func splitAtExpectedPitch(
     // room for the remaining bodies. Fall back to right-pack when a slot
     // has no positive peak (photo leading wash).
     let sample = max(1, body / 8)
-    let minSep = max(body * 3 / 4, body - max(0, gap))
+    // One full body between starts — 3/4 body let the 0/2 boundary steal the
+    // third slot (8._22).
+    let minSep = body
     var peakStarts: [Int] = []
     var searchFrom = span.0
     var peaksOk = true
