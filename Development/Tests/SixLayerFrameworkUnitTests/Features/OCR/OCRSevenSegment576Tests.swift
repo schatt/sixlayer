@@ -134,6 +134,31 @@ struct OCRSevenSegment576Tests {
         #expect(decode(image, maximum: 0).extractedText == "32.88\n8.022")
     }
 
+    @Test func onePixelOnADarkSegmentDoesNotChangeTheDigit() {
+        // A 3 with one pixel on the dark upper-left stem is an exact 9 when any
+        // foreground pixel lights a segment (#599).
+        let speck = SegmentPanel.render(
+            rows: [[.digit(digit(3))]],
+            falseUpperStemSpeck: true
+        )
+        #expect(decode(speck, maximum: 0).extractedText == "3")
+        let stroke = SegmentPanel.render(rows: [[.digit(digit(9))]])
+        #expect(decode(stroke, maximum: 0).extractedText == "9")
+    }
+
+    @Test func washedRowDigitCountFollowsStrideNotTheCleanRow() {
+        // Price is four digits. The washed volume row is five. Copying the
+        // price count packs the volume into four windows (#599).
+        let image = SegmentPanel.render(
+            rows: [atoms("32.88"), atoms("18022")],
+            solidGapWashVolumeOnly: true
+        )
+        let lines = decode(image, maximum: 0).extractedText.split(separator: "\n").map(String.init)
+        #expect(lines.count == 2)
+        #expect(lines.first?.filter(\.isNumber) == "3288")
+        #expect(lines.last?.filter(\.isNumber) == "18022")
+    }
+
     @Test func rescannedRowCropMatchesPriceBandGeometry() {
         // Approach B (#591): a left scratch sits in the digit bands but not
         // through the row gap, and a tall haze above each row stretches the
@@ -971,7 +996,8 @@ private enum SegmentPanel {
         aboveDigitGlare: Bool = false,
         leftScratch: Bool = false,
         tallHaze: Bool = false,
-        solidGapWashVolumeOnly: Bool = false
+        solidGapWashVolumeOnly: Bool = false,
+        falseUpperStemSpeck: Bool = false
     ) -> CGImage {
         let laid = layout(rows: rows, padding: padding)
         let background: UInt8 = backgroundLevel ?? (invert ? 28 : 214)
@@ -990,6 +1016,14 @@ private enum SegmentPanel {
         }
         for stroke in laid.strokes where stroke.opposite {
             fill(&pixels, width: laid.width, height: laid.height, rect: stroke.rect, value: markInk)
+        }
+        if falseUpperStemSpeck {
+            // One ink pixel on the upper-left stem scan of the first cell.
+            let x = padding + stroke
+            let y = padding + cellH / 4
+            if x < laid.width, y < laid.height {
+                pixels[y * laid.width + x] = ink
+            }
         }
         if glare, let band = laid.rowBands.first {
             let y0 = max(0, band.midY - stroke)
