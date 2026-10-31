@@ -91,7 +91,13 @@ public enum SevenSegmentGlyph {
 }
 
 public enum SevenSegmentOCR {
-    public static func decode(cgImage: CGImage, deskewMaximumDegrees: Double = 3) -> OCRResult {
+    public static func digitPanelRegion(in cgImage: CGImage) -> CGRect? { nil }
+    public static func decode(
+        cgImage: CGImage,
+        deskewMaximumDegrees: Double = 3,
+        localizeDigitPanel: Bool = false
+    ) -> OCRResult {
+        _ = localizeDigitPanel
         guard let gray = GrayBuffer.read(cgImage) else {
             return OCRResult(extractedText: "", confidence: 0)
         }
