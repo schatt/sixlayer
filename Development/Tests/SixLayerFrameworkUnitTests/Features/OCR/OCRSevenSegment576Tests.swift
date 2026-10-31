@@ -655,7 +655,8 @@ struct OCRSevenSegment576Tests {
 
     @Test func exactEmbedCropWithoutLocalizationStillReadsBothRows() {
         let panelImage = washedBothRowsPanel()
-        #expect(decode(panelImage, maximum: 0).extractedText == "32.88\n8.022")
+        // Same deskew default as bezelDarkerThanTheGlassKeepsWashedDigits.
+        #expect(decode(panelImage).extractedText == "32.88\n8.022")
         let originX = 180
         let originY = 420
         let frame = embed(
@@ -673,7 +674,7 @@ struct OCRSevenSegment576Tests {
             width: panelImage.width,
             height: panelImage.height
         )
-        #expect(decode(exact, maximum: 0).extractedText == "32.88\n8.022")
+        #expect(decode(exact).extractedText == "32.88\n8.022")
     }
 
     @Test func localizedDecodeReadsWashedPanelInFullFrame() throws {
@@ -693,10 +694,9 @@ struct OCRSevenSegment576Tests {
             width: Int(region.width.rounded(.up)),
             height: Int(region.height.rounded(.up))
         )
-        #expect(decode(foundCrop, maximum: 0).extractedText == "32.88\n8.022")
+        #expect(decode(foundCrop).extractedText == "32.88\n8.022")
         let result = SevenSegmentOCR.decode(
             cgImage: frame,
-            deskewMaximumDegrees: 0,
             localizeDigitPanel: true
         )
         #expect(result.extractedText == "32.88\n8.022")
@@ -707,7 +707,6 @@ struct OCRSevenSegment576Tests {
         let frame = solidGray(width: 1200, height: 1600, level: 180)
         let result = SevenSegmentOCR.decode(
             cgImage: frame,
-            deskewMaximumDegrees: 0,
             localizeDigitPanel: true
         )
         #expect(result.extractedText.isEmpty)
