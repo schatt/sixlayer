@@ -2524,10 +2524,18 @@ private func densestInkBand(
     let profile = rowInkSums(mask, x0: box.minX, x1: box.maxX, y0: box.minY, y1: box.maxY)
     let sums = profile.sums
     let height = sums.count
-    guard height > 2 else { return box }
+    // Always return a Y span inside the mask. An oversize caller box
+    // (frameTop + digitHeight on a bad ROI) must not escape (#597).
+    func clamped(_ minY: Int, _ maxY: Int) -> PixelBox {
+        PixelBox(minX: box.minX, minY: minY, maxX: box.maxX, maxY: maxY)
+    }
+    func clampedProfile() -> PixelBox {
+        clamped(profile.lower, profile.lower + height)
+    }
+    guard height > 2 else { return clampedProfile() }
     // A one is a tall stem. Leave it alone; aspect math is for wide glyphs.
     if box.width * 4 < height {
-        return box
+        return clampedProfile()
     }
     // Cap by this box's width. A broken 3 can tighten narrowly; then the
     // median digit width decides whether it is still a normal-height glyph.
@@ -2539,14 +2547,7 @@ private func densestInkBand(
     // bar" misreads the mid-row glare fixture as a colon. Pitch volume rows
     // opt in via forceDigitTall even when already under the aspect cap.
     if !forceDigitTall, height <= earlyCap + slack {
-        // rowInkSums already clamped; do not hand back an oversize caller box
-        // that can push sample() past the mask (#597).
-        return PixelBox(
-            minX: box.minX,
-            minY: profile.lower,
-            maxX: box.maxX,
-            maxY: profile.lower + height
-        )
+        return clampedProfile()
     }
     var start = 0
     var end = height
