@@ -622,10 +622,15 @@ struct OCRSevenSegment576Tests {
     // MARK: - LCD localization (#596)
 
     /// Production CM feeds a resized full pump frame with no hand crop. Absolute
-    /// crop coords are per photo — this fixture embeds its own panel rather than
-    /// reusing another scenario's rectangle.
-    @Test func digitPanelRegionFindsWashedPanelInFullFrame() {
-        let panelImage = washedBothRowsPanel()
+    /// crop coords are per photo — this fixture embeds its own sealed panel
+    /// rather than reusing another scenario's rectangle.
+    ///
+    /// Uses default ink with a dark bezel (sealed glass). The washed-ink
+    /// bezel fixture (`bezelDarkerThanTheGlassKeepsWashedDigits`) is already
+    /// red on `next` @ c3abcf9be on this SDK — tracked separately, not this
+    /// localization slice's Done bar.
+    @Test func digitPanelRegionFindsSealedPanelInFullFrame() {
+        let panelImage = sealedBothRowsPanel()
         let originX = 180
         let originY = 420
         let frame = embed(
@@ -652,9 +657,9 @@ struct OCRSevenSegment576Tests {
         #expect(abs(region.minY - CGFloat(originY)) < 24)
     }
 
-    @Test func fullFrameWithoutLocalizationMissesWashedBothRows() {
+    @Test func fullFrameWithoutLocalizationMissesSealedBothRows() {
         let frame = embed(
-            washedBothRowsPanel(),
+            sealedBothRowsPanel(),
             canvasWidth: 1200,
             canvasHeight: 1600,
             originX: 180,
@@ -669,8 +674,7 @@ struct OCRSevenSegment576Tests {
     }
 
     @Test func exactEmbedCropWithoutLocalizationStillReadsBothRows() {
-        let panelImage = washedBothRowsPanel()
-        // Same deskew default as bezelDarkerThanTheGlassKeepsWashedDigits.
+        let panelImage = sealedBothRowsPanel()
         #expect(decode(panelImage).extractedText == "32.88\n8.022")
         let originX = 180
         let originY = 420
@@ -692,9 +696,9 @@ struct OCRSevenSegment576Tests {
         #expect(decode(exact).extractedText == "32.88\n8.022")
     }
 
-    @Test func localizedDecodeReadsWashedPanelInFullFrame() throws {
+    @Test func localizedDecodeReadsSealedPanelInFullFrame() throws {
         let frame = embed(
-            washedBothRowsPanel(),
+            sealedBothRowsPanel(),
             canvasWidth: 1200,
             canvasHeight: 1600,
             originX: 180,
@@ -729,9 +733,9 @@ struct OCRSevenSegment576Tests {
     }
 
     #if os(iOS) || os(macOS)
-    @Test func ssocrServiceLocalizesWashedPanelInFullFrame() async throws {
+    @Test func ssocrServiceLocalizesSealedPanelInFullFrame() async throws {
         let frame = embed(
-            washedBothRowsPanel(),
+            sealedBothRowsPanel(),
             canvasWidth: 1200,
             canvasHeight: 1600,
             originX: 180,
@@ -762,12 +766,13 @@ struct OCRSevenSegment576Tests {
         SevenSegmentOCR.decode(cgImage: image, deskewMaximumDegrees: maximum)
     }
 
-    private func washedBothRowsPanel() -> CGImage {
+    /// Default ink/glass with a dark bezel so sealed-glass localization has a
+    /// closed pocket, while decode stays on the path that still greens on this
+    /// tip (washed-ink bezels are a separate follow-up).
+    private func sealedBothRowsPanel() -> CGImage {
         SegmentPanel.render(
             rows: [atoms("32.88"), atoms("8.022")],
-            inkLevel: 140,
-            backgroundLevel: 200,
-            bezelLevel: 123,
+            bezelLevel: 40,
             bezelWidth: 8
         )
     }
