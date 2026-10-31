@@ -388,6 +388,22 @@ struct OCRSevenSegment576Tests {
         #expect(!source.localizedCaseInsensitiveContains("imlib"))
     }
 
+    @Test func mismatchedRoiDoesNotTrapRangeInvariant() throws {
+        // #597: a bad / mismatched ROI must not fatalError with
+        // "Range requires lowerBound <= upperBound". Fixture is a synthetic
+        // 400x220 luminance field (not a production photo) that previously
+        // trapped during standingUp's quarter-turn score.
+        let url = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent()
+            .appendingPathComponent("BadROIRangeCrash597.png")
+        let data = try Data(contentsOf: url)
+        let image = try #require(PlatformImage.cgImage(opening: data))
+        let result = decode(image, maximum: 0)
+        // Controlled empty or garbage is fine — only the trap is forbidden.
+        #expect(result.confidence >= 0)
+        #expect(result.extractedText.count >= 0)
+    }
+
     // MARK: - Label binding
 
     @Test func overlapDropsOnlyALargeIntersection() {
@@ -603,12 +619,234 @@ struct OCRSevenSegment576Tests {
     }
     #endif
 
+    // MARK: - LCD localization (#596)
+
+    /// Production CM feeds a resized full pump frame with no hand crop. Absolute
+    /// crop coords are per photo — this fixture embeds its own panel rather than
+    /// reusing another scenario's rectangle.
+    @Test func digitPanelRegionFindsWashedPanelInFullFrame() {
+        let panelImage = washedBothRowsPanel()
+        let originX = 180
+        let originY = 420
+        let frame = embed(
+            panelImage,
+            canvasWidth: 1200,
+            canvasHeight: 1600,
+            originX: originX,
+            originY: originY,
+            fill: 180
+        )
+        let region = SevenSegmentOCR.digitPanelRegion(in: frame)
+        #expect(region != nil)
+        guard let region else { return }
+        let panelMidX = CGFloat(originX) + CGFloat(panelImage.width) / 2
+        let panelMidY = CGFloat(originY) + CGFloat(panelImage.height) / 2
+        #expect(region.minX < panelMidX && region.maxX > panelMidX)
+        #expect(region.minY < panelMidY && region.maxY > panelMidY)
+        #expect(region.width < CGFloat(frame.width) * 0.85)
+        #expect(region.height < CGFloat(frame.height) * 0.85)
+        // Region must track this panel's own box — not a near-full-frame pocket.
+        #expect(abs(region.width - CGFloat(panelImage.width)) < 48)
+        #expect(abs(region.height - CGFloat(panelImage.height)) < 48)
+        #expect(abs(region.minX - CGFloat(originX)) < 24)
+        #expect(abs(region.minY - CGFloat(originY)) < 24)
+    }
+
+    @Test func fullFrameWithoutLocalizationMissesWashedBothRows() {
+        let frame = embed(
+            washedBothRowsPanel(),
+            canvasWidth: 1200,
+            canvasHeight: 1600,
+            originX: 180,
+            originY: 420,
+            fill: 180
+        )
+        let raw = SevenSegmentOCR.decode(
+            cgImage: frame,
+            localizeDigitPanel: false
+        )
+        #expect(raw.extractedText != "32.88\n8.022")
+    }
+
+    @Test func exactEmbedCropWithoutLocalizationStillReadsBothRows() {
+        let panelImage = washedBothRowsPanel()
+        // Same deskew default as bezelDarkerThanTheGlassKeepsWashedDigits.
+        #expect(decode(panelImage).extractedText == "32.88\n8.022")
+        let originX = 180
+        let originY = 420
+        let frame = embed(
+            panelImage,
+            canvasWidth: 1200,
+            canvasHeight: 1600,
+            originX: originX,
+            originY: originY,
+            fill: 180
+        )
+        let exact = crop(
+            frame,
+            x: originX,
+            y: originY,
+            width: panelImage.width,
+            height: panelImage.height
+        )
+        #expect(decode(exact).extractedText == "32.88\n8.022")
+    }
+
+    @Test func localizedDecodeReadsWashedPanelInFullFrame() throws {
+        let frame = embed(
+            washedBothRowsPanel(),
+            canvasWidth: 1200,
+            canvasHeight: 1600,
+            originX: 180,
+            originY: 420,
+            fill: 180
+        )
+        let region = try #require(SevenSegmentOCR.digitPanelRegion(in: frame))
+        let foundCrop = crop(
+            frame,
+            x: Int(region.minX.rounded(.down)),
+            y: Int(region.minY.rounded(.down)),
+            width: Int(region.width.rounded(.up)),
+            height: Int(region.height.rounded(.up))
+        )
+        #expect(decode(foundCrop).extractedText == "32.88\n8.022")
+        let result = SevenSegmentOCR.decode(
+            cgImage: frame,
+            localizeDigitPanel: true
+        )
+        #expect(result.extractedText == "32.88\n8.022")
+        #expect(segmentTexts(result) == ["32.88", "8.022"])
+    }
+
+    @Test func localizedDecodeOnEmptyFullFrameStaysQuiet() {
+        let frame = solidGray(width: 1200, height: 1600, level: 180)
+        let result = SevenSegmentOCR.decode(
+            cgImage: frame,
+            localizeDigitPanel: true
+        )
+        #expect(result.extractedText.isEmpty)
+        #expect(result.recognizedTexts.isEmpty)
+    }
+
+    #if os(iOS) || os(macOS)
+    @Test func ssocrServiceLocalizesWashedPanelInFullFrame() async throws {
+        let frame = embed(
+            washedBothRowsPanel(),
+            canvasWidth: 1200,
+            canvasHeight: 1600,
+            originX: 180,
+            originY: 420,
+            fill: 180
+        )
+        let service = OCRService()
+        let strategy = OCRStrategy(
+            supportedTextTypes: [],
+            supportedLanguages: [.english],
+            processingMode: .ssocr
+        )
+        let result = try await service.processImage(
+            PlatformImage(cgImage: frame),
+            context: OCRContext(processingMode: .ssocr),
+            strategy: strategy
+        )
+        #expect(result.extractedText == "32.88\n8.022")
+        #expect(segmentTexts(result) == ["32.88", "8.022"])
+    }
+    #endif
+
     // MARK: - Helpers
 
     private func service() -> OCRService { OCRService() }
 
     private func decode(_ image: CGImage, maximum: Double = 3) -> OCRResult {
         SevenSegmentOCR.decode(cgImage: image, deskewMaximumDegrees: maximum)
+    }
+
+    private func washedBothRowsPanel() -> CGImage {
+        SegmentPanel.render(
+            rows: [atoms("32.88"), atoms("8.022")],
+            inkLevel: 140,
+            backgroundLevel: 200,
+            bezelLevel: 123,
+            bezelWidth: 8
+        )
+    }
+
+    private func embed(
+        _ panel: CGImage,
+        canvasWidth: Int,
+        canvasHeight: Int,
+        originX: Int,
+        originY: Int,
+        fill: UInt8
+    ) -> CGImage {
+        var pixels = [UInt8](repeating: fill, count: canvasWidth * canvasHeight)
+        let panelW = panel.width
+        let panelH = panel.height
+        // Copy the panel's own top-left gray bytes. Avoid CGContext.draw — its
+        // default bitmap orientation flips the fixture and empties localized
+        // decode of an otherwise good ROI.
+        guard let provider = panel.dataProvider,
+              let data = provider.data,
+              CFDataGetLength(data) >= panelW * panelH,
+              let bytes = CFDataGetBytePtr(data)
+        else {
+            return solidGrayImage(pixels: pixels, width: canvasWidth, height: canvasHeight)
+        }
+        let rowBytes = panel.bytesPerRow
+        for y in 0..<panelH {
+            let destY = originY + y
+            guard destY >= 0, destY < canvasHeight else { continue }
+            for x in 0..<panelW {
+                let destX = originX + x
+                guard destX >= 0, destX < canvasWidth else { continue }
+                pixels[destY * canvasWidth + destX] = bytes[y * rowBytes + x]
+            }
+        }
+        return solidGrayImage(pixels: pixels, width: canvasWidth, height: canvasHeight)
+    }
+
+    private func solidGray(width: Int, height: Int, level: UInt8) -> CGImage {
+        solidGrayImage(
+            pixels: [UInt8](repeating: level, count: width * height),
+            width: width,
+            height: height
+        )
+    }
+
+    private func crop(_ image: CGImage, x: Int, y: Int, width: Int, height: Int) -> CGImage {
+        var pixels = [UInt8](repeating: 0, count: width * height)
+        guard let provider = image.dataProvider,
+              let data = provider.data,
+              let bytes = CFDataGetBytePtr(data)
+        else {
+            return solidGray(width: width, height: height, level: 0)
+        }
+        let rowBytes = image.bytesPerRow
+        for row in 0..<height {
+            for col in 0..<width {
+                pixels[row * width + col] = bytes[(y + row) * rowBytes + (x + col)]
+            }
+        }
+        return solidGrayImage(pixels: pixels, width: width, height: height)
+    }
+
+    private func solidGrayImage(pixels: [UInt8], width: Int, height: Int) -> CGImage {
+        let data = Data(pixels) as CFData
+        let provider = CGDataProvider(data: data)!
+        return CGImage(
+            width: width,
+            height: height,
+            bitsPerComponent: 8,
+            bitsPerPixel: 8,
+            bytesPerRow: width,
+            space: CGColorSpaceCreateDeviceGray(),
+            bitmapInfo: CGBitmapInfo(rawValue: CGImageAlphaInfo.none.rawValue),
+            provider: provider,
+            decode: nil,
+            shouldInterpolate: false,
+            intent: .defaultIntent
+        )!
     }
 
     private func panel(_ rows: [String]) -> CGImage {
