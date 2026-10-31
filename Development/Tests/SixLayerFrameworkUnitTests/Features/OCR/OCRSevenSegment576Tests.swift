@@ -653,6 +653,29 @@ struct OCRSevenSegment576Tests {
         #expect(raw.extractedText != "32.88\n8.022")
     }
 
+    @Test func exactEmbedCropWithoutLocalizationStillReadsBothRows() {
+        let panelImage = washedBothRowsPanel()
+        #expect(decode(panelImage, maximum: 0).extractedText == "32.88\n8.022")
+        let originX = 180
+        let originY = 420
+        let frame = embed(
+            panelImage,
+            canvasWidth: 1200,
+            canvasHeight: 1600,
+            originX: originX,
+            originY: originY,
+            fill: 180
+        )
+        let exact = crop(
+            frame,
+            x: originX,
+            y: originY,
+            width: panelImage.width,
+            height: panelImage.height
+        )
+        #expect(decode(exact, maximum: 0).extractedText == "32.88\n8.022")
+    }
+
     @Test func localizedDecodeReadsWashedPanelInFullFrame() {
         let frame = embed(
             washedBothRowsPanel(),
@@ -662,6 +685,15 @@ struct OCRSevenSegment576Tests {
             originY: 420,
             fill: 180
         )
+        let region = try #require(SevenSegmentOCR.digitPanelRegion(in: frame))
+        let foundCrop = crop(
+            frame,
+            x: Int(region.minX.rounded(.down)),
+            y: Int(region.minY.rounded(.down)),
+            width: Int(region.width.rounded(.up)),
+            height: Int(region.height.rounded(.up))
+        )
+        #expect(decode(foundCrop, maximum: 0).extractedText == "32.88\n8.022")
         let result = SevenSegmentOCR.decode(
             cgImage: frame,
             deskewMaximumDegrees: 0,
@@ -737,33 +769,24 @@ struct OCRSevenSegment576Tests {
         var pixels = [UInt8](repeating: fill, count: canvasWidth * canvasHeight)
         let panelW = panel.width
         let panelH = panel.height
-        // Copy via a top-left gray bitmap. A default CGContext is bottom-left and
-        // would flip the panel, so localized crops would see inverted strokes.
-        let count = panelW * panelH
-        let pointer = UnsafeMutablePointer<UInt8>.allocate(capacity: count)
-        defer { pointer.deallocate() }
-        pointer.initialize(repeating: 0, count: count)
-        if let context = CGContext(
-            data: pointer,
-            width: panelW,
-            height: panelH,
-            bitsPerComponent: 8,
-            bytesPerRow: panelW,
-            space: CGColorSpaceCreateDeviceGray(),
-            bitmapInfo: CGImageAlphaInfo.none.rawValue
-        ) {
-            context.translateBy(x: 0, y: CGFloat(panelH))
-            context.scaleBy(x: 1, y: -1)
-            context.interpolationQuality = .none
-            context.draw(panel, in: CGRect(x: 0, y: 0, width: panelW, height: panelH))
-            for y in 0..<panelH {
-                let destY = originY + y
-                guard destY >= 0, destY < canvasHeight else { continue }
-                for x in 0..<panelW {
-                    let destX = originX + x
-                    guard destX >= 0, destX < canvasWidth else { continue }
-                    pixels[destY * canvasWidth + destX] = pointer[y * panelW + x]
-                }
+        // Copy the panel's own top-left gray bytes. Avoid CGContext.draw — its
+        // default bitmap orientation flips the fixture and empties localized
+        // decode of an otherwise good ROI.
+        guard let provider = panel.dataProvider,
+              let data = provider.data,
+              CFDataGetLength(data) >= panelW * panelH,
+              let bytes = CFDataGetBytePtr(data)
+        else {
+            return solidGrayImage(pixels: pixels, width: canvasWidth, height: canvasHeight)
+        }
+        let rowBytes = panel.bytesPerRow
+        for y in 0..<panelH {
+            let destY = originY + y
+            guard destY >= 0, destY < canvasHeight else { continue }
+            for x in 0..<panelW {
+                let destX = originX + x
+                guard destX >= 0, destX < canvasWidth else { continue }
+                pixels[destY * canvasWidth + destX] = bytes[y * rowBytes + x]
             }
         }
         return solidGrayImage(pixels: pixels, width: canvasWidth, height: canvasHeight)
@@ -775,6 +798,23 @@ struct OCRSevenSegment576Tests {
             width: width,
             height: height
         )
+    }
+
+    private func crop(_ image: CGImage, x: Int, y: Int, width: Int, height: Int) -> CGImage {
+        var pixels = [UInt8](repeating: 0, count: width * height)
+        guard let provider = image.dataProvider,
+              let data = provider.data,
+              let bytes = CFDataGetBytePtr(data)
+        else {
+            return solidGray(width: width, height: height, level: 0)
+        }
+        let rowBytes = image.bytesPerRow
+        for row in 0..<height {
+            for col in 0..<width {
+                pixels[row * width + col] = bytes[(y + row) * rowBytes + (x + col)]
+            }
+        }
+        return solidGrayImage(pixels: pixels, width: width, height: height)
     }
 
     private func solidGrayImage(pixels: [UInt8], width: Int, height: Int) -> CGImage {
