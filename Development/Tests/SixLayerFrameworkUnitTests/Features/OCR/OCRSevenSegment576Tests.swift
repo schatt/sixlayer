@@ -629,6 +629,11 @@ struct OCRSevenSegment576Tests {
         #expect(region.minY < panelMidY && region.maxY > panelMidY)
         #expect(region.width < CGFloat(frame.width) * 0.85)
         #expect(region.height < CGFloat(frame.height) * 0.85)
+        // Region must track this panel's own box — not a near-full-frame pocket.
+        #expect(abs(region.width - CGFloat(panelImage.width)) < 48)
+        #expect(abs(region.height - CGFloat(panelImage.height)) < 48)
+        #expect(abs(region.minX - CGFloat(originX)) < 24)
+        #expect(abs(region.minY - CGFloat(originY)) < 24)
     }
 
     @Test func fullFrameWithoutLocalizationMissesWashedBothRows() {
