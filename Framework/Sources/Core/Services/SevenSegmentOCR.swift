@@ -97,7 +97,8 @@ public enum SevenSegmentOCR {
     /// Absolute crop rectangles are **per photo**. Reusing one image's rect on
     /// another frame is not a valid test of decode quality (#596).
     public static func digitPanelRegion(in cgImage: CGImage) -> CGRect? {
-        nil
+        guard let gray = GrayBuffer.read(cgImage) else { return nil }
+        return gray.digitPanelBounds()
     }
 
     /// Decode seven-segment glyphs.
@@ -111,20 +112,22 @@ public enum SevenSegmentOCR {
         deskewMaximumDegrees: Double = 3,
         localizeDigitPanel: Bool = false
     ) -> OCRResult {
-        let source: CGImage
-        if localizeDigitPanel,
-           let region = digitPanelRegion(in: cgImage),
-           region.width > 8,
-           region.height > 8,
-           region.width * region.height < CGFloat(cgImage.width * cgImage.height) * 0.85,
-           let cropped = cgImage.cropping(to: region.integral)
-        {
-            source = cropped
-        } else {
-            source = cgImage
-        }
-        guard let gray = GrayBuffer.read(source) else {
+        guard var gray = GrayBuffer.read(cgImage) else {
             return OCRResult(extractedText: "", confidence: 0)
+        }
+        if localizeDigitPanel, let region = gray.digitPanelBounds() {
+            let area = region.width * region.height
+            let full = CGFloat(gray.width * gray.height)
+            if area > 64, area < full * 0.85 {
+                let x0 = Int(region.minX.rounded(.down))
+                let y0 = Int(region.minY.rounded(.down))
+                let x1 = Int(region.maxX.rounded(.up))
+                let y1 = Int(region.maxY.rounded(.up))
+                let cropped = gray.cropped(x0: x0, y0: y0, x1: x1, y1: y1)
+                if cropped.width > 8, cropped.height > 8 {
+                    gray = cropped
+                }
+            }
         }
         let upright = GrayBuffer.deskew(gray, maximumDegrees: deskewMaximumDegrees)
         let fragments = GrayBuffer.fragments(in: upright)
@@ -1058,6 +1061,114 @@ private extension GrayBuffer {
             )
         }
         return GrayBuffer(pixels: out, width: newW, height: newH)
+    }
+
+    /// Locate a sealed LCD glass (non-ink pocket closed by bezel ink) and
+    /// expand by a bezel margin. Returns nil when the frame has no panel that
+    /// is meaningfully smaller than the whole image (#596).
+    func digitPanelBounds() -> CGRect? {
+        let raw = masks()
+        let dark = sealedPanelBounds(in: raw.dark)
+        let light = sealedPanelBounds(in: raw.light)
+        switch (dark, light) {
+        case let (d?, l?):
+            return d.width * d.height >= l.width * l.height ? d : l
+        case let (d?, nil):
+            return d
+        case let (nil, l?):
+            return l
+        case (nil, nil):
+            return nil
+        }
+    }
+
+    private func sealedPanelBounds(in mask: Mask) -> CGRect? {
+        let width = mask.width
+        let height = mask.height
+        let count = width * height
+        guard width > 0, height > 0, mask.bits.count == count else { return nil }
+        var outside = [Bool](repeating: false, count: count)
+        var queue: [Int] = []
+        func push(_ x: Int, _ y: Int) {
+            guard x >= 0, y >= 0, x < width, y < height else { return }
+            let index = y * width + x
+            guard !mask.bits[index], !outside[index] else { return }
+            outside[index] = true
+            queue.append(index)
+        }
+        for x in 0..<width {
+            push(x, 0)
+            push(x, height - 1)
+        }
+        for y in 0..<height {
+            push(0, y)
+            push(width - 1, y)
+        }
+        var head = 0
+        while head < queue.count {
+            let index = queue[head]
+            head += 1
+            let x = index % width
+            let y = index / width
+            push(x - 1, y)
+            push(x + 1, y)
+            push(x, y - 1)
+            push(x, y + 1)
+        }
+        var seen = [Bool](repeating: false, count: count)
+        var bestArea = 0
+        var bestMinX = 0
+        var bestMinY = 0
+        var bestMaxX = 0
+        var bestMaxY = 0
+        for start in 0..<count where !mask.bits[start] && !outside[start] && !seen[start] {
+            var component = [start]
+            seen[start] = true
+            var compHead = 0
+            let sx = start % width
+            let sy = start / width
+            var minX = sx
+            var maxX = sx
+            var minY = sy
+            var maxY = sy
+            while compHead < component.count {
+                let index = component[compHead]
+                compHead += 1
+                let x = index % width
+                let y = index / width
+                minX = min(minX, x)
+                maxX = max(maxX, x)
+                minY = min(minY, y)
+                maxY = max(maxY, y)
+                for (nx, ny) in [(x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)] {
+                    guard nx >= 0, ny >= 0, nx < width, ny < height else { continue }
+                    let next = ny * width + nx
+                    guard !mask.bits[next], !outside[next], !seen[next] else { continue }
+                    seen[next] = true
+                    component.append(next)
+                }
+            }
+            if component.count > bestArea {
+                bestArea = component.count
+                bestMinX = minX
+                bestMinY = minY
+                bestMaxX = maxX
+                bestMaxY = maxY
+            }
+        }
+        // Counter holes inside an 8 are sealed too. Require a glass-sized
+        // pocket that is still clearly smaller than a full-frame photo.
+        let glassW = bestMaxX - bestMinX + 1
+        let glassH = bestMaxY - bestMinY + 1
+        guard bestArea >= max(400, count / 200) else { return nil }
+        guard bestArea * 100 < count * 85 else { return nil }
+        guard glassW >= 40, glassH >= 40 else { return nil }
+        let pad = max(12, min(glassW, glassH) / 16)
+        let x0 = max(0, bestMinX - pad)
+        let y0 = max(0, bestMinY - pad)
+        let x1 = min(width, bestMaxX + 1 + pad)
+        let y1 = min(height, bestMaxY + 1 + pad)
+        return CGRect(x: x0, y: y0, width: x1 - x0, height: y1 - y0)
     }
 
     static func readRows(
