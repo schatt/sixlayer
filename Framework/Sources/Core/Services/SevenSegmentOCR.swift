@@ -2578,7 +2578,7 @@ private func densestInkBand(
     var maxY = profile.lower + end
     let remaining = maxY - minY
     if remaining <= ownCap + max(4, ownCap / 12) {
-        return PixelBox(minX: box.minX, minY: minY, maxX: box.maxX, maxY: maxY)
+        return clamped(minY, maxY)
     }
     let target = min(remaining, ownCap)
     // Pitch volume: keep the top-bar start and take a digit-tall window
@@ -2589,7 +2589,7 @@ private func densestInkBand(
     } else {
         minY = maxY - target
     }
-    return PixelBox(minX: box.minX, minY: minY, maxX: box.maxX, maxY: maxY)
+    return clamped(minY, maxY)
 }
 
 /// Row of the strongest center-span bar in [from, to). Glare that fills the
