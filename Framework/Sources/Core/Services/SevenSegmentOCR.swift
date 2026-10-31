@@ -91,8 +91,39 @@ public enum SevenSegmentGlyph {
 }
 
 public enum SevenSegmentOCR {
-    public static func decode(cgImage: CGImage, deskewMaximumDegrees: Double = 3) -> OCRResult {
-        guard let gray = GrayBuffer.read(cgImage) else {
+    /// Pixel rect of the digit panel (glass plus a bezel margin) in image
+    /// coordinates, or `nil` when no sealed panel is found.
+    ///
+    /// Absolute crop rectangles are **per photo**. Reusing one image's rect on
+    /// another frame is not a valid test of decode quality (#596).
+    public static func digitPanelRegion(in cgImage: CGImage) -> CGRect? {
+        nil
+    }
+
+    /// Decode seven-segment glyphs.
+    ///
+    /// When `localizeDigitPanel` is true, a sealed digit panel is located and
+    /// cropped before decode so a resized full pump frame can feed `.ssocr`
+    /// without a hand-tuned ROI (#596). Tight crops keep working: a missing or
+    /// near-full-frame region falls back to the whole image.
+    public static func decode(
+        cgImage: CGImage,
+        deskewMaximumDegrees: Double = 3,
+        localizeDigitPanel: Bool = false
+    ) -> OCRResult {
+        let source: CGImage
+        if localizeDigitPanel,
+           let region = digitPanelRegion(in: cgImage),
+           region.width > 8,
+           region.height > 8,
+           region.width * region.height < CGFloat(cgImage.width * cgImage.height) * 0.85,
+           let cropped = cgImage.cropping(to: region.integral)
+        {
+            source = cropped
+        } else {
+            source = cgImage
+        }
+        guard let gray = GrayBuffer.read(source) else {
             return OCRResult(extractedText: "", confidence: 0)
         }
         let upright = GrayBuffer.deskew(gray, maximumDegrees: deskewMaximumDegrees)
