@@ -550,13 +550,15 @@ private struct GrayBuffer {
             let comma = box.maxY > baseline + max(2, digitHeight / 12)
             return Cell(box: box, character: comma ? "," : ".", confidence: 1, band: bandIndex)
         }
-        // Clamp to the mask. frameTop + digitHeight can sit past the buffer
-        // when tall empty columns inflate digitHeight on a bad ROI (#597).
+        // Do not clamp this frame to the mask. Washed bezels inflate
+        // digitHeight so frameTop + digitHeight can sit past the buffer;
+        // shortening the frame misreads good crops (#596 after #597).
+        // Bad-ROI safety is the empty-scan guards in foregroundCount (#597).
         let frame = PixelBox(
             minX: box.midX - max(digitWidth, box.width) / 2,
-            minY: max(0, frameTop),
+            minY: frameTop,
             maxX: box.midX + max(digitWidth, box.width) / 2,
-            maxY: min(mask.height, frameTop + max(digitHeight, 1))
+            maxY: frameTop + max(digitHeight, 1)
         )
         if box.height * 100 < digitHeight * 70, coverage(mask, box: frame, width: width) > solidCoverage {
             return nil
