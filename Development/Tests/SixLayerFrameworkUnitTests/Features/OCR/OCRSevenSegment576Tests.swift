@@ -647,7 +647,6 @@ struct OCRSevenSegment576Tests {
         )
         let raw = SevenSegmentOCR.decode(
             cgImage: frame,
-            deskewMaximumDegrees: 0,
             localizeDigitPanel: false
         )
         #expect(raw.extractedText != "32.88\n8.022")
