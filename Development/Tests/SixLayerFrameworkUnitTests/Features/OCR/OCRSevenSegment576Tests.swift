@@ -676,7 +676,7 @@ struct OCRSevenSegment576Tests {
         #expect(decode(exact, maximum: 0).extractedText == "32.88\n8.022")
     }
 
-    @Test func localizedDecodeReadsWashedPanelInFullFrame() {
+    @Test func localizedDecodeReadsWashedPanelInFullFrame() throws {
         let frame = embed(
             washedBothRowsPanel(),
             canvasWidth: 1200,
