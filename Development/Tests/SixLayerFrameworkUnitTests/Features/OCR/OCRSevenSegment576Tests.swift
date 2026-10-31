@@ -737,6 +737,8 @@ struct OCRSevenSegment576Tests {
         var pixels = [UInt8](repeating: fill, count: canvasWidth * canvasHeight)
         let panelW = panel.width
         let panelH = panel.height
+        // Copy via a top-left gray bitmap. A default CGContext is bottom-left and
+        // would flip the panel, so localized crops would see inverted strokes.
         let count = panelW * panelH
         let pointer = UnsafeMutablePointer<UInt8>.allocate(capacity: count)
         defer { pointer.deallocate() }
@@ -750,6 +752,8 @@ struct OCRSevenSegment576Tests {
             space: CGColorSpaceCreateDeviceGray(),
             bitmapInfo: CGImageAlphaInfo.none.rawValue
         ) {
+            context.translateBy(x: 0, y: CGFloat(panelH))
+            context.scaleBy(x: 1, y: -1)
             context.interpolationQuality = .none
             context.draw(panel, in: CGRect(x: 0, y: 0, width: panelW, height: panelH))
             for y in 0..<panelH {
