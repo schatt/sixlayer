@@ -91,9 +91,43 @@ public enum SevenSegmentGlyph {
 }
 
 public enum SevenSegmentOCR {
-    public static func decode(cgImage: CGImage, deskewMaximumDegrees: Double = 3) -> OCRResult {
-        guard let gray = GrayBuffer.read(cgImage) else {
+    /// Pixel rect of the digit panel (glass plus a bezel margin) in image
+    /// coordinates, or `nil` when no sealed panel is found.
+    ///
+    /// Absolute crop rectangles are **per photo**. Reusing one image's rect on
+    /// another frame is not a valid test of decode quality (#596).
+    public static func digitPanelRegion(in cgImage: CGImage) -> CGRect? {
+        guard let gray = GrayBuffer.read(cgImage) else { return nil }
+        return gray.digitPanelBounds()
+    }
+
+    /// Decode seven-segment glyphs.
+    ///
+    /// When `localizeDigitPanel` is true, a sealed digit panel is located and
+    /// cropped before decode so a resized full pump frame can feed `.ssocr`
+    /// without a hand-tuned ROI (#596). Tight crops keep working: a missing or
+    /// near-full-frame region falls back to the whole image.
+    public static func decode(
+        cgImage: CGImage,
+        deskewMaximumDegrees: Double = 3,
+        localizeDigitPanel: Bool = false
+    ) -> OCRResult {
+        guard var gray = GrayBuffer.read(cgImage) else {
             return OCRResult(extractedText: "", confidence: 0)
+        }
+        if localizeDigitPanel, let region = gray.digitPanelBounds() {
+            let area = region.width * region.height
+            let full = CGFloat(gray.width * gray.height)
+            if area > 64, area < full * 0.85 {
+                let x0 = Int(region.minX.rounded(.down))
+                let y0 = Int(region.minY.rounded(.down))
+                let x1 = Int(region.maxX.rounded(.up))
+                let y1 = Int(region.maxY.rounded(.up))
+                let cropped = gray.cropped(x0: x0, y0: y0, x1: x1, y1: y1)
+                if cropped.width > 8, cropped.height > 8 {
+                    gray = cropped
+                }
+            }
         }
         let upright = GrayBuffer.deskew(gray, maximumDegrees: deskewMaximumDegrees)
         let fragments = GrayBuffer.fragments(in: upright)
@@ -516,13 +550,15 @@ private struct GrayBuffer {
             let comma = box.maxY > baseline + max(2, digitHeight / 12)
             return Cell(box: box, character: comma ? "," : ".", confidence: 1, band: bandIndex)
         }
-        // Clamp to the mask. frameTop + digitHeight can sit past the buffer
-        // when tall empty columns inflate digitHeight on a bad ROI (#597).
+        // Do not clamp this frame to the mask. Washed bezels inflate
+        // digitHeight so frameTop + digitHeight can sit past the buffer;
+        // shortening the frame misreads good crops (#596 after #597).
+        // Bad-ROI safety is the empty-scan guards in foregroundCount (#597).
         let frame = PixelBox(
             minX: box.midX - max(digitWidth, box.width) / 2,
-            minY: max(0, frameTop),
+            minY: frameTop,
             maxX: box.midX + max(digitWidth, box.width) / 2,
-            maxY: min(mask.height, frameTop + max(digitHeight, 1))
+            maxY: frameTop + max(digitHeight, 1)
         )
         if box.height * 100 < digitHeight * 70, coverage(mask, box: frame, width: width) > solidCoverage {
             return nil
@@ -1029,6 +1065,114 @@ private extension GrayBuffer {
             )
         }
         return GrayBuffer(pixels: out, width: newW, height: newH)
+    }
+
+    /// Locate a sealed LCD glass (non-ink pocket closed by bezel ink) and
+    /// expand by a bezel margin. Returns nil when the frame has no panel that
+    /// is meaningfully smaller than the whole image (#596).
+    func digitPanelBounds() -> CGRect? {
+        let raw = masks()
+        let dark = sealedPanelBounds(in: raw.dark)
+        let light = sealedPanelBounds(in: raw.light)
+        switch (dark, light) {
+        case let (d?, l?):
+            return d.width * d.height >= l.width * l.height ? d : l
+        case let (d?, nil):
+            return d
+        case let (nil, l?):
+            return l
+        case (nil, nil):
+            return nil
+        }
+    }
+
+    private func sealedPanelBounds(in mask: Mask) -> CGRect? {
+        let width = mask.width
+        let height = mask.height
+        let count = width * height
+        guard width > 0, height > 0, mask.bits.count == count else { return nil }
+        var outside = [Bool](repeating: false, count: count)
+        var queue: [Int] = []
+        func push(_ x: Int, _ y: Int) {
+            guard x >= 0, y >= 0, x < width, y < height else { return }
+            let index = y * width + x
+            guard !mask.bits[index], !outside[index] else { return }
+            outside[index] = true
+            queue.append(index)
+        }
+        for x in 0..<width {
+            push(x, 0)
+            push(x, height - 1)
+        }
+        for y in 0..<height {
+            push(0, y)
+            push(width - 1, y)
+        }
+        var head = 0
+        while head < queue.count {
+            let index = queue[head]
+            head += 1
+            let x = index % width
+            let y = index / width
+            push(x - 1, y)
+            push(x + 1, y)
+            push(x, y - 1)
+            push(x, y + 1)
+        }
+        var seen = [Bool](repeating: false, count: count)
+        var bestArea = 0
+        var bestMinX = 0
+        var bestMinY = 0
+        var bestMaxX = 0
+        var bestMaxY = 0
+        for start in 0..<count where !mask.bits[start] && !outside[start] && !seen[start] {
+            var component = [start]
+            seen[start] = true
+            var compHead = 0
+            let sx = start % width
+            let sy = start / width
+            var minX = sx
+            var maxX = sx
+            var minY = sy
+            var maxY = sy
+            while compHead < component.count {
+                let index = component[compHead]
+                compHead += 1
+                let x = index % width
+                let y = index / width
+                minX = min(minX, x)
+                maxX = max(maxX, x)
+                minY = min(minY, y)
+                maxY = max(maxY, y)
+                for (nx, ny) in [(x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)] {
+                    guard nx >= 0, ny >= 0, nx < width, ny < height else { continue }
+                    let next = ny * width + nx
+                    guard !mask.bits[next], !outside[next], !seen[next] else { continue }
+                    seen[next] = true
+                    component.append(next)
+                }
+            }
+            if component.count > bestArea {
+                bestArea = component.count
+                bestMinX = minX
+                bestMinY = minY
+                bestMaxX = maxX
+                bestMaxY = maxY
+            }
+        }
+        // Counter holes inside an 8 are sealed too. Require a glass-sized
+        // pocket that is still clearly smaller than a full-frame photo.
+        let glassW = bestMaxX - bestMinX + 1
+        let glassH = bestMaxY - bestMinY + 1
+        guard bestArea >= max(400, count / 200) else { return nil }
+        guard bestArea * 100 < count * 85 else { return nil }
+        guard glassW >= 40, glassH >= 40 else { return nil }
+        let pad = max(12, min(glassW, glassH) / 16)
+        let x0 = max(0, bestMinX - pad)
+        let y0 = max(0, bestMinY - pad)
+        let x1 = min(width, bestMaxX + 1 + pad)
+        let y1 = min(height, bestMaxY + 1 + pad)
+        return CGRect(x: x0, y: y0, width: x1 - x0, height: y1 - y0)
     }
 
     static func readRows(
@@ -2524,18 +2668,13 @@ private func densestInkBand(
     let profile = rowInkSums(mask, x0: box.minX, x1: box.maxX, y0: box.minY, y1: box.maxY)
     let sums = profile.sums
     let height = sums.count
-    // Always return a Y span inside the mask. An oversize caller box
-    // (frameTop + digitHeight on a bad ROI) must not escape (#597).
-    func clamped(_ minY: Int, _ maxY: Int) -> PixelBox {
-        PixelBox(minX: box.minX, minY: minY, maxX: box.maxX, maxY: maxY)
-    }
-    func clampedProfile() -> PixelBox {
-        clamped(profile.lower, profile.lower + height)
-    }
-    guard height > 2 else { return clampedProfile() }
+    // Return the caller box on early exits (pre-#597). Replacing it with the
+    // profile span broke washed bezel crops (#596). Bad-ROI Range safety is
+    // foregroundCount's empty-scan guards, not rewriting these returns.
+    guard height > 2 else { return box }
     // A one is a tall stem. Leave it alone; aspect math is for wide glyphs.
     if box.width * 4 < height {
-        return clampedProfile()
+        return box
     }
     // Cap by this box's width. A broken 3 can tighten narrowly; then the
     // median digit width decides whether it is still a normal-height glyph.
@@ -2547,7 +2686,7 @@ private func densestInkBand(
     // bar" misreads the mid-row glare fixture as a colon. Pitch volume rows
     // opt in via forceDigitTall even when already under the aspect cap.
     if !forceDigitTall, height <= earlyCap + slack {
-        return clampedProfile()
+        return box
     }
     var start = 0
     var end = height
@@ -2578,7 +2717,7 @@ private func densestInkBand(
     var maxY = profile.lower + end
     let remaining = maxY - minY
     if remaining <= ownCap + max(4, ownCap / 12) {
-        return clamped(minY, maxY)
+        return PixelBox(minX: box.minX, minY: minY, maxX: box.maxX, maxY: maxY)
     }
     let target = min(remaining, ownCap)
     // Pitch volume: keep the top-bar start and take a digit-tall window
@@ -2589,7 +2728,7 @@ private func densestInkBand(
     } else {
         minY = maxY - target
     }
-    return clamped(minY, maxY)
+    return PixelBox(minX: box.minX, minY: minY, maxX: box.maxX, maxY: maxY)
 }
 
 /// Row of the strongest center-span bar in [from, to). Glare that fills the
