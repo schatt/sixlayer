@@ -2668,18 +2668,13 @@ private func densestInkBand(
     let profile = rowInkSums(mask, x0: box.minX, x1: box.maxX, y0: box.minY, y1: box.maxY)
     let sums = profile.sums
     let height = sums.count
-    // Always return a Y span inside the mask. An oversize caller box
-    // (frameTop + digitHeight on a bad ROI) must not escape (#597).
-    func clamped(_ minY: Int, _ maxY: Int) -> PixelBox {
-        PixelBox(minX: box.minX, minY: minY, maxX: box.maxX, maxY: maxY)
-    }
-    func clampedProfile() -> PixelBox {
-        clamped(profile.lower, profile.lower + height)
-    }
-    guard height > 2 else { return clampedProfile() }
+    // Return the caller box on early exits (pre-#597). Replacing it with the
+    // profile span broke washed bezel crops (#596). Bad-ROI Range safety is
+    // foregroundCount's empty-scan guards, not rewriting these returns.
+    guard height > 2 else { return box }
     // A one is a tall stem. Leave it alone; aspect math is for wide glyphs.
     if box.width * 4 < height {
-        return clampedProfile()
+        return box
     }
     // Cap by this box's width. A broken 3 can tighten narrowly; then the
     // median digit width decides whether it is still a normal-height glyph.
@@ -2691,7 +2686,7 @@ private func densestInkBand(
     // bar" misreads the mid-row glare fixture as a colon. Pitch volume rows
     // opt in via forceDigitTall even when already under the aspect cap.
     if !forceDigitTall, height <= earlyCap + slack {
-        return clampedProfile()
+        return box
     }
     var start = 0
     var end = height
@@ -2722,7 +2717,7 @@ private func densestInkBand(
     var maxY = profile.lower + end
     let remaining = maxY - minY
     if remaining <= ownCap + max(4, ownCap / 12) {
-        return clamped(minY, maxY)
+        return PixelBox(minX: box.minX, minY: minY, maxX: box.maxX, maxY: maxY)
     }
     let target = min(remaining, ownCap)
     // Pitch volume: keep the top-bar start and take a digit-tall window
@@ -2733,7 +2728,7 @@ private func densestInkBand(
     } else {
         minY = maxY - target
     }
-    return clamped(minY, maxY)
+    return PixelBox(minX: box.minX, minY: minY, maxX: box.maxX, maxY: maxY)
 }
 
 /// Row of the strongest center-span bar in [from, to). Glare that fills the
