@@ -388,6 +388,22 @@ struct OCRSevenSegment576Tests {
         #expect(!source.localizedCaseInsensitiveContains("imlib"))
     }
 
+    @Test func mismatchedRoiDoesNotTrapRangeInvariant() throws {
+        // #597: a bad / mismatched ROI must not fatalError with
+        // "Range requires lowerBound <= upperBound". Fixture is a synthetic
+        // 400x220 luminance field (not a production photo) that previously
+        // trapped during standingUp's quarter-turn score.
+        let url = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent()
+            .appendingPathComponent("BadROIRangeCrash597.png")
+        let data = try Data(contentsOf: url)
+        let image = try #require(PlatformImage.cgImage(opening: data))
+        let result = decode(image, maximum: 0)
+        // Controlled empty or garbage is fine — only the trap is forbidden.
+        #expect(result.confidence >= 0)
+        #expect(result.extractedText.count >= 0)
+    }
+
     // MARK: - Label binding
 
     @Test func overlapDropsOnlyALargeIntersection() {
