@@ -1,4 +1,9 @@
 import SwiftUI
+#if canImport(UIKit) && !os(watchOS)
+import UIKit
+#elseif canImport(AppKit)
+import AppKit
+#endif
 #if canImport(CoreData)
 import CoreData
 #endif
@@ -1493,6 +1498,54 @@ public extension View {
     }
 }
 
+// MARK: - Type-Only Creation Failure
+
+/// Visible failure for a type-only form that could not create an entity (#601).
+/// A platform label keeps the message in the hosted view tree. SwiftUI `Text` on
+/// this OS is a drawing layer and does not show the string there.
+#if canImport(UIKit) && !os(watchOS)
+private struct CreationFailureMessage: UIViewRepresentable {
+    let text: String
+
+    func makeUIView(context: Context) -> UILabel {
+        let label = UILabel()
+        label.numberOfLines = 0
+        label.text = text
+        label.accessibilityIdentifier = "IntelligentFormView.creationFailed"
+        return label
+    }
+
+    func updateUIView(_ label: UILabel, context: Context) {
+        label.text = text
+        label.accessibilityIdentifier = "IntelligentFormView.creationFailed"
+    }
+}
+#elseif canImport(AppKit)
+private struct CreationFailureMessage: NSViewRepresentable {
+    let text: String
+
+    func makeNSView(context: Context) -> NSTextField {
+        let field = NSTextField(labelWithString: text)
+        field.setAccessibilityIdentifier("IntelligentFormView.creationFailed")
+        return field
+    }
+
+    func updateNSView(_ field: NSTextField, context: Context) {
+        field.stringValue = text
+        field.setAccessibilityIdentifier("IntelligentFormView.creationFailed")
+    }
+}
+#else
+private struct CreationFailureMessage: View {
+    let text: String
+
+    var body: some View {
+        Text(text)
+            .accessibilityIdentifier("IntelligentFormView.creationFailed")
+    }
+}
+#endif
+
 // MARK: - Type-Only Form Wrapper
 
 /// Wrapper view for type-only form generation (new object creation)
@@ -1522,6 +1575,8 @@ private struct TypeOnlyFormWrapper<T>: View {
     // State to hold the created entity
     @State private var createdEntity: T?
     @State private var isNewEntity: Bool = true // Track if entity should be deleted on cancel
+    /// Model name when both Core Data and SwiftData creation returned nil (#601).
+    @State private var creationErrorModelName: String?
     
     var body: some View {
         Group {
@@ -1540,6 +1595,8 @@ private struct TypeOnlyFormWrapper<T>: View {
                     isDraft: isNewEntity, // Mark as draft if it's a new entity
                     autoSaveInterval: 30.0 // Auto-save every 30 seconds
                 )
+            } else if let creationErrorModelName {
+                creationFailureContent(modelName: creationErrorModelName)
             } else {
                 // Creating entity...
                 ProgressView("Creating form...")
@@ -1575,8 +1632,16 @@ private struct TypeOnlyFormWrapper<T>: View {
         }
         #endif
         
-        // If we can't create an entity, show error
-        // (This shouldn't happen if hints are fully declarative)
+        creationErrorModelName = modelName
+    }
+
+    @ViewBuilder
+    private func creationFailureContent(modelName: String) -> some View {
+        let message = InternationalizationService().localizedString(
+            for: "SixLayerFramework.form.entityCreationFailed",
+            arguments: [modelName]
+        )
+        CreationFailureMessage(text: message)
     }
     
     #if canImport(CoreData)
