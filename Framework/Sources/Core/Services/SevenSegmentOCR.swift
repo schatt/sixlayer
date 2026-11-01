@@ -1258,7 +1258,13 @@ private extension GrayBuffer {
         // A window that fits inside a stroke drops the middle of the bar,
         // so a row that is already on the small window stays on this mask.
         if splittingRows, splitBands.count > 1 {
+            if buffer.width > 200 {
+                SevenSegmentOCR.rowSplitNote = "read \(buffer.width)x\(buffer.height) bands \(splitBands.count)"
+            }
             let span = readingSpan(glyphs, bands: splitBands)
+            if buffer.width > 200 {
+                SevenSegmentOCR.rowSplitNote += " span \(String(describing: span))"
+            }
             let parentRadius = windowRadius(width: buffer.width, height: buffer.height)
             if buffer.width >= 1000 {
                 trace("span \(String(describing: span)) radius \(parentRadius)\n")
@@ -1774,10 +1780,6 @@ private func readingSpan(_ mask: Mask, bands: [(Int, Int)]) -> (Int, Int)? {
         }
     }
     runs.append(current)
-    if height > 700 {
-        let listed = runs.map { "\($0.start)-\($0.end) ink \($0.ink)" }.joined(separator: ", ")
-        SevenSegmentOCR.rowSplitNote = "h \(height) runs \(listed)"
-    }
     guard let best = runs.max(by: { $0.ink < $1.ink }) else { return nil }
     let span = best.end - best.start
     guard span > max(12, height / 10) else { return nil }
