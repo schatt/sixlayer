@@ -1276,6 +1276,17 @@ private extension GrayBuffer {
             : (bandsForSplit.count > foundBands.count
                 ? bandsForSplit
                 : merge(bandsForSplit, whenGapBelow: max(1, cellHeight / 2)))
+        if ocrNotePolarity, SevenSegmentOCR.diagnosticNotes.count < 12 {
+            let raw = runs(bandSource.rowSums).map { "\($0.0)-\($0.1)" }.joined(separator: ",")
+            let listed = splitBands.map { "\($0.0)-\($0.1)" }.joined(separator: ",")
+            let mid = bandSource.height / 2
+            let top = bandSource.rowSums.prefix(mid).reduce(0, +)
+            let bot = bandSource.rowSums.dropFirst(mid).reduce(0, +)
+            let chars = measured.map { String($0.cells.map(\.character)) }.joined(separator: "|")
+            SevenSegmentOCR.diagnosticNotes.append(
+                "raw \(raw) split \(listed) ink \(top)/\(bot) chars \(chars)"
+            )
+        }
         if buffer.width >= 1000 {
             let listed = splitBands.map { "\($0.0)-\($0.1)" }.joined(separator: ",")
             trace("bands \(listed)\n")
