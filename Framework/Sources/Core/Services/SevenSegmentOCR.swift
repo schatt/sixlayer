@@ -1772,6 +1772,10 @@ private func readingSpan(_ mask: Mask, bands: [(Int, Int)]) -> (Int, Int)? {
         }
     }
     runs.append(current)
+    if height > 700 {
+        let listed = runs.map { "\($0.start)-\($0.end) ink \($0.ink)" }.joined(separator: ", ")
+        try? "h \(height) runs \(listed)\n".write(toFile: "/tmp/607-span.txt", atomically: true, encoding: .utf8)
+    }
     guard let best = runs.max(by: { $0.ink < $1.ink }) else { return nil }
     let span = best.end - best.start
     guard span > max(12, height / 10) else { return nil }
