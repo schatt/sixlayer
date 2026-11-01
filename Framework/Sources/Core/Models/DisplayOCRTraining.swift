@@ -204,9 +204,13 @@ public enum DisplayOCRTraining {
     public static let labelFileName = "label.json"
 
     /// A display name with no path. Nil for empty, `.`, or `..`.
+    ///
+    /// Path components are taken from the string. `URL(fileURLWithPath:)` is
+    /// not used: it resolves `..` against the process working directory.
     public static func sanitizedSourceName(_ raw: String?) -> String? {
         guard let raw else { return nil }
-        let base = URL(fileURLWithPath: raw).lastPathComponent
+        let base = (raw as NSString).lastPathComponent
+        if base == "." || base == ".." { return nil }
         let allowed = CharacterSet.alphanumerics.union(CharacterSet(charactersIn: ".-_ "))
         let scalars = base.unicodeScalars.filter { allowed.contains($0) }
         let name = String(String.UnicodeScalarView(scalars))
