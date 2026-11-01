@@ -9,11 +9,6 @@
 import Foundation
 import SwiftUI
 import Testing
-#if canImport(UIKit)
-import UIKit
-#elseif canImport(AppKit)
-import AppKit
-#endif
 @testable import SixLayerFramework
 
 private struct TypeOnlyCreationProbe601 {
@@ -43,10 +38,11 @@ struct TypeOnlyFormCreationFailureTests {
             forceLayout: true,
             exposeContentAccessibility: true
         )
-        let snapshot = hostedAccessibilityText(hosted as Any)
+        let identifiers = findAllAccessibilityIdentifiersFromPlatformView(hosted)
+        let label = firstAccessibilityLabel(inHosted: hosted) ?? ""
         #expect(
-            snapshot.contains("IntelligentFormView.creationFailed"),
-            "Type-only creation failure stayed on the spinner. Snapshot: \(snapshot)"
+            identifiers.contains("IntelligentFormView.creationFailed"),
+            "Type-only creation failure stayed on the spinner. identifiers=\(identifiers) label=\(label)"
         )
     }
     #endif
@@ -91,52 +87,4 @@ private func viewTreeContainsTypeName(_ value: Any, fragment: String, depth: Int
         }
     }
     return false
-}
-
-@MainActor
-private func hostedAccessibilityText(_ value: Any?) -> String {
-    guard let value else { return "" }
-    var parts: [String] = []
-    collectHostedAccessibilityText(value, into: &parts, depth: 0)
-    return parts.joined(separator: "\n")
-}
-
-@MainActor
-private func collectHostedAccessibilityText(_ value: Any, into parts: inout [String], depth: Int) {
-    if depth > 12 { return }
-    #if canImport(UIKit)
-    if let view = value as? UIView {
-        if let identifier = view.accessibilityIdentifier {
-            parts.append(identifier)
-        }
-        if let label = view.accessibilityLabel {
-            parts.append(label)
-        }
-        if let label = view as? UILabel, let text = label.text {
-            parts.append(text)
-        }
-        for subview in view.subviews {
-            collectHostedAccessibilityText(subview, into: &parts, depth: depth + 1)
-        }
-        return
-    }
-    #elseif canImport(AppKit)
-    if let view = value as? NSView {
-        let identifier = view.accessibilityIdentifier()
-        if !identifier.isEmpty {
-            parts.append(identifier)
-        }
-        let label = view.accessibilityLabel()
-        if !label.isEmpty {
-            parts.append(label)
-        }
-        if let field = view as? NSTextField {
-            parts.append(field.stringValue)
-        }
-        for subview in view.subviews {
-            collectHostedAccessibilityText(subview, into: &parts, depth: depth + 1)
-        }
-        return
-    }
-    #endif
 }
