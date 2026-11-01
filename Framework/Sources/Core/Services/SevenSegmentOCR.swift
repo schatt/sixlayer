@@ -91,6 +91,10 @@ public enum SevenSegmentGlyph {
 }
 
 public enum SevenSegmentOCR {
+    /// Temporary sample notes for the #599 speck diagnosis. Cleared at the
+    /// start of each decode.
+    static var diagnosticNotes: [String] = []
+
     /// Pixel rect of the digit panel (glass plus a bezel margin) in image
     /// coordinates, or `nil` when no sealed panel is found.
     ///
@@ -112,6 +116,7 @@ public enum SevenSegmentOCR {
         deskewMaximumDegrees: Double = 3,
         localizeDigitPanel: Bool = false
     ) -> OCRResult {
+        diagnosticNotes = []
         guard var gray = GrayBuffer.read(cgImage) else {
             return OCRResult(extractedText: "", confidence: 0)
         }
@@ -603,8 +608,18 @@ private struct GrayBuffer {
             pattern.contains(.f) ? "f" : "-",
             pattern.contains(.g) ? "g" : "-"
         ].joined()
-        trace(
-            "classify \(glyph.character) pat \(bits) box \(box.minX),\(box.minY) \(box.width)x\(box.height) trimmed \(trimmed.minX),\(trimmed.minY) \(trimmed.width)x\(trimmed.height) sampled \(sampledBox.minX),\(sampledBox.minY) \(sampledBox.width)x\(sampledBox.height)\n"
+        let third = max(1, trimmed.height / 3)
+        let mid = trimmed.minX + trimmed.width / 2
+        let aRun = longestForegroundRun(mask, x: mid, y: trimmed.minY, length: third, vertical: true)
+        let dRun = longestForegroundRun(
+            mask,
+            x: mid,
+            y: trimmed.minY + third * 2,
+            length: max(1, trimmed.maxY - (trimmed.minY + third * 2)),
+            vertical: true
+        )
+        SevenSegmentOCR.diagnosticNotes.append(
+            "\(glyph.character) \(bits) box \(box.minX),\(box.minY) \(box.width)x\(box.height) trimmed \(trimmed.minX),\(trimmed.minY) \(trimmed.width)x\(trimmed.height) aRun \(aRun)/\(third) dRun \(dRun) buf \(buffer.width)x\(buffer.height)"
         )
         return Cell(box: box, character: glyph.character, confidence: glyph.confidence, band: bandIndex)
     }
