@@ -153,6 +153,7 @@ struct OCRSevenSegment576Tests {
             tallHaze: true
         )
         #expect(decode(image, maximum: 0).extractedText == "32.88\n8.022")
+        #expect(SevenSegmentOCR.rowSplitNote == "see")
     }
 
     @Test func wideGapSplitsGroupsAndAnEqualGapDoesNot() {
