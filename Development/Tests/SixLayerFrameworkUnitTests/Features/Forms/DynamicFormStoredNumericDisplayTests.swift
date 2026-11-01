@@ -132,6 +132,16 @@ open class DynamicFormStoredNumericDisplayTests: BaseTestClass {
         #expect(state.getValue(for: "odometer") as Int? == 12345)
     }
 
+    @Test @MainActor func binding_unfocusedStaleStringDoesNotReplaceStoredNSNumber() {
+        let (field, state) = numberField("fuelCost")
+        state.focusedFieldId = "gallons"
+        state.setValue(NSNumber(value: 33.24), for: "fuelCost")
+
+        field.numericTextBinding(formState: state).wrappedValue = "21.82"
+
+        #expect(state.getValue(for: "fuelCost") as NSNumber? == NSNumber(value: 33.24))
+    }
+
     @Test @MainActor func binding_focusedFieldReplacesStoredDouble() {
         let (field, state) = numberField("fuelCost")
         state.focusedFieldId = "fuelCost"
