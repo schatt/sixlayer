@@ -20,7 +20,7 @@ import SwiftData
 public enum EntityCreationUtilities {
 
     #if canImport(CoreData)
-    /// `insertNewObject` cannot create this name in this context (#606).
+    /// This context cannot insert the named Core Data entity (#606).
     public enum CoreDataCreationError: Error, Equatable, LocalizedError {
         case unavailable(entityName: String)
 
@@ -122,9 +122,8 @@ public enum EntityCreationUtilities {
         return entity
     }
 
-    /// Entity description that can be inserted, or nil when lookup itself would raise.
-    /// `entity(forEntityName:in:)` raises if `persistentStoreCoordinator` is nil, and
-    /// `insertNewObject` raises for a nil coordinator or an unknown name.
+    /// Description safe to insert, or nil when the context has no coordinator or the name
+    /// is absent from the model. Name lookup raises if `persistentStoreCoordinator` is nil.
     private static func insertableEntity(
         named entityName: String,
         in context: NSManagedObjectContext
