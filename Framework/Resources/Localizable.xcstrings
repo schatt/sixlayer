@@ -30272,6 +30272,193 @@
         }
       }
     },
+    "SixLayerFramework.ocr.training.clearRows" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clear rows"
+          }
+        }
+      }
+    },
+    "SixLayerFramework.ocr.training.confirmed" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Confirmed"
+          }
+        }
+      }
+    },
+    "SixLayerFramework.ocr.training.decode" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Decode"
+          }
+        }
+      }
+    },
+    "SixLayerFramework.ocr.training.decoded" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Decoded"
+          }
+        }
+      }
+    },
+    "SixLayerFramework.ocr.training.draw" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Draw"
+          }
+        }
+      }
+    },
+    "SixLayerFramework.ocr.training.export" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Export package"
+          }
+        }
+      }
+    },
+    "SixLayerFramework.ocr.training.exportFailed" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Could not export the package."
+          }
+        }
+      }
+    },
+    "SixLayerFramework.ocr.training.exported" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exported"
+          }
+        }
+      }
+    },
+    "SixLayerFramework.ocr.training.fullFrame" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Full frame"
+          }
+        }
+      }
+    },
+    "SixLayerFramework.ocr.training.loadFile" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Load file"
+          }
+        }
+      }
+    },
+    "SixLayerFramework.ocr.training.needsPanel" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Draw a panel around the display."
+          }
+        }
+      }
+    },
+    "SixLayerFramework.ocr.training.noImage" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Load a pump or display photo."
+          }
+        }
+      }
+    },
+    "SixLayerFramework.ocr.training.panel" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Panel"
+          }
+        }
+      }
+    },
+    "SixLayerFramework.ocr.training.photoLibrary" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Photo library"
+          }
+        }
+      }
+    },
+    "SixLayerFramework.ocr.training.row" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Row"
+          }
+        }
+      }
+    },
+    "SixLayerFramework.ocr.training.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Display training"
+          }
+        }
+      }
+    },
+    "SixLayerFramework.ocr.training.unreadable" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Could not read that image."
+          }
+        }
+      }
+    },
     "SixLayerFramework.ocr.unsupportedPlatform" : {
       "extractionState" : "manual",
       "localizations" : {
