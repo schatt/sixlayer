@@ -92,7 +92,7 @@ public enum SevenSegmentGlyph {
 
 public enum SevenSegmentOCR {
     /// Temporary row-split probe for #607. Removed once the failing fixture is known.
-    static var rowSplitNote: String = ""
+    nonisolated(unsafe) static var rowSplitNote: String = ""
 
     /// Pixel rect of the digit panel (glass plus a bezel margin) in image
     /// coordinates, or `nil` when no sealed panel is found.
