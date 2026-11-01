@@ -180,14 +180,13 @@ struct OCRSevenSegment576Tests {
         let image = SegmentPanel.render(
             rows: [atoms("3 3 3 3"), atoms("3 3 3 3")],
             outerMargin: 80,
-            glyphStroke: 4,
-            glyphWidth: 400,
-            glyphHeight: 720
+            glyphStroke: 4
         )
         let lines = decode(image, maximum: 0).extractedText
             .split(separator: "\n", omittingEmptySubsequences: false)
             .map { $0.filter(\.isNumber) }
         #expect(lines == ["3333", "3333"])
+        #expect(SevenSegmentOCR.rowSplitNote == "see")
     }
 
     @Test func paddedCanvasKeepsTheSameGroupsAndRows() {
