@@ -138,6 +138,8 @@ struct OCRSevenSegment576Tests {
         // A 4 has no bottom bar. One pixel on the center column in the lower
         // third lights `d` when any foreground pixel counts, and `4`+`d` ties
         // `9` (#599).
+        let plain = SegmentPanel.render(rows: [[.digit(digit(4))]])
+        #expect(decode(plain, maximum: 0).extractedText == "4")
         let speck = SegmentPanel.render(
             rows: [[.digit(digit(4))]],
             falseBottomBarSpeck: true
