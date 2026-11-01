@@ -405,6 +405,33 @@ private struct GrayBuffer {
                     "cell \(name) box \(box.minX),\(box.minY) \(box.width)x\(box.height) pat \(pattern.rawValue) [\(bits)] cov \(cover) h \(digitHeight)\(pitchNote)\n"
                 )
             }
+            if buffer.width < 420, SevenSegmentOCR.diagnosticNotes.count < 16 {
+                let pattern = sample(
+                    mask,
+                    box: densestInkBand(
+                        mask,
+                        box: box,
+                        width: buffer.width,
+                        digitWidth: digitWidth,
+                        forceDigitTall: washAwareStems
+                    ),
+                    width: buffer.width,
+                    washAwareStems: washAwareStems
+                )
+                let name = cell.map { String($0.character) } ?? "drop"
+                let bits = [
+                    pattern.contains(.a) ? "a" : "-",
+                    pattern.contains(.b) ? "b" : "-",
+                    pattern.contains(.c) ? "c" : "-",
+                    pattern.contains(.d) ? "d" : "-",
+                    pattern.contains(.e) ? "e" : "-",
+                    pattern.contains(.f) ? "f" : "-",
+                    pattern.contains(.g) ? "g" : "-"
+                ].joined()
+                SevenSegmentOCR.diagnosticNotes.append(
+                    "\(name) \(box.width)x\(box.height) [\(bits)] h\(digitHeight)"
+                )
+            }
             return cell
         }
         if ocrNoteCells, SevenSegmentOCR.diagnosticNotes.count < 40 {
