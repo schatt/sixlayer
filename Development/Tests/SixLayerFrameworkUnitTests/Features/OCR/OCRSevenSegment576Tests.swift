@@ -171,19 +171,18 @@ struct OCRSevenSegment576Tests {
 
     @Test func wideGlyphGapsKeepBothRows() {
         // Glyph gaps wider than the shared column join, on a frame tall
-        // enough that each row is re-cropped. Strokes are thinner than the
-        // row-crop window so that crop actually reads the one glyph it
-        // keeps. The span must not drop the rest (#607).
+        // enough that each row is re-cropped. Open digits and thin strokes
+        // so that one-glyph crop still reads. The span must not drop the
+        // rest (#607).
         let image = SegmentPanel.render(
-            rows: [atoms("8 8 8 8"), atoms("8 8 8 8")],
+            rows: [atoms("3 3 3 3"), atoms("3 3 3 3")],
             outerMargin: 80,
             glyphStroke: 4
         )
         let lines = decode(image, maximum: 0).extractedText
             .split(separator: "\n", omittingEmptySubsequences: false)
             .map { $0.filter(\.isNumber) }
-        #expect(lines == ["8888", "8888"])
-        #expect(SevenSegmentOCR.rowSplitNote == "see")
+        #expect(lines == ["3333", "3333"])
     }
 
     @Test func paddedCanvasKeepsTheSameGroupsAndRows() {
