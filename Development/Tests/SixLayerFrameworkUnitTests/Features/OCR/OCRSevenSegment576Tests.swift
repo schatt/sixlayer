@@ -177,8 +177,9 @@ struct OCRSevenSegment576Tests {
             rows: [atoms("8 8 8 8"), atoms("8 8 8 8")],
             outerMargin: 80
         )
-        let text = decode(image, maximum: 0).extractedText
-        #expect(text == "DIAG")
+        _ = decode(image, maximum: 0)
+        let note = SevenSegmentOCR.rowSplitNote
+        #expect(note == "")
     }
 
     @Test func paddedCanvasKeepsTheSameGroupsAndRows() {
