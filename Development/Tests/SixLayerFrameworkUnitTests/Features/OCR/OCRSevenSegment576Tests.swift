@@ -135,20 +135,19 @@ struct OCRSevenSegment576Tests {
     }
 
     @Test func onePixelOnADarkSegmentDoesNotChangeTheDigit() {
-        // A 4 has no bottom bar. One pixel on the center column in the lower
-        // third lights `d` when any foreground pixel counts, and `4`+`d` ties
-        // `9` (#599).
-        let plain = SegmentPanel.render(rows: [[.digit(digit(4))]])
-        let plainText = decode(plain, maximum: 0).extractedText
-        let plainNotes = SevenSegmentOCR.diagnosticNotes.joined(separator: " || ")
-        #expect(plainText == "4", "\(plainNotes)")
+        // A 3 has no lower-left stem. One pixel on that scan lights `e`
+        // when any foreground pixel counts, and `3`+`e` ties 2, 3, and 8
+        // (#599). A lone 4 is the wrong fixture: with no top or bottom bar
+        // its ink box is short and already reads as 9.
+        let plain = SegmentPanel.render(rows: [[.digit(digit(3))]])
+        #expect(decode(plain, maximum: 0).extractedText == "3")
         let speck = SegmentPanel.render(
-            rows: [[.digit(digit(4))]],
-            falseBottomBarSpeck: true
+            rows: [[.digit(digit(3))]],
+            falseLowerLeftStemSpeck: true
         )
-        #expect(decode(speck, maximum: 0).extractedText == "4")
-        let stroke = SegmentPanel.render(rows: [[.digit(digit(9))]])
-        #expect(decode(stroke, maximum: 0).extractedText == "9")
+        #expect(decode(speck, maximum: 0).extractedText == "3")
+        let stroke = SegmentPanel.render(rows: [[.digit(digit(8))]])
+        #expect(decode(stroke, maximum: 0).extractedText == "8")
     }
 
     @Test func washedRowDigitCountFollowsStrideNotTheCleanRow() {
@@ -1002,7 +1001,7 @@ private enum SegmentPanel {
         leftScratch: Bool = false,
         tallHaze: Bool = false,
         solidGapWashVolumeOnly: Bool = false,
-        falseBottomBarSpeck: Bool = false
+        falseLowerLeftStemSpeck: Bool = false
     ) -> CGImage {
         let laid = layout(rows: rows, padding: padding)
         let background: UInt8 = backgroundLevel ?? (invert ? 28 : 214)
@@ -1022,14 +1021,13 @@ private enum SegmentPanel {
         for stroke in laid.strokes where stroke.opposite {
             fill(&pixels, width: laid.width, height: laid.height, rect: stroke.rect, value: markInk)
         }
-        if falseBottomBarSpeck {
-            // Center column in the lower third of a 4, two pixels above the
-            // lower stem scan. A 4 has no bottom bar, so this one pixel is
-            // the only ink on `d`. It is not a full-width row, so the ink
-            // band does not snap to it.
-            let x = padding + cellW / 2
-            let lowerThird = stroke + (cellH - 2 * stroke) * 2 / 3 + 2
-            let y = padding + lowerThird
+        if falseLowerLeftStemSpeck {
+            // One pixel on the lower-left stem scan of a 3. That glyph has
+            // no `e`. The point sits in the open glass: below the crossbar,
+            // above the bottom bar, and left of the right stem, so it does
+            // not join a real stroke.
+            let x = padding + stroke + 2
+            let y = padding + (cellH * 3) / 4
             if x < laid.width, y < laid.height {
                 pixels[y * laid.width + x] = ink
             }
