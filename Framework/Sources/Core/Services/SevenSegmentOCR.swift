@@ -1317,11 +1317,12 @@ private extension GrayBuffer {
                 let x0 = max(0, left - 8)
                 let x1 = min(buffer.width, sharedRight + 8)
                 let crop = buffer.cropped(x0: x0, y0: y0, x1: x1, y1: y1)
+                let cropRadius = windowRadius(width: max(crop.width, 1), height: max(crop.height, 1))
+                SevenSegmentOCR.rowSplitNote += " | band \(crop.width)x\(crop.height) r \(cropRadius)"
                 guard crop.width > 8, crop.height > 8 else {
                     windowNarrows = false
                     break
                 }
-                let cropRadius = windowRadius(width: crop.width, height: crop.height)
                 if parentRadius < cropRadius + 8 {
                     windowNarrows = false
                     break
