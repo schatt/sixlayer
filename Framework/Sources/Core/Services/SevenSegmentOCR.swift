@@ -91,6 +91,9 @@ public enum SevenSegmentGlyph {
 }
 
 public enum SevenSegmentOCR {
+    /// Temporary row-split probe for #607. Removed once the failing fixture is known.
+    static var rowSplitNote: String = ""
+
     /// Pixel rect of the digit panel (glass plus a bezel margin) in image
     /// coordinates, or `nil` when no sealed panel is found.
     ///
@@ -1256,8 +1259,10 @@ private extension GrayBuffer {
         // A window that fits inside a stroke drops the middle of the bar,
         // so a row that is already on the small window stays on this mask.
         if splittingRows, splitBands.count > 1 {
+            SevenSegmentOCR.rowSplitNote = ""
             let span = readingSpan(glyphs, bands: splitBands)
             let parentRadius = windowRadius(width: buffer.width, height: buffer.height)
+            SevenSegmentOCR.rowSplitNote += " | span \(String(describing: span)) parent \(parentRadius) \(buffer.width)x\(buffer.height)"
             if buffer.width >= 1000 {
                 trace("span \(String(describing: span)) radius \(parentRadius)\n")
             }
@@ -1350,8 +1355,10 @@ private extension GrayBuffer {
                 }
             }
             if windowNarrows, !rescanned.isEmpty {
+                SevenSegmentOCR.rowSplitNote += " | kept rowcrop \(rescanned.map { String($0.map(\.character)) })"
                 return rescanned
             }
+            SevenSegmentOCR.rowSplitNote += " | rowcrop aborted"
             // Rowcrop aborted (parent window already tight — digitPitch synth).
             // Copy pitch across top-level bands only — never inside rowcrops,
             // never during standingUp/deskew scoring (allowBandPitch false),
@@ -1724,6 +1731,8 @@ private func readingSpan(_ mask: Mask, bands: [(Int, Int)]) -> (Int, Int)? {
         }
     }
     runs.append((start, end + 1, ink))
+    let listed = runs.map { "\($0.start)-\($0.end) ink \($0.ink)" }.joined(separator: ",")
+    SevenSegmentOCR.rowSplitNote += " runs[\(listed)] gap \(gapLimit)"
     guard let best = runs.max(by: { $0.ink < $1.ink }) else { return nil }
     let span = best.end - best.start
     guard span > max(12, height / 10) else { return nil }
