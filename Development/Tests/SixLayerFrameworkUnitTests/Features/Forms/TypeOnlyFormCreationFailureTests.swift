@@ -97,13 +97,15 @@ private func viewTreeContainsTypeName(_ value: Any, fragment: String, depth: Int
 private func hostedRenderedText(_ hosted: Any?) -> String {
     #if canImport(UIKit)
     guard let view = hosted as? UIView else { return "" }
+    var parts: [String] = []
     let selector = NSSelectorFromString("recursiveDescription")
-    guard view.responds(to: selector),
-          let unmanaged = view.perform(selector),
-          let description = unmanaged.takeUnretainedValue() as? String else {
-        return ""
+    if view.responds(to: selector),
+       let unmanaged = view.perform(selector),
+       let description = unmanaged.takeUnretainedValue() as? String {
+        parts.append(description)
     }
-    return description
+    appendUILabelText(view, into: &parts)
+    return parts.joined(separator: "\n")
     #elseif canImport(AppKit)
     guard let view = hosted as? NSView else { return "" }
     return String(describing: view)
@@ -111,3 +113,15 @@ private func hostedRenderedText(_ hosted: Any?) -> String {
     return ""
     #endif
 }
+
+#if canImport(UIKit)
+@MainActor
+private func appendUILabelText(_ view: UIView, into parts: inout [String]) {
+    if let label = view as? UILabel, let text = label.text {
+        parts.append(text)
+    }
+    for subview in view.subviews {
+        appendUILabelText(subview, into: &parts)
+    }
+}
+#endif
