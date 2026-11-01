@@ -248,7 +248,7 @@ public enum EntityCreationUtilities {
         guard let string = value as? String else { return nil }
         let trimmed = string.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return nil }
-        return Decimal(string: trimmed, locale: Locale(identifier: "en_US_POSIX"))
+        return entireDecimal(trimmed)
     }
 
     private static func boolStored(in value: Any) -> Bool? {
