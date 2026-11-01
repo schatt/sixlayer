@@ -6,6 +6,7 @@
 //  The object is an instance of the entity's class, and supplied values are stored (#608).
 //  A bad property or value throws, or the blank creator returns nil, instead of raising (#613).
 //  Strings the form stores for numbers, booleans, and dates are assigned as those types (#615).
+//  A partial decimal and an integer past Int.max are rejected without trapping.
 //
 
 import Testing
@@ -16,7 +17,7 @@ import CoreData
 @objc(CoreDataCreationProbe608)
 private final class CoreDataCreationProbe608: NSManagedObject {}
 
-@Suite("Core Data entity creation (#606, #608, #613)")
+@Suite("Core Data entity creation (#606, #608, #613, #615)")
 @MainActor
 struct CoreDataEntityCreationErrorTests {
 
@@ -186,6 +187,20 @@ struct CoreDataEntityCreationErrorTests {
                 context: context
             )
         }
+    }
+
+    /// `-9223372036854775809` is not an `Int`. `Double` rounds it to `Int.min`,
+    /// so a converter that trusts that double stores the wrong number.
+    @Test func inexactIntegerStringIsRejected() throws {
+        let context = try makeProbeContext()
+        #expect(throws: EntityCreationUtilities.CoreDataCreationError.incompatibleValue(entityName: "Probe608", key: "count")) {
+            try EntityCreationUtilities.createCoreDataEntity(
+                entityName: "Probe608",
+                values: ["count": "-9223372036854775809"],
+                context: context
+            )
+        }
+        #expect(context.insertedObjects.isEmpty)
     }
 
     @Test func doubleStringIsStored() throws {
