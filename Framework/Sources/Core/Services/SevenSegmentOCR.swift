@@ -93,7 +93,7 @@ public enum SevenSegmentGlyph {
 public enum SevenSegmentOCR {
     /// Temporary sample notes for the #599 speck diagnosis. Cleared at the
     /// start of each decode.
-    static var diagnosticNotes: [String] = []
+    nonisolated(unsafe) static var diagnosticNotes: [String] = []
 
     /// Pixel rect of the digit panel (glass plus a bezel margin) in image
     /// coordinates, or `nil` when no sealed panel is found.
