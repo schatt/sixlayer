@@ -272,7 +272,7 @@ public enum DisplayOCRTraining {
                 deskewMaximumDegrees: deskewMaximumDegrees,
                 localizeDigitPanel: false
             )
-            rows = rows(fromPanel: decoded)
+            rows = panelRows(from: decoded)
         } else {
             rows = clipped.compactMap { box in
                 guard let rowImage = crop(image, to: box) else { return nil }
@@ -404,7 +404,7 @@ public enum DisplayOCRTraining {
         )
     }
 
-    private static func rows(fromPanel decoded: OCRResult) -> [DisplayOCRTrainingRow] {
+    private static func panelRows(from decoded: OCRResult) -> [DisplayOCRTrainingRow] {
         let lines = decoded.extractedText
             .split(whereSeparator: \.isNewline)
             .map { $0.trimmingCharacters(in: .whitespaces) }
