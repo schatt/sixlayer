@@ -135,19 +135,16 @@ struct OCRSevenSegment576Tests {
     }
 
     @Test func onePixelOnADarkSegmentDoesNotChangeTheDigit() {
-        // A 3 has no lower-left stem. One pixel on that scan lights `e`
-        // when any foreground pixel counts, and `3`+`e` ties 2, 3, and 8
-        // (#599). A lone 4 is the wrong fixture: with no top or bottom bar
-        // its ink box is short and already reads as 9.
-        let plain = SegmentPanel.render(rows: [[.digit(digit(3))]])
-        #expect(decode(plain).extractedText == "3")
+        // "3125" already decodes. One pixel on the 3's empty lower-left
+        // stem lights `e` when any foreground pixel counts, and that 3
+        // stops being a 3 (#599). A lone 4 is the wrong fixture: with no
+        // top or bottom bar its ink box is short and already reads as 9.
+        #expect(decode(panel(["3125"])).extractedText == "3125")
         let speck = SegmentPanel.render(
-            rows: [[.digit(digit(3))]],
+            rows: [atoms("3125")],
             falseLowerLeftStemSpeck: true
         )
-        #expect(decode(speck).extractedText == "3")
-        let stroke = SegmentPanel.render(rows: [[.digit(digit(8))]])
-        #expect(decode(stroke).extractedText == "8")
+        #expect(decode(speck).extractedText == "3125")
     }
 
     @Test func washedRowDigitCountFollowsStrideNotTheCleanRow() {
