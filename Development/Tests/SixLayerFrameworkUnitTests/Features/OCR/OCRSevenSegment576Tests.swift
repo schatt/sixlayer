@@ -159,6 +159,7 @@ struct OCRSevenSegment576Tests {
     @Test func wideGapSplitsGroupsAndAnEqualGapDoesNot() {
         let split = decode(panel(["12 34"]))
         #expect(split.extractedText == "12  34")
+        #expect(SevenSegmentOCR.rowSplitNote == "see")
         #expect(segmentTexts(split) == ["12", "34"])
 
         let five = decode(panel(["1.11 2.22 3.33 4.44 5.55"]))
