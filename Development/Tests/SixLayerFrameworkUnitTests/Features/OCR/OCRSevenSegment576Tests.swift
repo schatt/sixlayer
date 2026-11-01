@@ -247,7 +247,7 @@ struct OCRSevenSegment576Tests {
         var two = digit(2)
         two.remove(.a)
         let result = decode(SegmentPanel.render(rows: [[.digit(two)]]))
-        #expect(result.extractedText == "2")
+        #expect(result.extractedText == "2", "\(SevenSegmentOCR.diagnosticNotes.joined(separator: " || "))")
         #expect(result.confidence > 0)
         #expect(result.confidence < 1)
         #expect(abs(result.confidence - (6.0 / 7.0)) < 0.02)
