@@ -200,9 +200,14 @@ public enum EntityCreationUtilities {
         if valueFits(value, attribute: attribute) { return value }
         switch attribute.attributeType {
         case .integer16AttributeType, .integer32AttributeType, .integer64AttributeType:
-            if let int = integerStored(in: value) { return int }
-        case .doubleAttributeType, .floatAttributeType:
+            if let int = integerStored(in: value), intFits(int, in: attribute.attributeType) {
+                return int
+            }
+        case .doubleAttributeType:
             if let double = doubleStored(in: value) { return double }
+        case .floatAttributeType:
+            // `setValue` stores a too-wide Double as infinity instead of raising.
+            if let double = doubleStored(in: value), Float(double).isFinite { return double }
         case .decimalAttributeType:
             if let decimal = decimalStored(in: value) { return decimal }
         case .booleanAttributeType:
@@ -226,6 +231,21 @@ public enum EntityCreationUtilities {
         let int64 = number.int64Value
         guard NSDecimalNumber(value: int64) == number else { return nil }
         return Int(exactly: int64)
+    }
+
+    /// `setValue` wraps an integer that is wider than integer16 or integer32.
+    /// A parsed string that does not fit stays unparsed so assignment rejects it.
+    private static func intFits(_ int: Int, in attributeType: NSAttributeType) -> Bool {
+        switch attributeType {
+        case .integer16AttributeType:
+            return (Int(Int16.min)...Int(Int16.max)).contains(int)
+        case .integer32AttributeType:
+            return (Int(Int32.min)...Int(Int32.max)).contains(int)
+        case .integer64AttributeType:
+            return true
+        default:
+            return false
+        }
     }
 
     private static func storedText(in value: Any) -> String? {
