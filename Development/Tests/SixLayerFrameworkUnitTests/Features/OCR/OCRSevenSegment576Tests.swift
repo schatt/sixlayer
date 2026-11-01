@@ -183,6 +183,7 @@ struct OCRSevenSegment576Tests {
             .split(separator: "\n", omittingEmptySubsequences: false)
             .map { $0.filter(\.isNumber) }
         #expect(lines == ["3333", "3333"])
+        #expect(SevenSegmentOCR.rowSplitNote == "see")
     }
 
     @Test func paddedCanvasKeepsTheSameGroupsAndRows() {
