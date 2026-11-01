@@ -63,8 +63,6 @@ class User: Codable {
 }
 
 struct CreateUserView: View {
-    @Environment(\.modelContext) private var modelContext
-    
     var body: some View {
         DynamicFormView(
             configuration: DynamicFormConfiguration(
@@ -121,7 +119,7 @@ struct CreateUserView: View {
 
 - **Requires `entityType`**: Must provide `entityType: User.self` parameter
 - **Requires Codable**: Your SwiftData model must conform to `Codable`
-- **Context**: Requires `@Environment(\.modelContext)`
+- **Context**: Install `.modelContainer` on the host. The form looks up that context only when creating a SwiftData entity. It does not declare `@Environment(\.modelContext)`, which opens an empty default store when the host has no container.
 
 **Why Codable?**: Swift doesn't support dynamic memberwise initialization at runtime. Codable allows us to encode form values to JSON, then decode to your entity type.
 
