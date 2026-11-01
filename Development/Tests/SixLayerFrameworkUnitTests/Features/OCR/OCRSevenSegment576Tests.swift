@@ -135,13 +135,14 @@ struct OCRSevenSegment576Tests {
     }
 
     @Test func onePixelOnADarkSegmentDoesNotChangeTheDigit() {
-        // A 3 with one pixel on the dark upper-left stem is an exact 9 when any
-        // foreground pixel lights a segment (#599).
+        // A 4 has no top bar. One pixel on the center column, inside the top
+        // third and off the stem scan, lights `a` when any foreground pixel
+        // counts. `a`+`4` ties `9`, so the cell becomes "_" (#599).
         let speck = SegmentPanel.render(
-            rows: [[.digit(digit(3))]],
-            falseUpperStemSpeck: true
+            rows: [[.digit(digit(4))]],
+            falseTopBarSpeck: true
         )
-        #expect(decode(speck, maximum: 0).extractedText == "3")
+        #expect(decode(speck, maximum: 0).extractedText == "4")
         let stroke = SegmentPanel.render(rows: [[.digit(digit(9))]])
         #expect(decode(stroke, maximum: 0).extractedText == "9")
     }
@@ -997,7 +998,7 @@ private enum SegmentPanel {
         leftScratch: Bool = false,
         tallHaze: Bool = false,
         solidGapWashVolumeOnly: Bool = false,
-        falseUpperStemSpeck: Bool = false
+        falseTopBarSpeck: Bool = false
     ) -> CGImage {
         let laid = layout(rows: rows, padding: padding)
         let background: UInt8 = backgroundLevel ?? (invert ? 28 : 214)
@@ -1017,10 +1018,11 @@ private enum SegmentPanel {
         for stroke in laid.strokes where stroke.opposite {
             fill(&pixels, width: laid.width, height: laid.height, rect: stroke.rect, value: markInk)
         }
-        if falseUpperStemSpeck {
-            // One ink pixel on the upper-left stem scan of the first cell.
-            let x = padding + stroke
-            let y = padding + cellH / 4
+        if falseTopBarSpeck {
+            // Center column, a few pixels below the stem tops: inside the top
+            // third, not on the quarter-height stem scan.
+            let x = padding + cellW / 2
+            let y = padding + stroke + 4
             if x < laid.width, y < laid.height {
                 pixels[y * laid.width + x] = ink
             }
