@@ -93,6 +93,7 @@ private func viewTreeContainsTypeName(_ value: Any, fragment: String, depth: Int
     return false
 }
 
+@MainActor
 private func hostedAccessibilityText(_ value: Any?) -> String {
     guard let value else { return "" }
     var parts: [String] = []
@@ -100,6 +101,7 @@ private func hostedAccessibilityText(_ value: Any?) -> String {
     return parts.joined(separator: "\n")
 }
 
+@MainActor
 private func collectHostedAccessibilityText(_ value: Any, into parts: inout [String], depth: Int) {
     if depth > 12 { return }
     #if canImport(UIKit)
