@@ -215,13 +215,26 @@ public enum EntityCreationUtilities {
         return value
     }
 
+    /// `Int` text, or an integral decimal such as the stepper's `"4.0"`.
+    /// A value that does not fit in `Int` stays unparsed. `Double` would round it
+    /// and `Int(_:)` would trap or store a different number.
     private static func integerStored(in value: Any) -> Int? {
         guard let string = value as? String else { return nil }
         let trimmed = string.trimmingCharacters(in: .whitespacesAndNewlines)
         if let int = Int(trimmed) { return int }
-        guard let double = Double(trimmed), double.isFinite, double == double.rounded(),
-              abs(double) <= Double(Int.max) else { return nil }
-        return Int(double)
+        guard let decimal = entireDecimal(trimmed) else { return nil }
+        let number = NSDecimalNumber(decimal: decimal)
+        let int64 = number.int64Value
+        guard NSDecimalNumber(value: int64) == number else { return nil }
+        return Int(exactly: int64)
+    }
+
+    /// The whole string is one decimal. `Decimal(string:)` accepts a prefix (`"4abc"` → 4).
+    private static func entireDecimal(_ text: String) -> Decimal? {
+        let scanner = Scanner(string: text)
+        scanner.locale = Locale(identifier: "en_US_POSIX")
+        guard let decimal = scanner.scanDecimal(), scanner.isAtEnd else { return nil }
+        return decimal
     }
 
     private static func doubleStored(in value: Any) -> Double? {
