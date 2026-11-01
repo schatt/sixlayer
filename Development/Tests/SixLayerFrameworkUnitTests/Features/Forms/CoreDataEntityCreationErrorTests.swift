@@ -304,6 +304,77 @@ struct CoreDataEntityCreationErrorTests {
         #expect(context.insertedObjects.isEmpty)
     }
 
+    /// `setValue` wraps a too-wide integer instead of raising. A form string must not
+    /// become that wrapped number.
+    @Test func narrowIntegerStringsOutOfRangeAreRejected() throws {
+        let tooWide16 = try makeProbeContext()
+        #expect(throws: EntityCreationUtilities.CoreDataCreationError.incompatibleValue(entityName: "Probe608", key: "small")) {
+            try EntityCreationUtilities.createCoreDataEntity(
+                entityName: "Probe608",
+                values: ["small": "32768"],
+                context: tooWide16
+            )
+        }
+        #expect(tooWide16.insertedObjects.isEmpty)
+
+        let tooWide32 = try makeProbeContext()
+        #expect(throws: EntityCreationUtilities.CoreDataCreationError.incompatibleValue(entityName: "Probe608", key: "mid")) {
+            try EntityCreationUtilities.createCoreDataEntity(
+                entityName: "Probe608",
+                values: ["mid": "3000000000"],
+                context: tooWide32
+            )
+        }
+        #expect(tooWide32.insertedObjects.isEmpty)
+
+        let stored16 = try EntityCreationUtilities.createCoreDataEntity(
+            entityName: "Probe608",
+            values: ["small": "32767"],
+            context: try makeProbeContext()
+        )
+        #expect((stored16.value(forKey: "small") as? NSNumber)?.int16Value == 32767)
+
+        let stored32 = try EntityCreationUtilities.createCoreDataEntity(
+            entityName: "Probe608",
+            values: ["mid": "2147483647"],
+            context: try makeProbeContext()
+        )
+        #expect((stored32.value(forKey: "mid") as? NSNumber)?.int32Value == 2_147_483_647)
+    }
+
+    @Test func blankNarrowIntegerStringReturnsNil() throws {
+        let context = try makeProbeContext()
+        let created = EntityCreationUtilities.createBlankCoreDataEntity(
+            entityName: "Probe608",
+            context: context,
+            fields: [DataField(name: "small", type: .number, isOptional: false)],
+            fieldHints: ["small": FieldDisplayHints(defaultValue: "32768")]
+        )
+        #expect(created == nil)
+        #expect(context.insertedObjects.isEmpty)
+    }
+
+    /// A finite `Double` past the float range is stored as infinity.
+    @Test func floatOverflowStringIsRejected() throws {
+        let rejected = try makeProbeContext()
+        #expect(throws: EntityCreationUtilities.CoreDataCreationError.incompatibleValue(entityName: "Probe608", key: "ratio")) {
+            try EntityCreationUtilities.createCoreDataEntity(
+                entityName: "Probe608",
+                values: ["ratio": "1e39"],
+                context: rejected
+            )
+        }
+        #expect(rejected.insertedObjects.isEmpty)
+
+        let stored = try EntityCreationUtilities.createCoreDataEntity(
+            entityName: "Probe608",
+            values: ["ratio": "1.5"],
+            context: try makeProbeContext()
+        )
+        let number = try #require(stored.value(forKey: "ratio") as? NSNumber)
+        #expect(abs(number.floatValue - 1.5) < 0.000_001)
+    }
+
     private func makeProbeContext() throws -> NSManagedObjectContext {
         let title = NSAttributeDescription()
         title.name = "title"
@@ -335,10 +406,25 @@ struct CoreDataEntityCreationErrorTests {
         price.attributeType = .decimalAttributeType
         price.isOptional = true
 
+        let small = NSAttributeDescription()
+        small.name = "small"
+        small.attributeType = .integer16AttributeType
+        small.isOptional = true
+
+        let mid = NSAttributeDescription()
+        mid.name = "mid"
+        mid.attributeType = .integer32AttributeType
+        mid.isOptional = true
+
+        let ratio = NSAttributeDescription()
+        ratio.name = "ratio"
+        ratio.attributeType = .floatAttributeType
+        ratio.isOptional = true
+
         let entity = NSEntityDescription()
         entity.name = "Probe608"
         entity.managedObjectClassName = NSStringFromClass(CoreDataCreationProbe608.self)
-        entity.properties = [title, count, amount, flag, when, price]
+        entity.properties = [title, count, amount, flag, when, price, small, mid, ratio]
 
         let model = NSManagedObjectModel()
         model.entities = [entity]
