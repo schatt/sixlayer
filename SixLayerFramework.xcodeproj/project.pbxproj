@@ -12796,6 +12796,7 @@
 					"@executable_path/Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "com.sixlayer.display-ocr-training";
+				PRODUCT_NAME = DisplayOCRTraining;
 				SDKROOT = iphoneos;
 				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -13328,6 +13329,7 @@
 					"@executable_path/Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "com.sixlayer.display-ocr-training";
+				PRODUCT_NAME = DisplayOCRTraining;
 				SDKROOT = iphoneos;
 				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -14166,6 +14168,7 @@
 				);
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.sixlayer.display-ocr-training";
+				PRODUCT_NAME = DisplayOCRTraining;
 				SDKROOT = macosx;
 				SWIFT_VERSION = 6.0;
 			};
@@ -14295,6 +14298,7 @@
 				);
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.sixlayer.display-ocr-training";
+				PRODUCT_NAME = DisplayOCRTraining;
 				SDKROOT = macosx;
 				SWIFT_VERSION = 6.0;
 			};
