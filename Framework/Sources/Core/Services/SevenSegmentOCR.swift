@@ -1333,6 +1333,7 @@ private extension GrayBuffer {
                     preferredPitch: rowPitch
                 ).flatMap { $0 }
                 let shifted = found.map { $0.shifted(dx: x0, dy: y0) }
+                SevenSegmentOCR.rowSplitNote += " [\(String(shifted.map(\.character)))]"
                 if buffer.width >= 900 {
                     let pitchNote = rowPitch.map { " pitch \($0.body)x\($0.count)" } ?? ""
                     trace(
