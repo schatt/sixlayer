@@ -61,7 +61,7 @@ private struct EntityAutoSaveWrapper<T>: View {
     
     #if canImport(SwiftData)
     @available(macOS 14.0, iOS 17.0, *)
-    @Environment(\.modelContext) private var modelContext: ModelContext
+    @Environment(\.self) private var environment
     #endif
     
     init(
@@ -163,6 +163,10 @@ private struct EntityAutoSaveWrapper<T>: View {
         #if canImport(SwiftData)
         if #available(macOS 14.0, iOS 17.0, *) {
             if entity is any PersistentModel {
+                guard let modelContext = SwiftDataContextAccess.installedContext(in: environment) else {
+                    print("SwiftData model auto-save: No ModelContainer is installed. Refusing to open the empty default store.")
+                    return
+                }
                 do {
                     // Note: SwiftData timestamp updates would need to be done via the model itself
                     // or in the onSubmit callback, as we can't directly set properties via reflection
