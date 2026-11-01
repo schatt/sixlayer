@@ -169,6 +169,20 @@ struct OCRSevenSegment576Tests {
         #expect(segmentTexts(glued) == ["1234"])
     }
 
+    @Test func wideGlyphGapsKeepBothRows() {
+        // Glyph gaps wider than the shared column join, on a frame tall
+        // enough that each row is re-cropped. The shared span must not keep
+        // only the inkiest glyph (#607).
+        let image = SegmentPanel.render(
+            rows: [atoms("8 8 8 8"), atoms("8 8 8 8")],
+            outerMargin: 80
+        )
+        let lines = decode(image, maximum: 0).extractedText
+            .split(separator: "\n", omittingEmptySubsequences: false)
+            .map { $0.filter(\.isNumber) }
+        #expect(lines == ["8888", "8888"])
+    }
+
     @Test func paddedCanvasKeepsTheSameGroupsAndRows() {
         let rows = [atoms("1.11 2.22"), atoms("3.0")]
         let content = SegmentPanel.contentSize(rows: rows)
