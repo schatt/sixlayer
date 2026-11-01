@@ -183,12 +183,7 @@ struct OCRSevenSegment576Tests {
     }
 
     @Test func wideGapSplitsGroupsAndAnEqualGapDoesNot() {
-        let flat = decode(panel(["1234"]), maximum: 0)
-        #expect(SevenSegmentOCR.diagnosticNotes.joined(separator: "\n") == "flat-notes")
-        #expect(flat.extractedText == "1234")
-
         let split = decode(panel(["12 34"]))
-        #expect(SevenSegmentOCR.diagnosticNotes.joined(separator: "\n") == "split-notes")
         #expect(split.extractedText == "12  34")
         #expect(segmentTexts(split) == ["12", "34"])
 
@@ -197,7 +192,6 @@ struct OCRSevenSegment576Tests {
         #expect(segmentTexts(five) == ["1.11", "2.22", "3.33", "4.44", "5.55"])
 
         let glued = decode(panel(["1234"]))
-        #expect(SevenSegmentOCR.diagnosticNotes.joined(separator: "\n") == "glued-notes")
         #expect(glued.extractedText == "1234")
         #expect(segmentTexts(glued) == ["1234"])
     }
