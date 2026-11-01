@@ -91,8 +91,6 @@ public enum SevenSegmentGlyph {
 }
 
 public enum SevenSegmentOCR {
-    nonisolated(unsafe) static var rowSplitNote: String = ""
-
     /// Pixel rect of the digit panel (glass plus a bezel margin) in image
     /// coordinates, or `nil` when no sealed panel is found.
     ///
@@ -1257,11 +1255,8 @@ private extension GrayBuffer {
         // crop of that row when that crop's window is actually narrower.
         // A window that fits inside a stroke drops the middle of the bar,
         // so a row that is already on the small window stays on this mask.
-        SevenSegmentOCR.rowSplitNote += " \(buffer.width)x\(buffer.height)/\(splitBands.count)"
         if splittingRows, splitBands.count > 1 {
-            SevenSegmentOCR.rowSplitNote += " [\(buffer.width)x\(buffer.height) bands \(splitBands.count)]"
             let span = readingSpan(glyphs, bands: splitBands)
-            SevenSegmentOCR.rowSplitNote += " span \(String(describing: span))"
             let parentRadius = windowRadius(width: buffer.width, height: buffer.height)
             if buffer.width >= 1000 {
                 trace("span \(String(describing: span)) radius \(parentRadius)\n")
@@ -1317,11 +1312,11 @@ private extension GrayBuffer {
                 let x0 = max(0, left - 8)
                 let x1 = min(buffer.width, sharedRight + 8)
                 let crop = buffer.cropped(x0: x0, y0: y0, x1: x1, y1: y1)
-                let cropRadius = windowRadius(width: max(crop.width, 1), height: max(crop.height, 1))
                 guard crop.width > 8, crop.height > 8 else {
                     windowNarrows = false
                     break
                 }
+                let cropRadius = windowRadius(width: crop.width, height: crop.height)
                 if parentRadius < cropRadius + 8 {
                     windowNarrows = false
                     break
