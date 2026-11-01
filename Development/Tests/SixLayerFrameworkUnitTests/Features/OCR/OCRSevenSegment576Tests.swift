@@ -135,12 +135,12 @@ struct OCRSevenSegment576Tests {
     }
 
     @Test func onePixelOnADarkSegmentDoesNotChangeTheDigit() {
-        // A 4 has no top bar. One pixel on the center column, inside the top
-        // third and off the stem scan, lights `a` when any foreground pixel
-        // counts. `a`+`4` ties `9`, so the cell becomes "_" (#599).
+        // A 4 has no bottom bar. One pixel on the center column in the lower
+        // third lights `d` when any foreground pixel counts, and `4`+`d` ties
+        // `9` (#599).
         let speck = SegmentPanel.render(
             rows: [[.digit(digit(4))]],
-            falseTopBarSpeck: true
+            falseBottomBarSpeck: true
         )
         #expect(decode(speck, maximum: 0).extractedText == "4")
         let stroke = SegmentPanel.render(rows: [[.digit(digit(9))]])
@@ -998,7 +998,7 @@ private enum SegmentPanel {
         leftScratch: Bool = false,
         tallHaze: Bool = false,
         solidGapWashVolumeOnly: Bool = false,
-        falseTopBarSpeck: Bool = false
+        falseBottomBarSpeck: Bool = false
     ) -> CGImage {
         let laid = layout(rows: rows, padding: padding)
         let background: UInt8 = backgroundLevel ?? (invert ? 28 : 214)
@@ -1018,11 +1018,14 @@ private enum SegmentPanel {
         for stroke in laid.strokes where stroke.opposite {
             fill(&pixels, width: laid.width, height: laid.height, rect: stroke.rect, value: markInk)
         }
-        if falseTopBarSpeck {
-            // Center column, a few pixels below the stem tops: inside the top
-            // third, not on the quarter-height stem scan.
+        if falseBottomBarSpeck {
+            // Center column in the lower third of a 4, two pixels above the
+            // lower stem scan. A 4 has no bottom bar, so this one pixel is
+            // the only ink on `d`. It is not a full-width row, so the ink
+            // band does not snap to it.
             let x = padding + cellW / 2
-            let y = padding + stroke + 4
+            let lowerThird = stroke + (cellH - 2 * stroke) * 2 / 3 + 2
+            let y = padding + lowerThird
             if x < laid.width, y < laid.height {
                 pixels[y * laid.width + x] = ink
             }
