@@ -594,6 +594,18 @@ private struct GrayBuffer {
         guard let glyph = SevenSegmentGlyph.match(pattern, preferMissing: washAwareStems) else {
             return nil
         }
+        let bits = [
+            pattern.contains(.a) ? "a" : "-",
+            pattern.contains(.b) ? "b" : "-",
+            pattern.contains(.c) ? "c" : "-",
+            pattern.contains(.d) ? "d" : "-",
+            pattern.contains(.e) ? "e" : "-",
+            pattern.contains(.f) ? "f" : "-",
+            pattern.contains(.g) ? "g" : "-"
+        ].joined()
+        trace(
+            "classify \(glyph.character) pat \(bits) box \(box.minX),\(box.minY) \(box.width)x\(box.height) trimmed \(trimmed.minX),\(trimmed.minY) \(trimmed.width)x\(trimmed.height) sampled \(sampledBox.minX),\(sampledBox.minY) \(sampledBox.width)x\(sampledBox.height)\n"
+        )
         return Cell(box: box, character: glyph.character, confidence: glyph.confidence, band: bandIndex)
     }
 
