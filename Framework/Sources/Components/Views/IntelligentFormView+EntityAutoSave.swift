@@ -164,7 +164,8 @@ private struct EntityAutoSaveWrapper<T>: View {
         if #available(macOS 14.0, iOS 17.0, *) {
             if entity is any PersistentModel {
                 guard let modelContext = SwiftDataContextAccess.installedContext(in: environment) else {
-                    print("SwiftData model auto-save: No ModelContainer is installed. Refusing to open the empty default store.")
+                    let missing = SwiftDataContextAccess.MissingContainer()
+                    print("SwiftData model auto-save: \(missing.localizedDescription)")
                     return
                 }
                 do {
