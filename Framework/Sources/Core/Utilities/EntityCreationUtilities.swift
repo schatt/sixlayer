@@ -43,18 +43,18 @@ public enum EntityCreationUtilities {
     ///   - context: Managed object context to insert into
     ///   - fieldHints: Optional hints to filter hidden fields
     /// - Returns: Created NSManagedObject
-    /// - Throws: Error if entity creation or save fails (entity is rolled back on error)
+    /// - Throws: `CoreDataCreationError.unavailable` when the name cannot be inserted,
+    ///   or the context save error (entity is rolled back on save failure)
     public static func createCoreDataEntity(
         entityName: String,
         values: [String: Any],
         context: NSManagedObjectContext,
         fieldHints: [String: FieldDisplayHints]? = nil
     ) throws -> NSManagedObject {
-        // Create blank entity
-        let entity = NSEntityDescription.insertNewObject(
-            forEntityName: entityName,
-            into: context
-        )
+        guard let description = insertableEntity(named: entityName, in: context) else {
+            throw CoreDataCreationError.unavailable(entityName: entityName)
+        }
+        let entity = NSManagedObject(entity: description, insertInto: context)
         
         // Set values from dictionary
         for (fieldId, value) in values {
@@ -96,17 +96,10 @@ public enum EntityCreationUtilities {
         fields: [DataField],
         fieldHints: [String: FieldDisplayHints]
     ) -> NSManagedObject? {
-        // insertNewObject raises when the context has no coordinator, or when the
-        // name is not in the model. Type-only forms must treat that as "no entity".
-        guard context.persistentStoreCoordinator != nil,
-              NSEntityDescription.entity(forEntityName: entityName, in: context) != nil else {
+        guard let description = insertableEntity(named: entityName, in: context) else {
             return nil
         }
-
-        let entity = NSEntityDescription.insertNewObject(
-            forEntityName: entityName,
-            into: context
-        )
+        let entity = NSManagedObject(entity: description, insertInto: context)
         
         // Populate with defaults from hints
         for field in fields {
@@ -127,6 +120,17 @@ public enum EntityCreationUtilities {
         }
         
         return entity
+    }
+
+    /// Entity description that can be inserted, or nil when lookup itself would raise.
+    /// `entity(forEntityName:in:)` raises if `persistentStoreCoordinator` is nil, and
+    /// `insertNewObject` raises for a nil coordinator or an unknown name.
+    private static func insertableEntity(
+        named entityName: String,
+        in context: NSManagedObjectContext
+    ) -> NSEntityDescription? {
+        guard context.persistentStoreCoordinator != nil else { return nil }
+        return NSEntityDescription.entity(forEntityName: entityName, in: context)
     }
     #endif
     
