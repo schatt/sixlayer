@@ -91,9 +91,6 @@ public enum SevenSegmentGlyph {
 }
 
 public enum SevenSegmentOCR {
-    /// Temporary #599 trace. Cleared at the start of each decode.
-    nonisolated(unsafe) static var diagnosticNotes: [String] = []
-
     /// Pixel rect of the digit panel (glass plus a bezel margin) in image
     /// coordinates, or `nil` when no sealed panel is found.
     ///
@@ -115,9 +112,7 @@ public enum SevenSegmentOCR {
         deskewMaximumDegrees: Double = 3,
         localizeDigitPanel: Bool = false
     ) -> OCRResult {
-        diagnosticNotes = []
         guard var gray = GrayBuffer.read(cgImage) else {
-            diagnosticNotes.append("no-gray")
             return OCRResult(extractedText: "", confidence: 0)
         }
         if localizeDigitPanel, let region = gray.digitPanelBounds() {
@@ -196,9 +191,6 @@ private struct GrayBuffer {
                 bestAngle = angle
             }
         }
-        SevenSegmentOCR.diagnosticNotes.append(
-            "skew angle \(bestAngle) upright \(uprightScore) best \(bestScore) conf \(uprightConfidence)"
-        )
         if bestAngle == 0 || uprightScore * 100 >= bestScore * 98 {
             return turned
         }
@@ -253,12 +245,6 @@ private struct GrayBuffer {
             }
             return left.element.confidence < right.element.confidence
         }?.offset ?? 0
-        if SevenSegmentOCR.diagnosticNotes.count < 40 {
-            let listed = scores.enumerated().map { index, score in
-                "t\(index):w\(score.wideDigits):\(score.text)"
-            }.joined(separator: " ")
-            SevenSegmentOCR.diagnosticNotes.append("up \(listed) best\(bestTurns)")
-        }
         guard bestTurns != 0 else { return buffer }
         // A small tilt still belongs to the fine deskew. Speck rows on a
         // sideways sample read as a few wide glyphs and must not spin an
@@ -405,40 +391,7 @@ private struct GrayBuffer {
                     "cell \(name) box \(box.minX),\(box.minY) \(box.width)x\(box.height) pat \(pattern.rawValue) [\(bits)] cov \(cover) h \(digitHeight)\(pitchNote)\n"
                 )
             }
-            if buffer.width < 420, SevenSegmentOCR.diagnosticNotes.count < 16 {
-                let pattern = sample(
-                    mask,
-                    box: densestInkBand(
-                        mask,
-                        box: box,
-                        width: buffer.width,
-                        digitWidth: digitWidth,
-                        forceDigitTall: washAwareStems
-                    ),
-                    width: buffer.width,
-                    washAwareStems: washAwareStems
-                )
-                let name = cell.map { String($0.character) } ?? "drop"
-                let bits = [
-                    pattern.contains(.a) ? "a" : "-",
-                    pattern.contains(.b) ? "b" : "-",
-                    pattern.contains(.c) ? "c" : "-",
-                    pattern.contains(.d) ? "d" : "-",
-                    pattern.contains(.e) ? "e" : "-",
-                    pattern.contains(.f) ? "f" : "-",
-                    pattern.contains(.g) ? "g" : "-"
-                ].joined()
-                SevenSegmentOCR.diagnosticNotes.append(
-                    "\(name) \(box.width)x\(box.height) [\(bits)] h\(digitHeight)"
-                )
-            }
             return cell
-        }
-        if ocrNoteCells, SevenSegmentOCR.diagnosticNotes.count < 40 {
-            let names = classified.map { String($0.character) }.joined()
-            SevenSegmentOCR.diagnosticNotes.append(
-                "cells \(buffer.width)x\(buffer.height) boxes \(boxes.count) [\(names)] pitch \(preferredPitch != nil)"
-            )
         }
         // A copied price pitch means real ones are rare on these pump rows.
         // Thin stem columns left of the digit field read as 1 and must not
@@ -1018,9 +971,6 @@ private func trace(_ message: String) {
     fputs(message, stderr)
 }
 
-/// Set only around the final `fragments` read so deskew samples stay quiet.
-nonisolated(unsafe) private var ocrNoteCells = false
-
 private struct Mask {
     var bits: [Bool]
     var width: Int
@@ -1101,16 +1051,7 @@ private func recognizedGroups(_ cells: [Cell], width: Int, height: Int) -> [OCRR
 
 private extension GrayBuffer {
     static func fragments(in buffer: GrayBuffer) -> [[OCRRecognizedText]] {
-        ocrNoteCells = true
-        let rows = readRows(in: buffer, allowBandPitch: true)
-        ocrNoteCells = false
-        if SevenSegmentOCR.diagnosticNotes.count < 40 {
-            let listed = rows.map { String($0.map(\.character)) }.joined(separator: "/")
-            SevenSegmentOCR.diagnosticNotes.append(
-                "frag \(buffer.width)x\(buffer.height) [\(listed)]"
-            )
-        }
-        return rows.compactMap { row in
+        readRows(in: buffer, allowBandPitch: true).compactMap { row in
             let texts = recognizedGroups(row, width: buffer.width, height: buffer.height)
             return texts.isEmpty ? nil : texts
         }
@@ -1527,9 +1468,6 @@ private extension GrayBuffer {
                 maxX: min(right, mid + pad),
                 maxY: bottom
             )
-            if SevenSegmentOCR.diagnosticNotes.count < 40 {
-                SevenSegmentOCR.diagnosticNotes.append("pitchdot \(left)-\(right)")
-            }
             trace("pitch marks place . @\(mid) first-gap \(left)-\(right)\n")
             placed.append(Cell(box: box, character: ".", confidence: 1, band: 0))
         }
