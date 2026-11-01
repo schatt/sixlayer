@@ -5,8 +5,8 @@ import SwiftUI
 ///
 /// **Read contract:** `String` is shown as-is; `Int`, `Double`, and `NSNumber` are formatted for display without
 /// scientific notation for typical magnitudes. **Write contract:** a focused field stores `String`. An unfocused
-/// write replaces a stored `String`, and it may refresh a stored number with the same value. It does not replace
-/// a stored number with a different string (#558).
+/// write replaces a stored `String`. It does not replace a stored number, including with that number's own
+/// display string — storing the string would let the next stale echo through (#558).
 ///
 /// This is separate from draft persistence keys (``DynamicFormState`` `draftStorageKey`, Issue #273).
 public enum DynamicFormStoredNumericDisplay {
@@ -66,47 +66,29 @@ public enum DynamicFormStoredNumericDisplay {
         return decimalFormatter.string(from: NSNumber(value: value)) ?? String(value)
     }
 
-    /// True when `newValue` is a sibling text field echoing a stale string over a stored number (#558).
+    /// True when an unfocused write would replace a stored number (#558).
     /// A focused field always accepts the write. A stored `String` always accepts the write.
-    /// The same number as the stored value is a display refresh and is kept.
+    /// The same display string is ignored too: storing it would turn the number into a `String`.
     static func shouldIgnoreNumericBindingSet(
-        newValue: String,
+        newValue _: String,
         storedValue: Any?,
         fieldIsFocused: Bool
     ) -> Bool {
         if fieldIsFocused { return false }
-        guard let storedNumber = storedNumber(storedValue) else { return false }
-        if let incoming = parsedNumber(newValue), numbersEqual(incoming, storedNumber) {
-            return false
-        }
-        return true
+        return isStoredNumber(storedValue)
     }
 
-    private static func storedNumber(_ value: Any?) -> Double? {
+    private static func isStoredNumber(_ value: Any?) -> Bool {
         switch value {
         case let double as Double:
-            return double.isFinite ? double : nil
-        case let int as Int:
-            return Double(int)
+            return double.isFinite
+        case is Int:
+            return true
         case let number as NSNumber:
-            let double = number.doubleValue
-            return double.isFinite ? double : nil
+            return number.doubleValue.isFinite
         default:
-            return nil
+            return false
         }
-    }
-
-    private static func parsedNumber(_ text: String) -> Double? {
-        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else { return nil }
-        let cleaned = trimmed
-            .replacingOccurrences(of: "$", with: "")
-            .replacingOccurrences(of: ",", with: "")
-        return Double(cleaned).flatMap { $0.isFinite ? $0 : nil }
-    }
-
-    private static func numbersEqual(_ lhs: Double, _ rhs: Double) -> Bool {
-        abs(lhs - rhs) <= 0.000_000_1 * max(1, abs(rhs))
     }
 }
 
@@ -131,7 +113,7 @@ extension DynamicFormField {
         )
     }
 
-    /// Whether an unfocused numeric text write would replace a stored number with a different string (#558).
+    /// Whether an unfocused numeric text write would replace a stored number (#558).
     func shouldIgnoreNumericTextEcho(_ newValue: String, formState: DynamicFormState) -> Bool {
         DynamicFormStoredNumericDisplay.shouldIgnoreNumericBindingSet(
             newValue: newValue,
