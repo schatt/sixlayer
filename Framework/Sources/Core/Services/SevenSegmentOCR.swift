@@ -674,10 +674,10 @@ private struct GrayBuffer {
         let eRun = longestForegroundRun(
             mask, x: box.minX + eFringe, y: threeQuarters, length: eLength, vertical: false
         )
-        // The fringe starts inside a real stem, so the tail is a few pixels.
-        // A fraction of that shortened scan drops `e` and turns a washed 8
-        // into a 9. Two pixels still reject a one-pixel speck (#599).
-        let eLit = washAwareStems ? eRun >= 2 : eRun >= max(2, eLength / 8)
+        // The fringe starts inside a real stem. The tail past it can be a
+        // single pixel; requiring two turned a washed 8 into a 9. The fringe
+        // already skipped the bridge (#599).
+        let eLit = washAwareStems ? eRun >= 1 : eRun >= max(2, eLength / 8)
         if eLit {
             pattern.formUnion(.e)
         }
@@ -707,7 +707,7 @@ private struct GrayBuffer {
             let fRun = longestForegroundRun(
                 mask, x: box.minX + fFringe, y: quarter, length: fLength, vertical: false
             )
-            if fRun >= 2, !washDominated {
+            if fRun >= 1, !washDominated {
                 pattern.formUnion(.f)
             }
             if pattern.contains(.f) {
@@ -2379,7 +2379,11 @@ private func packClusterRuns(
                 && packBody <= 80
                 && run.1 - run.0 >= needed
                 && run.1 - run.0 <= needed + packBody
-            let trimmed: (Int, Int) = fusedSynth
+            // More windows than the price count means the extra width is
+            // another digit. Right-packing that off drops the leading glyph
+            // (28022 → 8022) (#599).
+            let keepLeft = fusedSynth || n > pitch.count
+            let trimmed: (Int, Int) = keepLeft
                 ? run
                 : (max(run.0, run.1 - needed), run.1)
             let local = PreferredDigitPitch(body: packBody, count: n, stride: pitch.stride)
