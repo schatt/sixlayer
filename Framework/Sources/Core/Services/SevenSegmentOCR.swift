@@ -624,7 +624,8 @@ private struct GrayBuffer {
     /// Six scanlines, as ssocr does. The center column is split into thirds
     /// for the top, middle, and bottom bars. Lines a quarter down from the
     /// top and a quarter up from the bottom are split into halves for the
-    /// stems. One foreground pixel lights a segment.
+    /// stems. A segment lights only when a consecutive foreground run covers
+    /// at least a fifth of that scan, and at least two pixels (#599).
     ///
     /// `washAwareStems`: skip the outer left fringe on f/e scans so a solid
     /// wash bridge beside the glyph cannot mint a false upper/lower-left stem.
@@ -641,14 +642,14 @@ private struct GrayBuffer {
         var pattern = SevenSegmentPattern()
         let midX = box.minX + boxWidth / 2
         let third = max(1, boxHeight / 3)
-        if foregroundCount(mask, x: midX, y: box.minY, length: third, vertical: true) > 0 {
+        if segmentIsLit(mask, x: midX, y: box.minY, length: third, vertical: true) {
             pattern.formUnion(.a)
         }
-        if foregroundCount(mask, x: midX, y: box.minY + third, length: third, vertical: true) > 0 {
+        if segmentIsLit(mask, x: midX, y: box.minY + third, length: third, vertical: true) {
             pattern.formUnion(.g)
         }
         let lower = box.minY + third * 2
-        if foregroundCount(mask, x: midX, y: lower, length: max(1, box.maxY - lower), vertical: true) > 0 {
+        if segmentIsLit(mask, x: midX, y: lower, length: max(1, box.maxY - lower), vertical: true) {
             pattern.formUnion(.d)
         }
         let quarter = box.minY + boxHeight / 4
@@ -657,20 +658,15 @@ private struct GrayBuffer {
         let right = max(1, box.maxX - (midX + 1))
         // Right stems first so wash-aware `f` can see whether `c` is present
         // (8-candidates keep f; 2-like glyphs drop wash f).
-        if foregroundCount(mask, x: midX + 1, y: quarter, length: right, vertical: false) > 0 {
+        if segmentIsLit(mask, x: midX + 1, y: quarter, length: right, vertical: false) {
             pattern.formUnion(.b)
         }
-        if foregroundCount(mask, x: midX + 1, y: threeQuarters, length: right, vertical: false) > 0 {
+        if segmentIsLit(mask, x: midX + 1, y: threeQuarters, length: right, vertical: false) {
             pattern.formUnion(.c)
         }
         let eFringe = washAwareStems ? max(1, boxWidth / 6) : 0
-        if foregroundCount(
-            mask,
-            x: box.minX + eFringe,
-            y: threeQuarters,
-            length: max(1, half - eFringe),
-            vertical: false
-        ) > 0 {
+        let eLength = max(1, half - eFringe)
+        if segmentIsLit(mask, x: box.minX + eFringe, y: threeQuarters, length: eLength, vertical: false) {
             pattern.formUnion(.e)
         }
         // Wash bridges light false `f` on 2-like glyphs (pat 123 → 2/8 tie).
@@ -679,7 +675,7 @@ private struct GrayBuffer {
         // `c` is dark, require stem-zone ink, reject fringe-dominated wash,
         // and drop f if the remainder is an exact digit.
         if !washAwareStems || pattern.contains(.c) {
-            if foregroundCount(mask, x: box.minX, y: quarter, length: half, vertical: false) > 0 {
+            if segmentIsLit(mask, x: box.minX, y: quarter, length: half, vertical: false) {
                 pattern.formUnion(.f)
             }
         } else {
@@ -695,7 +691,8 @@ private struct GrayBuffer {
                 vertical: false
             )
             let washDominated = fEdge >= fStem && fEdge * 2 >= fFringe
-            if fStem > 0, !washDominated {
+            let fLength = max(1, half - fFringe)
+            if segmentIsLit(mask, x: box.minX + fFringe, y: quarter, length: fLength, vertical: false), !washDominated {
                 pattern.formUnion(.f)
             }
             if pattern.contains(.f) {
@@ -2860,6 +2857,56 @@ private func coverage(_ mask: Mask, box: PixelBox, width: Int) -> Float {
         }
     }
     return total == 0 ? 0 : Float(ink) / Float(total)
+}
+
+private func segmentIsLit(
+    _ mask: Mask,
+    x: Int,
+    y: Int,
+    length: Int,
+    vertical: Bool
+) -> Bool {
+    let run = longestForegroundRun(mask, x: x, y: y, length: length, vertical: vertical)
+    return run >= max(2, length / 5)
+}
+
+private func longestForegroundRun(
+    _ mask: Mask,
+    x: Int,
+    y: Int,
+    length: Int,
+    vertical: Bool
+) -> Int {
+    guard length > 0 else { return 0 }
+    var best = 0
+    var current = 0
+    func consider(_ set: Bool) {
+        if set {
+            current += 1
+            if current > best { best = current }
+        } else {
+            current = 0
+        }
+    }
+    if vertical {
+        guard x >= 0, x < mask.width else { return 0 }
+        let start = max(0, y)
+        let end = min(mask.height, y + length)
+        guard start < end else { return 0 }
+        for row in start..<end {
+            consider(mask.bits[row * mask.width + x])
+        }
+    } else {
+        guard y >= 0, y < mask.height else { return 0 }
+        let start = max(0, x)
+        let end = min(mask.width, x + length)
+        guard start < end else { return 0 }
+        let offset = y * mask.width
+        for column in start..<end {
+            consider(mask.bits[offset + column])
+        }
+    }
+    return best
 }
 
 private func foregroundCount(
