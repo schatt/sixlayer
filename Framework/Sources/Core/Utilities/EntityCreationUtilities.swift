@@ -20,14 +20,20 @@ import SwiftData
 public enum EntityCreationUtilities {
 
     #if canImport(CoreData)
-    /// This context cannot insert the named Core Data entity (#606).
+    /// Creating the named Core Data entity failed before `setValue` could raise (#606, #613).
     public enum CoreDataCreationError: Error, Equatable, LocalizedError {
         case unavailable(entityName: String)
+        case unknownProperty(entityName: String, key: String)
+        case incompatibleValue(entityName: String, key: String)
 
         public var errorDescription: String? {
             switch self {
             case .unavailable(let entityName):
                 return "Cannot create Core Data entity \"\(entityName)\". The model is not available in this context."
+            case .unknownProperty(let entityName, let key):
+                return "Cannot create Core Data entity \"\(entityName)\". \"\(key)\" is not a property of the model."
+            case .incompatibleValue(let entityName, let key):
+                return "Cannot create Core Data entity \"\(entityName)\". The value for \"\(key)\" cannot be stored."
             }
         }
     }
@@ -43,7 +49,7 @@ public enum EntityCreationUtilities {
     ///   - context: Managed object context to insert into
     ///   - fieldHints: Optional hints to filter hidden fields
     /// - Returns: Created NSManagedObject
-    /// - Throws: `CoreDataCreationError.unavailable` when the name cannot be inserted,
+    /// - Throws: `CoreDataCreationError` when the name, property, or value cannot be stored,
     ///   or the context save error (entity is rolled back on save failure)
     public static func createCoreDataEntity(
         entityName: String,
@@ -54,18 +60,24 @@ public enum EntityCreationUtilities {
         guard let description = insertableEntity(named: entityName, in: context) else {
             throw CoreDataCreationError.unavailable(entityName: entityName)
         }
-        let entity = NSManagedObject(entity: description, insertInto: context)
-        
-        // Set values from dictionary
+
+        var assignments: [(key: String, value: Any?)] = []
         for (fieldId, value) in values {
-            // Check if field should be hidden (skip it)
             if let hints = fieldHints, let hint = hints[fieldId], hint.isHidden {
                 continue
             }
-            
-            // Set value using KVC
-            entity.setValue(value, forKey: fieldId)
+            if let rejection = assignmentRejection(
+                value: value,
+                key: fieldId,
+                entityName: entityName,
+                description: description
+            ) {
+                throw rejection
+            }
+            assignments.append((fieldId, value))
         }
+
+        let entity = insert(description, assignments: assignments, into: context)
         
         // Save context - throw error if save fails (entity will be rolled back)
         do {
@@ -99,25 +111,30 @@ public enum EntityCreationUtilities {
         guard let description = insertableEntity(named: entityName, in: context) else {
             return nil
         }
-        let entity = NSManagedObject(entity: description, insertInto: context)
-        
-        // Populate with defaults from hints
+
+        var assignments: [(key: String, value: Any?)] = []
         for field in fields {
-            guard let hint = fieldHints[field.name] else { continue }
-            guard !hint.isHidden else { continue }
-            
+            guard let hint = fieldHints[field.name], !hint.isHidden else { continue }
+            let value: Any?
             if let defaultValue = hint.defaultValue {
-                // Set default value using KVC
-                entity.setValue(defaultValue, forKey: field.name)
+                value = defaultValue
             } else if field.isOptional {
-                // Optional fields can be nil
-                entity.setValue(nil, forKey: field.name)
+                value = nil
             } else {
-                // Required fields without defaults - use type-based defaults
-                let typeDefault = getDefaultValueForType(field.type)
-                entity.setValue(typeDefault, forKey: field.name)
+                value = getDefaultValueForType(field.type)
             }
+            if assignmentRejection(
+                value: value,
+                key: field.name,
+                entityName: entityName,
+                description: description
+            ) != nil {
+                return nil
+            }
+            assignments.append((field.name, value))
         }
+
+        let entity = insert(description, assignments: assignments, into: context)
         
         return entity
     }
@@ -130,6 +147,75 @@ public enum EntityCreationUtilities {
     ) -> NSEntityDescription? {
         guard context.persistentStoreCoordinator != nil else { return nil }
         return NSEntityDescription.entity(forEntityName: entityName, in: context)
+    }
+
+    private static func insert(
+        _ description: NSEntityDescription,
+        assignments: [(key: String, value: Any?)],
+        into context: NSManagedObjectContext
+    ) -> NSManagedObject {
+        let entity = NSManagedObject(entity: description, insertInto: context)
+        for assignment in assignments {
+            entity.setValue(assignment.value, forKey: assignment.key)
+        }
+        return entity
+    }
+
+    /// Why this value cannot be assigned, or nil when `setValue` can take it.
+    /// `setValue` raises for an unknown key and for a value the property cannot store.
+    private static func assignmentRejection(
+        value: Any?,
+        key: String,
+        entityName: String,
+        description: NSEntityDescription
+    ) -> CoreDataCreationError? {
+        if let attribute = description.attributesByName[key] {
+            return valueFits(value, attribute: attribute)
+                ? nil
+                : .incompatibleValue(entityName: entityName, key: key)
+        }
+        if let relationship = description.relationshipsByName[key] {
+            return valueFits(value, relationship: relationship)
+                ? nil
+                : .incompatibleValue(entityName: entityName, key: key)
+        }
+        return .unknownProperty(entityName: entityName, key: key)
+    }
+
+    private static func valueFits(_ value: Any?, attribute: NSAttributeDescription) -> Bool {
+        guard let value, !(value is NSNull) else { return true }
+        let object = value as AnyObject
+        switch attribute.attributeType {
+        case .integer16AttributeType, .integer32AttributeType, .integer64AttributeType,
+             .decimalAttributeType, .doubleAttributeType, .floatAttributeType,
+             .booleanAttributeType:
+            return object is NSNumber
+        case .stringAttributeType:
+            return object is NSString
+        case .dateAttributeType:
+            return object is NSDate
+        case .binaryDataAttributeType:
+            return object is NSData
+        case .UUIDAttributeType:
+            return object is NSUUID
+        case .URIAttributeType:
+            return object is NSURL
+        case .transformableAttributeType, .undefinedAttributeType,
+             .objectIDAttributeType, .compositeAttributeType:
+            // These store an object rather than one bridged class.
+            return true
+        @unknown default:
+            return true
+        }
+    }
+
+    private static func valueFits(_ value: Any?, relationship: NSRelationshipDescription) -> Bool {
+        guard let value, !(value is NSNull) else { return true }
+        let object = value as AnyObject
+        if relationship.isToMany {
+            return relationship.isOrdered ? object is NSOrderedSet : object is NSSet
+        }
+        return object is NSManagedObject
     }
     #endif
     
