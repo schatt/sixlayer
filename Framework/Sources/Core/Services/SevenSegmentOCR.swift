@@ -321,6 +321,9 @@ private struct GrayBuffer {
         let tallest = rawBoxes.map(\.height).max() ?? 1
         let minimum = max(1, tallest / 20)
         let boxes = rawBoxes.filter { $0.width >= minimum && $0.height >= minimum }
+        if buffer.width < 120 {
+            SevenSegmentOCR.rowSplitNote += " boxes \(boxes.count) raw \(rawBoxes.count)"
+        }
         guard !boxes.isEmpty else { return [] }
         let maxHeight = boxes.map(\.height).max() ?? 1
         let tall = boxes.filter { $0.height * 100 >= maxHeight * 55 }
