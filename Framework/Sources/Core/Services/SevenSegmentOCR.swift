@@ -2052,20 +2052,24 @@ private func polarity(
     loose: Mask,
     core: Mask
 ) -> (opens: Bool, reading: (isDark: Bool, glyphs: Mask, bandSource: Mask)) {
-    let span = digitColumnSpan(core)
-    let limitedCore = span.map { cleared($0, mask: core) } ?? core
+    let found = digitColumnSpan(core)
+    let limitedCore = found.map { cleared($0, mask: core) } ?? core
     let looseTall = runs(loose.rowSums).map { $0.1 - $0.0 }.max() ?? 0
     let limitedTall = runs(limitedCore.rowSums).map { $0.1 - $0.0 }.max() ?? 0
     let fills = looseTall * 100 > loose.height * 70
     if ocrNotePolarity, SevenSegmentOCR.diagnosticNotes.count < 12 {
         let coreTall = runs(core.rowSums).map { $0.1 - $0.0 }.max() ?? 0
         SevenSegmentOCR.diagnosticNotes.append(
-            "pol \(isDark ? "d" : "l") span \(span.map { "\($0.0)-\($0.1)" } ?? "nil") loose \(looseTall) lim \(limitedTall) core \(coreTall) h \(loose.height) fills \(fills)"
+            "pol \(isDark ? "d" : "l") span \(found.map { "\($0.0)-\($0.1)" } ?? "nil") loose \(looseTall) lim \(limitedTall) core \(coreTall) h \(loose.height) fills \(fills)"
         )
     }
-    guard let span, fills, limitedTall * 2 < looseTall else {
+    // digitColumnSpan rejects a run that covers most of the width. On a tight
+    // crop that run is the digits, so a nil span must not veto the flood
+    // test: the loose mask is one tall band and this core is not (#604).
+    guard fills, limitedTall * 2 < looseTall else {
         return (false, (isDark, loose, loose))
     }
+    let span = found ?? (0, core.width)
     // The loose mask still fills the gap inside the span. Row boundaries
     // stay on the thin core so gap specks are not thickened into a join.
     // Glyphs use a few pixels of thickness so the stroke is solid.
