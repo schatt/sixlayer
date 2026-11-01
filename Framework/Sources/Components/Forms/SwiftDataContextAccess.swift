@@ -24,10 +24,14 @@ enum SwiftDataContextAccess {
         }
     }
 
+    /// Substring `EnvironmentValues.description` uses for a written model-context key.
+    /// Reading `.modelContext` is what opens the empty default store, so the check stays on the description.
+    private static let installedKeyMarker = "ModelContextEnvironmentKey"
+
     /// The installed context, or `nil` when the host did not install one.
     @MainActor
     static func installedContext(in environment: EnvironmentValues) -> ModelContext? {
-        guard environment.description.contains("ModelContextEnvironmentKey") else {
+        guard environment.description.contains(installedKeyMarker) else {
             return nil
         }
         return environment.modelContext
