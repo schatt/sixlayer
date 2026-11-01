@@ -1318,7 +1318,8 @@ private extension GrayBuffer {
                 let x1 = min(buffer.width, sharedRight + 8)
                 let crop = buffer.cropped(x0: x0, y0: y0, x1: x1, y1: y1)
                 let cropRadius = windowRadius(width: max(crop.width, 1), height: max(crop.height, 1))
-                SevenSegmentOCR.rowSplitNote += " | band \(crop.width)x\(crop.height) r \(cropRadius)"
+                let darkPixels = crop.pixels.reduce(0) { $0 + ($1 < 100 ? 1 : 0) }
+                SevenSegmentOCR.rowSplitNote += " | band \(x0),\(y0) \(crop.width)x\(crop.height) r \(cropRadius) dark \(darkPixels)"
                 guard crop.width > 8, crop.height > 8 else {
                     windowNarrows = false
                     break
