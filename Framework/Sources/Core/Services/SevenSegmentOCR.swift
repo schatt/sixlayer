@@ -628,7 +628,9 @@ private struct GrayBuffer {
     /// for the top, middle, and bottom bars. Lines a quarter down from the
     /// top and a quarter up from the bottom are split into halves for the
     /// stems. A segment lights only when a consecutive foreground run covers
-    /// at least a fifth of that scan, and at least two pixels (#599).
+    /// at least an eighth of that scan, and at least two pixels (#599).
+    /// A fifth was too high: a real stroke on the near-miss 2 is a run of
+    /// four on scans of 21–30, and one pixel on an empty stem stays dark.
     ///
     /// `washAwareStems`: skip the outer left fringe on f/e scans so a solid
     /// wash bridge beside the glyph cannot mint a false upper/lower-left stem.
@@ -2884,7 +2886,7 @@ private func segmentIsLit(
     vertical: Bool
 ) -> Bool {
     let run = longestForegroundRun(mask, x: x, y: y, length: length, vertical: vertical)
-    return run >= max(2, length / 5)
+    return run >= max(2, length / 8)
 }
 
 private func longestForegroundRun(
