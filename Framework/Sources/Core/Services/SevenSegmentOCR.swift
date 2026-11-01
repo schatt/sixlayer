@@ -1257,14 +1257,11 @@ private extension GrayBuffer {
         // crop of that row when that crop's window is actually narrower.
         // A window that fits inside a stroke drops the middle of the bar,
         // so a row that is already on the small window stays on this mask.
+        SevenSegmentOCR.rowSplitNote += " \(buffer.width)x\(buffer.height)/\(splitBands.count)"
         if splittingRows, splitBands.count > 1 {
-            if buffer.width > 200 {
-                SevenSegmentOCR.rowSplitNote = "read \(buffer.width)x\(buffer.height) bands \(splitBands.count)"
-            }
+            SevenSegmentOCR.rowSplitNote += " [\(buffer.width)x\(buffer.height) bands \(splitBands.count)]"
             let span = readingSpan(glyphs, bands: splitBands)
-            if buffer.width > 200 {
-                SevenSegmentOCR.rowSplitNote += " span \(String(describing: span))"
-            }
+            SevenSegmentOCR.rowSplitNote += " span \(String(describing: span))"
             let parentRadius = windowRadius(width: buffer.width, height: buffer.height)
             if buffer.width >= 1000 {
                 trace("span \(String(describing: span)) radius \(parentRadius)\n")
