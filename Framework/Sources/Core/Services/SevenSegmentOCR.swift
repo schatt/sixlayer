@@ -91,9 +91,6 @@ public enum SevenSegmentGlyph {
 }
 
 public enum SevenSegmentOCR {
-    /// Temporary row-split probe for #607. Removed once the failing fixture is known.
-    nonisolated(unsafe) static var rowSplitNote: String = ""
-
     /// Pixel rect of the digit panel (glass plus a bezel margin) in image
     /// coordinates, or `nil` when no sealed panel is found.
     ///
@@ -321,9 +318,6 @@ private struct GrayBuffer {
         let tallest = rawBoxes.map(\.height).max() ?? 1
         let minimum = max(1, tallest / 20)
         let boxes = rawBoxes.filter { $0.width >= minimum && $0.height >= minimum }
-        if buffer.width < 120 {
-            SevenSegmentOCR.rowSplitNote += " boxes \(boxes.count) raw \(rawBoxes.count)"
-        }
         guard !boxes.isEmpty else { return [] }
         let maxHeight = boxes.map(\.height).max() ?? 1
         let tall = boxes.filter { $0.height * 100 >= maxHeight * 55 }
@@ -1208,10 +1202,6 @@ private extension GrayBuffer {
         let glyphs = chosen.glyphs
         let bandSource = chosen.bandSource
         let opened = darkChoice.opens || lightChoice.opens
-        if buffer.width < 120 {
-            let ink = glyphs.bits.filter { $0 }.count
-            SevenSegmentOCR.rowSplitNote += " cropInk \(ink) \(buffer.width)x\(buffer.height)"
-        }
         if buffer.width >= 1000 {
             let ink = glyphs.bits.filter { $0 }.count
             trace(
@@ -1266,10 +1256,8 @@ private extension GrayBuffer {
         // A window that fits inside a stroke drops the middle of the bar,
         // so a row that is already on the small window stays on this mask.
         if splittingRows, splitBands.count > 1 {
-            SevenSegmentOCR.rowSplitNote = ""
             let span = readingSpan(glyphs, bands: splitBands)
             let parentRadius = windowRadius(width: buffer.width, height: buffer.height)
-            SevenSegmentOCR.rowSplitNote += " | span \(String(describing: span)) parent \(parentRadius) \(buffer.width)x\(buffer.height)"
             if buffer.width >= 1000 {
                 trace("span \(String(describing: span)) radius \(parentRadius)\n")
             }
@@ -1325,8 +1313,6 @@ private extension GrayBuffer {
                 let x1 = min(buffer.width, sharedRight + 8)
                 let crop = buffer.cropped(x0: x0, y0: y0, x1: x1, y1: y1)
                 let cropRadius = windowRadius(width: max(crop.width, 1), height: max(crop.height, 1))
-                let darkPixels = crop.pixels.reduce(0) { $0 + ($1 < 100 ? 1 : 0) }
-                SevenSegmentOCR.rowSplitNote += " | band \(x0),\(y0) \(crop.width)x\(crop.height) r \(cropRadius) dark \(darkPixels)"
                 guard crop.width > 8, crop.height > 8 else {
                     windowNarrows = false
                     break
@@ -1341,7 +1327,6 @@ private extension GrayBuffer {
                     preferredPitch: rowPitch
                 ).flatMap { $0 }
                 let shifted = found.map { $0.shifted(dx: x0, dy: y0) }
-                SevenSegmentOCR.rowSplitNote += " [\(String(shifted.map(\.character)))]"
                 if buffer.width >= 900 {
                     let pitchNote = rowPitch.map { " pitch \($0.body)x\($0.count)" } ?? ""
                     trace(
@@ -1365,10 +1350,8 @@ private extension GrayBuffer {
                 }
             }
             if windowNarrows, !rescanned.isEmpty {
-                SevenSegmentOCR.rowSplitNote += " | kept rowcrop \(rescanned.map { String($0.map(\.character)) })"
                 return rescanned
             }
-            SevenSegmentOCR.rowSplitNote += " | rowcrop aborted"
             // Rowcrop aborted (parent window already tight — digitPitch synth).
             // Copy pitch across top-level bands only — never inside rowcrops,
             // never during standingUp/deskew scoring (allowBandPitch false),
@@ -1719,8 +1702,6 @@ private func readingSpan(_ mask: Mask, bands: [(Int, Int)]) -> (Int, Int)? {
     }
     guard !valleys.isEmpty else { return nil }
     var keep = [Bool](repeating: false, count: width)
-    var edgeColumn = [Bool](repeating: false, count: width)
-    var columnInk = [Int](repeating: 0, count: width)
     for x in 0..<width {
         let edge = valleys.contains { valley in
             // A speck in the gap is not the bezel. The edge is ink through it.
@@ -1733,7 +1714,6 @@ private func readingSpan(_ mask: Mask, bands: [(Int, Int)]) -> (Int, Int)? {
             return false
         }
         if edge {
-            edgeColumn[x] = true
             continue
         }
         var ink = 0
@@ -1746,37 +1726,15 @@ private func readingSpan(_ mask: Mask, bands: [(Int, Int)]) -> (Int, Int)? {
         }
         if ink > 0 {
             keep[x] = true
-            columnInk[x] = ink
         }
     }
+    // A wide gap between glyphs is still one row. A column that is ink
+    // through the valley is the bezel and is already out of `keep`.
     let active = keep.indices.filter { keep[$0] }
-    guard let first = active.first else { return nil }
-    // Keep digits across the intra-digit gap (8px). Do not jump a left
-    // scratch that sits farther away on a tall outer-margin crop.
-    let gapLimit = max(8, min(16, height / 40))
-    var runs: [(start: Int, end: Int, ink: Int)] = []
-    var start = first
-    var end = first
-    var ink = columnInk[first]
-    for index in active.dropFirst() {
-        let crossesBezel = (end + 1..<index).contains { edgeColumn[$0] }
-        if index - end <= gapLimit, !crossesBezel {
-            end = index
-            ink += columnInk[index]
-        } else {
-            runs.append((start, end + 1, ink))
-            start = index
-            end = index
-            ink = columnInk[index]
-        }
-    }
-    runs.append((start, end + 1, ink))
-    let listed = runs.map { "\($0.start)-\($0.end) ink \($0.ink)" }.joined(separator: ",")
-    SevenSegmentOCR.rowSplitNote += " runs[\(listed)] gap \(gapLimit)"
-    guard let best = runs.max(by: { $0.ink < $1.ink }) else { return nil }
-    let span = best.end - best.start
+    guard let first = active.first, let last = active.last else { return nil }
+    let span = last + 1 - first
     guard span > max(12, height / 10) else { return nil }
-    return (best.start, best.end)
+    return (first, last + 1)
 }
 
 /// When a row band is taller than a price crop, keep the densest window of
