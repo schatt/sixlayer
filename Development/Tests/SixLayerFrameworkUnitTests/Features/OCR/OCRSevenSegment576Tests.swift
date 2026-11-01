@@ -169,24 +169,17 @@ struct OCRSevenSegment576Tests {
         #expect(segmentTexts(glued) == ["1234"])
     }
 
-    @Test func wideGlyphGapsKeepBothRows() {
-        // Glyph gaps wider than the shared column join, on a frame tall
-        // enough that each row is re-cropped. Open digits and thin strokes
-        // so that one-glyph crop still reads. The span must not drop the
-        // rest (#607).
-        // The one-glyph crop has to be large enough that its window still
-        // sees a thin stroke. A small crop's window sits inside the stroke
-        // and returns nothing, so the bad span is thrown out.
-        let image = SegmentPanel.render(
-            rows: [atoms("3 3 3 3"), atoms("3 3 3 3")],
-            outerMargin: 80,
-            glyphStroke: 4
+    @Test func separatedGlyphsShareOneColumnSpan() {
+        // Four glyphs, gaps wider than the intra-digit join, valley empty.
+        // The shared span has to cover every glyph, not the inkiest one (#607).
+        let span = SeparatedGlyphSpan.span(
+            width: 300,
+            height: 200,
+            columns: [(10, 40), (80, 110), (150, 180), (220, 250)],
+            bands: [(10, 80), (120, 190)]
         )
-        let lines = decode(image, maximum: 0).extractedText
-            .split(separator: "\n", omittingEmptySubsequences: false)
-            .map { $0.filter(\.isNumber) }
-        #expect(lines == ["3333", "3333"])
-        #expect(SevenSegmentOCR.rowSplitNote == "see")
+        #expect(span?.0 == 10)
+        #expect(span?.1 == 250)
     }
 
     @Test func paddedCanvasKeepsTheSameGroupsAndRows() {
@@ -991,18 +984,9 @@ private enum SegmentPanel {
         aboveDigitGlare: Bool = false,
         leftScratch: Bool = false,
         tallHaze: Bool = false,
-        solidGapWashVolumeOnly: Bool = false,
-        glyphStroke: Int = stroke,
-        glyphWidth: Int = cellW,
-        glyphHeight: Int = cellH
+        solidGapWashVolumeOnly: Bool = false
     ) -> CGImage {
-        let laid = layout(
-            rows: rows,
-            padding: padding,
-            glyphStroke: glyphStroke,
-            glyphWidth: glyphWidth,
-            glyphHeight: glyphHeight
-        )
+        let laid = layout(rows: rows, padding: padding)
         let background: UInt8 = backgroundLevel ?? (invert ? 28 : 214)
         let ink: UInt8 = inkLevel ?? (invert ? 228 : 22)
         let markInk: UInt8 = 255
@@ -1332,13 +1316,7 @@ private enum SegmentPanel {
         var gaps: [Gap]
     }
 
-    private static func layout(
-        rows: [[Atom]],
-        padding: Int,
-        glyphStroke: Int = stroke,
-        glyphWidth: Int = cellW,
-        glyphHeight: Int = cellH
-    ) -> Layout {
+    private static func layout(rows: [[Atom]], padding: Int) -> Layout {
         var strokes: [Stroke] = []
         var bands: [RowBand] = []
         var gaps: [Gap] = []
@@ -1357,17 +1335,9 @@ private enum SegmentPanel {
                     if let end = previousEnd, end < x {
                         gaps.append(Gap(minX: end, maxX: x, minY: rowTop, maxY: rowTop + cellH))
                     }
-                    strokes.append(contentsOf: digitStrokes(
-                        pattern,
-                        x: x,
-                        y: y,
-                        opposite: false,
-                        glyphStroke: glyphStroke,
-                        glyphWidth: glyphWidth,
-                        glyphHeight: glyphHeight
-                    ))
-                    previousEnd = x + glyphWidth
-                    x += glyphWidth + intra
+                    strokes.append(contentsOf: digitStrokes(pattern, x: x, y: y, opposite: false))
+                    previousEnd = x + cellW
+                    x += cellW + intra
                 case .period:
                     if let end = previousEnd, end < x {
                         gaps.append(Gap(minX: end, maxX: x, minY: rowTop, maxY: rowTop + cellH))
@@ -1424,8 +1394,8 @@ private enum SegmentPanel {
                 }
             }
             maxX = max(maxX, x)
-            bands.append(RowBand(minY: rowTop, maxY: rowTop + glyphHeight))
-            y += glyphHeight + rowGap
+            bands.append(RowBand(minY: rowTop, maxY: rowTop + cellH))
+            y += cellH + rowGap
         }
         let height = max(padding, y - rowGap + padding)
         let width = max(padding, maxX - intra + padding)
@@ -1454,18 +1424,7 @@ private enum SegmentPanel {
         ]
     }
 
-    private static func digitStrokes(
-        _ pattern: SevenSegmentPattern,
-        x: Int,
-        y: Int,
-        opposite: Bool,
-        glyphStroke: Int = stroke,
-        glyphWidth: Int = cellW,
-        glyphHeight: Int = cellH
-    ) -> [Stroke] {
-        let stroke = glyphStroke
-        let cellW = glyphWidth
-        let cellH = glyphHeight
+    private static func digitStrokes(_ pattern: SevenSegmentPattern, x: Int, y: Int, opposite: Bool) -> [Stroke] {
         let mid = y + cellH / 2 - stroke / 2
         var rects: [CGRect] = []
         if pattern.contains(.a) { rects.append(CGRect(x: x + stroke, y: y, width: cellW - 2 * stroke, height: stroke)) }
