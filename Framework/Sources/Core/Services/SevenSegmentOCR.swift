@@ -766,6 +766,8 @@ private struct GrayBuffer {
         let range = localRange(radius: radius)
         var dark = [Bool](repeating: false, count: pixels.count)
         var light = [Bool](repeating: false, count: pixels.count)
+        var darkCore = [Bool](repeating: false, count: pixels.count)
+        var lightCore = [Bool](repeating: false, count: pixels.count)
         for index in pixels.indices {
             let pixel = Int(pixels[index])
             let low = range.low[index]
@@ -774,21 +776,34 @@ private struct GrayBuffer {
             // A stroke is at least a quarter of the brighter level darker
             // than that level. The halfway cut alone marks the glare.
             guard high - low > inkMargin, (high - low) * 4 > high else { continue }
-            let mid = low + (high - low) / 2
+            let span = high - low
+            let mid = low + span / 2
+            // Quarter of the way off the extreme. Mid-gray that the halfway
+            // cut calls ink stays out of the core, so a flooded loose mask
+            // can still fall back to the strokes (#604).
+            let darkQuarter = low + span / 4
+            let lightQuarter = high - span / 4
             dark[index] = pixel < mid && pixel + inkMargin <= high
             light[index] = pixel > mid && pixel >= low + inkMargin
+            darkCore[index] = pixel < darkQuarter && pixel + inkMargin <= high
+            lightCore[index] = pixel > lightQuarter && pixel >= low + inkMargin
         }
         // The middle of a wide pale bar matches itself, so the halfway cut
         // never marks it. The edges of that bar are already ink. Fill the
         // middle only in those columns, and only when the pixel is darker
         // than a wide average. An open hole is not darker than that average.
+        // Leave the core alone: this fill would paint a mid-gray veil back
+        // in between the strokes.
         let meanRadius = min(64, max(24, shortSide / 8))
         let mean = boxMean(radius: meanRadius)
         fillPaleBar(into: &dark, mean: mean, darker: true)
         fillPaleBar(into: &light, mean: mean, darker: false)
-        let darkMask = Mask(bits: dark, width: width, height: height)
-        let lightMask = Mask(bits: light, width: width, height: height)
-        return (darkMask, lightMask, darkMask, lightMask)
+        return (
+            Mask(bits: dark, width: width, height: height),
+            Mask(bits: light, width: width, height: height),
+            Mask(bits: darkCore, width: width, height: height),
+            Mask(bits: lightCore, width: width, height: height)
+        )
     }
 
     /// Min and max inside a square window. A square window separates into a
