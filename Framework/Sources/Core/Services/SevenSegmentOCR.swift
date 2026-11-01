@@ -91,6 +91,9 @@ public enum SevenSegmentGlyph {
 }
 
 public enum SevenSegmentOCR {
+    /// Temporary #604 trace. Cleared at the start of each decode.
+    nonisolated(unsafe) static var diagnosticNotes: [String] = []
+
     /// Pixel rect of the digit panel (glass plus a bezel margin) in image
     /// coordinates, or `nil` when no sealed panel is found.
     ///
@@ -112,6 +115,7 @@ public enum SevenSegmentOCR {
         deskewMaximumDegrees: Double = 3,
         localizeDigitPanel: Bool = false
     ) -> OCRResult {
+        diagnosticNotes = []
         guard var gray = GrayBuffer.read(cgImage) else {
             return OCRResult(extractedText: "", confidence: 0)
         }
@@ -977,6 +981,9 @@ private func trace(_ message: String) {
     fputs(message, stderr)
 }
 
+/// Set only around the final fragments read.
+nonisolated(unsafe) private var ocrNotePolarity = false
+
 private struct Mask {
     var bits: [Bool]
     var width: Int
@@ -1057,7 +1064,10 @@ private func recognizedGroups(_ cells: [Cell], width: Int, height: Int) -> [OCRR
 
 private extension GrayBuffer {
     static func fragments(in buffer: GrayBuffer) -> [[OCRRecognizedText]] {
-        readRows(in: buffer, allowBandPitch: true).compactMap { row in
+        ocrNotePolarity = true
+        let rows = readRows(in: buffer, allowBandPitch: true)
+        ocrNotePolarity = false
+        return rows.compactMap { row in
             let texts = recognizedGroups(row, width: buffer.width, height: buffer.height)
             return texts.isEmpty ? nil : texts
         }
@@ -1217,6 +1227,11 @@ private extension GrayBuffer {
         let glyphs = chosen.glyphs
         let bandSource = chosen.bandSource
         let opened = darkChoice.opens || lightChoice.opens
+        if ocrNotePolarity, SevenSegmentOCR.diagnosticNotes.count < 12 {
+            SevenSegmentOCR.diagnosticNotes.append(
+                "chosen dark \(primaryIsDark) opened \(opened) \(buffer.width)x\(buffer.height)"
+            )
+        }
         if buffer.width >= 1000 {
             let ink = glyphs.bits.filter { $0 }.count
             trace(
@@ -2042,6 +2057,12 @@ private func polarity(
     let looseTall = runs(loose.rowSums).map { $0.1 - $0.0 }.max() ?? 0
     let limitedTall = runs(limitedCore.rowSums).map { $0.1 - $0.0 }.max() ?? 0
     let fills = looseTall * 100 > loose.height * 70
+    if ocrNotePolarity, SevenSegmentOCR.diagnosticNotes.count < 12 {
+        let coreTall = runs(core.rowSums).map { $0.1 - $0.0 }.max() ?? 0
+        SevenSegmentOCR.diagnosticNotes.append(
+            "pol \(isDark ? "d" : "l") span \(span.map { "\($0.0)-\($0.1)" } ?? "nil") loose \(looseTall) lim \(limitedTall) core \(coreTall) h \(loose.height) fills \(fills)"
+        )
+    }
     guard let span, fills, limitedTall * 2 < looseTall else {
         return (false, (isDark, loose, loose))
     }
