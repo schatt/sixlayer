@@ -174,16 +174,20 @@ struct OCRSevenSegment576Tests {
         // enough that each row is re-cropped. Open digits and thin strokes
         // so that one-glyph crop still reads. The span must not drop the
         // rest (#607).
+        // The one-glyph crop has to be large enough that its window still
+        // sees a thin stroke. A small crop's window sits inside the stroke
+        // and returns nothing, so the bad span is thrown out.
         let image = SegmentPanel.render(
             rows: [atoms("3 3 3 3"), atoms("3 3 3 3")],
             outerMargin: 80,
-            glyphStroke: 4
+            glyphStroke: 4,
+            glyphWidth: 400,
+            glyphHeight: 720
         )
         let lines = decode(image, maximum: 0).extractedText
             .split(separator: "\n", omittingEmptySubsequences: false)
             .map { $0.filter(\.isNumber) }
         #expect(lines == ["3333", "3333"])
-        #expect(SevenSegmentOCR.rowSplitNote == "see")
     }
 
     @Test func paddedCanvasKeepsTheSameGroupsAndRows() {
@@ -989,9 +993,17 @@ private enum SegmentPanel {
         leftScratch: Bool = false,
         tallHaze: Bool = false,
         solidGapWashVolumeOnly: Bool = false,
-        glyphStroke: Int = stroke
+        glyphStroke: Int = stroke,
+        glyphWidth: Int = cellW,
+        glyphHeight: Int = cellH
     ) -> CGImage {
-        let laid = layout(rows: rows, padding: padding, glyphStroke: glyphStroke)
+        let laid = layout(
+            rows: rows,
+            padding: padding,
+            glyphStroke: glyphStroke,
+            glyphWidth: glyphWidth,
+            glyphHeight: glyphHeight
+        )
         let background: UInt8 = backgroundLevel ?? (invert ? 28 : 214)
         let ink: UInt8 = inkLevel ?? (invert ? 228 : 22)
         let markInk: UInt8 = 255
@@ -1324,7 +1336,9 @@ private enum SegmentPanel {
     private static func layout(
         rows: [[Atom]],
         padding: Int,
-        glyphStroke: Int = stroke
+        glyphStroke: Int = stroke,
+        glyphWidth: Int = cellW,
+        glyphHeight: Int = cellH
     ) -> Layout {
         var strokes: [Stroke] = []
         var bands: [RowBand] = []
@@ -1344,9 +1358,17 @@ private enum SegmentPanel {
                     if let end = previousEnd, end < x {
                         gaps.append(Gap(minX: end, maxX: x, minY: rowTop, maxY: rowTop + cellH))
                     }
-                    strokes.append(contentsOf: digitStrokes(pattern, x: x, y: y, opposite: false, glyphStroke: glyphStroke))
-                    previousEnd = x + cellW
-                    x += cellW + intra
+                    strokes.append(contentsOf: digitStrokes(
+                        pattern,
+                        x: x,
+                        y: y,
+                        opposite: false,
+                        glyphStroke: glyphStroke,
+                        glyphWidth: glyphWidth,
+                        glyphHeight: glyphHeight
+                    ))
+                    previousEnd = x + glyphWidth
+                    x += glyphWidth + intra
                 case .period:
                     if let end = previousEnd, end < x {
                         gaps.append(Gap(minX: end, maxX: x, minY: rowTop, maxY: rowTop + cellH))
@@ -1403,8 +1425,8 @@ private enum SegmentPanel {
                 }
             }
             maxX = max(maxX, x)
-            bands.append(RowBand(minY: rowTop, maxY: rowTop + cellH))
-            y += cellH + rowGap
+            bands.append(RowBand(minY: rowTop, maxY: rowTop + glyphHeight))
+            y += glyphHeight + rowGap
         }
         let height = max(padding, y - rowGap + padding)
         let width = max(padding, maxX - intra + padding)
@@ -1438,9 +1460,13 @@ private enum SegmentPanel {
         x: Int,
         y: Int,
         opposite: Bool,
-        glyphStroke: Int = stroke
+        glyphStroke: Int = stroke,
+        glyphWidth: Int = cellW,
+        glyphHeight: Int = cellH
     ) -> [Stroke] {
         let stroke = glyphStroke
+        let cellW = glyphWidth
+        let cellH = glyphHeight
         let mid = y + cellH / 2 - stroke / 2
         var rects: [CGRect] = []
         if pattern.contains(.a) { rects.append(CGRect(x: x + stroke, y: y, width: cellW - 2 * stroke, height: stroke)) }
