@@ -6,6 +6,7 @@
 //  The object is an instance of the entity's class, and supplied values are stored (#608).
 //  A bad property or value throws, or the blank creator returns nil, instead of raising (#613).
 //  Strings the form stores for numbers, booleans, and dates are assigned as those types (#615).
+//  A string that does not fit an integer16, integer32, or float attribute is rejected (#619).
 //  A partial decimal and an integer past Int.max are rejected without trapping.
 //
 
