@@ -89,8 +89,8 @@ struct OCRSevenSegment576Tests {
         let plain = panel(["32.88", "8.022"])
         #expect(decode(plain, maximum: 0).extractedText == "32.88\n8.022")
         let veiled = decode(midGrayVeil(plain), maximum: 0)
-        #expect(SevenSegmentOCR.diagnosticNotes.joined(separator: "\n") == "see")
-        #expect(veiled.extractedText == "32.88\n8.022")
+        let notes = SevenSegmentOCR.diagnosticNotes.joined(separator: "\n")
+        #expect(veiled.extractedText == "32.88\n8.022", "\(notes)")
     }
 
     @Test func tallCropReadsEachRowAtItsOwnWindow() {
