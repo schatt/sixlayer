@@ -162,17 +162,15 @@ open class DynamicFormStoredNumericDisplayTests: BaseTestClass {
         #expect(state.getValue(for: "gallons") as String? == "9.5")
     }
 
-    @Test @MainActor func binding_sameNumberRefreshesStoredDouble() {
+    /// Accepting this write would store `"33.24"` and the next stale echo would stick.
+    @Test @MainActor func binding_sameNumberLeavesStoredDoubleInPlace() {
         let (field, state) = numberField("fuelCost")
         state.focusedFieldId = nil
         state.setValue(33.24, for: "fuelCost")
 
         field.numericTextBinding(formState: state).wrappedValue = "33.24"
 
-        let stored = state.getValue(for: "fuelCost") as Any?
-        let asDouble = stored as? Double
-        let asString = stored as? String
-        #expect(asDouble == 33.24 || asString == "33.24")
+        #expect(state.getValue(for: "fuelCost") as Double? == 33.24)
     }
 
     @MainActor
