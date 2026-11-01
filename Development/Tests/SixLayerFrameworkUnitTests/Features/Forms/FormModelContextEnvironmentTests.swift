@@ -10,6 +10,9 @@
 import Foundation
 import SwiftUI
 import Testing
+#if canImport(SwiftData)
+import SwiftData
+#endif
 @testable import SixLayerFramework
 
 private struct FormModelContextProbe589 {
@@ -74,6 +77,32 @@ struct FormModelContextEnvironmentTests {
             "TypeOnlyFormWrapper stores \\.modelContext"
         )
     }
+
+    #if canImport(SwiftData)
+    @Test @MainActor func unsetEnvironmentReturnsNoContext() throws {
+        let environment = EnvironmentValues()
+        #expect(SwiftDataContextAccess.installedContext(in: environment) == nil)
+        #expect(throws: SwiftDataContextAccess.MissingContainer.self) {
+            try SwiftDataContextAccess.requireInstalledContext(in: environment)
+        }
+    }
+
+    @Test @MainActor func installedContainerIsTheHostContext() throws {
+        let schema = Schema([])
+        let configuration = ModelConfiguration(
+            schema: schema,
+            isStoredInMemoryOnly: true,
+            cloudKitDatabase: .none
+        )
+        let container = try ModelContainer(for: schema, configurations: [configuration])
+        var environment = EnvironmentValues()
+        environment.modelContext = container.mainContext
+
+        let context = SwiftDataContextAccess.installedContext(in: environment)
+        #expect(context === container.mainContext)
+        #expect(context?.container === container)
+    }
+    #endif
 }
 
 @MainActor
