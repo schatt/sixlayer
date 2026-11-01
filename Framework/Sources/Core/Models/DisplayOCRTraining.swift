@@ -220,6 +220,11 @@ public enum DisplayOCRTraining {
         return name
     }
 
+    /// Red gate: cancelling the file importer is still treated as a bad image.
+    public static func importerCancelled(_ error: Error) -> Bool {
+        false
+    }
+
     /// Map a drag in an aspect-fit container to a top-left image box.
     /// Drags shorter than `minimumContainerEdge` on either side are ignored.
     public static func normalizedBox(
