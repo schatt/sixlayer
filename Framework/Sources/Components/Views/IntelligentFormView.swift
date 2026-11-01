@@ -1510,6 +1510,9 @@ private struct CreationFailureMessage: UIViewRepresentable {
     func makeUIView(context: Context) -> UILabel {
         let label = UILabel()
         label.numberOfLines = 0
+        label.font = .preferredFont(forTextStyle: .headline)
+        label.adjustsFontForContentSizeCategory = true
+        label.textColor = .label
         label.text = text
         label.accessibilityIdentifier = "IntelligentFormView.creationFailed"
         return label
@@ -1526,6 +1529,7 @@ private struct CreationFailureMessage: NSViewRepresentable {
 
     func makeNSView(context: Context) -> NSTextField {
         let field = NSTextField(labelWithString: text)
+        field.font = .preferredFont(forTextStyle: .headline)
         field.setAccessibilityIdentifier("IntelligentFormView.creationFailed")
         return field
     }
