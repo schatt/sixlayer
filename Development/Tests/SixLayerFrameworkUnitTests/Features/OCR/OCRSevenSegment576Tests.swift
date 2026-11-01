@@ -657,6 +657,28 @@ struct OCRSevenSegment576Tests {
         #expect(abs(region.minY - CGFloat(originY)) < 24)
     }
 
+    /// A dark skirt that climbs slowly stays non-ink, so the sealed pocket
+    /// includes it. The sharp bezel in `sealedBothRowsPanel` is ink and is a
+    /// different edge. The returned region has to sit on the bright glass
+    /// (#600).
+    @Test func digitPanelRegionDropsDarkNonInkSkirt() {
+        let frame = darkSkirtAroundBrightGlass()
+        let glass = CGRect(x: 56, y: 56, width: 98, height: 88)
+        let region = SevenSegmentOCR.digitPanelRegion(in: frame)
+        #expect(region != nil)
+        guard let region else { return }
+        let slop: CGFloat = 16
+        #expect(region.contains(CGPoint(x: glass.midX, y: glass.midY)))
+        #expect(region.minX <= glass.minX)
+        #expect(region.minY <= glass.minY)
+        #expect(region.maxX >= glass.maxX)
+        #expect(region.maxY >= glass.maxY)
+        #expect(region.minX >= glass.minX - slop)
+        #expect(region.minY >= glass.minY - slop)
+        #expect(region.maxX <= glass.maxX + slop)
+        #expect(region.maxY <= glass.maxY + slop)
+    }
+
     @Test func fullFrameWithoutLocalizationMissesSealedBothRows() {
         let frame = embed(
             sealedBothRowsPanel(),
@@ -775,6 +797,38 @@ struct OCRSevenSegment576Tests {
             bezelLevel: 40,
             bezelWidth: 8
         )
+    }
+
+    /// 210×200 canvas. Glass is 98×88 at (56, 56). The skirt from 72 to 210
+    /// across 36px stays under the local-contrast ink rule at radius 4.
+    private func darkSkirtAroundBrightGlass() -> CGImage {
+        let width = 210
+        let height = 200
+        var pixels = [UInt8](repeating: 170, count: width * height)
+        let panelX = 16
+        let panelY = 16
+        let panelW = 178
+        let panelH = 168
+        let seal = 4
+        let skirt = 36
+        let glassLevel = 210.0
+        let skirtStart = 72.0
+        for y in panelY..<(panelY + panelH) {
+            for x in panelX..<(panelX + panelW) {
+                let inset = min(x - panelX, panelX + panelW - 1 - x, y - panelY, panelY + panelH - 1 - y)
+                let level: UInt8
+                if inset < seal {
+                    level = 16
+                } else if inset < seal + skirt {
+                    let t = Double(inset - seal) / Double(skirt)
+                    level = UInt8((skirtStart * pow(glassLevel / skirtStart, t)).rounded())
+                } else {
+                    level = 210
+                }
+                pixels[y * width + x] = level
+            }
+        }
+        return solidGrayImage(pixels: pixels, width: width, height: height)
     }
 
     private func embed(
