@@ -9,6 +9,11 @@
 import Foundation
 import SwiftUI
 import Testing
+#if canImport(UIKit)
+import UIKit
+#elseif canImport(AppKit)
+import AppKit
+#endif
 @testable import SixLayerFramework
 
 private struct TypeOnlyCreationProbe601 {
@@ -39,10 +44,10 @@ struct TypeOnlyFormCreationFailureTests {
             exposeContentAccessibility: true
         )
         let identifiers = findAllAccessibilityIdentifiersFromPlatformView(hosted)
-        let label = firstAccessibilityLabel(inHosted: hosted) ?? ""
+        let rendered = hostedRenderedText(hosted)
         #expect(
-            identifiers.contains("IntelligentFormView.creationFailed"),
-            "Type-only creation failure stayed on the spinner. identifiers=\(identifiers) label=\(label)"
+            rendered.contains("IntelligentFormView.creationFailed"),
+            "Type-only creation failure stayed on the spinner. identifiers=\(identifiers) rendered=\(rendered.prefix(800))"
         )
     }
     #endif
@@ -87,4 +92,23 @@ private func viewTreeContainsTypeName(_ value: Any, fragment: String, depth: Int
         }
     }
     return false
+}
+
+@MainActor
+private func hostedRenderedText(_ hosted: Any?) -> String {
+    #if canImport(UIKit)
+    guard let view = hosted as? UIView else { return "" }
+    let selector = NSSelectorFromString("recursiveDescription")
+    guard view.responds(to: selector),
+          let unmanaged = view.perform(selector),
+          let description = unmanaged.takeUnretainedValue() as? String else {
+        return ""
+    }
+    return description
+    #elseif canImport(AppKit)
+    guard let view = hosted as? NSView else { return "" }
+    return String(describing: view)
+    #else
+    return ""
+    #endif
 }
