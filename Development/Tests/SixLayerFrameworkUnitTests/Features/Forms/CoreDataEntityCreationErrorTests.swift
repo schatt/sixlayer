@@ -2,8 +2,8 @@
 //  CoreDataEntityCreationErrorTests.swift
 //  SixLayerFrameworkUnitTests
 //
-//  Creating a Core Data entity must throw when the context cannot insert it.
-//  insertNewObject raises NSInvalidArgumentException, which Swift catch cannot see (#606).
+//  Creating a Core Data entity throws when the context cannot insert it (#606).
+//  The object is an instance of the entity's class, and supplied values are stored (#608).
 //
 
 import Testing
@@ -14,7 +14,7 @@ import CoreData
 @objc(CoreDataCreationProbe608)
 private final class CoreDataCreationProbe608: NSManagedObject {}
 
-@Suite("Core Data entity creation errors (#606)")
+@Suite("Core Data entity creation (#606, #608)")
 @MainActor
 struct CoreDataEntityCreationErrorTests {
 
