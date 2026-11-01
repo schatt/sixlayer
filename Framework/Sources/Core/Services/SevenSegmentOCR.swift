@@ -624,8 +624,8 @@ private struct GrayBuffer {
     /// Six scanlines, as ssocr does. The center column is split into thirds
     /// for the top, middle, and bottom bars. Lines a quarter down from the
     /// top and a quarter up from the bottom are split into halves for the
-    /// stems. A segment lights only when a consecutive foreground run covers
-    /// at least a fifth of that scan, and at least two pixels (#599).
+    /// stems. Any foreground pixel on the scan lights the segment. This is
+    /// the pre-#599 count, kept only so the one-pixel speck can fail.
     ///
     /// `washAwareStems`: skip the outer left fringe on f/e scans so a solid
     /// wash bridge beside the glyph cannot mint a false upper/lower-left stem.
@@ -2867,7 +2867,7 @@ private func segmentIsLit(
     vertical: Bool
 ) -> Bool {
     let run = longestForegroundRun(mask, x: x, y: y, length: length, vertical: vertical)
-    return run >= max(2, length / 5)
+    return run >= 1
 }
 
 private func longestForegroundRun(
