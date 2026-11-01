@@ -1208,6 +1208,10 @@ private extension GrayBuffer {
         let glyphs = chosen.glyphs
         let bandSource = chosen.bandSource
         let opened = darkChoice.opens || lightChoice.opens
+        if buffer.width < 120 {
+            let ink = glyphs.bits.filter { $0 }.count
+            SevenSegmentOCR.rowSplitNote += " cropInk \(ink) \(buffer.width)x\(buffer.height)"
+        }
         if buffer.width >= 1000 {
             let ink = glyphs.bits.filter { $0 }.count
             trace(
