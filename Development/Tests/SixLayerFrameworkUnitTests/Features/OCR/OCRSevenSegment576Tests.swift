@@ -149,16 +149,17 @@ struct OCRSevenSegment576Tests {
     }
 
     @Test func washedRowDigitCountFollowsStrideNotTheCleanRow() {
-        // Price is four digits. The washed volume row is five. Copying the
-        // price count packs the volume into four windows (#599).
+        // Price is four digits at stride 58. Five wide glyphs span about
+        // 282 pixels, so width/stride rounds to five. A leading 1 is only
+        // a right-edge stem and does not add that stride (#599).
         let image = SegmentPanel.render(
-            rows: [atoms("32.88"), atoms("18022")],
+            rows: [atoms("32.88"), atoms("28022")],
             solidGapWashVolumeOnly: true
         )
         let lines = decode(image, maximum: 0).extractedText.split(separator: "\n").map(String.init)
         #expect(lines.count == 2)
         #expect(lines.first?.filter(\.isNumber) == "3288")
-        #expect(lines.last?.filter(\.isNumber) == "18022", "\(SevenSegmentOCR.diagnosticNotes.joined(separator: " | "))")
+        #expect(lines.last?.filter(\.isNumber) == "28022", "\(SevenSegmentOCR.diagnosticNotes.joined(separator: " | "))")
     }
 
     @Test func rescannedRowCropMatchesPriceBandGeometry() {
