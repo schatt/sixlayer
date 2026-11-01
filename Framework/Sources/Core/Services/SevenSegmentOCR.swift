@@ -2164,6 +2164,11 @@ private struct PreferredDigitPitch {
     var stride: Int
 }
 
+/// How many digits fit in `width` at the copied center-to-center step.
+private func digitCount(width: Int, stride: Int) -> Int {
+    max(1, Int((Double(width) / Double(max(1, stride))).rounded()))
+}
+
 private func columnRuns(
     _ mask: Mask,
     y0: Int,
@@ -2192,11 +2197,12 @@ private func columnRuns(
         )
     }
     // When pitch-driving: cluster wide runs that are wash-bridged (gap under
-    // body/10). Share the price digit count across clusters by width, then
-    // anchor one window per raw run when possible — only pitch-split a run
-    // that must hold more than one digit. That keeps the photo's 380-555
-    // 0-run on its own ink instead of a drifted body window. Without
-    // preferred pitch, valley.
+    // body/10). Each cluster's digit count is its width over the copied
+    // stride, not the price row's count, so a five-digit volume beside a
+    // four-digit price stays five (#599). Anchor one window per raw run when
+    // possible — only pitch-split a run that must hold more than one digit.
+    // That keeps the photo's 380-555 0-run on its own ink instead of a
+    // drifted body window. Without preferred pitch, valley.
     if let pitch = copied {
         let wideEnough = raw.filter { $0.1 - $0.0 > pitch.body / 2 }
         let bridgeLimit = max(2, pitch.body / 10)
@@ -2211,25 +2217,11 @@ private func columnRuns(
             }
         }
         if !clusters.isEmpty {
-            let widths = clusters.map { cluster -> Int in
-                guard let first = cluster.first, let last = cluster.last else { return 0 }
-                return last.1 - first.0
-            }
-            let totalWidth = max(1, widths.reduce(0, +))
-            var remaining = max(2, pitch.count)
             var pieces: [(Int, Int)] = []
-            for (index, cluster) in clusters.enumerated() {
-                let share: Int
-                if index == clusters.count - 1 {
-                    share = max(1, remaining)
-                } else {
-                    let nominal = max(
-                        1,
-                        Int((Double(widths[index]) / Double(totalWidth) * Double(pitch.count)).rounded())
-                    )
-                    share = min(remaining - (clusters.count - 1 - index), max(1, nominal))
-                }
-                remaining -= share
+            for cluster in clusters {
+                guard let first = cluster.first, let last = cluster.last else { continue }
+                let clusterWidth = last.1 - first.0
+                let share = digitCount(width: clusterWidth, stride: pitch.stride)
                 pieces.append(contentsOf: packClusterRuns(cluster, share: share, sums: sums, pitch: pitch))
             }
             if let overallFirst = wideEnough.first, let overallLast = wideEnough.last {
@@ -2262,8 +2254,14 @@ private func columnRuns(
             return [span]
         }
         if let pitch = copied {
-            // Pitch owns the split. Floor/join would glue wash bridges.
-            return splitAtExpectedPitch(span, sums: sums, pitch: pitch)
+            // Stride owns the split. The price row's digit count would pack a
+            // longer washed row into too few windows (#599).
+            let sized = PreferredDigitPitch(
+                body: pitch.body,
+                count: digitCount(width: spanWidth, stride: pitch.stride),
+                stride: pitch.stride
+            )
+            return splitAtExpectedPitch(span, sums: sums, pitch: sized)
         }
         let peak = (span.0..<span.1).map { sums[$0] }.max() ?? 0
         // A horizontal bar is much thinner than a flooded stem. peak/5 cut the
