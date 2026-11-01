@@ -188,6 +188,12 @@ struct DisplayOCRTraining609Tests {
         #expect(DisplayOCRTraining.sanitizedSourceName(nil) == nil)
     }
 
+    @Test func importerCancelLeavesTheCurrentPhotoAlone() {
+        #expect(DisplayOCRTraining.importerCancelled(CancellationError()))
+        #expect(DisplayOCRTraining.importerCancelled(CocoaError(.userCancelled)))
+        #expect(DisplayOCRTraining.importerCancelled(CocoaError(.fileReadNoSuchFile)) == false)
+    }
+
     @Test func packageRoundTripWritesOnlyThePackageFiles() throws {
         let frame = twoDigitFrame()
         let panel = DisplayOCRNormalizedBox(
