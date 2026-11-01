@@ -1675,6 +1675,36 @@ private func windowRadius(width: Int, height: Int) -> Int {
     return min(36, max(4, (shortSide - 96) / 24))
 }
 
+/// Column span shared by separated glyphs. A gap wider than the intra-digit
+/// join still belongs to the same row (#607).
+enum SeparatedGlyphSpan {
+    static func span(
+        width: Int,
+        height: Int,
+        columns: [(Int, Int)],
+        bands: [(Int, Int)]
+    ) -> (Int, Int)? {
+        guard width > 0, height > 0 else { return nil }
+        var bits = [Bool](repeating: false, count: width * height)
+        for column in columns {
+            let x0 = max(0, column.0)
+            let x1 = min(width, column.1)
+            guard x1 > x0 else { continue }
+            for band in bands {
+                let y0 = max(0, band.0)
+                let y1 = min(height, band.1)
+                guard y1 > y0 else { continue }
+                for y in y0..<y1 {
+                    for x in x0..<x1 {
+                        bits[y * width + x] = true
+                    }
+                }
+            }
+        }
+        return readingSpan(Mask(bits: bits, width: width, height: height), bands: bands)
+    }
+}
+
 /// Columns that hold digit ink and stay empty in the gap between rows.
 /// A strip that is ink on that gap is the bezel edge, not a stroke.
 private func readingSpan(_ mask: Mask, bands: [(Int, Int)]) -> (Int, Int)? {
