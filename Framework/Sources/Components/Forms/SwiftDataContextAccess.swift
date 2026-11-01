@@ -27,6 +27,9 @@ enum SwiftDataContextAccess {
     /// The installed context, or `nil` when the host did not install one.
     @MainActor
     static func installedContext(in environment: EnvironmentValues) -> ModelContext? {
+        guard environment.description.contains("ModelContextEnvironmentKey") else {
+            return nil
+        }
         return environment.modelContext
     }
 
