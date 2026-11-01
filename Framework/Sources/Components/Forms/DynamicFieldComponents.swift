@@ -1051,7 +1051,8 @@ public struct DynamicNumberField: View {
                     fromStoredValue: formState.getValue(for: field.id),
                     defaultValue: field.defaultValue
                 ),
-                write: { formState.setValue($0, for: field.id) }
+                rejectsUnfocusedWrite: { field.shouldIgnoreNumericTextEcho($0, formState: formState) },
+                write: { field.numericTextBinding(formState: formState).wrappedValue = $0 }
             ) { text in
                 TextField(field.placeholder ?? i18n.localizedString(for: "SixLayerFramework.form.placeholder.enterNumber"), text: text)
                     .platformTextFieldStyle()
@@ -1092,7 +1093,8 @@ public struct DynamicIntegerField: View {
                     fromStoredValue: formState.getValue(for: field.id),
                     defaultValue: field.defaultValue
                 ),
-                write: { formState.setValue($0, for: field.id) }
+                rejectsUnfocusedWrite: { field.shouldIgnoreNumericTextEcho($0, formState: formState) },
+                write: { field.numericTextBinding(formState: formState).wrappedValue = $0 }
             ) { text in
                 TextField(field.placeholder ?? i18n.localizedString(for: "SixLayerFramework.form.placeholder.enterInteger"), text: text)
                     .platformTextFieldStyle()
