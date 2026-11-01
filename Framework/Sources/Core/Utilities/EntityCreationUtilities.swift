@@ -219,14 +219,20 @@ public enum EntityCreationUtilities {
     /// A value that does not fit in `Int` stays unparsed. `Double` would round it
     /// and `Int(_:)` would trap or store a different number.
     private static func integerStored(in value: Any) -> Int? {
-        guard let string = value as? String else { return nil }
-        let trimmed = string.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let trimmed = storedText(in: value) else { return nil }
         if let int = Int(trimmed) { return int }
         guard let decimal = entireDecimal(trimmed) else { return nil }
         let number = NSDecimalNumber(decimal: decimal)
         let int64 = number.int64Value
         guard NSDecimalNumber(value: int64) == number else { return nil }
         return Int(exactly: int64)
+    }
+
+    private static func storedText(in value: Any) -> String? {
+        guard let string = value as? String else { return nil }
+        let trimmed = string.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return nil }
+        return trimmed
     }
 
     /// The whole string is one decimal. `Decimal(string:)` accepts a prefix (`"4abc"` → 4).
@@ -238,22 +244,19 @@ public enum EntityCreationUtilities {
     }
 
     private static func doubleStored(in value: Any) -> Double? {
-        guard let string = value as? String else { return nil }
-        let trimmed = string.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard let double = Double(trimmed), double.isFinite else { return nil }
+        guard let trimmed = storedText(in: value),
+              let double = Double(trimmed), double.isFinite else { return nil }
         return double
     }
 
     private static func decimalStored(in value: Any) -> Decimal? {
-        guard let string = value as? String else { return nil }
-        let trimmed = string.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else { return nil }
+        guard let trimmed = storedText(in: value) else { return nil }
         return entireDecimal(trimmed)
     }
 
     private static func boolStored(in value: Any) -> Bool? {
-        guard let string = value as? String else { return nil }
-        switch string.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() {
+        guard let trimmed = storedText(in: value) else { return nil }
+        switch trimmed.lowercased() {
         case "true", "1": return true
         case "false", "0": return false
         default: return nil
