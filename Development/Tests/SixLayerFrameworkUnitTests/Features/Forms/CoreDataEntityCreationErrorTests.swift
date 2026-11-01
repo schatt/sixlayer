@@ -15,7 +15,7 @@ import CoreData
 @objc(CoreDataCreationProbe608)
 private final class CoreDataCreationProbe608: NSManagedObject {}
 
-@Suite("Core Data entity creation (#606, #608)")
+@Suite("Core Data entity creation (#606, #608, #613)")
 @MainActor
 struct CoreDataEntityCreationErrorTests {
 
