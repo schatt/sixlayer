@@ -20103,6 +20103,17 @@
         }
       }
     },
+    "SixLayerFramework.form.entityCreationFailed" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Could not create a form for %@."
+          }
+        }
+      }
+    },
     "SixLayerFramework.form.cannotGenerate" : {
       "extractionState" : "manual",
       "localizations" : {

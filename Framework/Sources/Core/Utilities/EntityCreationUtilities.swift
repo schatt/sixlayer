@@ -82,7 +82,13 @@ public enum EntityCreationUtilities {
         fields: [DataField],
         fieldHints: [String: FieldDisplayHints]
     ) -> NSManagedObject? {
-        // Create blank entity
+        // insertNewObject raises when the context has no coordinator, or when the
+        // name is not in the model. Type-only forms must treat that as "no entity".
+        guard context.persistentStoreCoordinator != nil,
+              NSEntityDescription.entity(forEntityName: entityName, in: context) != nil else {
+            return nil
+        }
+
         let entity = NSEntityDescription.insertNewObject(
             forEntityName: entityName,
             into: context
