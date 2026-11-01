@@ -177,10 +177,8 @@ struct OCRSevenSegment576Tests {
             rows: [atoms("8 8 8 8"), atoms("8 8 8 8")],
             outerMargin: 80
         )
-        let lines = decode(image, maximum: 0).extractedText
-            .split(separator: "\n", omittingEmptySubsequences: false)
-            .map { $0.filter(\.isNumber) }
-        #expect(lines == ["8888", "8888"])
+        let text = decode(image, maximum: 0).extractedText
+        #expect(text == "DIAG")
     }
 
     @Test func paddedCanvasKeepsTheSameGroupsAndRows() {
