@@ -1702,6 +1702,8 @@ private func readingSpan(_ mask: Mask, bands: [(Int, Int)]) -> (Int, Int)? {
     }
     guard !valleys.isEmpty else { return nil }
     var keep = [Bool](repeating: false, count: width)
+    var edgeColumn = [Bool](repeating: false, count: width)
+    var columnInk = [Int](repeating: 0, count: width)
     for x in 0..<width {
         let edge = valleys.contains { valley in
             // A speck in the gap is not the bezel. The edge is ink through it.
@@ -1714,6 +1716,7 @@ private func readingSpan(_ mask: Mask, bands: [(Int, Int)]) -> (Int, Int)? {
             return false
         }
         if edge {
+            edgeColumn[x] = true
             continue
         }
         var ink = 0
@@ -1726,15 +1729,37 @@ private func readingSpan(_ mask: Mask, bands: [(Int, Int)]) -> (Int, Int)? {
         }
         if ink > 0 {
             keep[x] = true
+            columnInk[x] = ink
         }
     }
-    // A wide gap between glyphs is still one row. A column that is ink
-    // through the valley is the bezel and is already out of `keep`.
     let active = keep.indices.filter { keep[$0] }
-    guard let first = active.first, let last = active.last else { return nil }
-    let span = last + 1 - first
+    guard let first = active.first else { return nil }
+    // Synthetic intra gaps are 8px. Display glyphs sit farther apart than
+    // that, so the join has to reach about one cell. A bezel column still
+    // splits the run, and a left scratch past this join stays out. The
+    // digit field is the run with the most ink, not a speck past the bezel.
+    let gapLimit = 48
+    var runs: [(start: Int, end: Int, ink: Int)] = []
+    var start = first
+    var end = first
+    var ink = columnInk[first]
+    for index in active.dropFirst() {
+        let crossesBezel = (end + 1..<index).contains { edgeColumn[$0] }
+        if index - end <= gapLimit, !crossesBezel {
+            end = index
+            ink += columnInk[index]
+        } else {
+            runs.append((start, end + 1, ink))
+            start = index
+            end = index
+            ink = columnInk[index]
+        }
+    }
+    runs.append((start, end + 1, ink))
+    guard let best = runs.max(by: { $0.ink < $1.ink }) else { return nil }
+    let span = best.end - best.start
     guard span > max(12, height / 10) else { return nil }
-    return (first, last + 1)
+    return (best.start, best.end)
 }
 
 /// When a row band is taller than a price crop, keep the densest window of
