@@ -140,14 +140,14 @@ struct OCRSevenSegment576Tests {
         // (#599). A lone 4 is the wrong fixture: with no top or bottom bar
         // its ink box is short and already reads as 9.
         let plain = SegmentPanel.render(rows: [[.digit(digit(3))]])
-        #expect(decode(plain, maximum: 0).extractedText == "3")
+        #expect(decode(plain).extractedText == "3")
         let speck = SegmentPanel.render(
             rows: [[.digit(digit(3))]],
             falseLowerLeftStemSpeck: true
         )
-        #expect(decode(speck, maximum: 0).extractedText == "3")
+        #expect(decode(speck).extractedText == "3")
         let stroke = SegmentPanel.render(rows: [[.digit(digit(8))]])
-        #expect(decode(stroke, maximum: 0).extractedText == "8")
+        #expect(decode(stroke).extractedText == "8")
     }
 
     @Test func washedRowDigitCountFollowsStrideNotTheCleanRow() {
