@@ -278,26 +278,12 @@ public enum DisplayOCRTraining {
         }
         let rows: [DisplayOCRTrainingRow]
         if clipped.isEmpty {
-            let decoded = SevenSegmentOCR.decode(
-                cgImage: panelImage,
-                deskewMaximumDegrees: deskewMaximumDegrees,
-                localizeDigitPanel: false
-            )
-            rows = panelRows(from: decoded)
+            rows = panelRows(from: segmentRead(panelImage, deskewMaximumDegrees: deskewMaximumDegrees))
         } else {
             rows = clipped.compactMap { box in
                 guard let rowImage = crop(image, to: box) else { return nil }
-                let decoded = SevenSegmentOCR.decode(
-                    cgImage: rowImage,
-                    deskewMaximumDegrees: deskewMaximumDegrees,
-                    localizeDigitPanel: false
-                )
-                return DisplayOCRTrainingRow(
-                    box: box,
-                    decodedText: decoded.extractedText,
-                    confirmedText: decoded.extractedText,
-                    confidence: decoded.confidence
-                )
+                let decoded = segmentRead(rowImage, deskewMaximumDegrees: deskewMaximumDegrees)
+                return labeledRow(decoded.extractedText, box: box, confidence: decoded.confidence)
             }
         }
         guard !rows.isEmpty else { return nil }
@@ -415,20 +401,35 @@ public enum DisplayOCRTraining {
         )
     }
 
+    /// The user already drew the crop, so the decoder must not search for another panel.
+    private static func segmentRead(_ image: CGImage, deskewMaximumDegrees: Double) -> OCRResult {
+        SevenSegmentOCR.decode(
+            cgImage: image,
+            deskewMaximumDegrees: deskewMaximumDegrees,
+            localizeDigitPanel: false
+        )
+    }
+
+    private static func labeledRow(
+        _ text: String,
+        box: DisplayOCRNormalizedBox?,
+        confidence: Float
+    ) -> DisplayOCRTrainingRow {
+        DisplayOCRTrainingRow(
+            box: box,
+            decodedText: text,
+            confirmedText: text,
+            confidence: confidence
+        )
+    }
+
     private static func panelRows(from decoded: OCRResult) -> [DisplayOCRTrainingRow] {
         let lines = decoded.extractedText
             .split(whereSeparator: \.isNewline)
             .map { $0.trimmingCharacters(in: .whitespaces) }
             .filter { !$0.isEmpty }
         let texts = lines.isEmpty ? [""] : lines
-        return texts.map { text in
-            DisplayOCRTrainingRow(
-                box: nil,
-                decodedText: text,
-                confirmedText: text,
-                confidence: decoded.confidence
-            )
-        }
+        return texts.map { labeledRow($0, box: nil, confidence: decoded.confidence) }
     }
 }
 
@@ -523,11 +524,8 @@ public final class DisplayOCRTrainingSession: ObservableObject {
         ) else { return false }
         switch drawMode {
         case .panel:
-            panel = box
-            rowBoxes = []
-            label = nil
-            status = nil
-            return true
+            setPanel(box)
+            return panel != nil
         case .row:
             return addRowBox(box)
         }
