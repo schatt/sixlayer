@@ -131,8 +131,7 @@ struct OCRSevenSegment576Tests {
             rows: [atoms("32.88"), atoms("8.022")],
             solidGapWashVolumeOnly: true
         )
-        let text = decode(image, maximum: 0).extractedText
-        #expect(text == "32.88\n8.022", "\(SevenSegmentOCR.diagnosticNotes.joined(separator: " | "))")
+        #expect(decode(image, maximum: 0).extractedText == "32.88\n8.022")
     }
 
     @Test func onePixelOnADarkSegmentDoesNotChangeTheDigit() {
@@ -159,7 +158,7 @@ struct OCRSevenSegment576Tests {
         let lines = decode(image, maximum: 0).extractedText.split(separator: "\n").map(String.init)
         #expect(lines.count == 2)
         #expect(lines.first?.filter(\.isNumber) == "3288")
-        #expect(lines.last?.filter(\.isNumber) == "28022", "\(SevenSegmentOCR.diagnosticNotes.joined(separator: " | "))")
+        #expect(lines.last?.filter(\.isNumber) == "28022")
     }
 
     @Test func rescannedRowCropMatchesPriceBandGeometry() {
