@@ -20,14 +20,20 @@ import SwiftData
 public enum EntityCreationUtilities {
 
     #if canImport(CoreData)
-    /// This context cannot insert the named Core Data entity (#606).
+    /// Creating the named Core Data entity failed before `setValue` could raise (#606, #613).
     public enum CoreDataCreationError: Error, Equatable, LocalizedError {
         case unavailable(entityName: String)
+        case unknownProperty(entityName: String, key: String)
+        case incompatibleValue(entityName: String, key: String)
 
         public var errorDescription: String? {
             switch self {
             case .unavailable(let entityName):
                 return "Cannot create Core Data entity \"\(entityName)\". The model is not available in this context."
+            case .unknownProperty(let entityName, let key):
+                return "Cannot create Core Data entity \"\(entityName)\". \"\(key)\" is not a property of the model."
+            case .incompatibleValue(let entityName, let key):
+                return "Cannot create Core Data entity \"\(entityName)\". The value for \"\(key)\" cannot be stored."
             }
         }
     }
