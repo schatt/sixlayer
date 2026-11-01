@@ -77,10 +77,7 @@ public enum EntityCreationUtilities {
             assignments.append((fieldId, value))
         }
 
-        let entity = NSManagedObject(entity: description, insertInto: context)
-        for assignment in assignments {
-            entity.setValue(assignment.value, forKey: assignment.key)
-        }
+        let entity = insert(description, assignments: assignments, into: context)
         
         // Save context - throw error if save fails (entity will be rolled back)
         do {
@@ -137,10 +134,7 @@ public enum EntityCreationUtilities {
             assignments.append((field.name, value))
         }
 
-        let entity = NSManagedObject(entity: description, insertInto: context)
-        for assignment in assignments {
-            entity.setValue(assignment.value, forKey: assignment.key)
-        }
+        let entity = insert(description, assignments: assignments, into: context)
         
         return entity
     }
@@ -153,6 +147,18 @@ public enum EntityCreationUtilities {
     ) -> NSEntityDescription? {
         guard context.persistentStoreCoordinator != nil else { return nil }
         return NSEntityDescription.entity(forEntityName: entityName, in: context)
+    }
+
+    private static func insert(
+        _ description: NSEntityDescription,
+        assignments: [(key: String, value: Any?)],
+        into context: NSManagedObjectContext
+    ) -> NSManagedObject {
+        let entity = NSManagedObject(entity: description, insertInto: context)
+        for assignment in assignments {
+            entity.setValue(assignment.value, forKey: assignment.key)
+        }
+        return entity
     }
 
     /// Why this value cannot be assigned, or nil when `setValue` can take it.
@@ -196,6 +202,7 @@ public enum EntityCreationUtilities {
             return object is NSURL
         case .transformableAttributeType, .undefinedAttributeType,
              .objectIDAttributeType, .compositeAttributeType:
+            // These store an object rather than one bridged class.
             return true
         @unknown default:
             return true
