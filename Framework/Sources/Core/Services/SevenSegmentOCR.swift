@@ -671,7 +671,14 @@ private struct GrayBuffer {
         }
         let eFringe = washAwareStems ? max(1, boxWidth / 6) : 0
         let eLength = max(1, half - eFringe)
-        if segmentIsLit(mask, x: box.minX + eFringe, y: threeQuarters, length: eLength, vertical: false) {
+        let eRun = longestForegroundRun(
+            mask, x: box.minX + eFringe, y: threeQuarters, length: eLength, vertical: false
+        )
+        // The fringe starts inside a real stem, so the tail is a few pixels.
+        // A fraction of that shortened scan drops `e` and turns a washed 8
+        // into a 9. Two pixels still reject a one-pixel speck (#599).
+        let eLit = washAwareStems ? eRun >= 2 : eRun >= max(2, eLength / 8)
+        if eLit {
             pattern.formUnion(.e)
         }
         // Wash bridges light false `f` on 2-like glyphs (pat 123 → 2/8 tie).
@@ -697,7 +704,10 @@ private struct GrayBuffer {
             )
             let washDominated = fEdge >= fStem && fEdge * 2 >= fFringe
             let fLength = max(1, half - fFringe)
-            if segmentIsLit(mask, x: box.minX + fFringe, y: quarter, length: fLength, vertical: false), !washDominated {
+            let fRun = longestForegroundRun(
+                mask, x: box.minX + fFringe, y: quarter, length: fLength, vertical: false
+            )
+            if fRun >= 2, !washDominated {
                 pattern.formUnion(.f)
             }
             if pattern.contains(.f) {
