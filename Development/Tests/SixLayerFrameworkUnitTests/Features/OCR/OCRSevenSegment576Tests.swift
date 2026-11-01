@@ -139,7 +139,9 @@ struct OCRSevenSegment576Tests {
         // third lights `d` when any foreground pixel counts, and `4`+`d` ties
         // `9` (#599).
         let plain = SegmentPanel.render(rows: [[.digit(digit(4))]])
-        #expect(decode(plain, maximum: 0).extractedText == "4")
+        let plainText = decode(plain, maximum: 0).extractedText
+        let plainNotes = SevenSegmentOCR.diagnosticNotes.joined(separator: " || ")
+        #expect(plainText == "4", "\(plainNotes)")
         let speck = SegmentPanel.render(
             rows: [[.digit(digit(4))]],
             falseBottomBarSpeck: true
