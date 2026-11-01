@@ -220,9 +220,11 @@ public enum DisplayOCRTraining {
         return name
     }
 
-    /// Red gate: cancelling the file importer is still treated as a bad image.
+    /// True when the file panel was dismissed without a choice.
     public static func importerCancelled(_ error: Error) -> Bool {
-        false
+        if error is CancellationError { return true }
+        guard let cocoa = error as? CocoaError else { return false }
+        return cocoa.code == .userCancelled
     }
 
     /// Map a drag in an aspect-fit container to a top-left image box.
