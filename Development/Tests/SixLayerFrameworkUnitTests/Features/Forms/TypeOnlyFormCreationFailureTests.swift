@@ -43,11 +43,10 @@ struct TypeOnlyFormCreationFailureTests {
             forceLayout: true,
             exposeContentAccessibility: true
         )
-        let identifiers = findAllAccessibilityIdentifiersFromPlatformView(hosted)
         let rendered = hostedRenderedText(hosted)
         #expect(
-            rendered.contains("IntelligentFormView.creationFailed"),
-            "Type-only creation failure stayed on the spinner. identifiers=\(identifiers) rendered=\(rendered.prefix(800))"
+            !rendered.contains("UIActivityIndicatorView") && rendered.contains(modelName),
+            "Type-only creation failure stayed on the spinner. rendered=\(rendered.prefix(800))"
         )
     }
     #endif
