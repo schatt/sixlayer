@@ -271,6 +271,39 @@ struct CoreDataEntityCreationErrorTests {
         #expect((created.value(forKey: "count") as? NSNumber)?.intValue == 4)
     }
 
+    @Test func decimalStringIsStoredAndPartialIsRejected() throws {
+        let storedContext = try makeProbeContext()
+        let created = try EntityCreationUtilities.createCoreDataEntity(
+            entityName: "Probe608",
+            values: ["price": "4.5"],
+            context: storedContext
+        )
+        let stored = try #require(created.value(forKey: "price") as? NSNumber)
+        #expect(stored.decimalValue == Decimal(string: "4.5", locale: Locale(identifier: "en_US_POSIX")))
+
+        let rejectedContext = try makeProbeContext()
+        #expect(throws: EntityCreationUtilities.CoreDataCreationError.incompatibleValue(entityName: "Probe608", key: "price")) {
+            try EntityCreationUtilities.createCoreDataEntity(
+                entityName: "Probe608",
+                values: ["price": "4abc"],
+                context: rejectedContext
+            )
+        }
+        #expect(rejectedContext.insertedObjects.isEmpty)
+    }
+
+    @Test func integerStringBeyondIntMaxIsRejected() throws {
+        let context = try makeProbeContext()
+        #expect(throws: EntityCreationUtilities.CoreDataCreationError.incompatibleValue(entityName: "Probe608", key: "count")) {
+            try EntityCreationUtilities.createCoreDataEntity(
+                entityName: "Probe608",
+                values: ["count": "9223372036854775808"],
+                context: context
+            )
+        }
+        #expect(context.insertedObjects.isEmpty)
+    }
+
     private func makeProbeContext() throws -> NSManagedObjectContext {
         let title = NSAttributeDescription()
         title.name = "title"
@@ -297,10 +330,15 @@ struct CoreDataEntityCreationErrorTests {
         when.attributeType = .dateAttributeType
         when.isOptional = true
 
+        let price = NSAttributeDescription()
+        price.name = "price"
+        price.attributeType = .decimalAttributeType
+        price.isOptional = true
+
         let entity = NSEntityDescription()
         entity.name = "Probe608"
         entity.managedObjectClassName = NSStringFromClass(CoreDataCreationProbe608.self)
-        entity.properties = [title, count, amount, flag, when]
+        entity.properties = [title, count, amount, flag, when, price]
 
         let model = NSManagedObjectModel()
         model.entities = [entity]
