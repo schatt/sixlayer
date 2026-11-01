@@ -18,6 +18,20 @@ import SwiftData
 /// DRY: Centralizes entity creation logic used by both IntelligentFormView and DynamicFormView
 @MainActor
 public enum EntityCreationUtilities {
+
+    #if canImport(CoreData)
+    /// `insertNewObject` cannot create this name in this context (#606).
+    public enum CoreDataCreationError: Error, Equatable, LocalizedError {
+        case unavailable(entityName: String)
+
+        public var errorDescription: String? {
+            switch self {
+            case .unavailable(let entityName):
+                return "Cannot create Core Data entity \"\(entityName)\". The model is not available in this context."
+            }
+        }
+    }
+    #endif
     
     // MARK: - Core Data Entity Creation
     
