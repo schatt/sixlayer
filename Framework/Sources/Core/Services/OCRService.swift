@@ -162,9 +162,12 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
             guard let cgImage = getCGImage(from: image) else {
                 throw OCRError.invalidImage
             }
+            // Localize the digit panel so production full/resized pump frames
+            // can feed .ssocr without a hand-tuned crop (#596).
             return SevenSegmentOCR.decode(
                 cgImage: cgImage,
-                deskewMaximumDegrees: context.segmentDeskewMaximumDegrees
+                deskewMaximumDegrees: context.segmentDeskewMaximumDegrees,
+                localizeDigitPanel: true
             )
         }
         return try await performVisionOCRIfAvailable(
@@ -239,7 +242,8 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
         }
         let decoded = SevenSegmentOCR.decode(
             cgImage: cgImage,
-            deskewMaximumDegrees: context.segmentDeskewMaximumDegrees
+            deskewMaximumDegrees: context.segmentDeskewMaximumDegrees,
+            localizeDigitPanel: true
         )
         var labels = context.suppliedLabelFragments
         if labels.isEmpty {
@@ -1279,13 +1283,7 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
     }
 
     private func getCGImage(from image: PlatformImage) -> CGImage? {
-        #if os(iOS)
-        return image.uiImage.cgImage
-        #elseif os(macOS)
-        return image.nsImage.cgImage(forProposedRect: nil, context: nil, hints: nil)
-        #else
-        return nil
-        #endif
+        image.orientedCGImage()
     }
     
     private func getOCRCapabilities() -> OCRCapabilities {
@@ -1387,13 +1385,7 @@ public class MockOCRService: OCRServiceProtocol {
     // MARK: - Helper Methods
     
     private func getCGImage(from image: PlatformImage) -> CGImage? {
-        #if os(iOS)
-        return image.uiImage.cgImage
-        #elseif os(macOS)
-        return image.nsImage.cgImage(forProposedRect: nil, context: nil, hints: nil)
-        #else
-        return nil
-        #endif
+        image.orientedCGImage()
     }
     
     // MARK: - Structured Extraction Helper Methods

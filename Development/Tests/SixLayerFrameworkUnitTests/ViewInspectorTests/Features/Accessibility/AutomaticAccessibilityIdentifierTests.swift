@@ -702,7 +702,13 @@ open class AutomaticAccessibilityIdentifierTests: BaseTestClass {
             // Test text input action generation
             let textAction = config.generateTextInputAction("app.test.field", text: "test text")
             #expect(textAction.contains("app.textFields[\"app.test.field\"]"))
-            #expect(textAction.contains("element.typeText(\"test text\")"))
+            let focus = textAction.range(of: "element.platformTap()")
+            let typing = textAction.range(of: "element.typeText(\"test text\")")
+            #expect(focus != nil, "Text input snippet should focus the field before typing")
+            #expect(typing != nil)
+            if let focus, let typing {
+                #expect(focus.upperBound <= typing.lowerBound, "Focus must happen before typeText")
+            }
         }
     }
     

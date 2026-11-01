@@ -80,6 +80,81 @@ struct OCRSevenSegment576Tests {
         #expect(decode(panel(["11", "22", "33", "44"])).extractedText == "11\n22\n33\n44")
     }
 
+    @Test func tallCropReadsEachRowAtItsOwnWindow() {
+        // Empty margin makes the threshold window wide enough to see a bright
+        // line just above each row. The glass under that line is then darker
+        // than the halfway point, so the digits join. A crop of the row's ink
+        // does not include the line.
+        let image = SegmentPanel.render(
+            rows: [atoms("32.88"), atoms("8.022")],
+            inkLevel: 30,
+            backgroundLevel: 130,
+            outerMargin: 200,
+            gapGlare: true
+        )
+        #expect(decode(image, maximum: 0).extractedText == "32.88\n8.022")
+    }
+
+    @Test func glareAboveDigitInkDoesNotLightUpperStems() {
+        // Dense ink just above the top bar stretches the digit box upward.
+        // The upper stem scans then sit in that glare and light a/f (or b/c),
+        // so a 3 and a 2 become Hamming ties. Trimming the box to the digit
+        // ink band before sample keeps the scan on the glyph.
+        let image = SegmentPanel.render(
+            rows: [atoms("32.88"), atoms("8.022")],
+            padding: 80,
+            inkLevel: 40,
+            backgroundLevel: 200,
+            aboveDigitGlare: true
+        )
+        #expect(decode(image, maximum: 0).extractedText == "32.88\n8.022")
+    }
+
+    @Test func edgeStripAcrossTheRowGapIsNotADigit() {
+        // A bezel strip sits in the gap between the rows, with a small mark
+        // past it so the digit span would otherwise jump the strip. The strip
+        // is not a stroke.
+        let image = SegmentPanel.render(
+            rows: [atoms("32.88"), atoms("8.022")],
+            padding: 160,
+            edgeStrip: true
+        )
+        #expect(decode(image, maximum: 0).extractedText == "32.88\n8.022")
+    }
+
+    @Test func digitPitchCutsASolidWashBridge() {
+        // Approach D (#591): price row stays clean; volume gaps get a full-height
+        // wash so column sums stay high and valley hunting has no dip. The
+        // decoder copies measured digit widths from the price rowcrop and
+        // force-cuts the volume blob at that pitch — not ink valleys.
+        let image = SegmentPanel.render(
+            rows: [atoms("32.88"), atoms("8.022")],
+            solidGapWashVolumeOnly: true
+        )
+        #expect(decode(image, maximum: 0).extractedText == "32.88\n8.022")
+    }
+
+    @Test func rescannedRowCropMatchesPriceBandGeometry() {
+        // Approach B (#591): a left scratch sits in the digit bands but not
+        // through the row gap, and a tall haze above each row stretches the
+        // band past the digit ink. The known-good price crop starts on digit
+        // ink at ~radius 11. Each rescanned row crop must do the same — not
+        // include the scratch from x0 or the haze that widens the window.
+        let image = SegmentPanel.render(
+            rows: [atoms("32.88"), atoms("8.022")],
+            // Padding keeps the left scratch beyond the readingSpan join gap
+            // so the digit span starts on digit ink, not the scratch.
+            padding: 80,
+            inkLevel: 30,
+            backgroundLevel: 130,
+            outerMargin: 200,
+            gapGlare: true,
+            leftScratch: true,
+            tallHaze: true
+        )
+        #expect(decode(image, maximum: 0).extractedText == "32.88\n8.022")
+    }
+
     @Test func wideGapSplitsGroupsAndAnEqualGapDoesNot() {
         let split = decode(panel(["12 34"]))
         #expect(split.extractedText == "12  34")
@@ -190,6 +265,90 @@ struct OCRSevenSegment576Tests {
         #expect(decode(image).extractedText == "31.25")
     }
 
+    @Test func insetBezelStaysOutsideTheGlass() {
+        // The frame is inside the crop. It does not touch the image edge,
+        // so a border clear leaves it wrapped around the digits.
+        let image = SegmentPanel.render(
+            rows: [atoms("32.88"), atoms("8.022")],
+            inkLevel: 140,
+            backgroundLevel: 200,
+            bezelLevel: 123,
+            bezelWidth: 8,
+            outerMargin: 24
+        )
+        let result = decode(image)
+        #expect(result.extractedText == "32.88\n8.022")
+        #expect(segmentTexts(result) == ["32.88", "8.022"])
+    }
+
+    @Test func strokeSizedWindowSeparatesAdjacentDigits() {
+        // A window of one eighth of this crop is wider than the gap between digits.
+        // The lit strokes are only a few levels darker than that gap, so the wide
+        // window marks the gap as ink and the row becomes one blob.
+        let image = SegmentPanel.render(
+            rows: [atoms("32.88"), atoms("8.022")],
+            inkLevel: 100,
+            backgroundLevel: 130,
+            scale: 4
+        )
+        let result = decode(image)
+        #expect(result.extractedText == "32.88\n8.022")
+        #expect(segmentTexts(result) == ["32.88", "8.022"])
+    }
+
+    @Test func bezelDarkerThanTheGlassKeepsWashedDigits() {
+        // Scenario 1 hand crop, 2026-10-22: corners 123, glass ~200, digit cores ~140.
+        // The corner ceiling is 114, so this ink is dropped even though it is darker than the glass.
+        let image = SegmentPanel.render(
+            rows: [atoms("32.88"), atoms("8.022")],
+            inkLevel: 140,
+            backgroundLevel: 200,
+            bezelLevel: 123,
+            bezelWidth: 8
+        )
+        let result = decode(image)
+        #expect(result.extractedText == "32.88\n8.022")
+        #expect(segmentTexts(result) == ["32.88", "8.022"])
+    }
+
+    @Test func inkCloserThanTheMarginIsNotADigit() {
+        // Six levels under the glass is below the margin. Guessing a digit here is worse than silence.
+        let image = SegmentPanel.render(
+            rows: [atoms("32.88"), atoms("8.022")],
+            inkLevel: 194,
+            backgroundLevel: 200
+        )
+        let result = decode(image)
+        #expect(result.extractedText == "")
+        #expect(result.recognizedTexts.isEmpty)
+    }
+
+    @Test func thickStrokesDecodeWhenTheWindowWouldHaveCapped() {
+        // A 12-pixel stroke scaled by 4 is 48 pixels, wider than the 41-pixel window.
+        let image = SegmentPanel.render(
+            rows: [atoms("32.88"), atoms("8.022")],
+            inkLevel: 140,
+            backgroundLevel: 200,
+            bezelLevel: 123,
+            bezelWidth: 8,
+            scale: 4
+        )
+        #expect(decode(image).extractedText == "32.88\n8.022")
+    }
+
+    @Test func paleCommaDoesNotAskTheCorner() {
+        // Ink 140 on glass 200 is not half of a bezel corner at 123.
+        let image = SegmentPanel.render(
+            rows: [atoms("1,234.56")],
+            inkLevel: 140,
+            backgroundLevel: 200,
+            bezelLevel: 123,
+            bezelWidth: 8
+        )
+        let result = decode(image)
+        #expect(result.extractedText == "1,234.56")
+    }
+
     @Test func glareAndBothPolaritiesDecodeTheSameDigits() {
         let rows = [atoms("31.25")]
         let glared = decode(SegmentPanel.render(rows: rows, glare: true))
@@ -209,12 +368,40 @@ struct OCRSevenSegment576Tests {
         #expect(decode(tilted, maximum: 6).extractedText == "31.25")
     }
 
+    @Test func quarterTurnStillReadsTheDigits() {
+        // The scenario 1 crop stores the LCD on its side. A few degrees of
+        // deskew cannot stand that up.
+        let image = SegmentPanel.render(
+            rows: [atoms("32.88"), atoms("8.022")],
+            tiltDegrees: 90
+        )
+        let result = decode(image)
+        #expect(result.extractedText == "32.88\n8.022")
+        #expect(segmentTexts(result) == ["32.88", "8.022"])
+    }
+
     @Test func decoderSourceDoesNotNameFields() throws {
         let source = try decoderSource()
         for word in ["This Sale", "Gallons", "FuelPurchase", "sale"] {
             #expect(!source.localizedCaseInsensitiveContains(word))
         }
         #expect(!source.localizedCaseInsensitiveContains("imlib"))
+    }
+
+    @Test func mismatchedRoiDoesNotTrapRangeInvariant() throws {
+        // #597: a bad / mismatched ROI must not fatalError with
+        // "Range requires lowerBound <= upperBound". Fixture is a synthetic
+        // 400x220 luminance field (not a production photo) that previously
+        // trapped during standingUp's quarter-turn score.
+        let url = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent()
+            .appendingPathComponent("BadROIRangeCrash597.png")
+        let data = try Data(contentsOf: url)
+        let image = try #require(PlatformImage.cgImage(opening: data))
+        let result = decode(image, maximum: 0)
+        // Controlled empty or garbage is fine — only the trap is forbidden.
+        #expect(result.confidence >= 0)
+        #expect(result.extractedText.count >= 0)
     }
 
     // MARK: - Label binding
@@ -432,12 +619,239 @@ struct OCRSevenSegment576Tests {
     }
     #endif
 
+    // MARK: - LCD localization (#596)
+
+    /// Production CM feeds a resized full pump frame with no hand crop. Absolute
+    /// crop coords are per photo — this fixture embeds its own sealed panel
+    /// rather than reusing another scenario's rectangle.
+    ///
+    /// Uses default ink with a dark bezel (sealed glass). The washed-ink
+    /// bezel fixture (`bezelDarkerThanTheGlassKeepsWashedDigits`) is already
+    /// red on `next` @ c3abcf9be on this SDK — tracked separately, not this
+    /// localization slice's Done bar.
+    @Test func digitPanelRegionFindsSealedPanelInFullFrame() {
+        let panelImage = sealedBothRowsPanel()
+        let originX = 180
+        let originY = 420
+        let frame = embed(
+            panelImage,
+            canvasWidth: 1200,
+            canvasHeight: 1600,
+            originX: originX,
+            originY: originY,
+            fill: 180
+        )
+        let region = SevenSegmentOCR.digitPanelRegion(in: frame)
+        #expect(region != nil)
+        guard let region else { return }
+        let panelMidX = CGFloat(originX) + CGFloat(panelImage.width) / 2
+        let panelMidY = CGFloat(originY) + CGFloat(panelImage.height) / 2
+        #expect(region.minX < panelMidX && region.maxX > panelMidX)
+        #expect(region.minY < panelMidY && region.maxY > panelMidY)
+        #expect(region.width < CGFloat(frame.width) * 0.85)
+        #expect(region.height < CGFloat(frame.height) * 0.85)
+        // Region must track this panel's own box — not a near-full-frame pocket.
+        #expect(abs(region.width - CGFloat(panelImage.width)) < 48)
+        #expect(abs(region.height - CGFloat(panelImage.height)) < 48)
+        #expect(abs(region.minX - CGFloat(originX)) < 24)
+        #expect(abs(region.minY - CGFloat(originY)) < 24)
+    }
+
+    @Test func fullFrameWithoutLocalizationMissesSealedBothRows() {
+        let frame = embed(
+            sealedBothRowsPanel(),
+            canvasWidth: 1200,
+            canvasHeight: 1600,
+            originX: 180,
+            originY: 420,
+            fill: 180
+        )
+        let raw = SevenSegmentOCR.decode(
+            cgImage: frame,
+            localizeDigitPanel: false
+        )
+        #expect(raw.extractedText != "32.88\n8.022")
+    }
+
+    @Test func exactEmbedCropWithoutLocalizationStillReadsBothRows() {
+        let panelImage = sealedBothRowsPanel()
+        #expect(decode(panelImage).extractedText == "32.88\n8.022")
+        let originX = 180
+        let originY = 420
+        let frame = embed(
+            panelImage,
+            canvasWidth: 1200,
+            canvasHeight: 1600,
+            originX: originX,
+            originY: originY,
+            fill: 180
+        )
+        let exact = crop(
+            frame,
+            x: originX,
+            y: originY,
+            width: panelImage.width,
+            height: panelImage.height
+        )
+        #expect(decode(exact).extractedText == "32.88\n8.022")
+    }
+
+    @Test func localizedDecodeReadsSealedPanelInFullFrame() throws {
+        let frame = embed(
+            sealedBothRowsPanel(),
+            canvasWidth: 1200,
+            canvasHeight: 1600,
+            originX: 180,
+            originY: 420,
+            fill: 180
+        )
+        let region = try #require(SevenSegmentOCR.digitPanelRegion(in: frame))
+        let foundCrop = crop(
+            frame,
+            x: Int(region.minX.rounded(.down)),
+            y: Int(region.minY.rounded(.down)),
+            width: Int(region.width.rounded(.up)),
+            height: Int(region.height.rounded(.up))
+        )
+        #expect(decode(foundCrop).extractedText == "32.88\n8.022")
+        let result = SevenSegmentOCR.decode(
+            cgImage: frame,
+            localizeDigitPanel: true
+        )
+        #expect(result.extractedText == "32.88\n8.022")
+        #expect(segmentTexts(result) == ["32.88", "8.022"])
+    }
+
+    @Test func localizedDecodeOnEmptyFullFrameStaysQuiet() {
+        let frame = solidGray(width: 1200, height: 1600, level: 180)
+        let result = SevenSegmentOCR.decode(
+            cgImage: frame,
+            localizeDigitPanel: true
+        )
+        #expect(result.extractedText.isEmpty)
+        #expect(result.recognizedTexts.isEmpty)
+    }
+
+    #if os(iOS) || os(macOS)
+    @Test func ssocrServiceLocalizesSealedPanelInFullFrame() async throws {
+        let frame = embed(
+            sealedBothRowsPanel(),
+            canvasWidth: 1200,
+            canvasHeight: 1600,
+            originX: 180,
+            originY: 420,
+            fill: 180
+        )
+        let service = OCRService()
+        let strategy = OCRStrategy(
+            supportedTextTypes: [],
+            supportedLanguages: [.english],
+            processingMode: .ssocr
+        )
+        let result = try await service.processImage(
+            PlatformImage(cgImage: frame),
+            context: OCRContext(processingMode: .ssocr),
+            strategy: strategy
+        )
+        #expect(result.extractedText == "32.88\n8.022")
+        #expect(segmentTexts(result) == ["32.88", "8.022"])
+    }
+    #endif
+
     // MARK: - Helpers
 
     private func service() -> OCRService { OCRService() }
 
     private func decode(_ image: CGImage, maximum: Double = 3) -> OCRResult {
         SevenSegmentOCR.decode(cgImage: image, deskewMaximumDegrees: maximum)
+    }
+
+    /// Default ink/glass with a dark bezel so sealed-glass localization has a
+    /// closed pocket, while decode stays on the path that still greens on this
+    /// tip (washed-ink bezels are a separate follow-up).
+    private func sealedBothRowsPanel() -> CGImage {
+        SegmentPanel.render(
+            rows: [atoms("32.88"), atoms("8.022")],
+            bezelLevel: 40,
+            bezelWidth: 8
+        )
+    }
+
+    private func embed(
+        _ panel: CGImage,
+        canvasWidth: Int,
+        canvasHeight: Int,
+        originX: Int,
+        originY: Int,
+        fill: UInt8
+    ) -> CGImage {
+        var pixels = [UInt8](repeating: fill, count: canvasWidth * canvasHeight)
+        let panelW = panel.width
+        let panelH = panel.height
+        // Copy the panel's own top-left gray bytes. Avoid CGContext.draw — its
+        // default bitmap orientation flips the fixture and empties localized
+        // decode of an otherwise good ROI.
+        guard let provider = panel.dataProvider,
+              let data = provider.data,
+              CFDataGetLength(data) >= panelW * panelH,
+              let bytes = CFDataGetBytePtr(data)
+        else {
+            return solidGrayImage(pixels: pixels, width: canvasWidth, height: canvasHeight)
+        }
+        let rowBytes = panel.bytesPerRow
+        for y in 0..<panelH {
+            let destY = originY + y
+            guard destY >= 0, destY < canvasHeight else { continue }
+            for x in 0..<panelW {
+                let destX = originX + x
+                guard destX >= 0, destX < canvasWidth else { continue }
+                pixels[destY * canvasWidth + destX] = bytes[y * rowBytes + x]
+            }
+        }
+        return solidGrayImage(pixels: pixels, width: canvasWidth, height: canvasHeight)
+    }
+
+    private func solidGray(width: Int, height: Int, level: UInt8) -> CGImage {
+        solidGrayImage(
+            pixels: [UInt8](repeating: level, count: width * height),
+            width: width,
+            height: height
+        )
+    }
+
+    private func crop(_ image: CGImage, x: Int, y: Int, width: Int, height: Int) -> CGImage {
+        var pixels = [UInt8](repeating: 0, count: width * height)
+        guard let provider = image.dataProvider,
+              let data = provider.data,
+              let bytes = CFDataGetBytePtr(data)
+        else {
+            return solidGray(width: width, height: height, level: 0)
+        }
+        let rowBytes = image.bytesPerRow
+        for row in 0..<height {
+            for col in 0..<width {
+                pixels[row * width + col] = bytes[(y + row) * rowBytes + (x + col)]
+            }
+        }
+        return solidGrayImage(pixels: pixels, width: width, height: height)
+    }
+
+    private func solidGrayImage(pixels: [UInt8], width: Int, height: Int) -> CGImage {
+        let data = Data(pixels) as CFData
+        let provider = CGDataProvider(data: data)!
+        return CGImage(
+            width: width,
+            height: height,
+            bitsPerComponent: 8,
+            bitsPerPixel: 8,
+            bytesPerRow: width,
+            space: CGColorSpaceCreateDeviceGray(),
+            bitmapInfo: CGBitmapInfo(rawValue: CGImageAlphaInfo.none.rawValue),
+            provider: provider,
+            decode: nil,
+            shouldInterpolate: false,
+            intent: .defaultIntent
+        )!
     }
 
     private func panel(_ rows: [String]) -> CGImage {
@@ -547,13 +961,30 @@ private enum SegmentPanel {
         glare: Bool = false,
         tiltDegrees: Double = 0,
         inkLevel: UInt8? = nil,
-        backgroundLevel: UInt8? = nil
+        backgroundLevel: UInt8? = nil,
+        bezelLevel: UInt8? = nil,
+        bezelWidth: Int = 0,
+        outerMargin: Int = 0,
+        scale: Int = 1,
+        gapGlare: Bool = false,
+        edgeStrip: Bool = false,
+        aboveDigitGlare: Bool = false,
+        leftScratch: Bool = false,
+        tallHaze: Bool = false,
+        solidGapWashVolumeOnly: Bool = false
     ) -> CGImage {
         let laid = layout(rows: rows, padding: padding)
         let background: UInt8 = backgroundLevel ?? (invert ? 28 : 214)
         let ink: UInt8 = inkLevel ?? (invert ? 228 : 22)
         let markInk: UInt8 = 255
         var pixels = [UInt8](repeating: background, count: laid.width * laid.height)
+        if bezelWidth > 0, let bezelLevel {
+            let band = min(bezelWidth, min(laid.width, laid.height) / 2)
+            fill(&pixels, width: laid.width, height: laid.height, rect: CGRect(x: 0, y: 0, width: laid.width, height: band), value: bezelLevel)
+            fill(&pixels, width: laid.width, height: laid.height, rect: CGRect(x: 0, y: laid.height - band, width: laid.width, height: band), value: bezelLevel)
+            fill(&pixels, width: laid.width, height: laid.height, rect: CGRect(x: 0, y: 0, width: band, height: laid.height), value: bezelLevel)
+            fill(&pixels, width: laid.width, height: laid.height, rect: CGRect(x: laid.width - band, y: 0, width: band, height: laid.height), value: bezelLevel)
+        }
         for stroke in laid.strokes where !stroke.opposite {
             fill(&pixels, width: laid.width, height: laid.height, rect: stroke.rect, value: ink)
         }
@@ -570,11 +1001,280 @@ private enum SegmentPanel {
                 }
             }
         }
-        if abs(tiltDegrees) > 0.01 {
-            let turned = rotate(pixels: pixels, width: laid.width, height: laid.height, degrees: tiltDegrees, fill: background)
-            return image(pixels: turned.pixels, width: turned.width, height: turned.height)
+        var width = laid.width
+        var height = laid.height
+        if solidGapWashVolumeOnly {
+            let volumeGaps = laid.gaps.filter { gap in
+                guard let volume = laid.rowBands.dropFirst().first else { return false }
+                return gap.minY >= volume.minY && gap.maxY <= volume.maxY
+            }
+            paintSolidGapWash(&pixels, width: width, height: height, ink: ink, gaps: volumeGaps)
         }
-        return image(pixels: pixels, width: laid.width, height: laid.height)
+        if tallHaze {
+            paintTallHaze(
+                &pixels,
+                width: width,
+                height: height,
+                ink: ink,
+                bands: laid.rowBands,
+                padding: padding
+            )
+        }
+        if gapGlare {
+            paintGapGlare(&pixels, width: width, height: height, bands: laid.rowBands)
+        }
+        if aboveDigitGlare {
+            paintAboveDigitGlare(
+                &pixels,
+                width: width,
+                height: height,
+                ink: ink,
+                bands: laid.rowBands,
+                strokes: laid.strokes
+            )
+        }
+        if leftScratch {
+            paintLeftScratch(
+                &pixels,
+                width: width,
+                height: height,
+                ink: ink,
+                background: background,
+                padding: padding,
+                bands: laid.rowBands
+            )
+        }
+        if edgeStrip {
+            paintEdgeStrip(
+                &pixels,
+                width: width,
+                height: height,
+                ink: ink,
+                padding: padding,
+                bands: laid.rowBands
+            )
+        }
+        if abs(tiltDegrees) > 0.01 {
+            let turned = rotate(pixels: pixels, width: width, height: height, degrees: tiltDegrees, fill: background)
+            pixels = turned.pixels
+            width = turned.width
+            height = turned.height
+        }
+        if scale > 1 {
+            let grown = scalePixels(pixels, width: width, height: height, factor: scale)
+            pixels = grown.pixels
+            width = grown.width
+            height = grown.height
+        }
+        if outerMargin > 0 {
+            let paddedW = width + outerMargin * 2
+            let paddedH = height + outerMargin * 2
+            var padded = [UInt8](repeating: background, count: paddedW * paddedH)
+            for y in 0..<height {
+                for x in 0..<width {
+                    padded[(y + outerMargin) * paddedW + (x + outerMargin)] = pixels[y * width + x]
+                }
+            }
+            pixels = padded
+            width = paddedW
+            height = paddedH
+        }
+        return image(pixels: pixels, width: width, height: height)
+    }
+
+    /// Fill volume-row intra-digit gaps to the full cell height. Column sums
+    /// stay high across the bridge, so a valley cut has nothing to find.
+    /// Approach D copies price-row digit pitch and force-cuts those slots.
+    private static func paintSolidGapWash(
+        _ pixels: inout [UInt8],
+        width: Int,
+        height: Int,
+        ink: UInt8,
+        gaps: [Gap]
+    ) {
+        for gap in gaps {
+            let x0 = max(0, gap.minX)
+            let x1 = min(width, gap.maxX)
+            let y0 = max(0, gap.minY)
+            let y1 = min(height, gap.maxY)
+            guard x1 > x0, y1 > y0 else { continue }
+            for y in y0..<y1 {
+                for x in x0..<x1 {
+                    pixels[y * width + x] = ink
+                }
+            }
+        }
+    }
+
+    /// A bright line just above each digit row. A wide threshold window reaches
+    /// it and marks the glass. A crop of the row's own ink does not include it.
+    private static func paintGapGlare(
+        _ pixels: inout [UInt8],
+        width: Int,
+        height: Int,
+        bands: [RowBand]
+    ) {
+        for band in bands {
+            let y = band.minY - 16
+            guard y >= 0, y + 2 < height else { continue }
+            let x0 = min(width, 8)
+            let x1 = max(x0, width - 8)
+            for dy in 0..<3 {
+                for x in x0..<x1 {
+                    pixels[(y + dy) * width + x] = 255
+                }
+            }
+        }
+    }
+
+    /// Dense ink in each digit's own columns, sitting just above the top bar
+    /// of the first row. The box grows into that glare, so the upper stem
+    /// scans leave the glyph. Digits stay separated; a full-width slab would
+    /// fuse them. Later rows are left clean — glare in the inter-row gap
+    /// would join the bands and hide the digit-box failure.
+    private static func paintAboveDigitGlare(
+        _ pixels: inout [UInt8],
+        width: Int,
+        height: Int,
+        ink: UInt8,
+        bands: [RowBand],
+        strokes: [Stroke]
+    ) {
+        guard let band = bands.first else { return }
+        let digitStrokes = strokes.filter { !$0.opposite }
+        let glareHeight = max(28, cellH * 2 / 5)
+        let y1 = band.minY
+        let y0 = max(0, y1 - glareHeight)
+        guard y1 > y0 else { return }
+        let topBars = digitStrokes.filter { painted in
+            let rect = painted.rect
+            let minY = Int(rect.minY)
+            let barH = Int(rect.height.rounded(.up))
+            return minY >= band.minY
+                && minY < band.minY + stroke * 2
+                && barH <= stroke + 2
+                && Int(rect.width) > stroke
+        }
+        for bar in topBars {
+            let rect = bar.rect
+            let left = max(0, Int(rect.minX) - stroke)
+            let right = min(width, Int(rect.maxX.rounded(.up)) + stroke)
+            guard right > left else { continue }
+            for y in y0..<y1 {
+                for x in left..<right {
+                    pixels[y * width + x] = ink
+                }
+            }
+        }
+    }
+
+    /// Sparse dark marks above each digit row that keep the ink run open, so
+    /// the detected band is taller than the digit cells (price-like height
+    /// would be the densest stretch inside that band). Stay over the digit
+    /// columns — do not bridge a left scratch across the padding gap.
+    private static func paintTallHaze(
+        _ pixels: inout [UInt8],
+        width: Int,
+        height: Int,
+        ink: UInt8,
+        bands: [RowBand],
+        padding: Int = 16
+    ) {
+        let haze = max(48, cellH / 2)
+        for band in bands {
+            let top = max(0, band.minY - haze)
+            guard top < band.minY else { continue }
+            let x0 = min(width, max(padding, 8))
+            let x1 = max(x0, width - 8)
+            for y in top..<band.minY {
+                for x in stride(from: x0, to: x1, by: 11) {
+                    pixels[y * width + x] = ink
+                    if x + 1 < width { pixels[y * width + x + 1] = ink }
+                }
+            }
+        }
+    }
+
+    /// Left scratch inside each digit band, cleared through the row gap so it
+    /// is not a bezel edge. A span that starts at x0 includes it; a span that
+    /// starts on digit ink does not.
+    private static func paintLeftScratch(
+        _ pixels: inout [UInt8],
+        width: Int,
+        height: Int,
+        ink: UInt8,
+        background: UInt8,
+        padding: Int,
+        bands: [RowBand]
+    ) {
+        // Keep the scratch in the left padding with a clear gap before digits.
+        let scratchEnd = min(width / 4, max(8, padding / 3))
+        let haze = max(48, cellH / 2)
+        guard scratchEnd > 4, let first = bands.first, let last = bands.last else { return }
+        for band in bands {
+            let top = max(0, band.minY - haze)
+            for y in top..<band.maxY {
+                for x in 2..<scratchEnd {
+                    pixels[y * width + x] = ink
+                }
+            }
+        }
+        // Keep the gap empty so readingSpan does not treat the strip as edge.
+        let gapTop = first.maxY
+        let gapBottom = last.minY
+        guard gapBottom > gapTop else { return }
+        for y in gapTop..<gapBottom {
+            for x in 4..<scratchEnd {
+                pixels[y * width + x] = background
+            }
+        }
+    }
+
+    /// A full-height strip past the strokes, then a short mark that does not
+    /// enter the gap. The mark is close enough to be grouped with the digits
+    /// unless the strip blocks that jump.
+    private static func paintEdgeStrip(
+        _ pixels: inout [UInt8],
+        width: Int,
+        height: Int,
+        ink: UInt8,
+        padding: Int,
+        bands: [RowBand]
+    ) {
+        guard let first = bands.first, let last = bands.last else { return }
+        let contentEnd = width - padding
+        let stripX = contentEnd + 24
+        let stripEnd = min(width, stripX + 6)
+        guard stripEnd > stripX else { return }
+        for y in first.minY..<last.maxY {
+            for x in stripX..<stripEnd {
+                pixels[y * width + x] = ink
+            }
+        }
+        let speckX = stripEnd + 2
+        let speckEnd = min(width, speckX + 4)
+        guard speckEnd > speckX else { return }
+        for band in bands {
+            let top = band.minY + max(1, (band.maxY - band.minY) / 5)
+            let bottom = min(band.maxY, top + max(4, (band.maxY - band.minY) / 3))
+            for y in top..<bottom {
+                for x in speckX..<speckEnd {
+                    pixels[y * width + x] = ink
+                }
+            }
+        }
+    }
+
+    private static func scalePixels(_ pixels: [UInt8], width: Int, height: Int, factor: Int) -> (pixels: [UInt8], width: Int, height: Int) {
+        let newW = width * factor
+        let newH = height * factor
+        var output = [UInt8](repeating: 0, count: newW * newH)
+        for y in 0..<newH {
+            for x in 0..<newW {
+                output[y * newW + x] = pixels[(y / factor) * width + (x / factor)]
+            }
+        }
+        return (output, newW, newH)
     }
 
     private struct Stroke {
@@ -588,52 +1288,95 @@ private enum SegmentPanel {
         var midY: Int { (minY + maxY) / 2 }
     }
 
+    private struct Gap {
+        var minX: Int
+        var maxX: Int
+        var minY: Int
+        var maxY: Int
+    }
+
     private struct Layout {
         var width: Int
         var height: Int
         var strokes: [Stroke]
         var rowBands: [RowBand]
+        var gaps: [Gap]
     }
 
     private static func layout(rows: [[Atom]], padding: Int) -> Layout {
         var strokes: [Stroke] = []
         var bands: [RowBand] = []
+        var gaps: [Gap] = []
         var y = padding
         var maxX = padding
         for row in rows {
             var x = padding
             let rowTop = y
+            var previousEnd: Int?
             for atom in row {
                 switch atom {
                 case .gap(let extra):
+                    previousEnd = nil
                     x += extra
                 case .digit(let pattern):
+                    if let end = previousEnd, end < x {
+                        gaps.append(Gap(minX: end, maxX: x, minY: rowTop, maxY: rowTop + cellH))
+                    }
                     strokes.append(contentsOf: digitStrokes(pattern, x: x, y: y, opposite: false))
-                    let advance = isNarrowOne(pattern) ? stroke : cellW
-                    x += advance + intra
+                    previousEnd = x + cellW
+                    x += cellW + intra
                 case .period:
+                    if let end = previousEnd, end < x {
+                        gaps.append(Gap(minX: end, maxX: x, minY: rowTop, maxY: rowTop + cellH))
+                    }
                     strokes.append(Stroke(rect: periodRect(x: x, y: y), opposite: false))
+                    previousEnd = x + stroke
                     x += stroke + intra
                 case .comma:
+                    if let end = previousEnd, end < x {
+                        gaps.append(Gap(minX: end, maxX: x, minY: rowTop, maxY: rowTop + cellH))
+                    }
                     strokes.append(contentsOf: commaStrokes(x: x, y: y, opposite: false))
+                    previousEnd = x + stroke
                     x += stroke + intra
                 case .colon:
+                    if let end = previousEnd, end < x {
+                        gaps.append(Gap(minX: end, maxX: x, minY: rowTop, maxY: rowTop + cellH))
+                    }
                     strokes.append(contentsOf: colonStrokes(x: x, y: y))
+                    previousEnd = x + stroke
                     x += stroke + intra
                 case .hyphen:
+                    if let end = previousEnd, end < x {
+                        gaps.append(Gap(minX: end, maxX: x, minY: rowTop, maxY: rowTop + cellH))
+                    }
                     strokes.append(Stroke(rect: CGRect(x: x, y: y + cellH / 2 - stroke / 2, width: cellW, height: stroke), opposite: false))
+                    previousEnd = x + cellW
                     x += cellW + intra
                 case .topBar:
+                    if let end = previousEnd, end < x {
+                        gaps.append(Gap(minX: end, maxX: x, minY: rowTop, maxY: rowTop + cellH))
+                    }
                     strokes.append(Stroke(rect: CGRect(x: x, y: y, width: cellW, height: stroke), opposite: false))
+                    previousEnd = x + cellW
                     x += cellW + intra
                 case .fill(let width, let height):
+                    previousEnd = nil
                     strokes.append(Stroke(rect: CGRect(x: x, y: y + max(0, (cellH - height) / 2), width: width, height: height), opposite: false))
                     x += width + intra
                 case .oppositePeriod:
+                    if let end = previousEnd, end < x {
+                        gaps.append(Gap(minX: end, maxX: x, minY: rowTop, maxY: rowTop + cellH))
+                    }
                     strokes.append(Stroke(rect: periodRect(x: x, y: y), opposite: true))
+                    previousEnd = x + stroke
                     x += stroke + intra
                 case .oppositeComma:
+                    if let end = previousEnd, end < x {
+                        gaps.append(Gap(minX: end, maxX: x, minY: rowTop, maxY: rowTop + cellH))
+                    }
                     strokes.append(contentsOf: commaStrokes(x: x, y: y, opposite: true))
+                    previousEnd = x + stroke
                     x += stroke + intra
                 }
             }
@@ -643,7 +1386,7 @@ private enum SegmentPanel {
         }
         let height = max(padding, y - rowGap + padding)
         let width = max(padding, maxX - intra + padding)
-        return Layout(width: max(width, 1), height: max(height, 1), strokes: strokes, rowBands: bands)
+        return Layout(width: max(width, 1), height: max(height, 1), strokes: strokes, rowBands: bands, gaps: gaps)
     }
 
     private static func isNarrowOne(_ pattern: SevenSegmentPattern) -> Bool {
@@ -678,8 +1421,9 @@ private enum SegmentPanel {
         if pattern.contains(.e) { rects.append(CGRect(x: x, y: y + cellH / 2, width: stroke, height: cellH / 2 - stroke)) }
         if pattern.contains(.f) { rects.append(CGRect(x: x, y: y + stroke, width: stroke, height: cellH / 2 - stroke)) }
         if pattern.contains(.g) { rects.append(CGRect(x: x + stroke, y: mid, width: cellW - 2 * stroke, height: stroke)) }
-        if pattern.contains(.b) && pattern.contains(.c) && !pattern.contains(.a) && !pattern.contains(.d) && !pattern.contains(.e) && !pattern.contains(.f) && !pattern.contains(.g) {
-            rects = [CGRect(x: x, y: y, width: stroke, height: cellH)]
+        // A one is a full cell. The stem is the right edge, not a narrower glyph.
+        if isNarrowOne(pattern) {
+            rects = [CGRect(x: x + cellW - stroke, y: y, width: stroke, height: cellH)]
         }
         return rects.map { Stroke(rect: $0, opposite: opposite) }
     }
