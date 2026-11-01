@@ -1734,28 +1734,44 @@ private func readingSpan(_ mask: Mask, bands: [(Int, Int)]) -> (Int, Int)? {
     }
     let active = keep.indices.filter { keep[$0] }
     guard let first = active.first else { return nil }
-    // Synthetic intra gaps are 8px. Display glyphs sit farther apart than
-    // that, so the join has to reach about one cell. A bezel column still
-    // splits the run, and a left scratch past this join stays out. The
-    // digit field is the run with the most ink, not a speck past the bezel.
-    let gapLimit = 48
-    var runs: [(start: Int, end: Int, ink: Int)] = []
+    var pieces: [(start: Int, end: Int, ink: Int)] = []
     var start = first
     var end = first
     var ink = columnInk[first]
     for index in active.dropFirst() {
-        let crossesBezel = (end + 1..<index).contains { edgeColumn[$0] }
-        if index - end <= gapLimit, !crossesBezel {
+        if index == end + 1 {
             end = index
             ink += columnInk[index]
         } else {
-            runs.append((start, end + 1, ink))
+            pieces.append((start, end + 1, ink))
             start = index
             end = index
             ink = columnInk[index]
         }
     }
-    runs.append((start, end + 1, ink))
+    pieces.append((start, end + 1, ink))
+    // Intra gaps are a few pixels. A display glyph can sit about a cell
+    // farther away. A one-pixel haze speck must not bridge that gap, and a
+    // bezel column must not be crossed. The digit field is the inkest run.
+    let intraLimit = 8
+    let glyphGap = 48
+    let glyphWidth = 8
+    var runs: [(start: Int, end: Int, ink: Int)] = []
+    var current = pieces[0]
+    for piece in pieces.dropFirst() {
+        let gap = piece.start - current.end
+        let crossesBezel = (current.end..<piece.start).contains { edgeColumn[$0] }
+        let widePieces = (current.end - current.start) >= glyphWidth
+            && (piece.end - piece.start) >= glyphWidth
+        if !crossesBezel, gap <= intraLimit || (widePieces && gap <= glyphGap) {
+            current.end = piece.end
+            current.ink += piece.ink
+        } else {
+            runs.append(current)
+            current = piece
+        }
+    }
+    runs.append(current)
     guard let best = runs.max(by: { $0.ink < $1.ink }) else { return nil }
     let span = best.end - best.start
     guard span > max(12, height / 10) else { return nil }
