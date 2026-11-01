@@ -1516,7 +1516,7 @@ private struct TypeOnlyFormWrapper<T>: View {
     
     #if canImport(SwiftData)
     @available(macOS 14.0, iOS 17.0, *)
-    @Environment(\.modelContext) private var modelContext: ModelContext
+    @Environment(\.self) private var environment
     #endif
     
     // State to hold the created entity
@@ -1620,7 +1620,9 @@ private struct TypeOnlyFormWrapper<T>: View {
     /// DRY: Uses shared EntityCreationUtilities
     @available(macOS 14.0, iOS 17.0, *)
     private func createSwiftDataEntityUsingCodable() -> T? {
-        let context = modelContext
+        guard let context = SwiftDataContextAccess.installedContext(in: environment) else {
+            return nil
+        }
         
         // Use shared utility
         if let entity = EntityCreationUtilities.createBlankSwiftDataEntity(
@@ -1680,8 +1682,8 @@ private struct TypeOnlyFormWrapper<T>: View {
         
         #if canImport(SwiftData)
         if #available(macOS 14.0, iOS 17.0, *) {
-            if let persistentModel = createdEntity as? any PersistentModel {
-                let context = modelContext
+            if let persistentModel = createdEntity as? any PersistentModel,
+               let context = SwiftDataContextAccess.installedContext(in: environment) {
                 context.delete(persistentModel)
             }
         }
