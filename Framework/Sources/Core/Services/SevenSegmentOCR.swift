@@ -91,10 +91,6 @@ public enum SevenSegmentGlyph {
 }
 
 public enum SevenSegmentOCR {
-    /// Temporary sample notes for the #599 speck diagnosis. Cleared at the
-    /// start of each decode.
-    nonisolated(unsafe) static var diagnosticNotes: [String] = []
-
     /// Pixel rect of the digit panel (glass plus a bezel margin) in image
     /// coordinates, or `nil` when no sealed panel is found.
     ///
@@ -116,7 +112,6 @@ public enum SevenSegmentOCR {
         deskewMaximumDegrees: Double = 3,
         localizeDigitPanel: Bool = false
     ) -> OCRResult {
-        diagnosticNotes = []
         guard var gray = GrayBuffer.read(cgImage) else {
             return OCRResult(extractedText: "", confidence: 0)
         }
@@ -599,28 +594,6 @@ private struct GrayBuffer {
         guard let glyph = SevenSegmentGlyph.match(pattern, preferMissing: washAwareStems) else {
             return nil
         }
-        let bits = [
-            pattern.contains(.a) ? "a" : "-",
-            pattern.contains(.b) ? "b" : "-",
-            pattern.contains(.c) ? "c" : "-",
-            pattern.contains(.d) ? "d" : "-",
-            pattern.contains(.e) ? "e" : "-",
-            pattern.contains(.f) ? "f" : "-",
-            pattern.contains(.g) ? "g" : "-"
-        ].joined()
-        let third = max(1, trimmed.height / 3)
-        let mid = trimmed.minX + trimmed.width / 2
-        let aRun = longestForegroundRun(mask, x: mid, y: trimmed.minY, length: third, vertical: true)
-        let dRun = longestForegroundRun(
-            mask,
-            x: mid,
-            y: trimmed.minY + third * 2,
-            length: max(1, trimmed.maxY - (trimmed.minY + third * 2)),
-            vertical: true
-        )
-        SevenSegmentOCR.diagnosticNotes.append(
-            "\(glyph.character) \(bits) box \(box.minX),\(box.minY) \(box.width)x\(box.height) trimmed \(trimmed.minX),\(trimmed.minY) \(trimmed.width)x\(trimmed.height) aRun \(aRun)/\(third) dRun \(dRun) buf \(buffer.width)x\(buffer.height)"
-        )
         return Cell(box: box, character: glyph.character, confidence: glyph.confidence, band: bandIndex)
     }
 
