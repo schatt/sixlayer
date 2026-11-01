@@ -91,9 +91,6 @@ public enum SevenSegmentGlyph {
 }
 
 public enum SevenSegmentOCR {
-    /// Pitch-pack notes from the latest fragments decode. Diagnosis for #599.
-    nonisolated(unsafe) static var diagnosticNotes: [String] = []
-
     /// Pixel rect of the digit panel (glass plus a bezel margin) in image
     /// coordinates, or `nil` when no sealed panel is found.
     ///
@@ -1054,8 +1051,7 @@ private func recognizedGroups(_ cells: [Cell], width: Int, height: Int) -> [OCRR
 
 private extension GrayBuffer {
     static func fragments(in buffer: GrayBuffer) -> [[OCRRecognizedText]] {
-        SevenSegmentOCR.diagnosticNotes = []
-        return readRows(in: buffer, allowBandPitch: true).compactMap { row in
+        readRows(in: buffer, allowBandPitch: true).compactMap { row in
             let texts = recognizedGroups(row, width: buffer.width, height: buffer.height)
             return texts.isEmpty ? nil : texts
         }
@@ -2236,11 +2232,6 @@ private func columnRuns(
                 guard let first = cluster.first, let last = cluster.last else { continue }
                 let clusterWidth = last.1 - first.0
                 let share = digitCount(width: clusterWidth, stride: pitch.stride)
-                if SevenSegmentOCR.diagnosticNotes.count < 8 {
-                    SevenSegmentOCR.diagnosticNotes.append(
-                        "w\(clusterWidth) stride\(pitch.stride) share\(share) body\(pitch.body) count\(pitch.count)"
-                    )
-                }
                 pieces.append(contentsOf: packClusterRuns(cluster, share: share, sums: sums, pitch: pitch))
             }
             if let overallFirst = wideEnough.first, let overallLast = wideEnough.last {
