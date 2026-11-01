@@ -66,15 +66,16 @@ public enum EntityCreationUtilities {
             if let hints = fieldHints, let hint = hints[fieldId], hint.isHidden {
                 continue
             }
+            let prepared = preparedValue(value, forKey: fieldId, on: description)
             if let rejection = assignmentRejection(
-                value: value,
+                value: prepared,
                 key: fieldId,
                 entityName: entityName,
                 description: description
             ) {
                 throw rejection
             }
-            assignments.append((fieldId, value))
+            assignments.append((fieldId, prepared))
         }
 
         let entity = insert(description, assignments: assignments, into: context)
@@ -123,15 +124,16 @@ public enum EntityCreationUtilities {
             } else {
                 value = getDefaultValueForType(field.type)
             }
+            let prepared = preparedValue(value, forKey: field.name, on: description)
             if assignmentRejection(
-                value: value,
+                value: prepared,
                 key: field.name,
                 entityName: entityName,
                 description: description
             ) != nil {
                 return nil
             }
-            assignments.append((field.name, value))
+            assignments.append((field.name, prepared))
         }
 
         let entity = insert(description, assignments: assignments, into: context)
@@ -180,6 +182,69 @@ public enum EntityCreationUtilities {
                 : .incompatibleValue(entityName: entityName, key: key)
         }
         return .unknownProperty(entityName: entityName, key: key)
+    }
+
+    /// Form fields store numbers, booleans, and some dates as strings (#615).
+    /// Convert those before the class check. The check itself still matches `setValue`.
+    private static func preparedValue(
+        _ value: Any?,
+        forKey key: String,
+        on description: NSEntityDescription
+    ) -> Any? {
+        guard let attribute = description.attributesByName[key] else { return value }
+        return valueReadyToAssign(value, to: attribute)
+    }
+
+    private static func valueReadyToAssign(_ value: Any?, to attribute: NSAttributeDescription) -> Any? {
+        guard let value else { return nil }
+        if valueFits(value, attribute: attribute) { return value }
+        switch attribute.attributeType {
+        case .integer16AttributeType, .integer32AttributeType, .integer64AttributeType:
+            if let int = integerStored(in: value) { return int }
+        case .doubleAttributeType, .floatAttributeType:
+            if let double = doubleStored(in: value) { return double }
+        case .decimalAttributeType:
+            if let decimal = decimalStored(in: value) { return decimal }
+        case .booleanAttributeType:
+            if let bool = boolStored(in: value) { return bool }
+        case .dateAttributeType:
+            if let date = DynamicFormStoredDateValue.date(fromStoredValue: value) { return date }
+        default:
+            break
+        }
+        return value
+    }
+
+    private static func integerStored(in value: Any) -> Int? {
+        guard let string = value as? String else { return nil }
+        let trimmed = string.trimmingCharacters(in: .whitespacesAndNewlines)
+        if let int = Int(trimmed) { return int }
+        guard let double = Double(trimmed), double.isFinite, double == double.rounded(),
+              abs(double) <= Double(Int.max) else { return nil }
+        return Int(double)
+    }
+
+    private static func doubleStored(in value: Any) -> Double? {
+        guard let string = value as? String else { return nil }
+        let trimmed = string.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let double = Double(trimmed), double.isFinite else { return nil }
+        return double
+    }
+
+    private static func decimalStored(in value: Any) -> Decimal? {
+        guard let string = value as? String else { return nil }
+        let trimmed = string.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return nil }
+        return Decimal(string: trimmed, locale: Locale(identifier: "en_US_POSIX"))
+    }
+
+    private static func boolStored(in value: Any) -> Bool? {
+        guard let string = value as? String else { return nil }
+        switch string.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() {
+        case "true", "1": return true
+        case "false", "0": return false
+        default: return nil
+        }
     }
 
     private static func valueFits(_ value: Any?, attribute: NSAttributeDescription) -> Bool {
