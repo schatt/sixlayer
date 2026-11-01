@@ -88,7 +88,9 @@ struct OCRSevenSegment576Tests {
         // the copied pitch to plant a decimal, so it already reads "3.4".
         let plain = panel(["32.88", "8.022"])
         #expect(decode(plain, maximum: 0).extractedText == "32.88\n8.022")
-        #expect(decode(midGrayVeil(plain), maximum: 0).extractedText == "32.88\n8.022")
+        let veiled = decode(midGrayVeil(plain), maximum: 0)
+        #expect(SevenSegmentOCR.diagnosticNotes.joined(separator: "\n") == "see")
+        #expect(veiled.extractedText == "32.88\n8.022")
     }
 
     @Test func tallCropReadsEachRowAtItsOwnWindow() {
