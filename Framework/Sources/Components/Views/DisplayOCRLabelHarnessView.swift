@@ -73,7 +73,7 @@ public struct DisplayOCRLabelHarnessView: View {
         }
         .fileExporter(
             isPresented: $showExporter,
-            document: exportDocument,
+            document: $exportDocument,
             contentType: .json,
             defaultFilename: "display-ocr-label"
         ) { result in
