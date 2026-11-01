@@ -91,6 +91,9 @@ public enum SevenSegmentGlyph {
 }
 
 public enum SevenSegmentOCR {
+    /// Scan runs from the latest `fragments` call. Diagnosis for #599.
+    nonisolated(unsafe) static var diagnosticNotes: [String] = []
+
     /// Pixel rect of the digit panel (glass plus a bezel margin) in image
     /// coordinates, or `nil` when no sealed panel is found.
     ///
@@ -703,6 +706,19 @@ private struct GrayBuffer {
                 }
             }
         }
+        if SevenSegmentOCR.diagnosticNotes.count < 8 {
+            let aRun = longestForegroundRun(mask, x: midX, y: box.minY, length: third, vertical: true)
+            let gRun = longestForegroundRun(mask, x: midX, y: box.minY + third, length: third, vertical: true)
+            let dLen = max(1, box.maxY - lower)
+            let dRun = longestForegroundRun(mask, x: midX, y: lower, length: dLen, vertical: true)
+            let bRun = longestForegroundRun(mask, x: midX + 1, y: quarter, length: right, vertical: false)
+            let cRun = longestForegroundRun(mask, x: midX + 1, y: threeQuarters, length: right, vertical: false)
+            let eRun = longestForegroundRun(mask, x: box.minX + eFringe, y: threeQuarters, length: eLength, vertical: false)
+            let fRun = longestForegroundRun(mask, x: box.minX, y: quarter, length: half, vertical: false)
+            SevenSegmentOCR.diagnosticNotes.append(
+                "a\(aRun)/\(third) g\(gRun)/\(third) d\(dRun)/\(dLen) b\(bRun)/\(right) c\(cRun)/\(right) e\(eRun)/\(eLength) f\(fRun)/\(half) box\(boxWidth)x\(boxHeight)"
+            )
+        }
         return pattern
     }
 
@@ -1039,7 +1055,8 @@ private func recognizedGroups(_ cells: [Cell], width: Int, height: Int) -> [OCRR
 
 private extension GrayBuffer {
     static func fragments(in buffer: GrayBuffer) -> [[OCRRecognizedText]] {
-        readRows(in: buffer, allowBandPitch: true).compactMap { row in
+        SevenSegmentOCR.diagnosticNotes = []
+        return readRows(in: buffer, allowBandPitch: true).compactMap { row in
             let texts = recognizedGroups(row, width: buffer.width, height: buffer.height)
             return texts.isEmpty ? nil : texts
         }
