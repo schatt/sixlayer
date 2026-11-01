@@ -3,11 +3,11 @@
 //  DisplayOCRTraining
 //
 //  Runnable app for the display OCR label harness (#609).
-//  The window is the trainer. This shell is the wrong screen on purpose
-//  until the test that demands the trainer goes green.
+//  The window is the trainer.
 //
 
 import SwiftUI
+import SixLayerFramework
 #if os(macOS)
 import AppKit
 #endif
@@ -29,10 +29,10 @@ struct DisplayOCRTrainingApp: App {
     }
 }
 
-/// What the training app shows. Not the trainer yet.
+/// The training app's window.
 struct DisplayOCRTrainingRootView: View {
     var body: some View {
-        Text("Trainer shell")
+        DisplayOCRTrainingView()
     }
 }
 
