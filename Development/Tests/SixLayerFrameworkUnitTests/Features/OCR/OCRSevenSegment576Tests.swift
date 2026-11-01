@@ -80,6 +80,15 @@ struct OCRSevenSegment576Tests {
         #expect(decode(panel(["11", "22", "33", "44"])).extractedText == "11\n22\n33\n44")
     }
 
+    @Test func midGrayVeilUsesTheStricterCore() {
+        // 100 sits under the halfway cut when the window still sees ink (22)
+        // and glass (214), and over a quarter of that range. The loose mask
+        // fills the frame. A stricter core still has the two rows (#604).
+        let plain = panel(["12", "34"])
+        #expect(decode(plain, maximum: 0).extractedText == "12\n34")
+        #expect(decode(midGrayVeil(plain), maximum: 0).extractedText == "12\n34")
+    }
+
     @Test func tallCropReadsEachRowAtItsOwnWindow() {
         // Empty margin makes the threshold window wide enough to see a bright
         // line just above each row. The glass under that line is then darker
@@ -856,6 +865,30 @@ struct OCRSevenSegment576Tests {
 
     private func panel(_ rows: [String]) -> CGImage {
         SegmentPanel.render(rows: rows.map(atoms))
+    }
+
+    /// Leave the strokes alone. Drop every other background pixel to a
+    /// mid-gray, and keep a lattice of the original glass so a small window
+    /// still sees a bright pixel beside the veil.
+    private func midGrayVeil(_ image: CGImage, level: UInt8 = 100) -> CGImage {
+        let width = image.width
+        let height = image.height
+        guard let provider = image.dataProvider,
+              let data = provider.data,
+              let bytes = CFDataGetBytePtr(data)
+        else {
+            return image
+        }
+        let rowBytes = image.bytesPerRow
+        var pixels = [UInt8](repeating: 0, count: width * height)
+        for y in 0..<height {
+            for x in 0..<width {
+                let pixel = bytes[y * rowBytes + x]
+                let veiled = pixel >= 40 && (x + y) % 3 != 0
+                pixels[y * width + x] = veiled ? level : pixel
+            }
+        }
+        return solidGrayImage(pixels: pixels, width: width, height: height)
     }
 
     private func atoms(_ text: String) -> [SegmentPanel.Atom] {
