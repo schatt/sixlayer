@@ -84,9 +84,11 @@ struct OCRSevenSegment576Tests {
         // 100 sits under the halfway cut when the window still sees ink (22)
         // and glass (214), and over a quarter of that range. The loose mask
         // fills the frame. A stricter core still has the two rows (#604).
-        let plain = panel(["12", "34"])
-        #expect(decode(plain, maximum: 0).extractedText == "12\n34")
-        #expect(decode(midGrayVeil(plain), maximum: 0).extractedText == "12\n34")
+        // "12" / "34" is the wrong host: the second row is short enough for
+        // the copied pitch to plant a decimal, so it already reads "3.4".
+        let plain = panel(["32.88", "8.022"])
+        #expect(decode(plain, maximum: 0).extractedText == "32.88\n8.022")
+        #expect(decode(midGrayVeil(plain), maximum: 0).extractedText == "32.88\n8.022")
     }
 
     @Test func tallCropReadsEachRowAtItsOwnWindow() {
