@@ -367,12 +367,10 @@ private struct DisplayOCRTrainingFileImporter: ViewModifier {
         ) { result in
             switch result {
             case .success(let urls):
-                guard let url = urls.first else {
-                    session.markUnreadableImage()
-                    return
-                }
+                guard let url = urls.first else { return }
                 session.load(fileURL: url)
-            case .failure:
+            case .failure(let error):
+                guard !DisplayOCRTraining.importerCancelled(error) else { return }
                 session.markUnreadableImage()
             }
         }
