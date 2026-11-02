@@ -419,3 +419,14 @@ private struct DisplayOCRTrainingExportFolderImporter: ViewModifier {
         #endif
     }
 }
+
+/// Stub. The library count is not on screen yet.
+struct DisplayOCRTrainingLibrarySummary: View {
+    let exampleCount: Int
+    let rejectionCount: Int
+
+    var body: some View {
+        let _ = (exampleCount, rejectionCount)
+        EmptyView()
+    }
+}
