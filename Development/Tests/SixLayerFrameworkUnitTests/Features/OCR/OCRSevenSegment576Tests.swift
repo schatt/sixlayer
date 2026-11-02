@@ -735,6 +735,19 @@ struct OCRSevenSegment576Tests {
         #expect(pair?.lineCount == 1)
     }
 
+    /// Two rows are the common pump panel, and they use the same finder as
+    /// one row and three. Neither finder invents a third line or drops one.
+    @Test func rowFindersKeepATwoRowPanelAsTwoLines() {
+        let image = SegmentPanel.render(rows: [atoms("32.88"), atoms("8.022")])
+        let hits = SevenSegmentOCR.searchPaths(in: image, deskewMaximumDegrees: 0)
+        let all = hits.first { $0.frame == .wholeFrame && $0.rows == .allGaps && $0.digits == .scanline }
+        let pair = hits.first { $0.frame == .wholeFrame && $0.rows == .deepestPair && $0.digits == .scanline }
+        #expect(all?.lineCount == 2)
+        #expect(all?.text == "32.88\n8.022")
+        #expect(pair?.lineCount == 2)
+        #expect(pair?.text == "32.88\n8.022")
+    }
+
     /// Digit step. The scanline through the upper stems is erased. The band
     /// reader looks a few pixels off that line and still sees the stem.
     @Test func bandSampleReadsStemWhenTheScanlineRowIsEmpty() {
