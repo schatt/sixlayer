@@ -202,6 +202,16 @@ public enum DisplayOCRTraining {
     public static let schemaVersion = 1
     public static let imageFileName = "image.png"
     public static let labelFileName = "label.json"
+    public static let exportDirectoryName = "display-ocr-training"
+
+    /// Stub: still the temporary directory, not the current directory.
+    public static func defaultExportRoot(
+        currentDirectory: URL = URL(fileURLWithPath: FileManager.default.currentDirectoryPath, isDirectory: true)
+    ) -> URL {
+        _ = currentDirectory
+        return FileManager.default.temporaryDirectory
+            .appendingPathComponent(exportDirectoryName, isDirectory: true)
+    }
 
     /// A display name with no path. Nil for empty, `.`, or `..`.
     ///
@@ -443,6 +453,7 @@ public final class DisplayOCRTrainingSession: ObservableObject {
     @Published public private(set) var label: DisplayOCRTrainingLabel?
     @Published public var drawMode: DisplayOCRTrainingDrawMode = .panel
     @Published public private(set) var status: DisplayOCRTrainingStatus?
+    @Published public private(set) var exportRoot: URL = DisplayOCRTraining.defaultExportRoot()
 
     private var bitmap: CGImage?
 
@@ -576,6 +587,15 @@ public final class DisplayOCRTrainingSession: ObservableObject {
 
     public func failExport() {
         status = .exportFailed
+    }
+
+    public func setExportRoot(_ url: URL) {
+        exportRoot = url
+    }
+
+    /// Stub: ignores the selected directory and writes to the temporary one.
+    public func export() throws -> DisplayOCRTrainingExport {
+        try exportToTemporaryDirectory()
     }
 
     @discardableResult
