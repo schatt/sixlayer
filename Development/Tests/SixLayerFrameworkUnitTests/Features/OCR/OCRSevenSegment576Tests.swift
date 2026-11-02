@@ -928,7 +928,7 @@ struct OCRSevenSegment576Tests {
     }
 }
 
-private enum SegmentPanel {
+enum SegmentPanel {
     static let cellW = 50
     static let cellH = 90
     static let stroke = 12

@@ -13,7 +13,8 @@ import PhotosUI
 #endif
 
 /// Draw a panel and optional rows, confirm the seven-segment read, and export a label package.
-/// The export directory is the training library. The screen shows how many examples it holds.
+/// A new photo starts from the reader's suggested boxes. Tap a box to select it, drag to move
+/// or resize it, and remove the selected one. The export directory is the training library.
 public struct DisplayOCRTrainingView: View {
     @ObservedObject private var session: DisplayOCRTrainingSession
     private let onExport: ((DisplayOCRTrainingPackage) -> Void)?
@@ -21,6 +22,9 @@ public struct DisplayOCRTrainingView: View {
     @State private var importPresented = false
     @State private var exportFolderPresented = false
     @State private var dragRect: CGRect?
+    @State private var dragStarted = false
+    @State private var dragBasePanel: DisplayOCRNormalizedBox?
+    @State private var dragBaseRows: [DisplayOCRNormalizedBox] = []
     #if os(iOS) || os(macOS) || os(visionOS)
     @State private var photoItem: PhotosPickerItem?
     #endif
@@ -90,6 +94,12 @@ public struct DisplayOCRTrainingView: View {
                 }
                 .disabled(session.rowBoxes.isEmpty)
                 .automaticCompliance(named: "DisplayOCRTrainingClearRows")
+
+                Button(i18n.localizedString(for: "SixLayerFramework.ocr.training.removeBox")) {
+                    session.removeSelectedBox()
+                }
+                .disabled(session.selectedBox == nil)
+                .automaticCompliance(named: "DisplayOCRTrainingRemoveBox")
 
                 Button(i18n.localizedString(for: "SixLayerFramework.ocr.training.export")) {
                     exportPackage()
@@ -168,11 +178,23 @@ public struct DisplayOCRTrainingView: View {
                 .automaticCompliance(named: "DisplayOCRTrainingImage")
 
             if let panel = session.panel {
-                boxOutline(panel, color: .orange, containerSize: containerSize, name: "DisplayOCRTrainingPanel")
+                boxOutline(
+                    panel,
+                    color: .orange,
+                    containerSize: containerSize,
+                    name: "DisplayOCRTrainingPanel",
+                    selected: session.selectedBox == .panel
+                )
             }
             ForEach(Array(session.rowBoxes.enumerated()), id: \.offset) { index, box in
-                boxOutline(box, color: .blue, containerSize: containerSize, name: "DisplayOCRTrainingRowBox")
-                    .accessibilityLabel("\(index + 1)")
+                boxOutline(
+                    box,
+                    color: .blue,
+                    containerSize: containerSize,
+                    name: "DisplayOCRTrainingRowBox",
+                    selected: session.selectedBox == .row(index)
+                )
+                .accessibilityLabel("\(index + 1)")
             }
             if let dragRect, dragRect.width > 0, dragRect.height > 0 {
                 Rectangle()
@@ -193,14 +215,39 @@ public struct DisplayOCRTrainingView: View {
 
     #if !os(tvOS)
     private func drawGesture(containerSize: CGSize) -> some Gesture {
-        DragGesture(minimumDistance: 8, coordinateSpace: .local)
+        DragGesture(minimumDistance: 0, coordinateSpace: .local)
             .onChanged { value in
-                dragRect = Self.rect(from: value.startLocation, to: value.location)
+                if !dragStarted {
+                    dragStarted = true
+                    dragBasePanel = session.panel
+                    dragBaseRows = session.rowBoxes
+                }
+                let distance = hypot(value.translation.width, value.translation.height)
+                guard distance >= 8 else {
+                    dragRect = nil
+                    return
+                }
+                let adjusted = session.adjust(
+                    from: value.startLocation,
+                    to: value.location,
+                    containerSize: containerSize,
+                    basePanel: dragBasePanel,
+                    baseRows: dragBaseRows
+                )
+                dragRect = adjusted ? nil : Self.rect(from: value.startLocation, to: value.location)
             }
             .onEnded { value in
-                let rect = Self.rect(from: value.startLocation, to: value.location)
+                let distance = hypot(value.translation.width, value.translation.height)
+                if distance < 8 {
+                    session.selectBox(at: value.startLocation, containerSize: containerSize)
+                } else if dragRect != nil {
+                    let rect = Self.rect(from: value.startLocation, to: value.location)
+                    _ = session.applyDraw(containerRect: rect, containerSize: containerSize)
+                }
                 dragRect = nil
-                _ = session.applyDraw(containerRect: rect, containerSize: containerSize)
+                dragStarted = false
+                dragBasePanel = nil
+                dragBaseRows = []
             }
     }
     #endif
@@ -209,12 +256,13 @@ public struct DisplayOCRTrainingView: View {
         _ box: DisplayOCRNormalizedBox,
         color: Color,
         containerSize: CGSize,
-        name: String
+        name: String,
+        selected: Bool
     ) -> some View {
         let rect = box.containerRect(imagePixelSize: session.imagePixelSize, containerSize: containerSize)
         return Rectangle()
-            .fill(color.opacity(0.12))
-            .overlay(Rectangle().stroke(color, lineWidth: 2))
+            .fill(color.opacity(selected ? 0.22 : 0.12))
+            .overlay(Rectangle().stroke(color, lineWidth: selected ? 4 : 2))
             .frame(width: max(rect.width, 1), height: max(rect.height, 1))
             .offset(x: rect.minX, y: rect.minY)
             .allowsHitTesting(false)
