@@ -226,6 +226,12 @@ public enum DisplayOCRTrainingDrawMode: String, CaseIterable, Sendable, Identifi
     public var id: String { rawValue }
 }
 
+/// The panel, or one row box, that the user has selected.
+public enum DisplayOCRTrainingBoxTarget: Equatable, Sendable {
+    case panel
+    case row(Int)
+}
+
 public enum DisplayOCRTrainingStatus: Equatable, Sendable {
     case unreadableImage
     case needsPanel
@@ -296,6 +302,17 @@ public enum DisplayOCRTraining {
             width: hit.width / frame.width,
             height: hit.height / frame.height
         ).unitClamped
+    }
+
+    /// Map Vision boxes (bottom-left, crop fractions) into top-left photo rows.
+    /// Stub until the suggestion mapping is implemented.
+    public static func rowBoxes(
+        fromVisionBoxes boxes: [CGRect],
+        panel: DisplayOCRNormalizedBox
+    ) -> [DisplayOCRNormalizedBox] {
+        _ = boxes
+        _ = panel
+        return []
     }
 
     /// Gray crop in the same top-left order ``SevenSegmentOCR`` reads.
@@ -577,6 +594,7 @@ public final class DisplayOCRTrainingSession: ObservableObject {
     @Published public private(set) var status: DisplayOCRTrainingStatus?
     @Published public private(set) var exportRoot: URL = DisplayOCRTraining.defaultExportRoot()
     @Published public private(set) var library = DisplayOCRTrainingLibrary()
+    @Published public private(set) var selectedBox: DisplayOCRTrainingBoxTarget?
 
     private var bitmap: CGImage?
 
@@ -603,6 +621,12 @@ public final class DisplayOCRTrainingSession: ObservableObject {
         status = nil
     }
 
+    /// Shows a saved example. Stub keeps the photo and drops the label.
+    public func restore(cgImage: CGImage, label: DisplayOCRTrainingLabel, sourceName: String? = nil) {
+        _ = label
+        load(cgImage: cgImage, sourceName: sourceName)
+    }
+
     public func load(fileURL: URL) {
         do {
             let data = try platformSecurityScopedAccess(url: fileURL) { url -> Data in
@@ -624,6 +648,11 @@ public final class DisplayOCRTrainingSession: ObservableObject {
         rowBoxes = []
         label = nil
         status = nil
+    }
+
+    /// Resize or replace the panel. Stub until clipping is implemented.
+    public func updatePanel(_ box: DisplayOCRNormalizedBox) {
+        _ = box
     }
 
     public func useFullFramePanel() {
@@ -648,6 +677,29 @@ public final class DisplayOCRTrainingSession: ObservableObject {
         rowBoxes = []
         label = nil
         status = nil
+    }
+
+    public func selectBox(at point: CGPoint, containerSize: CGSize) {
+        _ = point
+        _ = containerSize
+    }
+
+    public func removeSelectedBox() {}
+
+    @discardableResult
+    public func adjust(
+        from start: CGPoint,
+        to end: CGPoint,
+        containerSize: CGSize,
+        basePanel: DisplayOCRNormalizedBox?,
+        baseRows: [DisplayOCRNormalizedBox]
+    ) -> Bool {
+        _ = start
+        _ = end
+        _ = containerSize
+        _ = basePanel
+        _ = baseRows
+        return false
     }
 
     @discardableResult
