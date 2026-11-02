@@ -202,6 +202,15 @@ public enum DisplayOCRTraining {
     public static let schemaVersion = 1
     public static let imageFileName = "image.png"
     public static let labelFileName = "label.json"
+    public static let exportDirectoryName = "display-ocr-training"
+
+    /// `<current directory>/display-ocr-training`. The caller can replace this
+    /// with a directory the user picked.
+    public static func defaultExportRoot(
+        currentDirectory: URL = URL(fileURLWithPath: FileManager.default.currentDirectoryPath, isDirectory: true)
+    ) -> URL {
+        currentDirectory.appendingPathComponent(exportDirectoryName, isDirectory: true)
+    }
 
     /// A display name with no path. Nil for empty, `.`, or `..`.
     ///
@@ -443,6 +452,7 @@ public final class DisplayOCRTrainingSession: ObservableObject {
     @Published public private(set) var label: DisplayOCRTrainingLabel?
     @Published public var drawMode: DisplayOCRTrainingDrawMode = .panel
     @Published public private(set) var status: DisplayOCRTrainingStatus?
+    @Published public private(set) var exportRoot: URL = DisplayOCRTraining.defaultExportRoot()
 
     private var bitmap: CGImage?
 
@@ -578,12 +588,32 @@ public final class DisplayOCRTrainingSession: ObservableObject {
         status = .exportFailed
     }
 
+    /// Use `url` as the directory that holds package folders. An existing file is ignored.
+    public func setExportRoot(_ url: URL) {
+        var isDirectory: ObjCBool = false
+        if FileManager.default.fileExists(atPath: url.path, isDirectory: &isDirectory), !isDirectory.boolValue {
+            return
+        }
+        exportRoot = url
+    }
+
+    /// Write `image.png` and `label.json` in a new folder under ``exportRoot``.
+    public func export() throws -> DisplayOCRTrainingExport {
+        try platformSecurityScopedAccess(url: exportRoot) { root in
+            try writePackage(under: root)
+        }
+    }
+
     @discardableResult
     public func exportToTemporaryDirectory() throws -> DisplayOCRTrainingExport {
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent(DisplayOCRTraining.exportDirectoryName, isDirectory: true)
+        return try writePackage(under: root)
+    }
+
+    private func writePackage(under root: URL) throws -> DisplayOCRTrainingExport {
         let package = try makePackage()
-        let directory = FileManager.default.temporaryDirectory
-            .appendingPathComponent("display-ocr-training", isDirectory: true)
-            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        let directory = root.appendingPathComponent(UUID().uuidString, isDirectory: true)
         try DisplayOCRTraining.write(package, to: directory)
         status = .exported(directory)
         return DisplayOCRTrainingExport(directory: directory, package: package)

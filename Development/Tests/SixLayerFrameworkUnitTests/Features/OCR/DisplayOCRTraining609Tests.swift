@@ -300,6 +300,51 @@ struct DisplayOCRTraining609Tests {
         #expect(session.label?.rows.first?.decodedText == "")
     }
 
+    @Test func defaultExportRootIsASubdirectoryOfTheCurrentDirectory() {
+        let current = URL(fileURLWithPath: "/tmp/pump-session", isDirectory: true)
+        let root = DisplayOCRTraining.defaultExportRoot(currentDirectory: current)
+        #expect(root.lastPathComponent == DisplayOCRTraining.exportDirectoryName)
+        #expect(
+            root.deletingLastPathComponent().standardizedFileURL.path
+                == current.standardizedFileURL.path
+        )
+    }
+
+    @Test @MainActor func exportWritesThePackageInsideTheSelectedDirectory() throws {
+        let frame = twoDigitFrame()
+        let session = DisplayOCRTrainingSession()
+        session.load(cgImage: frame.image, sourceName: "pump.png")
+        let panel = DisplayOCRNormalizedBox(
+            pixelRect: frame.two,
+            imageWidth: frame.image.width,
+            imageHeight: frame.image.height
+        )
+        session.setPanel(panel)
+        #expect(session.decode())
+
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent("display-ocr-chosen-\(UUID().uuidString)", isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        session.setExportRoot(root)
+        let exported = try session.export()
+
+        let exportedPath = exported.directory.standardizedFileURL.path
+        let rootPath = root.standardizedFileURL.path
+        #expect(exportedPath.hasPrefix(rootPath + "/"))
+        #expect(exported.directory.lastPathComponent != DisplayOCRTraining.imageFileName)
+        let names = try FileManager.default.contentsOfDirectory(atPath: exported.directory.path).sorted()
+        #expect(names == [DisplayOCRTraining.imageFileName, DisplayOCRTraining.labelFileName])
+        #expect(session.exportRoot.standardizedFileURL.path == rootPath)
+    }
+
+    @Test @MainActor func aNewSessionUsesTheCurrentDirectoryExportRoot() {
+        let session = DisplayOCRTrainingSession()
+        #expect(
+            session.exportRoot.standardizedFileURL.path
+                == DisplayOCRTraining.defaultExportRoot().standardizedFileURL.path
+        )
+    }
+
     // MARK: - Fixtures
 
     private func twoDigitFrame() -> (image: CGImage, two: CGRect, seven: CGRect) {

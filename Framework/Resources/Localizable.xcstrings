@@ -30272,6 +30272,17 @@
         }
       }
     },
+    "SixLayerFramework.ocr.training.chooseFolder" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose folder"
+          }
+        }
+      }
+    },
     "SixLayerFramework.ocr.training.clearRows" : {
       "extractionState" : "manual",
       "localizations" : {
