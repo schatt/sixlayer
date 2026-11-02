@@ -138,9 +138,20 @@ public struct SegmentSearchHit: Equatable, Sendable {
 public enum SevenSegmentOCR {
     /// Size of the image the frame finder searches. Callers map the rect back
     /// with `fullWidth / smallWidth` and `fullHeight / smallHeight`.
+    ///
+    /// The cap is the long side. A 3:4 portrait frame and a 3:4 landscape
+    /// frame both shrink until that side is `maxSide`; a square camera stays
+    /// square; a frame already inside the cap is not enlarged.
     static func findBufferSize(width: Int, height: Int, maxSide: Int = 1600) -> (width: Int, height: Int) {
-        _ = maxSide
-        return (width, height)
+        guard width > 0, height > 0, maxSide > 0 else { return (width, height) }
+        let longSide = max(width, height)
+        guard longSide > maxSide else { return (width, height) }
+        if width >= height {
+            let smallHeight = max(1, Int((Double(height) * Double(maxSide) / Double(width)).rounded()))
+            return (maxSide, smallHeight)
+        }
+        let smallWidth = max(1, Int((Double(width) * Double(maxSide) / Double(height)).rounded()))
+        return (smallWidth, maxSide)
     }
 
     /// Pixel rect of the digit panel (glass plus a bezel margin) in image
