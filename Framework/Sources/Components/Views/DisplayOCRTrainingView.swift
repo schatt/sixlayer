@@ -121,7 +121,9 @@ public struct DisplayOCRTrainingView: View {
 
             DisplayOCRTrainingLibrarySummary(
                 exampleCount: session.library.examples.count,
-                rejectionCount: session.library.rejections.count
+                rejectionCount: session.library.rejections.count,
+                training: session.panelTraining,
+                onTrain: { session.trainPanelModel() }
             )
         }
     }
@@ -478,6 +480,8 @@ private struct DisplayOCRTrainingExportFolderImporter: ViewModifier {
 struct DisplayOCRTrainingLibrarySummary: View {
     let exampleCount: Int
     let rejectionCount: Int
+    var training: DisplayOCRPanelTrainingState = .idle
+    var onTrain: () -> Void = {}
 
     var body: some View {
         let i18n = InternationalizationService()
@@ -498,6 +502,48 @@ struct DisplayOCRTrainingLibrarySummary: View {
                 .foregroundColor(.secondary)
                 .automaticCompliance(named: "DisplayOCRTrainingLibrarySkipped")
             }
+
+            Button(i18n.localizedString(for: "SixLayerFramework.ocr.training.trainPanel")) {
+                onTrain()
+            }
+            .disabled(exampleCount == 0 || training == .running)
+            .trainingBorderedButton()
+            .automaticCompliance(named: "DisplayOCRTrainingTrainPanel")
+
+            if let message = trainingMessage(i18n) {
+                Text(message)
+                    .font(.caption)
+                    .foregroundColor(trainingFailed ? .red : .secondary)
+                    .automaticCompliance(named: "DisplayOCRTrainingTrainStatus")
+            }
+        }
+    }
+
+    private var trainingFailed: Bool {
+        if case .failed = training { return true }
+        return false
+    }
+
+    private func trainingMessage(_ i18n: InternationalizationService) -> String? {
+        switch training {
+        case .idle:
+            return nil
+        case .running:
+            return i18n.localizedString(for: "SixLayerFramework.ocr.training.trainPanelRunning")
+        case .ready(let url):
+            return i18n.localizedString(
+                for: "SixLayerFramework.ocr.training.trainPanelReady",
+                arguments: [url.lastPathComponent]
+            )
+        case .emptyLibrary:
+            return i18n.localizedString(for: "SixLayerFramework.ocr.training.trainPanelEmpty")
+        case .requiresMacOS:
+            return i18n.localizedString(for: "SixLayerFramework.ocr.training.trainPanelMac")
+        case .failed(let message):
+            return i18n.localizedString(
+                for: "SixLayerFramework.ocr.training.trainPanelFailed",
+                arguments: [message]
+            )
         }
     }
 }
