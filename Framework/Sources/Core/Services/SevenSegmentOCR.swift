@@ -149,12 +149,12 @@ public enum SevenSegmentOCR {
     /// Rectangles the frame step can hand to a row finder. The lab ranks these.
     /// Production decode still uses the sealed pocket only when asked.
     public static func frameCandidates(in cgImage: CGImage) -> [SegmentFrameCandidate] {
-        [
-            SegmentFrameCandidate(
-                finder: .wholeFrame,
-                rect: CGRect(x: 0, y: 0, width: cgImage.width, height: cgImage.height)
-            )
-        ]
+        let whole = SegmentFrameCandidate(
+            finder: .wholeFrame,
+            rect: CGRect(x: 0, y: 0, width: cgImage.width, height: cgImage.height)
+        )
+        guard let gray = GrayBuffer.read(cgImage) else { return [whole] }
+        return gray.frameCandidates(whole: whole)
     }
 
     /// Every frame × row × digit combination, best exact-digit count first.
@@ -163,8 +163,48 @@ public enum SevenSegmentOCR {
         in cgImage: CGImage,
         deskewMaximumDegrees: Double = 3
     ) -> [SegmentSearchHit] {
-        _ = (cgImage, deskewMaximumDegrees)
-        return []
+        guard let gray = GrayBuffer.read(cgImage) else { return [] }
+        let whole = SegmentFrameCandidate(
+            finder: .wholeFrame,
+            rect: CGRect(x: 0, y: 0, width: gray.width, height: gray.height)
+        )
+        var hits: [SegmentSearchHit] = []
+        for frame in gray.frameCandidates(whole: whole) {
+            let rect = frame.rect
+            let cropped = gray.cropped(
+                x0: Int(rect.minX.rounded(.down)),
+                y0: Int(rect.minY.rounded(.down)),
+                x1: Int(rect.maxX.rounded(.up)),
+                y1: Int(rect.maxY.rounded(.up))
+            )
+            guard cropped.width > 8, cropped.height > 8 else { continue }
+            let upright = GrayBuffer.deskew(cropped, maximumDegrees: deskewMaximumDegrees)
+            for rows in SegmentRowFinder.allCases {
+                for digits in SegmentDigitReader.allCases {
+                    let pieces = GrayBuffer.fragments(
+                        in: upright,
+                        rowFinder: rows,
+                        sampleBand: digits.sampleBand
+                    )
+                    let lines = pieces.map { row in row.map(\.text).joined(separator: "  ") }
+                    let exactDigitCount = pieces.flatMap { $0 }.reduce(0) { total, piece in
+                        guard piece.confidence == 1 else { return total }
+                        return total + piece.text.filter(\.isNumber).count
+                    }
+                    hits.append(
+                        SegmentSearchHit(
+                            frame: frame.finder,
+                            rows: rows,
+                            digits: digits,
+                            text: lines.joined(separator: "\n"),
+                            exactDigitCount: exactDigitCount,
+                            lineCount: pieces.count
+                        )
+                    )
+                }
+            }
+        }
+        return hits.sorted { $0.exactDigitCount > $1.exactDigitCount }
     }
 
     /// Decode seven-segment glyphs.
@@ -369,7 +409,8 @@ private struct GrayBuffer {
         buffer: GrayBuffer,
         bandIndex: Int,
         darkInk: Bool,
-        preferredPitch: PreferredDigitPitch? = nil
+        preferredPitch: PreferredDigitPitch? = nil,
+        sampleBand: Int = 0
     ) -> [Cell] {
         let columns = columnRuns(
             mask,
@@ -425,7 +466,8 @@ private struct GrayBuffer {
                 bandIndex: bandIndex,
                 buffer: buffer,
                 darkInk: darkInk,
-                washAwareStems: washAwareStems
+                washAwareStems: washAwareStems,
+                sampleBand: sampleBand
             )
             // Volume rowcrops are ~980px; keep traces on those for #591.
             if buffer.width >= 900 {
@@ -439,7 +481,8 @@ private struct GrayBuffer {
                         forceDigitTall: washAwareStems
                     ),
                     width: buffer.width,
-                    washAwareStems: washAwareStems
+                    washAwareStems: washAwareStems,
+                    sampleBand: sampleBand
                 )
                 let cover = coverage(mask, box: box, width: buffer.width)
                 let name = cell.map { String($0.character) } ?? "drop"
@@ -561,7 +604,8 @@ private struct GrayBuffer {
         bandIndex: Int,
         buffer: GrayBuffer,
         darkInk: Bool,
-        washAwareStems: Bool = false
+        washAwareStems: Bool = false,
+        sampleBand: Int = 0
     ) -> Cell? {
         let vertical = verticalRuns(mask, box: box, width: width)
         let splitGap = vertical.count == 2 ? vertical[1].0 - vertical[0].1 : 0
@@ -596,7 +640,8 @@ private struct GrayBuffer {
                     bandIndex: bandIndex,
                     buffer: buffer,
                     darkInk: darkInk,
-                    washAwareStems: washAwareStems
+                    washAwareStems: washAwareStems,
+                    sampleBand: sampleBand
                 )
             }
         }
@@ -644,14 +689,24 @@ private struct GrayBuffer {
             digitWidth: digitWidth,
             forceDigitTall: washAwareStems
         )
-        let trimmedPattern = sample(mask, box: trimmed, width: width, washAwareStems: washAwareStems)
+        let trimmedPattern = sample(
+            mask,
+            box: trimmed,
+            width: width,
+            washAwareStems: washAwareStems,
+            sampleBand: sampleBand
+        )
         // Pitch volume: Y-trim can clip `c` and mint an exact 2 while the
         // untrimmed box is abcdeg (one f from 8). Prefer a near-8 that still
         // has `c` over that false exact 2.
         let pattern: SevenSegmentPattern
         if washAwareStems {
             let fullPattern = sample(
-                mask, box: sampledBox, width: width, washAwareStems: washAwareStems
+                mask,
+                box: sampledBox,
+                width: width,
+                washAwareStems: washAwareStems,
+                sampleBand: sampleBand
             )
             pattern = preferWashAwarePattern(trimmedPattern, fullPattern)
         } else {
@@ -699,22 +754,33 @@ private struct GrayBuffer {
         _ mask: Mask,
         box: PixelBox,
         width: Int,
-        washAwareStems: Bool = false
+        washAwareStems: Bool = false,
+        sampleBand: Int = 0
     ) -> SevenSegmentPattern {
         let boxWidth = box.width
         let boxHeight = box.height
         guard boxWidth > 1, boxHeight > 2, width > 0 else { return [] }
+        func ink(_ x: Int, _ y: Int, _ length: Int, _ vertical: Bool) -> Int {
+            foregroundCount(
+                mask,
+                x: x,
+                y: y,
+                length: length,
+                vertical: vertical,
+                sampleBand: sampleBand
+            )
+        }
         var pattern = SevenSegmentPattern()
         let midX = box.minX + boxWidth / 2
         let third = max(1, boxHeight / 3)
-        if foregroundCount(mask, x: midX, y: box.minY, length: third, vertical: true) > 0 {
+        if ink(midX, box.minY, third, true) > 0 {
             pattern.formUnion(.a)
         }
-        if foregroundCount(mask, x: midX, y: box.minY + third, length: third, vertical: true) > 0 {
+        if ink(midX, box.minY + third, third, true) > 0 {
             pattern.formUnion(.g)
         }
         let lower = box.minY + third * 2
-        if foregroundCount(mask, x: midX, y: lower, length: max(1, box.maxY - lower), vertical: true) > 0 {
+        if ink(midX, lower, max(1, box.maxY - lower), true) > 0 {
             pattern.formUnion(.d)
         }
         let quarter = box.minY + boxHeight / 4
@@ -723,20 +789,14 @@ private struct GrayBuffer {
         let right = max(1, box.maxX - (midX + 1))
         // Right stems first so wash-aware `f` can see whether `c` is present
         // (8-candidates keep f; 2-like glyphs drop wash f).
-        if foregroundCount(mask, x: midX + 1, y: quarter, length: right, vertical: false) > 0 {
+        if ink(midX + 1, quarter, right, false) > 0 {
             pattern.formUnion(.b)
         }
-        if foregroundCount(mask, x: midX + 1, y: threeQuarters, length: right, vertical: false) > 0 {
+        if ink(midX + 1, threeQuarters, right, false) > 0 {
             pattern.formUnion(.c)
         }
         let eFringe = washAwareStems ? max(1, boxWidth / 6) : 0
-        if foregroundCount(
-            mask,
-            x: box.minX + eFringe,
-            y: threeQuarters,
-            length: max(1, half - eFringe),
-            vertical: false
-        ) > 0 {
+        if ink(box.minX + eFringe, threeQuarters, max(1, half - eFringe), false) > 0 {
             pattern.formUnion(.e)
         }
         // Wash bridges light false `f` on 2-like glyphs (pat 123 → 2/8 tie).
@@ -745,21 +805,13 @@ private struct GrayBuffer {
         // `c` is dark, require stem-zone ink, reject fringe-dominated wash,
         // and drop f if the remainder is an exact digit.
         if !washAwareStems || pattern.contains(.c) {
-            if foregroundCount(mask, x: box.minX, y: quarter, length: half, vertical: false) > 0 {
+            if ink(box.minX, quarter, half, false) > 0 {
                 pattern.formUnion(.f)
             }
         } else {
             let fFringe = max(1, boxWidth / 5)
-            let fEdge = foregroundCount(
-                mask, x: box.minX, y: quarter, length: fFringe, vertical: false
-            )
-            let fStem = foregroundCount(
-                mask,
-                x: box.minX + fFringe,
-                y: quarter,
-                length: max(1, half - fFringe),
-                vertical: false
-            )
+            let fEdge = ink(box.minX, quarter, fFringe, false)
+            let fStem = ink(box.minX + fFringe, quarter, max(1, half - fFringe), false)
             let washDominated = fEdge >= fStem && fEdge * 2 >= fFringe
             if fStem > 0, !washDominated {
                 pattern.formUnion(.f)
@@ -1107,9 +1159,45 @@ private func recognizedGroups(_ cells: [Cell], width: Int, height: Int) -> [OCRR
 }
 
 private extension GrayBuffer {
-    static func fragments(in buffer: GrayBuffer) -> [[OCRRecognizedText]] {
-        readRows(in: buffer, allowBandPitch: true).compactMap { row in
+    static func fragments(
+        in buffer: GrayBuffer,
+        rowFinder: SegmentRowFinder? = nil,
+        sampleBand: Int = 0
+    ) -> [[OCRRecognizedText]] {
+        if let rowFinder {
+            return finderFragments(in: buffer, rowFinder: rowFinder, sampleBand: sampleBand)
+        }
+        return readRows(in: buffer, allowBandPitch: true).compactMap { row in
             let texts = recognizedGroups(row, width: buffer.width, height: buffer.height)
+            return texts.isEmpty ? nil : texts
+        }
+    }
+
+    /// One output line per finder band. A pair band may hold several digit
+    /// rows; those stay one line so the row finder, not the later merge,
+    /// decides the count.
+    private static func finderFragments(
+        in buffer: GrayBuffer,
+        rowFinder: SegmentRowFinder,
+        sampleBand: Int
+    ) -> [[OCRRecognizedText]] {
+        let raw = buffer.masks()
+        let mask = prefersDark(raw.dark, raw.light) ? raw.dark : raw.light
+        let projected = projectionBands(mask.rowSums, height: buffer.height)
+        let bands = rowFinder == .deepestPair
+            ? pairBands(projected, height: buffer.height)
+            : projected
+        return bands.compactMap { band in
+            let y0 = max(0, band.0 - 4)
+            let y1 = min(buffer.height, band.1 + 4)
+            let crop = buffer.cropped(x0: 0, y0: y0, x1: buffer.width, y1: y1)
+            guard crop.width > 8, crop.height > 8 else { return nil }
+            let cells = readRows(
+                in: crop,
+                allowBandPitch: true,
+                sampleBand: sampleBand
+            ).flatMap { $0 }
+            let texts = recognizedGroups(cells, width: crop.width, height: crop.height)
             return texts.isEmpty ? nil : texts
         }
     }
@@ -1150,6 +1238,59 @@ private extension GrayBuffer {
         case (nil, nil):
             return nil
         }
+    }
+
+    func frameCandidates(whole: SegmentFrameCandidate) -> [SegmentFrameCandidate] {
+        var candidates = [whole]
+        if let sealed = digitPanelBounds(), isLocalFrame(sealed) {
+            candidates.append(SegmentFrameCandidate(finder: .sealedPocket, rect: sealed))
+        }
+        if let ink = inkStackBounds(), isLocalFrame(ink) {
+            candidates.append(SegmentFrameCandidate(finder: .inkStack, rect: ink))
+        }
+        return candidates
+    }
+
+    /// Digit-row ink, not the canvas. The larger of the two polarities, once
+    /// each has already failed the full-frame size check.
+    private func inkStackBounds() -> CGRect? {
+        let raw = masks()
+        let dark = inkBounds(in: raw.dark)
+        let light = inkBounds(in: raw.light)
+        switch (dark, light) {
+        case let (d?, l?):
+            return d.width * d.height >= l.width * l.height ? d : l
+        case let (d?, nil):
+            return d
+        case let (nil, l?):
+            return l
+        case (nil, nil):
+            return nil
+        }
+    }
+
+    private func inkBounds(in mask: Mask) -> CGRect? {
+        let bands = projectionBands(mask.rowSums, height: height)
+        guard let first = bands.first, let last = bands.last, last.1 > first.0 else { return nil }
+        var minX = width
+        var maxX = -1
+        let y1 = min(height, last.1)
+        for y in first.0..<y1 {
+            let row = y * width
+            for x in 0..<width where mask.bits[row + x] {
+                if x < minX { minX = x }
+                if x > maxX { maxX = x }
+            }
+        }
+        guard maxX >= minX else { return nil }
+        let rect = CGRect(x: minX, y: first.0, width: maxX - minX + 1, height: y1 - first.0)
+        return isLocalFrame(rect) ? rect : nil
+    }
+
+    private func isLocalFrame(_ rect: CGRect) -> Bool {
+        rect.width * rect.height > 64
+            && rect.width < CGFloat(width) * 0.85
+            && rect.height < CGFloat(height) * 0.85
     }
 
     private func sealedPanelBounds(in mask: Mask) -> CGRect? {
@@ -1333,7 +1474,8 @@ private extension GrayBuffer {
         in buffer: GrayBuffer,
         splittingRows: Bool = true,
         preferredPitch: PreferredDigitPitch? = nil,
-        allowBandPitch: Bool = false
+        allowBandPitch: Bool = false,
+        sampleBand: Int = 0
     ) -> [[Cell]] {
         let raw = buffer.masks()
         // A frame inside the crop seals the glass. Ink outside that glass is the bezel.
@@ -1381,7 +1523,8 @@ private extension GrayBuffer {
                     buffer: buffer,
                     bandIndex: 0,
                     darkInk: primaryIsDark,
-                    preferredPitch: preferredPitch
+                    preferredPitch: preferredPitch,
+                    sampleBand: sampleBand
                 )
             )
         }
@@ -1478,7 +1621,8 @@ private extension GrayBuffer {
                 let found = readRows(
                     in: crop,
                     splittingRows: false,
-                    preferredPitch: rowPitch
+                    preferredPitch: rowPitch,
+                    sampleBand: sampleBand
                 ).flatMap { $0 }
                 let shifted = found.map { $0.shifted(dx: x0, dy: y0) }
                 if buffer.width >= 900 {
@@ -1519,7 +1663,8 @@ private extension GrayBuffer {
                         buffer: buffer,
                         bandIndex: 0,
                         darkInk: primaryIsDark,
-                        preferredPitch: bandPitch
+                        preferredPitch: bandPitch,
+                        sampleBand: sampleBand
                     )
                     let marks = opened
                         ? []
@@ -1556,7 +1701,8 @@ private extension GrayBuffer {
                 buffer: buffer,
                 bandIndex: 0,
                 darkInk: primaryIsDark,
-                preferredPitch: preferredPitch
+                preferredPitch: preferredPitch,
+                sampleBand: sampleBand
             )
             let marks = opened
                 ? []
@@ -2073,6 +2219,39 @@ private func priceMatchedLeftByScratchPrefix(
         if dropped > dropLimit { break }
     }
     return sharedLeft
+}
+
+/// Ink rows. A gap thinner than a row separation (a punched scanline, a
+/// cavity inside one glyph) is closed. Wider gaps stay, so one, two, and
+/// three rows each keep their own count.
+private func projectionBands(_ sums: [Int], height: Int) -> [(Int, Int)] {
+    let peak = sums.max() ?? 0
+    guard peak > 0, height > 0 else { return [(0, height)] }
+    let floor = max(8, peak / 20)
+    let found = runs(sums.map { $0 >= floor ? $0 : 0 })
+    guard !found.isEmpty else { return [(0, height)] }
+    return merge(found, whenGapBelow: max(6, height / 40))
+}
+
+/// Collapse every gap except the one nearest the middle into two bands.
+/// One projection row stays one band. A tie keeps the upper gap.
+private func pairBands(_ bands: [(Int, Int)], height: Int) -> [(Int, Int)] {
+    guard bands.count >= 2 else { return bands }
+    let mid = height / 2
+    var best = 0
+    var bestDistance = Int.max
+    for index in 0..<(bands.count - 1) {
+        let gapMid = (bands[index].1 + bands[index + 1].0) / 2
+        let distance = abs(gapMid - mid)
+        if distance < bestDistance {
+            bestDistance = distance
+            best = index
+        }
+    }
+    return [
+        (bands[0].0, bands[best].1),
+        (bands[best + 1].0, bands[bands.count - 1].1)
+    ]
 }
 
 /// Two digit rows joined by scratches. The valley has to sit between two
@@ -3021,8 +3200,34 @@ private func foregroundCount(
     x: Int,
     y: Int,
     length: Int,
-    vertical: Bool
+    vertical: Bool,
+    sampleBand: Int = 0
 ) -> Int {
+    if sampleBand > 0 {
+        var count = 0
+        if vertical {
+            for dx in -sampleBand...sampleBand {
+                count += foregroundCount(
+                    mask,
+                    x: x + dx,
+                    y: y,
+                    length: length,
+                    vertical: true
+                )
+            }
+        } else {
+            for dy in -sampleBand...sampleBand {
+                count += foregroundCount(
+                    mask,
+                    x: x,
+                    y: y + dy,
+                    length: length,
+                    vertical: false
+                )
+            }
+        }
+        return count
+    }
     guard length > 0 else { return 0 }
     var count = 0
     if vertical {
