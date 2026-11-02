@@ -1299,37 +1299,34 @@ private extension GrayBuffer {
     /// is meaningfully smaller than the whole image (#596).
     func digitPanelBounds() -> CGRect? {
         let raw = masks()
-        let dark = sealedPanelBounds(in: raw.dark)
-        let light = sealedPanelBounds(in: raw.light)
-        switch (dark, light) {
-        case let (d?, l?):
-            return d.width * d.height >= l.width * l.height ? d : l
-        case let (d?, nil):
-            return d
-        case let (nil, l?):
-            return l
-        case (nil, nil):
-            return nil
-        }
+        return largerRect(sealedPanelBounds(in: raw.dark), sealedPanelBounds(in: raw.light))
     }
 
     func frameCandidates(whole: SegmentFrameCandidate) -> [SegmentFrameCandidate] {
         var candidates = [whole]
-        if let sealed = digitPanelBounds(), isLocalFrame(sealed) {
+        let raw = masks()
+        if let sealed = largerRect(sealedPanelBounds(in: raw.dark), sealedPanelBounds(in: raw.light)),
+           isLocalFrame(sealed) {
             candidates.append(SegmentFrameCandidate(finder: .sealedPocket, rect: sealed))
         }
-        if let ink = inkStackBounds(), isLocalFrame(ink) {
+        if let ink = inkStackBounds(dark: raw.dark, light: raw.light) {
             candidates.append(SegmentFrameCandidate(finder: .inkStack, rect: ink))
         }
         return candidates
     }
 
-    /// Digit-row ink, not the canvas. The larger of the two polarities, once
-    /// each has already failed the full-frame size check.
-    private func inkStackBounds() -> CGRect? {
-        let raw = masks()
-        let dark = inkBounds(in: raw.dark)
-        let light = inkBounds(in: raw.light)
+    /// Digit-row ink, not the canvas and not the larger glass blob. Prefer the
+    /// stroke polarity. Fall back only when that bbox is missing or full-frame.
+    private func inkStackBounds(dark: Mask, light: Mask) -> CGRect? {
+        let darkRect = inkBounds(in: dark)
+        let lightRect = inkBounds(in: light)
+        if prefersDark(dark, light) {
+            return darkRect ?? lightRect
+        }
+        return lightRect ?? darkRect
+    }
+
+    private func largerRect(_ dark: CGRect?, _ light: CGRect?) -> CGRect? {
         switch (dark, light) {
         case let (d?, l?):
             return d.width * d.height >= l.width * l.height ? d : l
