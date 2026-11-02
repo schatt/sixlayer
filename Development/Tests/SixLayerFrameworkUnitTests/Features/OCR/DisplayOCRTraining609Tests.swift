@@ -1,0 +1,436 @@
+//
+//  DisplayOCRTraining609Tests.swift
+//  SixLayerFrameworkUnitTests
+//
+//  Display OCR label harness (#609). Boxes are top-left normalized fractions
+//  of the full image. Decode uses the current seven-segment reader on the crop.
+//
+
+import CoreGraphics
+import Foundation
+import ImageIO
+import Testing
+@testable import SixLayerFramework
+
+@Suite("Display OCR training labels (#609)")
+struct DisplayOCRTraining609Tests {
+
+    @Test func unitClampClipsToTheUnitSquareAndDropsEmptyBoxes() {
+        let clipped = DisplayOCRNormalizedBox(x: -0.2, y: 0.2, width: 0.5, height: 2).unitClamped
+        #expect(clipped?.x == 0)
+        #expect(clipped?.y == 0.2)
+        #expect(abs((clipped?.width ?? -1) - 0.3) < 0.000_001)
+        #expect(abs((clipped?.height ?? -1) - 0.8) < 0.000_001)
+        #expect(DisplayOCRNormalizedBox(x: 0, y: 0, width: 0, height: 1).unitClamped == nil)
+        #expect(DisplayOCRNormalizedBox(x: 1.2, y: 0, width: 0.2, height: 0.2).unitClamped == nil)
+    }
+
+    @Test func intersectionClipsARowToThePanel() {
+        let panel = DisplayOCRNormalizedBox(x: 0, y: 0, width: 0.5, height: 0.5)
+        let row = DisplayOCRNormalizedBox(x: 0.25, y: 0.25, width: 0.5, height: 0.5)
+        let hit = row.intersection(panel)
+        #expect(hit?.x == 0.25)
+        #expect(hit?.y == 0.25)
+        #expect(hit?.width == 0.25)
+        #expect(hit?.height == 0.25)
+        let outside = DisplayOCRNormalizedBox(x: 0.8, y: 0.8, width: 0.2, height: 0.2)
+        #expect(outside.intersection(panel) == nil)
+    }
+
+    @Test func pixelRectRoundTripsAnIntegerPlacement() {
+        let box = DisplayOCRNormalizedBox(
+            pixelRect: CGRect(x: 40, y: 50, width: 82, height: 122),
+            imageWidth: 400,
+            imageHeight: 360
+        )
+        #expect(box.pixelRect(imageWidth: 400, imageHeight: 360) == CGRect(x: 40, y: 50, width: 82, height: 122))
+    }
+
+    @Test func cropKeepsTheTopRowOfTheBitmap() throws {
+        let image = grayImage(width: 4, height: 2, pixels: [9, 9, 9, 9, 3, 3, 3, 3])
+        let top = DisplayOCRNormalizedBox(x: 0, y: 0, width: 1, height: 0.5)
+        let bottom = DisplayOCRNormalizedBox(x: 0, y: 0.5, width: 1, height: 0.5)
+        let topCrop = try #require(DisplayOCRTraining.crop(image, to: top))
+        let bottomCrop = try #require(DisplayOCRTraining.crop(image, to: bottom))
+        #expect(topCrop.width == 4)
+        #expect(topCrop.height == 1)
+        #expect(providerBytes(topCrop) == [9, 9, 9, 9])
+        #expect(bottomCrop.height == 1)
+        #expect(providerBytes(bottomCrop) == [3, 3, 3, 3])
+    }
+
+    @Test func normalizedBoxMapsALetterboxedDragOntoTheImage() {
+        let imageSize = CGSize(width: 200, height: 100)
+        let containerSize = CGSize(width: 200, height: 200)
+        let box = DisplayOCRTraining.normalizedBox(
+            fromContainerRect: CGRect(x: 0, y: 50, width: 100, height: 50),
+            imageSize: imageSize,
+            containerSize: containerSize
+        )
+        #expect(box != nil)
+        #expect(abs((box?.x ?? -1) - 0) < 0.001)
+        #expect(abs((box?.y ?? -1) - 0) < 0.001)
+        #expect(abs((box?.width ?? -1) - 0.5) < 0.001)
+        #expect(abs((box?.height ?? -1) - 0.5) < 0.001)
+
+        let margin = DisplayOCRTraining.normalizedBox(
+            fromContainerRect: CGRect(x: 0, y: 0, width: 40, height: 20),
+            imageSize: imageSize,
+            containerSize: containerSize
+        )
+        #expect(margin == nil)
+
+        let sliver = DisplayOCRTraining.normalizedBox(
+            fromContainerRect: CGRect(x: 10, y: 60, width: 4, height: 4),
+            imageSize: imageSize,
+            containerSize: containerSize
+        )
+        #expect(sliver == nil)
+    }
+
+    @Test func draftDecodesThePanelCropAndIgnoresTheOtherDigit() throws {
+        let frame = twoDigitFrame()
+        let panel = DisplayOCRNormalizedBox(
+            pixelRect: frame.two,
+            imageWidth: frame.image.width,
+            imageHeight: frame.image.height
+        )
+        let label = try #require(DisplayOCRTraining.draft(
+            image: frame.image,
+            panel: panel,
+            rowBoxes: [],
+            sourceName: "../../pump.jpg"
+        ))
+        #expect(label.schemaVersion == DisplayOCRTraining.schemaVersion)
+        #expect(label.origin == .topLeft)
+        #expect(label.imageFileName == DisplayOCRTraining.imageFileName)
+        #expect(label.imagePixelWidth == frame.image.width)
+        #expect(label.imagePixelHeight == frame.image.height)
+        #expect(label.sourceName == "pump.jpg")
+        #expect(label.rows.count == 1)
+        #expect(label.rows[0].box == nil)
+        #expect(label.rows[0].decodedText == "2")
+        #expect(label.rows[0].confirmedText == "2")
+    }
+
+    @Test func draftDecodesEachRowBoxOnItsOwnCrop() throws {
+        let frame = twoDigitFrame()
+        let full = DisplayOCRNormalizedBox(x: 0, y: 0, width: 1, height: 1)
+        let two = DisplayOCRNormalizedBox(
+            pixelRect: frame.two,
+            imageWidth: frame.image.width,
+            imageHeight: frame.image.height
+        )
+        let seven = DisplayOCRNormalizedBox(
+            pixelRect: frame.seven,
+            imageWidth: frame.image.width,
+            imageHeight: frame.image.height
+        )
+        let label = try #require(DisplayOCRTraining.draft(
+            image: frame.image,
+            panel: full,
+            rowBoxes: [seven, two],
+            sourceName: nil
+        ))
+        #expect(label.rows.map(\.decodedText) == ["7", "2"])
+        #expect(label.rows.map(\.confirmedText) == ["7", "2"])
+        #expect(label.rows[0].box != nil)
+        #expect(label.rows[1].box != nil)
+    }
+
+    @Test func draftDropsARowBoxOutsideThePanel() throws {
+        let frame = twoDigitFrame()
+        let panel = DisplayOCRNormalizedBox(
+            pixelRect: frame.two,
+            imageWidth: frame.image.width,
+            imageHeight: frame.image.height
+        )
+        let seven = DisplayOCRNormalizedBox(
+            pixelRect: frame.seven,
+            imageWidth: frame.image.width,
+            imageHeight: frame.image.height
+        )
+        let label = try #require(DisplayOCRTraining.draft(
+            image: frame.image,
+            panel: panel,
+            rowBoxes: [seven],
+            sourceName: nil
+        ))
+        #expect(label.rows.map(\.decodedText) == ["2"])
+        #expect(label.rows[0].box == nil)
+    }
+
+    @Test func confirmingEditsTheLabelWithoutChangingTheDecode() throws {
+        let frame = twoDigitFrame()
+        let panel = DisplayOCRNormalizedBox(
+            pixelRect: frame.two,
+            imageWidth: frame.image.width,
+            imageHeight: frame.image.height
+        )
+        let label = try #require(DisplayOCRTraining.draft(
+            image: frame.image,
+            panel: panel,
+            rowBoxes: [],
+            sourceName: nil
+        ))
+        let rowID = try #require(label.rows.first?.id)
+        let edited = DisplayOCRTraining.confirming(label, rowID: rowID, text: "8\"1")
+        #expect(edited.rows[0].confirmedText == "8\"1")
+        #expect(edited.rows[0].decodedText == "2")
+        let missed = DisplayOCRTraining.confirming(label, rowID: UUID(), text: "nope")
+        #expect(missed == label)
+    }
+
+    @Test func sanitizedSourceNameDropsPathComponents() {
+        #expect(DisplayOCRTraining.sanitizedSourceName("../../etc/passwd") == "passwd")
+        #expect(DisplayOCRTraining.sanitizedSourceName("..") == nil)
+        #expect(DisplayOCRTraining.sanitizedSourceName("pump photo.JPG") == "pump photo.JPG")
+        #expect(DisplayOCRTraining.sanitizedSourceName(nil) == nil)
+    }
+
+    @Test func importerCancelLeavesTheCurrentPhotoAlone() {
+        #expect(DisplayOCRTraining.importerCancelled(CancellationError()))
+        #expect(DisplayOCRTraining.importerCancelled(CocoaError(.userCancelled)))
+        #expect(DisplayOCRTraining.importerCancelled(CocoaError(.fileReadNoSuchFile)) == false)
+    }
+
+    @Test func packageRoundTripWritesOnlyThePackageFiles() throws {
+        let frame = twoDigitFrame()
+        let panel = DisplayOCRNormalizedBox(
+            pixelRect: frame.two,
+            imageWidth: frame.image.width,
+            imageHeight: frame.image.height
+        )
+        var label = try #require(DisplayOCRTraining.draft(
+            image: frame.image,
+            panel: panel,
+            rowBoxes: [],
+            sourceName: "../../etc/passwd"
+        ))
+        label = DisplayOCRTraining.confirming(label, rowID: try #require(label.rows.first?.id), text: "8\"1")
+        label.imageFileName = "../escape.png"
+        let package = try DisplayOCRTraining.package(label: label, image: frame.image)
+        #expect(package.label.imageFileName == DisplayOCRTraining.imageFileName)
+        #expect(package.label.sourceName == "passwd")
+        #expect(package.label.rows[0].confirmedText == "8\"1")
+        #expect(package.label.rows[0].decodedText == "2")
+
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("display-ocr-training-test-\(UUID().uuidString)", isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        try DisplayOCRTraining.write(package, to: directory)
+        let names = try FileManager.default.contentsOfDirectory(atPath: directory.path).sorted()
+        #expect(names == [DisplayOCRTraining.imageFileName, DisplayOCRTraining.labelFileName])
+
+        let loaded = try DisplayOCRTraining.read(from: directory)
+        #expect(loaded.label.rows[0].confirmedText == "8\"1")
+        #expect(loaded.label.rows[0].decodedText == "2")
+        #expect(loaded.label.sourceName == "passwd")
+        #expect(loaded.label.imagePixelWidth == frame.image.width)
+        #expect(loaded.label.imagePixelHeight == frame.image.height)
+        let reopened = try #require(cgImage(fromPNG: loaded.imagePNG))
+        #expect(reopened.width == frame.image.width)
+        #expect(reopened.height == frame.image.height)
+    }
+
+    @Test func readerRejectsANewerSchema() throws {
+        let json = """
+        {"imageFileName":"image.png","imagePixelHeight":2,"imagePixelWidth":2,"origin":"topLeft","panel":{"height":1,"width":1,"x":0,"y":0},"rows":[],"schemaVersion":2}
+        """
+        let data = try #require(json.data(using: .utf8))
+        #expect(throws: DisplayOCRTrainingError.unsupportedSchema(2)) {
+            try DisplayOCRTraining.label(from: data)
+        }
+    }
+
+    @Test @MainActor func sessionDrawsDecodesConfirmsAndExports() throws {
+        let frame = twoDigitFrame()
+        let session = DisplayOCRTrainingSession()
+        session.load(cgImage: frame.image, sourceName: "../../roll.png")
+        #expect(session.sourceName == "roll.png")
+        #expect(session.imagePixelSize == CGSize(width: frame.image.width, height: frame.image.height))
+
+        let panel = DisplayOCRNormalizedBox(
+            pixelRect: frame.two,
+            imageWidth: frame.image.width,
+            imageHeight: frame.image.height
+        )
+        let container = CGSize(width: 400, height: 400)
+        let drag = panel.containerRect(imagePixelSize: session.imagePixelSize, containerSize: container)
+        #expect(session.applyDraw(containerRect: drag, containerSize: container))
+        #expect(session.panel != nil)
+        #expect(session.decode())
+        let rowID = try #require(session.label?.rows.first?.id)
+        #expect(session.label?.rows.first?.decodedText == "2")
+        session.confirm(rowID: rowID, text: "2.0")
+        #expect(session.label?.rows.first?.confirmedText == "2.0")
+        #expect(session.label?.rows.first?.decodedText == "2")
+
+        let exported = try session.exportToTemporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: exported.directory) }
+        #expect(exported.package.label.rows.first?.confirmedText == "2.0")
+        let names = try FileManager.default.contentsOfDirectory(atPath: exported.directory.path).sorted()
+        #expect(names == [DisplayOCRTraining.imageFileName, DisplayOCRTraining.labelFileName])
+        if case .exported(let url) = session.status {
+            #expect(url == exported.directory)
+        } else {
+            Issue.record("Export should record the package directory")
+        }
+    }
+
+    @Test @MainActor func sessionLoadsAPhotoFileAndUsesTheFullFrame() throws {
+        let image = grayImage(width: 4, height: 2, pixels: [9, 9, 9, 9, 3, 3, 3, 3])
+        let png = try #require(pngData(image))
+        let url = FileManager.default.temporaryDirectory
+            .appendingPathComponent("display-ocr-load-\(UUID().uuidString).png")
+        try png.write(to: url)
+        defer { try? FileManager.default.removeItem(at: url) }
+
+        let session = DisplayOCRTrainingSession()
+        session.load(fileURL: url)
+        #expect(session.imagePixelSize.width == 4)
+        #expect(session.imagePixelSize.height == 2)
+        session.useFullFramePanel()
+        #expect(session.panel?.x == 0)
+        #expect(session.panel?.y == 0)
+        #expect(session.panel?.width == 1)
+        #expect(session.panel?.height == 1)
+        #expect(session.decode())
+        #expect(session.label?.rows.count == 1)
+        #expect(session.label?.rows.first?.decodedText == "")
+    }
+
+    // MARK: - Fixtures
+
+    private func twoDigitFrame() -> (image: CGImage, two: CGRect, seven: CGRect) {
+        let two = sprite([.a, .b, .d, .e, .g])
+        let seven = sprite([.a, .b, .c])
+        let canvasWidth = 400
+        let canvasHeight = 360
+        let twoOrigin = (x: 24, y: 20)
+        let sevenOrigin = (x: 220, y: 180)
+        var pixels = [UInt8](repeating: 214, count: canvasWidth * canvasHeight)
+        blit(two, into: &pixels, canvasWidth: canvasWidth, canvasHeight: canvasHeight, originX: twoOrigin.x, originY: twoOrigin.y)
+        blit(seven, into: &pixels, canvasWidth: canvasWidth, canvasHeight: canvasHeight, originX: sevenOrigin.x, originY: sevenOrigin.y)
+        let image = grayImage(width: canvasWidth, height: canvasHeight, pixels: pixels)
+        return (
+            image,
+            CGRect(x: twoOrigin.x, y: twoOrigin.y, width: two.width, height: two.height),
+            CGRect(x: sevenOrigin.x, y: sevenOrigin.y, width: seven.width, height: seven.height)
+        )
+    }
+
+    /// One digit, same cell geometry the seven-segment fixtures use.
+    private func sprite(_ pattern: SevenSegmentPattern) -> (pixels: [UInt8], width: Int, height: Int) {
+        let cellWidth = 50
+        let cellHeight = 90
+        let stroke = 12
+        let padding = 16
+        let width = cellWidth + padding * 2
+        let height = cellHeight + padding * 2
+        var pixels = [UInt8](repeating: 214, count: width * height)
+        let x = padding
+        let y = padding
+        var rects: [CGRect] = []
+        if pattern == [.b, .c] {
+            rects = [CGRect(x: x + cellWidth - stroke, y: y, width: stroke, height: cellHeight)]
+        } else {
+            let mid = y + cellHeight / 2 - stroke / 2
+            if pattern.contains(.a) { rects.append(CGRect(x: x + stroke, y: y, width: cellWidth - 2 * stroke, height: stroke)) }
+            if pattern.contains(.b) { rects.append(CGRect(x: x + cellWidth - stroke, y: y + stroke, width: stroke, height: cellHeight / 2 - stroke)) }
+            if pattern.contains(.c) { rects.append(CGRect(x: x + cellWidth - stroke, y: y + cellHeight / 2, width: stroke, height: cellHeight / 2 - stroke)) }
+            if pattern.contains(.d) { rects.append(CGRect(x: x + stroke, y: y + cellHeight - stroke, width: cellWidth - 2 * stroke, height: stroke)) }
+            if pattern.contains(.e) { rects.append(CGRect(x: x, y: y + cellHeight / 2, width: stroke, height: cellHeight / 2 - stroke)) }
+            if pattern.contains(.f) { rects.append(CGRect(x: x, y: y + stroke, width: stroke, height: cellHeight / 2 - stroke)) }
+            if pattern.contains(.g) { rects.append(CGRect(x: x + stroke, y: mid, width: cellWidth - 2 * stroke, height: stroke)) }
+        }
+        for rect in rects {
+            fill(&pixels, width: width, height: height, rect: rect, value: 22)
+        }
+        return (pixels, width, height)
+    }
+
+    private func blit(
+        _ sprite: (pixels: [UInt8], width: Int, height: Int),
+        into pixels: inout [UInt8],
+        canvasWidth: Int,
+        canvasHeight: Int,
+        originX: Int,
+        originY: Int
+    ) {
+        for y in 0..<sprite.height {
+            let destY = originY + y
+            guard destY >= 0, destY < canvasHeight else { continue }
+            for x in 0..<sprite.width {
+                let destX = originX + x
+                guard destX >= 0, destX < canvasWidth else { continue }
+                pixels[destY * canvasWidth + destX] = sprite.pixels[y * sprite.width + x]
+            }
+        }
+    }
+
+    private func fill(_ pixels: inout [UInt8], width: Int, height: Int, rect: CGRect, value: UInt8) {
+        let x0 = max(0, Int(rect.minX))
+        let y0 = max(0, Int(rect.minY))
+        let x1 = min(width, Int(rect.maxX.rounded(.up)))
+        let y1 = min(height, Int(rect.maxY.rounded(.up)))
+        guard x1 > x0, y1 > y0 else { return }
+        for y in y0..<y1 {
+            for x in x0..<x1 {
+                pixels[y * width + x] = value
+            }
+        }
+    }
+
+    private func grayImage(width: Int, height: Int, pixels: [UInt8]) -> CGImage {
+        let data = Data(pixels) as CFData
+        let provider = CGDataProvider(data: data)!
+        return CGImage(
+            width: width,
+            height: height,
+            bitsPerComponent: 8,
+            bitsPerPixel: 8,
+            bytesPerRow: width,
+            space: CGColorSpaceCreateDeviceGray(),
+            bitmapInfo: CGBitmapInfo(rawValue: CGImageAlphaInfo.none.rawValue),
+            provider: provider,
+            decode: nil,
+            shouldInterpolate: false,
+            intent: .defaultIntent
+        )!
+    }
+
+    private func providerBytes(_ image: CGImage) -> [UInt8] {
+        guard let data = image.dataProvider?.data else { return [] }
+        let bytes = CFDataGetBytePtr(data)
+        let rowBytes = image.bytesPerRow
+        var pixels = [UInt8]()
+        pixels.reserveCapacity(image.width * image.height)
+        for y in 0..<image.height {
+            for x in 0..<image.width {
+                if let bytes {
+                    pixels.append(bytes[y * rowBytes + x])
+                }
+            }
+        }
+        return pixels
+    }
+
+    private func pngData(_ image: CGImage) -> Data? {
+        let data = NSMutableData()
+        guard let destination = CGImageDestinationCreateWithData(
+            data,
+            "public.png" as CFString,
+            1,
+            nil
+        ) else { return nil }
+        CGImageDestinationAddImage(destination, image, nil)
+        guard CGImageDestinationFinalize(destination) else { return nil }
+        return data as Data
+    }
+
+    private func cgImage(fromPNG data: Data) -> CGImage? {
+        guard let source = CGImageSourceCreateWithData(data as CFData, nil) else { return nil }
+        return CGImageSourceCreateImageAtIndex(source, 0, nil)
+    }
+}
