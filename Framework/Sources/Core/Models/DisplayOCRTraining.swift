@@ -3,6 +3,8 @@
 //  SixLayerFramework
 //
 //  Display OCR training (#609). Phase A writes one confirmed example.
+//  Opening a new photo suggests a panel and rows from the seven-segment
+//  reader. A saved example keeps the boxes and text the user confirmed.
 //  Phase B reads the export directory as a library of those examples.
 //  Core ML training is Phase C.
 //
@@ -304,15 +306,15 @@ public enum DisplayOCRTraining {
         ).unitClamped
     }
 
-    /// Map Vision boxes (bottom-left, crop fractions) into top-left photo rows.
-    /// Stub until the suggestion mapping is implemented.
+    /// Map Vision boxes (origin bottom-left, fractions of the panel crop)
+    /// into top-left rows on the photo. Boxes in one row are unioned.
     public static func rowBoxes(
         fromVisionBoxes boxes: [CGRect],
         panel: DisplayOCRNormalizedBox
     ) -> [DisplayOCRNormalizedBox] {
-        _ = boxes
-        _ = panel
-        return []
+        guard let panel = panel.unitClamped, panel.width > 0, panel.height > 0 else { return [] }
+        let mapped = boxes.compactMap { photoBox(fromVisionBox: $0, panel: panel) }
+        return clusteredRows(mapped)
     }
 
     /// Gray crop in the same top-left order ``SevenSegmentOCR`` reads.
@@ -580,6 +582,179 @@ public enum DisplayOCRTraining {
         let texts = lines.isEmpty ? [""] : lines
         return texts.map { labeledRow($0, box: nil, confidence: decoded.confidence) }
     }
+
+    private static let unitSquare = DisplayOCRNormalizedBox(x: 0, y: 0, width: 1, height: 1)
+
+    /// Vision's y is the bottom of the glyph. The trainer's y is the top.
+    private static func photoBox(
+        fromVisionBox box: CGRect,
+        panel: DisplayOCRNormalizedBox
+    ) -> DisplayOCRNormalizedBox? {
+        guard box.width > 0, box.height > 0 else { return nil }
+        let topLeftY = 1 - Double(box.minY + box.height)
+        let photo = DisplayOCRNormalizedBox(
+            x: panel.x + Double(box.minX) * panel.width,
+            y: panel.y + topLeftY * panel.height,
+            width: Double(box.width) * panel.width,
+            height: Double(box.height) * panel.height
+        )
+        return photo.intersection(panel)
+    }
+
+    private static func clusteredRows(_ boxes: [DisplayOCRNormalizedBox]) -> [DisplayOCRNormalizedBox] {
+        let ordered = boxes.sorted { lhs, rhs in
+            if lhs.y == rhs.y { return lhs.x < rhs.x }
+            return lhs.y < rhs.y
+        }
+        var rows: [DisplayOCRNormalizedBox] = []
+        for box in ordered {
+            if let last = rows.last, sharesRow(last, box) {
+                rows[rows.count - 1] = union(last, box)
+            } else {
+                rows.append(box)
+            }
+        }
+        return rows
+    }
+
+    private static func sharesRow(_ lhs: DisplayOCRNormalizedBox, _ rhs: DisplayOCRNormalizedBox) -> Bool {
+        let top = max(lhs.y, rhs.y)
+        let bottom = min(lhs.y + lhs.height, rhs.y + rhs.height)
+        return bottom > top
+    }
+
+    private static func union(_ lhs: DisplayOCRNormalizedBox, _ rhs: DisplayOCRNormalizedBox) -> DisplayOCRNormalizedBox {
+        let left = min(lhs.x, rhs.x)
+        let top = min(lhs.y, rhs.y)
+        let right = max(lhs.x + lhs.width, rhs.x + rhs.width)
+        let bottom = max(lhs.y + lhs.height, rhs.y + rhs.height)
+        return DisplayOCRNormalizedBox(x: left, y: top, width: right - left, height: bottom - top)
+    }
+
+    private static func rowsInside(
+        _ rows: [DisplayOCRNormalizedBox],
+        panel: DisplayOCRNormalizedBox,
+        imageWidth: Int,
+        imageHeight: Int
+    ) -> [DisplayOCRNormalizedBox] {
+        rows.compactMap { row in
+            guard let hit = row.intersection(panel) else { return nil }
+            guard hit.pixelRect(imageWidth: imageWidth, imageHeight: imageHeight) != nil else { return nil }
+            return hit
+        }
+    }
+
+    private static func hit(
+        at point: CGPoint,
+        containerSize: CGSize,
+        imageSize: CGSize,
+        panel: DisplayOCRNormalizedBox?,
+        rows: [DisplayOCRNormalizedBox]
+    ) -> BoxHit? {
+        let frame = OCRBoundingBoxLayout.aspectFitImageFrame(
+            imageSize: imageSize,
+            containerSize: containerSize
+        )
+        guard frame.width > 0, frame.height > 0 else { return nil }
+        let x = (point.x - frame.minX) / frame.width
+        let y = (point.y - frame.minY) / frame.height
+        for (index, row) in rows.enumerated().reversed() {
+            if let edges = edges(atX: x, y: y, box: row, frame: frame) {
+                return BoxHit(target: .row(index), edges: edges)
+            }
+        }
+        if let panel, let edges = edges(atX: x, y: y, box: panel, frame: frame) {
+            return BoxHit(target: .panel, edges: edges)
+        }
+        return nil
+    }
+
+    /// Move keeps the size and stops at `bounds`. An edge drag clips to `bounds`.
+    private static func placed(
+        _ box: DisplayOCRNormalizedBox,
+        edges: BoxEdges,
+        dx: Double,
+        dy: Double,
+        within bounds: DisplayOCRNormalizedBox
+    ) -> DisplayOCRNormalizedBox? {
+        if edges.isEmpty {
+            let maxX = bounds.x + bounds.width - box.width
+            let maxY = bounds.y + bounds.height - box.height
+            return DisplayOCRNormalizedBox(
+                x: min(max(box.x + dx, bounds.x), max(bounds.x, maxX)),
+                y: min(max(box.y + dy, bounds.y), max(bounds.y, maxY)),
+                width: box.width,
+                height: box.height
+            )
+        }
+        var x = box.x
+        var y = box.y
+        var width = box.width
+        var height = box.height
+        if edges.contains(.left) {
+            let right = x + width
+            let next = min(max(x + dx, bounds.x), right)
+            x = next
+            width = right - next
+        } else if edges.contains(.right) {
+            let next = min(max(x + width + dx, x), bounds.x + bounds.width)
+            width = next - x
+        }
+        if edges.contains(.top) {
+            let bottom = y + height
+            let next = min(max(y + dy, bounds.y), bottom)
+            y = next
+            height = bottom - next
+        } else if edges.contains(.bottom) {
+            let next = min(max(y + height + dy, y), bounds.y + bounds.height)
+            height = next - y
+        }
+        let resized = DisplayOCRNormalizedBox(x: x, y: y, width: width, height: height)
+        return resized.intersection(bounds)
+    }
+
+    private static func edges(
+        atX x: CGFloat,
+        y: CGFloat,
+        box: DisplayOCRNormalizedBox,
+        frame: CGRect
+    ) -> BoxEdges? {
+        let fx = Double(x)
+        let fy = Double(y)
+        let slop = 0.000_1
+        guard fx + slop >= box.x, fy + slop >= box.y,
+              fx <= box.x + box.width + slop,
+              fy <= box.y + box.height + slop else { return nil }
+        let slopX = Double(min(12, box.width * frame.width / 3) / frame.width)
+        let slopY = Double(min(12, box.height * frame.height / 3) / frame.height)
+        var edges = BoxEdges()
+        if fx - box.x <= slopX { edges.insert(.left) }
+        if box.x + box.width - fx <= slopX { edges.insert(.right) }
+        if fy - box.y <= slopY { edges.insert(.top) }
+        if box.y + box.height - fy <= slopY { edges.insert(.bottom) }
+        if edges.contains(.left), edges.contains(.right) {
+            edges.remove(.left)
+            edges.remove(.right)
+        }
+        if edges.contains(.top), edges.contains(.bottom) {
+            edges.remove(.top)
+            edges.remove(.bottom)
+        }
+        return edges
+    }
+
+    private struct BoxEdges: OptionSet {
+        let rawValue: Int
+        static let left = BoxEdges(rawValue: 1 << 0)
+        static let right = BoxEdges(rawValue: 1 << 1)
+        static let top = BoxEdges(rawValue: 1 << 2)
+        static let bottom = BoxEdges(rawValue: 1 << 3)
+    }
+
+    private struct BoxHit {
+        var target: DisplayOCRTrainingBoxTarget
+        var edges: BoxEdges
+    }
 }
 
 @MainActor
@@ -611,20 +786,59 @@ public final class DisplayOCRTrainingSession: ObservableObject {
     }
 
     public func load(cgImage: CGImage, sourceName: String? = nil) {
+        show(cgImage, sourceName: sourceName, suggesting: true)
+    }
+
+    /// Show a saved example. The stored boxes and confirmed text stay; a new suggestion does not replace them.
+    public func restore(cgImage: CGImage, label saved: DisplayOCRTrainingLabel, sourceName: String? = nil) {
+        show(cgImage, sourceName: sourceName ?? saved.sourceName, suggesting: false)
+        guard bitmap != nil, let kept = saved.panel.unitClamped else { return }
+        panel = kept
+        rowBoxes = DisplayOCRTraining.rowsInside(
+            saved.rows.compactMap(\.box),
+            panel: kept,
+            imageWidth: Int(imagePixelSize.width),
+            imageHeight: Int(imagePixelSize.height)
+        )
+        label = saved
+        status = .decoded
+    }
+
+    private func show(_ cgImage: CGImage, sourceName rawName: String?, suggesting: Bool) {
         bitmap = cgImage
         image = PlatformImage(cgImage: cgImage)
         imagePixelSize = CGSize(width: cgImage.width, height: cgImage.height)
-        self.sourceName = DisplayOCRTraining.sanitizedSourceName(sourceName)
+        sourceName = DisplayOCRTraining.sanitizedSourceName(rawName)
         panel = nil
         rowBoxes = []
         label = nil
         status = nil
+        selectedBox = nil
+        if suggesting {
+            suggestBoxes(in: cgImage)
+        }
     }
 
-    /// Shows a saved example. Stub keeps the photo and drops the label.
-    public func restore(cgImage: CGImage, label: DisplayOCRTrainingLabel, sourceName: String? = nil) {
-        _ = label
-        load(cgImage: cgImage, sourceName: sourceName)
+    /// The classical reader proposes a panel and glyph rows. No panel means no suggestion.
+    private func suggestBoxes(in image: CGImage) {
+        guard let region = SevenSegmentOCR.digitPanelRegion(in: image) else { return }
+        let suggested = DisplayOCRNormalizedBox(
+            pixelRect: region,
+            imageWidth: image.width,
+            imageHeight: image.height
+        )
+        guard let panelBox = suggested.unitClamped,
+              panelBox.pixelRect(imageWidth: image.width, imageHeight: image.height) != nil else { return }
+        panel = panelBox
+        if let crop = DisplayOCRTraining.crop(image, to: panelBox) {
+            let read = SevenSegmentOCR.decode(
+                cgImage: crop,
+                deskewMaximumDegrees: 0,
+                localizeDigitPanel: false
+            )
+            rowBoxes = DisplayOCRTraining.rowBoxes(fromVisionBoxes: read.boundingBoxes, panel: panelBox)
+        }
+        _ = decode()
     }
 
     public func load(fileURL: URL) {
@@ -648,11 +862,24 @@ public final class DisplayOCRTrainingSession: ObservableObject {
         rowBoxes = []
         label = nil
         status = nil
+        selectedBox = nil
     }
 
-    /// Resize or replace the panel. Stub until clipping is implemented.
+    /// Replace the panel and clip rows to it. A row that falls outside is removed.
     public func updatePanel(_ box: DisplayOCRNormalizedBox) {
-        _ = box
+        guard bitmap != nil, let clamped = box.unitClamped else { return }
+        panel = clamped
+        rowBoxes = DisplayOCRTraining.rowsInside(
+            rowBoxes,
+            panel: clamped,
+            imageWidth: Int(imagePixelSize.width),
+            imageHeight: Int(imagePixelSize.height)
+        )
+        label = nil
+        status = nil
+        if case .row(let index) = selectedBox, rowBoxes.indices.contains(index) == false {
+            selectedBox = nil
+        }
     }
 
     public func useFullFramePanel() {
@@ -677,15 +904,40 @@ public final class DisplayOCRTrainingSession: ObservableObject {
         rowBoxes = []
         label = nil
         status = nil
+        if case .row = selectedBox {
+            selectedBox = nil
+        }
     }
 
     public func selectBox(at point: CGPoint, containerSize: CGSize) {
-        _ = point
-        _ = containerSize
+        selectedBox = DisplayOCRTraining.hit(
+            at: point,
+            containerSize: containerSize,
+            imageSize: imagePixelSize,
+            panel: panel,
+            rows: rowBoxes
+        )?.target
     }
 
-    public func removeSelectedBox() {}
+    public func removeSelectedBox() {
+        switch selectedBox {
+        case .panel:
+            panel = nil
+            rowBoxes = []
+            label = nil
+            status = nil
+            selectedBox = nil
+        case .row(let index) where rowBoxes.indices.contains(index):
+            rowBoxes.remove(at: index)
+            label = nil
+            status = nil
+            selectedBox = nil
+        default:
+            selectedBox = nil
+        }
+    }
 
+    /// Drag `start` on a box from the snapshot. A miss returns false so the caller can draw a new box.
     @discardableResult
     public func adjust(
         from start: CGPoint,
@@ -694,12 +946,63 @@ public final class DisplayOCRTrainingSession: ObservableObject {
         basePanel: DisplayOCRNormalizedBox?,
         baseRows: [DisplayOCRNormalizedBox]
     ) -> Bool {
-        _ = start
-        _ = end
-        _ = containerSize
-        _ = basePanel
-        _ = baseRows
-        return false
+        guard bitmap != nil, imagePixelSize.width > 0, imagePixelSize.height > 0 else { return false }
+        guard let hit = DisplayOCRTraining.hit(
+            at: start,
+            containerSize: containerSize,
+            imageSize: imagePixelSize,
+            panel: basePanel,
+            rows: baseRows
+        ) else { return false }
+        let frame = OCRBoundingBoxLayout.aspectFitImageFrame(
+            imageSize: imagePixelSize,
+            containerSize: containerSize
+        )
+        guard frame.width > 0, frame.height > 0 else { return false }
+        let dx = Double(end.x - start.x) / Double(frame.width)
+        let dy = Double(end.y - start.y) / Double(frame.height)
+        let imageWidth = Int(imagePixelSize.width)
+        let imageHeight = Int(imagePixelSize.height)
+        switch hit.target {
+        case .panel:
+            guard let base = basePanel else { return false }
+            guard let next = DisplayOCRTraining.placed(
+                base,
+                edges: hit.edges,
+                dx: dx,
+                dy: dy,
+                within: DisplayOCRTraining.unitSquare
+            ), next.pixelRect(imageWidth: imageWidth, imageHeight: imageHeight) != nil else { return false }
+            panel = next
+            rowBoxes = DisplayOCRTraining.rowsInside(
+                baseRows,
+                panel: next,
+                imageWidth: imageWidth,
+                imageHeight: imageHeight
+            )
+            selectedBox = .panel
+        case .row(let index):
+            guard let limit = (basePanel ?? panel)?.unitClamped, baseRows.indices.contains(index) else { return false }
+            panel = limit
+            var rows = baseRows
+            if let next = DisplayOCRTraining.placed(
+                baseRows[index],
+                edges: hit.edges,
+                dx: dx,
+                dy: dy,
+                within: limit
+            ), next.pixelRect(imageWidth: imageWidth, imageHeight: imageHeight) != nil {
+                rows[index] = next
+                selectedBox = .row(index)
+            } else {
+                rows.remove(at: index)
+                selectedBox = nil
+            }
+            rowBoxes = rows
+        }
+        label = nil
+        status = nil
+        return true
     }
 
     @discardableResult
@@ -760,6 +1063,7 @@ public final class DisplayOCRTrainingSession: ObservableObject {
         rowBoxes = []
         label = nil
         status = .unreadableImage
+        selectedBox = nil
     }
 
     public func failExport() {
