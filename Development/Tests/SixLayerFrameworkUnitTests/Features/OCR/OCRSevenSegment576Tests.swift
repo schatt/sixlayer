@@ -856,6 +856,29 @@ struct OCRSevenSegment576Tests {
         #expect((band?.exactDigitCount ?? 0) > (scan?.exactDigitCount ?? 0))
     }
 
+    /// A stem that continues into the gap between two rows is still a digit
+    /// column. Marking it as a bezel drops the right-hand group on a tall frame.
+    @Test func valleyStemDoesNotSplitTheDigitLine() {
+        let scale = 4
+        let rendered = SegmentPanel.render(
+            rows: [atoms("32.88"), atoms("8.022")],
+            scale: scale
+        )
+        let periodEnd = (16 + (SegmentPanel.cellW + SegmentPanel.intra) * 2 + SegmentPanel.stroke) * scale
+        let followingDigit = periodEnd + SegmentPanel.intra * scale
+        let gapTop = (16 + SegmentPanel.cellH) * scale
+        let gapBottom = gapTop + SegmentPanel.rowGap * scale
+        let image = paintLevel(
+            rendered,
+            x0: periodEnd - SegmentPanel.stroke * scale,
+            x1: followingDigit + SegmentPanel.stroke * scale,
+            y0: gapTop,
+            y1: gapBottom,
+            level: 22
+        )
+        #expect(decode(image, maximum: 0).extractedText == "32.88\n8.022")
+    }
+
     /// Private photo, not in this repo. Touch `/tmp/sixlayer-600-score-s1` to
     /// run it; the suite skips it otherwise. The frame stays at the camera's
     /// own size. Localization searches a long-side cap and reads the mapped
@@ -1125,6 +1148,39 @@ struct OCRSevenSegment576Tests {
         for row in 0..<height {
             for col in 0..<width {
                 pixels[row * width + col] = bytes[(y + row) * rowBytes + (x + col)]
+            }
+        }
+        return solidGrayImage(pixels: pixels, width: width, height: height)
+    }
+
+    private func paintLevel(
+        _ image: CGImage,
+        x0: Int,
+        x1: Int,
+        y0: Int,
+        y1: Int,
+        level: UInt8
+    ) -> CGImage {
+        let width = image.width
+        let height = image.height
+        var pixels = [UInt8](repeating: 0, count: width * height)
+        if let provider = image.dataProvider,
+           let data = provider.data,
+           let bytes = CFDataGetBytePtr(data) {
+            let rowBytes = image.bytesPerRow
+            for y in 0..<height {
+                for x in 0..<width {
+                    pixels[y * width + x] = bytes[y * rowBytes + x]
+                }
+            }
+        }
+        let left = max(0, min(width, x0))
+        let right = max(left, min(width, x1))
+        let top = max(0, min(height, y0))
+        let bottom = max(top, min(height, y1))
+        for y in top..<bottom {
+            for x in left..<right {
+                pixels[y * width + x] = level
             }
         }
         return solidGrayImage(pixels: pixels, width: width, height: height)
