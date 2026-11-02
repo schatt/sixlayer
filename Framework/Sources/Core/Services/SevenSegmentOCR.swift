@@ -2160,8 +2160,18 @@ private func readingSpan(_ mask: Mask, bands: [(Int, Int)]) -> (Int, Int)? {
     var start = first
     var end = first
     var ink = columnInk[first]
+    // A one- or two-pixel valley mark sits between strokes on a tall row
+    // and was cutting the right-hand digits off the run. A real bezel is
+    // wider than that.
+    let bezelWidth = max(2, rowHeight / 100)
     for index in active.dropFirst() {
-        let crossesBezel = (end + 1..<index).contains { edgeColumn[$0] }
+        var edgeCount = 0
+        if index > end + 1 {
+            for x in (end + 1)..<index where edgeColumn[x] {
+                edgeCount += 1
+            }
+        }
+        let crossesBezel = edgeCount > bezelWidth
         if index - end <= gapLimit, !crossesBezel {
             end = index
             ink += columnInk[index]
@@ -2173,10 +2183,6 @@ private func readingSpan(_ mask: Mask, bands: [(Int, Int)]) -> (Int, Int)? {
         }
     }
     runs.append((start, end + 1, ink))
-    if width >= 1400 {
-        let listed = runs.map { "\($0.start)-\($0.end):\($0.ink)" }.joined(separator: " ")
-        trace("span-runs gap \(gapLimit) \(listed)\n")
-    }
     guard let best = runs.max(by: { $0.ink < $1.ink }) else { return nil }
     let span = best.end - best.start
     guard span > max(12, height / 10) else { return nil }
