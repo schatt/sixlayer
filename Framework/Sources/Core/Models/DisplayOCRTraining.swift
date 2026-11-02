@@ -173,6 +173,42 @@ public struct DisplayOCRTrainingExport: Sendable, Equatable {
     }
 }
 
+/// One confirmed package inside a training library.
+public struct DisplayOCRTrainingLibraryExample: Sendable, Equatable {
+    public var directory: URL
+    public var package: DisplayOCRTrainingPackage
+
+    public init(directory: URL, package: DisplayOCRTrainingPackage) {
+        self.directory = directory
+        self.package = package
+    }
+}
+
+/// A child folder that is not a usable example.
+public struct DisplayOCRTrainingLibraryRejection: Sendable, Equatable {
+    public var directory: URL
+    public var error: DisplayOCRTrainingError
+
+    public init(directory: URL, error: DisplayOCRTrainingError) {
+        self.directory = directory
+        self.error = error
+    }
+}
+
+/// The examples and rejected folders in one export directory.
+public struct DisplayOCRTrainingLibrary: Sendable, Equatable {
+    public var examples: [DisplayOCRTrainingLibraryExample]
+    public var rejections: [DisplayOCRTrainingLibraryRejection]
+
+    public init(
+        examples: [DisplayOCRTrainingLibraryExample] = [],
+        rejections: [DisplayOCRTrainingLibraryRejection] = []
+    ) {
+        self.examples = examples
+        self.rejections = rejections
+    }
+}
+
 public enum DisplayOCRTrainingError: Error, Equatable, Sendable {
     case unreadableImage
     case emptyPanel
@@ -361,6 +397,12 @@ public enum DisplayOCRTraining {
         }
     }
 
+    /// Stub. The training library is not read yet.
+    public static func library(in root: URL) -> DisplayOCRTrainingLibrary {
+        _ = root
+        return DisplayOCRTrainingLibrary()
+    }
+
     public static func read(from directory: URL) throws -> DisplayOCRTrainingPackage {
         let imageURL = directory.appendingPathComponent(imageFileName)
         let labelURL = directory.appendingPathComponent(labelFileName)
@@ -453,6 +495,7 @@ public final class DisplayOCRTrainingSession: ObservableObject {
     @Published public var drawMode: DisplayOCRTrainingDrawMode = .panel
     @Published public private(set) var status: DisplayOCRTrainingStatus?
     @Published public private(set) var exportRoot: URL = DisplayOCRTraining.defaultExportRoot()
+    @Published public private(set) var library = DisplayOCRTrainingLibrary()
 
     private var bitmap: CGImage?
 
