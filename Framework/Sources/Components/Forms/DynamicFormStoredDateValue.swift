@@ -5,9 +5,10 @@ import Foundation
 ///
 /// **Primary contract:** `Date` — preferred for hosts mapping to Core Data / model `Date` attributes.
 ///
-/// **Interoperability:** Also accepts `TimeInterval`, ISO-8601 strings, and the same medium/short
-/// localized strings written by `DatePickerField` / `TimePickerField` / `DateTimePickerField` in
-/// `AdvancedFieldTypes.swift`. See `Framework/docs/AdvancedFieldTypesGuide.md` (date contracts) and GitHub #266.
+/// **Interoperability:** Also accepts `TimeInterval`, ISO-8601 strings, `en_US_POSIX` medium/short
+/// strings, and those same styles in `Locale.current` as written by `DatePickerField` /
+/// `TimePickerField` / `DateTimePickerField`. POSIX is tried first (#615, #621).
+/// See `Framework/docs/AdvancedFieldTypesGuide.md` (date contracts) and GitHub #266.
 public enum DynamicFormStoredDateValue {
 
     /// Returns a `Date` suitable for `DatePicker` binding, or `nil` if nothing is stored / parseable.
