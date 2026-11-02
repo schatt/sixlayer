@@ -1191,6 +1191,90 @@ private extension GrayBuffer {
         }
     }
 
+    /// Rows for one finder. Polarity can follow the glass holes after a punch
+    /// opens a counter, so both loose masks are read and the one with more
+    /// exact digits wins. A tie stays on the dark strokes.
+    private static func finderRows(
+        in buffer: GrayBuffer,
+        dark: Mask,
+        light: Mask,
+        rowFinder: SegmentRowFinder,
+        sampleBand: Int,
+        preferredPitch: PreferredDigitPitch?
+    ) -> [[Cell]] {
+        let paintedMarks = buffer.extremeMarkMask()
+        func lineRows(ink: Mask, isDark: Bool) -> [[Cell]] {
+            let projected = projectionBands(ink.rowSums, height: buffer.height)
+            let lines = rowFinder == .deepestPair
+                ? pairBands(projected, height: buffer.height)
+                : projected
+            let decoded = projected.map { band in
+                cellsInFinderBand(
+                    band,
+                    ink: ink,
+                    isDark: isDark,
+                    buffer: buffer,
+                    paintedMarks: paintedMarks,
+                    sampleBand: sampleBand,
+                    preferredPitch: preferredPitch
+                )
+            }
+            return lines.compactMap { line in
+                var combined: [Cell] = []
+                for (band, row) in zip(projected, decoded) where band.0 >= line.0 && band.1 <= line.1 {
+                    combined.append(contentsOf: row)
+                }
+                return combined.isEmpty ? nil : combined
+            }
+        }
+        let darkRows = lineRows(ink: dark, isDark: true)
+        let lightRows = lineRows(ink: light, isDark: false)
+        if exactDigitCells(lightRows) > exactDigitCells(darkRows) {
+            return lightRows
+        }
+        return darkRows
+    }
+
+    private static func cellsInFinderBand(
+        _ band: (Int, Int),
+        ink: Mask,
+        isDark: Bool,
+        buffer: GrayBuffer,
+        paintedMarks: Mask,
+        sampleBand: Int,
+        preferredPitch: PreferredDigitPitch?
+    ) -> [Cell] {
+        let found = cells(
+            in: band,
+            mask: ink,
+            buffer: buffer,
+            bandIndex: 0,
+            darkInk: isDark,
+            preferredPitch: preferredPitch,
+            sampleBand: sampleBand
+        )
+        let marks = oppositeMarks(
+            in: band,
+            secondary: paintedMarks,
+            existing: found,
+            buffer: buffer,
+            bandIndex: 0
+        )
+        let dots = baselineDots(in: band, mask: ink, cells: found, width: buffer.width, bandIndex: 0)
+        var row = found + marks + dots
+        if preferredPitch != nil {
+            row = pitchRowMarks(row, mask: ink, band: band, width: buffer.width)
+        }
+        return row
+    }
+
+    private static func exactDigitCells(_ rows: [[Cell]]) -> Int {
+        rows.flatMap { $0 }.reduce(0) { total, cell in
+            guard cell.confidence == 1, cell.character.isNumber else { return total }
+            return total + 1
+        }
+    }
+
     func cropped(x0: Int, y0: Int, x1: Int, y1: Int) -> GrayBuffer {
         let left = max(0, min(width, x0))
         let top = max(0, min(height, y0))
@@ -1495,66 +1579,14 @@ private extension GrayBuffer {
             )
         }
         if let rowFinder {
-            // Polarity can pick the glass holes once a punch opens a counter.
-            // Read both loose masks and keep the one with more exact digits.
-            // A tie stays on the dark strokes.
-            let paintedMarks = buffer.extremeMarkMask()
-            func lineRows(ink: Mask, isDark: Bool) -> [[Cell]] {
-                let projected = projectionBands(ink.rowSums, height: buffer.height)
-                let lines = rowFinder == .deepestPair
-                    ? pairBands(projected, height: buffer.height)
-                    : projected
-                func rowCells(_ band: (Int, Int)) -> [Cell] {
-                    let found = cells(
-                        in: band,
-                        mask: ink,
-                        buffer: buffer,
-                        bandIndex: 0,
-                        darkInk: isDark,
-                        preferredPitch: preferredPitch,
-                        sampleBand: sampleBand
-                    )
-                    let marks = oppositeMarks(
-                        in: band,
-                        secondary: paintedMarks,
-                        existing: found,
-                        buffer: buffer,
-                        bandIndex: 0
-                    )
-                    let dots = baselineDots(
-                        in: band,
-                        mask: ink,
-                        cells: found,
-                        width: buffer.width,
-                        bandIndex: 0
-                    )
-                    var row = found + marks + dots
-                    if preferredPitch != nil {
-                        row = pitchRowMarks(row, mask: ink, band: band, width: buffer.width)
-                    }
-                    return row
-                }
-                let decoded = projected.map(rowCells)
-                return lines.compactMap { line in
-                    var combined: [Cell] = []
-                    for (band, row) in zip(projected, decoded) where band.0 >= line.0 && band.1 <= line.1 {
-                        combined.append(contentsOf: row)
-                    }
-                    return combined.isEmpty ? nil : combined
-                }
-            }
-            func exactDigits(_ rows: [[Cell]]) -> Int {
-                rows.flatMap { $0 }.reduce(0) { total, cell in
-                    guard cell.confidence == 1, cell.character.isNumber else { return total }
-                    return total + 1
-                }
-            }
-            let darkRows = lineRows(ink: masks.dark, isDark: true)
-            let lightRows = lineRows(ink: masks.light, isDark: false)
-            if exactDigits(lightRows) > exactDigits(darkRows) {
-                return lightRows
-            }
-            return darkRows
+            return finderRows(
+                in: buffer,
+                dark: masks.dark,
+                light: masks.light,
+                rowFinder: rowFinder,
+                sampleBand: sampleBand,
+                preferredPitch: preferredPitch
+            )
         }
         let bandSums = opened ? digitRowSums(bandSource.rowSums) : bandSource.rowSums
         let foundBands = runs(bandSums)
