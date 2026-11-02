@@ -679,6 +679,79 @@ struct OCRSevenSegment576Tests {
         #expect(region.maxY <= glass.maxY + slop)
     }
 
+    // MARK: - Path search (#600)
+
+    /// Frame step offers more than the sealed pocket. The ink stack is the
+    /// digit rows, whatever the count, and it has to sit on the panel rather
+    /// than the canvas.
+    @Test func frameFindersOfferSealedPocketAndInkStack() {
+        let panel = sealedBothRowsPanel()
+        let originX = 40
+        let originY = 50
+        let frame = embed(
+            panel,
+            canvasWidth: 700,
+            canvasHeight: 600,
+            originX: originX,
+            originY: originY,
+            fill: 180
+        )
+        let regions = SevenSegmentOCR.frameCandidates(in: frame)
+        let whole = regions.first { $0.finder == .wholeFrame }
+        let sealed = regions.first { $0.finder == .sealedPocket }
+        let ink = regions.first { $0.finder == .inkStack }
+        #expect(whole?.rect == CGRect(x: 0, y: 0, width: 700, height: 600))
+        #expect(sealed != nil)
+        #expect(ink != nil)
+        for candidate in [sealed, ink].compactMap({ $0 }) {
+            #expect(candidate.rect.width < CGFloat(frame.width) * 0.85)
+            #expect(candidate.rect.height < CGFloat(frame.height) * 0.85)
+            #expect(candidate.rect.minX < CGFloat(originX) + CGFloat(panel.width) / 2)
+            #expect(candidate.rect.minY < CGFloat(originY) + CGFloat(panel.height) / 2)
+            #expect(candidate.rect.maxX > CGFloat(originX) + 40)
+            #expect(candidate.rect.maxY > CGFloat(originY) + 40)
+        }
+    }
+
+    /// Row step. Three stacked digits stay three lines on the all-gaps finder.
+    /// The pair finder keeps only the split nearest the middle.
+    @Test func rowFindersKeepEveryGapOrOnlyTheDeepestPair() {
+        let image = SegmentPanel.render(rows: [atoms("8"), atoms("8"), atoms("8")])
+        let hits = SevenSegmentOCR.searchPaths(in: image, deskewMaximumDegrees: 0)
+        let all = hits.first { $0.frame == .wholeFrame && $0.rows == .allGaps && $0.digits == .scanline }
+        let pair = hits.first { $0.frame == .wholeFrame && $0.rows == .deepestPair && $0.digits == .scanline }
+        #expect(all?.lineCount == 3)
+        #expect(all?.text == "8\n8\n8")
+        #expect(pair?.lineCount == 2)
+    }
+
+    @Test func rowFindersLeaveASingleRowAsOneLine() {
+        let image = SegmentPanel.render(rows: [atoms("8")])
+        let hits = SevenSegmentOCR.searchPaths(in: image, deskewMaximumDegrees: 0)
+        let all = hits.first { $0.frame == .wholeFrame && $0.rows == .allGaps && $0.digits == .scanline }
+        let pair = hits.first { $0.frame == .wholeFrame && $0.rows == .deepestPair && $0.digits == .scanline }
+        #expect(all?.lineCount == 1)
+        #expect(all?.text == "8")
+        #expect(pair?.lineCount == 1)
+    }
+
+    /// Digit step. The scanline through the upper stems is erased. The band
+    /// reader looks a few pixels off that line and still sees the stem.
+    @Test func bandSampleReadsStemWhenTheScanlineRowIsEmpty() {
+        let glyphY = 16
+        let quarter = glyphY + SegmentPanel.cellH / 4
+        let punched = zeroRows(
+            SegmentPanel.render(rows: [atoms("8")]),
+            rows: (quarter - 2)..<(quarter + 3)
+        )
+        let hits = SevenSegmentOCR.searchPaths(in: punched, deskewMaximumDegrees: 0)
+        let scan = hits.first { $0.frame == .wholeFrame && $0.rows == .allGaps && $0.digits == .scanline }
+        let band = hits.first { $0.frame == .wholeFrame && $0.rows == .allGaps && $0.digits == .bandSample }
+        #expect(scan?.text != "8")
+        #expect(band?.text == "8")
+        #expect((band?.exactDigitCount ?? 0) > (scan?.exactDigitCount ?? 0))
+    }
+
     @Test func fullFrameWithoutLocalizationMissesSealedBothRows() {
         let frame = embed(
             sealedBothRowsPanel(),
@@ -871,6 +944,31 @@ struct OCRSevenSegment576Tests {
             width: width,
             height: height
         )
+    }
+
+    private func zeroRows(_ image: CGImage, rows: Range<Int>) -> CGImage {
+        let width = image.width
+        let height = image.height
+        var pixels = [UInt8](repeating: 0, count: width * height)
+        guard let provider = image.dataProvider,
+              let data = provider.data,
+              let bytes = CFDataGetBytePtr(data)
+        else {
+            return solidGray(width: width, height: height, level: 0)
+        }
+        let rowBytes = image.bytesPerRow
+        for y in 0..<height {
+            for x in 0..<width {
+                pixels[y * width + x] = bytes[y * rowBytes + x]
+            }
+        }
+        let background = pixels.first ?? 214
+        for y in rows where y >= 0 && y < height {
+            for x in 0..<width {
+                pixels[y * width + x] = background
+            }
+        }
+        return solidGrayImage(pixels: pixels, width: width, height: height)
     }
 
     private func crop(_ image: CGImage, x: Int, y: Int, width: Int, height: Int) -> CGImage {
