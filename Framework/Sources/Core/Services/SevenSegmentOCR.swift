@@ -2152,10 +2152,10 @@ private func readingSpan(_ mask: Mask, bands: [(Int, Int)]) -> (Int, Int)? {
     guard let first = active.first else { return nil }
     // The hole between strokes grows with the row. A fixed 16px cap is the
     // intra-digit gap of a small fixture; on a tall row it keeps one cell
-    // and drops the rest of the line. A left scratch still sits further
-    // out than a fraction of the row.
+    // and drops the rest of the line. A tenth of the row stays under the
+    // clear gap before a left scratch (~54px on that fixture).
     let rowHeight = bands.map { max(0, $0.1 - $0.0) }.max() ?? height
-    let gapLimit = max(8, rowHeight / 8)
+    let gapLimit = max(8, rowHeight / 10)
     var runs: [(start: Int, end: Int, ink: Int)] = []
     var start = first
     var end = first
