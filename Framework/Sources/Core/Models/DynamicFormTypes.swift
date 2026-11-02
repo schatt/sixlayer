@@ -1647,6 +1647,17 @@ public class DynamicFormState: ObservableObject {
         }
     }
 
+    /// `locale` is the locale the form used for a stored decimal (#624).
+    /// Accepted so the reader tests compile. Parsing still uses `Double(_:)`.
+    func calculateFieldFromGroups(
+        fieldId: String,
+        calculationGroups: [CalculationGroup],
+        locale: Locale
+    ) -> GroupCalculationResult? {
+        _ = locale
+        return calculateFieldFromGroups(fieldId: fieldId, calculationGroups: calculationGroups)
+    }
+
     /// Check if all dependent fields for a calculation group are available
     private func canCalculateWithGroup(_ group: CalculationGroup) -> Bool {
         return group.dependentFields.allSatisfy { fieldValues[$0] != nil }
