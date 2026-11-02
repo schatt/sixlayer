@@ -629,6 +629,10 @@ struct DisplayOCRTraining609Tests {
         let text = session.label?.rows.map(\.confirmedText).joined(separator: "\n") ?? ""
         #expect(text.contains("32.88"))
         #expect(text.contains("8.022"))
+        #expect(session.decode())
+        let refreshed = session.label?.rows.map(\.confirmedText).joined(separator: "\n") ?? ""
+        #expect(refreshed.contains("32.88"))
+        #expect(refreshed.contains("8.022"))
     }
 
     @Test @MainActor func openingABlankPhotoSuggestsNothing() {
