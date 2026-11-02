@@ -2150,10 +2150,12 @@ private func readingSpan(_ mask: Mask, bands: [(Int, Int)]) -> (Int, Int)? {
     }
     let active = keep.indices.filter { keep[$0] }
     guard let first = active.first else { return nil }
-    // Keep digits across the intra-digit gap (8px). Do not jump a left
-    // scratch that sits farther away on a tall outer-margin crop.
-    let gapLimit = max(8, min(16, height / 40))
-    trace("span-limit \(width)x\(height) gap \(gapLimit)\n")
+    // The hole between strokes grows with the row. A fixed 16px cap is the
+    // intra-digit gap of a small fixture; on a tall row it keeps one cell
+    // and drops the rest of the line. A tenth of the row stays under the
+    // clear gap before a left scratch (~54px on that fixture).
+    let rowHeight = bands.map { max(0, $0.1 - $0.0) }.max() ?? height
+    let gapLimit = max(8, rowHeight / 10)
     var runs: [(start: Int, end: Int, ink: Int)] = []
     var start = first
     var end = first
