@@ -30382,6 +30382,28 @@
         }
       }
     },
+    "SixLayerFramework.ocr.training.libraryCount" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Library · %@"
+          }
+        }
+      }
+    },
+    "SixLayerFramework.ocr.training.librarySkipped" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Skipped · %@"
+          }
+        }
+      }
+    },
     "SixLayerFramework.ocr.training.loadFile" : {
       "extractionState" : "manual",
       "localizations" : {

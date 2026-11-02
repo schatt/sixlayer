@@ -13,6 +13,7 @@ import PhotosUI
 #endif
 
 /// Draw a panel and optional rows, confirm the seven-segment read, and export a label package.
+/// The export directory is the training library. The screen shows how many examples it holds.
 public struct DisplayOCRTrainingView: View {
     @ObservedObject private var session: DisplayOCRTrainingSession
     private let onExport: ((DisplayOCRTrainingPackage) -> Void)?
@@ -107,6 +108,11 @@ public struct DisplayOCRTrainingView: View {
 
             selectablePath(session.exportRoot.path)
                 .automaticCompliance(named: "DisplayOCRTrainingExportRoot")
+
+            DisplayOCRTrainingLibrarySummary(
+                exampleCount: session.library.examples.count,
+                rejectionCount: session.library.rejections.count
+            )
         }
     }
 
@@ -417,5 +423,33 @@ private struct DisplayOCRTrainingExportFolderImporter: ViewModifier {
         let _ = (isPresented, session)
         content
         #endif
+    }
+}
+
+/// How many confirmed examples are in the export directory, and how many folders were skipped.
+struct DisplayOCRTrainingLibrarySummary: View {
+    let exampleCount: Int
+    let rejectionCount: Int
+
+    var body: some View {
+        let i18n = InternationalizationService()
+        VStack(alignment: .leading, spacing: 4) {
+            Text(i18n.localizedString(
+                for: "SixLayerFramework.ocr.training.libraryCount",
+                arguments: ["\(exampleCount)"]
+            ))
+            .font(.caption)
+            .automaticCompliance(named: "DisplayOCRTrainingLibraryCount")
+
+            if rejectionCount > 0 {
+                Text(i18n.localizedString(
+                    for: "SixLayerFramework.ocr.training.librarySkipped",
+                    arguments: ["\(rejectionCount)"]
+                ))
+                .font(.caption)
+                .foregroundColor(.secondary)
+                .automaticCompliance(named: "DisplayOCRTrainingLibrarySkipped")
+            }
+        }
     }
 }
