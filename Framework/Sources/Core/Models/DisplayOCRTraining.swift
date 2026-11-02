@@ -842,23 +842,25 @@ public final class DisplayOCRTrainingSession: ObservableObject {
         _ = decode()
     }
 
-    /// Glyph unions are tight. A tight crop is read upside down. Give each row the
-    /// full panel width and the gap around it so the reader sees one upright line.
+    /// Glyph unions are tight, and the bezel above the first line is not part of
+    /// that line. Pad each row inside the panel and give it the panel's width.
     private static func bands(
         _ rows: [DisplayOCRNormalizedBox],
         in panel: DisplayOCRNormalizedBox
     ) -> [DisplayOCRNormalizedBox] {
         guard !rows.isEmpty else { return [] }
+        let panelBottom = panel.y + panel.height
         return rows.enumerated().map { index, row in
-            let above = index == 0 ? panel.y : (rows[index - 1].y + rows[index - 1].height + row.y) / 2
-            let below = index == rows.count - 1
-                ? panel.y + panel.height
-                : (row.y + row.height + rows[index + 1].y) / 2
+            let pad = max(row.height * 0.35, 0.005)
+            let topLimit = index == 0 ? panel.y : rows[index - 1].y + rows[index - 1].height
+            let bottomLimit = index == rows.count - 1 ? panelBottom : rows[index + 1].y
+            let top = min(max(row.y - pad, topLimit), row.y)
+            let bottom = max(min(row.y + row.height + pad, bottomLimit), row.y + row.height)
             let band = DisplayOCRNormalizedBox(
                 x: panel.x,
-                y: above,
+                y: top,
                 width: panel.width,
-                height: max(below - above, row.height)
+                height: bottom - top
             )
             return band.intersection(panel) ?? row
         }
