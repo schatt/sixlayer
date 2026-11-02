@@ -287,6 +287,30 @@ struct CoreDataEntityCreationErrorTests {
         #expect(abs(storedDate.timeIntervalSince1970 - expectedDate.timeIntervalSince1970) < 1)
     }
 
+    /// POSIX text still stores when the form locale uses a comma and a different date style (#621).
+    @Test func posixDecimalAndMediumDateStoreWhenLocaleUsesComma() throws {
+        let locale = Locale(identifier: "de_DE")
+        let medium = DateFormatter()
+        medium.locale = Locale(identifier: "en_US_POSIX")
+        medium.dateStyle = .medium
+        medium.timeStyle = .none
+        let ref = Date(timeIntervalSince1970: 1_700_000_000)
+        let mediumString = medium.string(from: ref)
+
+        let created = try EntityCreationUtilities.createCoreDataEntity(
+            entityName: "Probe608",
+            values: ["price": "4.5", "when": mediumString],
+            context: try makeProbeContext(),
+            locale: locale
+        )
+
+        let price = try #require(created.value(forKey: "price") as? NSNumber)
+        #expect(price.decimalValue == Decimal(string: "4.5", locale: Locale(identifier: "en_US_POSIX")))
+        let storedDate = try #require(created.value(forKey: "when") as? Date)
+        let expectedDate = try #require(medium.date(from: mediumString))
+        #expect(abs(storedDate.timeIntervalSince1970 - expectedDate.timeIntervalSince1970) < 1)
+    }
+
     /// A locale string that is not a complete number or date stays a string and is rejected.
     @Test func localeNumberAndDateThatDoNotParseAreRejected() throws {
         let locale = Locale(identifier: "de_DE")
