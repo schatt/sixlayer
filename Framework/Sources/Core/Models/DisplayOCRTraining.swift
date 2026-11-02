@@ -419,18 +419,13 @@ public enum DisplayOCRTraining {
         var examples: [DisplayOCRTrainingLibraryExample] = []
         var rejections: [DisplayOCRTrainingLibraryRejection] = []
         for child in children {
-            if symbolicLink(child) || !contained(child, in: root) {
-                rejections.append(DisplayOCRTrainingLibraryRejection(directory: child, error: .unreadablePackage))
-                continue
-            }
-            guard directory(child) else { continue }
-            do {
-                let package = try read(from: child)
+            switch classify(child, in: root) {
+            case .example(let package):
                 examples.append(DisplayOCRTrainingLibraryExample(directory: child, package: package))
-            } catch let error as DisplayOCRTrainingError {
+            case .rejection(let error):
                 rejections.append(DisplayOCRTrainingLibraryRejection(directory: child, error: error))
-            } catch {
-                rejections.append(DisplayOCRTrainingLibraryRejection(directory: child, error: .unreadablePackage))
+            case .ignored:
+                break
             }
         }
         examples.sort { $0.directory.lastPathComponent < $1.directory.lastPathComponent }
@@ -507,6 +502,26 @@ public enum DisplayOCRTraining {
             confirmedText: text,
             confidence: confidence
         )
+    }
+
+    private enum LibraryChild {
+        case example(DisplayOCRTrainingPackage)
+        case rejection(DisplayOCRTrainingError)
+        case ignored
+    }
+
+    private static func classify(_ child: URL, in root: URL) -> LibraryChild {
+        if symbolicLink(child) || !contained(child, in: root) {
+            return .rejection(.unreadablePackage)
+        }
+        guard directory(child) else { return .ignored }
+        do {
+            return .example(try read(from: child))
+        } catch let error as DisplayOCRTrainingError {
+            return .rejection(error)
+        } catch {
+            return .rejection(.unreadablePackage)
+        }
     }
 
     private static func symbolicLink(_ url: URL) -> Bool {
