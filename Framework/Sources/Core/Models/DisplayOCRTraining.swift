@@ -597,7 +597,7 @@ public enum DisplayOCRTraining {
     ) -> [DisplayOCRTrainingRow]? {
         guard lines.count > 1, lines.count == boxes.count else { return nil }
         guard lines.allSatisfy({ !$0.decodedText.isEmpty }) else { return nil }
-        guard stacked(boxes) else { return nil }
+        guard stacked(boxes), boxes.allSatisfy({ $0.width > $0.height * 1.5 }) else { return nil }
         let ordered = boxes.sorted { lhs, rhs in
             if lhs.y == rhs.y { return lhs.x < rhs.x }
             return lhs.y < rhs.y
