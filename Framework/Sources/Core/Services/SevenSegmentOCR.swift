@@ -2156,6 +2156,7 @@ private func readingSpan(_ mask: Mask, bands: [(Int, Int)]) -> (Int, Int)? {
     // clear gap before a left scratch (~54px on that fixture).
     let rowHeight = bands.map { max(0, $0.1 - $0.0) }.max() ?? height
     let gapLimit = max(8, rowHeight / 10)
+    trace("span-limit \(width)x\(height) row \(rowHeight) gap \(gapLimit)\n")
     var runs: [(start: Int, end: Int, ink: Int)] = []
     var start = first
     var end = first
