@@ -269,7 +269,8 @@ public enum TestSetupUtilities {
     @MainActor
     public static func hostRootPlatformViewNamedDebugLog<V: View>(
         _ view: V,
-        forceLayout: Bool = true
+        forceLayout: Bool = true,
+        exposeContentAccessibility: Bool = false
     ) -> (hosted: Any?, debugLog: String) {
         #if os(watchOS)
         return (nil, "")
@@ -281,10 +282,61 @@ public enum TestSetupUtilities {
             hostRootPlatformView(
                 view,
                 forceLayout: forceLayout,
+                exposeContentAccessibility: exposeContentAccessibility,
                 accessibilityIdentifierConfig: isolated
             )
         }
         return (hosted, isolated.getDebugLog())
+        #endif
+    }
+
+    /// Unit-lane named-compliance host observation (#622).
+    ///
+    /// Deliberately wrong for red (#622): silent `return` on watchOS; `#expect(hosted != nil)`
+    /// on every other platform including visionOS (fails #380). Correct both-direction shape
+    /// lands after the failing visionOS run.
+    @MainActor
+    public static func hostExpectingNamedCompliance<V: View>(
+        _ name: String,
+        exposeContentAccessibility: Bool = false,
+        @ViewBuilder _ view: () -> V
+    ) {
+        #if os(watchOS)
+        return
+        #else
+        let (hosted, log) = hostRootPlatformViewNamedDebugLog(
+            view(),
+            exposeContentAccessibility: exposeContentAccessibility
+        )
+        #expect(hosted != nil)
+        #expect(
+            log.contains(name),
+            "named compliance \(name) must appear in debug log"
+        )
+        #endif
+    }
+
+    /// Unit-lane non-nil platform-root host observation (#622).
+    ///
+    /// Deliberately wrong for red (#622): same silent-watch / non-nil-elsewhere shape as the
+    /// copied `hostView` helpers. Correct both-direction shape lands after the failing run.
+    @MainActor
+    public static func hostExpectingPlatformRoot<V: View>(
+        forceLayout: Bool = true,
+        exposeContentAccessibility: Bool = false,
+        accessibilityIdentifierConfig: AccessibilityIdentifierConfig? = nil,
+        @ViewBuilder _ view: () -> V
+    ) {
+        #if os(watchOS)
+        return
+        #else
+        let hosted = hostRootPlatformView(
+            view(),
+            forceLayout: forceLayout,
+            exposeContentAccessibility: exposeContentAccessibility,
+            accessibilityIdentifierConfig: accessibilityIdentifierConfig
+        )
+        #expect(hosted != nil)
         #endif
     }
     
