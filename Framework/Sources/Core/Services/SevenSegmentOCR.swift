@@ -1167,12 +1167,96 @@ private extension GrayBuffer {
         guard bestArea >= max(400, count / 200) else { return nil }
         guard bestArea * 100 < count * 85 else { return nil }
         guard glassW >= 40, glassH >= 40 else { return nil }
-        let pad = max(12, min(glassW, glassH) / 16)
-        let x0 = max(0, bestMinX - pad)
-        let y0 = max(0, bestMinY - pad)
-        let x1 = min(width, bestMaxX + 1 + pad)
-        let y1 = min(height, bestMaxY + 1 + pad)
-        return CGRect(x: x0, y: y0, width: x1 - x0, height: y1 - y0)
+        // A slow dark skirt stays non-ink, so the pocket bbox includes it
+        // (#600). A sharp bezel is ink and is already outside this rect.
+        let opened = droppingDarkMargin(
+            minX: bestMinX,
+            minY: bestMinY,
+            maxX: bestMaxX,
+            maxY: bestMaxY
+        )
+        let pad = max(12, min(opened.maxX - opened.minX + 1, opened.maxY - opened.minY + 1) / 16)
+        let x0 = max(0, opened.minX - pad)
+        let y0 = max(0, opened.minY - pad)
+        let x1 = min(width - 1, opened.maxX + pad)
+        let y1 = min(height - 1, opened.maxY + pad)
+        let fitted = droppingDarkMargin(minX: x0, minY: y0, maxX: x1, maxY: y1)
+        return CGRect(
+            x: fitted.minX,
+            y: fitted.minY,
+            width: fitted.maxX - fitted.minX + 1,
+            height: fitted.maxY - fitted.minY + 1
+        )
+    }
+
+    /// Drop edges that are darker than three quarters of the interior. The
+    /// bezel pad can pull that skirt back in, so callers run this again
+    /// after padding.
+    private func droppingDarkMargin(
+        minX: Int,
+        minY: Int,
+        maxX: Int,
+        maxY: Int
+    ) -> (minX: Int, minY: Int, maxX: Int, maxY: Int) {
+        var left = minX
+        var top = minY
+        var right = maxX
+        var bottom = maxY
+        guard right > left, bottom > top, right < width, bottom < height else {
+            return (minX, minY, maxX, maxY)
+        }
+        let insetX = max(0, (right - left) / 4)
+        let insetY = max(0, (bottom - top) / 4)
+        let interior = rectMean(
+            minX: left + insetX,
+            minY: top + insetY,
+            maxX: right - insetX,
+            maxY: bottom - insetY
+        )
+        let limit = interior * 3 / 4
+        func rowMean(_ y: Int) -> Int {
+            var sum = 0
+            let span = right - left + 1
+            for x in left...right {
+                sum += Int(pixels[y * width + x])
+            }
+            return sum / span
+        }
+        while bottom - top > 40, rowMean(top) < limit {
+            top += 1
+        }
+        while bottom - top > 40, rowMean(bottom) < limit {
+            bottom -= 1
+        }
+        func columnMean(_ x: Int) -> Int {
+            var sum = 0
+            let span = bottom - top + 1
+            for y in top...bottom {
+                sum += Int(pixels[y * width + x])
+            }
+            return sum / span
+        }
+        while right - left > 40, columnMean(left) < limit {
+            left += 1
+        }
+        while right - left > 40, columnMean(right) < limit {
+            right -= 1
+        }
+        return (left, top, right, bottom)
+    }
+
+    private func rectMean(minX: Int, minY: Int, maxX: Int, maxY: Int) -> Int {
+        guard maxX >= minX, maxY >= minY else { return 0 }
+        var sum = 0
+        var count = 0
+        for y in minY...maxY {
+            for x in minX...maxX {
+                sum += Int(pixels[y * width + x])
+                count += 1
+            }
+        }
+        guard count > 0 else { return 0 }
+        return sum / count
     }
 
     static func readRows(
