@@ -1529,10 +1529,18 @@ private extension GrayBuffer {
                 return row
             }
             let decoded = projected.map(rowCells)
-            if buffer.height < 200 {
-                let listed = projected.map { "\($0.0)-\($0.1)" }.joined(separator: ",")
+            if buffer.width == 82, buffer.height == 122, rowFinder == .allGaps {
+                let sums = ink.rowSums
+                let peak = sums.max() ?? 0
+                let chunks = stride(from: 0, to: sums.count, by: 8).map { y -> String in
+                    let end = min(sums.count, y + 8)
+                    let maxSum = sums[y..<end].max() ?? 0
+                    return "\(y):\(maxSum)"
+                }
                 let read = decoded.map { String($0.map(\.character)) }.joined(separator: "|")
-                trace("finder \(rowFinder) \(buffer.width)x\(buffer.height) band \(sampleBand) [\(listed)] [\(read)]\n")
+                trace(
+                    "finder band \(sampleBand) peak \(peak) dark \(primaryIsDark) [\(chunks.joined(separator: " "))] [\(read)]\n"
+                )
             }
             return lines.compactMap { line in
                 var combined: [Cell] = []
