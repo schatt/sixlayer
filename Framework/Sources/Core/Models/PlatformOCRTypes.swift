@@ -303,6 +303,10 @@ public struct OCRContext: Sendable {
     /// Printed-word fragments already in hand. When this is non-empty, the segment path
     /// does not run a Vision label pass.
     public let suppliedLabelFragments: [OCRRecognizedText]
+
+    /// Trained panel localizer for ``OCRProcessingMode/ssocr``. Nil keeps the
+    /// classical finder (#609).
+    public let panelLocator: DisplayOCRPanelLocator?
     
     public init(
         textTypes: [TextType] = [.general],
@@ -321,7 +325,8 @@ public struct OCRContext: Sendable {
         processingMode: OCRProcessingMode = .accurate,
         labelProcessingMode: OCRProcessingMode = .accurate,
         segmentDeskewMaximumDegrees: Double = 3,
-        suppliedLabelFragments: [OCRRecognizedText] = []
+        suppliedLabelFragments: [OCRRecognizedText] = [],
+        panelLocator: DisplayOCRPanelLocator? = nil
     ) {
         self.textTypes = textTypes
         self.language = language
@@ -340,6 +345,7 @@ public struct OCRContext: Sendable {
         self.labelProcessingMode = labelProcessingMode
         self.segmentDeskewMaximumDegrees = segmentDeskewMaximumDegrees
         self.suppliedLabelFragments = suppliedLabelFragments
+        self.panelLocator = panelLocator
     }
     
     /// Text types supplied to Vision for observation filtering. Empty means **no** per-line type filter.
