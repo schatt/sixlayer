@@ -627,8 +627,6 @@ struct DisplayOCRTraining609Tests {
             }
         }
         let text = session.label?.rows.map(\.confirmedText).joined(separator: "\n") ?? ""
-        let dump = "panel \(panel.y) \(panel.height) rows \(session.rowBoxes.map { "\($0.y):\($0.height)" }.joined(separator: ","))"
-        #expect(dump == "debug")
         #expect(text.contains("32.88"))
         #expect(text.contains("8.022"))
     }
