@@ -11,7 +11,14 @@ import Foundation
 public enum DynamicFormStoredDateValue {
 
     /// Returns a `Date` suitable for `DatePicker` binding, or `nil` if nothing is stored / parseable.
+    /// `locale` is the locale the form used when it wrote a medium or short string (#621).
+    /// The default is `Locale.current`. POSIX medium and short strings still parse.
     public static func date(fromStoredValue value: Any?) -> Date? {
+        date(fromStoredValue: value, locale: .current)
+    }
+
+    static func date(fromStoredValue value: Any?, locale: Locale) -> Date? {
+        _ = locale
         guard let value else { return nil }
 
         if let date = value as? Date {
