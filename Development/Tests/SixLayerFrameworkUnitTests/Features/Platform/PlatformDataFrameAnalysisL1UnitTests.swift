@@ -28,62 +28,34 @@ struct PlatformDataFrameAnalysisL1UnitTests {
 
     @Test @MainActor
     func analyzeDataFrameL1UsesIdentifierName() {
-        #if os(watchOS)
-        return
-        #else
-        let isolated = TestSetupUtilities.makeIsolatedAccessibilityIdentifierConfig()
-        isolated.enableDebugLogging = true
-        isolated.clearDebugLog()
-        let view = platformAnalyzeDataFrame_L1(dataFrame: tinyFrame())
-        let hosted = AccessibilityIdentifierConfig.$taskLocalConfig.withValue(isolated) {
-            TestSetupUtilities.hostRootPlatformView(
-                view,
-                forceLayout: true,
-                accessibilityIdentifierConfig: isolated
-            )
+        TestSetupUtilities.hostExpectingNamedCompliance("platformAnalyzeDataFrame_L1") {
+            platformAnalyzeDataFrame_L1(dataFrame: tinyFrame())
         }
-        #expect(hosted != nil)
-        let log = isolated.getDebugLog()
-        #expect(
-            log.contains("platformAnalyzeDataFrame_L1"),
-            "analyze L1 must use identifierName path. log=\(String(log.suffix(400)))"
-        )
-        #endif
     }
 
     @Test @MainActor
     func compareAndQualityL1Host() {
-        #if os(watchOS)
-        return
-        #else
         let frame = tinyFrame()
-        let compare = platformCompareDataFrames_L1(dataFrames: [frame, frame])
-        let quality = platformAssessDataQuality_L1(dataFrame: frame)
-        #expect(TestSetupUtilities.hostRootPlatformView(compare, forceLayout: true) != nil)
-        #expect(TestSetupUtilities.hostRootPlatformView(quality, forceLayout: true) != nil)
-        #endif
+        TestSetupUtilities.hostExpectingPlatformRoot {
+            platformCompareDataFrames_L1(dataFrames: [frame, frame])
+        }
+        TestSetupUtilities.hostExpectingPlatformRoot {
+            platformAssessDataQuality_L1(dataFrame: frame)
+        }
     }
 
     @Test @MainActor
     func analyzeDataFrameL1CustomVisualizationWrapsWithoutNamedRoot() {
-        #if os(watchOS)
-        return
+        let (hosted, log) = TestSetupUtilities.hostRootPlatformViewNamedDebugLog(
+            platformAnalyzeDataFrame_L1(dataFrame: tinyFrame()) { inner in
+                AnyView(inner.padding())
+            }
+        )
+        #if os(watchOS) || os(visionOS)
+        #expect(hosted == nil, "unit harness cannot host on this platform (#379/#380)")
+        #expect(log.isEmpty)
         #else
-        let isolated = TestSetupUtilities.makeIsolatedAccessibilityIdentifierConfig()
-        isolated.enableDebugLogging = true
-        isolated.clearDebugLog()
-        let view = platformAnalyzeDataFrame_L1(dataFrame: tinyFrame()) { inner in
-            AnyView(inner.padding())
-        }
-        let hosted = AccessibilityIdentifierConfig.$taskLocalConfig.withValue(isolated) {
-            TestSetupUtilities.hostRootPlatformView(
-                view,
-                forceLayout: true,
-                accessibilityIdentifierConfig: isolated
-            )
-        }
         #expect(hosted != nil)
-        let log = isolated.getDebugLog()
         #expect(
             !log.contains("NamedAutomaticComplianceModifier"),
             "custom visualization wrapper must stay anonymous (#245). log=\(String(log.suffix(400)))"

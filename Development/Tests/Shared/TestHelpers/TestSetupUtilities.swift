@@ -269,9 +269,14 @@ public enum TestSetupUtilities {
     @MainActor
     public static func hostRootPlatformViewNamedDebugLog<V: View>(
         _ view: V,
-        forceLayout: Bool = true
+        forceLayout: Bool = true,
+        exposeContentAccessibility: Bool = false
     ) -> (hosted: Any?, debugLog: String) {
-        #if os(watchOS)
+        #if os(watchOS) || os(visionOS)
+        // No unit-lane host tree (#379/#380); skip isolated config work.
+        _ = view
+        _ = forceLayout
+        _ = exposeContentAccessibility
         return (nil, "")
         #else
         let isolated = makeIsolatedAccessibilityIdentifierConfig()
@@ -281,10 +286,67 @@ public enum TestSetupUtilities {
             hostRootPlatformView(
                 view,
                 forceLayout: forceLayout,
+                exposeContentAccessibility: exposeContentAccessibility,
                 accessibilityIdentifierConfig: isolated
             )
         }
         return (hosted, isolated.getDebugLog())
+        #endif
+    }
+
+    /// Shared unit-lane named-compliance host observation (#616/#622).
+    /// Observes nil-host on watchOS/visionOS; named compliance on iOS/macOS. No silent `return`.
+    @MainActor
+    public static func hostExpectingNamedCompliance<V: View>(
+        _ name: String,
+        exposeContentAccessibility: Bool = false,
+        @ViewBuilder _ view: () -> V
+    ) {
+        let (hosted, log) = hostRootPlatformViewNamedDebugLog(
+            view(),
+            exposeContentAccessibility: exposeContentAccessibility
+        )
+        expectUnitLaneHostedRoot(hosted, debugLog: log, namedCompliance: name)
+    }
+
+    /// Shared unit-lane platform-root host observation (#622).
+    /// Observes nil-host on watchOS/visionOS; non-nil root on iOS/macOS. No silent `return`.
+    @MainActor
+    public static func hostExpectingPlatformRoot<V: View>(
+        forceLayout: Bool = true,
+        exposeContentAccessibility: Bool = false,
+        accessibilityIdentifierConfig: AccessibilityIdentifierConfig? = nil,
+        @ViewBuilder _ view: () -> V
+    ) {
+        let hosted = hostRootPlatformView(
+            view(),
+            forceLayout: forceLayout,
+            exposeContentAccessibility: exposeContentAccessibility,
+            accessibilityIdentifierConfig: accessibilityIdentifierConfig
+        )
+        expectUnitLaneHostedRoot(hosted)
+    }
+
+    /// Both-direction host contract shared by named-compliance and platform-root helpers (#622).
+    @MainActor
+    private static func expectUnitLaneHostedRoot(
+        _ hosted: Any?,
+        debugLog: String? = nil,
+        namedCompliance: String? = nil
+    ) {
+        #if os(watchOS) || os(visionOS)
+        #expect(hosted == nil, "unit harness cannot host on this platform (#379/#380)")
+        if let debugLog {
+            #expect(debugLog.isEmpty)
+        }
+        #else
+        #expect(hosted != nil)
+        if let namedCompliance, let debugLog {
+            #expect(
+                debugLog.contains(namedCompliance),
+                "named compliance \(namedCompliance) must appear in debug log"
+            )
+        }
         #endif
     }
     

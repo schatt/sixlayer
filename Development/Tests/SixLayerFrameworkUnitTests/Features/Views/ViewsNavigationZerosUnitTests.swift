@@ -48,49 +48,49 @@ struct ViewsNavigationZerosHostUnitTests {
 
     @Test @MainActor
     func crossPlatformOptimizationUsesNamedCompliance() {
-        hostExpectingNamedCompliance("CrossPlatformOptimization") {
+        TestSetupUtilities.hostExpectingNamedCompliance("CrossPlatformOptimization") {
             CrossPlatformOptimization()
         }
     }
 
     @Test @MainActor
     func runtimeCapabilityDetectionUsesNamedCompliance() {
-        hostExpectingNamedCompliance("RuntimeCapabilityDetectionView") {
+        TestSetupUtilities.hostExpectingNamedCompliance("RuntimeCapabilityDetectionView") {
             RuntimeCapabilityDetectionView()
         }
     }
 
     @Test @MainActor
     func platformPrivacyUsesNamedCompliance() {
-        hostExpectingNamedCompliance("PlatformPrivacy") {
+        TestSetupUtilities.hostExpectingNamedCompliance("PlatformPrivacy") {
             PlatformPrivacy()
         }
     }
 
     @Test @MainActor
     func platformSafetyUsesNamedCompliance() {
-        hostExpectingNamedCompliance("PlatformSafety") {
+        TestSetupUtilities.hostExpectingNamedCompliance("PlatformSafety") {
             PlatformSafety()
         }
     }
 
     @Test @MainActor
     func platformSecurityUsesNamedCompliance() {
-        hostExpectingNamedCompliance("PlatformSecurity") {
+        TestSetupUtilities.hostExpectingNamedCompliance("PlatformSecurity") {
             PlatformSecurity()
         }
     }
 
     @Test @MainActor
     func visionSafetyUsesNamedCompliance() {
-        hostExpectingNamedCompliance("VisionSafety") {
+        TestSetupUtilities.hostExpectingNamedCompliance("VisionSafety") {
             VisionSafety()
         }
     }
 
     @Test @MainActor
     func responsiveContainerHosts() {
-        hostView {
+        TestSetupUtilities.hostExpectingPlatformRoot {
             ResponsiveContainer { horizontal, vertical in
                 Text("h=\(horizontal ? "yes" : "no") v=\(vertical ? "yes" : "no")")
             }
@@ -100,7 +100,7 @@ struct ViewsNavigationZerosHostUnitTests {
     @Test @MainActor
     func barcodeOverlayViewHostsEmptyResult() {
         let result = BarcodeResult(barcodes: [], confidence: 0, processingTime: 0)
-        hostExpectingNamedCompliance("BarcodeOverlayView") {
+        TestSetupUtilities.hostExpectingNamedCompliance("BarcodeOverlayView") {
             BarcodeOverlayView(image: emptyPlatformImage(), result: result)
         }
     }
@@ -112,14 +112,14 @@ struct ViewsNavigationZerosHostUnitTests {
             confidence: 0,
             requiresUserSelection: false
         )
-        hostExpectingNamedCompliance("OCRDisambiguationView") {
+        TestSetupUtilities.hostExpectingNamedCompliance("OCRDisambiguationView") {
             OCRDisambiguationView(result: result, onSelection: { _ in })
         }
     }
 
     @Test @MainActor
     func platformTabStripHosts() {
-        hostView {
+        TestSetupUtilities.hostExpectingPlatformRoot {
             PlatformTabStrip(
                 selection: .constant(0),
                 items: [
@@ -132,7 +132,7 @@ struct ViewsNavigationZerosHostUnitTests {
 
     @Test @MainActor
     func platformNavigationSplitViewHosts() {
-        hostView {
+        TestSetupUtilities.hostExpectingPlatformRoot {
             platformNavigationSplitView {
                 Text("Content")
             } detail: {
@@ -151,7 +151,7 @@ struct ViewsNavigationZerosHostUnitTests {
 
     @Test @MainActor
     func entityAutoSaveWrapperHosts() {
-        hostView {
+        TestSetupUtilities.hostExpectingPlatformRoot {
             IntelligentFormView.withEntityAutoSave(
                 content: Text("Form"),
                 entity: "draft-entity",
@@ -172,7 +172,7 @@ struct ViewsNavigationZerosHostUnitTests {
             .init(id: .home, titleKey: "Home", systemImage: "house"),
             .init(id: .settings, titleKey: "Settings", systemImage: "gear")
         ]
-        hostView {
+        TestSetupUtilities.hostExpectingPlatformRoot {
             Text("Root")
                 .platformManagedAppNavigation_L4(
                     state: .constant(PlatformAppNavigationTopLevelState(deviceType: .phone)),
@@ -194,29 +194,4 @@ struct ViewsNavigationZerosHostUnitTests {
         #endif
     }
 
-    @MainActor
-    private func hostExpectingNamedCompliance<V: View>(
-        _ name: String,
-        @ViewBuilder _ view: () -> V
-    ) {
-        #if os(watchOS)
-        return
-        #else
-        let (hosted, log) = TestSetupUtilities.hostRootPlatformViewNamedDebugLog(view())
-        #expect(hosted != nil)
-        #expect(
-            log.contains(name),
-            "named compliance \(name) must appear in debug log"
-        )
-        #endif
-    }
-
-    @MainActor
-    private func hostView<V: View>(@ViewBuilder _ view: () -> V) {
-        #if os(watchOS)
-        return
-        #else
-        #expect(TestSetupUtilities.hostRootPlatformView(view(), forceLayout: true) != nil)
-        #endif
-    }
 }
