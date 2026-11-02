@@ -412,7 +412,7 @@ struct DisplayOCRTraining609Tests {
         #expect(library.examples.count == 2)
         #expect(closeShot.count == 1)
         #expect(closeShot.first?.label.panel == wide.unitClamped)
-        #expect(closeShot.first?.label.rows.first?.box == priceRow.unitClamped)
+        #expect(closeShot.first?.label.rows.first?.box == priceRow)
         #expect(closeShot.first?.label.imagePixelWidth == 8)
         #expect(closeShot.first?.imagePNG.isEmpty == false)
         #expect(farShot.count == 1)
