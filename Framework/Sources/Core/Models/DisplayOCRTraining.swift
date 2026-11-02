@@ -2,9 +2,9 @@
 //  DisplayOCRTraining.swift
 //  SixLayerFramework
 //
-//  Display OCR label harness (#609). Phase A: a photo, a panel box, optional
-//  row boxes, the current seven-segment decode, and a package of image plus
-//  confirmed text. Layout profiles and Core ML weights are later milestones.
+//  Display OCR training (#609). Phase A writes one confirmed example.
+//  Phase B reads the export directory as a library of those examples.
+//  Core ML training is Phase C.
 //
 
 import Combine
@@ -397,10 +397,45 @@ public enum DisplayOCRTraining {
         }
     }
 
-    /// Stub. The training library is not read yet.
+    /// Immediate child folders of `root`. A valid child is one example.
+    /// A symlink or a folder that is not a package is reported. A file is ignored.
+    /// One bad child does not drop the others. A missing `root` is an empty library.
     public static func library(in root: URL) -> DisplayOCRTrainingLibrary {
-        _ = root
-        return DisplayOCRTrainingLibrary()
+        let fileManager = FileManager.default
+        var isDirectory: ObjCBool = false
+        guard fileManager.fileExists(atPath: root.path, isDirectory: &isDirectory), isDirectory.boolValue else {
+            return DisplayOCRTrainingLibrary()
+        }
+        let children: [URL]
+        do {
+            children = try fileManager.contentsOfDirectory(
+                at: root,
+                includingPropertiesForKeys: [.isSymbolicLinkKey, .isDirectoryKey],
+                options: [.skipsHiddenFiles]
+            )
+        } catch {
+            return DisplayOCRTrainingLibrary()
+        }
+        var examples: [DisplayOCRTrainingLibraryExample] = []
+        var rejections: [DisplayOCRTrainingLibraryRejection] = []
+        for child in children {
+            if symbolicLink(child) || !contained(child, in: root) {
+                rejections.append(DisplayOCRTrainingLibraryRejection(directory: child, error: .unreadablePackage))
+                continue
+            }
+            guard directory(child) else { continue }
+            do {
+                let package = try read(from: child)
+                examples.append(DisplayOCRTrainingLibraryExample(directory: child, package: package))
+            } catch let error as DisplayOCRTrainingError {
+                rejections.append(DisplayOCRTrainingLibraryRejection(directory: child, error: error))
+            } catch {
+                rejections.append(DisplayOCRTrainingLibraryRejection(directory: child, error: .unreadablePackage))
+            }
+        }
+        examples.sort { $0.directory.lastPathComponent < $1.directory.lastPathComponent }
+        rejections.sort { $0.directory.lastPathComponent < $1.directory.lastPathComponent }
+        return DisplayOCRTrainingLibrary(examples: examples, rejections: rejections)
     }
 
     public static func read(from directory: URL) throws -> DisplayOCRTrainingPackage {
@@ -474,6 +509,37 @@ public enum DisplayOCRTraining {
         )
     }
 
+    private static func symbolicLink(_ url: URL) -> Bool {
+        if let values = try? url.resourceValues(forKeys: [.isSymbolicLinkKey]), values.isSymbolicLink == true {
+            return true
+        }
+        guard let attributes = try? FileManager.default.attributesOfItem(atPath: url.path) else {
+            return false
+        }
+        let type = attributes[.type] as? FileAttributeType
+        return type == .typeSymbolicLink
+    }
+
+    private static func directory(_ url: URL) -> Bool {
+        if let values = try? url.resourceValues(forKeys: [.isDirectoryKey]), let isDirectory = values.isDirectory {
+            return isDirectory
+        }
+        var isDirectory: ObjCBool = false
+        return FileManager.default.fileExists(atPath: url.path, isDirectory: &isDirectory) && isDirectory.boolValue
+    }
+
+    /// `child` stays inside `root` after resolving links. A sibling prefix does not count.
+    private static func contained(_ child: URL, in root: URL) -> Bool {
+        let rootPath = resolvedPath(root)
+        let childPath = resolvedPath(child)
+        let prefix = rootPath.hasSuffix("/") ? rootPath : rootPath + "/"
+        return childPath.hasPrefix(prefix)
+    }
+
+    private static func resolvedPath(_ url: URL) -> String {
+        url.resolvingSymlinksInPath().standardizedFileURL.path
+    }
+
     private static func panelRows(from decoded: OCRResult) -> [DisplayOCRTrainingRow] {
         let lines = decoded.extractedText
             .split(whereSeparator: \.isNewline)
@@ -499,7 +565,9 @@ public final class DisplayOCRTrainingSession: ObservableObject {
 
     private var bitmap: CGImage?
 
-    public init() {}
+    public init() {
+        refreshLibrary()
+    }
 
     public func load(platformImage: PlatformImage, sourceName: String? = nil) {
         guard let oriented = platformImage.orientedCGImage() else {
@@ -638,6 +706,7 @@ public final class DisplayOCRTrainingSession: ObservableObject {
             return
         }
         exportRoot = url
+        refreshLibrary()
     }
 
     /// Write `image.png` and `label.json` in a new folder under ``exportRoot``.
@@ -659,7 +728,14 @@ public final class DisplayOCRTrainingSession: ObservableObject {
         let directory = root.appendingPathComponent(UUID().uuidString, isDirectory: true)
         try DisplayOCRTraining.write(package, to: directory)
         status = .exported(directory)
+        refreshLibrary()
         return DisplayOCRTrainingExport(directory: directory, package: package)
+    }
+
+    private func refreshLibrary() {
+        library = platformSecurityScopedAccess(url: exportRoot) { root in
+            DisplayOCRTraining.library(in: root)
+        }
     }
 }
 
