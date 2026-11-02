@@ -121,13 +121,19 @@ struct ThemingProductAPITests {
     @Test @MainActor
     func themedCardAppliesThemedCardStyle() {
         let styled = Text("Card").themedCard()
-        #expect(String(describing: type(of: styled)).contains("ThemedCardStyle"))
+        #expect(
+            String(describing: type(of: styled))
+                == "ModifiedContent<Text, ThemedCardStyle>"
+        )
     }
 
     @Test @MainActor
     func themedTextFieldAppliesThemedTextFieldStyle() {
         let styled = TextField("Label", text: .constant("")).themedTextField()
-        #expect(String(describing: type(of: styled)).contains("ThemedTextFieldStyle"))
+        #expect(
+            String(describing: type(of: styled))
+                == "ModifiedContent<TextField<Text>, TextFieldStyleModifier<ThemedTextFieldStyle>>"
+        )
     }
 }
 
