@@ -833,6 +833,16 @@ struct DisplayOCRTraining609Tests {
         #endif
     }
 
+    @Test func thePanelModelPackageIsNotALibraryFolder() throws {
+        let root = try makeDirectory("panel-model-lib")
+        let model = root.appendingPathComponent(DisplayOCRPanelModel.modelFileName, isDirectory: true)
+        try FileManager.default.createDirectory(at: model, withIntermediateDirectories: true)
+        try Data("model".utf8).write(to: model.appendingPathComponent("coremldata.bin"))
+        let library = DisplayOCRTraining.library(in: root)
+        #expect(library.examples.isEmpty)
+        #expect(library.rejections.isEmpty)
+    }
+
     #if canImport(ViewInspector)
     @Test @MainActor func theLibraryOffersPanelTraining() throws {
         let title = InternationalizationService().localizedString(
