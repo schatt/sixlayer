@@ -830,40 +830,31 @@ public final class DisplayOCRTrainingSession: ObservableObject {
         guard let panelBox = suggested.unitClamped,
               panelBox.pixelRect(imageWidth: image.width, imageHeight: image.height) != nil else { return }
         panel = panelBox
+        var glyphs: [DisplayOCRNormalizedBox] = []
         if let crop = DisplayOCRTraining.crop(image, to: panelBox) {
             let read = SevenSegmentOCR.decode(
                 cgImage: crop,
                 deskewMaximumDegrees: 0,
                 localizeDigitPanel: false
             )
-            let glyphs = DisplayOCRTraining.rowBoxes(fromVisionBoxes: read.boundingBoxes, panel: panelBox)
-            rowBoxes = Self.bands(glyphs, in: panelBox)
+            glyphs = DisplayOCRTraining.rowBoxes(fromVisionBoxes: read.boundingBoxes, panel: panelBox)
         }
-        _ = decode()
-    }
-
-    /// Glyph unions are tight, and the bezel above the first line is not part of
-    /// that line. Pad each row inside the panel and give it the panel's width.
-    private static func bands(
-        _ rows: [DisplayOCRNormalizedBox],
-        in panel: DisplayOCRNormalizedBox
-    ) -> [DisplayOCRNormalizedBox] {
-        guard !rows.isEmpty else { return [] }
-        let panelBottom = panel.y + panel.height
-        return rows.enumerated().map { index, row in
-            let pad = max(row.height * 0.35, 0.005)
-            let topLimit = index == 0 ? panel.y : rows[index - 1].y + rows[index - 1].height
-            let bottomLimit = index == rows.count - 1 ? panelBottom : rows[index + 1].y
-            let top = min(max(row.y - pad, topLimit), row.y)
-            let bottom = max(min(row.y + row.height + pad, bottomLimit), row.y + row.height)
-            let band = DisplayOCRNormalizedBox(
-                x: panel.x,
-                y: top,
-                width: panel.width,
-                height: bottom - top
-            )
-            return band.intersection(panel) ?? row
+        // A crop of one line is read upside down or not at all. The panel read
+        // is the digit string; the glyph rows are only the boxes.
+        rowBoxes = []
+        guard decode(), var drafted = label, !glyphs.isEmpty else {
+            rowBoxes = glyphs
+            return
         }
+        guard drafted.rows.count == glyphs.count else {
+            rowBoxes = glyphs
+            return
+        }
+        for index in glyphs.indices {
+            drafted.rows[index].box = glyphs[index]
+        }
+        rowBoxes = glyphs
+        label = drafted
     }
 
     public func load(fileURL: URL) {
