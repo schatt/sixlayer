@@ -785,6 +785,8 @@ struct OCRSevenSegment576Tests {
         let data = try Data(contentsOf: URL(fileURLWithPath: path))
         let upright = try #require(PlatformImage.cgImage(opening: data))
         let resized = try #require(aspectFit(upright, maxWidth: 1200, maxHeight: 1600))
+        let regions = SevenSegmentOCR.frameCandidates(in: resized)
+        let regionReport = regions.map { "\($0.finder.rawValue) \($0.rect)" }.joined(separator: "\n")
         let clock = ContinuousClock()
         let started = clock.now
         let hits = SevenSegmentOCR.searchPaths(in: resized, deskewMaximumDegrees: 0)
@@ -792,7 +794,7 @@ struct OCRSevenSegment576Tests {
         let summary = hits.map { hit in
             "\(hit.frame.rawValue) \(hit.rows.rawValue) \(hit.digits.rawValue) lines=\(hit.lineCount) exact=\(hit.exactDigitCount) [\(hit.text)]"
         }.joined(separator: "\n")
-        let report = "\(resized.width)x\(resized.height) \(elapsed)\n\(summary)\n"
+        let report = "\(resized.width)x\(resized.height) upright \(upright.width)x\(upright.height) \(elapsed)\n\(regionReport)\n\(summary)\n"
         try report.write(
             to: URL(fileURLWithPath: "/tmp/sixlayer-600-s1-matrix.txt"),
             atomically: true,
