@@ -644,6 +644,7 @@
 		28CC358F2EE6AEA847C36241 /* HintsDrivenFormStrategyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B596E0E4E81929628F62319E /* HintsDrivenFormStrategyTests.swift */; };
 		290F8D0C289C1771B2C57E5F /* PlatformTypesCompilationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77B52C5563B7550031E55A8B /* PlatformTypesCompilationTests.swift */; };
 		29527563CFAE81107CE814B9 /* SwitchControlManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 070BF63CA4F7EB1293F77063 /* SwitchControlManager.swift */; };
+		296FC9C58CE336C28F7E67FF /* DisplayOCRPanelModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AF25D1EC665203130C203DF /* DisplayOCRPanelModel.swift */; };
 		2973FDB84A9FC8CC583ABBBF /* IntelligentCardExpansionLayer5.swift in Sources */ = {isa = PBXBuildFile; fileRef = 206BE61C4C1176A91ED00A04 /* IntelligentCardExpansionLayer5.swift */; };
 		298989E9A4CC1E4998F4508F /* PlatformOCRSemanticLayer1.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61560AE74EDC88FB604ADF3E /* PlatformOCRSemanticLayer1.swift */; };
 		29AE4710F7FABF8C66986C7D /* TestPatterns.swift in Sources */ = {isa = PBXBuildFile; fileRef = F512E80E77E2ABD9AAD456FF /* TestPatterns.swift */; };
@@ -907,6 +908,7 @@
 		3BCCC77BCCFE9DF6BCAD5B00 /* Layer1SemanticAPIPresenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A7D1165AF153DA42D36BDAD /* Layer1SemanticAPIPresenceTests.swift */; };
 		3BD55D33AA8D25940F450C0D /* PlatformNotificationL1UnitTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D107DE038746C69F67736D41 /* PlatformNotificationL1UnitTests.swift */; };
 		3BD60BBD74CC083BF0BC708C /* PlatformListsLayer4.swift in Sources */ = {isa = PBXBuildFile; fileRef = E255C5CE5C500F6E41101358 /* PlatformListsLayer4.swift */; };
+		3C08467662F20831BDAEB8F7 /* DisplayOCRPanelModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AF25D1EC665203130C203DF /* DisplayOCRPanelModel.swift */; };
 		3C08731BB942FDA85AACE077 /* PlatformSimulationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2D3372160FF88CACF40B1A3 /* PlatformSimulationTests.swift */; };
 		3C30600C7A1037667A18F288 /* HintsDefaultValueTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6354A896728129174603048 /* HintsDefaultValueTests.swift */; };
 		3C3CA2384CD04FCA7C3C9FA9 /* CrossPlatformOptimization.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28B6AC17046E4EC31EBA88BC /* CrossPlatformOptimization.swift */; };
@@ -1932,6 +1934,7 @@
 		7FC4AD79C2B5112BF5FD0EA2 /* IntelligentFormView+Debug.swift in Sources */ = {isa = PBXBuildFile; fileRef = E199DDD6AFBAA8FA621BA3F6 /* IntelligentFormView+Debug.swift */; };
 		7FE5AE969F37542841C90BE4 /* Layer4CameraInterfaceTestSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 987414223FA2728852460F59 /* Layer4CameraInterfaceTestSupport.swift */; };
 		80245DB209473E8FA5503DAD /* SixLayerFramework.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 77ADA5A0EF4DADCCD2C559D8 /* SixLayerFramework.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		8029F2FAF9621F76EAC46E90 /* DisplayOCRPanelModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AF25D1EC665203130C203DF /* DisplayOCRPanelModel.swift */; };
 		803B84E6BE2B688998D722B6 /* PlatformPopoverSheetLayer4.swift in Sources */ = {isa = PBXBuildFile; fileRef = 686AAFCE04952A1128A8664D /* PlatformPopoverSheetLayer4.swift */; };
 		803FF8E9BF4AB48F09B23A35 /* OCRServiceAutomaticHintsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B44FAB91A54EB3C69FA1A6EA /* OCRServiceAutomaticHintsTests.swift */; };
 		804E37B07EEEF820178F84B6 /* InternationalizationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB696A4D504ABF41B390F445 /* InternationalizationTests.swift */; };
@@ -2131,6 +2134,7 @@
 		8BDAE73E9353D3B90381FBA2 /* CloudKitServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1710FFC4EA354E27B46AF9A8 /* CloudKitServiceTests.swift */; };
 		8C0DF409127D964CB1F461BF /* OCROverlayTestableInterfaceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16AF8D780A16CE8C7500B357 /* OCROverlayTestableInterfaceTests.swift */; };
 		8C127837ABB38B27C6D5E0A4 /* FieldDisplayHintsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF7AF054C80396886AD8549F /* FieldDisplayHintsTests.swift */; };
+		8C21F9022831621607F6A293 /* DisplayOCRPanelModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AF25D1EC665203130C203DF /* DisplayOCRPanelModel.swift */; };
 		8C28E69BA543EC0815BF69BA /* ImageMetadataIntelligenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 544370B5F6C563A32941CBDB /* ImageMetadataIntelligenceTests.swift */; };
 		8C2A308C5BF2756D0450E338 /* UnitLaneHostHelperContractTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02B776203C8E226F00398931 /* UnitLaneHostHelperContractTests.swift */; };
 		8C2DE64CE5968BFB1D57AE5D /* PlatformImageEXIFWriters.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64EACD90C6C69FAA5D878815 /* PlatformImageEXIFWriters.swift */; };
@@ -3518,6 +3522,7 @@
 		ED01B963A30F1D636F74E590 /* TestSetupUtilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 656BD40E9672D6CF873A0432 /* TestSetupUtilities.swift */; };
 		ED135DF1C18161FE945BF3FE /* StringUtilitiesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 549D3CD07638D99B36CEBAC5 /* StringUtilitiesTests.swift */; };
 		ED31C71BB656A39BA6E60A2B /* Layer4FormContainerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1E59F559F64E3241CCCC6C3 /* Layer4FormContainerTests.swift */; };
+		ED3B68CCA002B70C610ADA5D /* DisplayOCRPanelModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AF25D1EC665203130C203DF /* DisplayOCRPanelModel.swift */; };
 		ED4146CC5F1C1D6132F19C66 /* SevenSegmentOCR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B76F2AC592AE7BC6F3248CF /* SevenSegmentOCR.swift */; };
 		ED4677D33C07F7947F546C01 /* RuntimeCapabilityDetectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4ABAD26C29AD3270D57C816 /* RuntimeCapabilityDetectionView.swift */; };
 		ED541324D228EE18A2FFFA28 /* PlatformToolbarActionsPackingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 177CBEE3F1A94D5C95CC6094 /* PlatformToolbarActionsPackingTests.swift */; };
@@ -4806,6 +4811,7 @@
 		8A15A7A41C920496A3AFDD0E /* Layer6ExamplesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Layer6ExamplesView.swift; sourceTree = "<group>"; };
 		8A968477710FAE02D44A6871 /* DetailViewCategoryBAuditView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailViewCategoryBAuditView.swift; sourceTree = "<group>"; };
 		8AE672BE992AE154089DCF9A /* FieldLayout385UITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FieldLayout385UITests.swift; sourceTree = "<group>"; };
+		8AF25D1EC665203130C203DF /* DisplayOCRPanelModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisplayOCRPanelModel.swift; sourceTree = "<group>"; };
 		8B0D76C0BA3A08E07DE3DD1B /* Layer6UITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Layer6UITests.swift; sourceTree = "<group>"; };
 		8B10A23F636DA4DD58F94797 /* BarcodeServiceMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BarcodeServiceMock.swift; sourceTree = "<group>"; };
 		8B1F85F34804B03D3317A7A7 /* PlatformSplitViewOptimizationsLayer5.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformSplitViewOptimizationsLayer5.swift; sourceTree = "<group>"; };
@@ -7014,6 +7020,7 @@
 				5354DB0B1A97ADAF3A72D7CB /* DataFrameAnalysisEngine.swift */,
 				08145E00340A1C4074870B42 /* DataHintsLoader.swift */,
 				695DDD54FFCD07A5A3248357 /* DataIntrospection.swift */,
+				8AF25D1EC665203130C203DF /* DisplayOCRPanelModel.swift */,
 				FA5931F5D36E29E4223AD22D /* DisplayOCRTraining.swift */,
 				2D0A71DD0F37AC75233997D9 /* DynamicFormTypes.swift */,
 				A8FDCCC264BC257BBD2E30E3 /* EnhancedDeviceDetection.swift */,
@@ -9054,6 +9061,7 @@
 				CF9E7668236D6FB8A3E464C9 /* DataIntrospection.swift in Sources */,
 				53C7FB56A0F8E140E84C92C7 /* DataPresentationIntelligence.swift in Sources */,
 				24C99B5982951CCD22EE380B /* DataValueExtraction.swift in Sources */,
+				3C08467662F20831BDAEB8F7 /* DisplayOCRPanelModel.swift in Sources */,
 				00AEF2FE008896B51E6405E6 /* DisplayOCRTraining.swift in Sources */,
 				51A42DBFF14CABDF1F3973C8 /* DisplayOCRTrainingView.swift in Sources */,
 				1D97AA9C6796D3A56C76D4C8 /* DynamicFieldComponents.swift in Sources */,
@@ -9382,6 +9390,7 @@
 				1E41C12959FB1D1145E9498C /* DataIntrospection.swift in Sources */,
 				995EE4EFFE7497709A41056F /* DataPresentationIntelligence.swift in Sources */,
 				F5FF5E5BF845E7B01435C9E2 /* DataValueExtraction.swift in Sources */,
+				ED3B68CCA002B70C610ADA5D /* DisplayOCRPanelModel.swift in Sources */,
 				91AE4C8B861DC2109C437ADB /* DisplayOCRTraining.swift in Sources */,
 				0FB7DEA1CE9126EAE510DA07 /* DisplayOCRTrainingView.swift in Sources */,
 				C7FDD6C9A999B8A37F600C03 /* DynamicFieldComponents.swift in Sources */,
@@ -10029,6 +10038,7 @@
 				EBB35492A54BC10D34F33690 /* DataIntrospection.swift in Sources */,
 				EF9583FE99A4D9D32E572B14 /* DataPresentationIntelligence.swift in Sources */,
 				67BDED405C0380100F137E81 /* DataValueExtraction.swift in Sources */,
+				8C21F9022831621607F6A293 /* DisplayOCRPanelModel.swift in Sources */,
 				BAA4FDA42916DD12237AF1D4 /* DisplayOCRTraining.swift in Sources */,
 				F6FAB040EC6D63C66146F5CE /* DisplayOCRTrainingView.swift in Sources */,
 				02743718BBBC4120F4BA8423 /* DynamicFieldComponents.swift in Sources */,
@@ -11324,6 +11334,7 @@
 				65BEF1CFFF4748FB4798EA11 /* DataIntrospection.swift in Sources */,
 				ABF5BD7B19DC192861455AB3 /* DataPresentationIntelligence.swift in Sources */,
 				5156017C034C19A72904B45B /* DataValueExtraction.swift in Sources */,
+				296FC9C58CE336C28F7E67FF /* DisplayOCRPanelModel.swift in Sources */,
 				A393B5EA5B3785A799C08E4B /* DisplayOCRTraining.swift in Sources */,
 				3DC18A16491D906018B1443B /* DisplayOCRTrainingView.swift in Sources */,
 				960D3127B3282D9E13EBEDDE /* DynamicFieldComponents.swift in Sources */,
@@ -11984,6 +11995,7 @@
 				21416EA54C154C8812AD86A7 /* DataIntrospection.swift in Sources */,
 				3533BF547550F389DBC04A86 /* DataPresentationIntelligence.swift in Sources */,
 				9792827A7770FA29AC19FCD6 /* DataValueExtraction.swift in Sources */,
+				8029F2FAF9621F76EAC46E90 /* DisplayOCRPanelModel.swift in Sources */,
 				7E9AE1A30E1A9AE1B7008B5A /* DisplayOCRTraining.swift in Sources */,
 				FBE0F8C5E2B04A568E5724C8 /* DisplayOCRTrainingView.swift in Sources */,
 				722D30406D28D3C0A22191AA /* DynamicFieldComponents.swift in Sources */,

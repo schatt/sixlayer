@@ -167,7 +167,8 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
             return SevenSegmentOCR.decode(
                 cgImage: cgImage,
                 deskewMaximumDegrees: context.segmentDeskewMaximumDegrees,
-                localizeDigitPanel: true
+                localizeDigitPanel: true,
+                panelLocator: context.panelLocator
             )
         }
         return try await performVisionOCRIfAvailable(
@@ -243,7 +244,8 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
         let decoded = SevenSegmentOCR.decode(
             cgImage: cgImage,
             deskewMaximumDegrees: context.segmentDeskewMaximumDegrees,
-            localizeDigitPanel: true
+            localizeDigitPanel: true,
+            panelLocator: context.panelLocator
         )
         var labels = context.suppliedLabelFragments
         if labels.isEmpty {

@@ -6,7 +6,7 @@
 //  Opening a new photo suggests a panel and rows from the seven-segment
 //  reader. A saved example keeps the boxes and text the user confirmed.
 //  Phase B reads the export directory as a library of those examples.
-//  Core ML training is Phase C.
+//  Phase C trains a panel localizer from that library on macOS.
 //
 
 import Combine
@@ -540,6 +540,7 @@ public enum DisplayOCRTraining {
             return .rejection(.unreadablePackage)
         }
         guard directory(child) else { return .ignored }
+        if isModelPackage(child) { return .ignored }
         do {
             return .example(try read(from: child))
         } catch let error as DisplayOCRTrainingError {
@@ -547,6 +548,14 @@ public enum DisplayOCRTraining {
         } catch {
             return .rejection(.unreadablePackage)
         }
+    }
+
+    /// A Core ML package sitting in the library root is not an example folder.
+    private static func isModelPackage(_ url: URL) -> Bool {
+        let name = url.lastPathComponent
+        if name == DisplayOCRPanelModel.modelFileName { return true }
+        if name == DisplayOCRPanelModel.modelFileName + ".partial" { return true }
+        return name.hasSuffix(".mlmodel") || name.hasSuffix(".mlmodelc")
     }
 
     private static func symbolicLink(_ url: URL) -> Bool {
@@ -837,6 +846,7 @@ public final class DisplayOCRTrainingSession: ObservableObject {
     @Published public private(set) var exportRoot: URL = DisplayOCRTraining.defaultExportRoot()
     @Published public private(set) var library = DisplayOCRTrainingLibrary()
     @Published public private(set) var selectedBox: DisplayOCRTrainingBoxTarget?
+    @Published public private(set) var panelTraining: DisplayOCRPanelTrainingState = .idle
 
     private var bitmap: CGImage?
 
@@ -1162,6 +1172,52 @@ public final class DisplayOCRTrainingSession: ObservableObject {
     public func failExport() {
         status = .exportFailed
     }
+
+    /// Train a panel localizer from the current library into the export root.
+    /// Create ML runs on macOS, off the main thread. An empty library does not start.
+    public func trainPanelModel() {
+        guard panelTraining != .running else { return }
+        #if os(macOS)
+        let currentLibrary = library
+        guard !currentLibrary.examples.isEmpty else {
+            panelTraining = .emptyLibrary
+            return
+        }
+        let root = exportRoot
+        panelTraining = .running
+        Task { [weak self] in
+            let state = await Self.trainedPanelState(library: currentLibrary, root: root)
+            self?.panelTraining = state
+        }
+        #else
+        panelTraining = .requiresMacOS
+        #endif
+    }
+
+    #if os(macOS)
+    nonisolated private static func trainedPanelState(
+        library: DisplayOCRTrainingLibrary,
+        root: URL
+    ) async -> DisplayOCRPanelTrainingState {
+        await Task.detached(priority: .userInitiated) {
+            do {
+                let url = try DisplayOCRPanelModel.train(library: library, writingModelTo: root)
+                return DisplayOCRPanelTrainingState.ready(url)
+            } catch let error as DisplayOCRPanelModelError {
+                switch error {
+                case .emptyLibrary:
+                    return .emptyLibrary
+                case .trainingRequiresMacOS:
+                    return .requiresMacOS
+                case .trainingFailed(let message):
+                    return .failed(message)
+                }
+            } catch {
+                return .failed(error.localizedDescription)
+            }
+        }.value
+    }
+    #endif
 
     /// Use `url` as the directory that holds package folders. An existing file is ignored.
     public func setExportRoot(_ url: URL) {
