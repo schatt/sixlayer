@@ -590,15 +590,25 @@ public enum DisplayOCRTraining {
     }
 
     /// Glyph rows become the line boxes only when there is one glyph row per line.
+    /// Otherwise the lines stay and no extra boxes are shown.
     static func aligningSuggestion(
         lines: [DisplayOCRTrainingRow],
         glyphs: [DisplayOCRNormalizedBox]
     ) -> (boxes: [DisplayOCRNormalizedBox], rows: [DisplayOCRTrainingRow]) {
-        (glyphs, lines)
+        guard !lines.isEmpty, lines.count == glyphs.count else {
+            return ([], lines)
+        }
+        let rows = zip(lines, glyphs).map { line, glyph in
+            var line = line
+            line.box = glyph
+            return line
+        }
+        return (glyphs, rows)
     }
 
-    /// One box per panel line, top to bottom. Nil when a line is blank or the
-    /// counts differ, so a tighter crop is still read on its own.
+    /// One box per panel line. The returned rows stay in the order the boxes were
+    /// drawn. Nil when a line is blank or the counts differ, so a tighter crop
+    /// is still read on its own.
     private static func rowsPairedWithPanelLines(
         _ lines: [DisplayOCRTrainingRow],
         boxes: [DisplayOCRNormalizedBox]
@@ -606,13 +616,20 @@ public enum DisplayOCRTraining {
         guard lines.count > 1, lines.count == boxes.count else { return nil }
         guard lines.allSatisfy({ !$0.decodedText.isEmpty }) else { return nil }
         guard stacked(boxes), wideRows(boxes) else { return nil }
-        let ordered = boxes.sorted { lhs, rhs in
-            if lhs.y == rhs.y { return lhs.x < rhs.x }
-            return lhs.y < rhs.y
+        let ranked = boxes.indices.sorted { lhs, rhs in
+            let left = boxes[lhs]
+            let right = boxes[rhs]
+            if left.y == right.y { return left.x < right.x }
+            return left.y < right.y
         }
-        return zip(ordered, lines).map { box, line in
-            labeledRow(line.decodedText, box: box, confidence: line.confidence)
+        var assigned: [DisplayOCRTrainingRow?] = Array(repeating: nil, count: boxes.count)
+        for (rank, index) in ranked.enumerated() {
+            let line = lines[rank]
+            assigned[index] = labeledRow(line.decodedText, box: boxes[index], confidence: line.confidence)
         }
+        let rows = assigned.compactMap { $0 }
+        guard rows.count == boxes.count else { return nil }
+        return rows
     }
 
     /// True when each box sits under the previous one. Side-by-side digits stay
@@ -844,14 +861,29 @@ public final class DisplayOCRTrainingSession: ObservableObject {
         show(cgImage, sourceName: sourceName ?? saved.sourceName, suggesting: false)
         guard bitmap != nil, let kept = saved.panel.unitClamped else { return }
         panel = kept
-        rowBoxes = DisplayOCRTraining.rowsInside(
-            saved.rows.compactMap(\.box),
-            panel: kept,
-            imageWidth: Int(imagePixelSize.width),
-            imageHeight: Int(imagePixelSize.height)
-        )
-        label = saved
+        let width = Int(imagePixelSize.width)
+        let height = Int(imagePixelSize.height)
+        var restored = saved
+        restored.panel = kept
+        restored.rows = saved.rows.map { row in
+            var row = row
+            row.box = clipped(row.box, to: kept, imageWidth: width, imageHeight: height)
+            return row
+        }
+        rowBoxes = restored.rows.compactMap(\.box)
+        label = restored
         status = .decoded
+    }
+
+    private func clipped(
+        _ box: DisplayOCRNormalizedBox?,
+        to panel: DisplayOCRNormalizedBox,
+        imageWidth: Int,
+        imageHeight: Int
+    ) -> DisplayOCRNormalizedBox? {
+        guard let hit = box?.unitClamped?.intersection(panel) else { return nil }
+        guard hit.pixelRect(imageWidth: imageWidth, imageHeight: imageHeight) != nil else { return nil }
+        return hit
     }
 
     private func show(_ cgImage: CGImage, sourceName rawName: String?, suggesting: Bool) {
@@ -892,18 +924,13 @@ public final class DisplayOCRTrainingSession: ObservableObject {
         // A crop of one line is read upside down or not at all. The panel read
         // is the digit string; the glyph rows are only the boxes.
         rowBoxes = []
-        guard decode(), var drafted = label, !glyphs.isEmpty else {
+        guard decode(), var drafted = label else {
             rowBoxes = glyphs
             return
         }
-        guard drafted.rows.count == glyphs.count else {
-            rowBoxes = glyphs
-            return
-        }
-        for index in glyphs.indices {
-            drafted.rows[index].box = glyphs[index]
-        }
-        rowBoxes = glyphs
+        let aligned = DisplayOCRTraining.aligningSuggestion(lines: drafted.rows, glyphs: glyphs)
+        drafted.rows = aligned.rows
+        rowBoxes = aligned.boxes
         label = drafted
     }
 
