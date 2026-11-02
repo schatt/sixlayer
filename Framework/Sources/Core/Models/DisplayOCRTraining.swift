@@ -837,6 +837,7 @@ public final class DisplayOCRTrainingSession: ObservableObject {
     @Published public private(set) var exportRoot: URL = DisplayOCRTraining.defaultExportRoot()
     @Published public private(set) var library = DisplayOCRTrainingLibrary()
     @Published public private(set) var selectedBox: DisplayOCRTrainingBoxTarget?
+    @Published public private(set) var panelTraining: DisplayOCRPanelTrainingState = .idle
 
     private var bitmap: CGImage?
 
@@ -1161,6 +1162,12 @@ public final class DisplayOCRTrainingSession: ObservableObject {
 
     public func failExport() {
         status = .exportFailed
+    }
+
+    /// Train a panel localizer from the current library. The stub records idle
+    /// until the Mac trainer exists.
+    public func trainPanelModel() {
+        panelTraining = .idle
     }
 
     /// Use `url` as the directory that holds package folders. An existing file is ignored.
