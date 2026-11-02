@@ -679,6 +679,49 @@ struct OCRSevenSegment576Tests {
         #expect(region.maxY <= glass.maxY + slop)
     }
 
+    /// Find resolution follows the camera. The long side is capped; a landscape
+    /// frame is not forced into a portrait box, and a frame already inside the
+    /// cap is left alone. Each case is a different sensor, not one scale factor.
+    @Test func findBufferSizeFollowsTheLongSideOfEachCamera() {
+        let cap = 1600
+        #expect(
+            SevenSegmentOCR.findBufferSize(width: 1000, height: 800, maxSide: cap)
+                == (width: 1000, height: 800)
+        )
+        #expect(
+            SevenSegmentOCR.findBufferSize(width: 1600, height: 1200, maxSide: cap)
+                == (width: 1600, height: 1200)
+        )
+        #expect(
+            SevenSegmentOCR.findBufferSize(width: 3200, height: 2400, maxSide: cap)
+                == (width: 1600, height: 1200)
+        )
+        #expect(
+            SevenSegmentOCR.findBufferSize(width: 2400, height: 3200, maxSide: cap)
+                == (width: 1200, height: 1600)
+        )
+        #expect(
+            SevenSegmentOCR.findBufferSize(width: 1800, height: 1800, maxSide: cap)
+                == (width: 1600, height: 1600)
+        )
+        #expect(
+            SevenSegmentOCR.findBufferSize(width: 4032, height: 3024, maxSide: cap)
+                == (width: 1600, height: 1200)
+        )
+        #expect(
+            SevenSegmentOCR.findBufferSize(width: 3024, height: 4032, maxSide: cap)
+                == (width: 1200, height: 1600)
+        )
+        #expect(
+            SevenSegmentOCR.findBufferSize(width: 2000, height: 1000, maxSide: cap)
+                == (width: 1600, height: 800)
+        )
+        #expect(
+            SevenSegmentOCR.findBufferSize(width: 1000, height: 2000, maxSide: cap)
+                == (width: 800, height: 1600)
+        )
+    }
+
     // MARK: - Path search (#600)
 
     /// Frame step offers more than the sealed pocket. The ink stack is the
