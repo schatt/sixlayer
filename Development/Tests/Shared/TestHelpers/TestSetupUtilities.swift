@@ -359,14 +359,14 @@ public enum TestSetupUtilities {
         accessibilityIdentifierConfig: AccessibilityIdentifierConfig? = nil,
         @ViewBuilder _ view: () -> V
     ) -> Any? {
-        // DELIBERATE WRONG for #626 red: always return non-nil without host contract.
-        _ = hostRootPlatformView(
+        let hosted = hostRootPlatformView(
             view(),
             forceLayout: forceLayout,
             exposeContentAccessibility: exposeContentAccessibility,
             accessibilityIdentifierConfig: accessibilityIdentifierConfig
         )
-        return "626-deliberate-non-nil-stub"
+        expectUnitLaneHostedRoot(hosted)
+        return hosted
     }
 
     /// Both-direction host contract shared by named-compliance and platform-root helpers (#622).
