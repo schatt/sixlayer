@@ -1134,16 +1134,21 @@ public struct DynamicStepperField: View {
     var value: Binding<Double> {
         Binding(
             get: {
-                _ = locale
                 if let value: Any = formState.getValue(for: field.id) {
                     if let doubleValue = value as? Double {
                         return doubleValue
                     } else if let stringValue = value as? String,
-                              let parsed = Double(stringValue) {
+                              let parsed = DynamicFormStoredDecimal.double(
+                                fromStoredText: stringValue,
+                                locale: locale
+                              ) {
                         return parsed
                     }
                 }
-                return Double(field.defaultValue ?? "0") ?? 0.0
+                return DynamicFormStoredDecimal.double(
+                    fromStoredText: field.defaultValue ?? "0",
+                    locale: locale
+                ) ?? 0.0
             },
             set: { newValue in
                 formState.setValue(String(newValue), for: field.id)
@@ -2296,22 +2301,24 @@ public struct DynamicGaugeField: View {
         self.locale = locale
     }
     
-    /// Get the current value as Double
+    /// Stored string uses the form locale. POSIX `4.5` still parses.
+    /// A non-number falls through to `defaultValue`, then 0 (#624).
     var value: Double {
-        _ = locale
         if let value: Any? = formState.getValue(for: field.id) {
             if let doubleValue = value as? Double {
                 return doubleValue
             } else if let intValue = value as? Int {
                 return Double(intValue)
             } else if let stringValue = value as? String,
-                      let parsed = Double(stringValue) {
+                      let parsed = DynamicFormStoredDecimal.double(
+                        fromStoredText: stringValue,
+                        locale: locale
+                      ) {
                 return parsed
             }
         }
-        // Fall back to defaultValue or 0.0
         if let defaultValue = field.defaultValue,
-           let parsed = Double(defaultValue) {
+           let parsed = DynamicFormStoredDecimal.double(fromStoredText: defaultValue, locale: locale) {
             return parsed
         }
         return 0.0
