@@ -1162,11 +1162,11 @@ private extension GrayBuffer {
         }
         // Counter holes inside an 8 are sealed too. Require a glass-sized
         // pocket that is still clearly smaller than a full-frame photo.
-        let glassW = bestMaxX - bestMinX + 1
-        let glassH = bestMaxY - bestMinY + 1
+        let pocketW = bestMaxX - bestMinX + 1
+        let pocketH = bestMaxY - bestMinY + 1
         guard bestArea >= max(400, count / 200) else { return nil }
         guard bestArea * 100 < count * 85 else { return nil }
-        guard glassW >= 40, glassH >= 40 else { return nil }
+        guard pocketW >= 40, pocketH >= 40 else { return nil }
         // A slow dark skirt stays non-ink, so the pocket bbox includes it
         // (#600). A sharp bezel is ink and is already outside this rect.
         let opened = droppingDarkMargin(
@@ -1214,10 +1214,14 @@ private extension GrayBuffer {
             maxY: bottom - insetY
         )
         let limit = interior * 3 / 4
+        // Vertical trim keeps the original width. Shrinking x here would
+        // hide a dark top row behind the brighter glass in the middle.
+        let rowLeft = left
+        let rowRight = right
         func rowMean(_ y: Int) -> Int {
             var sum = 0
-            let span = right - left + 1
-            for x in left...right {
+            let span = rowRight - rowLeft + 1
+            for x in rowLeft...rowRight {
                 sum += Int(pixels[y * width + x])
             }
             return sum / span
