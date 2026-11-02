@@ -272,7 +272,11 @@ public enum TestSetupUtilities {
         forceLayout: Bool = true,
         exposeContentAccessibility: Bool = false
     ) -> (hosted: Any?, debugLog: String) {
-        #if os(watchOS)
+        #if os(watchOS) || os(visionOS)
+        // No unit-lane host tree (#379/#380); skip isolated config work.
+        _ = view
+        _ = forceLayout
+        _ = exposeContentAccessibility
         return (nil, "")
         #else
         let isolated = makeIsolatedAccessibilityIdentifierConfig()
@@ -290,24 +294,22 @@ public enum TestSetupUtilities {
         #endif
     }
 
-    /// Unit-lane named-compliance host observation (#622).
-    ///
-    /// Deliberately wrong for red (#622): silent `return` on watchOS; `#expect(hosted != nil)`
-    /// on every other platform including visionOS (fails #380). Correct both-direction shape
-    /// lands after the failing visionOS run.
+    /// Shared unit-lane named-compliance host observation (#616/#622).
+    /// Observes nil-host on watchOS/visionOS; named compliance on iOS/macOS. No silent `return`.
     @MainActor
     public static func hostExpectingNamedCompliance<V: View>(
         _ name: String,
         exposeContentAccessibility: Bool = false,
         @ViewBuilder _ view: () -> V
     ) {
-        #if os(watchOS)
-        return
-        #else
         let (hosted, log) = hostRootPlatformViewNamedDebugLog(
             view(),
             exposeContentAccessibility: exposeContentAccessibility
         )
+        #if os(watchOS) || os(visionOS)
+        #expect(hosted == nil, "unit harness cannot host on this platform (#379/#380)")
+        #expect(log.isEmpty)
+        #else
         #expect(hosted != nil)
         #expect(
             log.contains(name),
@@ -316,10 +318,8 @@ public enum TestSetupUtilities {
         #endif
     }
 
-    /// Unit-lane non-nil platform-root host observation (#622).
-    ///
-    /// Deliberately wrong for red (#622): same silent-watch / non-nil-elsewhere shape as the
-    /// copied `hostView` helpers. Correct both-direction shape lands after the failing run.
+    /// Shared unit-lane platform-root host observation (#622).
+    /// Observes nil-host on watchOS/visionOS; non-nil root on iOS/macOS. No silent `return`.
     @MainActor
     public static func hostExpectingPlatformRoot<V: View>(
         forceLayout: Bool = true,
@@ -327,15 +327,15 @@ public enum TestSetupUtilities {
         accessibilityIdentifierConfig: AccessibilityIdentifierConfig? = nil,
         @ViewBuilder _ view: () -> V
     ) {
-        #if os(watchOS)
-        return
-        #else
         let hosted = hostRootPlatformView(
             view(),
             forceLayout: forceLayout,
             exposeContentAccessibility: exposeContentAccessibility,
             accessibilityIdentifierConfig: accessibilityIdentifierConfig
         )
+        #if os(watchOS) || os(visionOS)
+        #expect(hosted == nil, "unit harness cannot host on this platform (#379/#380)")
+        #else
         #expect(hosted != nil)
         #endif
     }
