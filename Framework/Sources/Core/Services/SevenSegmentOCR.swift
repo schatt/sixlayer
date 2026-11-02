@@ -1495,7 +1495,11 @@ private extension GrayBuffer {
             )
         }
         if let rowFinder {
-            let projected = projectionBands(glyphs.rowSums, height: buffer.height)
+            // A lone digit is most of a short crop, so polarity opens and
+            // dilates. That thick mask drops the glyph. The finder owns the
+            // row split, so it samples the loose strokes.
+            let ink = primaryIsDark ? masks.dark : masks.light
+            let projected = projectionBands(ink.rowSums, height: buffer.height)
             let lines = rowFinder == .deepestPair
                 ? pairBands(projected, height: buffer.height)
                 : projected
@@ -1503,20 +1507,24 @@ private extension GrayBuffer {
             func rowCells(_ band: (Int, Int)) -> [Cell] {
                 let found = cells(
                     in: band,
-                    mask: glyphs,
+                    mask: ink,
                     buffer: buffer,
                     bandIndex: 0,
                     darkInk: primaryIsDark,
                     preferredPitch: preferredPitch,
                     sampleBand: sampleBand
                 )
-                let marks = opened
-                    ? []
-                    : oppositeMarks(in: band, secondary: paintedMarks, existing: found, buffer: buffer, bandIndex: 0)
-                let dots = baselineDots(in: band, mask: glyphs, cells: found, width: buffer.width, bandIndex: 0)
+                let marks = oppositeMarks(
+                    in: band,
+                    secondary: paintedMarks,
+                    existing: found,
+                    buffer: buffer,
+                    bandIndex: 0
+                )
+                let dots = baselineDots(in: band, mask: ink, cells: found, width: buffer.width, bandIndex: 0)
                 var row = found + marks + dots
                 if preferredPitch != nil {
-                    row = pitchRowMarks(row, mask: glyphs, band: band, width: buffer.width)
+                    row = pitchRowMarks(row, mask: ink, band: band, width: buffer.width)
                 }
                 return row
             }
