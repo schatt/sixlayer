@@ -9,7 +9,11 @@
 import CoreGraphics
 import Foundation
 import ImageIO
+import SwiftUI
 import Testing
+#if canImport(ViewInspector)
+import ViewInspector
+#endif
 @testable import SixLayerFramework
 
 @Suite("Display OCR training labels (#609)")
@@ -470,6 +474,34 @@ struct DisplayOCRTraining609Tests {
         #expect(confirmed == ["9.99", "2.0"])
         #expect(session.library.examples.count == 2)
         #expect(session.library.rejections.count == 1)
+    }
+
+    @Test @MainActor func librarySummaryShowsHowManyExamplesJoined() {
+        let i18n = InternationalizationService()
+        #expect(
+            i18n.localizedString(
+                for: "SixLayerFramework.ocr.training.libraryCount",
+                arguments: ["2"]
+            ) == "Library · 2"
+        )
+        #expect(
+            i18n.localizedString(
+                for: "SixLayerFramework.ocr.training.librarySkipped",
+                arguments: ["1"]
+            ) == "Skipped · 1"
+        )
+        #if canImport(ViewInspector)
+        let summary = DisplayOCRTrainingLibrarySummary(exampleCount: 2, rejectionCount: 1)
+        let values = findAllInViewHierarchy(summary, ViewInspector.ViewType.Text.self)
+            .compactMap { try? $0.string() }
+        #expect(values.contains("Library · 2"))
+        #expect(values.contains("Skipped · 1"))
+        let quiet = DisplayOCRTrainingLibrarySummary(exampleCount: 2, rejectionCount: 0)
+        let quietValues = findAllInViewHierarchy(quiet, ViewInspector.ViewType.Text.self)
+            .compactMap { try? $0.string() }
+        #expect(quietValues.contains("Library · 2"))
+        #expect(quietValues.contains { $0.hasPrefix("Skipped") } == false)
+        #endif
     }
 
     // MARK: - Fixtures
