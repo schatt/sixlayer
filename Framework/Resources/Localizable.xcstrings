@@ -30459,6 +30459,17 @@
         }
       }
     },
+    "SixLayerFramework.ocr.training.removeBox" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove box"
+          }
+        }
+      }
+    },
     "SixLayerFramework.ocr.training.row" : {
       "extractionState" : "manual",
       "localizations" : {
