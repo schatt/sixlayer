@@ -1393,42 +1393,32 @@ public class DynamicFormState: ObservableObject {
         }
     }
 
-    /// Calculate a field value from other field values using a formula
+    /// Calculate a field value from other field values using a formula.
+    /// A locale decimal such as `4,5` is read with `Locale.current` and spliced as a POSIX literal (#628).
     /// - Parameters:
     ///   - formula: The calculation formula (e.g., "total_price / gallons")
     ///   - dependencies: Array of field IDs that the formula depends on
     /// - Returns: The calculated value as Double, or nil if calculation fails
     public func calculateFieldValue(formula: String, dependencies: [String]) -> Double? {
-        // Parse the formula and evaluate it using current field values
-        // This is a basic implementation that supports simple arithmetic
-
-        var processedFormula = formula
-
-        // Replace field references with their current values
-        for dependency in dependencies {
-            if let value = fieldValues[dependency] {
-                // Convert to string for replacement
-                let stringValue = String(describing: value)
-                processedFormula = processedFormula.replacingOccurrences(of: dependency, with: stringValue)
-            } else {
-                // If any dependency is missing, can't calculate
-                return nil
-            }
-        }
-
-        // Evaluate the mathematical expression
-        return evaluateMathExpression(processedFormula)
+        calculateFieldValue(formula: formula, dependencies: dependencies, locale: .current)
     }
 
-    /// `locale` is the locale the form used for a stored decimal (#628).
-    /// Accepted so the reader tests compile. Substitution still uses `String(describing:)`.
+    /// `locale` selects the decimal separator the form stored (#628).
+    /// POSIX text is still accepted. A value that is not a number fails closed.
     func calculateFieldValue(
         formula: String,
         dependencies: [String],
         locale: Locale
     ) -> Double? {
-        _ = locale
-        return calculateFieldValue(formula: formula, dependencies: dependencies)
+        var processedFormula = formula
+        for dependency in dependencies {
+            guard let value = fieldValues[dependency],
+                  let literal = formulaNumericLiteral(for: value, locale: locale) else {
+                return nil
+            }
+            processedFormula = processedFormula.replacingOccurrences(of: dependency, with: literal)
+        }
+        return evaluateMathExpression(processedFormula)
     }
 
     /// Calculate missing fields from available OCR data
@@ -1441,6 +1431,20 @@ public class DynamicFormState: ObservableObject {
     public func calculateMissingFieldFromOCR(
         availableFields: [String],
         possibleFormulas: [String: String]
+    ) -> CalculatedFieldResult? {
+        calculateMissingFieldFromOCR(
+            availableFields: availableFields,
+            possibleFormulas: possibleFormulas,
+            locale: .current
+        )
+    }
+
+    /// `locale` selects the decimal separator the form stored (#628).
+    /// POSIX text is still accepted. Callers omit `locale`; this path then uses `Locale.current`.
+    func calculateMissingFieldFromOCR(
+        availableFields: [String],
+        possibleFormulas: [String: String],
+        locale: Locale
     ) -> CalculatedFieldResult? {
         // Find which fields are missing from the available set
         let allFields = Set(possibleFormulas.keys)
@@ -1464,7 +1468,11 @@ public class DynamicFormState: ObservableObject {
             // Extract dependencies from the formula (simplified - assumes field names are used directly)
             let dependencies = extractFieldDependencies(from: formula)
 
-            if let calculatedValue = calculateFieldValue(formula: formula, dependencies: dependencies) {
+            if let calculatedValue = calculateFieldValue(
+                formula: formula,
+                dependencies: dependencies,
+                locale: locale
+            ) {
                 return CalculatedFieldResult(
                     fieldId: missingField,
                     calculatedValue: calculatedValue
@@ -1473,20 +1481,6 @@ public class DynamicFormState: ObservableObject {
         }
 
         return nil
-    }
-
-    /// `locale` is the locale the form used for a stored decimal (#628).
-    /// Accepted so the reader tests compile. This still calls the locale-free path.
-    func calculateMissingFieldFromOCR(
-        availableFields: [String],
-        possibleFormulas: [String: String],
-        locale: Locale
-    ) -> CalculatedFieldResult? {
-        _ = locale
-        return calculateMissingFieldFromOCR(
-            availableFields: availableFields,
-            possibleFormulas: possibleFormulas
-        )
     }
 
     /// Decimal literal safe to splice into an `NSExpression` formula.
