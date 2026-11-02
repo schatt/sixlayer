@@ -393,7 +393,7 @@ private struct DisplayOCRTrainingFileImporter: ViewModifier {
     }
 }
 
-/// Folder choice for the package root. Cancel leaves the current root in place.
+/// Folder choice for the package root. Dismissing the panel leaves the current root.
 private struct DisplayOCRTrainingExportFolderImporter: ViewModifier {
     @Binding var isPresented: Bool
     let session: DisplayOCRTrainingSession
@@ -409,8 +409,8 @@ private struct DisplayOCRTrainingExportFolderImporter: ViewModifier {
             case .success(let urls):
                 guard let url = urls.first else { return }
                 session.setExportRoot(url)
-            case .failure(let error):
-                guard DisplayOCRTraining.importerCancelled(error) else { return }
+            case .failure:
+                break
             }
         }
         #else
