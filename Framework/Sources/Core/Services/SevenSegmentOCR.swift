@@ -136,6 +136,13 @@ public struct SegmentSearchHit: Equatable, Sendable {
 }
 
 public enum SevenSegmentOCR {
+    /// Size of the image the frame finder searches. Callers map the rect back
+    /// with `fullWidth / smallWidth` and `fullHeight / smallHeight`.
+    static func findBufferSize(width: Int, height: Int, maxSide: Int = 1600) -> (width: Int, height: Int) {
+        _ = maxSide
+        return (width, height)
+    }
+
     /// Pixel rect of the digit panel (glass plus a bezel margin) in image
     /// coordinates, or `nil` when no sealed panel is found.
     ///
