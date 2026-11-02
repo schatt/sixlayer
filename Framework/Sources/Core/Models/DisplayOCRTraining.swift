@@ -836,9 +836,32 @@ public final class DisplayOCRTrainingSession: ObservableObject {
                 deskewMaximumDegrees: 0,
                 localizeDigitPanel: false
             )
-            rowBoxes = DisplayOCRTraining.rowBoxes(fromVisionBoxes: read.boundingBoxes, panel: panelBox)
+            let glyphs = DisplayOCRTraining.rowBoxes(fromVisionBoxes: read.boundingBoxes, panel: panelBox)
+            rowBoxes = Self.bands(glyphs, in: panelBox)
         }
         _ = decode()
+    }
+
+    /// Glyph unions are tight. A tight crop is read upside down. Give each row the
+    /// full panel width and the gap around it so the reader sees one upright line.
+    private static func bands(
+        _ rows: [DisplayOCRNormalizedBox],
+        in panel: DisplayOCRNormalizedBox
+    ) -> [DisplayOCRNormalizedBox] {
+        guard !rows.isEmpty else { return [] }
+        return rows.enumerated().map { index, row in
+            let above = index == 0 ? panel.y : (rows[index - 1].y + rows[index - 1].height + row.y) / 2
+            let below = index == rows.count - 1
+                ? panel.y + panel.height
+                : (row.y + row.height + rows[index + 1].y) / 2
+            let band = DisplayOCRNormalizedBox(
+                x: panel.x,
+                y: above,
+                width: panel.width,
+                height: max(below - above, row.height)
+            )
+            return band.intersection(panel) ?? row
+        }
     }
 
     public func load(fileURL: URL) {
