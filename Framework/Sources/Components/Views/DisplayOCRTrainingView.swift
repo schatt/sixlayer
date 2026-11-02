@@ -18,6 +18,7 @@ public struct DisplayOCRTrainingView: View {
     private let onExport: ((DisplayOCRTrainingPackage) -> Void)?
 
     @State private var importPresented = false
+    @State private var exportFolderPresented = false
     @State private var dragRect: CGRect?
     #if os(iOS) || os(macOS) || os(visionOS)
     @State private var photoItem: PhotosPickerItem?
@@ -48,6 +49,7 @@ public struct DisplayOCRTrainingView: View {
         }
         .automaticCompliance(named: "DisplayOCRTrainingView")
         .modifier(DisplayOCRTrainingFileImporter(isPresented: $importPresented, session: session))
+        .modifier(DisplayOCRTrainingExportFolderImporter(isPresented: $exportFolderPresented, session: session))
     }
 
     @ViewBuilder
@@ -94,7 +96,17 @@ public struct DisplayOCRTrainingView: View {
                 .disabled(session.label == nil)
                 .trainingProminentButton()
                 .automaticCompliance(named: "DisplayOCRTrainingExport")
+
+                #if os(iOS) || os(macOS) || os(visionOS)
+                Button(i18n.localizedString(for: "SixLayerFramework.ocr.training.chooseFolder")) {
+                    exportFolderPresented = true
+                }
+                .automaticCompliance(named: "DisplayOCRTrainingChooseFolder")
+                #endif
             }
+
+            selectablePath(session.exportRoot.path)
+                .automaticCompliance(named: "DisplayOCRTrainingExportRoot")
         }
     }
 
@@ -265,7 +277,7 @@ public struct DisplayOCRTrainingView: View {
 
     private func exportPackage() {
         do {
-            let exported = try session.exportToTemporaryDirectory()
+            let exported = try session.export()
             onExport?(exported.package)
         } catch {
             session.failExport()
@@ -376,6 +388,33 @@ private struct DisplayOCRTrainingFileImporter: ViewModifier {
         }
         #else
         let _ = session
+        content
+        #endif
+    }
+}
+
+/// Folder choice for the package root. Cancel leaves the current root in place.
+private struct DisplayOCRTrainingExportFolderImporter: ViewModifier {
+    @Binding var isPresented: Bool
+    let session: DisplayOCRTrainingSession
+
+    func body(content: Content) -> some View {
+        #if os(iOS) || os(macOS) || os(visionOS)
+        content.fileImporter(
+            isPresented: $isPresented,
+            allowedContentTypes: [.folder],
+            allowsMultipleSelection: false
+        ) { result in
+            switch result {
+            case .success(let urls):
+                guard let url = urls.first else { return }
+                session.setExportRoot(url)
+            case .failure(let error):
+                guard DisplayOCRTraining.importerCancelled(error) else { return }
+            }
+        }
+        #else
+        let _ = (isPresented, session)
         content
         #endif
     }
