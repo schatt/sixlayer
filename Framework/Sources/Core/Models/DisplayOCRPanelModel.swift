@@ -161,30 +161,48 @@ public enum DisplayOCRPanelModel {
     /// The image name is the example folder plus `.png`, because every
     /// package file is named `image.png`.
     public static func annotations(from library: DisplayOCRTrainingLibrary) -> [DisplayOCRPanelAnnotation] {
+        trainingImages(from: library).map(\.annotation)
+    }
+
+    /// The bytes and the annotation come from the same example, so a repeated
+    /// folder name cannot pair one panel with another photo.
+    private struct TrainingImage {
+        var annotation: DisplayOCRPanelAnnotation
+        var png: Data
+    }
+
+    private static func trainingImageName(for example: DisplayOCRTrainingLibraryExample) -> String? {
+        let name = example.directory.lastPathComponent
+        guard !name.isEmpty, name != ".", name != ".." else { return nil }
+        return name + ".png"
+    }
+
+    private static func trainingImages(from library: DisplayOCRTrainingLibrary) -> [TrainingImage] {
         var seen: Set<String> = []
-        var rows: [DisplayOCRPanelAnnotation] = []
+        var images: [TrainingImage] = []
         for example in library.examples {
             guard let panel = example.package.label.panel.unitClamped else { continue }
-            let name = example.directory.lastPathComponent
-            guard !name.isEmpty, name != ".", name != ".." else { continue }
-            let filename = name + ".png"
+            guard let filename = trainingImageName(for: example) else { continue }
             guard seen.insert(filename).inserted else { continue }
-            rows.append(DisplayOCRPanelAnnotation(
-                imagefilename: filename,
-                annotation: [
-                    DisplayOCRPanelObjectAnnotation(
-                        label: panelLabel,
-                        coordinates: DisplayOCRPanelCoordinates(
-                            x: panel.x + panel.width / 2,
-                            y: panel.y + panel.height / 2,
-                            width: panel.width,
-                            height: panel.height
+            images.append(TrainingImage(
+                annotation: DisplayOCRPanelAnnotation(
+                    imagefilename: filename,
+                    annotation: [
+                        DisplayOCRPanelObjectAnnotation(
+                            label: panelLabel,
+                            coordinates: DisplayOCRPanelCoordinates(
+                                x: panel.x + panel.width / 2,
+                                y: panel.y + panel.height / 2,
+                                width: panel.width,
+                                height: panel.height
+                            )
                         )
-                    )
-                ]
+                    ]
+                ),
+                png: example.package.imagePNG
             ))
         }
-        return rows
+        return images
     }
 
     /// Copy labeled images and write `annotations.json`. The image directory
@@ -193,23 +211,20 @@ public enum DisplayOCRPanelModel {
         _ library: DisplayOCRTrainingLibrary,
         to directory: URL
     ) throws -> DisplayOCRPanelTrainingSet {
-        let rows = annotations(from: library)
+        let rows = trainingImages(from: library)
         guard !rows.isEmpty else { throw DisplayOCRPanelModelError.emptyLibrary }
         let images = directory.appendingPathComponent("images", isDirectory: true)
         try FileManager.default.createDirectory(at: images, withIntermediateDirectories: true)
-        let wanted = Set(rows.map(\.imagefilename))
-        for example in library.examples {
-            let filename = example.directory.lastPathComponent + ".png"
-            guard wanted.contains(filename) else { continue }
-            try example.package.imagePNG.write(
-                to: images.appendingPathComponent(filename),
+        for row in rows {
+            try row.png.write(
+                to: images.appendingPathComponent(row.annotation.imagefilename),
                 options: .atomic
             )
         }
         let annotation = directory.appendingPathComponent(annotationFileName)
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
-        try encoder.encode(rows).write(to: annotation, options: .atomic)
+        try encoder.encode(rows.map(\.annotation)).write(to: annotation, options: .atomic)
         return DisplayOCRPanelTrainingSet(imageDirectory: images, annotationFile: annotation)
     }
 
