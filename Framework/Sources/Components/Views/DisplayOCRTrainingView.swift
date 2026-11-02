@@ -13,6 +13,7 @@ import PhotosUI
 #endif
 
 /// Draw a panel and optional rows, confirm the seven-segment read, and export a label package.
+/// The export directory is the training library. The screen shows how many examples it holds.
 public struct DisplayOCRTrainingView: View {
     @ObservedObject private var session: DisplayOCRTrainingSession
     private let onExport: ((DisplayOCRTrainingPackage) -> Void)?
