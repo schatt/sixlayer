@@ -1178,15 +1178,15 @@ public final class DisplayOCRTrainingSession: ObservableObject {
     public func trainPanelModel() {
         guard panelTraining != .running else { return }
         #if os(macOS)
-        let examples = library
-        guard !examples.examples.isEmpty else {
+        let currentLibrary = library
+        guard !currentLibrary.examples.isEmpty else {
             panelTraining = .emptyLibrary
             return
         }
         let root = exportRoot
         panelTraining = .running
         Task { [weak self] in
-            let state = await Self.trainedPanelState(library: examples, root: root)
+            let state = await Self.trainedPanelState(library: currentLibrary, root: root)
             self?.panelTraining = state
         }
         #else
