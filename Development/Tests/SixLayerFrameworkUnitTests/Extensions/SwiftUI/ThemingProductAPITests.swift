@@ -142,7 +142,7 @@ struct ThemingProductHostUnitTests {
 
     @Test @MainActor
     func themedFrameworkViewUsesNamedCompliance() {
-        hostExpectingNamedCompliance("ThemedFrameworkView") {
+        TestSetupUtilities.hostExpectingNamedCompliance("ThemedFrameworkView") {
             ThemedFrameworkView {
                 Text("Content")
             }
@@ -151,26 +151,8 @@ struct ThemingProductHostUnitTests {
 
     @Test @MainActor
     func themedProgressBarUsesNamedCompliance() {
-        hostExpectingNamedCompliance("ThemedProgressBar") {
+        TestSetupUtilities.hostExpectingNamedCompliance("ThemedProgressBar") {
             ThemedProgressBar(progress: 0.5, variant: .primary)
         }
-    }
-
-    @MainActor
-    private func hostExpectingNamedCompliance<V: View>(
-        _ name: String,
-        @ViewBuilder _ view: () -> V
-    ) {
-        let (hosted, log) = TestSetupUtilities.hostRootPlatformViewNamedDebugLog(view())
-        #if os(watchOS) || os(visionOS)
-        #expect(hosted == nil, "unit harness cannot host on this platform (#379/#380)")
-        #expect(log.isEmpty)
-        #else
-        #expect(hosted != nil)
-        #expect(
-            log.contains(name),
-            "named compliance \(name) must appear in debug log"
-        )
-        #endif
     }
 }
