@@ -295,10 +295,16 @@ public enum EntityCreationUtilities {
         return trimmed
     }
 
+    private static let posixLocale = Locale(identifier: "en_US_POSIX")
+
     /// The whole string is one decimal. A prefix (`"4abc"`, `"4,5abc"`) is not a value.
-    /// Locale only, so a POSIX `"4.5"` fails when the locale uses a comma.
+    /// POSIX is tried first so `"4.5"` stays 4.5 when the locale uses a comma.
     private static func entireDecimal(_ text: String, locale: Locale) -> Decimal? {
-        scanDecimal(text, locale: locale)
+        if let posix = scanDecimal(text, locale: posixLocale) {
+            return posix
+        }
+        if locale.identifier == posixLocale.identifier { return nil }
+        return scanDecimal(text, locale: locale)
     }
 
     private static func scanDecimal(_ text: String, locale: Locale) -> Decimal? {
