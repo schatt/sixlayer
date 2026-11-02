@@ -2173,6 +2173,10 @@ private func readingSpan(_ mask: Mask, bands: [(Int, Int)]) -> (Int, Int)? {
         }
     }
     runs.append((start, end + 1, ink))
+    if width >= 1400 {
+        let listed = runs.map { "\($0.start)-\($0.end):\($0.ink)" }.joined(separator: " ")
+        trace("span-runs gap \(gapLimit) \(listed)\n")
+    }
     guard let best = runs.max(by: { $0.ink < $1.ink }) else { return nil }
     let span = best.end - best.start
     guard span > max(12, height / 10) else { return nil }
