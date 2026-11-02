@@ -833,6 +833,24 @@ struct DisplayOCRTraining609Tests {
         #endif
     }
 
+    #if os(macOS)
+    @Test func anUncompiledPanelModelLoads() throws {
+        let root = try makeDirectory("panel-load")
+        let library = DisplayOCRTrainingLibrary(examples: [
+            try realPanelExample(named: "shot-a", fill: 180),
+            try realPanelExample(named: "shot-b", fill: 200)
+        ])
+        let model = try DisplayOCRPanelModel.train(
+            library: library,
+            writingModelTo: root,
+            maxIterations: 1
+        )
+        let locator = try #require(DisplayOCRPanelLocator.coreML(modelAt: model))
+        let image = grayImage(width: 64, height: 48, pixels: [UInt8](repeating: 180, count: 64 * 48))
+        _ = locator.panelRegion(in: image)
+    }
+    #endif
+
     @Test func thePanelModelPackageIsNotALibraryFolder() throws {
         let root = try makeDirectory("panel-model-lib")
         let model = root.appendingPathComponent(DisplayOCRPanelModel.modelFileName, isDirectory: true)
@@ -916,6 +934,26 @@ struct DisplayOCRTraining609Tests {
     ) -> DisplayOCRTrainingError? {
         library.rejections.first { $0.directory.lastPathComponent == name }?.error
     }
+
+    #if os(macOS)
+    private func realPanelExample(named name: String, fill: UInt8) throws -> DisplayOCRTrainingLibraryExample {
+        let image = grayImage(width: 64, height: 48, pixels: [UInt8](repeating: fill, count: 64 * 48))
+        let label = DisplayOCRTrainingLabel(
+            schemaVersion: DisplayOCRTraining.schemaVersion,
+            origin: .topLeft,
+            imageFileName: DisplayOCRTraining.imageFileName,
+            imagePixelWidth: image.width,
+            imagePixelHeight: image.height,
+            sourceName: nil,
+            panel: DisplayOCRNormalizedBox(x: 0.1, y: 0.2, width: 0.5, height: 0.4),
+            rows: []
+        )
+        return DisplayOCRTrainingLibraryExample(
+            directory: URL(fileURLWithPath: "/tmp/\(name)", isDirectory: true),
+            package: try DisplayOCRTraining.package(label: label, image: image)
+        )
+    }
+    #endif
 
     private func panelExample(
         named name: String,
