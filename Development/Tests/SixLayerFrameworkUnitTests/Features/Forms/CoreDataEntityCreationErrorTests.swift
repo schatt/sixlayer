@@ -8,6 +8,7 @@
 //  Strings the form stores for numbers, booleans, and dates are assigned as those types (#615).
 //  A string that does not fit an integer16, integer32, or float attribute is rejected (#619).
 //  A partial decimal and an integer past Int.max are rejected without trapping.
+//  A current-locale decimal or medium date is stored; other text is rejected (#621).
 //
 
 import Testing
@@ -18,7 +19,7 @@ import CoreData
 @objc(CoreDataCreationProbe608)
 private final class CoreDataCreationProbe608: NSManagedObject {}
 
-@Suite("Core Data entity creation (#606, #608, #613, #615)")
+@Suite("Core Data entity creation (#606, #608, #613, #615, #621)")
 @MainActor
 struct CoreDataEntityCreationErrorTests {
 
@@ -257,6 +258,116 @@ struct CoreDataEntityCreationErrorTests {
         let expectedMedium = try #require(DynamicFormStoredDateValue.date(fromStoredValue: mediumString))
         let storedMedium = try #require(fromMedium.value(forKey: "when") as? Date)
         #expect(abs(storedMedium.timeIntervalSince1970 - expectedMedium.timeIntervalSince1970) < 86_400)
+    }
+
+    /// Decimal pad text and `DatePickerField`'s medium string use the locale, not POSIX (#621).
+    @Test func localeNumberAndMediumDateAreStored() throws {
+        let locale = Locale(identifier: "de_DE")
+        let context = try makeProbeContext()
+        let medium = DateFormatter()
+        medium.locale = locale
+        medium.dateStyle = .medium
+        medium.timeStyle = .none
+        let ref = Date(timeIntervalSince1970: 1_700_000_000)
+        let mediumString = medium.string(from: ref)
+
+        let created = try EntityCreationUtilities.createCoreDataEntity(
+            entityName: "Probe608",
+            values: ["price": "4,5", "amount": "-4,5", "when": mediumString],
+            context: context,
+            locale: locale
+        )
+
+        let price = try #require(created.value(forKey: "price") as? NSNumber)
+        #expect(price.decimalValue == Decimal(string: "4.5", locale: Locale(identifier: "en_US_POSIX")))
+        let amount = try #require(created.value(forKey: "amount") as? NSNumber)
+        #expect(abs(amount.doubleValue - (-4.5)) < 0.000_001)
+        let storedDate = try #require(created.value(forKey: "when") as? Date)
+        let expectedDate = try #require(medium.date(from: mediumString))
+        #expect(abs(storedDate.timeIntervalSince1970 - expectedDate.timeIntervalSince1970) < 1)
+    }
+
+    /// A POSIX decimal still stores when the form locale uses a comma (#621).
+    @Test func posixDecimalStoresWhenLocaleUsesComma() throws {
+        let created = try EntityCreationUtilities.createCoreDataEntity(
+            entityName: "Probe608",
+            values: ["price": "4.5"],
+            context: try makeProbeContext(),
+            locale: Locale(identifier: "de_DE")
+        )
+        let price = try #require(created.value(forKey: "price") as? NSNumber)
+        #expect(price.decimalValue == Decimal(string: "4.5", locale: Locale(identifier: "en_US_POSIX")))
+    }
+
+    /// A POSIX medium date still stores when the form locale writes a different style (#621).
+    @Test func posixMediumDateStoresWhenLocaleUsesComma() throws {
+        let medium = DateFormatter()
+        medium.locale = Locale(identifier: "en_US_POSIX")
+        medium.dateStyle = .medium
+        medium.timeStyle = .none
+        let mediumString = medium.string(from: Date(timeIntervalSince1970: 1_700_000_000))
+
+        let created = try EntityCreationUtilities.createCoreDataEntity(
+            entityName: "Probe608",
+            values: ["when": mediumString],
+            context: try makeProbeContext(),
+            locale: Locale(identifier: "de_DE")
+        )
+        let storedDate = try #require(created.value(forKey: "when") as? Date)
+        let expectedDate = try #require(medium.date(from: mediumString))
+        #expect(abs(storedDate.timeIntervalSince1970 - expectedDate.timeIntervalSince1970) < 1)
+    }
+
+    /// A locale string that is not a complete number or date stays a string and is rejected.
+    @Test func localeNumberAndDateThatDoNotParseAreRejected() throws {
+        let locale = Locale(identifier: "de_DE")
+        let priceContext = try makeProbeContext()
+        #expect(throws: EntityCreationUtilities.CoreDataCreationError.incompatibleValue(entityName: "Probe608", key: "price")) {
+            try EntityCreationUtilities.createCoreDataEntity(
+                entityName: "Probe608",
+                values: ["price": "4,5abc"],
+                context: priceContext,
+                locale: locale
+            )
+        }
+        #expect(priceContext.insertedObjects.isEmpty)
+
+        let posixContext = try makeProbeContext()
+        #expect(throws: EntityCreationUtilities.CoreDataCreationError.incompatibleValue(entityName: "Probe608", key: "price")) {
+            try EntityCreationUtilities.createCoreDataEntity(
+                entityName: "Probe608",
+                values: ["price": "4,5"],
+                context: posixContext,
+                locale: Locale(identifier: "en_US_POSIX")
+            )
+        }
+        #expect(posixContext.insertedObjects.isEmpty)
+
+        let dateContext = try makeProbeContext()
+        #expect(throws: EntityCreationUtilities.CoreDataCreationError.incompatibleValue(entityName: "Probe608", key: "when")) {
+            try EntityCreationUtilities.createCoreDataEntity(
+                entityName: "Probe608",
+                values: ["when": "not-a-date"],
+                context: dateContext,
+                locale: locale
+            )
+        }
+        #expect(dateContext.insertedObjects.isEmpty)
+    }
+
+    @Test func blankLocaleDecimalDefaultIsStored() throws {
+        let context = try makeProbeContext()
+        let created = try #require(
+            EntityCreationUtilities.createBlankCoreDataEntity(
+                entityName: "Probe608",
+                context: context,
+                fields: [DataField(name: "price", type: .number, isOptional: true)],
+                fieldHints: ["price": FieldDisplayHints(defaultValue: "4,5")],
+                locale: Locale(identifier: "de_DE")
+            )
+        )
+        let stored = try #require(created.value(forKey: "price") as? NSNumber)
+        #expect(stored.decimalValue == Decimal(string: "4.5", locale: Locale(identifier: "en_US_POSIX")))
     }
 
     @Test func blankNumericStringDefaultIsStored() throws {
