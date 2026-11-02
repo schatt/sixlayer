@@ -576,8 +576,8 @@ struct DisplayOCRTraining609Tests {
             basePanel: panel,
             baseRows: session.rowBoxes
         ))
-        #expect(session.panel?.x == 0.3)
-        #expect(session.panel?.width == 0.5)
+        #expect(abs((session.panel?.x ?? 0) - 0.3) < 0.001)
+        #expect(abs((session.panel?.width ?? 0) - 0.5) < 0.001)
         #expect(session.label == nil)
         #expect(session.adjust(
             from: CGPoint(x: 30, y: 45),
