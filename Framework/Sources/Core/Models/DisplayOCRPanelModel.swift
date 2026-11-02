@@ -262,8 +262,9 @@ public enum DisplayOCRPanelModel {
     }
 
     private static func write(_ detector: MLObjectDetector, to destination: URL) throws -> URL {
-        let partial = destination.deletingLastPathComponent()
-            .appendingPathComponent(destination.lastPathComponent + ".partial")
+        // Create ML only leaves a package when the URL ends in `.mlmodel`.
+        let partialName = destination.deletingPathExtension().lastPathComponent + ".partial.mlmodel"
+        let partial = destination.deletingLastPathComponent().appendingPathComponent(partialName)
         if FileManager.default.fileExists(atPath: partial.path) {
             try FileManager.default.removeItem(at: partial)
         }
@@ -283,15 +284,44 @@ public enum DisplayOCRPanelModel {
     #endif
 
     #if canImport(CoreML) && canImport(Vision) && !os(watchOS)
+    private static let modelLock = NSLock()
+    nonisolated(unsafe) private static var compiledModelURLs: [String: URL] = [:]
+
     static func locator(modelAt url: URL) -> DisplayOCRPanelLocator? {
         guard FileManager.default.fileExists(atPath: url.path) else { return nil }
-        guard let model = try? MLModel(contentsOf: url),
+        guard let model = loadableModel(at: url),
               let visionModel = try? VNCoreMLModel(for: model) else {
             return nil
         }
         return DisplayOCRPanelLocator { image in
             region(in: image, model: visionModel)
         }
+    }
+
+    /// Create ML writes an uncompiled `.mlmodel` package. Vision loads the
+    /// compiled `.mlmodelc`. A path that is already compiled is used as-is.
+    private static func loadableModel(at url: URL) -> MLModel? {
+        let key = url.standardizedFileURL.path
+        modelLock.lock()
+        let cached = compiledModelURLs[key]
+        modelLock.unlock()
+        if let cached,
+           FileManager.default.fileExists(atPath: cached.path),
+           let model = try? MLModel(contentsOf: cached) {
+            return model
+        }
+        let compiledURL: URL
+        if url.pathExtension == "mlmodelc" {
+            compiledURL = url
+        } else {
+            guard let compiled = try? MLModel.compileModel(at: url) else { return nil }
+            compiledURL = compiled
+        }
+        guard let model = try? MLModel(contentsOf: compiledURL) else { return nil }
+        modelLock.lock()
+        compiledModelURLs[key] = compiledURL
+        modelLock.unlock()
+        return model
     }
 
     private static func region(in image: CGImage, model: VNCoreMLModel) -> CGRect? {
