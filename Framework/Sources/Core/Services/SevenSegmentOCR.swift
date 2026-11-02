@@ -154,8 +154,11 @@ public enum SevenSegmentOCR {
         return (smallWidth, maxSide)
     }
 
-    /// Pixel rect of the digit panel (glass plus a bezel margin) in image
-    /// coordinates, or `nil` when no sealed panel is found.
+    /// Pixel rect of the digit panel (glass plus a bezel margin) in the source
+    /// image's coordinates, or `nil` when no sealed panel is found.
+    ///
+    /// Frames larger than the find cap are searched on a long-side downsample.
+    /// The rect is scaled back by `source / find` on each axis.
     ///
     /// Absolute crop rectangles are **per photo**. Reusing one image's rect on
     /// another frame is not a valid test of decode quality (#596).
@@ -1343,14 +1346,24 @@ private extension GrayBuffer {
     /// expand by a bezel margin. Returns nil when the frame has no panel that
     /// is meaningfully smaller than the whole image (#596).
     ///
-    /// Search runs at `findBufferSize`. The rect is in that buffer's pixels.
+    /// Search runs at `findBufferSize`. The rect is mapped back with this
+    /// buffer's size over the find buffer's size, per axis, so a landscape
+    /// camera and a portrait camera do not share one factor.
     func digitPanelBounds() -> CGRect? {
         let target = SevenSegmentOCR.findBufferSize(width: width, height: height)
         let searched = downsampled(width: target.width, height: target.height)
         let raw = searched.masks()
-        return searched.largerRect(
+        guard let found = searched.largerRect(
             searched.sealedPanelBounds(in: raw.dark),
             searched.sealedPanelBounds(in: raw.light)
+        ) else { return nil }
+        let scaleX = CGFloat(width) / CGFloat(searched.width)
+        let scaleY = CGFloat(height) / CGFloat(searched.height)
+        return CGRect(
+            x: found.minX * scaleX,
+            y: found.minY * scaleY,
+            width: found.size.width * scaleX,
+            height: found.size.height * scaleY
         )
     }
 
