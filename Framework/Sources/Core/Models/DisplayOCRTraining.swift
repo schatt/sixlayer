@@ -597,6 +597,7 @@ public enum DisplayOCRTraining {
     ) -> [DisplayOCRTrainingRow]? {
         guard lines.count > 1, lines.count == boxes.count else { return nil }
         guard lines.allSatisfy({ !$0.decodedText.isEmpty }) else { return nil }
+        guard stacked(boxes) else { return nil }
         let ordered = boxes.sorted { lhs, rhs in
             if lhs.y == rhs.y { return lhs.x < rhs.x }
             return lhs.y < rhs.y
@@ -604,6 +605,19 @@ public enum DisplayOCRTraining {
         return zip(ordered, lines).map { box, line in
             labeledRow(line.decodedText, box: box, confidence: line.confidence)
         }
+    }
+
+    /// True when each box sits under the previous one. Side-by-side digits stay
+    /// on their own crops.
+    private static func stacked(_ boxes: [DisplayOCRNormalizedBox]) -> Bool {
+        let ordered = boxes.sorted { $0.y < $1.y }
+        guard ordered.count > 1 else { return false }
+        for pair in zip(ordered, ordered.dropFirst()) {
+            let overlap = min(pair.0.y + pair.0.height, pair.1.y + pair.1.height) - max(pair.0.y, pair.1.y)
+            let shorter = min(pair.0.height, pair.1.height)
+            if shorter > 0, overlap > shorter * 0.5 { return false }
+        }
+        return true
     }
 
     fileprivate static let unitSquare = DisplayOCRNormalizedBox(x: 0, y: 0, width: 1, height: 1)
