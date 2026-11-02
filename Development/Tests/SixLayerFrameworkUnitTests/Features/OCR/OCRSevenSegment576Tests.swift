@@ -722,6 +722,45 @@ struct OCRSevenSegment576Tests {
         )
     }
 
+    /// A larger sensor still reports the panel in the original bitmap. The
+    /// finder may search a smaller buffer; the rect the caller crops is the
+    /// full frame. Portrait, landscape, and square are separate cameras.
+    @Test func localizedPanelStaysInFullImageCoordinatesOnLargerCameras() {
+        let panel = sealedBothRowsPanel()
+        let cameras: [(width: Int, height: Int, originX: Int, originY: Int)] = [
+            (2200, 1500, 400, 280),
+            (1500, 2200, 280, 500),
+            (2000, 2000, 360, 420),
+        ]
+        for camera in cameras {
+            let frame = embed(
+                panel,
+                canvasWidth: camera.width,
+                canvasHeight: camera.height,
+                originX: camera.originX,
+                originY: camera.originY,
+                fill: 180
+            )
+            let region = SevenSegmentOCR.digitPanelRegion(in: frame)
+            #expect(region != nil, "\(camera.width)x\(camera.height)")
+            guard let region else { continue }
+            let find = SevenSegmentOCR.findBufferSize(width: camera.width, height: camera.height)
+            let scaleX = CGFloat(camera.width) / CGFloat(find.width)
+            let scaleY = CGFloat(camera.height) / CGFloat(find.height)
+            let slopX = 24 * scaleX
+            let slopY = 24 * scaleY
+            let panelMidX = CGFloat(camera.originX) + CGFloat(panel.width) / 2
+            let panelMidY = CGFloat(camera.originY) + CGFloat(panel.height) / 2
+            #expect(region.contains(CGPoint(x: panelMidX, y: panelMidY)), "\(camera.width)x\(camera.height) \(region)")
+            #expect(abs(region.minX - CGFloat(camera.originX)) < slopX, "\(camera.width)x\(camera.height) \(region)")
+            #expect(abs(region.minY - CGFloat(camera.originY)) < slopY, "\(camera.width)x\(camera.height) \(region)")
+            #expect(abs(region.width - CGFloat(panel.width)) < 48 * scaleX, "\(camera.width)x\(camera.height) \(region)")
+            #expect(abs(region.height - CGFloat(panel.height)) < 48 * scaleY, "\(camera.width)x\(camera.height) \(region)")
+            #expect(region.width < CGFloat(camera.width) * 0.85)
+            #expect(region.height < CGFloat(camera.height) * 0.85)
+        }
+    }
+
     // MARK: - Path search (#600)
 
     /// Frame step offers more than the sealed pocket. The ink stack is the
