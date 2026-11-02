@@ -140,7 +140,7 @@ struct PlatformSplitViewLayer4StateUnitTests {
 
     @Test @MainActor
     func verticalSplitUsesNamedCompliance() {
-        hostExpectingNamedCompliance("platformVerticalSplit_L4") {
+        TestSetupUtilities.hostExpectingNamedCompliance("platformVerticalSplit_L4") {
             Text("Root").platformVerticalSplit_L4(spacing: 4) {
                 Text("Top")
                 Text("Bottom")
@@ -154,7 +154,7 @@ struct PlatformSplitViewLayer4StateUnitTests {
             firstPane: PlatformSplitViewPaneSizing(minWidth: 80),
             container: PlatformSplitViewPaneSizing(maxWidth: 600)
         )
-        hostExpectingNamedCompliance("platformVerticalSplit_L4") {
+        TestSetupUtilities.hostExpectingNamedCompliance("platformVerticalSplit_L4") {
             Text("Root").platformVerticalSplit_L4(spacing: 4, sizing: sizing) {
                 Text("Top")
                 Text("Bottom")
@@ -169,7 +169,7 @@ struct PlatformSplitViewLayer4StateUnitTests {
             cornerRadius: 6,
             shadow: PlatformSplitViewShadow(color: .black, radius: 2)
         )
-        hostExpectingNamedCompliance("platformVerticalSplit_L4") {
+        TestSetupUtilities.hostExpectingNamedCompliance("platformVerticalSplit_L4") {
             Text("Root").platformVerticalSplit_L4(
                 spacing: 4,
                 style: .balanced,
@@ -185,7 +185,7 @@ struct PlatformSplitViewLayer4StateUnitTests {
     @Test @MainActor
     func verticalSplitWithStateUsesNamedCompliance() {
         let state = PlatformSplitViewState()
-        hostExpectingNamedCompliance("platformVerticalSplit_L4") {
+        TestSetupUtilities.hostExpectingNamedCompliance("platformVerticalSplit_L4") {
             Text("Root").platformVerticalSplit_L4(state: .constant(state), spacing: 4) {
                 Text("Top")
                 Text("Bottom")
@@ -195,7 +195,7 @@ struct PlatformSplitViewLayer4StateUnitTests {
 
     @Test @MainActor
     func horizontalSplitUsesNamedCompliance() {
-        hostExpectingNamedCompliance("platformHorizontalSplit_L4") {
+        TestSetupUtilities.hostExpectingNamedCompliance("platformHorizontalSplit_L4") {
             Text("Root").platformHorizontalSplit_L4(spacing: 4) {
                 Text("Leading")
                 Text("Trailing")
@@ -207,7 +207,7 @@ struct PlatformSplitViewLayer4StateUnitTests {
     func paneVisibilityAndSizingModifiersHost() {
         let state = PlatformSplitViewState()
         state.setPaneVisible(0, visible: false)
-        hostView {
+        TestSetupUtilities.hostExpectingPlatformRoot {
             Text("Pane")
                 .splitViewPaneVisibility(index: 0, state: state)
                 .splitViewPaneSizing(
@@ -216,29 +216,4 @@ struct PlatformSplitViewLayer4StateUnitTests {
         }
     }
 
-    @MainActor
-    private func hostExpectingNamedCompliance<V: View>(
-        _ name: String,
-        @ViewBuilder _ view: () -> V
-    ) {
-        #if os(watchOS)
-        return
-        #else
-        let (hosted, log) = TestSetupUtilities.hostRootPlatformViewNamedDebugLog(view())
-        #expect(hosted != nil)
-        #expect(
-            log.contains(name),
-            "named compliance \(name) must appear in debug log"
-        )
-        #endif
-    }
-
-    @MainActor
-    private func hostView<V: View>(@ViewBuilder _ view: () -> V) {
-        #if os(watchOS)
-        return
-        #else
-        #expect(TestSetupUtilities.hostRootPlatformView(view(), forceLayout: true) != nil)
-        #endif
-    }
 }
