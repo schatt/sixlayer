@@ -1466,7 +1466,8 @@ public class DynamicFormState: ObservableObject {
 
     /// Decimal literal safe to splice into an `NSExpression` formula.
     /// Empty strings, `".."`, booleans, and other non-numeric values return nil.
-    private func formulaNumericLiteral(for value: Any) -> String? {
+    /// A locale decimal such as `4,5` is emitted as a POSIX literal. `4.5` is unchanged (#624).
+    private func formulaNumericLiteral(for value: Any, locale: Locale) -> String? {
         if value is Bool { return nil }
         let number: Double?
         switch value {
@@ -1483,7 +1484,7 @@ public class DynamicFormState: ObservableObject {
         case let numberValue as NSNumber:
             number = numberValue.doubleValue
         case let string as String:
-            number = Double(string.trimmingCharacters(in: .whitespacesAndNewlines))
+            number = DynamicFormStoredDecimal.double(fromStoredText: string, locale: locale)
         default:
             number = nil
         }
@@ -1597,6 +1598,20 @@ public class DynamicFormState: ObservableObject {
         fieldId: String,
         calculationGroups: [CalculationGroup]
     ) -> GroupCalculationResult? {
+        calculateFieldFromGroups(
+            fieldId: fieldId,
+            calculationGroups: calculationGroups,
+            locale: .current
+        )
+    }
+
+    /// `locale` selects the decimal separator the form stored (#624).
+    /// POSIX text is still accepted. Callers omit `locale`; calculation then uses `Locale.current`.
+    func calculateFieldFromGroups(
+        fieldId: String,
+        calculationGroups: [CalculationGroup],
+        locale: Locale
+    ) -> GroupCalculationResult? {
         // Sort groups by priority (lower number = higher priority)
         let sortedGroups = calculationGroups.sorted { $0.priority < $1.priority }
 
@@ -1605,7 +1620,7 @@ public class DynamicFormState: ObservableObject {
         // Try to calculate using each group in priority order
         for group in sortedGroups {
             if canCalculateWithGroup(group) {
-                if let value = calculateWithGroup(group, targetFieldId: fieldId) {
+                if let value = calculateWithGroup(group, targetFieldId: fieldId, locale: locale) {
                     calculatedResults.append((value: value, groupId: group.id))
                 }
             }
@@ -1647,24 +1662,17 @@ public class DynamicFormState: ObservableObject {
         }
     }
 
-    /// `locale` is the locale the form used for a stored decimal (#624).
-    /// Accepted so the reader tests compile. Parsing still uses `Double(_:)`.
-    func calculateFieldFromGroups(
-        fieldId: String,
-        calculationGroups: [CalculationGroup],
-        locale: Locale
-    ) -> GroupCalculationResult? {
-        _ = locale
-        return calculateFieldFromGroups(fieldId: fieldId, calculationGroups: calculationGroups)
-    }
-
     /// Check if all dependent fields for a calculation group are available
     private func canCalculateWithGroup(_ group: CalculationGroup) -> Bool {
         return group.dependentFields.allSatisfy { fieldValues[$0] != nil }
     }
 
     /// Calculate a field value using a specific calculation group
-    private func calculateWithGroup(_ group: CalculationGroup, targetFieldId: String) -> Double? {
+    private func calculateWithGroup(
+        _ group: CalculationGroup,
+        targetFieldId: String,
+        locale: Locale
+    ) -> Double? {
         // Parse the formula: "target = expression"
         let parts = group.formula.split(separator: "=", maxSplits: 1).map { $0.trimmingCharacters(in: .whitespaces) }
 
@@ -1676,7 +1684,7 @@ public class DynamicFormState: ObservableObject {
         var processedExpression = expression
         for fieldId in group.dependentFields {
             guard let value = fieldValues[fieldId],
-                  let literal = formulaNumericLiteral(for: value) else {
+                  let literal = formulaNumericLiteral(for: value, locale: locale) else {
                 return nil
             }
             processedExpression = processedExpression.replacingOccurrences(of: fieldId, with: literal)
