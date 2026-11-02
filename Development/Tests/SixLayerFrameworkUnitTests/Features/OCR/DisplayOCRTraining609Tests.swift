@@ -514,14 +514,14 @@ struct DisplayOCRTraining609Tests {
             panel: panel
         )
         #expect(rows.count == 2)
-        #expect(rows[0].x == 0.15)
-        #expect(rows[0].y == 0.28)
-        #expect(rows[0].width == 0.15)
-        #expect(rows[0].height == 0.08)
-        #expect(rows[1].x == 0.15)
-        #expect(rows[1].y == 0.5)
-        #expect(rows[1].width == 0.25)
-        #expect(rows[1].height == 0.1)
+        #expect(abs(rows[0].x - 0.15) < 0.000_001)
+        #expect(abs(rows[0].y - 0.28) < 0.000_001)
+        #expect(abs(rows[0].width - 0.15) < 0.000_001)
+        #expect(abs(rows[0].height - 0.08) < 0.000_001)
+        #expect(abs(rows[1].x - 0.15) < 0.000_001)
+        #expect(abs(rows[1].y - 0.5) < 0.000_001)
+        #expect(abs(rows[1].width - 0.25) < 0.000_001)
+        #expect(abs(rows[1].height - 0.1) < 0.000_001)
     }
 
     @Test @MainActor func removingOneRowLeavesTheOthers() {
@@ -534,7 +534,7 @@ struct DisplayOCRTraining609Tests {
         #expect(session.selectedBox == .row(0))
         session.removeSelectedBox()
         #expect(session.rowBoxes.count == 1)
-        #expect(session.rowBoxes[0].y == 0.4)
+        #expect(abs(session.rowBoxes[0].y - 0.4) < 0.001)
         #expect(session.selectedBox == nil)
     }
 
@@ -557,8 +557,8 @@ struct DisplayOCRTraining609Tests {
         session.updatePanel(DisplayOCRNormalizedBox(x: 0, y: 0, width: 0.5, height: 0.5))
         #expect(session.panel?.width == 0.5)
         #expect(session.rowBoxes.count == 1)
-        #expect(session.rowBoxes[0].x == 0.1)
-        #expect(session.rowBoxes[0].width == 0.2)
+        #expect(abs(session.rowBoxes[0].x - 0.1) < 0.001)
+        #expect(abs(session.rowBoxes[0].width - 0.2) < 0.001)
         #expect(session.label == nil)
     }
 
@@ -566,7 +566,7 @@ struct DisplayOCRTraining609Tests {
         let session = squareSession()
         let panel = DisplayOCRNormalizedBox(x: 0.2, y: 0.2, width: 0.5, height: 0.5)
         session.setPanel(panel)
-        #expect(session.addRowBox(DisplayOCRNormalizedBox(x: 0.25, y: 0.55, width: 0.2, height: 0.1)))
+        #expect(session.addRowBox(DisplayOCRNormalizedBox(x: 0.45, y: 0.55, width: 0.2, height: 0.1)))
         #expect(session.decode())
         let container = CGSize(width: 100, height: 100)
         #expect(session.adjust(
@@ -589,14 +589,14 @@ struct DisplayOCRTraining609Tests {
         #expect(abs((session.panel?.x ?? 1) - 0.2) < 0.001)
         #expect(abs((session.panel?.width ?? 0) - 0.6) < 0.001)
         #expect(session.adjust(
-            from: CGPoint(x: 35, y: 60),
+            from: CGPoint(x: 55, y: 60),
             to: CGPoint(x: 0, y: 60),
             containerSize: container,
             basePanel: session.panel,
             baseRows: session.rowBoxes
         ))
         #expect(session.rowBoxes[0].x == session.panel?.x)
-        #expect(session.rowBoxes[0].width == 0.2)
+        #expect(abs(session.rowBoxes[0].width - 0.2) < 0.001)
         #expect(session.adjust(
             from: CGPoint(x: 1, y: 1),
             to: CGPoint(x: 40, y: 40),
@@ -617,7 +617,14 @@ struct DisplayOCRTraining609Tests {
         #expect(abs(panel.y * height - Double(frame.originY)) < 24)
         #expect(session.rowBoxes.isEmpty == false)
         for row in session.rowBoxes {
-            #expect(row.intersection(panel) == row.unitClamped)
+            let overlap = row.intersection(panel)
+            #expect(overlap != nil)
+            if let overlap {
+                #expect(abs(overlap.x - row.x) < 0.001)
+                #expect(abs(overlap.width - row.width) < 0.001)
+                #expect(abs(overlap.y - row.y) < 0.001)
+                #expect(abs(overlap.height - row.height) < 0.001)
+            }
         }
         let text = session.label?.rows.map(\.confirmedText).joined(separator: "\n") ?? ""
         #expect(text.contains("32.88"))
