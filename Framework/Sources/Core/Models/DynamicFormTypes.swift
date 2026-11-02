@@ -1410,13 +1410,12 @@ public class DynamicFormState: ObservableObject {
         dependencies: [String],
         locale: Locale
     ) -> Double? {
-        var processedFormula = formula
-        for dependency in dependencies {
-            guard let value = fieldValues[dependency],
-                  let literal = formulaNumericLiteral(for: value, locale: locale) else {
-                return nil
-            }
-            processedFormula = processedFormula.replacingOccurrences(of: dependency, with: literal)
+        guard let processedFormula = formulaSubstitutingNumericLiterals(
+            formula,
+            dependencies: dependencies,
+            locale: locale
+        ) else {
+            return nil
         }
         return evaluateMathExpression(processedFormula)
     }
@@ -1696,21 +1695,32 @@ public class DynamicFormState: ObservableObject {
         let parts = group.formula.split(separator: "=", maxSplits: 1).map { $0.trimmingCharacters(in: .whitespaces) }
 
         guard parts.count == 2 else { return nil }
-        let expression = parts[1]
+        guard let processedExpression = formulaSubstitutingNumericLiterals(
+            parts[1],
+            dependencies: group.dependentFields,
+            locale: locale
+        ) else {
+            return nil
+        }
+        return evaluateMathExpression(processedExpression)
+    }
 
-        // Substitute numeric scalars only. String(describing:) of "" or ".." builds a formula
-        // NSExpression cannot parse, and that throw is an uncaught ObjC exception (SIGABRT).
-        var processedExpression = expression
-        for fieldId in group.dependentFields {
+    /// Substitute each dependency with a POSIX numeric literal.
+    /// A missing or non-numeric value returns nil so `NSExpression` never sees `""`, `".."`, or `"4,5"`.
+    private func formulaSubstitutingNumericLiterals(
+        _ expression: String,
+        dependencies: [String],
+        locale: Locale
+    ) -> String? {
+        var processed = expression
+        for fieldId in dependencies {
             guard let value = fieldValues[fieldId],
                   let literal = formulaNumericLiteral(for: value, locale: locale) else {
                 return nil
             }
-            processedExpression = processedExpression.replacingOccurrences(of: fieldId, with: literal)
+            processed = processed.replacingOccurrences(of: fieldId, with: literal)
         }
-
-        // Evaluate the mathematical expression
-        return evaluateMathExpression(processedExpression)
+        return processed
     }
 
     /// Check if field has errors
