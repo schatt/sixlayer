@@ -703,6 +703,7 @@ struct OCRSevenSegment576Tests {
         #expect(whole?.rect == CGRect(x: 0, y: 0, width: 700, height: 600))
         #expect(sealed != nil)
         #expect(ink != nil)
+        #expect(sealed?.rect == ink?.rect)
         for candidate in [sealed, ink].compactMap({ $0 }) {
             #expect(candidate.rect.width < CGFloat(frame.width) * 0.85)
             #expect(candidate.rect.height < CGFloat(frame.height) * 0.85)
@@ -723,6 +724,7 @@ struct OCRSevenSegment576Tests {
         #expect(all?.lineCount == 3)
         #expect(all?.text == "8\n8\n8")
         #expect(pair?.lineCount == 2)
+        #expect(pair?.text == "pending-pair-text")
     }
 
     @Test func rowFindersLeaveASingleRowAsOneLine() {
@@ -733,6 +735,7 @@ struct OCRSevenSegment576Tests {
         #expect(all?.lineCount == 1)
         #expect(all?.text == "8")
         #expect(pair?.lineCount == 1)
+        #expect(pair?.text == "pending-pair-text")
     }
 
     /// Two rows are the common pump panel, and they use the same finder as
