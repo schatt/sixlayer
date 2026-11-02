@@ -627,12 +627,81 @@ struct DisplayOCRTraining609Tests {
             }
         }
         let text = session.label?.rows.map(\.confirmedText).joined(separator: "\n") ?? ""
-        #expect(text.contains("32.88"))
-        #expect(text.contains("8.022"))
+        #expect(session.label?.rows.map(\.confirmedText) == ["32.88", "8.022"])
         #expect(session.decode())
-        let refreshed = session.label?.rows.map(\.confirmedText).joined(separator: "\n") ?? ""
-        #expect(refreshed.contains("32.88"))
-        #expect(refreshed.contains("8.022"))
+        #expect(session.label?.rows.map(\.confirmedText) == ["32.88", "8.022"])
+    }
+
+    @Test @MainActor func draftKeepsTheDrawnBoxWhenPairingPanelLines() throws {
+        let frame = sealedFrame()
+        let session = DisplayOCRTrainingSession()
+        session.load(cgImage: frame.image)
+        let panel = try #require(session.panel)
+        #expect(session.rowBoxes.count == 2)
+        let bottomFirst = [session.rowBoxes[1], session.rowBoxes[0]]
+        let label = try #require(DisplayOCRTraining.draft(
+            image: frame.image,
+            panel: panel,
+            rowBoxes: bottomFirst,
+            sourceName: nil
+        ))
+        #expect(label.rows.map(\.decodedText) == ["8.022", "32.88"])
+        #expect(abs((label.rows[0].box?.y ?? -1) - bottomFirst[0].y) < 0.001)
+        #expect(abs((label.rows[1].box?.y ?? -1) - bottomFirst[1].y) < 0.001)
+    }
+
+    @Test func aSuggestionDropsGlyphsThatAreNotThePanelLines() {
+        let lines = [
+            trainingRow(text: "32.88"),
+            trainingRow(text: "8.022")
+        ]
+        let glyphs = [
+            DisplayOCRNormalizedBox(x: 0.1, y: 0.1, width: 0.8, height: 0.2),
+            DisplayOCRNormalizedBox(x: 0.1, y: 0.4, width: 0.8, height: 0.2),
+            DisplayOCRNormalizedBox(x: 0.1, y: 0.7, width: 0.8, height: 0.2)
+        ]
+        let aligned = DisplayOCRTraining.aligningSuggestion(lines: lines, glyphs: glyphs)
+        #expect(aligned.boxes.isEmpty)
+        #expect(aligned.rows.map(\.box) == [nil, nil])
+        #expect(aligned.rows.map(\.confirmedText) == ["32.88", "8.022"])
+
+        let matched = DisplayOCRTraining.aligningSuggestion(
+            lines: lines,
+            glyphs: [glyphs[0], glyphs[1]]
+        )
+        #expect(matched.boxes == [glyphs[0], glyphs[1]])
+        #expect(matched.rows[0].box == glyphs[0])
+        #expect(matched.rows[1].box == glyphs[1])
+        #expect(matched.rows.map(\.confirmedText) == ["32.88", "8.022"])
+    }
+
+    @Test @MainActor func restoringDropsARowBoxOutsideThePanel() {
+        let image = grayImage(width: 100, height: 100, pixels: [UInt8](repeating: 180, count: 10_000))
+        let panel = DisplayOCRNormalizedBox(x: 0, y: 0, width: 0.4, height: 1)
+        let outside = DisplayOCRNormalizedBox(x: 0.7, y: 0.1, width: 0.2, height: 0.2)
+        let label = DisplayOCRTrainingLabel(
+            schemaVersion: DisplayOCRTraining.schemaVersion,
+            origin: .topLeft,
+            imageFileName: DisplayOCRTraining.imageFileName,
+            imagePixelWidth: 100,
+            imagePixelHeight: 100,
+            sourceName: nil,
+            panel: panel,
+            rows: [
+                DisplayOCRTrainingRow(
+                    box: outside,
+                    decodedText: "1",
+                    confirmedText: "KEEP",
+                    confidence: 1
+                )
+            ]
+        )
+        let session = DisplayOCRTrainingSession()
+        session.restore(cgImage: image, label: label)
+        #expect(session.panel == panel)
+        #expect(session.rowBoxes.isEmpty)
+        #expect(session.label?.rows.first?.box == nil)
+        #expect(session.label?.rows.first?.confirmedText == "KEEP")
     }
 
     @Test @MainActor func openingABlankPhotoSuggestsNothing() {
@@ -733,6 +802,10 @@ struct DisplayOCRTraining609Tests {
         named name: String
     ) -> DisplayOCRTrainingError? {
         library.rejections.first { $0.directory.lastPathComponent == name }?.error
+    }
+
+    private func trainingRow(text: String) -> DisplayOCRTrainingRow {
+        DisplayOCRTrainingRow(box: nil, decodedText: text, confirmedText: text, confidence: 1)
     }
 
     @MainActor
