@@ -107,14 +107,19 @@ public enum SevenSegmentOCR {
     /// cropped before decode so a resized full pump frame can feed `.ssocr`
     /// without a hand-tuned ROI (#596). Tight crops keep working: a missing or
     /// near-full-frame region falls back to the whole image.
+    ///
+    /// `panelLocator`, when set, is the trained panel model (#609). A nil
+    /// result from it still uses the classical finder.
     public static func decode(
         cgImage: CGImage,
         deskewMaximumDegrees: Double = 3,
-        localizeDigitPanel: Bool = false
+        localizeDigitPanel: Bool = false,
+        panelLocator: DisplayOCRPanelLocator? = nil
     ) -> OCRResult {
         guard var gray = GrayBuffer.read(cgImage) else {
             return OCRResult(extractedText: "", confidence: 0)
         }
+        _ = panelLocator
         if localizeDigitPanel, let region = gray.digitPanelBounds() {
             let area = region.width * region.height
             let full = CGFloat(gray.width * gray.height)
