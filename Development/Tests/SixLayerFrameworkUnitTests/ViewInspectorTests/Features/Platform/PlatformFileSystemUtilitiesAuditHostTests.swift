@@ -11,9 +11,9 @@ import SwiftUI
 open class PlatformFileSystemUtilitiesAuditHostTests: BaseTestClass {
 
     @Test @MainActor func testPlatformFileSystemAuditHostRenders() async {
-        let root = PlatformFileSystemUtilitiesAuditHost()
-        let hosted = Self.hostRootPlatformView(root)
-        #expect(hosted != nil)
+        TestSetupUtilities.hostExpectingPlatformRoot {
+            PlatformFileSystemUtilitiesAuditHost()
+        }
     }
 
     @Test func testPlatformHomeDirectoryIsNonemptyFileURL() {

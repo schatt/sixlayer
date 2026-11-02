@@ -341,6 +341,24 @@ public enum TestSetupUtilities {
         accessibilityIdentifierConfig: AccessibilityIdentifierConfig? = nil,
         @ViewBuilder _ view: () -> V
     ) {
+        _ = hostObservingPlatformRoot(
+            forceLayout: forceLayout,
+            exposeContentAccessibility: exposeContentAccessibility,
+            accessibilityIdentifierConfig: accessibilityIdentifierConfig,
+            view
+        )
+    }
+
+    /// Host under the unit-lane contract and return the platform root for traversal (#626).
+    /// Observes nil-host on watchOS/visionOS; non-nil root on iOS/macOS.
+    @MainActor
+    @discardableResult
+    public static func hostObservingPlatformRoot<V: View>(
+        forceLayout: Bool = true,
+        exposeContentAccessibility: Bool = false,
+        accessibilityIdentifierConfig: AccessibilityIdentifierConfig? = nil,
+        @ViewBuilder _ view: () -> V
+    ) -> Any? {
         let hosted = hostRootPlatformView(
             view(),
             forceLayout: forceLayout,
@@ -348,6 +366,7 @@ public enum TestSetupUtilities {
             accessibilityIdentifierConfig: accessibilityIdentifierConfig
         )
         expectUnitLaneHostedRoot(hosted)
+        return hosted
     }
 
     /// Both-direction host contract shared by named-compliance and platform-root helpers (#622).
