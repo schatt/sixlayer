@@ -504,6 +504,162 @@ struct DisplayOCRTraining609Tests {
         #endif
     }
 
+    @Test func visionBoxesMapOntoThePanelAsTopLeftRows() {
+        let panel = DisplayOCRNormalizedBox(x: 0.1, y: 0.2, width: 0.5, height: 0.4)
+        let upper = CGRect(x: 0.1, y: 0.6, width: 0.3, height: 0.2)
+        let lowerLeft = CGRect(x: 0.1, y: 0.0, width: 0.2, height: 0.25)
+        let lowerRight = CGRect(x: 0.4, y: 0.05, width: 0.2, height: 0.2)
+        let rows = DisplayOCRTraining.rowBoxes(
+            fromVisionBoxes: [lowerRight, upper, lowerLeft],
+            panel: panel
+        )
+        #expect(rows.count == 2)
+        #expect(rows[0].x == 0.15)
+        #expect(rows[0].y == 0.28)
+        #expect(rows[0].width == 0.15)
+        #expect(rows[0].height == 0.08)
+        #expect(rows[1].x == 0.15)
+        #expect(rows[1].y == 0.5)
+        #expect(rows[1].width == 0.25)
+        #expect(rows[1].height == 0.1)
+    }
+
+    @Test @MainActor func removingOneRowLeavesTheOthers() {
+        let session = squareSession()
+        session.setPanel(DisplayOCRNormalizedBox(x: 0, y: 0, width: 1, height: 1))
+        #expect(session.addRowBox(DisplayOCRNormalizedBox(x: 0.1, y: 0.1, width: 0.2, height: 0.1)))
+        #expect(session.addRowBox(DisplayOCRNormalizedBox(x: 0.1, y: 0.4, width: 0.2, height: 0.1)))
+        let container = CGSize(width: 100, height: 100)
+        session.selectBox(at: CGPoint(x: 20, y: 15), containerSize: container)
+        #expect(session.selectedBox == .row(0))
+        session.removeSelectedBox()
+        #expect(session.rowBoxes.count == 1)
+        #expect(session.rowBoxes[0].y == 0.4)
+        #expect(session.selectedBox == nil)
+    }
+
+    @Test @MainActor func removingThePanelClearsItsRows() {
+        let session = squareSession()
+        session.setPanel(DisplayOCRNormalizedBox(x: 0.2, y: 0.2, width: 0.6, height: 0.6))
+        #expect(session.addRowBox(DisplayOCRNormalizedBox(x: 0.25, y: 0.62, width: 0.15, height: 0.1)))
+        session.selectBox(at: CGPoint(x: 50, y: 50), containerSize: CGSize(width: 100, height: 100))
+        #expect(session.selectedBox == .panel)
+        session.removeSelectedBox()
+        #expect(session.panel == nil)
+        #expect(session.rowBoxes.isEmpty)
+    }
+
+    @Test @MainActor func shrinkingThePanelClipsARowAndDropsOneOutside() {
+        let session = squareSession()
+        session.setPanel(DisplayOCRNormalizedBox(x: 0, y: 0, width: 1, height: 1))
+        #expect(session.addRowBox(DisplayOCRNormalizedBox(x: 0.1, y: 0.1, width: 0.2, height: 0.2)))
+        #expect(session.addRowBox(DisplayOCRNormalizedBox(x: 0.7, y: 0.7, width: 0.2, height: 0.2)))
+        session.updatePanel(DisplayOCRNormalizedBox(x: 0, y: 0, width: 0.5, height: 0.5))
+        #expect(session.panel?.width == 0.5)
+        #expect(session.rowBoxes.count == 1)
+        #expect(session.rowBoxes[0].x == 0.1)
+        #expect(session.rowBoxes[0].width == 0.2)
+        #expect(session.label == nil)
+    }
+
+    @Test @MainActor func draggingMovesABoxAndAnEdgeResizesIt() {
+        let session = squareSession()
+        let panel = DisplayOCRNormalizedBox(x: 0.2, y: 0.2, width: 0.5, height: 0.5)
+        session.setPanel(panel)
+        #expect(session.addRowBox(DisplayOCRNormalizedBox(x: 0.25, y: 0.55, width: 0.2, height: 0.1)))
+        #expect(session.decode())
+        let container = CGSize(width: 100, height: 100)
+        #expect(session.adjust(
+            from: CGPoint(x: 45, y: 45),
+            to: CGPoint(x: 55, y: 45),
+            containerSize: container,
+            basePanel: panel,
+            baseRows: session.rowBoxes
+        ))
+        #expect(session.panel?.x == 0.3)
+        #expect(session.panel?.width == 0.5)
+        #expect(session.label == nil)
+        #expect(session.adjust(
+            from: CGPoint(x: 30, y: 45),
+            to: CGPoint(x: 20, y: 45),
+            containerSize: container,
+            basePanel: session.panel,
+            baseRows: session.rowBoxes
+        ))
+        #expect(abs((session.panel?.x ?? 1) - 0.2) < 0.001)
+        #expect(abs((session.panel?.width ?? 0) - 0.6) < 0.001)
+        #expect(session.adjust(
+            from: CGPoint(x: 35, y: 60),
+            to: CGPoint(x: 0, y: 60),
+            containerSize: container,
+            basePanel: session.panel,
+            baseRows: session.rowBoxes
+        ))
+        #expect(session.rowBoxes[0].x == session.panel?.x)
+        #expect(session.rowBoxes[0].width == 0.2)
+        #expect(session.adjust(
+            from: CGPoint(x: 1, y: 1),
+            to: CGPoint(x: 40, y: 40),
+            containerSize: container,
+            basePanel: session.panel,
+            baseRows: session.rowBoxes
+        ) == false)
+    }
+
+    @Test @MainActor func openingASealedPanelSuggestsBoxesAndDigits() throws {
+        let frame = sealedFrame()
+        let session = DisplayOCRTrainingSession()
+        session.load(cgImage: frame.image)
+        let panel = try #require(session.panel)
+        let width = Double(frame.image.width)
+        let height = Double(frame.image.height)
+        #expect(abs(panel.x * width - Double(frame.originX)) < 24)
+        #expect(abs(panel.y * height - Double(frame.originY)) < 24)
+        #expect(session.rowBoxes.isEmpty == false)
+        for row in session.rowBoxes {
+            #expect(row.intersection(panel) == row.unitClamped)
+        }
+        let text = session.label?.rows.map(\.confirmedText).joined(separator: "\n") ?? ""
+        #expect(text.contains("32.88"))
+        #expect(text.contains("8.022"))
+    }
+
+    @Test @MainActor func openingABlankPhotoSuggestsNothing() {
+        let image = grayImage(width: 4, height: 2, pixels: [UInt8](repeating: 180, count: 8))
+        let session = DisplayOCRTrainingSession()
+        session.load(cgImage: image)
+        #expect(session.panel == nil)
+        #expect(session.rowBoxes.isEmpty)
+        #expect(session.label == nil)
+    }
+
+    @Test @MainActor func restoringALabelDoesNotReplaceItWithASuggestion() throws {
+        let frame = sealedFrame()
+        let kept = DisplayOCRNormalizedBox(x: 0, y: 0, width: 1, height: 1)
+        let label = DisplayOCRTrainingLabel(
+            schemaVersion: DisplayOCRTraining.schemaVersion,
+            origin: .topLeft,
+            imageFileName: DisplayOCRTraining.imageFileName,
+            imagePixelWidth: frame.image.width,
+            imagePixelHeight: frame.image.height,
+            sourceName: "pump.png",
+            panel: kept,
+            rows: [
+                DisplayOCRTrainingRow(
+                    box: nil,
+                    decodedText: "1",
+                    confirmedText: "KEEP",
+                    confidence: 1
+                )
+            ]
+        )
+        let session = DisplayOCRTrainingSession()
+        session.restore(cgImage: frame.image, label: label)
+        #expect(session.panel == kept)
+        #expect(session.rowBoxes.isEmpty)
+        #expect(session.label?.rows.first?.confirmedText == "KEEP")
+    }
+
     // MARK: - Fixtures
 
     private func makeDirectory(_ prefix: String) throws -> URL {
@@ -566,6 +722,91 @@ struct DisplayOCRTraining609Tests {
         named name: String
     ) -> DisplayOCRTrainingError? {
         library.rejections.first { $0.directory.lastPathComponent == name }?.error
+    }
+
+    @MainActor
+    private func squareSession() -> DisplayOCRTrainingSession {
+        let session = DisplayOCRTrainingSession()
+        session.load(cgImage: grayImage(
+            width: 100,
+            height: 100,
+            pixels: [UInt8](repeating: 180, count: 10_000)
+        ))
+        return session
+    }
+
+    private func sealedFrame() -> (image: CGImage, originX: Int, originY: Int) {
+        let panel = SegmentPanel.render(
+            rows: [sealedAtoms("32.88"), sealedAtoms("8.022")],
+            bezelLevel: 40,
+            bezelWidth: 8
+        )
+        let originX = 80
+        let originY = 100
+        let image = embed(
+            panel,
+            originX: originX,
+            originY: originY,
+            canvasWidth: 1200,
+            canvasHeight: 900
+        )
+        return (image, originX, originY)
+    }
+
+    private func sealedAtoms(_ text: String) -> [SegmentPanel.Atom] {
+        text.map { character in
+            switch character {
+            case "0"..."9":
+                return .digit(sealedDigit(Int(String(character)) ?? 0))
+            case ".":
+                return .period
+            default:
+                return .gap(0)
+            }
+        }
+    }
+
+    private func sealedDigit(_ value: Int) -> SevenSegmentPattern {
+        switch value {
+        case 0: return [.a, .b, .c, .d, .e, .f]
+        case 1: return [.b, .c]
+        case 2: return [.a, .b, .d, .e, .g]
+        case 3: return [.a, .b, .c, .d, .g]
+        case 4: return [.b, .c, .f, .g]
+        case 5: return [.a, .c, .d, .f, .g]
+        case 6: return [.a, .c, .d, .e, .f, .g]
+        case 7: return [.a, .b, .c]
+        case 8: return [.a, .b, .c, .d, .e, .f, .g]
+        default: return [.a, .b, .c, .d, .f, .g]
+        }
+    }
+
+    private func embed(
+        _ panel: CGImage,
+        originX: Int,
+        originY: Int,
+        canvasWidth: Int,
+        canvasHeight: Int
+    ) -> CGImage {
+        var pixels = [UInt8](repeating: 180, count: canvasWidth * canvasHeight)
+        let panelWidth = panel.width
+        let panelHeight = panel.height
+        if let provider = panel.dataProvider,
+           let data = provider.data,
+           CFDataGetLength(data) >= panelWidth * panelHeight,
+           let bytes = CFDataGetBytePtr(data) {
+            let rowBytes = panel.bytesPerRow
+            for y in 0..<panelHeight {
+                let destY = originY + y
+                guard destY >= 0, destY < canvasHeight else { continue }
+                for x in 0..<panelWidth {
+                    let destX = originX + x
+                    guard destX >= 0, destX < canvasWidth else { continue }
+                    pixels[destY * canvasWidth + destX] = bytes[y * rowBytes + x]
+                }
+            }
+        }
+        return grayImage(width: canvasWidth, height: canvasHeight, pixels: pixels)
     }
 
     private func twoDigitFrame() -> (image: CGImage, two: CGRect, seven: CGRect) {
