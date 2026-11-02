@@ -600,20 +600,20 @@ public final class DisplayOCRTrainingSession: ObservableObject {
     /// Write `image.png` and `label.json` in a new folder under ``exportRoot``.
     public func export() throws -> DisplayOCRTrainingExport {
         try platformSecurityScopedAccess(url: exportRoot) { root in
-            let package = try makePackage()
-            let directory = root.appendingPathComponent(UUID().uuidString, isDirectory: true)
-            try DisplayOCRTraining.write(package, to: directory)
-            status = .exported(directory)
-            return DisplayOCRTrainingExport(directory: directory, package: package)
+            try writePackage(under: root)
         }
     }
 
     @discardableResult
     public func exportToTemporaryDirectory() throws -> DisplayOCRTrainingExport {
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent(DisplayOCRTraining.exportDirectoryName, isDirectory: true)
+        return try writePackage(under: root)
+    }
+
+    private func writePackage(under root: URL) throws -> DisplayOCRTrainingExport {
         let package = try makePackage()
-        let directory = FileManager.default.temporaryDirectory
-            .appendingPathComponent("display-ocr-training", isDirectory: true)
-            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        let directory = root.appendingPathComponent(UUID().uuidString, isDirectory: true)
         try DisplayOCRTraining.write(package, to: directory)
         status = .exported(directory)
         return DisplayOCRTrainingExport(directory: directory, package: package)
