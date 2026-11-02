@@ -266,7 +266,7 @@ public enum EntityCreationUtilities {
     private static func integerStored(in value: Any, locale: Locale) -> Int? {
         guard let trimmed = storedText(in: value) else { return nil }
         if let int = Int(trimmed) { return int }
-        guard let decimal = entireDecimal(trimmed, locale: locale) else { return nil }
+        guard let decimal = DynamicFormStoredDecimal.decimal(fromEntire: trimmed, locale: locale) else { return nil }
         let number = NSDecimalNumber(decimal: decimal)
         let int64 = number.int64Value
         guard NSDecimalNumber(value: int64) == number else { return nil }
@@ -295,37 +295,14 @@ public enum EntityCreationUtilities {
         return trimmed
     }
 
-    private static let posixLocale = Locale(identifier: "en_US_POSIX")
-
-    /// The whole string is one decimal. A prefix (`"4abc"`, `"4,5abc"`) is not a value.
-    /// POSIX is tried first so `"4.5"` stays 4.5 when the locale uses a comma.
-    private static func entireDecimal(_ text: String, locale: Locale) -> Decimal? {
-        if let posix = scanDecimal(text, locale: posixLocale) {
-            return posix
-        }
-        if locale.identifier == posixLocale.identifier { return nil }
-        return scanDecimal(text, locale: locale)
-    }
-
-    private static func scanDecimal(_ text: String, locale: Locale) -> Decimal? {
-        let scanner = Scanner(string: text)
-        scanner.locale = locale
-        guard let decimal = scanner.scanDecimal(), scanner.isAtEnd else { return nil }
-        return decimal
-    }
-
     private static func doubleStored(in value: Any, locale: Locale) -> Double? {
         guard let trimmed = storedText(in: value) else { return nil }
-        if let double = Double(trimmed), double.isFinite { return double }
-        guard let decimal = entireDecimal(trimmed, locale: locale) else { return nil }
-        let double = NSDecimalNumber(decimal: decimal).doubleValue
-        guard double.isFinite else { return nil }
-        return double
+        return DynamicFormStoredDecimal.double(fromStoredText: trimmed, locale: locale)
     }
 
     private static func decimalStored(in value: Any, locale: Locale) -> Decimal? {
         guard let trimmed = storedText(in: value) else { return nil }
-        return entireDecimal(trimmed, locale: locale)
+        return DynamicFormStoredDecimal.decimal(fromEntire: trimmed, locale: locale)
     }
 
     private static func boolStored(in value: Any) -> Bool? {

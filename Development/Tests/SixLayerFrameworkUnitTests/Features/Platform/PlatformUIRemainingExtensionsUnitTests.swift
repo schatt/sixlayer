@@ -88,38 +88,30 @@ struct PlatformUIRemainingExtensionHostsUnitTests {
 
     @Test @MainActor
     func tabViewStyleHosts() {
-        hostView {
+        TestSetupUtilities.hostExpectingPlatformRoot {
             Text("Tab").platformTabViewStyle()
         }
     }
 
     @Test @MainActor
     func textFieldStyleHosts() {
-        hostView {
+        TestSetupUtilities.hostExpectingPlatformRoot {
             TextField("Name", text: .constant("")).platformTextFieldStyle()
         }
     }
 
     @Test @MainActor
     func animationModifierHosts() {
-        hostView {
+        TestSetupUtilities.hostExpectingPlatformRoot {
             Text("Anim").platformAnimation(.easeInOut)
         }
     }
 
     @Test @MainActor
     func scrollContainerHosts() {
-        hostView {
+        TestSetupUtilities.hostExpectingPlatformRoot {
             Text("Scroll").platformScrollContainer()
         }
     }
 
-    @MainActor
-    private func hostView<V: View>(@ViewBuilder _ view: () -> V) {
-        #if os(watchOS)
-        return
-        #else
-        #expect(TestSetupUtilities.hostRootPlatformView(view(), forceLayout: true) != nil)
-        #endif
-    }
 }
