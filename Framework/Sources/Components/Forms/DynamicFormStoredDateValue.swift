@@ -40,6 +40,8 @@ public enum DynamicFormStoredDateValue {
         return nil
     }
 
+    private static let posixLocale = Locale(identifier: "en_US_POSIX")
+
     private static func date(fromLocalizedOrISOString string: String, locale: Locale) -> Date? {
         let trimmed = string.trimmingCharacters(in: .whitespacesAndNewlines)
         if trimmed.isEmpty { return nil }
@@ -48,6 +50,10 @@ public enum DynamicFormStoredDateValue {
             return iso
         }
 
+        if let posix = styledDate(from: trimmed, locale: posixLocale) {
+            return posix
+        }
+        if locale.identifier == posixLocale.identifier { return nil }
         return styledDate(from: trimmed, locale: locale)
     }
 
