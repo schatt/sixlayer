@@ -340,9 +340,15 @@ public enum DisplayOCRTraining {
             guard hit.pixelRect(imageWidth: image.width, imageHeight: image.height) != nil else { return nil }
             return hit
         }
+        let panelRead = segmentRead(panelImage, deskewMaximumDegrees: deskewMaximumDegrees)
+        let lineRows = panelRows(from: panelRead)
         let rows: [DisplayOCRTrainingRow]
         if clipped.isEmpty {
-            rows = panelRows(from: segmentRead(panelImage, deskewMaximumDegrees: deskewMaximumDegrees))
+            rows = lineRows
+        } else if let paired = rowsPairedWithPanelLines(lineRows, boxes: clipped) {
+            // A crop of one LCD line is turned 180° by the reader. One box per
+            // panel line keeps that line's text and the box the user is editing.
+            rows = paired
         } else {
             rows = clipped.compactMap { box in
                 guard let rowImage = crop(image, to: box) else { return nil }
@@ -581,6 +587,23 @@ public enum DisplayOCRTraining {
             .filter { !$0.isEmpty }
         let texts = lines.isEmpty ? [""] : lines
         return texts.map { labeledRow($0, box: nil, confidence: decoded.confidence) }
+    }
+
+    /// One box per panel line, top to bottom. Nil when a line is blank or the
+    /// counts differ, so a tighter crop is still read on its own.
+    private static func rowsPairedWithPanelLines(
+        _ lines: [DisplayOCRTrainingRow],
+        boxes: [DisplayOCRNormalizedBox]
+    ) -> [DisplayOCRTrainingRow]? {
+        guard lines.count > 1, lines.count == boxes.count else { return nil }
+        guard lines.allSatisfy({ !$0.decodedText.isEmpty }) else { return nil }
+        let ordered = boxes.sorted { lhs, rhs in
+            if lhs.y == rhs.y { return lhs.x < rhs.x }
+            return lhs.y < rhs.y
+        }
+        return zip(ordered, lines).map { box, line in
+            labeledRow(line.decodedText, box: box, confidence: line.confidence)
+        }
     }
 
     fileprivate static let unitSquare = DisplayOCRNormalizedBox(x: 0, y: 0, width: 1, height: 1)
