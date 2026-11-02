@@ -1119,15 +1119,22 @@ public struct DynamicIntegerField: View {
 public struct DynamicStepperField: View {
     let field: DynamicFormField
     @ObservedObject var formState: DynamicFormState
+    let locale: Locale
 
     public init(field: DynamicFormField, formState: DynamicFormState) {
-        self.field = field
-        self.formState = formState
+        self.init(field: field, formState: formState, locale: .current)
     }
 
-    private var value: Binding<Double> {
+    init(field: DynamicFormField, formState: DynamicFormState, locale: Locale) {
+        self.field = field
+        self.formState = formState
+        self.locale = locale
+    }
+
+    var value: Binding<Double> {
         Binding(
             get: {
+                _ = locale
                 if let value: Any = formState.getValue(for: field.id) {
                     if let doubleValue = value as? Double {
                         return doubleValue
@@ -2277,14 +2284,21 @@ public struct DynamicDisplayField: View {
 public struct DynamicGaugeField: View {
     let field: DynamicFormField
     @ObservedObject var formState: DynamicFormState
-    
+    let locale: Locale
+
     public init(field: DynamicFormField, formState: DynamicFormState) {
+        self.init(field: field, formState: formState, locale: .current)
+    }
+
+    init(field: DynamicFormField, formState: DynamicFormState, locale: Locale) {
         self.field = field
         self.formState = formState
+        self.locale = locale
     }
     
     /// Get the current value as Double
-    private var value: Double {
+    var value: Double {
+        _ = locale
         if let value: Any? = formState.getValue(for: field.id) {
             if let doubleValue = value as? Double {
                 return doubleValue
