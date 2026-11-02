@@ -243,17 +243,17 @@ public enum DisplayOCRPanelModel {
             throw DisplayOCRPanelModelError.trainingFailed(error.localizedDescription)
         }
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-        return try write(detector.model, to: directory.appendingPathComponent(modelFileName))
+        return try write(detector, to: directory.appendingPathComponent(modelFileName))
     }
 
-    private static func write(_ model: MLModel, to destination: URL) throws -> URL {
+    private static func write(_ detector: MLObjectDetector, to destination: URL) throws -> URL {
         let partial = destination.deletingLastPathComponent()
             .appendingPathComponent(destination.lastPathComponent + ".partial")
         if FileManager.default.fileExists(atPath: partial.path) {
             try FileManager.default.removeItem(at: partial)
         }
         do {
-            try model.write(to: partial)
+            try detector.write(to: partial)
             if FileManager.default.fileExists(atPath: destination.path) {
                 _ = try FileManager.default.replaceItemAt(destination, withItemAt: partial)
             } else {
