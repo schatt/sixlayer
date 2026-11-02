@@ -345,7 +345,196 @@ struct DisplayOCRTraining609Tests {
         )
     }
 
+    @Test func libraryKeepsDifferentShotsAndReportsBadFolders() throws {
+        let root = try makeDirectory("display-ocr-library")
+        defer { try? FileManager.default.removeItem(at: root) }
+        let wide = DisplayOCRNormalizedBox(x: 0.1, y: 0.2, width: 0.7, height: 0.3)
+        let narrow = DisplayOCRNormalizedBox(x: 0.55, y: 0.05, width: 0.2, height: 0.8)
+        let priceRow = DisplayOCRNormalizedBox(x: 0.12, y: 0.22, width: 0.4, height: 0.12)
+        try writeExample(
+            confirmed: "12.9",
+            panel: wide,
+            row: priceRow,
+            imageWidth: 8,
+            imageHeight: 4,
+            to: root.appendingPathComponent("close-shot", isDirectory: true)
+        )
+        try writeExample(
+            confirmed: "3.50",
+            panel: narrow,
+            row: nil,
+            imageWidth: 5,
+            imageHeight: 9,
+            to: root.appendingPathComponent("far-shot", isDirectory: true)
+        )
+        try writeExample(
+            confirmed: "777",
+            panel: wide,
+            row: nil,
+            imageWidth: 4,
+            imageHeight: 2,
+            to: root.appendingPathComponent("deeper/inner", isDirectory: true)
+        )
+        let outside = FileManager.default.temporaryDirectory
+            .appendingPathComponent("display-ocr-outside-\(UUID().uuidString)", isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: outside) }
+        try writeExample(
+            confirmed: "999",
+            panel: narrow,
+            row: nil,
+            imageWidth: 4,
+            imageHeight: 2,
+            to: outside
+        )
+        try FileManager.default.createSymbolicLink(
+            at: root.appendingPathComponent("escape"),
+            withDestinationURL: outside
+        )
+        try FileManager.default.createSymbolicLink(
+            at: root.appendingPathComponent("alias"),
+            withDestinationURL: root.appendingPathComponent("close-shot", isDirectory: true)
+        )
+        try writeBadSchema(to: root.appendingPathComponent("bad-schema", isDirectory: true))
+        try writeLabelOnly(to: root.appendingPathComponent("missing-image", isDirectory: true))
+        let missingLabel = root.appendingPathComponent("missing-label", isDirectory: true)
+        try FileManager.default.createDirectory(at: missingLabel, withIntermediateDirectories: true)
+        try Data("not a label".utf8).write(to: missingLabel.appendingPathComponent("image.png"))
+        try Data("notes".utf8).write(to: root.appendingPathComponent("notes.txt"))
+
+        let library = DisplayOCRTraining.library(in: root)
+        func packages(confirmed text: String) -> [DisplayOCRTrainingPackage] {
+            library.examples.compactMap { example in
+                example.package.label.rows.first?.confirmedText == text ? example.package : nil
+            }
+        }
+        let closeShot = packages(confirmed: "12.9")
+        let farShot = packages(confirmed: "3.50")
+        #expect(library.examples.count == 2)
+        #expect(closeShot.count == 1)
+        #expect(closeShot.first?.label.panel == wide.unitClamped)
+        #expect(closeShot.first?.label.rows.first?.box == priceRow.unitClamped)
+        #expect(closeShot.first?.label.imagePixelWidth == 8)
+        #expect(closeShot.first?.imagePNG.isEmpty == false)
+        #expect(farShot.count == 1)
+        #expect(farShot.first?.label.panel == narrow.unitClamped)
+        #expect(farShot.first?.label.rows.first?.box == nil)
+        #expect(farShot.first?.label.imagePixelHeight == 9)
+        #expect(packages(confirmed: "777").isEmpty)
+        #expect(packages(confirmed: "999").isEmpty)
+        #expect(rejection(in: library, named: "bad-schema") == .unsupportedSchema(2))
+        #expect(rejection(in: library, named: "missing-image") == .unreadablePackage)
+        #expect(rejection(in: library, named: "missing-label") == .unreadablePackage)
+        #expect(rejection(in: library, named: "deeper") == .unreadablePackage)
+        #expect(rejection(in: library, named: "escape") == .unreadablePackage)
+        #expect(rejection(in: library, named: "alias") == .unreadablePackage)
+        #expect(library.rejections.contains { $0.directory.lastPathComponent == "notes.txt" } == false)
+        #expect(library.examples.contains { $0.directory.lastPathComponent == "notes.txt" } == false)
+
+        let missing = FileManager.default.temporaryDirectory
+            .appendingPathComponent("display-ocr-missing-\(UUID().uuidString)", isDirectory: true)
+        let empty = DisplayOCRTraining.library(in: missing)
+        #expect(empty.examples.isEmpty)
+        #expect(empty.rejections.isEmpty)
+    }
+
+    @Test @MainActor func exportJoinsTheTrainingLibrary() throws {
+        let root = try makeDirectory("display-ocr-join")
+        defer { try? FileManager.default.removeItem(at: root) }
+        try writeExample(
+            confirmed: "9.99",
+            panel: DisplayOCRNormalizedBox(x: 0, y: 0, width: 1, height: 1),
+            row: nil,
+            imageWidth: 4,
+            imageHeight: 2,
+            to: root.appendingPathComponent("already", isDirectory: true)
+        )
+        try writeBadSchema(to: root.appendingPathComponent("bad-schema", isDirectory: true))
+
+        let frame = twoDigitFrame()
+        let session = DisplayOCRTrainingSession()
+        session.load(cgImage: frame.image, sourceName: "pump.png")
+        session.setPanel(DisplayOCRNormalizedBox(
+            pixelRect: frame.two,
+            imageWidth: frame.image.width,
+            imageHeight: frame.image.height
+        ))
+        #expect(session.decode())
+        let rowID = try #require(session.label?.rows.first?.id)
+        session.confirm(rowID: rowID, text: "2.0")
+        session.setExportRoot(root)
+        #expect(session.library.examples.count == 1)
+        #expect(session.library.rejections.count == 1)
+        _ = try session.export()
+
+        let confirmed = Set(session.library.examples.map { $0.package.label.rows[0].confirmedText })
+        #expect(confirmed == ["9.99", "2.0"])
+        #expect(session.library.examples.count == 2)
+        #expect(session.library.rejections.count == 1)
+    }
+
     // MARK: - Fixtures
+
+    private func makeDirectory(_ prefix: String) throws -> URL {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("\(prefix)-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        return directory
+    }
+
+    private func writeExample(
+        confirmed: String,
+        panel: DisplayOCRNormalizedBox,
+        row: DisplayOCRNormalizedBox?,
+        imageWidth: Int,
+        imageHeight: Int,
+        to directory: URL
+    ) throws {
+        let pixels = [UInt8](repeating: 40, count: imageWidth * imageHeight)
+        let image = grayImage(width: imageWidth, height: imageHeight, pixels: pixels)
+        let label = DisplayOCRTrainingLabel(
+            schemaVersion: DisplayOCRTraining.schemaVersion,
+            origin: .topLeft,
+            imageFileName: DisplayOCRTraining.imageFileName,
+            imagePixelWidth: imageWidth,
+            imagePixelHeight: imageHeight,
+            sourceName: "pump.png",
+            panel: panel,
+            rows: [
+                DisplayOCRTrainingRow(
+                    box: row,
+                    decodedText: confirmed,
+                    confirmedText: confirmed,
+                    confidence: 1
+                )
+            ]
+        )
+        let package = try DisplayOCRTraining.package(label: label, image: image)
+        try DisplayOCRTraining.write(package, to: directory)
+    }
+
+    private func writeBadSchema(to directory: URL) throws {
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        let json = """
+        {"imageFileName":"image.png","imagePixelHeight":2,"imagePixelWidth":2,"origin":"topLeft","panel":{"height":1,"width":1,"x":0,"y":0},"rows":[],"schemaVersion":2}
+        """
+        try Data(json.utf8).write(to: directory.appendingPathComponent(DisplayOCRTraining.labelFileName))
+        try Data("png".utf8).write(to: directory.appendingPathComponent(DisplayOCRTraining.imageFileName))
+    }
+
+    private func writeLabelOnly(to directory: URL) throws {
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        let json = """
+        {"imageFileName":"image.png","imagePixelHeight":2,"imagePixelWidth":2,"origin":"topLeft","panel":{"height":1,"width":1,"x":0,"y":0},"rows":[],"schemaVersion":1}
+        """
+        try Data(json.utf8).write(to: directory.appendingPathComponent(DisplayOCRTraining.labelFileName))
+    }
+
+    private func rejection(
+        in library: DisplayOCRTrainingLibrary,
+        named name: String
+    ) -> DisplayOCRTrainingError? {
+        library.rejections.first { $0.directory.lastPathComponent == name }?.error
+    }
 
     private func twoDigitFrame() -> (image: CGImage, two: CGRect, seven: CGRect) {
         let two = sprite([.a, .b, .d, .e, .g])
