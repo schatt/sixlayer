@@ -583,7 +583,7 @@ public enum DisplayOCRTraining {
         return texts.map { labeledRow($0, box: nil, confidence: decoded.confidence) }
     }
 
-    private static let unitSquare = DisplayOCRNormalizedBox(x: 0, y: 0, width: 1, height: 1)
+    fileprivate static let unitSquare = DisplayOCRNormalizedBox(x: 0, y: 0, width: 1, height: 1)
 
     /// Vision's y is the bottom of the glyph. The trainer's y is the top.
     private static func photoBox(
@@ -631,7 +631,7 @@ public enum DisplayOCRTraining {
         return DisplayOCRNormalizedBox(x: left, y: top, width: right - left, height: bottom - top)
     }
 
-    private static func rowsInside(
+    fileprivate static func rowsInside(
         _ rows: [DisplayOCRNormalizedBox],
         panel: DisplayOCRNormalizedBox,
         imageWidth: Int,
@@ -644,7 +644,7 @@ public enum DisplayOCRTraining {
         }
     }
 
-    private static func hit(
+    fileprivate static func hit(
         at point: CGPoint,
         containerSize: CGSize,
         imageSize: CGSize,
@@ -670,7 +670,7 @@ public enum DisplayOCRTraining {
     }
 
     /// Move keeps the size and stops at `bounds`. An edge drag clips to `bounds`.
-    private static func placed(
+    fileprivate static func placed(
         _ box: DisplayOCRNormalizedBox,
         edges: BoxEdges,
         dx: Double,
@@ -743,7 +743,7 @@ public enum DisplayOCRTraining {
         return edges
     }
 
-    private struct BoxEdges: OptionSet {
+    fileprivate struct BoxEdges: OptionSet {
         let rawValue: Int
         static let left = BoxEdges(rawValue: 1 << 0)
         static let right = BoxEdges(rawValue: 1 << 1)
@@ -751,7 +751,7 @@ public enum DisplayOCRTraining {
         static let bottom = BoxEdges(rawValue: 1 << 3)
     }
 
-    private struct BoxHit {
+    fileprivate struct BoxHit {
         var target: DisplayOCRTrainingBoxTarget
         var edges: BoxEdges
     }
