@@ -857,35 +857,40 @@ struct OCRSevenSegment576Tests {
     }
 
     /// Private photo, not in this repo. Touch `/tmp/sixlayer-600-score-s1` to
-    /// run it; the suite skips it otherwise. Scores the frame × row × digit
-    /// matrix on the upright scenario-1 pump, aspect-fit into 1200×1600.
+    /// run it; the suite skips it otherwise. The frame stays at the camera's
+    /// own size. Localization searches a long-side cap and reads the mapped
+    /// crop of the original.
     @Test(
         .enabled(if: FileManager.default.fileExists(atPath: "/tmp/sixlayer-600-score-s1"))
     )
-    func resizedScenario1MatrixFindsAPathThatReadsBothRows() throws {
+    func uprightScenario1LocalizesAndReadsBothRows() throws {
         let path = "/Users/schatt/code/github/cm/1157-pump-three-role-solver/Tests/TestImages/fuel_purchase/scenario_1/ti_fp_s1_pump.jpg"
         let data = try Data(contentsOf: URL(fileURLWithPath: path))
         let upright = try #require(PlatformImage.cgImage(opening: data))
-        let resized = try #require(aspectFit(upright, maxWidth: 1200, maxHeight: 1600))
-        let regions = SevenSegmentOCR.frameCandidates(in: resized)
-        let regionReport = regions.map { "\($0.finder.rawValue) \($0.rect)" }.joined(separator: "\n")
+        let find = SevenSegmentOCR.findBufferSize(width: upright.width, height: upright.height)
+        let region = SevenSegmentOCR.digitPanelRegion(in: upright)
         let clock = ContinuousClock()
         let started = clock.now
-        let hits = SevenSegmentOCR.searchPaths(in: resized, deskewMaximumDegrees: 0)
+        let result = SevenSegmentOCR.decode(
+            cgImage: upright,
+            deskewMaximumDegrees: 0,
+            localizeDigitPanel: true
+        )
         let elapsed = started.duration(to: clock.now)
-        let summary = hits.map { hit in
-            "\(hit.frame.rawValue) \(hit.rows.rawValue) \(hit.digits.rawValue) lines=\(hit.lineCount) exact=\(hit.exactDigitCount) [\(hit.text)]"
-        }.joined(separator: "\n")
-        let report = "\(resized.width)x\(resized.height) upright \(upright.width)x\(upright.height) \(elapsed)\n\(regionReport)\n\(summary)\n"
+        let report = """
+        upright \(upright.width)x\(upright.height) find \(find.width)x\(find.height) \(elapsed)
+        region \(String(describing: region))
+        conf \(result.confidence)
+        [\(result.extractedText)]
+        """
         try report.write(
             to: URL(fileURLWithPath: "/tmp/sixlayer-600-s1-matrix.txt"),
             atomically: true,
             encoding: .utf8
         )
         print(report)
-        let readable = hits.contains { hit in
-            hit.text.contains("32.88") && hit.text.contains("8.022")
-        }
+        let readable = result.extractedText.contains("32.88")
+            && result.extractedText.contains("8.022")
         #expect(readable, "\(report)")
     }
 
@@ -1183,35 +1188,6 @@ struct OCRSevenSegment576Tests {
         case 8: return [.a, .b, .c, .d, .e, .f, .g]
         default: return [.a, .b, .c, .d, .f, .g]
         }
-    }
-
-    /// Same aspect-fit box the pump app uses before OCR: 1200×1600.
-    private func aspectFit(_ image: CGImage, maxWidth: Int, maxHeight: Int) -> CGImage? {
-        guard image.width > 0, image.height > 0, maxWidth > 0, maxHeight > 0 else { return nil }
-        let aspect = Double(image.width) / Double(image.height)
-        let targetAspect = Double(maxWidth) / Double(maxHeight)
-        let width: Int
-        let height: Int
-        if aspect > targetAspect {
-            width = maxWidth
-            height = max(1, Int((Double(maxWidth) / aspect).rounded()))
-        } else {
-            height = maxHeight
-            width = max(1, Int((Double(maxHeight) * aspect).rounded()))
-        }
-        let colorSpace = CGColorSpaceCreateDeviceRGB()
-        guard let context = CGContext(
-            data: nil,
-            width: width,
-            height: height,
-            bitsPerComponent: 8,
-            bytesPerRow: 0,
-            space: colorSpace,
-            bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
-        ) else { return nil }
-        context.interpolationQuality = .high
-        context.draw(image, in: CGRect(x: 0, y: 0, width: width, height: height))
-        return context.makeImage()
     }
 
     private func segmentTexts(_ result: OCRResult) -> [String] {
