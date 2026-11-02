@@ -752,10 +752,11 @@ struct DisplayOCRTraining609Tests {
         )
         let set = try DisplayOCRPanelModel.writeTrainingSet(library, to: root)
         let rows = try JSONDecoder().decode([DisplayOCRPanelAnnotation].self, from: Data(contentsOf: set.annotationFile))
+        let row = try #require(rows.first)
         #expect(rows.count == 1)
-        #expect(rows[0].imagefilename == "example-a.png")
-        #expect(rows[0].annotation.map(\.label) == [DisplayOCRPanelModel.panelLabel])
-        let box = try #require(rows[0].annotation.first).coordinates
+        #expect(row.imagefilename == "example-a.png")
+        #expect(row.annotation.map(\.label) == [DisplayOCRPanelModel.panelLabel])
+        let box = try #require(row.annotation.first).coordinates
         #expect(abs(box.x - 0.3) < 0.000_001)
         #expect(abs(box.y - 0.3) < 0.000_001)
         #expect(abs(box.width - 0.4) < 0.000_001)
