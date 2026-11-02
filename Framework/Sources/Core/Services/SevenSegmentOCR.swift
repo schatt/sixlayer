@@ -1529,6 +1529,11 @@ private extension GrayBuffer {
                 return row
             }
             let decoded = projected.map(rowCells)
+            if buffer.height < 200 {
+                let listed = projected.map { "\($0.0)-\($0.1)" }.joined(separator: ",")
+                let read = decoded.map { String($0.map(\.character)) }.joined(separator: "|")
+                trace("finder \(rowFinder) \(buffer.width)x\(buffer.height) band \(sampleBand) [\(listed)] [\(read)]\n")
+            }
             return lines.compactMap { line in
                 var combined: [Cell] = []
                 for (band, row) in zip(projected, decoded) where band.0 >= line.0 && band.1 <= line.1 {
