@@ -90,6 +90,51 @@ public enum SevenSegmentGlyph {
     }
 }
 
+/// One way to propose the digit-panel rectangle (#600).
+public enum SegmentFrameFinder: String, CaseIterable, Sendable {
+    case wholeFrame
+    case sealedPocket
+    case inkStack
+}
+
+/// One way to turn a crop into rows. The count is whatever the finder reports.
+public enum SegmentRowFinder: String, CaseIterable, Sendable {
+    /// Every pale gap, so one row stays one and three rows stay three.
+    case allGaps
+    /// The single gap nearest the middle. A taller stack collapses to two bands.
+    case deepestPair
+}
+
+/// One way to read the glyphs inside a row.
+public enum SegmentDigitReader: String, CaseIterable, Sendable {
+    /// One scanline per segment, as ssocr does.
+    case scanline
+    /// A few pixels either side of that scanline, for a broken or washed stroke.
+    case bandSample
+
+    var sampleBand: Int {
+        switch self {
+        case .scanline: return 0
+        case .bandSample: return 3
+        }
+    }
+}
+
+public struct SegmentFrameCandidate: Equatable, Sendable {
+    public var finder: SegmentFrameFinder
+    public var rect: CGRect
+}
+
+/// One combination of frame, row, and digit finders, scored for the lab matrix.
+public struct SegmentSearchHit: Equatable, Sendable {
+    public var frame: SegmentFrameFinder
+    public var rows: SegmentRowFinder
+    public var digits: SegmentDigitReader
+    public var text: String
+    public var exactDigitCount: Int
+    public var lineCount: Int
+}
+
 public enum SevenSegmentOCR {
     /// Pixel rect of the digit panel (glass plus a bezel margin) in image
     /// coordinates, or `nil` when no sealed panel is found.
@@ -99,6 +144,27 @@ public enum SevenSegmentOCR {
     public static func digitPanelRegion(in cgImage: CGImage) -> CGRect? {
         guard let gray = GrayBuffer.read(cgImage) else { return nil }
         return gray.digitPanelBounds()
+    }
+
+    /// Rectangles the frame step can hand to a row finder. The lab ranks these.
+    /// Production decode still uses the sealed pocket only when asked.
+    public static func frameCandidates(in cgImage: CGImage) -> [SegmentFrameCandidate] {
+        [
+            SegmentFrameCandidate(
+                finder: .wholeFrame,
+                rect: CGRect(x: 0, y: 0, width: cgImage.width, height: cgImage.height)
+            )
+        ]
+    }
+
+    /// Every frame × row × digit combination, best exact-digit count first.
+    /// This is the measurement matrix, not the production read.
+    public static func searchPaths(
+        in cgImage: CGImage,
+        deskewMaximumDegrees: Double = 3
+    ) -> [SegmentSearchHit] {
+        _ = (cgImage, deskewMaximumDegrees)
+        return []
     }
 
     /// Decode seven-segment glyphs.
