@@ -57,6 +57,24 @@ public enum EntityCreationUtilities {
         context: NSManagedObjectContext,
         fieldHints: [String: FieldDisplayHints]? = nil
     ) throws -> NSManagedObject {
+        try createCoreDataEntity(
+            entityName: entityName,
+            values: values,
+            context: context,
+            fieldHints: fieldHints,
+            locale: .current
+        )
+    }
+
+    /// `locale` selects the decimal separator and date style the form wrote (#621).
+    /// Callers omit it; creation then uses `Locale.current`. POSIX forms still parse.
+    static func createCoreDataEntity(
+        entityName: String,
+        values: [String: Any],
+        context: NSManagedObjectContext,
+        fieldHints: [String: FieldDisplayHints]? = nil,
+        locale: Locale
+    ) throws -> NSManagedObject {
         guard let description = insertableEntity(named: entityName, in: context) else {
             throw CoreDataCreationError.unavailable(entityName: entityName)
         }
@@ -66,7 +84,7 @@ public enum EntityCreationUtilities {
             if let hints = fieldHints, let hint = hints[fieldId], hint.isHidden {
                 continue
             }
-            let prepared = preparedValue(value, forKey: fieldId, on: description)
+            let prepared = preparedValue(value, forKey: fieldId, on: description, locale: locale)
             if let rejection = assignmentRejection(
                 value: prepared,
                 key: fieldId,
@@ -109,6 +127,22 @@ public enum EntityCreationUtilities {
         fields: [DataField],
         fieldHints: [String: FieldDisplayHints]
     ) -> NSManagedObject? {
+        createBlankCoreDataEntity(
+            entityName: entityName,
+            context: context,
+            fields: fields,
+            fieldHints: fieldHints,
+            locale: .current
+        )
+    }
+
+    static func createBlankCoreDataEntity(
+        entityName: String,
+        context: NSManagedObjectContext,
+        fields: [DataField],
+        fieldHints: [String: FieldDisplayHints],
+        locale: Locale
+    ) -> NSManagedObject? {
         guard let description = insertableEntity(named: entityName, in: context) else {
             return nil
         }
@@ -124,7 +158,7 @@ public enum EntityCreationUtilities {
             } else {
                 value = getDefaultValueForType(field.type)
             }
-            let prepared = preparedValue(value, forKey: field.name, on: description)
+            let prepared = preparedValue(value, forKey: field.name, on: description, locale: locale)
             if assignmentRejection(
                 value: prepared,
                 key: field.name,
@@ -184,36 +218,42 @@ public enum EntityCreationUtilities {
         return .unknownProperty(entityName: entityName, key: key)
     }
 
-    /// Form fields store numbers, booleans, and some dates as strings (#615).
+    /// Form fields store numbers, booleans, and some dates as strings (#615, #621).
+    /// POSIX text is unchanged. A decimal or date the form wrote in `locale` is converted too.
     /// Convert those before the class check. The check itself still matches `setValue`.
     private static func preparedValue(
         _ value: Any?,
         forKey key: String,
-        on description: NSEntityDescription
+        on description: NSEntityDescription,
+        locale: Locale
     ) -> Any? {
         guard let attribute = description.attributesByName[key] else { return value }
-        return valueReadyToAssign(value, to: attribute)
+        return valueReadyToAssign(value, to: attribute, locale: locale)
     }
 
-    private static func valueReadyToAssign(_ value: Any?, to attribute: NSAttributeDescription) -> Any? {
+    private static func valueReadyToAssign(
+        _ value: Any?,
+        to attribute: NSAttributeDescription,
+        locale: Locale
+    ) -> Any? {
         guard let value else { return nil }
         if valueFits(value, attribute: attribute) { return value }
         switch attribute.attributeType {
         case .integer16AttributeType, .integer32AttributeType, .integer64AttributeType:
-            if let int = integerStored(in: value), intFits(int, in: attribute.attributeType) {
+            if let int = integerStored(in: value, locale: locale), intFits(int, in: attribute.attributeType) {
                 return int
             }
         case .doubleAttributeType:
-            if let double = doubleStored(in: value) { return double }
+            if let double = doubleStored(in: value, locale: locale) { return double }
         case .floatAttributeType:
             // `setValue` stores a too-wide Double as infinity instead of raising.
-            if let double = doubleStored(in: value), Float(double).isFinite { return double }
+            if let double = doubleStored(in: value, locale: locale), Float(double).isFinite { return double }
         case .decimalAttributeType:
-            if let decimal = decimalStored(in: value) { return decimal }
+            if let decimal = decimalStored(in: value, locale: locale) { return decimal }
         case .booleanAttributeType:
             if let bool = boolStored(in: value) { return bool }
         case .dateAttributeType:
-            if let date = DynamicFormStoredDateValue.date(fromStoredValue: value) { return date }
+            if let date = DynamicFormStoredDateValue.date(fromStoredValue: value, locale: locale) { return date }
         default:
             break
         }
@@ -223,10 +263,10 @@ public enum EntityCreationUtilities {
     /// `Int` text, or an integral decimal such as the stepper's `"4.0"`.
     /// A value that does not fit in `Int` stays unparsed. `Double` would round it
     /// and `Int(_:)` would trap or store a different number.
-    private static func integerStored(in value: Any) -> Int? {
+    private static func integerStored(in value: Any, locale: Locale) -> Int? {
         guard let trimmed = storedText(in: value) else { return nil }
         if let int = Int(trimmed) { return int }
-        guard let decimal = entireDecimal(trimmed) else { return nil }
+        guard let decimal = entireDecimal(trimmed, locale: locale) else { return nil }
         let number = NSDecimalNumber(decimal: decimal)
         let int64 = number.int64Value
         guard NSDecimalNumber(value: int64) == number else { return nil }
@@ -255,23 +295,37 @@ public enum EntityCreationUtilities {
         return trimmed
     }
 
-    /// The whole string is one decimal. `Decimal(string:)` accepts a prefix (`"4abc"` → 4).
-    private static func entireDecimal(_ text: String) -> Decimal? {
+    private static let posixLocale = Locale(identifier: "en_US_POSIX")
+
+    /// The whole string is one decimal. A prefix (`"4abc"`, `"4,5abc"`) is not a value.
+    /// POSIX is tried first so `"4.5"` stays 4.5 when the locale uses a comma.
+    private static func entireDecimal(_ text: String, locale: Locale) -> Decimal? {
+        if let posix = scanDecimal(text, locale: posixLocale) {
+            return posix
+        }
+        if locale.identifier == posixLocale.identifier { return nil }
+        return scanDecimal(text, locale: locale)
+    }
+
+    private static func scanDecimal(_ text: String, locale: Locale) -> Decimal? {
         let scanner = Scanner(string: text)
-        scanner.locale = Locale(identifier: "en_US_POSIX")
+        scanner.locale = locale
         guard let decimal = scanner.scanDecimal(), scanner.isAtEnd else { return nil }
         return decimal
     }
 
-    private static func doubleStored(in value: Any) -> Double? {
-        guard let trimmed = storedText(in: value),
-              let double = Double(trimmed), double.isFinite else { return nil }
+    private static func doubleStored(in value: Any, locale: Locale) -> Double? {
+        guard let trimmed = storedText(in: value) else { return nil }
+        if let double = Double(trimmed), double.isFinite { return double }
+        guard let decimal = entireDecimal(trimmed, locale: locale) else { return nil }
+        let double = NSDecimalNumber(decimal: decimal).doubleValue
+        guard double.isFinite else { return nil }
         return double
     }
 
-    private static func decimalStored(in value: Any) -> Decimal? {
+    private static func decimalStored(in value: Any, locale: Locale) -> Decimal? {
         guard let trimmed = storedText(in: value) else { return nil }
-        return entireDecimal(trimmed)
+        return entireDecimal(trimmed, locale: locale)
     }
 
     private static func boolStored(in value: Any) -> Bool? {
