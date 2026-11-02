@@ -144,13 +144,9 @@ open class FocusedFormTextEditorTests: BaseTestClass {
 
     @MainActor
     private func host(_ view: AnyView, kind: EditorKind) -> Any? {
-        guard let root = hostRootPlatformView(view, forceLayout: true) else {
-            #if os(iOS) || os(macOS)
-            Issue.record("expected hosted platform root for \(kind)")
-            #endif
-            return nil
-        }
-        return root
+        // Observes nil-host on watchOS/visionOS (#379/#380); no silent soft-skip (#627).
+        _ = kind
+        return TestSetupUtilities.hostObservingPlatformRoot(forceLayout: true) { view }
     }
 
     @MainActor

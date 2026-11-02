@@ -248,13 +248,7 @@ open class FormSelectAllOnBeginEditingTests: BaseTestClass {
         initializeTestConfig()
         runWithTaskLocalConfig {
             let view = twoFieldForm(selectAll: true, first: "42000", second: "Station")
-            // watchOS harness returns nil for hostRootPlatformView (#379/#460); do not Issue.record there.
-            guard let root = hostRootPlatformView(view, forceLayout: true) else {
-                #if os(iOS) || os(macOS)
-                Issue.record("expected hosted platform root")
-                #endif
-                return
-            }
+            guard let root = observeHostedRoot(view) else { return }
             #if os(iOS)
             guard let uiRoot = root as? UIView else {
                 Issue.record("expected UIView root")
@@ -288,12 +282,7 @@ open class FormSelectAllOnBeginEditingTests: BaseTestClass {
         initializeTestConfig()
         runWithTaskLocalConfig {
             let view = twoFieldForm(selectAll: false, first: "42000", second: "Station")
-            guard let root = hostRootPlatformView(view, forceLayout: true) else {
-                #if os(iOS) || os(macOS)
-                Issue.record("expected hosted platform root")
-                #endif
-                return
-            }
+            guard let root = observeHostedRoot(view) else { return }
             #if os(iOS)
             guard let uiRoot = root as? UIView else { return }
             pumpSelectAllHost()
@@ -326,12 +315,7 @@ open class FormSelectAllOnBeginEditingTests: BaseTestClass {
                 twoFieldForm(selectAll: true, first: "on-a", second: "on-b")
                 twoFieldForm(selectAll: false, first: "off-a", second: "off-b")
             }
-            guard let root = hostRootPlatformView(view, forceLayout: true) else {
-                #if os(iOS) || os(macOS)
-                Issue.record("expected hosted platform root")
-                #endif
-                return
-            }
+            guard let root = observeHostedRoot(view) else { return }
             #if os(iOS)
             guard let uiRoot = root as? UIView else { return }
             pumpSelectAllHost()
@@ -364,12 +348,7 @@ open class FormSelectAllOnBeginEditingTests: BaseTestClass {
         runWithTaskLocalConfig {
             let view = TextField("", text: .constant("42000"))
                 .selectAllTextOnBeginEditingIfFormOptedIn()
-            guard let root = hostRootPlatformView(view, forceLayout: true) else {
-                #if os(iOS) || os(macOS)
-                Issue.record("expected hosted platform root")
-                #endif
-                return
-            }
+            guard let root = observeHostedRoot(view) else { return }
             #if os(iOS)
             guard let uiRoot = root as? UIView else { return }
             pumpSelectAllHost()
@@ -414,12 +393,7 @@ open class FormSelectAllOnBeginEditingTests: BaseTestClass {
                 hints: hints,
                 selectAllOnBeginEditing: true
             )
-            guard let root = hostRootPlatformView(view, forceLayout: true) else {
-                #if os(iOS) || os(macOS)
-                Issue.record("expected hosted L1 root")
-                #endif
-                return
-            }
+            guard let root = observeHostedRoot(view) else { return }
             #if os(iOS)
             guard let uiRoot = root as? UIView else { return }
             pumpSelectAllHost()
@@ -457,12 +431,7 @@ open class FormSelectAllOnBeginEditingTests: BaseTestClass {
                         .selectAllTextOnBeginEditingIfFormOptedIn()
                 }
             )
-            guard let root = hostRootPlatformView(view, forceLayout: true) else {
-                #if os(iOS) || os(macOS)
-                Issue.record("expected hosted IFV root")
-                #endif
-                return
-            }
+            guard let root = observeHostedRoot(view) else { return }
             #if os(iOS)
             guard let uiRoot = root as? UIView else { return }
             pumpSelectAllHost()
@@ -486,6 +455,13 @@ open class FormSelectAllOnBeginEditingTests: BaseTestClass {
             expectSelectAllIfEditorPresent(hosted[1], fullySelected: true)
             #endif
         }
+    }
+
+    /// Host under the shared nil-host / non-nil contract (#627). Returns nil on
+    /// watchOS/visionOS after asserting; callers early-return only for host-dependent work.
+    @MainActor
+    private func observeHostedRoot<V: View>(_ view: V) -> Any? {
+        TestSetupUtilities.hostObservingPlatformRoot(forceLayout: true) { view }
     }
 
     @MainActor
