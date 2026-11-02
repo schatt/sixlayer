@@ -297,21 +297,20 @@ public enum EntityCreationUtilities {
 
     private static let posixLocale = Locale(identifier: "en_US_POSIX")
 
-    /// POSIX text must be the whole string (`"4abc"` is not 4).
-    /// The locale scan does not require the end yet, so `"4,5abc"` is still 4.5.
+    /// The whole string is one decimal. A prefix (`"4abc"`, `"4,5abc"`) is not a value.
+    /// POSIX is tried first so `"4.5"` stays 4.5 when the locale uses a comma.
     private static func entireDecimal(_ text: String, locale: Locale) -> Decimal? {
-        if let posix = scanDecimal(text, locale: posixLocale, requireEnd: true) {
+        if let posix = scanDecimal(text, locale: posixLocale) {
             return posix
         }
         if locale.identifier == posixLocale.identifier { return nil }
-        return scanDecimal(text, locale: locale, requireEnd: false)
+        return scanDecimal(text, locale: locale)
     }
 
-    private static func scanDecimal(_ text: String, locale: Locale, requireEnd: Bool) -> Decimal? {
+    private static func scanDecimal(_ text: String, locale: Locale) -> Decimal? {
         let scanner = Scanner(string: text)
         scanner.locale = locale
-        guard let decimal = scanner.scanDecimal() else { return nil }
-        if requireEnd, !scanner.isAtEnd { return nil }
+        guard let decimal = scanner.scanDecimal(), scanner.isAtEnd else { return nil }
         return decimal
     }
 
