@@ -1563,6 +1563,7 @@
 		681657C1C7108A33D6310EB7 /* VIEWINSPECTOR_ANYVIEW_INVESTIGATION.md in Resources */ = {isa = PBXBuildFile; fileRef = B79AD98936960569626B63AD /* VIEWINSPECTOR_ANYVIEW_INVESTIGATION.md */; };
 		682065BBEBE27618A21E940D /* PlatformStylingLayer4.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AFB9688FB54E31DDE5950F9 /* PlatformStylingLayer4.swift */; };
 		684D1ABE54291C46E2498B01 /* PlatformDismissSettingsUnitTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9209A8FEFC873F4386BA783F /* PlatformDismissSettingsUnitTests.swift */; };
+		685B00FEFB6CEB655236C734 /* DynamicFormStoredDecimal.swift in Sources */ = {isa = PBXBuildFile; fileRef = C72F6C310B497C21C60555DC /* DynamicFormStoredDecimal.swift */; };
 		685CF58F843E807CF006A82E /* MigrationTool.swift in Sources */ = {isa = PBXBuildFile; fileRef = 778732994C806F48DAC91188 /* MigrationTool.swift */; };
 		685F2AE003B70F5E4A08F843 /* Layer4CameraInterfaceTestSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 987414223FA2728852460F59 /* Layer4CameraInterfaceTestSupport.swift */; };
 		6866457D4732232E5E2FB4D9 /* RuntimeCapabilityDetectionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7A524E6E06C01F309963D05 /* RuntimeCapabilityDetectionTests.swift */; };
@@ -2013,6 +2014,7 @@
 		84C9D5B803E8B543423AFCE4 /* PlatformDataFrameAnalysisL1.swift in Sources */ = {isa = PBXBuildFile; fileRef = F63AE9E0DE5CC4E50E2575EC /* PlatformDataFrameAnalysisL1.swift */; };
 		84CB0A20B40963A8F3652EE2 /* SwitchControlManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 070BF63CA4F7EB1293F77063 /* SwitchControlManager.swift */; };
 		84EC88ADAA969C8AD7CB0465 /* LiquidGlassDesignSystemTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 460F91B3C8E3453BEFB62262 /* LiquidGlassDesignSystemTests.swift */; };
+		84F0A149317042C0F987D3DA /* DynamicFormStoredDecimal.swift in Sources */ = {isa = PBXBuildFile; fileRef = C72F6C310B497C21C60555DC /* DynamicFormStoredDecimal.swift */; };
 		8503BCB0BC3D0BB9AAAF3A30 /* PlatformOCRTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF8D1274EBF8C09E5851CD09 /* PlatformOCRTypes.swift */; };
 		8526528F5CABD4EE8DC67371 /* CardDisplayHelperHintTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DA94093B91151C94B1D4A5C /* CardDisplayHelperHintTests.swift */; };
 		852940F9CA611F172E8D4767 /* OCRService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2B30BDD76FF2484519764EE /* OCRService.swift */; };
@@ -2211,6 +2213,7 @@
 		917435C7633D005536E33279 /* PlatformLocationExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 359D9E4D959B4817A3861DAF /* PlatformLocationExtensions.swift */; };
 		917DB2544CFDEB17D3C31669 /* IntelligentDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C82C686B5CB8D7A0AF5C65D /* IntelligentDetailView.swift */; };
 		91824CE2A1001B6B0CD330EC /* DynamicFormStateAutoSaveTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6CB3790F12922281A23590E6 /* DynamicFormStateAutoSaveTests.swift */; };
+		91A0F8FDB1312464834FB53B /* DynamicFormStoredDecimal.swift in Sources */ = {isa = PBXBuildFile; fileRef = C72F6C310B497C21C60555DC /* DynamicFormStoredDecimal.swift */; };
 		91A363DE2955D6A517122F6C /* VIEWINSPECTOR_ANYVIEW_INVESTIGATION.md in Resources */ = {isa = PBXBuildFile; fileRef = B79AD98936960569626B63AD /* VIEWINSPECTOR_ANYVIEW_INVESTIGATION.md */; };
 		91A8A8F92AA3305AB233E29E /* PlatformModalSheetNavigationChromeLayer4.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6180F6FFDFDE808465F687B7 /* PlatformModalSheetNavigationChromeLayer4.swift */; };
 		91AE4C8B861DC2109C437ADB /* DisplayOCRTraining.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA5931F5D36E29E4223AD22D /* DisplayOCRTraining.swift */; };
@@ -3451,6 +3454,7 @@
 		E969DEA1C17D3D8B90D77D7C /* ManagedPlatformSettingsFlowGuideExampleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FD027FDA244C386948E9B66 /* ManagedPlatformSettingsFlowGuideExampleTests.swift */; };
 		E96EB3E429BBCE92FEB9104F /* TextTestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63350C34234DE2EE7E64F256 /* TextTestView.swift */; };
 		E9833AA11A5C0E758605303C /* GenericDataItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43F9BB9F7677DBA23A5A5BD3 /* GenericDataItem.swift */; };
+		E9847B46BFAFF74104AFB839 /* DynamicFormStoredDecimal.swift in Sources */ = {isa = PBXBuildFile; fileRef = C72F6C310B497C21C60555DC /* DynamicFormStoredDecimal.swift */; };
 		E9AE1B44879CFA14634DA3DD /* FormProcessingWorkflowTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD7AFE58993D8F6D3337C6FE /* FormProcessingWorkflowTests.swift */; };
 		E9BC655973C460BD653C563D /* CardViewportHostHintsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0ED3F2338F4B022941AF6113 /* CardViewportHostHintsTests.swift */; };
 		E9C75485F92C113E7684C4E4 /* PlatformImagePhase3Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C805CA9CDAF550856B6C156 /* PlatformImagePhase3Tests.swift */; };
@@ -3639,6 +3643,7 @@
 		F730C5FEFB401B8CFBCCF9FB /* PhotoCallbackFunctionalTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE518F880E9CC53BCEE67078 /* PhotoCallbackFunctionalTests.swift */; };
 		F7348678BB3AC9CB3F042D22 /* IntelligentFormPackingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80946B34A5DEC8F744EEC5AA /* IntelligentFormPackingTests.swift */; };
 		F779AC1C228DBAB5F073D20F /* NativeTypesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F127275D2426698CB7EED69A /* NativeTypesTests.swift */; };
+		F78501D2899EF59A3E7648AF /* DynamicFormStoredDecimal.swift in Sources */ = {isa = PBXBuildFile; fileRef = C72F6C310B497C21C60555DC /* DynamicFormStoredDecimal.swift */; };
 		F7A4C528012569A7FDEF2343 /* SevenSegmentOCR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B76F2AC592AE7BC6F3248CF /* SevenSegmentOCR.swift */; };
 		F7AEF630EA2CA2B940936D51 /* InteractiveFormTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64584D1A47F0D077CF326AD1 /* InteractiveFormTests.swift */; };
 		F7AF01E4F8AFFF992CC5BE40 /* OCRSegmentLabelBinding.swift in Sources */ = {isa = PBXBuildFile; fileRef = 116E81ECB97ADA1FE356B240 /* OCRSegmentLabelBinding.swift */; };
@@ -4984,6 +4989,7 @@
 		C5BC59316ED38567F356453C /* HIGComplianceColorContrastTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HIGComplianceColorContrastTests.swift; sourceTree = "<group>"; };
 		C679AAA9ECA284F47B2727DC /* FormTestHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FormTestHelper.swift; sourceTree = "<group>"; };
 		C70CBB6B3A5CF69BD03AB665 /* AccessibilityTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessibilityTypes.swift; sourceTree = "<group>"; };
+		C72F6C310B497C21C60555DC /* DynamicFormStoredDecimal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DynamicFormStoredDecimal.swift; sourceTree = "<group>"; };
 		C76964D4BE510EDC67AE7133 /* PlatformReduceMotionPreference.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformReduceMotionPreference.swift; sourceTree = "<group>"; };
 		C8328938E5E043A86D861E14 /* FieldDisplayCharacterMetricsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FieldDisplayCharacterMetricsTests.swift; sourceTree = "<group>"; };
 		C89CC72A51B698960367C9CD /* ManagedSettingsPaneList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManagedSettingsPaneList.swift; sourceTree = "<group>"; };
@@ -5744,6 +5750,7 @@
 				60EF531CE9E02639FA372DF9 /* AdvancedFieldTypes.swift */,
 				5783D57CF47FD8CF6BF81230 /* DynamicFieldComponents.swift */,
 				0A0676CEBC17AD835250ED98 /* DynamicFormStoredDateValue.swift */,
+				C72F6C310B497C21C60555DC /* DynamicFormStoredDecimal.swift */,
 				734145FE59F0374C3CF5B4FD /* DynamicFormStoredNumericDisplay.swift */,
 				1C2B85546CDAA3A3CFAA2233 /* DynamicFormView.swift */,
 				F7B5709DD9536EEA8468F2A6 /* DynamicSelectField.swift */,
@@ -9044,6 +9051,7 @@
 				1D97AA9C6796D3A56C76D4C8 /* DynamicFieldComponents.swift in Sources */,
 				0D2D953C0E153E6C30435523 /* DynamicFontResolver.swift in Sources */,
 				EEE9521A70B2D44A671FB542 /* DynamicFormStoredDateValue.swift in Sources */,
+				685B00FEFB6CEB655236C734 /* DynamicFormStoredDecimal.swift in Sources */,
 				BB095166BBD791A5FBA2D598 /* DynamicFormStoredNumericDisplay.swift in Sources */,
 				E6BF8C9C21729A59E11B8464 /* DynamicFormTypes.swift in Sources */,
 				17C9DDA096B1E291680B1482 /* DynamicFormView.swift in Sources */,
@@ -9371,6 +9379,7 @@
 				C7FDD6C9A999B8A37F600C03 /* DynamicFieldComponents.swift in Sources */,
 				BE47C5D5EFDE31484525E169 /* DynamicFontResolver.swift in Sources */,
 				341A93C8DE348BD01F35D6D0 /* DynamicFormStoredDateValue.swift in Sources */,
+				E9847B46BFAFF74104AFB839 /* DynamicFormStoredDecimal.swift in Sources */,
 				C0A805E6C6843AF4561C575E /* DynamicFormStoredNumericDisplay.swift in Sources */,
 				3BB2CD9453D10FAD54642DF8 /* DynamicFormTypes.swift in Sources */,
 				8C7B123293D6BF61CBF78F53 /* DynamicFormView.swift in Sources */,
@@ -10017,6 +10026,7 @@
 				02743718BBBC4120F4BA8423 /* DynamicFieldComponents.swift in Sources */,
 				726BD44E5D2EFF7B634D5FAD /* DynamicFontResolver.swift in Sources */,
 				2425DA270EEE3735EE435013 /* DynamicFormStoredDateValue.swift in Sources */,
+				F78501D2899EF59A3E7648AF /* DynamicFormStoredDecimal.swift in Sources */,
 				FFCE8405FC024CC395A5F197 /* DynamicFormStoredNumericDisplay.swift in Sources */,
 				C79DB42DFBB242B830633806 /* DynamicFormTypes.swift in Sources */,
 				EA858063658A0B705D485371 /* DynamicFormView.swift in Sources */,
@@ -11309,6 +11319,7 @@
 				960D3127B3282D9E13EBEDDE /* DynamicFieldComponents.swift in Sources */,
 				45140EE22D9A8330033847AB /* DynamicFontResolver.swift in Sources */,
 				AC7BE5AF2C00F9F952C07915 /* DynamicFormStoredDateValue.swift in Sources */,
+				84F0A149317042C0F987D3DA /* DynamicFormStoredDecimal.swift in Sources */,
 				FB17AAF8AD9F6650AAEC5CDD /* DynamicFormStoredNumericDisplay.swift in Sources */,
 				2697C25BF380D6B5FE20739D /* DynamicFormTypes.swift in Sources */,
 				37F5AE998506CE64F2FC97E3 /* DynamicFormView.swift in Sources */,
@@ -11967,6 +11978,7 @@
 				722D30406D28D3C0A22191AA /* DynamicFieldComponents.swift in Sources */,
 				09D036D4C9765AF0860CAD8B /* DynamicFontResolver.swift in Sources */,
 				2BC1E670AD8F7F10435BE5D5 /* DynamicFormStoredDateValue.swift in Sources */,
+				91A0F8FDB1312464834FB53B /* DynamicFormStoredDecimal.swift in Sources */,
 				DCC0BA4A87BA13997E4D6D36 /* DynamicFormStoredNumericDisplay.swift in Sources */,
 				D606355EA33214B03326E855 /* DynamicFormTypes.swift in Sources */,
 				1F95989C67D115FF16A0EDC0 /* DynamicFormView.swift in Sources */,
