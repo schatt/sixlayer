@@ -107,6 +107,11 @@ public struct DisplayOCRTrainingView: View {
 
             selectablePath(session.exportRoot.path)
                 .automaticCompliance(named: "DisplayOCRTrainingExportRoot")
+
+            DisplayOCRTrainingLibrarySummary(
+                exampleCount: session.library.examples.count,
+                rejectionCount: session.library.rejections.count
+            )
         }
     }
 
@@ -420,13 +425,30 @@ private struct DisplayOCRTrainingExportFolderImporter: ViewModifier {
     }
 }
 
-/// Stub. The library count is not on screen yet.
+/// How many confirmed examples are in the export directory, and how many folders were skipped.
 struct DisplayOCRTrainingLibrarySummary: View {
     let exampleCount: Int
     let rejectionCount: Int
 
     var body: some View {
-        let _ = (exampleCount, rejectionCount)
-        EmptyView()
+        let i18n = InternationalizationService()
+        VStack(alignment: .leading, spacing: 4) {
+            Text(i18n.localizedString(
+                for: "SixLayerFramework.ocr.training.libraryCount",
+                arguments: ["\(exampleCount)"]
+            ))
+            .font(.caption)
+            .automaticCompliance(named: "DisplayOCRTrainingLibraryCount")
+
+            if rejectionCount > 0 {
+                Text(i18n.localizedString(
+                    for: "SixLayerFramework.ocr.training.librarySkipped",
+                    arguments: ["\(rejectionCount)"]
+                ))
+                .font(.caption)
+                .foregroundColor(.secondary)
+                .automaticCompliance(named: "DisplayOCRTrainingLibrarySkipped")
+            }
+        }
     }
 }
