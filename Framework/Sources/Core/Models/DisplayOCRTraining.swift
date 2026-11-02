@@ -589,6 +589,14 @@ public enum DisplayOCRTraining {
         return texts.map { labeledRow($0, box: nil, confidence: decoded.confidence) }
     }
 
+    /// Glyph rows become the line boxes only when there is one glyph row per line.
+    static func aligningSuggestion(
+        lines: [DisplayOCRTrainingRow],
+        glyphs: [DisplayOCRNormalizedBox]
+    ) -> (boxes: [DisplayOCRNormalizedBox], rows: [DisplayOCRTrainingRow]) {
+        (glyphs, lines)
+    }
+
     /// One box per panel line, top to bottom. Nil when a line is blank or the
     /// counts differ, so a tighter crop is still read on its own.
     private static func rowsPairedWithPanelLines(
