@@ -740,6 +740,119 @@ struct DisplayOCRTraining609Tests {
         #expect(session.label?.rows.first?.confirmedText == "KEEP")
     }
 
+    // MARK: - Phase C panel model
+
+    @Test func panelAnnotationsUseTheCenterOfEachPanel() throws {
+        let root = try makeDirectory("panel-train")
+        let library = DisplayOCRTrainingLibrary(
+            examples: [
+                panelExample(named: "example-a", panel: DisplayOCRNormalizedBox(x: 0.1, y: 0.2, width: 0.4, height: 0.2)),
+                panelExample(named: "blank", panel: DisplayOCRNormalizedBox(x: 0, y: 0, width: 0, height: 0))
+            ]
+        )
+        let set = try DisplayOCRPanelModel.writeTrainingSet(library, to: root)
+        let rows = try JSONDecoder().decode([DisplayOCRPanelAnnotation].self, from: Data(contentsOf: set.annotationFile))
+        let row = try #require(rows.first)
+        #expect(rows.count == 1)
+        #expect(row.imagefilename == "example-a.png")
+        #expect(row.annotation.map(\.label) == [DisplayOCRPanelModel.panelLabel])
+        let box = try #require(row.annotation.first).coordinates
+        #expect(abs(box.x - 0.3) < 0.000_001)
+        #expect(abs(box.y - 0.3) < 0.000_001)
+        #expect(abs(box.width - 0.4) < 0.000_001)
+        #expect(abs(box.height - 0.2) < 0.000_001)
+        let image = set.imageDirectory.appendingPathComponent("example-a.png")
+        #expect(try Data(contentsOf: image) == Data([9, 8, 7]))
+    }
+
+    @Test func visionPanelBoxMapsToTopLeftPixels() {
+        let mapped = DisplayOCRPanelModel.topLeftPixelRect(
+            visionBox: CGRect(x: 0.1, y: 0.6, width: 0.3, height: 0.2),
+            imageWidth: 1000,
+            imageHeight: 500
+        )
+        let rect = mapped ?? .zero
+        #expect(abs(rect.minX - 100) < 0.001)
+        #expect(abs(rect.minY - 100) < 0.001)
+        #expect(abs(rect.width - 300) < 0.001)
+        #expect(abs(rect.height - 100) < 0.001)
+    }
+
+    @Test func theHighestConfidentPanelBoxIsTheOneUsed() {
+        let panel = CGRect(x: 0.2, y: 0.3, width: 0.4, height: 0.1)
+        let chosen = DisplayOCRPanelModel.chosenVisionBox(from: [
+            DisplayOCRPanelCandidate(label: "other", confidence: 0.99, box: CGRect(x: 0, y: 0, width: 1, height: 1)),
+            DisplayOCRPanelCandidate(label: DisplayOCRPanelModel.panelLabel, confidence: 0.8, box: panel),
+            DisplayOCRPanelCandidate(label: DisplayOCRPanelModel.panelLabel, confidence: 0.4, box: CGRect(x: 0.1, y: 0.1, width: 0.2, height: 0.2)),
+            DisplayOCRPanelCandidate(label: DisplayOCRPanelModel.panelLabel, confidence: 0.29, box: CGRect(x: 0.5, y: 0.5, width: 0.2, height: 0.2))
+        ])
+        #expect(chosen == panel)
+        let weak = DisplayOCRPanelModel.chosenVisionBox(from: [
+            DisplayOCRPanelCandidate(label: DisplayOCRPanelModel.panelLabel, confidence: 0.29, box: panel)
+        ])
+        #expect(weak == nil)
+    }
+
+    @Test func aSuppliedPanelRectReplacesTheClassicalCrop() {
+        let frame = twoDigitFrame()
+        let decoded = SevenSegmentOCR.decode(
+            cgImage: frame.image,
+            deskewMaximumDegrees: 0,
+            localizeDigitPanel: true,
+            panelLocator: DisplayOCRPanelLocator { _ in frame.seven }
+        )
+        #expect(decoded.extractedText == "7")
+    }
+
+    @Test func ssocrUsesTheContextPanelLocator() async throws {
+        let frame = twoDigitFrame()
+        let context = OCRContext(
+            processingMode: .ssocr,
+            panelLocator: DisplayOCRPanelLocator { _ in frame.seven }
+        )
+        let strategy = OCRStrategy(
+            supportedTextTypes: [],
+            supportedLanguages: [.english],
+            processingMode: .ssocr
+        )
+        let result = try await OCRService().processImage(
+            PlatformImage(cgImage: frame.image),
+            context: context,
+            strategy: strategy
+        )
+        #expect(result.extractedText == "7")
+    }
+
+    @Test @MainActor func trainingAnEmptyLibraryDoesNotStart() {
+        let session = DisplayOCRTrainingSession()
+        session.trainPanelModel()
+        #if os(macOS)
+        #expect(session.panelTraining == .emptyLibrary)
+        #else
+        #expect(session.panelTraining == .requiresMacOS)
+        #endif
+    }
+
+    @Test func thePanelModelPackageIsNotALibraryFolder() throws {
+        let root = try makeDirectory("panel-model-lib")
+        let model = root.appendingPathComponent(DisplayOCRPanelModel.modelFileName, isDirectory: true)
+        try FileManager.default.createDirectory(at: model, withIntermediateDirectories: true)
+        try Data("model".utf8).write(to: model.appendingPathComponent("coremldata.bin"))
+        let library = DisplayOCRTraining.library(in: root)
+        #expect(library.examples.isEmpty)
+        #expect(library.rejections.isEmpty)
+    }
+
+    #if canImport(ViewInspector)
+    @Test @MainActor func theLibraryOffersPanelTraining() throws {
+        let title = InternationalizationService().localizedString(
+            for: "SixLayerFramework.ocr.training.trainPanel"
+        )
+        let summary = DisplayOCRTrainingLibrarySummary(exampleCount: 1, rejectionCount: 0)
+        _ = try summary.inspect().find(button: title)
+    }
+    #endif
+
     // MARK: - Fixtures
 
     private func makeDirectory(_ prefix: String) throws -> URL {
@@ -802,6 +915,27 @@ struct DisplayOCRTraining609Tests {
         named name: String
     ) -> DisplayOCRTrainingError? {
         library.rejections.first { $0.directory.lastPathComponent == name }?.error
+    }
+
+    private func panelExample(
+        named name: String,
+        panel: DisplayOCRNormalizedBox
+    ) -> DisplayOCRTrainingLibraryExample {
+        let directory = URL(fileURLWithPath: "/tmp/\(name)", isDirectory: true)
+        let label = DisplayOCRTrainingLabel(
+            schemaVersion: DisplayOCRTraining.schemaVersion,
+            origin: .topLeft,
+            imageFileName: DisplayOCRTraining.imageFileName,
+            imagePixelWidth: 200,
+            imagePixelHeight: 100,
+            sourceName: nil,
+            panel: panel,
+            rows: []
+        )
+        return DisplayOCRTrainingLibraryExample(
+            directory: directory,
+            package: DisplayOCRTrainingPackage(label: label, imagePNG: Data([9, 8, 7]))
+        )
     }
 
     private func trainingRow(text: String) -> DisplayOCRTrainingRow {
