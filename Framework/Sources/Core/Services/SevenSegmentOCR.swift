@@ -1167,7 +1167,7 @@ private extension GrayBuffer {
         if let rowFinder {
             return finderFragments(in: buffer, rowFinder: rowFinder, sampleBand: sampleBand)
         }
-        return readRows(in: buffer, allowBandPitch: true).compactMap { row in
+        return readRows(in: buffer, allowBandPitch: true, sampleBand: sampleBand).compactMap { row in
             let texts = recognizedGroups(row, width: buffer.width, height: buffer.height)
             return texts.isEmpty ? nil : texts
         }
