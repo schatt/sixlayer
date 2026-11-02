@@ -1312,12 +1312,46 @@ private extension GrayBuffer {
         return GrayBuffer(pixels: out, width: newW, height: newH)
     }
 
+    /// Area-average into a smaller buffer. Used so the finder does not walk
+    /// every pixel of a large sensor. The caller maps the rect back.
+    func downsampled(width targetWidth: Int, height targetHeight: Int) -> GrayBuffer {
+        guard targetWidth > 0, targetHeight > 0, width > 0, height > 0 else { return self }
+        if targetWidth == width, targetHeight == height { return self }
+        var out = [UInt8](repeating: 0, count: targetWidth * targetHeight)
+        for y in 0..<targetHeight {
+            let srcY0 = y * height / targetHeight
+            let srcY1 = min(height, max(srcY0 + 1, (y + 1) * height / targetHeight))
+            for x in 0..<targetWidth {
+                let srcX0 = x * width / targetWidth
+                let srcX1 = min(width, max(srcX0 + 1, (x + 1) * width / targetWidth))
+                var sum = 0
+                var count = 0
+                for sy in srcY0..<srcY1 {
+                    let row = sy * width
+                    for sx in srcX0..<srcX1 {
+                        sum += Int(pixels[row + sx])
+                        count += 1
+                    }
+                }
+                out[y * targetWidth + x] = count > 0 ? UInt8(sum / count) : 0
+            }
+        }
+        return GrayBuffer(pixels: out, width: targetWidth, height: targetHeight)
+    }
+
     /// Locate a sealed LCD glass (non-ink pocket closed by bezel ink) and
     /// expand by a bezel margin. Returns nil when the frame has no panel that
     /// is meaningfully smaller than the whole image (#596).
+    ///
+    /// Search runs at `findBufferSize`. The rect is in that buffer's pixels.
     func digitPanelBounds() -> CGRect? {
-        let raw = masks()
-        return largerRect(sealedPanelBounds(in: raw.dark), sealedPanelBounds(in: raw.light))
+        let target = SevenSegmentOCR.findBufferSize(width: width, height: height)
+        let searched = downsampled(width: target.width, height: target.height)
+        let raw = searched.masks()
+        return searched.largerRect(
+            searched.sealedPanelBounds(in: raw.dark),
+            searched.sealedPanelBounds(in: raw.light)
+        )
     }
 
     func frameCandidates(whole: SegmentFrameCandidate) -> [SegmentFrameCandidate] {
