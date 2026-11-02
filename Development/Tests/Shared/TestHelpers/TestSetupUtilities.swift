@@ -302,11 +302,34 @@ public enum TestSetupUtilities {
         exposeContentAccessibility: Bool = false,
         @ViewBuilder _ view: () -> V
     ) {
-        let (hosted, log) = hostRootPlatformViewNamedDebugLog(
+        let log = hostObservingNamedDebugLog(
             view(),
             exposeContentAccessibility: exposeContentAccessibility
         )
-        expectUnitLaneHostedRoot(hosted, debugLog: log, namedCompliance: name)
+        #if !os(watchOS) && !os(visionOS)
+        #expect(
+            log.contains(name),
+            "named compliance \(name) must appear in debug log"
+        )
+        #endif
+    }
+
+    /// Host under the unit-lane contract and return the debug log for custom content asserts (#622).
+    /// Observes nil-host + empty log on watchOS/visionOS; non-nil host on iOS/macOS.
+    @MainActor
+    @discardableResult
+    public static func hostObservingNamedDebugLog<V: View>(
+        _ view: V,
+        forceLayout: Bool = true,
+        exposeContentAccessibility: Bool = false
+    ) -> String {
+        let (hosted, log) = hostRootPlatformViewNamedDebugLog(
+            view,
+            forceLayout: forceLayout,
+            exposeContentAccessibility: exposeContentAccessibility
+        )
+        expectUnitLaneHostedRoot(hosted, debugLog: log)
+        return log
     }
 
     /// Shared unit-lane platform-root host observation (#622).
@@ -331,8 +354,7 @@ public enum TestSetupUtilities {
     @MainActor
     private static func expectUnitLaneHostedRoot(
         _ hosted: Any?,
-        debugLog: String? = nil,
-        namedCompliance: String? = nil
+        debugLog: String? = nil
     ) {
         #if os(watchOS) || os(visionOS)
         #expect(hosted == nil, "unit harness cannot host on this platform (#379/#380)")
@@ -341,12 +363,6 @@ public enum TestSetupUtilities {
         }
         #else
         #expect(hosted != nil)
-        if let namedCompliance, let debugLog {
-            #expect(
-                debugLog.contains(namedCompliance),
-                "named compliance \(namedCompliance) must appear in debug log"
-            )
-        }
         #endif
     }
     

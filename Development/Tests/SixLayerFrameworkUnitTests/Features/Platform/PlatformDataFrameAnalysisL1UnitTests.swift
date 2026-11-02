@@ -46,16 +46,12 @@ struct PlatformDataFrameAnalysisL1UnitTests {
 
     @Test @MainActor
     func analyzeDataFrameL1CustomVisualizationWrapsWithoutNamedRoot() {
-        let (hosted, log) = TestSetupUtilities.hostRootPlatformViewNamedDebugLog(
+        let log = TestSetupUtilities.hostObservingNamedDebugLog(
             platformAnalyzeDataFrame_L1(dataFrame: tinyFrame()) { inner in
                 AnyView(inner.padding())
             }
         )
-        #if os(watchOS) || os(visionOS)
-        #expect(hosted == nil, "unit harness cannot host on this platform (#379/#380)")
-        #expect(log.isEmpty)
-        #else
-        #expect(hosted != nil)
+        #if !os(watchOS) && !os(visionOS)
         #expect(
             !log.contains("NamedAutomaticComplianceModifier"),
             "custom visualization wrapper must stay anonymous (#245). log=\(String(log.suffix(400)))"
