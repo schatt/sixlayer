@@ -204,13 +204,12 @@ public enum DisplayOCRTraining {
     public static let labelFileName = "label.json"
     public static let exportDirectoryName = "display-ocr-training"
 
-    /// Stub: still the temporary directory, not the current directory.
+    /// `<current directory>/display-ocr-training`. The caller can replace this
+    /// with a directory the user picked.
     public static func defaultExportRoot(
         currentDirectory: URL = URL(fileURLWithPath: FileManager.default.currentDirectoryPath, isDirectory: true)
     ) -> URL {
-        _ = currentDirectory
-        return FileManager.default.temporaryDirectory
-            .appendingPathComponent(exportDirectoryName, isDirectory: true)
+        currentDirectory.appendingPathComponent(exportDirectoryName, isDirectory: true)
     }
 
     /// A display name with no path. Nil for empty, `.`, or `..`.
@@ -589,13 +588,24 @@ public final class DisplayOCRTrainingSession: ObservableObject {
         status = .exportFailed
     }
 
+    /// Use `url` as the directory that holds package folders. An existing file is ignored.
     public func setExportRoot(_ url: URL) {
+        var isDirectory: ObjCBool = false
+        if FileManager.default.fileExists(atPath: url.path, isDirectory: &isDirectory), !isDirectory.boolValue {
+            return
+        }
         exportRoot = url
     }
 
-    /// Stub: ignores the selected directory and writes to the temporary one.
+    /// Write `image.png` and `label.json` in a new folder under ``exportRoot``.
     public func export() throws -> DisplayOCRTrainingExport {
-        try exportToTemporaryDirectory()
+        try platformSecurityScopedAccess(url: exportRoot) { root in
+            let package = try makePackage()
+            let directory = root.appendingPathComponent(UUID().uuidString, isDirectory: true)
+            try DisplayOCRTraining.write(package, to: directory)
+            status = .exported(directory)
+            return DisplayOCRTrainingExport(directory: directory, package: package)
+        }
     }
 
     @discardableResult
