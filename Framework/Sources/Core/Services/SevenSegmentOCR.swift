@@ -1174,30 +1174,19 @@ private extension GrayBuffer {
     }
 
     /// One output line per finder band. A pair band may hold several digit
-    /// rows; those stay one line so the row finder, not the later merge,
-    /// decides the count.
+    /// rows; those cells stay on one line so the row finder decides the count.
     private static func finderFragments(
         in buffer: GrayBuffer,
         rowFinder: SegmentRowFinder,
         sampleBand: Int
     ) -> [[OCRRecognizedText]] {
-        let raw = buffer.masks()
-        let mask = prefersDark(raw.dark, raw.light) ? raw.dark : raw.light
-        let projected = projectionBands(mask.rowSums, height: buffer.height)
-        let bands = rowFinder == .deepestPair
-            ? pairBands(projected, height: buffer.height)
-            : projected
-        return bands.compactMap { band in
-            let y0 = max(0, band.0 - 4)
-            let y1 = min(buffer.height, band.1 + 4)
-            let crop = buffer.cropped(x0: 0, y0: y0, x1: buffer.width, y1: y1)
-            guard crop.width > 8, crop.height > 8 else { return nil }
-            let cells = readRows(
-                in: crop,
-                allowBandPitch: true,
-                sampleBand: sampleBand
-            ).flatMap { $0 }
-            let texts = recognizedGroups(cells, width: crop.width, height: crop.height)
+        readRows(
+            in: buffer,
+            allowBandPitch: true,
+            sampleBand: sampleBand,
+            rowFinder: rowFinder
+        ).compactMap { row in
+            let texts = recognizedGroups(row, width: buffer.width, height: buffer.height)
             return texts.isEmpty ? nil : texts
         }
     }
@@ -1475,7 +1464,8 @@ private extension GrayBuffer {
         splittingRows: Bool = true,
         preferredPitch: PreferredDigitPitch? = nil,
         allowBandPitch: Bool = false,
-        sampleBand: Int = 0
+        sampleBand: Int = 0,
+        rowFinder: SegmentRowFinder? = nil
     ) -> [[Cell]] {
         let raw = buffer.masks()
         // A frame inside the crop seals the glass. Ink outside that glass is the bezel.
@@ -1503,6 +1493,41 @@ private extension GrayBuffer {
             trace(
                 "read \(buffer.width)x\(buffer.height) dark=\(primaryIsDark) opened=\(opened) ink=\(ink)\n"
             )
+        }
+        if let rowFinder {
+            let projected = projectionBands(glyphs.rowSums, height: buffer.height)
+            let lines = rowFinder == .deepestPair
+                ? pairBands(projected, height: buffer.height)
+                : projected
+            let paintedMarks = buffer.extremeMarkMask()
+            func rowCells(_ band: (Int, Int)) -> [Cell] {
+                let found = cells(
+                    in: band,
+                    mask: glyphs,
+                    buffer: buffer,
+                    bandIndex: 0,
+                    darkInk: primaryIsDark,
+                    preferredPitch: preferredPitch,
+                    sampleBand: sampleBand
+                )
+                let marks = opened
+                    ? []
+                    : oppositeMarks(in: band, secondary: paintedMarks, existing: found, buffer: buffer, bandIndex: 0)
+                let dots = baselineDots(in: band, mask: glyphs, cells: found, width: buffer.width, bandIndex: 0)
+                var row = found + marks + dots
+                if preferredPitch != nil {
+                    row = pitchRowMarks(row, mask: glyphs, band: band, width: buffer.width)
+                }
+                return row
+            }
+            let decoded = projected.map(rowCells)
+            return lines.compactMap { line in
+                var combined: [Cell] = []
+                for (band, row) in zip(projected, decoded) where band.0 >= line.0 && band.1 <= line.1 {
+                    combined.append(contentsOf: row)
+                }
+                return combined.isEmpty ? nil : combined
+            }
         }
         let bandSums = opened ? digitRowSums(bandSource.rowSums) : bandSource.rowSums
         let foundBands = runs(bandSums)
