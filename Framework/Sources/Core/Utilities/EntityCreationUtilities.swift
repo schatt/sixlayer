@@ -57,6 +57,24 @@ public enum EntityCreationUtilities {
         context: NSManagedObjectContext,
         fieldHints: [String: FieldDisplayHints]? = nil
     ) throws -> NSManagedObject {
+        try createCoreDataEntity(
+            entityName: entityName,
+            values: values,
+            context: context,
+            fieldHints: fieldHints,
+            locale: .current
+        )
+    }
+
+    /// `locale` selects the decimal separator and date style the form wrote (#621).
+    /// Callers omit it; creation then uses `Locale.current`. POSIX forms still parse.
+    static func createCoreDataEntity(
+        entityName: String,
+        values: [String: Any],
+        context: NSManagedObjectContext,
+        fieldHints: [String: FieldDisplayHints]? = nil,
+        locale: Locale
+    ) throws -> NSManagedObject {
         guard let description = insertableEntity(named: entityName, in: context) else {
             throw CoreDataCreationError.unavailable(entityName: entityName)
         }
@@ -66,7 +84,7 @@ public enum EntityCreationUtilities {
             if let hints = fieldHints, let hint = hints[fieldId], hint.isHidden {
                 continue
             }
-            let prepared = preparedValue(value, forKey: fieldId, on: description)
+            let prepared = preparedValue(value, forKey: fieldId, on: description, locale: locale)
             if let rejection = assignmentRejection(
                 value: prepared,
                 key: fieldId,
@@ -109,6 +127,22 @@ public enum EntityCreationUtilities {
         fields: [DataField],
         fieldHints: [String: FieldDisplayHints]
     ) -> NSManagedObject? {
+        createBlankCoreDataEntity(
+            entityName: entityName,
+            context: context,
+            fields: fields,
+            fieldHints: fieldHints,
+            locale: .current
+        )
+    }
+
+    static func createBlankCoreDataEntity(
+        entityName: String,
+        context: NSManagedObjectContext,
+        fields: [DataField],
+        fieldHints: [String: FieldDisplayHints],
+        locale: Locale
+    ) -> NSManagedObject? {
         guard let description = insertableEntity(named: entityName, in: context) else {
             return nil
         }
@@ -124,7 +158,7 @@ public enum EntityCreationUtilities {
             } else {
                 value = getDefaultValueForType(field.type)
             }
-            let prepared = preparedValue(value, forKey: field.name, on: description)
+            let prepared = preparedValue(value, forKey: field.name, on: description, locale: locale)
             if assignmentRejection(
                 value: prepared,
                 key: field.name,
@@ -189,13 +223,19 @@ public enum EntityCreationUtilities {
     private static func preparedValue(
         _ value: Any?,
         forKey key: String,
-        on description: NSEntityDescription
+        on description: NSEntityDescription,
+        locale: Locale
     ) -> Any? {
         guard let attribute = description.attributesByName[key] else { return value }
-        return valueReadyToAssign(value, to: attribute)
+        return valueReadyToAssign(value, to: attribute, locale: locale)
     }
 
-    private static func valueReadyToAssign(_ value: Any?, to attribute: NSAttributeDescription) -> Any? {
+    private static func valueReadyToAssign(
+        _ value: Any?,
+        to attribute: NSAttributeDescription,
+        locale: Locale
+    ) -> Any? {
+        _ = locale
         guard let value else { return nil }
         if valueFits(value, attribute: attribute) { return value }
         switch attribute.attributeType {
