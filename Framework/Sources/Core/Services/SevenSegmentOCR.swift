@@ -2150,10 +2150,10 @@ private func readingSpan(_ mask: Mask, bands: [(Int, Int)]) -> (Int, Int)? {
     }
     let active = keep.indices.filter { keep[$0] }
     guard let first = active.first else { return nil }
-    // The hole between strokes grows with the row. A fixed 16px cap is the
-    // intra-digit gap of a small fixture; on a tall row it keeps one cell
-    // and drops the rest of the line. A tenth of the row stays under the
-    // clear gap before a left scratch (~54px on that fixture).
+    // The hole between strokes grows with the row. A fixed 16px cap keeps
+    // one cell of a tall row: scale-4 strokes sit 32px apart. A tenth of
+    // the row joins that hole. A group gap is wider than this on the
+    // small fixtures.
     let rowHeight = bands.map { max(0, $0.1 - $0.0) }.max() ?? height
     let gapLimit = max(8, rowHeight / 10)
     var runs: [(start: Int, end: Int, ink: Int)] = []
