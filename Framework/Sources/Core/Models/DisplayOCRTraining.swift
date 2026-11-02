@@ -597,7 +597,7 @@ public enum DisplayOCRTraining {
     ) -> [DisplayOCRTrainingRow]? {
         guard lines.count > 1, lines.count == boxes.count else { return nil }
         guard lines.allSatisfy({ !$0.decodedText.isEmpty }) else { return nil }
-        guard stacked(boxes), boxes.allSatisfy({ $0.width > $0.height * 1.5 }) else { return nil }
+        guard stacked(boxes), wideRows(boxes) else { return nil }
         let ordered = boxes.sorted { lhs, rhs in
             if lhs.y == rhs.y { return lhs.x < rhs.x }
             return lhs.y < rhs.y
@@ -618,6 +618,11 @@ public enum DisplayOCRTraining {
             if shorter > 0, overlap > shorter * 0.5 { return false }
         }
         return true
+    }
+
+    /// A line of digits is wider than it is tall. A single digit is not.
+    private static func wideRows(_ boxes: [DisplayOCRNormalizedBox]) -> Bool {
+        boxes.allSatisfy { $0.width > $0.height * 1.5 }
     }
 
     fileprivate static let unitSquare = DisplayOCRNormalizedBox(x: 0, y: 0, width: 1, height: 1)
