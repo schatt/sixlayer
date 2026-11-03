@@ -46,6 +46,23 @@ private func createNavigationView<Content: View>(
     #endif
 }
 
+/// Drop-in NavigationStack host without L1→L3 strategy (Issue #637).
+/// Applies accessibility compliance plus L5/L6 stack modifiers.
+///
+/// Use when you need a root/host stack and are not running the semantic pipeline.
+/// For strategy-driven stacks, prefer ``platformImplementNavigationStack_L4`` or
+/// ``platformPresentNavigationStack_L1``.
+///
+/// - Parameter content: Root content hosted inside the stack.
+/// - Returns: Platform navigation stack wrapping `content`.
+@MainActor
+public func platformNavigationStack<Content: View>(
+    @ViewBuilder content: () -> Content
+) -> some View {
+    // Deliberate stub for TDD red (#637): return bare content so stack/L5 assertions fail.
+    content()
+}
+
 /// Implement NavigationStack based on Layer 3 strategy
 /// Layer 4: Component Implementation
 /// Note: Requires @MainActor because it calls main-actor isolated view methods
