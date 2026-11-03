@@ -171,12 +171,7 @@ private struct GrayBuffer {
     }
 
     static func deskew(_ buffer: GrayBuffer, maximumDegrees: Double) -> GrayBuffer {
-        // A glyph-tight crop has no glass for the threshold window. A few
-        // pixels of pad restore an upright read so standingUp is not tempted
-        // by a half-turn of 0/2/8 (#625). Full panels already have glass.
-        let shortSide = min(buffer.width, buffer.height)
-        let prepared = buffer.paddedForReading(margin: shortSide < 140 ? 12 : 0)
-        let turned = standingUp(prepared)
+        let turned = standingUp(buffer)
         let limit = Int(max(0, maximumDegrees).rounded(.down))
         guard limit > 0 else { return turned }
         let small = turned.fitted(maxSide: 280)
