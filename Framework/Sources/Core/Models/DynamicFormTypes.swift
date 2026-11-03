@@ -1037,6 +1037,9 @@ public struct DynamicFormConfiguration: Identifiable {
     public let topContentPadding: CGFloat
     public let sections: [DynamicFormSection]
     public let submitButtonText: String
+    /// When `false`, `DynamicFormView` omits the framework Submit control so the host can own Save
+    /// (toolbar / safeAreaInset) without a second Save — OCR / Scan Document chrome still draws (#640).
+    public let showsSubmitButton: Bool
     public let cancelButtonText: String?
     public let metadata: [String: String]?
     /// Optional model name for auto-loading hints from .hints files
@@ -1061,6 +1064,7 @@ public struct DynamicFormConfiguration: Identifiable {
         topContentPadding: CGFloat = 20,
         sections: [DynamicFormSection] = [],
         submitButtonText: String = "Submit",
+        showsSubmitButton: Bool = true,
         cancelButtonText: String? = "Cancel",
         metadata: [String: String]? = nil,
         modelName: String? = nil,
@@ -1078,6 +1082,7 @@ public struct DynamicFormConfiguration: Identifiable {
         self.topContentPadding = topContentPadding
         self.sections = sections
         self.submitButtonText = submitButtonText
+        self.showsSubmitButton = showsSubmitButton
         self.cancelButtonText = cancelButtonText
         self.metadata = metadata
         self.modelName = modelName
@@ -1183,6 +1188,7 @@ public struct DynamicFormConfiguration: Identifiable {
             topContentPadding: topContentPadding,
             sections: sectionsWithHints,
             submitButtonText: submitButtonText,
+            showsSubmitButton: showsSubmitButton,
             cancelButtonText: cancelButtonText,
             metadata: metadata,
             modelName: modelName,
@@ -2163,6 +2169,7 @@ public struct DynamicFormBuilder {
         hostProvidesPrimaryHeading: Bool = false,
         topContentPadding: CGFloat = 20,
         submitButtonText: String = "Submit",
+        showsSubmitButton: Bool = true,
         cancelButtonText: String? = "Cancel",
         selectAllOnBeginEditing: Bool = false
     ) -> DynamicFormConfiguration {
@@ -2182,6 +2189,7 @@ public struct DynamicFormBuilder {
             topContentPadding: topContentPadding,
             sections: sections,
             submitButtonText: submitButtonText,
+            showsSubmitButton: showsSubmitButton,
             cancelButtonText: cancelButtonText,
             selectAllOnBeginEditing: selectAllOnBeginEditing
         )
