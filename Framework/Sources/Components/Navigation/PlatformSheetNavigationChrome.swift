@@ -1,3 +1,11 @@
+//
+//  PlatformSheetNavigationChrome.swift
+//  SixLayerFramework
+//
+//  Pure decision + compile-time apply for platformSheet NavigationStack chrome (#636).
+//  Mirrors the #447 sidebar/overlay pattern so Mirror subject types stay platform-truthful.
+//
+
 import Foundation
 import SwiftUI
 
@@ -21,7 +29,7 @@ public func platformSheetNavigationChrome(for platform: SixLayerPlatform) -> Pla
 }
 
 public extension View {
-    /// Sheet presented root: NavigationStack on iOS and macOS (#636 parity).
+    /// Sheet presented root: `NavigationStack` on iOS and macOS.
     /// Apply path matches `platformSheetNavigationChrome(for: .current)`.
     @MainActor
     func platformSheetNavigationChrome() -> some View {
