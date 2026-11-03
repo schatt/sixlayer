@@ -2603,6 +2603,55 @@ open class DynamicFormViewTests: BaseTestClass {
         }
     }
     
+    // MARK: - showsSubmitButton (Issue #640 / CarManager #1399)
+
+    /// Default / true keeps framework Submit; false omits it while OCR Scan Document stays (#640).
+    @Test @MainActor func testShowsSubmitButton_bothDirections_keepsOCRChrome() async {
+        initializeTestConfig()
+        let ocrField = DynamicFormField(
+            id: "title",
+            contentType: .text,
+            label: "Title",
+            supportsOCR: true,
+            ocrHints: ["title"]
+        )
+        let section = DynamicFormSection(id: "s1", title: "Details", fields: [ocrField])
+
+        let shown = DynamicFormConfiguration(
+            id: "shown-submit",
+            title: "Shown Submit",
+            sections: [section],
+            submitButtonText: "Save Record",
+            showsSubmitButton: true
+        )
+        let hidden = DynamicFormConfiguration(
+            id: "hidden-submit",
+            title: "Hidden Submit",
+            sections: [section],
+            submitButtonText: "Save Record",
+            showsSubmitButton: false
+        )
+        #expect(shown.showsSubmitButton, "Default path must keep Submit visible (#640)")
+        #expect(!hidden.showsSubmitButton, "Opt-out must hide Submit (#640)")
+
+        #if canImport(ViewInspector)
+        let shownView = DynamicFormView(configuration: shown, onSubmit: { _ in })
+        let hiddenView = DynamicFormView(configuration: hidden, onSubmit: { _ in })
+        #expect(
+            expectsNamedCompliance(shownView, named: "SubmitButton"),
+            "showsSubmitButton true must expose SubmitButton compliance (#640)"
+        )
+        #expect(
+            !expectsNamedCompliance(hiddenView, named: "SubmitButton"),
+            "showsSubmitButton false must omit SubmitButton (#640)"
+        )
+        #expect(
+            expectsBatchOCRButton(hiddenView, configuration: hidden),
+            "Hiding Submit must not drop Scan Document / BatchOCR chrome (#640)"
+        )
+        #endif
+    }
+
     // MARK: - Injected formState (Issue #186)
     
     /// When host provides formState via environment, form uses it; onSubmit receives that formState's fieldValues (Issue #186).
