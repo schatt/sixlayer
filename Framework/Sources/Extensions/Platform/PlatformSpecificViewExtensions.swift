@@ -693,29 +693,22 @@ public extension View {
     ) -> some View {
         #if os(iOS)
         return self.sheet(isPresented: isPresented, onDismiss: onDismiss) {
-            Group {
-                if #available(iOS 16.0, *) {
-                    NavigationStack {
-                        content()
-                    }
-                } else {
-                    NavigationView {
-                        content()
-                    }
-                }
-            }
-            .platformPresentationFrame(sizes: sizes)
-            .platformPresentationDetents(fromSizes: sizes)
-            .deviceAwareFrame()
+            content()
+                .platformSheetNavigationChrome()
+                .platformPresentationFrame(sizes: sizes)
+                .platformPresentationDetents(fromSizes: sizes)
+                .deviceAwareFrame()
         }
         #elseif os(macOS)
         return self.sheet(isPresented: isPresented, onDismiss: onDismiss) {
             content()
+                .platformSheetNavigationChrome()
                 .platformPresentationFrame(sizes: sizes)
         }
         #else
         return self.sheet(isPresented: isPresented, onDismiss: onDismiss) {
             content()
+                .platformSheetNavigationChrome()
                 .platformPresentationFrame(sizes: sizes)
         }
         #endif
