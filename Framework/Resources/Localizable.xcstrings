@@ -34470,39 +34470,6 @@
       "extractionState" : "manual",
       "shouldTranslate" : false
     },
-    "example-pending %@" : {
-
-    },
-    "progress-pending %@ %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "progress-pending %1$@ %2$@"
-          }
-        }
-      }
-    },
-    "rows-pending %@ %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "rows-pending %1$@ %2$@"
-          }
-        }
-      }
-    },
-    "skip-pending %@ %@ %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "skip-pending %1$@ %2$@ %3$@"
-          }
-        }
-      }
-    },
     "•" : {
       "extractionState" : "manual",
       "shouldTranslate" : false
