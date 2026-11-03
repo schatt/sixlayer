@@ -122,15 +122,13 @@ struct OCRSevenSegment576Tests {
         #expect(decode(image, maximum: 0).extractedText == "32.88\n8.022")
     }
 
-    /// Glare through the row gap on the first digit's left stem. A bezel keeps
-    /// the glass open so that narrow mark does not join the two lines. The
-    /// stem is still part of the digit.
+    /// Glare through the row gap on the first digit's left stem. Padding keeps
+    /// that gap a thin valley, so the lines stay split. The stem is still
+    /// part of the 8.
     @Test func leadingValleyStripeKeepsTheFirstDigit() {
-        let price = String(repeating: "8", count: 12)
         let image = SegmentPanel.render(
-            rows: [atoms(price), atoms("8.022")],
-            bezelLevel: 40,
-            bezelWidth: 8,
+            rows: [atoms("82.88"), atoms("8.022")],
+            padding: 160,
             leadingValleyStripe: true
         )
         let result = decode(image, maximum: 0)
@@ -138,7 +136,7 @@ struct OCRSevenSegment576Tests {
             let box = text.boundingBox
             return "\(text.text) y\(Int((box.minY * 100).rounded())) h\(Int((box.height * 100).rounded()))"
         }.joined(separator: " | ")
-        #expect(result.extractedText == "\(price)\n8.022", "cells \(cells)")
+        #expect(result.extractedText == "82.88\n8.022", "cells \(cells)")
     }
 
     @Test func digitPitchCutsASolidWashBridge() {
