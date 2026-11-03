@@ -262,7 +262,7 @@ List {
 
 Provides consistent sheet presentation across platforms using `PlatformPresentationSize` (#384).
 
-**Navigation chrome** (#636): presented roots are wrapped in `NavigationStack` on **iOS and macOS** via `platformSheetNavigationChrome()`, so `.navigationTitle` and toolbar dismiss controls work without `#if os`. Secondary platforms leave content unmodified. Prefer this over wrapping a second stack yourself. `platformSheet_L4` does **not** apply this chrome — call `platformSheetNavigationChrome()` on L4 content when you need the same root.
+**Navigation chrome** (#636 / #639): presented roots are wrapped in `NavigationStack` on **iOS and macOS** via `platformSheetNavigationChrome()`, so `.navigationTitle` and toolbar dismiss controls work without `#if os`. Applies to both the sizes overload and the no-`sizes:` `platformSheet` alias (alias routes through the sizes path). Secondary platforms leave content unmodified. Prefer this over wrapping a second stack yourself. `platformSheet_L4` does **not** apply this chrome (wrapper-minimal per #193) — call `platformSheetNavigationChrome()` on L4 content when you need the same root.
 
 **Size hints** (not raw SwiftUI detents):
 
