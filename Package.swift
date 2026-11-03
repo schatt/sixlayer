@@ -1,5 +1,5 @@
 // swift-tools-version: 6.0
-// SixLayerFramework v8.7.0 - Minor: seven-segment OCR (#576); optional hints and public DataBinder (#581, #585); Vision resume once (#563, #574)
+// SixLayerFramework v8.7.1 - Patch: DynamicFormConfiguration.showsSubmitButton (#640)
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
