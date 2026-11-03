@@ -1270,27 +1270,57 @@ public func platformButton(
     )
 }
 
-/// Drop-in Button with title + SF Symbol (`Label`).
-/// Deliberate incomplete stub for Issue #635 red: no automaticCompliance yet.
+/// Drop-in Button with title + SF Symbol (`Label`), matching `Button("…", systemImage:)`.
+/// When `id` is nil, the accessibility identifier is auto-derived from `label` (sanitized).
+///
+/// ## Usage Example
+/// ```swift
+/// platformButton(label: "Add Place", systemImage: "plus") { addPlace() }
+/// platformButton(label: "Add Place", systemImage: "plus", id: "toolbar-add-place") { addPlace() }
+/// ```
 public func platformButton(
     label: String,
     systemImage: String,
     id: String? = nil,
     action: @escaping () -> Void
 ) -> some View {
-    _ = id
+    let identifierName = id ?? sanitizeLabelText(label)
     return Button(action: action) {
         Label(label, systemImage: systemImage)
     }
+    .automaticCompliance(
+        identifierName: identifierName,
+        identifierElementType: "Button",
+        accessibilityLabel: label,
+        accessibilityHint: generateAccessibilityHintForButton(label: label),
+        accessibilityTraits: .isButton
+    )
 }
 
-/// Drop-in Button with custom `@ViewBuilder` label.
-/// Deliberate incomplete stub for Issue #635 red: no automaticCompliance yet.
+/// Drop-in Button with a custom `@ViewBuilder` label (e.g. name + price `HStack`).
+/// Prefer an explicit `id` so the accessibility identifier is stable; when nil,
+/// automaticCompliance still applies element type / traits without a fixed name.
+///
+/// ## Usage Example
+/// ```swift
+/// platformButton(id: "paywall-product-row") {
+///     purchase()
+/// } label: {
+///     HStack {
+///         Text("Plus")
+///         Text("$4.99")
+///     }
+/// }
+/// ```
 public func platformButton<LabelContent: View>(
     id: String? = nil,
     action: @escaping () -> Void,
     @ViewBuilder label: () -> LabelContent
 ) -> some View {
-    _ = id
-    return Button(action: action, label: label)
+    Button(action: action, label: label)
+        .automaticCompliance(
+            identifierName: id,
+            identifierElementType: "Button",
+            accessibilityTraits: .isButton
+        )
 }
