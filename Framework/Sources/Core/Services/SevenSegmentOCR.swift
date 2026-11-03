@@ -2183,10 +2183,54 @@ private func readingSpan(_ mask: Mask, bands: [(Int, Int)]) -> (Int, Int)? {
         }
     }
     runs.append((start, end + 1, ink))
-    guard let best = runs.max(by: { $0.ink < $1.ink }) else { return nil }
+    // A glare column through the price is wider than a speck and still
+    // narrower than a frame. Both sides are digits, so keep them in one
+    // span. A speck past a real strip has too little ink to join.
+    let glareLimit = max(bezelWidth, rowHeight / 12)
+    let kept = joinedAcrossGlare(
+        runs,
+        edgeColumn: edgeColumn,
+        glareLimit: glareLimit,
+        rowHeight: rowHeight
+    )
+    guard let best = kept.max(by: { $0.ink < $1.ink }) else { return nil }
     let span = best.end - best.start
     guard span > max(12, height / 10) else { return nil }
     return (best.start, best.end)
+}
+
+/// Pull digit runs back together across a glare column. The column is edge
+/// ink in the row gap, so the first pass splits there. A speck on the far
+/// side of a frame stays split: it is narrower than a digit.
+private func joinedAcrossGlare(
+    _ runs: [(start: Int, end: Int, ink: Int)],
+    edgeColumn: [Bool],
+    glareLimit: Int,
+    rowHeight: Int
+) -> [(start: Int, end: Int, ink: Int)] {
+    guard var previous = runs.first else { return [] }
+    let minWidth = max(12, rowHeight / 3)
+    var merged: [(start: Int, end: Int, ink: Int)] = []
+    for run in runs.dropFirst() {
+        let gap = run.start - previous.end
+        var edgeCount = 0
+        if gap > 0 {
+            for x in previous.end..<run.start where x >= 0 && x < edgeColumn.count && edgeColumn[x] {
+                edgeCount += 1
+            }
+        }
+        let previousWidth = previous.end - previous.start
+        let runWidth = run.end - run.start
+        let glare = gap > 0 && edgeCount <= glareLimit && edgeCount * 2 >= gap
+        if glare, previousWidth >= minWidth, runWidth >= minWidth {
+            previous = (previous.start, run.end, previous.ink + run.ink)
+        } else {
+            merged.append(previous)
+            previous = run
+        }
+    }
+    merged.append(previous)
+    return merged
 }
 
 /// When a row band is taller than a price crop, keep the densest window of
