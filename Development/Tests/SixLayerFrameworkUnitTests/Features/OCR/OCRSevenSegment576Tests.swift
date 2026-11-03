@@ -349,18 +349,6 @@ struct OCRSevenSegment576Tests {
         #expect(result.extractedText == "1,234.56")
     }
 
-    @Test func thinnerMaskLosesWhenItCollapsesBothRows() {
-        // A bright wash through the gap is less ink than the strokes, so the
-        // thinner-mask rule picks it. That wash is one full-height band. The
-        // dark mask still has two digit rows.
-        let image = SegmentPanel.render(
-            rows: [atoms("32.88"), atoms("8.022")],
-            brightGapWash: true
-        )
-        let report = decode(image).extractedText
-        #expect(report == "32.88\n8.022", "\(report)")
-    }
-
     @Test func glareAndBothPolaritiesDecodeTheSameDigits() {
         let rows = [atoms("31.25")]
         let glared = decode(SegmentPanel.render(rows: rows, glare: true))
@@ -1290,7 +1278,6 @@ private enum SegmentPanel {
         padding: Int = 16,
         invert: Bool = false,
         glare: Bool = false,
-        brightGapWash: Bool = false,
         tiltDegrees: Double = 0,
         inkLevel: UInt8? = nil,
         backgroundLevel: UInt8? = nil,
@@ -1354,15 +1341,6 @@ private enum SegmentPanel {
         }
         if gapGlare {
             paintGapGlare(&pixels, width: width, height: height, bands: laid.rowBands)
-        }
-        if brightGapWash {
-            paintBrightGapWash(
-                &pixels,
-                width: width,
-                height: height,
-                bands: laid.rowBands,
-                strokes: laid.strokes
-            )
         }
         if aboveDigitGlare {
             paintAboveDigitGlare(
@@ -1442,37 +1420,6 @@ private enum SegmentPanel {
             for y in y0..<y1 {
                 for x in x0..<x1 {
                     pixels[y * width + x] = ink
-                }
-            }
-        }
-    }
-
-    /// Bright pixels through the inter-row gap, only on columns that already
-    /// hold a stroke. Alternating with the background keeps a local contrast
-    /// so the light mask is marked through the whole gap.
-    private static func paintBrightGapWash(
-        _ pixels: inout [UInt8],
-        width: Int,
-        height: Int,
-        bands: [RowBand],
-        strokes: [Stroke]
-    ) {
-        guard bands.count >= 2 else { return }
-        var columns = Array(repeating: false, count: width)
-        for stroke in strokes where !stroke.opposite {
-            let start = max(0, Int(stroke.rect.minX))
-            let end = min(width, Int(stroke.rect.maxX))
-            guard start < end else { continue }
-            for x in start..<end { columns[x] = true }
-        }
-        for index in 0..<(bands.count - 1) {
-            let top = min(height, bands[index].maxY)
-            let bottom = max(0, bands[index + 1].minY)
-            guard top < bottom else { continue }
-            for y in top..<bottom {
-                for x in 0..<width where columns[x] {
-                    guard x % 2 == (y % 2) else { continue }
-                    pixels[y * width + x] = 255
                 }
             }
         }
