@@ -480,8 +480,16 @@ private struct DisplayOCRTrainingExportFolderImporter: ViewModifier {
 struct DisplayOCRTrainingLibrarySummary: View {
     let exampleCount: Int
     let rejectionCount: Int
+    var rowBoxCount: Int = 0
+    var panelOnlyCount: Int = 0
+    var exampleNames: [String] = []
+    var skipped: [DisplayOCRTrainingSkippedFolder] = []
+    var reindexProgress: DisplayOCRTrainingReindexProgress?
     var training: DisplayOCRPanelTrainingState = .idle
     var onTrain: () -> Void = {}
+    var onReindex: () -> Void = {}
+    var onOpen: (String) -> Void = { _ in }
+    var onRemove: (String) -> Void = { _ in }
 
     var body: some View {
         let i18n = InternationalizationService()
@@ -493,6 +501,19 @@ struct DisplayOCRTrainingLibrarySummary: View {
             .font(.caption)
             .automaticCompliance(named: "DisplayOCRTrainingLibraryCount")
 
+            Text("rows-pending \(rowBoxCount) \(panelOnlyCount)")
+                .font(.caption)
+            ForEach(exampleNames, id: \.self) { name in
+                Text("example-pending \(name)")
+                Button("open-pending \(name)") { onOpen(name) }
+                Button("remove-pending \(name)") { onRemove(name) }
+            }
+            if let reindexProgress {
+                Text("progress-pending \(reindexProgress.completed) \(reindexProgress.total)")
+                    .font(.caption)
+            }
+            Button("reindex-pending") { onReindex() }
+
             if rejectionCount > 0 {
                 Text(i18n.localizedString(
                     for: "SixLayerFramework.ocr.training.librarySkipped",
@@ -501,6 +522,14 @@ struct DisplayOCRTrainingLibrarySummary: View {
                 .font(.caption)
                 .foregroundColor(.secondary)
                 .automaticCompliance(named: "DisplayOCRTrainingLibrarySkipped")
+            }
+
+            ForEach(skipped) { folder in
+                Text("skip-pending \(folder.name) \(folder.reason.rawValue) \(folder.canOpen)")
+                if folder.canOpen {
+                    Button("open-pending \(folder.name)") { onOpen(folder.name) }
+                }
+                Button("remove-pending \(folder.name)") { onRemove(folder.name) }
             }
 
             Button(i18n.localizedString(for: "SixLayerFramework.ocr.training.trainPanel")) {
