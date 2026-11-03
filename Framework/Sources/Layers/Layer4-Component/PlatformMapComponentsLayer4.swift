@@ -46,12 +46,32 @@ public enum PlatformMapComponentsLayer4 {
                 content()
             }
         }
-        .frame(minWidth: 1, minHeight: 1)
-        .accessibilityElement(children: .ignore)
-        .automaticCompliance(named: "platformMapView_L4")
-        .accessibilityIdentifier("platformMapView_L4")
+        .platformMapViewL4Chrome()
         #else
         // MapKit not available - provide fallback UI
+        UnsupportedPlatformMapView()
+            .automaticCompliance(named: "platformMapView_L4")
+        #endif
+    }
+
+    /// Creates a platform-specific map view that forwards SwiftUI Map selection.
+    /// Use with `.tag` on `Marker` / `Annotation` the same way as raw `Map(position:selection:)`.
+    /// Note: Requires @MainActor because Map is a View
+    @ViewBuilder
+    @MainActor
+    public static func platformMapView_L4<SelectionValue: Hashable>(
+        position: Binding<MapCameraPosition>,
+        selection: Binding<SelectionValue?>,
+        @MapContentBuilder content: () -> some MapContent
+    ) -> some View {
+        #if os(iOS) || os(macOS)
+        Group {
+            Map(position: position, selection: selection) {
+                content()
+            }
+        }
+        .platformMapViewL4Chrome()
+        #else
         UnsupportedPlatformMapView()
             .automaticCompliance(named: "platformMapView_L4")
         #endif
@@ -81,10 +101,7 @@ public enum PlatformMapComponentsLayer4 {
                 }
             }
         }
-        .frame(minWidth: 1, minHeight: 1)
-        .accessibilityElement(children: .ignore)
-        .automaticCompliance(named: "platformMapView_L4")
-        .accessibilityIdentifier("platformMapView_L4")
+        .platformMapViewL4Chrome()
         #else
         // MapKit not available
         UnsupportedPlatformMapView()
@@ -252,6 +269,22 @@ private struct MapViewWithLocationService: View {
 }
 #endif
 
+// MARK: - Map chrome (shared contract)
+
+#if os(iOS) || os(macOS)
+@available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+private extension View {
+    /// Shared frame / a11y / compliance wrapping for `platformMapView_L4` Map hosts.
+    func platformMapViewL4Chrome() -> some View {
+        self
+            .frame(minWidth: 1, minHeight: 1)
+            .accessibilityElement(children: .ignore)
+            .automaticCompliance(named: "platformMapView_L4")
+            .accessibilityIdentifier("platformMapView_L4")
+    }
+}
+#endif
+
 // MARK: - Unsupported Platform Fallback
 
 private struct UnsupportedPlatformMapView: View {
@@ -281,6 +314,23 @@ public func platformMapView_L4(
     @MapContentBuilder content: () -> some MapContent
 ) -> some View {
     PlatformMapComponentsLayer4.platformMapView_L4(position: position, content: content)
+}
+
+/// Creates a platform-specific map view that forwards SwiftUI Map selection (convenience wrapper)
+/// Note: Requires @MainActor because it calls main-actor isolated methods
+@available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+@ViewBuilder
+@MainActor
+public func platformMapView_L4<SelectionValue: Hashable>(
+    position: Binding<MapCameraPosition>,
+    selection: Binding<SelectionValue?>,
+    @MapContentBuilder content: () -> some MapContent
+) -> some View {
+    PlatformMapComponentsLayer4.platformMapView_L4(
+        position: position,
+        selection: selection,
+        content: content
+    )
 }
 
 /// Creates a platform-specific map view with annotations (convenience wrapper)

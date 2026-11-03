@@ -67,3 +67,5 @@ test_output.log
 
 # Translation script virtualenv (bootstrap_venv.sh)
 scripts/venv/
+
+display-ocr-training/

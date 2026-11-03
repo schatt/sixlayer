@@ -16,44 +16,44 @@ struct PlatformUIExtensionZerosUnitTests {
 
     @Test @MainActor
     func navigationSheetButtonUsesNamedCompliance() {
-        hostExpectingNamedCompliance("platformNavigationSheetButton") {
+        TestSetupUtilities.hostExpectingNamedCompliance("platformNavigationSheetButton") {
             Text("Root").platformNavigationSheetButton(action: {})
         }
     }
 
     @Test @MainActor
     func listStyleHosts() {
-        hostView {
+        TestSetupUtilities.hostExpectingPlatformRoot {
             Text("Row").platformListStyle()
         }
     }
 
     @Test @MainActor
     func sidebarListStyleHosts() {
-        hostView {
+        TestSetupUtilities.hostExpectingPlatformRoot {
             Text("Row").platformSidebarListStyle()
         }
     }
 
     @Test @MainActor
     func advancedContainersHost() {
-        hostView {
+        TestSetupUtilities.hostExpectingPlatformRoot {
             Text("Grid").platformLazyVGridContainer()
         }
-        hostView {
+        TestSetupUtilities.hostExpectingPlatformRoot {
             Text("Scroll").platformScrollContainer()
         }
-        hostView {
+        TestSetupUtilities.hostExpectingPlatformRoot {
             Text("List").platformListContainer()
         }
-        hostView {
+        TestSetupUtilities.hostExpectingPlatformRoot {
             Text("Form").platformFormContainer()
         }
     }
 
     @Test @MainActor
     func contextMenuHosts() {
-        hostView {
+        TestSetupUtilities.hostExpectingPlatformRoot {
             Text("Item").platformContextMenu {
                 Button("Edit") {}
             }
@@ -62,7 +62,7 @@ struct PlatformUIExtensionZerosUnitTests {
 
     @Test @MainActor
     func menuHosts() {
-        hostView {
+        TestSetupUtilities.hostExpectingPlatformRoot {
             Text("Menu").platformMenu {
                 Button("One") {}
             }
@@ -71,14 +71,14 @@ struct PlatformUIExtensionZerosUnitTests {
 
     @Test @MainActor
     func dragDropHosts() {
-        hostView {
+        TestSetupUtilities.hostExpectingPlatformRoot {
             Text("Drop").platformOnDropText { _ in true }
         }
     }
 
     @Test @MainActor
     func adaptiveButtonUsesNamedCompliance() {
-        hostExpectingNamedCompliance("AdaptiveButton") {
+        TestSetupUtilities.hostExpectingNamedCompliance("AdaptiveButton") {
             AdaptiveUIPatterns.AdaptiveButton("Save") {}
         }
     }
@@ -92,7 +92,7 @@ struct PlatformUIExtensionZerosUnitTests {
         #else
         let image = PlatformImage()
         #endif
-        hostView {
+        TestSetupUtilities.hostExpectingPlatformRoot {
             platformScanBarcode_L1(
                 image: image,
                 context: BarcodeContext(),
@@ -101,29 +101,4 @@ struct PlatformUIExtensionZerosUnitTests {
         }
     }
 
-    @MainActor
-    private func hostExpectingNamedCompliance<V: View>(
-        _ name: String,
-        @ViewBuilder _ view: () -> V
-    ) {
-        #if os(watchOS)
-        return
-        #else
-        let (hosted, log) = TestSetupUtilities.hostRootPlatformViewNamedDebugLog(view())
-        #expect(hosted != nil)
-        #expect(
-            log.contains(name),
-            "named compliance \(name) must appear in debug log"
-        )
-        #endif
-    }
-
-    @MainActor
-    private func hostView<V: View>(@ViewBuilder _ view: () -> V) {
-        #if os(watchOS)
-        return
-        #else
-        #expect(TestSetupUtilities.hostRootPlatformView(view(), forceLayout: true) != nil)
-        #endif
-    }
 }

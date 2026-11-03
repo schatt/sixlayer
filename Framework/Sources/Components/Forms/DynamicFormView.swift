@@ -351,7 +351,7 @@ struct DynamicFormViewInner: View {
     
     #if canImport(SwiftData)
     @available(macOS 14.0, iOS 17.0, *)
-    @Environment(\.modelContext) private var modelContext: ModelContext
+    @Environment(\.self) private var environment
     #endif
 
     /// Top-of-form title and subtitle when ``DynamicFormConfiguration/formHeaderVisibility`` is ``DynamicFormHeaderVisibility/visible`` and text resolves non-empty (Issue #224).
@@ -674,7 +674,7 @@ struct DynamicFormViewInner: View {
     /// - Throws: Error if entity creation or save fails
     @available(macOS 14.0, iOS 17.0, *)
     private func createSwiftDataEntity(entityType: Any.Type, values: [String: Any]) throws -> Any {
-        let context = modelContext
+        let context = try SwiftDataContextAccess.requireInstalledContext(in: environment)
         
         // Load hints to get type information (for filtering hidden fields)
         let hintsLoader = FileBasedDataHintsLoader()

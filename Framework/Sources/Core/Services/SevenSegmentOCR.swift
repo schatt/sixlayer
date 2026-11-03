@@ -107,26 +107,24 @@ public enum SevenSegmentOCR {
     /// cropped before decode so a resized full pump frame can feed `.ssocr`
     /// without a hand-tuned ROI (#596). Tight crops keep working: a missing or
     /// near-full-frame region falls back to the whole image.
+    ///
+    /// `panelLocator`, when set, is the trained panel model (#609). A nil
+    /// result from it still uses the classical finder.
     public static func decode(
         cgImage: CGImage,
         deskewMaximumDegrees: Double = 3,
-        localizeDigitPanel: Bool = false
+        localizeDigitPanel: Bool = false,
+        panelLocator: DisplayOCRPanelLocator? = nil
     ) -> OCRResult {
         guard var gray = GrayBuffer.read(cgImage) else {
             return OCRResult(extractedText: "", confidence: 0)
         }
-        if localizeDigitPanel, let region = gray.digitPanelBounds() {
-            let area = region.width * region.height
-            let full = CGFloat(gray.width * gray.height)
-            if area > 64, area < full * 0.85 {
-                let x0 = Int(region.minX.rounded(.down))
-                let y0 = Int(region.minY.rounded(.down))
-                let x1 = Int(region.maxX.rounded(.up))
-                let y1 = Int(region.maxY.rounded(.up))
-                let cropped = gray.cropped(x0: x0, y0: y0, x1: x1, y1: y1)
-                if cropped.width > 8, cropped.height > 8 {
-                    gray = cropped
-                }
+        if localizeDigitPanel {
+            let modelRegion = panelLocator?.panelRegion(in: cgImage)
+            if let modelRegion, let cropped = gray.panelCrop(modelRegion) {
+                gray = cropped
+            } else if let region = gray.digitPanelBounds(), let cropped = gray.panelCrop(region) {
+                gray = cropped
             }
         }
         let upright = GrayBuffer.deskew(gray, maximumDegrees: deskewMaximumDegrees)
@@ -246,15 +244,30 @@ private struct GrayBuffer {
             return left.element.confidence < right.element.confidence
         }?.offset ?? 0
         guard bestTurns != 0 else { return buffer }
-        // A small tilt still belongs to the fine deskew. Speck rows on a
-        // sideways sample read as a few wide glyphs and must not spin an
-        // upright panel. A real quarter turn is mostly digits.
-        let glyphs = scores[bestTurns].text.filter { $0 != "/" }
+        guard acceptsOrientation(bestTurns, scores: scores, buffer: buffer) else { return buffer }
+        return buffer.rotated(degrees: Double(bestTurns * 90))
+    }
+
+    /// A small tilt still belongs to the fine deskew. Speck rows on a
+    /// sideways sample read as a few wide glyphs and must not spin an
+    /// upright panel. A real quarter turn is mostly digits. A half turn of
+    /// 0/2/8 still looks numeric — only take 180° when decimals sit below
+    /// after the turn. A short wide strip is already one upright line (#625).
+    private static func acceptsOrientation(
+        _ turns: Int,
+        scores: [OrientationScore],
+        buffer: GrayBuffer
+    ) -> Bool {
+        let glyphs = scores[turns].text.filter { $0 != "/" }
         let numbers = glyphs.filter(\.isNumber).count
         let mostlyNumbers = !glyphs.isEmpty && numbers * 2 > glyphs.count
-        let enough = mostlyNumbers && scores[bestTurns].wideDigits >= max(scores[0].wideDigits + 2, 4)
-        guard enough else { return buffer }
-        return buffer.rotated(degrees: Double(bestTurns * 90))
+        if turns == 2 {
+            return mostlyNumbers && scores[2].marksBelow > scores[0].marksBelow
+        }
+        if (turns == 1 || turns == 3), buffer.width * 4 > buffer.height * 5 {
+            return false
+        }
+        return mostlyNumbers && scores[turns].wideDigits >= max(scores[0].wideDigits + 2, 4)
     }
 
     private struct OrientationScore {
@@ -1055,6 +1068,20 @@ private extension GrayBuffer {
             let texts = recognizedGroups(row, width: buffer.width, height: buffer.height)
             return texts.isEmpty ? nil : texts
         }
+    }
+
+    /// A panel crop, or nil when the rect is tiny, nearly the whole frame, or empty.
+    func panelCrop(_ region: CGRect) -> GrayBuffer? {
+        let area = region.width * region.height
+        let full = CGFloat(width * height)
+        guard area > 64, area < full * 0.85 else { return nil }
+        let x0 = Int(region.minX.rounded(.down))
+        let y0 = Int(region.minY.rounded(.down))
+        let x1 = Int(region.maxX.rounded(.up))
+        let y1 = Int(region.maxY.rounded(.up))
+        let cropped = cropped(x0: x0, y0: y0, x1: x1, y1: y1)
+        guard cropped.width > 8, cropped.height > 8 else { return nil }
+        return cropped
     }
 
     func cropped(x0: Int, y0: Int, x1: Int, y1: Int) -> GrayBuffer {
