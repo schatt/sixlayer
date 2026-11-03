@@ -171,12 +171,7 @@ private struct GrayBuffer {
     }
 
     static func deskew(_ buffer: GrayBuffer, maximumDegrees: Double) -> GrayBuffer {
-        // Glyph-tight crops need glass beside the outer stems. Pad only the
-        // sides of short frames so a full panel is unchanged, and so top/bottom
-        // pad does not invent a second row (#625).
-        let shortSide = min(buffer.width, buffer.height)
-        let prepared = shortSide < 140 ? buffer.paddedHorizontally(margin: 12) : buffer
-        let turned = standingUp(prepared)
+        let turned = standingUp(buffer)
         let limit = Int(max(0, maximumDegrees).rounded(.down))
         guard limit > 0 else { return turned }
         let small = turned.fitted(maxSide: 280)
@@ -903,21 +898,6 @@ private struct GrayBuffer {
                 if wasInk { inkOnRight = true }
             }
         }
-    }
-
-    /// Bright glass left and right of the ink. Fill from the bright end of
-    /// the crop so the pad is glass, not the ink-dark median.
-    private func paddedHorizontally(margin: Int) -> GrayBuffer {
-        guard margin > 0, width > 0, height > 0 else { return self }
-        let ranked = pixels.sorted()
-        let glass = ranked[min(ranked.count - 1, (ranked.count * 3) / 4)]
-        let newW = width + margin * 2
-        var output = [UInt8](repeating: glass, count: newW * height)
-        for y in 0..<height {
-            let dest = y * newW + margin
-            output.replaceSubrange(dest..<(dest + width), with: pixels[(y * width)..<((y + 1) * width)])
-        }
-        return GrayBuffer(pixels: output, width: newW, height: height)
     }
 
     private func fitted(maxSide: Int) -> GrayBuffer {
