@@ -127,7 +127,7 @@ struct OCRSevenSegment576Tests {
     /// part of the 8.
     @Test func leadingValleyStripeKeepsTheFirstDigit() {
         let image = SegmentPanel.render(
-            rows: [atoms("82.88"), atoms("8.022")],
+            rows: [atoms("88.88"), atoms("8.022")],
             padding: 160,
             leadingValleyStripe: true
         )
@@ -136,7 +136,7 @@ struct OCRSevenSegment576Tests {
             let box = text.boundingBox
             return "\(text.text) y\(Int((box.minY * 100).rounded())) h\(Int((box.height * 100).rounded()))"
         }.joined(separator: " | ")
-        #expect(result.extractedText == "82.88\n8.022", "cells \(cells)")
+        #expect(result.extractedText == "88.88\n8.022", "cells \(cells)")
     }
 
     @Test func digitPitchCutsASolidWashBridge() {
