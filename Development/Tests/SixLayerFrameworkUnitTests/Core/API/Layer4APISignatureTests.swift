@@ -261,8 +261,8 @@ open class Layer4APISignatureTests: BaseTestClass {
     }
 
     /// BUSINESS PURPOSE: Verify platformMapView_L4 API signature exists (with selection binding)
-    /// TESTING SCOPE: Tests that platformMapView_L4 accepts selection Binding and MapContentBuilder
-    /// METHODOLOGY: Compile with Hashable selection + lock compliance subject type
+    /// TESTING SCOPE: Accepts selection Binding + MapContentBuilder; subject includes Map and compliance
+    /// METHODOLOGY: Compile with Hashable selection + lock Map + AutomaticComplianceModifier
     @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
     @Test @MainActor func testPlatformMapView_L4_WithSelection_APISignature() {
         #if canImport(MapKit) && (os(iOS) || os(macOS))
@@ -282,6 +282,7 @@ open class Layer4APISignatureTests: BaseTestClass {
             )
             .tag("test")
         }
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "Map")
         BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "AutomaticComplianceModifier")
         #endif
     }
