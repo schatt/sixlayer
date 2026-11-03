@@ -593,6 +593,14 @@ public extension PlatformImage {
 
     /// Pixels from encoded photo bytes, turned so the orientation tag is upright.
     public static func cgImage(opening data: Data) -> CGImage? {
+        #if os(iOS) || os(tvOS) || os(visionOS)
+        // ImageIO's transformed thumbnail of a Display P3 photo comes back
+        // premultiplied and dark on iOS. Drawing through UIImage keeps the
+        // orientation tag and the levels the decoder reads on macOS.
+        if let image = UIImage(data: data)?.cgImageApplyingDisplayOrientation() {
+            return image
+        }
+        #endif
         guard let source = CGImageSourceCreateWithData(data as CFData, nil) else { return nil }
         let props = CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [String: Any]
         let width = intProperty(props, kCGImagePropertyPixelWidth)
