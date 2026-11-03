@@ -281,22 +281,85 @@ private struct GrayBuffer {
         let width = image.width
         let height = image.height
         guard width > 0, height > 0 else { return nil }
+        if let copied = copyMonochrome(image) {
+            return copied
+        }
+        return luma(from: image)
+    }
+
+    /// Eight-bit gray fixtures are already the values the decoder thresholds.
+    /// Copy them. A DeviceGray draw is not those values for a Display P3 photo.
+    private static func copyMonochrome(_ image: CGImage) -> GrayBuffer? {
+        guard image.decode == nil,
+              image.bitsPerComponent == 8,
+              image.bitsPerPixel == 8,
+              image.colorSpace?.model == .monochrome,
+              image.bytesPerRow >= image.width,
+              let provider = image.dataProvider,
+              let data = provider.data,
+              let pointer = CFDataGetBytePtr(data)
+        else { return nil }
+        let width = image.width
+        let height = image.height
+        let rowBytes = image.bytesPerRow
+        guard CFDataGetLength(data) >= rowBytes * height else { return nil }
+        var pixels = [UInt8](repeating: 0, count: width * height)
+        for y in 0..<height {
+            let row = y * rowBytes
+            for x in 0..<width {
+                pixels[y * width + x] = pointer[row + x]
+            }
+        }
+        return GrayBuffer(pixels: pixels, width: width, height: height)
+    }
+
+    /// Display P3 drawn into a DeviceGray context is about a third as bright
+    /// on iOS as on macOS. Draw into sRGB and take BT.601 luma, which stays
+    /// within a few levels of the macOS DeviceGray result.
+    private static func luma(from image: CGImage) -> GrayBuffer? {
+        let width = image.width
+        let height = image.height
         let count = width * height
-        let pointer = UnsafeMutablePointer<UInt8>.allocate(capacity: count)
-        pointer.initialize(repeating: 0, count: count)
+        let rowBytes = width * 4
+        let pointer = UnsafeMutablePointer<UInt8>.allocate(capacity: rowBytes * height)
+        pointer.initialize(repeating: 0, count: rowBytes * height)
         defer { pointer.deallocate() }
-        guard let context = CGContext(
-            data: pointer,
-            width: width,
-            height: height,
-            bitsPerComponent: 8,
-            bytesPerRow: width,
-            space: CGColorSpaceCreateDeviceGray(),
-            bitmapInfo: CGImageAlphaInfo.none.rawValue
-        ) else { return nil }
+        guard let space = CGColorSpace(name: CGColorSpace.sRGB),
+              let context = CGContext(
+                data: pointer,
+                width: width,
+                height: height,
+                bitsPerComponent: 8,
+                bytesPerRow: rowBytes,
+                space: space,
+                bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
+              )
+        else { return nil }
         context.interpolationQuality = .none
         context.draw(image, in: CGRect(x: 0, y: 0, width: width, height: height))
-        return GrayBuffer(pixels: Array(UnsafeBufferPointer(start: pointer, count: count)), width: width, height: height)
+        var pixels = [UInt8](repeating: 0, count: count)
+        for index in 0..<count {
+            let base = index * 4
+            let alpha = Int(pointer[base + 3])
+            let red: Int
+            let green: Int
+            let blue: Int
+            if alpha == 0 {
+                red = 0
+                green = 0
+                blue = 0
+            } else if alpha == 255 {
+                red = Int(pointer[base])
+                green = Int(pointer[base + 1])
+                blue = Int(pointer[base + 2])
+            } else {
+                red = min(255, Int(pointer[base]) * 255 / alpha)
+                green = min(255, Int(pointer[base + 1]) * 255 / alpha)
+                blue = min(255, Int(pointer[base + 2]) * 255 / alpha)
+            }
+            pixels[index] = UInt8((77 * red + 150 * green + 29 * blue) / 256)
+        }
+        return GrayBuffer(pixels: pixels, width: width, height: height)
     }
 
     static func deskew(_ buffer: GrayBuffer, maximumDegrees: Double) -> GrayBuffer {
@@ -1101,38 +1164,6 @@ private func trace(_ message: String) {
     fputs(message, stderr)
 }
 
-/// Temporary #600 diagnostic. Removed once the hand-crop polarity is known.
-private func notePolarity(
-    buffer: GrayBuffer,
-    dark: Mask,
-    light: Mask,
-    chosenDark: Bool,
-    darkOpens: Bool,
-    lightOpens: Bool
-) {
-    func listed(_ mask: Mask) -> String {
-        let found = runs(mask.rowSums)
-        let bands = found.count <= 1 ? rowGapBands(mask) : found
-        let text = bands.map { "\($0.0)-\($0.1)" }.joined(separator: ",")
-        return "raw\(found.count) [\(text)] digit\(digitHeightBandCount(mask))"
-    }
-    let darkInk = dark.rowSums.reduce(Int64(0)) { $0 + Int64($1) }
-    let lightInk = light.rowSums.reduce(Int64(0)) { $0 + Int64($1) }
-    var pixelSum = 0
-    for pixel in buffer.pixels { pixelSum += Int(pixel) }
-    let mean = buffer.pixels.isEmpty ? 0 : pixelSum / buffer.pixels.count
-    let line = """
-    \(buffer.width)x\(buffer.height) mean=\(mean) \
-    dark \(listed(dark)) light \(listed(light)) \
-    runs \(bandedColumnRuns(dark))/\(bandedColumnRuns(light)) \
-    ink \(darkInk)/\(lightInk) \
-    chosenDark=\(chosenDark) opens \(darkOpens)/\(lightOpens)\n
-    """
-    let path = "/tmp/sixlayer-600-polarity.txt"
-    let prior = (try? String(contentsOfFile: path, encoding: .utf8)) ?? ""
-    try? (prior + line).write(toFile: path, atomically: false, encoding: .utf8)
-}
-
 private struct Mask {
     var bits: [Bool]
     var width: Int
@@ -1657,8 +1688,6 @@ private extension GrayBuffer {
         let chosen: (isDark: Bool, glyphs: Mask, bandSource: Mask)
         if darkChoice.opens != lightChoice.opens {
             chosen = darkChoice.opens ? darkChoice.reading : lightChoice.reading
-        } else if let split = maskThatKeepsDigitRows(masks.dark, masks.light) {
-            chosen = split ? darkChoice.reading : lightChoice.reading
         } else if prefersDark(masks.dark, masks.light) {
             chosen = darkChoice.reading
         } else {
@@ -1672,16 +1701,6 @@ private extension GrayBuffer {
             let ink = glyphs.bits.filter { $0 }.count
             trace(
                 "read \(buffer.width)x\(buffer.height) dark=\(primaryIsDark) opened=\(opened) ink=\(ink)\n"
-            )
-        }
-        if FileManager.default.fileExists(atPath: "/tmp/sixlayer-600-score-s1") {
-            notePolarity(
-                buffer: buffer,
-                dark: masks.dark,
-                light: masks.light,
-                chosenDark: primaryIsDark,
-                darkOpens: darkChoice.opens,
-                lightOpens: lightChoice.opens
             )
         }
         if let rowFinder {
@@ -3467,30 +3486,6 @@ private func overlap(_ lhs: PixelBox, _ rhs: PixelBox) -> Int {
 private func median(_ values: [Int]) -> Int? {
     guard !values.isEmpty else { return nil }
     return values.sorted()[values.count / 2]
-}
-
-/// True when the dark mask is the one that still has digit rows.
-/// Nil when both masks have the same row shape, so the thinner-ink tie
-/// still decides a washed one-row glass.
-private func maskThatKeepsDigitRows(_ dark: Mask, _ light: Mask) -> Bool? {
-    let darkRows = digitHeightBandCount(dark)
-    let lightRows = digitHeightBandCount(light)
-    if darkRows >= 2, lightRows < 2 { return true }
-    if lightRows >= 2, darkRows < 2 { return false }
-    return nil
-}
-
-/// Bands the row reader would keep: raw runs, or the gap split when those
-/// runs are a single smear. A band has to be a digit row, not the whole crop.
-private func digitHeightBandCount(_ mask: Mask) -> Int {
-    let found = runs(mask.rowSums)
-    let bands = found.count <= 1 ? rowGapBands(mask) : found
-    return bands.reduce(into: 0) { count, band in
-        let span = band.1 - band.0
-        let tallEnough = span * 8 >= mask.height
-        let shortOfTheCrop = span * 10 <= mask.height * 7
-        if tallEnough && shortOfTheCrop { count += 1 }
-    }
 }
 
 private func prefersDark(_ dark: Mask, _ light: Mask) -> Bool {
