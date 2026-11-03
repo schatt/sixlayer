@@ -20103,17 +20103,6 @@
         }
       }
     },
-    "SixLayerFramework.form.entityCreationFailed" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Could not create a form for %@."
-          }
-        }
-      }
-    },
     "SixLayerFramework.form.cannotGenerate" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -20556,6 +20545,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "表单草稿编码失败：%@"
+          }
+        }
+      }
+    },
+    "SixLayerFramework.form.entityCreationFailed" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Could not create a form for %@."
           }
         }
       }
@@ -30404,72 +30404,6 @@
         }
       }
     },
-    "SixLayerFramework.ocr.training.trainPanel" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Train panel model"
-          }
-        }
-      }
-    },
-    "SixLayerFramework.ocr.training.trainPanelEmpty" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Export a labeled photo before training."
-          }
-        }
-      }
-    },
-    "SixLayerFramework.ocr.training.trainPanelFailed" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Panel training failed · %@"
-          }
-        }
-      }
-    },
-    "SixLayerFramework.ocr.training.trainPanelMac" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Train the panel model on a Mac."
-          }
-        }
-      }
-    },
-    "SixLayerFramework.ocr.training.trainPanelReady" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Panel model · %@"
-          }
-        }
-      }
-    },
-    "SixLayerFramework.ocr.training.trainPanelRunning" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Training the panel model…"
-          }
-        }
-      }
-    },
     "SixLayerFramework.ocr.training.loadFile" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -30554,6 +30488,72 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Display training"
+          }
+        }
+      }
+    },
+    "SixLayerFramework.ocr.training.trainPanel" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Train panel model"
+          }
+        }
+      }
+    },
+    "SixLayerFramework.ocr.training.trainPanelEmpty" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Export a labeled photo before training."
+          }
+        }
+      }
+    },
+    "SixLayerFramework.ocr.training.trainPanelFailed" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Panel training failed · %@"
+          }
+        }
+      }
+    },
+    "SixLayerFramework.ocr.training.trainPanelMac" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Train the panel model on a Mac."
+          }
+        }
+      }
+    },
+    "SixLayerFramework.ocr.training.trainPanelReady" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Panel model · %@"
+          }
+        }
+      }
+    },
+    "SixLayerFramework.ocr.training.trainPanelRunning" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Training the panel model…"
           }
         }
       }
@@ -34337,6 +34337,39 @@
     "[%@]:" : {
       "extractionState" : "manual",
       "shouldTranslate" : false
+    },
+    "example-pending %@" : {
+
+    },
+    "progress-pending %@ %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "progress-pending %1$@ %2$@"
+          }
+        }
+      }
+    },
+    "rows-pending %@ %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "rows-pending %1$@ %2$@"
+          }
+        }
+      }
+    },
+    "skip-pending %@ %@ %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "skip-pending %1$@ %2$@ %3$@"
+          }
+        }
+      }
     },
     "•" : {
       "extractionState" : "manual",
