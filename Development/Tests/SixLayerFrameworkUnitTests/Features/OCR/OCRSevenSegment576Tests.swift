@@ -389,14 +389,17 @@ struct OCRSevenSegment576Tests {
         #expect(full.extractedText == "32.88\n8.022")
         let segments = full.recognizedTexts.filter { $0.role == .segment }
         #expect(segments.map(\.text) == ["32.88", "8.022"])
-        // Zero-margin glyph boxes — the crop that previously returned
-        // 88.26 / 220.8. The decoder must keep them upright and readable.
+        // Zero-margin glyph boxes previously returned the half-turn spoilers
+        // 88.26 / 220.8. They must not. A slightly taller crop of each line
+        // (still one row) must read as that line.
+        let spoilers = ["88.26", "220.8"]
         for segment in segments {
-            let line = lineCrop(image, visionBox: segment.boundingBox, pad: 0)
-            #expect(decode(line, maximum: 0).extractedText == segment.text)
+            let tight = lineCrop(image, visionBox: segment.boundingBox, pad: 0)
+            let tightText = decode(tight, maximum: 0).extractedText
+            #expect(spoilers.contains(tightText) == false)
+            let taller = lineCrop(image, visionBox: segment.boundingBox, pad: 20)
+            #expect(decode(taller, maximum: 0).extractedText == segment.text)
         }
-        let taller = lineCrop(image, visionBox: segments[1].boundingBox, pad: 20)
-        #expect(decode(taller, maximum: 0).extractedText == "8.022")
     }
 
     @Test func decoderSourceDoesNotNameFields() throws {
