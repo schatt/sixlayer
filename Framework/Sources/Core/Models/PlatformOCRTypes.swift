@@ -363,6 +363,32 @@ public struct OCRContext: Sendable {
     public var visionStrategySupportedTextTypes: [TextType] {
         strictVisionTextTypeFiltering ? textTypes : []
     }
+
+    /// Returns a copy with `captureRegionCode` set. Other fields are unchanged (#631).
+    public func with(captureRegionCode: String?) -> OCRContext {
+        OCRContext(
+            textTypes: textTypes,
+            language: language,
+            confidenceThreshold: confidenceThreshold,
+            allowsEditing: allowsEditing,
+            maxImageSize: maxImageSize,
+            extractionHints: extractionHints,
+            requiredFields: requiredFields,
+            extractionMode: extractionMode,
+            entityName: entityName,
+            fieldRanges: fieldRanges,
+            fieldAverages: fieldAverages,
+            strictVisionTextTypeFiltering: strictVisionTextTypeFiltering,
+            visionMinimumTextHeight: visionMinimumTextHeight,
+            processingMode: processingMode,
+            labelProcessingMode: labelProcessingMode,
+            segmentDeskewMaximumDegrees: segmentDeskewMaximumDegrees,
+            suppliedLabelFragments: suppliedLabelFragments,
+            panelLocator: panelLocator,
+            decimalLocale: decimalLocale,
+            captureRegionCode: captureRegionCode
+        )
+    }
 }
 
 // MARK: - OCR Language
