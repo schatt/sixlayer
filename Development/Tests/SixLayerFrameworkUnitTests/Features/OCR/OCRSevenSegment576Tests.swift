@@ -958,6 +958,14 @@ struct OCRSevenSegment576Tests {
             context.interpolationQuality = .none
             context.draw(image, in: CGRect(x: 0, y: 0, width: width, height: height))
             parts.append("deviceGray \(channelMean(gray, stride: 1, offset: 0, total: count))")
+            let marks = [50, 150, 300, 410, 500, 650, 750].compactMap { y -> String? in
+                guard y < height else { return nil }
+                let start = y * width
+                var sum = 0
+                for x in 0..<width { sum += Int(gray[start + x]) }
+                return "y\(y)=\(sum / width)"
+            }
+            parts.append(marks.joined(separator: " "))
         }
         if let srgb = CGColorSpace(name: CGColorSpace.sRGB) {
             let row = width * 4
