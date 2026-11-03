@@ -718,7 +718,10 @@ public extension View {
     }
     
     /// Platform-specific sheet presentation with item-based binding
-    /// Provides consistent sheet presentation using item binding (matches SwiftUI's item-based sheet overload)
+    /// Provides consistent sheet presentation using item binding (matches SwiftUI's item-based sheet overload).
+    ///
+    /// Presented roots are wrapped with ``platformSheetNavigationChrome()`` on iOS and macOS
+    /// so `.navigationTitle` / toolbar dismiss work without `#if os` (#636).
     ///
     /// - Parameters:
     ///   - item: Optional item binding for sheet presentation (sheet presents when item is non-nil)
