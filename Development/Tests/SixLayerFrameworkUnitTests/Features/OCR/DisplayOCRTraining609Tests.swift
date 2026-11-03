@@ -877,24 +877,29 @@ struct DisplayOCRTraining609Tests {
         let directory = root.appendingPathComponent("close-shot", isDirectory: true)
         try writeIndexedExample(confirmed: "12.9", row: indexRow, to: directory)
 
+        let imageURL = directory.appendingPathComponent(DisplayOCRTraining.imageFileName)
+        let originalPNG = try Data(contentsOf: imageURL)
         let first = DisplayOCRTraining.catalog(in: root)
-        #expect(confirmedTexts(in: first, named: "close-shot") == ["12.9"])
-        let firstImage = try #require(first.examples.first).package.imagePNG
-        #expect(firstImage.isEmpty == false)
+        #expect(first.examples.contains { $0.directory.lastPathComponent == "close-shot" })
+        #expect(first.examples.allSatisfy { $0.package.imagePNG.isEmpty })
+        #expect(first.rowBoxExampleCount == 1)
 
-        try rewriteLabel(in: directory, from: "12.9", to: "99.9", restoreModificationDate: true)
+        try corruptLabelPreservingFingerprint(in: directory, restoreModificationDate: true)
         let second = DisplayOCRTraining.catalog(in: root)
-        #expect(confirmedTexts(in: second, named: "close-shot") == ["12.9"])
+        #expect(second.examples.contains { $0.directory.lastPathComponent == "close-shot" })
+        #expect(second.rejections.contains { $0.directory.lastPathComponent == "close-shot" } == false)
         let served = try #require(second.examples.first { $0.directory.lastPathComponent == "close-shot" })
         #expect(served.package.imagePNG.isEmpty)
+        #expect(second.rowBoxExampleCount == 1)
 
         let indexFile = indexURL(in: root)
         #expect(FileManager.default.fileExists(atPath: indexFile.path))
         let stored = try String(contentsOf: indexFile, encoding: .utf8)
         #expect(stored.contains(root.path) == false)
-        #expect(stored.contains("\"99.9\"") == false)
+        #expect(stored.contains("\"12.9\"") == false)
         let decoded = try JSONDecoder().decode(DisplayOCRTrainingIndex.self, from: Data(stored.utf8))
         let entry = try #require(decoded.entries.first { $0.name == "close-shot" })
+        #expect(entry.label == nil)
         let labelURL = directory.appendingPathComponent(DisplayOCRTraining.labelFileName)
         let size = try labelURL.resourceValues(forKeys: [.fileSizeKey]).fileSize
         #expect(size == entry.labelByteCount)
@@ -902,7 +907,7 @@ struct DisplayOCRTraining609Tests {
 
         let loaded = DisplayOCRTraining.loadingImages(second)
         let filled = try #require(loaded.examples.first { $0.directory.lastPathComponent == "close-shot" })
-        #expect(filled.package.imagePNG == firstImage)
+        #expect(filled.package.imagePNG == originalPNG)
     }
 
     @Test func aChangedPackageIsReadAgain() throws {
@@ -919,7 +924,8 @@ struct DisplayOCRTraining609Tests {
         #expect(served.package.imagePNG.isEmpty == false)
 
         let stored = try String(contentsOf: indexURL(in: root), encoding: .utf8)
-        #expect(stored.contains("\"99.9\""))
+        #expect(stored.contains("close-shot"))
+        #expect(stored.contains("\"99.9\"") == false)
         #expect(stored.contains(root.path) == false)
     }
 
@@ -935,7 +941,7 @@ struct DisplayOCRTraining609Tests {
         )
         let session = DisplayOCRTrainingSession()
         session.setExportRoot(root)
-        try rewriteLabel(in: kept, from: "12.9", to: "99.9", restoreModificationDate: true)
+        try corruptLabelPreservingFingerprint(in: kept, restoreModificationDate: true)
 
         let frame = twoDigitFrame()
         session.load(cgImage: frame.image, sourceName: "pump.png")
@@ -953,12 +959,13 @@ struct DisplayOCRTraining609Tests {
         #expect(texts.contains("12.9"))
         #expect(texts.contains("3.50"))
         #expect(texts.contains("8.8"))
-        #expect(texts.contains("99.9") == false)
+        #expect(session.library.rejections.contains { $0.directory.lastPathComponent == "close-shot" } == false)
         #expect(session.library.examples.count == 3)
         let indexText = (try? String(contentsOf: indexURL(in: root), encoding: .utf8)) ?? ""
-        #expect(indexText.contains("\"12.9\""))
-        #expect(indexText.contains("\"8.8\""))
-        #expect(indexText.contains("\"99.9\"") == false)
+        #expect(indexText.contains("close-shot"))
+        #expect(indexText.contains("far-shot"))
+        #expect(indexText.contains("\"12.9\"") == false)
+        #expect(indexText.contains("\"8.8\"") == false)
         #expect(indexText.contains(root.path) == false)
     }
 
@@ -976,17 +983,19 @@ struct DisplayOCRTraining609Tests {
         let model = root.appendingPathComponent(DisplayOCRPanelModel.modelFileName, isDirectory: true)
         try FileManager.default.createDirectory(at: model, withIntermediateDirectories: true)
         _ = DisplayOCRTraining.catalog(in: root)
-        try rewriteLabel(in: directory, from: "12.9", to: "99.9", restoreModificationDate: true)
+        try corruptLabelPreservingFingerprint(in: directory, restoreModificationDate: true)
 
         let log = ProgressLog()
         let library = try DisplayOCRTraining.reindex(in: root) { log.add($0) }
         #expect(log.values.map(\.completed) == [0, 1, 2])
         #expect(log.values.allSatisfy { $0.total == 2 })
-        #expect(confirmedTexts(in: library, named: "close-shot") == ["99.9"])
+        #expect(library.rejections.contains { $0.directory.lastPathComponent == "close-shot" })
+        #expect(library.examples.contains { $0.directory.lastPathComponent == "close-shot" } == false)
+        #expect(library.examples.allSatisfy { $0.package.imagePNG.isEmpty })
         #expect(FileManager.default.fileExists(atPath: directory.appendingPathComponent("image.png").path))
         #expect(FileManager.default.fileExists(atPath: model.path))
         let stored = try String(contentsOf: indexURL(in: root), encoding: .utf8)
-        #expect(stored.contains("\"99.9\""))
+        #expect(stored.contains("close-shot"))
         #expect(stored.contains(root.path) == false)
     }
 
@@ -1002,7 +1011,8 @@ struct DisplayOCRTraining609Tests {
         session.setExportRoot(root)
         await session.reindexLibrary()
         #expect(session.reindexRanOnMainThread == false)
-        #expect(confirmedTexts(in: session.library, named: "close-shot") == ["12.9"])
+        #expect(session.library.examples.count == 1)
+        #expect(session.library.examples.allSatisfy { $0.package.imagePNG.isEmpty })
     }
 
     @Test func aFailedReindexKeepsThePreviousIndex() throws {
@@ -1092,8 +1102,10 @@ struct DisplayOCRTraining609Tests {
         #expect(created.directory.lastPathComponent != "missing-label")
         #expect(created.directory.lastPathComponent != "close-shot")
         let indexText = (try? String(contentsOf: indexURL(in: root), encoding: .utf8)) ?? ""
-        #expect(indexText.contains("\"12.8\""))
-        #expect(indexText.contains("\"4.0\""))
+        #expect(indexText.contains("close-shot"))
+        #expect(indexText.contains("missing-label"))
+        #expect(indexText.contains("\"12.8\"") == false)
+        #expect(indexText.contains("\"4.0\"") == false)
         #expect(indexText.contains(root.path) == false)
     }
 
@@ -1181,6 +1193,7 @@ struct DisplayOCRTraining609Tests {
         #expect(skipReason(in: again, named: "missing-label") == .missingLabel)
         #expect(again.rowBoxExampleCount == 1)
         #expect(again.panelOnlyExampleCount == 1)
+        #expect(again.examples.allSatisfy { $0.package.imagePNG.isEmpty })
     }
 
     #if canImport(ViewInspector)
@@ -1344,6 +1357,22 @@ struct DisplayOCRTraining609Tests {
         let values = try url.resourceValues(forKeys: [.contentModificationDateKey])
         let date = try #require(values.contentModificationDate)
         return Int((date.timeIntervalSince1970 * 1000).rounded())
+    }
+
+    private func corruptLabelPreservingFingerprint(
+        in directory: URL,
+        restoreModificationDate: Bool
+    ) throws {
+        var url = directory.appendingPathComponent(DisplayOCRTraining.labelFileName)
+        let values = try url.resourceValues(forKeys: [.contentModificationDateKey, .fileSizeKey])
+        let originalDate = try #require(values.contentModificationDate)
+        let originalSize = try #require(values.fileSize)
+        try Data(repeating: 0x78, count: originalSize).write(to: url, options: .atomic)
+        if restoreModificationDate {
+            var restored = URLResourceValues()
+            restored.contentModificationDate = originalDate
+            try url.setResourceValues(restored)
+        }
     }
 
     private func rewriteLabel(
