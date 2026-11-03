@@ -122,6 +122,18 @@ struct OCRSevenSegment576Tests {
         #expect(decode(image, maximum: 0).extractedText == "32.88\n8.022")
     }
 
+    @Test func valleyGlareThroughTheRowGapKeepsBothSidesOfThePrice() {
+        // A glare column in the row gap is wider than a speck and sits inside
+        // the price. Treating every valley mark as a bezel keeps only the
+        // heavier side and drops the other half of the digits. A speck past a
+        // real strip stays out (edgeStrip).
+        let image = SegmentPanel.render(
+            rows: [atoms("32.88"), atoms("8.022")],
+            valleyGlare: true
+        )
+        #expect(decode(image, maximum: 0).extractedText == "32.88\n8.022")
+    }
+
     @Test func digitPitchCutsASolidWashBridge() {
         // Approach D (#591): price row stays clean; volume gaps get a full-height
         // wash so column sums stay high and valley hunting has no dip. The
@@ -1265,7 +1277,8 @@ private enum SegmentPanel {
         aboveDigitGlare: Bool = false,
         leftScratch: Bool = false,
         tallHaze: Bool = false,
-        solidGapWashVolumeOnly: Bool = false
+        solidGapWashVolumeOnly: Bool = false,
+        valleyGlare: Bool = false
     ) -> CGImage {
         let laid = layout(rows: rows, padding: padding)
         let background: UInt8 = backgroundLevel ?? (invert ? 28 : 214)
@@ -1345,6 +1358,16 @@ private enum SegmentPanel {
                 height: height,
                 ink: ink,
                 padding: padding,
+                bands: laid.rowBands
+            )
+        }
+        if valleyGlare {
+            paintValleyGlare(
+                &pixels,
+                width: width,
+                height: height,
+                ink: ink,
+                background: background,
                 bands: laid.rowBands
             )
         }
@@ -1520,6 +1543,42 @@ private enum SegmentPanel {
         for y in gapTop..<gapBottom {
             for x in 4..<scratchEnd {
                 pixels[y * width + x] = background
+            }
+        }
+    }
+
+    /// Ink through the row gap, a few columns wide, at the middle of the price.
+    /// Wider than the speck bezel and inside the digits, so a span that drops
+    /// one side of it loses half the amount.
+    private static func paintValleyGlare(
+        _ pixels: inout [UInt8],
+        width: Int,
+        height: Int,
+        ink: UInt8,
+        background: UInt8,
+        bands: [RowBand]
+    ) {
+        guard let first = bands.first, let second = bands.dropFirst().first else { return }
+        let gapTop = first.maxY
+        let gapBottom = second.minY
+        guard gapBottom - gapTop > 8 else { return }
+        var minX = width
+        var maxX = 0
+        for y in first.minY..<first.maxY {
+            for x in 0..<width where pixels[y * width + x] != background {
+                if x < minX { minX = x }
+                if x > maxX { maxX = x }
+            }
+        }
+        guard maxX > minX else { return }
+        let rowHeight = first.maxY - first.minY
+        let stripe = max(6, rowHeight / 16)
+        let mid = (minX + maxX) / 2
+        let x0 = max(0, mid - stripe / 2)
+        let x1 = min(width, x0 + stripe)
+        for y in gapTop..<gapBottom {
+            for x in x0..<x1 {
+                pixels[y * width + x] = ink
             }
         }
     }
