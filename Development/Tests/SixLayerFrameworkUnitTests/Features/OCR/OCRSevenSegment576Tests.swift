@@ -122,6 +122,20 @@ struct OCRSevenSegment576Tests {
         #expect(decode(image, maximum: 0).extractedText == "32.88\n8.022")
     }
 
+    /// Glare through the row gap on the left of the first digit. Those columns
+    /// are a valley edge, so the span starts mid-glyph. The price still has
+    /// to include that stem.
+    @Test func leadingValleyStripeKeepsTheFirstDigit() {
+        let image = SegmentPanel.render(
+            rows: [atoms("32.88"), atoms("8.022")],
+            inkLevel: 140,
+            backgroundLevel: 200,
+            scale: 4,
+            leadingValleyStripe: true
+        )
+        #expect(decode(image, maximum: 0).extractedText == "32.88\n8.022")
+    }
+
     @Test func digitPitchCutsASolidWashBridge() {
         // Approach D (#591): price row stays clean; volume gaps get a full-height
         // wash so column sums stay high and valley hunting has no dip. The
@@ -1265,7 +1279,8 @@ private enum SegmentPanel {
         aboveDigitGlare: Bool = false,
         leftScratch: Bool = false,
         tallHaze: Bool = false,
-        solidGapWashVolumeOnly: Bool = false
+        solidGapWashVolumeOnly: Bool = false,
+        leadingValleyStripe: Bool = false
     ) -> CGImage {
         let laid = layout(rows: rows, padding: padding)
         let background: UInt8 = backgroundLevel ?? (invert ? 28 : 214)
@@ -1340,6 +1355,16 @@ private enum SegmentPanel {
         }
         if edgeStrip {
             paintEdgeStrip(
+                &pixels,
+                width: width,
+                height: height,
+                ink: ink,
+                padding: padding,
+                bands: laid.rowBands
+            )
+        }
+        if leadingValleyStripe {
+            paintLeadingValleyStripe(
                 &pixels,
                 width: width,
                 height: height,
@@ -1520,6 +1545,31 @@ private enum SegmentPanel {
         for y in gapTop..<gapBottom {
             for x in 4..<scratchEnd {
                 pixels[y * width + x] = background
+            }
+        }
+    }
+
+    /// Ink through the row gap, only on the left of the first digit. The
+    /// stem stays in the digit band. The gap mark makes those columns a
+    /// valley edge, so a span that drops edge columns starts mid-glyph.
+    private static func paintLeadingValleyStripe(
+        _ pixels: inout [UInt8],
+        width: Int,
+        height: Int,
+        ink: UInt8,
+        padding: Int,
+        bands: [RowBand]
+    ) {
+        guard bands.count >= 2 else { return }
+        let top = bands[0].maxY
+        let bottom = bands[1].minY
+        guard bottom > top else { return }
+        let x0 = max(0, padding)
+        let x1 = min(width, x0 + max(8, cellH / 4))
+        guard x1 > x0 else { return }
+        for y in top..<bottom {
+            for x in x0..<x1 {
+                pixels[y * width + x] = ink
             }
         }
     }
