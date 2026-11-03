@@ -57,7 +57,7 @@ public enum PlatformMapComponentsLayer4 {
     /// Creates a platform-specific map view that forwards SwiftUI Map selection.
     /// Use with `.tag` on `Marker` / `Annotation` the same way as raw `Map(position:selection:)`.
     /// Note: Requires @MainActor because Map is a View
-    @ViewBuilder
+    /// Temporary #634 /2 deliberate red: chrome without Map(selection:) until strengthened tests fail.
     @MainActor
     public static func platformMapView_L4<SelectionValue: Hashable>(
         position: Binding<MapCameraPosition>,
@@ -65,14 +65,10 @@ public enum PlatformMapComponentsLayer4 {
         @MapContentBuilder content: () -> some MapContent
     ) -> some View {
         #if os(iOS) || os(macOS)
-        Group {
-            Map(position: position, selection: selection) {
-                content()
-            }
-        }
-        .platformMapViewL4Chrome()
+        let _ = (position, selection, content)
+        return EmptyView().platformMapViewL4Chrome()
         #else
-        UnsupportedPlatformMapView()
+        return UnsupportedPlatformMapView()
             .automaticCompliance(named: "platformMapView_L4")
         #endif
     }
