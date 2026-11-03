@@ -30393,6 +30393,28 @@
         }
       }
     },
+    "SixLayerFramework.ocr.training.libraryPanelOnly" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Panel only · %@"
+          }
+        }
+      }
+    },
+    "SixLayerFramework.ocr.training.libraryRows" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rows · %@"
+          }
+        }
+      }
+    },
     "SixLayerFramework.ocr.training.librarySkipped" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -30437,6 +30459,17 @@
         }
       }
     },
+    "SixLayerFramework.ocr.training.openExample" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open"
+          }
+        }
+      }
+    },
     "SixLayerFramework.ocr.training.panel" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -30459,6 +30492,28 @@
         }
       }
     },
+    "SixLayerFramework.ocr.training.reindex" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reindex"
+          }
+        }
+      }
+    },
+    "SixLayerFramework.ocr.training.reindexProgress" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ / %@"
+          }
+        }
+      }
+    },
     "SixLayerFramework.ocr.training.removeBox" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -30470,6 +30525,17 @@
         }
       }
     },
+    "SixLayerFramework.ocr.training.removeExample" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove"
+          }
+        }
+      }
+    },
     "SixLayerFramework.ocr.training.row" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -30477,6 +30543,72 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Row"
+          }
+        }
+      }
+    },
+    "SixLayerFramework.ocr.training.skipEmptyPanel" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Empty panel"
+          }
+        }
+      }
+    },
+    "SixLayerFramework.ocr.training.skipMissingImage" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Missing image"
+          }
+        }
+      }
+    },
+    "SixLayerFramework.ocr.training.skipMissingLabel" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Missing label"
+          }
+        }
+      }
+    },
+    "SixLayerFramework.ocr.training.skipSymlink" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Symlink"
+          }
+        }
+      }
+    },
+    "SixLayerFramework.ocr.training.skipUnknownSchema" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unknown schema"
+          }
+        }
+      }
+    },
+    "SixLayerFramework.ocr.training.skipUnreadable" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unreadable package"
           }
         }
       }
