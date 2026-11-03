@@ -56,6 +56,28 @@ public enum PlatformMapComponentsLayer4 {
             .automaticCompliance(named: "platformMapView_L4")
         #endif
     }
+
+    /// Creates a platform-specific map view that forwards SwiftUI Map selection.
+    /// Use with `.tag` on `Marker` / `Annotation` the same way as raw `Map(position:selection:)`.
+    /// Note: Requires @MainActor because Map is a View
+    /// Stub for #634 deliberate red — returns EmptyView until green implementation.
+    @ViewBuilder
+    @MainActor
+    public static func platformMapView_L4<SelectionValue: Hashable>(
+        position: Binding<MapCameraPosition>,
+        selection: Binding<SelectionValue?>,
+        @MapContentBuilder content: () -> some MapContent
+    ) -> some View {
+        #if os(iOS) || os(macOS)
+        _ = position
+        _ = selection
+        _ = content
+        EmptyView()
+        #else
+        UnsupportedPlatformMapView()
+            .automaticCompliance(named: "platformMapView_L4")
+        #endif
+    }
     
     /// Creates a platform-specific map view with annotations
     /// Convenience method that wraps annotations in MapContentBuilder
@@ -281,6 +303,23 @@ public func platformMapView_L4(
     @MapContentBuilder content: () -> some MapContent
 ) -> some View {
     PlatformMapComponentsLayer4.platformMapView_L4(position: position, content: content)
+}
+
+/// Creates a platform-specific map view that forwards SwiftUI Map selection (convenience wrapper)
+/// Note: Requires @MainActor because it calls main-actor isolated methods
+@available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+@ViewBuilder
+@MainActor
+public func platformMapView_L4<SelectionValue: Hashable>(
+    position: Binding<MapCameraPosition>,
+    selection: Binding<SelectionValue?>,
+    @MapContentBuilder content: () -> some MapContent
+) -> some View {
+    PlatformMapComponentsLayer4.platformMapView_L4(
+        position: position,
+        selection: selection,
+        content: content
+    )
 }
 
 /// Creates a platform-specific map view with annotations (convenience wrapper)
