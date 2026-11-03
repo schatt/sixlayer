@@ -48,6 +48,12 @@ struct OCRCalculationGroupLocaleDecimalTests {
         #expect(cost(gallons: "1,234.5", price: "2", locale: english) == 2469)
     }
 
+    /// A comma that is not a thousands group must not become part of the number (#630).
+    @Test func englishCommaDecimalDoesNotBecomeFortyFive() {
+        #expect(cost(gallons: "4,5", price: "2", locale: english) == nil)
+        #expect(cost(gallons: "-4,5", price: "2", locale: english) == nil)
+    }
+
     @Test func incompleteDecimalFailsClosed() {
         #expect(cost(gallons: "4,5abc", price: "2", locale: german) == nil)
         #expect(cost(gallons: "..", price: "2", locale: german) == nil)
