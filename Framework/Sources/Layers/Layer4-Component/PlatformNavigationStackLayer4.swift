@@ -59,30 +59,11 @@ private func createNavigationView<Content: View>(
 public func platformNavigationStack<Content: View>(
     @ViewBuilder content: () -> Content
 ) -> some View {
-    createSimpleNavigationStackRoot(content: content())
-        .applyNavigationStackLayer4Modifiers()
-}
-
-/// Platform stack chrome for the strategy-free host API (Issue #637).
-@MainActor
-@ViewBuilder
-private func createSimpleNavigationStackRoot<Content: View>(content: Content) -> some View {
-    #if os(iOS)
-    if #available(iOS 16.0, *) {
-        NavigationStack {
-            content
-        }
-    } else {
-        NavigationView {
-            content
-        }
-        .navigationViewStyle(StackNavigationViewStyle())
+    // Deployment targets are iOS 17+ / macOS 15+ — NavigationStack is available on both.
+    NavigationStack {
+        content()
     }
-    #else
-    NavigationView {
-        content
-    }
-    #endif
+    .applyNavigationStackLayer4Modifiers()
 }
 
 /// Implement NavigationStack based on Layer 3 strategy
