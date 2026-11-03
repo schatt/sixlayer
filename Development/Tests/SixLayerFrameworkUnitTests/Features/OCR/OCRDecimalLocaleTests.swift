@@ -175,9 +175,8 @@ struct OCRDecimalLocaleTests {
         #expect(OCRDecimalLocale.resolve(context: enriched).decimalSeparator == ".")
     }
 
-    @Test func serviceEnrichesContextFromImageEXIFGPS() async throws {
-        let berlin = CLLocation(latitude: 52.52, longitude: 13.405)
-        guard let image = try onePixelJPEG(with: berlin) else {
+    @Test func serviceEnrichesContextFromImageEXIFGPS() async {
+        guard let image = onePixelJPEG(with: CLLocation(latitude: 52.52, longitude: 13.405)) else {
             Issue.record("GPS JPEG fixture should encode")
             return
         }
@@ -193,9 +192,8 @@ struct OCRDecimalLocaleTests {
         #expect(OCRDecimalLocale.resolve(context: enriched).decimalSeparator == ",")
     }
 
-    @Test func serviceSkipsGPSWhenContextAlreadyHasRegion() async throws {
-        let berlin = CLLocation(latitude: 52.52, longitude: 13.405)
-        guard let image = try onePixelJPEG(with: berlin) else {
+    @Test func serviceSkipsGPSWhenContextAlreadyHasRegion() async {
+        guard let image = onePixelJPEG(with: CLLocation(latitude: 52.52, longitude: 13.405)) else {
             Issue.record("GPS JPEG fixture should encode")
             return
         }
@@ -210,7 +208,7 @@ struct OCRDecimalLocaleTests {
     }
 
     /// One-pixel JPEG with GPS via the production EXIF writer (#275 / #631).
-    private func onePixelJPEG(with location: CLLocation) throws -> PlatformImage? {
+    private func onePixelJPEG(with location: CLLocation) -> PlatformImage? {
         let colorSpace = CGColorSpaceCreateDeviceRGB()
         let bitmapInfo = CGBitmapInfo.byteOrder32Little.rawValue
             | CGImageAlphaInfo.premultipliedFirst.rawValue
@@ -223,15 +221,11 @@ struct OCRDecimalLocaleTests {
             space: colorSpace,
             bitmapInfo: bitmapInfo
         ) else {
-            struct MakeImageError: Error {}
-            throw MakeImageError()
+            return nil
         }
         ctx.setFillColor(red: 1, green: 1, blue: 1, alpha: 1)
         ctx.fill(CGRect(x: 0, y: 0, width: 1, height: 1))
-        guard let cgImage = ctx.makeImage() else {
-            struct MakeImageError: Error {}
-            throw MakeImageError()
-        }
+        guard let cgImage = ctx.makeImage() else { return nil }
         #if os(macOS)
         let base = PlatformImage(cgImage: cgImage, size: CGSize(width: 1, height: 1))
         #else
