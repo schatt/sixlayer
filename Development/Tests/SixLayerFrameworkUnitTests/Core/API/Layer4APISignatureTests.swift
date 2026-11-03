@@ -259,6 +259,32 @@ open class Layer4APISignatureTests: BaseTestClass {
         BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "AutomaticComplianceModifier")
         #endif
     }
+
+    /// BUSINESS PURPOSE: Verify platformMapView_L4 API signature exists (with selection binding)
+    /// TESTING SCOPE: Tests that platformMapView_L4 accepts selection Binding and MapContentBuilder
+    /// METHODOLOGY: Compile with Hashable selection + lock compliance subject type
+    @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+    @Test @MainActor func testPlatformMapView_L4_WithSelection_APISignature() {
+        #if canImport(MapKit) && (os(iOS) || os(macOS))
+        let position = Binding<MapCameraPosition>(
+            get: { MapCameraPosition.automatic },
+            set: { (_: MapCameraPosition) in }
+        )
+        var selected: String? = nil
+        let selection = Binding<String?>(
+            get: { selected },
+            set: { selected = $0 }
+        )
+        let view = platformMapView_L4(position: position, selection: selection) {
+            Marker(
+                "Test",
+                coordinate: CLLocationCoordinate2D(latitude: 37.7749, longitude: -122.4194)
+            )
+            .tag("test")
+        }
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "AutomaticComplianceModifier")
+        #endif
+    }
     
     /// BUSINESS PURPOSE: Verify platformMapViewWithCurrentLocation_L4 API signature exists
     /// TESTING SCOPE: Tests that platformMapViewWithCurrentLocation_L4 accepts correct parameters
