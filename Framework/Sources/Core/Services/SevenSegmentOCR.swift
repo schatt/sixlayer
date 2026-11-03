@@ -1101,6 +1101,38 @@ private func trace(_ message: String) {
     fputs(message, stderr)
 }
 
+/// Temporary #600 diagnostic. Removed once the hand-crop polarity is known.
+private func notePolarity(
+    buffer: GrayBuffer,
+    dark: Mask,
+    light: Mask,
+    chosenDark: Bool,
+    darkOpens: Bool,
+    lightOpens: Bool
+) {
+    func listed(_ mask: Mask) -> String {
+        let found = runs(mask.rowSums)
+        let bands = found.count <= 1 ? rowGapBands(mask) : found
+        let text = bands.map { "\($0.0)-\($0.1)" }.joined(separator: ",")
+        return "raw\(found.count) [\(text)] digit\(digitHeightBandCount(mask))"
+    }
+    let darkInk = dark.rowSums.reduce(Int64(0)) { $0 + Int64($1) }
+    let lightInk = light.rowSums.reduce(Int64(0)) { $0 + Int64($1) }
+    var pixelSum = 0
+    for pixel in buffer.pixels { pixelSum += Int(pixel) }
+    let mean = buffer.pixels.isEmpty ? 0 : pixelSum / buffer.pixels.count
+    let line = """
+    \(buffer.width)x\(buffer.height) mean=\(mean) \
+    dark \(listed(dark)) light \(listed(light)) \
+    runs \(bandedColumnRuns(dark))/\(bandedColumnRuns(light)) \
+    ink \(darkInk)/\(lightInk) \
+    chosenDark=\(chosenDark) opens \(darkOpens)/\(lightOpens)\n
+    """
+    let path = "/tmp/sixlayer-600-polarity.txt"
+    let prior = (try? String(contentsOfFile: path, encoding: .utf8)) ?? ""
+    try? (prior + line).write(toFile: path, atomically: false, encoding: .utf8)
+}
+
 private struct Mask {
     var bits: [Bool]
     var width: Int
@@ -1640,6 +1672,16 @@ private extension GrayBuffer {
             let ink = glyphs.bits.filter { $0 }.count
             trace(
                 "read \(buffer.width)x\(buffer.height) dark=\(primaryIsDark) opened=\(opened) ink=\(ink)\n"
+            )
+        }
+        if FileManager.default.fileExists(atPath: "/tmp/sixlayer-600-score-s1") {
+            notePolarity(
+                buffer: buffer,
+                dark: masks.dark,
+                light: masks.light,
+                chosenDark: primaryIsDark,
+                darkOpens: darkChoice.opens,
+                lightOpens: lightChoice.opens
             )
         }
         if let rowFinder {
