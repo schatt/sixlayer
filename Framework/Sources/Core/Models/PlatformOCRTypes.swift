@@ -307,6 +307,13 @@ public struct OCRContext: Sendable {
     /// Trained panel localizer for ``OCRProcessingMode/ssocr``. Nil keeps the
     /// classical finder (#609).
     public let panelLocator: DisplayOCRPanelLocator?
+
+    /// Explicit locale for OCR decimal / grouping parse (#631). Wins over capture region.
+    public let decimalLocale: Locale?
+
+    /// Optional ISO 3166-1 alpha-2 region from capture place (e.g. EXIF GPS).
+    /// Guide only — nil must not block OCR (#631).
+    public let captureRegionCode: String?
     
     public init(
         textTypes: [TextType] = [.general],
@@ -326,7 +333,9 @@ public struct OCRContext: Sendable {
         labelProcessingMode: OCRProcessingMode = .accurate,
         segmentDeskewMaximumDegrees: Double = 3,
         suppliedLabelFragments: [OCRRecognizedText] = [],
-        panelLocator: DisplayOCRPanelLocator? = nil
+        panelLocator: DisplayOCRPanelLocator? = nil,
+        decimalLocale: Locale? = nil,
+        captureRegionCode: String? = nil
     ) {
         self.textTypes = textTypes
         self.language = language
@@ -346,6 +355,8 @@ public struct OCRContext: Sendable {
         self.segmentDeskewMaximumDegrees = segmentDeskewMaximumDegrees
         self.suppliedLabelFragments = suppliedLabelFragments
         self.panelLocator = panelLocator
+        self.decimalLocale = decimalLocale
+        self.captureRegionCode = captureRegionCode
     }
     
     /// Text types supplied to Vision for observation filtering. Empty means **no** per-line type filter.
