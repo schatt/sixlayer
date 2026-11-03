@@ -1352,7 +1352,7 @@ struct DisplayOCRTraining609Tests {
         to replacement: String,
         restoreModificationDate: Bool
     ) throws {
-        let url = directory.appendingPathComponent(DisplayOCRTraining.labelFileName)
+        var url = directory.appendingPathComponent(DisplayOCRTraining.labelFileName)
         let values = try url.resourceValues(forKeys: [.contentModificationDateKey, .fileSizeKey])
         let originalDate = try #require(values.contentModificationDate)
         let originalSize = try #require(values.fileSize)
