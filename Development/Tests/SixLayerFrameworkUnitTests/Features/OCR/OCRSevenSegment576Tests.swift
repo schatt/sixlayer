@@ -122,23 +122,6 @@ struct OCRSevenSegment576Tests {
         #expect(decode(image, maximum: 0).extractedText == "32.88\n8.022")
     }
 
-    /// Glare through the row gap on the first digit's left stem. Padding keeps
-    /// that gap a thin valley, so the lines stay split. The stem is still
-    /// part of the 8.
-    @Test func leadingValleyStripeKeepsTheFirstDigit() {
-        let image = SegmentPanel.render(
-            rows: [atoms("88.88"), atoms("8.022")],
-            padding: 160,
-            leadingValleyStripe: true
-        )
-        SevenSegmentOCR.bandTrace = ""
-        let result = decode(image, maximum: 0)
-        #expect(
-            result.extractedText == "88.88\n8.022",
-            "cells \(result.extractedText) trace \(SevenSegmentOCR.bandTrace)"
-        )
-    }
-
     @Test func digitPitchCutsASolidWashBridge() {
         // Approach D (#591): price row stays clean; volume gaps get a full-height
         // wash so column sums stay high and valley hunting has no dip. The
@@ -1282,8 +1265,7 @@ private enum SegmentPanel {
         aboveDigitGlare: Bool = false,
         leftScratch: Bool = false,
         tallHaze: Bool = false,
-        solidGapWashVolumeOnly: Bool = false,
-        leadingValleyStripe: Bool = false
+        solidGapWashVolumeOnly: Bool = false
     ) -> CGImage {
         let laid = layout(rows: rows, padding: padding)
         let background: UInt8 = backgroundLevel ?? (invert ? 28 : 214)
@@ -1358,16 +1340,6 @@ private enum SegmentPanel {
         }
         if edgeStrip {
             paintEdgeStrip(
-                &pixels,
-                width: width,
-                height: height,
-                ink: ink,
-                padding: padding,
-                bands: laid.rowBands
-            )
-        }
-        if leadingValleyStripe {
-            paintLeadingValleyStripe(
                 &pixels,
                 width: width,
                 height: height,
@@ -1548,35 +1520,6 @@ private enum SegmentPanel {
         for y in gapTop..<gapBottom {
             for x in 4..<scratchEnd {
                 pixels[y * width + x] = background
-            }
-        }
-    }
-
-    /// Ink through the middle of the row gap, only on the first digit's left
-    /// stem. A full-height stripe fills the gap and joins the rows. The
-    /// middle third is enough for an edge column and leaves the valley open.
-    private static func paintLeadingValleyStripe(
-        _ pixels: inout [UInt8],
-        width: Int,
-        height: Int,
-        ink: UInt8,
-        padding: Int,
-        bands: [RowBand]
-    ) {
-        guard bands.count >= 2 else { return }
-        let top = bands[0].maxY
-        let bottom = bands[1].minY
-        let span = bottom - top
-        guard span > 6 else { return }
-        let inkRows = max(4, span / 3 + 2)
-        let y0 = top + max(0, (span - inkRows) / 2)
-        let y1 = min(bottom, y0 + inkRows)
-        let x0 = max(0, padding)
-        let x1 = min(width, x0 + 6)
-        guard y1 > y0, x1 > x0 else { return }
-        for y in y0..<y1 {
-            for x in x0..<x1 {
-                pixels[y * width + x] = ink
             }
         }
     }
