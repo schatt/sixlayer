@@ -869,7 +869,29 @@ struct OCRSevenSegment576Tests {
         let hand = try #require(
             upright.cropping(to: CGRect(x: 620, y: 1440, width: 1480, height: 820))
         )
-        let channels = cropChannelReport(hand)
+        var channels = cropChannelReport(hand)
+        if let source = CGImageSourceCreateWithData(data as CFData, nil),
+           let full = CGImageSourceCreateImageAtIndex(source, 0, nil) {
+            channels += "\nfull \(full.width)x\(full.height) \(cropChannelReport(full))"
+        }
+        #if os(iOS)
+        if let platform = PlatformImage(data: data) {
+            let uiImage = platform.uiImage
+            channels += "\nui ori=\(uiImage.imageOrientation.rawValue)"
+            if let cgImage = uiImage.cgImage {
+                channels += " cg \(cgImage.width)x\(cgImage.height) \(cropChannelReport(cgImage))"
+            }
+            if let oriented = uiImage.cgImageApplyingDisplayOrientation(),
+               let uiHand = oriented.cropping(to: CGRect(x: 620, y: 1440, width: 1480, height: 820)) {
+                let uiResult = SevenSegmentOCR.decode(
+                    cgImage: uiHand,
+                    deskewMaximumDegrees: 0,
+                    localizeDigitPanel: false
+                )
+                channels += "\nuiHand \(cropChannelReport(uiHand)) [\(uiResult.extractedText)] conf \(uiResult.confidence)"
+            }
+        }
+        #endif
         let result = SevenSegmentOCR.decode(
             cgImage: hand,
             deskewMaximumDegrees: 0,
@@ -917,7 +939,7 @@ struct OCRSevenSegment576Tests {
             let total = CFDataGetLength(data)
             let stride = image.bitsPerPixel / 8
             parts.append(
-                "raw R\(channelMean(pointer, stride: stride, offset: 0, total: total)) G\(channelMean(pointer, stride: stride, offset: 1, total: total)) B\(channelMean(pointer, stride: stride, offset: 2, total: total))"
+                "raw R\(channelMean(pointer, stride: stride, offset: 0, total: total)) G\(channelMean(pointer, stride: stride, offset: 1, total: total)) B\(channelMean(pointer, stride: stride, offset: 2, total: total)) A\(channelMean(pointer, stride: stride, offset: 3, total: total))"
             )
         }
         let gray = UnsafeMutablePointer<UInt8>.allocate(capacity: count)
