@@ -987,7 +987,11 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
             }
             
             if allDependenciesAvailable {
-                if let calculatedValue = evaluateCalculationGroup(group, fieldValues: result) {
+                if let calculatedValue = evaluateCalculationGroup(
+                    group,
+                    fieldValues: result,
+                    locale: Locale(identifier: context.language.rawValue)
+                ) {
                     result[targetField] = String(calculatedValue)
                     let formula = group.formula
                     adjustments[targetField] = "Calculated from formula: \(formula) = \(String(format: "%.2f", calculatedValue))"
@@ -998,8 +1002,14 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
         return (result, adjustments)
     }
     
-    /// Evaluate a calculation group formula
-    private func evaluateCalculationGroup(_ group: CalculationGroup, fieldValues: [String: String]) -> Double? {
+    /// `locale` is the locale the recognizer used (#629).
+    /// Accepted so the tests compile. Parsing still strips every comma.
+    func evaluateCalculationGroup(
+        _ group: CalculationGroup,
+        fieldValues: [String: String],
+        locale: Locale
+    ) -> Double? {
+        _ = locale
         // Parse the formula: "target = expression"
         let parts = group.formula.split(separator: "=", maxSplits: 1).map { $0.trimmingCharacters(in: .whitespaces) }
         
