@@ -122,13 +122,13 @@ struct OCRSevenSegment576Tests {
         #expect(decode(image, maximum: 0).extractedText == "32.88\n8.022")
     }
 
-    /// Glare through the row gap on the first digit's left stem. A long row
-    /// keeps that narrow stripe under the gap floor, so the two lines stay
-    /// split. The stem is still part of the digit.
+    /// Glare through the row gap on the first digit's left stem. The frame is
+    /// tall so that gap stays a valley. The stem is still part of the digit.
     @Test func leadingValleyStripeKeepsTheFirstDigit() {
         let price = String(repeating: "8", count: 12)
         let image = SegmentPanel.render(
             rows: [atoms(price), atoms("8.022")],
+            padding: 180,
             leadingValleyStripe: true
         )
         let result = decode(image, maximum: 0)
