@@ -1968,7 +1968,7 @@ public final class DisplayOCRTrainingSession: ObservableObject {
         let root = exportRoot
         let relay = LibraryReindexRelay(session: self)
         let outcome = await Task.detached {
-            let onMain = Thread.isMainThread
+            let onMain = MainThreadProbe.isMain()
             do {
                 let scanned = try DisplayOCRTraining.reindex(in: root) { progress in
                     relay.publish(progress)
@@ -1982,6 +1982,10 @@ public final class DisplayOCRTrainingSession: ObservableObject {
         if let scanned = outcome.library {
             library = scanned
         }
+    }
+
+    fileprivate func noteReindexProgress(_ progress: DisplayOCRTrainingReindexProgress) {
+        reindexProgress = progress
     }
 
     private func refreshLibrary() {
@@ -2006,9 +2010,16 @@ private final class LibraryReindexRelay: @unchecked Sendable {
     func publish(_ progress: DisplayOCRTrainingReindexProgress) {
         DispatchQueue.main.async { [weak self] in
             MainActor.assumeIsolated {
-                self?.session?.reindexProgress = progress
+                self?.session?.noteReindexProgress(progress)
             }
         }
+    }
+}
+
+/// `Thread.isMainThread` is unavailable inside a Swift concurrency async context.
+private enum MainThreadProbe {
+    nonisolated static func isMain() -> Bool {
+        Thread.isMainThread
     }
 }
 
