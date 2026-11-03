@@ -5,7 +5,8 @@
 //  Display OCR training (#609). Phase A writes one confirmed example.
 //  Opening a new photo suggests a panel and rows from the seven-segment
 //  reader. A saved example keeps the boxes and text the user confirmed.
-//  Phase B reads the export directory as a library of those examples.
+//  Phase B keeps an index of those examples so opening the library does not
+//  load every photo.
 //  Phase C trains a panel localizer from that library on macOS.
 //
 
@@ -179,21 +180,116 @@ public struct DisplayOCRTrainingExport: Sendable, Equatable {
 public struct DisplayOCRTrainingLibraryExample: Sendable, Equatable {
     public var directory: URL
     public var package: DisplayOCRTrainingPackage
+    /// True when the saved label has a row box. Kept separately so a catalog
+    /// entry can count rows without holding the label or the photo.
+    public var hasRowBox: Bool
 
-    public init(directory: URL, package: DisplayOCRTrainingPackage) {
+    public init(directory: URL, package: DisplayOCRTrainingPackage, hasRowBox: Bool? = nil) {
         self.directory = directory
         self.package = package
+        self.hasRowBox = hasRowBox ?? package.label.rows.contains { $0.box != nil }
     }
+}
+
+/// Why a child folder is on the skipped list. The package error stays the
+/// thrown value; this is the reason shown next to the folder name.
+public enum DisplayOCRTrainingSkipReason: String, Codable, Equatable, Sendable {
+    case missingLabel
+    case missingImage
+    case unknownSchema
+    case symlink
+    case unreadablePackage
+    case emptyPanel
 }
 
 /// A child folder that is not a usable example.
 public struct DisplayOCRTrainingLibraryRejection: Sendable, Equatable {
     public var directory: URL
     public var error: DisplayOCRTrainingError
+    public var reason: DisplayOCRTrainingSkipReason
 
-    public init(directory: URL, error: DisplayOCRTrainingError) {
+    public init(
+        directory: URL,
+        error: DisplayOCRTrainingError,
+        reason: DisplayOCRTrainingSkipReason = .unreadablePackage
+    ) {
         self.directory = directory
         self.error = error
+        self.reason = reason
+    }
+}
+
+/// One row on the skipped list: folder name, why it was skipped, and whether Open is safe.
+public struct DisplayOCRTrainingSkippedFolder: Equatable, Sendable, Identifiable {
+    public var name: String
+    public var reason: DisplayOCRTrainingSkipReason
+    public var canOpen: Bool
+
+    public var id: String { name }
+
+    public init(name: String, reason: DisplayOCRTrainingSkipReason, canOpen: Bool) {
+        self.name = name
+        self.reason = reason
+        self.canOpen = canOpen
+    }
+}
+
+/// How far a manual reindex has walked. `completed` and `total` are child folders.
+public struct DisplayOCRTrainingReindexProgress: Equatable, Sendable {
+    public var completed: Int
+    public var total: Int
+
+    public init(completed: Int, total: Int) {
+        self.completed = completed
+        self.total = total
+    }
+}
+
+/// Disposable catalog at the library root. Names, byte sizes, and modification
+/// times identify each child. A skip reason and a row-box flag are enough to
+/// draw the library screen. Paths, photo bytes, and label text are not stored.
+public struct DisplayOCRTrainingIndex: Codable, Equatable, Sendable {
+    public var schemaVersion: Int
+    public var entries: [DisplayOCRTrainingIndexEntry]
+
+    public init(schemaVersion: Int, entries: [DisplayOCRTrainingIndexEntry]) {
+        self.schemaVersion = schemaVersion
+        self.entries = entries
+    }
+}
+
+public struct DisplayOCRTrainingIndexEntry: Codable, Equatable, Sendable {
+    public var name: String
+    public var imageByteCount: Int?
+    public var imageModifiedMilliseconds: Int?
+    public var labelByteCount: Int?
+    public var labelModifiedMilliseconds: Int?
+    /// Present only so a decoded index can show that no label body was stored.
+    public var label: DisplayOCRTrainingLabel?
+    public var hasRowBox: Bool
+    public var skipReason: DisplayOCRTrainingSkipReason?
+    public var schemaVersionFound: Int?
+
+    public init(
+        name: String,
+        imageByteCount: Int?,
+        imageModifiedMilliseconds: Int?,
+        labelByteCount: Int?,
+        labelModifiedMilliseconds: Int?,
+        label: DisplayOCRTrainingLabel? = nil,
+        hasRowBox: Bool = false,
+        skipReason: DisplayOCRTrainingSkipReason?,
+        schemaVersionFound: Int?
+    ) {
+        self.name = name
+        self.imageByteCount = imageByteCount
+        self.imageModifiedMilliseconds = imageModifiedMilliseconds
+        self.labelByteCount = labelByteCount
+        self.labelModifiedMilliseconds = labelModifiedMilliseconds
+        self.label = label
+        self.hasRowBox = hasRowBox
+        self.skipReason = skipReason
+        self.schemaVersionFound = schemaVersionFound
     }
 }
 
@@ -208,6 +304,16 @@ public struct DisplayOCRTrainingLibrary: Sendable, Equatable {
     ) {
         self.examples = examples
         self.rejections = rejections
+    }
+
+    /// Examples whose label has at least one row box.
+    public var rowBoxExampleCount: Int {
+        examples.filter(\.hasRowBox).count
+    }
+
+    /// Examples with a panel and no row box.
+    public var panelOnlyExampleCount: Int {
+        examples.count - rowBoxExampleCount
     }
 }
 
@@ -244,8 +350,10 @@ public enum DisplayOCRTrainingStatus: Equatable, Sendable {
 
 public enum DisplayOCRTraining {
     public static let schemaVersion = 1
+    public static let indexSchemaVersion = 1
     public static let imageFileName = "image.png"
     public static let labelFileName = "label.json"
+    public static let indexFileName = "index.json"
     public static let exportDirectoryName = "display-ocr-training"
 
     /// `<current directory>/display-ocr-training`. The caller can replace this
@@ -447,8 +555,8 @@ public enum DisplayOCRTraining {
             switch classify(child, in: root) {
             case .example(let package):
                 examples.append(DisplayOCRTrainingLibraryExample(directory: child, package: package))
-            case .rejection(let error):
-                rejections.append(DisplayOCRTrainingLibraryRejection(directory: child, error: error))
+            case .rejection(let error, let reason):
+                rejections.append(DisplayOCRTrainingLibraryRejection(directory: child, error: error, reason: reason))
             case .ignored:
                 break
             }
@@ -456,6 +564,105 @@ public enum DisplayOCRTraining {
         examples.sort { $0.directory.lastPathComponent < $1.directory.lastPathComponent }
         rejections.sort { $0.directory.lastPathComponent < $1.directory.lastPathComponent }
         return DisplayOCRTrainingLibrary(examples: examples, rejections: rejections)
+    }
+
+    /// Open path. A missing index is built by reading each child once. Later opens
+    /// stat `image.png` and `label.json` and read a folder only when that fingerprint changes.
+    /// Returned examples do not keep photo bytes from the scan.
+    public static func catalog(in root: URL) -> DisplayOCRTrainingLibrary {
+        guard directory(root), !symbolicLink(root) else { return DisplayOCRTrainingLibrary() }
+        let children: [URL]
+        do {
+            children = try listedChildren(in: root)
+        } catch {
+            return DisplayOCRTrainingLibrary()
+        }
+        if let index = loadIndex(in: root) {
+            return reconcile(children, index: index, in: root)
+        }
+        let scanned = scan(children, in: root, progress: nil)
+        let index = DisplayOCRTrainingIndex(
+            schemaVersion: indexSchemaVersion,
+            entries: scanned.entries.sorted { $0.name < $1.name }
+        )
+        try? replaceIndex(index, in: root)
+        return scanned.library
+    }
+
+    /// Walk every child, ignoring the current index. The new index replaces the
+    /// old file only after the walk finishes. Photo bytes are not kept.
+    public static func reindex(
+        in root: URL,
+        progress: @escaping @Sendable (DisplayOCRTrainingReindexProgress) -> Void
+    ) throws -> DisplayOCRTrainingLibrary {
+        guard directory(root), !symbolicLink(root) else { throw DisplayOCRTrainingError.unreadablePackage }
+        let children: [URL]
+        do {
+            children = try listedChildren(in: root)
+        } catch {
+            throw DisplayOCRTrainingError.unreadablePackage
+        }
+        let scanned = scan(children, in: root, progress: progress)
+        let index = DisplayOCRTrainingIndex(
+            schemaVersion: indexSchemaVersion,
+            entries: scanned.entries.sorted { $0.name < $1.name }
+        )
+        try replaceIndex(index, in: root)
+        return scanned.library
+    }
+
+    /// Reads `image.png` for examples the catalog served without bytes.
+    /// A symlink is left unloaded. The label file is not required.
+    public static func loadingImages(
+        _ library: DisplayOCRTrainingLibrary
+    ) -> DisplayOCRTrainingLibrary {
+        var copy = library
+        copy.examples = library.examples.map { example in
+            guard example.package.imagePNG.isEmpty else { return example }
+            guard let data = imageData(in: example.directory) else { return example }
+            var package = example.package
+            package.imagePNG = data
+            return DisplayOCRTrainingLibraryExample(
+                directory: example.directory,
+                package: package,
+                hasRowBox: example.hasRowBox
+            )
+        }
+        return copy
+    }
+
+    /// Reads any package the catalog did not fully load, for an explicit train.
+    static func packagesForTraining(
+        _ library: DisplayOCRTrainingLibrary
+    ) -> DisplayOCRTrainingLibrary {
+        var copy = library
+        copy.examples = library.examples.compactMap { example in
+            let needsLabel = example.package.label.imagePixelWidth == 0
+            let needsImage = example.package.imagePNG.isEmpty
+            if !needsLabel, !needsImage { return example }
+            if needsLabel {
+                guard !symbolicLink(example.directory),
+                      let package = try? read(from: example.directory) else { return nil }
+                return DisplayOCRTrainingLibraryExample(directory: example.directory, package: package)
+            }
+            guard let data = imageData(in: example.directory) else { return nil }
+            var package = example.package
+            package.imagePNG = data
+            return DisplayOCRTrainingLibraryExample(
+                directory: example.directory,
+                package: package,
+                hasRowBox: example.hasRowBox
+            )
+        }
+        return copy
+    }
+
+    /// Whether Open can read this child without following a symlink.
+    public static func canOpenLibraryFolder(named name: String, in root: URL) -> Bool {
+        guard let child = directChild(named: name, in: root) else { return false }
+        if symbolicLink(child) || !directory(child) || !contained(child, in: root) { return false }
+        let imageURL = child.appendingPathComponent(imageFileName)
+        return !symbolicLink(imageURL) && regularFile(imageURL)
     }
 
     public static func read(from directory: URL) throws -> DisplayOCRTrainingPackage {
@@ -531,23 +738,482 @@ public enum DisplayOCRTraining {
 
     private enum LibraryChild {
         case example(DisplayOCRTrainingPackage)
-        case rejection(DisplayOCRTrainingError)
+        case rejection(DisplayOCRTrainingError, DisplayOCRTrainingSkipReason)
         case ignored
     }
 
     private static func classify(_ child: URL, in root: URL) -> LibraryChild {
-        if symbolicLink(child) || !contained(child, in: root) {
-            return .rejection(.unreadablePackage)
+        if symbolicLink(child) {
+            return .rejection(.unreadablePackage, .symlink)
+        }
+        if !contained(child, in: root) {
+            return .rejection(.unreadablePackage, .unreadablePackage)
         }
         guard directory(child) else { return .ignored }
         if isModelPackage(child) { return .ignored }
+        let imageURL = child.appendingPathComponent(imageFileName)
+        let labelURL = child.appendingPathComponent(labelFileName)
+        if symbolicLink(imageURL) || symbolicLink(labelURL) {
+            return .rejection(.unreadablePackage, .symlink)
+        }
+        if !regularFile(imageURL) {
+            return .rejection(.unreadablePackage, .missingImage)
+        }
+        if !regularFile(labelURL) {
+            return .rejection(.unreadablePackage, .missingLabel)
+        }
         do {
             return .example(try read(from: child))
         } catch let error as DisplayOCRTrainingError {
-            return .rejection(error)
+            return .rejection(error, reason(for: error))
         } catch {
-            return .rejection(.unreadablePackage)
+            return .rejection(.unreadablePackage, .unreadablePackage)
         }
+    }
+
+    private static func reason(for error: DisplayOCRTrainingError) -> DisplayOCRTrainingSkipReason {
+        switch error {
+        case .unsupportedSchema:
+            return .unknownSchema
+        case .emptyPanel:
+            return .emptyPanel
+        case .missingLabel:
+            return .missingLabel
+        case .unreadableImage:
+            return .missingImage
+        case .unreadablePackage, .pngEncodingFailed, .writeFailed:
+            return .unreadablePackage
+        }
+    }
+
+    fileprivate static func folderName(_ raw: String) -> String? {
+        if raw.isEmpty || raw == "." || raw == ".." { return nil }
+        if raw.contains("/") || raw.contains("\\") || raw.contains("\0") { return nil }
+        if (raw as NSString).lastPathComponent != raw { return nil }
+        return raw
+    }
+
+    fileprivate static func directChild(named name: String, in root: URL) -> URL? {
+        guard let name = folderName(name) else { return nil }
+        return root.appendingPathComponent(name, isDirectory: true)
+    }
+
+    fileprivate struct OpenedLibraryImage {
+        var image: Data
+        var label: DisplayOCRTrainingLabel?
+    }
+
+    /// The image bytes and, when it parses, the label. Does not follow a symlink.
+    fileprivate static func openedImage(named name: String, in root: URL) -> OpenedLibraryImage? {
+        guard canOpenLibraryFolder(named: name, in: root),
+              let child = directChild(named: name, in: root),
+              let image = imageData(in: child) else { return nil }
+        let labelURL = child.appendingPathComponent(labelFileName)
+        let label: DisplayOCRTrainingLabel?
+        if symbolicLink(labelURL) {
+            label = nil
+        } else if let data = try? Data(contentsOf: labelURL) {
+            label = try? self.label(from: data)
+        } else {
+            label = nil
+        }
+        return OpenedLibraryImage(image: image, label: label)
+    }
+
+    fileprivate static func recordExportedPackage(
+        _ package: DisplayOCRTrainingPackage,
+        directory: URL,
+        in root: URL,
+        library: inout DisplayOCRTrainingLibrary
+    ) {
+        let name = directory.lastPathComponent
+        library.rejections.removeAll { $0.directory.lastPathComponent == name }
+        let hasRowBox = package.label.rows.contains { $0.box != nil }
+        let example = DisplayOCRTrainingLibraryExample(
+            directory: directory,
+            package: package,
+            hasRowBox: hasRowBox
+        )
+        if let index = library.examples.firstIndex(where: { $0.directory.lastPathComponent == name }) {
+            library.examples[index] = example
+        } else {
+            library.examples.append(example)
+            library.examples.sort { $0.directory.lastPathComponent < $1.directory.lastPathComponent }
+        }
+        guard var index = loadIndex(in: root) else { return }
+        let entry = indexEntry(
+            name: name,
+            fingerprint: fingerprint(of: directory),
+            hasRowBox: hasRowBox,
+            skipReason: nil,
+            schemaVersionFound: nil
+        )
+        if let existing = index.entries.firstIndex(where: { $0.name == name }) {
+            index.entries[existing] = entry
+        } else {
+            index.entries.append(entry)
+            index.entries.sort { $0.name < $1.name }
+        }
+        try? replaceIndex(index, in: root)
+    }
+
+    fileprivate static func removeIndexedFolder(named name: String, in root: URL, library: inout DisplayOCRTrainingLibrary) throws {
+        guard let child = directChild(named: name, in: root) else { throw DisplayOCRTrainingError.writeFailed }
+        guard symbolicLink(child) || directory(child) else { throw DisplayOCRTrainingError.writeFailed }
+        do {
+            try FileManager.default.removeItem(at: child)
+        } catch {
+            throw DisplayOCRTrainingError.writeFailed
+        }
+        library.examples.removeAll { $0.directory.lastPathComponent == name }
+        library.rejections.removeAll { $0.directory.lastPathComponent == name }
+        guard var index = loadIndex(in: root) else { return }
+        index.entries.removeAll { $0.name == name }
+        try? replaceIndex(index, in: root)
+    }
+
+    private struct IndexedScan {
+        var library: DisplayOCRTrainingLibrary
+        var entries: [DisplayOCRTrainingIndexEntry]
+    }
+
+    private static func listedChildren(in root: URL) throws -> [URL] {
+        try FileManager.default.contentsOfDirectory(
+            at: root,
+            includingPropertiesForKeys: [.isSymbolicLinkKey, .isDirectoryKey],
+            options: [.skipsHiddenFiles]
+        )
+    }
+
+    /// A symlink is indexed so it can be removed. A model package and a plain file are not.
+    private static func shouldIndex(_ child: URL) -> Bool {
+        if symbolicLink(child) { return true }
+        if !directory(child) { return false }
+        if isModelPackage(child) { return false }
+        return true
+    }
+
+    private static func loadIndex(in root: URL) -> DisplayOCRTrainingIndex? {
+        let url = root.appendingPathComponent(indexFileName)
+        if symbolicLink(url) { return nil }
+        guard let data = try? Data(contentsOf: url),
+              let index = try? JSONDecoder().decode(DisplayOCRTrainingIndex.self, from: data),
+              index.schemaVersion == indexSchemaVersion else { return nil }
+        return index
+    }
+
+    private static func replaceIndex(_ index: DisplayOCRTrainingIndex, in root: URL) throws {
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+        let data: Data
+        do {
+            data = try encoder.encode(index)
+        } catch {
+            throw DisplayOCRTrainingError.writeFailed
+        }
+        let destination = root.appendingPathComponent(indexFileName)
+        let partial = root.appendingPathComponent("." + indexFileName + ".partial")
+        do {
+            try data.write(to: partial, options: .atomic)
+            if FileManager.default.fileExists(atPath: destination.path) {
+                _ = try FileManager.default.replaceItemAt(destination, withItemAt: partial)
+            } else {
+                try FileManager.default.moveItem(at: partial, to: destination)
+            }
+        } catch {
+            try? FileManager.default.removeItem(at: partial)
+            throw DisplayOCRTrainingError.writeFailed
+        }
+    }
+
+    private static func scan(
+        _ children: [URL],
+        in root: URL,
+        progress: (@Sendable (DisplayOCRTrainingReindexProgress) -> Void)?
+    ) -> IndexedScan {
+        let targets = children.filter { shouldIndex($0) }.sorted {
+            $0.lastPathComponent < $1.lastPathComponent
+        }
+        progress?(DisplayOCRTrainingReindexProgress(completed: 0, total: targets.count))
+        var examples: [DisplayOCRTrainingLibraryExample] = []
+        var rejections: [DisplayOCRTrainingLibraryRejection] = []
+        var entries: [DisplayOCRTrainingIndexEntry] = []
+        for (offset, child) in targets.enumerated() {
+            let stamp = fingerprint(of: child)
+            appendClassified(
+                classify(child, in: root),
+                directory: child,
+                fingerprint: stamp,
+                clearImagePNG: true,
+                examples: &examples,
+                rejections: &rejections,
+                entries: &entries
+            )
+            progress?(DisplayOCRTrainingReindexProgress(completed: offset + 1, total: targets.count))
+        }
+        examples.sort { $0.directory.lastPathComponent < $1.directory.lastPathComponent }
+        rejections.sort { $0.directory.lastPathComponent < $1.directory.lastPathComponent }
+        return IndexedScan(
+            library: DisplayOCRTrainingLibrary(examples: examples, rejections: rejections),
+            entries: entries
+        )
+    }
+
+    private static func reconcile(
+        _ children: [URL],
+        index: DisplayOCRTrainingIndex,
+        in root: URL
+    ) -> DisplayOCRTrainingLibrary {
+        let targets = children.filter { shouldIndex($0) }.sorted {
+            $0.lastPathComponent < $1.lastPathComponent
+        }
+        var known: [String: DisplayOCRTrainingIndexEntry] = [:]
+        for entry in index.entries {
+            known[entry.name] = entry
+        }
+        var examples: [DisplayOCRTrainingLibraryExample] = []
+        var rejections: [DisplayOCRTrainingLibraryRejection] = []
+        var entries: [DisplayOCRTrainingIndexEntry] = []
+        var changed = targets.count != index.entries.count
+        for child in targets {
+            let name = child.lastPathComponent
+            let stamp = fingerprint(of: child)
+            if let stored = known[name], fingerprintMatches(stored, child: child, stamp: stamp) {
+                entries.append(indexEntry(
+                    name: name,
+                    fingerprint: stamp,
+                    hasRowBox: stored.hasRowBox,
+                    skipReason: stored.skipReason,
+                    schemaVersionFound: stored.schemaVersionFound
+                ))
+                appendFromIndex(stored, directory: child, examples: &examples, rejections: &rejections)
+                continue
+            }
+            changed = true
+            appendClassified(
+                classify(child, in: root),
+                directory: child,
+                fingerprint: stamp,
+                clearImagePNG: false,
+                examples: &examples,
+                rejections: &rejections,
+                entries: &entries
+            )
+        }
+        if Set(entries.map(\.name)) != Set(index.entries.map(\.name)) {
+            changed = true
+        }
+        if changed {
+            let updated = DisplayOCRTrainingIndex(
+                schemaVersion: indexSchemaVersion,
+                entries: entries.sorted { $0.name < $1.name }
+            )
+            try? replaceIndex(updated, in: root)
+        }
+        examples.sort { $0.directory.lastPathComponent < $1.directory.lastPathComponent }
+        rejections.sort { $0.directory.lastPathComponent < $1.directory.lastPathComponent }
+        return DisplayOCRTrainingLibrary(examples: examples, rejections: rejections)
+    }
+
+    /// Records one classify result. Scan clears photo bytes; a fingerprint miss keeps them.
+    private static func appendClassified(
+        _ child: LibraryChild,
+        directory: URL,
+        fingerprint stamp: DisplayOCRTrainingIndexEntry,
+        clearImagePNG: Bool,
+        examples: inout [DisplayOCRTrainingLibraryExample],
+        rejections: inout [DisplayOCRTrainingLibraryRejection],
+        entries: inout [DisplayOCRTrainingIndexEntry]
+    ) {
+        let name = directory.lastPathComponent
+        switch child {
+        case .example(let package):
+            let hasRowBox = package.label.rows.contains { $0.box != nil }
+            var stored = package
+            if clearImagePNG {
+                stored.imagePNG = Data()
+            }
+            examples.append(DisplayOCRTrainingLibraryExample(
+                directory: directory,
+                package: stored,
+                hasRowBox: hasRowBox
+            ))
+            entries.append(indexEntry(
+                name: name,
+                fingerprint: stamp,
+                hasRowBox: hasRowBox,
+                skipReason: nil,
+                schemaVersionFound: nil
+            ))
+        case .rejection(let error, let reason):
+            rejections.append(DisplayOCRTrainingLibraryRejection(
+                directory: directory,
+                error: error,
+                reason: reason
+            ))
+            let version: Int?
+            if case .unsupportedSchema(let found) = error {
+                version = found
+            } else {
+                version = nil
+            }
+            entries.append(indexEntry(
+                name: name,
+                fingerprint: stamp,
+                hasRowBox: false,
+                skipReason: reason,
+                schemaVersionFound: version
+            ))
+        case .ignored:
+            break
+        }
+    }
+
+    private static func appendFromIndex(
+        _ entry: DisplayOCRTrainingIndexEntry,
+        directory: URL,
+        examples: inout [DisplayOCRTrainingLibraryExample],
+        rejections: inout [DisplayOCRTrainingLibraryRejection]
+    ) {
+        guard let reason = entry.skipReason else {
+            examples.append(DisplayOCRTrainingLibraryExample(
+                directory: directory,
+                package: placeholderPackage(),
+                hasRowBox: entry.hasRowBox
+            ))
+            return
+        }
+        rejections.append(DisplayOCRTrainingLibraryRejection(
+            directory: directory,
+            error: error(for: reason, schemaVersionFound: entry.schemaVersionFound),
+            reason: reason
+        ))
+    }
+
+    private static func error(
+        for reason: DisplayOCRTrainingSkipReason,
+        schemaVersionFound: Int?
+    ) -> DisplayOCRTrainingError {
+        switch reason {
+        case .unknownSchema:
+            return .unsupportedSchema(schemaVersionFound ?? 0)
+        case .emptyPanel:
+            return .emptyPanel
+        case .missingLabel, .missingImage, .symlink, .unreadablePackage:
+            return .unreadablePackage
+        }
+    }
+
+    private static func placeholderPackage() -> DisplayOCRTrainingPackage {
+        let label = DisplayOCRTrainingLabel(
+            schemaVersion: schemaVersion,
+            origin: .topLeft,
+            imageFileName: imageFileName,
+            imagePixelWidth: 0,
+            imagePixelHeight: 0,
+            sourceName: nil,
+            panel: DisplayOCRNormalizedBox(x: 0, y: 0, width: 1, height: 1),
+            rows: []
+        )
+        return DisplayOCRTrainingPackage(label: label, imagePNG: Data())
+    }
+
+    private static func indexEntry(
+        name: String,
+        fingerprint: DisplayOCRTrainingIndexEntry,
+        hasRowBox: Bool,
+        skipReason: DisplayOCRTrainingSkipReason?,
+        schemaVersionFound: Int?
+    ) -> DisplayOCRTrainingIndexEntry {
+        DisplayOCRTrainingIndexEntry(
+            name: name,
+            imageByteCount: fingerprint.imageByteCount,
+            imageModifiedMilliseconds: fingerprint.imageModifiedMilliseconds,
+            labelByteCount: fingerprint.labelByteCount,
+            labelModifiedMilliseconds: fingerprint.labelModifiedMilliseconds,
+            label: nil,
+            hasRowBox: hasRowBox,
+            skipReason: skipReason,
+            schemaVersionFound: schemaVersionFound
+        )
+    }
+
+    /// Sizes and modification times of the two package files. A symlink is not followed.
+    private static func fingerprint(of child: URL) -> DisplayOCRTrainingIndexEntry {
+        let name = child.lastPathComponent
+        if symbolicLink(child) || !directory(child) {
+            return DisplayOCRTrainingIndexEntry(
+                name: name,
+                imageByteCount: nil,
+                imageModifiedMilliseconds: nil,
+                labelByteCount: nil,
+                labelModifiedMilliseconds: nil,
+                hasRowBox: false,
+                skipReason: nil,
+                schemaVersionFound: nil
+            )
+        }
+        let image = fileStamp(child.appendingPathComponent(imageFileName))
+        let label = fileStamp(child.appendingPathComponent(labelFileName))
+        return DisplayOCRTrainingIndexEntry(
+            name: name,
+            imageByteCount: image?.bytes,
+            imageModifiedMilliseconds: image?.modified,
+            labelByteCount: label?.bytes,
+            labelModifiedMilliseconds: label?.modified,
+            hasRowBox: false,
+            skipReason: nil,
+            schemaVersionFound: nil
+        )
+    }
+
+    private static func fingerprintMatches(
+        _ stored: DisplayOCRTrainingIndexEntry,
+        child: URL,
+        stamp: DisplayOCRTrainingIndexEntry
+    ) -> Bool {
+        if symbolicLink(child) {
+            return stored.skipReason == .symlink && sameFingerprint(stored, stamp)
+        }
+        if stored.skipReason == .symlink { return false }
+        return sameFingerprint(stored, stamp)
+    }
+
+    private static func sameFingerprint(
+        _ stored: DisplayOCRTrainingIndexEntry,
+        _ stamp: DisplayOCRTrainingIndexEntry
+    ) -> Bool {
+        stored.imageByteCount == stamp.imageByteCount
+            && stored.imageModifiedMilliseconds == stamp.imageModifiedMilliseconds
+            && stored.labelByteCount == stamp.labelByteCount
+            && stored.labelModifiedMilliseconds == stamp.labelModifiedMilliseconds
+    }
+
+    private struct FileStamp {
+        var bytes: Int
+        var modified: Int
+    }
+
+    private static func fileStamp(_ url: URL) -> FileStamp? {
+        if symbolicLink(url) { return nil }
+        guard let values = try? url.resourceValues(forKeys: [
+            .isRegularFileKey, .fileSizeKey, .contentModificationDateKey
+        ]), values.isRegularFile == true,
+              let size = values.fileSize,
+              let date = values.contentModificationDate else { return nil }
+        return FileStamp(bytes: size, modified: Int((date.timeIntervalSince1970 * 1000).rounded()))
+    }
+
+    private static func regularFile(_ url: URL) -> Bool {
+        if symbolicLink(url) { return false }
+        guard let values = try? url.resourceValues(forKeys: [.isRegularFileKey]) else { return false }
+        return values.isRegularFile == true
+    }
+
+    private static func imageData(in directory: URL) -> Data? {
+        let url = directory.appendingPathComponent(imageFileName)
+        guard regularFile(url) else { return nil }
+        return try? Data(contentsOf: url)
     }
 
     /// A Core ML package sitting in the library root is not an example folder.
@@ -847,6 +1513,9 @@ public final class DisplayOCRTrainingSession: ObservableObject {
     @Published public private(set) var library = DisplayOCRTrainingLibrary()
     @Published public private(set) var selectedBox: DisplayOCRTrainingBoxTarget?
     @Published public private(set) var panelTraining: DisplayOCRPanelTrainingState = .idle
+    @Published public private(set) var editingFolderName: String?
+    @Published public private(set) var reindexProgress: DisplayOCRTrainingReindexProgress?
+    public private(set) var reindexRanOnMainThread: Bool?
 
     private var bitmap: CGImage?
 
@@ -863,6 +1532,7 @@ public final class DisplayOCRTrainingSession: ObservableObject {
     }
 
     public func load(cgImage: CGImage, sourceName: String? = nil) {
+        editingFolderName = nil
         show(cgImage, sourceName: sourceName, suggesting: true)
     }
 
@@ -1201,7 +1871,8 @@ public final class DisplayOCRTrainingSession: ObservableObject {
     ) async -> DisplayOCRPanelTrainingState {
         await Task.detached(priority: .userInitiated) {
             do {
-                let url = try DisplayOCRPanelModel.train(library: library, writingModelTo: root)
+                let loaded = DisplayOCRTraining.packagesForTraining(library)
+                let url = try DisplayOCRPanelModel.train(library: loaded, writingModelTo: root)
                 return DisplayOCRPanelTrainingState.ready(url)
             } catch let error as DisplayOCRPanelModelError {
                 switch error {
@@ -1229,7 +1900,7 @@ public final class DisplayOCRTrainingSession: ObservableObject {
         refreshLibrary()
     }
 
-    /// Write `image.png` and `label.json` in a new folder under ``exportRoot``.
+    /// Write `image.png` and `label.json`. An opened folder is saved back into itself.
     public func export() throws -> DisplayOCRTrainingExport {
         try platformSecurityScopedAccess(url: exportRoot) { root in
             try writePackage(under: root)
@@ -1245,17 +1916,103 @@ public final class DisplayOCRTrainingSession: ObservableObject {
 
     private func writePackage(under root: URL) throws -> DisplayOCRTrainingExport {
         let package = try makePackage()
-        let directory = root.appendingPathComponent(UUID().uuidString, isDirectory: true)
+        let savingExisting = root.standardizedFileURL.path == exportRoot.standardizedFileURL.path
+        let directory: URL
+        if savingExisting, let name = editingFolderName, DisplayOCRTraining.folderName(name) != nil {
+            directory = root.appendingPathComponent(name, isDirectory: true)
+        } else {
+            directory = root.appendingPathComponent(UUID().uuidString, isDirectory: true)
+        }
         try DisplayOCRTraining.write(package, to: directory)
         status = .exported(directory)
-        refreshLibrary()
+        if savingExisting {
+            DisplayOCRTraining.recordExportedPackage(
+                package,
+                directory: directory,
+                in: root,
+                library: &library
+            )
+        }
         return DisplayOCRTrainingExport(directory: directory, package: package)
+    }
+
+    /// Open one child. A readable label keeps its boxes and text. A new photo is not started.
+    public func openLibraryFolder(named name: String) -> Bool {
+        let opened = platformSecurityScopedAccess(url: exportRoot) { root in
+            DisplayOCRTraining.openedImage(named: name, in: root)
+        }
+        guard let opened, let image = PlatformImage(data: opened.image)?.orientedCGImage() else { return false }
+        if let saved = opened.label {
+            restore(cgImage: image, label: saved, sourceName: name)
+        } else {
+            load(cgImage: image, sourceName: name)
+        }
+        editingFolderName = DisplayOCRTraining.folderName(name)
+        return editingFolderName != nil
+    }
+
+    /// Delete one child folder and its index entry. A symlink removes the link only.
+    public func removeLibraryFolder(named name: String) throws {
+        try platformSecurityScopedAccess(url: exportRoot) { root in
+            try DisplayOCRTraining.removeIndexedFolder(named: name, in: root, library: &library)
+        }
+    }
+
+    /// Walk the export root off the main thread. A failed walk keeps the previous index and library.
+    public func reindexLibrary() async {
+        let root = exportRoot
+        let relay = LibraryReindexRelay(session: self)
+        let outcome = await Task.detached {
+            let onMain = MainThreadProbe.isMain()
+            do {
+                let scanned = try DisplayOCRTraining.reindex(in: root) { progress in
+                    relay.publish(progress)
+                }
+                return ReindexOutcome(library: scanned, ranOnMainThread: onMain)
+            } catch {
+                return ReindexOutcome(library: nil, ranOnMainThread: onMain)
+            }
+        }.value
+        reindexRanOnMainThread = outcome.ranOnMainThread
+        if let scanned = outcome.library {
+            library = scanned
+        }
+    }
+
+    fileprivate func noteReindexProgress(_ progress: DisplayOCRTrainingReindexProgress) {
+        reindexProgress = progress
     }
 
     private func refreshLibrary() {
         library = platformSecurityScopedAccess(url: exportRoot) { root in
-            DisplayOCRTraining.library(in: root)
+            DisplayOCRTraining.catalog(in: root)
         }
+    }
+}
+
+private struct ReindexOutcome: Sendable {
+    var library: DisplayOCRTrainingLibrary?
+    var ranOnMainThread: Bool
+}
+
+private final class LibraryReindexRelay: @unchecked Sendable {
+    private weak var session: DisplayOCRTrainingSession?
+
+    init(session: DisplayOCRTrainingSession) {
+        self.session = session
+    }
+
+    func publish(_ progress: DisplayOCRTrainingReindexProgress) {
+        Task { @MainActor [weak self] in
+            self?.session?.noteReindexProgress(progress)
+        }
+    }
+}
+
+/// `Thread.isMainThread` is unavailable inside a Swift concurrency async context.
+private enum MainThreadProbe {
+    nonisolated static func isMain() -> Bool {
+        Thread.isMainThread
     }
 }
 
