@@ -293,19 +293,27 @@ private struct GrayBuffer {
         guard image.decode == nil,
               image.bitsPerComponent == 8,
               image.bitsPerPixel == 8,
-              image.colorSpace?.model == .monochrome,
-              image.bytesPerRow >= image.width,
               let provider = image.dataProvider,
               let data = provider.data,
               let pointer = CFDataGetBytePtr(data)
         else { return nil }
         let width = image.width
         let height = image.height
+        guard width > 0, height > 0 else { return nil }
+        let packed = width * height
         let rowBytes = image.bytesPerRow
-        guard CFDataGetLength(data) >= rowBytes * height else { return nil }
-        var pixels = [UInt8](repeating: 0, count: width * height)
+        let dataLength = CFDataGetLength(data)
+        let stride: Int
+        if rowBytes >= width, dataLength >= rowBytes * height {
+            stride = rowBytes
+        } else if dataLength >= packed {
+            stride = width
+        } else {
+            return nil
+        }
+        var pixels = [UInt8](repeating: 0, count: packed)
         for y in 0..<height {
-            let row = y * rowBytes
+            let row = y * stride
             for x in 0..<width {
                 pixels[y * width + x] = pointer[row + x]
             }
