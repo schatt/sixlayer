@@ -281,93 +281,22 @@ private struct GrayBuffer {
         let width = image.width
         let height = image.height
         guard width > 0, height > 0 else { return nil }
-        if let copied = copyMonochrome(image) {
-            return copied
-        }
-        return luma(from: image)
-    }
-
-    /// Eight-bit gray fixtures are already the values the decoder thresholds.
-    /// Copy them. A DeviceGray draw is not those values for a Display P3 photo.
-    private static func copyMonochrome(_ image: CGImage) -> GrayBuffer? {
-        guard image.decode == nil,
-              image.bitsPerComponent == 8,
-              image.bitsPerPixel == 8,
-              let provider = image.dataProvider,
-              let data = provider.data,
-              let pointer = CFDataGetBytePtr(data)
-        else { return nil }
-        let width = image.width
-        let height = image.height
-        guard width > 0, height > 0 else { return nil }
-        let packed = width * height
-        let rowBytes = image.bytesPerRow
-        let dataLength = CFDataGetLength(data)
-        let stride: Int
-        if rowBytes >= width, dataLength >= rowBytes * height {
-            stride = rowBytes
-        } else if dataLength >= packed {
-            stride = width
-        } else {
-            return nil
-        }
-        var pixels = [UInt8](repeating: 0, count: packed)
-        for y in 0..<height {
-            let row = y * stride
-            for x in 0..<width {
-                pixels[y * width + x] = pointer[row + x]
-            }
-        }
-        return GrayBuffer(pixels: pixels, width: width, height: height)
-    }
-
-    /// Display P3 drawn into a DeviceGray context is about a third as bright
-    /// on iOS as on macOS. Draw into sRGB and take BT.601 luma, which stays
-    /// within a few levels of the macOS DeviceGray result.
-    private static func luma(from image: CGImage) -> GrayBuffer? {
-        let width = image.width
-        let height = image.height
         let count = width * height
-        let rowBytes = width * 4
-        let pointer = UnsafeMutablePointer<UInt8>.allocate(capacity: rowBytes * height)
-        pointer.initialize(repeating: 0, count: rowBytes * height)
+        let pointer = UnsafeMutablePointer<UInt8>.allocate(capacity: count)
+        pointer.initialize(repeating: 0, count: count)
         defer { pointer.deallocate() }
-        guard let space = CGColorSpace(name: CGColorSpace.sRGB),
-              let context = CGContext(
-                data: pointer,
-                width: width,
-                height: height,
-                bitsPerComponent: 8,
-                bytesPerRow: rowBytes,
-                space: space,
-                bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
-              )
-        else { return nil }
+        guard let context = CGContext(
+            data: pointer,
+            width: width,
+            height: height,
+            bitsPerComponent: 8,
+            bytesPerRow: width,
+            space: CGColorSpaceCreateDeviceGray(),
+            bitmapInfo: CGImageAlphaInfo.none.rawValue
+        ) else { return nil }
         context.interpolationQuality = .none
         context.draw(image, in: CGRect(x: 0, y: 0, width: width, height: height))
-        var pixels = [UInt8](repeating: 0, count: count)
-        for index in 0..<count {
-            let base = index * 4
-            let alpha = Int(pointer[base + 3])
-            let red: Int
-            let green: Int
-            let blue: Int
-            if alpha == 0 {
-                red = 0
-                green = 0
-                blue = 0
-            } else if alpha == 255 {
-                red = Int(pointer[base])
-                green = Int(pointer[base + 1])
-                blue = Int(pointer[base + 2])
-            } else {
-                red = min(255, Int(pointer[base]) * 255 / alpha)
-                green = min(255, Int(pointer[base + 1]) * 255 / alpha)
-                blue = min(255, Int(pointer[base + 2]) * 255 / alpha)
-            }
-            pixels[index] = UInt8((77 * red + 150 * green + 29 * blue) / 256)
-        }
-        return GrayBuffer(pixels: pixels, width: width, height: height)
+        return GrayBuffer(pixels: Array(UnsafeBufferPointer(start: pointer, count: count)), width: width, height: height)
     }
 
     static func deskew(_ buffer: GrayBuffer, maximumDegrees: Double) -> GrayBuffer {
