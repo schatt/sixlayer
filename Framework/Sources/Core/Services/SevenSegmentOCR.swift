@@ -1625,6 +1625,8 @@ private extension GrayBuffer {
         let chosen: (isDark: Bool, glyphs: Mask, bandSource: Mask)
         if darkChoice.opens != lightChoice.opens {
             chosen = darkChoice.opens ? darkChoice.reading : lightChoice.reading
+        } else if let split = maskThatKeepsDigitRows(masks.dark, masks.light) {
+            chosen = split ? darkChoice.reading : lightChoice.reading
         } else if prefersDark(masks.dark, masks.light) {
             chosen = darkChoice.reading
         } else {
@@ -3423,6 +3425,30 @@ private func overlap(_ lhs: PixelBox, _ rhs: PixelBox) -> Int {
 private func median(_ values: [Int]) -> Int? {
     guard !values.isEmpty else { return nil }
     return values.sorted()[values.count / 2]
+}
+
+/// True when the dark mask is the one that still has digit rows.
+/// Nil when both masks have the same row shape, so the thinner-ink tie
+/// still decides a washed one-row glass.
+private func maskThatKeepsDigitRows(_ dark: Mask, _ light: Mask) -> Bool? {
+    let darkRows = digitHeightBandCount(dark)
+    let lightRows = digitHeightBandCount(light)
+    if darkRows >= 2, lightRows < 2 { return true }
+    if lightRows >= 2, darkRows < 2 { return false }
+    return nil
+}
+
+/// Bands the row reader would keep: raw runs, or the gap split when those
+/// runs are a single smear. A band has to be a digit row, not the whole crop.
+private func digitHeightBandCount(_ mask: Mask) -> Int {
+    let found = runs(mask.rowSums)
+    let bands = found.count <= 1 ? rowGapBands(mask) : found
+    return bands.reduce(into: 0) { count, band in
+        let span = band.1 - band.0
+        let tallEnough = span * 8 >= mask.height
+        let shortOfTheCrop = span * 10 <= mask.height * 7
+        if tallEnough && shortOfTheCrop { count += 1 }
+    }
 }
 
 private func prefersDark(_ dark: Mask, _ light: Mask) -> Bool {
