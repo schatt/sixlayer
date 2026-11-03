@@ -131,6 +131,9 @@ struct OCRSevenSegment576Tests {
             rows: [atoms(price), atoms("8.022")],
             leadingValleyStripe: true
         )
+        let hits = SevenSegmentOCR.searchPaths(in: image, deskewMaximumDegrees: 0)
+        let listed = hits.map { "\($0.frame)/\($0.rows)/\($0.digits) lines=\($0.lineCount) [\($0.text)]" }
+        print(listed.joined(separator: "\n"))
         #expect(decode(image, maximum: 0).extractedText == "\(price)\n8.022")
     }
 
