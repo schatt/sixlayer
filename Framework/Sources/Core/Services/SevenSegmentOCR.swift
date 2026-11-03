@@ -137,7 +137,7 @@ public struct SegmentSearchHit: Equatable, Sendable {
 
 public enum SevenSegmentOCR {
     /// Last band trace. Tests read this; production decode does not branch on it.
-    static var bandTrace = ""
+    nonisolated(unsafe) static var bandTrace = ""
 
     /// Size of the image the frame finder searches. Callers map the rect back
     /// with `fullWidth / smallWidth` and `fullHeight / smallHeight`.
