@@ -1572,7 +1572,7 @@ private enum SegmentPanel {
         let y0 = top + max(0, (span - inkRows) / 2)
         let y1 = min(bottom, y0 + inkRows)
         let x0 = max(0, padding)
-        let x1 = min(width, x0 + stroke)
+        let x1 = min(width, x0 + 6)
         guard y1 > y0, x1 > x0 else { return }
         for y in y0..<y1 {
             for x in x0..<x1 {
