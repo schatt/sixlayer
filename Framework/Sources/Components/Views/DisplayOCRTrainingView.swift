@@ -122,8 +122,32 @@ public struct DisplayOCRTrainingView: View {
             DisplayOCRTrainingLibrarySummary(
                 exampleCount: session.library.examples.count,
                 rejectionCount: session.library.rejections.count,
+                rowBoxCount: session.library.rowBoxExampleCount,
+                panelOnlyCount: session.library.panelOnlyExampleCount,
+                exampleNames: session.library.examples.map(\.directory.lastPathComponent),
+                skipped: session.library.rejections.map { rejection in
+                    let name = rejection.directory.lastPathComponent
+                    return DisplayOCRTrainingSkippedFolder(
+                        name: name,
+                        reason: rejection.reason,
+                        canOpen: DisplayOCRTraining.canOpenLibraryFolder(
+                            named: name,
+                            in: session.exportRoot
+                        )
+                    )
+                },
+                reindexProgress: session.reindexProgress,
                 training: session.panelTraining,
-                onTrain: { session.trainPanelModel() }
+                onTrain: { session.trainPanelModel() },
+                onReindex: {
+                    Task { await session.reindexLibrary() }
+                },
+                onOpen: { name in
+                    _ = session.openLibraryFolder(named: name)
+                },
+                onRemove: { name in
+                    try? session.removeLibraryFolder(named: name)
+                }
             )
         }
     }
@@ -493,6 +517,8 @@ struct DisplayOCRTrainingLibrarySummary: View {
 
     var body: some View {
         let i18n = InternationalizationService()
+        let openTitle = i18n.localizedString(for: "SixLayerFramework.ocr.training.openExample")
+        let removeTitle = i18n.localizedString(for: "SixLayerFramework.ocr.training.removeExample")
         VStack(alignment: .leading, spacing: 4) {
             Text(i18n.localizedString(
                 for: "SixLayerFramework.ocr.training.libraryCount",
@@ -501,18 +527,44 @@ struct DisplayOCRTrainingLibrarySummary: View {
             .font(.caption)
             .automaticCompliance(named: "DisplayOCRTrainingLibraryCount")
 
-            Text("rows-pending \(rowBoxCount) \(panelOnlyCount)")
-                .font(.caption)
+            Text(i18n.localizedString(
+                for: "SixLayerFramework.ocr.training.libraryRows",
+                arguments: ["\(rowBoxCount)"]
+            ))
+            .font(.caption)
+            .automaticCompliance(named: "DisplayOCRTrainingLibraryRows")
+
+            Text(i18n.localizedString(
+                for: "SixLayerFramework.ocr.training.libraryPanelOnly",
+                arguments: ["\(panelOnlyCount)"]
+            ))
+            .font(.caption)
+            .automaticCompliance(named: "DisplayOCRTrainingLibraryPanelOnly")
+
             ForEach(exampleNames, id: \.self) { name in
-                Text("example-pending \(name)")
-                Button("open-pending \(name)") { onOpen(name) }
-                Button("remove-pending \(name)") { onRemove(name) }
+                HStack(spacing: 8) {
+                    Text(name)
+                    Button(openTitle) { onOpen(name) }
+                        .automaticCompliance(named: "DisplayOCRTrainingOpenExample")
+                    Button(removeTitle) { onRemove(name) }
+                        .automaticCompliance(named: "DisplayOCRTrainingRemoveExample")
+                }
             }
+
             if let reindexProgress {
-                Text("progress-pending \(reindexProgress.completed) \(reindexProgress.total)")
-                    .font(.caption)
+                Text(i18n.localizedString(
+                    for: "SixLayerFramework.ocr.training.reindexProgress",
+                    arguments: ["\(reindexProgress.completed)", "\(reindexProgress.total)"]
+                ))
+                .font(.caption)
+                .automaticCompliance(named: "DisplayOCRTrainingReindexProgress")
             }
-            Button("reindex-pending") { onReindex() }
+
+            Button(i18n.localizedString(for: "SixLayerFramework.ocr.training.reindex")) {
+                onReindex()
+            }
+            .trainingBorderedButton()
+            .automaticCompliance(named: "DisplayOCRTrainingReindex")
 
             if rejectionCount > 0 {
                 Text(i18n.localizedString(
@@ -525,11 +577,17 @@ struct DisplayOCRTrainingLibrarySummary: View {
             }
 
             ForEach(skipped) { folder in
-                Text("skip-pending \(folder.name) \(folder.reason.rawValue) \(folder.canOpen)")
-                if folder.canOpen {
-                    Button("open-pending \(folder.name)") { onOpen(folder.name) }
+                HStack(spacing: 8) {
+                    Text(folder.name)
+                    Text(skipReasonText(folder.reason, i18n: i18n))
+                        .foregroundColor(.secondary)
+                    if folder.canOpen {
+                        Button(openTitle) { onOpen(folder.name) }
+                            .automaticCompliance(named: "DisplayOCRTrainingOpenSkipped")
+                    }
+                    Button(removeTitle) { onRemove(folder.name) }
+                        .automaticCompliance(named: "DisplayOCRTrainingRemoveSkipped")
                 }
-                Button("remove-pending \(folder.name)") { onRemove(folder.name) }
             }
 
             Button(i18n.localizedString(for: "SixLayerFramework.ocr.training.trainPanel")) {
@@ -546,6 +604,28 @@ struct DisplayOCRTrainingLibrarySummary: View {
                     .automaticCompliance(named: "DisplayOCRTrainingTrainStatus")
             }
         }
+    }
+
+    private func skipReasonText(
+        _ reason: DisplayOCRTrainingSkipReason,
+        i18n: InternationalizationService
+    ) -> String {
+        let key: String
+        switch reason {
+        case .missingLabel:
+            key = "SixLayerFramework.ocr.training.skipMissingLabel"
+        case .missingImage:
+            key = "SixLayerFramework.ocr.training.skipMissingImage"
+        case .unknownSchema:
+            key = "SixLayerFramework.ocr.training.skipUnknownSchema"
+        case .symlink:
+            key = "SixLayerFramework.ocr.training.skipSymlink"
+        case .unreadablePackage:
+            key = "SixLayerFramework.ocr.training.skipUnreadable"
+        case .emptyPanel:
+            key = "SixLayerFramework.ocr.training.skipEmptyPanel"
+        }
+        return i18n.localizedString(for: key)
     }
 
     private var trainingFailed: Bool {
