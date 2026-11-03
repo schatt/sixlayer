@@ -36,6 +36,27 @@ struct BasicMapExample: View {
     }
 }
 
+/// Example: Map with selection binding (list ↔ marker sync via `.tag`)
+@available(iOS 17.0, macOS 14.0, *)
+struct SelectionBindingMapExample: View {
+    @State private var position = MapCameraPosition.automatic
+    @State private var selectedPlaceID: String?
+
+    private let places: [(id: String, name: String, coordinate: CLLocationCoordinate2D)] = [
+        ("gg", "Golden Gate Bridge", CLLocationCoordinate2D(latitude: 37.8199, longitude: -122.4783)),
+        ("al", "Alcatraz Island", CLLocationCoordinate2D(latitude: 37.8267, longitude: -122.4230)),
+    ]
+
+    var body: some View {
+        platformMapView_L4(position: $position, selection: $selectedPlaceID) {
+            ForEach(places, id: \.id) { place in
+                Marker(place.name, coordinate: place.coordinate)
+                    .tag(place.id)
+            }
+        }
+    }
+}
+
 /// Example: Map with multiple annotations
 @available(iOS 17.0, macOS 14.0, *)
 struct MultipleAnnotationsMapExample: View {
