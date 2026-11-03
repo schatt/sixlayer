@@ -1636,10 +1636,8 @@ private extension GrayBuffer {
         let opened = darkChoice.opens || lightChoice.opens
         if buffer.width >= 1000 {
             let ink = glyphs.bits.filter { $0 }.count
-            let darkInk = masks.dark.bits.filter { $0 }.count
-            let lightInk = masks.light.bits.filter { $0 }.count
             trace(
-                "read \(buffer.width)x\(buffer.height) dark=\(primaryIsDark) opened=\(opened) ink=\(ink) darkInk=\(darkInk) lightInk=\(lightInk) darkRuns=\(bandedColumnRuns(masks.dark)) lightRuns=\(bandedColumnRuns(masks.light))\n"
+                "read \(buffer.width)x\(buffer.height) dark=\(primaryIsDark) opened=\(opened) ink=\(ink)\n"
             )
         }
         if let rowFinder {
