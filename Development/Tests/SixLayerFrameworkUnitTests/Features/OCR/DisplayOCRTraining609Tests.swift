@@ -871,7 +871,401 @@ struct DisplayOCRTraining609Tests {
     }
     #endif
 
+    @Test func aMatchingIndexSkipsUnchangedPackages() throws {
+        let root = try makeDirectory("display-ocr-index-match")
+        defer { try? FileManager.default.removeItem(at: root) }
+        let directory = root.appendingPathComponent("close-shot", isDirectory: true)
+        try writeIndexedExample(confirmed: "12.9", row: indexRow, to: directory)
+
+        let first = DisplayOCRTraining.catalog(in: root)
+        #expect(confirmedTexts(in: first, named: "close-shot") == ["12.9"])
+        let firstImage = try #require(first.examples.first).package.imagePNG
+        #expect(firstImage.isEmpty == false)
+
+        try rewriteLabel(in: directory, from: "12.9", to: "99.9", restoreModificationDate: true)
+        let second = DisplayOCRTraining.catalog(in: root)
+        #expect(confirmedTexts(in: second, named: "close-shot") == ["12.9"])
+        let served = try #require(second.examples.first { $0.directory.lastPathComponent == "close-shot" })
+        #expect(served.package.imagePNG.isEmpty)
+
+        let indexFile = indexURL(in: root)
+        #expect(FileManager.default.fileExists(atPath: indexFile.path))
+        let stored = try String(contentsOf: indexFile, encoding: .utf8)
+        #expect(stored.contains(root.path) == false)
+        #expect(stored.contains("\"99.9\"") == false)
+        let decoded = try JSONDecoder().decode(DisplayOCRTrainingIndex.self, from: Data(stored.utf8))
+        let entry = try #require(decoded.entries.first { $0.name == "close-shot" })
+        let labelURL = directory.appendingPathComponent(DisplayOCRTraining.labelFileName)
+        let size = try labelURL.resourceValues(forKeys: [.fileSizeKey]).fileSize
+        #expect(size == entry.labelByteCount)
+        #expect(try modificationMilliseconds(labelURL) == entry.labelModifiedMilliseconds)
+
+        let loaded = DisplayOCRTraining.loadingImages(second)
+        let filled = try #require(loaded.examples.first { $0.directory.lastPathComponent == "close-shot" })
+        #expect(filled.package.imagePNG == firstImage)
+    }
+
+    @Test func aChangedPackageIsReadAgain() throws {
+        let root = try makeDirectory("display-ocr-index-changed")
+        defer { try? FileManager.default.removeItem(at: root) }
+        let directory = root.appendingPathComponent("close-shot", isDirectory: true)
+        try writeIndexedExample(confirmed: "12.9", row: nil, to: directory)
+        _ = DisplayOCRTraining.catalog(in: root)
+
+        try rewriteLabel(in: directory, from: "12.9", to: "99.9", restoreModificationDate: false)
+        let second = DisplayOCRTraining.catalog(in: root)
+        #expect(confirmedTexts(in: second, named: "close-shot") == ["99.9"])
+        let served = try #require(second.examples.first)
+        #expect(served.package.imagePNG.isEmpty == false)
+
+        let stored = try String(contentsOf: indexURL(in: root), encoding: .utf8)
+        #expect(stored.contains("\"99.9\""))
+        #expect(stored.contains(root.path) == false)
+    }
+
+    @Test @MainActor func exportAppendsOneFolderWithoutReadingTheOthers() throws {
+        let root = try makeDirectory("display-ocr-index-export")
+        defer { try? FileManager.default.removeItem(at: root) }
+        let kept = root.appendingPathComponent("close-shot", isDirectory: true)
+        try writeIndexedExample(confirmed: "12.9", row: nil, to: kept)
+        try writeIndexedExample(
+            confirmed: "3.50",
+            row: nil,
+            to: root.appendingPathComponent("far-shot", isDirectory: true)
+        )
+        let session = DisplayOCRTrainingSession()
+        session.setExportRoot(root)
+        try rewriteLabel(in: kept, from: "12.9", to: "99.9", restoreModificationDate: true)
+
+        let frame = twoDigitFrame()
+        session.load(cgImage: frame.image, sourceName: "pump.png")
+        session.setPanel(DisplayOCRNormalizedBox(
+            pixelRect: frame.two,
+            imageWidth: frame.image.width,
+            imageHeight: frame.image.height
+        ))
+        #expect(session.decode())
+        let rowID = try #require(session.label?.rows.first?.id)
+        session.confirm(rowID: rowID, text: "8.8")
+        _ = try session.export()
+
+        let texts = Set(session.library.examples.flatMap { $0.package.label.rows.map(\.confirmedText) })
+        #expect(texts.contains("12.9"))
+        #expect(texts.contains("3.50"))
+        #expect(texts.contains("8.8"))
+        #expect(texts.contains("99.9") == false)
+        #expect(session.library.examples.count == 3)
+        let indexText = (try? String(contentsOf: indexURL(in: root), encoding: .utf8)) ?? ""
+        #expect(indexText.contains("\"12.9\""))
+        #expect(indexText.contains("\"8.8\""))
+        #expect(indexText.contains("\"99.9\"") == false)
+        #expect(indexText.contains(root.path) == false)
+    }
+
+    @Test func reindexWalksEveryChildAndReplacesTheIndex() throws {
+        let root = try makeDirectory("display-ocr-reindex")
+        defer { try? FileManager.default.removeItem(at: root) }
+        let directory = root.appendingPathComponent("close-shot", isDirectory: true)
+        try writeIndexedExample(confirmed: "12.9", row: nil, to: directory)
+        try writeIndexedExample(
+            confirmed: "3.50",
+            row: nil,
+            to: root.appendingPathComponent("far-shot", isDirectory: true)
+        )
+        try Data("notes".utf8).write(to: root.appendingPathComponent("notes.txt"))
+        let model = root.appendingPathComponent(DisplayOCRPanelModel.modelFileName, isDirectory: true)
+        try FileManager.default.createDirectory(at: model, withIntermediateDirectories: true)
+        _ = DisplayOCRTraining.catalog(in: root)
+        try rewriteLabel(in: directory, from: "12.9", to: "99.9", restoreModificationDate: true)
+
+        let log = ProgressLog()
+        let library = try DisplayOCRTraining.reindex(in: root) { log.add($0) }
+        #expect(log.values.map(\.completed) == [0, 1, 2])
+        #expect(log.values.allSatisfy { $0.total == 2 })
+        #expect(confirmedTexts(in: library, named: "close-shot") == ["99.9"])
+        #expect(FileManager.default.fileExists(atPath: directory.appendingPathComponent("image.png").path))
+        #expect(FileManager.default.fileExists(atPath: model.path))
+        let stored = try String(contentsOf: indexURL(in: root), encoding: .utf8)
+        #expect(stored.contains("\"99.9\""))
+        #expect(stored.contains(root.path) == false)
+    }
+
+    @Test @MainActor func reindexRunsOffTheMainThread() async throws {
+        let root = try makeDirectory("display-ocr-reindex-thread")
+        defer { try? FileManager.default.removeItem(at: root) }
+        try writeIndexedExample(
+            confirmed: "12.9",
+            row: nil,
+            to: root.appendingPathComponent("close-shot", isDirectory: true)
+        )
+        let session = DisplayOCRTrainingSession()
+        session.setExportRoot(root)
+        await session.reindexLibrary()
+        #expect(session.reindexRanOnMainThread == false)
+        #expect(confirmedTexts(in: session.library, named: "close-shot") == ["12.9"])
+    }
+
+    @Test func aFailedReindexKeepsThePreviousIndex() throws {
+        let root = try makeDirectory("display-ocr-reindex-fail")
+        defer { try? FileManager.default.removeItem(at: root) }
+        defer {
+            try? FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: root.path)
+        }
+        try writeIndexedExample(
+            confirmed: "12.9",
+            row: nil,
+            to: root.appendingPathComponent("close-shot", isDirectory: true)
+        )
+        let sentinel = Data("{\"schemaVersion\":1,\"entries\":[]}".utf8)
+        try sentinel.write(to: indexURL(in: root))
+        do {
+            _ = try DisplayOCRTraining.reindex(in: root) { progress in
+                if progress.completed == 0 {
+                    try? FileManager.default.setAttributes(
+                        [.posixPermissions: 0o555],
+                        ofItemAtPath: root.path
+                    )
+                }
+            }
+        } catch {
+            // A scan that cannot publish the new index leaves the previous file.
+        }
+        try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: root.path)
+        let after = try Data(contentsOf: indexURL(in: root))
+        #expect(after == sentinel)
+        #expect(FileManager.default.fileExists(
+            atPath: root.appendingPathComponent("close-shot").appendingPathComponent("image.png").path
+        ))
+    }
+
+    @Test @MainActor func anOpenedFolderSavesBackIntoItself() throws {
+        let root = try makeDirectory("display-ocr-index-open")
+        defer { try? FileManager.default.removeItem(at: root) }
+        let panel = DisplayOCRNormalizedBox(x: 0.1, y: 0.2, width: 0.7, height: 0.3)
+        try writeIndexedExample(
+            confirmed: "12.9",
+            row: indexRow,
+            to: root.appendingPathComponent("close-shot", isDirectory: true)
+        )
+        let skipped = root.appendingPathComponent("missing-label", isDirectory: true)
+        try writeIndexedExample(confirmed: "1.0", row: nil, to: skipped)
+        try FileManager.default.removeItem(at: skipped.appendingPathComponent(DisplayOCRTraining.labelFileName))
+
+        let session = DisplayOCRTrainingSession()
+        session.setExportRoot(root)
+        #expect(session.openLibraryFolder(named: "close-shot"))
+        #expect(session.editingFolderName == "close-shot")
+        #expect(session.label?.rows.first?.confirmedText == "12.9")
+        #expect(session.panel == panel.unitClamped)
+        let rowID = try #require(session.label?.rows.first?.id)
+        session.confirm(rowID: rowID, text: "12.8")
+        let saved = try session.export()
+        #expect(saved.directory.lastPathComponent == "close-shot")
+
+        #expect(session.openLibraryFolder(named: "missing-label"))
+        #expect(session.editingFolderName == "missing-label")
+        #expect(session.image != nil)
+        session.useFullFramePanel()
+        #expect(session.decode())
+        let skippedRow = try #require(session.label?.rows.first?.id)
+        session.confirm(rowID: skippedRow, text: "4.0")
+        let repaired = try session.export()
+        #expect(repaired.directory.lastPathComponent == "missing-label")
+        let names = try childDirectoryNames(in: root)
+        #expect(names == ["close-shot", "missing-label"])
+        #expect(session.library.rejections.contains { $0.directory.lastPathComponent == "missing-label" } == false)
+        #expect(confirmedTexts(in: session.library, named: "missing-label") == ["4.0"])
+        #expect(confirmedTexts(in: session.library, named: "close-shot") == ["12.8"])
+
+        let frame = twoDigitFrame()
+        session.load(cgImage: frame.image, sourceName: "pump.png")
+        #expect(session.editingFolderName == nil)
+        session.setPanel(DisplayOCRNormalizedBox(
+            pixelRect: frame.two,
+            imageWidth: frame.image.width,
+            imageHeight: frame.image.height
+        ))
+        #expect(session.decode())
+        let freshRow = try #require(session.label?.rows.first?.id)
+        session.confirm(rowID: freshRow, text: "8.8")
+        let created = try session.export()
+        #expect(created.directory.lastPathComponent != "missing-label")
+        #expect(created.directory.lastPathComponent != "close-shot")
+        let indexText = (try? String(contentsOf: indexURL(in: root), encoding: .utf8)) ?? ""
+        #expect(indexText.contains("\"12.8\""))
+        #expect(indexText.contains("\"4.0\""))
+        #expect(indexText.contains(root.path) == false)
+    }
+
+    @Test @MainActor func removeDeletesOneChildAndNotASymlinkTarget() throws {
+        let root = try makeDirectory("display-ocr-index-remove")
+        defer { try? FileManager.default.removeItem(at: root) }
+        try writeIndexedExample(
+            confirmed: "12.9",
+            row: nil,
+            to: root.appendingPathComponent("close-shot", isDirectory: true)
+        )
+        try writeIndexedExample(
+            confirmed: "3.50",
+            row: nil,
+            to: root.appendingPathComponent("far-shot", isDirectory: true)
+        )
+        let outside = try makeDirectory("display-ocr-index-outside")
+        defer { try? FileManager.default.removeItem(at: outside) }
+        try writeIndexedExample(confirmed: "9.0", row: nil, to: outside)
+        try FileManager.default.createSymbolicLink(
+            at: root.appendingPathComponent("escape"),
+            withDestinationURL: outside
+        )
+        let linked = root.appendingPathComponent("linked-image", isDirectory: true)
+        try FileManager.default.createDirectory(at: linked, withIntermediateDirectories: true)
+        try FileManager.default.createSymbolicLink(
+            at: linked.appendingPathComponent(DisplayOCRTraining.imageFileName),
+            withDestinationURL: root.appendingPathComponent("close-shot").appendingPathComponent(DisplayOCRTraining.imageFileName)
+        )
+
+        let session = DisplayOCRTrainingSession()
+        session.setExportRoot(root)
+        #expect(DisplayOCRTraining.canOpenLibraryFolder(named: "escape", in: root) == false)
+        #expect(DisplayOCRTraining.canOpenLibraryFolder(named: "linked-image", in: root) == false)
+        #expect(DisplayOCRTraining.canOpenLibraryFolder(named: "close-shot", in: root))
+        #expect(session.openLibraryFolder(named: "escape") == false)
+        #expect(session.openLibraryFolder(named: "linked-image") == false)
+        try session.removeLibraryFolder(named: "escape")
+        #expect(FileManager.default.fileExists(atPath: outside.appendingPathComponent(DisplayOCRTraining.imageFileName).path))
+        #expect(FileManager.default.fileExists(atPath: root.appendingPathComponent("escape").path) == false)
+        try session.removeLibraryFolder(named: "close-shot")
+        #expect(FileManager.default.fileExists(atPath: root.appendingPathComponent("close-shot").path) == false)
+        #expect(FileManager.default.fileExists(atPath: root.appendingPathComponent("far-shot").path))
+        #expect(session.library.examples.contains { $0.directory.lastPathComponent == "far-shot" })
+        #expect(session.library.examples.contains { $0.directory.lastPathComponent == "close-shot" } == false)
+        let indexText = (try? String(contentsOf: indexURL(in: root), encoding: .utf8)) ?? ""
+        #expect(indexText.contains("close-shot") == false)
+        #expect(indexText.contains("far-shot"))
+    }
+
+    @Test func theLibraryCountsRowBoxesAndPanelOnlyExamples() throws {
+        let root = try makeDirectory("display-ocr-index-counts")
+        defer { try? FileManager.default.removeItem(at: root) }
+        try writeIndexedExample(
+            confirmed: "12.9",
+            row: indexRow,
+            to: root.appendingPathComponent("close-shot", isDirectory: true)
+        )
+        try writeIndexedExample(
+            confirmed: "3.50",
+            row: nil,
+            to: root.appendingPathComponent("far-shot", isDirectory: true)
+        )
+        try writeBadSchema(to: root.appendingPathComponent("bad-schema", isDirectory: true))
+        try writeLabelOnly(to: root.appendingPathComponent("missing-image", isDirectory: true))
+        let missingLabel = root.appendingPathComponent("missing-label", isDirectory: true)
+        try FileManager.default.createDirectory(at: missingLabel, withIntermediateDirectories: true)
+        try Data("not a label".utf8).write(to: missingLabel.appendingPathComponent(DisplayOCRTraining.imageFileName))
+        try FileManager.default.createSymbolicLink(
+            at: root.appendingPathComponent("alias"),
+            withDestinationURL: root.appendingPathComponent("close-shot", isDirectory: true)
+        )
+
+        let scanned = DisplayOCRTraining.library(in: root)
+        #expect(scanned.rowBoxExampleCount == 1)
+        #expect(scanned.panelOnlyExampleCount == 1)
+        #expect(skipReason(in: scanned, named: "missing-label") == .missingLabel)
+        #expect(skipReason(in: scanned, named: "missing-image") == .missingImage)
+        #expect(skipReason(in: scanned, named: "bad-schema") == .unknownSchema)
+        #expect(skipReason(in: scanned, named: "alias") == .symlink)
+
+        let opened = DisplayOCRTraining.catalog(in: root)
+        #expect(skipReason(in: opened, named: "missing-label") == .missingLabel)
+        let again = DisplayOCRTraining.catalog(in: root)
+        #expect(skipReason(in: again, named: "missing-label") == .missingLabel)
+        #expect(again.rowBoxExampleCount == 1)
+        #expect(again.panelOnlyExampleCount == 1)
+    }
+
+    #if canImport(ViewInspector)
+    @Test @MainActor func theLibraryScreenListsSkipsAndReindex() throws {
+        let i18n = InternationalizationService()
+        let rows = i18n.localizedString(
+            for: "SixLayerFramework.ocr.training.libraryRows",
+            arguments: ["1"]
+        )
+        let panelOnly = i18n.localizedString(
+            for: "SixLayerFramework.ocr.training.libraryPanelOnly",
+            arguments: ["1"]
+        )
+        let reindex = i18n.localizedString(for: "SixLayerFramework.ocr.training.reindex")
+        let open = i18n.localizedString(for: "SixLayerFramework.ocr.training.openExample")
+        let progress = i18n.localizedString(
+            for: "SixLayerFramework.ocr.training.reindexProgress",
+            arguments: ["240", "3000"]
+        )
+        let reason = i18n.localizedString(for: "SixLayerFramework.ocr.training.skipMissingLabel")
+        let summary = DisplayOCRTrainingLibrarySummary(
+            exampleCount: 2,
+            rejectionCount: 1,
+            rowBoxCount: 1,
+            panelOnlyCount: 1,
+            exampleNames: ["close-shot"],
+            skipped: [
+                DisplayOCRTrainingSkippedFolder(
+                    name: "missing-label",
+                    reason: .missingLabel,
+                    canOpen: true
+                )
+            ],
+            reindexProgress: DisplayOCRTrainingReindexProgress(completed: 240, total: 3000)
+        )
+        let values = findAllInViewHierarchy(summary, ViewInspector.ViewType.Text.self)
+            .compactMap { try? $0.string() }
+        #expect(values.contains(rows))
+        #expect(values.contains(panelOnly))
+        #expect(values.contains(progress))
+        #expect(values.contains("missing-label"))
+        #expect(values.contains(reason))
+        #expect(values.contains("close-shot"))
+        _ = try summary.inspect().find(button: reindex)
+        _ = try summary.inspect().find(button: open)
+    }
+    #endif
+
+    @Test func trainingExportsAreGitignored() throws {
+        var url = URL(fileURLWithPath: #filePath)
+        let fileManager = FileManager.default
+        while url.path != "/" {
+            let gitignore = url.appendingPathComponent(".gitignore")
+            let project = url.appendingPathComponent("project.yml")
+            if fileManager.fileExists(atPath: gitignore.path),
+               fileManager.fileExists(atPath: project.path) {
+                let text = try String(contentsOf: gitignore, encoding: .utf8)
+                #expect(text.contains("display-ocr-training/"))
+                return
+            }
+            url.deleteLastPathComponent()
+        }
+        Issue.record("Repository root not found from the test file")
+    }
+
     // MARK: - Fixtures
+
+    private let indexRow = DisplayOCRNormalizedBox(x: 0.12, y: 0.22, width: 0.4, height: 0.12)
+
+    private final class ProgressLog: @unchecked Sendable {
+        private let lock = NSLock()
+        private var storage: [DisplayOCRTrainingReindexProgress] = []
+
+        func add(_ progress: DisplayOCRTrainingReindexProgress) {
+            lock.lock()
+            storage.append(progress)
+            lock.unlock()
+        }
+
+        var values: [DisplayOCRTrainingReindexProgress] {
+            lock.lock()
+            defer { lock.unlock() }
+            return storage
+        }
+    }
 
     private func makeDirectory(_ prefix: String) throws -> URL {
         let directory = FileManager.default.temporaryDirectory
@@ -909,6 +1303,87 @@ struct DisplayOCRTraining609Tests {
         )
         let package = try DisplayOCRTraining.package(label: label, image: image)
         try DisplayOCRTraining.write(package, to: directory)
+    }
+
+    private func writeIndexedExample(
+        confirmed: String,
+        row: DisplayOCRNormalizedBox?,
+        to directory: URL
+    ) throws {
+        try writeExample(
+            confirmed: confirmed,
+            panel: DisplayOCRNormalizedBox(x: 0.1, y: 0.2, width: 0.7, height: 0.3),
+            row: row,
+            imageWidth: 8,
+            imageHeight: 4,
+            to: directory
+        )
+    }
+
+    private func indexURL(in root: URL) -> URL {
+        root.appendingPathComponent(DisplayOCRTraining.indexFileName)
+    }
+
+    private func confirmedTexts(
+        in library: DisplayOCRTrainingLibrary,
+        named name: String
+    ) -> [String] {
+        library.examples
+            .filter { $0.directory.lastPathComponent == name }
+            .flatMap { $0.package.label.rows.map(\.confirmedText) }
+    }
+
+    private func skipReason(
+        in library: DisplayOCRTrainingLibrary,
+        named name: String
+    ) -> DisplayOCRTrainingSkipReason? {
+        library.rejections.first { $0.directory.lastPathComponent == name }?.reason
+    }
+
+    private func modificationMilliseconds(_ url: URL) throws -> Int {
+        let values = try url.resourceValues(forKeys: [.contentModificationDateKey])
+        let date = try #require(values.contentModificationDate)
+        return Int((date.timeIntervalSince1970 * 1000).rounded())
+    }
+
+    private func rewriteLabel(
+        in directory: URL,
+        from old: String,
+        to replacement: String,
+        restoreModificationDate: Bool
+    ) throws {
+        let url = directory.appendingPathComponent(DisplayOCRTraining.labelFileName)
+        let values = try url.resourceValues(forKeys: [.contentModificationDateKey, .fileSizeKey])
+        let originalDate = try #require(values.contentModificationDate)
+        let originalSize = try #require(values.fileSize)
+        let text = try String(contentsOf: url, encoding: .utf8)
+        let replaced = text.replacingOccurrences(of: old, with: replacement)
+        #expect(replaced != text)
+        #expect(Data(replaced.utf8).count == originalSize)
+        try Data(replaced.utf8).write(to: url, options: .atomic)
+        if restoreModificationDate {
+            var restored = URLResourceValues()
+            restored.contentModificationDate = originalDate
+            try url.setResourceValues(restored)
+        }
+    }
+
+    private func childDirectoryNames(in root: URL) throws -> [String] {
+        try FileManager.default.contentsOfDirectory(
+            at: root,
+            includingPropertiesForKeys: [.isDirectoryKey, .isSymbolicLinkKey],
+            options: [.skipsHiddenFiles]
+        )
+        .filter { url in
+            if (try? url.resourceValues(forKeys: [.isSymbolicLinkKey]))?.isSymbolicLink == true {
+                return true
+            }
+            var isDirectory: ObjCBool = false
+            return FileManager.default.fileExists(atPath: url.path, isDirectory: &isDirectory)
+                && isDirectory.boolValue
+        }
+        .map(\.lastPathComponent)
+        .sorted()
     }
 
     private func writeBadSchema(to directory: URL) throws {
