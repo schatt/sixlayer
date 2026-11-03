@@ -183,6 +183,11 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
         _ image: PlatformImage,
         context: OCRContext
     ) async throws -> OCRResult {
+        // Optional EXIF GPS → capture region for decimal locale (#631). Never required.
+        let context = await OCRDecimalLocale.contextByApplyingCaptureGPS(
+            context,
+            location: image.exif.gpsLocation
+        )
         if context.processingMode == .ssocr {
             return try await processSevenSegmentStructured(image, context: context)
         }
