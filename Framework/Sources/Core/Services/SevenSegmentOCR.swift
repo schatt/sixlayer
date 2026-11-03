@@ -900,23 +900,6 @@ private struct GrayBuffer {
         }
     }
 
-    /// Bright glass around the ink. A crop that ends on the stroke has no
-    /// local contrast for the first and last segments. Fill with a bright
-    /// sample from the crop — the median of the whole crop is ink-dark.
-    private func paddedForReading(margin: Int) -> GrayBuffer {
-        guard margin > 0, width > 0, height > 0 else { return self }
-        let ranked = pixels.sorted()
-        let glass = ranked[min(ranked.count - 1, (ranked.count * 3) / 4)]
-        let newW = width + margin * 2
-        let newH = height + margin * 2
-        var output = [UInt8](repeating: glass, count: newW * newH)
-        for y in 0..<height {
-            let dest = (y + margin) * newW + margin
-            output.replaceSubrange(dest..<(dest + width), with: pixels[(y * width)..<((y + 1) * width)])
-        }
-        return GrayBuffer(pixels: output, width: newW, height: newH)
-    }
-
     private func fitted(maxSide: Int) -> GrayBuffer {
         let longest = max(width, height)
         guard longest > maxSide, longest > 0 else { return self }
