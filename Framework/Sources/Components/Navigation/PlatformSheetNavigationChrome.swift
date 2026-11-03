@@ -21,13 +21,11 @@ public func platformSheetNavigationChrome(for platform: SixLayerPlatform) -> Pla
 }
 
 public extension View {
-    /// Sheet presented root: NavigationStack on iOS (and eventually macOS for #636 parity).
-    /// Apply path must match `platformSheetNavigationChrome(for: .current)`.
-    ///
-    /// Deliberate red stub: macOS left unmodified until green implementation.
+    /// Sheet presented root: NavigationStack on iOS and macOS (#636 parity).
+    /// Apply path matches `platformSheetNavigationChrome(for: .current)`.
     @MainActor
     func platformSheetNavigationChrome() -> some View {
-        #if os(iOS)
+        #if os(iOS) || os(macOS)
         NavigationStack {
             self
         }
