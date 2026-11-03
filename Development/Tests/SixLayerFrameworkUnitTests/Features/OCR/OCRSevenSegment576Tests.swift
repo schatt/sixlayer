@@ -877,11 +877,21 @@ struct OCRSevenSegment576Tests {
             localizeDigitPanel: true
         )
         let elapsed = started.duration(to: clock.now)
+        // Known-good glass on this photo. If this reads and localization does
+        // not, the finder crop is the miss. Private harness only.
+        let handRect = CGRect(x: 620, y: 1440, width: 1480, height: 820)
+        let handImage = try #require(upright.cropping(to: handRect))
+        let handResult = SevenSegmentOCR.decode(
+            cgImage: handImage,
+            deskewMaximumDegrees: 0,
+            localizeDigitPanel: false
+        )
         let report = """
         upright \(upright.width)x\(upright.height) find \(find.width)x\(find.height) \(elapsed)
         region \(String(describing: region))
         conf \(result.confidence)
         [\(result.extractedText)]
+        hand [\(handResult.extractedText)] conf \(handResult.confidence)
         """
         try report.write(
             to: URL(fileURLWithPath: "/tmp/sixlayer-600-s1-matrix.txt"),
