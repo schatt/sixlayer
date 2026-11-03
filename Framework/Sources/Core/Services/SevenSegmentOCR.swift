@@ -244,15 +244,30 @@ private struct GrayBuffer {
             return left.element.confidence < right.element.confidence
         }?.offset ?? 0
         guard bestTurns != 0 else { return buffer }
-        // A small tilt still belongs to the fine deskew. Speck rows on a
-        // sideways sample read as a few wide glyphs and must not spin an
-        // upright panel. A real quarter turn is mostly digits.
-        let glyphs = scores[bestTurns].text.filter { $0 != "/" }
+        guard acceptsOrientation(bestTurns, scores: scores, buffer: buffer) else { return buffer }
+        return buffer.rotated(degrees: Double(bestTurns * 90))
+    }
+
+    /// A small tilt still belongs to the fine deskew. Speck rows on a
+    /// sideways sample read as a few wide glyphs and must not spin an
+    /// upright panel. A real quarter turn is mostly digits. A half turn of
+    /// 0/2/8 still looks numeric — only take 180° when decimals sit below
+    /// after the turn. A short wide strip is already one upright line (#625).
+    private static func acceptsOrientation(
+        _ turns: Int,
+        scores: [OrientationScore],
+        buffer: GrayBuffer
+    ) -> Bool {
+        let glyphs = scores[turns].text.filter { $0 != "/" }
         let numbers = glyphs.filter(\.isNumber).count
         let mostlyNumbers = !glyphs.isEmpty && numbers * 2 > glyphs.count
-        let enough = mostlyNumbers && scores[bestTurns].wideDigits >= max(scores[0].wideDigits + 2, 4)
-        guard enough else { return buffer }
-        return buffer.rotated(degrees: Double(bestTurns * 90))
+        if turns == 2 {
+            return mostlyNumbers && scores[2].marksBelow > scores[0].marksBelow
+        }
+        if (turns == 1 || turns == 3), buffer.width * 4 > buffer.height * 5 {
+            return false
+        }
+        return mostlyNumbers && scores[turns].wideDigits >= max(scores[0].wideDigits + 2, 4)
     }
 
     private struct OrientationScore {

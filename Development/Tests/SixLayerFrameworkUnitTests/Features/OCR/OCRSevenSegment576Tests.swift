@@ -380,6 +380,27 @@ struct OCRSevenSegment576Tests {
         #expect(segmentTexts(result) == ["32.88", "8.022"])
     }
 
+    /// #625: a tight upright line must not lose to a half-turn. Symmetric
+    /// digits (`0`, `2`, `8`) still look like numbers upside down, and a
+    /// border-clipped upright sample can score fewer wide digits.
+    @Test func aTightSingleLineCropStaysUpright() {
+        let image = sealedBothRowsPanel()
+        let full = decode(image, maximum: 0)
+        #expect(full.extractedText == "32.88\n8.022")
+        let segments = full.recognizedTexts.filter { $0.role == .segment }
+        #expect(segments.map(\.text) == ["32.88", "8.022"])
+        // Zero-margin glyph boxes previously returned the half-turn spoilers
+        // 88.26 / 220.8. They must not. A taller crop of the lower line
+        // (still one row) must stay upright as 8.022.
+        let spoilers = ["88.26", "220.8"]
+        for segment in segments {
+            let tight = lineCrop(image, visionBox: segment.boundingBox, pad: 0)
+            #expect(spoilers.contains(decode(tight, maximum: 0).extractedText) == false)
+        }
+        let taller = lineCrop(image, visionBox: segments[1].boundingBox, pad: 20)
+        #expect(decode(taller, maximum: 0).extractedText == "8.022")
+    }
+
     @Test func decoderSourceDoesNotNameFields() throws {
         let source = try decoderSource()
         for word in ["This Sale", "Gallons", "FuelPurchase", "sale"] {
@@ -834,6 +855,20 @@ struct OCRSevenSegment576Tests {
             }
         }
         return solidGrayImage(pixels: pixels, width: width, height: height)
+    }
+
+    private func lineCrop(_ image: CGImage, visionBox: CGRect, pad: Int) -> CGImage {
+        let width = image.width
+        let height = image.height
+        let minX = Int((visionBox.minX * CGFloat(width)).rounded(.down)) - pad
+        let maxX = Int((visionBox.maxX * CGFloat(width)).rounded(.up)) + pad
+        let minY = Int(((1 - visionBox.maxY) * CGFloat(height)).rounded(.down)) - pad
+        let maxY = Int(((1 - visionBox.minY) * CGFloat(height)).rounded(.up)) + pad
+        let x = max(0, minX)
+        let y = max(0, minY)
+        let w = max(1, min(width, maxX) - x)
+        let h = max(1, min(height, maxY) - y)
+        return crop(image, x: x, y: y, width: w, height: h)
     }
 
     private func solidGrayImage(pixels: [UInt8], width: Int, height: Int) -> CGImage {
