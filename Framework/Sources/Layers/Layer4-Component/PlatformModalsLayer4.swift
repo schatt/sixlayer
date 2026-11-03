@@ -8,25 +8,29 @@ import SwiftUI
 public extension View {
     
     /// Platform-specific sheet presentation with consistent styling
-    /// Provides standardized sheet appearance across platforms
+    /// Provides standardized sheet appearance across platforms.
     ///
-    /// **Note**: For new code, prefer `platformSheet_L4()` which provides
-    /// `PlatformPresentationSize` sizing (#384) and better cross-platform documentation.
-    /// This function is maintained for backward compatibility (defaults to `[.large]`).
+    /// Routes through the sizes-based `platformSheet` overload so presented roots get
+    /// ``platformSheetNavigationChrome()`` on iOS and macOS (#636 / #639). Kept as a
+    /// no-`sizes:` convenience; defaults to `[.large]`.
     ///
-    /// - SeeAlso: `platformSheet_L4()` for enhanced sheet presentation with size hints
+    /// **Note**: Prefer the sizes overload or `platformSheet_L4` when you need detents /
+    /// drag-indicator control. `platformSheet_L4` stays wrapper-minimal (#193) and does
+    /// **not** apply navigation chrome — call ``platformSheetNavigationChrome()`` on L4
+    /// content when you need a titled toolbar root.
+    ///
+    /// - SeeAlso: `platformSheet(isPresented:sizes:onDismiss:content:)` for explicit sizes
     @MainActor
     func platformSheet<SheetContent: View>(
         isPresented: Binding<Bool>,
         onDismiss: (() -> Void)? = nil,
         @ViewBuilder content: @escaping () -> SheetContent
     ) -> some View {
-        // Use platformSheet_L4 internally for consistency
-        return self.platformSheet_L4(
+        // Sizes overload owns NavigationStack chrome (#639); do not route via L4 (#193).
+        return self.platformSheet(
             isPresented: isPresented,
-            onDismiss: onDismiss,
             sizes: [.large],
-            dragIndicator: .automatic,
+            onDismiss: onDismiss,
             content: content
         )
         .automaticCompliance(named: "platformSheet")
