@@ -186,14 +186,101 @@ public struct DisplayOCRTrainingLibraryExample: Sendable, Equatable {
     }
 }
 
+/// Why a child folder is on the skipped list. The package error stays the
+/// thrown value; this is the reason shown next to the folder name.
+public enum DisplayOCRTrainingSkipReason: String, Codable, Equatable, Sendable {
+    case missingLabel
+    case missingImage
+    case unknownSchema
+    case symlink
+    case unreadablePackage
+    case emptyPanel
+}
+
 /// A child folder that is not a usable example.
 public struct DisplayOCRTrainingLibraryRejection: Sendable, Equatable {
     public var directory: URL
     public var error: DisplayOCRTrainingError
+    public var reason: DisplayOCRTrainingSkipReason
 
-    public init(directory: URL, error: DisplayOCRTrainingError) {
+    public init(
+        directory: URL,
+        error: DisplayOCRTrainingError,
+        reason: DisplayOCRTrainingSkipReason = .unreadablePackage
+    ) {
         self.directory = directory
         self.error = error
+        self.reason = reason
+    }
+}
+
+/// One row on the skipped list: folder name, why it was skipped, and whether Open is safe.
+public struct DisplayOCRTrainingSkippedFolder: Equatable, Sendable, Identifiable {
+    public var name: String
+    public var reason: DisplayOCRTrainingSkipReason
+    public var canOpen: Bool
+
+    public var id: String { name }
+
+    public init(name: String, reason: DisplayOCRTrainingSkipReason, canOpen: Bool) {
+        self.name = name
+        self.reason = reason
+        self.canOpen = canOpen
+    }
+}
+
+/// How far a manual reindex has walked. `completed` and `total` are child folders.
+public struct DisplayOCRTrainingReindexProgress: Equatable, Sendable {
+    public var completed: Int
+    public var total: Int
+
+    public init(completed: Int, total: Int) {
+        self.completed = completed
+        self.total = total
+    }
+}
+
+/// Disposable catalog at the library root. Names, byte sizes, and modification
+/// times identify each child. The cached label and skip reason are what an
+/// unchanged folder is served from. Paths are not stored.
+public struct DisplayOCRTrainingIndex: Codable, Equatable, Sendable {
+    public var schemaVersion: Int
+    public var entries: [DisplayOCRTrainingIndexEntry]
+
+    public init(schemaVersion: Int, entries: [DisplayOCRTrainingIndexEntry]) {
+        self.schemaVersion = schemaVersion
+        self.entries = entries
+    }
+}
+
+public struct DisplayOCRTrainingIndexEntry: Codable, Equatable, Sendable {
+    public var name: String
+    public var imageByteCount: Int?
+    public var imageModifiedMilliseconds: Int?
+    public var labelByteCount: Int?
+    public var labelModifiedMilliseconds: Int?
+    public var label: DisplayOCRTrainingLabel?
+    public var skipReason: DisplayOCRTrainingSkipReason?
+    public var schemaVersionFound: Int?
+
+    public init(
+        name: String,
+        imageByteCount: Int?,
+        imageModifiedMilliseconds: Int?,
+        labelByteCount: Int?,
+        labelModifiedMilliseconds: Int?,
+        label: DisplayOCRTrainingLabel?,
+        skipReason: DisplayOCRTrainingSkipReason?,
+        schemaVersionFound: Int?
+    ) {
+        self.name = name
+        self.imageByteCount = imageByteCount
+        self.imageModifiedMilliseconds = imageModifiedMilliseconds
+        self.labelByteCount = labelByteCount
+        self.labelModifiedMilliseconds = labelModifiedMilliseconds
+        self.label = label
+        self.skipReason = skipReason
+        self.schemaVersionFound = schemaVersionFound
     }
 }
 
@@ -209,6 +296,12 @@ public struct DisplayOCRTrainingLibrary: Sendable, Equatable {
         self.examples = examples
         self.rejections = rejections
     }
+
+    /// Examples whose label has at least one row box.
+    public var rowBoxExampleCount: Int { 0 }
+
+    /// Examples with a panel and no row box.
+    public var panelOnlyExampleCount: Int { 0 }
 }
 
 public enum DisplayOCRTrainingError: Error, Equatable, Sendable {
@@ -244,8 +337,10 @@ public enum DisplayOCRTrainingStatus: Equatable, Sendable {
 
 public enum DisplayOCRTraining {
     public static let schemaVersion = 1
+    public static let indexSchemaVersion = 1
     public static let imageFileName = "image.png"
     public static let labelFileName = "label.json"
+    public static let indexFileName = "index.json"
     public static let exportDirectoryName = "display-ocr-training"
 
     /// `<current directory>/display-ocr-training`. The caller can replace this
@@ -456,6 +551,35 @@ public enum DisplayOCRTraining {
         examples.sort { $0.directory.lastPathComponent < $1.directory.lastPathComponent }
         rejections.sort { $0.directory.lastPathComponent < $1.directory.lastPathComponent }
         return DisplayOCRTrainingLibrary(examples: examples, rejections: rejections)
+    }
+
+    /// Open path. Still reads every package until the index is honored.
+    public static func catalog(in root: URL) -> DisplayOCRTrainingLibrary {
+        library(in: root)
+    }
+
+    /// Manual reindex. Still reads every package and does not report progress.
+    public static func reindex(
+        in root: URL,
+        progress: @escaping @Sendable (DisplayOCRTrainingReindexProgress) -> Void
+    ) throws -> DisplayOCRTrainingLibrary {
+        _ = progress
+        let url = root.appendingPathComponent(indexFileName)
+        try Data("{}".utf8).write(to: url)
+        return library(in: root)
+    }
+
+    /// Reads `image.png` for examples the index served without bytes.
+    public static func loadingImages(
+        _ library: DisplayOCRTrainingLibrary
+    ) -> DisplayOCRTrainingLibrary {
+        library
+    }
+
+    /// Whether Open can read this child without following a symlink.
+    public static func canOpenLibraryFolder(named name: String, in root: URL) -> Bool {
+        _ = (name, root)
+        return true
     }
 
     public static func read(from directory: URL) throws -> DisplayOCRTrainingPackage {
@@ -847,6 +971,9 @@ public final class DisplayOCRTrainingSession: ObservableObject {
     @Published public private(set) var library = DisplayOCRTrainingLibrary()
     @Published public private(set) var selectedBox: DisplayOCRTrainingBoxTarget?
     @Published public private(set) var panelTraining: DisplayOCRPanelTrainingState = .idle
+    @Published public private(set) var editingFolderName: String?
+    @Published public private(set) var reindexProgress: DisplayOCRTrainingReindexProgress?
+    public private(set) var reindexRanOnMainThread: Bool?
 
     private var bitmap: CGImage?
 
@@ -1250,6 +1377,24 @@ public final class DisplayOCRTrainingSession: ObservableObject {
         status = .exported(directory)
         refreshLibrary()
         return DisplayOCRTrainingExport(directory: directory, package: package)
+    }
+
+    /// Open a library child into the trainer. Not available until the index lands.
+    public func openLibraryFolder(named name: String) -> Bool {
+        _ = name
+        return false
+    }
+
+    /// Delete one child folder and its index entry.
+    public func removeLibraryFolder(named name: String) throws {
+        _ = name
+        throw DisplayOCRTrainingError.writeFailed
+    }
+
+    /// Manual reindex. The stub stays on the main thread and reads every package.
+    public func reindexLibrary() async {
+        reindexRanOnMainThread = true
+        library = DisplayOCRTraining.library(in: exportRoot)
     }
 
     private func refreshLibrary() {
