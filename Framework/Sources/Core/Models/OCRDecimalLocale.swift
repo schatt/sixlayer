@@ -15,6 +15,18 @@ struct FixedOCRCaptureRegionResolver: OCRCaptureRegionResolving {
     }
 }
 
+/// Default resolver: reverse-geocode via `CLGeocoder` (optional; failures yield `nil`).
+struct CLGeocoderOCRCaptureRegionResolver: OCRCaptureRegionResolving {
+    func regionCode(for location: CLLocation) async -> String? {
+        do {
+            let placemarks = try await CLGeocoder().reverseGeocodeLocation(location)
+            return placemarks.first?.isoCountryCode
+        } catch {
+            return nil
+        }
+    }
+}
+
 /// Resolves which `Locale` OCR uses for decimal and grouping separators (#631).
 ///
 /// Capture region (from EXIF GPS reverse-geocode, or an explicit code) is an optional
@@ -51,16 +63,19 @@ enum OCRDecimalLocale {
     ///
     /// GPS is a guide only: missing location / failed resolve leaves context unchanged.
     /// Explicit `captureRegionCode` or `decimalLocale` wins — GPS does not override.
-    ///
-    /// Stub returns context unchanged until green implementation (#631).
     static func contextByApplyingCaptureGPS(
         _ context: OCRContext,
         location: CLLocation?,
-        resolver: OCRCaptureRegionResolving
+        resolver: OCRCaptureRegionResolving = CLGeocoderOCRCaptureRegionResolver()
     ) async -> OCRContext {
-        _ = location
-        _ = resolver
-        return context
+        if context.decimalLocale != nil { return context }
+        if normalizedRegionCode(context.captureRegionCode) != nil { return context }
+        guard let location else { return context }
+        guard let region = await resolver.regionCode(for: location),
+              let normalized = normalizedRegionCode(region) else {
+            return context
+        }
+        return context.with(captureRegionCode: normalized)
     }
 
     private static func normalizedRegionCode(_ regionCode: String?) -> String? {
