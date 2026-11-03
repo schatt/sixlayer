@@ -1269,3 +1269,28 @@ public func platformButton(
         accessibilityTraits: .isButton  // Issue #165: Auto-add button trait
     )
 }
+
+/// Drop-in Button with title + SF Symbol (`Label`).
+/// Deliberate incomplete stub for Issue #635 red: no automaticCompliance yet.
+public func platformButton(
+    label: String,
+    systemImage: String,
+    id: String? = nil,
+    action: @escaping () -> Void
+) -> some View {
+    _ = id
+    return Button(action: action) {
+        Label(label, systemImage: systemImage)
+    }
+}
+
+/// Drop-in Button with custom `@ViewBuilder` label.
+/// Deliberate incomplete stub for Issue #635 red: no automaticCompliance yet.
+public func platformButton<LabelContent: View>(
+    id: String? = nil,
+    action: @escaping () -> Void,
+    @ViewBuilder label: () -> LabelContent
+) -> some View {
+    _ = id
+    return Button(action: action, label: label)
+}
