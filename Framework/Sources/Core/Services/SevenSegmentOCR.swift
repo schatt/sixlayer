@@ -250,7 +250,13 @@ private struct GrayBuffer {
         let glyphs = scores[bestTurns].text.filter { $0 != "/" }
         let numbers = glyphs.filter(\.isNumber).count
         let mostlyNumbers = !glyphs.isEmpty && numbers * 2 > glyphs.count
-        let enough = mostlyNumbers && scores[bestTurns].wideDigits >= max(scores[0].wideDigits + 2, 4)
+        var enough = mostlyNumbers && scores[bestTurns].wideDigits >= max(scores[0].wideDigits + 2, 4)
+        // A half turn of 0/2/8 still looks numeric. Border clipping can make
+        // the upright sample lose wide digits to that spin. Only take 180°
+        // when decimals clearly sit below after the turn (#625).
+        if bestTurns == 2 {
+            enough = mostlyNumbers && scores[2].marksBelow > scores[0].marksBelow
+        }
         guard enough else { return buffer }
         return buffer.rotated(degrees: Double(bestTurns * 90))
     }
