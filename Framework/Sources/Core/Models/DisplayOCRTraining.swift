@@ -2003,10 +2003,8 @@ private final class LibraryReindexRelay: @unchecked Sendable {
     }
 
     func publish(_ progress: DisplayOCRTrainingReindexProgress) {
-        DispatchQueue.main.async { [weak self] in
-            MainActor.assumeIsolated {
-                self?.session?.noteReindexProgress(progress)
-            }
+        Task { @MainActor [weak self] in
+            self?.session?.noteReindexProgress(progress)
         }
     }
 }
