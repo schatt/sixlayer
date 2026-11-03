@@ -609,7 +609,8 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
                                 if let calculatedValue = evaluateCalculationGroupForField(
                                     fieldId: dependentField,
                                     group: group,
-                                    fieldValues: testData
+                                    fieldValues: testData,
+                                    locale: Locale(identifier: context.language.rawValue)
                                 ) {
                                     if dependentRange.contains(calculatedValue) {
                                         isValid = true
@@ -625,7 +626,8 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
                         if let calculatedValue = evaluateCalculationGroupForField(
                             fieldId: fieldId,
                             group: group,
-                            fieldValues: testData
+                            fieldValues: testData,
+                            locale: Locale(identifier: context.language.rawValue)
                         ) {
                             // If calculation matches our corrected value (within tolerance), it's valid
                             if abs(calculatedValue - correctedValue) < 0.01 {
@@ -782,39 +784,17 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
         return nil // Unsupported formula format
     }
     
-    /// Helper to evaluate a calculation group for a specific field
+    /// Evaluate a calculation group only when its formula target is `fieldId`.
+    /// Uses the same locale decimal parse as `evaluateCalculationGroup` (#629, #630).
     private func evaluateCalculationGroupForField(
         fieldId: String,
         group: CalculationGroup,
-        fieldValues: [String: String]
+        fieldValues: [String: String],
+        locale: Locale
     ) -> Double? {
-        // Parse the formula: "target = expression"
         let parts = group.formula.split(separator: "=", maxSplits: 1).map { $0.trimmingCharacters(in: .whitespaces) }
-        guard parts.count == 2 else { return nil }
-        
-        // Check if this group can calculate the target field
-        let targetField = parts[0]
-        guard targetField == fieldId else { return nil }
-        
-        // Check if all dependent fields are available
-        let allDependenciesAvailable = group.dependentFields.allSatisfy { fieldId in
-            fieldValues[fieldId] != nil
-        }
-        guard allDependenciesAvailable else { return nil }
-        
-        // Replace field references with their values
-        var expression = parts[1]
-        for dependentField in group.dependentFields {
-            if let valueString = fieldValues[dependentField],
-               let value = Double(valueString.replacingOccurrences(of: ",", with: "")) {
-                expression = expression.replacingOccurrences(of: dependentField, with: String(value))
-            } else {
-                return nil
-            }
-        }
-        
-        // Evaluate the mathematical expression
-        return evaluateMathExpression(expression)
+        guard parts.count == 2, parts[0] == fieldId else { return nil }
+        return evaluateCalculationGroup(group, fieldValues: fieldValues, locale: locale)
     }
     
     /// Validate extracted field values against expected ranges
@@ -825,23 +805,23 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
     private func validateFieldRanges(in structuredData: [String: String], context: OCRContext) -> ([String: String], [String: String]) {
         let validatedData = structuredData
         var rangeWarnings: [String: String] = [:]
+        let locale = Locale(identifier: context.language.rawValue)
         
         // Get hints file ranges if entityName is provided
         var hintsRanges: [String: ValueRange] = [:]
         if let entityName = context.entityName {
             let loader = FileBasedDataHintsLoader()
-            let hintsResult = loader.loadHintsResult(for: entityName, locale: Locale(identifier: context.language.rawValue))
+            let hintsResult = loader.loadHintsResult(for: entityName, locale: locale)
             for (fieldId, fieldHints) in hintsResult.fieldHints {
                 if let range = fieldHints.expectedRange {
                     hintsRanges[fieldId] = range
                 }
             }
         }
-        
+
         // Validate each extracted value
         for (fieldId, valueString) in structuredData {
-            // Try to parse as numeric value
-            guard let numericValue = Double(valueString.replacingOccurrences(of: ",", with: "")) else {
+            guard let numericValue = recognizedDecimal(valueString, locale: locale) else {
                 continue // Not a numeric value, skip range validation
             }
             
@@ -866,7 +846,7 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
                 var confirmedByCalculation = false
                 if let entityName = context.entityName {
                     let loader = FileBasedDataHintsLoader()
-                    let hintsResult = loader.loadHintsResult(for: entityName, locale: Locale(identifier: context.language.rawValue))
+                    let hintsResult = loader.loadHintsResult(for: entityName, locale: locale)
                     if let fieldHints = hintsResult.fieldHints[fieldId],
                        let calculationGroups = fieldHints.calculationGroups {
                         // Try to calculate this field from related fields
@@ -874,7 +854,8 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
                             if let calculatedValue = evaluateCalculationGroupForField(
                                 fieldId: fieldId,
                                 group: group,
-                                fieldValues: structuredData
+                                fieldValues: structuredData,
+                                locale: locale
                             ) {
                                 // If calculated value matches extracted value (within tolerance), it's confirmed
                                 if abs(calculatedValue - numericValue) < 0.01 {
@@ -1028,18 +1009,21 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
         return evaluateMathExpression(processedExpression)
     }
 
-    /// Finite number for recognized text. POSIX is tried first. A whole-string locale decimal
-    /// wins over grouping removal, so a decimal comma is not treated as a thousands separator.
+    /// Finite number for recognized text. POSIX / whole-string locale decimals first (#624).
+    /// Grouped locale forms (`1,234.5`, `1.234,5`) use `NumberFormatter`, which rejects a
+    /// malformed grouping comma such as English `4,5` instead of inventing 45 (#630).
     private func recognizedDecimal(_ text: String, locale: Locale) -> Double? {
         if let parsed = DynamicFormStoredDecimal.double(fromStoredText: text, locale: locale) {
             return parsed
         }
-        guard let grouping = locale.groupingSeparator, !grouping.isEmpty else { return nil }
-        let decimalSeparator = locale.decimalSeparator ?? "."
-        guard grouping != decimalSeparator else { return nil }
-        let withoutGrouping = text.replacingOccurrences(of: grouping, with: "")
-        guard withoutGrouping != text else { return nil }
-        return DynamicFormStoredDecimal.double(fromStoredText: withoutGrouping, locale: locale)
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return nil }
+        let formatter = NumberFormatter()
+        formatter.locale = locale
+        formatter.numberStyle = .decimal
+        guard let number = formatter.number(from: trimmed) else { return nil }
+        let double = number.doubleValue
+        return double.isFinite ? double : nil
     }
     
     /// Evaluate a simple mathematical expression (supports +, -, *, /, parentheses).
