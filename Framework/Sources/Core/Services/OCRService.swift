@@ -946,7 +946,8 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
         }
         
         let loader = FileBasedDataHintsLoader()
-        let hintsResult = loader.loadHintsResult(for: entityName, locale: Locale(identifier: context.language.rawValue))
+        let locale = Locale(identifier: context.language.rawValue)
+        let hintsResult = loader.loadHintsResult(for: entityName, locale: locale)
         
         // Collect all calculation groups, sorted by priority
         var allGroups: [(fieldId: String, group: CalculationGroup)] = []
@@ -990,7 +991,7 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
                 if let calculatedValue = evaluateCalculationGroup(
                     group,
                     fieldValues: result,
-                    locale: Locale(identifier: context.language.rawValue)
+                    locale: locale
                 ) {
                     result[targetField] = String(calculatedValue)
                     let formula = group.formula
@@ -1020,6 +1021,7 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
                   let value = recognizedDecimal(valueString, locale: locale) else {
                 return nil
             }
+            // `String(Double)` is a POSIX literal, so the comma is not written back into the formula.
             processedExpression = processedExpression.replacingOccurrences(of: fieldId, with: String(value))
         }
 
