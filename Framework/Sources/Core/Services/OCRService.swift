@@ -148,6 +148,18 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
 
     /// Counts `VNRecognizeTextRequest` values created by this instance.
     private(set) var visionTextRecognitionRequestCount = 0
+
+    /// Reverse-geocode for optional capture-region guidance (#631). Tests inject a Fixed resolver.
+    var captureRegionResolver: OCRCaptureRegionResolving = CLGeocoderOCRCaptureRegionResolver()
+
+    /// Optional EXIF GPS → capture region. Stub returns context unchanged until green (#631).
+    func contextEnrichedFromCaptureGPS(
+        _ context: OCRContext,
+        image: PlatformImage
+    ) async -> OCRContext {
+        _ = image
+        return context
+    }
     
     
     // MARK: - Public Methods
@@ -184,10 +196,7 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
         context: OCRContext
     ) async throws -> OCRResult {
         // Optional EXIF GPS → capture region for decimal locale (#631). Never required.
-        let context = await OCRDecimalLocale.contextByApplyingCaptureGPS(
-            context,
-            location: image.exif.gpsLocation
-        )
+        let context = await contextEnrichedFromCaptureGPS(context, image: image)
         if context.processingMode == .ssocr {
             return try await processSevenSegmentStructured(image, context: context)
         }
