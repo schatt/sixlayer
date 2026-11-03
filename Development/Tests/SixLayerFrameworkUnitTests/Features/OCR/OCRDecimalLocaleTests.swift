@@ -175,8 +175,18 @@ struct OCRDecimalLocaleTests {
         #expect(OCRDecimalLocale.resolve(context: enriched).decimalSeparator == ".")
     }
 
+    @Test func serviceEnrichmentLeavesContextWithoutImageGPS() async {
+        let service = OCRService()
+        service.captureRegionResolver = FixedOCRCaptureRegionResolver(regionCode: "DE")
+        let enriched = await service.contextEnrichedFromCaptureGPS(
+            OCRContext(language: .english),
+            image: PlatformImage()
+        )
+        #expect(enriched.captureRegionCode == nil)
+    }
+
     @Test func serviceEnrichesContextFromImageEXIFGPS() async {
-        guard let image = onePixelJPEG(with: CLLocation(latitude: 52.52, longitude: 13.405)) else {
+        guard let image = Self.onePixelJPEG(with: CLLocation(latitude: 52.52, longitude: 13.405)) else {
             Issue.record("GPS JPEG fixture should encode")
             return
         }
@@ -193,7 +203,7 @@ struct OCRDecimalLocaleTests {
     }
 
     @Test func serviceSkipsGPSWhenContextAlreadyHasRegion() async {
-        guard let image = onePixelJPEG(with: CLLocation(latitude: 52.52, longitude: 13.405)) else {
+        guard let image = Self.onePixelJPEG(with: CLLocation(latitude: 52.52, longitude: 13.405)) else {
             Issue.record("GPS JPEG fixture should encode")
             return
         }
@@ -208,7 +218,7 @@ struct OCRDecimalLocaleTests {
     }
 
     /// One-pixel JPEG with GPS via the production EXIF writer (#275 / #631).
-    private func onePixelJPEG(with location: CLLocation) -> PlatformImage? {
+    private static func onePixelJPEG(with location: CLLocation) -> PlatformImage? {
         let colorSpace = CGColorSpaceCreateDeviceRGB()
         let bitmapInfo = CGBitmapInfo.byteOrder32Little.rawValue
             | CGImageAlphaInfo.premultipliedFirst.rawValue
