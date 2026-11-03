@@ -122,13 +122,15 @@ struct OCRSevenSegment576Tests {
         #expect(decode(image, maximum: 0).extractedText == "32.88\n8.022")
     }
 
-    /// Glare through the row gap on the first digit's left stem. The frame is
-    /// tall so that gap stays a valley. The stem is still part of the digit.
+    /// Glare through the row gap on the first digit's left stem. A bezel keeps
+    /// the glass open so that narrow mark does not join the two lines. The
+    /// stem is still part of the digit.
     @Test func leadingValleyStripeKeepsTheFirstDigit() {
         let price = String(repeating: "8", count: 12)
         let image = SegmentPanel.render(
             rows: [atoms(price), atoms("8.022")],
-            padding: 180,
+            bezelLevel: 40,
+            bezelWidth: 8,
             leadingValleyStripe: true
         )
         let result = decode(image, maximum: 0)
