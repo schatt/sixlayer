@@ -385,40 +385,17 @@ struct OCRSevenSegment576Tests {
     /// border-clipped upright sample can score fewer wide digits.
     @Test func aTightSingleLineCropStaysUpright() {
         let image = sealedBothRowsPanel()
-        #expect(decode(image, maximum: 0).extractedText == "32.88\n8.022")
-        // SegmentPanel layout: padding 16, cellH 90, rowGap 64. Crop each
-        // row with only a few pixels of glass — enough for threshold, still
-        // the path that previously flipped to 88.26 / 220.8.
-        let padding = 16
-        let cellH = SegmentPanel.cellH
-        let rowGap = SegmentPanel.rowGap
-        let inset = 8
-        let glass = 4
-        let width = max(1, image.width - inset * 2)
-        let top = crop(
-            image,
-            x: inset,
-            y: padding - glass,
-            width: width,
-            height: cellH + glass * 2
-        )
-        let bottomY = padding + cellH + rowGap
-        let bottom = crop(
-            image,
-            x: inset,
-            y: bottomY - glass,
-            width: width,
-            height: cellH + glass * 2
-        )
-        #expect(decode(top, maximum: 0).extractedText == "32.88")
-        #expect(decode(bottom, maximum: 0).extractedText == "8.022")
-        let taller = crop(
-            image,
-            x: inset,
-            y: bottomY - 20,
-            width: width,
-            height: cellH + 36
-        )
+        let full = decode(image, maximum: 0)
+        #expect(full.extractedText == "32.88\n8.022")
+        let segments = full.recognizedTexts.filter { $0.role == .segment }
+        #expect(segments.map(\.text) == ["32.88", "8.022"])
+        // Glyph boxes plus a few pixels of glass. Zero-margin boxes starve
+        // the threshold; this is still the crop that read as 88.26 / 220.8.
+        for segment in segments {
+            let line = lineCrop(image, visionBox: segment.boundingBox, pad: 6)
+            #expect(decode(line, maximum: 0).extractedText == segment.text)
+        }
+        let taller = lineCrop(image, visionBox: segments[1].boundingBox, pad: 20)
         #expect(decode(taller, maximum: 0).extractedText == "8.022")
     }
 
@@ -876,6 +853,20 @@ struct OCRSevenSegment576Tests {
             }
         }
         return solidGrayImage(pixels: pixels, width: width, height: height)
+    }
+
+    private func lineCrop(_ image: CGImage, visionBox: CGRect, pad: Int) -> CGImage {
+        let width = image.width
+        let height = image.height
+        let minX = Int((visionBox.minX * CGFloat(width)).rounded(.down)) - pad
+        let maxX = Int((visionBox.maxX * CGFloat(width)).rounded(.up)) + pad
+        let minY = Int(((1 - visionBox.maxY) * CGFloat(height)).rounded(.down)) - pad
+        let maxY = Int(((1 - visionBox.minY) * CGFloat(height)).rounded(.up)) + pad
+        let x = max(0, minX)
+        let y = max(0, minY)
+        let w = max(1, min(width, maxX) - x)
+        let h = max(1, min(height, maxY) - y)
+        return crop(image, x: x, y: y, width: w, height: h)
     }
 
     private func solidGrayImage(pixels: [UInt8], width: Int, height: Int) -> CGImage {
