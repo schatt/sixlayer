@@ -46,10 +46,7 @@ public enum PlatformMapComponentsLayer4 {
                 content()
             }
         }
-        .frame(minWidth: 1, minHeight: 1)
-        .accessibilityElement(children: .ignore)
-        .automaticCompliance(named: "platformMapView_L4")
-        .accessibilityIdentifier("platformMapView_L4")
+        .platformMapViewL4Chrome()
         #else
         // MapKit not available - provide fallback UI
         UnsupportedPlatformMapView()
@@ -73,10 +70,7 @@ public enum PlatformMapComponentsLayer4 {
                 content()
             }
         }
-        .frame(minWidth: 1, minHeight: 1)
-        .accessibilityElement(children: .ignore)
-        .automaticCompliance(named: "platformMapView_L4")
-        .accessibilityIdentifier("platformMapView_L4")
+        .platformMapViewL4Chrome()
         #else
         UnsupportedPlatformMapView()
             .automaticCompliance(named: "platformMapView_L4")
@@ -107,10 +101,7 @@ public enum PlatformMapComponentsLayer4 {
                 }
             }
         }
-        .frame(minWidth: 1, minHeight: 1)
-        .accessibilityElement(children: .ignore)
-        .automaticCompliance(named: "platformMapView_L4")
-        .accessibilityIdentifier("platformMapView_L4")
+        .platformMapViewL4Chrome()
         #else
         // MapKit not available
         UnsupportedPlatformMapView()
@@ -274,6 +265,22 @@ private struct MapViewWithLocationService: View {
             )
         )
         #endif
+    }
+}
+#endif
+
+// MARK: - Map chrome (shared contract)
+
+#if os(iOS) || os(macOS)
+@available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+private extension View {
+    /// Shared frame / a11y / compliance wrapping for `platformMapView_L4` Map hosts.
+    func platformMapViewL4Chrome() -> some View {
+        self
+            .frame(minWidth: 1, minHeight: 1)
+            .accessibilityElement(children: .ignore)
+            .automaticCompliance(named: "platformMapView_L4")
+            .accessibilityIdentifier("platformMapView_L4")
     }
 }
 #endif
