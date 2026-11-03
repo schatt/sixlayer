@@ -136,9 +136,6 @@ public struct SegmentSearchHit: Equatable, Sendable {
 }
 
 public enum SevenSegmentOCR {
-    /// Last band trace. Tests read this; production decode does not branch on it.
-    nonisolated(unsafe) static var bandTrace = ""
-
     /// Size of the image the frame finder searches. Callers map the rect back
     /// with `fullWidth / smallWidth` and `fullHeight / smallHeight`.
     ///
@@ -1102,9 +1099,6 @@ private struct GrayBuffer {
 
 private func trace(_ message: String) {
     fputs(message, stderr)
-    if message.hasPrefix("bands ") || message.hasPrefix("span ") || message.hasPrefix("read ") {
-        SevenSegmentOCR.bandTrace += message
-    }
 }
 
 private struct Mask {
@@ -1640,7 +1634,7 @@ private extension GrayBuffer {
         let glyphs = chosen.glyphs
         let bandSource = chosen.bandSource
         let opened = darkChoice.opens || lightChoice.opens
-        if buffer.width >= 400 {
+        if buffer.width >= 1000 {
             let ink = glyphs.bits.filter { $0 }.count
             trace(
                 "read \(buffer.width)x\(buffer.height) dark=\(primaryIsDark) opened=\(opened) ink=\(ink)\n"
@@ -1695,7 +1689,7 @@ private extension GrayBuffer {
             : (bandsForSplit.count > foundBands.count
                 ? bandsForSplit
                 : merge(bandsForSplit, whenGapBelow: max(1, cellHeight / 2)))
-        if buffer.width >= 400 {
+        if buffer.width >= 1000 {
             let listed = splitBands.map { "\($0.0)-\($0.1)" }.joined(separator: ",")
             trace("bands \(listed)\n")
         }
@@ -1707,7 +1701,7 @@ private extension GrayBuffer {
         if splittingRows, splitBands.count > 1 {
             let span = readingSpan(glyphs, bands: splitBands)
             let parentRadius = windowRadius(width: buffer.width, height: buffer.height)
-            if buffer.width >= 400 {
+            if buffer.width >= 1000 {
                 trace("span \(String(describing: span)) radius \(parentRadius)\n")
             }
             var windowNarrows = true
