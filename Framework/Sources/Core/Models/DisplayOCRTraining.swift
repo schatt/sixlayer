@@ -939,47 +939,16 @@ public enum DisplayOCRTraining {
         var rejections: [DisplayOCRTrainingLibraryRejection] = []
         var entries: [DisplayOCRTrainingIndexEntry] = []
         for (offset, child) in targets.enumerated() {
-            let name = child.lastPathComponent
             let stamp = fingerprint(of: child)
-            switch classify(child, in: root) {
-            case .example(let package):
-                let hasRowBox = package.label.rows.contains { $0.box != nil }
-                var stored = package
-                stored.imagePNG = Data()
-                examples.append(DisplayOCRTrainingLibraryExample(
-                    directory: child,
-                    package: stored,
-                    hasRowBox: hasRowBox
-                ))
-                entries.append(indexEntry(
-                    name: name,
-                    fingerprint: stamp,
-                    hasRowBox: hasRowBox,
-                    skipReason: nil,
-                    schemaVersionFound: nil
-                ))
-            case .rejection(let error, let reason):
-                rejections.append(DisplayOCRTrainingLibraryRejection(
-                    directory: child,
-                    error: error,
-                    reason: reason
-                ))
-                let version: Int?
-                if case .unsupportedSchema(let found) = error {
-                    version = found
-                } else {
-                    version = nil
-                }
-                entries.append(indexEntry(
-                    name: name,
-                    fingerprint: stamp,
-                    hasRowBox: false,
-                    skipReason: reason,
-                    schemaVersionFound: version
-                ))
-            case .ignored:
-                break
-            }
+            appendClassified(
+                classify(child, in: root),
+                directory: child,
+                fingerprint: stamp,
+                clearImagePNG: true,
+                examples: &examples,
+                rejections: &rejections,
+                entries: &entries
+            )
             progress?(DisplayOCRTrainingReindexProgress(completed: offset + 1, total: targets.count))
         }
         examples.sort { $0.directory.lastPathComponent < $1.directory.lastPathComponent }
@@ -1021,43 +990,15 @@ public enum DisplayOCRTraining {
                 continue
             }
             changed = true
-            switch classify(child, in: root) {
-            case .example(let package):
-                let hasRowBox = package.label.rows.contains { $0.box != nil }
-                examples.append(DisplayOCRTrainingLibraryExample(
-                    directory: child,
-                    package: package,
-                    hasRowBox: hasRowBox
-                ))
-                entries.append(indexEntry(
-                    name: name,
-                    fingerprint: stamp,
-                    hasRowBox: hasRowBox,
-                    skipReason: nil,
-                    schemaVersionFound: nil
-                ))
-            case .rejection(let error, let reason):
-                rejections.append(DisplayOCRTrainingLibraryRejection(
-                    directory: child,
-                    error: error,
-                    reason: reason
-                ))
-                let version: Int?
-                if case .unsupportedSchema(let found) = error {
-                    version = found
-                } else {
-                    version = nil
-                }
-                entries.append(indexEntry(
-                    name: name,
-                    fingerprint: stamp,
-                    hasRowBox: false,
-                    skipReason: reason,
-                    schemaVersionFound: version
-                ))
-            case .ignored:
-                break
-            }
+            appendClassified(
+                classify(child, in: root),
+                directory: child,
+                fingerprint: stamp,
+                clearImagePNG: false,
+                examples: &examples,
+                rejections: &rejections,
+                entries: &entries
+            )
         }
         if Set(entries.map(\.name)) != Set(index.entries.map(\.name)) {
             changed = true
@@ -1072,6 +1013,60 @@ public enum DisplayOCRTraining {
         examples.sort { $0.directory.lastPathComponent < $1.directory.lastPathComponent }
         rejections.sort { $0.directory.lastPathComponent < $1.directory.lastPathComponent }
         return DisplayOCRTrainingLibrary(examples: examples, rejections: rejections)
+    }
+
+    /// Records one classify result. Scan clears photo bytes; a fingerprint miss keeps them.
+    private static func appendClassified(
+        _ child: LibraryChild,
+        directory: URL,
+        fingerprint stamp: DisplayOCRTrainingIndexEntry,
+        clearImagePNG: Bool,
+        examples: inout [DisplayOCRTrainingLibraryExample],
+        rejections: inout [DisplayOCRTrainingLibraryRejection],
+        entries: inout [DisplayOCRTrainingIndexEntry]
+    ) {
+        let name = directory.lastPathComponent
+        switch child {
+        case .example(let package):
+            let hasRowBox = package.label.rows.contains { $0.box != nil }
+            var stored = package
+            if clearImagePNG {
+                stored.imagePNG = Data()
+            }
+            examples.append(DisplayOCRTrainingLibraryExample(
+                directory: directory,
+                package: stored,
+                hasRowBox: hasRowBox
+            ))
+            entries.append(indexEntry(
+                name: name,
+                fingerprint: stamp,
+                hasRowBox: hasRowBox,
+                skipReason: nil,
+                schemaVersionFound: nil
+            ))
+        case .rejection(let error, let reason):
+            rejections.append(DisplayOCRTrainingLibraryRejection(
+                directory: directory,
+                error: error,
+                reason: reason
+            ))
+            let version: Int?
+            if case .unsupportedSchema(let found) = error {
+                version = found
+            } else {
+                version = nil
+            }
+            entries.append(indexEntry(
+                name: name,
+                fingerprint: stamp,
+                hasRowBox: false,
+                skipReason: reason,
+                schemaVersionFound: version
+            ))
+        case .ignored:
+            break
+        }
     }
 
     private static func appendFromIndex(
