@@ -2186,29 +2186,7 @@ private func readingSpan(_ mask: Mask, bands: [(Int, Int)]) -> (Int, Int)? {
     guard let best = runs.max(by: { $0.ink < $1.ink }) else { return nil }
     let span = best.end - best.start
     guard span > max(12, height / 10) else { return nil }
-    // A valley glare on the leading stem is an edge, so the winning run
-    // starts inside that digit. Take up to a quarter of the row back through
-    // that edge and the stem. A margin wider than the stroke hole — padding,
-    // or a scratch — stays outside the crop.
-    let context = max(8, rowHeight / 4)
-    var paddedStart = best.start
-    var walked = 0
-    while paddedStart > 0, walked < context {
-        let x = paddedStart - 1
-        if !keep[x], !edgeColumn[x] {
-            var gap = 0
-            var look = x
-            while look >= 0, !keep[look], !edgeColumn[look] {
-                gap += 1
-                look -= 1
-                if gap > gapLimit { break }
-            }
-            if gap > gapLimit { break }
-        }
-        paddedStart = x
-        walked += 1
-    }
-    return (paddedStart, best.end)
+    return (best.start, best.end)
 }
 
 /// When a row band is taller than a price crop, keep the densest window of
