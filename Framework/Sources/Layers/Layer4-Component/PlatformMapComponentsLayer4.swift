@@ -61,7 +61,6 @@ public enum PlatformMapComponentsLayer4 {
     /// Use with `.tag` on `Marker` / `Annotation` the same way as raw `Map(position:selection:)`.
     /// Note: Requires @MainActor because Map is a View
     /// Stub for #634 deliberate red — returns EmptyView until green implementation.
-    @ViewBuilder
     @MainActor
     public static func platformMapView_L4<SelectionValue: Hashable>(
         position: Binding<MapCameraPosition>,
@@ -69,12 +68,10 @@ public enum PlatformMapComponentsLayer4 {
         @MapContentBuilder content: () -> some MapContent
     ) -> some View {
         #if os(iOS) || os(macOS)
-        _ = position
-        _ = selection
-        _ = content
-        EmptyView()
+        let _ = (position, selection, content)
+        return EmptyView()
         #else
-        UnsupportedPlatformMapView()
+        return UnsupportedPlatformMapView()
             .automaticCompliance(named: "platformMapView_L4")
         #endif
     }
