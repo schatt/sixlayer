@@ -131,12 +131,12 @@ struct OCRSevenSegment576Tests {
             padding: 160,
             leadingValleyStripe: true
         )
+        SevenSegmentOCR.bandTrace = ""
         let result = decode(image, maximum: 0)
-        let cells = result.recognizedTexts.map { text in
-            let box = text.boundingBox
-            return "\(text.text) y\(Int((box.minY * 100).rounded())) h\(Int((box.height * 100).rounded()))"
-        }.joined(separator: " | ")
-        #expect(result.extractedText == "88.88\n8.022", "cells \(cells)")
+        #expect(
+            result.extractedText == "88.88\n8.022",
+            "cells \(result.extractedText) trace \(SevenSegmentOCR.bandTrace)"
+        )
     }
 
     @Test func digitPitchCutsASolidWashBridge() {
