@@ -389,10 +389,10 @@ struct OCRSevenSegment576Tests {
         #expect(full.extractedText == "32.88\n8.022")
         let segments = full.recognizedTexts.filter { $0.role == .segment }
         #expect(segments.map(\.text) == ["32.88", "8.022"])
-        // Glyph boxes plus a few pixels of glass. Zero-margin boxes starve
-        // the threshold; this is still the crop that read as 88.26 / 220.8.
+        // Zero-margin glyph boxes — the crop that previously returned
+        // 88.26 / 220.8. The decoder must keep them upright and readable.
         for segment in segments {
-            let line = lineCrop(image, visionBox: segment.boundingBox, pad: 6)
+            let line = lineCrop(image, visionBox: segment.boundingBox, pad: 0)
             #expect(decode(line, maximum: 0).extractedText == segment.text)
         }
         let taller = lineCrop(image, visionBox: segments[1].boundingBox, pad: 20)
