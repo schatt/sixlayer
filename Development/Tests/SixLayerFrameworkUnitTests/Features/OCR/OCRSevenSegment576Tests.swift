@@ -358,7 +358,7 @@ struct OCRSevenSegment576Tests {
             brightGapWash: true
         )
         let report = decode(image).extractedText
-        #expect(report == "32.88\n8.022", report)
+        #expect(report == "32.88\n8.022", "\(report)")
     }
 
     @Test func glareAndBothPolaritiesDecodeTheSameDigits() {
@@ -889,7 +889,7 @@ struct OCRSevenSegment576Tests {
         let report = "hand \(hand.width)x\(hand.height) [\(result.extractedText)] conf \(result.confidence)"
         #expect(
             result.extractedText.contains("32.88") && result.extractedText.contains("8.022"),
-            report
+            "\(report)"
         )
     }
 
