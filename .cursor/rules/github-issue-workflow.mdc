@@ -76,7 +76,15 @@ Structure (same branch vs child) is flexible; **Done gating is not**.
 
 - **Default:** **Close when the work is done on its branch** — don't wait for merge to `main`. Name the branch in the closing comment (e.g. implemented on **`wip/…`** then merged, or on **`done/…`** after rename). Issue-linked implementation should have lived on **`wip/<issue-slug>`** before integration (see above).
 - Merge to `main` is part of the release process, not a prerequisite for closing (unless you are using the integration-line workflow below — then `next` is part of “done”).
-- **/2 quality gate (before close) — MANDATORY:** Before Final Record finalize and close, run the **`/2`** skill (Cursor skill `2`: production quality / dtrt / dry / similar issues / refactor) on the **issue’s landed change** (branch diff / files touched — not the whole product). Post the `/2` verdicts on the issue (Taska `add_comment` / `gh` fallback). **Fix all in-scope `/2` findings** on the same `wip/` branch (or a continuation `wip/` if already retired once); bucket any remaining leftovers per the taxonomy above; do **not** close while `/2` still flags in-scope work. Optional follow-ups discovered by `/2` get their **own** open issues, linked from the close comment. Pure docs/chore issues with no product change may state “`/2` N/A — docs-only” in the close comment instead of a full review.
+- **/2 quality gate (before close) — MANDATORY:** Before Final Record finalize and close, run the **`/2`** skill (Cursor skill `2`) on the **issue’s landed change** (branch diff / files touched — not the whole product). Answer these five questions **verbatim as section headers**, in this order, and post that review on the issue (Taska `add_comment` / `gh` fallback):
+
+  1. **production quality?** — Ready to ship/land as-is? Incomplete failure domains, dangling globals, band-aids, missing both-direction gates, or unproven claims → no (say what blocks).
+  2. **dtrt?** — Right problem, right layer? Prefer fixing root cause over suite serialize / suppress / paper-over. Note half-fixes and leftover footguns.
+  3. **dry?** — Duplicated logic that should be one path? Name the duplication; don’t invent abstractions for one-off noise.
+  4. **similar issues?** — Do similar problems/patterns exist that we should also handle? If so, name the problem **and the leftover bucket** (in scope / child / follow-up — or none).
+  5. **refactor?** — Leftovers: name the bucket (**in scope** / **child / sub-issue** / **follow-up**). Prefer small extracts when cheap. Do **not** escape Done with bare “follow-up?”.
+
+  Then **fix all in-scope `/2` findings** on the same `wip/` branch (or a continuation `wip/` if already retired once); bucket any remaining leftovers per the taxonomy above; do **not** close while `/2` still flags in-scope work. Optional follow-ups discovered by `/2` get their **own** open issues, linked from the close comment. Pure docs/chore issues with no product change may state “`/2` N/A — docs-only” in the close comment instead of a full review.
 - **Leftover gates (before close):** no **in-scope** leftovers remain (or reopen and finish); no open **child** issues that parent acceptance still requires; every **follow-up** has its own open issue, linked from the close comment.
 
 ### Worklist closure: `wip/` + `next` + dedicated worktree
