@@ -68,14 +68,20 @@ enum OCRDecimalLocale {
         location: CLLocation?,
         resolver: OCRCaptureRegionResolving = CLGeocoderOCRCaptureRegionResolver()
     ) async -> OCRContext {
-        if context.decimalLocale != nil { return context }
-        if normalizedRegionCode(context.captureRegionCode) != nil { return context }
-        guard let location else { return context }
+        guard shouldApplyCaptureGPSGuide(to: context), let location else {
+            return context
+        }
         guard let region = await resolver.regionCode(for: location),
               let normalized = normalizedRegionCode(region) else {
             return context
         }
         return context.with(captureRegionCode: normalized)
+    }
+
+    /// True when neither an explicit locale override nor a capture region is set.
+    private static func shouldApplyCaptureGPSGuide(to context: OCRContext) -> Bool {
+        context.decimalLocale == nil
+            && normalizedRegionCode(context.captureRegionCode) == nil
     }
 
     private static func normalizedRegionCode(_ regionCode: String?) -> String? {
