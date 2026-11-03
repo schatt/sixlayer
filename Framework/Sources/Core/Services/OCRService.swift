@@ -946,7 +946,8 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
         }
         
         let loader = FileBasedDataHintsLoader()
-        let hintsResult = loader.loadHintsResult(for: entityName, locale: Locale(identifier: context.language.rawValue))
+        let locale = Locale(identifier: context.language.rawValue)
+        let hintsResult = loader.loadHintsResult(for: entityName, locale: locale)
         
         // Collect all calculation groups, sorted by priority
         var allGroups: [(fieldId: String, group: CalculationGroup)] = []
@@ -987,7 +988,11 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
             }
             
             if allDependenciesAvailable {
-                if let calculatedValue = evaluateCalculationGroup(group, fieldValues: result) {
+                if let calculatedValue = evaluateCalculationGroup(
+                    group,
+                    fieldValues: result,
+                    locale: locale
+                ) {
                     result[targetField] = String(calculatedValue)
                     let formula = group.formula
                     adjustments[targetField] = "Calculated from formula: \(formula) = \(String(format: "%.2f", calculatedValue))"
@@ -998,27 +1003,43 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
         return (result, adjustments)
     }
     
-    /// Evaluate a calculation group formula
-    private func evaluateCalculationGroup(_ group: CalculationGroup, fieldValues: [String: String]) -> Double? {
-        // Parse the formula: "target = expression"
+    /// Evaluate a calculation group formula.
+    /// A locale decimal such as `4,5` matches POSIX `4.5`. A grouping separator is removed
+    /// only when it is not the decimal separator, so `1.234,5` stays one thousand (#629).
+    func evaluateCalculationGroup(
+        _ group: CalculationGroup,
+        fieldValues: [String: String],
+        locale: Locale
+    ) -> Double? {
         let parts = group.formula.split(separator: "=", maxSplits: 1).map { $0.trimmingCharacters(in: .whitespaces) }
-        
+
         guard parts.count == 2 else { return nil }
-        let expression = parts[1]
-        
-        // Replace field references with their numeric values
-        var processedExpression = expression
+        var processedExpression = parts[1]
+
         for fieldId in group.dependentFields {
-            if let valueString = fieldValues[fieldId],
-               let value = Double(valueString.replacingOccurrences(of: ",", with: "")) {
-                processedExpression = processedExpression.replacingOccurrences(of: fieldId, with: String(value))
-            } else {
-                return nil // Missing dependency or invalid value
+            guard let valueString = fieldValues[fieldId],
+                  let value = recognizedDecimal(valueString, locale: locale) else {
+                return nil
             }
+            // `String(Double)` is a POSIX literal, so the comma is not written back into the formula.
+            processedExpression = processedExpression.replacingOccurrences(of: fieldId, with: String(value))
         }
-        
-        // Evaluate the mathematical expression
+
         return evaluateMathExpression(processedExpression)
+    }
+
+    /// Finite number for recognized text. POSIX is tried first. A whole-string locale decimal
+    /// wins over grouping removal, so a decimal comma is not treated as a thousands separator.
+    private func recognizedDecimal(_ text: String, locale: Locale) -> Double? {
+        if let parsed = DynamicFormStoredDecimal.double(fromStoredText: text, locale: locale) {
+            return parsed
+        }
+        guard let grouping = locale.groupingSeparator, !grouping.isEmpty else { return nil }
+        let decimalSeparator = locale.decimalSeparator ?? "."
+        guard grouping != decimalSeparator else { return nil }
+        let withoutGrouping = text.replacingOccurrences(of: grouping, with: "")
+        guard withoutGrouping != text else { return nil }
+        return DynamicFormStoredDecimal.double(fromStoredText: withoutGrouping, locale: locale)
     }
     
     /// Evaluate a simple mathematical expression (supports +, -, *, /, parentheses).
