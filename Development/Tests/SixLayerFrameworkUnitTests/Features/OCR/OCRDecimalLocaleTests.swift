@@ -1,3 +1,4 @@
+import CoreLocation
 import Foundation
 import Testing
 
@@ -131,5 +132,45 @@ struct OCRDecimalLocaleTests {
                 locale: locale
             ) == 9
         )
+    }
+
+    @Test func gpsRegionGuidesWhenContextHasNoRegion() async {
+        let berlin = CLLocation(latitude: 52.52, longitude: 13.405)
+        let context = OCRContext(language: .english)
+        let enriched = await OCRDecimalLocale.contextByApplyingCaptureGPS(
+            context,
+            location: berlin,
+            resolver: FixedOCRCaptureRegionResolver(regionCode: "DE")
+        )
+        #expect(enriched.captureRegionCode == "DE")
+        #expect(OCRDecimalLocale.resolve(context: enriched).decimalSeparator == ",")
+    }
+
+    @Test func gpsDoesNotOverrideExplicitRegionOrLocale() async {
+        let berlin = CLLocation(latitude: 52.52, longitude: 13.405)
+        let withRegion = await OCRDecimalLocale.contextByApplyingCaptureGPS(
+            OCRContext(language: .english, captureRegionCode: "US"),
+            location: berlin,
+            resolver: FixedOCRCaptureRegionResolver(regionCode: "DE")
+        )
+        #expect(withRegion.captureRegionCode == "US")
+
+        let withOverride = await OCRDecimalLocale.contextByApplyingCaptureGPS(
+            OCRContext(language: .english, decimalLocale: Locale(identifier: "en_US")),
+            location: berlin,
+            resolver: FixedOCRCaptureRegionResolver(regionCode: "DE")
+        )
+        #expect(withOverride.captureRegionCode == nil)
+        #expect(OCRDecimalLocale.resolve(context: withOverride).decimalSeparator == ".")
+    }
+
+    @Test func missingGPSLeavesContextUnchanged() async {
+        let enriched = await OCRDecimalLocale.contextByApplyingCaptureGPS(
+            OCRContext(language: .english),
+            location: nil,
+            resolver: FixedOCRCaptureRegionResolver(regionCode: "DE")
+        )
+        #expect(enriched.captureRegionCode == nil)
+        #expect(OCRDecimalLocale.resolve(context: enriched).decimalSeparator == ".")
     }
 }
