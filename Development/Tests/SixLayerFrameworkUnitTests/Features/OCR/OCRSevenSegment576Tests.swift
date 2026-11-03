@@ -129,6 +129,7 @@ struct OCRSevenSegment576Tests {
         // real strip stays out (edgeStrip).
         let image = SegmentPanel.render(
             rows: [atoms("32.88"), atoms("8.022")],
+            scale: 4,
             valleyGlare: true
         )
         #expect(decode(image, maximum: 0).extractedText == "32.88\n8.022")
@@ -1562,6 +1563,12 @@ private enum SegmentPanel {
         let gapTop = first.maxY
         let gapBottom = second.minY
         guard gapBottom - gapTop > 8 else { return }
+        // Leave empty rows against each digit band. Filling the whole gap
+        // joins the two rows into one line.
+        let margin = max(4, (gapBottom - gapTop) / 6)
+        let stripeTop = gapTop + margin
+        let stripeBottom = gapBottom - margin
+        guard stripeBottom - stripeTop > (gapBottom - gapTop) / 3 else { return }
         var minX = width
         var maxX = 0
         for y in first.minY..<first.maxY {
@@ -1576,7 +1583,7 @@ private enum SegmentPanel {
         let mid = (minX + maxX) / 2
         let x0 = max(0, mid - stripe / 2)
         let x1 = min(width, x0 + stripe)
-        for y in gapTop..<gapBottom {
+        for y in stripeTop..<stripeBottom {
             for x in x0..<x1 {
                 pixels[y * width + x] = ink
             }
