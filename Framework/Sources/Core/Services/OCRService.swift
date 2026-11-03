@@ -480,13 +480,14 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
     private func correctDecimalPlacement(in structuredData: [String: String], context: OCRContext) -> ([String: String], [String: String]) {
         var correctedData = structuredData
         var adjustments: [String: String] = [:]
+        let locale = Locale(identifier: context.language.rawValue)
         
         // Get hints file data if entityName is provided
         var hintsRanges: [String: ValueRange] = [:]
         var hintsCalculationGroups: [String: [CalculationGroup]] = [:]
         if let entityName = context.entityName {
             let loader = FileBasedDataHintsLoader()
-            let hintsResult = loader.loadHintsResult(for: entityName, locale: Locale(identifier: context.language.rawValue))
+            let hintsResult = loader.loadHintsResult(for: entityName, locale: locale)
             for (fieldId, fieldHints) in hintsResult.fieldHints {
                 if let range = fieldHints.expectedRange {
                     hintsRanges[fieldId] = range
@@ -610,7 +611,7 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
                                     fieldId: dependentField,
                                     group: group,
                                     fieldValues: testData,
-                                    locale: Locale(identifier: context.language.rawValue)
+                                    locale: locale
                                 ) {
                                     if dependentRange.contains(calculatedValue) {
                                         isValid = true
@@ -627,7 +628,7 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
                             fieldId: fieldId,
                             group: group,
                             fieldValues: testData,
-                            locale: Locale(identifier: context.language.rawValue)
+                            locale: locale
                         ) {
                             // If calculation matches our corrected value (within tolerance), it's valid
                             if abs(calculatedValue - correctedValue) < 0.01 {
