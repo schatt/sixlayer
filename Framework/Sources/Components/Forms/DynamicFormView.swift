@@ -466,18 +466,20 @@ struct DynamicFormViewInner: View {
 
                 Spacer()
 
-                // Submit button
-                Button(action: {
-                    handleSubmit()
-                }) {
-                    Text(configuration.submitButtonText)
-                        .frame(maxWidth: .infinity)
+                // Submit button — host may own Save (toolbar / inset); omit when showsSubmitButton is false (#640).
+                if configuration.showsSubmitButton {
+                    Button(action: {
+                        handleSubmit()
+                    }) {
+                        Text(configuration.submitButtonText)
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .automaticCompliance(
+                        named: "SubmitButton",
+                        accessibilitySortPriority: 1.0  // Issue #165: Primary action has highest priority
+                    )
                 }
-                .buttonStyle(.borderedProminent)
-                .automaticCompliance(
-                    named: "SubmitButton",
-                    accessibilitySortPriority: 1.0  // Issue #165: Primary action has highest priority
-                )
             }
             .environment(\.dynamicFormLocalizationNamespace, formLocalizationNamespace)
             .environment(\.formSelectAllOnBeginEditing, configuration.selectAllOnBeginEditing)
