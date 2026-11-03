@@ -387,28 +387,37 @@ struct OCRSevenSegment576Tests {
         let image = sealedBothRowsPanel()
         #expect(decode(image, maximum: 0).extractedText == "32.88\n8.022")
         // SegmentPanel layout: padding 16, cellH 90, rowGap 64. Crop each
-        // row band with no extra glass — the path that previously flipped.
+        // row with only a few pixels of glass — enough for threshold, still
+        // the path that previously flipped to 88.26 / 220.8.
         let padding = 16
         let cellH = SegmentPanel.cellH
         let rowGap = SegmentPanel.rowGap
         let inset = 8
+        let glass = 4
         let width = max(1, image.width - inset * 2)
-        let top = crop(image, x: inset, y: padding, width: width, height: cellH)
+        let top = crop(
+            image,
+            x: inset,
+            y: padding - glass,
+            width: width,
+            height: cellH + glass * 2
+        )
+        let bottomY = padding + cellH + rowGap
         let bottom = crop(
             image,
             x: inset,
-            y: padding + cellH + rowGap,
+            y: bottomY - glass,
             width: width,
-            height: cellH
+            height: cellH + glass * 2
         )
         #expect(decode(top, maximum: 0).extractedText == "32.88")
         #expect(decode(bottom, maximum: 0).extractedText == "8.022")
         let taller = crop(
             image,
             x: inset,
-            y: max(0, padding + cellH + rowGap - 24),
+            y: bottomY - 20,
             width: width,
-            height: cellH + 40
+            height: cellH + 36
         )
         #expect(decode(taller, maximum: 0).extractedText == "8.022")
     }
