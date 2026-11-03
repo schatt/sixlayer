@@ -1,11 +1,7 @@
 import CoreGraphics
 import CoreLocation
 import Foundation
-import ImageIO
 import Testing
-#if canImport(UniformTypeIdentifiers)
-import UniformTypeIdentifiers
-#endif
 
 @testable import SixLayerFramework
 
@@ -180,12 +176,9 @@ struct OCRDecimalLocaleTests {
     }
 
     @Test func serviceEnrichesContextFromImageEXIFGPS() async throws {
-        let jpegData = try makeJPEGDataOnePixelWithGPS(
-            latitude: 52.52,
-            longitude: 13.405
-        )
-        guard let image = PlatformImage(data: jpegData) else {
-            Issue.record("GPS JPEG fixture should decode")
+        let berlin = CLLocation(latitude: 52.52, longitude: 13.405)
+        guard let image = try onePixelJPEG(with: berlin) else {
+            Issue.record("GPS JPEG fixture should encode")
             return
         }
         #expect(image.exif.gpsLocation != nil)
@@ -201,12 +194,9 @@ struct OCRDecimalLocaleTests {
     }
 
     @Test func serviceSkipsGPSWhenContextAlreadyHasRegion() async throws {
-        let jpegData = try makeJPEGDataOnePixelWithGPS(
-            latitude: 52.52,
-            longitude: 13.405
-        )
-        guard let image = PlatformImage(data: jpegData) else {
-            Issue.record("GPS JPEG fixture should decode")
+        let berlin = CLLocation(latitude: 52.52, longitude: 13.405)
+        guard let image = try onePixelJPEG(with: berlin) else {
+            Issue.record("GPS JPEG fixture should encode")
             return
         }
 
@@ -219,10 +209,8 @@ struct OCRDecimalLocaleTests {
         #expect(enriched.captureRegionCode == "US")
     }
 
-    private func makeJPEGDataOnePixelWithGPS(
-        latitude: Double,
-        longitude: Double
-    ) throws -> Data {
+    /// One-pixel JPEG with GPS via the production EXIF writer (#275 / #631).
+    private func onePixelJPEG(with location: CLLocation) throws -> PlatformImage? {
         let colorSpace = CGColorSpaceCreateDeviceRGB()
         let bitmapInfo = CGBitmapInfo.byteOrder32Little.rawValue
             | CGImageAlphaInfo.premultipliedFirst.rawValue
@@ -234,41 +222,21 @@ struct OCRDecimalLocaleTests {
             bytesPerRow: 4,
             space: colorSpace,
             bitmapInfo: bitmapInfo
-        ), let cgImage = {
-            ctx.setFillColor(red: 1, green: 1, blue: 1, alpha: 1)
-            ctx.fill(CGRect(x: 0, y: 0, width: 1, height: 1))
-            return ctx.makeImage()
-        }() else {
+        ) else {
             struct MakeImageError: Error {}
             throw MakeImageError()
         }
-        let mutable = NSMutableData()
-        #if canImport(UniformTypeIdentifiers)
-        let type = UTType.jpeg.identifier as CFString
+        ctx.setFillColor(red: 1, green: 1, blue: 1, alpha: 1)
+        ctx.fill(CGRect(x: 0, y: 0, width: 1, height: 1))
+        guard let cgImage = ctx.makeImage() else {
+            struct MakeImageError: Error {}
+            throw MakeImageError()
+        }
+        #if os(macOS)
+        let base = PlatformImage(cgImage: cgImage, size: CGSize(width: 1, height: 1))
         #else
-        let type = "public.jpeg" as CFString
+        let base = PlatformImage(cgImage: cgImage)
         #endif
-        guard let dest = CGImageDestinationCreateWithData(mutable, type, 1, nil) else {
-            struct DestinationError: Error {}
-            throw DestinationError()
-        }
-        let latRef = latitude >= 0 ? "N" : "S"
-        let lonRef = longitude >= 0 ? "E" : "W"
-        let gps: [String: Any] = [
-            kCGImagePropertyGPSLatitude as String: abs(latitude),
-            kCGImagePropertyGPSLatitudeRef as String: latRef,
-            kCGImagePropertyGPSLongitude as String: abs(longitude),
-            kCGImagePropertyGPSLongitudeRef as String: lonRef
-        ]
-        CGImageDestinationAddImage(
-            dest,
-            cgImage,
-            [kCGImagePropertyGPSDictionary as String: gps] as CFDictionary
-        )
-        guard CGImageDestinationFinalize(dest) else {
-            struct FinalizeError: Error {}
-            throw FinalizeError()
-        }
-        return mutable as Data
+        return base.exif.with(gpsLocation: location, as: .jpeg)
     }
 }
