@@ -653,7 +653,10 @@ public extension View {
     // MARK: - Sheet and Alert Modifiers
 
     /// Platform-specific sheet presentation with navigation wrapper
-    /// Provides consistent sheet presentation across platforms
+    /// Provides consistent sheet presentation across platforms.
+    ///
+    /// Presented roots are wrapped with ``platformSheetNavigationChrome()`` on iOS and macOS
+    /// so `.navigationTitle` / toolbar dismiss work without `#if os` (#636).
     ///
     /// - Parameters:
     ///   - isPresented: Binding to control sheet presentation
@@ -755,29 +758,22 @@ public extension View {
     ) -> some View {
         #if os(iOS)
         return self.sheet(item: item, onDismiss: onDismiss) { item in
-            Group {
-                if #available(iOS 16.0, *) {
-                    NavigationStack {
-                        content(item)
-                    }
-                } else {
-                    NavigationView {
-                        content(item)
-                    }
-                }
-            }
-            .platformPresentationFrame(sizes: sizes)
-            .platformPresentationDetents(fromSizes: sizes)
-            .deviceAwareFrame()
+            content(item)
+                .platformSheetNavigationChrome()
+                .platformPresentationFrame(sizes: sizes)
+                .platformPresentationDetents(fromSizes: sizes)
+                .deviceAwareFrame()
         }
         #elseif os(macOS)
         return self.sheet(item: item, onDismiss: onDismiss) { item in
             content(item)
+                .platformSheetNavigationChrome()
                 .platformPresentationFrame(sizes: sizes)
         }
         #else
         return self.sheet(item: item, onDismiss: onDismiss) { item in
             content(item)
+                .platformSheetNavigationChrome()
                 .platformPresentationFrame(sizes: sizes)
         }
         #endif
