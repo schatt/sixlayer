@@ -136,6 +136,31 @@ open class PlatformMapComponentsLayer4Tests: BaseTestClass {
         }
         #endif
     }
+
+    /// BUSINESS PURPOSE: Verify selection overload wraps Map with the same compliance contract
+    /// TESTING SCOPE: Selection binding overload exists and applies AutomaticComplianceModifier
+    /// METHODOLOGY: Build with Hashable selection + tagged Marker; lock subject type
+    @Test @MainActor func testPlatformMapView_SelectionBinding_AppliesCompliance() {
+        #if canImport(MapKit)
+        if #available(iOS 17.0, macOS 14.0, *) {
+            let position = Binding.constant(MapCameraPosition.automatic)
+            var selected: String? = nil
+            let selection = Binding<String?>(
+                get: { selected },
+                set: { selected = $0 }
+            )
+            let coordinate = CLLocationCoordinate2D(latitude: 37.7749, longitude: -122.4194)
+            let view = PlatformMapComponentsLayer4.platformMapView_L4(
+                position: position,
+                selection: selection
+            ) {
+                Marker("San Francisco", coordinate: coordinate)
+                    .tag("sf")
+            }
+            BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "AutomaticComplianceModifier")
+        }
+        #endif
+    }
     
     /// BUSINESS PURPOSE: Verify map component integrates with LocationService
     /// TESTING SCOPE: Tests that LocationService can provide coordinates for map
