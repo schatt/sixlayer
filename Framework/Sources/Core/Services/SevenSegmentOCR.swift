@@ -262,6 +262,11 @@ private struct GrayBuffer {
         if bestTurns == 2 {
             enough = mostlyNumbers && scores[2].marksBelow > scores[0].marksBelow
         }
+        // A short wide strip is already one upright line. Speck columns after
+        // a quarter turn must not win on wideDigits (#625).
+        if bestTurns == 1 || bestTurns == 3, buffer.width * 4 > buffer.height * 5 {
+            enough = false
+        }
         guard enough else { return buffer }
         return buffer.rotated(degrees: Double(bestTurns * 90))
     }
