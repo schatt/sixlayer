@@ -2650,7 +2650,6 @@ open class DynamicFormViewTests: BaseTestClass {
             "Hiding Submit must not drop Scan Document / BatchOCR chrome (#640)"
         )
         #endif
-        await cleanupTestEnvironment()
     }
 
     // MARK: - Injected formState (Issue #186)
