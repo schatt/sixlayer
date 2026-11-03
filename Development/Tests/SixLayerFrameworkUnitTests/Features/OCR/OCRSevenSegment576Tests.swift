@@ -122,18 +122,16 @@ struct OCRSevenSegment576Tests {
         #expect(decode(image, maximum: 0).extractedText == "32.88\n8.022")
     }
 
-    /// Glare through the row gap on the left of the first digit. Those columns
-    /// are a valley edge, so the span starts mid-glyph. The price still has
-    /// to include that stem.
+    /// Glare through the row gap on the first digit's left stem. A long row
+    /// keeps that narrow stripe under the gap floor, so the two lines stay
+    /// split. The stem is still part of the digit.
     @Test func leadingValleyStripeKeepsTheFirstDigit() {
+        let price = String(repeating: "8", count: 12)
         let image = SegmentPanel.render(
-            rows: [atoms("32.88"), atoms("8.022")],
-            inkLevel: 140,
-            backgroundLevel: 200,
-            scale: 4,
+            rows: [atoms(price), atoms("8.022")],
             leadingValleyStripe: true
         )
-        #expect(decode(image, maximum: 0).extractedText == "32.88\n8.022")
+        #expect(decode(image, maximum: 0).extractedText == "\(price)\n8.022")
     }
 
     @Test func digitPitchCutsASolidWashBridge() {
@@ -1549,9 +1547,9 @@ private enum SegmentPanel {
         }
     }
 
-    /// Ink through the row gap, only on the left of the first digit. The
-    /// stem stays in the digit band. The gap mark makes those columns a
-    /// valley edge, so a span that drops edge columns starts mid-glyph.
+    /// Ink through the middle of the row gap, only on the first digit's left
+    /// stem. A full-height stripe fills the gap and joins the rows. The
+    /// middle third is enough for an edge column and leaves the valley open.
     private static func paintLeadingValleyStripe(
         _ pixels: inout [UInt8],
         width: Int,
@@ -1563,11 +1561,15 @@ private enum SegmentPanel {
         guard bands.count >= 2 else { return }
         let top = bands[0].maxY
         let bottom = bands[1].minY
-        guard bottom > top else { return }
+        let span = bottom - top
+        guard span > 6 else { return }
+        let inkRows = max(4, span / 3 + 2)
+        let y0 = top + max(0, (span - inkRows) / 2)
+        let y1 = min(bottom, y0 + inkRows)
         let x0 = max(0, padding)
-        let x1 = min(width, x0 + max(8, cellH / 4))
-        guard x1 > x0 else { return }
-        for y in top..<bottom {
+        let x1 = min(width, x0 + stroke)
+        guard y1 > y0, x1 > x0 else { return }
+        for y in y0..<y1 {
             for x in x0..<x1 {
                 pixels[y * width + x] = ink
             }
