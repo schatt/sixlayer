@@ -137,9 +137,9 @@ open class PlatformMapComponentsLayer4Tests: BaseTestClass {
         #endif
     }
 
-    /// BUSINESS PURPOSE: Verify selection overload wraps Map with the same compliance contract
-    /// TESTING SCOPE: Selection binding overload exists and applies AutomaticComplianceModifier
-    /// METHODOLOGY: Build with Hashable selection + tagged Marker; lock subject type
+    /// BUSINESS PURPOSE: Verify selection overload forwards Map(selection:) under the compliance chrome
+    /// TESTING SCOPE: Subject type includes Map (not chrome-only EmptyView) and AutomaticComplianceModifier
+    /// METHODOLOGY: Build with Hashable selection + tagged Marker; lock subject type for Map + compliance
     @Test @MainActor func testPlatformMapView_SelectionBinding_AppliesCompliance() {
         #if canImport(MapKit)
         if #available(iOS 17.0, macOS 14.0, *) {
@@ -157,6 +157,7 @@ open class PlatformMapComponentsLayer4Tests: BaseTestClass {
                 Marker("San Francisco", coordinate: coordinate)
                     .tag("sf")
             }
+            BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "Map")
             BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "AutomaticComplianceModifier")
         }
         #endif
