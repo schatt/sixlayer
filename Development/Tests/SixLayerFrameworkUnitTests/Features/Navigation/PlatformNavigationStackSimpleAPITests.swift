@@ -30,15 +30,10 @@ open class PlatformNavigationStackSimpleAPITests: BaseTestClass {
         }
         let description = BaseTestClass.viewSubjectTypeDescription(for: view)
 
-        #if os(iOS)
+        #if os(iOS) || os(macOS)
         #expect(
             description.contains("NavigationStack"),
-            "iOS host stack should wrap content in NavigationStack, got: \(description)"
-        )
-        #elseif os(macOS)
-        #expect(
-            description.contains("NavigationView"),
-            "macOS host stack should wrap content in NavigationView, got: \(description)"
+            "Host stack should wrap content in NavigationStack, got: \(description)"
         )
         #endif
 
