@@ -1,6 +1,11 @@
+import CoreGraphics
 import CoreLocation
 import Foundation
+import ImageIO
 import Testing
+#if canImport(UniformTypeIdentifiers)
+import UniformTypeIdentifiers
+#endif
 
 @testable import SixLayerFramework
 
@@ -172,5 +177,98 @@ struct OCRDecimalLocaleTests {
         )
         #expect(enriched.captureRegionCode == nil)
         #expect(OCRDecimalLocale.resolve(context: enriched).decimalSeparator == ".")
+    }
+
+    @Test func serviceEnrichesContextFromImageEXIFGPS() async throws {
+        let jpegData = try makeJPEGDataOnePixelWithGPS(
+            latitude: 52.52,
+            longitude: 13.405
+        )
+        guard let image = PlatformImage(data: jpegData) else {
+            Issue.record("GPS JPEG fixture should decode")
+            return
+        }
+        #expect(image.exif.gpsLocation != nil)
+
+        let service = OCRService()
+        service.captureRegionResolver = FixedOCRCaptureRegionResolver(regionCode: "DE")
+        let enriched = await service.contextEnrichedFromCaptureGPS(
+            OCRContext(language: .english),
+            image: image
+        )
+        #expect(enriched.captureRegionCode == "DE")
+        #expect(OCRDecimalLocale.resolve(context: enriched).decimalSeparator == ",")
+    }
+
+    @Test func serviceSkipsGPSWhenContextAlreadyHasRegion() async throws {
+        let jpegData = try makeJPEGDataOnePixelWithGPS(
+            latitude: 52.52,
+            longitude: 13.405
+        )
+        guard let image = PlatformImage(data: jpegData) else {
+            Issue.record("GPS JPEG fixture should decode")
+            return
+        }
+
+        let service = OCRService()
+        service.captureRegionResolver = FixedOCRCaptureRegionResolver(regionCode: "DE")
+        let enriched = await service.contextEnrichedFromCaptureGPS(
+            OCRContext(language: .english, captureRegionCode: "US"),
+            image: image
+        )
+        #expect(enriched.captureRegionCode == "US")
+    }
+
+    private func makeJPEGDataOnePixelWithGPS(
+        latitude: Double,
+        longitude: Double
+    ) throws -> Data {
+        let colorSpace = CGColorSpaceCreateDeviceRGB()
+        let bitmapInfo = CGBitmapInfo.byteOrder32Little.rawValue
+            | CGImageAlphaInfo.premultipliedFirst.rawValue
+        guard let ctx = CGContext(
+            data: nil,
+            width: 1,
+            height: 1,
+            bitsPerComponent: 8,
+            bytesPerRow: 4,
+            space: colorSpace,
+            bitmapInfo: bitmapInfo
+        ), let cgImage = {
+            ctx.setFillColor(red: 1, green: 1, blue: 1, alpha: 1)
+            ctx.fill(CGRect(x: 0, y: 0, width: 1, height: 1))
+            return ctx.makeImage()
+        }() else {
+            struct MakeImageError: Error {}
+            throw MakeImageError()
+        }
+        let mutable = NSMutableData()
+        #if canImport(UniformTypeIdentifiers)
+        let type = UTType.jpeg.identifier as CFString
+        #else
+        let type = "public.jpeg" as CFString
+        #endif
+        guard let dest = CGImageDestinationCreateWithData(mutable, type, 1, nil) else {
+            struct DestinationError: Error {}
+            throw DestinationError()
+        }
+        let latRef = latitude >= 0 ? "N" : "S"
+        let lonRef = longitude >= 0 ? "E" : "W"
+        let gps: [String: Any] = [
+            kCGImagePropertyGPSLatitude as String: abs(latitude),
+            kCGImagePropertyGPSLatitudeRef as String: latRef,
+            kCGImagePropertyGPSLongitude as String: abs(longitude),
+            kCGImagePropertyGPSLongitudeRef as String: lonRef
+        ]
+        CGImageDestinationAddImage(
+            dest,
+            cgImage,
+            [kCGImagePropertyGPSDictionary as String: gps] as CFDictionary
+        )
+        guard CGImageDestinationFinalize(dest) else {
+            struct FinalizeError: Error {}
+            throw FinalizeError()
+        }
+        return mutable as Data
     }
 }
