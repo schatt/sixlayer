@@ -449,37 +449,21 @@ struct OCRSevenSegment576Tests {
     }
 
     /// #649: a modestly taller crop of the **top** sealed line must read
-    /// `32.88`. Isotropic pad around that Vision box previously emptied or
-    /// garbled the read; lower taller is #625.
+    /// `32.88`. Grow only downward into the row gap — isotropic pad (and
+    /// any horizontal growth) garbles the top line; lower taller is #625.
     @Test func aTallerTopLineCropReadsThatLine() {
         let image = sealedBothRowsPanel()
         let full = decode(image, maximum: 0)
         let segments = full.recognizedTexts.filter { $0.role == .segment }
         #expect(segments.map(\.text) == ["32.88", "8.022"])
-        let taller = lineCrop(image, visionBox: segments[0].boundingBox, pad: 20)
+        let taller = lineCrop(
+            image,
+            visionBox: segments[0].boundingBox,
+            padX: 0,
+            padTop: 0,
+            padBottom: 20
+        )
         #expect(decode(taller, maximum: 0).extractedText == "32.88")
-    }
-
-    /// Temporary #649 pad-direction probe.
-    @Test func diagnose649TopPadDirections() {
-        let image = sealedBothRowsPanel()
-        let full = decode(image, maximum: 0)
-        let top = full.recognizedTexts.filter { $0.role == .segment }[0]
-        var report: [String] = []
-        for (label, crop) in [
-            ("iso0", lineCrop(image, visionBox: top.boundingBox, pad: 0)),
-            ("iso2", lineCrop(image, visionBox: top.boundingBox, pad: 2)),
-            ("iso20", lineCrop(image, visionBox: top.boundingBox, pad: 20)),
-            ("down20", lineCrop(image, visionBox: top.boundingBox, padX: 0, padTop: 0, padBottom: 20)),
-            ("up20", lineCrop(image, visionBox: top.boundingBox, padX: 0, padTop: 20, padBottom: 0)),
-            ("down40", lineCrop(image, visionBox: top.boundingBox, padX: 0, padTop: 0, padBottom: 40)),
-            ("y20", lineCrop(image, visionBox: top.boundingBox, padX: 0, padTop: 20, padBottom: 20))
-        ] {
-            let text = decode(crop, maximum: 0).extractedText
-            report.append("\(label) \(crop.width)x\(crop.height) -> \(text.debugDescription)")
-        }
-        Issue.record(Comment(rawValue: report.joined(separator: "\n")))
-        #expect(Bool(false), "pad direction probe")
     }
 
     @Test func decoderSourceDoesNotNameFields() throws {
