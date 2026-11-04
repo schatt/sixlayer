@@ -1041,35 +1041,53 @@ private struct Cell {
 
 private func recognizedGroups(_ cells: [Cell], width: Int, height: Int) -> [OCRRecognizedText] {
     let pieces = GrayBuffer.group(cells)
-    // Ink-tight bounds leave no glass for a zero-margin re-crop on a lower
-    // sealed line (#641). Grow with real panel glass when the group sits
-    // below the top band — expanding the top line pulls chrome and breaks
-    // a read that already works at pad=0.
-    let glass = 6
     return pieces.map { group in
         let text = String(group.map(\.character))
         let confidence = group.map(\.confidence).min() ?? 0
-        let minX0 = group.map(\.minX).min() ?? 0
-        let maxX0 = group.map(\.maxX).max() ?? 0
-        let minY0 = group.map(\.minY).min() ?? 0
-        let maxY0 = group.map(\.maxY).max() ?? 0
-        let grow = minY0 * 3 > height
-        let minX = grow ? max(0, minX0 - glass) : minX0
-        let maxX = grow ? min(width, maxX0 + glass) : maxX0
-        let minY = grow ? max(0, minY0 - glass) : minY0
-        let maxY = grow ? min(height, maxY0 + glass) : maxY0
+        let box = reCropGlassBox(
+            minX: group.map(\.minX).min() ?? 0,
+            maxX: group.map(\.maxX).max() ?? 0,
+            minY: group.map(\.minY).min() ?? 0,
+            maxY: group.map(\.maxY).max() ?? 0,
+            width: width,
+            height: height
+        )
         return OCRRecognizedText(
             text: text,
             boundingBox: CGRect(
-                x: CGFloat(minX) / CGFloat(width),
-                y: 1 - CGFloat(maxY) / CGFloat(height),
-                width: CGFloat(max(1, maxX - minX)) / CGFloat(width),
-                height: CGFloat(max(1, maxY - minY)) / CGFloat(height)
+                x: CGFloat(box.minX) / CGFloat(width),
+                y: 1 - CGFloat(box.maxY) / CGFloat(height),
+                width: CGFloat(max(1, box.maxX - box.minX)) / CGFloat(width),
+                height: CGFloat(max(1, box.maxY - box.minY)) / CGFloat(height)
             ),
             confidence: confidence,
             role: .segment
         )
     }
+}
+
+/// Ink-tight bounds leave no glass for a zero-margin re-crop on a lower
+/// sealed line (#641). Grow with real panel glass when the group sits below
+/// the top band — expanding the top line pulls chrome and breaks a read that
+/// already works at pad=0.
+private func reCropGlassBox(
+    minX: Int,
+    maxX: Int,
+    minY: Int,
+    maxY: Int,
+    width: Int,
+    height: Int,
+    glass: Int = 6
+) -> (minX: Int, maxX: Int, minY: Int, maxY: Int) {
+    guard minY * 3 > height else {
+        return (minX, maxX, minY, maxY)
+    }
+    return (
+        max(0, minX - glass),
+        min(width, maxX + glass),
+        max(0, minY - glass),
+        min(height, maxY + glass)
+    )
 }
 
 private extension GrayBuffer {
