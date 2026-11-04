@@ -448,28 +448,6 @@ struct OCRSevenSegment576Tests {
         }
     }
 
-    /// Temporary #641 geometry probe.
-    @Test func diagnose641BoxGeometry() {
-        let image = sealedBothRowsPanel()
-        let full = decode(image, maximum: 0)
-        let segments = full.recognizedTexts.filter { $0.role == .segment }
-        var report: [String] = [
-            "panel \(image.width)x\(image.height)"
-        ]
-        for segment in segments {
-            let box = segment.boundingBox
-            let minX = Int((box.minX * CGFloat(image.width)).rounded(.down))
-            let maxX = Int((box.maxX * CGFloat(image.width)).rounded(.up))
-            let minY = Int(((1 - box.maxY) * CGFloat(image.height)).rounded(.down))
-            let maxY = Int(((1 - box.minY) * CGFloat(image.height)).rounded(.up))
-            report.append(
-                "\(segment.text) vision=\(box) px=(\(minX),\(minY))-(\(maxX),\(maxY)) size=\(maxX - minX)x\(maxY - minY)"
-            )
-        }
-        Issue.record(Comment(rawValue: report.joined(separator: "\n")))
-        #expect(Bool(false), "geometry probe")
-    }
-
     @Test func decoderSourceDoesNotNameFields() throws {
         let source = try decoderSource()
         for word in ["This Sale", "Gallons", "FuelPurchase", "sale"] {
