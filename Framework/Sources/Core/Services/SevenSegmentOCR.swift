@@ -1238,7 +1238,7 @@ private extension GrayBuffer {
         let glyphs = chosen.glyphs
         let bandSource = chosen.bandSource
         let opened = darkChoice.opens || lightChoice.opens
-        if buffer.width >= 1000 {
+        if buffer.width >= 1000 || buffer.width < 420 {
             let ink = glyphs.bits.filter { $0 }.count
             trace(
                 "read \(buffer.width)x\(buffer.height) dark=\(primaryIsDark) opened=\(opened) ink=\(ink)\n"
@@ -1282,7 +1282,7 @@ private extension GrayBuffer {
             : (bandsForSplit.count > foundBands.count
                 ? bandsForSplit
                 : merge(bandsForSplit, whenGapBelow: max(1, cellHeight / 2)))
-        if buffer.width >= 1000 {
+        if buffer.width >= 1000 || buffer.width < 420 {
             let listed = splitBands.map { "\($0.0)-\($0.1)" }.joined(separator: ",")
             trace("bands \(listed)\n")
         }
