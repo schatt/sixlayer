@@ -183,8 +183,9 @@ struct OCRSevenSegment576Tests {
     }
 
     @Test func wideGapSplitsGroupsAndAnEqualGapDoesNot() {
-        // Isolate fine deskew: an untilted short row must still read (#602).
+        // Isolate fine deskew: untilted short rows must still read (#602).
         #expect(decode(panel(["1234"]), maximum: 0).extractedText == "1234")
+        #expect(decode(panel(["12 34"]), maximum: 0).extractedText == "12  34")
 
         let split = decode(panel(["12 34"]))
         #expect(split.extractedText == "12  34")
