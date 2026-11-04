@@ -1473,9 +1473,8 @@ private extension GrayBuffer {
         let firstDigit = digits[0].minX
         let lastDigit = digits[digits.count - 1].maxX
         let between = row.filter { cell in
-            (cell.character == "." || cell.character == ",")
-                && cell.minX >= firstDigit
-                && cell.maxX <= lastDigit
+            guard cell.character == "." || cell.character == "," else { return false }
+            return cell.minX >= firstDigit && cell.maxX <= lastDigit
         }
         // Keep a real inter-digit mark. Inventing is only for washed X.xxx
         // volume (four digits) when the decimal was lost (#591 / Approach D).
