@@ -184,6 +184,19 @@ struct OCRDecimalLocaleTests {
         #expect(enriched.captureRegionCode == nil)
     }
 
+    @Test func berlinGPSFixtureDecodesWithoutTrap() async {
+        let image = Self.platformImageWithBerlinGPS()
+        #expect(image != nil)
+    }
+
+    @Test func berlinGPSFixtureExposesLocation() async {
+        guard let image = Self.platformImageWithBerlinGPS() else {
+            Issue.record("Berlin GPS JPEG fixture should decode")
+            return
+        }
+        #expect(image.exif.gpsLocation != nil)
+    }
+
     @Test func serviceEnrichesContextFromImageEXIFGPS() async {
         guard let image = Self.platformImageWithBerlinGPS() else {
             Issue.record("Berlin GPS JPEG fixture should decode")
