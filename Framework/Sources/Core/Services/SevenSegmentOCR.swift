@@ -171,7 +171,11 @@ private struct GrayBuffer {
     }
 
     static func deskew(_ buffer: GrayBuffer, maximumDegrees: Double) -> GrayBuffer {
-        let turned = standingUp(buffer)
+        // A taller crop of the top sealed line pulls dark bezel into the
+        // frame (#649). Strip that chrome before stand-up so the line still
+        // reads; full panels and zero-margin line boxes are unchanged.
+        let prepared = buffer.trimmingEdgeBezel()
+        let turned = standingUp(prepared)
         let limit = Int(max(0, maximumDegrees).rounded(.down))
         guard limit > 0 else { return turned }
         let small = turned.fitted(maxSide: 280)
@@ -1096,6 +1100,48 @@ private extension GrayBuffer {
             let texts = recognizedGroups(row, width: buffer.width, height: buffer.height)
             return texts.isEmpty ? nil : texts
         }
+    }
+
+    /// Drop dark bezel bands that a padded line crop pulled in from the
+    /// panel chrome (#649). Only short wide strips — a full panel keeps its
+    /// bezel for sealed-glass localization.
+    func trimmingEdgeBezel() -> GrayBuffer {
+        guard height > 0, width > 0, height < 160, width * 4 > height * 5 else {
+            return self
+        }
+        func isBezelBand(_ values: [UInt8]) -> Bool {
+            guard !values.isEmpty else { return false }
+            let dark = values.filter { $0 < 80 }.count
+            return dark * 2 > values.count
+        }
+        var top = 0
+        while top < height - 8 {
+            let row = (0..<width).map { pixels[top * width + $0] }
+            guard isBezelBand(row) else { break }
+            top += 1
+        }
+        var bottom = height
+        while bottom > top + 8 {
+            let row = (0..<width).map { pixels[(bottom - 1) * width + $0] }
+            guard isBezelBand(row) else { break }
+            bottom -= 1
+        }
+        var left = 0
+        while left < width - 8 {
+            let column = (top..<bottom).map { pixels[$0 * width + left] }
+            guard isBezelBand(column) else { break }
+            left += 1
+        }
+        var right = width
+        while right > left + 8 {
+            let column = (top..<bottom).map { pixels[$0 * width + (right - 1)] }
+            guard isBezelBand(column) else { break }
+            right -= 1
+        }
+        if top == 0, bottom == height, left == 0, right == width {
+            return self
+        }
+        return cropped(x0: left, y0: top, x1: right, y1: bottom)
     }
 
     /// A panel crop, or nil when the rect is tiny, nearly the whole frame, or empty.
