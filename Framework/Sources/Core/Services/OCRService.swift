@@ -183,6 +183,11 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
         _ image: PlatformImage,
         context: OCRContext
     ) async throws -> OCRResult {
+        // Optional EXIF GPS → capture region for decimal locale (#631). Never required.
+        let context = await OCRDecimalLocale.contextByApplyingCaptureGPS(
+            context,
+            location: image.exif.gpsLocation
+        )
         if context.processingMode == .ssocr {
             return try await processSevenSegmentStructured(image, context: context)
         }
@@ -422,7 +427,7 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
         }
         
         let loader = FileBasedDataHintsLoader()
-        let hintsResult = loader.loadHintsResult(for: entityName, locale: Locale(identifier: context.language.rawValue))
+        let hintsResult = loader.loadHintsResult(for: entityName, locale: OCRDecimalLocale.resolve(context: context))
         
         var patterns: [String: String] = [:]
         
@@ -480,7 +485,7 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
     private func correctDecimalPlacement(in structuredData: [String: String], context: OCRContext) -> ([String: String], [String: String]) {
         var correctedData = structuredData
         var adjustments: [String: String] = [:]
-        let locale = Locale(identifier: context.language.rawValue)
+        let locale = OCRDecimalLocale.resolve(context: context)
         
         // Get hints file data if entityName is provided
         var hintsRanges: [String: ValueRange] = [:]
@@ -806,7 +811,7 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
     private func validateFieldRanges(in structuredData: [String: String], context: OCRContext) -> ([String: String], [String: String]) {
         let validatedData = structuredData
         var rangeWarnings: [String: String] = [:]
-        let locale = Locale(identifier: context.language.rawValue)
+        let locale = OCRDecimalLocale.resolve(context: context)
         
         // Get hints file ranges if entityName is provided
         var hintsRanges: [String: ValueRange] = [:]
@@ -911,7 +916,7 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
         }
         
         let loader = FileBasedDataHintsLoader()
-        let hintsResult = loader.loadHintsResult(for: entityName, locale: Locale(identifier: context.language.rawValue))
+        let hintsResult = loader.loadHintsResult(for: entityName, locale: OCRDecimalLocale.resolve(context: context))
         return hintsResult.fieldHints[fieldId]?.expectedRange
     }
     
@@ -928,7 +933,7 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
         }
         
         let loader = FileBasedDataHintsLoader()
-        let locale = Locale(identifier: context.language.rawValue)
+        let locale = OCRDecimalLocale.resolve(context: context)
         let hintsResult = loader.loadHintsResult(for: entityName, locale: locale)
         
         // Collect all calculation groups, sorted by priority

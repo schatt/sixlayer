@@ -134,6 +134,33 @@ struct OCRSevenSegment576Tests {
         #expect(decode(image, maximum: 0).extractedText == "32.88\n8.022")
     }
 
+    @Test func onePixelOnADarkSegmentDoesNotChangeTheDigit() {
+        // "3125" already decodes. One pixel on the 3's empty lower-left
+        // stem lights `e` when any foreground pixel counts, and that 3
+        // stops being a 3 (#599). A lone 4 is the wrong fixture: with no
+        // top or bottom bar its ink box is short and already reads as 9.
+        #expect(decode(panel(["3125"])).extractedText == "3125")
+        let speck = SegmentPanel.render(
+            rows: [atoms("3125")],
+            falseLowerLeftStemSpeck: true
+        )
+        #expect(decode(speck).extractedText == "3125")
+    }
+
+    @Test func washedRowDigitCountFollowsStrideNotTheCleanRow() {
+        // Price is four digits at stride 58. Five wide glyphs span about
+        // 282 pixels, so width/stride rounds to five. A leading 1 is only
+        // a right-edge stem and does not add that stride (#599).
+        let image = SegmentPanel.render(
+            rows: [atoms("32.88"), atoms("28022")],
+            solidGapWashVolumeOnly: true
+        )
+        let lines = decode(image, maximum: 0).extractedText.split(separator: "\n").map(String.init)
+        #expect(lines.count == 2)
+        #expect(lines.first?.filter(\.isNumber) == "3288")
+        #expect(lines.last?.filter(\.isNumber) == "28022")
+    }
+
     @Test func rescannedRowCropMatchesPriceBandGeometry() {
         // Approach B (#591): a left scratch sits in the digit bands but not
         // through the row gap, and a tall haze above each row stretches the
@@ -378,6 +405,27 @@ struct OCRSevenSegment576Tests {
         let result = decode(image)
         #expect(result.extractedText == "32.88\n8.022")
         #expect(segmentTexts(result) == ["32.88", "8.022"])
+    }
+
+    /// #625: a tight upright line must not lose to a half-turn. Symmetric
+    /// digits (`0`, `2`, `8`) still look like numbers upside down, and a
+    /// border-clipped upright sample can score fewer wide digits.
+    @Test func aTightSingleLineCropStaysUpright() {
+        let image = sealedBothRowsPanel()
+        let full = decode(image, maximum: 0)
+        #expect(full.extractedText == "32.88\n8.022")
+        let segments = full.recognizedTexts.filter { $0.role == .segment }
+        #expect(segments.map(\.text) == ["32.88", "8.022"])
+        // Zero-margin glyph boxes previously returned the half-turn spoilers
+        // 88.26 / 220.8. They must not. A taller crop of the lower line
+        // (still one row) must stay upright as 8.022.
+        let spoilers = ["88.26", "220.8"]
+        for segment in segments {
+            let tight = lineCrop(image, visionBox: segment.boundingBox, pad: 0)
+            #expect(spoilers.contains(decode(tight, maximum: 0).extractedText) == false)
+        }
+        let taller = lineCrop(image, visionBox: segments[1].boundingBox, pad: 20)
+        #expect(decode(taller, maximum: 0).extractedText == "8.022")
     }
 
     @Test func decoderSourceDoesNotNameFields() throws {
@@ -836,6 +884,20 @@ struct OCRSevenSegment576Tests {
         return solidGrayImage(pixels: pixels, width: width, height: height)
     }
 
+    private func lineCrop(_ image: CGImage, visionBox: CGRect, pad: Int) -> CGImage {
+        let width = image.width
+        let height = image.height
+        let minX = Int((visionBox.minX * CGFloat(width)).rounded(.down)) - pad
+        let maxX = Int((visionBox.maxX * CGFloat(width)).rounded(.up)) + pad
+        let minY = Int(((1 - visionBox.maxY) * CGFloat(height)).rounded(.down)) - pad
+        let maxY = Int(((1 - visionBox.minY) * CGFloat(height)).rounded(.up)) + pad
+        let x = max(0, minX)
+        let y = max(0, minY)
+        let w = max(1, min(width, maxX) - x)
+        let h = max(1, min(height, maxY) - y)
+        return crop(image, x: x, y: y, width: w, height: h)
+    }
+
     private func solidGrayImage(pixels: [UInt8], width: Int, height: Int) -> CGImage {
         let data = Data(pixels) as CFData
         let provider = CGDataProvider(data: data)!
@@ -971,7 +1033,8 @@ enum SegmentPanel {
         aboveDigitGlare: Bool = false,
         leftScratch: Bool = false,
         tallHaze: Bool = false,
-        solidGapWashVolumeOnly: Bool = false
+        solidGapWashVolumeOnly: Bool = false,
+        falseLowerLeftStemSpeck: Bool = false
     ) -> CGImage {
         let laid = layout(rows: rows, padding: padding)
         let background: UInt8 = backgroundLevel ?? (invert ? 28 : 214)
@@ -990,6 +1053,17 @@ enum SegmentPanel {
         }
         for stroke in laid.strokes where stroke.opposite {
             fill(&pixels, width: laid.width, height: laid.height, rect: stroke.rect, value: markInk)
+        }
+        if falseLowerLeftStemSpeck {
+            // One pixel on the lower-left stem scan of a 3. That glyph has
+            // no `e`. The point sits in the open glass: below the crossbar,
+            // above the bottom bar, and left of the right stem, so it does
+            // not join a real stroke.
+            let x = padding + stroke + 2
+            let y = padding + (cellH * 3) / 4
+            if x < laid.width, y < laid.height {
+                pixels[y * laid.width + x] = ink
+            }
         }
         if glare, let band = laid.rowBands.first {
             let y0 = max(0, band.midY - stroke)
