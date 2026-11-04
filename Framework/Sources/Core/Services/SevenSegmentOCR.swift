@@ -2063,7 +2063,11 @@ private func polarity(
     let looseTall = runs(loose.rowSums).map { $0.1 - $0.0 }.max() ?? 0
     let limitedTall = runs(limitedCore.rowSums).map { $0.1 - $0.0 }.max() ?? 0
     let fills = looseTall * 100 > loose.height * 70
-    guard let span, fills, limitedTall * 2 < looseTall else {
+    // Core must still be a digit-tall row. A single-row panel's segment bars
+    // are short; treating them as an opened multi-row core splits the glyph
+    // mid-height and the short synth rows go empty (#602).
+    let coreIsDigitTall = limitedTall * 5 >= loose.height
+    guard let span, fills, limitedTall * 2 < looseTall, coreIsDigitTall else {
         return (false, (isDark, loose, loose))
     }
     // The loose mask still fills the gap inside the span. Row boundaries
