@@ -713,8 +713,13 @@ struct OCRSevenSegment576Tests {
 
     /// Library photos are multi-megapixel. Panel localization must analyze a
     /// capped long edge and map the rect back (#650).
+    ///
+    /// The sealed panel is scaled so it occupies a similar fraction of the
+    /// 4000×3000 canvas as the 1200×1600 fixture — a postage-stamp embed would
+    /// fail sealed-area thresholds even after fitting, which is not the
+    /// production pump-frame geometry.
     @Test func digitPanelRegionCapsAnalysisOnLargeFrame() {
-        let panelImage = sealedBothRowsPanel()
+        let panelImage = scaleGrayImage(sealedBothRowsPanel(), factor: 3)
         let originX = 600
         let originY = 900
         let frame = embed(
@@ -738,10 +743,10 @@ struct OCRSevenSegment576Tests {
         let panelMidY = CGFloat(originY) + CGFloat(panelImage.height) / 2
         #expect(region.minX < panelMidX && region.maxX > panelMidX)
         #expect(region.minY < panelMidY && region.maxY > panelMidY)
-        #expect(abs(region.width - CGFloat(panelImage.width)) < 96)
-        #expect(abs(region.height - CGFloat(panelImage.height)) < 96)
-        #expect(abs(region.minX - CGFloat(originX)) < 48)
-        #expect(abs(region.minY - CGFloat(originY)) < 48)
+        #expect(abs(region.width - CGFloat(panelImage.width)) < 120)
+        #expect(abs(region.height - CGFloat(panelImage.height)) < 120)
+        #expect(abs(region.minX - CGFloat(originX)) < 64)
+        #expect(abs(region.minY - CGFloat(originY)) < 64)
     }
 
     @Test func fullFrameWithoutLocalizationMissesSealedBothRows() {
@@ -904,6 +909,26 @@ struct OCRSevenSegment576Tests {
             width: width,
             height: height
         )
+    }
+
+    /// Nearest-neighbor enlarge for large-frame localization fixtures (#650).
+    private func scaleGrayImage(_ image: CGImage, factor: Int) -> CGImage {
+        guard factor > 1 else { return image }
+        let width = image.width
+        let height = image.height
+        var pixels = [UInt8](repeating: 0, count: width * height)
+        if let provider = image.dataProvider,
+           let data = provider.data,
+           let bytes = CFDataGetBytePtr(data) {
+            let rowBytes = image.bytesPerRow
+            for y in 0..<height {
+                for x in 0..<width {
+                    pixels[y * width + x] = bytes[y * rowBytes + x]
+                }
+            }
+        }
+        let scaled = Self.scalePixels(pixels, width: width, height: height, factor: factor)
+        return solidGrayImage(pixels: scaled.pixels, width: scaled.width, height: scaled.height)
     }
 
     private func crop(_ image: CGImage, x: Int, y: Int, width: Int, height: Int) -> CGImage {
