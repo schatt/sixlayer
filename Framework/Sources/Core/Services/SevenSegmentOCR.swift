@@ -822,6 +822,9 @@ private struct GrayBuffer {
 
     /// Min and max inside a square window. A square window separates into a
     /// horizontal pass and a vertical pass.
+    ///
+    /// Uses C-style index loops — Swift `ClosedRange` iteration dominated the
+    /// #650 photo-library hang sample (generic metadata / IndexingIterator).
     private func localRange(radius: Int) -> (low: [Int], high: [Int]) {
         var horizontalLow = [Int](repeating: 255, count: pixels.count)
         var horizontalHigh = [Int](repeating: 0, count: pixels.count)
@@ -832,10 +835,12 @@ private struct GrayBuffer {
                 let x1 = min(width - 1, x + radius)
                 var low = 255
                 var high = 0
-                for sample in x0...x1 {
+                var sample = x0
+                while sample <= x1 {
                     let level = Int(pixels[row + sample])
                     if level < low { low = level }
                     if level > high { high = level }
+                    sample += 1
                 }
                 horizontalLow[row + x] = low
                 horizontalHigh[row + x] = high
@@ -849,10 +854,12 @@ private struct GrayBuffer {
                 let y1 = min(height - 1, y + radius)
                 var columnLow = 255
                 var columnHigh = 0
-                for sample in y0...y1 {
+                var sample = y0
+                while sample <= y1 {
                     let index = sample * width + x
                     if horizontalLow[index] < columnLow { columnLow = horizontalLow[index] }
                     if horizontalHigh[index] > columnHigh { columnHigh = horizontalHigh[index] }
+                    sample += 1
                 }
                 let index = y * width + x
                 low[index] = columnLow
@@ -1113,22 +1120,38 @@ private extension GrayBuffer {
     /// Locate a sealed LCD glass (non-ink pocket closed by bezel ink) and
     /// expand by a bezel margin. Returns nil when the frame has no panel that
     /// is meaningfully smaller than the whole image (#596).
+    ///
+    /// Analysis runs on a fitted buffer (max long edge
+    /// ``SevenSegmentOCR.digitPanelAnalysisMaxSide``) so full-resolution
+    /// library photos do not stall in `localRange` (#650). The returned rect
+    /// is mapped back to this buffer's coordinates.
     func digitPanelBounds() -> CGRect? {
-        // Stub probe for #650 red: records the full buffer until fitted lands.
-        SevenSegmentOCR.lastDigitPanelAnalysisLongEdge = max(width, height)
-        let raw = masks()
-        let dark = sealedPanelBounds(in: raw.dark)
-        let light = sealedPanelBounds(in: raw.light)
+        let analysis = fitted(maxSide: SevenSegmentOCR.digitPanelAnalysisMaxSide)
+        SevenSegmentOCR.lastDigitPanelAnalysisLongEdge = max(analysis.width, analysis.height)
+        let raw = analysis.masks()
+        let dark = analysis.sealedPanelBounds(in: raw.dark)
+        let light = analysis.sealedPanelBounds(in: raw.light)
+        let found: CGRect?
         switch (dark, light) {
         case let (d?, l?):
-            return d.width * d.height >= l.width * l.height ? d : l
+            found = d.width * d.height >= l.width * l.height ? d : l
         case let (d?, nil):
-            return d
+            found = d
         case let (nil, l?):
-            return l
+            found = l
         case (nil, nil):
-            return nil
+            found = nil
         }
+        guard let found else { return nil }
+        guard analysis.width != width || analysis.height != height else { return found }
+        let scaleX = CGFloat(width) / CGFloat(analysis.width)
+        let scaleY = CGFloat(height) / CGFloat(analysis.height)
+        return CGRect(
+            x: found.minX * scaleX,
+            y: found.minY * scaleY,
+            width: found.width * scaleX,
+            height: found.height * scaleY
+        )
     }
 
     private func sealedPanelBounds(in mask: Mask) -> CGRect? {
