@@ -401,6 +401,25 @@ struct OCRSevenSegment576Tests {
         }
     }
 
+    /// Temporary #625 pad probe — remove after taller-top empty is diagnosed.
+    @Test func diagnose625TallerPadSweep() {
+        let image = sealedBothRowsPanel()
+        let full = decode(image, maximum: 0)
+        let segments = full.recognizedTexts.filter { $0.role == .segment }
+        var report: [String] = []
+        for segment in segments {
+            for pad in [0, 4, 8, 12, 16, 20, 24, 28] {
+                let cropped = lineCrop(image, visionBox: segment.boundingBox, pad: pad)
+                let text = decode(cropped, maximum: 0).extractedText
+                report.append(
+                    "\(segment.text) pad=\(pad) \(cropped.width)x\(cropped.height) -> \(text.debugDescription)"
+                )
+            }
+        }
+        Issue.record(Comment(rawValue: report.joined(separator: "\n")))
+        #expect(Bool(false), "pad sweep (see Issue.record)")
+    }
+
     @Test func decoderSourceDoesNotNameFields() throws {
         let source = try decoderSource()
         for word in ["This Sale", "Gallons", "FuelPurchase", "sale"] {
