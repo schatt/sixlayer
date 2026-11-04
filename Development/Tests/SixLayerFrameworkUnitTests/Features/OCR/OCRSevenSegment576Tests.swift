@@ -448,6 +448,18 @@ struct OCRSevenSegment576Tests {
         }
     }
 
+    /// #649: a modestly taller crop of the **top** sealed line must read
+    /// `32.88`. Isotropic pad around that Vision box previously emptied or
+    /// garbled the read (chrome above the digits); lower taller is #625.
+    @Test func aTallerTopLineCropReadsThatLine() {
+        let image = sealedBothRowsPanel()
+        let full = decode(image, maximum: 0)
+        let segments = full.recognizedTexts.filter { $0.role == .segment }
+        #expect(segments.map(\.text) == ["32.88", "8.022"])
+        let taller = lineCrop(image, visionBox: segments[0].boundingBox, pad: 20)
+        #expect(decode(taller, maximum: 0).extractedText == "32.88")
+    }
+
     @Test func decoderSourceDoesNotNameFields() throws {
         let source = try decoderSource()
         for word in ["This Sale", "Gallons", "FuelPurchase", "sale"] {
