@@ -374,8 +374,8 @@ private struct GrayBuffer {
                 darkInk: darkInk,
                 washAwareStems: washAwareStems
             )
-            // Volume rowcrops are ~980px; keep traces on those for #591.
-            if buffer.width >= 900 {
+            // Volume rowcrops are ~980px (#591). Short synth panels (<420) for #602.
+            if buffer.width >= 900 || buffer.width < 420 {
                 let pattern = sample(
                     mask,
                     box: densestInkBand(
