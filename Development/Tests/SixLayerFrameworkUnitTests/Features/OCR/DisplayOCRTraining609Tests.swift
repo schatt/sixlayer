@@ -1015,6 +1015,17 @@ struct DisplayOCRTraining609Tests {
         #expect(session.library.examples.allSatisfy { $0.package.imagePNG.isEmpty })
     }
 
+    /// Photo-library load must not run digit-panel suggestion on the main
+    /// actor — that is the hang in #650.
+    @Test @MainActor func loadSuggestsBoxesOffTheMainThread() async {
+        let frame = sealedFrame()
+        let session = DisplayOCRTrainingSession()
+        session.load(cgImage: frame.image)
+        await session.waitForSuggestion()
+        #expect(session.suggestionRanOnMainThread == false)
+        #expect(session.panel != nil)
+    }
+
     @Test func aFailedReindexKeepsThePreviousIndex() throws {
         let root = try makeDirectory("display-ocr-reindex-fail")
         defer { try? FileManager.default.removeItem(at: root) }
