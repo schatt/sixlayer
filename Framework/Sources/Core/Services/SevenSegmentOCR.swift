@@ -1470,11 +1470,27 @@ private extension GrayBuffer {
             !cell.character.isNumber && cell.character != "." && cell.character != ","
         }
         guard digits.count >= 2 else { return row }
-        // Pitch rows copy a price body count onto washed volume (Approach D).
+        let firstDigit = digits[0].minX
+        let lastDigit = digits[digits.count - 1].maxX
+        let between = row.filter { cell in
+            guard cell.character == "." || cell.character == "," else { return false }
+            return cell.minX >= firstDigit && cell.maxX <= lastDigit
+        }
+        // Keep a real inter-digit mark. Inventing is only for washed X.xxx
+        // volume (four digits) when the decimal was lost (#591 / Approach D).
+        // Two-digit integer rows that inherit pitch must stay unmarked (#644).
+        if !between.isEmpty {
+            return (digits + other + between).sorted { $0.minX < $1.minX }
+        }
+        guard digits.count >= 4 else {
+            return (digits + other).sorted { $0.minX < $1.minX }
+        }
+        // Pitch rows copy a price body onto washed volume (Approach D).
         // That volume is X.xxx units: place the mark in the first inter-digit
         // gap. Ink scoring mis-fired on this photo (max → 80.22, empty → 802.2,
         // non-flood → broke edgeStrip when the real dot itself looked "flooded").
-        // Drop stale ./, marks; do not invent stroke ink — only a gap anchor.
+        // Drop stale leading/trailing marks; do not invent stroke ink — only a
+        // gap anchor.
         let digitHeight = median(digits.map(\.height)) ?? 0
         guard digitHeight > 8 else {
             return (digits + other).sorted { $0.minX < $1.minX }
