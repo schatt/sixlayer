@@ -214,15 +214,9 @@ private struct GrayBuffer {
     private static func coreStaysOpen(_ buffer: GrayBuffer) -> Bool {
         let raw = buffer.masks()
         let sealed = (dark: keepingInteriorInk(raw.dark), light: keepingInteriorInk(raw.light))
-        let masks = (
-            dark: clearingBorderInk(sealed.dark, width: buffer.width, height: buffer.height),
-            light: clearingBorderInk(sealed.light, width: buffer.width, height: buffer.height)
-        )
+        let masks = (dark: clearingBorderComponents(sealed.dark), light: clearingBorderComponents(sealed.light))
         let sealedCore = (dark: keepingInteriorInk(raw.darkCore), light: keepingInteriorInk(raw.lightCore))
-        let cores = (
-            dark: clearingBorderInk(sealedCore.dark, width: buffer.width, height: buffer.height),
-            light: clearingBorderInk(sealedCore.light, width: buffer.width, height: buffer.height)
-        )
+        let cores = (dark: clearingBorderComponents(sealedCore.dark), light: clearingBorderComponents(sealedCore.light))
         let dark = polarity(isDark: true, loose: masks.dark, core: cores.dark)
         let light = polarity(isDark: false, loose: masks.light, core: cores.light)
         return dark.opens || light.opens
@@ -1227,17 +1221,9 @@ private extension GrayBuffer {
         // A frame inside the crop seals the glass. Ink outside that glass is the bezel.
         let sealed = (dark: keepingInteriorInk(raw.dark), light: keepingInteriorInk(raw.light))
         // A dark bezel that does touch the crop edge would outline the glass as one zero.
-        // Glyph-tight single-line crops are already the content — clearing "frame"
-        // ink there eats decimals and stems on the crop edge (#641).
-        let masks = (
-            dark: clearingBorderInk(sealed.dark, width: buffer.width, height: buffer.height),
-            light: clearingBorderInk(sealed.light, width: buffer.width, height: buffer.height)
-        )
+        let masks = (dark: clearingBorderComponents(sealed.dark), light: clearingBorderComponents(sealed.light))
         let sealedCore = (dark: keepingInteriorInk(raw.darkCore), light: keepingInteriorInk(raw.lightCore))
-        let cores = (
-            dark: clearingBorderInk(sealedCore.dark, width: buffer.width, height: buffer.height),
-            light: clearingBorderInk(sealedCore.light, width: buffer.width, height: buffer.height)
-        )
+        let cores = (dark: clearingBorderComponents(sealedCore.dark), light: clearingBorderComponents(sealedCore.light))
         let darkChoice = polarity(isDark: true, loose: masks.dark, core: cores.dark)
         let lightChoice = polarity(isDark: false, loose: masks.light, core: cores.light)
         let chosen: (isDark: Bool, glyphs: Mask, bandSource: Mask)
@@ -1601,15 +1587,6 @@ private func keepingInteriorInk(_ mask: Mask) -> Mask {
         }
     }
     return Mask(bits: bits, width: width, height: height)
-}
-
-/// Skip bezel stripping on a short wide strip: the crop is one upright line,
-/// not a framed panel, so edge-touching ink is digits/marks (#641).
-private func clearingBorderInk(_ mask: Mask, width: Int, height: Int) -> Mask {
-    if height < 120, width * 4 > height * 5 {
-        return mask
-    }
-    return clearingBorderComponents(mask)
 }
 
 private func clearingBorderComponents(_ mask: Mask) -> Mask {
