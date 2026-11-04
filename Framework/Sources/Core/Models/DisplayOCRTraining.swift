@@ -1516,8 +1516,12 @@ public final class DisplayOCRTrainingSession: ObservableObject {
     @Published public private(set) var editingFolderName: String?
     @Published public private(set) var reindexProgress: DisplayOCRTrainingReindexProgress?
     public private(set) var reindexRanOnMainThread: Bool?
+    /// Whether the last auto-suggest compute ran on the main thread. Test probe (#650).
+    public private(set) var suggestionRanOnMainThread: Bool?
 
     private var bitmap: CGImage?
+    private var suggestionGeneration = 0
+    private var suggestionTask: Task<Void, Never>?
 
     public init() {
         refreshLibrary()
@@ -1567,6 +1571,10 @@ public final class DisplayOCRTrainingSession: ObservableObject {
     }
 
     private func show(_ cgImage: CGImage, sourceName rawName: String?, suggesting: Bool) {
+        suggestionTask?.cancel()
+        suggestionTask = nil
+        suggestionGeneration += 1
+        let generation = suggestionGeneration
         bitmap = cgImage
         image = PlatformImage(cgImage: cgImage)
         imagePixelSize = CGSize(width: cgImage.width, height: cgImage.height)
@@ -1576,14 +1584,23 @@ public final class DisplayOCRTrainingSession: ObservableObject {
         label = nil
         status = nil
         selectedBox = nil
-        if suggesting {
-            suggestBoxes(in: cgImage)
-        }
+        suggestionRanOnMainThread = nil
+        guard suggesting else { return }
+        // Stub for #650 red: still suggests synchronously on the main actor.
+        suggestionRanOnMainThread = MainThreadProbe.isMain()
+        suggestBoxes(in: cgImage, generation: generation)
+    }
+
+    /// Wait until the in-flight auto-suggest (if any) finishes. No-op when idle.
+    public func waitForSuggestion() async {
+        await suggestionTask?.value
     }
 
     /// The classical reader proposes a panel and glyph rows. No panel means no suggestion.
-    private func suggestBoxes(in image: CGImage) {
+    private func suggestBoxes(in image: CGImage, generation: Int) {
+        guard generation == suggestionGeneration else { return }
         guard let region = SevenSegmentOCR.digitPanelRegion(in: image) else { return }
+        guard generation == suggestionGeneration else { return }
         let suggested = DisplayOCRNormalizedBox(
             pixelRect: region,
             imageWidth: image.width,
