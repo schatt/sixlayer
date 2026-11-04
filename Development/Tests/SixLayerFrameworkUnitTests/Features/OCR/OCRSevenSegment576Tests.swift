@@ -957,7 +957,12 @@ struct OCRSevenSegment576Tests {
         ) {
             context.interpolationQuality = .none
             context.draw(image, in: CGRect(x: 0, y: 0, width: width, height: height))
-            parts.append("deviceGray \(channelMean(gray, stride: 1, offset: 0, total: count))")
+            var squares = 0
+            for index in 0..<count {
+                let value = Int(gray[index])
+                squares += value * value
+            }
+            parts.append("deviceGray \(channelMean(gray, stride: 1, offset: 0, total: count)) squares \(squares)")
             let marks = [50, 150, 300, 410, 500, 650, 750].compactMap { y -> String? in
                 guard y < height else { return nil }
                 let start = y * width
