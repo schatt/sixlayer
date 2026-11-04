@@ -35,9 +35,10 @@ open class PlatformNavigationStackSimpleAPITests: BaseTestClass {
             description.contains("NavigationStack"),
             "Host stack should wrap content in NavigationStack, got: \(description)"
         )
-        #endif
-
-        #if os(iOS) || os(macOS)
+        #expect(
+            description.contains("AutomaticComplianceModifier"),
+            "Simple platformNavigationStack should apply accessibility compliance, got: \(description)"
+        )
         #expect(
             description.contains("_TransactionModifier"),
             "Simple platformNavigationStack should apply L5 stack optimizations, got: \(description)"
