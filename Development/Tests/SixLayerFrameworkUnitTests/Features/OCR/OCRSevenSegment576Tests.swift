@@ -711,6 +711,39 @@ struct OCRSevenSegment576Tests {
         #expect(abs(region.minY - CGFloat(originY)) < 24)
     }
 
+    /// Library photos are multi-megapixel. Panel localization must analyze a
+    /// capped long edge and map the rect back (#650).
+    @Test func digitPanelRegionCapsAnalysisOnLargeFrame() {
+        let panelImage = sealedBothRowsPanel()
+        let originX = 600
+        let originY = 900
+        let frame = embed(
+            panelImage,
+            canvasWidth: 4000,
+            canvasHeight: 3000,
+            originX: originX,
+            originY: originY,
+            fill: 180
+        )
+        SevenSegmentOCR.lastDigitPanelAnalysisLongEdge = nil
+        let region = SevenSegmentOCR.digitPanelRegion(in: frame)
+        #expect(SevenSegmentOCR.lastDigitPanelAnalysisLongEdge != nil)
+        #expect(
+            (SevenSegmentOCR.lastDigitPanelAnalysisLongEdge ?? .max)
+                <= SevenSegmentOCR.digitPanelAnalysisMaxSide
+        )
+        #expect(region != nil)
+        guard let region else { return }
+        let panelMidX = CGFloat(originX) + CGFloat(panelImage.width) / 2
+        let panelMidY = CGFloat(originY) + CGFloat(panelImage.height) / 2
+        #expect(region.minX < panelMidX && region.maxX > panelMidX)
+        #expect(region.minY < panelMidY && region.maxY > panelMidY)
+        #expect(abs(region.width - CGFloat(panelImage.width)) < 96)
+        #expect(abs(region.height - CGFloat(panelImage.height)) < 96)
+        #expect(abs(region.minX - CGFloat(originX)) < 48)
+        #expect(abs(region.minY - CGFloat(originY)) < 48)
+    }
+
     @Test func fullFrameWithoutLocalizationMissesSealedBothRows() {
         let frame = embed(
             sealedBothRowsPanel(),
