@@ -216,15 +216,10 @@ struct OCRDecimalLocaleTests {
         #expect(enriched.captureRegionCode == "US")
     }
 
-    /// Loads `Development/TestImages/one-pixel-berlin-gps.jpg` (prebuilt; no ImageIO create in XCTest).
+    /// Same bytes as `Development/TestImages/one-pixel-berlin-gps.jpg` (embedded so XCTest need not resolve source paths).
     private static func platformImageWithBerlinGPS() -> PlatformImage? {
-        let url = URL(fileURLWithPath: #filePath)
-            .deletingLastPathComponent() // OCR
-            .deletingLastPathComponent() // Features
-            .deletingLastPathComponent() // SixLayerFrameworkUnitTests
-            .deletingLastPathComponent() // Tests
-            .appendingPathComponent("TestImages/one-pixel-berlin-gps.jpg")
-        guard let data = try? Data(contentsOf: url) else { return nil }
+        let base64 = "/9j/4AAQSkZJRgABAQAASABIAAD/4QCyRXhpZgAATU0AKgAAAAgAAodpAAQAAAABAAAAJoglAAQAAAABAAAARAAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAAAABAABAAIAAAACTgAAAAACAAUAAAADAAAAegADAAIAAAACRQAAAAAEAAUAAAADAAAAkgAAAAAAAAA0AAAAAQAAAB8AAAABAAAEsAAAAGQAAAANAAAAAQAAABgAAAABAAAHCAAAAGT/7QA4UGhvdG9zaG9wIDMuMAA4QklNBAQAAAAAAAA4QklNBCUAAAAAABDUHYzZjwCyBOmACZjs+EJ+/8AAEQgAAQABAwEiAAIRAQMRAf/EAB8AAAEFAQEBAQEBAAAAAAAAAAABAgMEBQYHCAkKC//EALUQAAIBAwMCBAMFBQQEAAABfQECAwAEEQUSITFBBhNRYQcicRQygZGhCCNCscEVUtHwJDNicoIJChYXGBkaJSYnKCkqNDU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6g4SFhoeIiYqSk5SVlpeYmZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY2drh4uPk5ebn6Onq8fLz9PX29/j5+v/EAB8BAAMBAQEBAQEBAQEAAAAAAAABAgMEBQYHCAkKC//EALURAAIBAgQEAwQHBQQEAAECdwABAgMRBAUhMQYSQVEHYXETIjKBCBRCkaGxwQkjM1LwFWJy0QoWJDThJfEXGBkaJicoKSo1Njc4OTpDREVGR0hJSlNUVVZXWFlaY2RlZmdoaWpzdHV2d3h5eoKDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uLj5OXm5+jp6vLz9PX29/j5+v/bAEMAAgICAgICAwICAwUDAwMFBgUFBQUGCAYGBgYGCAoICAgICAgKCgoKCgoKCgwMDAwMDA4ODg4ODw8PDw8PDw8PD//bAEMBAgICBAQEBwQEBxALCQsQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEP/dAAQAAf/aAAwDAQACEQMRAD8A/fyiiigD/9k="
+        guard let data = Data(base64Encoded: base64) else { return nil }
         return PlatformImage(data: data)
     }
 }
