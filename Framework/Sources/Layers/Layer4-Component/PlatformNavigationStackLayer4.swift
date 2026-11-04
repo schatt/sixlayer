@@ -53,6 +53,9 @@ private func createNavigationView<Content: View>(
 /// For strategy-driven stacks, prefer ``platformImplementNavigationStack_L4`` or
 /// ``platformPresentNavigationStack_L1``.
 ///
+/// Distinct from ``CrossPlatformNavigation/platformNavigationStack(items:selectedItem:itemView:detailView:analysis:)``
+/// (list-detail). This free function is content-only chrome for app roots / empty hosts.
+///
 /// - Parameter content: Root content hosted inside the stack.
 /// - Returns: Platform navigation stack wrapping `content`.
 @MainActor
@@ -60,10 +63,11 @@ public func platformNavigationStack<Content: View>(
     @ViewBuilder content: () -> Content
 ) -> some View {
     // Deployment targets are iOS 17+ / macOS 15+ — NavigationStack is available on both.
+    // Stable identifierName matches L1 root-stack discoverability (nil would auto-generate).
     NavigationStack {
         content()
     }
-    .applyNavigationStackLayer4Modifiers()
+    .applyNavigationStackLayer4Modifiers(title: "platformNavigationStack")
 }
 
 /// Implement NavigationStack based on Layer 3 strategy
