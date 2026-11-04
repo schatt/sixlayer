@@ -1586,9 +1586,21 @@ public final class DisplayOCRTrainingSession: ObservableObject {
         selectedBox = nil
         suggestionRanOnMainThread = nil
         guard suggesting else { return }
-        // Stub for #650 red: still suggests synchronously on the main actor.
-        suggestionRanOnMainThread = MainThreadProbe.isMain()
-        suggestBoxes(in: cgImage, generation: generation)
+        // Publish the image first; digit-panel suggestion is off the main
+        // actor so full-res library photos do not freeze the UI (#650).
+        nonisolated(unsafe) let analysisImage = cgImage
+        suggestionTask = Task { [weak self] in
+            let outcome = await Task.detached(priority: .userInitiated) {
+                let ranOnMain = MainThreadProbe.isMain()
+                let proposal = DisplayOCRTrainingSession.suggestionProposal(for: analysisImage)
+                return SuggestionComputeOutcome(ranOnMainThread: ranOnMain, proposal: proposal)
+            }.value
+            await self?.applySuggestion(
+                outcome.proposal,
+                ranOnMainThread: outcome.ranOnMainThread,
+                generation: generation
+            )
+        }
     }
 
     /// Wait until the in-flight auto-suggest (if any) finishes. No-op when idle.
@@ -1596,19 +1608,18 @@ public final class DisplayOCRTrainingSession: ObservableObject {
         await suggestionTask?.value
     }
 
-    /// The classical reader proposes a panel and glyph rows. No panel means no suggestion.
-    private func suggestBoxes(in image: CGImage, generation: Int) {
-        guard generation == suggestionGeneration else { return }
-        guard let region = SevenSegmentOCR.digitPanelRegion(in: image) else { return }
-        guard generation == suggestionGeneration else { return }
+    /// Classical reader panel + glyph boxes. Runs off the main actor (#650).
+    nonisolated private static func suggestionProposal(for image: CGImage) -> SuggestionProposal? {
+        guard let region = SevenSegmentOCR.digitPanelRegion(in: image) else { return nil }
         let suggested = DisplayOCRNormalizedBox(
             pixelRect: region,
             imageWidth: image.width,
             imageHeight: image.height
         )
         guard let panelBox = suggested.unitClamped,
-              panelBox.pixelRect(imageWidth: image.width, imageHeight: image.height) != nil else { return }
-        panel = panelBox
+              panelBox.pixelRect(imageWidth: image.width, imageHeight: image.height) != nil else {
+            return nil
+        }
         var glyphs: [DisplayOCRNormalizedBox] = []
         if let crop = DisplayOCRTraining.crop(image, to: panelBox) {
             let read = SevenSegmentOCR.decode(
@@ -1618,14 +1629,29 @@ public final class DisplayOCRTrainingSession: ObservableObject {
             )
             glyphs = DisplayOCRTraining.rowBoxes(fromVisionBoxes: read.boundingBoxes, panel: panelBox)
         }
+        return SuggestionProposal(panel: panelBox, glyphs: glyphs)
+    }
+
+    private func applySuggestion(
+        _ proposal: SuggestionProposal?,
+        ranOnMainThread: Bool,
+        generation: Int
+    ) {
+        guard generation == suggestionGeneration else { return }
+        suggestionRanOnMainThread = ranOnMainThread
+        guard let proposal else { return }
+        panel = proposal.panel
         // A crop of one line is read upside down or not at all. The panel read
         // is the digit string; the glyph rows are only the boxes.
         rowBoxes = []
         guard decode(), var drafted = label else {
-            rowBoxes = glyphs
+            rowBoxes = proposal.glyphs
             return
         }
-        let aligned = DisplayOCRTraining.aligningSuggestion(lines: drafted.rows, glyphs: glyphs)
+        let aligned = DisplayOCRTraining.aligningSuggestion(
+            lines: drafted.rows,
+            glyphs: proposal.glyphs
+        )
         drafted.rows = aligned.rows
         rowBoxes = aligned.boxes
         label = drafted
@@ -2010,6 +2036,16 @@ public final class DisplayOCRTrainingSession: ObservableObject {
 private struct ReindexOutcome: Sendable {
     var library: DisplayOCRTrainingLibrary?
     var ranOnMainThread: Bool
+}
+
+private struct SuggestionProposal: Sendable {
+    var panel: DisplayOCRNormalizedBox
+    var glyphs: [DisplayOCRNormalizedBox]
+}
+
+private struct SuggestionComputeOutcome: Sendable {
+    var ranOnMainThread: Bool
+    var proposal: SuggestionProposal?
 }
 
 private final class LibraryReindexRelay: @unchecked Sendable {
