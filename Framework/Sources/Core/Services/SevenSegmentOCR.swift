@@ -1041,16 +1041,17 @@ private struct Cell {
 
 private func recognizedGroups(_ cells: [Cell], width: Int, height: Int) -> [OCRRecognizedText] {
     let pieces = GrayBuffer.group(cells)
-    // Ink-tight vertical bounds leave no glass for a zero-margin re-crop
-    // (#641). A few pixels of real panel glass above/below restore the
-    // read; horizontal pad invents side stems, so only grow Y.
+    // Ink-tight bottom bounds leave no glass under decimals for a
+    // zero-margin re-crop (#641). Grow only downward — upward growth
+    // toward chrome breaks the top sealed line; horizontal pad invents
+    // side stems.
     let glass = 6
     return pieces.map { group in
         let text = String(group.map(\.character))
         let confidence = group.map(\.confidence).min() ?? 0
         let minX = group.map(\.minX).min() ?? 0
         let maxX = group.map(\.maxX).max() ?? 0
-        let minY = max(0, (group.map(\.minY).min() ?? 0) - glass)
+        let minY = group.map(\.minY).min() ?? 0
         let maxY = min(height, (group.map(\.maxY).max() ?? 0) + glass)
         return OCRRecognizedText(
             text: text,
