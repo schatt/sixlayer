@@ -1471,7 +1471,7 @@ private extension GrayBuffer {
         }
         guard digits.count >= 2 else { return row }
         // Pitch rows copy a price body count onto washed volume (Approach D).
-        // That volume is X.xxx gallons: place the mark in the first inter-digit
+        // That volume is X.xxx units: place the mark in the first inter-digit
         // gap. Ink scoring mis-fired on this photo (max → 80.22, empty → 802.2,
         // non-flood → broke edgeStrip when the real dot itself looked "flooded").
         // Drop stale ./, marks; do not invent stroke ink — only a gap anchor.
