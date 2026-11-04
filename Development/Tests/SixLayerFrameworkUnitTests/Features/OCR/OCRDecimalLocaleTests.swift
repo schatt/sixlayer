@@ -1,4 +1,3 @@
-import CoreGraphics
 import CoreLocation
 import Foundation
 import Testing
@@ -186,8 +185,8 @@ struct OCRDecimalLocaleTests {
     }
 
     @Test func serviceEnrichesContextFromImageEXIFGPS() async {
-        guard let image = Self.onePixelJPEG(with: CLLocation(latitude: 52.52, longitude: 13.405)) else {
-            Issue.record("GPS JPEG fixture should encode")
+        guard let image = Self.platformImageWithBerlinGPS() else {
+            Issue.record("Berlin GPS JPEG fixture should decode")
             return
         }
         #expect(image.exif.gpsLocation != nil)
@@ -203,8 +202,8 @@ struct OCRDecimalLocaleTests {
     }
 
     @Test func serviceSkipsGPSWhenContextAlreadyHasRegion() async {
-        guard let image = Self.onePixelJPEG(with: CLLocation(latitude: 52.52, longitude: 13.405)) else {
-            Issue.record("GPS JPEG fixture should encode")
+        guard let image = Self.platformImageWithBerlinGPS() else {
+            Issue.record("Berlin GPS JPEG fixture should decode")
             return
         }
 
@@ -217,30 +216,15 @@ struct OCRDecimalLocaleTests {
         #expect(enriched.captureRegionCode == "US")
     }
 
-    /// One-pixel JPEG with GPS via the production EXIF writer (#275 / #631).
-    private static func onePixelJPEG(with location: CLLocation) -> PlatformImage? {
-        let colorSpace = CGColorSpaceCreateDeviceRGB()
-        let bitmapInfo = CGBitmapInfo.byteOrder32Little.rawValue
-            | CGImageAlphaInfo.premultipliedFirst.rawValue
-        guard let ctx = CGContext(
-            data: nil,
-            width: 1,
-            height: 1,
-            bitsPerComponent: 8,
-            bytesPerRow: 4,
-            space: colorSpace,
-            bitmapInfo: bitmapInfo
-        ) else {
-            return nil
-        }
-        ctx.setFillColor(red: 1, green: 1, blue: 1, alpha: 1)
-        ctx.fill(CGRect(x: 0, y: 0, width: 1, height: 1))
-        guard let cgImage = ctx.makeImage() else { return nil }
-        #if os(macOS)
-        let base = PlatformImage(cgImage: cgImage, size: CGSize(width: 1, height: 1))
-        #else
-        let base = PlatformImage(cgImage: cgImage)
-        #endif
-        return base.exif.with(gpsLocation: location, as: .jpeg)
+    /// Loads `Development/TestImages/one-pixel-berlin-gps.jpg` (prebuilt; no ImageIO create in XCTest).
+    private static func platformImageWithBerlinGPS() -> PlatformImage? {
+        let url = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent() // OCR
+            .deletingLastPathComponent() // Features
+            .deletingLastPathComponent() // SixLayerFrameworkUnitTests
+            .deletingLastPathComponent() // Tests
+            .appendingPathComponent("TestImages/one-pixel-berlin-gps.jpg")
+        guard let data = try? Data(contentsOf: url) else { return nil }
+        return PlatformImage(data: data)
     }
 }
