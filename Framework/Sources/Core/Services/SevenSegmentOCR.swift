@@ -1103,45 +1103,33 @@ private extension GrayBuffer {
     }
 
     /// Drop dark bezel bands that a padded line crop pulled in from the
-    /// panel chrome (#649). Only short wide strips — a full panel keeps its
-    /// bezel for sealed-glass localization.
+    /// panel chrome (#649). Only top/bottom on short wide strips — side
+    /// trim eats outer digit stems; a full panel keeps its bezel for
+    /// sealed-glass localization.
     func trimmingEdgeBezel() -> GrayBuffer {
         guard height > 0, width > 0, height < 160, width * 4 > height * 5 else {
             return self
         }
-        func isBezelBand(_ values: [UInt8]) -> Bool {
-            guard !values.isEmpty else { return false }
-            let dark = values.filter { $0 < 80 }.count
-            return dark * 2 > values.count
+        func isBezelRow(_ y: Int) -> Bool {
+            var dark = 0
+            for x in 0..<width where pixels[y * width + x] < 80 {
+                dark += 1
+            }
+            // Solid chrome, not a digit row that is mostly glass.
+            return dark * 4 > width * 3
         }
         var top = 0
-        while top < height - 8 {
-            let row = (0..<width).map { pixels[top * width + $0] }
-            guard isBezelBand(row) else { break }
+        while top < height - 8, isBezelRow(top) {
             top += 1
         }
         var bottom = height
-        while bottom > top + 8 {
-            let row = (0..<width).map { pixels[(bottom - 1) * width + $0] }
-            guard isBezelBand(row) else { break }
+        while bottom > top + 8, isBezelRow(bottom - 1) {
             bottom -= 1
         }
-        var left = 0
-        while left < width - 8 {
-            let column = (top..<bottom).map { pixels[$0 * width + left] }
-            guard isBezelBand(column) else { break }
-            left += 1
-        }
-        var right = width
-        while right > left + 8 {
-            let column = (top..<bottom).map { pixels[$0 * width + (right - 1)] }
-            guard isBezelBand(column) else { break }
-            right -= 1
-        }
-        if top == 0, bottom == height, left == 0, right == width {
+        if top == 0, bottom == height {
             return self
         }
-        return cropped(x0: left, y0: top, x1: right, y1: bottom)
+        return cropped(x0: 0, y0: top, x1: width, y1: bottom)
     }
 
     /// A panel crop, or nil when the rect is tiny, nearly the whole frame, or empty.
