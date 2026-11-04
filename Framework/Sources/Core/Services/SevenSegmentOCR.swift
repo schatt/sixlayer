@@ -374,8 +374,8 @@ private struct GrayBuffer {
                 darkInk: darkInk,
                 washAwareStems: washAwareStems
             )
-            // Volume rowcrops are ~980px (#591). Short synth panels (<420) for #602.
-            if buffer.width >= 900 || buffer.width < 420 {
+            // Volume rowcrops are ~980px; keep traces on those for #591.
+            if buffer.width >= 900 {
                 let pattern = sample(
                     mask,
                     box: densestInkBand(
@@ -1238,7 +1238,7 @@ private extension GrayBuffer {
         let glyphs = chosen.glyphs
         let bandSource = chosen.bandSource
         let opened = darkChoice.opens || lightChoice.opens
-        if buffer.width >= 1000 || buffer.width < 420 {
+        if buffer.width >= 1000 {
             let ink = glyphs.bits.filter { $0 }.count
             trace(
                 "read \(buffer.width)x\(buffer.height) dark=\(primaryIsDark) opened=\(opened) ink=\(ink)\n"
@@ -1282,7 +1282,7 @@ private extension GrayBuffer {
             : (bandsForSplit.count > foundBands.count
                 ? bandsForSplit
                 : merge(bandsForSplit, whenGapBelow: max(1, cellHeight / 2)))
-        if buffer.width >= 1000 || buffer.width < 420 {
+        if buffer.width >= 1000 {
             let listed = splitBands.map { "\($0.0)-\($0.1)" }.joined(separator: ",")
             trace("bands \(listed)\n")
         }
