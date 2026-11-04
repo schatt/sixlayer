@@ -450,7 +450,7 @@ struct OCRSevenSegment576Tests {
 
     /// #649: a modestly taller crop of the **top** sealed line must read
     /// `32.88`. Isotropic pad around that Vision box previously emptied or
-    /// garbled the read (chrome above the digits); lower taller is #625.
+    /// garbled the read; lower taller is #625.
     @Test func aTallerTopLineCropReadsThatLine() {
         let image = sealedBothRowsPanel()
         let full = decode(image, maximum: 0)
@@ -458,6 +458,28 @@ struct OCRSevenSegment576Tests {
         #expect(segments.map(\.text) == ["32.88", "8.022"])
         let taller = lineCrop(image, visionBox: segments[0].boundingBox, pad: 20)
         #expect(decode(taller, maximum: 0).extractedText == "32.88")
+    }
+
+    /// Temporary #649 pad-direction probe.
+    @Test func diagnose649TopPadDirections() {
+        let image = sealedBothRowsPanel()
+        let full = decode(image, maximum: 0)
+        let top = full.recognizedTexts.filter { $0.role == .segment }[0]
+        var report: [String] = []
+        for (label, crop) in [
+            ("iso0", lineCrop(image, visionBox: top.boundingBox, pad: 0)),
+            ("iso2", lineCrop(image, visionBox: top.boundingBox, pad: 2)),
+            ("iso20", lineCrop(image, visionBox: top.boundingBox, pad: 20)),
+            ("down20", lineCrop(image, visionBox: top.boundingBox, padX: 0, padTop: 0, padBottom: 20)),
+            ("up20", lineCrop(image, visionBox: top.boundingBox, padX: 0, padTop: 20, padBottom: 0)),
+            ("down40", lineCrop(image, visionBox: top.boundingBox, padX: 0, padTop: 0, padBottom: 40)),
+            ("y20", lineCrop(image, visionBox: top.boundingBox, padX: 0, padTop: 20, padBottom: 20))
+        ] {
+            let text = decode(crop, maximum: 0).extractedText
+            report.append("\(label) \(crop.width)x\(crop.height) -> \(text.debugDescription)")
+        }
+        Issue.record(Comment(rawValue: report.joined(separator: "\n")))
+        #expect(Bool(false), "pad direction probe")
     }
 
     @Test func decoderSourceDoesNotNameFields() throws {
@@ -917,12 +939,22 @@ struct OCRSevenSegment576Tests {
     }
 
     private func lineCrop(_ image: CGImage, visionBox: CGRect, pad: Int) -> CGImage {
+        lineCrop(image, visionBox: visionBox, padX: pad, padTop: pad, padBottom: pad)
+    }
+
+    private func lineCrop(
+        _ image: CGImage,
+        visionBox: CGRect,
+        padX: Int,
+        padTop: Int,
+        padBottom: Int
+    ) -> CGImage {
         let width = image.width
         let height = image.height
-        let minX = Int((visionBox.minX * CGFloat(width)).rounded(.down)) - pad
-        let maxX = Int((visionBox.maxX * CGFloat(width)).rounded(.up)) + pad
-        let minY = Int(((1 - visionBox.maxY) * CGFloat(height)).rounded(.down)) - pad
-        let maxY = Int(((1 - visionBox.minY) * CGFloat(height)).rounded(.up)) + pad
+        let minX = Int((visionBox.minX * CGFloat(width)).rounded(.down)) - padX
+        let maxX = Int((visionBox.maxX * CGFloat(width)).rounded(.up)) + padX
+        let minY = Int(((1 - visionBox.maxY) * CGFloat(height)).rounded(.down)) - padTop
+        let maxY = Int(((1 - visionBox.minY) * CGFloat(height)).rounded(.up)) + padBottom
         let x = max(0, minX)
         let y = max(0, minY)
         let w = max(1, min(width, maxX) - x)
