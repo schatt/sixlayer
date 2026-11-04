@@ -91,6 +91,13 @@ public enum SevenSegmentGlyph {
 }
 
 public enum SevenSegmentOCR {
+    /// Long-edge cap for panel localization analysis (#650). Full-resolution
+    /// library photos are fitted to this before `masks()` / `localRange`.
+    public static let digitPanelAnalysisMaxSide = 1600
+
+    /// Long edge of the buffer that `digitPanelBounds` last analyzed. Test probe (#650).
+    public static var lastDigitPanelAnalysisLongEdge: Int?
+
     /// Pixel rect of the digit panel (glass plus a bezel margin) in image
     /// coordinates, or `nil` when no sealed panel is found.
     ///
@@ -1107,6 +1114,8 @@ private extension GrayBuffer {
     /// expand by a bezel margin. Returns nil when the frame has no panel that
     /// is meaningfully smaller than the whole image (#596).
     func digitPanelBounds() -> CGRect? {
+        // Stub probe for #650 red: records the full buffer until fitted lands.
+        SevenSegmentOCR.lastDigitPanelAnalysisLongEdge = max(width, height)
         let raw = masks()
         let dark = sealedPanelBounds(in: raw.dark)
         let light = sealedPanelBounds(in: raw.light)
