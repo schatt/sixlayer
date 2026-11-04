@@ -2333,8 +2333,16 @@ private func priceMatchedLeftByDenseWindow(
                 second = ink
             }
         }
+        var bodyMax = 0
+        var bodyX = sharedLeft
+        let bodyRight = min(right, max(sharedLeft, right - 40))
+        for x in sharedLeft..<bodyRight where columnInk[x] > bodyMax {
+            bodyMax = columnInk[x]
+            bodyX = x
+        }
+        let edge = (max(sharedLeft, right - 40)..<right).map { "\($0):\(columnInk[$0])" }.joined(separator: ",")
         trace(
-            "leftwin y \(y0)-\(y1) span \(sharedLeft)-\(sharedRight) peak \(peak)@\(peakX) second \(second) stemHi \(stemHi) win \(window) best \(bestStart) score \(bestScore)\n"
+            "leftwin y \(y0)-\(y1) span \(sharedLeft)-\(sharedRight) peak \(peak)@\(peakX) second \(second) body \(bodyMax)@\(bodyX) stemHi \(stemHi) win \(window) best \(bestStart) score \(bestScore) edge \(edge)\n"
         )
     }
     guard bestStart > sharedLeft + 16, bestScore > 8 else { return sharedLeft }
