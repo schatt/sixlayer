@@ -134,6 +134,33 @@ struct OCRSevenSegment576Tests {
         #expect(decode(image, maximum: 0).extractedText == "32.88\n8.022")
     }
 
+    @Test func onePixelOnADarkSegmentDoesNotChangeTheDigit() {
+        // "3125" already decodes. One pixel on the 3's empty lower-left
+        // stem lights `e` when any foreground pixel counts, and that 3
+        // stops being a 3 (#599). A lone 4 is the wrong fixture: with no
+        // top or bottom bar its ink box is short and already reads as 9.
+        #expect(decode(panel(["3125"])).extractedText == "3125")
+        let speck = SegmentPanel.render(
+            rows: [atoms("3125")],
+            falseLowerLeftStemSpeck: true
+        )
+        #expect(decode(speck).extractedText == "3125")
+    }
+
+    @Test func washedRowDigitCountFollowsStrideNotTheCleanRow() {
+        // Price is four digits at stride 58. Five wide glyphs span about
+        // 282 pixels, so width/stride rounds to five. A leading 1 is only
+        // a right-edge stem and does not add that stride (#599).
+        let image = SegmentPanel.render(
+            rows: [atoms("32.88"), atoms("28022")],
+            solidGapWashVolumeOnly: true
+        )
+        let lines = decode(image, maximum: 0).extractedText.split(separator: "\n").map(String.init)
+        #expect(lines.count == 2)
+        #expect(lines.first?.filter(\.isNumber) == "3288")
+        #expect(lines.last?.filter(\.isNumber) == "28022")
+    }
+
     @Test func rescannedRowCropMatchesPriceBandGeometry() {
         // Approach B (#591): a left scratch sits in the digit bands but not
         // through the row gap, and a tall haze above each row stretches the
@@ -156,6 +183,10 @@ struct OCRSevenSegment576Tests {
     }
 
     @Test func wideGapSplitsGroupsAndAnEqualGapDoesNot() {
+        // Isolate fine deskew: untilted short rows must still read (#602).
+        #expect(decode(panel(["1234"]), maximum: 0).extractedText == "1234")
+        #expect(decode(panel(["12 34"]), maximum: 0).extractedText == "12  34")
+
         let split = decode(panel(["12 34"]))
         #expect(split.extractedText == "12  34")
         #expect(segmentTexts(split) == ["12", "34"])
@@ -1008,7 +1039,8 @@ enum SegmentPanel {
         aboveDigitGlare: Bool = false,
         leftScratch: Bool = false,
         tallHaze: Bool = false,
-        solidGapWashVolumeOnly: Bool = false
+        solidGapWashVolumeOnly: Bool = false,
+        falseLowerLeftStemSpeck: Bool = false
     ) -> CGImage {
         let laid = layout(rows: rows, padding: padding)
         let background: UInt8 = backgroundLevel ?? (invert ? 28 : 214)
@@ -1027,6 +1059,17 @@ enum SegmentPanel {
         }
         for stroke in laid.strokes where stroke.opposite {
             fill(&pixels, width: laid.width, height: laid.height, rect: stroke.rect, value: markInk)
+        }
+        if falseLowerLeftStemSpeck {
+            // One pixel on the lower-left stem scan of a 3. That glyph has
+            // no `e`. The point sits in the open glass: below the crossbar,
+            // above the bottom bar, and left of the right stem, so it does
+            // not join a real stroke.
+            let x = padding + stroke + 2
+            let y = padding + (cellH * 3) / 4
+            if x < laid.width, y < laid.height {
+                pixels[y * laid.width + x] = ink
+            }
         }
         if glare, let band = laid.rowBands.first {
             let y0 = max(0, band.midY - stroke)

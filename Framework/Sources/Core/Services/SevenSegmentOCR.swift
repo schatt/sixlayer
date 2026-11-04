@@ -637,7 +637,10 @@ private struct GrayBuffer {
     /// Six scanlines, as ssocr does. The center column is split into thirds
     /// for the top, middle, and bottom bars. Lines a quarter down from the
     /// top and a quarter up from the bottom are split into halves for the
-    /// stems. One foreground pixel lights a segment.
+    /// stems. A segment lights only when a consecutive foreground run covers
+    /// at least an eighth of that scan, and at least two pixels (#599).
+    /// A fifth was too high: a real stroke on the near-miss 2 is a run of
+    /// four on scans of 21–30, and one pixel on an empty stem stays dark.
     ///
     /// `washAwareStems`: skip the outer left fringe on f/e scans so a solid
     /// wash bridge beside the glyph cannot mint a false upper/lower-left stem.
@@ -654,14 +657,14 @@ private struct GrayBuffer {
         var pattern = SevenSegmentPattern()
         let midX = box.minX + boxWidth / 2
         let third = max(1, boxHeight / 3)
-        if foregroundCount(mask, x: midX, y: box.minY, length: third, vertical: true) > 0 {
+        if segmentIsLit(mask, x: midX, y: box.minY, length: third, vertical: true) {
             pattern.formUnion(.a)
         }
-        if foregroundCount(mask, x: midX, y: box.minY + third, length: third, vertical: true) > 0 {
+        if segmentIsLit(mask, x: midX, y: box.minY + third, length: third, vertical: true) {
             pattern.formUnion(.g)
         }
         let lower = box.minY + third * 2
-        if foregroundCount(mask, x: midX, y: lower, length: max(1, box.maxY - lower), vertical: true) > 0 {
+        if segmentIsLit(mask, x: midX, y: lower, length: max(1, box.maxY - lower), vertical: true) {
             pattern.formUnion(.d)
         }
         let quarter = box.minY + boxHeight / 4
@@ -670,20 +673,22 @@ private struct GrayBuffer {
         let right = max(1, box.maxX - (midX + 1))
         // Right stems first so wash-aware `f` can see whether `c` is present
         // (8-candidates keep f; 2-like glyphs drop wash f).
-        if foregroundCount(mask, x: midX + 1, y: quarter, length: right, vertical: false) > 0 {
+        if segmentIsLit(mask, x: midX + 1, y: quarter, length: right, vertical: false) {
             pattern.formUnion(.b)
         }
-        if foregroundCount(mask, x: midX + 1, y: threeQuarters, length: right, vertical: false) > 0 {
+        if segmentIsLit(mask, x: midX + 1, y: threeQuarters, length: right, vertical: false) {
             pattern.formUnion(.c)
         }
         let eFringe = washAwareStems ? max(1, boxWidth / 6) : 0
-        if foregroundCount(
-            mask,
-            x: box.minX + eFringe,
-            y: threeQuarters,
-            length: max(1, half - eFringe),
-            vertical: false
-        ) > 0 {
+        let eLength = max(1, half - eFringe)
+        let eRun = longestForegroundRun(
+            mask, x: box.minX + eFringe, y: threeQuarters, length: eLength, vertical: false
+        )
+        // The fringe starts inside a real stem. The tail past it can be a
+        // single pixel; requiring two turned a washed 8 into a 9. The fringe
+        // already skipped the bridge (#599).
+        let eLit = washAwareStems ? eRun >= 1 : eRun >= max(2, eLength / 8)
+        if eLit {
             pattern.formUnion(.e)
         }
         // Wash bridges light false `f` on 2-like glyphs (pat 123 → 2/8 tie).
@@ -692,7 +697,7 @@ private struct GrayBuffer {
         // `c` is dark, require stem-zone ink, reject fringe-dominated wash,
         // and drop f if the remainder is an exact digit.
         if !washAwareStems || pattern.contains(.c) {
-            if foregroundCount(mask, x: box.minX, y: quarter, length: half, vertical: false) > 0 {
+            if segmentIsLit(mask, x: box.minX, y: quarter, length: half, vertical: false) {
                 pattern.formUnion(.f)
             }
         } else {
@@ -708,7 +713,11 @@ private struct GrayBuffer {
                 vertical: false
             )
             let washDominated = fEdge >= fStem && fEdge * 2 >= fFringe
-            if fStem > 0, !washDominated {
+            let fLength = max(1, half - fFringe)
+            let fRun = longestForegroundRun(
+                mask, x: box.minX + fFringe, y: quarter, length: fLength, vertical: false
+            )
+            if fRun >= 1, !washDominated {
                 pattern.formUnion(.f)
             }
             if pattern.contains(.f) {
@@ -1462,7 +1471,7 @@ private extension GrayBuffer {
         }
         guard digits.count >= 2 else { return row }
         // Pitch rows copy a price body count onto washed volume (Approach D).
-        // That volume is X.xxx gallons: place the mark in the first inter-digit
+        // That volume is X.xxx units: place the mark in the first inter-digit
         // gap. Ink scoring mis-fired on this photo (max → 80.22, empty → 802.2,
         // non-flood → broke edgeStrip when the real dot itself looked "flooded").
         // Drop stale ./, marks; do not invent stroke ink — only a gap anchor.
@@ -2054,7 +2063,14 @@ private func polarity(
     let looseTall = runs(loose.rowSums).map { $0.1 - $0.0 }.max() ?? 0
     let limitedTall = runs(limitedCore.rowSums).map { $0.1 - $0.0 }.max() ?? 0
     let fills = looseTall * 100 > loose.height * 70
-    guard let span, fills, limitedTall * 2 < looseTall else {
+    // Opened path is for multi-row washed panels where loose fills the gap.
+    // A single-row panel's core often shows two mid-glyph bands with a tiny
+    // valley; opening on that splits the digit and short rows go empty (#602).
+    let coreBands = runs(limitedCore.rowSums).filter { $0.1 - $0.0 >= max(8, loose.height / 8) }
+    let coreGap = zip(coreBands, coreBands.dropFirst()).map { $1.0 - $0.1 }.max() ?? 0
+    let shortestCore = coreBands.map { $0.1 - $0.0 }.min() ?? 0
+    let realRowGap = coreBands.count >= 2 && coreGap * 4 >= shortestCore
+    guard let span, fills, limitedTall * 2 < looseTall, realRowGap else {
         return (false, (isDark, loose, loose))
     }
     // The loose mask still fills the gap inside the span. Row boundaries
@@ -2192,6 +2208,11 @@ private struct PreferredDigitPitch {
     var stride: Int
 }
 
+/// How many digits fit in `width` at the copied center-to-center step.
+private func digitCount(width: Int, stride: Int) -> Int {
+    max(1, Int((Double(width) / Double(max(1, stride))).rounded()))
+}
+
 private func columnRuns(
     _ mask: Mask,
     y0: Int,
@@ -2220,11 +2241,12 @@ private func columnRuns(
         )
     }
     // When pitch-driving: cluster wide runs that are wash-bridged (gap under
-    // body/10). Share the price digit count across clusters by width, then
-    // anchor one window per raw run when possible — only pitch-split a run
-    // that must hold more than one digit. That keeps the photo's 380-555
-    // 0-run on its own ink instead of a drifted body window. Without
-    // preferred pitch, valley.
+    // body/10). Each cluster's digit count is its width over the copied
+    // stride, not the price row's count, so a five-digit volume beside a
+    // four-digit price stays five (#599). Anchor one window per raw run when
+    // possible — only pitch-split a run that must hold more than one digit.
+    // That keeps the photo's 380-555 0-run on its own ink instead of a
+    // drifted body window. Without preferred pitch, valley.
     if let pitch = copied {
         let wideEnough = raw.filter { $0.1 - $0.0 > pitch.body / 2 }
         let bridgeLimit = max(2, pitch.body / 10)
@@ -2239,25 +2261,11 @@ private func columnRuns(
             }
         }
         if !clusters.isEmpty {
-            let widths = clusters.map { cluster -> Int in
-                guard let first = cluster.first, let last = cluster.last else { return 0 }
-                return last.1 - first.0
-            }
-            let totalWidth = max(1, widths.reduce(0, +))
-            var remaining = max(2, pitch.count)
             var pieces: [(Int, Int)] = []
-            for (index, cluster) in clusters.enumerated() {
-                let share: Int
-                if index == clusters.count - 1 {
-                    share = max(1, remaining)
-                } else {
-                    let nominal = max(
-                        1,
-                        Int((Double(widths[index]) / Double(totalWidth) * Double(pitch.count)).rounded())
-                    )
-                    share = min(remaining - (clusters.count - 1 - index), max(1, nominal))
-                }
-                remaining -= share
+            for cluster in clusters {
+                guard let first = cluster.first, let last = cluster.last else { continue }
+                let clusterWidth = last.1 - first.0
+                let share = digitCount(width: clusterWidth, stride: pitch.stride)
                 pieces.append(contentsOf: packClusterRuns(cluster, share: share, sums: sums, pitch: pitch))
             }
             if let overallFirst = wideEnough.first, let overallLast = wideEnough.last {
@@ -2290,8 +2298,14 @@ private func columnRuns(
             return [span]
         }
         if let pitch = copied {
-            // Pitch owns the split. Floor/join would glue wash bridges.
-            return splitAtExpectedPitch(span, sums: sums, pitch: pitch)
+            // Stride owns the split. The price row's digit count would pack a
+            // longer washed row into too few windows (#599).
+            let sized = PreferredDigitPitch(
+                body: pitch.body,
+                count: digitCount(width: spanWidth, stride: pitch.stride),
+                stride: pitch.stride
+            )
+            return splitAtExpectedPitch(span, sums: sums, pitch: sized)
         }
         let peak = (span.0..<span.1).map { sums[$0] }.max() ?? 0
         // A horizontal bar is much thinner than a flooded stem. peak/5 cut the
@@ -2390,7 +2404,11 @@ private func packClusterRuns(
                 && packBody <= 80
                 && run.1 - run.0 >= needed
                 && run.1 - run.0 <= needed + packBody
-            let trimmed: (Int, Int) = fusedSynth
+            // More windows than the price count means the extra width is
+            // another digit. Right-packing that off drops the leading glyph
+            // (28022 → 8022) (#599).
+            let keepLeft = fusedSynth || n > pitch.count
+            let trimmed: (Int, Int) = keepLeft
                 ? run
                 : (max(run.0, run.1 - needed), run.1)
             let local = PreferredDigitPitch(body: packBody, count: n, stride: pitch.stride)
@@ -2887,6 +2905,56 @@ private func coverage(_ mask: Mask, box: PixelBox, width: Int) -> Float {
         }
     }
     return total == 0 ? 0 : Float(ink) / Float(total)
+}
+
+private func segmentIsLit(
+    _ mask: Mask,
+    x: Int,
+    y: Int,
+    length: Int,
+    vertical: Bool
+) -> Bool {
+    let run = longestForegroundRun(mask, x: x, y: y, length: length, vertical: vertical)
+    return run >= max(2, length / 8)
+}
+
+private func longestForegroundRun(
+    _ mask: Mask,
+    x: Int,
+    y: Int,
+    length: Int,
+    vertical: Bool
+) -> Int {
+    guard length > 0 else { return 0 }
+    var best = 0
+    var current = 0
+    func consider(_ set: Bool) {
+        if set {
+            current += 1
+            if current > best { best = current }
+        } else {
+            current = 0
+        }
+    }
+    if vertical {
+        guard x >= 0, x < mask.width else { return 0 }
+        let start = max(0, y)
+        let end = min(mask.height, y + length)
+        guard start < end else { return 0 }
+        for row in start..<end {
+            consider(mask.bits[row * mask.width + x])
+        }
+    } else {
+        guard y >= 0, y < mask.height else { return 0 }
+        let start = max(0, x)
+        let end = min(mask.width, x + length)
+        guard start < end else { return 0 }
+        let offset = y * mask.width
+        for column in start..<end {
+            consider(mask.bits[offset + column])
+        }
+    }
+    return best
 }
 
 private func foregroundCount(
