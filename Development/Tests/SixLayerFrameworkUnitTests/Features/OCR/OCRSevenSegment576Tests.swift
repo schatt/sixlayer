@@ -423,7 +423,7 @@ struct OCRSevenSegment576Tests {
         // Zero-margin glyph boxes previously returned the half-turn spoilers
         // 88.26 / 220.8. They must not. A taller crop of the lower line
         // (still one row) must stay upright as 8.022. Zero-margin correct
-        // digits are #641; taller top-line correct read is a follow-up
+        // digits are #641; taller top-line correct read is #649
         // (pad sweep: top Vision box never recovers with isotropic pad).
         let spoilers = ["88.26", "220.8"]
         for segment in segments {
