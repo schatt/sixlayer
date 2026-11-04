@@ -1471,7 +1471,7 @@ private extension GrayBuffer {
         }
         guard digits.count >= 2 else { return row }
         // Pitch rows copy a price body count onto washed volume (Approach D).
-        // That volume is X.xxx gallons: place the mark in the first inter-digit
+        // That volume is X.xxx units: place the mark in the first inter-digit
         // gap. Ink scoring mis-fired on this photo (max → 80.22, empty → 802.2,
         // non-flood → broke edgeStrip when the real dot itself looked "flooded").
         // Drop stale ./, marks; do not invent stroke ink — only a gap anchor.
@@ -2063,7 +2063,14 @@ private func polarity(
     let looseTall = runs(loose.rowSums).map { $0.1 - $0.0 }.max() ?? 0
     let limitedTall = runs(limitedCore.rowSums).map { $0.1 - $0.0 }.max() ?? 0
     let fills = looseTall * 100 > loose.height * 70
-    guard let span, fills, limitedTall * 2 < looseTall else {
+    // Opened path is for multi-row washed panels where loose fills the gap.
+    // A single-row panel's core often shows two mid-glyph bands with a tiny
+    // valley; opening on that splits the digit and short rows go empty (#602).
+    let coreBands = runs(limitedCore.rowSums).filter { $0.1 - $0.0 >= max(8, loose.height / 8) }
+    let coreGap = zip(coreBands, coreBands.dropFirst()).map { $1.0 - $0.1 }.max() ?? 0
+    let shortestCore = coreBands.map { $0.1 - $0.0 }.min() ?? 0
+    let realRowGap = coreBands.count >= 2 && coreGap * 4 >= shortestCore
+    guard let span, fills, limitedTall * 2 < looseTall, realRowGap else {
         return (false, (isDark, loose, loose))
     }
     // The loose mask still fills the gap inside the span. Row boundaries
