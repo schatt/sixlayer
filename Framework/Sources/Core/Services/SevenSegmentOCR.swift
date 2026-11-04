@@ -1041,19 +1041,23 @@ private struct Cell {
 
 private func recognizedGroups(_ cells: [Cell], width: Int, height: Int) -> [OCRRecognizedText] {
     let pieces = GrayBuffer.group(cells)
-    // Ink-tight bounds leave no glass for a zero-margin re-crop (#641).
-    // Grow with real panel glass on all sides, but keep clear of the top
-    // edge — upward growth into chrome breaks the top sealed line.
+    // Ink-tight bounds leave no glass for a zero-margin re-crop on a lower
+    // sealed line (#641). Grow with real panel glass when the group sits
+    // below the top band — expanding the top line pulls chrome and breaks
+    // a read that already works at pad=0.
     let glass = 6
-    let topClearance = 12
     return pieces.map { group in
         let text = String(group.map(\.character))
         let confidence = group.map(\.confidence).min() ?? 0
-        let minX = max(0, (group.map(\.minX).min() ?? 0) - glass)
-        let maxX = min(width, (group.map(\.maxX).max() ?? 0) + glass)
-        let rawMinY = (group.map(\.minY).min() ?? 0) - glass
-        let minY = max(topClearance, rawMinY)
-        let maxY = min(height, (group.map(\.maxY).max() ?? 0) + glass)
+        let minX0 = group.map(\.minX).min() ?? 0
+        let maxX0 = group.map(\.maxX).max() ?? 0
+        let minY0 = group.map(\.minY).min() ?? 0
+        let maxY0 = group.map(\.maxY).max() ?? 0
+        let grow = minY0 * 3 > height
+        let minX = grow ? max(0, minX0 - glass) : minX0
+        let maxX = grow ? min(width, maxX0 + glass) : maxX0
+        let minY = grow ? max(0, minY0 - glass) : minY0
+        let maxY = grow ? min(height, maxY0 + glass) : maxY0
         return OCRRecognizedText(
             text: text,
             boundingBox: CGRect(
