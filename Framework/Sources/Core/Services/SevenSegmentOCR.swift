@@ -171,11 +171,7 @@ private struct GrayBuffer {
     }
 
     static func deskew(_ buffer: GrayBuffer, maximumDegrees: Double) -> GrayBuffer {
-        // A taller crop of the top sealed line pulls dark bezel into the
-        // frame (#649). Strip that chrome before stand-up so the line still
-        // reads; full panels and zero-margin line boxes are unchanged.
-        let prepared = buffer.trimmingEdgeBezel()
-        let turned = standingUp(prepared)
+        let turned = standingUp(buffer)
         let limit = Int(max(0, maximumDegrees).rounded(.down))
         guard limit > 0 else { return turned }
         let small = turned.fitted(maxSide: 280)
@@ -1100,36 +1096,6 @@ private extension GrayBuffer {
             let texts = recognizedGroups(row, width: buffer.width, height: buffer.height)
             return texts.isEmpty ? nil : texts
         }
-    }
-
-    /// Drop dark bezel bands that a padded line crop pulled in from the
-    /// panel chrome (#649). Only top/bottom on short wide strips — side
-    /// trim eats outer digit stems; a full panel keeps its bezel for
-    /// sealed-glass localization.
-    func trimmingEdgeBezel() -> GrayBuffer {
-        guard height > 0, width > 0, height < 160, width * 4 > height * 5 else {
-            return self
-        }
-        func isBezelRow(_ y: Int) -> Bool {
-            var dark = 0
-            for x in 0..<width where pixels[y * width + x] < 80 {
-                dark += 1
-            }
-            // Solid chrome, not a digit row that is mostly glass.
-            return dark * 4 > width * 3
-        }
-        var top = 0
-        while top < height - 8, isBezelRow(top) {
-            top += 1
-        }
-        var bottom = height
-        while bottom > top + 8, isBezelRow(bottom - 1) {
-            bottom -= 1
-        }
-        if top == 0, bottom == height {
-            return self
-        }
-        return cropped(x0: 0, y0: top, x1: width, y1: bottom)
     }
 
     /// A panel crop, or nil when the rect is tiny, nearly the whole frame, or empty.
