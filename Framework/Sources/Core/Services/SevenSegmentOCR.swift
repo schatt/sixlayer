@@ -2064,11 +2064,13 @@ private func polarity(
     let limitedTall = runs(limitedCore.rowSums).map { $0.1 - $0.0 }.max() ?? 0
     let fills = looseTall * 100 > loose.height * 70
     // Opened path is for multi-row washed panels where loose fills the gap.
-    // A single-row panel's segment bars are short core runs; opening on them
-    // splits the glyph mid-height and short synth rows go empty (#602).
-    let digitFloor = max(8, loose.height / 5)
-    let digitTallCoreBands = runs(limitedCore.rowSums).filter { $0.1 - $0.0 >= digitFloor }
-    guard let span, fills, limitedTall * 2 < looseTall, digitTallCoreBands.count >= 2 else {
+    // A single-row panel's core often shows two mid-glyph bands with a tiny
+    // valley; opening on that splits the digit and short rows go empty (#602).
+    let coreBands = runs(limitedCore.rowSums).filter { $0.1 - $0.0 >= max(8, loose.height / 8) }
+    let coreGap = zip(coreBands, coreBands.dropFirst()).map { $1.0 - $0.1 }.max() ?? 0
+    let shortestCore = coreBands.map { $0.1 - $0.0 }.min() ?? 0
+    let realRowGap = coreBands.count >= 2 && coreGap * 4 >= shortestCore
+    guard let span, fills, limitedTall * 2 < looseTall, realRowGap else {
         return (false, (isDark, loose, loose))
     }
     // The loose mask still fills the gap inside the span. Row boundaries
