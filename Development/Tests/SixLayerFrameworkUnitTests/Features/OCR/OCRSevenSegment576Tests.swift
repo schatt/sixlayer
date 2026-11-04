@@ -434,6 +434,20 @@ struct OCRSevenSegment576Tests {
         #expect(decode(taller, maximum: 0).extractedText == "8.022")
     }
 
+    /// #641: a zero-margin Vision glyph crop must read that line, not only
+    /// avoid the known half-turn spoilers. Border clearing on a box tight to
+    /// ink previously left `"8"` / `""` instead of `32.88` / `8.022`.
+    @Test func aZeroMarginGlyphCropReadsThatLine() {
+        let image = sealedBothRowsPanel()
+        let full = decode(image, maximum: 0)
+        let segments = full.recognizedTexts.filter { $0.role == .segment }
+        #expect(segments.map(\.text) == ["32.88", "8.022"])
+        for segment in segments {
+            let tight = lineCrop(image, visionBox: segment.boundingBox, pad: 0)
+            #expect(decode(tight, maximum: 0).extractedText == segment.text)
+        }
+    }
+
     @Test func decoderSourceDoesNotNameFields() throws {
         let source = try decoderSource()
         for word in ["This Sale", "Gallons", "FuelPurchase", "sale"] {
