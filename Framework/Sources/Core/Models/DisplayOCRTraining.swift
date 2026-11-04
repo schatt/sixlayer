@@ -1639,7 +1639,8 @@ public final class DisplayOCRTrainingSession: ObservableObject {
     ) {
         guard generation == suggestionGeneration else { return }
         suggestionRanOnMainThread = ranOnMainThread
-        guard let proposal else { return }
+        // A host that already drew or restored boxes wins over the late proposal.
+        guard panel == nil, let proposal else { return }
         panel = proposal.panel
         // A crop of one line is read upside down or not at all. The panel read
         // is the digit string; the glyph rows are only the boxes.
@@ -1655,6 +1656,12 @@ public final class DisplayOCRTrainingSession: ObservableObject {
         drafted.rows = aligned.rows
         rowBoxes = aligned.boxes
         label = drafted
+    }
+
+    private func cancelPendingSuggestion() {
+        suggestionTask?.cancel()
+        suggestionTask = nil
+        suggestionGeneration += 1
     }
 
     public func load(fileURL: URL) {
@@ -1674,6 +1681,7 @@ public final class DisplayOCRTrainingSession: ObservableObject {
 
     public func setPanel(_ box: DisplayOCRNormalizedBox) {
         guard bitmap != nil, let clamped = box.unitClamped else { return }
+        cancelPendingSuggestion()
         panel = clamped
         rowBoxes = []
         label = nil
@@ -1684,6 +1692,7 @@ public final class DisplayOCRTrainingSession: ObservableObject {
     /// Replace the panel and clip rows to it. A row that falls outside is removed.
     public func updatePanel(_ box: DisplayOCRNormalizedBox) {
         guard bitmap != nil, let clamped = box.unitClamped else { return }
+        cancelPendingSuggestion()
         panel = clamped
         rowBoxes = DisplayOCRTraining.rowsInside(
             rowBoxes,
