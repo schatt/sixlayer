@@ -96,7 +96,7 @@ public enum SevenSegmentOCR {
     public static let digitPanelAnalysisMaxSide = 1600
 
     /// Long edge of the buffer that `digitPanelBounds` last analyzed. Test probe (#650).
-    public static var lastDigitPanelAnalysisLongEdge: Int?
+    nonisolated(unsafe) public static var lastDigitPanelAnalysisLongEdge: Int?
 
     /// Pixel rect of the digit panel (glass plus a bezel margin) in image
     /// coordinates, or `nil` when no sealed panel is found.
