@@ -1717,7 +1717,6 @@ private extension GrayBuffer {
             // Approach D: once a price-like row yields digit boxes, copy that
             // pitch into later rowcrops (volume) so wash bridges still cut.
             var rowPitch = preferredPitch
-            var anchoredLeft: Int?
             for band in splitBands {
                 let rawHeight = band.1 - band.0
                 let searchBand: (Int, Int)
@@ -1753,18 +1752,7 @@ private extension GrayBuffer {
                     sharedLeft: sharedLeft,
                     sharedRight: sharedRight
                 )
-                // A washed second row often has no stem the window will score,
-                // so the search returns the span edge and the pitch reads the
-                // scratch. The price row already found the digit field.
-                let x0: Int
-                if left > sharedLeft + 16 {
-                    x0 = max(0, left - 8)
-                    anchoredLeft = x0
-                } else if let anchoredLeft {
-                    x0 = anchoredLeft
-                } else {
-                    x0 = max(0, left - 8)
-                }
+                let x0 = max(0, left - 8)
                 let x1 = min(buffer.width, sharedRight + 8)
                 let crop = buffer.cropped(x0: x0, y0: y0, x1: x1, y1: y1)
                 guard crop.width > 8, crop.height > 8 else {
@@ -2331,6 +2319,23 @@ private func priceMatchedLeftByDenseWindow(
             bestStart = start
         }
         start += 1
+    }
+    if width >= 1000 {
+        var peakX = sharedLeft
+        var second = 0
+        let right = min(width, sharedRight)
+        for x in sharedLeft..<right {
+            let ink = columnInk[x]
+            if ink > columnInk[peakX] {
+                second = columnInk[peakX]
+                peakX = x
+            } else if ink > second {
+                second = ink
+            }
+        }
+        trace(
+            "leftwin y \(y0)-\(y1) span \(sharedLeft)-\(sharedRight) peak \(peak)@\(peakX) second \(second) stemHi \(stemHi) win \(window) best \(bestStart) score \(bestScore)\n"
+        )
     }
     guard bestStart > sharedLeft + 16, bestScore > 8 else { return sharedLeft }
     var lo = bestStart
