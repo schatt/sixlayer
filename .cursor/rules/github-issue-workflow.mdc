@@ -108,7 +108,7 @@ When an issue is ready to close, replace the body with a concise final record (T
 - **Decisions** — key trade-offs and rationale.
 - **Delivered API** — final public interfaces/behaviors shipped (or explicitly "no API changes").
 - **Tests** — what was added/updated and current status.
-- **/2** — that the gate ran (or “docs-only N/A”), the five criteria verdicts (or pointer to the `/2` comment), and any leftover issue numbers it produced.
+- **/2** — that the gate ran **before land** (or “docs-only N/A”), the five criteria verdicts (or pointer to the `/2` comment), and any leftover issue numbers it produced.
 - **Leftovers** — bucketed: in-scope remaining (must be none), required children (none or closed/integrated), follow-ups (each an open issue, linked).
 - **References** — PR(s), branch, commit(s), design docs, related issues.
 
