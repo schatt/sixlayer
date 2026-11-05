@@ -916,19 +916,20 @@ struct OCRSevenSegment576Tests {
         guard factor > 1 else { return image }
         let width = image.width
         let height = image.height
-        var pixels = [UInt8](repeating: 0, count: width * height)
+        let newW = width * factor
+        let newH = height * factor
+        var output = [UInt8](repeating: 0, count: newW * newH)
         if let provider = image.dataProvider,
            let data = provider.data,
            let bytes = CFDataGetBytePtr(data) {
             let rowBytes = image.bytesPerRow
-            for y in 0..<height {
-                for x in 0..<width {
-                    pixels[y * width + x] = bytes[y * rowBytes + x]
+            for y in 0..<newH {
+                for x in 0..<newW {
+                    output[y * newW + x] = bytes[(y / factor) * rowBytes + (x / factor)]
                 }
             }
         }
-        let scaled = Self.scalePixels(pixels, width: width, height: height, factor: factor)
-        return solidGrayImage(pixels: scaled.pixels, width: scaled.width, height: scaled.height)
+        return solidGrayImage(pixels: output, width: newW, height: newH)
     }
 
     private func crop(_ image: CGImage, x: Int, y: Int, width: Int, height: Int) -> CGImage {
