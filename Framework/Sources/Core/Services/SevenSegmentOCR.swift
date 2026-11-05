@@ -516,15 +516,16 @@ private struct GrayBuffer {
             ? min(vertical[0].1 - vertical[0].0, vertical[1].1 - vertical[1].0)
             : 0
         let colonGap = vertical.count == 2 && splitGap >= shorterRun
-        let colonNarrow = box.width * 100 <= box.height * 30
-        let colonShort = vertical.allSatisfy({ $0.1 - $0.0 < digitHeight * 45 / 100 })
-        if colonGap, colonNarrow, colonShort {
-            // #645 probe: mid-row glare vs real colon. Remove after fix.
-            trace(
-                "colon box=\(box.minX)..\(box.maxX)x\(box.minY)..\(box.maxY) "
-                    + "dh=\(digitHeight) dw=\(digitWidth) runs=\(vertical) "
-                    + "gap=\(splitGap) short=\(shorterRun)\n"
-            )
+        // Mid-row glare brightens the glass strip; the rows just above/below
+        // then look like ink in empty inter-digit columns (#645). That yields
+        // two speck-tall runs with a colon-sized gap. Real colon dots are a
+        // meaningful share of the digit height — drop the speck pair instead
+        // of falling through to '.' .
+        if colonGap,
+           box.width * 100 <= box.height * 30,
+           vertical.allSatisfy({ $0.1 - $0.0 < digitHeight * 45 / 100 }) {
+            let minDot = max(3, digitHeight * 8 / 100)
+            guard shorterRun >= minDot else { return nil }
             return Cell(box: box, character: ":", confidence: 1, band: bandIndex)
         }
         // Glare lifts the glass on both sides of its band. Those short bands
