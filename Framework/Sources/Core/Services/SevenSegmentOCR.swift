@@ -183,7 +183,9 @@ private struct GrayBuffer {
         // ink with a 6px glass margin so lower-line zero-margin crops still
         // keep the glass #641 needs.
         let trimmed = buffer.trimmingEdgeBezel()
-        let prepared = trimmed.tightenedToDigitLine(margin: 6)
+        // Horizontal glass beside a tight top line invents side stems; keep
+        // vertical glass so lower-line #641 boxes still clear their border.
+        let prepared = trimmed.tightenedToDigitLine(marginX: 0, marginY: 6)
         if buffer.width != prepared.width || buffer.height != prepared.height {
             print(
                 "651-prep \(buffer.width)x\(buffer.height) -> trim \(trimmed.width)x\(trimmed.height) -> prep \(prepared.width)x\(prepared.height)"
@@ -1202,11 +1204,11 @@ private extension GrayBuffer {
         return cropped(x0: left, y0: top, x1: right, y1: bottom)
     }
 
-    /// Peel empty glass from the edges of a short wide line crop, keeping
-    /// `margin` px so lower-line boxes still have the glass #641 needs.
-    /// Extra isotropic / both-vertical pad otherwise invents side stems or
-    /// empties the top sealed line (#651).
-    func tightenedToDigitLine(margin: Int) -> GrayBuffer {
+    /// Peel empty glass from the edges of a short wide line crop.
+    /// Horizontal margin stays tight — side glass invents stems on the top
+    /// sealed line (#651). Vertical margin keeps the glass lower-line
+    /// #641 boxes need for border clearing.
+    func tightenedToDigitLine(marginX: Int, marginY: Int) -> GrayBuffer {
         guard height > 0, width > 0, height < 160, width * 4 > height * 5 else {
             return self
         }
@@ -1242,10 +1244,10 @@ private extension GrayBuffer {
         while glassBottom < height - 8, rowDark(height - 1 - glassBottom) <= emptyRow {
             glassBottom += 1
         }
-        let x0 = max(0, glassLeft - margin)
-        let y0 = max(0, glassTop - margin)
-        let x1 = min(width, width - glassRight + margin)
-        let y1 = min(height, height - glassBottom + margin)
+        let x0 = max(0, glassLeft - marginX)
+        let y0 = max(0, glassTop - marginY)
+        let x1 = min(width, width - glassRight + marginX)
+        let y1 = min(height, height - glassBottom + marginY)
         if x0 == 0, y0 == 0, x1 == width, y1 == height {
             return self
         }
