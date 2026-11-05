@@ -405,36 +405,34 @@ private struct GrayBuffer {
                 darkInk: darkInk,
                 washAwareStems: washAwareStems
             )
-            // Volume rowcrops are ~980px; keep traces on those for #591.
-            if buffer.width >= 900 {
-                let pattern = sample(
+            // Temporary #647 probe — log all panels (was width>=900 only).
+            let pattern = sample(
+                mask,
+                box: densestInkBand(
                     mask,
-                    box: densestInkBand(
-                        mask,
-                        box: box,
-                        width: buffer.width,
-                        digitWidth: digitWidth,
-                        forceDigitTall: washAwareStems
-                    ),
+                    box: box,
                     width: buffer.width,
-                    washAwareStems: washAwareStems
-                )
-                let cover = coverage(mask, box: box, width: buffer.width)
-                let name = cell.map { String($0.character) } ?? "drop"
-                let pitchNote = preferredPitch.map { " pitch \($0.body)x\($0.count)" } ?? ""
-                let bits = [
-                    pattern.contains(.a) ? "a" : "",
-                    pattern.contains(.b) ? "b" : "",
-                    pattern.contains(.c) ? "c" : "",
-                    pattern.contains(.d) ? "d" : "",
-                    pattern.contains(.e) ? "e" : "",
-                    pattern.contains(.f) ? "f" : "",
-                    pattern.contains(.g) ? "g" : ""
-                ].joined()
-                trace(
-                    "cell \(name) box \(box.minX),\(box.minY) \(box.width)x\(box.height) pat \(pattern.rawValue) [\(bits)] cov \(cover) h \(digitHeight)\(pitchNote)\n"
-                )
-            }
+                    digitWidth: digitWidth,
+                    forceDigitTall: washAwareStems
+                ),
+                width: buffer.width,
+                washAwareStems: washAwareStems
+            )
+            let cover = coverage(mask, box: box, width: buffer.width)
+            let name = cell.map { String($0.character) } ?? "drop"
+            let pitchNote = preferredPitch.map { " pitch \($0.body)x\($0.count)" } ?? ""
+            let bits = [
+                pattern.contains(.a) ? "a" : "",
+                pattern.contains(.b) ? "b" : "",
+                pattern.contains(.c) ? "c" : "",
+                pattern.contains(.d) ? "d" : "",
+                pattern.contains(.e) ? "e" : "",
+                pattern.contains(.f) ? "f" : "",
+                pattern.contains(.g) ? "g" : ""
+            ].joined()
+            trace(
+                "647-cell \(name) box \(box.minX),\(box.minY) \(box.width)x\(box.height) pat \(pattern.rawValue) [\(bits)] cov \(cover) h \(digitHeight)\(pitchNote)\n"
+            )
             return cell
         }
         // A copied price pitch means real ones are rare on these pump rows.
