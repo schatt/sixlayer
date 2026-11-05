@@ -730,6 +730,11 @@ struct OCRSevenSegment576Tests {
     @Test func lowSegmentScoreStaysInTheTextAndOutOfExtractionConfidence() async throws {
         let image = panel(["8_2 17.740"])
         let preview = decode(image)
+        // Temporary #647 probe — localize vs plain.
+        let localized = SevenSegmentOCR.decode(cgImage: image, localizeDigitPanel: true)
+        let region = SevenSegmentOCR.digitPanelRegion(in: image)
+        print("647-plain \(String(reflecting: preview.extractedText))")
+        print("647-localized \(String(reflecting: localized.extractedText)) region=\(String(describing: region))")
         let clean = try #require(preview.recognizedTexts.first { $0.text == "17.740" })
         let label = OCRRecognizedText(
             text: "Total",
@@ -744,6 +749,7 @@ struct OCRSevenSegment576Tests {
             suppliedLabelFragments: [label]
         )
         let result = try await service().processStructuredExtraction(PlatformImage(cgImage: image), context: context)
+        print("647-structured \(String(reflecting: result.extractedText))")
         #expect(result.confidence == 0)
         #expect(result.extractedText.contains("8_2"))
         #expect(result.extractedText.contains("17.740"))
