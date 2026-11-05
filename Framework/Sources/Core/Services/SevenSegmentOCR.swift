@@ -2001,17 +2001,19 @@ private func digitRowSums(_ sums: [Int]) -> [Int] {
 
 /// ssocr dynamic threshold window. A short crop stays tight. A tall crop
 /// grows until the window would meet across the gap between digits.
-/// Dense scale-4 panels (~1100px) hit a 36px cap that bridges the scaled
-/// intra-digit gap and reads garbage (#659); keep the window near the
-/// scale-1 size once the crop is that large. Typical washed price bands
-/// stay under 600px short side and keep the growing formula.
+///
+/// Wide single-row crops also floor the radius at ~half a digit stroke
+/// (`height / 15` for SegmentPanel proportions). Without that floor, a
+/// scale-4 rowcrop lands near radius 12 while the stroke is 48px and
+/// hollows horizontal bars into stems (`_` / `1` junk — #659). Square
+/// multi-row parents keep the growing cap only — a stroke floor on the
+/// full two-row short side would widen past digit gaps.
 private func windowRadius(width: Int, height: Int) -> Int {
     let shortSide = min(width, height)
-    let grown = max(4, (shortSide - 96) / 24)
-    if shortSide > 600 {
-        return min(12, grown)
-    }
-    return min(36, grown)
+    let sized = min(36, max(4, (shortSide - 96) / 24))
+    guard width > height + height / 2 else { return sized }
+    let strokeFloor = max(4, height / 15)
+    return min(36, max(sized, strokeFloor))
 }
 
 /// Columns that hold digit ink and stay empty in the gap between rows.
