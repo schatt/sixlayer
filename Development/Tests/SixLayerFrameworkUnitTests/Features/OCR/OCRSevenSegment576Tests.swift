@@ -7,7 +7,6 @@
 
 import CoreGraphics
 import Foundation
-import ImageIO
 import Testing
 @testable import SixLayerFramework
 
@@ -870,132 +869,12 @@ struct OCRSevenSegment576Tests {
         let hand = try #require(
             upright.cropping(to: CGRect(x: 620, y: 1440, width: 1480, height: 820))
         )
-        var channels = cropChannelReport(hand)
-        if let source = CGImageSourceCreateWithData(data as CFData, nil),
-           let full = CGImageSourceCreateImageAtIndex(source, 0, nil) {
-            channels += "\nfull \(full.width)x\(full.height) \(cropChannelReport(full))"
-        }
-        #if os(iOS)
-        if let platform = PlatformImage(data: data) {
-            let uiImage = platform.uiImage
-            channels += "\nui ori=\(uiImage.imageOrientation.rawValue)"
-            if let cgImage = uiImage.cgImage {
-                channels += " cg \(cgImage.width)x\(cgImage.height) \(cropChannelReport(cgImage))"
-            }
-            if let oriented = uiImage.cgImageApplyingDisplayOrientation(),
-               let uiHand = oriented.cropping(to: CGRect(x: 620, y: 1440, width: 1480, height: 820)) {
-                let uiResult = SevenSegmentOCR.decode(
-                    cgImage: uiHand,
-                    deskewMaximumDegrees: 0,
-                    localizeDigitPanel: false
-                )
-                channels += "\nuiHand \(cropChannelReport(uiHand)) [\(uiResult.extractedText)] conf \(uiResult.confidence)"
-            }
-        }
-        #endif
-        try? FileManager.default.removeItem(atPath: "/tmp/sixlayer-600-trace.txt")
         let result = SevenSegmentOCR.decode(
             cgImage: hand,
             deskewMaximumDegrees: 0,
             localizeDigitPanel: false
         )
-        let report = """
-        hand \(hand.width)x\(hand.height) [\(result.extractedText)] conf \(result.confidence)
-        \(channels)
-        """
-        try? report.write(
-            toFile: "/tmp/sixlayer-600-gray.txt",
-            atomically: true,
-            encoding: .utf8
-        )
-        #expect(
-            result.extractedText.contains("32.88") && result.extractedText.contains("8.022"),
-            "\(report)"
-        )
-    }
-
-    /// Source levels for the private crop. iOS DeviceGray of this Display P3
-    /// photo is not the macOS gray, so the failure comment keeps both.
-    private func cropChannelReport(_ image: CGImage) -> String {
-        let width = image.width
-        let height = image.height
-        let count = width * height
-        guard count > 0 else { return "empty" }
-        func channelMean(_ bytes: UnsafePointer<UInt8>, stride: Int, offset: Int, total: Int) -> Int {
-            var sum = 0
-            var samples = 0
-            var index = offset
-            while index < total {
-                sum += Int(bytes[index])
-                samples += 1
-                index += stride
-            }
-            return samples == 0 ? -1 : sum / samples
-        }
-        let space = image.colorSpace.flatMap { $0.name as String? } ?? "nil"
-        var parts = ["cs=\(space) bpp=\(image.bitsPerPixel)"]
-        if image.bitsPerPixel >= 24,
-           let provider = image.dataProvider,
-           let data = provider.data,
-           let pointer = CFDataGetBytePtr(data) {
-            let total = CFDataGetLength(data)
-            let stride = image.bitsPerPixel / 8
-            parts.append(
-                "raw R\(channelMean(pointer, stride: stride, offset: 0, total: total)) G\(channelMean(pointer, stride: stride, offset: 1, total: total)) B\(channelMean(pointer, stride: stride, offset: 2, total: total)) A\(channelMean(pointer, stride: stride, offset: 3, total: total))"
-            )
-        }
-        let gray = UnsafeMutablePointer<UInt8>.allocate(capacity: count)
-        gray.initialize(repeating: 0, count: count)
-        defer { gray.deallocate() }
-        if let context = CGContext(
-            data: gray,
-            width: width,
-            height: height,
-            bitsPerComponent: 8,
-            bytesPerRow: width,
-            space: CGColorSpaceCreateDeviceGray(),
-            bitmapInfo: CGImageAlphaInfo.none.rawValue
-        ) {
-            context.interpolationQuality = .none
-            context.draw(image, in: CGRect(x: 0, y: 0, width: width, height: height))
-            var squares = 0
-            for index in 0..<count {
-                let value = Int(gray[index])
-                squares += value * value
-            }
-            parts.append("deviceGray \(channelMean(gray, stride: 1, offset: 0, total: count)) squares \(squares)")
-            let marks = [50, 150, 300, 410, 500, 650, 750].compactMap { y -> String? in
-                guard y < height else { return nil }
-                let start = y * width
-                var sum = 0
-                for x in 0..<width { sum += Int(gray[start + x]) }
-                return "y\(y)=\(sum / width)"
-            }
-            parts.append(marks.joined(separator: " "))
-        }
-        if let srgb = CGColorSpace(name: CGColorSpace.sRGB) {
-            let row = width * 4
-            let total = row * height
-            let rgba = UnsafeMutablePointer<UInt8>.allocate(capacity: total)
-            rgba.initialize(repeating: 0, count: total)
-            defer { rgba.deallocate() }
-            if let context = CGContext(
-                data: rgba,
-                width: width,
-                height: height,
-                bitsPerComponent: 8,
-                bytesPerRow: row,
-                space: srgb,
-                bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
-            ) {
-                context.interpolationQuality = .none
-                context.draw(image, in: CGRect(x: 0, y: 0, width: width, height: height))
-                parts.append(
-                    "sRGB R\(channelMean(rgba, stride: 4, offset: 0, total: total)) G\(channelMean(rgba, stride: 4, offset: 1, total: total)) B\(channelMean(rgba, stride: 4, offset: 2, total: total))"
-                )
-            }
-        }
-        return parts.joined(separator: " ")
+        #expect(result.extractedText == "32.88\n8.022")
     }
 
     /// Private photo, not in this repo. Touch `/tmp/sixlayer-600-score-s1` to
