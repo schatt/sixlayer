@@ -179,11 +179,15 @@ private struct GrayBuffer {
 
     static func deskew(_ buffer: GrayBuffer, maximumDegrees: Double) -> GrayBuffer {
         // A padded single-line crop pulls panel chrome and extra glass into
-        // the frame (#651). Drop solid edge bezel, then pull back to the
-        // digit ink so isotropic / both-vertical pads read like a tight crop.
-        let turned = standingUp(
-            buffer.trimmingEdgeBezel().tightenedToDigitLine(margin: 4)
-        )
+        // the frame (#651). Drop solid edge bezel; when chrome was present,
+        // also pull back to digit ink. Skip the ink tighten when no bezel
+        // was trimmed — lower-line crops need their glass (#641/#625).
+        let trimmed = buffer.trimmingEdgeBezel()
+        let prepared =
+            (trimmed.width != buffer.width || trimmed.height != buffer.height)
+            ? trimmed.tightenedToDigitLine(margin: 6)
+            : trimmed
+        let turned = standingUp(prepared)
         let limit = Int(max(0, maximumDegrees).rounded(.down))
         guard limit > 0 else { return turned }
         let small = turned.fitted(maxSide: 280)
