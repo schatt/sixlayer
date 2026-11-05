@@ -440,6 +440,26 @@ public enum DisplayOCRTraining {
         sourceName: String?,
         deskewMaximumDegrees: Double = 3
     ) -> DisplayOCRTrainingLabel? {
+        draft(
+            image: image,
+            panel: panel,
+            rowBoxes: rowBoxes,
+            sourceName: sourceName,
+            deskewMaximumDegrees: deskewMaximumDegrees,
+            precomputedPanelRead: nil
+        )
+    }
+
+    /// Same as ``draft(image:panel:rowBoxes:sourceName:deskewMaximumDegrees:)`` but
+    /// reuses an already-decoded panel read (suggestion path, #654).
+    fileprivate static func draft(
+        image: CGImage,
+        panel: DisplayOCRNormalizedBox,
+        rowBoxes: [DisplayOCRNormalizedBox],
+        sourceName: String?,
+        deskewMaximumDegrees: Double,
+        precomputedPanelRead: OCRResult?
+    ) -> DisplayOCRTrainingLabel? {
         guard let panelBox = panel.unitClamped,
               let panelImage = crop(image, to: panelBox) else { return nil }
         let clipped = rowBoxes.compactMap { box -> DisplayOCRNormalizedBox? in
@@ -448,7 +468,8 @@ public enum DisplayOCRTraining {
             guard hit.pixelRect(imageWidth: image.width, imageHeight: image.height) != nil else { return nil }
             return hit
         }
-        let panelRead = segmentRead(panelImage, deskewMaximumDegrees: deskewMaximumDegrees)
+        let panelRead = precomputedPanelRead
+            ?? segmentRead(panelImage, deskewMaximumDegrees: deskewMaximumDegrees)
         let lineRows = panelRows(from: panelRead)
         let rows: [DisplayOCRTrainingRow]
         if clipped.isEmpty {
@@ -1622,19 +1643,23 @@ public final class DisplayOCRTrainingSession: ObservableObject {
             return nil
         }
         var glyphs: [DisplayOCRNormalizedBox] = []
+        var panelRead: OCRResult?
         if let crop = DisplayOCRTraining.crop(image, to: panelBox) {
             let read = SevenSegmentOCR.decode(
                 cgImage: crop,
                 deskewMaximumDegrees: 0,
                 localizeDigitPanel: false
             )
+            panelRead = read
             glyphs = DisplayOCRTraining.rowBoxes(fromVisionBoxes: read.boundingBoxes, panel: panelBox)
         }
         let drafted = DisplayOCRTraining.draft(
             image: image,
             panel: panelBox,
             rowBoxes: [],
-            sourceName: nil
+            sourceName: nil,
+            deskewMaximumDegrees: 0,
+            precomputedPanelRead: panelRead
         )
         return SuggestionProposal(panel: panelBox, glyphs: glyphs, label: drafted)
     }
