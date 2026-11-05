@@ -1114,9 +1114,35 @@ private func reCropGlassBox(
 
 private extension GrayBuffer {
     static func fragments(in buffer: GrayBuffer) -> [[OCRRecognizedText]] {
-        readRows(in: buffer, allowBandPitch: true).compactMap { row in
+        // A padded single LCD line (glass above/below, maybe beside) can
+        // register extra bands and collapse the read (#651). Treat short wide
+        // crops as one line: no row split, no band-pitch copy.
+        let singleLine = buffer.height < 160 && buffer.width * 4 > buffer.height * 5
+        let rows = readRows(
+            in: buffer,
+            splittingRows: !singleLine,
+            allowBandPitch: !singleLine
+        )
+        let chosen: [[Cell]]
+        if singleLine, rows.count > 1 {
+            chosen = [rows.max(by: { left, right in
+                digitWeight(left) < digitWeight(right)
+            }) ?? []]
+        } else {
+            chosen = rows
+        }
+        return chosen.compactMap { row in
             let texts = recognizedGroups(row, width: buffer.width, height: buffer.height)
             return texts.isEmpty ? nil : texts
+        }
+    }
+
+    /// Prefer the row with the most digit ink when a line crop spuriously
+    /// splits (#651).
+    private static func digitWeight(_ row: [Cell]) -> Int {
+        row.reduce(0) { score, cell in
+            guard cell.character.isNumber, cell.height > 0 else { return score }
+            return score + cell.height * max(1, cell.box.width)
         }
     }
 
