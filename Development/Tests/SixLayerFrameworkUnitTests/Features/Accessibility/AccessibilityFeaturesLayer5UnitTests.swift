@@ -145,62 +145,36 @@ struct AccessibilityFeaturesLayer5HostUnitTests {
 
     @Test @MainActor
     func accessibilityEnhancedUsesNamedCompliance() {
-        hostExpectingNamedCompliance("accessibility-enhanced") {
+        TestSetupUtilities.hostExpectingNamedCompliance("accessibility-enhanced") {
             Text("Content").accessibilityEnhanced()
         }
     }
 
     @Test @MainActor
     func voiceOverEnabledUsesNamedCompliance() {
-        hostExpectingNamedCompliance("voiceOverEnabled") {
+        TestSetupUtilities.hostExpectingNamedCompliance("voiceOverEnabled") {
             Text("Content").voiceOverEnabled()
         }
     }
 
     @Test @MainActor
     func keyboardNavigableHosts() {
-        hostView {
+        TestSetupUtilities.hostExpectingPlatformRoot {
             Text("Content").keyboardNavigable()
         }
     }
 
     @Test @MainActor
     func highContrastEnabledHosts() {
-        hostView {
+        TestSetupUtilities.hostExpectingPlatformRoot {
             Text("Content").highContrastEnabled()
         }
     }
 
     @Test @MainActor
     func accessibilityTestingViewUsesNamedCompliance() {
-        hostExpectingNamedCompliance("AccessibilityTestingView") {
+        TestSetupUtilities.hostExpectingNamedCompliance("AccessibilityTestingView") {
             AccessibilityTestingView()
         }
-    }
-
-    @MainActor
-    private func hostExpectingNamedCompliance<V: View>(
-        _ name: String,
-        @ViewBuilder _ view: () -> V
-    ) {
-        #if os(watchOS)
-        return
-        #else
-        let (hosted, log) = TestSetupUtilities.hostRootPlatformViewNamedDebugLog(view())
-        #expect(hosted != nil)
-        #expect(
-            log.contains(name),
-            "named compliance \(name) must appear in debug log"
-        )
-        #endif
-    }
-
-    @MainActor
-    private func hostView<V: View>(@ViewBuilder _ view: () -> V) {
-        #if os(watchOS)
-        return
-        #else
-        #expect(TestSetupUtilities.hostRootPlatformView(view(), forceLayout: true) != nil)
-        #endif
     }
 }

@@ -19,13 +19,18 @@ open class PlatformMenuAndContextMenuExtensionsTests: BaseTestClass {
         let isolated = TestSetupUtilities.makeIsolatedAccessibilityIdentifierConfig()
         AccessibilityIdentifierConfig.$taskLocalConfig.withValue(isolated) {
             let anonymous = root()
-            let anonymousHost = hostRootPlatformView(anonymous, accessibilityIdentifierConfig: isolated)
-            #expect(anonymousHost != nil, "\(context): anonymous compliance path should render")
+            _ = TestSetupUtilities.hostObservingPlatformRoot(
+                accessibilityIdentifierConfig: isolated
+            ) { anonymous }
 
             let named = root().named(anchorName)
-            let namedHost = hostRootPlatformView(named, accessibilityIdentifierConfig: isolated)
-            #expect(namedHost != nil, "\(context): named path should render")
+            let namedHost = TestSetupUtilities.hostObservingPlatformRoot(
+                accessibilityIdentifierConfig: isolated
+            ) { named }
 
+            #if os(watchOS) || os(visionOS)
+            _ = (namedHost, context)
+            #else
             let expectedNamedId = NamedModifier.testingGeneratedIdentifier(name: anchorName, config: isolated)
             let platformIds = findAllAccessibilityIdentifiersFromPlatformView(namedHost)
             let platformHit = platformIds.contains { $0 == expectedNamedId || $0.contains(anchorName) }
@@ -41,6 +46,7 @@ open class PlatformMenuAndContextMenuExtensionsTests: BaseTestClass {
                 platformHit || viHit || logHit,
                 "\(context): expected named id '\(expectedNamedId)' via platform, ViewInspector, or config debug log."
             )
+            #endif
         }
     }
 
@@ -98,9 +104,9 @@ open class PlatformMenuAndContextMenuExtensionsTests: BaseTestClass {
     }
 
     @Test @MainActor func testPlatformMenuContextMenuAuditHostRenders() async {
-        let view = PlatformMenuContextMenuExtensionsAuditHost(onBackToMain: nil)
-        let hosted = Self.hostRootPlatformView(view)
-        #expect(hosted != nil)
+        TestSetupUtilities.hostExpectingPlatformRoot {
+            PlatformMenuContextMenuExtensionsAuditHost(onBackToMain: nil)
+        }
     }
 
     /// Issue #321: `platformMenu` must wrap SwiftUI `Menu` on iOS and macOS (not iOS no-op passthrough).

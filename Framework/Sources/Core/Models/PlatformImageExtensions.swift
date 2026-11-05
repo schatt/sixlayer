@@ -576,7 +576,7 @@ public extension PlatformImage {
 
     /// Bitmap in display orientation. Encoded photos use the orientation tag.
     /// A platform image built from pixels that are already upright is returned as stored.
-    public func orientedCGImage() -> CGImage? {
+    func orientedCGImage() -> CGImage? {
         if let data = originalEncodedData, let opened = Self.cgImage(opening: data) {
             return opened
         }
@@ -592,7 +592,7 @@ public extension PlatformImage {
     }
 
     /// Pixels from encoded photo bytes, turned so the orientation tag is upright.
-    public static func cgImage(opening data: Data) -> CGImage? {
+    static func cgImage(opening data: Data) -> CGImage? {
         guard let source = CGImageSourceCreateWithData(data as CFData, nil) else { return nil }
         let props = CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [String: Any]
         let orientation = intProperty(props, kCGImagePropertyOrientation)

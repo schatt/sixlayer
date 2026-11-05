@@ -135,6 +135,48 @@ open class AutomaticAccessibilityLabelViewInspectorTests: BaseTestClass {
             #expect(labelText != nil && !(labelText?.isEmpty ?? true), "Button with auto-extracted label should have label applied")
         }
     }
+
+    /// BUSINESS PURPOSE: platformButton(label:systemImage:) should apply accessibility label and auto id (#635)
+    /// TESTING SCOPE: systemImage overload preserves compliance (label + identifier from title)
+    /// METHODOLOGY: Host button; assert VoiceOver label and sanitized identifierName
+    @Test @MainActor func testPlatformButton_WithSystemImage_AppliesLabelAndIdentifier() {
+        initializeTestConfig()
+        runWithTaskLocalConfig {
+            let view = platformButton(label: "Add Place", systemImage: "plus") { }
+            let root = Self.hostRootPlatformView(view, forceLayout: true)
+            let labelText = getAccessibilityLabelForTest(view: view, hostedRoot: root)
+            #expect(labelText != nil && !(labelText?.isEmpty ?? true), "systemImage overload should apply accessibility label")
+            if let label = labelText {
+                #expect(label == "Add Place." || label.hasPrefix("Add Place"), "Label should come from title text")
+            }
+            let identifier = getAccessibilityIdentifierForTest(view: view, hostedRoot: root)
+            #expect(identifier != nil && !(identifier?.isEmpty ?? true), "systemImage overload should have an identifier")
+            #expect(identifier?.contains("add-place") == true, "Identifier should include sanitized label (add-place)")
+        }
+    }
+
+    /// BUSINESS PURPOSE: platformButton ViewBuilder label overload should honor explicit id (#635)
+    /// TESTING SCOPE: Custom label content still gets automaticCompliance identifierName
+    /// METHODOLOGY: Host button with explicit id; assert identifier includes that id
+    @Test @MainActor func testPlatformButton_WithViewBuilderLabel_UsesExplicitIdentifier() {
+        initializeTestConfig()
+        runWithTaskLocalConfig {
+            let view = platformButton(id: "paywall-product-row") {
+            } label: {
+                HStack {
+                    Text("Plus")
+                    Text("$4.99")
+                }
+            }
+            let root = Self.hostRootPlatformView(view, forceLayout: true)
+            let identifier = getAccessibilityIdentifierForTest(view: view, hostedRoot: root)
+            #expect(identifier != nil && !(identifier?.isEmpty ?? true), "ViewBuilder overload should have an identifier")
+            #expect(
+                identifier?.contains("paywall-product-row") == true,
+                "Explicit id should appear in generated accessibility identifier"
+            )
+        }
+    }
     
     // MARK: - Label Formatting Through ViewInspector Tests
     

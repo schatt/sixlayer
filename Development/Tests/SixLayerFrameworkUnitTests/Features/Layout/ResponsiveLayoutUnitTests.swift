@@ -41,7 +41,7 @@ struct ResponsiveLayoutHostUnitTests {
 
     @Test @MainActor
     func adaptiveGridHosts() {
-        hostView {
+        TestSetupUtilities.hostExpectingPlatformRoot {
             ResponsiveLayout.adaptiveGrid {
                 Text("Cell")
             }
@@ -50,19 +50,10 @@ struct ResponsiveLayoutHostUnitTests {
 
     @Test @MainActor
     func verticalGridHosts() {
-        hostView {
+        TestSetupUtilities.hostExpectingPlatformRoot {
             ResponsiveLayout.verticalGrid {
                 Text("Cell")
             }
         }
-    }
-
-    @MainActor
-    private func hostView<V: View>(@ViewBuilder _ view: () -> V) {
-        #if os(watchOS)
-        return
-        #else
-        #expect(TestSetupUtilities.hostRootPlatformView(view(), forceLayout: true) != nil)
-        #endif
     }
 }

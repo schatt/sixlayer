@@ -134,6 +134,33 @@ struct OCRSevenSegment576Tests {
         #expect(decode(image, maximum: 0).extractedText == "32.88\n8.022")
     }
 
+    @Test func onePixelOnADarkSegmentDoesNotChangeTheDigit() {
+        // "3125" already decodes. One pixel on the 3's empty lower-left
+        // stem lights `e` when any foreground pixel counts, and that 3
+        // stops being a 3 (#599). A lone 4 is the wrong fixture: with no
+        // top or bottom bar its ink box is short and already reads as 9.
+        #expect(decode(panel(["3125"])).extractedText == "3125")
+        let speck = SegmentPanel.render(
+            rows: [atoms("3125")],
+            falseLowerLeftStemSpeck: true
+        )
+        #expect(decode(speck).extractedText == "3125")
+    }
+
+    @Test func washedRowDigitCountFollowsStrideNotTheCleanRow() {
+        // Price is four digits at stride 58. Five wide glyphs span about
+        // 282 pixels, so width/stride rounds to five. A leading 1 is only
+        // a right-edge stem and does not add that stride (#599).
+        let image = SegmentPanel.render(
+            rows: [atoms("32.88"), atoms("28022")],
+            solidGapWashVolumeOnly: true
+        )
+        let lines = decode(image, maximum: 0).extractedText.split(separator: "\n").map(String.init)
+        #expect(lines.count == 2)
+        #expect(lines.first?.filter(\.isNumber) == "3288")
+        #expect(lines.last?.filter(\.isNumber) == "28022")
+    }
+
     @Test func rescannedRowCropMatchesPriceBandGeometry() {
         // Approach B (#591): a left scratch sits in the digit bands but not
         // through the row gap, and a tall haze above each row stretches the
@@ -156,6 +183,10 @@ struct OCRSevenSegment576Tests {
     }
 
     @Test func wideGapSplitsGroupsAndAnEqualGapDoesNot() {
+        // Isolate fine deskew: untilted short rows must still read (#602).
+        #expect(decode(panel(["1234"]), maximum: 0).extractedText == "1234")
+        #expect(decode(panel(["12 34"]), maximum: 0).extractedText == "12  34")
+
         let split = decode(panel(["12 34"]))
         #expect(split.extractedText == "12  34")
         #expect(segmentTexts(split) == ["12", "34"])
@@ -243,9 +274,14 @@ struct OCRSevenSegment576Tests {
     }
 
     @Test func filledInkBesideCleanRowsDoesNotCreateASegment() {
-        var row = atoms("51.07")
-        row.append(.gap(SegmentPanel.groupGap))
-        row.append(contentsOf: atoms("17.740"))
+        var clean = atoms("51.07")
+        clean.append(.gap(SegmentPanel.groupGap))
+        clean.append(contentsOf: atoms("17.740"))
+        // Control: without fills the price must stay one fragment (#646).
+        // Volume mark can still mis-read as comma on this short canvas (#658).
+        #expect(segmentTexts(decode(SegmentPanel.render(rows: [clean]))).first == "51.07")
+
+        var row = clean
         row.append(.gap(SegmentPanel.groupGap))
         row.append(.fill(width: 70, height: 70))
         let result = decode(SegmentPanel.render(rows: [row, [.fill(width: 160, height: 28)]]))
@@ -283,11 +319,12 @@ struct OCRSevenSegment576Tests {
 
     @Test func strokeSizedWindowSeparatesAdjacentDigits() {
         // A window of one eighth of this crop is wider than the gap between digits.
-        // The lit strokes are only a few levels darker than that gap, so the wide
-        // window marks the gap as ink and the row becomes one blob.
+        // Lit strokes stay low-contrast vs glass, but must clear the masks
+        // quarter-of-high floor ((high-low)*4 > high): ink 100 / glass 130
+        // is range 30 and yields an empty mask (#648).
         let image = SegmentPanel.render(
             rows: [atoms("32.88"), atoms("8.022")],
-            inkLevel: 100,
+            inkLevel: 95,
             backgroundLevel: 130,
             scale: 4
         )
@@ -359,6 +396,15 @@ struct OCRSevenSegment576Tests {
         #expect(light == "31.25")
     }
 
+    /// #645: real colon dots are stroke-tall; the glare-edge speck pair must
+    /// not steal this path, and a painted colon must still read — clean and
+    /// under the same mid-row glare wash that used to invent ':' on `31.25`.
+    @Test func aColonBetweenDigitsStaysAColon() {
+        let rows = [atoms("12:30")]
+        #expect(decode(SegmentPanel.render(rows: rows)).extractedText == "12:30")
+        #expect(decode(SegmentPanel.render(rows: rows, glare: true)).extractedText == "12:30")
+    }
+
     @Test func deskewSearchesTheCallerMaximum() {
         let rows = [atoms("31.25")]
         let tilted = SegmentPanel.render(rows: rows, tiltDegrees: 3)
@@ -378,6 +424,83 @@ struct OCRSevenSegment576Tests {
         let result = decode(image)
         #expect(result.extractedText == "32.88\n8.022")
         #expect(segmentTexts(result) == ["32.88", "8.022"])
+    }
+
+    /// #625: a tight upright line must not lose to a half-turn. Symmetric
+    /// digits (`0`, `2`, `8`) still look like numbers upside down, and a
+    /// border-clipped upright sample can score fewer wide digits.
+    @Test func aTightSingleLineCropStaysUpright() {
+        let image = sealedBothRowsPanel()
+        let full = decode(image, maximum: 0)
+        #expect(full.extractedText == "32.88\n8.022")
+        let segments = full.recognizedTexts.filter { $0.role == .segment }
+        #expect(segments.map(\.text) == ["32.88", "8.022"])
+        // Zero-margin glyph boxes previously returned the half-turn spoilers
+        // 88.26 / 220.8. They must not. A taller crop of the lower line
+        // (still one row) must stay upright as 8.022. Zero-margin correct
+        // digits are #641; taller top-line (downward) is #649; isotropic
+        // pad around the top box is #651.
+        let spoilers = ["88.26", "220.8"]
+        for segment in segments {
+            let tight = lineCrop(image, visionBox: segment.boundingBox, pad: 0)
+            #expect(spoilers.contains(decode(tight, maximum: 0).extractedText) == false)
+        }
+        let taller = lineCrop(image, visionBox: segments[1].boundingBox, pad: 20)
+        #expect(decode(taller, maximum: 0).extractedText == "8.022")
+    }
+
+    /// #641: a zero-margin Vision glyph crop must read that line, not only
+    /// avoid the known half-turn spoilers. Border clearing on a box tight to
+    /// ink previously left `"8"` / `""` instead of `32.88` / `8.022`.
+    @Test func aZeroMarginGlyphCropReadsThatLine() {
+        let image = sealedBothRowsPanel()
+        let full = decode(image, maximum: 0)
+        let segments = full.recognizedTexts.filter { $0.role == .segment }
+        #expect(segments.map(\.text) == ["32.88", "8.022"])
+        for segment in segments {
+            let tight = lineCrop(image, visionBox: segment.boundingBox, pad: 0)
+            #expect(decode(tight, maximum: 0).extractedText == segment.text)
+        }
+    }
+
+    /// #649: a modestly taller crop of the **top** sealed line must read
+    /// `32.88`. Grow only downward into the row gap — isotropic pad (and
+    /// any horizontal growth) garbles the top line (#651); lower taller is
+    /// #625.
+    @Test func aTallerTopLineCropReadsThatLine() {
+        let image = sealedBothRowsPanel()
+        let full = decode(image, maximum: 0)
+        let segments = full.recognizedTexts.filter { $0.role == .segment }
+        #expect(segments.map(\.text) == ["32.88", "8.022"])
+        let taller = lineCrop(
+            image,
+            visionBox: segments[0].boundingBox,
+            padX: 0,
+            padTop: 0,
+            padBottom: 20
+        )
+        #expect(decode(taller, maximum: 0).extractedText == "32.88")
+    }
+
+    /// #651: isotropic or symmetric vertical pad around the top sealed line
+    /// must still read `32.88`. Pad=2 isotropic previously returned `"_\n7"`;
+    /// pad=20 emptied; padTop+padBottom=20 (no X) returned `"_"`.
+    @Test func aPaddedTopLineCropStillReadsThatLine() {
+        let image = sealedBothRowsPanel()
+        let full = decode(image, maximum: 0)
+        let segments = full.recognizedTexts.filter { $0.role == .segment }
+        #expect(segments.map(\.text) == ["32.88", "8.022"])
+        let box = segments[0].boundingBox
+        let isotropic = lineCrop(image, visionBox: box, pad: 20)
+        #expect(decode(isotropic, maximum: 0).extractedText == "32.88")
+        let bothVertical = lineCrop(
+            image,
+            visionBox: box,
+            padX: 0,
+            padTop: 20,
+            padBottom: 20
+        )
+        #expect(decode(bothVertical, maximum: 0).extractedText == "32.88")
     }
 
     @Test func decoderSourceDoesNotNameFields() throws {
@@ -528,7 +651,9 @@ struct OCRSevenSegment576Tests {
     }
 
     @Test func structuredExtractionBindsSuppliedLabelsAndSkipsVision() async throws {
-        let image = panel(["32.88", "8.022"])
+        // Structured ssocr always localizes the digit panel; unbezeled
+        // two-row synthetics are not a sealed pocket (#648).
+        let image = sealedBothRowsPanel()
         let preview = decode(image)
         let segments = preview.recognizedTexts.filter { $0.role == .segment }
         #expect(segments.count == 2)
@@ -915,6 +1040,69 @@ struct OCRSevenSegment576Tests {
         #expect(readable, "\(report)")
     }
 
+    /// Library photos are multi-megapixel. Panel localization must analyze a
+    /// capped long edge and map the rect back (#650).
+    ///
+    /// The sealed panel is scaled so it occupies a similar fraction of the
+    /// 4000×3000 canvas as the 1200×1600 fixture — a postage-stamp embed would
+    /// fail sealed-area thresholds even after fitting, which is not the
+    /// production pump-frame geometry.
+    @Test func digitPanelRegionCapsAnalysisOnLargeFrame() {
+        let panelImage = scaleGrayImage(sealedBothRowsPanel(), factor: 3)
+        let originX = 600
+        let originY = 900
+        let frame = embed(
+            panelImage,
+            canvasWidth: 4000,
+            canvasHeight: 3000,
+            originX: originX,
+            originY: originY,
+            fill: 180
+        )
+        SevenSegmentOCR.lastDigitPanelAnalysisLongEdge = nil
+        let region = SevenSegmentOCR.digitPanelRegion(in: frame)
+        #expect(SevenSegmentOCR.lastDigitPanelAnalysisLongEdge != nil)
+        #expect(
+            (SevenSegmentOCR.lastDigitPanelAnalysisLongEdge ?? .max)
+                <= SevenSegmentOCR.digitPanelAnalysisMaxSide
+        )
+        #expect(region != nil)
+        guard let region else { return }
+        let panelMidX = CGFloat(originX) + CGFloat(panelImage.width) / 2
+        let panelMidY = CGFloat(originY) + CGFloat(panelImage.height) / 2
+        #expect(region.minX < panelMidX && region.maxX > panelMidX)
+        #expect(region.minY < panelMidY && region.maxY > panelMidY)
+        #expect(abs(region.width - CGFloat(panelImage.width)) < 120)
+        #expect(abs(region.height - CGFloat(panelImage.height)) < 120)
+        #expect(abs(region.minX - CGFloat(originX)) < 64)
+        #expect(abs(region.minY - CGFloat(originY)) < 64)
+    }
+
+    /// Training Decode hangs when `masks` runs on a multi-megapixel panel crop (#654).
+    /// Scale just past the analysis cap so the red run stays finite without the fit.
+    /// Exact glyph text on NN-enlarged synthetics is not the Done bar — the cap is.
+    @Test func decodeCapsAnalysisOnLargePanelCrop() {
+        let base = sealedBothRowsPanel()
+        var factor = 2
+        while max(base.width, base.height) * factor <= SevenSegmentOCR.digitPanelAnalysisMaxSide {
+            factor += 1
+        }
+        let panelImage = scaleGrayImage(base, factor: factor)
+        #expect(max(panelImage.width, panelImage.height) > SevenSegmentOCR.digitPanelAnalysisMaxSide)
+        SevenSegmentOCR.lastDecodeAnalysisLongEdge = nil
+        _ = SevenSegmentOCR.decode(
+            cgImage: panelImage,
+            deskewMaximumDegrees: 0,
+            localizeDigitPanel: false
+        )
+        #expect(SevenSegmentOCR.lastDecodeAnalysisLongEdge != nil)
+        #expect(
+            (SevenSegmentOCR.lastDecodeAnalysisLongEdge ?? .max)
+                <= SevenSegmentOCR.digitPanelAnalysisMaxSide
+        )
+    }
+
+
     @Test func fullFrameWithoutLocalizationMissesSealedBothRows() {
         let frame = embed(
             sealedBothRowsPanel(),
@@ -1134,6 +1322,27 @@ struct OCRSevenSegment576Tests {
         return solidGrayImage(pixels: pixels, width: width, height: height)
     }
 
+    /// Nearest-neighbor enlarge for large-frame localization fixtures (#650).
+    private func scaleGrayImage(_ image: CGImage, factor: Int) -> CGImage {
+        guard factor > 1 else { return image }
+        let width = image.width
+        let height = image.height
+        let newW = width * factor
+        let newH = height * factor
+        var output = [UInt8](repeating: 0, count: newW * newH)
+        if let provider = image.dataProvider,
+           let data = provider.data,
+           let bytes = CFDataGetBytePtr(data) {
+            let rowBytes = image.bytesPerRow
+            for y in 0..<newH {
+                for x in 0..<newW {
+                    output[y * newW + x] = bytes[(y / factor) * rowBytes + (x / factor)]
+                }
+            }
+        }
+        return solidGrayImage(pixels: output, width: newW, height: newH)
+    }
+
     private func crop(_ image: CGImage, x: Int, y: Int, width: Int, height: Int) -> CGImage {
         var pixels = [UInt8](repeating: 0, count: width * height)
         guard let provider = image.dataProvider,
@@ -1149,6 +1358,30 @@ struct OCRSevenSegment576Tests {
             }
         }
         return solidGrayImage(pixels: pixels, width: width, height: height)
+    }
+
+    private func lineCrop(_ image: CGImage, visionBox: CGRect, pad: Int) -> CGImage {
+        lineCrop(image, visionBox: visionBox, padX: pad, padTop: pad, padBottom: pad)
+    }
+
+    private func lineCrop(
+        _ image: CGImage,
+        visionBox: CGRect,
+        padX: Int,
+        padTop: Int,
+        padBottom: Int
+    ) -> CGImage {
+        let width = image.width
+        let height = image.height
+        let minX = Int((visionBox.minX * CGFloat(width)).rounded(.down)) - padX
+        let maxX = Int((visionBox.maxX * CGFloat(width)).rounded(.up)) + padX
+        let minY = Int(((1 - visionBox.maxY) * CGFloat(height)).rounded(.down)) - padTop
+        let maxY = Int(((1 - visionBox.minY) * CGFloat(height)).rounded(.up)) + padBottom
+        let x = max(0, minX)
+        let y = max(0, minY)
+        let w = max(1, min(width, maxX) - x)
+        let h = max(1, min(height, maxY) - y)
+        return crop(image, x: x, y: y, width: w, height: h)
     }
 
     private func solidGrayImage(pixels: [UInt8], width: Int, height: Int) -> CGImage {
@@ -1243,7 +1476,7 @@ struct OCRSevenSegment576Tests {
     }
 }
 
-private enum SegmentPanel {
+enum SegmentPanel {
     static let cellW = 50
     static let cellH = 90
     static let stroke = 12
@@ -1286,7 +1519,8 @@ private enum SegmentPanel {
         aboveDigitGlare: Bool = false,
         leftScratch: Bool = false,
         tallHaze: Bool = false,
-        solidGapWashVolumeOnly: Bool = false
+        solidGapWashVolumeOnly: Bool = false,
+        falseLowerLeftStemSpeck: Bool = false
     ) -> CGImage {
         let laid = layout(rows: rows, padding: padding)
         let background: UInt8 = backgroundLevel ?? (invert ? 28 : 214)
@@ -1305,6 +1539,17 @@ private enum SegmentPanel {
         }
         for stroke in laid.strokes where stroke.opposite {
             fill(&pixels, width: laid.width, height: laid.height, rect: stroke.rect, value: markInk)
+        }
+        if falseLowerLeftStemSpeck {
+            // One pixel on the lower-left stem scan of a 3. That glyph has
+            // no `e`. The point sits in the open glass: below the crossbar,
+            // above the bottom bar, and left of the right stem, so it does
+            // not join a real stroke.
+            let x = padding + stroke + 2
+            let y = padding + (cellH * 3) / 4
+            if x < laid.width, y < laid.height {
+                pixels[y * laid.width + x] = ink
+            }
         }
         if glare, let band = laid.rowBands.first {
             let y0 = max(0, band.midY - stroke)

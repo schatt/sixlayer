@@ -154,11 +154,21 @@ public enum SevenSegmentOCR {
         return (smallWidth, maxSide)
     }
 
+    /// Long-edge cap for panel localization analysis (#650). Full-resolution
+    /// library photos are fitted to this before `masks()` / `localRange`.
+    public static let digitPanelAnalysisMaxSide = 1600
+
+    /// Long edge of the buffer that `digitPanelBounds` last analyzed. Test probe (#650).
+    nonisolated(unsafe) public static var lastDigitPanelAnalysisLongEdge: Int?
+
+    /// Long edge of the buffer that `decode` last ran `masks` on. Test probe (#654).
+    nonisolated(unsafe) public static var lastDecodeAnalysisLongEdge: Int?
+
     /// Pixel rect of the digit panel (glass plus a bezel margin) in the source
     /// image's coordinates, or `nil` when no sealed panel is found.
     ///
-    /// Frames larger than the find cap are searched on a long-side downsample.
-    /// The rect is scaled back by `source / find` on each axis.
+    /// Frames larger than ``digitPanelAnalysisMaxSide`` are searched on a
+    /// fitted buffer. The rect is scaled back by `source / analysis` on each axis.
     ///
     /// Absolute crop rectangles are **per photo**. Reusing one image's rect on
     /// another frame is not a valid test of decode quality (#596).
@@ -234,28 +244,35 @@ public enum SevenSegmentOCR {
     /// cropped before decode so a resized full pump frame can feed `.ssocr`
     /// without a hand-tuned ROI (#596). Tight crops keep working: a missing or
     /// near-full-frame region falls back to the whole image.
+    ///
+    /// `panelLocator`, when set, is the trained panel model (#609). A nil
+    /// result from it still uses the classical finder.
+    ///
+    /// After localization, analysis is fitted to ``digitPanelAnalysisMaxSide``
+    /// so full-resolution panel crops from the training harness do not stall
+    /// in `localRange` (#654). Normalized glyph boxes stay valid (same aspect).
     public static func decode(
         cgImage: CGImage,
         deskewMaximumDegrees: Double = 3,
-        localizeDigitPanel: Bool = false
+        localizeDigitPanel: Bool = false,
+        panelLocator: DisplayOCRPanelLocator? = nil
     ) -> OCRResult {
         guard var gray = GrayBuffer.read(cgImage) else {
             return OCRResult(extractedText: "", confidence: 0)
         }
-        if localizeDigitPanel, let region = gray.digitPanelBounds() {
-            let area = region.width * region.height
-            let full = CGFloat(gray.width * gray.height)
-            if area > 64, area < full * 0.85 {
-                let x0 = Int(region.minX.rounded(.down))
-                let y0 = Int(region.minY.rounded(.down))
-                let x1 = Int(region.maxX.rounded(.up))
-                let y1 = Int(region.maxY.rounded(.up))
-                let cropped = gray.cropped(x0: x0, y0: y0, x1: x1, y1: y1)
-                if cropped.width > 8, cropped.height > 8 {
-                    gray = cropped
-                }
+        if localizeDigitPanel {
+            let modelRegion = panelLocator?.panelRegion(in: cgImage)
+            if let modelRegion, let cropped = gray.panelCrop(modelRegion) {
+                gray = cropped
+            } else if let region = gray.digitPanelBounds(), let cropped = gray.panelCrop(region) {
+                gray = cropped
             }
         }
+        // Huge pale pad around a small panel (training / paddedCanvas) must
+        // not survive into masks — fit alone leaves tiny glyphs (#648).
+        gray = gray.trimmingUniformMargin()
+        gray = gray.fitted(maxSide: digitPanelAnalysisMaxSide)
+        lastDecodeAnalysisLongEdge = max(gray.width, gray.height)
         let upright = GrayBuffer.deskew(gray, maximumDegrees: deskewMaximumDegrees)
         let fragments = GrayBuffer.fragments(in: upright)
         let lines = fragments.map { row in row.map(\.text).joined(separator: "  ") }
@@ -300,7 +317,15 @@ private struct GrayBuffer {
     }
 
     static func deskew(_ buffer: GrayBuffer, maximumDegrees: Double) -> GrayBuffer {
-        let turned = standingUp(buffer)
+        // Padded single-line crops pull bezel and extra glass (#651). Trim
+        // solid edge chrome, peel side glass tight (side pad invents stems),
+        // and snap to the densest ink band with 4px vertical glass — enough
+        // for #641 border clearing, less than the 6px span that left
+        // isotropic / both-vertical pad reading "_".
+        let prepared = buffer
+            .trimmingEdgeBezel()
+            .tightenedToDigitLine(marginX: 0, marginY: 4)
+        let turned = standingUp(prepared)
         let limit = Int(max(0, maximumDegrees).rounded(.down))
         guard limit > 0 else { return turned }
         let small = turned.fitted(maxSide: 280)
@@ -373,20 +398,39 @@ private struct GrayBuffer {
             return left.element.confidence < right.element.confidence
         }?.offset ?? 0
         guard bestTurns != 0 else { return buffer }
-        // A small tilt still belongs to the fine deskew. Speck rows on a
-        // sideways sample read as a few wide glyphs and must not spin an
-        // upright panel. A real quarter turn is mostly digits.
-        // A 480px sample of an upright panel can drop two wide digits.
-        // That lead is not a turn. A field of ones still turns on a lead of two.
-        let glyphs = scores[bestTurns].text.filter { $0 != "/" }
+        guard acceptsOrientation(bestTurns, scores: scores, buffer: buffer) else { return buffer }
+        return buffer.rotated(degrees: Double(bestTurns * 90))
+    }
+
+    /// A small tilt still belongs to the fine deskew. Speck rows on a
+    /// sideways sample read as a few wide glyphs and must not spin an
+    /// upright panel. A real quarter turn is mostly digits. A half turn of
+    /// 0/2/8 still looks numeric — only take 180° when decimals sit below
+    /// after the turn. A short wide strip is already one upright line
+    /// (#625); padded top-line crops that keep a little glass still look
+    /// short-wide and must not half-turn into `"_"` (#651).
+    /// A 480px sample of an upright panel can drop two wide digits.
+    /// That lead is not a turn. A field of ones still turns on a lead of two.
+    private static func acceptsOrientation(
+        _ turns: Int,
+        scores: [OrientationScore],
+        buffer: GrayBuffer
+    ) -> Bool {
+        // Line crops (Vision box ± pad) are already upright. Blocking only
+        // 90° left 180° free to invent `"_"` / spoilers on isotropic pad.
+        if buffer.width * 4 > buffer.height * 5 {
+            return false
+        }
+        let glyphs = scores[turns].text.filter { $0 != "/" }
         let numbers = glyphs.filter(\.isNumber).count
         let mostlyNumbers = !glyphs.isEmpty && numbers * 2 > glyphs.count
+        if turns == 2 {
+            return mostlyNumbers && scores[2].marksBelow > scores[0].marksBelow
+        }
         let uprightWide = scores[0].wideDigits
-        let turnedWide = scores[bestTurns].wideDigits
+        let turnedWide = scores[turns].wideDigits
         let minimumLead = uprightWide >= 4 ? 4 : 2
-        let enough = mostlyNumbers && turnedWide >= 4 && turnedWide >= uprightWide + minimumLead
-        guard enough else { return buffer }
-        return buffer.rotated(degrees: Double(bestTurns * 90))
+        return mostlyNumbers && turnedWide >= 4 && turnedWide >= uprightWide + minimumLead
     }
 
     private struct OrientationScore {
@@ -639,9 +683,17 @@ private struct GrayBuffer {
             ? min(vertical[0].1 - vertical[0].0, vertical[1].1 - vertical[1].0)
             : 0
         let colonGap = vertical.count == 2 && splitGap >= shorterRun
-        if colonGap,
-           box.width * 100 <= box.height * 30,
-           vertical.allSatisfy({ $0.1 - $0.0 < digitHeight * 45 / 100 }) {
+        // Mid-row glare brightens the glass strip; the rows just above/below
+        // then look like ink in empty inter-digit columns (#645). That yields
+        // two speck-tall runs with a colon-sized gap. Real colon dots are a
+        // meaningful share of the digit height — drop the speck pair instead
+        // of falling through to '.' .
+        let stackedNarrowDots = colonGap
+            && box.width * 100 <= box.height * 30
+            && vertical.allSatisfy { $0.1 - $0.0 < digitHeight * 45 / 100 }
+        if stackedNarrowDots {
+            let minDot = max(3, digitHeight * 8 / 100)
+            guard shorterRun >= minDot else { return nil }
             return Cell(box: box, character: ":", confidence: 1, band: bandIndex)
         }
         // Glare lifts the glass on both sides of its band. Those short bands
@@ -771,7 +823,10 @@ private struct GrayBuffer {
     /// Six scanlines, as ssocr does. The center column is split into thirds
     /// for the top, middle, and bottom bars. Lines a quarter down from the
     /// top and a quarter up from the bottom are split into halves for the
-    /// stems. One foreground pixel lights a segment.
+    /// stems. A segment lights only when a consecutive foreground run covers
+    /// at least an eighth of that scan, and at least two pixels (#599).
+    /// A fifth was too high: a real stroke on the near-miss 2 is a run of
+    /// four on scans of 21–30, and one pixel on an empty stem stays dark.
     ///
     /// `washAwareStems`: skip the outer left fringe on f/e scans so a solid
     /// wash bridge beside the glyph cannot mint a false upper/lower-left stem.
@@ -799,14 +854,14 @@ private struct GrayBuffer {
         var pattern = SevenSegmentPattern()
         let midX = box.minX + boxWidth / 2
         let third = max(1, boxHeight / 3)
-        if ink(midX, box.minY, third, true) > 0 {
+        if segmentIsLit(mask, x: midX, y: box.minY, length: third, vertical: true) {
             pattern.formUnion(.a)
         }
-        if ink(midX, box.minY + third, third, true) > 0 {
+        if segmentIsLit(mask, x: midX, y: box.minY + third, length: third, vertical: true) {
             pattern.formUnion(.g)
         }
         let lower = box.minY + third * 2
-        if ink(midX, lower, max(1, box.maxY - lower), true) > 0 {
+        if segmentIsLit(mask, x: midX, y: lower, length: max(1, box.maxY - lower), vertical: true) {
             pattern.formUnion(.d)
         }
         let quarter = box.minY + boxHeight / 4
@@ -815,14 +870,22 @@ private struct GrayBuffer {
         let right = max(1, box.maxX - (midX + 1))
         // Right stems first so wash-aware `f` can see whether `c` is present
         // (8-candidates keep f; 2-like glyphs drop wash f).
-        if ink(midX + 1, quarter, right, false) > 0 {
+        if segmentIsLit(mask, x: midX + 1, y: quarter, length: right, vertical: false) {
             pattern.formUnion(.b)
         }
-        if ink(midX + 1, threeQuarters, right, false) > 0 {
+        if segmentIsLit(mask, x: midX + 1, y: threeQuarters, length: right, vertical: false) {
             pattern.formUnion(.c)
         }
         let eFringe = washAwareStems ? max(1, boxWidth / 6) : 0
-        if ink(box.minX + eFringe, threeQuarters, max(1, half - eFringe), false) > 0 {
+        let eLength = max(1, half - eFringe)
+        let eRun = longestForegroundRun(
+            mask, x: box.minX + eFringe, y: threeQuarters, length: eLength, vertical: false
+        )
+        // The fringe starts inside a real stem. The tail past it can be a
+        // single pixel; requiring two turned a washed 8 into a 9. The fringe
+        // already skipped the bridge (#599).
+        let eLit = washAwareStems ? eRun >= 1 : eRun >= max(2, eLength / 8)
+        if eLit {
             pattern.formUnion(.e)
         }
         // Wash bridges light false `f` on 2-like glyphs (pat 123 → 2/8 tie).
@@ -831,7 +894,7 @@ private struct GrayBuffer {
         // `c` is dark, require stem-zone ink, reject fringe-dominated wash,
         // and drop f if the remainder is an exact digit.
         if !washAwareStems || pattern.contains(.c) {
-            if ink(box.minX, quarter, half, false) > 0 {
+            if segmentIsLit(mask, x: box.minX, y: quarter, length: half, vertical: false) {
                 pattern.formUnion(.f)
             }
         } else {
@@ -839,7 +902,11 @@ private struct GrayBuffer {
             let fEdge = ink(box.minX, quarter, fFringe, false)
             let fStem = ink(box.minX + fFringe, quarter, max(1, half - fFringe), false)
             let washDominated = fEdge >= fStem && fEdge * 2 >= fFringe
-            if fStem > 0, !washDominated {
+            let fLength = max(1, half - fFringe)
+            let fRun = longestForegroundRun(
+                mask, x: box.minX + fFringe, y: quarter, length: fLength, vertical: false
+            )
+            if fRun >= 1, !washDominated {
                 pattern.formUnion(.f)
             }
             if pattern.contains(.f) {
@@ -857,13 +924,13 @@ private struct GrayBuffer {
         guard !cells.isEmpty else { return [] }
         let ordered = cells.sorted { $0.minX < $1.minX }
         guard ordered.count > 1 else { return [ordered] }
-        let gaps = zip(ordered, ordered.dropFirst()).map { max(0, $1.minX - $0.maxX) }
+        // Narrow stems shrink a plain median and start late in their slot, so
+        // a body→stem edge gap looks cell-wide (#646). Upper-half pitch plus
+        // right-anchored padding keeps only true group holes above the bar.
+        let pitch = bodyPitch(of: ordered)
+        let slots = groupSlots(ordered, pitch: pitch)
+        let gaps = zip(slots, slots.dropFirst()).map { max(0, $1.minX - $0.maxX) }
         let middle = median(gaps) ?? 0
-        let tallest = ordered.map(\.height).max() ?? 1
-        let pitches = ordered.filter { cell in
-            cell.height * 100 >= tallest * 55 && !isMark(cell.character)
-        }.map(\.box.width)
-        let pitch = median(pitches) ?? 0
         var groups: [[Cell]] = [[ordered[0]]]
         for (index, cell) in ordered.dropFirst().enumerated() {
             let gap = gaps[index]
@@ -875,6 +942,26 @@ private struct GrayBuffer {
             }
         }
         return groups
+    }
+
+    /// Median of the upper half of tall non-mark widths — resists skinny "1"s.
+    private static func bodyPitch(of cells: [Cell]) -> Int {
+        let tallest = cells.map(\.height).max() ?? 1
+        let widths = cells.filter { cell in
+            cell.height * 100 >= tallest * 55 && !isMark(cell.character)
+        }.map(\.box.width).sorted()
+        guard !widths.isEmpty else { return 0 }
+        return median(Array(widths[(widths.count / 2)...])) ?? 0
+    }
+
+    /// Pad thin digits out to `pitch`, anchored on maxX (stems sit on the right).
+    private static func groupSlots(_ cells: [Cell], pitch: Int) -> [(minX: Int, maxX: Int)] {
+        cells.map { cell in
+            if isMark(cell.character) || pitch <= 0 || cell.box.width >= pitch {
+                return (cell.minX, cell.maxX)
+            }
+            return (cell.maxX - pitch, cell.maxX)
+        }
     }
 
     private static func isMark(_ character: Character) -> Bool {
@@ -937,6 +1024,9 @@ private struct GrayBuffer {
 
     /// Min and max inside a square window. A square window separates into a
     /// horizontal pass and a vertical pass.
+    ///
+    /// Uses C-style index loops — Swift `ClosedRange` iteration dominated the
+    /// #650 photo-library hang sample (generic metadata / IndexingIterator).
     private func localRange(radius: Int) -> (low: [Int], high: [Int]) {
         var horizontalLow = [Int](repeating: 255, count: pixels.count)
         var horizontalHigh = [Int](repeating: 0, count: pixels.count)
@@ -947,10 +1037,12 @@ private struct GrayBuffer {
                 let x1 = min(width - 1, x + radius)
                 var low = 255
                 var high = 0
-                for sample in x0...x1 {
+                var sample = x0
+                while sample <= x1 {
                     let level = Int(pixels[row + sample])
                     if level < low { low = level }
                     if level > high { high = level }
+                    sample += 1
                 }
                 horizontalLow[row + x] = low
                 horizontalHigh[row + x] = high
@@ -964,10 +1056,12 @@ private struct GrayBuffer {
                 let y1 = min(height - 1, y + radius)
                 var columnLow = 255
                 var columnHigh = 0
-                for sample in y0...y1 {
+                var sample = y0
+                while sample <= y1 {
                     let index = sample * width + x
                     if horizontalLow[index] < columnLow { columnLow = horizontalLow[index] }
                     if horizontalHigh[index] > columnHigh { columnHigh = horizontalHigh[index] }
+                    sample += 1
                 }
                 let index = y * width + x
                 low[index] = columnLow
@@ -1035,7 +1129,7 @@ private struct GrayBuffer {
         }
     }
 
-    private func fitted(maxSide: Int) -> GrayBuffer {
+    func fitted(maxSide: Int) -> GrayBuffer {
         let longest = max(width, height)
         guard longest > maxSide, longest > 0 else { return self }
         let ratio = Double(maxSide) / Double(longest)
@@ -1091,6 +1185,45 @@ private struct GrayBuffer {
     fileprivate func cornerFill() -> UInt8 {
         let corners = [pixels[0], pixels[width - 1], pixels[(height - 1) * width], pixels[pixels.count - 1]]
         return corners.sorted()[corners.count / 2]
+    }
+
+    /// Peel uniform border that matches the corner fill (synthetic pad /
+    /// letterbox). Keeps a small glass margin so bezels stay when present (#648).
+    func trimmingUniformMargin() -> GrayBuffer {
+        guard width > 16, height > 16 else { return self }
+        let fill = Int(cornerFill())
+        let slack = inkMargin
+        func isMarginRow(_ y: Int) -> Bool {
+            let start = y * width
+            for x in 0..<width where abs(Int(pixels[start + x]) - fill) > slack {
+                return false
+            }
+            return true
+        }
+        func isMarginColumn(_ x: Int) -> Bool {
+            for y in 0..<height where abs(Int(pixels[y * width + x]) - fill) > slack {
+                return false
+            }
+            return true
+        }
+        var top = 0
+        while top < height - 8, isMarginRow(top) { top += 1 }
+        var bottom = height
+        while bottom > top + 8, isMarginRow(bottom - 1) { bottom -= 1 }
+        var left = 0
+        while left < width - 8, isMarginColumn(left) { left += 1 }
+        var right = width
+        while right > left + 8, isMarginColumn(right - 1) { right -= 1 }
+        // Ignore hairline "pad" so glare / invert fixtures keep full glass (#645).
+        let peeled = top + (height - bottom) + left + (width - right)
+        guard peeled >= 64 else { return self }
+        let margin = 4
+        let x0 = max(0, left - margin)
+        let y0 = max(0, top - margin)
+        let x1 = min(width, right + margin)
+        let y1 = min(height, bottom + margin)
+        if x0 == 0, y0 == 0, x1 == width, y1 == height { return self }
+        return cropped(x0: x0, y0: y0, x1: x1, y1: y1)
     }
 
     fileprivate func extremeMarkMask() -> Mask {
@@ -1166,22 +1299,50 @@ private func recognizedGroups(_ cells: [Cell], width: Int, height: Int) -> [OCRR
     return pieces.map { group in
         let text = String(group.map(\.character))
         let confidence = group.map(\.confidence).min() ?? 0
-        let minX = group.map(\.minX).min() ?? 0
-        let maxX = group.map(\.maxX).max() ?? 0
-        let minY = group.map(\.minY).min() ?? 0
-        let maxY = group.map(\.maxY).max() ?? 0
+        let box = reCropGlassBox(
+            minX: group.map(\.minX).min() ?? 0,
+            maxX: group.map(\.maxX).max() ?? 0,
+            minY: group.map(\.minY).min() ?? 0,
+            maxY: group.map(\.maxY).max() ?? 0,
+            width: width,
+            height: height
+        )
         return OCRRecognizedText(
             text: text,
             boundingBox: CGRect(
-                x: CGFloat(minX) / CGFloat(width),
-                y: 1 - CGFloat(maxY) / CGFloat(height),
-                width: CGFloat(max(1, maxX - minX)) / CGFloat(width),
-                height: CGFloat(max(1, maxY - minY)) / CGFloat(height)
+                x: CGFloat(box.minX) / CGFloat(width),
+                y: 1 - CGFloat(box.maxY) / CGFloat(height),
+                width: CGFloat(max(1, box.maxX - box.minX)) / CGFloat(width),
+                height: CGFloat(max(1, box.maxY - box.minY)) / CGFloat(height)
             ),
             confidence: confidence,
             role: .segment
         )
     }
+}
+
+/// Ink-tight bounds leave no glass for a zero-margin re-crop on a lower
+/// sealed line (#641). Grow with real panel glass when the group sits below
+/// the top band — expanding the top line pulls chrome and breaks a read that
+/// already works at pad=0.
+private func reCropGlassBox(
+    minX: Int,
+    maxX: Int,
+    minY: Int,
+    maxY: Int,
+    width: Int,
+    height: Int,
+    glass: Int = 6
+) -> (minX: Int, maxX: Int, minY: Int, maxY: Int) {
+    guard minY * 3 > height else {
+        return (minX, maxX, minY, maxY)
+    }
+    return (
+        max(0, minX - glass),
+        min(width, maxX + glass),
+        max(0, minY - glass),
+        min(height, maxY + glass)
+    )
 }
 
 private extension GrayBuffer {
@@ -1193,7 +1354,24 @@ private extension GrayBuffer {
         if let rowFinder {
             return finderFragments(in: buffer, rowFinder: rowFinder, sampleBand: sampleBand)
         }
-        return readRows(in: buffer, allowBandPitch: true, sampleBand: sampleBand).compactMap { row in
+        // A padded single LCD line (glass above/below, maybe beside) can
+        // register extra bands and collapse the read (#651). Treat short wide
+        // crops as one line: no row split, no band-pitch copy.
+        let singleLine = buffer.height < 160 && buffer.width * 4 > buffer.height * 5
+        let rows = readRows(
+            in: buffer,
+            splittingRows: !singleLine,
+            allowBandPitch: !singleLine
+        )
+        let chosen: [[Cell]]
+        if singleLine, rows.count > 1 {
+            chosen = [rows.max(by: { left, right in
+                digitWeight(left) < digitWeight(right)
+            }) ?? []]
+        } else {
+            chosen = rows
+        }
+        return chosen.compactMap { row in
             let texts = recognizedGroups(row, width: buffer.width, height: buffer.height)
             return texts.isEmpty ? nil : texts
         }
@@ -1301,6 +1479,141 @@ private extension GrayBuffer {
         }
     }
 
+    /// Prefer the row with the most digit ink when a line crop spuriously
+    /// splits (#651).
+    private static func digitWeight(_ row: [Cell]) -> Int {
+        row.reduce(0) { score, cell in
+            guard cell.character.isNumber, cell.height > 0 else { return score }
+            return score + cell.height * max(1, cell.box.width)
+        }
+    }
+
+    /// Drop solid chrome that a padded line crop pulled in from the panel
+    /// bezel (#651). Only short wide strips — a full panel keeps its bezel
+    /// for sealed-glass localization. Side columns need a stricter dark
+    /// fraction than rows: digit stems at a tight crop edge are dark but
+    /// not solid chrome (a looser side trim previously read `32.86`).
+    func trimmingEdgeBezel() -> GrayBuffer {
+        guard height > 0, width > 0, height < 160, width * 4 > height * 5 else {
+            return self
+        }
+        func isBezelRow(_ y: Int) -> Bool {
+            var dark = 0
+            for x in 0..<width where pixels[y * width + x] < 80 {
+                dark += 1
+            }
+            return dark * 4 > width * 3
+        }
+        func isBezelColumn(_ x: Int) -> Bool {
+            var dark = 0
+            for y in 0..<height where pixels[y * width + x] < 80 {
+                dark += 1
+            }
+            return dark * 10 >= height * 9
+        }
+        var top = 0
+        while top < height - 8, isBezelRow(top) {
+            top += 1
+        }
+        var bottom = height
+        while bottom > top + 8, isBezelRow(bottom - 1) {
+            bottom -= 1
+        }
+        var left = 0
+        while left < width - 8, isBezelColumn(left) {
+            left += 1
+        }
+        var right = width
+        while right > left + 8, isBezelColumn(right - 1) {
+            right -= 1
+        }
+        if top == 0, bottom == height, left == 0, right == width {
+            return self
+        }
+        return cropped(x0: left, y0: top, x1: right, y1: bottom)
+    }
+
+    /// Peel empty side glass (tight — side pad invents stems) and crop to
+    /// the densest vertical ink band with a glass margin (#651 / #641).
+    /// Row-gap noise from both-vertical pad is too dark for a plain glass
+    /// peel but too weak to win the densest-band pick.
+    func tightenedToDigitLine(marginX: Int, marginY: Int) -> GrayBuffer {
+        guard height > 0, width > 0, height < 160, width * 4 > height * 5 else {
+            return self
+        }
+        func columnDark(_ x: Int) -> Int {
+            var dark = 0
+            for y in 0..<height where pixels[y * width + x] < 80 {
+                dark += 1
+            }
+            return dark
+        }
+        func rowDark(_ y: Int) -> Int {
+            var dark = 0
+            for x in 0..<width where pixels[y * width + x] < 80 {
+                dark += 1
+            }
+            return dark
+        }
+        let emptyColumn = max(1, height / 16)
+        var glassLeft = 0
+        while glassLeft < width - 8, columnDark(glassLeft) <= emptyColumn {
+            glassLeft += 1
+        }
+        var glassRight = 0
+        while glassRight < width - 8, columnDark(width - 1 - glassRight) <= emptyColumn {
+            glassRight += 1
+        }
+        let x0 = max(0, glassLeft - marginX)
+        let x1 = min(width, width - glassRight + marginX)
+        let rowInk = (0..<height).map(rowDark)
+        let peak = rowInk.max() ?? 0
+        let floor = max(max(1, width / 20) * 2, peak / 10)
+        var bestStart = 0
+        var bestEnd = height
+        var bestInk = -1
+        var cursor = 0
+        while cursor < height {
+            while cursor < height, rowInk[cursor] < floor {
+                cursor += 1
+            }
+            guard cursor < height else { break }
+            let start = cursor
+            var ink = 0
+            while cursor < height, rowInk[cursor] >= floor {
+                ink += rowInk[cursor]
+                cursor += 1
+            }
+            if ink > bestInk {
+                bestInk = ink
+                bestStart = start
+                bestEnd = cursor
+            }
+        }
+        guard bestInk >= 0 else { return self }
+        let y0 = max(0, bestStart - marginY)
+        let y1 = min(height, bestEnd + marginY)
+        if x0 == 0, y0 == 0, x1 == width, y1 == height {
+            return self
+        }
+        guard x1 - x0 > 8, y1 - y0 > 8 else { return self }
+        return cropped(x0: x0, y0: y0, x1: x1, y1: y1)
+    }
+
+    /// A panel crop, or nil when the rect is tiny, nearly the whole frame, or empty.
+    func panelCrop(_ region: CGRect) -> GrayBuffer? {
+        let area = region.width * region.height
+        let full = CGFloat(width * height)
+        guard area > 64, area < full * 0.85 else { return nil }
+        let x0 = Int(region.minX.rounded(.down))
+        let y0 = Int(region.minY.rounded(.down))
+        let x1 = Int(region.maxX.rounded(.up))
+        let y1 = Int(region.maxY.rounded(.up))
+        let cropped = cropped(x0: x0, y0: y0, x1: x1, y1: y1)
+        guard cropped.width > 8, cropped.height > 8 else { return nil }
+        return cropped
+    }
+
     func cropped(x0: Int, y0: Int, x1: Int, y1: Int) -> GrayBuffer {
         let left = max(0, min(width, x0))
         let top = max(0, min(height, y0))
@@ -1351,32 +1664,41 @@ private extension GrayBuffer {
     /// expand by a bezel margin. Returns nil when the frame has no panel that
     /// is meaningfully smaller than the whole image (#596).
     ///
-    /// Search runs at `findBufferSize`. The rect is mapped back with this
-    /// buffer's size over the find buffer's size, per axis, so a landscape
-    /// camera and a portrait camera do not share one factor.
+    /// Analysis runs on a fitted buffer (max long edge
+    /// ``SevenSegmentOCR.digitPanelAnalysisMaxSide``) so full-resolution
+    /// library photos do not stall in `localRange` (#650). The returned rect
+    /// is mapped back to this buffer's coordinates.
     func digitPanelBounds() -> CGRect? {
-        let target = SevenSegmentOCR.findBufferSize(width: width, height: height)
-        let searched = downsampled(width: target.width, height: target.height)
-        let raw = searched.masks()
-        guard let found = searched.largerRect(
-            searched.sealedPanelBounds(in: raw.dark),
-            searched.sealedPanelBounds(in: raw.light)
+        let analysis = fitted(maxSide: SevenSegmentOCR.digitPanelAnalysisMaxSide)
+        SevenSegmentOCR.lastDigitPanelAnalysisLongEdge = max(analysis.width, analysis.height)
+        let raw = analysis.masks()
+        guard let found = Self.largerPanel(
+            analysis.sealedPanelBounds(in: raw.dark),
+            analysis.sealedPanelBounds(in: raw.light)
         ) else { return nil }
-        let scaleX = CGFloat(width) / CGFloat(searched.width)
-        let scaleY = CGFloat(height) / CGFloat(searched.height)
-        return CGRect(
-            x: found.minX * scaleX,
-            y: found.minY * scaleY,
-            width: found.size.width * scaleX,
-            height: found.size.height * scaleY
-        )
+        return mapRect(found, from: analysis)
+    }
+
+    private static func largerPanel(_ dark: CGRect?, _ light: CGRect?) -> CGRect? {
+        switch (dark, light) {
+        case let (d?, l?):
+            return d.width * d.height >= l.width * l.height ? d : l
+        case let (d?, nil):
+            return d
+        case let (nil, l?):
+            return l
+        case (nil, nil):
+            return nil
+        }
     }
 
     func frameCandidates(whole: SegmentFrameCandidate) -> [SegmentFrameCandidate] {
         var candidates = [whole]
         let raw = masks()
-        if let sealed = largerRect(sealedPanelBounds(in: raw.dark), sealedPanelBounds(in: raw.light)),
-           isLocalFrame(sealed) {
+        if let sealed = Self.largerPanel(
+            sealedPanelBounds(in: raw.dark),
+            sealedPanelBounds(in: raw.light)
+        ), isLocalFrame(sealed) {
             candidates.append(SegmentFrameCandidate(finder: .sealedPocket, rect: sealed))
         }
         if let ink = inkStackBounds(dark: raw.dark, light: raw.light) {
@@ -1394,19 +1716,6 @@ private extension GrayBuffer {
             return darkRect ?? lightRect
         }
         return lightRect ?? darkRect
-    }
-
-    private func largerRect(_ dark: CGRect?, _ light: CGRect?) -> CGRect? {
-        switch (dark, light) {
-        case let (d?, l?):
-            return d.width * d.height >= l.width * l.height ? d : l
-        case let (d?, nil):
-            return d
-        case let (nil, l?):
-            return l
-        case (nil, nil):
-            return nil
-        }
     }
 
     private func inkBounds(in mask: Mask) -> CGRect? {
@@ -1431,6 +1740,18 @@ private extension GrayBuffer {
         rect.width * rect.height > 64
             && rect.width < CGFloat(width) * 0.85
             && rect.height < CGFloat(height) * 0.85
+    }
+
+    private func mapRect(_ rect: CGRect, from analysis: GrayBuffer) -> CGRect {
+        guard analysis.width != width || analysis.height != height else { return rect }
+        let scaleX = CGFloat(width) / CGFloat(analysis.width)
+        let scaleY = CGFloat(height) / CGFloat(analysis.height)
+        return CGRect(
+            x: rect.minX * scaleX,
+            y: rect.minY * scaleY,
+            width: rect.width * scaleX,
+            height: rect.height * scaleY
+        )
     }
 
     private func sealedPanelBounds(in mask: Mask) -> CGRect? {
@@ -1590,27 +1911,8 @@ private extension GrayBuffer {
         while right - left > 40, columnMean(left) < limit {
             left += 1
         }
-        let rightBeforeTrim = right
         while right - left > 40, columnMean(right) < limit {
             right -= 1
-        }
-        // The last stroke sits on the dark bezel. Eating the whole bezel
-        // clips it. Keep a short run — the same minimum as the bezel pad.
-        let bezelKeep = 12
-        if rightBeforeTrim - right > bezelKeep {
-            right += bezelKeep
-        }
-        // A dim ramp stays brighter than the dark-skirt cut and still climbs
-        // into the glass. Follow it only while two steps keep climbing, so
-        // one bright cliff is not a ramp.
-        let step = max(4, (right - left) / 40)
-        while left + step * 2 < right {
-            let here = columnMean(left)
-            let gain = columnMean(left + step) - here
-            let nextGain = columnMean(left + step * 2) - columnMean(left + step)
-            let need = max(4, here / 16)
-            if gain < need || nextGain < need { break }
-            left += step
         }
         return (left, top, right, bottom)
     }
@@ -1904,11 +2206,27 @@ private extension GrayBuffer {
             !cell.character.isNumber && cell.character != "." && cell.character != ","
         }
         guard digits.count >= 2 else { return row }
-        // Pitch rows copy a price body count onto washed volume (Approach D).
-        // That volume is X.xxx gallons: place the mark in the first inter-digit
+        let firstDigit = digits[0].minX
+        let lastDigit = digits[digits.count - 1].maxX
+        let between = row.filter { cell in
+            guard cell.character == "." || cell.character == "," else { return false }
+            return cell.minX >= firstDigit && cell.maxX <= lastDigit
+        }
+        // Keep a real inter-digit mark. Inventing is only for washed X.xxx
+        // volume (four digits) when the decimal was lost (#591 / Approach D).
+        // Two-digit integer rows that inherit pitch must stay unmarked (#644).
+        if !between.isEmpty {
+            return (digits + other + between).sorted { $0.minX < $1.minX }
+        }
+        guard digits.count >= 4 else {
+            return (digits + other).sorted { $0.minX < $1.minX }
+        }
+        // Pitch rows copy a price body onto washed volume (Approach D).
+        // That volume is X.xxx units: place the mark in the first inter-digit
         // gap. Ink scoring mis-fired on this photo (max → 80.22, empty → 802.2,
         // non-flood → broke edgeStrip when the real dot itself looked "flooded").
-        // Drop stale ./, marks; do not invent stroke ink — only a gap anchor.
+        // Drop stale leading/trailing marks; do not invent stroke ink — only a
+        // gap anchor.
         let digitHeight = median(digits.map(\.height)) ?? 0
         guard digitHeight > 8 else {
             return (digits + other).sorted { $0.minX < $1.minX }
@@ -2570,7 +2888,14 @@ private func polarity(
     let looseTall = runs(loose.rowSums).map { $0.1 - $0.0 }.max() ?? 0
     let limitedTall = runs(limitedCore.rowSums).map { $0.1 - $0.0 }.max() ?? 0
     let fills = looseTall * 100 > loose.height * 70
-    guard let span, fills, limitedTall * 2 < looseTall else {
+    // Opened path is for multi-row washed panels where loose fills the gap.
+    // A single-row panel's core often shows two mid-glyph bands with a tiny
+    // valley; opening on that splits the digit and short rows go empty (#602).
+    let coreBands = runs(limitedCore.rowSums).filter { $0.1 - $0.0 >= max(8, loose.height / 8) }
+    let coreGap = zip(coreBands, coreBands.dropFirst()).map { $1.0 - $0.1 }.max() ?? 0
+    let shortestCore = coreBands.map { $0.1 - $0.0 }.min() ?? 0
+    let realRowGap = coreBands.count >= 2 && coreGap * 4 >= shortestCore
+    guard let span, fills, limitedTall * 2 < looseTall, realRowGap else {
         return (false, (isDark, loose, loose))
     }
     // The loose mask still fills the gap inside the span. Row boundaries
@@ -2708,6 +3033,11 @@ private struct PreferredDigitPitch {
     var stride: Int
 }
 
+/// How many digits fit in `width` at the copied center-to-center step.
+private func digitCount(width: Int, stride: Int) -> Int {
+    max(1, Int((Double(width) / Double(max(1, stride))).rounded()))
+}
+
 private func columnRuns(
     _ mask: Mask,
     y0: Int,
@@ -2736,11 +3066,12 @@ private func columnRuns(
         )
     }
     // When pitch-driving: cluster wide runs that are wash-bridged (gap under
-    // body/10). Share the price digit count across clusters by width, then
-    // anchor one window per raw run when possible — only pitch-split a run
-    // that must hold more than one digit. That keeps the photo's 380-555
-    // 0-run on its own ink instead of a drifted body window. Without
-    // preferred pitch, valley.
+    // body/10). Each cluster's digit count is its width over the copied
+    // stride, not the price row's count, so a five-digit volume beside a
+    // four-digit price stays five (#599). Anchor one window per raw run when
+    // possible — only pitch-split a run that must hold more than one digit.
+    // That keeps the photo's 380-555 0-run on its own ink instead of a
+    // drifted body window. Without preferred pitch, valley.
     if let pitch = copied {
         let wideEnough = raw.filter { $0.1 - $0.0 > pitch.body / 2 }
         let bridgeLimit = max(2, pitch.body / 10)
@@ -2755,25 +3086,11 @@ private func columnRuns(
             }
         }
         if !clusters.isEmpty {
-            let widths = clusters.map { cluster -> Int in
-                guard let first = cluster.first, let last = cluster.last else { return 0 }
-                return last.1 - first.0
-            }
-            let totalWidth = max(1, widths.reduce(0, +))
-            var remaining = max(2, pitch.count)
             var pieces: [(Int, Int)] = []
-            for (index, cluster) in clusters.enumerated() {
-                let share: Int
-                if index == clusters.count - 1 {
-                    share = max(1, remaining)
-                } else {
-                    let nominal = max(
-                        1,
-                        Int((Double(widths[index]) / Double(totalWidth) * Double(pitch.count)).rounded())
-                    )
-                    share = min(remaining - (clusters.count - 1 - index), max(1, nominal))
-                }
-                remaining -= share
+            for cluster in clusters {
+                guard let first = cluster.first, let last = cluster.last else { continue }
+                let clusterWidth = last.1 - first.0
+                let share = digitCount(width: clusterWidth, stride: pitch.stride)
                 pieces.append(contentsOf: packClusterRuns(cluster, share: share, sums: sums, pitch: pitch))
             }
             if let overallFirst = wideEnough.first, let overallLast = wideEnough.last {
@@ -2806,8 +3123,14 @@ private func columnRuns(
             return [span]
         }
         if let pitch = copied {
-            // Pitch owns the split. Floor/join would glue wash bridges.
-            return splitAtExpectedPitch(span, sums: sums, pitch: pitch)
+            // Stride owns the split. The price row's digit count would pack a
+            // longer washed row into too few windows (#599).
+            let sized = PreferredDigitPitch(
+                body: pitch.body,
+                count: digitCount(width: spanWidth, stride: pitch.stride),
+                stride: pitch.stride
+            )
+            return splitAtExpectedPitch(span, sums: sums, pitch: sized)
         }
         let peak = (span.0..<span.1).map { sums[$0] }.max() ?? 0
         // A horizontal bar is much thinner than a flooded stem. peak/5 cut the
@@ -2906,7 +3229,11 @@ private func packClusterRuns(
                 && packBody <= 80
                 && run.1 - run.0 >= needed
                 && run.1 - run.0 <= needed + packBody
-            let trimmed: (Int, Int) = fusedSynth
+            // More windows than the price count means the extra width is
+            // another digit. Right-packing that off drops the leading glyph
+            // (28022 → 8022) (#599).
+            let keepLeft = fusedSynth || n > pitch.count
+            let trimmed: (Int, Int) = keepLeft
                 ? run
                 : (max(run.0, run.1 - needed), run.1)
             let local = PreferredDigitPitch(body: packBody, count: n, stride: pitch.stride)
@@ -3403,6 +3730,56 @@ private func coverage(_ mask: Mask, box: PixelBox, width: Int) -> Float {
         }
     }
     return total == 0 ? 0 : Float(ink) / Float(total)
+}
+
+private func segmentIsLit(
+    _ mask: Mask,
+    x: Int,
+    y: Int,
+    length: Int,
+    vertical: Bool
+) -> Bool {
+    let run = longestForegroundRun(mask, x: x, y: y, length: length, vertical: vertical)
+    return run >= max(2, length / 8)
+}
+
+private func longestForegroundRun(
+    _ mask: Mask,
+    x: Int,
+    y: Int,
+    length: Int,
+    vertical: Bool
+) -> Int {
+    guard length > 0 else { return 0 }
+    var best = 0
+    var current = 0
+    func consider(_ set: Bool) {
+        if set {
+            current += 1
+            if current > best { best = current }
+        } else {
+            current = 0
+        }
+    }
+    if vertical {
+        guard x >= 0, x < mask.width else { return 0 }
+        let start = max(0, y)
+        let end = min(mask.height, y + length)
+        guard start < end else { return 0 }
+        for row in start..<end {
+            consider(mask.bits[row * mask.width + x])
+        }
+    } else {
+        guard y >= 0, y < mask.height else { return 0 }
+        let start = max(0, x)
+        let end = min(mask.width, x + length)
+        guard start < end else { return 0 }
+        let offset = y * mask.width
+        for column in start..<end {
+            consider(mask.bits[offset + column])
+        }
+    }
+    return best
 }
 
 private func foregroundCount(

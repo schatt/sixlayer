@@ -75,7 +75,7 @@ struct FileUploadAreaHostUnitTests {
 
     @Test @MainActor
     func fileUploadAreaUsesNamedCompliance() {
-        hostExpectingNamedCompliance("FileUploadArea") {
+        TestSetupUtilities.hostExpectingNamedCompliance("FileUploadArea") {
             FileUploadArea(
                 isDragOver: .constant(false),
                 selectedFiles: .constant([]),
@@ -84,22 +84,5 @@ struct FileUploadAreaHostUnitTests {
                 onFilesSelected: { _ in }
             )
         }
-    }
-
-    @MainActor
-    private func hostExpectingNamedCompliance<V: View>(
-        _ name: String,
-        @ViewBuilder _ view: () -> V
-    ) {
-        #if os(watchOS)
-        return
-        #else
-        let (hosted, log) = TestSetupUtilities.hostRootPlatformViewNamedDebugLog(view())
-        #expect(hosted != nil)
-        #expect(
-            log.contains(name),
-            "named compliance \(name) must appear in debug log"
-        )
-        #endif
     }
 }
