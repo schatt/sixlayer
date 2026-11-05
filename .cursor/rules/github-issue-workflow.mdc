@@ -1,5 +1,5 @@
 ---
-description: GitHub issue workflow — wip branch, leftover taxonomy (in scope / child / follow-up), Taska comments, TDD red on issue, /2 gate before close, closure sequence.
+description: GitHub issue workflow — wip branch, leftover taxonomy (in scope / child / follow-up), Taska comments, TDD red on issue, /2 gate before land, closure sequence.
 globs: **/*
 alwaysApply: true
 ---
@@ -76,7 +76,7 @@ Structure (same branch vs child) is flexible; **Done gating is not**.
 
 - **Default:** **Close when the work is done on its branch** — don't wait for merge to `main`. Name the branch in the closing comment (e.g. implemented on **`wip/…`** then merged, or on **`done/…`** after rename). Issue-linked implementation should have lived on **`wip/<issue-slug>`** before integration (see above).
 - Merge to `main` is part of the release process, not a prerequisite for closing (unless you are using the integration-line workflow below — then `next` is part of “done”).
-- **/2 quality gate (before close) — MANDATORY:** Before Final Record finalize and close, run the **`/2`** skill (Cursor skill `2`) on the **issue’s landed change** (branch diff / files touched — not the whole product). Answer these five questions **verbatim as section headers**, in this order, and post that review on the issue (Taska `add_comment` / `gh` fallback):
+- **/2 quality gate (before land) — MANDATORY:** Run the **`/2`** skill (Cursor skill `2`) on the **`wip/` tip that is about to land** (branch diff / files touched — not the whole product) **before** merging that branch into `next`. Do **not** land first and `/2` afterward. Answer these five questions **verbatim as section headers**, in this order, and post that review on the issue (Taska `add_comment` / `gh` fallback):
 
   1. **production quality?** — Ready to ship/land as-is? Incomplete failure domains, dangling globals, band-aids, missing both-direction gates, or unproven claims → no (say what blocks).
   2. **dtrt?** — Right problem, right layer? Prefer fixing root cause over suite serialize / suppress / paper-over. Note half-fixes and leftover footguns.
@@ -84,21 +84,21 @@ Structure (same branch vs child) is flexible; **Done gating is not**.
   4. **similar issues?** — Do similar problems/patterns exist that we should also handle? If so, name the problem **and the leftover bucket** (in scope / child / follow-up — or none).
   5. **refactor?** — Leftovers: name the bucket (**in scope** / **child / sub-issue** / **follow-up**). Prefer small extracts when cheap. Do **not** escape Done with bare “follow-up?”.
 
-  Then **fix all in-scope `/2` findings** on the same `wip/` branch (or a continuation `wip/` if already retired once); bucket any remaining leftovers per the taxonomy above; do **not** close while `/2` still flags in-scope work. Optional follow-ups discovered by `/2` get their **own** open issues, linked from the close comment. Pure docs/chore issues with no product change may state “`/2` N/A — docs-only” in the close comment instead of a full review.
+  Then **fix all in-scope `/2` findings** on the same `wip/` branch **before** merging to `next`; bucket any remaining leftovers per the taxonomy above; do **not** land or close while `/2` still flags in-scope work. Optional follow-ups discovered by `/2` get their **own** open issues, linked from the close comment. Pure docs/chore issues with no product change may state “`/2` N/A — docs-only” in the close comment instead of a full review.
 - **Leftover gates (before close):** no **in-scope** leftovers remain (or reopen and finish); no open **child** issues that parent acceptance still requires; every **follow-up** has its own open issue, linked from the close comment.
 
 ### Worklist closure: `wip/` + `next` + dedicated worktree
 
-When issue-linked work used a **`wip/<issue-slug>`** branch (often in a **temp worktree**) and lands on **`next`** (not necessarily `main`), **do not close the issue until** this sequence is finished; then post the **final** comment and close. If no temp worktree was used, **skip step 4** and state that explicitly in the closing comment.
+When issue-linked work used a **`wip/<issue-slug>`** branch (often in a **temp worktree**) and lands on **`next`** (not necessarily `main`), **do not close the issue until** this sequence is finished; then post the **final** comment and close. If no temp worktree was used, **skip step 5** and state that explicitly in the closing comment.
 
 1. **Merge `next` into `wip/...`** (in the worktree or equivalent checkout), resolve conflicts, commit the merge if needed, push.
-2. **Merge `wip/...` into `next`** in the primary clone with **`git merge --no-ff`** (never fast-forward — see [no-fast-forward-merges.mdc](mdc:.cursor/rules/no-fast-forward-merges.mdc)), push `next` (`git push all next` or repo convention).
-3. **Retire** `wip/<slug>` → **`done/<slug>`** with `Development/scripts/retire_wip_branch.sh <slug>` (rename, `git push all done/<slug>`, delete remote `wip/`, remove the temp worktree, **delete the local `done/` branch**). Remotes keep `done/` for history; do not leave an unused local `done/` tip (#459). Leftover local `done/*`: `Development/scripts/repair_branch_upstreams.sh`.
-4. **Worktree:** `retire_wip_branch.sh` removes the dedicated worktree. If you retired with `--no-worktree-remove` (or renamed by hand), **`git worktree remove <path>`** now. If no temp worktree was used, **skip** and state that in the closing comment.
-5. **/2 gate:** Run `/2` on the landed change; post verdicts on the issue; fix in-scope findings (may require a new `wip/` + re-merge into `next` + re-retire — repeat 1–4 as needed) before proceeding. Do **not** skip this step to “close later.”
-6. **Then** finalize GitHub state: confirm leftover gates (no in-scope leftovers; no open required children; each follow-up has its own open issue) **and** that step 5 (`/2`) is done. Replace the issue body with the **Final Record** (mandatory section below) via Taska `update_issue` (or `gh issue edit --body-file` fallback). Add a comment (Taska `add_comment` / `gh` fallback) documenting steps 1–5: merge SHAs, `next`/`done/` tips, **worktree path removed**, pushes, **`/2` outcome**, **leftover issue numbers**. Close via Taska `set_issue_state` (or `gh issue close --reason completed`). **Order:** edits and comment **before** close (close last). If the issue was closed early by mistake, **reopen**, post the closure comment, then close again.
+2. **/2 gate (blocks land):** Run `/2` on the `wip/` tip (diff vs integration base — files this issue touched). Post verdicts on the issue; **fix all in-scope findings on this same `wip/`** and re-run `/2` as needed until no in-scope leftovers remain. **Do not** merge into `next` while `/2` still flags in-scope work. Do **not** skip this step to “land now, `/2` later.”
+3. **Merge `wip/...` into `next`** in the primary clone with **`git merge --no-ff`** (never fast-forward — see [no-fast-forward-merges.mdc](mdc:.cursor/rules/no-fast-forward-merges.mdc)), push `next` (`git push all next` or repo convention).
+4. **Retire** `wip/<slug>` → **`done/<slug>`** with `Development/scripts/retire_wip_branch.sh <slug>` (rename, `git push all done/<slug>`, delete remote `wip/`, remove the temp worktree, **delete the local `done/` branch**). Remotes keep `done/` for history; do not leave an unused local `done/` tip (#459). Leftover local `done/*`: `Development/scripts/repair_branch_upstreams.sh`.
+5. **Worktree:** `retire_wip_branch.sh` removes the dedicated worktree. If you retired with `--no-worktree-remove` (or renamed by hand), **`git worktree remove <path>`** now. If no temp worktree was used, **skip** and state that in the closing comment.
+6. **Then** finalize GitHub state: confirm leftover gates (no in-scope leftovers; no open required children; each follow-up has its own open issue) **and** that step 2 (`/2` before land) is done. Replace the issue body with the **Final Record** (mandatory section below) via Taska `update_issue` (or `gh issue edit --body-file` fallback). Add a comment (Taska `add_comment` / `gh` fallback) documenting steps 1–5: merge SHAs, `next`/`done/` tips, **worktree path removed**, pushes, **`/2` outcome**, **leftover issue numbers**. Close via Taska `set_issue_state` (or `gh issue close --reason completed`). **Order:** edits and comment **before** close (close last). If the issue was closed early by mistake, **reopen**, post the closure comment, then close again.
 
-If production work used **`wip/`** + **`next`** but you close before step 6, the audit trail diverges from the integration-line record — avoid that.
+If production work used **`wip/`** + **`next`** but you close before step 6, the audit trail diverges from the integration-line record — avoid that. Landing before step 2 is a process defect — reopen, finish `/2` in-scope work on a continuation `wip/`, and re-land.
 
 ## Final record rewrite before close (MANDATORY)
 
@@ -108,7 +108,7 @@ When an issue is ready to close, replace the body with a concise final record (T
 - **Decisions** — key trade-offs and rationale.
 - **Delivered API** — final public interfaces/behaviors shipped (or explicitly "no API changes").
 - **Tests** — what was added/updated and current status.
-- **/2** — that the gate ran (or “docs-only N/A”), the five criteria verdicts (or pointer to the `/2` comment), and any leftover issue numbers it produced.
+- **/2** — that the gate ran **before land** (or “docs-only N/A”), the five criteria verdicts (or pointer to the `/2` comment), and any leftover issue numbers it produced.
 - **Leftovers** — bucketed: in-scope remaining (must be none), required children (none or closed/integrated), follow-ups (each an open issue, linked).
 - **References** — PR(s), branch, commit(s), design docs, related issues.
 
