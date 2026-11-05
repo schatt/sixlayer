@@ -296,17 +296,7 @@ private struct GrayBuffer {
         ) else { return nil }
         context.interpolationQuality = .none
         context.draw(image, in: CGRect(x: 0, y: 0, width: width, height: height))
-        let pixels = Array(UnsafeBufferPointer(start: pointer, count: count))
-        if width == 1480, height == 820,
-           FileManager.default.fileExists(atPath: "/tmp/sixlayer-600-score-s1") {
-            #if os(iOS)
-            let grayPath = "/tmp/sixlayer-600-ios-decoder-gray.bin"
-            #else
-            let grayPath = "/tmp/sixlayer-600-mac-decoder-gray.bin"
-            #endif
-            try? Data(pixels).write(to: URL(fileURLWithPath: grayPath))
-        }
-        return GrayBuffer(pixels: pixels, width: width, height: height)
+        return GrayBuffer(pixels: Array(UnsafeBufferPointer(start: pointer, count: count)), width: width, height: height)
     }
 
     static func deskew(_ buffer: GrayBuffer, maximumDegrees: Double) -> GrayBuffer {
@@ -382,12 +372,6 @@ private struct GrayBuffer {
             }
             return left.element.confidence < right.element.confidence
         }?.offset ?? 0
-        if buffer.width >= 1000 {
-            let listed = scores.enumerated().map { offset, score in
-                "t\(offset) w\(score.wideDigits) m\(score.marksBelow) [\(score.text)]"
-            }.joined(separator: " || ")
-            trace("stand best \(bestTurns) \(listed)\n")
-        }
         guard bestTurns != 0 else { return buffer }
         // A small tilt still belongs to the fine deskew. Speck rows on a
         // sideways sample read as a few wide glyphs and must not spin an
@@ -1120,17 +1104,6 @@ private struct GrayBuffer {
 
 private func trace(_ message: String) {
     fputs(message, stderr)
-    guard FileManager.default.fileExists(atPath: "/tmp/sixlayer-600-score-s1"),
-          let data = message.data(using: .utf8) else { return }
-    let path = "/tmp/sixlayer-600-trace.txt"
-    if FileManager.default.fileExists(atPath: path),
-       let handle = FileHandle(forWritingAtPath: path) {
-        defer { try? handle.close() }
-        handle.seekToEndOfFile()
-        handle.write(data)
-    } else {
-        try? data.write(to: URL(fileURLWithPath: path))
-    }
 }
 
 private struct Mask {
