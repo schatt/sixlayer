@@ -2185,8 +2185,8 @@ private func readingSpan(_ mask: Mask, bands: [(Int, Int)]) -> (Int, Int)? {
     runs.append((start, end + 1, ink))
     guard var best = runs.max(by: { $0.ink < $1.ink }) else { return nil }
     // A ramp that begins as a speck and climbs past a stroke-width hole is
-    // the bezel, not another digit. Leaving it on the run lifts the stem
-    // line and pulls the right edge over the field.
+    // the bezel, not another digit. The span stops on the last ink before
+    // that hole. Stopping on the ramp itself lets the crop pad reach it.
     let hole = max(8, min(16, height / 40))
     var cursor = best.end - 1
     while cursor > best.start, columnInk[cursor] == 0 {
@@ -2205,7 +2205,10 @@ private func readingSpan(_ mask: Mask, bands: [(Int, Int)]) -> (Int, Int)? {
         let blobMax = (blobStart...blobEnd).reduce(0) { max($0, columnInk[$1]) }
         let rising = blobMax > columnInk[blobStart] * 4 && blobMax * 2 > rowHeight
         if rising {
-            best.end = blobStart
+            let cut = cursor - gap + 1
+            if cut > best.start, cut < best.end {
+                best.end = cut
+            }
         }
     }
     let span = best.end - best.start
