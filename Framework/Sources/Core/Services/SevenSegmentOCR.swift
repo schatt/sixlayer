@@ -1129,28 +1129,35 @@ private extension GrayBuffer {
         let analysis = fitted(maxSide: SevenSegmentOCR.digitPanelAnalysisMaxSide)
         SevenSegmentOCR.lastDigitPanelAnalysisLongEdge = max(analysis.width, analysis.height)
         let raw = analysis.masks()
-        let dark = analysis.sealedPanelBounds(in: raw.dark)
-        let light = analysis.sealedPanelBounds(in: raw.light)
-        let found: CGRect?
+        guard let found = Self.largerPanel(
+            analysis.sealedPanelBounds(in: raw.dark),
+            analysis.sealedPanelBounds(in: raw.light)
+        ) else { return nil }
+        return mapRect(found, from: analysis)
+    }
+
+    private static func largerPanel(_ dark: CGRect?, _ light: CGRect?) -> CGRect? {
         switch (dark, light) {
         case let (d?, l?):
-            found = d.width * d.height >= l.width * l.height ? d : l
+            return d.width * d.height >= l.width * l.height ? d : l
         case let (d?, nil):
-            found = d
+            return d
         case let (nil, l?):
-            found = l
+            return l
         case (nil, nil):
-            found = nil
+            return nil
         }
-        guard let found else { return nil }
-        guard analysis.width != width || analysis.height != height else { return found }
+    }
+
+    private func mapRect(_ rect: CGRect, from analysis: GrayBuffer) -> CGRect {
+        guard analysis.width != width || analysis.height != height else { return rect }
         let scaleX = CGFloat(width) / CGFloat(analysis.width)
         let scaleY = CGFloat(height) / CGFloat(analysis.height)
         return CGRect(
-            x: found.minX * scaleX,
-            y: found.minY * scaleY,
-            width: found.width * scaleX,
-            height: found.height * scaleY
+            x: rect.minX * scaleX,
+            y: rect.minY * scaleY,
+            width: rect.width * scaleX,
+            height: rect.height * scaleY
         )
     }
 
