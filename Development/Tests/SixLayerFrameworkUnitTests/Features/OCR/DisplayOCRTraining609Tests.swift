@@ -606,10 +606,11 @@ struct DisplayOCRTraining609Tests {
         ) == false)
     }
 
-    @Test @MainActor func openingASealedPanelSuggestsBoxesAndDigits() throws {
+    @Test @MainActor func openingASealedPanelSuggestsBoxesAndDigits() async throws {
         let frame = sealedFrame()
         let session = DisplayOCRTrainingSession()
         session.load(cgImage: frame.image)
+        await session.waitForSuggestion()
         let panel = try #require(session.panel)
         let width = Double(frame.image.width)
         let height = Double(frame.image.height)
@@ -632,10 +633,11 @@ struct DisplayOCRTraining609Tests {
         #expect(session.label?.rows.map(\.confirmedText) == ["32.88", "8.022"])
     }
 
-    @Test @MainActor func draftKeepsTheDrawnBoxWhenPairingPanelLines() throws {
+    @Test @MainActor func draftKeepsTheDrawnBoxWhenPairingPanelLines() async throws {
         let frame = sealedFrame()
         let session = DisplayOCRTrainingSession()
         session.load(cgImage: frame.image)
+        await session.waitForSuggestion()
         let panel = try #require(session.panel)
         #expect(session.rowBoxes.count == 2)
         let bottomFirst = [session.rowBoxes[1], session.rowBoxes[0]]
@@ -704,10 +706,11 @@ struct DisplayOCRTraining609Tests {
         #expect(session.label?.rows.first?.confirmedText == "KEEP")
     }
 
-    @Test @MainActor func openingABlankPhotoSuggestsNothing() {
+    @Test @MainActor func openingABlankPhotoSuggestsNothing() async {
         let image = grayImage(width: 4, height: 2, pixels: [UInt8](repeating: 180, count: 8))
         let session = DisplayOCRTrainingSession()
         session.load(cgImage: image)
+        await session.waitForSuggestion()
         #expect(session.panel == nil)
         #expect(session.rowBoxes.isEmpty)
         #expect(session.label == nil)
@@ -1013,6 +1016,17 @@ struct DisplayOCRTraining609Tests {
         #expect(session.reindexRanOnMainThread == false)
         #expect(session.library.examples.count == 1)
         #expect(session.library.examples.allSatisfy { $0.package.imagePNG.isEmpty })
+    }
+
+    /// Photo-library load must not run digit-panel suggestion on the main
+    /// actor — that is the hang in #650.
+    @Test @MainActor func loadSuggestsBoxesOffTheMainThread() async {
+        let frame = sealedFrame()
+        let session = DisplayOCRTrainingSession()
+        session.load(cgImage: frame.image)
+        await session.waitForSuggestion()
+        #expect(session.suggestionRanOnMainThread == false)
+        #expect(session.panel != nil)
     }
 
     @Test func aFailedReindexKeepsThePreviousIndex() throws {
