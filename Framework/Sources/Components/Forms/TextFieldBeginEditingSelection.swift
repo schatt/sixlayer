@@ -23,6 +23,7 @@ public extension EnvironmentValues {
 ///
 /// Walks to the nearest sibling subtree by subview-index distance instead of taking
 /// the first text control in an ancestor (which binds every field to field 1).
+@MainActor
 enum NativeTextControlLookup {
     #if os(iOS)
     static func nearestTextControl(from marker: UIView) -> AnyObject? {
@@ -126,6 +127,7 @@ enum NativeTextControlLookup {
 }
 
 /// Selects all contents of a native text control when it is the same instance that began editing.
+@MainActor
 enum TextFieldBeginEditingSelection {
     static func applySelectAll(
         to object: Any?,
@@ -216,9 +218,11 @@ private struct NativeTextControlAnchor: View {
 }
 
 #if os(iOS)
+@MainActor
 private final class NativeTextControlMarkerView: UIView {
     var shouldSelect = false
-    private var observers: [NSObjectProtocol] = []
+    /// Cleared from `deinit` as well as MainActor paths (#652).
+    private nonisolated(unsafe) var observers: [NSObjectProtocol] = []
 
     override func didMoveToWindow() {
         super.didMoveToWindow()
@@ -246,12 +250,14 @@ private final class NativeTextControlMarkerView: UIView {
                     object: nil,
                     queue: .main
                 ) { [weak self] note in
-                    guard let self else { return }
-                    TextFieldBeginEditingSelection.handleBeginEditing(
-                        note.object,
-                        marker: self,
-                        shouldSelect: self.shouldSelect
-                    )
+                    Task { @MainActor in
+                        guard let self else { return }
+                        TextFieldBeginEditingSelection.handleBeginEditing(
+                            note.object,
+                            marker: self,
+                            shouldSelect: self.shouldSelect
+                        )
+                    }
                 }
             )
         }
@@ -265,7 +271,9 @@ private final class NativeTextControlMarkerView: UIView {
     }
 
     deinit {
-        removeObservers()
+        for observer in observers {
+            NotificationCenter.default.removeObserver(observer)
+        }
     }
 }
 
@@ -281,13 +289,22 @@ private struct NativeTextControlAnchorRepresentable: UIViewRepresentable {
     }
 }
 #elseif os(macOS)
+@MainActor
 private final class NativeTextControlMarkerView: NSView {
     var shouldSelect = false
-    private var observers: [NSObjectProtocol] = []
+    /// Cleared from `deinit` as well as MainActor paths (#652).
+    private nonisolated(unsafe) var observers: [NSObjectProtocol] = []
 
     override func viewDidMoveToWindow() {
         super.viewDidMoveToWindow()
         refreshObservers()
+    }
+
+    override func viewWillMove(toWindow newWindow: NSWindow?) {
+        super.viewWillMove(toWindow: newWindow)
+        if newWindow == nil {
+            removeObservers()
+        }
     }
 
     func refreshObservers() {
@@ -304,12 +321,14 @@ private final class NativeTextControlMarkerView: NSView {
                     object: nil,
                     queue: .main
                 ) { [weak self] note in
-                    guard let self else { return }
-                    TextFieldBeginEditingSelection.handleBeginEditing(
-                        note.object,
-                        marker: self,
-                        shouldSelect: self.shouldSelect
-                    )
+                    Task { @MainActor in
+                        guard let self else { return }
+                        TextFieldBeginEditingSelection.handleBeginEditing(
+                            note.object,
+                            marker: self,
+                            shouldSelect: self.shouldSelect
+                        )
+                    }
                 }
             )
         }
@@ -323,7 +342,9 @@ private final class NativeTextControlMarkerView: NSView {
     }
 
     deinit {
-        removeObservers()
+        for observer in observers {
+            NotificationCenter.default.removeObserver(observer)
+        }
     }
 }
 
