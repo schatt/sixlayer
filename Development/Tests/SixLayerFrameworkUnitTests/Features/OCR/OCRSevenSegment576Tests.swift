@@ -788,6 +788,24 @@ struct OCRSevenSegment576Tests {
         #expect(abs(region.minY - CGFloat(originY)) < 64)
     }
 
+    /// Training Decode hangs when `masks` runs on a multi-megapixel panel crop (#654).
+    @Test func decodeCapsAnalysisOnLargePanelCrop() {
+        let panelImage = scaleGrayImage(sealedBothRowsPanel(), factor: 4)
+        #expect(max(panelImage.width, panelImage.height) > SevenSegmentOCR.digitPanelAnalysisMaxSide)
+        SevenSegmentOCR.lastDecodeAnalysisLongEdge = nil
+        let result = SevenSegmentOCR.decode(
+            cgImage: panelImage,
+            deskewMaximumDegrees: 0,
+            localizeDigitPanel: false
+        )
+        #expect(SevenSegmentOCR.lastDecodeAnalysisLongEdge != nil)
+        #expect(
+            (SevenSegmentOCR.lastDecodeAnalysisLongEdge ?? .max)
+                <= SevenSegmentOCR.digitPanelAnalysisMaxSide
+        )
+        #expect(result.extractedText == "32.88\n8.022")
+    }
+
     @Test func fullFrameWithoutLocalizationMissesSealedBothRows() {
         let frame = embed(
             sealedBothRowsPanel(),
