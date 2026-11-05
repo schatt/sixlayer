@@ -76,7 +76,7 @@ Structure (same branch vs child) is flexible; **Done gating is not**.
 
 - **Default:** **Close when the work is done on its branch** — don't wait for merge to `main`. Name the branch in the closing comment (e.g. implemented on **`wip/…`** then merged, or on **`done/…`** after rename). Issue-linked implementation should have lived on **`wip/<issue-slug>`** before integration (see above).
 - Merge to `main` is part of the release process, not a prerequisite for closing (unless you are using the integration-line workflow below — then `next` is part of “done”).
-- **/2 quality gate (before land) — MANDATORY:** Run the **`/2`** skill (Cursor skill `2`) on the **`wip/` tip that is about to land** (branch diff / files touched — not the whole product) **before** merging that branch into `next`. Do **not** land first and `/2` afterward. Answer these five questions **verbatim as section headers**, in this order, and post that review on the issue (Taska `add_comment` / `gh` fallback):
+- **/2 quality gate (before land) — MANDATORY:** Run the **`/2`** skill (Cursor skill `2`) on the **`wip/` tip that is about to land** (branch diff / files touched — not the whole product) **before** merging that branch into `next`. Do **not** land first and `/2` afterward. Answer these five questions **verbatim as section headers**, in this order:
 
   1. **production quality?** — Ready to ship/land as-is? Incomplete failure domains, dangling globals, band-aids, missing both-direction gates, or unproven claims → no (say what blocks).
   2. **dtrt?** — Right problem, right layer? Prefer fixing root cause over suite serialize / suppress / paper-over. Note half-fixes and leftover footguns.
@@ -84,7 +84,11 @@ Structure (same branch vs child) is flexible; **Done gating is not**.
   4. **similar issues?** — Do similar problems/patterns exist that we should also handle? If so, name the problem **and the leftover bucket** (in scope / child / follow-up — or none).
   5. **refactor?** — Leftovers: name the bucket (**in scope** / **child / sub-issue** / **follow-up**). Prefer small extracts when cheap. Do **not** escape Done with bare “follow-up?”.
 
-  Then **fix all in-scope `/2` findings** on the same `wip/` branch **before** merging to `next`; bucket any remaining leftovers per the taxonomy above; do **not** land or close while `/2` still flags in-scope work. Optional follow-ups discovered by `/2` get their **own** open issues, linked from the close comment. Pure docs/chore issues with no product change may state “`/2` N/A — docs-only” in the close comment instead of a full review.
+  **Surfacing (both required — GitHub alone is not enough) (#657):**
+  1. **Agent chat** — paste the five-header verdict block in the Cursor conversation **before** merging to `next`, so the operator can read `/2` without leaving the session.
+  2. **Own issue comment** — Taska `add_comment` / `gh` fallback headed **`## /2`** (standalone). Do **not** bury `/2` under TDD red/green/refactor or other headings.
+
+  Then **fix all in-scope `/2` findings** on the same `wip/` branch **before** merging to `next`; bucket any remaining leftovers per the taxonomy above; do **not** land or close while `/2` still flags in-scope work. Optional follow-ups discovered by `/2` get their **own** open issues, linked from the close comment. Pure docs/chore issues with no product change may state “`/2` N/A — docs-only” in the close comment **and** in chat instead of a full review.
 - **Leftover gates (before close):** no **in-scope** leftovers remain (or reopen and finish); no open **child** issues that parent acceptance still requires; every **follow-up** has its own open issue, linked from the close comment.
 
 ### Worklist closure: `wip/` + `next` + dedicated worktree
