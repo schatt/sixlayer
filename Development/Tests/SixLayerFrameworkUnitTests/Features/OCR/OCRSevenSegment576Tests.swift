@@ -274,9 +274,14 @@ struct OCRSevenSegment576Tests {
     }
 
     @Test func filledInkBesideCleanRowsDoesNotCreateASegment() {
-        var row = atoms("51.07")
-        row.append(.gap(SegmentPanel.groupGap))
-        row.append(contentsOf: atoms("17.740"))
+        var clean = atoms("51.07")
+        clean.append(.gap(SegmentPanel.groupGap))
+        clean.append(contentsOf: atoms("17.740"))
+        // Control: without fills the price must stay one fragment (#646).
+        // Volume mark can still mis-read as comma on this short canvas (#658).
+        #expect(segmentTexts(decode(SegmentPanel.render(rows: [clean]))).first == "51.07")
+
+        var row = clean
         row.append(.gap(SegmentPanel.groupGap))
         row.append(.fill(width: 70, height: 70))
         let result = decode(SegmentPanel.render(rows: [row, [.fill(width: 160, height: 28)]]))
@@ -314,11 +319,12 @@ struct OCRSevenSegment576Tests {
 
     @Test func strokeSizedWindowSeparatesAdjacentDigits() {
         // A window of one eighth of this crop is wider than the gap between digits.
-        // The lit strokes are only a few levels darker than that gap, so the wide
-        // window marks the gap as ink and the row becomes one blob.
+        // Lit strokes stay low-contrast vs glass, but must clear the masks
+        // quarter-of-high floor ((high-low)*4 > high): ink 100 / glass 130
+        // is range 30 and yields an empty mask (#648).
         let image = SegmentPanel.render(
             rows: [atoms("32.88"), atoms("8.022")],
-            inkLevel: 100,
+            inkLevel: 95,
             backgroundLevel: 130,
             scale: 4
         )
@@ -645,7 +651,9 @@ struct OCRSevenSegment576Tests {
     }
 
     @Test func structuredExtractionBindsSuppliedLabelsAndSkipsVision() async throws {
-        let image = panel(["32.88", "8.022"])
+        // Structured ssocr always localizes the digit panel; unbezeled
+        // two-row synthetics are not a sealed pocket (#648).
+        let image = sealedBothRowsPanel()
         let preview = decode(image)
         let segments = preview.recognizedTexts.filter { $0.role == .segment }
         #expect(segments.count == 2)

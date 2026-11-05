@@ -141,6 +141,9 @@ public enum SevenSegmentOCR {
                 gray = cropped
             }
         }
+        // Huge pale pad around a small panel (training / paddedCanvas) must
+        // not survive into masks — fit alone leaves tiny glyphs (#648).
+        gray = gray.trimmingUniformMargin()
         gray = gray.fitted(maxSide: digitPanelAnalysisMaxSide)
         lastDecodeAnalysisLongEdge = max(gray.width, gray.height)
         let upright = GrayBuffer.deskew(gray, maximumDegrees: deskewMaximumDegrees)
@@ -771,13 +774,13 @@ private struct GrayBuffer {
         guard !cells.isEmpty else { return [] }
         let ordered = cells.sorted { $0.minX < $1.minX }
         guard ordered.count > 1 else { return [ordered] }
-        let gaps = zip(ordered, ordered.dropFirst()).map { max(0, $1.minX - $0.maxX) }
+        // Narrow stems shrink a plain median and start late in their slot, so
+        // a body→stem edge gap looks cell-wide (#646). Upper-half pitch plus
+        // right-anchored padding keeps only true group holes above the bar.
+        let pitch = bodyPitch(of: ordered)
+        let slots = groupSlots(ordered, pitch: pitch)
+        let gaps = zip(slots, slots.dropFirst()).map { max(0, $1.minX - $0.maxX) }
         let middle = median(gaps) ?? 0
-        let tallest = ordered.map(\.height).max() ?? 1
-        let pitches = ordered.filter { cell in
-            cell.height * 100 >= tallest * 55 && !isMark(cell.character)
-        }.map(\.box.width)
-        let pitch = median(pitches) ?? 0
         var groups: [[Cell]] = [[ordered[0]]]
         for (index, cell) in ordered.dropFirst().enumerated() {
             let gap = gaps[index]
@@ -789,6 +792,26 @@ private struct GrayBuffer {
             }
         }
         return groups
+    }
+
+    /// Median of the upper half of tall non-mark widths — resists skinny "1"s.
+    private static func bodyPitch(of cells: [Cell]) -> Int {
+        let tallest = cells.map(\.height).max() ?? 1
+        let widths = cells.filter { cell in
+            cell.height * 100 >= tallest * 55 && !isMark(cell.character)
+        }.map(\.box.width).sorted()
+        guard !widths.isEmpty else { return 0 }
+        return median(Array(widths[(widths.count / 2)...])) ?? 0
+    }
+
+    /// Pad thin digits out to `pitch`, anchored on maxX (stems sit on the right).
+    private static func groupSlots(_ cells: [Cell], pitch: Int) -> [(minX: Int, maxX: Int)] {
+        cells.map { cell in
+            if isMark(cell.character) || pitch <= 0 || cell.box.width >= pitch {
+                return (cell.minX, cell.maxX)
+            }
+            return (cell.maxX - pitch, cell.maxX)
+        }
     }
 
     private static func isMark(_ character: Character) -> Bool {
@@ -1012,6 +1035,45 @@ private struct GrayBuffer {
     fileprivate func cornerFill() -> UInt8 {
         let corners = [pixels[0], pixels[width - 1], pixels[(height - 1) * width], pixels[pixels.count - 1]]
         return corners.sorted()[corners.count / 2]
+    }
+
+    /// Peel uniform border that matches the corner fill (synthetic pad /
+    /// letterbox). Keeps a small glass margin so bezels stay when present (#648).
+    func trimmingUniformMargin() -> GrayBuffer {
+        guard width > 16, height > 16 else { return self }
+        let fill = Int(cornerFill())
+        let slack = inkMargin
+        func isMarginRow(_ y: Int) -> Bool {
+            let start = y * width
+            for x in 0..<width where abs(Int(pixels[start + x]) - fill) > slack {
+                return false
+            }
+            return true
+        }
+        func isMarginColumn(_ x: Int) -> Bool {
+            for y in 0..<height where abs(Int(pixels[y * width + x]) - fill) > slack {
+                return false
+            }
+            return true
+        }
+        var top = 0
+        while top < height - 8, isMarginRow(top) { top += 1 }
+        var bottom = height
+        while bottom > top + 8, isMarginRow(bottom - 1) { bottom -= 1 }
+        var left = 0
+        while left < width - 8, isMarginColumn(left) { left += 1 }
+        var right = width
+        while right > left + 8, isMarginColumn(right - 1) { right -= 1 }
+        // Ignore hairline "pad" so glare / invert fixtures keep full glass (#645).
+        let peeled = top + (height - bottom) + left + (width - right)
+        guard peeled >= 64 else { return self }
+        let margin = 4
+        let x0 = max(0, left - margin)
+        let y0 = max(0, top - margin)
+        let x1 = min(width, right + margin)
+        let y1 = min(height, bottom + margin)
+        if x0 == 0, y0 == 0, x1 == width, y1 == height { return self }
+        return cropped(x0: x0, y0: y0, x1: x1, y1: y1)
     }
 
     fileprivate func extremeMarkMask() -> Mask {
