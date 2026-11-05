@@ -778,6 +778,11 @@ private struct GrayBuffer {
             cell.height * 100 >= tallest * 55 && !isMark(cell.character)
         }.map(\.box.width)
         let pitch = median(pitches) ?? 0
+        // Temporary #646 probe — remove once green.
+        let listed = zip(ordered, ordered.dropFirst()).enumerated().map { index, pair in
+            "\(pair.0.character)→\(pair.1.character) gap\(gaps[index]) w\(pair.0.box.width)/\(pair.1.box.width)"
+        }.joined(separator: " ")
+        trace("646-group mid\(middle) pitch\(pitch) [\(listed)]\n")
         var groups: [[Cell]] = [[ordered[0]]]
         for (index, cell) in ordered.dropFirst().enumerated() {
             let gap = gaps[index]
