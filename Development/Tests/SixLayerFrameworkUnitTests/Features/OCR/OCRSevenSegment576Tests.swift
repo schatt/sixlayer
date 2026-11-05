@@ -893,6 +893,7 @@ struct OCRSevenSegment576Tests {
             }
         }
         #endif
+        try? FileManager.default.removeItem(atPath: "/tmp/sixlayer-600-trace.txt")
         let result = SevenSegmentOCR.decode(
             cgImage: hand,
             deskewMaximumDegrees: 0,
