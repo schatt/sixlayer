@@ -274,9 +274,14 @@ struct OCRSevenSegment576Tests {
     }
 
     @Test func filledInkBesideCleanRowsDoesNotCreateASegment() {
-        var row = atoms("51.07")
-        row.append(.gap(SegmentPanel.groupGap))
-        row.append(contentsOf: atoms("17.740"))
+        var clean = atoms("51.07")
+        clean.append(.gap(SegmentPanel.groupGap))
+        clean.append(contentsOf: atoms("17.740"))
+        // Control: without fills the price must stay one fragment (#646).
+        // Volume mark can still mis-read as comma on this short canvas (#658).
+        #expect(segmentTexts(decode(SegmentPanel.render(rows: [clean]))).first == "51.07")
+
+        var row = clean
         row.append(.gap(SegmentPanel.groupGap))
         row.append(.fill(width: 70, height: 70))
         let result = decode(SegmentPanel.render(rows: [row, [.fill(width: 160, height: 28)]]))
