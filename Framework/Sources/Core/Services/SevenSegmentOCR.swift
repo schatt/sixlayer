@@ -366,10 +366,7 @@ private struct GrayBuffer {
         let maxHeight = boxes.map(\.height).max() ?? 1
         let tall = boxes.filter { $0.height * 100 >= maxHeight * 55 }
         let digitHeight = median(tall.map(\.height)) ?? maxHeight
-        // Use the lowest tall bottom for period/comma. A median is pulled up by
-        // glyphs that omit the bottom bar (1/4/7), so a true period at the
-        // real baseline looks like a comma (#647 / #658).
-        let baseline = tall.map(\.maxY).max() ?? band.1
+        let baseline = median(tall.map(\.maxY)) ?? band.1
         let frameTop = median(tall.map(\.minY)) ?? band.0
         // A fused wash blob inflates the median width. Prefer a pitch copied
         // from a known-good row, else the 7-seg aspect (≈ height/2).
@@ -515,7 +512,7 @@ private struct GrayBuffer {
         bandIndex: Int
     ) -> [Cell] {
         let digitHeight = median(existing.map(\.height)) ?? max(1, band.1 - band.0)
-        let baseline = existing.map(\.maxY).max() ?? band.1
+        let baseline = median(existing.map(\.maxY)) ?? band.1
         let minimum = max(1, digitHeight / 20)
         let expanded = (max(0, band.0 - digitHeight / 2), min(buffer.height, band.1 + digitHeight / 2))
         let columns = columnRuns(secondary, y0: expanded.0, y1: expanded.1, width: buffer.width)
@@ -524,9 +521,22 @@ private struct GrayBuffer {
             guard box.width >= minimum, box.height >= minimum else { return nil }
             guard box.width < digitHeight * 30 / 100, box.height < digitHeight * 55 / 100 else { return nil }
             if existing.contains(where: { overlap($0.box, box) > 0 }) { return nil }
-            let comma = box.maxY > baseline + max(2, digitHeight / 12)
-            return Cell(box: box, character: comma ? "," : ".", confidence: 1, band: bandIndex)
+            return Cell(
+                box: box,
+                character: markCharacter(box: box, baseline: baseline, digitHeight: digitHeight),
+                confidence: 1,
+                band: bandIndex
+            )
         }
+    }
+
+    /// Periods are square baseline dots. Commas hang below and are taller than
+    /// wide. Hang alone is not enough: digits that omit the bottom bar pull the
+    /// median baseline up so a true period looks low (#647 / #658).
+    private static func markCharacter(box: PixelBox, baseline: Int, digitHeight: Int) -> Character {
+        let hangs = box.maxY > baseline + max(2, digitHeight / 12)
+        let tallTail = box.height > box.width
+        return hangs && tallTail ? "," : "."
     }
 
     private static func classify(
@@ -600,8 +610,12 @@ private struct GrayBuffer {
             // A thin comma tail can miss the mask while the raw pixels are
             // still darker than the glass around the mark.
             guard markIsInk(mask, box: box, width: width, buffer: buffer, darkInk: darkInk) else { return nil }
-            let comma = box.maxY > baseline + max(2, digitHeight / 12)
-            return Cell(box: box, character: comma ? "," : ".", confidence: 1, band: bandIndex)
+            return Cell(
+                box: box,
+                character: markCharacter(box: box, baseline: baseline, digitHeight: digitHeight),
+                confidence: 1,
+                band: bandIndex
+            )
         }
         // Do not clamp this frame to the mask. Washed bezels inflate
         // digitHeight so frameTop + digitHeight can sit past the buffer;
