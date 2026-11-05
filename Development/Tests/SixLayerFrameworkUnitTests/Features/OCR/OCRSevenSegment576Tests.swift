@@ -791,6 +791,30 @@ struct OCRSevenSegment576Tests {
         #expect(abs(region.minY - CGFloat(originY)) < 64)
     }
 
+    /// Training Decode hangs when `masks` runs on a multi-megapixel panel crop (#654).
+    /// Scale just past the analysis cap so the red run stays finite without the fit.
+    /// Exact glyph text on NN-enlarged synthetics is not the Done bar — the cap is.
+    @Test func decodeCapsAnalysisOnLargePanelCrop() {
+        let base = sealedBothRowsPanel()
+        var factor = 2
+        while max(base.width, base.height) * factor <= SevenSegmentOCR.digitPanelAnalysisMaxSide {
+            factor += 1
+        }
+        let panelImage = scaleGrayImage(base, factor: factor)
+        #expect(max(panelImage.width, panelImage.height) > SevenSegmentOCR.digitPanelAnalysisMaxSide)
+        SevenSegmentOCR.lastDecodeAnalysisLongEdge = nil
+        _ = SevenSegmentOCR.decode(
+            cgImage: panelImage,
+            deskewMaximumDegrees: 0,
+            localizeDigitPanel: false
+        )
+        #expect(SevenSegmentOCR.lastDecodeAnalysisLongEdge != nil)
+        #expect(
+            (SevenSegmentOCR.lastDecodeAnalysisLongEdge ?? .max)
+                <= SevenSegmentOCR.digitPanelAnalysisMaxSide
+        )
+    }
+
     @Test func fullFrameWithoutLocalizationMissesSealedBothRows() {
         let frame = embed(
             sealedBothRowsPanel(),
