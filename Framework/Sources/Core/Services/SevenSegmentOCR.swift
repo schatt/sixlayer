@@ -777,12 +777,14 @@ private struct GrayBuffer {
         let pitches = ordered.filter { cell in
             cell.height * 100 >= tallest * 55 && !isMark(cell.character)
         }.map(\.box.width)
-        let pitch = median(pitches) ?? 0
-        // Temporary #646 probe — remove once green.
-        let listed = zip(ordered, ordered.dropFirst()).enumerated().map { index, pair in
-            "\(pair.0.character)→\(pair.1.character) gap\(gaps[index]) w\(pair.0.box.width)/\(pair.1.box.width)"
-        }.joined(separator: " ")
-        trace("646-group mid\(middle) pitch\(pitch) [\(listed)]\n")
+        // Narrow ones (especially "1") shrink a plain median so a full-width
+        // digit followed by a stem looks cell-wide (#646). Upper half keeps
+        // the bar near a real body; real group gaps stay above it.
+        let pitch: Int = {
+            let sorted = pitches.sorted()
+            guard !sorted.isEmpty else { return 0 }
+            return median(Array(sorted[(sorted.count / 2)...])) ?? 0
+        }()
         var groups: [[Cell]] = [[ordered[0]]]
         for (index, cell) in ordered.dropFirst().enumerated() {
             let gap = gaps[index]
