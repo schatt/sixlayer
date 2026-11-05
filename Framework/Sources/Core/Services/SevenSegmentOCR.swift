@@ -1058,22 +1058,50 @@ private func recognizedGroups(_ cells: [Cell], width: Int, height: Int) -> [OCRR
     return pieces.map { group in
         let text = String(group.map(\.character))
         let confidence = group.map(\.confidence).min() ?? 0
-        let minX = group.map(\.minX).min() ?? 0
-        let maxX = group.map(\.maxX).max() ?? 0
-        let minY = group.map(\.minY).min() ?? 0
-        let maxY = group.map(\.maxY).max() ?? 0
+        let box = reCropGlassBox(
+            minX: group.map(\.minX).min() ?? 0,
+            maxX: group.map(\.maxX).max() ?? 0,
+            minY: group.map(\.minY).min() ?? 0,
+            maxY: group.map(\.maxY).max() ?? 0,
+            width: width,
+            height: height
+        )
         return OCRRecognizedText(
             text: text,
             boundingBox: CGRect(
-                x: CGFloat(minX) / CGFloat(width),
-                y: 1 - CGFloat(maxY) / CGFloat(height),
-                width: CGFloat(max(1, maxX - minX)) / CGFloat(width),
-                height: CGFloat(max(1, maxY - minY)) / CGFloat(height)
+                x: CGFloat(box.minX) / CGFloat(width),
+                y: 1 - CGFloat(box.maxY) / CGFloat(height),
+                width: CGFloat(max(1, box.maxX - box.minX)) / CGFloat(width),
+                height: CGFloat(max(1, box.maxY - box.minY)) / CGFloat(height)
             ),
             confidence: confidence,
             role: .segment
         )
     }
+}
+
+/// Ink-tight bounds leave no glass for a zero-margin re-crop on a lower
+/// sealed line (#641). Grow with real panel glass when the group sits below
+/// the top band — expanding the top line pulls chrome and breaks a read that
+/// already works at pad=0.
+private func reCropGlassBox(
+    minX: Int,
+    maxX: Int,
+    minY: Int,
+    maxY: Int,
+    width: Int,
+    height: Int,
+    glass: Int = 6
+) -> (minX: Int, maxX: Int, minY: Int, maxY: Int) {
+    guard minY * 3 > height else {
+        return (minX, maxX, minY, maxY)
+    }
+    return (
+        max(0, minX - glass),
+        min(width, maxX + glass),
+        max(0, minY - glass),
+        min(height, maxY + glass)
+    )
 }
 
 private extension GrayBuffer {
@@ -1509,11 +1537,27 @@ private extension GrayBuffer {
             !cell.character.isNumber && cell.character != "." && cell.character != ","
         }
         guard digits.count >= 2 else { return row }
-        // Pitch rows copy a price body count onto washed volume (Approach D).
+        let firstDigit = digits[0].minX
+        let lastDigit = digits[digits.count - 1].maxX
+        let between = row.filter { cell in
+            guard cell.character == "." || cell.character == "," else { return false }
+            return cell.minX >= firstDigit && cell.maxX <= lastDigit
+        }
+        // Keep a real inter-digit mark. Inventing is only for washed X.xxx
+        // volume (four digits) when the decimal was lost (#591 / Approach D).
+        // Two-digit integer rows that inherit pitch must stay unmarked (#644).
+        if !between.isEmpty {
+            return (digits + other + between).sorted { $0.minX < $1.minX }
+        }
+        guard digits.count >= 4 else {
+            return (digits + other).sorted { $0.minX < $1.minX }
+        }
+        // Pitch rows copy a price body onto washed volume (Approach D).
         // That volume is X.xxx units: place the mark in the first inter-digit
         // gap. Ink scoring mis-fired on this photo (max → 80.22, empty → 802.2,
         // non-flood → broke edgeStrip when the real dot itself looked "flooded").
-        // Drop stale ./, marks; do not invent stroke ink — only a gap anchor.
+        // Drop stale leading/trailing marks; do not invent stroke ink — only a
+        // gap anchor.
         let digitHeight = median(digits.map(\.height)) ?? 0
         guard digitHeight > 8 else {
             return (digits + other).sorted { $0.minX < $1.minX }

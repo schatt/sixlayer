@@ -423,8 +423,8 @@ struct OCRSevenSegment576Tests {
         // Zero-margin glyph boxes previously returned the half-turn spoilers
         // 88.26 / 220.8. They must not. A taller crop of the lower line
         // (still one row) must stay upright as 8.022. Zero-margin correct
-        // digits are #641; taller top-line correct read is #649
-        // (pad sweep: top Vision box never recovers with isotropic pad).
+        // digits are #641; taller top-line (downward) is #649; isotropic
+        // pad around the top box is #651.
         let spoilers = ["88.26", "220.8"]
         for segment in segments {
             let tight = lineCrop(image, visionBox: segment.boundingBox, pad: 0)
@@ -432,6 +432,39 @@ struct OCRSevenSegment576Tests {
         }
         let taller = lineCrop(image, visionBox: segments[1].boundingBox, pad: 20)
         #expect(decode(taller, maximum: 0).extractedText == "8.022")
+    }
+
+    /// #641: a zero-margin Vision glyph crop must read that line, not only
+    /// avoid the known half-turn spoilers. Border clearing on a box tight to
+    /// ink previously left `"8"` / `""` instead of `32.88` / `8.022`.
+    @Test func aZeroMarginGlyphCropReadsThatLine() {
+        let image = sealedBothRowsPanel()
+        let full = decode(image, maximum: 0)
+        let segments = full.recognizedTexts.filter { $0.role == .segment }
+        #expect(segments.map(\.text) == ["32.88", "8.022"])
+        for segment in segments {
+            let tight = lineCrop(image, visionBox: segment.boundingBox, pad: 0)
+            #expect(decode(tight, maximum: 0).extractedText == segment.text)
+        }
+    }
+
+    /// #649: a modestly taller crop of the **top** sealed line must read
+    /// `32.88`. Grow only downward into the row gap — isotropic pad (and
+    /// any horizontal growth) garbles the top line (#651); lower taller is
+    /// #625.
+    @Test func aTallerTopLineCropReadsThatLine() {
+        let image = sealedBothRowsPanel()
+        let full = decode(image, maximum: 0)
+        let segments = full.recognizedTexts.filter { $0.role == .segment }
+        #expect(segments.map(\.text) == ["32.88", "8.022"])
+        let taller = lineCrop(
+            image,
+            visionBox: segments[0].boundingBox,
+            padX: 0,
+            padTop: 0,
+            padBottom: 20
+        )
+        #expect(decode(taller, maximum: 0).extractedText == "32.88")
     }
 
     @Test func decoderSourceDoesNotNameFields() throws {
@@ -950,12 +983,22 @@ struct OCRSevenSegment576Tests {
     }
 
     private func lineCrop(_ image: CGImage, visionBox: CGRect, pad: Int) -> CGImage {
+        lineCrop(image, visionBox: visionBox, padX: pad, padTop: pad, padBottom: pad)
+    }
+
+    private func lineCrop(
+        _ image: CGImage,
+        visionBox: CGRect,
+        padX: Int,
+        padTop: Int,
+        padBottom: Int
+    ) -> CGImage {
         let width = image.width
         let height = image.height
-        let minX = Int((visionBox.minX * CGFloat(width)).rounded(.down)) - pad
-        let maxX = Int((visionBox.maxX * CGFloat(width)).rounded(.up)) + pad
-        let minY = Int(((1 - visionBox.maxY) * CGFloat(height)).rounded(.down)) - pad
-        let maxY = Int(((1 - visionBox.minY) * CGFloat(height)).rounded(.up)) + pad
+        let minX = Int((visionBox.minX * CGFloat(width)).rounded(.down)) - padX
+        let maxX = Int((visionBox.maxX * CGFloat(width)).rounded(.up)) + padX
+        let minY = Int(((1 - visionBox.maxY) * CGFloat(height)).rounded(.down)) - padTop
+        let maxY = Int(((1 - visionBox.minY) * CGFloat(height)).rounded(.up)) + padBottom
         let x = max(0, minX)
         let y = max(0, minY)
         let w = max(1, min(width, maxX) - x)
