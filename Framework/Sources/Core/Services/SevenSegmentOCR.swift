@@ -771,20 +771,28 @@ private struct GrayBuffer {
         guard !cells.isEmpty else { return [] }
         let ordered = cells.sorted { $0.minX < $1.minX }
         guard ordered.count > 1 else { return [ordered] }
-        let gaps = zip(ordered, ordered.dropFirst()).map { max(0, $1.minX - $0.maxX) }
-        let middle = median(gaps) ?? 0
         let tallest = ordered.map(\.height).max() ?? 1
         let pitches = ordered.filter { cell in
             cell.height * 100 >= tallest * 55 && !isMark(cell.character)
         }.map(\.box.width)
-        // Narrow ones (especially "1") shrink a plain median so a full-width
-        // digit followed by a stem looks cell-wide (#646). Upper half keeps
-        // the bar near a real body; real group gaps stay above it.
+        // Narrow ones shrink a plain median; prefer the upper half so the
+        // body bar stays near a real digit (#646).
         let pitch: Int = {
             let sorted = pitches.sorted()
             guard !sorted.isEmpty else { return 0 }
             return median(Array(sorted[(sorted.count / 2)...])) ?? 0
         }()
+        // Edge gaps after a full body before a stem look cell-wide because
+        // the stem's box starts late. Pad thin digits out to `pitch` (right-
+        // anchored) before measuring so only true group holes stay large.
+        let slots: [(minX: Int, maxX: Int)] = ordered.map { cell in
+            if isMark(cell.character) || pitch <= 0 || cell.box.width >= pitch {
+                return (cell.minX, cell.maxX)
+            }
+            return (cell.maxX - pitch, cell.maxX)
+        }
+        let gaps = zip(slots, slots.dropFirst()).map { max(0, $1.minX - $0.maxX) }
+        let middle = median(gaps) ?? 0
         var groups: [[Cell]] = [[ordered[0]]]
         for (index, cell) in ordered.dropFirst().enumerated() {
             let gap = gaps[index]
