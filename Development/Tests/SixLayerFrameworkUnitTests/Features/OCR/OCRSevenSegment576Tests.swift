@@ -261,16 +261,7 @@ struct OCRSevenSegment576Tests {
     // MARK: - Confidence and non-segment ink
 
     @Test func unknownCellZerosOnlyItsFragment() {
-        // Controls: each side alone must still read (#647).
-        #expect(decode(panel(["8_2"])).extractedText == "8_2")
-        #expect(decode(panel(["17.740"])).extractedText == "17.740")
-
         let result = decode(panel(["8_2 17.740"]))
-        // Temporary #647 probe — remove once green.
-        for text in result.recognizedTexts {
-            print("647-seg '\(text.text)' conf=\(text.confidence) box=\(text.boundingBox)")
-        }
-        print("647-text \(String(reflecting: result.extractedText)) conf=\(result.confidence)")
         #expect(result.extractedText == "8_2  17.740")
         #expect(result.confidence == 0)
         let broken = result.recognizedTexts.first { $0.text.contains("_") }
@@ -728,13 +719,14 @@ struct OCRSevenSegment576Tests {
     }
 
     @Test func lowSegmentScoreStaysInTheTextAndOutOfExtractionConfidence() async throws {
-        let image = panel(["8_2 17.740"])
+        // Structured ssocr always localizes; unbezeled synthetics are not a
+        // sealed pocket and collapse to a digit counter (`8.`) (#647 / #648).
+        let image = SegmentPanel.render(
+            rows: [atoms("8_2 17.740")],
+            bezelLevel: 40,
+            bezelWidth: 8
+        )
         let preview = decode(image)
-        // Temporary #647 probe — localize vs plain.
-        let localized = SevenSegmentOCR.decode(cgImage: image, localizeDigitPanel: true)
-        let region = SevenSegmentOCR.digitPanelRegion(in: image)
-        print("647-plain \(String(reflecting: preview.extractedText))")
-        print("647-localized \(String(reflecting: localized.extractedText)) region=\(String(describing: region))")
         let clean = try #require(preview.recognizedTexts.first { $0.text == "17.740" })
         let label = OCRRecognizedText(
             text: "Total",
@@ -749,7 +741,6 @@ struct OCRSevenSegment576Tests {
             suppliedLabelFragments: [label]
         )
         let result = try await service().processStructuredExtraction(PlatformImage(cgImage: image), context: context)
-        print("647-structured \(String(reflecting: result.extractedText))")
         #expect(result.confidence == 0)
         #expect(result.extractedText.contains("8_2"))
         #expect(result.extractedText.contains("17.740"))
