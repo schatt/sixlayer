@@ -2279,7 +2279,26 @@ private func priceMatchedLeftByDenseWindow(
     // Thresholds are relative to the band's peak column. A left glare blob
     // often *is* the peak; digit stems sit well below it. Penalize near-peak
     // fills so the digit field wins. Window ~ price digit run width.
-    let peak = (sharedLeft..<min(width, sharedRight)).map { columnInk[$0] }.max() ?? 0
+    // A blob after a hole wider than a stroke is not that peak. One solid
+    // column there lifts the stem line, and a washed row then scores its
+    // margin as digit ink.
+    let right = min(width, sharedRight)
+    let hole = max(8, min(16, bandHeight / 40))
+    var cursor = right - 1
+    while cursor > sharedLeft, columnInk[cursor] == 0 {
+        cursor -= 1
+    }
+    while cursor > sharedLeft, columnInk[cursor] > 0 {
+        cursor -= 1
+    }
+    var gap = 0
+    while cursor - gap > sharedLeft, columnInk[cursor - gap] == 0 {
+        gap += 1
+    }
+    let fieldEnd = gap > hole ? cursor + 1 : right
+    let fieldPeak = (sharedLeft..<max(sharedLeft, fieldEnd)).reduce(0) { max($0, columnInk[$1]) }
+    let fullPeak = (sharedLeft..<right).reduce(0) { max($0, columnInk[$1]) }
+    let peak = fieldPeak > 0 ? fieldPeak : fullPeak
     let speckFloor = max(2, bandHeight / 12)
     let solidFloor = max(speckFloor + 1, peak * 4 / 5)
     let stemHi = max(speckFloor + 1, peak * 11 / 20)
@@ -2319,31 +2338,6 @@ private func priceMatchedLeftByDenseWindow(
             bestStart = start
         }
         start += 1
-    }
-    if width >= 1000 {
-        var peakX = sharedLeft
-        var second = 0
-        let right = min(width, sharedRight)
-        for x in sharedLeft..<right {
-            let ink = columnInk[x]
-            if ink > columnInk[peakX] {
-                second = columnInk[peakX]
-                peakX = x
-            } else if ink > second {
-                second = ink
-            }
-        }
-        var bodyMax = 0
-        var bodyX = sharedLeft
-        let bodyRight = min(right, max(sharedLeft, right - 40))
-        for x in sharedLeft..<bodyRight where columnInk[x] > bodyMax {
-            bodyMax = columnInk[x]
-            bodyX = x
-        }
-        let edge = (max(sharedLeft, right - 40)..<right).map { "\($0):\(columnInk[$0])" }.joined(separator: ",")
-        trace(
-            "leftwin y \(y0)-\(y1) span \(sharedLeft)-\(sharedRight) peak \(peak)@\(peakX) second \(second) body \(bodyMax)@\(bodyX) stemHi \(stemHi) win \(window) best \(bestStart) score \(bestScore) edge \(edge)\n"
-        )
     }
     guard bestStart > sharedLeft + 16, bestScore > 8 else { return sharedLeft }
     var lo = bestStart
