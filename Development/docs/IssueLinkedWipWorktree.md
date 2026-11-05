@@ -38,6 +38,10 @@ git push all HEAD   # pushes current wip branch
 
 When the `wip/` branch is ready:
 
+1. Merge `next` into `wip/` (worktree), push.
+2. **Run `/2` on the `wip/` tip** — post on the issue; fix all in-scope findings on that same `wip/` **before** the next step. Do not land and `/2` later.
+3. Only then merge into `next`:
+
 ```bash
 cd /path/to/sixlayer          # primary clone
 git checkout next
