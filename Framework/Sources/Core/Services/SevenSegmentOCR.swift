@@ -182,9 +182,14 @@ private struct GrayBuffer {
         // the frame (#651). Drop solid edge bezel, then pull back to digit
         // ink with a 6px glass margin so lower-line zero-margin crops still
         // keep the glass #641 needs.
-        let turned = standingUp(
-            buffer.trimmingEdgeBezel().tightenedToDigitLine(margin: 6)
-        )
+        let trimmed = buffer.trimmingEdgeBezel()
+        let prepared = trimmed.tightenedToDigitLine(margin: 6)
+        if buffer.width != prepared.width || buffer.height != prepared.height {
+            print(
+                "651-prep \(buffer.width)x\(buffer.height) -> trim \(trimmed.width)x\(trimmed.height) -> prep \(prepared.width)x\(prepared.height)"
+            )
+        }
+        let turned = standingUp(prepared)
         let limit = Int(max(0, maximumDegrees).rounded(.down))
         guard limit > 0 else { return turned }
         let small = turned.fitted(maxSide: 280)
