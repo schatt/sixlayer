@@ -777,10 +777,17 @@ public enum DisplayOCRTraining {
         if symbolicLink(imageURL) || symbolicLink(labelURL) {
             return .rejection(.unreadablePackage, .symlink)
         }
-        if !regularFile(imageURL) {
+        let hasImage = regularFile(imageURL)
+        let hasLabel = regularFile(labelURL)
+        // Not package-shaped (Documents / home-folder junk). Do not flood the
+        // skipped list as Missing image (#655).
+        if !hasImage && !hasLabel {
+            return .ignored
+        }
+        if !hasImage {
             return .rejection(.unreadablePackage, .missingImage)
         }
-        if !regularFile(labelURL) {
+        if !hasLabel {
             return .rejection(.unreadablePackage, .missingLabel)
         }
         do {
