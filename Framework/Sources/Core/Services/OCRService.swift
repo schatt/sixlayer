@@ -152,13 +152,16 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
     /// Reverse-geocode for optional capture-region guidance (#631). Tests inject a Fixed resolver.
     var captureRegionResolver: OCRCaptureRegionResolving = CLGeocoderOCRCaptureRegionResolver()
 
-    /// Optional EXIF GPS → capture region. Stub returns context unchanged until green (#631).
+    /// Optional EXIF GPS → capture region via `image.exif.gpsLocation` (#631). Never required.
     func contextEnrichedFromCaptureGPS(
         _ context: OCRContext,
         image: PlatformImage
     ) async -> OCRContext {
-        _ = image
-        return context
+        await OCRDecimalLocale.contextByApplyingCaptureGPS(
+            context,
+            location: image.exif.gpsLocation,
+            resolver: captureRegionResolver
+        )
     }
     
     
