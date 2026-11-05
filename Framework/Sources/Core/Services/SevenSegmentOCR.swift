@@ -523,9 +523,22 @@ private struct GrayBuffer {
             guard box.width >= minimum, box.height >= minimum else { return nil }
             guard box.width < digitHeight * 30 / 100, box.height < digitHeight * 55 / 100 else { return nil }
             if existing.contains(where: { overlap($0.box, box) > 0 }) { return nil }
-            let comma = box.maxY > baseline + max(2, digitHeight / 12)
-            return Cell(box: box, character: comma ? "," : ".", confidence: 1, band: bandIndex)
+            return Cell(
+                box: box,
+                character: markCharacter(box: box, baseline: baseline, digitHeight: digitHeight),
+                confidence: 1,
+                band: bandIndex
+            )
         }
+    }
+
+    /// Period = square baseline dot; comma = hanging tail (taller than wide).
+    /// Hang alone is insufficient: 1/4/7 omit the bottom bar and pull the
+    /// median baseline up, so a true period looks "low" (#647 / #658).
+    private static func markCharacter(box: PixelBox, baseline: Int, digitHeight: Int) -> Character {
+        let hangs = box.maxY > baseline + max(2, digitHeight / 12)
+        let tallTail = box.height > box.width
+        return hangs && tallTail ? "," : "."
     }
 
     private static func classify(
@@ -599,8 +612,12 @@ private struct GrayBuffer {
             // A thin comma tail can miss the mask while the raw pixels are
             // still darker than the glass around the mark.
             guard markIsInk(mask, box: box, width: width, buffer: buffer, darkInk: darkInk) else { return nil }
-            let comma = box.maxY > baseline + max(2, digitHeight / 12)
-            return Cell(box: box, character: comma ? "," : ".", confidence: 1, band: bandIndex)
+            return Cell(
+                box: box,
+                character: markCharacter(box: box, baseline: baseline, digitHeight: digitHeight),
+                confidence: 1,
+                band: bandIndex
+            )
         }
         // Do not clamp this frame to the mask. Washed bezels inflate
         // digitHeight so frameTop + digitHeight can sit past the buffer;
@@ -615,8 +632,11 @@ private struct GrayBuffer {
         if box.height * 100 < digitHeight * 70, coverage(mask, box: frame, width: width) > solidCoverage {
             return nil
         }
-        // A reflection beside the digits is wider than a glyph. A digit is taller than it is wide.
-        if box.height * 100 >= digitHeight * 50, box.width * 5 > box.height * 4 {
+        // A reflection beside the digits is wider than a glyph. Compare to the
+        // band's digit height — not the ink-tight box height. Digits that omit
+        // top/bottom bars (especially 4) shrink vertically and otherwise trip
+        // this as a "wide" reflection (#647).
+        if box.height * 100 >= digitHeight * 50, box.width * 5 > digitHeight * 4 {
             return nil
         }
         let sampledBox = box.height * 100 < digitHeight * 70 ? frame : box

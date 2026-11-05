@@ -719,7 +719,13 @@ struct OCRSevenSegment576Tests {
     }
 
     @Test func lowSegmentScoreStaysInTheTextAndOutOfExtractionConfidence() async throws {
-        let image = panel(["8_2 17.740"])
+        // Structured ssocr always localizes; unbezeled synthetics are not a
+        // sealed pocket and collapse to a digit counter (`8.`) (#647 / #648).
+        let image = SegmentPanel.render(
+            rows: [atoms("8_2 17.740")],
+            bezelLevel: 40,
+            bezelWidth: 8
+        )
         let preview = decode(image)
         let clean = try #require(preview.recognizedTexts.first { $0.text == "17.740" })
         let label = OCRRecognizedText(
