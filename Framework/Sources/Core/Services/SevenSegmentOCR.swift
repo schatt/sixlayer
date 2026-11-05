@@ -944,7 +944,7 @@ private struct GrayBuffer {
         }
     }
 
-    private func fitted(maxSide: Int) -> GrayBuffer {
+    func fitted(maxSide: Int) -> GrayBuffer {
         let longest = max(width, height)
         guard longest > maxSide, longest > 0 else { return self }
         let ratio = Double(maxSide) / Double(longest)
