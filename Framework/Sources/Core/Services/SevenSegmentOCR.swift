@@ -1024,19 +1024,17 @@ private struct GrayBuffer {
         let fill = Int(cornerFill())
         let slack = inkMargin
         func isMarginRow(_ y: Int) -> Bool {
-            var near = 0
             let start = y * width
-            for x in 0..<width {
-                if abs(Int(pixels[start + x]) - fill) <= slack { near += 1 }
+            for x in 0..<width where abs(Int(pixels[start + x]) - fill) > slack {
+                return false
             }
-            return near * 20 >= width * 19
+            return true
         }
         func isMarginColumn(_ x: Int) -> Bool {
-            var near = 0
-            for y in 0..<height {
-                if abs(Int(pixels[y * width + x]) - fill) <= slack { near += 1 }
+            for y in 0..<height where abs(Int(pixels[y * width + x]) - fill) > slack {
+                return false
             }
-            return near * 20 >= height * 19
+            return true
         }
         var top = 0
         while top < height - 8, isMarginRow(top) { top += 1 }
