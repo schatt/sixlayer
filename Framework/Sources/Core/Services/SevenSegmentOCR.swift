@@ -141,6 +141,9 @@ public enum SevenSegmentOCR {
                 gray = cropped
             }
         }
+        // Huge pale pad around a small panel (training / paddedCanvas) must
+        // not survive into masks — fit alone leaves tiny glyphs (#648).
+        gray = gray.trimmingUniformMargin()
         gray = gray.fitted(maxSide: digitPanelAnalysisMaxSide)
         lastDecodeAnalysisLongEdge = max(gray.width, gray.height)
         let upright = GrayBuffer.deskew(gray, maximumDegrees: deskewMaximumDegrees)
