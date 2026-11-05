@@ -771,13 +771,13 @@ private struct GrayBuffer {
         guard !cells.isEmpty else { return [] }
         let ordered = cells.sorted { $0.minX < $1.minX }
         guard ordered.count > 1 else { return [ordered] }
-        let gaps = zip(ordered, ordered.dropFirst()).map { max(0, $1.minX - $0.maxX) }
+        // Narrow stems shrink a plain median and start late in their slot, so
+        // a body→stem edge gap looks cell-wide (#646). Upper-half pitch plus
+        // right-anchored padding keeps only true group holes above the bar.
+        let pitch = bodyPitch(of: ordered)
+        let slots = groupSlots(ordered, pitch: pitch)
+        let gaps = zip(slots, slots.dropFirst()).map { max(0, $1.minX - $0.maxX) }
         let middle = median(gaps) ?? 0
-        let tallest = ordered.map(\.height).max() ?? 1
-        let pitches = ordered.filter { cell in
-            cell.height * 100 >= tallest * 55 && !isMark(cell.character)
-        }.map(\.box.width)
-        let pitch = median(pitches) ?? 0
         var groups: [[Cell]] = [[ordered[0]]]
         for (index, cell) in ordered.dropFirst().enumerated() {
             let gap = gaps[index]
@@ -789,6 +789,26 @@ private struct GrayBuffer {
             }
         }
         return groups
+    }
+
+    /// Median of the upper half of tall non-mark widths — resists skinny "1"s.
+    private static func bodyPitch(of cells: [Cell]) -> Int {
+        let tallest = cells.map(\.height).max() ?? 1
+        let widths = cells.filter { cell in
+            cell.height * 100 >= tallest * 55 && !isMark(cell.character)
+        }.map(\.box.width).sorted()
+        guard !widths.isEmpty else { return 0 }
+        return median(Array(widths[(widths.count / 2)...])) ?? 0
+    }
+
+    /// Pad thin digits out to `pitch`, anchored on maxX (stems sit on the right).
+    private static func groupSlots(_ cells: [Cell], pitch: Int) -> [(minX: Int, maxX: Int)] {
+        cells.map { cell in
+            if isMark(cell.character) || pitch <= 0 || cell.box.width >= pitch {
+                return (cell.minX, cell.maxX)
+            }
+            return (cell.maxX - pitch, cell.maxX)
+        }
     }
 
     private static func isMark(_ character: Character) -> Bool {
