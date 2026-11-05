@@ -1025,6 +1025,14 @@ private struct GrayBuffer {
 
 private func trace(_ message: String) {
     fputs(message, stderr)
+    let path = "/tmp/595-ocr-trace.txt"
+    if let handle = FileHandle(forWritingAtPath: path) {
+        handle.seekToEndOfFile()
+        if let data = message.data(using: .utf8) { handle.write(data) }
+        try? handle.close()
+    } else {
+        FileManager.default.createFile(atPath: path, contents: message.data(using: .utf8))
+    }
 }
 
 private struct Mask {
@@ -1533,9 +1541,15 @@ private extension GrayBuffer {
             : (bandsForSplit.count > foundBands.count
                 ? bandsForSplit
                 : (keepRowSplit ? bandsForSplit : mergedForSplit))
-        if buffer.width >= 1000 {
+        // TEMP #595 diagnose — always log band split decisions.
+        do {
             let listed = splitBands.map { "\($0.0)-\($0.1)" }.joined(separator: ",")
-            trace("bands \(listed)\n")
+            let foundListed = foundBands.map { "\($0.0)-\($0.1)" }.joined(separator: ",")
+            let subListed = bandsForSplit.map { "\($0.0)-\($0.1)" }.joined(separator: ",")
+            let mergedListed = mergedForSplit.map { "\($0.0)-\($0.1)" }.joined(separator: ",")
+            trace(
+                "bands \(listed) found[\(foundListed)] splitSrc[\(subListed)] merged[\(mergedListed)] cellH=\(cellHeight) rowLike=\(rowLikeFloor) gap=\(thinnestGap)/\(gapFloor) keep=\(keepRowSplit) opened=\(opened) size=\(buffer.width)x\(buffer.height)\n"
+            )
         }
         // The window is sized from the whole crop. Two rows make it wide
         // enough to mark the glass between digits. Read each row from a
