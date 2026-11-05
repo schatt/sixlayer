@@ -516,9 +516,15 @@ private struct GrayBuffer {
             ? min(vertical[0].1 - vertical[0].0, vertical[1].1 - vertical[1].0)
             : 0
         let colonGap = vertical.count == 2 && splitGap >= shorterRun
-        if colonGap,
-           box.width * 100 <= box.height * 30,
-           vertical.allSatisfy({ $0.1 - $0.0 < digitHeight * 45 / 100 }) {
+        let colonNarrow = box.width * 100 <= box.height * 30
+        let colonShort = vertical.allSatisfy({ $0.1 - $0.0 < digitHeight * 45 / 100 })
+        if colonGap, colonNarrow, colonShort {
+            // #645 probe: mid-row glare vs real colon. Remove after fix.
+            trace(
+                "colon box=\(box.minX)..\(box.maxX)x\(box.minY)..\(box.maxY) "
+                    + "dh=\(digitHeight) dw=\(digitWidth) runs=\(vertical) "
+                    + "gap=\(splitGap) short=\(shorterRun)\n"
+            )
             return Cell(box: box, character: ":", confidence: 1, band: bandIndex)
         }
         // Glare lifts the glass on both sides of its band. Those short bands
