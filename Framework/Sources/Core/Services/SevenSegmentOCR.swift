@@ -521,9 +521,10 @@ private struct GrayBuffer {
         // two speck-tall runs with a colon-sized gap. Real colon dots are a
         // meaningful share of the digit height — drop the speck pair instead
         // of falling through to '.' .
-        if colonGap,
-           box.width * 100 <= box.height * 30,
-           vertical.allSatisfy({ $0.1 - $0.0 < digitHeight * 45 / 100 }) {
+        let stackedNarrowDots = colonGap
+            && box.width * 100 <= box.height * 30
+            && vertical.allSatisfy { $0.1 - $0.0 < digitHeight * 45 / 100 }
+        if stackedNarrowDots {
             let minDot = max(3, digitHeight * 8 / 100)
             guard shorterRun >= minDot else { return nil }
             return Cell(box: box, character: ":", confidence: 1, band: bandIndex)
