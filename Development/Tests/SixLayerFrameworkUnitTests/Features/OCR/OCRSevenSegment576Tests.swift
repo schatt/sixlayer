@@ -789,8 +789,14 @@ struct OCRSevenSegment576Tests {
     }
 
     /// Training Decode hangs when `masks` runs on a multi-megapixel panel crop (#654).
+    /// Scale just past the analysis cap so the red run stays finite without the fit.
     @Test func decodeCapsAnalysisOnLargePanelCrop() {
-        let panelImage = scaleGrayImage(sealedBothRowsPanel(), factor: 4)
+        let base = sealedBothRowsPanel()
+        var factor = 2
+        while max(base.width, base.height) * factor <= SevenSegmentOCR.digitPanelAnalysisMaxSide {
+            factor += 1
+        }
+        let panelImage = scaleGrayImage(base, factor: factor)
         #expect(max(panelImage.width, panelImage.height) > SevenSegmentOCR.digitPanelAnalysisMaxSide)
         SevenSegmentOCR.lastDecodeAnalysisLongEdge = nil
         let result = SevenSegmentOCR.decode(
