@@ -250,11 +250,12 @@ private final class NativeTextControlMarkerView: UIView {
                     object: nil,
                     queue: .main
                 ) { [weak self] note in
-                    let object = note.object
-                    Task { @MainActor in
+                    // Delivered on `.main` — stay on the actor without sending
+                    // the notification object across isolation (#652).
+                    MainActor.assumeIsolated {
                         guard let self else { return }
                         TextFieldBeginEditingSelection.handleBeginEditing(
-                            object,
+                            note.object,
                             marker: self,
                             shouldSelect: self.shouldSelect
                         )
@@ -322,11 +323,12 @@ private final class NativeTextControlMarkerView: NSView {
                     object: nil,
                     queue: .main
                 ) { [weak self] note in
-                    let object = note.object
-                    Task { @MainActor in
+                    // Delivered on `.main` — stay on the actor without sending
+                    // the notification object across isolation (#652).
+                    MainActor.assumeIsolated {
                         guard let self else { return }
                         TextFieldBeginEditingSelection.handleBeginEditing(
-                            object,
+                            note.object,
                             marker: self,
                             shouldSelect: self.shouldSelect
                         )
