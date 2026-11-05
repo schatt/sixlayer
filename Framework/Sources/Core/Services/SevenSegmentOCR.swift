@@ -1087,14 +1087,6 @@ private struct GrayBuffer {
 
 private func trace(_ message: String) {
     fputs(message, stderr)
-    let path = "/tmp/595-ocr-trace.txt"
-    if let handle = FileHandle(forWritingAtPath: path) {
-        handle.seekToEndOfFile()
-        if let data = message.data(using: .utf8) { handle.write(data) }
-        try? handle.close()
-    } else {
-        FileManager.default.createFile(atPath: path, contents: message.data(using: .utf8))
-    }
 }
 
 private struct Mask {
@@ -1557,11 +1549,7 @@ private extension GrayBuffer {
             ? foundBands.filter { ($0.1 - $0.0) * 20 >= buffer.height }
             : foundBands
         let paintedMarks = buffer.extremeMarkMask()
-        // Measure cells on unmerged bands. Merging first (whenGapBelow: 0 →
-        // median/2) joins haze-thinned rows into one window and inflates
-        // cellHeight, which then makes merge + keep-row floors too large (#595).
-        // Only collapse touching runs (gap < 1) before measuring.
-        let measuredBands = opened ? solidBands : merge(foundBands, whenGapBelow: 1)
+        let measuredBands = opened ? solidBands : merge(foundBands, whenGapBelow: 0)
         let measured = measuredBands.map { band -> (band: (Int, Int), cells: [Cell]) in
             return (
                 band,
@@ -1585,36 +1573,14 @@ private extension GrayBuffer {
         let bandsForSplit = substantiveBands.count >= 2 ? substantiveBands : separated
         // merge treats a zero limit as "pick a default", which would close
         // the gap this split just opened.
-        let mergedForSplit = merge(bandsForSplit, whenGapBelow: max(1, cellHeight / 2))
-        // Tall haze can shrink the remaining inter-row gap below cellHeight/2
-        // while each band is still a full digit row (Approach B / #595). Keep
-        // those row-like bands split so per-row crops still run. Floor must
-        // stay near a full cell: cellHeight*2/5 also matched mid-glyph halves
-        // and broke clean three-row decode (#591). Mid-glyph valleys are only
-        // a few pixels; haze-thinned row gaps stay larger than gapFloor.
-        let rowLikeFloor = max(48, (cellHeight * 3) / 4)
-        let thinnestGap = zip(bandsForSplit, bandsForSplit.dropFirst())
-            .map { $1.0 - $0.1 }
-            .min() ?? 0
-        let gapFloor = max(8, cellHeight / 12)
-        let keepRowSplit = !opened
-            && bandsForSplit.count >= 2
-            && mergedForSplit.count < bandsForSplit.count
-            && bandsForSplit.allSatisfy { $0.1 - $0.0 >= rowLikeFloor }
-            && thinnestGap >= gapFloor
         let splitBands = opened
             ? merge(solidBands, whenGapBelow: max(2, buffer.height / 40))
             : (bandsForSplit.count > foundBands.count
                 ? bandsForSplit
-                : (keepRowSplit ? bandsForSplit : mergedForSplit))
-        // TEMP #595 diagnose
-        do {
+                : merge(bandsForSplit, whenGapBelow: max(1, cellHeight / 2)))
+        if buffer.width >= 1000 {
             let listed = splitBands.map { "\($0.0)-\($0.1)" }.joined(separator: ",")
-            let subListed = bandsForSplit.map { "\($0.0)-\($0.1)" }.joined(separator: ",")
-            let heights = bandsForSplit.map { $0.1 - $0.0 }
-            trace(
-                "bands \(listed) splitSrc[\(subListed)] h=\(heights) cellH=\(cellHeight) rowLike=\(rowLikeFloor) gap=\(thinnestGap)/\(gapFloor) keep=\(keepRowSplit) opened=\(opened) size=\(buffer.width)x\(buffer.height)\n"
-            )
+            trace("bands \(listed)\n")
         }
         // The window is sized from the whole crop. Two rows make it wide
         // enough to mark the glass between digits. Read each row from a
