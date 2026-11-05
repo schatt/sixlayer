@@ -366,7 +366,10 @@ private struct GrayBuffer {
         let maxHeight = boxes.map(\.height).max() ?? 1
         let tall = boxes.filter { $0.height * 100 >= maxHeight * 55 }
         let digitHeight = median(tall.map(\.height)) ?? maxHeight
-        let baseline = median(tall.map(\.maxY)) ?? band.1
+        // Use the lowest tall bottom for period/comma. A median is pulled up by
+        // glyphs that omit the bottom bar (1/4/7), so a true period at the
+        // real baseline looks like a comma (#647 / #658).
+        let baseline = tall.map(\.maxY).max() ?? band.1
         let frameTop = median(tall.map(\.minY)) ?? band.0
         // A fused wash blob inflates the median width. Prefer a pitch copied
         // from a known-good row, else the 7-seg aspect (≈ height/2).
@@ -512,7 +515,7 @@ private struct GrayBuffer {
         bandIndex: Int
     ) -> [Cell] {
         let digitHeight = median(existing.map(\.height)) ?? max(1, band.1 - band.0)
-        let baseline = median(existing.map(\.maxY)) ?? band.1
+        let baseline = existing.map(\.maxY).max() ?? band.1
         let minimum = max(1, digitHeight / 20)
         let expanded = (max(0, band.0 - digitHeight / 2), min(buffer.height, band.1 + digitHeight / 2))
         let columns = columnRuns(secondary, y0: expanded.0, y1: expanded.1, width: buffer.width)
