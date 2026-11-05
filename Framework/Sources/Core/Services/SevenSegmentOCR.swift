@@ -781,6 +781,11 @@ private struct GrayBuffer {
         let slots = groupSlots(ordered, pitch: pitch)
         let gaps = zip(slots, slots.dropFirst()).map { max(0, $1.minX - $0.maxX) }
         let middle = median(gaps) ?? 0
+        // Temporary #647 probe — remove once green.
+        let listed = zip(ordered, ordered.dropFirst()).enumerated().map { index, pair in
+            "\(pair.0.character)→\(pair.1.character) gap\(gaps[index]) w\(pair.0.box.width)/\(pair.1.box.width)"
+        }.joined(separator: " ")
+        trace("647-group mid\(middle) pitch\(pitch) [\(listed)] → \(String(ordered.map(\.character)))\n")
         var groups: [[Cell]] = [[ordered[0]]]
         for (index, cell) in ordered.dropFirst().enumerated() {
             let gap = gaps[index]
