@@ -777,10 +777,14 @@ public enum DisplayOCRTraining {
         if symbolicLink(imageURL) || symbolicLink(labelURL) {
             return .rejection(.unreadablePackage, .symlink)
         }
-        if !regularFile(imageURL) {
+        let markers = packageMarkers(in: child)
+        // Not package-shaped (Documents / home-folder junk). Do not flood the
+        // skipped list as Missing image (#655).
+        guard markers.hasImage || markers.hasLabel else { return .ignored }
+        if !markers.hasImage {
             return .rejection(.unreadablePackage, .missingImage)
         }
-        if !regularFile(labelURL) {
+        if !markers.hasLabel {
             return .rejection(.unreadablePackage, .missingLabel)
         }
         do {
@@ -790,6 +794,14 @@ public enum DisplayOCRTraining {
         } catch {
             return .rejection(.unreadablePackage, .unreadablePackage)
         }
+    }
+
+    /// A training package child has at least one of the fixed package files.
+    private static func packageMarkers(in child: URL) -> (hasImage: Bool, hasLabel: Bool) {
+        (
+            regularFile(child.appendingPathComponent(imageFileName)),
+            regularFile(child.appendingPathComponent(labelFileName))
+        )
     }
 
     private static func reason(for error: DisplayOCRTrainingError) -> DisplayOCRTrainingSkipReason {
@@ -906,12 +918,14 @@ public enum DisplayOCRTraining {
         )
     }
 
-    /// A symlink is indexed so it can be removed. A model package and a plain file are not.
+    /// A symlink is indexed so it can be removed. A model package, a plain file,
+    /// and a directory with neither package file are not (#655).
     private static func shouldIndex(_ child: URL) -> Bool {
         if symbolicLink(child) { return true }
         if !directory(child) { return false }
         if isModelPackage(child) { return false }
-        return true
+        let markers = packageMarkers(in: child)
+        return markers.hasImage || markers.hasLabel
     }
 
     private static func loadIndex(in root: URL) -> DisplayOCRTrainingIndex? {
