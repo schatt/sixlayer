@@ -98,6 +98,9 @@ public enum SevenSegmentOCR {
     /// Long edge of the buffer that `digitPanelBounds` last analyzed. Test probe (#650).
     nonisolated(unsafe) public static var lastDigitPanelAnalysisLongEdge: Int?
 
+    /// Long edge of the buffer that `decode` last ran `masks` on. Test probe (#654).
+    nonisolated(unsafe) public static var lastDecodeAnalysisLongEdge: Int?
+
     /// Pixel rect of the digit panel (glass plus a bezel margin) in image
     /// coordinates, or `nil` when no sealed panel is found.
     ///
@@ -117,6 +120,10 @@ public enum SevenSegmentOCR {
     ///
     /// `panelLocator`, when set, is the trained panel model (#609). A nil
     /// result from it still uses the classical finder.
+    ///
+    /// After localization, analysis is fitted to ``digitPanelAnalysisMaxSide``
+    /// so full-resolution panel crops from the training harness do not stall
+    /// in `localRange` (#654). Normalized glyph boxes stay valid (same aspect).
     public static func decode(
         cgImage: CGImage,
         deskewMaximumDegrees: Double = 3,
@@ -134,6 +141,8 @@ public enum SevenSegmentOCR {
                 gray = cropped
             }
         }
+        gray = gray.fitted(maxSide: digitPanelAnalysisMaxSide)
+        lastDecodeAnalysisLongEdge = max(gray.width, gray.height)
         let upright = GrayBuffer.deskew(gray, maximumDegrees: deskewMaximumDegrees)
         let fragments = GrayBuffer.fragments(in: upright)
         let lines = fragments.map { row in row.map(\.text).joined(separator: "  ") }
@@ -947,7 +956,7 @@ private struct GrayBuffer {
         }
     }
 
-    private func fitted(maxSide: Int) -> GrayBuffer {
+    func fitted(maxSide: Int) -> GrayBuffer {
         let longest = max(width, height)
         guard longest > maxSide, longest > 0 else { return self }
         let ratio = Double(maxSide) / Double(longest)

@@ -440,6 +440,26 @@ public enum DisplayOCRTraining {
         sourceName: String?,
         deskewMaximumDegrees: Double = 3
     ) -> DisplayOCRTrainingLabel? {
+        draft(
+            image: image,
+            panel: panel,
+            rowBoxes: rowBoxes,
+            sourceName: sourceName,
+            deskewMaximumDegrees: deskewMaximumDegrees,
+            precomputedPanelRead: nil
+        )
+    }
+
+    /// Same as ``draft(image:panel:rowBoxes:sourceName:deskewMaximumDegrees:)`` but
+    /// reuses an already-decoded panel read (suggestion path, #654).
+    fileprivate static func draft(
+        image: CGImage,
+        panel: DisplayOCRNormalizedBox,
+        rowBoxes: [DisplayOCRNormalizedBox],
+        sourceName: String?,
+        deskewMaximumDegrees: Double,
+        precomputedPanelRead: OCRResult?
+    ) -> DisplayOCRTrainingLabel? {
         guard let panelBox = panel.unitClamped,
               let panelImage = crop(image, to: panelBox) else { return nil }
         let clipped = rowBoxes.compactMap { box -> DisplayOCRNormalizedBox? in
@@ -448,7 +468,8 @@ public enum DisplayOCRTraining {
             guard hit.pixelRect(imageWidth: image.width, imageHeight: image.height) != nil else { return nil }
             return hit
         }
-        let panelRead = segmentRead(panelImage, deskewMaximumDegrees: deskewMaximumDegrees)
+        let panelRead = precomputedPanelRead
+            ?? segmentRead(panelImage, deskewMaximumDegrees: deskewMaximumDegrees)
         let lineRows = panelRows(from: panelRead)
         let rows: [DisplayOCRTrainingRow]
         if clipped.isEmpty {
@@ -1588,14 +1609,14 @@ public final class DisplayOCRTrainingSession: ObservableObject {
         guard suggesting else { return }
         // Publish the image first; digit-panel suggestion is off the main
         // actor so full-res library photos do not freeze the UI (#650).
-        nonisolated(unsafe) let analysisImage = cgImage
-        suggestionTask = Task { [weak self] in
+        let analysisImage = cgImage
+        suggestionTask = Task { @MainActor [weak self] in
             let outcome = await Task.detached(priority: .userInitiated) {
                 let ranOnMain = MainThreadProbe.isMain()
                 let proposal = DisplayOCRTrainingSession.suggestionProposal(for: analysisImage)
                 return SuggestionComputeOutcome(ranOnMainThread: ranOnMain, proposal: proposal)
             }.value
-            await self?.applySuggestion(
+            self?.applySuggestion(
                 outcome.proposal,
                 ranOnMainThread: outcome.ranOnMainThread,
                 generation: generation
@@ -1608,7 +1629,8 @@ public final class DisplayOCRTrainingSession: ObservableObject {
         await suggestionTask?.value
     }
 
-    /// Classical reader panel + glyph boxes. Runs off the main actor (#650).
+    /// Classical reader panel + glyph boxes + draft. Runs off the main actor
+    /// (#650 / #654) so apply only publishes state.
     nonisolated private static func suggestionProposal(for image: CGImage) -> SuggestionProposal? {
         guard let region = SevenSegmentOCR.digitPanelRegion(in: image) else { return nil }
         let suggested = DisplayOCRNormalizedBox(
@@ -1621,15 +1643,25 @@ public final class DisplayOCRTrainingSession: ObservableObject {
             return nil
         }
         var glyphs: [DisplayOCRNormalizedBox] = []
+        var panelRead: OCRResult?
         if let crop = DisplayOCRTraining.crop(image, to: panelBox) {
             let read = SevenSegmentOCR.decode(
                 cgImage: crop,
                 deskewMaximumDegrees: 0,
                 localizeDigitPanel: false
             )
+            panelRead = read
             glyphs = DisplayOCRTraining.rowBoxes(fromVisionBoxes: read.boundingBoxes, panel: panelBox)
         }
-        return SuggestionProposal(panel: panelBox, glyphs: glyphs)
+        let drafted = DisplayOCRTraining.draft(
+            image: image,
+            panel: panelBox,
+            rowBoxes: [],
+            sourceName: nil,
+            deskewMaximumDegrees: 0,
+            precomputedPanelRead: panelRead
+        )
+        return SuggestionProposal(panel: panelBox, glyphs: glyphs, label: drafted)
     }
 
     private func applySuggestion(
@@ -1645,7 +1677,7 @@ public final class DisplayOCRTrainingSession: ObservableObject {
         // A crop of one line is read upside down or not at all. The panel read
         // is the digit string; the glyph rows are only the boxes.
         rowBoxes = []
-        guard decode(), var drafted = label else {
+        guard var drafted = proposal.label else {
             rowBoxes = proposal.glyphs
             return
         }
@@ -1656,6 +1688,7 @@ public final class DisplayOCRTrainingSession: ObservableObject {
         drafted.rows = aligned.rows
         rowBoxes = aligned.boxes
         label = drafted
+        status = .decoded
     }
 
     private func cancelPendingSuggestion() {
@@ -2050,6 +2083,7 @@ private struct ReindexOutcome: Sendable {
 private struct SuggestionProposal: Sendable {
     var panel: DisplayOCRNormalizedBox
     var glyphs: [DisplayOCRNormalizedBox]
+    var label: DisplayOCRTrainingLabel?
 }
 
 private struct SuggestionComputeOutcome: Sendable {
