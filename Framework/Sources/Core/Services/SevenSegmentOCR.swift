@@ -183,9 +183,10 @@ private struct GrayBuffer {
         // ink with a 6px glass margin so lower-line zero-margin crops still
         // keep the glass #641 needs.
         let trimmed = buffer.trimmingEdgeBezel()
-        // Horizontal glass beside a tight top line invents side stems; keep
-        // vertical glass so lower-line #641 boxes still clear their border.
-        let prepared = trimmed.tightenedToDigitLine(marginX: 0, marginY: 0)
+        // Horizontal glass invents side stems; vertical pad can leave gap
+        // noise that blocks a plain glass peel — crop to densest ink band
+        // and keep a little vertical glass for #641.
+        let prepared = trimmed.tightenedToDigitLine(marginX: 0, marginY: 6)
         if buffer.width != prepared.width || buffer.height != prepared.height {
             print(
                 "651-prep \(buffer.width)x\(buffer.height) -> trim \(trimmed.width)x\(trimmed.height) -> prep \(prepared.width)x\(prepared.height)"
@@ -1204,10 +1205,10 @@ private extension GrayBuffer {
         return cropped(x0: left, y0: top, x1: right, y1: bottom)
     }
 
-    /// Peel empty glass from the edges of a short wide line crop.
-    /// Horizontal margin stays tight — side glass invents stems on the top
-    /// sealed line (#651). Vertical margin keeps the glass lower-line
-    /// #641 boxes need for border clearing.
+    /// Peel empty side glass (tight — side pad invents stems) and crop to
+    /// the densest vertical ink band with a glass margin (#651 / #641).
+    /// Row-gap noise from both-vertical pad is too dark for a plain glass
+    /// peel but too weak to win the densest-band pick.
     func tightenedToDigitLine(marginX: Int, marginY: Int) -> GrayBuffer {
         guard height > 0, width > 0, height < 160, width * 4 > height * 5 else {
             return self
@@ -1227,7 +1228,6 @@ private extension GrayBuffer {
             return dark
         }
         let emptyColumn = max(1, height / 16)
-        let emptyRow = max(1, width / 20)
         var glassLeft = 0
         while glassLeft < width - 8, columnDark(glassLeft) <= emptyColumn {
             glassLeft += 1
@@ -1236,18 +1236,35 @@ private extension GrayBuffer {
         while glassRight < width - 8, columnDark(width - 1 - glassRight) <= emptyColumn {
             glassRight += 1
         }
-        var glassTop = 0
-        while glassTop < height - 8, rowDark(glassTop) <= emptyRow {
-            glassTop += 1
-        }
-        var glassBottom = 0
-        while glassBottom < height - 8, rowDark(height - 1 - glassBottom) <= emptyRow {
-            glassBottom += 1
-        }
         let x0 = max(0, glassLeft - marginX)
-        let y0 = max(0, glassTop - marginY)
         let x1 = min(width, width - glassRight + marginX)
-        let y1 = min(height, height - glassBottom + marginY)
+        let rowInk = (0..<height).map(rowDark)
+        let peak = rowInk.max() ?? 0
+        let floor = max(max(1, width / 20) * 2, peak / 10)
+        var bestStart = 0
+        var bestEnd = height
+        var bestInk = -1
+        var cursor = 0
+        while cursor < height {
+            while cursor < height, rowInk[cursor] < floor {
+                cursor += 1
+            }
+            guard cursor < height else { break }
+            let start = cursor
+            var ink = 0
+            while cursor < height, rowInk[cursor] >= floor {
+                ink += rowInk[cursor]
+                cursor += 1
+            }
+            if ink > bestInk {
+                bestInk = ink
+                bestStart = start
+                bestEnd = cursor
+            }
+        }
+        guard bestInk >= 0 else { return self }
+        let y0 = max(0, bestStart - marginY)
+        let y1 = min(height, bestEnd + marginY)
         if x0 == 0, y0 == 0, x1 == width, y1 == height {
             return self
         }
