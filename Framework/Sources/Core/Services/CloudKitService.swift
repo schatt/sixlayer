@@ -1073,20 +1073,19 @@ public class CloudKitService: ObservableObject {
     /// Start monitoring network connectivity using shared network status manager
     /// This prevents multiple NWPathMonitor instances from stressing configd
     private func startNetworkMonitoring() {
-        Task { @MainActor in
+        // Outer and sink both capture weak self so ownership stays consistent (#652).
+        Task { @MainActor [weak self] in
+            guard let self else { return }
             // Use shared network status manager to prevent multiple monitors
             let statusPublisher = SharedNetworkStatusManager.shared.startMonitoring()
-            
-            // Subscribe to network status changes.
-            // Bind weak self in the sink, then hop to a MainActor Task with a strong self
-            // so capture ownership is consistent (avoids ImplicitStrongCapture warning).
+
             networkStatusCancellable = statusPublisher
                 .sink { [weak self] (isAvailable: Bool) in
                     guard let self else { return }
                     Task { @MainActor in
                         let wasAvailable = self.isNetworkAvailable
                         self.isNetworkAvailable = isAvailable
-                        
+
                         // If network just became available and we have queued operations, flush them
                         if !wasAvailable && self.isNetworkAvailable && self.autoFlushEnabled {
                             do {
@@ -1098,7 +1097,7 @@ public class CloudKitService: ObservableObject {
                         }
                     }
                 }
-            
+
             // Set initial network status
             isNetworkAvailable = SharedNetworkStatusManager.shared.currentStatus()
         }

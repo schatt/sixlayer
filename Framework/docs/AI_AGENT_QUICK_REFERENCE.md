@@ -278,8 +278,8 @@ platformCameraInterface_L4 { image in
     // Handle captured image
 }
 
-// ✅ Map view - Layer 4
-platformMapView_L4(region: $mapRegion)
+// ✅ Map view - Layer 4 (MapCameraPosition; see MapAPIUsage.md for selection:)
+platformMapView_L4(position: $mapPosition)
 ```
 
 ### OCR

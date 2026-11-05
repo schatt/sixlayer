@@ -428,7 +428,8 @@ struct DisplayOCRTraining609Tests {
         #expect(rejection(in: library, named: "bad-schema") == .unsupportedSchema(2))
         #expect(rejection(in: library, named: "missing-image") == .unreadablePackage)
         #expect(rejection(in: library, named: "missing-label") == .unreadablePackage)
-        #expect(rejection(in: library, named: "deeper") == .unreadablePackage)
+        // Nested-only parents are not package-shaped; ignore like Documents junk (#655).
+        #expect(library.rejections.contains { $0.directory.lastPathComponent == "deeper" } == false)
         #expect(rejection(in: library, named: "escape") == .unreadablePackage)
         #expect(rejection(in: library, named: "alias") == .unreadablePackage)
         #expect(library.rejections.contains { $0.directory.lastPathComponent == "notes.txt" } == false)
@@ -439,6 +440,45 @@ struct DisplayOCRTraining609Tests {
         let empty = DisplayOCRTraining.library(in: missing)
         #expect(empty.examples.isEmpty)
         #expect(empty.rejections.isEmpty)
+    }
+
+    /// Choosing Documents as the export root must not list every unrelated
+    /// child folder as "Missing image" (#655). Only package-shaped defects
+    /// (e.g. label.json without image.png) belong on the skipped list.
+    @Test func catalogIgnoresNonPackageShapedChildFolders() throws {
+        let root = try makeDirectory("display-ocr-non-package-skips")
+        defer { try? FileManager.default.removeItem(at: root) }
+        try writeIndexedExample(
+            confirmed: "12.9",
+            row: nil,
+            to: root.appendingPathComponent("close-shot", isDirectory: true)
+        )
+        try writeLabelOnly(to: root.appendingPathComponent("missing-image", isDirectory: true))
+        for junk in ["Audacity", "Icons", "Backups", "deeper"] {
+            try FileManager.default.createDirectory(
+                at: root.appendingPathComponent(junk, isDirectory: true),
+                withIntermediateDirectories: true
+            )
+        }
+        try Data("notes".utf8).write(to: root.appendingPathComponent("notes.txt"))
+
+        let scanned = DisplayOCRTraining.library(in: root)
+        #expect(scanned.examples.count == 1)
+        #expect(skipReason(in: scanned, named: "missing-image") == .missingImage)
+        for junk in ["Audacity", "Icons", "Backups", "deeper"] {
+            #expect(scanned.rejections.contains { $0.directory.lastPathComponent == junk } == false)
+            #expect(scanned.examples.contains { $0.directory.lastPathComponent == junk } == false)
+        }
+        #expect(scanned.rejections.contains { $0.directory.lastPathComponent == "notes.txt" } == false)
+
+        let cataloged = DisplayOCRTraining.catalog(in: root)
+        for junk in ["Audacity", "Icons", "Backups", "deeper"] {
+            #expect(cataloged.rejections.contains { $0.directory.lastPathComponent == junk } == false)
+        }
+        #expect(skipReason(in: cataloged, named: "missing-image") == .missingImage)
+        let indexText = (try? String(contentsOf: indexURL(in: root), encoding: .utf8)) ?? ""
+        #expect(indexText.contains("Audacity") == false)
+        #expect(indexText.contains("missing-image"))
     }
 
     @Test @MainActor func exportJoinsTheTrainingLibrary() throws {
@@ -606,10 +646,11 @@ struct DisplayOCRTraining609Tests {
         ) == false)
     }
 
-    @Test @MainActor func openingASealedPanelSuggestsBoxesAndDigits() throws {
+    @Test @MainActor func openingASealedPanelSuggestsBoxesAndDigits() async throws {
         let frame = sealedFrame()
         let session = DisplayOCRTrainingSession()
         session.load(cgImage: frame.image)
+        await session.waitForSuggestion()
         let panel = try #require(session.panel)
         let width = Double(frame.image.width)
         let height = Double(frame.image.height)
@@ -632,10 +673,11 @@ struct DisplayOCRTraining609Tests {
         #expect(session.label?.rows.map(\.confirmedText) == ["32.88", "8.022"])
     }
 
-    @Test @MainActor func draftKeepsTheDrawnBoxWhenPairingPanelLines() throws {
+    @Test @MainActor func draftKeepsTheDrawnBoxWhenPairingPanelLines() async throws {
         let frame = sealedFrame()
         let session = DisplayOCRTrainingSession()
         session.load(cgImage: frame.image)
+        await session.waitForSuggestion()
         let panel = try #require(session.panel)
         #expect(session.rowBoxes.count == 2)
         let bottomFirst = [session.rowBoxes[1], session.rowBoxes[0]]
@@ -704,10 +746,11 @@ struct DisplayOCRTraining609Tests {
         #expect(session.label?.rows.first?.confirmedText == "KEEP")
     }
 
-    @Test @MainActor func openingABlankPhotoSuggestsNothing() {
+    @Test @MainActor func openingABlankPhotoSuggestsNothing() async {
         let image = grayImage(width: 4, height: 2, pixels: [UInt8](repeating: 180, count: 8))
         let session = DisplayOCRTrainingSession()
         session.load(cgImage: image)
+        await session.waitForSuggestion()
         #expect(session.panel == nil)
         #expect(session.rowBoxes.isEmpty)
         #expect(session.label == nil)
@@ -1013,6 +1056,17 @@ struct DisplayOCRTraining609Tests {
         #expect(session.reindexRanOnMainThread == false)
         #expect(session.library.examples.count == 1)
         #expect(session.library.examples.allSatisfy { $0.package.imagePNG.isEmpty })
+    }
+
+    /// Photo-library load must not run digit-panel suggestion on the main
+    /// actor — that is the hang in #650.
+    @Test @MainActor func loadSuggestsBoxesOffTheMainThread() async {
+        let frame = sealedFrame()
+        let session = DisplayOCRTrainingSession()
+        session.load(cgImage: frame.image)
+        await session.waitForSuggestion()
+        #expect(session.suggestionRanOnMainThread == false)
+        #expect(session.panel != nil)
     }
 
     @Test func aFailedReindexKeepsThePreviousIndex() throws {
