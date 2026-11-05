@@ -155,8 +155,10 @@ public struct DisplayOCRTrainingView: View {
     @ViewBuilder
     private func loadControls(_ i18n: InternationalizationService) -> some View {
         #if os(iOS) || os(macOS) || os(visionOS)
+        // Resolve before PhotosPicker — its label closure is @Sendable (#652).
+        let photoLibraryTitle = i18n.localizedString(for: "SixLayerFramework.ocr.training.photoLibrary")
         PhotosPicker(selection: $photoItem, matching: .images) {
-            Text(i18n.localizedString(for: "SixLayerFramework.ocr.training.photoLibrary"))
+            Text(photoLibraryTitle)
         }
         .trainingBorderedButton()
         .automaticCompliance(named: "DisplayOCRTrainingPhotoLibrary")
