@@ -1061,17 +1061,28 @@ struct OCRSevenSegment576Tests {
         context.interpolationQuality = .none
         context.draw(image, in: CGRect(x: 0, y: 0, width: width, height: height))
         let pixels = Array(UnsafeBufferPointer(start: pointer, count: count))
-        func column(_ x: Int) -> (mean: Int, min: Int, max: Int) {
+        func column(_ x: Int) -> (mean: Int, mid: Int, dark: Int, min: Int, max: Int) {
             var sum = 0
+            var midSum = 0
+            var midCount = 0
+            var dark = 0
             var lo = 255
             var hi = 0
+            let y0 = height / 4
+            let y1 = height - y0
             for y in 0..<height {
                 let value = Int(pixels[y * width + x])
                 sum += value
+                if value < 80 { dark += 1 }
                 lo = min(lo, value)
                 hi = max(hi, value)
+                if y >= y0, y < y1 {
+                    midSum += value
+                    midCount += 1
+                }
             }
-            return (sum / height, lo, hi)
+            let mid = midCount > 0 ? midSum / midCount : 0
+            return (sum / height, mid, dark * 100 / height, lo, hi)
         }
         let insetX = width / 4
         let insetY = height / 4
@@ -1088,9 +1099,16 @@ struct OCRSevenSegment576Tests {
             .filter { $0 >= 0 && $0 < width }
         let parts = xs.map { x -> String in
             let stats = column(x)
-            return "\(x):\(stats.mean)/\(stats.min)/\(stats.max)"
+            return "\(x):\(stats.mean)/\(stats.mid)/\(stats.dark)/\(stats.min)/\(stats.max)"
         }
-        return "crop \(width)x\(height) interior \(interior) limit \(interior * 3 / 4) " + parts.joined(separator: " ")
+        func rowMean(_ y: Int) -> Int {
+            var sum = 0
+            for x in 0..<width { sum += Int(pixels[y * width + x]) }
+            return sum / width
+        }
+        let ys = [0, 21, 40, height / 2, height - 29, height - 1].filter { $0 >= 0 && $0 < height }
+        let rows = ys.map { y in "\(y):\(rowMean(y))" }
+        return "crop \(width)x\(height) interior \(interior) limit \(interior * 3 / 4) cols " + parts.joined(separator: " ") + " rows " + rows.joined(separator: " ")
     }
 
     private func service() -> OCRService { OCRService() }
