@@ -423,8 +423,8 @@ struct OCRSevenSegment576Tests {
         // Zero-margin glyph boxes previously returned the half-turn spoilers
         // 88.26 / 220.8. They must not. A taller crop of the lower line
         // (still one row) must stay upright as 8.022. Zero-margin correct
-        // digits are #641; taller top-line correct read is #649
-        // (pad sweep: top Vision box never recovers with isotropic pad).
+        // digits are #641; taller top-line (downward) is #649; isotropic
+        // pad around the top box is #651.
         let spoilers = ["88.26", "220.8"]
         for segment in segments {
             let tight = lineCrop(image, visionBox: segment.boundingBox, pad: 0)
@@ -450,7 +450,8 @@ struct OCRSevenSegment576Tests {
 
     /// #649: a modestly taller crop of the **top** sealed line must read
     /// `32.88`. Grow only downward into the row gap — isotropic pad (and
-    /// any horizontal growth) garbles the top line; lower taller is #625.
+    /// any horizontal growth) garbles the top line (#651); lower taller is
+    /// #625.
     @Test func aTallerTopLineCropReadsThatLine() {
         let image = sealedBothRowsPanel()
         let full = decode(image, maximum: 0)
