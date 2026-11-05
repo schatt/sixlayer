@@ -1520,20 +1520,48 @@ private extension GrayBuffer {
         let masks = (dark: clearingBorderComponents(sealed.dark), light: clearingBorderComponents(sealed.light))
         let sealedCore = (dark: keepingInteriorInk(raw.darkCore), light: keepingInteriorInk(raw.lightCore))
         let cores = (dark: clearingBorderComponents(sealedCore.dark), light: clearingBorderComponents(sealedCore.light))
+        let darkPreferred = prefersDark(masks.dark, masks.light)
         let darkChoice = polarity(isDark: true, loose: masks.dark, core: cores.dark)
         let lightChoice = polarity(isDark: false, loose: masks.light, core: cores.light)
         let chosen: (isDark: Bool, glyphs: Mask, bandSource: Mask)
+        let opened: Bool
         if darkChoice.opens != lightChoice.opens {
-            chosen = darkChoice.opens ? darkChoice.reading : lightChoice.reading
-        } else if prefersDark(masks.dark, masks.light) {
+            // A sole open wins only when that polarity looks like ink. Glass
+            // marked as light fills the panel and false-opens; taking it
+            // over prefersDark collapses washed bezels to "8" / empty (#598).
+            let openIsDark = darkChoice.opens
+            if openIsDark == darkPreferred {
+                chosen = openIsDark ? darkChoice.reading : lightChoice.reading
+                opened = true
+            } else if darkPreferred {
+                let forced = polarity(
+                    isDark: true,
+                    loose: masks.dark,
+                    core: cores.dark,
+                    forceOpen: true
+                )
+                chosen = forced.reading
+                opened = forced.opens
+            } else {
+                let forced = polarity(
+                    isDark: false,
+                    loose: masks.light,
+                    core: cores.light,
+                    forceOpen: true
+                )
+                chosen = forced.reading
+                opened = forced.opens
+            }
+        } else if darkPreferred {
             chosen = darkChoice.reading
+            opened = darkChoice.opens
         } else {
             chosen = lightChoice.reading
+            opened = lightChoice.opens
         }
         let primaryIsDark = chosen.isDark
         let glyphs = chosen.glyphs
         let bandSource = chosen.bandSource
-        let opened = darkChoice.opens || lightChoice.opens
         if buffer.width >= 1000 {
             let ink = glyphs.bits.filter { $0 }.count
             trace(
@@ -2368,7 +2396,8 @@ private func merge(_ bands: [(Int, Int)], whenGapBelow limit: Int) -> [(Int, Int
 private func polarity(
     isDark: Bool,
     loose: Mask,
-    core: Mask
+    core: Mask,
+    forceOpen: Bool = false
 ) -> (opens: Bool, reading: (isDark: Bool, glyphs: Mask, bandSource: Mask)) {
     let span = digitColumnSpan(core)
     let limitedCore = span.map { cleared($0, mask: core) } ?? core
@@ -2382,7 +2411,12 @@ private func polarity(
     let coreGap = zip(coreBands, coreBands.dropFirst()).map { $1.0 - $0.1 }.max() ?? 0
     let shortestCore = coreBands.map { $0.1 - $0.0 }.min() ?? 0
     let realRowGap = coreBands.count >= 2 && coreGap * 4 >= shortestCore
-    guard let span, fills, limitedTall * 2 < looseTall, realRowGap else {
+    // forceOpen: opposite polarity false-opened on glass (#598). Still require
+    // a digit span; skip fills/tall checks that mid-glyph valleys defeat.
+    let canOpen = forceOpen
+        ? span != nil
+        : (span != nil && fills && limitedTall * 2 < looseTall && realRowGap)
+    guard let span, canOpen else {
         return (false, (isDark, loose, loose))
     }
     // The loose mask still fills the gap inside the span. Row boundaries
