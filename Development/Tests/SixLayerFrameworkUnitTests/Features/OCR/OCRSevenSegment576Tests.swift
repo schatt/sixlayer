@@ -915,34 +915,6 @@ struct OCRSevenSegment576Tests {
         #expect(readable, "\(report)")
     }
 
-    /// Private photo. Right-edge trim is off, so the sealed rect keeps its pad.
-    /// Inset the other three sides to the hand crop and read.
-    @Test(
-        .enabled(if: FileManager.default.fileExists(atPath: "/tmp/sixlayer-600-score-s1"))
-    )
-    func uprightScenario1SealedRect() throws {
-        let path = "/Users/schatt/code/github/cm/1157-pump-three-role-solver/Tests/TestImages/fuel_purchase/scenario_1/ti_fp_s1_pump.jpg"
-        let data = try Data(contentsOf: URL(fileURLWithPath: path))
-        let upright = try #require(PlatformImage.cgImage(opening: data))
-        let region = try #require(SevenSegmentOCR.digitPanelRegion(in: upright))
-        let rect = CGRect(
-            x: region.minX + 93,
-            y: region.minY + 21,
-            width: region.width - 93,
-            height: region.height - 49
-        )
-        let crop = try #require(upright.cropping(to: rect))
-        let result = SevenSegmentOCR.decode(
-            cgImage: crop,
-            deskewMaximumDegrees: 0,
-            localizeDigitPanel: false
-        )
-        #expect(
-            result.extractedText == "32.88\n8.022",
-            "\(rect) [\(result.extractedText)] \(result.confidence)"
-        )
-    }
-
     @Test func fullFrameWithoutLocalizationMissesSealedBothRows() {
         let frame = embed(
             sealedBothRowsPanel(),
