@@ -1472,10 +1472,15 @@ private extension GrayBuffer {
         let glyphs = chosen.glyphs
         let bandSource = chosen.bandSource
         let opened = darkChoice.opens || lightChoice.opens
-        if buffer.width >= 1000 {
+        // #598 probe: also trace synthetic washed-bezel panels (<400px).
+        let probe = buffer.width >= 1000 || (buffer.width < 400 && buffer.height < 400)
+        if probe {
             let ink = glyphs.bits.filter { $0 }.count
+            let darkInk = masks.dark.bits.filter { $0 }.count
+            let lightInk = masks.light.bits.filter { $0 }.count
+            let rawDark = sealed.dark.bits.filter { $0 }.count
             trace(
-                "read \(buffer.width)x\(buffer.height) dark=\(primaryIsDark) opened=\(opened) ink=\(ink)\n"
+                "read \(buffer.width)x\(buffer.height) dark=\(primaryIsDark) opened=\(opened) ink=\(ink) sealedDark=\(rawDark) maskD=\(darkInk) maskL=\(lightInk) split=\(splittingRows)\n"
             )
         }
         let bandSums = opened ? digitRowSums(bandSource.rowSums) : bandSource.rowSums
@@ -1516,9 +1521,16 @@ private extension GrayBuffer {
             : (bandsForSplit.count > foundBands.count
                 ? bandsForSplit
                 : merge(bandsForSplit, whenGapBelow: max(1, cellHeight / 2)))
-        if buffer.width >= 1000 {
+        if probe {
             let listed = splitBands.map { "\($0.0)-\($0.1)" }.joined(separator: ",")
-            trace("bands \(listed)\n")
+            let found = foundBands.map { "\($0.0)-\($0.1)" }.joined(separator: ",")
+            let sep = separated.map { "\($0.0)-\($0.1)" }.joined(separator: ",")
+            let measuredText = measured.map { band in
+                "\(band.band.0)-\(band.band.1):[\(band.cells.map(\.character))]"
+            }.joined(separator: " ")
+            trace(
+                "bands split=[\(listed)] found=[\(found)] sep=[\(sep)] cellH=\(cellHeight) measured=\(measuredText)\n"
+            )
         }
         // The window is sized from the whole crop. Two rows make it wide
         // enough to mark the glass between digits. Read each row from a
