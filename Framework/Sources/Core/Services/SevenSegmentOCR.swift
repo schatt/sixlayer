@@ -178,14 +178,10 @@ private struct GrayBuffer {
     }
 
     static func deskew(_ buffer: GrayBuffer, maximumDegrees: Double) -> GrayBuffer {
-        // Extra glass around a single LCD line (isotropic or both-vertical
-        // pad) confuses band split and empties/garbles the top sealed line
-        // (#651). Pull short wide crops back to the ink before stand-up.
-        let prepared =
-            (buffer.height < 160 && buffer.width * 4 > buffer.height * 5)
-            ? buffer.tightenedToInk(margin: 6)
-            : buffer
-        let turned = standingUp(prepared)
+        // A padded single-line crop pulls panel chrome into the frame
+        // (#651). Thin side bezel is not a "frame" so border clearing keeps
+        // it as false stems; solid edge trim drops that chrome first.
+        let turned = standingUp(buffer.trimmingEdgeBezel())
         let limit = Int(max(0, maximumDegrees).rounded(.down))
         guard limit > 0 else { return turned }
         let small = turned.fitted(maxSide: 280)
@@ -1153,31 +1149,49 @@ private extension GrayBuffer {
         }
     }
 
-    /// Bound the ink and keep a little glass. Used for short wide line crops
-    /// that arrived with too much pad (#651).
-    func tightenedToInk(margin: Int) -> GrayBuffer {
-        guard width > 0, height > 0 else { return self }
-        var minX = width
-        var maxX = -1
-        var minY = height
-        var maxY = -1
-        for y in 0..<height {
-            for x in 0..<width where pixels[y * width + x] < 128 {
-                minX = min(minX, x)
-                maxX = max(maxX, x)
-                minY = min(minY, y)
-                maxY = max(maxY, y)
-            }
-        }
-        guard maxX >= minX, maxY >= minY else { return self }
-        let x0 = max(0, minX - margin)
-        let y0 = max(0, minY - margin)
-        let x1 = min(width, maxX + 1 + margin)
-        let y1 = min(height, maxY + 1 + margin)
-        if x0 == 0, y0 == 0, x1 == width, y1 == height {
+    /// Drop solid chrome that a padded line crop pulled in from the panel
+    /// bezel (#651). Only short wide strips — a full panel keeps its bezel
+    /// for sealed-glass localization. Side columns need a stricter dark
+    /// fraction than rows: digit stems at a tight crop edge are dark but
+    /// not solid chrome (a looser side trim previously read `32.86`).
+    func trimmingEdgeBezel() -> GrayBuffer {
+        guard height > 0, width > 0, height < 160, width * 4 > height * 5 else {
             return self
         }
-        return cropped(x0: x0, y0: y0, x1: x1, y1: y1)
+        func isBezelRow(_ y: Int) -> Bool {
+            var dark = 0
+            for x in 0..<width where pixels[y * width + x] < 80 {
+                dark += 1
+            }
+            return dark * 4 > width * 3
+        }
+        func isBezelColumn(_ x: Int) -> Bool {
+            var dark = 0
+            for y in 0..<height where pixels[y * width + x] < 80 {
+                dark += 1
+            }
+            return dark * 10 >= height * 9
+        }
+        var top = 0
+        while top < height - 8, isBezelRow(top) {
+            top += 1
+        }
+        var bottom = height
+        while bottom > top + 8, isBezelRow(bottom - 1) {
+            bottom -= 1
+        }
+        var left = 0
+        while left < width - 8, isBezelColumn(left) {
+            left += 1
+        }
+        var right = width
+        while right > left + 8, isBezelColumn(right - 1) {
+            right -= 1
+        }
+        if top == 0, bottom == height, left == 0, right == width {
+            return self
+        }
+        return cropped(x0: left, y0: top, x1: right, y1: bottom)
     }
 
     /// A panel crop, or nil when the rect is tiny, nearly the whole frame, or empty.
