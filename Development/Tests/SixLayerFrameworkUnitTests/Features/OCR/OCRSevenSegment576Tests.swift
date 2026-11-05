@@ -429,8 +429,8 @@ struct OCRSevenSegment576Tests {
         // Zero-margin glyph boxes previously returned the half-turn spoilers
         // 88.26 / 220.8. They must not. A taller crop of the lower line
         // (still one row) must stay upright as 8.022. Zero-margin correct
-        // digits are #641; taller top-line correct read is #649
-        // (pad sweep: top Vision box never recovers with isotropic pad).
+        // digits are #641; taller top-line (downward) is #649; isotropic
+        // pad around the top box is #651.
         let spoilers = ["88.26", "220.8"]
         for segment in segments {
             let tight = lineCrop(image, visionBox: segment.boundingBox, pad: 0)
@@ -438,6 +438,39 @@ struct OCRSevenSegment576Tests {
         }
         let taller = lineCrop(image, visionBox: segments[1].boundingBox, pad: 20)
         #expect(decode(taller, maximum: 0).extractedText == "8.022")
+    }
+
+    /// #641: a zero-margin Vision glyph crop must read that line, not only
+    /// avoid the known half-turn spoilers. Border clearing on a box tight to
+    /// ink previously left `"8"` / `""` instead of `32.88` / `8.022`.
+    @Test func aZeroMarginGlyphCropReadsThatLine() {
+        let image = sealedBothRowsPanel()
+        let full = decode(image, maximum: 0)
+        let segments = full.recognizedTexts.filter { $0.role == .segment }
+        #expect(segments.map(\.text) == ["32.88", "8.022"])
+        for segment in segments {
+            let tight = lineCrop(image, visionBox: segment.boundingBox, pad: 0)
+            #expect(decode(tight, maximum: 0).extractedText == segment.text)
+        }
+    }
+
+    /// #649: a modestly taller crop of the **top** sealed line must read
+    /// `32.88`. Grow only downward into the row gap — isotropic pad (and
+    /// any horizontal growth) garbles the top line (#651); lower taller is
+    /// #625.
+    @Test func aTallerTopLineCropReadsThatLine() {
+        let image = sealedBothRowsPanel()
+        let full = decode(image, maximum: 0)
+        let segments = full.recognizedTexts.filter { $0.role == .segment }
+        #expect(segments.map(\.text) == ["32.88", "8.022"])
+        let taller = lineCrop(
+            image,
+            visionBox: segments[0].boundingBox,
+            padX: 0,
+            padTop: 0,
+            padBottom: 20
+        )
+        #expect(decode(taller, maximum: 0).extractedText == "32.88")
     }
 
     @Test func decoderSourceDoesNotNameFields() throws {
@@ -717,6 +750,44 @@ struct OCRSevenSegment576Tests {
         #expect(abs(region.minY - CGFloat(originY)) < 24)
     }
 
+    /// Library photos are multi-megapixel. Panel localization must analyze a
+    /// capped long edge and map the rect back (#650).
+    ///
+    /// The sealed panel is scaled so it occupies a similar fraction of the
+    /// 4000×3000 canvas as the 1200×1600 fixture — a postage-stamp embed would
+    /// fail sealed-area thresholds even after fitting, which is not the
+    /// production pump-frame geometry.
+    @Test func digitPanelRegionCapsAnalysisOnLargeFrame() {
+        let panelImage = scaleGrayImage(sealedBothRowsPanel(), factor: 3)
+        let originX = 600
+        let originY = 900
+        let frame = embed(
+            panelImage,
+            canvasWidth: 4000,
+            canvasHeight: 3000,
+            originX: originX,
+            originY: originY,
+            fill: 180
+        )
+        SevenSegmentOCR.lastDigitPanelAnalysisLongEdge = nil
+        let region = SevenSegmentOCR.digitPanelRegion(in: frame)
+        #expect(SevenSegmentOCR.lastDigitPanelAnalysisLongEdge != nil)
+        #expect(
+            (SevenSegmentOCR.lastDigitPanelAnalysisLongEdge ?? .max)
+                <= SevenSegmentOCR.digitPanelAnalysisMaxSide
+        )
+        #expect(region != nil)
+        guard let region else { return }
+        let panelMidX = CGFloat(originX) + CGFloat(panelImage.width) / 2
+        let panelMidY = CGFloat(originY) + CGFloat(panelImage.height) / 2
+        #expect(region.minX < panelMidX && region.maxX > panelMidX)
+        #expect(region.minY < panelMidY && region.maxY > panelMidY)
+        #expect(abs(region.width - CGFloat(panelImage.width)) < 120)
+        #expect(abs(region.height - CGFloat(panelImage.height)) < 120)
+        #expect(abs(region.minX - CGFloat(originX)) < 64)
+        #expect(abs(region.minY - CGFloat(originY)) < 64)
+    }
+
     @Test func fullFrameWithoutLocalizationMissesSealedBothRows() {
         let frame = embed(
             sealedBothRowsPanel(),
@@ -879,6 +950,27 @@ struct OCRSevenSegment576Tests {
         )
     }
 
+    /// Nearest-neighbor enlarge for large-frame localization fixtures (#650).
+    private func scaleGrayImage(_ image: CGImage, factor: Int) -> CGImage {
+        guard factor > 1 else { return image }
+        let width = image.width
+        let height = image.height
+        let newW = width * factor
+        let newH = height * factor
+        var output = [UInt8](repeating: 0, count: newW * newH)
+        if let provider = image.dataProvider,
+           let data = provider.data,
+           let bytes = CFDataGetBytePtr(data) {
+            let rowBytes = image.bytesPerRow
+            for y in 0..<newH {
+                for x in 0..<newW {
+                    output[y * newW + x] = bytes[(y / factor) * rowBytes + (x / factor)]
+                }
+            }
+        }
+        return solidGrayImage(pixels: output, width: newW, height: newH)
+    }
+
     private func crop(_ image: CGImage, x: Int, y: Int, width: Int, height: Int) -> CGImage {
         var pixels = [UInt8](repeating: 0, count: width * height)
         guard let provider = image.dataProvider,
@@ -897,12 +989,22 @@ struct OCRSevenSegment576Tests {
     }
 
     private func lineCrop(_ image: CGImage, visionBox: CGRect, pad: Int) -> CGImage {
+        lineCrop(image, visionBox: visionBox, padX: pad, padTop: pad, padBottom: pad)
+    }
+
+    private func lineCrop(
+        _ image: CGImage,
+        visionBox: CGRect,
+        padX: Int,
+        padTop: Int,
+        padBottom: Int
+    ) -> CGImage {
         let width = image.width
         let height = image.height
-        let minX = Int((visionBox.minX * CGFloat(width)).rounded(.down)) - pad
-        let maxX = Int((visionBox.maxX * CGFloat(width)).rounded(.up)) + pad
-        let minY = Int(((1 - visionBox.maxY) * CGFloat(height)).rounded(.down)) - pad
-        let maxY = Int(((1 - visionBox.minY) * CGFloat(height)).rounded(.up)) + pad
+        let minX = Int((visionBox.minX * CGFloat(width)).rounded(.down)) - padX
+        let maxX = Int((visionBox.maxX * CGFloat(width)).rounded(.up)) + padX
+        let minY = Int(((1 - visionBox.maxY) * CGFloat(height)).rounded(.down)) - padTop
+        let maxY = Int(((1 - visionBox.minY) * CGFloat(height)).rounded(.up)) + padBottom
         let x = max(0, minX)
         let y = max(0, minY)
         let w = max(1, min(width, maxX) - x)
