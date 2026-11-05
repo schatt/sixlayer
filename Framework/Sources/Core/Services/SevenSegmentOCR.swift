@@ -1480,7 +1480,7 @@ private extension GrayBuffer {
             let lightInk = masks.light.bits.filter { $0 }.count
             let rawDark = sealed.dark.bits.filter { $0 }.count
             trace(
-                "read \(buffer.width)x\(buffer.height) dark=\(primaryIsDark) opened=\(opened) ink=\(ink) sealedDark=\(rawDark) maskD=\(darkInk) maskL=\(lightInk) split=\(splittingRows)\n"
+                "read \(buffer.width)x\(buffer.height) dark=\(primaryIsDark) opened=\(opened) dOpen=\(darkChoice.opens) lOpen=\(lightChoice.opens) preferD=\(prefersDark(masks.dark, masks.light)) ink=\(ink) sealedDark=\(rawDark) maskD=\(darkInk) maskL=\(lightInk) split=\(splittingRows)\n"
             )
         }
         let bandSums = opened ? digitRowSums(bandSource.rowSums) : bandSource.rowSums
