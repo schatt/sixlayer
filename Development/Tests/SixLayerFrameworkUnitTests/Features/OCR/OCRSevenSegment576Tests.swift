@@ -485,21 +485,6 @@ struct OCRSevenSegment576Tests {
         let segments = full.recognizedTexts.filter { $0.role == .segment }
         #expect(segments.map(\.text) == ["32.88", "8.022"])
         let box = segments[0].boundingBox
-        // Temporary #651 pad map — remove once green.
-        let probes: [(String, CGImage)] = [
-            ("pad0", lineCrop(image, visionBox: box, pad: 0)),
-            ("down20", lineCrop(image, visionBox: box, padX: 0, padTop: 0, padBottom: 20)),
-            ("up20", lineCrop(image, visionBox: box, padX: 0, padTop: 20, padBottom: 0)),
-            ("y20", lineCrop(image, visionBox: box, padX: 0, padTop: 20, padBottom: 20)),
-            ("x20", lineCrop(image, visionBox: box, padX: 20, padTop: 0, padBottom: 0)),
-            ("iso20", lineCrop(image, visionBox: box, pad: 20)),
-            ("iso8", lineCrop(image, visionBox: box, pad: 8)),
-            ("iso4", lineCrop(image, visionBox: box, pad: 4)),
-        ]
-        for (name, crop) in probes {
-            let text = decode(crop, maximum: 0).extractedText
-            print("651-probe \(name) \(crop.width)x\(crop.height) -> \(String(reflecting: text))")
-        }
         let isotropic = lineCrop(image, visionBox: box, pad: 20)
         #expect(decode(isotropic, maximum: 0).extractedText == "32.88")
         let bothVertical = lineCrop(
