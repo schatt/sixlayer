@@ -185,16 +185,8 @@ private struct GrayBuffer {
         let trimmed = buffer.trimmingEdgeBezel()
         // Horizontal glass invents side stems; vertical pad can leave gap
         // noise that blocks a plain glass peel — crop to densest ink band
-        // and keep a little vertical glass for #641.
-        // 6px vertical margin left height 102 and both-vertical still read
-        // "_"; iso4 at 99 works. 4px lands near that working height while
-        // keeping some glass for lower-line border clearing.
-        let prepared = trimmed.tightenedToDigitLine(marginX: 0, marginY: 4)
-        if buffer.width != prepared.width || buffer.height != prepared.height {
-            print(
-                "651-prep \(buffer.width)x\(buffer.height) -> trim \(trimmed.width)x\(trimmed.height) -> prep \(prepared.width)x\(prepared.height)"
-            )
-        }
+        // and keep vertical glass for #641 border clearing.
+        let prepared = trimmed.tightenedToDigitLine(marginX: 0, marginY: 6)
         let turned = standingUp(prepared)
         let limit = Int(max(0, maximumDegrees).rounded(.down))
         guard limit > 0 else { return turned }
@@ -276,20 +268,24 @@ private struct GrayBuffer {
     /// sideways sample read as a few wide glyphs and must not spin an
     /// upright panel. A real quarter turn is mostly digits. A half turn of
     /// 0/2/8 still looks numeric — only take 180° when decimals sit below
-    /// after the turn. A short wide strip is already one upright line (#625).
+    /// after the turn. A short wide strip is already one upright line
+    /// (#625); padded top-line crops that keep a little glass still look
+    /// short-wide and must not half-turn into `"_"` (#651).
     private static func acceptsOrientation(
         _ turns: Int,
         scores: [OrientationScore],
         buffer: GrayBuffer
     ) -> Bool {
+        // Line crops (Vision box ± pad) are already upright. Blocking only
+        // 90° left 180° free to invent `"_"` / spoilers on isotropic pad.
+        if buffer.width * 4 > buffer.height * 5 {
+            return false
+        }
         let glyphs = scores[turns].text.filter { $0 != "/" }
         let numbers = glyphs.filter(\.isNumber).count
         let mostlyNumbers = !glyphs.isEmpty && numbers * 2 > glyphs.count
         if turns == 2 {
             return mostlyNumbers && scores[2].marksBelow > scores[0].marksBelow
-        }
-        if (turns == 1 || turns == 3), buffer.width * 4 > buffer.height * 5 {
-            return false
         }
         return mostlyNumbers && scores[turns].wideDigits >= max(scores[0].wideDigits + 2, 4)
     }
