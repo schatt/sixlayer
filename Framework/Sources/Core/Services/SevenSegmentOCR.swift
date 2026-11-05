@@ -1590,6 +1590,28 @@ private extension GrayBuffer {
         while right - left > 40, columnMean(left) < limit {
             left += 1
         }
+        let rightBeforeTrim = right
+        while right - left > 40, columnMean(right) < limit {
+            right -= 1
+        }
+        // The last stroke sits on the dark bezel. Eating the whole bezel
+        // clips it. Keep a short run — the same minimum as the bezel pad.
+        let bezelKeep = 12
+        if rightBeforeTrim - right > bezelKeep {
+            right += bezelKeep
+        }
+        // A dim ramp stays brighter than the dark-skirt cut and still climbs
+        // into the glass. Follow it only while two steps keep climbing, so
+        // one bright cliff is not a ramp.
+        let step = max(4, (right - left) / 40)
+        while left + step * 2 < right {
+            let here = columnMean(left)
+            let gain = columnMean(left + step) - here
+            let nextGain = columnMean(left + step * 2) - columnMean(left + step)
+            let need = max(4, here / 16)
+            if gain < need || nextGain < need { break }
+            left += step
+        }
         return (left, top, right, bottom)
     }
 
