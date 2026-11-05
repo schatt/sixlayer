@@ -178,10 +178,12 @@ private struct GrayBuffer {
     }
 
     static func deskew(_ buffer: GrayBuffer, maximumDegrees: Double) -> GrayBuffer {
-        // A padded single-line crop pulls panel chrome into the frame
-        // (#651). Thin side bezel is not a "frame" so border clearing keeps
-        // it as false stems; solid edge trim drops that chrome first.
-        let turned = standingUp(buffer.trimmingEdgeBezel())
+        // A padded single-line crop pulls panel chrome and extra glass into
+        // the frame (#651). Drop solid edge bezel, then pull back to the
+        // digit ink so isotropic / both-vertical pads read like a tight crop.
+        let turned = standingUp(
+            buffer.trimmingEdgeBezel().tightenedToDigitLine(margin: 4)
+        )
         let limit = Int(max(0, maximumDegrees).rounded(.down))
         guard limit > 0 else { return turned }
         let small = turned.fitted(maxSide: 280)
@@ -1192,6 +1194,59 @@ private extension GrayBuffer {
             return self
         }
         return cropped(x0: left, y0: top, x1: right, y1: bottom)
+    }
+
+    /// Bound the digit ink (not solid chrome, not empty glass) and keep a
+    /// little margin. Extra pad around a single LCD line otherwise invents
+    /// side stems or empties the read (#651).
+    func tightenedToDigitLine(margin: Int) -> GrayBuffer {
+        guard height > 0, width > 0, height < 160, width * 4 > height * 5 else {
+            return self
+        }
+        func columnDark(_ x: Int) -> Int {
+            var dark = 0
+            for y in 0..<height where pixels[y * width + x] < 80 {
+                dark += 1
+            }
+            return dark
+        }
+        func rowDark(_ y: Int) -> Int {
+            var dark = 0
+            for x in 0..<width where pixels[y * width + x] < 80 {
+                dark += 1
+            }
+            return dark
+        }
+        // Digit ink sits between empty glass and solid bezel.
+        func isDigitColumn(_ x: Int) -> Bool {
+            let dark = columnDark(x)
+            return dark > height / 16 && dark * 10 < height * 9
+        }
+        func isDigitRow(_ y: Int) -> Bool {
+            let dark = rowDark(y)
+            return dark > width / 20 && dark * 4 <= width * 3
+        }
+        var minX = width
+        var maxX = -1
+        var minY = height
+        var maxY = -1
+        for x in 0..<width where isDigitColumn(x) {
+            minX = min(minX, x)
+            maxX = max(maxX, x)
+        }
+        for y in 0..<height where isDigitRow(y) {
+            minY = min(minY, y)
+            maxY = max(maxY, y)
+        }
+        guard maxX >= minX, maxY >= minY else { return self }
+        let x0 = max(0, minX - margin)
+        let y0 = max(0, minY - margin)
+        let x1 = min(width, maxX + 1 + margin)
+        let y1 = min(height, maxY + 1 + margin)
+        if x0 == 0, y0 == 0, x1 == width, y1 == height {
+            return self
+        }
+        return cropped(x0: x0, y0: y0, x1: x1, y1: y1)
     }
 
     /// A panel crop, or nil when the rect is tiny, nearly the whole frame, or empty.
