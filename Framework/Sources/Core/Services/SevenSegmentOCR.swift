@@ -186,10 +186,9 @@ private struct GrayBuffer {
         // Horizontal glass invents side stems; vertical pad can leave gap
         // noise that blocks a plain glass peel — crop to densest ink band
         // and keep vertical glass for #641 border clearing.
+        // 4px vertical glass: 6px left both-vertical / isotropic pad reading
+        // "_"; 0px broke #641/#649. Keep side peel tight (marginX 0).
         let prepared = trimmed.tightenedToDigitLine(marginX: 0, marginY: 4)
-        if buffer.width != prepared.width || buffer.height != prepared.height {
-            print("651-prep \(buffer.width)x\(buffer.height) -> \(prepared.width)x\(prepared.height)")
-        }
         let turned = standingUp(prepared)
         let limit = Int(max(0, maximumDegrees).rounded(.down))
         guard limit > 0 else { return turned }
