@@ -274,12 +274,21 @@ struct OCRSevenSegment576Tests {
     }
 
     @Test func filledInkBesideCleanRowsDoesNotCreateASegment() {
-        var row = atoms("51.07")
-        row.append(.gap(SegmentPanel.groupGap))
-        row.append(contentsOf: atoms("17.740"))
+        var clean = atoms("51.07")
+        clean.append(.gap(SegmentPanel.groupGap))
+        clean.append(contentsOf: atoms("17.740"))
+        // Control: same price/volume without fill blobs must stay glued (#646).
+        #expect(decode(SegmentPanel.render(rows: [clean])).extractedText == "51.07  17.740")
+
+        var row = clean
         row.append(.gap(SegmentPanel.groupGap))
         row.append(.fill(width: 70, height: 70))
         let result = decode(SegmentPanel.render(rows: [row, [.fill(width: 160, height: 28)]]))
+        // Temporary #646 probe — remove once green.
+        for text in result.recognizedTexts {
+            print("646-seg '\(text.text)' box=\(text.boundingBox)")
+        }
+        print("646-text \(String(reflecting: result.extractedText))")
         #expect(result.extractedText == "51.07  17.740")
         #expect(segmentTexts(result) == ["51.07", "17.740"])
         #expect(result.confidence == 1)
