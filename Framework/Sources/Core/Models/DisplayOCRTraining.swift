@@ -1608,7 +1608,8 @@ public final class DisplayOCRTrainingSession: ObservableObject {
         await suggestionTask?.value
     }
 
-    /// Classical reader panel + glyph boxes. Runs off the main actor (#650).
+    /// Classical reader panel + glyph boxes + draft. Runs off the main actor
+    /// (#650 / #654) so apply only publishes state.
     nonisolated private static func suggestionProposal(for image: CGImage) -> SuggestionProposal? {
         guard let region = SevenSegmentOCR.digitPanelRegion(in: image) else { return nil }
         let suggested = DisplayOCRNormalizedBox(
@@ -1629,7 +1630,13 @@ public final class DisplayOCRTrainingSession: ObservableObject {
             )
             glyphs = DisplayOCRTraining.rowBoxes(fromVisionBoxes: read.boundingBoxes, panel: panelBox)
         }
-        return SuggestionProposal(panel: panelBox, glyphs: glyphs)
+        let drafted = DisplayOCRTraining.draft(
+            image: image,
+            panel: panelBox,
+            rowBoxes: [],
+            sourceName: nil
+        )
+        return SuggestionProposal(panel: panelBox, glyphs: glyphs, label: drafted)
     }
 
     private func applySuggestion(
@@ -1645,7 +1652,7 @@ public final class DisplayOCRTrainingSession: ObservableObject {
         // A crop of one line is read upside down or not at all. The panel read
         // is the digit string; the glyph rows are only the boxes.
         rowBoxes = []
-        guard decode(), var drafted = label else {
+        guard var drafted = proposal.label else {
             rowBoxes = proposal.glyphs
             return
         }
@@ -1656,6 +1663,7 @@ public final class DisplayOCRTrainingSession: ObservableObject {
         drafted.rows = aligned.rows
         rowBoxes = aligned.boxes
         label = drafted
+        status = .decoded
     }
 
     private func cancelPendingSuggestion() {
@@ -2050,6 +2058,7 @@ private struct ReindexOutcome: Sendable {
 private struct SuggestionProposal: Sendable {
     var panel: DisplayOCRNormalizedBox
     var glyphs: [DisplayOCRNormalizedBox]
+    var label: DisplayOCRTrainingLabel?
 }
 
 private struct SuggestionComputeOutcome: Sendable {
