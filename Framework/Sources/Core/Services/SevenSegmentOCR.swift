@@ -1044,6 +1044,9 @@ private struct GrayBuffer {
         while left < width - 8, isMarginColumn(left) { left += 1 }
         var right = width
         while right > left + 8, isMarginColumn(right - 1) { right -= 1 }
+        // Ignore hairline "pad" so glare / invert fixtures keep full glass (#645).
+        let peeled = top + (height - bottom) + left + (width - right)
+        guard peeled >= 64 else { return self }
         let margin = 4
         let x0 = max(0, left - margin)
         let y0 = max(0, top - margin)
