@@ -178,17 +178,14 @@ private struct GrayBuffer {
     }
 
     static func deskew(_ buffer: GrayBuffer, maximumDegrees: Double) -> GrayBuffer {
-        // A padded single-line crop pulls panel chrome and extra glass into
-        // the frame (#651). Drop solid edge bezel, then pull back to digit
-        // ink with a 6px glass margin so lower-line zero-margin crops still
-        // keep the glass #641 needs.
-        let trimmed = buffer.trimmingEdgeBezel()
-        // Horizontal glass invents side stems; vertical pad can leave gap
-        // noise that blocks a plain glass peel — crop to densest ink band
-        // and keep vertical glass for #641 border clearing.
-        // 4px vertical glass: 6px left both-vertical / isotropic pad reading
-        // "_"; 0px broke #641/#649. Keep side peel tight (marginX 0).
-        let prepared = trimmed.tightenedToDigitLine(marginX: 0, marginY: 4)
+        // Padded single-line crops pull bezel and extra glass (#651). Trim
+        // solid edge chrome, peel side glass tight (side pad invents stems),
+        // and snap to the densest ink band with 4px vertical glass — enough
+        // for #641 border clearing, less than the 6px span that left
+        // isotropic / both-vertical pad reading "_".
+        let prepared = buffer
+            .trimmingEdgeBezel()
+            .tightenedToDigitLine(marginX: 0, marginY: 4)
         let turned = standingUp(prepared)
         let limit = Int(max(0, maximumDegrees).rounded(.down))
         guard limit > 0 else { return turned }
