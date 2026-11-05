@@ -221,8 +221,7 @@ private struct NativeTextControlAnchor: View {
 @MainActor
 private final class NativeTextControlMarkerView: UIView {
     var shouldSelect = false
-    /// Cleared from `deinit` as well as MainActor paths (#652).
-    private nonisolated(unsafe) var observers: [NSObjectProtocol] = []
+    private var isObserving = false
 
     override func didMoveToWindow() {
         super.didMoveToWindow()
@@ -243,39 +242,35 @@ private final class NativeTextControlMarkerView: UIView {
             UITextField.textDidBeginEditingNotification,
             UITextView.textDidBeginEditingNotification
         ]
+        // Selector-based observers stay on the MainActor NSObject; block
+        // observers are @Sendable and cannot touch AppKit state (#652).
         for name in names {
-            observers.append(
-                NotificationCenter.default.addObserver(
-                    forName: name,
-                    object: nil,
-                    queue: .main
-                ) { [weak self] note in
-                    // Delivered on `.main` — stay on the actor without sending
-                    // the notification object across isolation (#652).
-                    MainActor.assumeIsolated {
-                        guard let self else { return }
-                        TextFieldBeginEditingSelection.handleBeginEditing(
-                            note.object,
-                            marker: self,
-                            shouldSelect: self.shouldSelect
-                        )
-                    }
-                }
+            NotificationCenter.default.addObserver(
+                self,
+                selector: #selector(handleBeginEditingNotification(_:)),
+                name: name,
+                object: nil
             )
         }
+        isObserving = true
+    }
+
+    @objc private func handleBeginEditingNotification(_ note: Notification) {
+        TextFieldBeginEditingSelection.handleBeginEditing(
+            note.object,
+            marker: self,
+            shouldSelect: shouldSelect
+        )
     }
 
     private func removeObservers() {
-        for observer in observers {
-            NotificationCenter.default.removeObserver(observer)
-        }
-        observers.removeAll()
+        guard isObserving else { return }
+        NotificationCenter.default.removeObserver(self)
+        isObserving = false
     }
 
     deinit {
-        for observer in observers {
-            NotificationCenter.default.removeObserver(observer)
-        }
+        NotificationCenter.default.removeObserver(self)
     }
 }
 
@@ -294,8 +289,7 @@ private struct NativeTextControlAnchorRepresentable: UIViewRepresentable {
 @MainActor
 private final class NativeTextControlMarkerView: NSView {
     var shouldSelect = false
-    /// Cleared from `deinit` as well as MainActor paths (#652).
-    private nonisolated(unsafe) var observers: [NSObjectProtocol] = []
+    private var isObserving = false
 
     override func viewDidMoveToWindow() {
         super.viewDidMoveToWindow()
@@ -316,39 +310,35 @@ private final class NativeTextControlMarkerView: NSView {
             NSControl.textDidBeginEditingNotification,
             NSText.didBeginEditingNotification
         ]
+        // Selector-based observers stay on the MainActor NSObject; block
+        // observers are @Sendable and cannot touch AppKit state (#652).
         for name in names {
-            observers.append(
-                NotificationCenter.default.addObserver(
-                    forName: name,
-                    object: nil,
-                    queue: .main
-                ) { [weak self] note in
-                    // Delivered on `.main` — stay on the actor without sending
-                    // the notification object across isolation (#652).
-                    MainActor.assumeIsolated {
-                        guard let self else { return }
-                        TextFieldBeginEditingSelection.handleBeginEditing(
-                            note.object,
-                            marker: self,
-                            shouldSelect: self.shouldSelect
-                        )
-                    }
-                }
+            NotificationCenter.default.addObserver(
+                self,
+                selector: #selector(handleBeginEditingNotification(_:)),
+                name: name,
+                object: nil
             )
         }
+        isObserving = true
+    }
+
+    @objc private func handleBeginEditingNotification(_ note: Notification) {
+        TextFieldBeginEditingSelection.handleBeginEditing(
+            note.object,
+            marker: self,
+            shouldSelect: shouldSelect
+        )
     }
 
     private func removeObservers() {
-        for observer in observers {
-            NotificationCenter.default.removeObserver(observer)
-        }
-        observers.removeAll()
+        guard isObserving else { return }
+        NotificationCenter.default.removeObserver(self)
+        isObserving = false
     }
 
     deinit {
-        for observer in observers {
-            NotificationCenter.default.removeObserver(observer)
-        }
+        NotificationCenter.default.removeObserver(self)
     }
 }
 
