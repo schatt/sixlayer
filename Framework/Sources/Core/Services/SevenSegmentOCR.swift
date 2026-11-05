@@ -1540,20 +1540,48 @@ private extension GrayBuffer {
         let masks = (dark: clearingBorderComponents(sealed.dark), light: clearingBorderComponents(sealed.light))
         let sealedCore = (dark: keepingInteriorInk(raw.darkCore), light: keepingInteriorInk(raw.lightCore))
         let cores = (dark: clearingBorderComponents(sealedCore.dark), light: clearingBorderComponents(sealedCore.light))
+        let darkPreferred = prefersDark(masks.dark, masks.light)
         let darkChoice = polarity(isDark: true, loose: masks.dark, core: cores.dark)
         let lightChoice = polarity(isDark: false, loose: masks.light, core: cores.light)
         let chosen: (isDark: Bool, glyphs: Mask, bandSource: Mask)
+        let opened: Bool
         if darkChoice.opens != lightChoice.opens {
-            chosen = darkChoice.opens ? darkChoice.reading : lightChoice.reading
-        } else if prefersDark(masks.dark, masks.light) {
+            // A sole open wins only when that polarity looks like ink. Glass
+            // marked as light fills the panel and false-opens; taking it
+            // over prefersDark collapses washed bezels to "8" / empty (#598).
+            let openIsDark = darkChoice.opens
+            if openIsDark == darkPreferred {
+                chosen = openIsDark ? darkChoice.reading : lightChoice.reading
+                opened = true
+            } else if darkPreferred {
+                let forced = polarity(
+                    isDark: true,
+                    loose: masks.dark,
+                    core: cores.dark,
+                    forceOpen: true
+                )
+                chosen = forced.reading
+                opened = forced.opens
+            } else {
+                let forced = polarity(
+                    isDark: false,
+                    loose: masks.light,
+                    core: cores.light,
+                    forceOpen: true
+                )
+                chosen = forced.reading
+                opened = forced.opens
+            }
+        } else if darkPreferred {
             chosen = darkChoice.reading
+            opened = darkChoice.opens
         } else {
             chosen = lightChoice.reading
+            opened = lightChoice.opens
         }
         let primaryIsDark = chosen.isDark
         let glyphs = chosen.glyphs
         let bandSource = chosen.bandSource
-        let opened = darkChoice.opens || lightChoice.opens
         if buffer.width >= 1000 {
             let ink = glyphs.bits.filter { $0 }.count
             trace(
@@ -2021,9 +2049,23 @@ private func digitRowSums(_ sums: [Int]) -> [Int] {
 
 /// ssocr dynamic threshold window. A short crop stays tight. A tall crop
 /// grows until the window would meet across the gap between digits.
+///
+/// Scale-4 square panels (~1100px) hit the 36px growing cap and bridge
+/// digit gaps on the parent mask (#659 strokeSized). Cap those near the
+/// scale-1 radius (7). Wide single-row crops separately floor the radius
+/// at ~half a digit stroke (`height / 15`) so a scale-4 rowcrop does not
+/// hollow 48px bars into stems (#659 thickStrokes).
 private func windowRadius(width: Int, height: Int) -> Int {
     let shortSide = min(width, height)
-    return min(36, max(4, (shortSide - 96) / 24))
+    let grown = min(36, max(4, (shortSide - 96) / 24))
+    // Nearly square and large → dense multi-row panel (not a wide rowcrop).
+    let isWideRow = width > height + height / 2
+    if shortSide > 600, !isWideRow {
+        return min(7, grown)
+    }
+    guard isWideRow else { return grown }
+    let strokeFloor = max(4, height / 15)
+    return min(36, max(grown, strokeFloor))
 }
 
 /// Columns that hold digit ink and stay empty in the gap between rows.
@@ -2388,7 +2430,8 @@ private func merge(_ bands: [(Int, Int)], whenGapBelow limit: Int) -> [(Int, Int
 private func polarity(
     isDark: Bool,
     loose: Mask,
-    core: Mask
+    core: Mask,
+    forceOpen: Bool = false
 ) -> (opens: Bool, reading: (isDark: Bool, glyphs: Mask, bandSource: Mask)) {
     let span = digitColumnSpan(core)
     let limitedCore = span.map { cleared($0, mask: core) } ?? core
@@ -2402,7 +2445,12 @@ private func polarity(
     let coreGap = zip(coreBands, coreBands.dropFirst()).map { $1.0 - $0.1 }.max() ?? 0
     let shortestCore = coreBands.map { $0.1 - $0.0 }.min() ?? 0
     let realRowGap = coreBands.count >= 2 && coreGap * 4 >= shortestCore
-    guard let span, fills, limitedTall * 2 < looseTall, realRowGap else {
+    // forceOpen: opposite polarity false-opened on glass (#598). Still require
+    // a digit span; skip fills/tall checks that mid-glyph valleys defeat.
+    let canOpen = forceOpen
+        ? span != nil
+        : (span != nil && fills && limitedTall * 2 < looseTall && realRowGap)
+    guard let span, canOpen else {
         return (false, (isDark, loose, loose))
     }
     // The loose mask still fills the gap inside the span. Row boundaries
