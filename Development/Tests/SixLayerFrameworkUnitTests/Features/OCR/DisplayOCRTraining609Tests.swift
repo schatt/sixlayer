@@ -428,7 +428,8 @@ struct DisplayOCRTraining609Tests {
         #expect(rejection(in: library, named: "bad-schema") == .unsupportedSchema(2))
         #expect(rejection(in: library, named: "missing-image") == .unreadablePackage)
         #expect(rejection(in: library, named: "missing-label") == .unreadablePackage)
-        #expect(rejection(in: library, named: "deeper") == .unreadablePackage)
+        // Nested-only parents are not package-shaped; ignore like Documents junk (#655).
+        #expect(library.rejections.contains { $0.directory.lastPathComponent == "deeper" } == false)
         #expect(rejection(in: library, named: "escape") == .unreadablePackage)
         #expect(rejection(in: library, named: "alias") == .unreadablePackage)
         #expect(library.rejections.contains { $0.directory.lastPathComponent == "notes.txt" } == false)
