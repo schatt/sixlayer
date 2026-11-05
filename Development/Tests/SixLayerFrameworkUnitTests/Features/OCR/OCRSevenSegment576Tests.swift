@@ -915,9 +915,8 @@ struct OCRSevenSegment576Tests {
         #expect(readable, "\(report)")
     }
 
-    /// Private photo. The right-edge trim is off, so this crop includes the
-    /// columns that trim used to delete. Their dark fraction says which of
-    /// those columns are digits and which are skirt.
+    /// Private photo. Right-edge trim is off, so the sealed rect keeps its pad.
+    /// Inset the other three sides to the hand crop and read.
     @Test(
         .enabled(if: FileManager.default.fileExists(atPath: "/tmp/sixlayer-600-score-s1"))
     )
@@ -927,13 +926,21 @@ struct OCRSevenSegment576Tests {
         let upright = try #require(PlatformImage.cgImage(opening: data))
         let region = try #require(SevenSegmentOCR.digitPanelRegion(in: upright))
         let rect = CGRect(
-            x: region.minX.rounded(.down),
-            y: region.minY.rounded(.down),
-            width: region.width.rounded(.down),
-            height: region.height.rounded(.down)
+            x: region.minX + 93,
+            y: region.minY + 21,
+            width: region.width - 93,
+            height: region.height - 49
         )
         let crop = try #require(upright.cropping(to: rect))
-        #expect(Bool(false), "\(region) \(rightEdgeDarkFraction(crop))")
+        let result = SevenSegmentOCR.decode(
+            cgImage: crop,
+            deskewMaximumDegrees: 0,
+            localizeDigitPanel: false
+        )
+        #expect(
+            result.extractedText == "32.88\n8.022",
+            "\(rect) [\(result.extractedText)] \(result.confidence)"
+        )
     }
 
     @Test func fullFrameWithoutLocalizationMissesSealedBothRows() {
@@ -1038,40 +1045,6 @@ struct OCRSevenSegment576Tests {
     #endif
 
     // MARK: - Helpers
-
-    private func rightEdgeDarkFraction(_ image: CGImage) -> String {
-        let width = image.width
-        let height = image.height
-        guard width > 80, height > 4 else { return "empty" }
-        let count = width * height
-        let pointer = UnsafeMutablePointer<UInt8>.allocate(capacity: count)
-        pointer.initialize(repeating: 0, count: count)
-        defer { pointer.deallocate() }
-        guard let context = CGContext(
-            data: pointer,
-            width: width,
-            height: height,
-            bitsPerComponent: 8,
-            bytesPerRow: width,
-            space: CGColorSpaceCreateDeviceGray(),
-            bitmapInfo: CGImageAlphaInfo.none.rawValue
-        ) else { return "no-context" }
-        context.interpolationQuality = .none
-        context.draw(image, in: CGRect(x: 0, y: 0, width: width, height: height))
-        let pixels = Array(UnsafeBufferPointer(start: pointer, count: count))
-        let xs = Array(stride(from: width - 80, through: width - 1, by: 8))
-        let parts = xs.map { x -> String in
-            var sum = 0
-            var dark = 0
-            for y in 0..<height {
-                let value = Int(pixels[y * width + x])
-                sum += value
-                if value < 129 { dark += 1 }
-            }
-            return "\(x):\(sum / height)/\(dark * 100 / height)"
-        }
-        return parts.joined(separator: " ")
-    }
 
     private func service() -> OCRService { OCRService() }
 
