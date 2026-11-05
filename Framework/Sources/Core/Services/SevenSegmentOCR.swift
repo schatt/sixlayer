@@ -1197,9 +1197,10 @@ private extension GrayBuffer {
         return cropped(x0: left, y0: top, x1: right, y1: bottom)
     }
 
-    /// Bound the digit ink (not solid chrome, not empty glass) and keep a
-    /// little margin. Extra pad around a single LCD line otherwise invents
-    /// side stems or empties the read (#651).
+    /// Peel empty glass from the edges of a short wide line crop, keeping
+    /// `margin` px so lower-line boxes still have the glass #641 needs.
+    /// Extra isotropic / both-vertical pad otherwise invents side stems or
+    /// empties the top sealed line (#651).
     func tightenedToDigitLine(margin: Int) -> GrayBuffer {
         guard height > 0, width > 0, height < 160, width * 4 > height * 5 else {
             return self
@@ -1218,35 +1219,32 @@ private extension GrayBuffer {
             }
             return dark
         }
-        // Digit ink sits between empty glass and solid bezel.
-        func isDigitColumn(_ x: Int) -> Bool {
-            let dark = columnDark(x)
-            return dark > height / 16 && dark * 10 < height * 9
+        let emptyColumn = max(1, height / 16)
+        let emptyRow = max(1, width / 20)
+        var glassLeft = 0
+        while glassLeft < width - 8, columnDark(glassLeft) <= emptyColumn {
+            glassLeft += 1
         }
-        func isDigitRow(_ y: Int) -> Bool {
-            let dark = rowDark(y)
-            return dark > width / 20 && dark * 4 <= width * 3
+        var glassRight = 0
+        while glassRight < width - 8, columnDark(width - 1 - glassRight) <= emptyColumn {
+            glassRight += 1
         }
-        var minX = width
-        var maxX = -1
-        var minY = height
-        var maxY = -1
-        for x in 0..<width where isDigitColumn(x) {
-            minX = min(minX, x)
-            maxX = max(maxX, x)
+        var glassTop = 0
+        while glassTop < height - 8, rowDark(glassTop) <= emptyRow {
+            glassTop += 1
         }
-        for y in 0..<height where isDigitRow(y) {
-            minY = min(minY, y)
-            maxY = max(maxY, y)
+        var glassBottom = 0
+        while glassBottom < height - 8, rowDark(height - 1 - glassBottom) <= emptyRow {
+            glassBottom += 1
         }
-        guard maxX >= minX, maxY >= minY else { return self }
-        let x0 = max(0, minX - margin)
-        let y0 = max(0, minY - margin)
-        let x1 = min(width, maxX + 1 + margin)
-        let y1 = min(height, maxY + 1 + margin)
+        let x0 = max(0, glassLeft - margin)
+        let y0 = max(0, glassTop - margin)
+        let x1 = min(width, width - glassRight + margin)
+        let y1 = min(height, height - glassBottom + margin)
         if x0 == 0, y0 == 0, x1 == width, y1 == height {
             return self
         }
+        guard x1 - x0 > 8, y1 - y0 > 8 else { return self }
         return cropped(x0: x0, y0: y0, x1: x1, y1: y1)
     }
 
