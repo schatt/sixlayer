@@ -46,6 +46,30 @@ private func createNavigationView<Content: View>(
     #endif
 }
 
+/// Drop-in NavigationStack host without L1→L3 strategy (Issue #637).
+/// Applies accessibility compliance plus L5/L6 stack modifiers.
+///
+/// Use when you need a root/host stack and are not running the semantic pipeline.
+/// For strategy-driven stacks, prefer ``platformImplementNavigationStack_L4`` or
+/// ``platformPresentNavigationStack_L1``.
+///
+/// Distinct from ``CrossPlatformNavigation/platformNavigationStack(items:selectedItem:itemView:detailView:analysis:)``
+/// (list-detail). This free function is content-only chrome for app roots / empty hosts.
+///
+/// - Parameter content: Root content hosted inside the stack.
+/// - Returns: Platform navigation stack wrapping `content`.
+@MainActor
+public func platformNavigationStack<Content: View>(
+    @ViewBuilder content: () -> Content
+) -> some View {
+    // Deployment targets are iOS 17+ / macOS 15+ — NavigationStack is available on both.
+    // Stable identifierName matches L1 root-stack discoverability (nil would auto-generate).
+    NavigationStack {
+        content()
+    }
+    .applyNavigationStackLayer4Modifiers(title: "platformNavigationStack")
+}
+
 /// Implement NavigationStack based on Layer 3 strategy
 /// Layer 4: Component Implementation
 /// Note: Requires @MainActor because it calls main-actor isolated view methods

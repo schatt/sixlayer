@@ -162,7 +162,7 @@ open class FormSelectAllOnBeginEditingTests: BaseTestClass {
 
     // Bare `NSTextView.string =` aborts via TextInputUI under parallel xctest (Gitea run 293).
     // Production `applySelectAll` no-ops when `window == nil`; cover that without mutating string.
-    @Test func unhostedNSTextView_selectAllIsNoOpWithoutWindow() {
+    @Test @MainActor func unhostedNSTextView_selectAllIsNoOpWithoutWindow() {
         let view = NSTextView()
         #expect(view.window == nil)
         TextFieldBeginEditingSelection.applySelectAll(
@@ -173,7 +173,7 @@ open class FormSelectAllOnBeginEditingTests: BaseTestClass {
         #expect(view.selectedRange.length == 0)
     }
 
-    @Test func unhostedNSTextField_selectAllIsNoOpWithoutWindow() {
+    @Test @MainActor func unhostedNSTextField_selectAllIsNoOpWithoutWindow() {
         let field = NSTextField(string: "42000")
         #expect(field.window == nil)
         TextFieldBeginEditingSelection.applySelectAll(
@@ -227,7 +227,7 @@ open class FormSelectAllOnBeginEditingTests: BaseTestClass {
     #endif
 
     #if os(macOS)
-    @Test func nearestLookup_flatSiblings_selectsMatchingNSTextFieldNotFirst() {
+    @Test @MainActor func nearestLookup_flatSiblings_selectsMatchingNSTextFieldNotFirst() {
         let container = NSView(frame: NSRect(x: 0, y: 0, width: 320, height: 200))
         let first = NSTextField(string: "42000")
         let firstMarker = NSView()

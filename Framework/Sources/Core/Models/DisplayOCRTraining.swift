@@ -440,6 +440,26 @@ public enum DisplayOCRTraining {
         sourceName: String?,
         deskewMaximumDegrees: Double = 3
     ) -> DisplayOCRTrainingLabel? {
+        draft(
+            image: image,
+            panel: panel,
+            rowBoxes: rowBoxes,
+            sourceName: sourceName,
+            deskewMaximumDegrees: deskewMaximumDegrees,
+            precomputedPanelRead: nil
+        )
+    }
+
+    /// Same as ``draft(image:panel:rowBoxes:sourceName:deskewMaximumDegrees:)`` but
+    /// reuses an already-decoded panel read (suggestion path, #654).
+    fileprivate static func draft(
+        image: CGImage,
+        panel: DisplayOCRNormalizedBox,
+        rowBoxes: [DisplayOCRNormalizedBox],
+        sourceName: String?,
+        deskewMaximumDegrees: Double,
+        precomputedPanelRead: OCRResult?
+    ) -> DisplayOCRTrainingLabel? {
         guard let panelBox = panel.unitClamped,
               let panelImage = crop(image, to: panelBox) else { return nil }
         let clipped = rowBoxes.compactMap { box -> DisplayOCRNormalizedBox? in
@@ -448,7 +468,8 @@ public enum DisplayOCRTraining {
             guard hit.pixelRect(imageWidth: image.width, imageHeight: image.height) != nil else { return nil }
             return hit
         }
-        let panelRead = segmentRead(panelImage, deskewMaximumDegrees: deskewMaximumDegrees)
+        let panelRead = precomputedPanelRead
+            ?? segmentRead(panelImage, deskewMaximumDegrees: deskewMaximumDegrees)
         let lineRows = panelRows(from: panelRead)
         let rows: [DisplayOCRTrainingRow]
         if clipped.isEmpty {
@@ -756,10 +777,14 @@ public enum DisplayOCRTraining {
         if symbolicLink(imageURL) || symbolicLink(labelURL) {
             return .rejection(.unreadablePackage, .symlink)
         }
-        if !regularFile(imageURL) {
+        let markers = packageMarkers(in: child)
+        // Not package-shaped (Documents / home-folder junk). Do not flood the
+        // skipped list as Missing image (#655).
+        guard markers.hasImage || markers.hasLabel else { return .ignored }
+        if !markers.hasImage {
             return .rejection(.unreadablePackage, .missingImage)
         }
-        if !regularFile(labelURL) {
+        if !markers.hasLabel {
             return .rejection(.unreadablePackage, .missingLabel)
         }
         do {
@@ -769,6 +794,14 @@ public enum DisplayOCRTraining {
         } catch {
             return .rejection(.unreadablePackage, .unreadablePackage)
         }
+    }
+
+    /// A training package child has at least one of the fixed package files.
+    private static func packageMarkers(in child: URL) -> (hasImage: Bool, hasLabel: Bool) {
+        (
+            regularFile(child.appendingPathComponent(imageFileName)),
+            regularFile(child.appendingPathComponent(labelFileName))
+        )
     }
 
     private static func reason(for error: DisplayOCRTrainingError) -> DisplayOCRTrainingSkipReason {
@@ -885,12 +918,14 @@ public enum DisplayOCRTraining {
         )
     }
 
-    /// A symlink is indexed so it can be removed. A model package and a plain file are not.
+    /// A symlink is indexed so it can be removed. A model package, a plain file,
+    /// and a directory with neither package file are not (#655).
     private static func shouldIndex(_ child: URL) -> Bool {
         if symbolicLink(child) { return true }
         if !directory(child) { return false }
         if isModelPackage(child) { return false }
-        return true
+        let markers = packageMarkers(in: child)
+        return markers.hasImage || markers.hasLabel
     }
 
     private static func loadIndex(in root: URL) -> DisplayOCRTrainingIndex? {
@@ -1516,8 +1551,12 @@ public final class DisplayOCRTrainingSession: ObservableObject {
     @Published public private(set) var editingFolderName: String?
     @Published public private(set) var reindexProgress: DisplayOCRTrainingReindexProgress?
     public private(set) var reindexRanOnMainThread: Bool?
+    /// Whether the last auto-suggest compute ran on the main thread. Test probe (#650).
+    public private(set) var suggestionRanOnMainThread: Bool?
 
     private var bitmap: CGImage?
+    private var suggestionGeneration = 0
+    private var suggestionTask: Task<Void, Never>?
 
     public init() {
         refreshLibrary()
@@ -1567,6 +1606,10 @@ public final class DisplayOCRTrainingSession: ObservableObject {
     }
 
     private func show(_ cgImage: CGImage, sourceName rawName: String?, suggesting: Bool) {
+        suggestionTask?.cancel()
+        suggestionTask = nil
+        suggestionGeneration += 1
+        let generation = suggestionGeneration
         bitmap = cgImage
         image = PlatformImage(cgImage: cgImage)
         imagePixelSize = CGSize(width: cgImage.width, height: cgImage.height)
@@ -1576,42 +1619,96 @@ public final class DisplayOCRTrainingSession: ObservableObject {
         label = nil
         status = nil
         selectedBox = nil
-        if suggesting {
-            suggestBoxes(in: cgImage)
+        suggestionRanOnMainThread = nil
+        guard suggesting else { return }
+        // Publish the image first; digit-panel suggestion is off the main
+        // actor so full-res library photos do not freeze the UI (#650).
+        let analysisImage = cgImage
+        suggestionTask = Task { @MainActor [weak self] in
+            let outcome = await Task.detached(priority: .userInitiated) {
+                let ranOnMain = MainThreadProbe.isMain()
+                let proposal = DisplayOCRTrainingSession.suggestionProposal(for: analysisImage)
+                return SuggestionComputeOutcome(ranOnMainThread: ranOnMain, proposal: proposal)
+            }.value
+            self?.applySuggestion(
+                outcome.proposal,
+                ranOnMainThread: outcome.ranOnMainThread,
+                generation: generation
+            )
         }
     }
 
-    /// The classical reader proposes a panel and glyph rows. No panel means no suggestion.
-    private func suggestBoxes(in image: CGImage) {
-        guard let region = SevenSegmentOCR.digitPanelRegion(in: image) else { return }
+    /// Wait until the in-flight auto-suggest (if any) finishes. No-op when idle.
+    public func waitForSuggestion() async {
+        await suggestionTask?.value
+    }
+
+    /// Classical reader panel + glyph boxes + draft. Runs off the main actor
+    /// (#650 / #654) so apply only publishes state.
+    nonisolated private static func suggestionProposal(for image: CGImage) -> SuggestionProposal? {
+        guard let region = SevenSegmentOCR.digitPanelRegion(in: image) else { return nil }
         let suggested = DisplayOCRNormalizedBox(
             pixelRect: region,
             imageWidth: image.width,
             imageHeight: image.height
         )
         guard let panelBox = suggested.unitClamped,
-              panelBox.pixelRect(imageWidth: image.width, imageHeight: image.height) != nil else { return }
-        panel = panelBox
+              panelBox.pixelRect(imageWidth: image.width, imageHeight: image.height) != nil else {
+            return nil
+        }
         var glyphs: [DisplayOCRNormalizedBox] = []
+        var panelRead: OCRResult?
         if let crop = DisplayOCRTraining.crop(image, to: panelBox) {
             let read = SevenSegmentOCR.decode(
                 cgImage: crop,
                 deskewMaximumDegrees: 0,
                 localizeDigitPanel: false
             )
+            panelRead = read
             glyphs = DisplayOCRTraining.rowBoxes(fromVisionBoxes: read.boundingBoxes, panel: panelBox)
         }
+        let drafted = DisplayOCRTraining.draft(
+            image: image,
+            panel: panelBox,
+            rowBoxes: [],
+            sourceName: nil,
+            deskewMaximumDegrees: 0,
+            precomputedPanelRead: panelRead
+        )
+        return SuggestionProposal(panel: panelBox, glyphs: glyphs, label: drafted)
+    }
+
+    private func applySuggestion(
+        _ proposal: SuggestionProposal?,
+        ranOnMainThread: Bool,
+        generation: Int
+    ) {
+        guard generation == suggestionGeneration else { return }
+        suggestionRanOnMainThread = ranOnMainThread
+        // A host that already drew or restored boxes wins over the late proposal.
+        guard panel == nil, let proposal else { return }
+        panel = proposal.panel
         // A crop of one line is read upside down or not at all. The panel read
         // is the digit string; the glyph rows are only the boxes.
         rowBoxes = []
-        guard decode(), var drafted = label else {
-            rowBoxes = glyphs
+        guard var drafted = proposal.label else {
+            rowBoxes = proposal.glyphs
             return
         }
-        let aligned = DisplayOCRTraining.aligningSuggestion(lines: drafted.rows, glyphs: glyphs)
+        let aligned = DisplayOCRTraining.aligningSuggestion(
+            lines: drafted.rows,
+            glyphs: proposal.glyphs
+        )
         drafted.rows = aligned.rows
         rowBoxes = aligned.boxes
         label = drafted
+        status = .decoded
+    }
+
+    private func cancelPendingSuggestion() {
+        suggestionTask?.cancel()
+        suggestionTask = nil
+        suggestionGeneration += 1
     }
 
     public func load(fileURL: URL) {
@@ -1631,6 +1728,7 @@ public final class DisplayOCRTrainingSession: ObservableObject {
 
     public func setPanel(_ box: DisplayOCRNormalizedBox) {
         guard bitmap != nil, let clamped = box.unitClamped else { return }
+        cancelPendingSuggestion()
         panel = clamped
         rowBoxes = []
         label = nil
@@ -1641,6 +1739,7 @@ public final class DisplayOCRTrainingSession: ObservableObject {
     /// Replace the panel and clip rows to it. A row that falls outside is removed.
     public func updatePanel(_ box: DisplayOCRNormalizedBox) {
         guard bitmap != nil, let clamped = box.unitClamped else { return }
+        cancelPendingSuggestion()
         panel = clamped
         rowBoxes = DisplayOCRTraining.rowsInside(
             rowBoxes,
@@ -1993,6 +2092,17 @@ public final class DisplayOCRTrainingSession: ObservableObject {
 private struct ReindexOutcome: Sendable {
     var library: DisplayOCRTrainingLibrary?
     var ranOnMainThread: Bool
+}
+
+private struct SuggestionProposal: Sendable {
+    var panel: DisplayOCRNormalizedBox
+    var glyphs: [DisplayOCRNormalizedBox]
+    var label: DisplayOCRTrainingLabel?
+}
+
+private struct SuggestionComputeOutcome: Sendable {
+    var ranOnMainThread: Bool
+    var proposal: SuggestionProposal?
 }
 
 private final class LibraryReindexRelay: @unchecked Sendable {
