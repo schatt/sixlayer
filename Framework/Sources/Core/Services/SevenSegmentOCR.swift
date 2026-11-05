@@ -532,9 +532,9 @@ private struct GrayBuffer {
         }
     }
 
-    /// Periods are square baseline dots. Commas hang below and are taller than
-    /// wide. Hang alone is not enough: digits that omit the bottom bar pull the
-    /// median baseline up so a true period looks low (#647 / #658).
+    /// Period = square baseline dot; comma = hanging tail (taller than wide).
+    /// Hang alone is insufficient: 1/4/7 omit the bottom bar and pull the
+    /// median baseline up, so a true period looks "low" (#647 / #658).
     private static func markCharacter(box: PixelBox, baseline: Int, digitHeight: Int) -> Character {
         let hangs = box.maxY > baseline + max(2, digitHeight / 12)
         let tallTail = box.height > box.width
