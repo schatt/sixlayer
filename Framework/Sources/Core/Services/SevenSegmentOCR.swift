@@ -2183,7 +2183,31 @@ private func readingSpan(_ mask: Mask, bands: [(Int, Int)]) -> (Int, Int)? {
         }
     }
     runs.append((start, end + 1, ink))
-    guard let best = runs.max(by: { $0.ink < $1.ink }) else { return nil }
+    guard var best = runs.max(by: { $0.ink < $1.ink }) else { return nil }
+    // A ramp that begins as a speck and climbs past a stroke-width hole is
+    // the bezel, not another digit. Leaving it on the run lifts the stem
+    // line and pulls the right edge over the field.
+    let hole = max(8, min(16, height / 40))
+    var cursor = best.end - 1
+    while cursor > best.start, columnInk[cursor] == 0 {
+        cursor -= 1
+    }
+    let blobEnd = cursor
+    while cursor > best.start, columnInk[cursor] > 0 {
+        cursor -= 1
+    }
+    let blobStart = cursor + 1
+    var gap = 0
+    while cursor - gap > best.start, columnInk[cursor - gap] == 0 {
+        gap += 1
+    }
+    if gap >= hole, blobEnd >= blobStart {
+        let blobMax = (blobStart...blobEnd).reduce(0) { max($0, columnInk[$1]) }
+        let rising = blobMax > columnInk[blobStart] * 4 && blobMax * 2 > rowHeight
+        if rising {
+            best.end = blobStart
+        }
+    }
     let span = best.end - best.start
     guard span > max(12, height / 10) else { return nil }
     return (best.start, best.end)
@@ -2279,26 +2303,7 @@ private func priceMatchedLeftByDenseWindow(
     // Thresholds are relative to the band's peak column. A left glare blob
     // often *is* the peak; digit stems sit well below it. Penalize near-peak
     // fills so the digit field wins. Window ~ price digit run width.
-    // A blob after a hole wider than a stroke is not that peak. One solid
-    // column there lifts the stem line, and a washed row then scores its
-    // margin as digit ink.
-    let right = min(width, sharedRight)
-    let hole = max(8, min(16, bandHeight / 40))
-    var cursor = right - 1
-    while cursor > sharedLeft, columnInk[cursor] == 0 {
-        cursor -= 1
-    }
-    while cursor > sharedLeft, columnInk[cursor] > 0 {
-        cursor -= 1
-    }
-    var gap = 0
-    while cursor - gap > sharedLeft, columnInk[cursor - gap] == 0 {
-        gap += 1
-    }
-    let fieldEnd = gap > hole ? cursor + 1 : right
-    let fieldPeak = (sharedLeft..<max(sharedLeft, fieldEnd)).reduce(0) { max($0, columnInk[$1]) }
-    let fullPeak = (sharedLeft..<right).reduce(0) { max($0, columnInk[$1]) }
-    let peak = fieldPeak > 0 ? fieldPeak : fullPeak
+    let peak = (sharedLeft..<min(width, sharedRight)).map { columnInk[$0] }.max() ?? 0
     let speckFloor = max(2, bandHeight / 12)
     let solidFloor = max(speckFloor + 1, peak * 4 / 5)
     let stemHi = max(speckFloor + 1, peak * 11 / 20)
