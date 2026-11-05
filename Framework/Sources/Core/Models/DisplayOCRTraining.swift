@@ -1588,14 +1588,14 @@ public final class DisplayOCRTrainingSession: ObservableObject {
         guard suggesting else { return }
         // Publish the image first; digit-panel suggestion is off the main
         // actor so full-res library photos do not freeze the UI (#650).
-        nonisolated(unsafe) let analysisImage = cgImage
-        suggestionTask = Task { [weak self] in
+        let analysisImage = cgImage
+        suggestionTask = Task { @MainActor [weak self] in
             let outcome = await Task.detached(priority: .userInitiated) {
                 let ranOnMain = MainThreadProbe.isMain()
                 let proposal = DisplayOCRTrainingSession.suggestionProposal(for: analysisImage)
                 return SuggestionComputeOutcome(ranOnMainThread: ranOnMain, proposal: proposal)
             }.value
-            await self?.applySuggestion(
+            self?.applySuggestion(
                 outcome.proposal,
                 ranOnMainThread: outcome.ranOnMainThread,
                 generation: generation
