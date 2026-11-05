@@ -392,10 +392,15 @@ private struct GrayBuffer {
         // A small tilt still belongs to the fine deskew. Speck rows on a
         // sideways sample read as a few wide glyphs and must not spin an
         // upright panel. A real quarter turn is mostly digits.
+        // A 480px sample of an upright panel can drop two wide digits.
+        // That lead is not a turn. A field of ones still turns on a lead of two.
         let glyphs = scores[bestTurns].text.filter { $0 != "/" }
         let numbers = glyphs.filter(\.isNumber).count
         let mostlyNumbers = !glyphs.isEmpty && numbers * 2 > glyphs.count
-        let enough = mostlyNumbers && scores[bestTurns].wideDigits >= max(scores[0].wideDigits + 2, 4)
+        let uprightWide = scores[0].wideDigits
+        let turnedWide = scores[bestTurns].wideDigits
+        let minimumLead = uprightWide >= 4 ? 4 : 2
+        let enough = mostlyNumbers && turnedWide >= 4 && turnedWide >= uprightWide + minimumLead
         guard enough else { return buffer }
         return buffer.rotated(degrees: Double(bestTurns * 90))
     }
