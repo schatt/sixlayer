@@ -391,9 +391,12 @@ struct OCRSevenSegment576Tests {
     }
 
     /// #645: real colon dots are stroke-tall; the glare-edge speck pair must
-    /// not steal this path, and a painted colon must still read.
+    /// not steal this path, and a painted colon must still read — clean and
+    /// under the same mid-row glare wash that used to invent ':' on `31.25`.
     @Test func aColonBetweenDigitsStaysAColon() {
-        #expect(decode(panel(["12:30"])).extractedText == "12:30")
+        let rows = [atoms("12:30")]
+        #expect(decode(SegmentPanel.render(rows: rows)).extractedText == "12:30")
+        #expect(decode(SegmentPanel.render(rows: rows, glare: true)).extractedText == "12:30")
     }
 
     @Test func deskewSearchesTheCallerMaximum() {
