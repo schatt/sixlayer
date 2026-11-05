@@ -141,13 +141,8 @@ public enum SevenSegmentOCR {
                 gray = cropped
             }
         }
-        // Deliberate #654 red stub: uncapped probe; bail before masks when
-        // over maxSide so the runner does not hang in localRange. Green fits
-        // then continues into deskew/fragments.
+        gray = gray.fitted(maxSide: digitPanelAnalysisMaxSide)
         lastDecodeAnalysisLongEdge = max(gray.width, gray.height)
-        if max(gray.width, gray.height) > digitPanelAnalysisMaxSide {
-            return OCRResult(extractedText: "", confidence: 0)
-        }
         let upright = GrayBuffer.deskew(gray, maximumDegrees: deskewMaximumDegrees)
         let fragments = GrayBuffer.fragments(in: upright)
         let lines = fragments.map { row in row.map(\.text).joined(separator: "  ") }
