@@ -2001,9 +2001,17 @@ private func digitRowSums(_ sums: [Int]) -> [Int] {
 
 /// ssocr dynamic threshold window. A short crop stays tight. A tall crop
 /// grows until the window would meet across the gap between digits.
+/// Dense scale-4 panels (~1100px) hit a 36px cap that bridges the scaled
+/// intra-digit gap and reads garbage (#659); keep the window near the
+/// scale-1 size once the crop is that large. Typical washed price bands
+/// stay under 600px short side and keep the growing formula.
 private func windowRadius(width: Int, height: Int) -> Int {
     let shortSide = min(width, height)
-    return min(36, max(4, (shortSide - 96) / 24))
+    let grown = max(4, (shortSide - 96) / 24)
+    if shortSide > 600 {
+        return min(12, grown)
+    }
+    return min(36, grown)
 }
 
 /// Columns that hold digit ink and stay empty in the gap between rows.
