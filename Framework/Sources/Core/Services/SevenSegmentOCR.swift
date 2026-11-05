@@ -185,7 +185,7 @@ private struct GrayBuffer {
         let trimmed = buffer.trimmingEdgeBezel()
         // Horizontal glass beside a tight top line invents side stems; keep
         // vertical glass so lower-line #641 boxes still clear their border.
-        let prepared = trimmed.tightenedToDigitLine(marginX: 0, marginY: 6)
+        let prepared = trimmed.tightenedToDigitLine(marginX: 0, marginY: 0)
         if buffer.width != prepared.width || buffer.height != prepared.height {
             print(
                 "651-prep \(buffer.width)x\(buffer.height) -> trim \(trimmed.width)x\(trimmed.height) -> prep \(prepared.width)x\(prepared.height)"
