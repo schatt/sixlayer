@@ -1590,9 +1590,6 @@ private extension GrayBuffer {
         while right - left > 40, columnMean(left) < limit {
             left += 1
         }
-        while right - left > 40, columnMean(right) < limit {
-            right -= 1
-        }
         return (left, top, right, bottom)
     }
 
