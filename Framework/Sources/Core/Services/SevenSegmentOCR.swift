@@ -2037,14 +2037,15 @@ private func digitRowSums(_ sums: [Int]) -> [Int] {
 /// hollow 48px bars into stems (#659 thickStrokes).
 private func windowRadius(width: Int, height: Int) -> Int {
     let shortSide = min(width, height)
-    var sized = min(36, max(4, (shortSide - 96) / 24))
-    let isWide = width > height + height / 2
-    if shortSide > 600, !isWide {
-        sized = min(7, sized)
+    let grown = min(36, max(4, (shortSide - 96) / 24))
+    // Nearly square and large → dense multi-row panel (not a wide rowcrop).
+    let isWideRow = width > height + height / 2
+    if shortSide > 600, !isWideRow {
+        return min(7, grown)
     }
-    guard isWide else { return sized }
+    guard isWideRow else { return grown }
     let strokeFloor = max(4, height / 15)
-    return min(36, max(sized, strokeFloor))
+    return min(36, max(grown, strokeFloor))
 }
 
 /// Columns that hold digit ink and stay empty in the gap between rows.
