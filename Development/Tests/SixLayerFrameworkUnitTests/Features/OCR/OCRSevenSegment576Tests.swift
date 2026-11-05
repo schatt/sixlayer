@@ -390,6 +390,12 @@ struct OCRSevenSegment576Tests {
         #expect(light == "31.25")
     }
 
+    /// #645: real colon dots are stroke-tall; the glare-edge speck pair must
+    /// not steal this path, and a painted colon must still read.
+    @Test func aColonBetweenDigitsStaysAColon() {
+        #expect(decode(panel(["12:30"])).extractedText == "12:30")
+    }
+
     @Test func deskewSearchesTheCallerMaximum() {
         let rows = [atoms("31.25")]
         let tilted = SegmentPanel.render(rows: rows, tiltDegrees: 3)
