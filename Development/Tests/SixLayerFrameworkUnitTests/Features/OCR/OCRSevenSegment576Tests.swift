@@ -915,26 +915,38 @@ struct OCRSevenSegment576Tests {
         #expect(readable, "\(report)")
     }
 
-    /// Private photo. The sealed rect is the right neighborhood and too far
-    /// left. This records column gray so the skirt can be told from the pad.
-    /// It does not decode.
+    /// Private photo. The sealed rect's left edge is a brightness ramp, not a
+    /// dark skirt. These insets ask where that ramp stops hurting the read.
     @Test(
         .enabled(if: FileManager.default.fileExists(atPath: "/tmp/sixlayer-600-score-s1"))
     )
-    func uprightScenario1SealedCropEdgeProfile() throws {
+    func uprightScenario1InsetReads() throws {
         let path = "/Users/schatt/code/github/cm/1157-pump-three-role-solver/Tests/TestImages/fuel_purchase/scenario_1/ti_fp_s1_pump.jpg"
         let data = try Data(contentsOf: URL(fileURLWithPath: path))
         let upright = try #require(PlatformImage.cgImage(opening: data))
         let region = try #require(SevenSegmentOCR.digitPanelRegion(in: upright))
-        let rect = CGRect(
-            x: region.minX.rounded(.down),
-            y: region.minY.rounded(.down),
-            width: region.width.rounded(.down),
-            height: region.height.rounded(.down)
-        )
-        let crop = try #require(upright.cropping(to: rect))
-        let profile = columnEdgeProfile(crop)
-        #expect(Bool(false), "\(region) \(profile)")
+        func read(dx: CGFloat, dy: CGFloat, dw: CGFloat, dh: CGFloat) -> String {
+            let rect = CGRect(
+                x: region.minX + dx,
+                y: region.minY + dy,
+                width: region.width - dw,
+                height: region.height - dh
+            )
+            let crop = upright.cropping(to: rect)
+            guard let crop else { return "\(dx),\(dy) crop-failed" }
+            let result = SevenSegmentOCR.decode(
+                cgImage: crop,
+                deskewMaximumDegrees: 0,
+                localizeDigitPanel: false
+            )
+            return "\(Int(dx)),\(Int(dy)) \(crop.width)x\(crop.height) [\(result.extractedText)] \(result.confidence)"
+        }
+        let report = [
+            read(dx: 40, dy: 0, dw: 40, dh: 0),
+            read(dx: 80, dy: 0, dw: 80, dh: 0),
+            read(dx: 93, dy: 21, dw: 93, dh: 49)
+        ].joined(separator: "\n")
+        #expect(Bool(false), "\(report)")
     }
 
     @Test func fullFrameWithoutLocalizationMissesSealedBothRows() {
@@ -1039,77 +1051,6 @@ struct OCRSevenSegment576Tests {
     #endif
 
     // MARK: - Helpers
-
-    /// Mean, min, and max of selected columns, plus the interior three-quarter limit.
-    private func columnEdgeProfile(_ image: CGImage) -> String {
-        let width = image.width
-        let height = image.height
-        guard width > 4, height > 4 else { return "empty" }
-        let count = width * height
-        let pointer = UnsafeMutablePointer<UInt8>.allocate(capacity: count)
-        pointer.initialize(repeating: 0, count: count)
-        defer { pointer.deallocate() }
-        guard let context = CGContext(
-            data: pointer,
-            width: width,
-            height: height,
-            bitsPerComponent: 8,
-            bytesPerRow: width,
-            space: CGColorSpaceCreateDeviceGray(),
-            bitmapInfo: CGImageAlphaInfo.none.rawValue
-        ) else { return "no-context" }
-        context.interpolationQuality = .none
-        context.draw(image, in: CGRect(x: 0, y: 0, width: width, height: height))
-        let pixels = Array(UnsafeBufferPointer(start: pointer, count: count))
-        func column(_ x: Int) -> (mean: Int, mid: Int, dark: Int, min: Int, max: Int) {
-            var sum = 0
-            var midSum = 0
-            var midCount = 0
-            var dark = 0
-            var lo = 255
-            var hi = 0
-            let y0 = height / 4
-            let y1 = height - y0
-            for y in 0..<height {
-                let value = Int(pixels[y * width + x])
-                sum += value
-                if value < 80 { dark += 1 }
-                lo = min(lo, value)
-                hi = max(hi, value)
-                if y >= y0, y < y1 {
-                    midSum += value
-                    midCount += 1
-                }
-            }
-            let mid = midCount > 0 ? midSum / midCount : 0
-            return (sum / height, mid, dark * 100 / height, lo, hi)
-        }
-        let insetX = width / 4
-        let insetY = height / 4
-        var interiorSum = 0
-        var interiorCount = 0
-        for y in insetY..<(height - insetY) {
-            for x in insetX..<(width - insetX) {
-                interiorSum += Int(pixels[y * width + x])
-                interiorCount += 1
-            }
-        }
-        let interior = interiorCount > 0 ? interiorSum / interiorCount : 0
-        let xs = [0, 20, 40, 60, 80, 93, 120, 200, width / 2, width - 94, width - 41, width - 1]
-            .filter { $0 >= 0 && $0 < width }
-        let parts = xs.map { x -> String in
-            let stats = column(x)
-            return "\(x):\(stats.mean)/\(stats.mid)/\(stats.dark)/\(stats.min)/\(stats.max)"
-        }
-        func rowMean(_ y: Int) -> Int {
-            var sum = 0
-            for x in 0..<width { sum += Int(pixels[y * width + x]) }
-            return sum / width
-        }
-        let ys = [0, 21, 40, height / 2, height - 29, height - 1].filter { $0 >= 0 && $0 < height }
-        let rows = ys.map { y in "\(y):\(rowMean(y))" }
-        return "crop \(width)x\(height) interior \(interior) limit \(interior * 3 / 4) cols " + parts.joined(separator: " ") + " rows " + rows.joined(separator: " ")
-    }
 
     private func service() -> OCRService { OCRService() }
 
