@@ -2030,16 +2030,19 @@ private func digitRowSums(_ sums: [Int]) -> [Int] {
 /// ssocr dynamic threshold window. A short crop stays tight. A tall crop
 /// grows until the window would meet across the gap between digits.
 ///
-/// Wide single-row crops also floor the radius at ~half a digit stroke
-/// (`height / 15` for SegmentPanel proportions). Without that floor, a
-/// scale-4 rowcrop lands near radius 12 while the stroke is 48px and
-/// hollows horizontal bars into stems (`_` / `1` junk — #659). Square
-/// multi-row parents keep the growing cap only — a stroke floor on the
-/// full two-row short side would widen past digit gaps.
+/// Scale-4 square panels (~1100px) hit the 36px growing cap and bridge
+/// digit gaps on the parent mask (#659 strokeSized). Cap those near the
+/// scale-1 radius (7). Wide single-row crops separately floor the radius
+/// at ~half a digit stroke (`height / 15`) so a scale-4 rowcrop does not
+/// hollow 48px bars into stems (#659 thickStrokes).
 private func windowRadius(width: Int, height: Int) -> Int {
     let shortSide = min(width, height)
-    let sized = min(36, max(4, (shortSide - 96) / 24))
-    guard width > height + height / 2 else { return sized }
+    var sized = min(36, max(4, (shortSide - 96) / 24))
+    let isWide = width > height + height / 2
+    if shortSide > 600, !isWide {
+        sized = min(7, sized)
+    }
+    guard isWide else { return sized }
     let strokeFloor = max(4, height / 15)
     return min(36, max(sized, strokeFloor))
 }
