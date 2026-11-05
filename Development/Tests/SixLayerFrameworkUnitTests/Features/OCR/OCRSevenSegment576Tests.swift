@@ -915,38 +915,17 @@ struct OCRSevenSegment576Tests {
         #expect(readable, "\(report)")
     }
 
-    /// Private photo. The sealed rect's left edge is a brightness ramp, not a
-    /// dark skirt. These insets ask where that ramp stops hurting the read.
+    /// Private photo. Reports the sealed rect only, so a trim change can be
+    /// checked without decoding.
     @Test(
         .enabled(if: FileManager.default.fileExists(atPath: "/tmp/sixlayer-600-score-s1"))
     )
-    func uprightScenario1InsetReads() throws {
+    func uprightScenario1SealedRect() throws {
         let path = "/Users/schatt/code/github/cm/1157-pump-three-role-solver/Tests/TestImages/fuel_purchase/scenario_1/ti_fp_s1_pump.jpg"
         let data = try Data(contentsOf: URL(fileURLWithPath: path))
         let upright = try #require(PlatformImage.cgImage(opening: data))
         let region = try #require(SevenSegmentOCR.digitPanelRegion(in: upright))
-        func read(dx: CGFloat, dy: CGFloat, dw: CGFloat, dh: CGFloat) -> String {
-            let rect = CGRect(
-                x: region.minX + dx,
-                y: region.minY + dy,
-                width: region.width - dw,
-                height: region.height - dh
-            )
-            let crop = upright.cropping(to: rect)
-            guard let crop else { return "\(dx),\(dy) crop-failed" }
-            let result = SevenSegmentOCR.decode(
-                cgImage: crop,
-                deskewMaximumDegrees: 0,
-                localizeDigitPanel: false
-            )
-            return "\(Int(dx)),\(Int(dy)) \(crop.width)x\(crop.height) [\(result.extractedText)] \(result.confidence)"
-        }
-        let report = [
-            read(dx: 40, dy: 0, dw: 40, dh: 0),
-            read(dx: 80, dy: 0, dw: 80, dh: 0),
-            read(dx: 93, dy: 21, dw: 93, dh: 49)
-        ].joined(separator: "\n")
-        #expect(Bool(false), "\(report)")
+        #expect(Bool(false), "\(region)")
     }
 
     @Test func fullFrameWithoutLocalizationMissesSealedBothRows() {
