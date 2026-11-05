@@ -261,7 +261,16 @@ struct OCRSevenSegment576Tests {
     // MARK: - Confidence and non-segment ink
 
     @Test func unknownCellZerosOnlyItsFragment() {
+        // Controls: each side alone must still read (#647).
+        #expect(decode(panel(["8_2"])).extractedText == "8_2")
+        #expect(decode(panel(["17.740"])).extractedText == "17.740")
+
         let result = decode(panel(["8_2 17.740"]))
+        // Temporary #647 probe — remove once green.
+        for text in result.recognizedTexts {
+            print("647-seg '\(text.text)' conf=\(text.confidence) box=\(text.boundingBox)")
+        }
+        print("647-text \(String(reflecting: result.extractedText)) conf=\(result.confidence)")
         #expect(result.extractedText == "8_2  17.740")
         #expect(result.confidence == 0)
         let broken = result.recognizedTexts.first { $0.text.contains("_") }
