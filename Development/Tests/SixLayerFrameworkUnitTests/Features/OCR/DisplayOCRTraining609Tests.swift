@@ -441,6 +441,45 @@ struct DisplayOCRTraining609Tests {
         #expect(empty.rejections.isEmpty)
     }
 
+    /// Choosing Documents as the export root must not list every unrelated
+    /// child folder as "Missing image" (#655). Only package-shaped defects
+    /// (e.g. label.json without image.png) belong on the skipped list.
+    @Test func catalogIgnoresNonPackageShapedChildFolders() throws {
+        let root = try makeDirectory("display-ocr-non-package-skips")
+        defer { try? FileManager.default.removeItem(at: root) }
+        try writeIndexedExample(
+            confirmed: "12.9",
+            row: nil,
+            to: root.appendingPathComponent("close-shot", isDirectory: true)
+        )
+        try writeLabelOnly(to: root.appendingPathComponent("missing-image", isDirectory: true))
+        for junk in ["Audacity", "Icons", "Backups", "deeper"] {
+            try FileManager.default.createDirectory(
+                at: root.appendingPathComponent(junk, isDirectory: true),
+                withIntermediateDirectories: true
+            )
+        }
+        try Data("notes".utf8).write(to: root.appendingPathComponent("notes.txt"))
+
+        let scanned = DisplayOCRTraining.library(in: root)
+        #expect(scanned.examples.count == 1)
+        #expect(skipReason(in: scanned, named: "missing-image") == .missingImage)
+        for junk in ["Audacity", "Icons", "Backups", "deeper"] {
+            #expect(scanned.rejections.contains { $0.directory.lastPathComponent == junk } == false)
+            #expect(scanned.examples.contains { $0.directory.lastPathComponent == junk } == false)
+        }
+        #expect(scanned.rejections.contains { $0.directory.lastPathComponent == "notes.txt" } == false)
+
+        let cataloged = DisplayOCRTraining.catalog(in: root)
+        for junk in ["Audacity", "Icons", "Backups", "deeper"] {
+            #expect(cataloged.rejections.contains { $0.directory.lastPathComponent == junk } == false)
+        }
+        #expect(skipReason(in: cataloged, named: "missing-image") == .missingImage)
+        let indexText = (try? String(contentsOf: indexURL(in: root), encoding: .utf8)) ?? ""
+        #expect(indexText.contains("Audacity") == false)
+        #expect(indexText.contains("missing-image"))
+    }
+
     @Test @MainActor func exportJoinsTheTrainingLibrary() throws {
         let root = try makeDirectory("display-ocr-join")
         defer { try? FileManager.default.removeItem(at: root) }
