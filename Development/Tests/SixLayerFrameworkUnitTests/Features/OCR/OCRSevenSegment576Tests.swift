@@ -476,6 +476,27 @@ struct OCRSevenSegment576Tests {
         #expect(decode(taller, maximum: 0).extractedText == "32.88")
     }
 
+    /// #651: isotropic or symmetric vertical pad around the top sealed line
+    /// must still read `32.88`. Pad=2 isotropic previously returned `"_\n7"`;
+    /// pad=20 emptied; padTop+padBottom=20 (no X) returned `"_"`.
+    @Test func aPaddedTopLineCropStillReadsThatLine() {
+        let image = sealedBothRowsPanel()
+        let full = decode(image, maximum: 0)
+        let segments = full.recognizedTexts.filter { $0.role == .segment }
+        #expect(segments.map(\.text) == ["32.88", "8.022"])
+        let box = segments[0].boundingBox
+        let isotropic = lineCrop(image, visionBox: box, pad: 20)
+        #expect(decode(isotropic, maximum: 0).extractedText == "32.88")
+        let bothVertical = lineCrop(
+            image,
+            visionBox: box,
+            padX: 0,
+            padTop: 20,
+            padBottom: 20
+        )
+        #expect(decode(bothVertical, maximum: 0).extractedText == "32.88")
+    }
+
     @Test func decoderSourceDoesNotNameFields() throws {
         let source = try decoderSource()
         for word in ["This Sale", "Gallons", "FuelPurchase", "sale"] {

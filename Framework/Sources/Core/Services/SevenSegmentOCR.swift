@@ -187,7 +187,15 @@ private struct GrayBuffer {
     }
 
     static func deskew(_ buffer: GrayBuffer, maximumDegrees: Double) -> GrayBuffer {
-        let turned = standingUp(buffer)
+        // Padded single-line crops pull bezel and extra glass (#651). Trim
+        // solid edge chrome, peel side glass tight (side pad invents stems),
+        // and snap to the densest ink band with 4px vertical glass — enough
+        // for #641 border clearing, less than the 6px span that left
+        // isotropic / both-vertical pad reading "_".
+        let prepared = buffer
+            .trimmingEdgeBezel()
+            .tightenedToDigitLine(marginX: 0, marginY: 4)
+        let turned = standingUp(prepared)
         let limit = Int(max(0, maximumDegrees).rounded(.down))
         guard limit > 0 else { return turned }
         let small = turned.fitted(maxSide: 280)
@@ -268,20 +276,24 @@ private struct GrayBuffer {
     /// sideways sample read as a few wide glyphs and must not spin an
     /// upright panel. A real quarter turn is mostly digits. A half turn of
     /// 0/2/8 still looks numeric — only take 180° when decimals sit below
-    /// after the turn. A short wide strip is already one upright line (#625).
+    /// after the turn. A short wide strip is already one upright line
+    /// (#625); padded top-line crops that keep a little glass still look
+    /// short-wide and must not half-turn into `"_"` (#651).
     private static func acceptsOrientation(
         _ turns: Int,
         scores: [OrientationScore],
         buffer: GrayBuffer
     ) -> Bool {
+        // Line crops (Vision box ± pad) are already upright. Blocking only
+        // 90° left 180° free to invent `"_"` / spoilers on isotropic pad.
+        if buffer.width * 4 > buffer.height * 5 {
+            return false
+        }
         let glyphs = scores[turns].text.filter { $0 != "/" }
         let numbers = glyphs.filter(\.isNumber).count
         let mostlyNumbers = !glyphs.isEmpty && numbers * 2 > glyphs.count
         if turns == 2 {
             return mostlyNumbers && scores[2].marksBelow > scores[0].marksBelow
-        }
-        if (turns == 1 || turns == 3), buffer.width * 4 > buffer.height * 5 {
-            return false
         }
         return mostlyNumbers && scores[turns].wideDigits >= max(scores[0].wideDigits + 2, 4)
     }
@@ -1123,10 +1135,148 @@ private func reCropGlassBox(
 
 private extension GrayBuffer {
     static func fragments(in buffer: GrayBuffer) -> [[OCRRecognizedText]] {
-        readRows(in: buffer, allowBandPitch: true).compactMap { row in
+        // A padded single LCD line (glass above/below, maybe beside) can
+        // register extra bands and collapse the read (#651). Treat short wide
+        // crops as one line: no row split, no band-pitch copy.
+        let singleLine = buffer.height < 160 && buffer.width * 4 > buffer.height * 5
+        let rows = readRows(
+            in: buffer,
+            splittingRows: !singleLine,
+            allowBandPitch: !singleLine
+        )
+        let chosen: [[Cell]]
+        if singleLine, rows.count > 1 {
+            chosen = [rows.max(by: { left, right in
+                digitWeight(left) < digitWeight(right)
+            }) ?? []]
+        } else {
+            chosen = rows
+        }
+        return chosen.compactMap { row in
             let texts = recognizedGroups(row, width: buffer.width, height: buffer.height)
             return texts.isEmpty ? nil : texts
         }
+    }
+
+    /// Prefer the row with the most digit ink when a line crop spuriously
+    /// splits (#651).
+    private static func digitWeight(_ row: [Cell]) -> Int {
+        row.reduce(0) { score, cell in
+            guard cell.character.isNumber, cell.height > 0 else { return score }
+            return score + cell.height * max(1, cell.box.width)
+        }
+    }
+
+    /// Drop solid chrome that a padded line crop pulled in from the panel
+    /// bezel (#651). Only short wide strips — a full panel keeps its bezel
+    /// for sealed-glass localization. Side columns need a stricter dark
+    /// fraction than rows: digit stems at a tight crop edge are dark but
+    /// not solid chrome (a looser side trim previously read `32.86`).
+    func trimmingEdgeBezel() -> GrayBuffer {
+        guard height > 0, width > 0, height < 160, width * 4 > height * 5 else {
+            return self
+        }
+        func isBezelRow(_ y: Int) -> Bool {
+            var dark = 0
+            for x in 0..<width where pixels[y * width + x] < 80 {
+                dark += 1
+            }
+            return dark * 4 > width * 3
+        }
+        func isBezelColumn(_ x: Int) -> Bool {
+            var dark = 0
+            for y in 0..<height where pixels[y * width + x] < 80 {
+                dark += 1
+            }
+            return dark * 10 >= height * 9
+        }
+        var top = 0
+        while top < height - 8, isBezelRow(top) {
+            top += 1
+        }
+        var bottom = height
+        while bottom > top + 8, isBezelRow(bottom - 1) {
+            bottom -= 1
+        }
+        var left = 0
+        while left < width - 8, isBezelColumn(left) {
+            left += 1
+        }
+        var right = width
+        while right > left + 8, isBezelColumn(right - 1) {
+            right -= 1
+        }
+        if top == 0, bottom == height, left == 0, right == width {
+            return self
+        }
+        return cropped(x0: left, y0: top, x1: right, y1: bottom)
+    }
+
+    /// Peel empty side glass (tight — side pad invents stems) and crop to
+    /// the densest vertical ink band with a glass margin (#651 / #641).
+    /// Row-gap noise from both-vertical pad is too dark for a plain glass
+    /// peel but too weak to win the densest-band pick.
+    func tightenedToDigitLine(marginX: Int, marginY: Int) -> GrayBuffer {
+        guard height > 0, width > 0, height < 160, width * 4 > height * 5 else {
+            return self
+        }
+        func columnDark(_ x: Int) -> Int {
+            var dark = 0
+            for y in 0..<height where pixels[y * width + x] < 80 {
+                dark += 1
+            }
+            return dark
+        }
+        func rowDark(_ y: Int) -> Int {
+            var dark = 0
+            for x in 0..<width where pixels[y * width + x] < 80 {
+                dark += 1
+            }
+            return dark
+        }
+        let emptyColumn = max(1, height / 16)
+        var glassLeft = 0
+        while glassLeft < width - 8, columnDark(glassLeft) <= emptyColumn {
+            glassLeft += 1
+        }
+        var glassRight = 0
+        while glassRight < width - 8, columnDark(width - 1 - glassRight) <= emptyColumn {
+            glassRight += 1
+        }
+        let x0 = max(0, glassLeft - marginX)
+        let x1 = min(width, width - glassRight + marginX)
+        let rowInk = (0..<height).map(rowDark)
+        let peak = rowInk.max() ?? 0
+        let floor = max(max(1, width / 20) * 2, peak / 10)
+        var bestStart = 0
+        var bestEnd = height
+        var bestInk = -1
+        var cursor = 0
+        while cursor < height {
+            while cursor < height, rowInk[cursor] < floor {
+                cursor += 1
+            }
+            guard cursor < height else { break }
+            let start = cursor
+            var ink = 0
+            while cursor < height, rowInk[cursor] >= floor {
+                ink += rowInk[cursor]
+                cursor += 1
+            }
+            if ink > bestInk {
+                bestInk = ink
+                bestStart = start
+                bestEnd = cursor
+            }
+        }
+        guard bestInk >= 0 else { return self }
+        let y0 = max(0, bestStart - marginY)
+        let y1 = min(height, bestEnd + marginY)
+        if x0 == 0, y0 == 0, x1 == width, y1 == height {
+            return self
+        }
+        guard x1 - x0 > 8, y1 - y0 > 8 else { return self }
+        return cropped(x0: x0, y0: y0, x1: x1, y1: y1)
     }
 
     /// A panel crop, or nil when the rect is tiny, nearly the whole frame, or empty.
