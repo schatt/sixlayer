@@ -250,10 +250,11 @@ private final class NativeTextControlMarkerView: UIView {
                     object: nil,
                     queue: .main
                 ) { [weak self] note in
+                    let object = note.object
                     Task { @MainActor in
                         guard let self else { return }
                         TextFieldBeginEditingSelection.handleBeginEditing(
-                            note.object,
+                            object,
                             marker: self,
                             shouldSelect: self.shouldSelect
                         )
@@ -321,10 +322,11 @@ private final class NativeTextControlMarkerView: NSView {
                     object: nil,
                     queue: .main
                 ) { [weak self] note in
+                    let object = note.object
                     Task { @MainActor in
                         guard let self else { return }
                         TextFieldBeginEditingSelection.handleBeginEditing(
-                            note.object,
+                            object,
                             marker: self,
                             shouldSelect: self.shouldSelect
                         )
