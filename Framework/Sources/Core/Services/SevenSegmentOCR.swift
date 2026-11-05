@@ -613,8 +613,11 @@ private struct GrayBuffer {
         if box.height * 100 < digitHeight * 70, coverage(mask, box: frame, width: width) > solidCoverage {
             return nil
         }
-        // A reflection beside the digits is wider than a glyph. A digit is taller than it is wide.
-        if box.height * 100 >= digitHeight * 50, box.width * 5 > box.height * 4 {
+        // A reflection beside the digits is wider than a glyph. Compare to the
+        // band's digit height — not the ink-tight box height. Digits that omit
+        // top/bottom bars (especially 4) shrink vertically and otherwise trip
+        // this as a "wide" reflection (#647).
+        if box.height * 100 >= digitHeight * 50, box.width * 5 > digitHeight * 4 {
             return nil
         }
         let sampledBox = box.height * 100 < digitHeight * 70 ? frame : box
