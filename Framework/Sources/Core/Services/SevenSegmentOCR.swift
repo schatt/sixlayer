@@ -3148,12 +3148,15 @@ private func densestInkBand(
     var end = height
     // A top bar spans the interior, not the full cell. A glare cap fills it.
     let solid = max(2, box.width * 9 / 10)
-    while start < height - 3 && sums[start] >= solid {
+    // A pitch row's real a/d bars span ~90% of the glyph box too. Peeling
+    // them as "glare caps" turned row-two 5/6/7 into 4/4/1. Only the
+    // price-like path (aspect-capped above) peels caps.
+    while !forceDigitTall && start < height - 3 && sums[start] >= solid {
         start += 1
     }
     // A stem fills the box. A glare cap is a minority of the height.
     if start * 2 > height { start = 0 }
-    while end - start > 3 && sums[end - 1] >= solid {
+    while !forceDigitTall && end - start > 3 && sums[end - 1] >= solid {
         end -= 1
     }
     if (height - end) * 2 > height { end = height }
