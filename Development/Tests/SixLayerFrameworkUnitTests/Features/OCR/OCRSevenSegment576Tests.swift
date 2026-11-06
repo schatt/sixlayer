@@ -80,6 +80,17 @@ struct OCRSevenSegment576Tests {
         #expect(decode(panel(["11", "22", "33", "44"])).extractedText == "11\n22\n33\n44")
     }
 
+    /// The second row copies the first row's pitch. That path dropped a
+    /// leading 1 with its decimal (15.556 read 5.556). 5.022 and 56.78 guard
+    /// the a/d bar peel (bb4789618), which this fixture's bars do not reach.
+    /// Not yet covered: a first row with only 7/3/1 under-measures the pitch
+    /// and clips row-two left stems (7.73/1.840 reads 7.73/1.947).
+    @Test func secondRowKeepsDigitsTheFirstRowDoesNotShare() {
+        #expect(decode(panel(["32.88", "5.022"])).extractedText == "32.88\n5.022")
+        #expect(decode(panel(["56.92", "15.556"])).extractedText == "56.92\n15.556")
+        #expect(decode(panel(["12.34", "56.78"])).extractedText == "12.34\n56.78")
+    }
+
     @Test func tallCropReadsEachRowAtItsOwnWindow() {
         // Empty margin makes the threshold window wide enough to see a bright
         // line just above each row. The glass under that line is then darker
