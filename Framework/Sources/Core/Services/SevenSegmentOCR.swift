@@ -437,14 +437,10 @@ private struct GrayBuffer {
             }
             return cell
         }
-        // A copied price pitch means real ones are rare on these pump rows.
-        // Thin stem columns left of the digit field read as 1 and must not
-        // prefix the volume fragment (photo leading 111).
-        guard let pitch = preferredPitch else { return classified }
-        return classified.filter { cell in
-            if cell.character == "1", cell.box.width * 3 < pitch.body { return false }
-            return true
-        }
+        // A real one is a single stem, always under a third of the copied
+        // body width. Dropping those deleted the leading 1 of 15.556 and
+        // 1.840 (both real pump volumes). Junk is rejected in classify.
+        return classified
     }
 
     /// A washed decimal shares its columns with the digit beside it, so the
