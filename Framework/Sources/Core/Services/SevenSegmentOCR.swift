@@ -133,6 +133,7 @@ public enum SevenSegmentOCR {
         guard var gray = GrayBuffer.read(cgImage) else {
             return OCRResult(extractedText: "", confidence: 0)
         }
+        let frame = gray
         if localizeDigitPanel {
             let modelRegion = panelLocator?.panelRegion(in: cgImage)
             if let modelRegion, let cropped = gray.panelCrop(modelRegion) {
@@ -152,15 +153,43 @@ public enum SevenSegmentOCR {
         // Photographed panels: italic digits, segment gaps, reflections and
         // uneven light defeat the fixed-pixel path above. The lattice reader
         // measures everything from the panel itself (#576 real photos).
-        let rows = SevenSegmentLatticeReader.read(pixels: gray.pixels, width: gray.width, height: gray.height)
-        let lattice = result(rows.map { [latticeFragment($0, width: gray.width, height: gray.height)] })
-        // Keep the legacy read when it is plausible and the lattice read is
-        // not clearly better: legacy carries group spacing, commas, colons
-        // and unknown-cell placeholders. Quality counts real glyphs: photo
-        // garbage from the legacy path is mostly "1", "_" and stray marks.
+        var rows = SevenSegmentLatticeReader.readRefined(pixels: gray.pixels, width: gray.width, height: gray.height)
+        var lattice = result(rows.map { [latticeFragment($0, width: gray.width, height: gray.height)] })
+        // The panel finder above can pick the wrong region of a real photo
+        // (a payment screen, an ad). When the crop does not read cleanly,
+        // search the whole frame for the region that reads best. Those
+        // boxes are normalized to the whole image.
+        if localizeDigitPanel, !SevenSegmentLatticeReader.isConfident(rows) {
+            let located = SevenSegmentLatticeReader.locateAndRead(
+                pixels: frame.pixels, width: frame.width, height: frame.height
+            )
+            if SevenSegmentLatticeReader.rank(located) > SevenSegmentLatticeReader.rank(rows) {
+                rows = located
+                lattice = result(located.map { [latticeFragment($0, width: frame.width, height: frame.height)] })
+            }
+        }
+        // Legacy carries group spacing, commas, colons and unknown-cell
+        // placeholders, so it stays when it is believable. Its photo output
+        // is mostly "1", "_" and stray marks, sometimes at confidence 1.0, so
+        // a confident lattice read needs a richer legacy read to lose.
+        if SevenSegmentLatticeReader.isConfident(rows) {
+            if isPlausible(fragments) {
+                return quality(legacy) >= quality(lattice) ? legacy : lattice
+            }
+            let trusted = fragments.flatMap { $0 }.filter { fragment in
+                fragment.confidence >= 6.0 / 7.0 && isPlausible([[fragment]])
+            }
+            let trustedChars = trusted.reduce(0) { $0 + $1.text.count }
+            let allChars = fragments.flatMap { $0 }.reduce(0) { $0 + $1.text.count }
+            let trustedDigits = trusted.reduce(0) { $0 + $1.text.filter(\.isNumber).count }
+            let latticeDigits = rows.flatMap { $0 }.filter { $0.character.isNumber }.count
+            if trustedChars * 2 >= allChars, trustedDigits >= latticeDigits {
+                return legacy
+            }
+            return lattice
+        }
         if isPlausible(fragments) {
-            let better = SevenSegmentLatticeReader.isConfident(rows) && quality(lattice) > quality(legacy)
-            return better ? lattice : legacy
+            return legacy
         }
         if !rows.isEmpty, quality(lattice) >= quality(legacy) {
             return lattice
