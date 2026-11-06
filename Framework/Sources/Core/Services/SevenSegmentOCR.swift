@@ -2059,7 +2059,10 @@ private func windowRadius(width: Int, height: Int) -> Int {
     let shortSide = min(width, height)
     let grown = min(36, max(4, (shortSide - 96) / 24))
     // Nearly square and large → dense multi-row panel (not a wide rowcrop).
-    let isWideRow = width > height + height / 2
+    // Require width > 2×height so landscape *two-row* panels (paddedCanvas
+    // ~432×248) keep `grown` — the old 1.5× cut treated them as rowcrops and
+    // floored the window into garbage (#659 reopen).
+    let isWideRow = width > height * 2
     if shortSide > 600, !isWideRow {
         return min(7, grown)
     }
