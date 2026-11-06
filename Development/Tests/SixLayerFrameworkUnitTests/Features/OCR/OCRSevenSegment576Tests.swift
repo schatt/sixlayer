@@ -91,6 +91,19 @@ struct OCRSevenSegment576Tests {
         #expect(decode(panel(["12.34", "56.78"])).extractedText == "12.34\n56.78")
     }
 
+    /// Live Photo frames: each row is voted across the reads (#600).
+    @Test func liveFramesVoteEachRow() {
+        let good = panel(["31.25", "7.623"])
+        let glared = panel(["37.25", "7.623"])
+        let result = SevenSegmentOCR.decode(
+            frames: [good, glared, good],
+            keyFrame: good,
+            localizeDigitPanel: false
+        )
+        #expect(result.extractedText == "31.25\n7.623")
+        #expect(result.confidence >= 0.79 && result.confidence <= 0.81)
+    }
+
     @Test func tallCropReadsEachRowAtItsOwnWindow() {
         // Empty margin makes the threshold window wide enough to see a bright
         // line just above each row. The glass under that line is then darker
