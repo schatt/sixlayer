@@ -648,6 +648,8 @@ private struct GrayBuffer {
         // scans light false `f` on that fringe (pat 123 → 2/8 tie). Gate the
         // tighter stem sample on preferredPitch so clean price rows stay put.
         let washAwareStems = preferredPitch != nil
+        let markBaseline = Self.baseline(of: tall, mask: mask, width: buffer.width, digitWidth: digitWidth)
+            ?? (baseline, false)
         let classified = capped.compactMap { box -> Cell? in
             let cell = classify(
                 box,
@@ -656,6 +658,7 @@ private struct GrayBuffer {
                 digitHeight: digitHeight,
                 digitWidth: digitWidth,
                 baseline: baseline,
+                markBaseline: markBaseline,
                 frameTop: frameTop,
                 bandIndex: bandIndex,
                 buffer: buffer,
@@ -769,7 +772,9 @@ private struct GrayBuffer {
         bandIndex: Int
     ) -> [Cell] {
         let digitHeight = median(existing.map(\.height)) ?? max(1, band.1 - band.0)
-        let baseline = median(existing.map(\.maxY)) ?? band.1
+        let barredDigits = existing.filter { "0235689".contains($0.character) }
+        let barredBaseline = !barredDigits.isEmpty
+        let baseline = median((barredBaseline ? barredDigits : existing).map(\.maxY)) ?? band.1
         let minimum = max(1, digitHeight / 20)
         let expanded = (max(0, band.0 - digitHeight / 2), min(buffer.height, band.1 + digitHeight / 2))
         let columns = columnRuns(secondary, y0: expanded.0, y1: expanded.1, width: buffer.width)
@@ -780,20 +785,50 @@ private struct GrayBuffer {
             if existing.contains(where: { overlap($0.box, box) > 0 }) { return nil }
             return Cell(
                 box: box,
-                character: markCharacter(box: box, baseline: baseline, digitHeight: digitHeight),
+                character: markCharacter(box: box, baseline: baseline, barredBaseline: barredBaseline),
                 confidence: 1,
                 band: bandIndex
             )
         }
     }
 
-    /// Period = square baseline dot; comma = hanging tail (taller than wide).
-    /// Hang alone is insufficient: 1/4/7 omit the bottom bar and pull the
-    /// median baseline up, so a true period looks "low" (#647 / #658).
-    private static func markCharacter(box: PixelBox, baseline: Int, digitHeight: Int) -> Character {
-        let hangs = box.maxY > baseline + max(2, digitHeight / 12)
-        let tallTail = box.height > box.width
-        return hangs && tallTail ? "," : "."
+    /// Period = a dot sitting on the baseline; comma = a mark that reaches
+    /// below it. The mark's own width (about one stroke) is the yardstick, so
+    /// the rule scales with the photo: reaching below the baseline by more
+    /// than a quarter of that width is more than edge blur.
+    ///
+    /// `barredBaseline` says the baseline came from digits with a bottom bar.
+    /// Without one (a row of 1s, 4s and 7s), the stems end above the true
+    /// baseline and a period looks low (#647 / #658), so the mark must also
+    /// be taller than wide: a period is square, a comma is not.
+    private static func markCharacter(box: PixelBox, baseline: Int, barredBaseline: Bool) -> Character {
+        let reachesBelow = (box.maxY - baseline) * 4 > box.width
+        guard reachesBelow else { return "." }
+        return barredBaseline || box.height > box.width ? "," : "."
+    }
+
+    /// Median bottom of the boxes whose lowest ink row is a bar, and whether
+    /// any were found. In 1, 4 and 7 the lowest ink is a stem, narrower than
+    /// half a digit; their bottoms sit above the bar of 0, 2, 3, 5, 6, 8, 9.
+    private static func baseline(
+        of boxes: [PixelBox],
+        mask: Mask,
+        width: Int,
+        digitWidth: Int
+    ) -> (Int, Bool)? {
+        let barred = boxes.filter { box in
+            let y = box.maxY - 1
+            guard y >= 0, y < mask.height, box.maxX > box.minX else { return false }
+            var longest = 0
+            var run = 0
+            for x in max(0, box.minX)..<min(width, box.maxX) {
+                run = mask.bits[y * width + x] ? run + 1 : 0
+                longest = max(longest, run)
+            }
+            return longest * 2 >= digitWidth
+        }
+        if let bottom = median(barred.map(\.maxY)) { return (bottom, true) }
+        return median(boxes.map(\.maxY)).map { ($0, false) }
     }
 
     private static func classify(
@@ -803,6 +838,7 @@ private struct GrayBuffer {
         digitHeight: Int,
         digitWidth: Int,
         baseline: Int,
+        markBaseline: (Int, Bool),
         frameTop: Int,
         bandIndex: Int,
         buffer: GrayBuffer,
@@ -847,6 +883,7 @@ private struct GrayBuffer {
                     digitHeight: digitHeight,
                     digitWidth: digitWidth,
                     baseline: baseline,
+                    markBaseline: markBaseline,
                     frameTop: frameTop,
                     bandIndex: bandIndex,
                     buffer: buffer,
@@ -871,7 +908,7 @@ private struct GrayBuffer {
             guard markIsInk(mask, box: box, width: width, buffer: buffer, darkInk: darkInk) else { return nil }
             return Cell(
                 box: box,
-                character: markCharacter(box: box, baseline: baseline, digitHeight: digitHeight),
+                character: markCharacter(box: box, baseline: markBaseline.0, barredBaseline: markBaseline.1),
                 confidence: 1,
                 band: bandIndex
             )
