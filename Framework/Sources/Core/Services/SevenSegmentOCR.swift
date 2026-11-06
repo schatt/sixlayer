@@ -1392,8 +1392,26 @@ private extension GrayBuffer {
             }
         }
         guard bestInk >= 0 else { return self }
+        // Comma tails hang a stroke below the digit line. marginY 4 is what
+        // #651 needs for padded top lines, but it shears those tails off so
+        // markCharacter only sees a square period (#661). Reach a short
+        // distance for sparse mark ink, then stop at the first empty row.
+        let hangFloor = max(1, floor / 8)
+        let hangLimit = min(height, bestEnd + max(marginY * 4, (bestEnd - bestStart) / 5))
+        var hangEnd = bestEnd
+        var y = bestEnd
+        while y < hangLimit {
+            if rowInk[y] >= hangFloor {
+                hangEnd = y + 1
+                y += 1
+            } else if hangEnd > bestEnd {
+                break
+            } else {
+                y += 1
+            }
+        }
         let y0 = max(0, bestStart - marginY)
-        let y1 = min(height, bestEnd + marginY)
+        let y1 = min(height, max(bestEnd + marginY, hangEnd))
         if x0 == 0, y0 == 0, x1 == width, y1 == height {
             return self
         }
