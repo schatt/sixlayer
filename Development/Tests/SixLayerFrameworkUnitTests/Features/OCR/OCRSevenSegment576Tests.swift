@@ -414,15 +414,15 @@ struct OCRSevenSegment576Tests {
         #expect(decode(SegmentPanel.render(rows: rows, glare: true)).extractedText == "12:30")
     }
 
-    /// #664: wash the lower half of the digit band to 176 (≥80). The hard
-    /// <80 peel then sees only the upper stub — tall enough that the #660
-    /// band-height guard still peels — and drops lower segments. Adaptive
-    /// darkness must count the washed strokes so the densest band stays
-    /// digit-tall.
+    /// #664: wash the lower half of the digit band to 140 (≥80, but still
+    /// contrasty enough for masks vs glass 214). The hard <80 peel then sees
+    /// only the upper stub — tall enough that the #660 band-height guard
+    /// still peels — and drops lower segments. Adaptive darkness must count
+    /// the washed strokes so the densest band stays digit-tall.
     @Test func washedLowerHalfStillPeelsFullDigits() {
         let rows = [atoms("31.25")]
         let base = SegmentPanel.render(rows: rows, padding: 20)
-        let washed = washLowerDigitHalf(base, inkWash: 176)
+        let washed = washLowerDigitHalf(base, inkWash: 140)
         #expect(decode(washed, maximum: 0).extractedText == "31.25")
     }
 
