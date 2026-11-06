@@ -2458,7 +2458,10 @@ private func polarity(
     let coreBands = coreRuns.filter { $0.1 - $0.0 >= digitFloor }
     let coreGap = zip(coreBands, coreBands.dropFirst()).map { $1.0 - $0.1 }.max() ?? 0
     let shortestCore = coreBands.map { $0.1 - $0.0 }.min() ?? 0
-    let realRowGap = coreBands.count >= 2 && coreGap * 4 >= shortestCore
+    // Gap at least a quarter of the shorter digit-tall band (mid-glyph
+    // valleys are much smaller).
+    let minGapVsBand = 4
+    let realRowGap = coreBands.count >= 2 && coreGap * minGapVsBand >= shortestCore
     // forceOpen: opposite polarity false-opened on glass (#598). Still require
     // a real inter-row core gap — skipping it opens single-row multi-group
     // panels, digitColumnSpan keeps one group (gapLimit << groupGap), and
