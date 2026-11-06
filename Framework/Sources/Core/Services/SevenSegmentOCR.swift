@@ -3818,12 +3818,15 @@ private struct Reader {
         }
         let t = tan(degrees * .pi / 180)
         let pad = Int(abs(t) * Double(mask.height)) + 2
+        // Positive slant moves upper rows left (toward -t*h); negative slant
+        // moves them right. Only the first needs a left margin.
+        let shift = t > 0 ? pad : 0
         shearTangent = t
-        shearPad = pad
+        shearPad = shift
         var out = BitMask(width: mask.width + pad, height: mask.height)
         for y in 0..<mask.height {
             for x in 0..<mask.width where mask[x, y] {
-                let shifted = Int((Double(x) + Double(y - mask.height) * t).rounded()) + pad
+                let shifted = Int((Double(x) + Double(y - mask.height) * t).rounded()) + shift
                 if shifted >= 0, shifted < out.width { out[shifted, y] = true }
             }
         }
