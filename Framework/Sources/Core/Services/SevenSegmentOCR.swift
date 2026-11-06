@@ -1033,14 +1033,14 @@ private struct GrayBuffer {
         var pattern = SevenSegmentPattern()
         let midX = box.minX + boxWidth / 2
         let third = max(1, boxHeight / 3)
-        if segmentIsLit(mask, x: midX, y: box.minY, length: third, vertical: true) {
+        if segmentIsLit(mask, x: midX, y: box.minY, length: third, vertical: true, sampleBand: sampleBand) {
             pattern.formUnion(.a)
         }
-        if segmentIsLit(mask, x: midX, y: box.minY + third, length: third, vertical: true) {
+        if segmentIsLit(mask, x: midX, y: box.minY + third, length: third, vertical: true, sampleBand: sampleBand) {
             pattern.formUnion(.g)
         }
         let lower = box.minY + third * 2
-        if segmentIsLit(mask, x: midX, y: lower, length: max(1, box.maxY - lower), vertical: true) {
+        if segmentIsLit(mask, x: midX, y: lower, length: max(1, box.maxY - lower), vertical: true, sampleBand: sampleBand) {
             pattern.formUnion(.d)
         }
         let quarter = box.minY + boxHeight / 4
@@ -1049,16 +1049,16 @@ private struct GrayBuffer {
         let right = max(1, box.maxX - (midX + 1))
         // Right stems first so wash-aware `f` can see whether `c` is present
         // (8-candidates keep f; 2-like glyphs drop wash f).
-        if segmentIsLit(mask, x: midX + 1, y: quarter, length: right, vertical: false) {
+        if segmentIsLit(mask, x: midX + 1, y: quarter, length: right, vertical: false, sampleBand: sampleBand) {
             pattern.formUnion(.b)
         }
-        if segmentIsLit(mask, x: midX + 1, y: threeQuarters, length: right, vertical: false) {
+        if segmentIsLit(mask, x: midX + 1, y: threeQuarters, length: right, vertical: false, sampleBand: sampleBand) {
             pattern.formUnion(.c)
         }
         let eFringe = washAwareStems ? max(1, boxWidth / 6) : 0
         let eLength = max(1, half - eFringe)
         let eRun = longestForegroundRun(
-            mask, x: box.minX + eFringe, y: threeQuarters, length: eLength, vertical: false
+            mask, x: box.minX + eFringe, y: threeQuarters, length: eLength, vertical: false, sampleBand: sampleBand
         )
         // The fringe starts inside a real stem. The tail past it can be a
         // single pixel; requiring two turned a washed 8 into a 9. The fringe
@@ -1073,7 +1073,7 @@ private struct GrayBuffer {
         // `c` is dark, require stem-zone ink, reject fringe-dominated wash,
         // and drop f if the remainder is an exact digit.
         if !washAwareStems || pattern.contains(.c) {
-            if segmentIsLit(mask, x: box.minX, y: quarter, length: half, vertical: false) {
+            if segmentIsLit(mask, x: box.minX, y: quarter, length: half, vertical: false, sampleBand: sampleBand) {
                 pattern.formUnion(.f)
             }
         } else {
@@ -1083,7 +1083,7 @@ private struct GrayBuffer {
             let washDominated = fEdge >= fStem && fEdge * 2 >= fFringe
             let fLength = max(1, half - fFringe)
             let fRun = longestForegroundRun(
-                mask, x: box.minX + fFringe, y: quarter, length: fLength, vertical: false
+                mask, x: box.minX + fFringe, y: quarter, length: fLength, vertical: false, sampleBand: sampleBand
             )
             if fRun >= 1, !washDominated {
                 pattern.formUnion(.f)
@@ -4039,19 +4039,37 @@ private func segmentIsLit(
     x: Int,
     y: Int,
     length: Int,
-    vertical: Bool
+    vertical: Bool,
+    sampleBand: Int = 0
 ) -> Bool {
-    let run = longestForegroundRun(mask, x: x, y: y, length: length, vertical: vertical)
+    let run = longestForegroundRun(
+        mask, x: x, y: y, length: length, vertical: vertical, sampleBand: sampleBand
+    )
     return run >= 2
 }
 
+/// Longest consecutive run on the scanline. With `sampleBand`, the longest
+/// on any parallel line up to that many pixels either side, so a stroke
+/// broken on the scanline itself still counts.
 private func longestForegroundRun(
     _ mask: Mask,
     x: Int,
     y: Int,
     length: Int,
-    vertical: Bool
+    vertical: Bool,
+    sampleBand: Int = 0
 ) -> Int {
+    if sampleBand > 0 {
+        return (-sampleBand...sampleBand).map { offset in
+            longestForegroundRun(
+                mask,
+                x: vertical ? x + offset : x,
+                y: vertical ? y : y + offset,
+                length: length,
+                vertical: vertical
+            )
+        }.max() ?? 0
+    }
     guard length > 0 else { return 0 }
     var best = 0
     var current = 0
