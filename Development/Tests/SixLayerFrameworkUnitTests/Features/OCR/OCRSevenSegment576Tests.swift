@@ -234,7 +234,6 @@ struct OCRSevenSegment576Tests {
         #expect(decode(panel(["-12.5"])).extractedText == "-12.5")
         #expect(decode(panel(["12:30"])).extractedText == "12:30")
         let held = decode(panel(["8_2"]))
-        Issue.record("held=\(held.extractedText) cells=\(SevenSegmentOCR.lastFragmentCellSummary ?? "?")")
         #expect(held.extractedText == "8_2")
         #expect(segmentTexts(held) == ["8_2"])
     }
