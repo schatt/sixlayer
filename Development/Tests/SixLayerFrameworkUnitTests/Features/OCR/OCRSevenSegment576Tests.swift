@@ -273,12 +273,21 @@ struct OCRSevenSegment576Tests {
         #expect(result.extractedText.contains("17.740"))
     }
 
+    @Test func cleanPriceVolumeRowKeepsThePeriod() {
+        // Fill-free twin of the filledInk row: period must not become a comma (#658).
+        var row = atoms("51.07")
+        row.append(.gap(SegmentPanel.groupGap))
+        row.append(contentsOf: atoms("17.740"))
+        let result = decode(SegmentPanel.render(rows: [row]))
+        #expect(result.extractedText == "51.07  17.740")
+        #expect(segmentTexts(result) == ["51.07", "17.740"])
+    }
+
     @Test func filledInkBesideCleanRowsDoesNotCreateASegment() {
         var clean = atoms("51.07")
         clean.append(.gap(SegmentPanel.groupGap))
         clean.append(contentsOf: atoms("17.740"))
-        // Control: without fills the price must stay one fragment (#646).
-        // Volume mark can still mis-read as comma on this short canvas (#658).
+        // Price glue without fills (#646). Full clean period is `cleanPriceVolumeRowKeepsThePeriod` (#658).
         #expect(segmentTexts(decode(SegmentPanel.render(rows: [clean]))).first == "51.07")
 
         var row = clean
