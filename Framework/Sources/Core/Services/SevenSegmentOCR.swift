@@ -101,6 +101,9 @@ public enum SevenSegmentOCR {
     /// Long edge of the buffer that `decode` last ran `masks` on. Test probe (#654).
     nonisolated(unsafe) public static var lastDecodeAnalysisLongEdge: Int?
 
+    /// Last fragment cell summary for short-panel diagnosis (#661).
+    nonisolated(unsafe) public static var lastFragmentCellSummary: String?
+
     /// Pixel rect of the digit panel (glass plus a bezel margin) in image
     /// coordinates, or `nil` when no sealed panel is found.
     ///
@@ -1278,7 +1281,8 @@ private extension GrayBuffer {
             let summary = chosen.map { row in
                 row.map { "\($0.character):\($0.box.width)x\($0.box.height)@\($0.minX)" }.joined(separator: ",")
             }.joined(separator: " || ")
-            trace("frag #661 \(buffer.width)x\(buffer.height) single=\(singleLine) rows=\(rows.count) [\(summary)]\n")
+            SevenSegmentOCR.lastFragmentCellSummary =
+                "\(buffer.width)x\(buffer.height) single=\(singleLine) rows=\(rows.count) [\(summary)]"
         }
         return chosen.compactMap { row in
             let texts = recognizedGroups(row, width: buffer.width, height: buffer.height)
