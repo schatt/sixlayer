@@ -278,12 +278,15 @@ struct OCRSevenSegment576Tests {
         clean.append(.gap(SegmentPanel.groupGap))
         clean.append(contentsOf: atoms("17.740"))
         // Control: without fills, price stays glued and volume keeps its period (#646 / #658).
-        #expect(decode(SegmentPanel.render(rows: [clean])).extractedText == "51.07  17.740")
+        let cleanResult = decode(SegmentPanel.render(rows: [clean]))
+        print("658-clean \(String(reflecting: cleanResult.extractedText))")
+        #expect(cleanResult.extractedText == "51.07  17.740")
 
         var row = clean
         row.append(.gap(SegmentPanel.groupGap))
         row.append(.fill(width: 70, height: 70))
         let result = decode(SegmentPanel.render(rows: [row, [.fill(width: 160, height: 28)]]))
+        print("658-filled \(String(reflecting: result.extractedText)) segs=\(segmentTexts(result))")
         #expect(result.extractedText == "51.07  17.740")
         #expect(segmentTexts(result) == ["51.07", "17.740"])
         #expect(result.confidence == 1)
