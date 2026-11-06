@@ -1614,16 +1614,10 @@ private extension GrayBuffer {
         let raw = buffer.masks()
         // A frame inside the crop seals the glass. Ink outside that glass is the bezel.
         let sealed = (dark: keepingInteriorInk(raw.dark), light: keepingInteriorInk(raw.light))
-        // Short-wide line peels put digit stems on the crop edge (#651). Border
-        // clear then eats a bridged leading 8 (alone `8_2` → `_2`) (#661).
-        let lineCrop = buffer.height < 160 && buffer.width * 4 > buffer.height * 5
-        let masks = lineCrop
-            ? sealed
-            : (dark: clearingBorderComponents(sealed.dark), light: clearingBorderComponents(sealed.light))
+        // A dark bezel that does touch the crop edge would outline the glass as one zero.
+        let masks = (dark: clearingBorderComponents(sealed.dark), light: clearingBorderComponents(sealed.light))
         let sealedCore = (dark: keepingInteriorInk(raw.darkCore), light: keepingInteriorInk(raw.lightCore))
-        let cores = lineCrop
-            ? sealedCore
-            : (dark: clearingBorderComponents(sealedCore.dark), light: clearingBorderComponents(sealedCore.light))
+        let cores = (dark: clearingBorderComponents(sealedCore.dark), light: clearingBorderComponents(sealedCore.light))
         let darkPreferred = prefersDark(masks.dark, masks.light)
         let darkChoice = polarity(isDark: true, loose: masks.dark, core: cores.dark)
         let lightChoice = polarity(isDark: false, loose: masks.light, core: cores.light)
@@ -2086,11 +2080,17 @@ private func clearingBorderComponents(_ mask: Mask) -> Mask {
         // stroke that runs inward past it.
         guard boxW * 2 > width, boxH * 2 > height else { return }
         let thickness = frameThickness(queue, width: width, height: height)
+        // Short-wide peels put digit stems on the crop edge. A bridged digit
+        // field then looks "frame-sized" but its inward depth is a glyph, not
+        // a thin bezel — clearing it drops a leading 8 (alone `8_2` → `_2`)
+        // (#661). Only strip a shallow rim.
+        let maxRim = max(2, min(boxW, boxH) / 8)
+        let rim = min(thickness, maxRim)
         for index in queue {
             let x = index % width
             let y = index / width
             let distance = min(x, y, width - 1 - x, height - 1 - y)
-            if distance < thickness {
+            if distance < rim {
                 bits[index] = false
             }
         }
