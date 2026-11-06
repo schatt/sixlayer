@@ -1694,8 +1694,21 @@ private extension GrayBuffer {
             : (bandsForSplit.count > foundBands.count
                 ? bandsForSplit
                 : merge(bandsForSplit, whenGapBelow: max(1, cellHeight / 2)))
+        // Short-wide single-line crops already disable row windows, but a
+        // mid-row top-bar (alone `8_2`) still splits the band list. Reading
+        // each slice separately then letting digitWeight pick a winner drops
+        // the real digits and keeps a counter that looks like `0` (#661).
+        // Collapse to one band whenever we are not splitting rows.
+        let lineBands: [(Int, Int)]
+        if !splittingRows, splitBands.count > 1 {
+            let y0 = splitBands.map(\.0).min() ?? 0
+            let y1 = splitBands.map(\.1).max() ?? buffer.height
+            lineBands = y1 > y0 ? [(y0, y1)] : splitBands
+        } else {
+            lineBands = splitBands
+        }
         if buffer.width >= 1000 {
-            let listed = splitBands.map { "\($0.0)-\($0.1)" }.joined(separator: ",")
+            let listed = lineBands.map { "\($0.0)-\($0.1)" }.joined(separator: ",")
             trace("bands \(listed)\n")
         }
         // The window is sized from the whole crop. Two rows make it wide
@@ -1703,8 +1716,8 @@ private extension GrayBuffer {
         // crop of that row when that crop's window is actually narrower.
         // A window that fits inside a stroke drops the middle of the bar,
         // so a row that is already on the small window stays on this mask.
-        if splittingRows, splitBands.count > 1 {
-            let span = readingSpan(glyphs, bands: splitBands)
+        if splittingRows, lineBands.count > 1 {
+            let span = readingSpan(glyphs, bands: lineBands)
             let parentRadius = windowRadius(width: buffer.width, height: buffer.height)
             if buffer.width >= 1000 {
                 trace("span \(String(describing: span)) radius \(parentRadius)\n")
@@ -1722,7 +1735,7 @@ private extension GrayBuffer {
             // Approach D: once a price-like row yields digit boxes, copy that
             // pitch into later rowcrops (volume) so wash bridges still cut.
             var rowPitch = preferredPitch
-            for band in splitBands {
+            for band in lineBands {
                 let rawHeight = band.1 - band.0
                 let searchBand: (Int, Int)
                 if rawHeight + 16 > priceBandHeight {
@@ -1806,7 +1819,7 @@ private extension GrayBuffer {
             // and only on small panels (tallCrop/gapGlare fixtures are larger).
             if allowBandPitch, buffer.width < 350, buffer.height < 350 {
                 var bandPitch = preferredPitch
-                return splitBands.compactMap { band -> [Cell]? in
+                return lineBands.compactMap { band -> [Cell]? in
                     let found = cells(
                         in: band,
                         mask: glyphs,
@@ -1843,7 +1856,7 @@ private extension GrayBuffer {
                 }
             }
         }
-        return splitBands.compactMap { band -> [Cell]? in
+        return lineBands.compactMap { band -> [Cell]? in
             let found = cells(
                 in: band,
                 mask: glyphs,
