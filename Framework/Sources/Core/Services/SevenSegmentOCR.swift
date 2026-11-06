@@ -159,10 +159,23 @@ public enum SevenSegmentOCR {
     public static let digitPanelAnalysisMaxSide = 1600
 
     /// Long edge of the buffer that `digitPanelBounds` last analyzed. Test probe (#650).
-    nonisolated(unsafe) public static var lastDigitPanelAnalysisLongEdge: Int?
+    ///
+    /// Decodes can run at once (``decode(frames:keyFrame:deskewMaximumDegrees:localizeDigitPanel:)``),
+    /// so the probe is locked; after concurrent decodes it holds one of their values.
+    public static var lastDigitPanelAnalysisLongEdge: Int? {
+        get { digitPanelLongEdgeProbe.value }
+        set { digitPanelLongEdgeProbe.value = newValue }
+    }
 
     /// Long edge of the buffer that `decode` last ran `masks` on. Test probe (#654).
-    nonisolated(unsafe) public static var lastDecodeAnalysisLongEdge: Int?
+    /// Locked like ``lastDigitPanelAnalysisLongEdge``.
+    public static var lastDecodeAnalysisLongEdge: Int? {
+        get { decodeLongEdgeProbe.value }
+        set { decodeLongEdgeProbe.value = newValue }
+    }
+
+    private static let digitPanelLongEdgeProbe = LockedProbe()
+    private static let decodeLongEdgeProbe = LockedProbe()
 
     /// Pixel rect of the digit panel (glass plus a bezel margin) in the source
     /// image's coordinates, or `nil` when no sealed panel is found.
@@ -5336,5 +5349,24 @@ private final class FrameReads: @unchecked Sendable {
         lock.lock()
         stored[index] = result
         lock.unlock()
+    }
+}
+
+/// A test probe value that concurrent decodes may write.
+private final class LockedProbe: @unchecked Sendable {
+    private var stored: Int?
+    private let lock = NSLock()
+
+    var value: Int? {
+        get {
+            lock.lock()
+            defer { lock.unlock() }
+            return stored
+        }
+        set {
+            lock.lock()
+            stored = newValue
+            lock.unlock()
+        }
     }
 }
