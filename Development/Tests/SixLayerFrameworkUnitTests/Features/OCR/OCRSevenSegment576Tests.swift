@@ -1117,9 +1117,9 @@ struct OCRSevenSegment576Tests {
         #expect((band?.exactDigitCount ?? 0) > (scan?.exactDigitCount ?? 0))
     }
 
-    /// Scenario-1 pump photo in the private fixtures submodule
+    /// Scenario-1 pump photo from the private fixtures repo
     /// (`Development/TestFixtures/private`, schatt/sixlayer-test-fixtures).
-    /// CI checks the submodule out; a clone without access skips these tests.
+    /// `Development/scripts/fetch-private-fixtures.sh` clones it; without access these tests skip.
     static let scenario1Photo = URL(fileURLWithPath: #filePath)
         .deletingLastPathComponent() // …/Features/OCR
         .deletingLastPathComponent() // …/SixLayerFrameworkUnitTests/Features
@@ -1129,7 +1129,7 @@ struct OCRSevenSegment576Tests {
         .appendingPathComponent("TestFixtures/private/seven-segment/fuel_purchase/scenario_1/ti_fp_s1_pump.jpg")
         .path
 
-    /// Private photo from the fixtures submodule. This crop is the known-good glass
+    /// Private photo from the fixtures repo. This crop is the known-good glass
     /// (`620,1440 1480×820`). It does not run the finder.
     @Test(
         .enabled(if: FileManager.default.fileExists(atPath: OCRSevenSegment576Tests.scenario1Photo))
@@ -1152,7 +1152,7 @@ struct OCRSevenSegment576Tests {
         }
     }
 
-    /// Private photo from the fixtures submodule. The frame stays at the camera's
+    /// Private photo from the fixtures repo. The frame stays at the camera's
     /// own size. Localization searches a long-side cap and reads the mapped
     /// crop of the original.
     @Test(
