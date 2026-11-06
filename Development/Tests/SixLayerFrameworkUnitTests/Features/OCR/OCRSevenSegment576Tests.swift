@@ -186,6 +186,12 @@ struct OCRSevenSegment576Tests {
         // Isolate fine deskew: untilted short rows must still read (#602).
         #expect(decode(panel(["1234"]), maximum: 0).extractedText == "1234")
         #expect(decode(panel(["12 34"]), maximum: 0).extractedText == "12  34")
+        // Untilted five-group: forceOpen must not skip the inter-row gap bar
+        // or digitColumnSpan keeps one group ("2.22") (#602 / #598).
+        #expect(
+            decode(panel(["1.11 2.22 3.33 4.44 5.55"]), maximum: 0).extractedText
+                == "1.11  2.22  3.33  4.44  5.55"
+        )
 
         let split = decode(panel(["12 34"]))
         #expect(split.extractedText == "12  34")

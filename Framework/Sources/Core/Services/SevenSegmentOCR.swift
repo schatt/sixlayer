@@ -2107,8 +2107,8 @@ private func windowRadius(width: Int, height: Int) -> Int {
     }
     guard isWideRow else { return grown }
     // Scale-4 rowcrops (~360px+ tall, 48px strokes) need height/15 so bars
-    // stay solid (#659). Scale-1 wide fixtures (filledInk ~200px) must keep
-    // `grown` — flooring to ~14 bridges digit gaps and reads `51.0` (#662).
+    // stay solid (#659). Scale-1 wide fixtures (filledInk ~200px / five-group
+    // ~122px) must keep `grown` — flooring bridges digit gaps (#662 / #602).
     let scale4RowMinHeight = 280
     guard height > scale4RowMinHeight else { return grown }
     let strokeFloor = max(4, height / 15)
@@ -2493,14 +2493,23 @@ private func polarity(
     // Opened path is for multi-row washed panels where loose fills the gap.
     // A single-row panel's core often shows two mid-glyph bands with a tiny
     // valley; opening on that splits the digit and short rows go empty (#602).
-    let coreBands = runs(limitedCore.rowSums).filter { $0.1 - $0.0 >= max(8, loose.height / 8) }
+    // Band floor follows typical core run height, not canvas height/8 — on an
+    // 820px hand crop that floor was 102px and dropped real digit rows, so
+    // open never fired and decode stayed on the loose mask (#602 / #600).
+    let coreRuns = runs(limitedCore.rowSums)
+    let typicalCore = median(coreRuns.map { $0.1 - $0.0 }.filter { $0 >= 8 }) ?? 0
+    let digitFloor = max(8, typicalCore / 2)
+    let coreBands = coreRuns.filter { $0.1 - $0.0 >= digitFloor }
     let coreGap = zip(coreBands, coreBands.dropFirst()).map { $1.0 - $0.1 }.max() ?? 0
     let shortestCore = coreBands.map { $0.1 - $0.0 }.min() ?? 0
-    let realRowGap = coreBands.count >= 2 && coreGap * 4 >= shortestCore
-    // forceOpen: still require a digit span; skip fills/tall checks that
-    // mid-glyph valleys defeat.
+    // Gap at least a quarter of the shorter digit-tall band (mid-glyph
+    // valleys are much smaller). forceOpen still requires this — skipping
+    // it opens single-row multi-group panels and digitColumnSpan keeps one
+    // group ("2.22" on wideGap five-group) (#602 / #598).
+    let minGapVsBand = 4
+    let realRowGap = coreBands.count >= 2 && coreGap * minGapVsBand >= shortestCore
     let canOpen = forceOpen
-        ? span != nil
+        ? (span != nil && realRowGap)
         : (span != nil && fills && limitedTall * 2 < looseTall && realRowGap)
     guard canOpen else {
         return (false, (isDark, loose, loose))
