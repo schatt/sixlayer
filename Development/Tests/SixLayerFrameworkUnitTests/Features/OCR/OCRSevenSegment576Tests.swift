@@ -153,6 +153,15 @@ struct OCRSevenSegment576Tests {
         #expect(!SevenSegmentOCR.legacyOutweighsLattice(ones, latticeText: "18"))
     }
 
+    /// A sealed panel that really holds two digits: the whole-frame search
+    /// after the short read must not replace it.
+    @Test func shortConfidentReadSurvivesTheFrameSearch() {
+        let sealed = SegmentPanel.render(rows: [atoms("88")], bezelLevel: 40, bezelWidth: 8)
+        let frame = embed(sealed, canvasWidth: 1200, canvasHeight: 1600, originX: 180, originY: 420, fill: 180)
+        let result = SevenSegmentOCR.decode(cgImage: frame, localizeDigitPanel: true)
+        #expect(result.extractedText == "88")
+    }
+
     @Test func tallCropReadsEachRowAtItsOwnWindow() {
         // Empty margin makes the threshold window wide enough to see a bright
         // line just above each row. The glass under that line is then darker
