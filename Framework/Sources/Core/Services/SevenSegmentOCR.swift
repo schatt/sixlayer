@@ -2676,9 +2676,12 @@ private func columnRuns(
                 pieces.append(contentsOf: packClusterRuns(cluster, share: share, sums: sums, pitch: pitch))
             }
             if let overallFirst = wideEnough.first, let overallLast = wideEnough.last {
+                // A leading 1 (one stem) and its decimal sit left of the
+                // first wide run; keep narrow runs up to two strides outside.
+                let reach = pitch.stride * 2
                 let extras = raw.filter { span in
                     if span.1 - span.0 > pitch.body / 2 { return false }
-                    return span.0 >= overallFirst.0 && span.1 <= overallLast.1
+                    return span.0 >= overallFirst.0 - reach && span.1 <= overallLast.1
                         && !pieces.contains { span.0 >= $0.0 && span.1 <= $0.1 }
                 }
                 pieces.append(contentsOf: extras)
