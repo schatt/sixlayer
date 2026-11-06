@@ -26,68 +26,37 @@ struct PlatformSecurityL1UnitTests {
 
     @Test @MainActor
     func secureContentL1HostsProbeText() {
-        #if os(watchOS)
-        return
-        #else
-        let view = platformPresentSecureContent_L1(
-            content: Text("SecureProbe"),
-            hints: SecurityHints(enablePrivacyIndicators: false)
-        )
-        let hosted = TestSetupUtilities.hostRootPlatformView(
-            view,
-            forceLayout: true,
-            exposeContentAccessibility: true
-        )
-        #expect(hosted != nil, "secure content L1 must host on UIKit/AppKit")
-        #endif
+        TestSetupUtilities.hostExpectingPlatformRoot(exposeContentAccessibility: true) {
+            platformPresentSecureContent_L1(
+                content: Text("SecureProbe"),
+                hints: SecurityHints(enablePrivacyIndicators: false)
+            )
+        }
     }
 
     @Test @MainActor
     func secureTextFieldL1UsesIdentifierNamePath() {
-        #if os(watchOS)
-        return
-        #else
         var text = ""
-        let isolated = TestSetupUtilities.makeIsolatedAccessibilityIdentifierConfig()
-        isolated.enableDebugLogging = true
-        isolated.clearDebugLog()
-        let view = platformPresentSecureTextField_L1(
-            title: "Password",
-            text: Binding(get: { text }, set: { text = $0 }),
-            hints: SecurityHints(enableSecureTextEntry: true)
-        )
-        let hosted = AccessibilityIdentifierConfig.$taskLocalConfig.withValue(isolated) {
-            TestSetupUtilities.hostRootPlatformView(
-                view,
-                forceLayout: true,
-                exposeContentAccessibility: true,
-                accessibilityIdentifierConfig: isolated
+        TestSetupUtilities.hostExpectingNamedCompliance(
+            "platformPresentSecureTextField_L1",
+            exposeContentAccessibility: true
+        ) {
+            platformPresentSecureTextField_L1(
+                title: "Password",
+                text: Binding(get: { text }, set: { text = $0 }),
+                hints: SecurityHints(enableSecureTextEntry: true)
             )
         }
-        #expect(hosted != nil, "secure text field L1 must host")
-        let log = isolated.getDebugLog()
-        #expect(
-            log.contains("platformPresentSecureTextField_L1"),
-            "secure text field L1 must use identifierName path. log=\(String(log.suffix(400)))"
-        )
-        #endif
     }
 
     @Test @MainActor
     func privacyIndicatorL1ReturnsEmptyViewShell() {
-        let view = platformShowPrivacyIndicator_L1(
-            type: .camera,
-            isActive: true,
-            hints: SecurityHints(enablePrivacyIndicators: true)
-        )
-        #if os(watchOS)
-        _ = view
-        #else
-        let hosted = TestSetupUtilities.hostRootPlatformView(
-            view,
-            forceLayout: true
-        )
-        #expect(hosted != nil)
-        #endif
+        TestSetupUtilities.hostExpectingPlatformRoot {
+            platformShowPrivacyIndicator_L1(
+                type: .camera,
+                isActive: true,
+                hints: SecurityHints(enablePrivacyIndicators: true)
+            )
+        }
     }
 }

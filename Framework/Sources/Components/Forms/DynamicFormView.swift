@@ -351,7 +351,7 @@ struct DynamicFormViewInner: View {
     
     #if canImport(SwiftData)
     @available(macOS 14.0, iOS 17.0, *)
-    @Environment(\.modelContext) private var modelContext: ModelContext
+    @Environment(\.self) private var environment
     #endif
 
     /// Top-of-form title and subtitle when ``DynamicFormConfiguration/formHeaderVisibility`` is ``DynamicFormHeaderVisibility/visible`` and text resolves non-empty (Issue #224).
@@ -466,18 +466,20 @@ struct DynamicFormViewInner: View {
 
                 Spacer()
 
-                // Submit button
-                Button(action: {
-                    handleSubmit()
-                }) {
-                    Text(configuration.submitButtonText)
-                        .frame(maxWidth: .infinity)
+                // Submit button — host may own Save (toolbar / inset); omit when showsSubmitButton is false (#640).
+                if configuration.showsSubmitButton {
+                    Button(action: {
+                        handleSubmit()
+                    }) {
+                        Text(configuration.submitButtonText)
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .automaticCompliance(
+                        named: "SubmitButton",
+                        accessibilitySortPriority: 1.0  // Issue #165: Primary action has highest priority
+                    )
                 }
-                .buttonStyle(.borderedProminent)
-                .automaticCompliance(
-                    named: "SubmitButton",
-                    accessibilitySortPriority: 1.0  // Issue #165: Primary action has highest priority
-                )
             }
             .environment(\.dynamicFormLocalizationNamespace, formLocalizationNamespace)
             .environment(\.formSelectAllOnBeginEditing, configuration.selectAllOnBeginEditing)
@@ -674,7 +676,7 @@ struct DynamicFormViewInner: View {
     /// - Throws: Error if entity creation or save fails
     @available(macOS 14.0, iOS 17.0, *)
     private func createSwiftDataEntity(entityType: Any.Type, values: [String: Any]) throws -> Any {
-        let context = modelContext
+        let context = try SwiftDataContextAccess.requireInstalledContext(in: environment)
         
         // Load hints to get type information (for filtering hidden fields)
         let hintsLoader = FileBasedDataHintsLoader()

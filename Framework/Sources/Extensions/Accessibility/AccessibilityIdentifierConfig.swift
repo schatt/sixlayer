@@ -304,10 +304,14 @@ public final class AccessibilityIdentifierConfig: @unchecked Sendable {
         return "app.otherElements[\"\(identifier)\"].element.platformTap()"
     }
     
-    /// Generate text input action for UI testing
-    /// TDD RED PHASE: This is a stub implementation for testing
+    /// Generate text input action for UI testing.
+    /// Focuses the field, then types. On macOS, `typeText` needs keyboard focus.
     public func generateTextInputAction(_ identifier: String, text: String) -> String {
-        return "app.textFields[\"\(identifier)\"].element.typeText(\"\(text)\")"
+        let query = "app.textFields[\"\(identifier)\"].element"
+        return """
+        \(query).platformTap()
+        \(query).typeText(\"\(text)\")
+        """
     }
     
     /// Generate UI test code and save to file
