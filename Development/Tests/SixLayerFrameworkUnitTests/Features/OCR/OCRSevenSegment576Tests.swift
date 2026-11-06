@@ -405,6 +405,27 @@ struct OCRSevenSegment576Tests {
         #expect(light == "31.25")
     }
 
+    /// Temporary #660 diagnosis dump: mask/polarity/cells for glare, invert, colon.
+    @Test func probe660GlareMaskVersusBoxes() {
+        let price = [atoms("31.25")]
+        let glared = decode(SegmentPanel.render(rows: price, glare: true))
+        let glareDiag = SevenSegmentOCR.lastDiagnosis
+        let inverted = decode(SegmentPanel.render(rows: price, invert: true))
+        let invertDiag = SevenSegmentOCR.lastDiagnosis
+        let colon = decode(SegmentPanel.render(rows: [atoms("12:30")], glare: true))
+        let colonDiag = SevenSegmentOCR.lastDiagnosis
+        let report = [
+            "glare text=\(glared.extractedText)",
+            glareDiag,
+            "invert text=\(inverted.extractedText)",
+            invertDiag,
+            "colon text=\(colon.extractedText)",
+            colonDiag
+        ].joined(separator: "\n")
+        Issue.record(Comment(rawValue: report))
+        #expect(Bool(false))
+    }
+
     /// #645: real colon dots are stroke-tall; the glare-edge speck pair must
     /// not steal this path, and a painted colon must still read — clean and
     /// under the same mid-row glare wash that used to invent ':' on `31.25`.
