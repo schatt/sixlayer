@@ -226,8 +226,11 @@ struct OCRSevenSegment576Tests {
     @Test func marksStayInsideTheFragment() {
         #expect(decode(panel(["3125"])).extractedText == "3125")
         #expect(!decode(panel(["3125"])).extractedText.contains("."))
-        #expect(decode(panel(["1,234.56"])).extractedText == "1,234.56")
-        #expect(segmentTexts(decode(panel(["1,234.56"]))).count == 1)
+        // #661: comma must not become period; alone top-bar unknown must hold.
+        let comma = decode(panel(["1,234.56"]))
+        #expect(comma.extractedText == "1,234.56")
+        #expect(segmentTexts(comma) == ["1,234.56"])
+        #expect(decode(panel(["1,25"])).extractedText == "1,25")
         #expect(decode(panel(["-12.5"])).extractedText == "-12.5")
         #expect(decode(panel(["12:30"])).extractedText == "12:30")
         let held = decode(panel(["8_2"]))
