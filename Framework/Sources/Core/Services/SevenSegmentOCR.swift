@@ -286,7 +286,10 @@ public enum SevenSegmentOCR {
         // (a payment screen, an ad). When the crop does not read cleanly,
         // search the whole frame for the region that reads best. Those
         // boxes are normalized to the whole image.
-        if localizeDigitPanel, !SevenSegmentLatticeReader.isConfident(rows) {
+        // A confident read of one short row ("88") can be a fragment of the
+        // panel; search too when it holds fewer than four digits.
+        let cropDigits = rows.flatMap { $0 }.filter { $0.character.isNumber }.count
+        if localizeDigitPanel, !SevenSegmentLatticeReader.isConfident(rows) || cropDigits < 4 {
             let located = SevenSegmentLatticeReader.locateAndRead(
                 pixels: frame.pixels, width: frame.width, height: frame.height
             )
@@ -308,8 +311,10 @@ public enum SevenSegmentOCR {
             }
             let trustedChars = trusted.reduce(0) { $0 + $1.text.count }
             let allChars = fragments.flatMap { $0 }.reduce(0) { $0 + $1.text.count }
-            let trustedDigits = trusted.reduce(0) { $0 + $1.text.filter(\.isNumber).count }
-            let latticeDigits = rows.flatMap { $0 }.filter { $0.character.isNumber }.count
+            // Count digits other than 1: legacy photo output is often runs
+            // of 1s at high confidence.
+            let trustedDigits = trusted.reduce(0) { $0 + $1.text.filter { $0.isNumber && $0 != "1" }.count }
+            let latticeDigits = rows.flatMap { $0 }.filter { $0.character.isNumber && $0.character != "1" }.count
             if trustedChars * 2 >= allChars, trustedDigits >= latticeDigits {
                 return legacy
             }
