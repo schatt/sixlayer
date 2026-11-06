@@ -1255,7 +1255,10 @@ struct OCRSevenSegment576Tests {
     }
 
 
-    @Test func fullFrameWithoutLocalizationMissesSealedBothRows() {
+    /// This once showed that a whole frame needed localization to read
+    /// (#596). The lattice reader now finds the rows in the full frame on
+    /// its own, so it guards that instead.
+    @Test func fullFrameWithoutLocalizationReadsSealedBothRows() {
         let frame = embed(
             sealedBothRowsPanel(),
             canvasWidth: 1200,
@@ -1268,7 +1271,7 @@ struct OCRSevenSegment576Tests {
             cgImage: frame,
             localizeDigitPanel: false
         )
-        #expect(raw.extractedText != "32.88\n8.022")
+        #expect(raw.extractedText == "32.88\n8.022")
     }
 
     @Test func exactEmbedCropWithoutLocalizationStillReadsBothRows() {
