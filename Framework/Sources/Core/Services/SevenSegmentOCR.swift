@@ -270,8 +270,19 @@ public enum SevenSegmentOCR {
         }
         // Huge pale pad around a small panel (training / paddedCanvas) must
         // not survive into masks — fit alone leaves tiny glyphs (#648).
+        let traceDecode = getenv("SLF_OCR_TRACE") != nil
+        if traceDecode {
+            try? FileManager.default.removeItem(atPath: "/tmp/sixlayer-600-ocr-trace.txt")
+            trace("in \(gray.width)x\(gray.height)\n")
+        }
         gray = gray.trimmingUniformMargin()
+        if traceDecode {
+            trace("trimmed \(gray.width)x\(gray.height)\n")
+        }
         gray = gray.fitted(maxSide: digitPanelAnalysisMaxSide)
+        if traceDecode {
+            trace("fitted \(gray.width)x\(gray.height)\n")
+        }
         lastDecodeAnalysisLongEdge = max(gray.width, gray.height)
         let upright = GrayBuffer.deskew(gray, maximumDegrees: deskewMaximumDegrees)
         let fragments = GrayBuffer.fragments(in: upright)
@@ -1237,6 +1248,16 @@ private struct GrayBuffer {
 
 private func trace(_ message: String) {
     fputs(message, stderr)
+    guard getenv("SLF_OCR_TRACE") != nil else { return }
+    let path = "/tmp/sixlayer-600-ocr-trace.txt"
+    let data = Data(message.utf8)
+    if let handle = FileHandle(forWritingAtPath: path) {
+        handle.seekToEndOfFile()
+        handle.write(data)
+        try? handle.close()
+    } else {
+        FileManager.default.createFile(atPath: path, contents: data)
+    }
 }
 
 private struct Mask {
