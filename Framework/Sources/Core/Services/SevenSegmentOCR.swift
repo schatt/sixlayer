@@ -3434,3 +3434,951 @@ private func bandedColumnRuns(_ mask: Mask) -> Int {
         return total + runs(sums).count
     }
 }
+
+// MARK: - Lattice reader (photographed panels)
+//
+// Scale-relative reader for photographed seven-segment panels.
+//
+// Every size is measured from the panel itself: the analysis height, the
+// stroke thickness of the segments, the digit height of each row and the
+// digit pitch. Nothing is a fixed pixel count of the photo. Steps:
+// 1. Fit the crop to a fixed analysis height.
+// 2. Ink = relative black top-hat (dark features about a stroke wide).
+//    Broad reflections and shadows are wider than the window; scratches and
+//    reflection edges are thinner than a stroke and are dropped by shape.
+// 3. Keep stroke-drawn pieces: inscribed thickness near the panel's stroke.
+// 4. Undo rotation (from horizontal bars) and italic shear (from stems).
+// 5. Rows: heights covered by several separate pieces at once.
+// 6. Digits: a lattice fitted to the right edges of the tall pieces. Each
+//    lattice cell is read by the ink share in each segment zone.
+// 7. Decimal: baseline ink in the gap between two cells, empty above.
+
+
+struct SevenSegmentLatticeReader {
+    struct Cell {
+        var character: Character
+        var confidence: Float
+        /// Bounds in source pixel coordinates (top-left origin).
+        var minX: Double
+        var minY: Double
+        var maxX: Double
+        var maxY: Double
+    }
+
+    /// Rows top to bottom, cells left to right. Empty when nothing reads.
+    static func read(pixels: [UInt8], width: Int, height: Int, darkInk: Bool = true) -> [[Cell]] {
+        guard width > 8, height > 8, pixels.count == width * height else { return [] }
+        var reader = Reader(pixels: pixels, width: width, height: height, darkInk: darkInk)
+        return reader.run()
+    }
+
+    /// True when every row has at least two digits and every digit matched a
+    /// template exactly.
+    static func isConfident(_ rows: [[Cell]]) -> Bool {
+        guard !rows.isEmpty else { return false }
+        for row in rows {
+            let digits = row.filter { $0.character.isNumber }
+            if digits.count < 2 { return false }
+            if row.contains(where: { $0.character == "_" }) { return false }
+            if digits.contains(where: { $0.confidence < 1 }) { return false }
+        }
+        return true
+    }
+}
+
+// MARK: - Implementation
+
+private let analysisHeight = 360
+private let topHatFractions: [Double] = [0.08, 0.12, 0.18]
+private let thickMaximum = 1.8
+private let rowCoverFraction = 0.3
+private let bridgeStrokes = 0.3
+private let holeMaximum = 0.5
+private let snapFraction = 0.15
+private let decimalAbove = 0.1
+
+private struct BitMask {
+    var bits: [Bool]
+    var width: Int
+    var height: Int
+
+    init(width: Int, height: Int) {
+        self.width = width
+        self.height = height
+        bits = [Bool](repeating: false, count: width * height)
+    }
+
+    subscript(x: Int, y: Int) -> Bool {
+        get { bits[y * width + x] }
+        set { bits[y * width + x] = newValue }
+    }
+
+    var inkFraction: Double {
+        guard !bits.isEmpty else { return 0 }
+        return Double(bits.lazy.filter { $0 }.count) / Double(bits.count)
+    }
+}
+
+private struct Component {
+    var label: Int
+    var minX: Int
+    var minY: Int
+    var maxX: Int   // exclusive
+    var maxY: Int   // exclusive
+    var area: Int
+    var width: Int { maxX - minX }
+    var height: Int { maxY - minY }
+}
+
+private struct Reader {
+    let pixels: [UInt8]
+    let width: Int
+    let height: Int
+    let darkInk: Bool
+
+    // Analysis-space transform, for mapping cells back to the source.
+    private var scale = 1.0
+    private var smallWidth = 0
+    private var rotationDegrees = 0.0
+    private var rotatedWidth = 0
+    private var rotatedHeight = 0
+    private var shearTangent = 0.0
+    private var shearPad = 0
+
+    init(pixels: [UInt8], width: Int, height: Int, darkInk: Bool) {
+        self.pixels = pixels
+        self.width = width
+        self.height = height
+        self.darkInk = darkInk
+    }
+
+    mutating func run() -> [[SevenSegmentLatticeReader.Cell]] {
+        let h = analysisHeight
+        scale = Double(h) / Double(height)
+        smallWidth = max(1, Int((Double(width) * scale).rounded()))
+        let small = boxResize(pixels, width: width, height: height, toWidth: smallWidth, toHeight: h)
+        let smoothed = median3(small, width: smallWidth, height: h)
+
+        var best: (score: Int, mask: BitMask, stroke: Double)?
+        for fraction in topHatFractions {
+            let contrast = topHat(smoothed, width: smallWidth, height: h, window: Int(Double(h) * fraction))
+            let selected = contrast.filter { $0 > 0.03 }
+            let cut = selected.count > 200 ? otsu(selected) : 0.2
+            var raw = BitMask(width: smallWidth, height: h)
+            let level = max(0.6 * cut, 0.07)
+            for index in contrast.indices where contrast[index] > level {
+                raw.bits[index] = true
+            }
+            let (kept, stroke) = clean(raw)
+            let value = segmentScore(kept, stroke: stroke)
+            if best == nil || value > best!.score {
+                best = (value, kept, stroke)
+            }
+        }
+        guard var mask = best?.mask, let stroke = best?.stroke, stroke > 0 else { return [] }
+
+        rotationDegrees = rotation(of: mask)
+        if rotationDegrees != 0 {
+            mask = rotate(mask, degrees: rotationDegrees, expand: true)
+        }
+        rotatedWidth = mask.width
+        rotatedHeight = mask.height
+        let shear = stemShear(mask)
+        mask = deshear(mask, degrees: shear)
+
+        var rows: [[SevenSegmentLatticeReader.Cell]] = []
+        for band in rowBands(mask) {
+            let cells = readBand(mask, top: band.0, bottom: band.1, stroke: stroke)
+            if cells.contains(where: { $0.character.isNumber }) {
+                rows.append(cells)
+            }
+        }
+        return rows
+    }
+
+    // MARK: Ink
+
+    private func topHat(_ gray: [UInt8], width w: Int, height h: Int, window: Int) -> [Double] {
+        let k = max(3, window | 1)
+        var values = gray.map { Double(darkInk ? $0 : 255 - $0) }
+        let dilated = slidingExtreme(values, width: w, height: h, size: k, maximum: true)
+        let closed = slidingExtreme(dilated, width: w, height: h, size: k, maximum: false)
+        for index in values.indices {
+            let level = closed[index]
+            let value = (level - values[index]) / max(level, 8)
+            values[index] = min(1, max(0, value))
+        }
+        return values
+    }
+
+    private func clean(_ raw: BitMask) -> (BitMask, Double) {
+        let (labels, components) = label(raw)
+        let h = Double(analysisHeight)
+        let big = components.filter { Double($0.area) >= (h * 0.015) * (h * 0.015) }
+        guard !big.isEmpty else { return (BitMask(width: raw.width, height: raw.height), 0) }
+        let thick = thicknesses(raw, labels: labels, count: components.count)
+        func th(_ c: Component) -> Double { thick[c.label] }
+        let longish = big.filter { Double(max($0.width, $0.height)) >= 3 * th($0) }
+        let pool = longish.count >= 3 ? longish : big
+        let stroke = weightedMedian(pool.map { (th($0), Double(max($0.width, $0.height))) })
+        var keep = Set<Int>()
+        for c in big {
+            let touches = c.minY == 0 || c.minX == 0 || c.maxY == raw.height || c.maxX == raw.width
+            if touches && (Double(c.height) > 0.5 * Double(raw.height)
+                || Double(c.width) > 0.3 * Double(raw.width)
+                || Double(c.area) < stroke * stroke * 2) {
+                continue
+            }
+            if Double(c.height) > 0.85 * Double(raw.height) || Double(c.width) > 0.6 * Double(raw.width) { continue }
+            if th(c) < 0.45 * stroke || th(c) > thickMaximum * stroke { continue }
+            let fill = Double(c.area) / Double(c.width * c.height)
+            if fill < 0.18 { continue }
+            keep.insert(c.label)
+        }
+        var out = BitMask(width: raw.width, height: raw.height)
+        for index in labels.indices where labels[index] > 0 && keep.contains(labels[index]) {
+            out.bits[index] = true
+        }
+        return (out, stroke)
+    }
+
+    private func segmentScore(_ mask: BitMask, stroke: Double) -> Int {
+        guard stroke > 0 else { return 0 }
+        let (labels, components) = label(mask)
+        let thick = thicknesses(mask, labels: labels, count: components.count)
+        var total = 0
+        for c in components {
+            let t = thick[c.label]
+            if t >= 0.6 * stroke, t <= 1.6 * stroke, Double(max(c.width, c.height)) >= 2 * t {
+                total += c.area
+            }
+        }
+        return total
+    }
+
+    // MARK: Geometry
+
+    private func rotation(of mask: BitMask) -> Double {
+        if let bars = barRotation(mask) {
+            return abs(bars) >= 1 ? bars : 0
+        }
+        func sharpness(_ degrees: Double) -> Double {
+            let turned = degrees == 0 ? mask : rotate(mask, degrees: degrees, expand: false)
+            var sum = 0.0
+            var squares = 0.0
+            for y in 0..<turned.height {
+                var row = 0.0
+                for x in 0..<turned.width where turned[x, y] { row += 1 }
+                sum += row
+                squares += row * row
+            }
+            return squares / max(1, sum * sum)
+        }
+        let base = sharpness(0)
+        var best = (0.0, base)
+        var degrees = -15.0
+        while degrees <= 15.0001 {
+            let value = sharpness(degrees)
+            if value > best.1 { best = (degrees, value) }
+            degrees += 0.5
+        }
+        return best.1 > base * 1.10 ? best.0 : 0
+    }
+
+    /// Median orientation of long horizontal-ish bars (a/g/d segments).
+    private func barRotation(_ mask: BitMask) -> Double? {
+        let (labels, components) = label(mask)
+        var angles: [(Double, Double)] = []
+        for c in components where c.area >= 30 {
+            var sx = 0.0, sy = 0.0, sxx = 0.0, syy = 0.0, sxy = 0.0, n = 0.0
+            for y in c.minY..<c.maxY {
+                for x in c.minX..<c.maxX where labels[y * mask.width + x] == c.label {
+                    let fx = Double(x), fy = Double(y)
+                    sx += fx; sy += fy; sxx += fx * fx; syy += fy * fy; sxy += fx * fy; n += 1
+                }
+            }
+            let mx = sx / n, my = sy / n
+            let cxx = sxx / n - mx * mx, cyy = syy / n - my * my, cxy = sxy / n - mx * my
+            let trace = cxx + cyy
+            let det = cxx * cyy - cxy * cxy
+            let disc = max(0, trace * trace / 4 - det)
+            let big = trace / 2 + disc.squareRoot()
+            let small = trace / 2 - disc.squareRoot()
+            if big < 6 * max(small, 1e-6) { continue }
+            var angle = 0.5 * atan2(2 * cxy, cxx - cyy) * 180 / .pi
+            if angle > 90 { angle -= 180 }
+            if angle < -90 { angle += 180 }
+            if abs(angle) <= 20 { angles.append((angle, n)) }
+        }
+        guard angles.count >= 3 else { return nil }
+        // Image y grows downward; a bar rising to the right has a negative
+        // angle here. Rotating by that angle levels it (scipy convention).
+        return weightedMedian(angles)
+    }
+
+    /// Italic slant from the right edges of tall pieces. Separate stems and
+    /// merged whole digits both keep the b/c stems on their right edge.
+    private func stemShear(_ mask: BitMask) -> Double {
+        let (labels, components) = label(mask)
+        var angles: [(Double, Double)] = []
+        for c in components {
+            if Double(c.height) < Double(analysisHeight) * 0.06 || Double(c.height) < 1.3 * Double(c.width) { continue }
+            var ys: [Double] = []
+            var xs: [Double] = []
+            for y in c.minY..<c.maxY {
+                var right = -1
+                for x in c.minX..<c.maxX where labels[y * mask.width + x] == c.label { right = x }
+                if right >= 0 {
+                    ys.append(Double(y - c.minY))
+                    xs.append(Double(right - c.minX))
+                }
+            }
+            guard ys.count >= 8, var line = fitLine(ys, xs) else { continue }
+            for _ in 0..<2 {
+                let keep = ys.indices.filter { xs[$0] - (line.0 * ys[$0] + line.1) > -0.25 * Double(c.width) }
+                if keep.count < 8 { break }
+                guard let refit = fitLine(keep.map { ys[$0] }, keep.map { xs[$0] }) else { break }
+                line = refit
+            }
+            angles.append((atan(-line.0) * 180 / .pi, Double(c.height)))
+        }
+        guard angles.count >= 2 else { return 0 }
+        let value = weightedMedian(angles)
+        return (-3...15).contains(value) ? value : 0
+    }
+
+    private mutating func deshear(_ mask: BitMask, degrees: Double) -> BitMask {
+        guard abs(degrees) >= 0.5 else {
+            shearTangent = 0
+            shearPad = 0
+            return mask
+        }
+        let t = tan(degrees * .pi / 180)
+        let pad = Int(abs(t) * Double(mask.height)) + 2
+        shearTangent = t
+        shearPad = pad
+        var out = BitMask(width: mask.width + pad, height: mask.height)
+        for y in 0..<mask.height {
+            for x in 0..<mask.width where mask[x, y] {
+                let shifted = Int((Double(x) + Double(y - mask.height) * t).rounded()) + pad
+                if shifted >= 0, shifted < out.width { out[shifted, y] = true }
+            }
+        }
+        return close(out)
+    }
+
+    // MARK: Rows and cells
+
+    private func rowBands(_ mask: BitMask) -> [(Int, Int)] {
+        let (_, components) = label(mask)
+        guard !components.isEmpty else { return [] }
+        var cover = [Double](repeating: 0, count: mask.height)
+        for c in components {
+            for y in c.minY..<c.maxY { cover[y] += 1 }
+        }
+        let peak = cover.max() ?? 0
+        let bands = runs(cover.map { $0 >= max(2, rowCoverFraction * peak) })
+        let minimum = Double(analysisHeight) * 0.08
+        let tallest = bands.map { $0.1 - $0.0 }.max() ?? 0
+        return bands.filter { Double($0.1 - $0.0) >= max(minimum, Double(tallest) * 0.35) }
+    }
+
+    private func trimBand(_ band: BitMask, stroke: Double) -> (Int, Int) {
+        let columns = columnHasInk(band, rows: 0..<band.height)
+        let bridged = close1D(columns, size: max(1, Int(stroke * 0.6)) | 1)
+        var tops: [Int] = []
+        var bottoms: [Int] = []
+        for (x0, x1) in runs(bridged) {
+            guard let span = inkRows(band, x0: x0, x1: x1) else { continue }
+            if Double(span.1 - span.0) >= 0.6 * Double(band.height) {
+                tops.append(span.0)
+                bottoms.append(span.1)
+            }
+        }
+        guard !tops.isEmpty else { return (0, band.height) }
+        tops.sort()
+        bottoms.sort()
+        let bottom = bottoms.count % 2 == 1 ? bottoms[(bottoms.count - 1) / 2] : bottoms[bottoms.count / 2]
+        return (tops[tops.count / 2], bottom)
+    }
+
+    private func readBand(_ mask: BitMask, top: Int, bottom: Int, stroke: Double) -> [SevenSegmentLatticeReader.Cell] {
+        let whole = crop(mask, y0: top, y1: bottom)
+        let (t0, t1) = trimBand(whole, stroke: stroke)
+        let pad = max(1, Int(stroke * 0.3))
+        let bandTop = max(0, t0 - pad)
+        let band = crop(whole, y0: bandTop, y1: min(whole.height, t1 + pad))
+        let dh = Double(band.height)
+        let upperRows = 0..<Int(dh * 0.72)
+        let bridged = close1D(columnHasInk(band, rows: upperRows), size: max(1, Int(stroke * bridgeStrokes)) | 1)
+
+        var tall: [(x0: Int, x1: Int)] = []
+        for (x0, x1) in runs(bridged) {
+            guard let span = inkRows(band, x0: x0, x1: x1) else { continue }
+            if Double(span.1 - span.0) >= 0.6 * dh { tall.append((x0, x1)) }
+        }
+        guard !tall.isEmpty else { return [] }
+        let wide = tall.map { Double($0.x1 - $0.x0) }.filter { $0 >= 0.35 * dh && $0 <= 0.8 * dh }
+        let w = wide.isEmpty ? 0.5 * dh : median(wide)
+
+        var edges: [Double] = []
+        for piece in tall {
+            let pw = Double(piece.x1 - piece.x0)
+            let n = pw > 1.45 * w ? max(1, Int((pw / (w * 1.15)).rounded())) : 1
+            for j in 0..<n { edges.append(Double(piece.x0) + Double(j + 1) * pw / Double(n)) }
+        }
+        edges.sort()
+
+        var stride = 1.3 * w
+        var phase = edges.first ?? 0
+        if edges.count >= 2 {
+            var best = -Double.infinity
+            var s = w
+            while s < 1.9 * w {
+                var p = 0.0
+                let phaseStep = max(1, s / 30)
+                while p < s {
+                    var hits = 0.0
+                    var error = 0.0
+                    for e in edges {
+                        let k = ((e - p) / s).rounded()
+                        let miss = abs(e - p - k * s)
+                        error += miss
+                        if miss < 0.18 * w { hits += 1 }
+                    }
+                    let fit = hits - 0.002 * error / w
+                    if fit > best {
+                        best = fit
+                        stride = s
+                        phase = p
+                    }
+                    p += phaseStep
+                }
+                s += max(1, w / 40)
+            }
+        }
+
+        struct Slot { var character: Character; var confidence: Float; var x0: Int; var x1: Int }
+        var cells: [Slot] = []
+        let first = (edges.first ?? 0) - 0.5 * stride
+        let last = (edges.last ?? 0) + 0.5 * stride
+        let k0 = Int(((first - phase) / stride).rounded(.down))
+        let k1 = Int(((last - phase) / stride).rounded(.up))
+        for k in k0...max(k0, k1) {
+            var r = phase + Double(k) * stride
+            if let near = edges.filter({ abs($0 - r) < 0.25 * w }).min(by: { abs($0 - r) < abs($1 - r) }) {
+                r = near
+            }
+            let x0 = Int((r - w).rounded())
+            let x1 = Int(r.rounded())
+            if x1 <= 0 || x0 >= band.width { continue }
+            let cx0 = max(0, x0)
+            let cx1 = min(band.width, x1)
+            guard cx1 > cx0 else { continue }
+            if inkShare(band, x0: cx0, x1: cx1, y0: 0, y1: band.height) < 0.03 { continue }
+            let upper = columnHasInk(band, rows: upperRows, x0: cx0, x1: cx1)
+            guard let firstInk = upper.firstIndex(of: true), let lastInk = upper.lastIndex(of: true) else { continue }
+            guard let rowsSpan = inkRows(band, x0: cx0, x1: cx1) else { continue }
+            if Double(rowsSpan.1 - rowsSpan.0) < 0.55 * dh { continue }
+            let span = Double(lastInk - firstInk + 1)
+            let offset = Double(firstInk)
+            if span < 0.42 * w && offset > 0.45 * w {
+                cells.append(Slot(character: "1", confidence: 1, x0: x0, x1: x1))
+                continue
+            }
+            // A few pixels of lattice error move ink into the wrong zone.
+            // Try small shifts; keep the surest read.
+            let reach = Int(snapFraction * w)
+            let step = max(1, Int(w / 16))
+            let shifts = Swift.stride(from: -reach, through: reach, by: step).sorted { (abs($0), $0) < (abs($1), $1) }
+            var chosen: (Character, Float, Int, Int)?
+            for dx in shifts {
+                let a = x0 + dx, b = x1 + dx
+                let lo = max(0, a), hi = min(band.width, b)
+                guard hi > lo else { continue }
+                let glyph = readDigit(band, x0: lo, x1: hi)
+                if chosen == nil || glyph.1 > chosen!.1 { chosen = (glyph.0, glyph.1, a, b) }
+                if glyph.1 == 1 { break }
+            }
+            guard let pick = chosen else { continue }
+            cells.append(Slot(character: pick.0, confidence: pick.1, x0: pick.2, x1: pick.3))
+        }
+
+        // A row's digits sit on consecutive lattice points.
+        if !cells.isEmpty {
+            var groups: [[Slot]] = [[cells[0]]]
+            for cell in cells.dropFirst() {
+                let gap = Double(cell.x1 - groups[groups.count - 1].last!.x1) / stride
+                if gap > 1.6 { groups.append([cell]) } else { groups[groups.count - 1].append(cell) }
+            }
+            cells = groups.max { lhs, rhs in
+                let l = lhs.filter { $0.character != "_" }.count
+                let r = rhs.filter { $0.character != "_" }.count
+                return l != r ? l < r : lhs.count < rhs.count
+            } ?? []
+        }
+        while let head = cells.first, head.character == "_", head.confidence == 0 { cells.removeFirst() }
+        while let tail = cells.last, tail.character == "_", tail.confidence == 0 { cells.removeLast() }
+
+        // Decimal: baseline ink between two cells, with empty glass above.
+        var marks: [(above: Double, x: Double)] = []
+        let stripTop = Int(dh * 0.74)
+        let upperLimit = Int(dh * 0.6)
+        for (left, right) in zip(cells, cells.dropFirst()) {
+            let g0 = max(0, Int(Double(left.x1) - 0.08 * w))
+            let g1 = min(band.width, Int(Double(right.x0) + 0.12 * w))
+            guard g1 > g0 else { continue }
+            var candidate: [Bool] = []
+            var highs: [Int] = []
+            for x in g0..<g1 {
+                var low = 0
+                var high = 0
+                for y in stripTop..<band.height where band[x, y] { low += 1 }
+                for y in 0..<upperLimit where band[x, y] { high += 1 }
+                highs.append(high)
+                candidate.append(Double(low) >= max(1, 0.35 * stroke) && Double(high) <= decimalAbove * dh)
+            }
+            guard let longest = runs(candidate).max(by: { ($0.1 - $0.0) < ($1.1 - $1.0) }) else { continue }
+            if Double(longest.1 - longest.0) < 0.4 * stroke { continue }
+            let above = Double(highs[longest.0..<longest.1].reduce(0, +)) / Double(longest.1 - longest.0) / dh
+            marks.append((above, Double(g0) + Double(longest.0 + longest.1) / 2))
+        }
+        // One decimal per row: the gap with the emptiest glass above its dot.
+        let mark = marks.min { $0.above < $1.above }
+
+        var placed: [(Character, Float, Double, Double)] = cells.map {
+            ($0.character, $0.confidence, Double($0.x0), Double($0.x1))
+        }
+        if let mark {
+            placed.append((".", 1, mark.x - stroke / 2, mark.x + stroke / 2))
+        }
+        placed.sort { ($0.2 + $0.3) < ($1.2 + $1.3) }
+        while placed.first?.0 == "." { placed.removeFirst() }
+        while placed.last?.0 == "." { placed.removeLast() }
+
+        let y0 = Double(top + bandTop)
+        let y1 = y0 + dh
+        return placed.map { item in
+            let box = sourceBox(x0: item.2, x1: item.3, y0: item.0 == "." ? y0 + dh * 0.74 : y0, y1: y1)
+            return SevenSegmentLatticeReader.Cell(
+                character: item.0, confidence: item.1,
+                minX: box.0, minY: box.1, maxX: box.2, maxY: box.3
+            )
+        }
+    }
+
+    private func readDigit(_ band: BitMask, x0: Int, x1: Int) -> (Character, Float) {
+        let h = Double(band.height)
+        let w = Double(x1 - x0)
+        func share(_ fx0: Double, _ fx1: Double, _ fy0: Double, _ fy1: Double) -> Double {
+            let ya = Int(fy0 * h), yb = max(Int(fy1 * h), ya + 1)
+            let xa = x0 + Int(fx0 * w), xb = max(x0 + Int(fx1 * w), xa + 1)
+            return inkShare(band, x0: xa, x1: min(xb, band.width), y0: ya, y1: min(yb, band.height))
+        }
+        let holes = (share(0.32, 0.68, 0.2, 0.38) + share(0.32, 0.68, 0.62, 0.8)) / 2
+        if holes > holeMaximum { return ("_", 0) }
+        let zones: [(SevenSegmentPattern, Double)] = [
+            (.a, share(0.3, 0.7, 0, 0.16)),
+            (.b, share(0.7, 1, 0.18, 0.4)),
+            (.c, share(0.7, 1, 0.6, 0.82)),
+            (.d, share(0.3, 0.7, 0.84, 1)),
+            (.e, share(0, 0.3, 0.6, 0.82)),
+            (.f, share(0, 0.3, 0.18, 0.4)),
+            (.g, share(0.3, 0.7, 0.42, 0.58))
+        ]
+        let top = zones.map(\.1).max() ?? 0
+        var pattern = SevenSegmentPattern()
+        for (segment, value) in zones where value > max(0.22, 0.4 * top) {
+            pattern.formUnion(segment)
+        }
+        return SevenSegmentLatticeReader.digit(for: pattern)
+    }
+
+    // MARK: Coordinates
+
+    /// Map an analysis-space box (after rotation and shear) to the source.
+    private func sourceBox(x0: Double, x1: Double, y0: Double, y1: Double) -> (Double, Double, Double, Double) {
+        let corners = [(x0, y0), (x1, y0), (x0, y1), (x1, y1)].map { point -> (Double, Double) in
+            // Undo shear.
+            let x = point.0 - Double(shearPad) - (point.1 - Double(rotatedHeight)) * shearTangent
+            let y = point.1
+            // Undo rotation (expanded canvas around the centre).
+            var sx = x, sy = y
+            if rotationDegrees != 0 {
+                let radians = rotationDegrees * .pi / 180
+                let dx = x - Double(rotatedWidth) / 2
+                let dy = y - Double(rotatedHeight) / 2
+                sx = cos(radians) * dx - sin(radians) * dy + Double(smallWidth) / 2
+                sy = sin(radians) * dx + cos(radians) * dy + Double(analysisHeight) / 2
+            }
+            return (sx / scale, sy / scale)
+        }
+        let xs = corners.map(\.0), ys = corners.map(\.1)
+        return (
+            max(0, xs.min()!), max(0, ys.min()!),
+            min(Double(width), xs.max()!), min(Double(height), ys.max()!)
+        )
+    }
+}
+
+extension SevenSegmentLatticeReader {
+    private static let patterns: [(Character, SevenSegmentPattern)] = [
+        ("0", [.a, .b, .c, .d, .e, .f]), ("1", [.b, .c]), ("2", [.a, .b, .d, .e, .g]),
+        ("3", [.a, .b, .c, .d, .g]), ("4", [.b, .c, .f, .g]), ("5", [.a, .c, .d, .f, .g]),
+        ("6", [.a, .c, .d, .e, .f, .g]), ("7", [.a, .b, .c]), ("8", [.a, .b, .c, .d, .e, .f, .g]),
+        ("9", [.a, .b, .c, .d, .f, .g]), ("-", [.g])
+    ]
+
+    /// Exact template, else a unique template one segment away, else "_".
+    fileprivate static func digit(for pattern: SevenSegmentPattern) -> (Character, Float) {
+        if let exact = patterns.first(where: { $0.1 == pattern }) { return (exact.0, 1) }
+        let near = patterns.filter { ($0.1.rawValue ^ pattern.rawValue).nonzeroBitCount == 1 }
+        if near.count == 1 { return (near[0].0, 6 / 7) }
+        return ("_", 0)
+    }
+}
+
+// MARK: - Raster helpers
+
+private func boxResize(_ source: [UInt8], width: Int, height: Int, toWidth: Int, toHeight: Int) -> [UInt8] {
+    // Area-weighted (box) resampling: each output pixel averages the source
+    // area it covers. Separable: rows, then columns.
+    func weights(_ from: Int, _ to: Int) -> [[(Int, Double)]] {
+        let ratio = Double(from) / Double(to)
+        return (0..<to).map { i in
+            let a = Double(i) * ratio, b = Double(i + 1) * ratio
+            var list: [(Int, Double)] = []
+            var j = Int(a)
+            while Double(j) < b, j < from {
+                let lo = max(a, Double(j)), hi = min(b, Double(j + 1))
+                if hi > lo { list.append((j, (hi - lo) / ratio)) }
+                j += 1
+            }
+            return list
+        }
+    }
+    let wx = weights(width, toWidth)
+    let wy = weights(height, toHeight)
+    var horizontal = [Double](repeating: 0, count: toWidth * height)
+    for y in 0..<height {
+        let row = y * width
+        for x in 0..<toWidth {
+            var sum = 0.0
+            for (j, weight) in wx[x] { sum += Double(source[row + j]) * weight }
+            horizontal[y * toWidth + x] = sum
+        }
+    }
+    var out = [UInt8](repeating: 0, count: toWidth * toHeight)
+    for y in 0..<toHeight {
+        for x in 0..<toWidth {
+            var sum = 0.0
+            for (j, weight) in wy[y] { sum += horizontal[j * toWidth + x] * weight }
+            out[y * toWidth + x] = UInt8(min(255, max(0, sum.rounded())))
+        }
+    }
+    return out
+}
+
+private func median3(_ source: [UInt8], width: Int, height: Int) -> [UInt8] {
+    var out = source
+    var window = [UInt8](repeating: 0, count: 9)
+    for y in 0..<height {
+        for x in 0..<width {
+            var n = 0
+            for dy in -1...1 {
+                let yy = min(height - 1, max(0, y + dy))
+                for dx in -1...1 {
+                    let xx = min(width - 1, max(0, x + dx))
+                    window[n] = source[yy * width + xx]
+                    n += 1
+                }
+            }
+            window.sort()
+            out[y * width + x] = window[4]
+        }
+    }
+    return out
+}
+
+/// Square max (or min) filter of odd `size`, clipped at the borders.
+private func slidingExtreme(_ values: [Double], width: Int, height: Int, size: Int, maximum: Bool) -> [Double] {
+    let radius = size / 2
+    func pass(_ input: [Double], count: Int, lines: Int, index: (Int, Int) -> Int) -> [Double] {
+        var output = input
+        var deque = [Int](repeating: 0, count: count)
+        for line in 0..<lines {
+            var head = 0, tail = 0
+            var next = 0
+            for i in 0..<count {
+                let upper = min(count - 1, i + radius)
+                while next <= upper {
+                    let v = input[index(line, next)]
+                    while tail > head {
+                        let w = input[index(line, deque[tail - 1])]
+                        if maximum ? (w <= v) : (w >= v) { tail -= 1 } else { break }
+                    }
+                    deque[tail] = next
+                    tail += 1
+                    next += 1
+                }
+                while deque[head] < i - radius { head += 1 }
+                output[index(line, i)] = input[index(line, deque[head])]
+            }
+        }
+        return output
+    }
+    let rows = pass(values, count: width, lines: height) { line, i in line * width + i }
+    return pass(rows, count: height, lines: width) { line, i in i * width + line }
+}
+
+private func otsu(_ values: [Double]) -> Double {
+    guard let low = values.min(), let high = values.max(), high > low else { return values.first ?? 0 }
+    let bins = 128
+    var histogram = [Double](repeating: 0, count: bins)
+    let span = (high - low) / Double(bins)
+    for v in values {
+        histogram[min(bins - 1, Int((v - low) / span))] += 1
+    }
+    let centers = (0..<bins).map { low + (Double($0) + 0.5) * span }
+    let total = histogram.reduce(0, +)
+    let totalMass = zip(histogram, centers).reduce(0) { $0 + $1.0 * $1.1 }
+    var weight = 0.0, mass = 0.0
+    var best = -1.0, cut = low
+    for i in 0..<bins {
+        weight += histogram[i]
+        mass += histogram[i] * centers[i]
+        let rest = total - weight
+        guard weight > 0, rest > 0 else { continue }
+        let mean1 = mass / weight
+        let mean2 = (totalMass - mass) / rest
+        let between = weight * rest * (mean1 - mean2) * (mean1 - mean2)
+        if between > best {
+            best = between
+            cut = low + Double(i + 1) * span
+        }
+    }
+    return cut
+}
+
+/// 4-connected labels (0 = background) and component bounds, labels from 1.
+private func label(_ mask: BitMask) -> ([Int], [Component]) {
+    let w = mask.width, h = mask.height
+    var labels = [Int](repeating: 0, count: w * h)
+    var components: [Component] = []
+    var stack: [Int] = []
+    var next = 0
+    for start in 0..<(w * h) where mask.bits[start] && labels[start] == 0 {
+        next += 1
+        var c = Component(label: next, minX: start % w, minY: start / w, maxX: start % w + 1, maxY: start / w + 1, area: 0)
+        labels[start] = next
+        stack.append(start)
+        while let index = stack.popLast() {
+            let x = index % w, y = index / w
+            c.area += 1
+            c.minX = min(c.minX, x); c.maxX = max(c.maxX, x + 1)
+            c.minY = min(c.minY, y); c.maxY = max(c.maxY, y + 1)
+            if x > 0, mask.bits[index - 1], labels[index - 1] == 0 { labels[index - 1] = next; stack.append(index - 1) }
+            if x + 1 < w, mask.bits[index + 1], labels[index + 1] == 0 { labels[index + 1] = next; stack.append(index + 1) }
+            if y > 0, mask.bits[index - w], labels[index - w] == 0 { labels[index - w] = next; stack.append(index - w) }
+            if y + 1 < h, mask.bits[index + w], labels[index + w] == 0 { labels[index + w] = next; stack.append(index + w) }
+        }
+        components.append(c)
+    }
+    return (labels, components)
+}
+
+/// Twice the largest inscribed distance per component (stroke thickness).
+/// Exact Euclidean distance transform (Felzenszwalb–Huttenlocher), with the
+/// area outside the mask counted as background.
+private func thicknesses(_ mask: BitMask, labels: [Int], count: Int) -> [Double] {
+    let w = mask.width + 2, h = mask.height + 2
+    let infinity = 1e20
+    var grid = [Double](repeating: 0, count: w * h)
+    for y in 0..<mask.height {
+        for x in 0..<mask.width where mask[x, y] {
+            grid[(y + 1) * w + x + 1] = infinity
+        }
+    }
+    func transform(_ f: [Double]) -> [Double] {
+        let n = f.count
+        var d = [Double](repeating: 0, count: n)
+        var v = [Int](repeating: 0, count: n)
+        var z = [Double](repeating: 0, count: n + 1)
+        var k = 0
+        z[0] = -infinity; z[1] = infinity
+        for q in 1..<n {
+            var s = ((f[q] + Double(q * q)) - (f[v[k]] + Double(v[k] * v[k]))) / Double(2 * q - 2 * v[k])
+            while s <= z[k] {
+                k -= 1
+                s = ((f[q] + Double(q * q)) - (f[v[k]] + Double(v[k] * v[k]))) / Double(2 * q - 2 * v[k])
+            }
+            k += 1
+            v[k] = q
+            z[k] = s
+            z[k + 1] = infinity
+        }
+        k = 0
+        for q in 0..<n {
+            while z[k + 1] < Double(q) { k += 1 }
+            let dq = Double(q - v[k])
+            d[q] = dq * dq + f[v[k]]
+        }
+        return d
+    }
+    for x in 0..<w {
+        let column = (0..<h).map { grid[$0 * w + x] }
+        let done = transform(column)
+        for y in 0..<h { grid[y * w + x] = done[y] }
+    }
+    for y in 0..<h {
+        let row = Array(grid[(y * w)..<(y * w + w)])
+        let done = transform(row)
+        for x in 0..<w { grid[y * w + x] = done[x] }
+    }
+    var best = [Double](repeating: 0, count: count + 1)
+    for y in 0..<mask.height {
+        for x in 0..<mask.width {
+            let l = labels[y * mask.width + x]
+            if l > 0 { best[l] = max(best[l], grid[(y + 1) * w + x + 1]) }
+        }
+    }
+    return best.map { 2 * $0.squareRoot() }
+}
+
+/// Nearest-neighbour rotation about the centre (scipy.ndimage.rotate order 0).
+private func rotate(_ mask: BitMask, degrees: Double, expand: Bool) -> BitMask {
+    let radians = degrees * .pi / 180
+    let c = cos(radians), s = sin(radians)
+    let w = Double(mask.width), h = Double(mask.height)
+    let outW = expand ? Int((abs(w * c) + abs(h * s)).rounded()) : mask.width
+    let outH = expand ? Int((abs(w * s) + abs(h * c)).rounded()) : mask.height
+    var out = BitMask(width: max(1, outW), height: max(1, outH))
+    let ocx = Double(outW) / 2, ocy = Double(outH) / 2
+    for y in 0..<out.height {
+        for x in 0..<out.width {
+            let dx = Double(x) + 0.5 - ocx, dy = Double(y) + 0.5 - ocy
+            let sx = Int((c * dx - s * dy + w / 2).rounded(.down))
+            let sy = Int((s * dx + c * dy + h / 2).rounded(.down))
+            if sx >= 0, sy >= 0, sx < mask.width, sy < mask.height, mask[sx, sy] { out[x, y] = true }
+        }
+    }
+    return out
+}
+
+/// Binary closing with a 3×3 cross, one iteration.
+private func close(_ mask: BitMask) -> BitMask {
+    func step(_ m: BitMask, dilate: Bool) -> BitMask {
+        var out = m
+        for y in 0..<m.height {
+            for x in 0..<m.width {
+                var values = [m[x, y]]
+                if x > 0 { values.append(m[x - 1, y]) } else if !dilate { values.append(false) }
+                if x + 1 < m.width { values.append(m[x + 1, y]) } else if !dilate { values.append(false) }
+                if y > 0 { values.append(m[x, y - 1]) } else if !dilate { values.append(false) }
+                if y + 1 < m.height { values.append(m[x, y + 1]) } else if !dilate { values.append(false) }
+                out[x, y] = dilate ? values.contains(true) : !values.contains(false)
+            }
+        }
+        return out
+    }
+    return step(step(mask, dilate: true), dilate: false)
+}
+
+private func close1D(_ line: [Bool], size: Int) -> [Bool] {
+    let radius = size / 2
+    guard radius > 0 else { return line }
+    let n = line.count
+    var dilated = [Bool](repeating: false, count: n)
+    for i in 0..<n where line[i] {
+        for j in max(0, i - radius)...min(n - 1, i + radius) { dilated[j] = true }
+    }
+    var out = [Bool](repeating: false, count: n)
+    for i in 0..<n {
+        var all = true
+        for j in (i - radius)...(i + radius) {
+            if j < 0 || j >= n || !dilated[j] { all = false; break }
+        }
+        out[i] = all
+    }
+    return out
+}
+
+private func crop(_ mask: BitMask, y0: Int, y1: Int) -> BitMask {
+    let top = max(0, y0), bottom = min(mask.height, max(top, y1))
+    var out = BitMask(width: mask.width, height: bottom - top)
+    for y in top..<bottom {
+        for x in 0..<mask.width { out[x, y - top] = mask[x, y] }
+    }
+    return out
+}
+
+private func columnHasInk(_ mask: BitMask, rows: Range<Int>, x0: Int = 0, x1: Int? = nil) -> [Bool] {
+    let end = x1 ?? mask.width
+    let ys = max(0, rows.lowerBound)..<min(mask.height, rows.upperBound)
+    return (x0..<end).map { x in ys.contains { mask[x, $0] } }
+}
+
+private func inkRows(_ mask: BitMask, x0: Int, x1: Int) -> (Int, Int)? {
+    var first: Int?
+    var last = 0
+    for y in 0..<mask.height {
+        var any = false
+        for x in max(0, x0)..<min(mask.width, x1) where mask[x, y] { any = true; break }
+        if any {
+            if first == nil { first = y }
+            last = y + 1
+        }
+    }
+    return first.map { ($0, last) }
+}
+
+private func inkShare(_ mask: BitMask, x0: Int, x1: Int, y0: Int, y1: Int) -> Double {
+    let xa = max(0, x0), xb = min(mask.width, x1), ya = max(0, y0), yb = min(mask.height, y1)
+    guard xb > xa, yb > ya else { return 0 }
+    var ink = 0
+    for y in ya..<yb {
+        for x in xa..<xb where mask[x, y] { ink += 1 }
+    }
+    return Double(ink) / Double((xb - xa) * (yb - ya))
+}
+
+private func runs(_ on: [Bool]) -> [(Int, Int)] {
+    var result: [(Int, Int)] = []
+    var start: Int?
+    for (i, value) in on.enumerated() {
+        if value, start == nil { start = i }
+        if !value, let s = start { result.append((s, i)); start = nil }
+    }
+    if let s = start { result.append((s, on.count)) }
+    return result
+}
+
+/// Least-squares x = slope * y + intercept.
+private func fitLine(_ ys: [Double], _ xs: [Double]) -> (Double, Double)? {
+    let n = Double(ys.count)
+    let sy = ys.reduce(0, +), sx = xs.reduce(0, +)
+    let syy = ys.reduce(0) { $0 + $1 * $1 }
+    let sxy = zip(ys, xs).reduce(0) { $0 + $1.0 * $1.1 }
+    let denominator = n * syy - sy * sy
+    guard denominator != 0 else { return nil }
+    let slope = (n * sxy - sx * sy) / denominator
+    return (slope, (sx - slope * sy) / n)
+}
+
+private func median(_ values: [Double]) -> Double {
+    let sorted = values.sorted()
+    guard !sorted.isEmpty else { return 0 }
+    let mid = sorted.count / 2
+    return sorted.count % 2 == 1 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2
+}
+
+private func weightedMedian(_ pairs: [(Double, Double)]) -> Double {
+    let sorted = pairs.sorted { $0.0 < $1.0 }
+    let total = sorted.reduce(0) { $0 + $1.1 }
+    var running = 0.0
+    for (value, weight) in sorted {
+        running += weight
+        if running >= total / 2 { return value }
+    }
+    return sorted.last?.0 ?? 0
+}
