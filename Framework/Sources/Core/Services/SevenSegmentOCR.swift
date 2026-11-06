@@ -406,7 +406,8 @@ private struct GrayBuffer {
                 washAwareStems: washAwareStems
             )
             // Volume rowcrops are ~980px; keep traces on those for #591.
-            if buffer.width >= 900 {
+            // #660 probe: also trace synth glare / invert panels (<500px).
+            if buffer.width >= 900 || buffer.width < 500 {
                 let pattern = sample(
                     mask,
                     box: densestInkBand(
@@ -1582,10 +1583,32 @@ private extension GrayBuffer {
         let primaryIsDark = chosen.isDark
         let glyphs = chosen.glyphs
         let bandSource = chosen.bandSource
-        if buffer.width >= 1000 {
+        // #660 probe: also trace synth glare / invert panels (<500px).
+        let probe = buffer.width >= 1000 || buffer.width < 500
+        if probe {
             let ink = glyphs.bits.filter { $0 }.count
+            let darkInk = masks.dark.bits.filter { $0 }.count
+            let lightInk = masks.light.bits.filter { $0 }.count
+            let midY0 = buffer.height / 3
+            let midY1 = (buffer.height * 2) / 3
+            var midGlyph = 0
+            var midGlass = 0
+            var midTotal = 0
+            for y in midY0..<midY1 {
+                let row = y * buffer.width
+                for x in 0..<buffer.width {
+                    midTotal += 1
+                    if glyphs.bits[row + x] {
+                        midGlyph += 1
+                        // Digits sit in the middle 80% of width; edge columns
+                        // on a full-width mid-row glare wash are glass.
+                        let edge = x < buffer.width / 10 || x > (buffer.width * 9) / 10
+                        if edge { midGlass += 1 }
+                    }
+                }
+            }
             trace(
-                "read \(buffer.width)x\(buffer.height) dark=\(primaryIsDark) opened=\(opened) ink=\(ink)\n"
+                "read \(buffer.width)x\(buffer.height) dark=\(primaryIsDark) opened=\(opened) dOpen=\(darkChoice.opens) lOpen=\(lightChoice.opens) preferD=\(darkPreferred) ink=\(ink) maskD=\(darkInk) maskL=\(lightInk) midInk=\(midGlyph)/\(midTotal) midEdgeInk=\(midGlass) split=\(splittingRows)\n"
             )
         }
         let bandSums = opened ? digitRowSums(bandSource.rowSums) : bandSource.rowSums
@@ -1626,9 +1649,10 @@ private extension GrayBuffer {
             : (bandsForSplit.count > foundBands.count
                 ? bandsForSplit
                 : merge(bandsForSplit, whenGapBelow: max(1, cellHeight / 2)))
-        if buffer.width >= 1000 {
+        if buffer.width >= 1000 || buffer.width < 500 {
             let listed = splitBands.map { "\($0.0)-\($0.1)" }.joined(separator: ",")
-            trace("bands \(listed)\n")
+            let found = foundBands.map { "\($0.0)-\($0.1)" }.joined(separator: ",")
+            trace("bands split=\(listed) found=\(found) cellH=\(cellHeight)\n")
         }
         // The window is sized from the whole crop. Two rows make it wide
         // enough to mark the glass between digits. Read each row from a
