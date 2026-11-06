@@ -270,19 +270,8 @@ public enum SevenSegmentOCR {
         }
         // Huge pale pad around a small panel (training / paddedCanvas) must
         // not survive into masks — fit alone leaves tiny glyphs (#648).
-        let traceDecode = getenv("SLF_OCR_TRACE") != nil
-        if traceDecode {
-            try? FileManager.default.removeItem(atPath: "/tmp/sixlayer-600-ocr-trace.txt")
-            trace("in \(gray.width)x\(gray.height)\n")
-        }
         gray = gray.trimmingUniformMargin()
-        if traceDecode {
-            trace("trimmed \(gray.width)x\(gray.height)\n")
-        }
         gray = gray.fitted(maxSide: digitPanelAnalysisMaxSide)
-        if traceDecode {
-            trace("fitted \(gray.width)x\(gray.height)\n")
-        }
         lastDecodeAnalysisLongEdge = max(gray.width, gray.height)
         let upright = GrayBuffer.deskew(gray, maximumDegrees: deskewMaximumDegrees)
         let fragments = GrayBuffer.fragments(in: upright)
@@ -552,16 +541,15 @@ private struct GrayBuffer {
             )
             // Volume rowcrops are ~980px; keep traces on those for #591.
             if buffer.width >= 900 {
-                let trimmed = densestInkBand(
-                    mask,
-                    box: box,
-                    width: buffer.width,
-                    digitWidth: digitWidth,
-                    forceDigitTall: washAwareStems
-                )
                 let pattern = sample(
                     mask,
-                    box: trimmed,
+                    box: densestInkBand(
+                        mask,
+                        box: box,
+                        width: buffer.width,
+                        digitWidth: digitWidth,
+                        forceDigitTall: washAwareStems
+                    ),
                     width: buffer.width,
                     washAwareStems: washAwareStems,
                     sampleBand: sampleBand
@@ -578,28 +566,8 @@ private struct GrayBuffer {
                     pattern.contains(.f) ? "f" : "",
                     pattern.contains(.g) ? "g" : ""
                 ].joined()
-                let third = max(1, trimmed.height / 3)
-                let midX = trimmed.minX + trimmed.width / 2
-                let aRun = longestForegroundRun(
-                    mask, x: midX, y: trimmed.minY, length: third, vertical: true
-                )
-                let gRun = longestForegroundRun(
-                    mask, x: midX, y: trimmed.minY + third, length: third, vertical: true
-                )
-                let lower = trimmed.minY + third * 2
-                let dRun = longestForegroundRun(
-                    mask, x: midX, y: lower, length: max(1, trimmed.maxY - lower), vertical: true
-                )
-                let threeQuarters = trimmed.minY + (trimmed.height * 3) / 4
-                let half = trimmed.width / 2
-                let eRun = longestForegroundRun(
-                    mask, x: trimmed.minX, y: threeQuarters, length: max(1, half), vertical: false
-                )
-                let cRun = longestForegroundRun(
-                    mask, x: midX + 1, y: threeQuarters, length: max(1, trimmed.maxX - (midX + 1)), vertical: false
-                )
                 trace(
-                    "cell \(name) box \(box.minX),\(box.minY) \(box.width)x\(box.height) trim \(trimmed.minX),\(trimmed.minY) \(trimmed.width)x\(trimmed.height) pat \(pattern.rawValue) [\(bits)] runs a\(aRun)/\(third) g\(gRun)/\(third) d\(dRun) e\(eRun)/\(max(1, half)) c\(cRun) cov \(cover) h \(digitHeight)\(pitchNote)\n"
+                    "cell \(name) box \(box.minX),\(box.minY) \(box.width)x\(box.height) pat \(pattern.rawValue) [\(bits)] cov \(cover) h \(digitHeight)\(pitchNote)\n"
                 )
             }
             return cell
@@ -1271,16 +1239,6 @@ private struct GrayBuffer {
 
 private func trace(_ message: String) {
     fputs(message, stderr)
-    guard getenv("SLF_OCR_TRACE") != nil else { return }
-    let path = "/tmp/sixlayer-600-ocr-trace.txt"
-    let data = Data(message.utf8)
-    if let handle = FileHandle(forWritingAtPath: path) {
-        handle.seekToEndOfFile()
-        handle.write(data)
-        try? handle.close()
-    } else {
-        FileManager.default.createFile(atPath: path, contents: data)
-    }
 }
 
 private struct Mask {
@@ -2939,11 +2897,6 @@ private func polarity(
     let coreGap = zip(coreBands, coreBands.dropFirst()).map { $1.0 - $0.1 }.max() ?? 0
     let shortestCore = coreBands.map { $0.1 - $0.0 }.min() ?? 0
     let realRowGap = coreBands.count >= 2 && coreGap * 4 >= shortestCore
-    if getenv("SLF_OCR_TRACE") != nil, loose.width >= 900 {
-        trace(
-            "polarity dark=\(isDark) fills=\(fills) limitedTall=\(limitedTall) looseTall=\(looseTall) bands=\(coreBands.count) gap=\(coreGap) short=\(shortestCore) real=\(realRowGap) span=\(span != nil)\n"
-        )
-    }
     guard let span, fills, limitedTall * 2 < looseTall, realRowGap else {
         return (false, (isDark, loose, loose))
     }
