@@ -855,10 +855,12 @@ private struct GrayBuffer {
     /// Six scanlines, as ssocr does. The center column is split into thirds
     /// for the top, middle, and bottom bars. Lines a quarter down from the
     /// top and a quarter up from the bottom are split into halves for the
-    /// stems. A segment lights only when a consecutive foreground run covers
-    /// at least an eighth of that scan, and at least two pixels (#599).
-    /// A fifth was too high: a real stroke on the near-miss 2 is a run of
-    /// four on scans of 21–30, and one pixel on an empty stem stays dark.
+    /// stems. A segment lights on a consecutive run of at least two pixels
+    /// (#599). One pixel on an empty stem stays dark. A fraction of the scan
+    /// (an eighth) fit synthetic strokes of 12px in a ~30px third, and rejected
+    /// this crop: the 3's bars are runs of 7–11 in a third of ~111, and the
+    /// 2's lower-left stem is a run of 2 in a half of 91. Those became `1`
+    /// and a 2/3 tie.
     ///
     /// `washAwareStems`: skip the outer left fringe on f/e scans so a solid
     /// wash bridge beside the glyph cannot mint a false upper/lower-left stem.
@@ -916,7 +918,7 @@ private struct GrayBuffer {
         // The fringe starts inside a real stem. The tail past it can be a
         // single pixel; requiring two turned a washed 8 into a 9. The fringe
         // already skipped the bridge (#599).
-        let eLit = washAwareStems ? eRun >= 1 : eRun >= max(2, eLength / 8)
+        let eLit = washAwareStems ? eRun >= 1 : eRun >= 2
         if eLit {
             pattern.formUnion(.e)
         }
@@ -3787,7 +3789,7 @@ private func segmentIsLit(
     vertical: Bool
 ) -> Bool {
     let run = longestForegroundRun(mask, x: x, y: y, length: length, vertical: vertical)
-    return run >= max(2, length / 8)
+    return run >= 2
 }
 
 private func longestForegroundRun(
