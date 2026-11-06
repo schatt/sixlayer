@@ -811,14 +811,6 @@ private struct GrayBuffer {
                 groups[groups.count - 1].append(cell)
             }
         }
-        // Temporary #602 probe — five-group → "2.22" only.
-        if ordered.count >= 10 {
-            let listed = zip(ordered, ordered.dropFirst()).enumerated().map { index, pair in
-                "\(pair.0.character)→\(pair.1.character) gap\(gaps[index])"
-            }.joined(separator: " ")
-            let texts = groups.map { String($0.map(\.character)) }.joined(separator: "|")
-            trace("602-group mid\(middle) pitch\(pitch) [\(listed)] → \(texts)\n")
-        }
         return groups
     }
 
@@ -2457,7 +2449,13 @@ private func polarity(
     // Opened path is for multi-row washed panels where loose fills the gap.
     // A single-row panel's core often shows two mid-glyph bands with a tiny
     // valley; opening on that splits the digit and short rows go empty (#602).
-    let coreBands = runs(limitedCore.rowSums).filter { $0.1 - $0.0 >= max(8, loose.height / 8) }
+    // Band floor follows typical core run height, not canvas height/8 — on an
+    // 820px hand crop that floor was 102px and dropped real digit rows, so
+    // open never fired and decode stayed on the loose mask (#602 / #600).
+    let coreRuns = runs(limitedCore.rowSums)
+    let typicalCore = median(coreRuns.map { $0.1 - $0.0 }.filter { $0 >= 8 }) ?? 0
+    let digitFloor = max(8, typicalCore / 2)
+    let coreBands = coreRuns.filter { $0.1 - $0.0 >= digitFloor }
     let coreGap = zip(coreBands, coreBands.dropFirst()).map { $1.0 - $0.1 }.max() ?? 0
     let shortestCore = coreBands.map { $0.1 - $0.0 }.min() ?? 0
     let realRowGap = coreBands.count >= 2 && coreGap * 4 >= shortestCore
@@ -2468,12 +2466,6 @@ private func polarity(
     let canOpen = forceOpen
         ? (span != nil && realRowGap)
         : (span != nil && fills && limitedTall * 2 < looseTall && realRowGap)
-    // Temporary #602 probe.
-    if loose.width >= 900 {
-        trace(
-            "602-polarity dark=\(isDark) force=\(forceOpen) fills=\(fills) realRowGap=\(realRowGap) bands=\(coreBands.count) gap=\(coreGap) short=\(shortestCore) can=\(canOpen && span != nil)\n"
-        )
-    }
     guard let span, canOpen else {
         return (false, (isDark, loose, loose))
     }
