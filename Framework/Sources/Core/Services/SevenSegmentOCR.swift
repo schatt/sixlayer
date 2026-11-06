@@ -2106,6 +2106,11 @@ private func windowRadius(width: Int, height: Int) -> Int {
         return min(7, grown)
     }
     guard isWideRow else { return grown }
+    // Scale-4 rowcrops (~360px+ tall, 48px strokes) need height/15 so bars
+    // stay solid (#659). Scale-1 wide fixtures (filledInk ~200px) must keep
+    // `grown` — flooring to ~14 bridges digit gaps and reads `51.0` (#662).
+    let scale4RowMinHeight = 280
+    guard height > scale4RowMinHeight else { return grown }
     let strokeFloor = max(4, height / 15)
     return min(36, max(grown, strokeFloor))
 }
