@@ -1390,16 +1390,29 @@ private extension GrayBuffer {
         guard height > 0, width > 0, height < 160, width * 4 > height * 5 else {
             return self
         }
+        // Relative to panel glass, not a fixed <80 cut (#664). Washed strokes
+        // (~140–176 on lower-half / mid-row wash) must still count as ink while
+        // glass near the median does not. Light-on-dark panels flip the test.
+        let median = peelGlassMedian()
+        let margin = max(inkMargin, 24)
+        let inkIsDark = median > 127
+        func isPeelInk(_ pixel: UInt8) -> Bool {
+            let level = Int(pixel)
+            if inkIsDark {
+                return level + margin < median
+            }
+            return level > median + margin
+        }
         func columnDark(_ x: Int) -> Int {
             var dark = 0
-            for y in 0..<height where pixels[y * width + x] < 80 {
+            for y in 0..<height where isPeelInk(pixels[y * width + x]) {
                 dark += 1
             }
             return dark
         }
         func rowDark(_ y: Int) -> Int {
             var dark = 0
-            for x in 0..<width where pixels[y * width + x] < 80 {
+            for x in 0..<width where isPeelInk(pixels[y * width + x]) {
                 dark += 1
             }
             return dark
@@ -1440,11 +1453,9 @@ private extension GrayBuffer {
             }
         }
         guard bestInk >= 0 else { return self }
-        // Mid-row glare lifts strokes above the hard <80 ink cut (#660), so
-        // the densest "dark" run collapses to a top- or bottom-bar stub.
-        // Peeling into that stub makes solid wash fills read as 8 / "_".
-        // Keep the full line when the winning band is much shorter than the
-        // panel — real padded line crops still have a digit-tall densest band.
+        // Belt-and-suspenders with adaptive peel ink (#664): if a wash still
+        // leaves only a short densest run, refuse to peel into that stub
+        // (#660). Real padded line crops keep a digit-tall densest band.
         let bandHeight = bestEnd - bestStart
         if bandHeight * 3 < height {
             return self
@@ -1456,6 +1467,24 @@ private extension GrayBuffer {
         }
         guard x1 - x0 > 8, y1 - y0 > 8 else { return self }
         return cropped(x0: x0, y0: y0, x1: x1, y1: y1)
+    }
+
+    /// Median luminance — proxy for glass on a mostly-glass short-wide crop.
+    fileprivate func peelGlassMedian() -> Int {
+        guard !pixels.isEmpty else { return 128 }
+        var hist = [Int](repeating: 0, count: 256)
+        for pixel in pixels {
+            hist[Int(pixel)] += 1
+        }
+        var seen = 0
+        let mid = (pixels.count + 1) / 2
+        for level in 0..<256 {
+            seen += hist[level]
+            if seen >= mid {
+                return level
+            }
+        }
+        return 128
     }
 
     /// A panel crop, or nil when the rect is tiny, nearly the whole frame, or empty.
@@ -2166,8 +2195,8 @@ private func windowRadius(width: Int, height: Int) -> Int {
     }
     guard isWideRow else { return grown }
     // Scale-4 rowcrops (~360px+ tall, 48px strokes) need height/15 so bars
-    // stay solid (#659). Scale-1 wide fixtures (filledInk ~200px) must keep
-    // `grown` — flooring to ~14 bridges digit gaps and reads `51.0` (#662).
+    // stay solid (#659). Scale-1 wide fixtures (filledInk ~200px / five-group
+    // ~122px) must keep `grown` — flooring bridges digit gaps (#662 / #602).
     let scale4RowMinHeight = 280
     guard height > scale4RowMinHeight else { return grown }
     let strokeFloor = max(4, height / 15)
@@ -2552,14 +2581,23 @@ private func polarity(
     // Opened path is for multi-row washed panels where loose fills the gap.
     // A single-row panel's core often shows two mid-glyph bands with a tiny
     // valley; opening on that splits the digit and short rows go empty (#602).
-    let coreBands = runs(limitedCore.rowSums).filter { $0.1 - $0.0 >= max(8, loose.height / 8) }
+    // Band floor follows typical core run height, not canvas height/8 — on an
+    // 820px hand crop that floor was 102px and dropped real digit rows, so
+    // open never fired and decode stayed on the loose mask (#602 / #600).
+    let coreRuns = runs(limitedCore.rowSums)
+    let typicalCore = median(coreRuns.map { $0.1 - $0.0 }.filter { $0 >= 8 }) ?? 0
+    let digitFloor = max(8, typicalCore / 2)
+    let coreBands = coreRuns.filter { $0.1 - $0.0 >= digitFloor }
     let coreGap = zip(coreBands, coreBands.dropFirst()).map { $1.0 - $0.1 }.max() ?? 0
     let shortestCore = coreBands.map { $0.1 - $0.0 }.min() ?? 0
-    let realRowGap = coreBands.count >= 2 && coreGap * 4 >= shortestCore
-    // forceOpen: still require a digit span; skip fills/tall checks that
-    // mid-glyph valleys defeat.
+    // Gap at least a quarter of the shorter digit-tall band (mid-glyph
+    // valleys are much smaller). forceOpen still requires this — skipping
+    // it opens single-row multi-group panels and digitColumnSpan keeps one
+    // group ("2.22" on wideGap five-group) (#602 / #598).
+    let minGapVsBand = 4
+    let realRowGap = coreBands.count >= 2 && coreGap * minGapVsBand >= shortestCore
     let canOpen = forceOpen
-        ? span != nil
+        ? (span != nil && realRowGap)
         : (span != nil && fills && limitedTall * 2 < looseTall && realRowGap)
     guard canOpen else {
         return (false, (isDark, loose, loose))
