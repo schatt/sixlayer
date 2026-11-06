@@ -104,6 +104,20 @@ struct OCRSevenSegment576Tests {
         #expect(result.confidence >= 0.79 && result.confidence <= 0.81)
     }
 
+    /// Two stray 1s from the legacy path do not replace a confident "11.11".
+    @Test func strayOnesDoNotOutweighALatticeReadOfOnes() {
+        let ones = [[
+            fragment("1", x: 0.1, y: 0.4, w: 0.05, h: 0.2, role: .segment),
+            fragment("1", x: 0.3, y: 0.4, w: 0.05, h: 0.2, role: .segment)
+        ]]
+        #expect(!SevenSegmentOCR.legacyOutweighsLattice(ones, latticeText: "11.11"))
+        #expect(SevenSegmentOCR.legacyOutweighsLattice(ones, latticeText: "1.1"))
+        // Digits other than 1 still decide when either side has them.
+        let eights = [[fragment("88", x: 0.1, y: 0.4, w: 0.2, h: 0.2, role: .segment)]]
+        #expect(SevenSegmentOCR.legacyOutweighsLattice(eights, latticeText: "1188"))
+        #expect(!SevenSegmentOCR.legacyOutweighsLattice(ones, latticeText: "18"))
+    }
+
     @Test func tallCropReadsEachRowAtItsOwnWindow() {
         // Empty margin makes the threshold window wide enough to see a bright
         // line just above each row. The glass under that line is then darker

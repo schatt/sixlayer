@@ -319,19 +319,8 @@ public enum SevenSegmentOCR {
             if isPlausible(fragments) {
                 return quality(legacy) >= quality(lattice) ? legacy : lattice
             }
-            let trusted = fragments.flatMap { $0 }.filter { fragment in
-                fragment.confidence >= 6.0 / 7.0 && isPlausible([[fragment]])
-            }
-            let trustedChars = trusted.reduce(0) { $0 + $1.text.count }
-            let allChars = fragments.flatMap { $0 }.reduce(0) { $0 + $1.text.count }
-            // Count digits other than 1: legacy photo output is often runs
-            // of 1s at high confidence.
-            let trustedDigits = trusted.reduce(0) { $0 + $1.text.filter { $0.isNumber && $0 != "1" }.count }
-            let latticeDigits = rows.flatMap { $0 }.filter { $0.character.isNumber && $0.character != "1" }.count
-            if trustedChars * 2 >= allChars, trustedDigits >= latticeDigits {
-                return legacy
-            }
-            return lattice
+            let latticeText = String(rows.flatMap { $0 }.map(\.character))
+            return legacyOutweighsLattice(fragments, latticeText: latticeText) ? legacy : lattice
         }
         if isPlausible(fragments) {
             return legacy
@@ -340,6 +329,31 @@ public enum SevenSegmentOCR {
             return lattice
         }
         return legacy
+    }
+
+    /// Whether an implausible legacy read still beats a confident lattice read.
+    ///
+    /// Only high-confidence plausible fragments count, and they must hold at
+    /// least half the legacy characters. Digits are compared without 1s:
+    /// legacy photo output is often runs of 1s at high confidence. When
+    /// neither side has a digit other than 1 ("11.11"), every digit counts,
+    /// so a couple of stray 1s cannot replace a full read of 1s.
+    static func legacyOutweighsLattice(_ fragments: [[OCRRecognizedText]], latticeText: String) -> Bool {
+        let trusted = fragments.flatMap { $0 }.filter { fragment in
+            fragment.confidence >= 6.0 / 7.0 && isPlausible([[fragment]])
+        }
+        let trustedText = trusted.map(\.text).joined()
+        let allChars = fragments.flatMap { $0 }.reduce(0) { $0 + $1.text.count }
+        guard trustedText.count * 2 >= allChars else { return false }
+        func digits(_ text: String, countingOnes: Bool) -> Int {
+            text.filter { $0.isNumber && (countingOnes || $0 != "1") }.count
+        }
+        let trustedDigits = digits(trustedText, countingOnes: false)
+        let latticeDigits = digits(latticeText, countingOnes: false)
+        if trustedDigits == 0, latticeDigits == 0 {
+            return digits(trustedText, countingOnes: true) >= digits(latticeText, countingOnes: true)
+        }
+        return trustedDigits >= latticeDigits
     }
 
     private static func quality(_ result: OCRResult) -> Int {
