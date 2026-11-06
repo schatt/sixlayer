@@ -148,6 +148,33 @@ public enum SevenSegmentOCR {
         lastDecodeAnalysisLongEdge = max(gray.width, gray.height)
         let upright = GrayBuffer.deskew(gray, maximumDegrees: deskewMaximumDegrees)
         let fragments = GrayBuffer.fragments(in: upright)
+        let legacy = result(fragments)
+        // Photographed panels: italic digits, segment gaps, reflections and
+        // uneven light defeat the fixed-pixel path above. The lattice reader
+        // measures everything from the panel itself (#576 real photos).
+        let rows = SevenSegmentLatticeReader.read(pixels: gray.pixels, width: gray.width, height: gray.height)
+        let lattice = result(rows.map { [latticeFragment($0, width: gray.width, height: gray.height)] })
+        // Keep the legacy read when it is plausible and the lattice read is
+        // not clearly better: legacy carries group spacing, commas, colons
+        // and unknown-cell placeholders. Quality counts real glyphs: photo
+        // garbage from the legacy path is mostly "1", "_" and stray marks.
+        if isPlausible(fragments) {
+            let better = SevenSegmentLatticeReader.isConfident(rows) && quality(lattice) > quality(legacy)
+            return better ? lattice : legacy
+        }
+        if !rows.isEmpty, quality(lattice) >= quality(legacy) {
+            return lattice
+        }
+        return legacy
+    }
+
+    private static func quality(_ result: OCRResult) -> Int {
+        let text = result.extractedText
+        let glyphs = text.filter { $0.isNumber && $0 != "1" }.count
+        return glyphs - text.filter { $0 == "_" }.count
+    }
+
+    private static func result(_ fragments: [[OCRRecognizedText]]) -> OCRResult {
         let lines = fragments.map { row in row.map(\.text).joined(separator: "  ") }
         let extracted = lines.joined(separator: "\n")
         let flat = fragments.flatMap { $0 }
@@ -158,6 +185,42 @@ public enum SevenSegmentOCR {
             boundingBoxes: flat.map(\.boundingBox),
             textTypes: extracted.isEmpty ? [:] : [.number: extracted],
             recognizedTexts: flat
+        )
+    }
+
+    /// Every group holds a digit, has no unknown cell, and does not start or
+    /// end on a mark. Garbage such as ".  ...  .8" can score 1.0 otherwise.
+    private static func isPlausible(_ fragments: [[OCRRecognizedText]]) -> Bool {
+        let flat = fragments.flatMap { $0 }
+        guard !flat.isEmpty, flat.allSatisfy({ $0.confidence > 0 && !$0.text.contains("_") }) else { return false }
+        return flat.allSatisfy { fragment in
+            let text = fragment.text
+            guard text.contains(where: \.isNumber), let first = text.first, let last = text.last else { return false }
+            return first != "." && first != "," && last != "." && last != ","
+        }
+    }
+
+    private static func latticeFragment(
+        _ row: [SevenSegmentLatticeReader.Cell],
+        width: Int,
+        height: Int
+    ) -> OCRRecognizedText {
+        let minX = row.map(\.minX).min() ?? 0
+        let maxX = row.map(\.maxX).max() ?? 0
+        let minY = row.map(\.minY).min() ?? 0
+        let maxY = row.map(\.maxY).max() ?? 0
+        let w = Double(max(1, width))
+        let h = Double(max(1, height))
+        return OCRRecognizedText(
+            text: String(row.map(\.character)),
+            boundingBox: CGRect(
+                x: minX / w,
+                y: 1 - maxY / h,
+                width: max(1, maxX - minX) / w,
+                height: max(1, maxY - minY) / h
+            ),
+            confidence: row.map(\.confidence).min() ?? 0,
+            role: .segment
         )
     }
 }
