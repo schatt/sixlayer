@@ -237,13 +237,15 @@ struct OCRSevenSegment576Tests {
         let aloneBar = decode(panel(["_"]))
         let eightOnly = decode(panel(["8"]))
         let twoOnly = decode(panel(["2"]))
-        Issue.record(
-            Comment(rawValue: """
+        let eightTwo = decode(panel(["82"]))
+        let padded = decode(SegmentPanel.render(rows: [atoms("8_2")], padding: 40))
+        let widePad = decode(SegmentPanel.render(rows: [atoms("8")], padding: 40))
+        Issue.record("""
             #661 alone probe text=\(held.extractedText) segs=\(segmentTexts(held)) \
             bar=\(aloneBar.extractedText) eight=\(eightOnly.extractedText) two=\(twoOnly.extractedText) \
+            82=\(eightTwo.extractedText) pad40=\(padded.extractedText) eightPad40=\(widePad.extractedText) \
             texts=\(held.recognizedTexts.map { "\($0.text)@\($0.confidence)" })
             """)
-        )
         #expect(held.extractedText == "8_2")
         #expect(segmentTexts(held) == ["8_2"])
     }
