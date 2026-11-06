@@ -1352,6 +1352,15 @@ private extension GrayBuffer {
             }
         }
         guard bestInk >= 0 else { return self }
+        // Mid-row glare lifts strokes above the hard <80 ink cut (#660), so
+        // the densest "dark" run collapses to a top- or bottom-bar stub.
+        // Peeling into that stub makes solid wash fills read as 8 / "_".
+        // Keep the full line when the winning band is much shorter than the
+        // panel — real padded line crops still have a digit-tall densest band.
+        let bandHeight = bestEnd - bestStart
+        if bandHeight * 3 < height {
+            return self
+        }
         let y0 = max(0, bestStart - marginY)
         let y1 = min(height, bestEnd + marginY)
         if x0 == 0, y0 == 0, x1 == width, y1 == height {
@@ -2438,7 +2447,12 @@ private func polarity(
     forceOpen: Bool = false
 ) -> (opens: Bool, reading: (isDark: Bool, glyphs: Mask, bandSource: Mask)) {
     let span = digitColumnSpan(core)
-    let limitedCore = span.map { cleared($0, mask: core) } ?? core
+    // forceOpen: opposite polarity false-opened on glass (#598). Keep the
+    // full core — clearing to the single heaviest column run drops a weaker
+    // leading cluster on clean inverted panels (31 of 31.25 → ".25", #660).
+    let limitedCore = forceOpen
+        ? core
+        : (span.map { cleared($0, mask: core) } ?? core)
     let looseTall = runs(loose.rowSums).map { $0.1 - $0.0 }.max() ?? 0
     let limitedTall = runs(limitedCore.rowSums).map { $0.1 - $0.0 }.max() ?? 0
     let fills = looseTall * 100 > loose.height * 70
@@ -2449,19 +2463,27 @@ private func polarity(
     let coreGap = zip(coreBands, coreBands.dropFirst()).map { $1.0 - $0.1 }.max() ?? 0
     let shortestCore = coreBands.map { $0.1 - $0.0 }.min() ?? 0
     let realRowGap = coreBands.count >= 2 && coreGap * 4 >= shortestCore
-    // forceOpen: opposite polarity false-opened on glass (#598). Still require
-    // a digit span; skip fills/tall checks that mid-glyph valleys defeat.
+    // forceOpen: still require a digit span; skip fills/tall checks that
+    // mid-glyph valleys defeat.
     let canOpen = forceOpen
         ? span != nil
         : (span != nil && fills && limitedTall * 2 < looseTall && realRowGap)
-    guard let span, canOpen else {
+    guard canOpen else {
         return (false, (isDark, loose, loose))
     }
     // The loose mask still fills the gap inside the span. Row boundaries
     // stay on the thin core so gap specks are not thickened into a join.
     // Glyphs use a few pixels of thickness so the stroke is solid.
     let radius = max(2, core.height / 180)
-    let thick = cleared(span, mask: dilate(limitedCore, radius: radius))
+    let thickCore = dilate(limitedCore, radius: radius)
+    let thick: Mask
+    if forceOpen {
+        thick = thickCore
+    } else if let span {
+        thick = cleared(span, mask: thickCore)
+    } else {
+        return (false, (isDark, loose, loose))
+    }
     return (true, (isDark, thick, limitedCore))
 }
 
