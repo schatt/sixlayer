@@ -377,18 +377,25 @@ private struct GrayBuffer {
         let aspectWidth = max(1, digitHeight / 2)
         let digitWidth = preferredPitch?.body
             ?? (measured > aspectWidth + aspectWidth / 4 ? aspectWidth : measured)
-        let capped = boxes.map { box -> PixelBox in
-            // Cap only blobs clearly wider than one digit; a normal glyph can
-            // sit a few pixels over height/2 without being fused.
-            guard box.width > digitWidth + digitWidth / 4 else { return box }
-            let mid = box.midX
-            let half = digitWidth / 2
-            return PixelBox(
-                minX: mid - half,
-                minY: box.minY,
-                maxX: mid + (digitWidth - half),
-                maxY: box.maxY
-            )
+        // A window that bridges the intra-digit gap fuses a leading 8 into the
+        // next cell; mid-capping then kept only the middle (alone `8_2` → `_2`).
+        // Split wide spans into digit-sized slices from the left (#661).
+        let capped = boxes.flatMap { box -> [PixelBox] in
+            guard box.width > digitWidth + digitWidth / 4 else { return [box] }
+            let step = max(1, digitWidth)
+            let gap = max(1, digitWidth / 6)
+            var parts: [PixelBox] = []
+            var x = box.minX
+            while x < box.maxX {
+                let x1 = min(box.maxX, x + step)
+                let part = tightBox(mask, x0: x, x1: x1, y0: box.minY, y1: box.maxY, width: buffer.width)
+                if part.width > 0, part.height > 0 {
+                    parts.append(part)
+                }
+                if x1 >= box.maxX { break }
+                x = x1 + gap
+            }
+            return parts.isEmpty ? [box] : parts
         }
         // Pitch-driven volume rows have solid wash bridges. Left-half stem
         // scans light false `f` on that fringe (pat 123 → 2/8 tie). Gate the
@@ -2149,14 +2156,7 @@ private func windowRadius(width: Int, height: Int) -> Int {
     }
     guard isWideRow else { return grown }
     let strokeFloor = max(4, height / 15)
-    let radius = min(36, max(grown, strokeFloor))
-    // Short line crops: strokeFloor can span the intra-digit gap and fuse a
-    // leading 8 into the next cell (alone `8_2` kept only `_2`) (#661).
-    // #659 still needs the floor on taller wide rowcrops.
-    if height < 160 {
-        return min(radius, max(4, grown))
-    }
-    return radius
+    return min(36, max(grown, strokeFloor))
 }
 
 /// Columns that hold digit ink and stay empty in the gap between rows.
