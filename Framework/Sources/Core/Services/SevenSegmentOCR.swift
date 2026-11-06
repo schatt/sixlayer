@@ -5251,19 +5251,21 @@ extension SevenSegmentOCR {
     /// Decode a Live Photo: its key photo plus frames from the paired video.
     ///
     /// Reflections move between frames while the digits stay, so each row is
-    /// voted across the key photo and the frames. On 37 pump Live Photos,
-    /// voting over 12 frames read 66 of 74 rows; the key photo alone, 54.
+    /// voted across the key photo and the frames.
     ///
     /// Every image gets the full single-photo decode, panel search included.
     /// (Cropping each frame to the key photo's region was faster but lost
     /// rows the key read had missed.) Images decode in parallel. The key
-    /// photo is sharper than the video frames, so its read counts twice.
+    /// photo is sharper than the video frames, so its read counts twice and
+    /// wins a tied row.
     ///
     /// `localizeDigitPanel` is passed to each single-photo decode. Leave it
     /// on for whole Live Photo frames; turn it off for frames that are
     /// already cropped to the panel.
     ///
-    /// Confidence is the smallest share of the vote that any row won.
+    /// Confidence is the smallest share of the vote that any row won. Boxes
+    /// come from the one read that agrees with the most winning rows, so
+    /// they share that image's coordinates.
     public static func decode(
         frames: [CGImage],
         keyFrame: CGImage? = nil,
@@ -5281,64 +5283,168 @@ extension SevenSegmentOCR {
             )
             reads.store(read, at: index)
         }
-        let results = reads.results
-        var weighted: [(OCRResult, Double)] = []
-        for (index, result) in results.enumerated() {
+        var votes: [FrameVote] = []
+        for (index, result) in reads.results.enumerated() {
             guard let result else { continue }
-            weighted.append((result, keyFrame != nil && index == 0 ? 2 : 1))
+            let isKey = keyFrame != nil && index == 0
+            votes.append(FrameVote(result: result, weight: isKey ? 2 : 1, isKey: isKey))
         }
-        let fallback = weighted.first?.0 ?? OCRResult(extractedText: "", confidence: 0)
-        return voted(weighted, fallback: fallback)
+        let fallback = votes.first?.result ?? OCRResult(extractedText: "", confidence: 0)
+        return voted(votes, fallback: fallback)
     }
 
-    /// Per-row majority among reads that agree on the row count. Only
-    /// well-formed rows vote: digits with at most one decimal mark.
-    private static func voted(_ reads: [(OCRResult, Double)], fallback: OCRResult) -> OCRResult {
-        func rows(_ result: OCRResult) -> [String] {
-            result.extractedText.isEmpty ? [] : result.extractedText
-                .components(separatedBy: "\n")
-                .map { $0.replacingOccurrences(of: " ", with: "") }
-        }
-        func wellFormed(_ row: String) -> Bool {
-            // Digits with at most one decimal mark between them.
-            let marks = row.filter { $0 == "." || $0 == "," }
-            guard let first = row.first, let last = row.last, first.isNumber, last.isNumber,
-                  marks.count <= 1 else { return false }
-            return row.allSatisfy { $0.isNumber || $0 == "." || $0 == "," }
-        }
+    /// Per-row majority among reads that agree on the row count.
+    ///
+    /// Rows are compared without spaces, and the winner keeps the spacing of
+    /// a read that voted for it. Well-formed rows (digits with at most one
+    /// decimal mark) outvote the rest; a row that no read got well-formed
+    /// (an unknown cell, a colon) is voted among all reads instead.
+    /// A tied row goes to the key photo's read, then to the reads with more
+    /// total confidence.
+    private static func voted(_ votes: [FrameVote], fallback: OCRResult) -> OCRResult {
         var rowCounts: [Int: Double] = [:]
-        for (result, weight) in reads where !rows(result).isEmpty {
-            rowCounts[rows(result).count, default: 0] += weight
+        for vote in votes where !vote.rows.isEmpty {
+            rowCounts[vote.rows.count, default: 0] += vote.weight
         }
         // On a tie, more rows: a read that found both rows beats one that lost a row.
         guard let count = rowCounts.max(by: { $0.value < $1.value || ($0.value == $1.value && $0.key < $1.key) })?.key
         else { return fallback }
+        let voters = votes.filter { $0.rows.count == count }
         var winners: [String] = []
-        var share = 1.0
+        var shares: [Double] = []
         for index in 0..<count {
-            var tally: [String: Double] = [:]
-            var total = 0.0
-            for (result, weight) in reads {
-                let r = rows(result)
-                guard r.count == count, wellFormed(r[index]) else { continue }
-                tally[r[index], default: 0] += weight
-                total += weight
+            let wellFormed = voters.filter { isWellFormedRow(FrameVote.normalized($0.rows[index])) }
+            let ballots = wellFormed.isEmpty ? voters : wellFormed
+            var tally: [String: RowTally] = [:]
+            var order: [String] = []
+            for vote in ballots {
+                let row = vote.rows[index]
+                let key = FrameVote.normalized(row)
+                if tally[key] == nil { order.append(key) }
+                var entry = tally[key] ?? RowTally(text: row)
+                entry.weight += vote.weight
+                entry.hasKey = entry.hasKey || vote.isKey
+                entry.confidence += Double(vote.result.confidence)
+                tally[key] = entry
             }
-            guard let best = tally.max(by: { $0.value < $1.value || ($0.value == $1.value && $0.key > $1.key) })
+            let total = ballots.reduce(0) { $0 + $1.weight }
+            // `order` is first-seen (key photo first), so max keeps the earliest on a full tie.
+            guard let best = order.compactMap({ tally[$0] }).max(by: { $0.ranksBelow($1) }), total > 0
             else { return fallback }
-            winners.append(best.key)
-            share = min(share, best.value / total)
+            winners.append(best.text)
+            shares.append(best.weight / total)
         }
-        // Keep boxes from a read that matches the vote, the key photo first.
-        let matching = reads.first { rows($0.0) == winners }?.0
         let text = winners.joined(separator: "\n")
+        let (boxes, texts) = boxesFollowingVote(voters, winners: winners, shares: shares)
         return OCRResult(
             extractedText: text,
-            confidence: Float(share),
-            boundingBoxes: matching?.boundingBoxes ?? [],
-            textTypes: [.number: text],
-            recognizedTexts: matching?.recognizedTexts ?? []
+            confidence: Float(shares.min() ?? 0),
+            boundingBoxes: boxes,
+            textTypes: text.isEmpty ? [:] : [.number: text],
+            recognizedTexts: texts
         )
+    }
+
+    /// Digits with at most one decimal mark between them.
+    private static func isWellFormedRow(_ row: String) -> Bool {
+        let marks = row.filter { $0 == "." || $0 == "," }
+        guard let first = row.first, let last = row.last, first.isNumber, last.isNumber,
+              marks.count <= 1 else { return false }
+        return row.allSatisfy { $0.isNumber || $0 == "." || $0 == "," }
+    }
+
+    /// Boxes and fragments from the read that agrees with the most winning
+    /// rows (the key photo first). A row that read got wrong becomes one
+    /// fragment with the winning text over that row's boxes.
+    private static func boxesFollowingVote(
+        _ voters: [FrameVote],
+        winners: [String],
+        shares: [Double]
+    ) -> ([CGRect], [OCRRecognizedText]) {
+        let wanted = winners.map(FrameVote.normalized)
+        func agreement(_ vote: FrameVote) -> Int {
+            zip(vote.rows.map(FrameVote.normalized), wanted).filter { $0 == $1 }.count
+        }
+        // Earliest wins a tie, so the key photo is preferred.
+        guard var base = voters.first else { return ([], []) }
+        for vote in voters.dropFirst() where agreement(vote) > agreement(base) {
+            base = vote
+        }
+        let baseRows = base.rows.map(FrameVote.normalized)
+        guard let groups = rowGroups(base.result.recognizedTexts, rows: baseRows) else {
+            // Fragments do not line up with rows; keep them only when they say the same.
+            return baseRows == wanted ? (base.result.boundingBoxes, base.result.recognizedTexts) : (base.result.boundingBoxes, [])
+        }
+        var texts: [OCRRecognizedText] = []
+        for (index, group) in groups.enumerated() {
+            if baseRows[index] == wanted[index] {
+                texts += group
+                continue
+            }
+            let union = group.map(\.boundingBox).reduce(CGRect.null) { $0.union($1) }
+            texts.append(
+                OCRRecognizedText(
+                    text: winners[index],
+                    boundingBox: union.isNull ? .zero : union,
+                    confidence: Float(shares[index]),
+                    role: .segment
+                )
+            )
+        }
+        return (texts.map(\.boundingBox), texts)
+    }
+
+    /// Split fragments into rows by their text, in reading order. Nil when
+    /// they do not spell the rows exactly.
+    private static func rowGroups(_ fragments: [OCRRecognizedText], rows: [String]) -> [[OCRRecognizedText]]? {
+        var groups: [[OCRRecognizedText]] = []
+        var next = 0
+        for row in rows {
+            var spelled = ""
+            var group: [OCRRecognizedText] = []
+            while spelled.count < row.count, next < fragments.count {
+                group.append(fragments[next])
+                spelled += FrameVote.normalized(fragments[next].text)
+                next += 1
+            }
+            guard spelled == row, !group.isEmpty else { return nil }
+            groups.append(group)
+        }
+        return next == fragments.count ? groups : nil
+    }
+}
+
+/// One image's read and its weight in the vote.
+private struct FrameVote {
+    let result: OCRResult
+    let weight: Double
+    let isKey: Bool
+    let rows: [String]
+
+    init(result: OCRResult, weight: Double, isKey: Bool) {
+        self.result = result
+        self.weight = weight
+        self.isKey = isKey
+        rows = result.extractedText.isEmpty ? [] : result.extractedText.components(separatedBy: "\n")
+    }
+
+    static func normalized(_ row: String) -> String {
+        row.replacingOccurrences(of: " ", with: "")
+    }
+}
+
+/// Votes for one spelling of a row.
+private struct RowTally {
+    let text: String
+    var weight = 0.0
+    var hasKey = false
+    var confidence = 0.0
+
+    func ranksBelow(_ other: RowTally) -> Bool {
+        if weight != other.weight { return weight < other.weight }
+        if hasKey != other.hasKey { return !hasKey }
+        if confidence != other.confidence { return confidence < other.confidence }
+        return false
     }
 }
 

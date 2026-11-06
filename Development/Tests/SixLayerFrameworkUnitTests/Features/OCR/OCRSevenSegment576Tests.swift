@@ -104,6 +104,41 @@ struct OCRSevenSegment576Tests {
         #expect(result.confidence >= 0.79 && result.confidence <= 0.81)
     }
 
+    /// A tied row goes to the key photo, not to the smaller string.
+    @Test func liveFramesTieGoesToTheKeyPhoto() {
+        let result = SevenSegmentOCR.decode(
+            frames: [panel(["31.25"]), panel(["31.25"])],
+            keyFrame: panel(["37.25"]),
+            localizeDigitPanel: false
+        )
+        #expect(result.extractedText == "37.25")
+        #expect(result.confidence >= 0.49 && result.confidence <= 0.51)
+    }
+
+    /// No read matches every winning row; boxes still come back, one per row.
+    @Test func liveFramesKeepBoxesWhenNoReadMatchesTheVote() {
+        let result = SevenSegmentOCR.decode(
+            frames: [
+                panel(["31.25", "7.623"]),
+                panel(["31.25", "7.625"]),
+                panel(["37.25", "7.628"]),
+                panel(["38.25", "7.628"])
+            ],
+            localizeDigitPanel: false
+        )
+        #expect(result.extractedText == "31.25\n7.628")
+        #expect(segmentTexts(result) == ["31.25", "7.628"])
+        #expect(result.boundingBoxes.count == 2)
+        #expect(result.boundingBoxes.allSatisfy { $0.width > 0 && $0.height > 0 })
+    }
+
+    /// A row no read got well-formed is still voted, with its group spacing.
+    @Test func liveFramesVoteARowWithAnUnknownCell() {
+        let held = panel(["8_2 17.740"])
+        let result = SevenSegmentOCR.decode(frames: [held, held], keyFrame: held, localizeDigitPanel: false)
+        #expect(result.extractedText == "8_2  17.740")
+    }
+
     /// Two stray 1s from the legacy path do not replace a confident "11.11".
     @Test func strayOnesDoNotOutweighALatticeReadOfOnes() {
         let ones = [[
