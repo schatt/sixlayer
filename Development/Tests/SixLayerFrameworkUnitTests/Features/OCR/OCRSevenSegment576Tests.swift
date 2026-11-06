@@ -234,6 +234,7 @@ struct OCRSevenSegment576Tests {
         #expect(decode(panel(["-12.5"])).extractedText == "-12.5")
         #expect(decode(panel(["12:30"])).extractedText == "12:30")
         let held = decode(panel(["8_2"]))
+        let heldSummary = SevenSegmentOCR.lastFragmentCellSummary
         let aloneBar = decode(panel(["_"]))
         let eightOnly = decode(panel(["8"]))
         let twoOnly = decode(panel(["2"]))
@@ -246,6 +247,7 @@ struct OCRSevenSegment576Tests {
         let topBarOnlyWide = decode(SegmentPanel.render(rows: [atoms("8_2")], padding: 80))
         Issue.record("""
             #661 alone probe text=\(held.extractedText) segs=\(segmentTexts(held)) \
+            cells=\(heldSummary ?? "?") \
             bar=\(aloneBar.extractedText) eight=\(eightOnly.extractedText) two=\(twoOnly.extractedText) \
             82=\(eightTwo.extractedText) pad40=\(padded.extractedText) eightPad40=\(widePad.extractedText) \
             82pad16=\(eightTwoWide.extractedText) 82pad80=\(eightTwoShortWide.extractedText) \
