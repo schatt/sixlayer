@@ -234,8 +234,7 @@ struct OCRSevenSegment576Tests {
         #expect(decode(panel(["-12.5"])).extractedText == "-12.5")
         #expect(decode(panel(["12:30"])).extractedText == "12:30")
         let held = decode(panel(["8_2"]))
-        // Temporary: surface cell-level decode while alone 8_2 still drops the 8.
-        Issue.record("held=\(held.extractedText) boxes=\(segmentBoxes(held)) texts=\(held.recognizedTexts.map(\.text))")
+        Issue.record("held=\(held.extractedText) cells=\(SevenSegmentOCR.lastFragmentCellSummary ?? "?")")
         #expect(held.extractedText == "8_2")
         #expect(segmentTexts(held) == ["8_2"])
     }
