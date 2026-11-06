@@ -2067,7 +2067,11 @@ private func windowRadius(width: Int, height: Int) -> Int {
     if shortSide > 600, !isWideRow {
         return min(7, grown)
     }
-    guard isWideRow else { return grown }
+    // Stroke floor is for tall wide rowcrops (scale-4 ~392px). Short wide
+    // single-row synth (~122×1186 five-group) must keep `grown` — flooring
+    // there collapsed groups to "2.22" (#602).
+    let tallRowcropMinHeight = 200
+    guard isWideRow, height >= tallRowcropMinHeight else { return grown }
     let strokeFloor = max(4, height / 15)
     return min(36, max(grown, strokeFloor))
 }
