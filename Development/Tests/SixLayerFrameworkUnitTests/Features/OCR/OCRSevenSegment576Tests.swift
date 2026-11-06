@@ -139,6 +139,27 @@ struct OCRSevenSegment576Tests {
         #expect(result.extractedText == "8_2  17.740")
     }
 
+    /// A well-formed row keeps its group spacing through the vote; rows are
+    /// compared without spaces but not returned without them.
+    @Test func liveFramesKeepGroupSpacingOfAWellFormedRow() {
+        let spaced = panel(["1 234.56"])
+        let single = decode(spaced).extractedText
+        #expect(single.contains(" "))
+        let result = SevenSegmentOCR.decode(frames: [spaced, spaced], keyFrame: spaced, localizeDigitPanel: false)
+        #expect(result.extractedText == single)
+    }
+
+    /// A row no read got well-formed does not hand the whole result to the
+    /// key photo: the other row still takes the frames' majority.
+    @Test func liveFramesUnknownCellRowDoesNotOverrideTheOtherRow() {
+        let result = SevenSegmentOCR.decode(
+            frames: Array(repeating: panel(["8_2 17.740", "7.628"]), count: 3),
+            keyFrame: panel(["8_2 17.740", "7.623"]),
+            localizeDigitPanel: false
+        )
+        #expect(result.extractedText == "8_2  17.740\n7.628")
+    }
+
     /// Two stray 1s from the legacy path do not replace a confident "11.11".
     @Test func strayOnesDoNotOutweighALatticeReadOfOnes() {
         let ones = [[
