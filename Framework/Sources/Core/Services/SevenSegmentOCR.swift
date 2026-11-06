@@ -101,9 +101,6 @@ public enum SevenSegmentOCR {
     /// Long edge of the buffer that `decode` last ran `masks` on. Test probe (#654).
     nonisolated(unsafe) public static var lastDecodeAnalysisLongEdge: Int?
 
-    /// Accumulated mask/cell probe lines from the last decode (#660).
-    nonisolated(unsafe) public static var lastDiagnosis: String = ""
-
     /// Pixel rect of the digit panel (glass plus a bezel margin) in image
     /// coordinates, or `nil` when no sealed panel is found.
     ///
@@ -133,7 +130,6 @@ public enum SevenSegmentOCR {
         localizeDigitPanel: Bool = false,
         panelLocator: DisplayOCRPanelLocator? = nil
     ) -> OCRResult {
-        lastDiagnosis = ""
         guard var gray = GrayBuffer.read(cgImage) else {
             return OCRResult(extractedText: "", confidence: 0)
         }
@@ -410,8 +406,7 @@ private struct GrayBuffer {
                 washAwareStems: washAwareStems
             )
             // Volume rowcrops are ~980px; keep traces on those for #591.
-            // #660 probe: also trace synth glare / invert panels (<500px).
-            if buffer.width >= 900 || buffer.width < 500 {
+            if buffer.width >= 900 {
                 let pattern = sample(
                     mask,
                     box: densestInkBand(
@@ -1112,7 +1107,6 @@ private struct GrayBuffer {
 
 private func trace(_ message: String) {
     fputs(message, stderr)
-    SevenSegmentOCR.lastDiagnosis += message
 }
 
 private struct Mask {
@@ -1597,32 +1591,10 @@ private extension GrayBuffer {
         let primaryIsDark = chosen.isDark
         let glyphs = chosen.glyphs
         let bandSource = chosen.bandSource
-        // #660 probe: also trace synth glare / invert panels (<500px).
-        let probe = buffer.width >= 1000 || buffer.width < 500
-        if probe {
+        if buffer.width >= 1000 {
             let ink = glyphs.bits.filter { $0 }.count
-            let darkInk = masks.dark.bits.filter { $0 }.count
-            let lightInk = masks.light.bits.filter { $0 }.count
-            let midY0 = buffer.height / 3
-            let midY1 = (buffer.height * 2) / 3
-            var midGlyph = 0
-            var midGlass = 0
-            var midTotal = 0
-            for y in midY0..<midY1 {
-                let row = y * buffer.width
-                for x in 0..<buffer.width {
-                    midTotal += 1
-                    if glyphs.bits[row + x] {
-                        midGlyph += 1
-                        // Digits sit in the middle 80% of width; edge columns
-                        // on a full-width mid-row glare wash are glass.
-                        let edge = x < buffer.width / 10 || x > (buffer.width * 9) / 10
-                        if edge { midGlass += 1 }
-                    }
-                }
-            }
             trace(
-                "read \(buffer.width)x\(buffer.height) dark=\(primaryIsDark) opened=\(opened) dOpen=\(darkChoice.opens) lOpen=\(lightChoice.opens) preferD=\(darkPreferred) ink=\(ink) maskD=\(darkInk) maskL=\(lightInk) midInk=\(midGlyph)/\(midTotal) midEdgeInk=\(midGlass) split=\(splittingRows)\n"
+                "read \(buffer.width)x\(buffer.height) dark=\(primaryIsDark) opened=\(opened) ink=\(ink)\n"
             )
         }
         let bandSums = opened ? digitRowSums(bandSource.rowSums) : bandSource.rowSums
@@ -1663,10 +1635,9 @@ private extension GrayBuffer {
             : (bandsForSplit.count > foundBands.count
                 ? bandsForSplit
                 : merge(bandsForSplit, whenGapBelow: max(1, cellHeight / 2)))
-        if buffer.width >= 1000 || buffer.width < 500 {
+        if buffer.width >= 1000 {
             let listed = splitBands.map { "\($0.0)-\($0.1)" }.joined(separator: ",")
-            let found = foundBands.map { "\($0.0)-\($0.1)" }.joined(separator: ",")
-            trace("bands split=\(listed) found=\(found) cellH=\(cellHeight)\n")
+            trace("bands \(listed)\n")
         }
         // The window is sized from the whole crop. Two rows make it wide
         // enough to mark the glass between digits. Read each row from a
