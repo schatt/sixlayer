@@ -2501,7 +2501,14 @@ private func polarity(
     // Glyphs use a few pixels of thickness so the stroke is solid.
     let radius = max(2, core.height / 180)
     let thickCore = dilate(limitedCore, radius: radius)
-    let thick = forceOpen ? thickCore : cleared(span!, mask: thickCore)
+    let thick: Mask
+    if forceOpen {
+        thick = thickCore
+    } else if let span {
+        thick = cleared(span, mask: thickCore)
+    } else {
+        return (false, (isDark, loose, loose))
+    }
     return (true, (isDark, thick, limitedCore))
 }
 
