@@ -1274,6 +1274,12 @@ private extension GrayBuffer {
         } else {
             chosen = rows
         }
+        if buffer.width < 400, buffer.height < 200 {
+            let summary = chosen.map { row in
+                row.map { "\($0.character):\($0.box.width)x\($0.box.height)@\($0.minX)" }.joined(separator: ",")
+            }.joined(separator: " || ")
+            trace("frag #661 \(buffer.width)x\(buffer.height) single=\(singleLine) rows=\(rows.count) [\(summary)]\n")
+        }
         return chosen.compactMap { row in
             let texts = recognizedGroups(row, width: buffer.width, height: buffer.height)
             return texts.isEmpty ? nil : texts
