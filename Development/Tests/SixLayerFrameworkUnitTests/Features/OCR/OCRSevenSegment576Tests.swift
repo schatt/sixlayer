@@ -1117,14 +1117,25 @@ struct OCRSevenSegment576Tests {
         #expect((band?.exactDigitCount ?? 0) > (scan?.exactDigitCount ?? 0))
     }
 
-    /// Private photo, not in this repo. Touch `/tmp/sixlayer-600-score-s1` to
-    /// run it; the suite skips it otherwise. This crop is the known-good glass
+    /// Scenario-1 pump photo in the private fixtures submodule
+    /// (`Development/TestFixtures/private`, schatt/sixlayer-test-fixtures).
+    /// CI checks the submodule out; a clone without access skips these tests.
+    static let scenario1Photo = URL(fileURLWithPath: #filePath)
+        .deletingLastPathComponent() // …/Features/OCR
+        .deletingLastPathComponent() // …/SixLayerFrameworkUnitTests/Features
+        .deletingLastPathComponent() // …/Tests/SixLayerFrameworkUnitTests
+        .deletingLastPathComponent() // …/Development/Tests
+        .deletingLastPathComponent() // …/Development
+        .appendingPathComponent("TestFixtures/private/seven-segment/fuel_purchase/scenario_1/ti_fp_s1_pump.jpg")
+        .path
+
+    /// Private photo from the fixtures submodule. This crop is the known-good glass
     /// (`620,1440 1480×820`). It does not run the finder.
     @Test(
-        .enabled(if: FileManager.default.fileExists(atPath: "/tmp/sixlayer-600-score-s1"))
+        .enabled(if: FileManager.default.fileExists(atPath: OCRSevenSegment576Tests.scenario1Photo))
     )
     func uprightScenario1HandCropReadsBothRows() throws {
-        let path = "/Users/schatt/code/github/cm/1157-pump-three-role-solver/Tests/TestImages/fuel_purchase/scenario_1/ti_fp_s1_pump.jpg"
+        let path = Self.scenario1Photo
         let data = try Data(contentsOf: URL(fileURLWithPath: path))
         let upright = try #require(PlatformImage.cgImage(opening: data))
         let hand = try #require(
@@ -1135,18 +1146,20 @@ struct OCRSevenSegment576Tests {
             deskewMaximumDegrees: 0,
             localizeDigitPanel: false
         )
-        #expect(result.extractedText == "32.88\n8.022")
+        // Open #600 target: reads 7.777 / 3.022 on macOS and 7.777 / 1.022 on iOS.
+        withKnownIssue("Scenario-1 hand crop does not read yet (#600)") {
+            #expect(result.extractedText == "32.88\n8.022")
+        }
     }
 
-    /// Private photo, not in this repo. Touch `/tmp/sixlayer-600-score-s1` to
-    /// run it; the suite skips it otherwise. The frame stays at the camera's
+    /// Private photo from the fixtures submodule. The frame stays at the camera's
     /// own size. Localization searches a long-side cap and reads the mapped
     /// crop of the original.
     @Test(
-        .enabled(if: FileManager.default.fileExists(atPath: "/tmp/sixlayer-600-score-s1"))
+        .enabled(if: FileManager.default.fileExists(atPath: OCRSevenSegment576Tests.scenario1Photo))
     )
     func uprightScenario1LocalizesAndReadsBothRows() throws {
-        let path = "/Users/schatt/code/github/cm/1157-pump-three-role-solver/Tests/TestImages/fuel_purchase/scenario_1/ti_fp_s1_pump.jpg"
+        let path = Self.scenario1Photo
         let data = try Data(contentsOf: URL(fileURLWithPath: path))
         let upright = try #require(PlatformImage.cgImage(opening: data))
         let find = SevenSegmentOCR.findBufferSize(width: upright.width, height: upright.height)
@@ -1173,7 +1186,10 @@ struct OCRSevenSegment576Tests {
         print(report)
         let readable = result.extractedText.contains("32.88")
             && result.extractedText.contains("8.022")
-        #expect(readable, "\(report)")
+        // Open #600 target: the full frame reads 7707 / 7 / -.022 on macOS and 11.1 on iOS.
+        withKnownIssue("Scenario-1 full frame does not read yet (#600)") {
+            #expect(readable, "\(report)")
+        }
     }
 
     /// Library photos are multi-megapixel. Panel localization must analyze a

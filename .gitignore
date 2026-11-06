@@ -69,3 +69,8 @@ test_output.log
 scripts/venv/
 
 display-ocr-training/
+
+# Private real-photo fixtures (schatt/sixlayer-test-fixtures). Not a submodule:
+# SwiftPM would try to check it out for package consumers. Fetch with
+# Development/scripts/fetch-private-fixtures.sh.
+Development/TestFixtures/private/
