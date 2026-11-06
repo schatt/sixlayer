@@ -811,6 +811,14 @@ private struct GrayBuffer {
                 groups[groups.count - 1].append(cell)
             }
         }
+        // Temporary #602 probe — five-group → "2.22" only.
+        if ordered.count >= 10 {
+            let listed = zip(ordered, ordered.dropFirst()).enumerated().map { index, pair in
+                "\(pair.0.character)→\(pair.1.character) gap\(gaps[index])"
+            }.joined(separator: " ")
+            let texts = groups.map { String($0.map(\.character)) }.joined(separator: "|")
+            trace("602-group mid\(middle) pitch\(pitch) [\(listed)] → \(texts)\n")
+        }
         return groups
     }
 
