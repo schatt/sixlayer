@@ -1302,16 +1302,29 @@ private extension GrayBuffer {
         guard height > 0, width > 0, height < 160, width * 4 > height * 5 else {
             return self
         }
+        // Relative to panel glass, not a fixed <80 cut (#664). Washed strokes
+        // (~140–176 on lower-half / mid-row wash) must still count as ink while
+        // glass near the median does not. Light-on-dark panels flip the test.
+        let median = peelGlassMedian()
+        let margin = max(inkMargin, 24)
+        let inkIsDark = median > 127
+        func isPeelInk(_ pixel: UInt8) -> Bool {
+            let level = Int(pixel)
+            if inkIsDark {
+                return level + margin < median
+            }
+            return level > median + margin
+        }
         func columnDark(_ x: Int) -> Int {
             var dark = 0
-            for y in 0..<height where pixels[y * width + x] < 80 {
+            for y in 0..<height where isPeelInk(pixels[y * width + x]) {
                 dark += 1
             }
             return dark
         }
         func rowDark(_ y: Int) -> Int {
             var dark = 0
-            for x in 0..<width where pixels[y * width + x] < 80 {
+            for x in 0..<width where isPeelInk(pixels[y * width + x]) {
                 dark += 1
             }
             return dark
@@ -1352,6 +1365,13 @@ private extension GrayBuffer {
             }
         }
         guard bestInk >= 0 else { return self }
+        // Belt-and-suspenders with adaptive peel ink (#664): if a wash still
+        // leaves only a short densest run, refuse to peel into that stub
+        // (#660). Real padded line crops keep a digit-tall densest band.
+        let bandHeight = bestEnd - bestStart
+        if bandHeight * 3 < height {
+            return self
+        }
         let y0 = max(0, bestStart - marginY)
         let y1 = min(height, bestEnd + marginY)
         if x0 == 0, y0 == 0, x1 == width, y1 == height {
@@ -1359,6 +1379,24 @@ private extension GrayBuffer {
         }
         guard x1 - x0 > 8, y1 - y0 > 8 else { return self }
         return cropped(x0: x0, y0: y0, x1: x1, y1: y1)
+    }
+
+    /// Median luminance — proxy for glass on a mostly-glass short-wide crop.
+    fileprivate func peelGlassMedian() -> Int {
+        guard !pixels.isEmpty else { return 128 }
+        var hist = [Int](repeating: 0, count: 256)
+        for pixel in pixels {
+            hist[Int(pixel)] += 1
+        }
+        var seen = 0
+        let mid = (pixels.count + 1) / 2
+        for level in 0..<256 {
+            seen += hist[level]
+            if seen >= mid {
+                return level
+            }
+        }
+        return 128
     }
 
     /// A panel crop, or nil when the rect is tiny, nearly the whole frame, or empty.
@@ -2067,11 +2105,12 @@ private func windowRadius(width: Int, height: Int) -> Int {
     if shortSide > 600, !isWideRow {
         return min(7, grown)
     }
-    // Stroke floor is for tall wide rowcrops (scale-4 ~392px). Short wide
-    // single-row synth (~122×1186 five-group) must keep `grown` — flooring
-    // there collapsed groups to "2.22" (#602).
-    let tallRowcropMinHeight = 200
-    guard isWideRow, height >= tallRowcropMinHeight else { return grown }
+    guard isWideRow else { return grown }
+    // Scale-4 rowcrops (~360px+ tall, 48px strokes) need height/15 so bars
+    // stay solid (#659). Scale-1 wide fixtures (filledInk ~200px / five-group
+    // ~122px) must keep `grown` — flooring bridges digit gaps (#662 / #602).
+    let scale4RowMinHeight = 280
+    guard height > scale4RowMinHeight else { return grown }
     let strokeFloor = max(4, height / 15)
     return min(36, max(grown, strokeFloor))
 }
@@ -2442,7 +2481,12 @@ private func polarity(
     forceOpen: Bool = false
 ) -> (opens: Bool, reading: (isDark: Bool, glyphs: Mask, bandSource: Mask)) {
     let span = digitColumnSpan(core)
-    let limitedCore = span.map { cleared($0, mask: core) } ?? core
+    // forceOpen: opposite polarity false-opened on glass (#598). Keep the
+    // full core — clearing to the single heaviest column run drops a weaker
+    // leading cluster on clean inverted panels (31 of 31.25 → ".25", #660).
+    let limitedCore = forceOpen
+        ? core
+        : (span.map { cleared($0, mask: core) } ?? core)
     let looseTall = runs(loose.rowSums).map { $0.1 - $0.0 }.max() ?? 0
     let limitedTall = runs(limitedCore.rowSums).map { $0.1 - $0.0 }.max() ?? 0
     let fills = looseTall * 100 > loose.height * 70
@@ -2459,24 +2503,30 @@ private func polarity(
     let coreGap = zip(coreBands, coreBands.dropFirst()).map { $1.0 - $0.1 }.max() ?? 0
     let shortestCore = coreBands.map { $0.1 - $0.0 }.min() ?? 0
     // Gap at least a quarter of the shorter digit-tall band (mid-glyph
-    // valleys are much smaller).
+    // valleys are much smaller). forceOpen still requires this — skipping
+    // it opens single-row multi-group panels and digitColumnSpan keeps one
+    // group ("2.22" on wideGap five-group) (#602 / #598).
     let minGapVsBand = 4
     let realRowGap = coreBands.count >= 2 && coreGap * minGapVsBand >= shortestCore
-    // forceOpen: opposite polarity false-opened on glass (#598). Still require
-    // a real inter-row core gap — skipping it opens single-row multi-group
-    // panels, digitColumnSpan keeps one group (gapLimit << groupGap), and
-    // five-group wideGap collapses to "2.22" (#602).
     let canOpen = forceOpen
         ? (span != nil && realRowGap)
         : (span != nil && fills && limitedTall * 2 < looseTall && realRowGap)
-    guard let span, canOpen else {
+    guard canOpen else {
         return (false, (isDark, loose, loose))
     }
     // The loose mask still fills the gap inside the span. Row boundaries
     // stay on the thin core so gap specks are not thickened into a join.
     // Glyphs use a few pixels of thickness so the stroke is solid.
     let radius = max(2, core.height / 180)
-    let thick = cleared(span, mask: dilate(limitedCore, radius: radius))
+    let thickCore = dilate(limitedCore, radius: radius)
+    let thick: Mask
+    if forceOpen {
+        thick = thickCore
+    } else if let span {
+        thick = cleared(span, mask: thickCore)
+    } else {
+        return (false, (isDark, loose, loose))
+    }
     return (true, (isDark, thick, limitedCore))
 }
 
