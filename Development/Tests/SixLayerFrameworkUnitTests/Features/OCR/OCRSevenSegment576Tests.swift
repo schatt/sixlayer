@@ -414,6 +414,18 @@ struct OCRSevenSegment576Tests {
         #expect(decode(SegmentPanel.render(rows: rows, glare: true)).extractedText == "12:30")
     }
 
+    /// #664: wash the lower half of the digit band to 140 (≥80, but still
+    /// contrasty enough for masks vs glass 214). The hard <80 peel then sees
+    /// only the upper stub — tall enough that the #660 band-height guard
+    /// still peels — and drops lower segments. Adaptive darkness must count
+    /// the washed strokes so the densest band stays digit-tall.
+    @Test func washedLowerHalfStillPeelsFullDigits() {
+        let rows = [atoms("31.25")]
+        let base = SegmentPanel.render(rows: rows, padding: 20)
+        let washed = washLowerDigitHalf(base, inkWash: 140)
+        #expect(decode(washed, maximum: 0).extractedText == "31.25")
+    }
+
     @Test func deskewSearchesTheCallerMaximum() {
         let rows = [atoms("31.25")]
         let tilted = SegmentPanel.render(rows: rows, tiltDegrees: 3)
@@ -966,6 +978,36 @@ struct OCRSevenSegment576Tests {
 
     private func decode(_ image: CGImage, maximum: Double = 3) -> OCRResult {
         SevenSegmentOCR.decode(cgImage: image, deskewMaximumDegrees: maximum)
+    }
+
+    /// Lift strokes in the lower half of the content band above the hard <80
+    /// peel cut while leaving the upper half dark enough to win densest-band.
+    private func washLowerDigitHalf(_ image: CGImage, inkWash: UInt8) -> CGImage {
+        let width = image.width
+        let height = image.height
+        var pixels = [UInt8](repeating: 0, count: width * height)
+        guard let provider = image.dataProvider,
+              let data = provider.data,
+              let bytes = CFDataGetBytePtr(data)
+        else {
+            return image
+        }
+        let rowBytes = image.bytesPerRow
+        for y in 0..<height {
+            for x in 0..<width {
+                pixels[y * width + x] = bytes[y * rowBytes + x]
+            }
+        }
+        let y0 = height / 2
+        for y in y0..<height {
+            for x in 0..<width {
+                let index = y * width + x
+                if pixels[index] < 80 {
+                    pixels[index] = inkWash
+                }
+            }
+        }
+        return solidGrayImage(pixels: pixels, width: width, height: height)
     }
 
     /// Default ink/glass with a dark bezel so sealed-glass localization has a
