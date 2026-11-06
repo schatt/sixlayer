@@ -639,8 +639,11 @@ private struct GrayBuffer {
         if box.height * 100 >= digitHeight * 55, box.width * 4 < box.height {
             return Cell(box: box, character: "1", confidence: 1, band: bandIndex)
         }
+        // Drop fused wash blobs, not a single dense glyph. Thick synth strokes
+        // on a short-wide peel can push an ordinary 8 over solidCoverage; width
+        // vs digitHeight alone then erased the leading 8 from alone `8_2` (#661).
         if box.height * 100 >= digitHeight * 50,
-           box.width * 100 >= digitHeight * 40,
+           box.width > digitWidth + digitWidth / 4,
            (coverage(mask, box: box, width: width) > solidCoverage || inkFraction(buffer, box: box, darkInk: darkInk) > solidCoverage) {
             return nil
         }
