@@ -2462,10 +2462,18 @@ private func polarity(
     let shortestCore = coreBands.map { $0.1 - $0.0 }.min() ?? 0
     let realRowGap = coreBands.count >= 2 && coreGap * 4 >= shortestCore
     // forceOpen: opposite polarity false-opened on glass (#598). Still require
-    // a digit span; skip fills/tall checks that mid-glyph valleys defeat.
+    // a real inter-row core gap — skipping it opens single-row multi-group
+    // panels, digitColumnSpan keeps one group (gapLimit << groupGap), and
+    // five-group wideGap collapses to "2.22" (#602).
     let canOpen = forceOpen
-        ? span != nil
+        ? (span != nil && realRowGap)
         : (span != nil && fills && limitedTall * 2 < looseTall && realRowGap)
+    // Temporary #602 probe.
+    if loose.width >= 900 {
+        trace(
+            "602-polarity dark=\(isDark) force=\(forceOpen) fills=\(fills) realRowGap=\(realRowGap) bands=\(coreBands.count) gap=\(coreGap) short=\(shortestCore) can=\(canOpen && span != nil)\n"
+        )
+    }
     guard let span, canOpen else {
         return (false, (isDark, loose, loose))
     }
