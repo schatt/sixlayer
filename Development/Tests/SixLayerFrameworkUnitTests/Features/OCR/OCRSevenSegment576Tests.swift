@@ -994,12 +994,18 @@ struct OCRSevenSegment576Tests {
         let hand = try #require(
             upright.cropping(to: CGRect(x: 620, y: 1440, width: 1480, height: 820))
         )
+        setenv("SLF_OCR_TRACE", "1", 1)
         let result = SevenSegmentOCR.decode(
             cgImage: hand,
             deskewMaximumDegrees: 0,
             localizeDigitPanel: false
         )
-        #expect(result.extractedText == "32.88\n8.022")
+        unsetenv("SLF_OCR_TRACE")
+        let trace = (try? String(
+            contentsOfFile: "/tmp/sixlayer-600-ocr-trace.txt",
+            encoding: .utf8
+        )) ?? ""
+        #expect(result.extractedText == "32.88\n8.022", "\(trace)")
     }
 
     /// Private photo, not in this repo. Touch `/tmp/sixlayer-600-score-s1` to
