@@ -101,6 +101,9 @@ public enum SevenSegmentOCR {
     /// Long edge of the buffer that `decode` last ran `masks` on. Test probe (#654).
     nonisolated(unsafe) public static var lastDecodeAnalysisLongEdge: Int?
 
+    /// Accumulated mask/cell probe lines from the last decode (#660).
+    nonisolated(unsafe) public static var lastDiagnosis: String = ""
+
     /// Pixel rect of the digit panel (glass plus a bezel margin) in image
     /// coordinates, or `nil` when no sealed panel is found.
     ///
@@ -130,6 +133,7 @@ public enum SevenSegmentOCR {
         localizeDigitPanel: Bool = false,
         panelLocator: DisplayOCRPanelLocator? = nil
     ) -> OCRResult {
+        lastDiagnosis = ""
         guard var gray = GrayBuffer.read(cgImage) else {
             return OCRResult(extractedText: "", confidence: 0)
         }
@@ -1108,6 +1112,7 @@ private struct GrayBuffer {
 
 private func trace(_ message: String) {
     fputs(message, stderr)
+    SevenSegmentOCR.lastDiagnosis += message
 }
 
 private struct Mask {
