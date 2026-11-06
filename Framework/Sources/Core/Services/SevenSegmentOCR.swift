@@ -5217,3 +5217,124 @@ private func weightedMedian(_ pairs: [(Double, Double)]) -> Double {
     }
     return sorted.last?.0 ?? 0
 }
+
+// MARK: - Live Photo frames
+
+extension SevenSegmentOCR {
+    /// Decode a Live Photo: its key photo plus frames from the paired video.
+    ///
+    /// Reflections move between frames while the digits stay, so each row is
+    /// voted across the key photo and the frames. On 37 pump Live Photos,
+    /// voting over 12 frames read 66 of 74 rows; the key photo alone, 54.
+    ///
+    /// Every image gets the full single-photo decode, panel search included.
+    /// (Cropping each frame to the key photo's region was faster but lost
+    /// rows the key read had missed.) Images decode in parallel. The key
+    /// photo is sharper than the video frames, so its read counts twice.
+    ///
+    /// `localizeDigitPanel` is passed to each single-photo decode. Leave it
+    /// on for whole Live Photo frames; turn it off for frames that are
+    /// already cropped to the panel.
+    ///
+    /// Confidence is the smallest share of the vote that any row won.
+    public static func decode(
+        frames: [CGImage],
+        keyFrame: CGImage? = nil,
+        deskewMaximumDegrees: Double = 3,
+        localizeDigitPanel: Bool = true
+    ) -> OCRResult {
+        let images = (keyFrame.map { [$0] } ?? []) + frames
+        guard !images.isEmpty else { return OCRResult(extractedText: "", confidence: 0) }
+        let reads = FrameReads(images: images)
+        DispatchQueue.concurrentPerform(iterations: images.count) { index in
+            let read = decode(
+                cgImage: reads.images[index],
+                deskewMaximumDegrees: deskewMaximumDegrees,
+                localizeDigitPanel: localizeDigitPanel
+            )
+            reads.store(read, at: index)
+        }
+        let results = reads.results
+        var weighted: [(OCRResult, Double)] = []
+        for (index, result) in results.enumerated() {
+            guard let result else { continue }
+            weighted.append((result, keyFrame != nil && index == 0 ? 2 : 1))
+        }
+        let fallback = weighted.first?.0 ?? OCRResult(extractedText: "", confidence: 0)
+        return voted(weighted, fallback: fallback)
+    }
+
+    /// Per-row majority among reads that agree on the row count. Only
+    /// well-formed rows vote: digits with at most one decimal mark.
+    private static func voted(_ reads: [(OCRResult, Double)], fallback: OCRResult) -> OCRResult {
+        func rows(_ result: OCRResult) -> [String] {
+            result.extractedText.isEmpty ? [] : result.extractedText
+                .components(separatedBy: "\n")
+                .map { $0.replacingOccurrences(of: " ", with: "") }
+        }
+        func wellFormed(_ row: String) -> Bool {
+            // Digits with at most one decimal mark between them.
+            let marks = row.filter { $0 == "." || $0 == "," }
+            guard let first = row.first, let last = row.last, first.isNumber, last.isNumber,
+                  marks.count <= 1 else { return false }
+            return row.allSatisfy { $0.isNumber || $0 == "." || $0 == "," }
+        }
+        var rowCounts: [Int: Double] = [:]
+        for (result, weight) in reads where !rows(result).isEmpty {
+            rowCounts[rows(result).count, default: 0] += weight
+        }
+        // On a tie, more rows: a read that found both rows beats one that lost a row.
+        guard let count = rowCounts.max(by: { $0.value < $1.value || ($0.value == $1.value && $0.key < $1.key) })?.key
+        else { return fallback }
+        var winners: [String] = []
+        var share = 1.0
+        for index in 0..<count {
+            var tally: [String: Double] = [:]
+            var total = 0.0
+            for (result, weight) in reads {
+                let r = rows(result)
+                guard r.count == count, wellFormed(r[index]) else { continue }
+                tally[r[index], default: 0] += weight
+                total += weight
+            }
+            guard let best = tally.max(by: { $0.value < $1.value || ($0.value == $1.value && $0.key > $1.key) })
+            else { return fallback }
+            winners.append(best.key)
+            share = min(share, best.value / total)
+        }
+        // Keep boxes from a read that matches the vote, the key photo first.
+        let matching = reads.first { rows($0.0) == winners }?.0
+        let text = winners.joined(separator: "\n")
+        return OCRResult(
+            extractedText: text,
+            confidence: Float(share),
+            boundingBoxes: matching?.boundingBoxes ?? [],
+            textTypes: [.number: text],
+            recognizedTexts: matching?.recognizedTexts ?? []
+        )
+    }
+}
+
+/// Reads written from concurrent decodes.
+private final class FrameReads: @unchecked Sendable {
+    let images: [CGImage]
+    private var stored: [OCRResult?]
+    private let lock = NSLock()
+
+    init(images: [CGImage]) {
+        self.images = images
+        stored = Array(repeating: nil, count: images.count)
+    }
+
+    var results: [OCRResult?] {
+        lock.lock()
+        defer { lock.unlock() }
+        return stored
+    }
+
+    func store(_ result: OCRResult, at index: Int) {
+        lock.lock()
+        stored[index] = result
+        lock.unlock()
+    }
+}
