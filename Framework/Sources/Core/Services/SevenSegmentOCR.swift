@@ -1358,6 +1358,15 @@ private extension GrayBuffer {
             }
         }
         guard bestInk >= 0 else { return self }
+        // Mid-row glare lifts strokes above the hard <80 ink cut (#660), so
+        // the densest "dark" run collapses to a top- or bottom-bar stub.
+        // Peeling into that stub makes solid wash fills read as 8 / "_".
+        // Keep the full line when the winning band is much shorter than the
+        // panel — real padded line crops still have a digit-tall densest band.
+        let bandHeight = bestEnd - bestStart
+        if bandHeight * 3 < height {
+            return self
+        }
         let y0 = max(0, bestStart - marginY)
         let y1 = min(height, bestEnd + marginY)
         if x0 == 0, y0 == 0, x1 == width, y1 == height {
