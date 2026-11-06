@@ -1302,16 +1302,29 @@ private extension GrayBuffer {
         guard height > 0, width > 0, height < 160, width * 4 > height * 5 else {
             return self
         }
+        // Relative to panel glass, not a fixed <80 cut (#664). Washed strokes
+        // (~176 on mid-row / lower-half glare) must still count as ink while
+        // glass near the median does not. Light-on-dark panels flip the test.
+        let median = peelGlassMedian()
+        let margin = max(inkMargin, 24)
+        let inkIsDark = median > 127
+        func isPeelInk(_ pixel: UInt8) -> Bool {
+            let level = Int(pixel)
+            if inkIsDark {
+                return level + margin < median
+            }
+            return level > median + margin
+        }
         func columnDark(_ x: Int) -> Int {
             var dark = 0
-            for y in 0..<height where pixels[y * width + x] < 80 {
+            for y in 0..<height where isPeelInk(pixels[y * width + x]) {
                 dark += 1
             }
             return dark
         }
         func rowDark(_ y: Int) -> Int {
             var dark = 0
-            for x in 0..<width where pixels[y * width + x] < 80 {
+            for x in 0..<width where isPeelInk(pixels[y * width + x]) {
                 dark += 1
             }
             return dark
@@ -1352,11 +1365,9 @@ private extension GrayBuffer {
             }
         }
         guard bestInk >= 0 else { return self }
-        // Mid-row glare lifts strokes above the hard <80 ink cut (#660), so
-        // the densest "dark" run collapses to a top- or bottom-bar stub.
-        // Peeling into that stub makes solid wash fills read as 8 / "_".
-        // Keep the full line when the winning band is much shorter than the
-        // panel — real padded line crops still have a digit-tall densest band.
+        // Belt-and-suspenders with adaptive peel ink (#664): if a wash still
+        // leaves only a short densest run, refuse to peel into that stub
+        // (#660). Real padded line crops keep a digit-tall densest band.
         let bandHeight = bestEnd - bestStart
         if bandHeight * 3 < height {
             return self
@@ -1368,6 +1379,24 @@ private extension GrayBuffer {
         }
         guard x1 - x0 > 8, y1 - y0 > 8 else { return self }
         return cropped(x0: x0, y0: y0, x1: x1, y1: y1)
+    }
+
+    /// Median luminance — proxy for glass on a mostly-glass short-wide crop.
+    fileprivate func peelGlassMedian() -> Int {
+        guard !pixels.isEmpty else { return 128 }
+        var hist = [Int](repeating: 0, count: 256)
+        for pixel in pixels {
+            hist[Int(pixel)] += 1
+        }
+        var seen = 0
+        let mid = (pixels.count + 1) / 2
+        for level in 0..<256 {
+            seen += hist[level]
+            if seen >= mid {
+                return level
+            }
+        }
+        return 128
     }
 
     /// A panel crop, or nil when the rect is tiny, nearly the whole frame, or empty.
