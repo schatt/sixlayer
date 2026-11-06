@@ -414,6 +414,20 @@ struct OCRSevenSegment576Tests {
         #expect(decode(SegmentPanel.render(rows: rows, glare: true)).extractedText == "12:30")
     }
 
+    /// #664: ink at 100 sits above the hard `<80` peel cut. Side pad still
+    /// triggers `tightenedToDigitLine` (height &lt; 160); without adaptive
+    /// darkness the peel sees no ink, keeps the pad, and invents stems.
+    @Test func paleInkPaddedLineStillDecodes() {
+        let rows = [atoms("31.25")]
+        let image = SegmentPanel.render(
+            rows: rows,
+            padding: 30,
+            inkLevel: 100,
+            backgroundLevel: 214
+        )
+        #expect(decode(image, maximum: 0).extractedText == "31.25")
+    }
+
     @Test func deskewSearchesTheCallerMaximum() {
         let rows = [atoms("31.25")]
         let tilted = SegmentPanel.render(rows: rows, tiltDegrees: 3)
