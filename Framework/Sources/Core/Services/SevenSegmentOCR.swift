@@ -541,6 +541,39 @@ private struct GrayBuffer {
         return hangs && tallTail ? "," : "."
     }
 
+    /// Digit-band `cells` clip mark boxes to the band, so a comma's hanging
+    /// stroke below the digit line never enters the box and `markCharacter`
+    /// reads a square period (#661). Reach a short distance below for ink.
+    private static func markBoxIncludingHang(
+        _ box: PixelBox,
+        mask: Mask,
+        buffer: GrayBuffer,
+        darkInk: Bool,
+        digitHeight: Int
+    ) -> PixelBox {
+        let reach = min(buffer.height, box.maxY + max(8, digitHeight / 4))
+        guard reach > box.maxY else { return box }
+        let fromMask = tightBox(mask, x0: box.minX, x1: box.maxX, y0: box.minY, y1: reach, width: buffer.width)
+        if fromMask.maxY > box.maxY, fromMask.width > 0, fromMask.height > 0 {
+            return fromMask
+        }
+        // Thin tails can miss the mask while raw pixels still look like ink.
+        var maxY = box.maxY
+        let left = max(0, box.minX)
+        let right = min(buffer.width, box.maxX)
+        guard right > left else { return box }
+        for y in box.maxY..<reach {
+            let probe = PixelBox(minX: left, minY: y, maxX: right, maxY: y + 1)
+            if inkFraction(buffer, box: probe, darkInk: darkInk) > 0.35 {
+                maxY = y + 1
+            } else if maxY > box.maxY {
+                break
+            }
+        }
+        guard maxY > box.maxY else { return box }
+        return PixelBox(minX: box.minX, minY: box.minY, maxX: box.maxX, maxY: maxY)
+    }
+
     private static func classify(
         _ box: PixelBox,
         mask: Mask,
@@ -612,9 +645,16 @@ private struct GrayBuffer {
             // A thin comma tail can miss the mask while the raw pixels are
             // still darker than the glass around the mark.
             guard markIsInk(mask, box: box, width: width, buffer: buffer, darkInk: darkInk) else { return nil }
+            let mark = markBoxIncludingHang(
+                box,
+                mask: mask,
+                buffer: buffer,
+                darkInk: darkInk,
+                digitHeight: digitHeight
+            )
             return Cell(
-                box: box,
-                character: markCharacter(box: box, baseline: baseline, digitHeight: digitHeight),
+                box: mark,
+                character: markCharacter(box: mark, baseline: baseline, digitHeight: digitHeight),
                 confidence: 1,
                 band: bandIndex
             )
