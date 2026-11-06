@@ -6,8 +6,9 @@ Reproduce with `Development/scripts/ssocr-linux/` (see `build.sh`).
 ## Summary
 
 `SevenSegmentOCR` reads the synthetic `SegmentPanel` fixtures. It reads none
-of the pump photos in `Development/TestImages`, even from a hand-tight crop of
-the glass. The fixtures are upright, solid-bar, high-contrast, 50×90 px cells
+of the pump photos in `Development/TestImages` or in CarManager
+`Tests/TestImages` (15 distinct photos), even from a hand-tight crop of the
+glass. The fixtures are upright, solid-bar, high-contrast, 50×90 px cells
 with 8 px gaps. Every real pump differs on several of those at once. The
 decoder is tuned in absolute pixels to the fixtures, so one realistic change
 from them breaks it.
@@ -27,6 +28,28 @@ from them breaks it.
 
 Rescaling the crops to 240–800 px wide, area-averaged, does not help: no size
 reads any photo.
+
+### CarManager `Tests/TestImages` (kept private; not copied here)
+
+Fuel scenarios 1–3 are pixel-identical to IMG_3274/3275/3276 above. The
+other nine images:
+
+| Image | Truth | Full frame, `next` | Crop, `next` | Crop, prototype |
+|---|---|---|---|---|
+| fp s4 | 31.25 / 7.623 | `_-1_ / 8 _ ___4 .......` | `6-.3_25 / 87.-7_____` | `3625/1._23` |
+| fp s5 | 31.25 / 7.623 | `___6..... / -._` | `1__` | `31251/7.6231` |
+| fp s6 (far, glare) | 33.82 / 6.974 | `180` | `1____0` | `192/_.14` |
+| fp s7 | 33.82 / 6.974 | `0` | `681` | **`33.82/6.974`** |
+| fp s8 (far) | 44.42 / 7.934 | `-` | `1 4.44_ / 1 1 16651` | `444_/7.934` |
+| fp s9 | 44.42 / 7.934 | `8-798609_ / 8 19_77` | `6-_9__ / 8-___…1` | `4442/7.934` |
+| UK 244937491 | 106.59 / 58.60 | `_9` | `1___0659` | `.106.59/15860` |
+| UK 250155538 | 108.98 / 58.00 | `18_ 98 / 580` | `1_6_` | `10298/50.00` |
+| UK 325407693 | 88.10 / 58.00 | `1111. 1 .. / 1.111..11` | `. ... .8....8` | `8610/58.00` |
+
+The branch commits produce identical output on all nine; the mask fails
+before the pitch path matters. The prototype was not tuned for these
+images. Its usual misses are the price-row decimal and bezel or glare edges
+read as an extra 1.
 
 ### One factor at a time, starting from the passing `31.25` fixture
 
