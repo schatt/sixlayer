@@ -3,6 +3,42 @@
 Branch `wip/ocr-real-image-investigation`, from `next` at `f7af7ff05`.
 Reproduce with `Development/scripts/ssocr-linux/` (see `build.sh`).
 
+## Update: lattice reader on this branch
+
+`decode` now includes a scale-relative reader (`SevenSegmentLatticeReader`,
+at the end of `SevenSegmentOCR.swift`). With `localizeDigitPanel` it can
+also find the panel by reading candidates across the whole frame. The
+legacy path still runs first and keeps its output when it is believable,
+so fixture formatting is unchanged. The ported fixture suite passes 36/43;
+it passed 35/43 before.
+
+Exact rows read (price and volume each count as one row):
+
+| Photo set | Rows | `next`, full frame | Branch, hand crop | Branch, full frame |
+|---|---|---|---|---|
+| sixlayer `Development/TestImages` (8 pumps) | 15 | 0 | 3 | 3 |
+| CarManager fuel scenarios 4–9 + UK (9) | 18 | 0 | 13 | 10 |
+| CarManager `TestImages/New` (11 pumps) | 22 | 0 | 18 | 16 |
+| **Total (28 photos)** | **55** | **0** | **34** | **29** |
+
+All 28 photos were used while developing the reader, so these numbers
+are optimistic. The next batch of photos is the real held-out test.
+
+What still fails:
+
+- Heavy scenery reflections (IMG_3274–3276, s6) wash out whole segments.
+- Ghost segments can produce a confident wrong digit: IMG_5669 reads
+  `41.25` where the display shows `41.26`.
+- Small decimals in a few volume rows (UK 244937491 `5860`).
+- Price rows under glare (IMG_3027 loses its `4`; IMG_5209 its `40`).
+
+Cost: a whole-frame search takes about 1.7 s on average and 3.2 s at most
+(Linux, `-O`, 12 MP photos). It runs only when the localized crop does not
+read confidently.
+
+The reader has not yet been built with the Mac toolchain or in Xcode. It
+was developed with the Linux harness in `Development/scripts/ssocr-linux/`.
+
 ## Summary
 
 `SevenSegmentOCR` reads the synthetic `SegmentPanel` fixtures. It reads none
