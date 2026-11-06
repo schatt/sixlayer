@@ -4104,6 +4104,156 @@ extension SevenSegmentLatticeReader {
     }
 }
 
+
+// MARK: - Locating the panel in a full frame
+
+extension SevenSegmentLatticeReader {
+    /// Read, then read again from a tight box around the rows found. A loose
+    /// crop shrinks the digits in the fixed analysis height; decimals suffer
+    /// first. Cells are in this image's pixel coordinates.
+    static func readRefined(pixels: [UInt8], width: Int, height: Int) -> [[Cell]] {
+        let first = read(pixels: pixels, width: width, height: height)
+        guard let box = rowsBox(first, width: width, height: height) else { return first }
+        let (x0, y0, x1, y1) = box
+        if x0 == 0, y0 == 0, x1 == width, y1 == height { return first }
+        let tight = cropped(pixels, width: width, x0: x0, y0: y0, x1: x1, y1: y1)
+        let second = read(pixels: tight, width: x1 - x0, height: y1 - y0)
+            .map { row in row.map { $0.offset(dx: Double(x0), dy: Double(y0)) } }
+        return rank(second) >= rank(first) ? second : first
+    }
+
+    /// Find the digit panel in a whole photo: clusters of stroke-like ink are
+    /// candidates, and the candidate that reads best wins. Cells are in the
+    /// full image's pixel coordinates.
+    static func locateAndRead(pixels: [UInt8], width: Int, height: Int) -> [[Cell]] {
+        var best: [[Cell]] = []
+        for box in candidateBoxes(pixels: pixels, width: width, height: height) {
+            let (x0, y0, x1, y1) = box
+            guard x1 - x0 >= 16, y1 - y0 >= 16 else { continue }
+            let crop = cropped(pixels, width: width, x0: x0, y0: y0, x1: x1, y1: y1)
+            let rows = readRefined(pixels: crop, width: x1 - x0, height: y1 - y0)
+                .map { row in row.map { $0.offset(dx: Double(x0), dy: Double(y0)) } }
+            if best.isEmpty || rank(rows) > rank(best) { best = rows }
+        }
+        return best
+    }
+
+    /// Glyphs that carry information: digits other than 1 (stray stems read
+    /// as 1), less unknown cells.
+    static func quality(_ rows: [[Cell]]) -> Int {
+        let cells = rows.flatMap { $0 }
+        return cells.filter { $0.character.isNumber && $0.character != "1" }.count
+            - cells.filter { $0.character == "_" }.count
+    }
+
+    static func rank(_ rows: [[Cell]]) -> (Int, Int) {
+        (isConfident(rows) ? 1 : 0, quality(rows))
+    }
+
+    private static func rowsBox(_ rows: [[Cell]], width: Int, height: Int) -> (Int, Int, Int, Int)? {
+        let digits = rows.flatMap { $0 }.filter { $0.character.isNumber }
+        guard !digits.isEmpty else { return nil }
+        let heights = digits.map { $0.maxY - $0.minY }.sorted()
+        let dh = heights[heights.count / 2]
+        let all = rows.flatMap { $0 }
+        let x0 = Int(max(0, (all.map(\.minX).min() ?? 0) - 0.6 * dh))
+        let y0 = Int(max(0, (all.map(\.minY).min() ?? 0) - 0.5 * dh))
+        let x1 = Int(min(Double(width), (all.map(\.maxX).max() ?? 0) + 0.6 * dh))
+        let y1 = Int(min(Double(height), (all.map(\.maxY).max() ?? 0) + 0.5 * dh))
+        guard x1 - x0 >= 16, y1 - y0 >= 16 else { return nil }
+        return (x0, y0, x1, y1)
+    }
+
+    /// Candidate panel boxes, most stroke ink first, at most eight.
+    private static func candidateBoxes(pixels: [UInt8], width: Int, height: Int) -> [(Int, Int, Int, Int)] {
+        let scale = 900.0 / Double(max(width, height))
+        let sw = max(1, Int((Double(width) * scale).rounded()))
+        let sh = max(1, Int((Double(height) * scale).rounded()))
+        let small = median3(boxResize(pixels, width: width, height: height, toWidth: sw, toHeight: sh), width: sw, height: sh)
+        let short = Double(min(sw, sh))
+        var found: [(area: Int, box: (Double, Double, Double, Double))] = []
+        for fraction in [0.012, 0.02, 0.032] {
+            let stroke = max(2, short * fraction)
+            let k = Int(stroke * 2.4) | 1
+            let values = small.map(Double.init)
+            let closed = slidingExtreme(slidingExtreme(values, width: sw, height: sh, size: k, maximum: true),
+                                        width: sw, height: sh, size: k, maximum: false)
+            var contrast = [Double](repeating: 0, count: values.count)
+            for i in values.indices { contrast[i] = min(1, max(0, (closed[i] - values[i]) / max(closed[i], 8))) }
+            let selected = contrast.filter { $0 > 0.03 }
+            let cut = selected.count > 200 ? otsu(selected) : 0.2
+            var ink = BitMask(width: sw, height: sh)
+            for i in contrast.indices where contrast[i] > max(0.6 * cut, 0.08) { ink.bits[i] = true }
+            let (labels, components) = label(ink)
+            guard !components.isEmpty else { continue }
+            let thick = thicknesses(ink, labels: labels, count: components.count)
+            var segment = BitMask(width: sw, height: sh)
+            var keep = Set<Int>()
+            for c in components {
+                let t = thick[c.label]
+                let longest = Double(max(c.width, c.height))
+                if t >= 0.5 * stroke, t <= 2 * stroke, longest >= 2.2 * t, longest <= 14 * stroke { keep.insert(c.label) }
+            }
+            for i in labels.indices where labels[i] > 0 && keep.contains(labels[i]) { segment.bits[i] = true }
+            let grown = slidingExtreme(segment.bits.map { $0 ? 1.0 : 0.0 }, width: sw, height: sh,
+                                       sizeX: Int(stroke * 5) | 1, sizeY: Int(stroke * 3) | 1, maximum: true)
+            var joined = BitMask(width: sw, height: sh)
+            for i in grown.indices where grown[i] > 0 { joined.bits[i] = true }
+            let (clusterLabels, clusters) = label(joined)
+            var pieces = [Set<Int>](repeating: [], count: clusters.count + 1)
+            var area = [Int](repeating: 0, count: clusters.count + 1)
+            let (segmentLabels, _) = label(segment)
+            for i in segmentLabels.indices where segmentLabels[i] > 0 {
+                let cluster = clusterLabels[i]
+                pieces[cluster].insert(segmentLabels[i])
+                area[cluster] += 1
+            }
+            for c in clusters {
+                guard pieces[c.label].count >= 4 else { continue }
+                guard Double(c.height) >= 4 * stroke, Double(c.width) >= 6 * stroke else { continue }
+                found.append((area[c.label], (
+                    Double(c.minX) / scale, Double(c.minY) / scale, Double(c.maxX) / scale, Double(c.maxY) / scale
+                )))
+            }
+        }
+        found.sort { $0.area > $1.area }
+        var boxes: [(Double, Double, Double, Double)] = []
+        for item in found {
+            let (x0, y0, x1, y1) = item.box
+            let bw = x1 - x0, bh = y1 - y0
+            let box = (max(0, x0 - 0.12 * bw), max(0, y0 - 0.25 * bh),
+                       min(Double(width), x1 + 0.12 * bw), min(Double(height), y1 + 0.25 * bh))
+            if boxes.contains(where: { overlapRatio($0, box) > 0.6 }) { continue }
+            boxes.append(box)
+            if boxes.count >= 8 { break }
+        }
+        return boxes.map { (Int($0.0), Int($0.1), Int($0.2.rounded(.up)), Int($0.3.rounded(.up))) }
+    }
+}
+
+extension SevenSegmentLatticeReader.Cell {
+    fileprivate func offset(dx: Double, dy: Double) -> Self {
+        var moved = self
+        moved.minX += dx; moved.maxX += dx
+        moved.minY += dy; moved.maxY += dy
+        return moved
+    }
+}
+
+private func overlapRatio(_ a: (Double, Double, Double, Double), _ b: (Double, Double, Double, Double)) -> Double {
+    let ix = max(0, min(a.2, b.2) - max(a.0, b.0)), iy = max(0, min(a.3, b.3) - max(a.1, b.1))
+    let inter = ix * iy
+    let union = (a.2 - a.0) * (a.3 - a.1) + (b.2 - b.0) * (b.3 - b.1) - inter
+    return union > 0 ? inter / union : 0
+}
+
+private func cropped(_ pixels: [UInt8], width: Int, x0: Int, y0: Int, x1: Int, y1: Int) -> [UInt8] {
+    var out: [UInt8] = []
+    out.reserveCapacity((x1 - x0) * (y1 - y0))
+    for y in y0..<y1 { out.append(contentsOf: pixels[(y * width + x0)..<(y * width + x1)]) }
+    return out
+}
+
 // MARK: - Raster helpers
 
 private func boxResize(_ source: [UInt8], width: Int, height: Int, toWidth: Int, toHeight: Int) -> [UInt8] {
@@ -4168,8 +4318,14 @@ private func median3(_ source: [UInt8], width: Int, height: Int) -> [UInt8] {
 
 /// Square max (or min) filter of odd `size`, clipped at the borders.
 private func slidingExtreme(_ values: [Double], width: Int, height: Int, size: Int, maximum: Bool) -> [Double] {
-    let radius = size / 2
-    func pass(_ input: [Double], count: Int, lines: Int, index: (Int, Int) -> Int) -> [Double] {
+    slidingExtreme(values, width: width, height: height, sizeX: size, sizeY: size, maximum: maximum)
+}
+
+/// Rectangular max (or min) filter of odd sizes, clipped at the borders.
+private func slidingExtreme(
+    _ values: [Double], width: Int, height: Int, sizeX: Int, sizeY: Int, maximum: Bool
+) -> [Double] {
+    func pass(_ input: [Double], count: Int, lines: Int, radius: Int, index: (Int, Int) -> Int) -> [Double] {
         var output = input
         var deque = [Int](repeating: 0, count: count)
         for line in 0..<lines {
@@ -4193,8 +4349,8 @@ private func slidingExtreme(_ values: [Double], width: Int, height: Int, size: I
         }
         return output
     }
-    let rows = pass(values, count: width, lines: height) { line, i in line * width + i }
-    return pass(rows, count: height, lines: width) { line, i in i * width + line }
+    let rows = pass(values, count: width, lines: height, radius: sizeX / 2) { line, i in line * width + i }
+    return pass(rows, count: height, lines: width, radius: sizeY / 2) { line, i in i * width + line }
 }
 
 private func otsu(_ values: [Double]) -> Double {
