@@ -1302,17 +1302,29 @@ private extension GrayBuffer {
         guard height > 0, width > 0, height < 160, width * 4 > height * 5 else {
             return self
         }
-        // #664 probe: hard <80 only — expect washedLowerHalfStillPeelsFullDigits red.
+        // Relative to panel glass, not a fixed <80 cut (#664). Washed strokes
+        // (~140–176 on lower-half / mid-row wash) must still count as ink while
+        // glass near the median does not. Light-on-dark panels flip the test.
+        let median = peelGlassMedian()
+        let margin = max(inkMargin, 24)
+        let inkIsDark = median > 127
+        func isPeelInk(_ pixel: UInt8) -> Bool {
+            let level = Int(pixel)
+            if inkIsDark {
+                return level + margin < median
+            }
+            return level > median + margin
+        }
         func columnDark(_ x: Int) -> Int {
             var dark = 0
-            for y in 0..<height where pixels[y * width + x] < 80 {
+            for y in 0..<height where isPeelInk(pixels[y * width + x]) {
                 dark += 1
             }
             return dark
         }
         func rowDark(_ y: Int) -> Int {
             var dark = 0
-            for x in 0..<width where pixels[y * width + x] < 80 {
+            for x in 0..<width where isPeelInk(pixels[y * width + x]) {
                 dark += 1
             }
             return dark
