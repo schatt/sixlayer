@@ -2149,7 +2149,14 @@ private func windowRadius(width: Int, height: Int) -> Int {
     }
     guard isWideRow else { return grown }
     let strokeFloor = max(4, height / 15)
-    return min(36, max(grown, strokeFloor))
+    let radius = min(36, max(grown, strokeFloor))
+    // Short line crops: strokeFloor can span the intra-digit gap and fuse a
+    // leading 8 into the next cell (alone `8_2` kept only `_2`) (#661).
+    // #659 still needs the floor on taller wide rowcrops.
+    if height < 160 {
+        return min(radius, max(4, grown))
+    }
+    return radius
 }
 
 /// Columns that hold digit ink and stay empty in the gap between rows.
