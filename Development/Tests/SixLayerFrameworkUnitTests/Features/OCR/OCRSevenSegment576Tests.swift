@@ -853,7 +853,9 @@ struct OCRSevenSegment576Tests {
         )
     }
 
-    @Test func fullFrameWithoutLocalizationMissesSealedBothRows() {
+    /// Was a control asserting the raw frame misses (#596). Polarity and
+    /// band fixes now read the sealed panel without localization (#661).
+    @Test func fullFrameWithoutLocalizationReadsSealedBothRows() {
         let frame = embed(
             sealedBothRowsPanel(),
             canvasWidth: 1200,
@@ -866,7 +868,7 @@ struct OCRSevenSegment576Tests {
             cgImage: frame,
             localizeDigitPanel: false
         )
-        #expect(raw.extractedText != "32.88\n8.022")
+        #expect(raw.extractedText == "32.88\n8.022")
     }
 
     @Test func exactEmbedCropWithoutLocalizationStillReadsBothRows() {

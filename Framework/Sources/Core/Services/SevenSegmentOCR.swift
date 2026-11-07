@@ -101,6 +101,7 @@ public enum SevenSegmentOCR {
     /// Long edge of the buffer that `decode` last ran `masks` on. Test probe (#654).
     nonisolated(unsafe) public static var lastDecodeAnalysisLongEdge: Int?
 
+
     /// Pixel rect of the digit panel (glass plus a bezel margin) in image
     /// coordinates, or `nil` when no sealed panel is found.
     ///
@@ -195,15 +196,20 @@ private struct GrayBuffer {
         // and snap to the densest ink band with 4px vertical glass — enough
         // for #641 border clearing, less than the 6px span that left
         // isotropic / both-vertical pad reading "_".
-        let prepared = buffer
-            .trimmingEdgeBezel()
-            .tightenedToDigitLine(marginX: 0, marginY: 4)
-        let turned = standingUp(prepared)
+        let trimmed = buffer.trimmingEdgeBezel()
+        let tightened = trimmed.tightenedToDigitLine(marginX: 0, marginY: 4)
+        // A short-wide line crop is upright (#625, #651). Judge that before
+        // the side peel: dropping a blank leading cell can leave the line
+        // taller than wide, so it reads as two rows or turns sideways (#661).
+        let lineCrop = buffer.height < 160 && buffer.width * 4 > buffer.height * 5
+        let staysLine = tightened.width * 4 > tightened.height * 5
+        let prepared = lineCrop && !staysLine ? trimmed : tightened
+        let turned = lineCrop ? prepared : standingUp(prepared)
         let limit = Int(max(0, maximumDegrees).rounded(.down))
         guard limit > 0 else { return turned }
         let small = turned.fitted(maxSide: 280)
         let uprightScore = score(small)
-        let uprightConfidence = readConfidence(small)
+        let uprightRead = readQuality(small)
         var bestAngle = 0
         var bestScore = uprightScore
         for angle in -limit...limit where angle != 0 {
@@ -211,7 +217,12 @@ private struct GrayBuffer {
             let value = score(turnedSample)
             // A tilt that lights an extra segment is a worse read, even when
             // the row sums vary more.
-            if value > bestScore, readConfidence(turnedSample) >= uprightConfidence {
+            let turnedRead = readQuality(turnedSample)
+            // A tilt that loses digits (light `31.25` → a lone `1`) is a
+            // worse read even at full confidence (#661).
+            if value > bestScore,
+               turnedRead.confidence >= uprightRead.confidence,
+               turnedRead.digits >= uprightRead.digits {
                 bestScore = value
                 bestAngle = angle
             }
@@ -230,10 +241,11 @@ private struct GrayBuffer {
 
     /// Lowest cell confidence. A tilt that only adds row-sum noise scores
     /// higher and still reads worse; deskew keeps the surer angle.
-    private static func readConfidence(_ buffer: GrayBuffer) -> Float {
+    private static func readQuality(_ buffer: GrayBuffer) -> (confidence: Float, digits: Int) {
         let cells = readRows(in: buffer, allowBandPitch: false).flatMap { $0 }
-        guard !cells.isEmpty else { return 0 }
-        return cells.map(\.confidence).min() ?? 0
+        guard !cells.isEmpty else { return (0, 0) }
+        let digits = cells.filter { $0.character.isNumber }.count
+        return (cells.map(\.confidence).min() ?? 0, digits)
     }
 
     /// True when one polarity's core splits a full-height loose mask into
@@ -298,7 +310,12 @@ private struct GrayBuffer {
         if turns == 2 {
             return mostlyNumbers && scores[2].marksBelow > scores[0].marksBelow
         }
-        return mostlyNumbers && scores[turns].wideDigits >= max(scores[0].wideDigits + 2, 4)
+        // A sideways stroke slices into solid "8"s that count as wide digits.
+        // A real quarter turn reads surer than the upright garbage it fixes;
+        // a lone upright `7` does not turn into `888888888-1` (#661).
+        return mostlyNumbers
+            && scores[turns].wideDigits >= max(scores[0].wideDigits + 2, 4)
+            && scores[turns].minConfidence >= scores[0].minConfidence
     }
 
     private struct OrientationScore {
@@ -306,6 +323,7 @@ private struct GrayBuffer {
         var marksBelow: Int
         var rowVariance: Int
         var confidence: Float
+        var minConfidence: Float
         var text: String
     }
 
@@ -337,6 +355,7 @@ private struct GrayBuffer {
             marksBelow: placed.filter(\.markBelow).count,
             rowVariance: score(buffer),
             confidence: placed.reduce(Float(0)) { $0 + $1.cell.confidence },
+            minConfidence: placed.map(\.cell.confidence).min() ?? 0,
             text: rows.map { String($0.map(\.character)) }.joined(separator: "/")
         )
     }
@@ -379,6 +398,19 @@ private struct GrayBuffer {
         // Split wide spans into digit-sized slices from the left (#661).
         let capped = boxes.flatMap { box -> [PixelBox] in
             guard box.width > digitWidth + digitWidth / 4 else { return [box] }
+            // Under ~1.75 digits there is no room for a second glyph: a
+            // missing top bar shortens the box, so aspect width undershoots
+            // and slicing leaves a stem sliver that reads as a mark. Cap it.
+            guard box.width * 4 >= digitWidth * 7 else {
+                let mid = box.midX
+                let half = digitWidth / 2
+                return [PixelBox(
+                    minX: mid - half,
+                    minY: box.minY,
+                    maxX: mid + (digitWidth - half),
+                    maxY: box.maxY
+                )]
+            }
             let step = max(1, digitWidth)
             let gap = max(1, digitWidth / 6)
             var parts: [PixelBox] = []
@@ -560,9 +592,25 @@ private struct GrayBuffer {
     ) -> PixelBox {
         let reach = min(buffer.height, box.maxY + max(8, digitHeight / 4))
         guard reach > box.maxY else { return box }
-        let fromMask = tightBox(mask, x0: box.minX, x1: box.maxX, y0: box.minY, y1: reach, width: buffer.width)
-        if fromMask.maxY > box.maxY, fromMask.width > 0, fromMask.height > 0 {
-            return fromMask
+        // A tail hangs straight off the dot. Walk down while each row under
+        // the mark still has ink; a gap ends it, so the next row's haze or
+        // strokes inside the reach cannot turn a period into a comma (#661).
+        var tailEnd = box.maxY
+        while tailEnd < reach {
+            let row = tailEnd * buffer.width
+            var inked = false
+            for x in max(0, box.minX)..<min(buffer.width, box.maxX + 1) where mask.bits[row + x] {
+                inked = true
+                break
+            }
+            guard inked else { break }
+            tailEnd += 1
+        }
+        if tailEnd > box.maxY {
+            let fromMask = tightBox(mask, x0: box.minX, x1: box.maxX, y0: box.minY, y1: tailEnd, width: buffer.width)
+            if fromMask.maxY > box.maxY, fromMask.width > 0, fromMask.height > 0 {
+                return fromMask
+            }
         }
         // Thin tails can miss the mask while raw pixels still look like ink.
         var maxY = box.maxY
@@ -642,6 +690,14 @@ private struct GrayBuffer {
         // ssocr: a box narrower than a quarter of its height is a one.
         if box.height * 100 >= digitHeight * 55, box.width * 4 < box.height {
             return Cell(box: box, character: "1", confidence: 1, band: bandIndex)
+        }
+        // A digit-tall box that is nearly all ink is a fill, not a glyph:
+        // even a thick 8 keeps two holes. Capping or slicing a fill to digit
+        // width otherwise reads it as 8s (`filledInk` → `8888888888`) (#661).
+        if box.height * 100 >= digitHeight * 50,
+           box.width * 4 >= box.height,
+           coverage(mask, box: box, width: width) >= 0.95 {
+            return nil
         }
         // Drop fused wash blobs, not a single dense glyph. Thick synth strokes
         // on a short-wide peel can push an ordinary 8 over solidCoverage; width
@@ -890,7 +946,7 @@ private struct GrayBuffer {
 
     private static func score(_ buffer: GrayBuffer) -> Int {
         let masks = buffer.masks()
-        let chosen = prefersDark(masks.dark, masks.light) ? masks.dark : masks.light
+        let chosen = prefersDark(masks.dark, masks.light, pixels: buffer.pixels) ? masks.dark : masks.light
         return score(chosen)
     }
 
@@ -1102,9 +1158,33 @@ private struct GrayBuffer {
         return GrayBuffer(pixels: output, width: newW, height: newH)
     }
 
+    /// Median level of the outer border. Four corner pixels are not enough
+    /// on a crop peeled to 0px side glass: glyph ink can sit on them, and a
+    /// rotation then fills its new corners with ink (#661).
     fileprivate func cornerFill() -> UInt8 {
-        let corners = [pixels[0], pixels[width - 1], pixels[(height - 1) * width], pixels[pixels.count - 1]]
-        return corners.sorted()[corners.count / 2]
+        guard width > 0, height > 0 else { return 0 }
+        var counts = [Int](repeating: 0, count: 256)
+        var total = 0
+        func add(_ index: Int) {
+            counts[Int(pixels[index])] += 1
+            total += 1
+        }
+        for x in 0..<width {
+            add(x)
+            if height > 1 { add((height - 1) * width + x) }
+        }
+        if height > 2 {
+            for y in 1..<(height - 1) {
+                add(y * width)
+                if width > 1 { add(y * width + width - 1) }
+            }
+        }
+        var seen = 0
+        for level in 0..<256 {
+            seen += counts[level]
+            if seen * 2 > total { return UInt8(level) }
+        }
+        return pixels[0]
     }
 
     /// Peel uniform border that matches the corner fill (synthetic pad /
@@ -1134,9 +1214,17 @@ private struct GrayBuffer {
         while left < width - 8, isMarginColumn(left) { left += 1 }
         var right = width
         while right > left + 8, isMarginColumn(right - 1) { right -= 1 }
-        // Ignore hairline "pad" so glare / invert fixtures keep full glass (#645).
-        let peeled = top + (height - bottom) + left + (width - right)
-        guard peeled >= 64 else { return self }
+        // Only peel a pad that dwarfs the content (#648 training canvas).
+        // Ordinary glass margin must stay: a 16px pad sums to 64 and trimming
+        // it puts strokes on the crop edge, where polarity flips and the
+        // border clear eats ink (#645, #661).
+        let padX = left + (width - right)
+        let padY = top + (height - bottom)
+        // Both axes: a leading blank cell is one-sided pad, and peeling it
+        // turns a short-wide line tall enough to read as sideways. At least
+        // twice the content: a pad about the content's size is still panel
+        // geometry that rowcrop windows rely on (`rescannedRowCrop`).
+        guard padX >= (right - left) * 2, padY >= (bottom - top) * 2 else { return self }
         let margin = 4
         let x0 = max(0, left - margin)
         let y0 = max(0, top - margin)
@@ -1380,9 +1468,7 @@ private extension GrayBuffer {
         let rowInk = (0..<height).map(rowDark)
         let peak = rowInk.max() ?? 0
         let floor = max(max(1, width / 20) * 2, peak / 10)
-        var bestStart = 0
-        var bestEnd = height
-        var bestInk = -1
+        var bands: [(start: Int, end: Int, ink: Int)] = []
         var cursor = 0
         while cursor < height {
             while cursor < height, rowInk[cursor] < floor {
@@ -1395,23 +1481,43 @@ private extension GrayBuffer {
                 ink += rowInk[cursor]
                 cursor += 1
             }
-            if ink > bestInk {
-                bestInk = ink
-                bestStart = start
-                bestEnd = cursor
+            bands.append((start, cursor, ink))
+        }
+        // A glare stripe lifts ink above the dark cut and splits one digit
+        // line into upper and lower halves; keeping the bigger half reads
+        // `31.25` as `_21  8__6.` (#661). Rejoin bands whose gap is shorter
+        // than the smaller band — a real gap between lines is wider.
+        var joined: [(start: Int, end: Int, ink: Int)] = []
+        for band in bands {
+            if let last = joined.last,
+               band.start - last.end < min(last.end - last.start, band.end - band.start) {
+                joined[joined.count - 1] = (last.start, band.end, last.ink + band.ink)
+            } else {
+                joined.append(band)
             }
         }
-        guard bestInk >= 0 else { return self }
+        guard let best = joined.max(by: { $0.ink < $1.ink }) else { return self }
+        let bestStart = best.start
+        let bestEnd = best.end
         // Comma tails hang a stroke below the digit line. marginY 4 is what
         // #651 needs for padded top lines, but it shears those tails off so
         // markCharacter only sees a square period (#661). Reach a short
         // distance for sparse mark ink, then stop at the first empty row.
+        // Painted opposite-polarity marks are near-white; count them too so
+        // their tail is not shorn into a period (`1,25` → `1.25`).
+        func rowMark(_ y: Int) -> Int {
+            var mark = 0
+            for x in 0..<width where pixels[y * width + x] < 80 || pixels[y * width + x] >= 252 {
+                mark += 1
+            }
+            return mark
+        }
         let hangFloor = max(1, floor / 8)
         let hangLimit = min(height, bestEnd + max(marginY * 4, (bestEnd - bestStart) / 5))
         var hangEnd = bestEnd
         var y = bestEnd
         while y < hangLimit {
-            if rowInk[y] >= hangFloor {
+            if rowMark(y) >= hangFloor {
                 hangEnd = y + 1
                 y += 1
             } else if hangEnd > bestEnd {
@@ -1608,7 +1714,7 @@ private extension GrayBuffer {
         let masks = (dark: clearingBorderComponents(sealed.dark), light: clearingBorderComponents(sealed.light))
         let sealedCore = (dark: keepingInteriorInk(raw.darkCore), light: keepingInteriorInk(raw.lightCore))
         let cores = (dark: clearingBorderComponents(sealedCore.dark), light: clearingBorderComponents(sealedCore.light))
-        let darkPreferred = prefersDark(masks.dark, masks.light)
+        let darkPreferred = prefersDark(masks.dark, masks.light, pixels: buffer.pixels)
         let darkChoice = polarity(isDark: true, loose: masks.dark, core: cores.dark)
         let lightChoice = polarity(isDark: false, loose: masks.light, core: cores.light)
         let chosen: (isDark: Bool, glyphs: Mask, bandSource: Mask)
@@ -1622,23 +1728,29 @@ private extension GrayBuffer {
                 chosen = openIsDark ? darkChoice.reading : lightChoice.reading
                 opened = true
             } else if darkPreferred {
-                let forced = polarity(
-                    isDark: true,
-                    loose: masks.dark,
-                    core: cores.dark,
-                    forceOpen: true
-                )
-                chosen = forced.reading
-                opened = forced.opens
+                // Forcing open clears columns outside the digit span. On one
+                // wide line of groups that span is a single group (`five` →
+                // `2.22`) (#661), so only force when it keeps the dark ink.
+                if spanKeepsInk(core: cores.dark, loose: masks.dark) {
+                    let forced = polarity(
+                        isDark: true,
+                        loose: masks.dark,
+                        core: cores.dark,
+                        forceOpen: true
+                    )
+                    chosen = forced.reading
+                    opened = forced.opens
+                } else {
+                    chosen = darkChoice.reading
+                    opened = false
+                }
             } else {
-                let forced = polarity(
-                    isDark: false,
-                    loose: masks.light,
-                    core: cores.light,
-                    forceOpen: true
-                )
-                chosen = forced.reading
-                opened = forced.opens
+                // Light ink on dark glass: the glass false-opens. Forcing the
+                // light ink open clears columns outside its digit span and
+                // drops leading digits (light `31.25` → `1`) (#661). Read
+                // the light mask as is.
+                chosen = lightChoice.reading
+                opened = false
             }
         } else if darkPreferred {
             chosen = darkChoice.reading
@@ -1689,9 +1801,33 @@ private extension GrayBuffer {
         let bandsForSplit = substantiveBands.count >= 2 ? substantiveBands : separated
         // merge treats a zero limit as "pick a default", which would close
         // the gap this split just opened.
+        // Merging heals a digit that glare split into pieces. Bands that each
+        // read as a row of confident digits are rows, even when haze narrows
+        // the gap below cellHeight/2 (`rescannedRowCrop` → `018-`) (#661).
+        let bandsAreRows: Bool = {
+            guard splittingRows, !opened, bandsForSplit.count >= 2 else { return false }
+            let cleaned = clearingOverlongRows(glyphs, bands: bandsForSplit)
+            return bandsForSplit.allSatisfy { raw in
+                let band = trimmingSparseEdges(raw, mask: cleaned)
+                let found = cells(
+                    in: band,
+                    mask: cleaned,
+                    buffer: buffer,
+                    bandIndex: 0,
+                    darkInk: primaryIsDark,
+                    preferredPitch: preferredPitch
+                )
+                let rowHeight = band.1 - band.0
+                let solid = found.filter { cell in
+                    cell.character.isNumber && cell.confidence == 1
+                        && cell.height * 10 >= rowHeight * 7
+                }
+                return solid.count >= 2 && solid.count * 2 > found.count
+            }
+        }()
         let splitBands = opened
             ? merge(solidBands, whenGapBelow: max(2, buffer.height / 40))
-            : (bandsForSplit.count > foundBands.count
+            : (bandsForSplit.count > foundBands.count || bandsAreRows
                 ? bandsForSplit
                 : merge(bandsForSplit, whenGapBelow: max(1, cellHeight / 2)))
         // Short-wide single-line crops already disable row windows, but a
@@ -1699,13 +1835,19 @@ private extension GrayBuffer {
         // each slice separately then letting digitWeight pick a winner drops
         // the real digits and keeps a counter that looks like `0` (#661).
         // Collapse to one band whenever we are not splitting rows.
+        // No seven-segment stroke runs further across than its row is tall.
+        // A longer run is glare or chrome: a bright gap-glare line marks the
+        // glass beside it as ink and puts ink in every column, so column runs
+        // never break (`rescannedRowCrop` → `1_9__8_`) (#661). Clear those
+        // rows for cell boxes, then peel the haze they hid.
+        let cellGlyphs = opened ? glyphs : clearingOverlongRows(glyphs, bands: splitBands)
         let lineBands: [(Int, Int)]
         if !splittingRows, splitBands.count > 1 {
             let y0 = splitBands.map(\.0).min() ?? 0
             let y1 = splitBands.map(\.1).max() ?? buffer.height
             lineBands = y1 > y0 ? [(y0, y1)] : splitBands
         } else {
-            lineBands = splitBands
+            lineBands = opened ? splitBands : splitBands.map { trimmingSparseEdges($0, mask: cellGlyphs) }
         }
         if buffer.width >= 1000 {
             let listed = lineBands.map { "\($0.0)-\($0.1)" }.joined(separator: ",")
@@ -1716,6 +1858,47 @@ private extension GrayBuffer {
         // crop of that row when that crop's window is actually narrower.
         // A window that fits inside a stroke drops the middle of the bar,
         // so a row that is already on the small window stays on this mask.
+        // A column inked down most of a row gap is bezel strip, not stroke
+        // (`edgeStrip` → trailing `1.`) (#661). Digits leave the gap empty and
+        // gap glare is a thin line, so neither marks it. Drop cells on that
+        // strip and the speck past it, on the outer side of the digits.
+        var gapStrip = [Bool](repeating: false, count: buffer.width)
+        if splittingRows, lineBands.count > 1 {
+            for (upper, lower) in zip(lineBands, lineBands.dropFirst()) {
+                let gap = lower.0 - upper.1
+                guard gap >= 8 else { continue }
+                let y0 = upper.1 + gap / 4
+                let y1 = lower.0 - gap / 4
+                for x in 0..<buffer.width {
+                    var inked = 0
+                    for y in y0..<y1 where glyphs.bits[y * buffer.width + x] {
+                        inked += 1
+                    }
+                    if inked * 5 >= (y1 - y0) * 4 { gapStrip[x] = true }
+                }
+            }
+        }
+        func droppingGapStrip(_ cells: [Cell]) -> [Cell] {
+            guard gapStrip.contains(true) else { return cells }
+            func onStrip(_ cell: Cell) -> Bool {
+                let x0 = max(0, cell.minX)
+                let x1 = min(buffer.width, cell.maxX + 1)
+                guard x1 > x0 else { return false }
+                return (x0..<x1).filter { gapStrip[$0] }.count * 2 >= x1 - x0
+            }
+            let digits = cells.filter { $0.character.isNumber && !onStrip($0) }
+            guard let left = digits.map(\.minX).min(), let right = digits.map(\.maxX).max() else {
+                return cells
+            }
+            let outerRight = (right..<buffer.width).first { gapStrip[$0] }
+            let outerLeft = (0..<max(0, left)).last { gapStrip[$0] }
+            return cells.filter { cell in
+                if onStrip(cell) { return false }
+                if let outerRight, cell.minX >= outerRight { return false }
+                if let outerLeft, cell.maxX <= outerLeft { return false }
+                return true
+            }
+        }
         if splittingRows, lineBands.count > 1 {
             let span = readingSpan(glyphs, bands: lineBands)
             let parentRadius = windowRadius(width: buffer.width, height: buffer.height)
@@ -1810,7 +1993,12 @@ private extension GrayBuffer {
                     }
                 }
             }
-            if windowNarrows, !rescanned.isEmpty {
+            // A reading span that misses groups crops each row down to one
+            // digit (tight padded canvas `1.11  2.22` → `1`) (#661). Keep the
+            // rowcrops only when they read at least the digits the whole crop did.
+            let parentDigits = measured.flatMap(\.cells).filter { $0.character.isNumber }.count
+            let rescannedDigits = rescanned.flatMap { $0 }.filter { $0.character.isNumber }.count
+            if windowNarrows, !rescanned.isEmpty, rescannedDigits >= parentDigits {
                 return rescanned
             }
             // Rowcrop aborted (parent window already tight — digitPitch synth).
@@ -1822,7 +2010,7 @@ private extension GrayBuffer {
                 return lineBands.compactMap { band -> [Cell]? in
                     let found = cells(
                         in: band,
-                        mask: glyphs,
+                        mask: cellGlyphs,
                         buffer: buffer,
                         bandIndex: 0,
                         darkInk: primaryIsDark,
@@ -1832,7 +2020,7 @@ private extension GrayBuffer {
                         ? []
                         : oppositeMarks(in: band, secondary: paintedMarks, existing: found, buffer: buffer, bandIndex: 0)
                     let dots = baselineDots(in: band, mask: glyphs, cells: found, width: buffer.width, bandIndex: 0)
-                    var row = found + marks + dots
+                    var row = droppingGapStrip(found + marks + dots)
                     if bandPitch != nil {
                         row = pitchRowMarks(row, mask: glyphs, band: band, width: buffer.width)
                     }
@@ -1859,7 +2047,7 @@ private extension GrayBuffer {
         return lineBands.compactMap { band -> [Cell]? in
             let found = cells(
                 in: band,
-                mask: glyphs,
+                mask: cellGlyphs,
                 buffer: buffer,
                 bandIndex: 0,
                 darkInk: primaryIsDark,
@@ -1869,7 +2057,7 @@ private extension GrayBuffer {
                 ? []
                 : oppositeMarks(in: band, secondary: paintedMarks, existing: found, buffer: buffer, bandIndex: 0)
             let dots = baselineDots(in: band, mask: glyphs, cells: found, width: buffer.width, bandIndex: 0)
-            var row = found + marks + dots
+            var row = droppingGapStrip(found + marks + dots)
             // Pitch volume often washes the glass above the real decimal, so
             // baselineDots misses it and a trailing noise mark can survive.
             // Keep only marks between digits; if none, place one in the
@@ -2071,16 +2259,15 @@ private func clearingBorderComponents(_ mask: Mask) -> Mask {
         guard boxW * 2 > width, boxH * 2 > height else { return }
         let thickness = frameThickness(queue, width: width, height: height)
         // Short-wide peels put digit stems on the crop edge. A bridged digit
-        // field then looks "frame-sized" but its inward depth is a glyph, not
-        // a thin bezel — clearing it drops a leading 8 (alone `8_2` → `_2`)
-        // (#661). Only strip a shallow rim.
-        let maxRim = max(2, min(boxW, boxH) / 8)
-        let rim = min(thickness, maxRim)
+        // field looks frame-sized but its inward depth is a glyph, not a thin
+        // bezel — clearing it drops a leading 8 (alone `8_2` → `_2`) (#661).
+        // Only strip a shallow rim that still looks like chrome.
+        guard thickness * 6 <= min(boxW, boxH) else { return }
         for index in queue {
             let x = index % width
             let y = index / width
             let distance = min(x, y, width - 1 - x, height - 1 - y)
-            if distance < rim {
+            if distance < thickness {
                 bits[index] = false
             }
         }
@@ -2465,8 +2652,9 @@ private func rowGapBands(_ mask: Mask) -> [(Int, Int)] {
         let below = height - y
         let length = y - valley
         // A cavity inside the only row of digits is a large fraction of the
-        // crop. The gap between two rows is a thin band.
-        guard length >= minValley, length * 8 <= height else { continue }
+        // crop. The gap between two rows is a thinner band — but on a tight
+        // two-row crop it is ~1/4 of the height, not 1/8 (#661).
+        guard length >= minValley, length * 3 <= height else { continue }
         guard above >= minSide, below >= minSide, floor < bestFloor else { continue }
         // A glare line through one row leaves a short stub. Two rows are
         // about the same height.
@@ -2546,6 +2734,103 @@ private func polarity(
     let radius = max(2, core.height / 180)
     let thick = cleared(span, mask: dilate(limitedCore, radius: radius))
     return (true, (isDark, thick, limitedCore))
+}
+
+/// True when the core's digit span holds most of the loose mask's ink.
+private func spanKeepsInk(core: Mask, loose: Mask) -> Bool {
+    guard let span = digitColumnSpan(core) else { return false }
+    var inside = 0
+    var total = 0
+    for y in 0..<loose.height {
+        let row = y * loose.width
+        for x in 0..<loose.width where loose.bits[row + x] {
+            total += 1
+            if x >= span.0, x < span.1 { inside += 1 }
+        }
+    }
+    return total == 0 || inside * 10 >= total * 8
+}
+
+/// Haze above a row is dotted ink: runs far shorter than a stroke. Left in
+/// the band it bridges column runs, so cell boxes slide off the digits
+/// (`rescannedRowCrop` → `1_3_.28_`) (#661). Peel band edge rows whose mean
+/// run is under a third of the band's median run; stop at the first stroke row.
+private func trimmingSparseEdges(_ band: (Int, Int), mask: Mask) -> (Int, Int) {
+    let width = mask.width
+    guard band.1 - band.0 > 8 else { return band }
+    func rowRuns(_ y: Int) -> [Int] {
+        var lengths: [Int] = []
+        var length = 0
+        let row = y * width
+        for x in 0..<width {
+            if mask.bits[row + x] {
+                length += 1
+            } else if length > 0 {
+                lengths.append(length)
+                length = 0
+            }
+        }
+        if length > 0 { lengths.append(length) }
+        return lengths
+    }
+    let perRow = (band.0..<band.1).map(rowRuns)
+    // Pixel-weighted: haze has many tiny runs, strokes hold most of the ink.
+    let weighted = perRow.flatMap { $0 }.flatMap { length in Array(repeating: length, count: length) }
+    guard let typical = median(weighted), typical >= 3 else { return band }
+    func sparse(_ index: Int) -> Bool {
+        let lengths = perRow[index]
+        guard !lengths.isEmpty else { return true }
+        let mean = lengths.reduce(0, +) / lengths.count
+        return mean * 3 < typical
+    }
+    let limit = (band.1 - band.0) / 2
+    var top = 0
+    while top < limit, sparse(top) { top += 1 }
+    var bottom = perRow.count
+    while perRow.count - bottom < limit, bottom > top + 1, sparse(bottom - 1) { bottom -= 1 }
+    // Only peel a real haze block, not a row or two of edge noise.
+    let peeledTop = top >= 4 ? top : 0
+    let peeledBottom = perRow.count - bottom >= 4 ? bottom : perRow.count
+    return (band.0 + peeledTop, band.0 + peeledBottom)
+}
+
+/// Clears rows that hold a run longer than the band is tall, plus the rows
+/// between them when they cluster in a short stripe (a glare line's hole).
+private func clearingOverlongRows(_ mask: Mask, bands: [(Int, Int)]) -> Mask {
+    var bits = mask.bits
+    let width = mask.width
+    for band in bands {
+        let limit = band.1 - band.0
+        guard limit >= 20 else { continue }
+        var overlong: [Int] = []
+        for y in max(0, band.0)..<min(mask.height, band.1) {
+            let row = y * width
+            var x = 0
+            var longest = 0
+            while x < width {
+                guard bits[row + x] else { x += 1; continue }
+                let start = x
+                while x < width, bits[row + x] { x += 1 }
+                longest = max(longest, x - start)
+            }
+            if longest > limit { overlong.append(y) }
+        }
+        guard let first = overlong.first, let last = overlong.last else { continue }
+        // One short stripe only; a tall block of long runs is not glare.
+        guard (last - first + 1) * 4 <= limit else { continue }
+        // Glare sits off the digits, inside the band's outer third with
+        // haze or glass beyond it. Wash-bridged `a`/`d` bars touch the band
+        // edge and `g` bars sit mid-band; clearing those drops strokes
+        // (`28022` → `28032`).
+        let inset = max(3, limit / 30)
+        guard first > band.0 + inset, last < band.1 - 1 - inset else { continue }
+        guard last < band.0 + limit / 3 || first > band.1 - limit / 3 else { continue }
+        for y in first...last {
+            let row = y * width
+            for x in 0..<width { bits[row + x] = false }
+        }
+    }
+    return Mask(bits: bits, width: width, height: mask.height)
 }
 
 private func digitColumnSpan(_ mask: Mask) -> (Int, Int)? {
@@ -3469,17 +3754,51 @@ private func median(_ values: [Int]) -> Int? {
     return values.sorted()[values.count / 2]
 }
 
-private func prefersDark(_ dark: Mask, _ light: Mask) -> Bool {
+private func prefersDark(_ dark: Mask, _ light: Mask, pixels: [UInt8]) -> Bool {
     // A halo is one fat run, so a two-to-one lead still wins. The glass split
-    // by the strokes can have a few more runs than the strokes. When the
-    // counts are that close, the thinner mask is the ink.
+    // by the strokes can have a few more runs than the strokes.
     let darkRuns = bandedColumnRuns(dark)
     let lightRuns = bandedColumnRuns(light)
     if darkRuns >= lightRuns * 2 { return true }
     if lightRuns >= darkRuns * 2 { return false }
+    // When the counts are that close, the ink is the mask whose pixels sit
+    // farthest from the glass. Glass fills most of the panel, so the median
+    // level is glass. A tight threshold window leaves only a thin ring of
+    // glass marked beside each stroke, so "thinner mask is ink" picks that
+    // ring on a clean single glyph (#661).
+    if let glass = medianLevel(pixels),
+       let darkLevel = meanLevel(dark, pixels: pixels),
+       let lightLevel = meanLevel(light, pixels: pixels) {
+        let darkContrast = abs(darkLevel - glass)
+        let lightContrast = abs(lightLevel - glass)
+        if darkContrast >= lightContrast * 2 { return true }
+        if lightContrast >= darkContrast * 2 { return false }
+    }
     let darkInk = dark.rowSums.reduce(Int64(0)) { $0 + Int64($1) }
     let lightInk = light.rowSums.reduce(Int64(0)) { $0 + Int64($1) }
     return darkInk <= lightInk
+}
+
+private func medianLevel(_ pixels: [UInt8]) -> Int? {
+    guard !pixels.isEmpty else { return nil }
+    var counts = [Int](repeating: 0, count: 256)
+    for pixel in pixels { counts[Int(pixel)] += 1 }
+    var seen = 0
+    for level in 0..<256 {
+        seen += counts[level]
+        if seen * 2 >= pixels.count { return level }
+    }
+    return nil
+}
+
+private func meanLevel(_ mask: Mask, pixels: [UInt8]) -> Int? {
+    var total = 0
+    var count = 0
+    for index in mask.bits.indices where mask.bits[index] {
+        total += Int(pixels[index])
+        count += 1
+    }
+    return count > 0 ? total / count : nil
 }
 
 private func bandedColumnRuns(_ mask: Mask) -> Int {
