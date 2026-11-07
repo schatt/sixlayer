@@ -454,15 +454,19 @@ private struct GrayBuffer {
         guard limit > 0 else { return turned }
         let small = turned.fitted(maxSide: 280)
         let uprightScore = score(small)
-        let uprightConfidence = readConfidence(small)
+        let upright = readQuality(small)
         var bestAngle = 0
         var bestScore = uprightScore
         for angle in -limit...limit where angle != 0 {
             let turnedSample = small.rotated(degrees: Double(angle))
             let value = score(turnedSample)
             // A tilt that lights an extra segment is a worse read, even when
-            // the row sums vary more.
-            if value > bestScore, readConfidence(turnedSample) >= uprightConfidence {
+            // the row sums vary more. Turning never changes which polarity is
+            // ink, so a tilt that reads the other one is reading the glass
+            // lit beside the strokes (#609: a turned 7 read as two slivers, 11).
+            guard value > bestScore else { continue }
+            let tilted = readQuality(turnedSample)
+            if tilted.confidence >= upright.confidence, upright.isDark == nil || tilted.isDark == upright.isDark {
                 bestScore = value
                 bestAngle = angle
             }
@@ -479,12 +483,14 @@ private struct GrayBuffer {
         return tilted
     }
 
-    /// Lowest cell confidence. A tilt that only adds row-sum noise scores
-    /// higher and still reads worse; deskew keeps the surer angle.
-    private static func readConfidence(_ buffer: GrayBuffer) -> Float {
-        let cells = readRows(in: buffer, allowBandPitch: false).flatMap { $0 }
-        guard !cells.isEmpty else { return 0 }
-        return cells.map(\.confidence).min() ?? 0
+    /// Lowest cell confidence, and the polarity read as ink (nil when no
+    /// cell was read). A tilt that only adds row-sum noise scores higher and
+    /// still reads worse; deskew keeps the surer angle.
+    private static func readQuality(_ buffer: GrayBuffer) -> (confidence: Float, isDark: Bool?) {
+        var isDark: Bool?
+        let cells = readRows(in: buffer, allowBandPitch: false, polarityRead: { isDark = $0 }).flatMap { $0 }
+        guard !cells.isEmpty else { return (0, nil) }
+        return (cells.map(\.confidence).min() ?? 0, isDark)
     }
 
     /// True when one polarity's core splits a full-height loose mask into
@@ -2154,7 +2160,8 @@ private extension GrayBuffer {
         preferredPitch: PreferredDigitPitch? = nil,
         allowBandPitch: Bool = false,
         sampleBand: Int = 0,
-        rowFinder: SegmentRowFinder? = nil
+        rowFinder: SegmentRowFinder? = nil,
+        polarityRead: ((Bool) -> Void)? = nil
     ) -> [[Cell]] {
         let raw = buffer.masks()
         // A frame inside the crop seals the glass. Ink outside that glass is the bezel.
@@ -2203,6 +2210,7 @@ private extension GrayBuffer {
             opened = lightChoice.opens
         }
         let primaryIsDark = chosen.isDark
+        polarityRead?(primaryIsDark)
         let glyphs = chosen.glyphs
         let bandSource = chosen.bandSource
         if buffer.width >= 1000 {
