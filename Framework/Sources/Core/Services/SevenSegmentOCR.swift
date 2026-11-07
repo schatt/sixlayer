@@ -454,21 +454,15 @@ private struct GrayBuffer {
         guard limit > 0 else { return turned }
         let small = turned.fitted(maxSide: 280)
         let uprightScore = score(small)
-        let upright = readQuality(small)
+        let uprightConfidence = readConfidence(small)
         var bestAngle = 0
         var bestScore = uprightScore
         for angle in -limit...limit where angle != 0 {
             let turnedSample = small.rotated(degrees: Double(angle))
             let value = score(turnedSample)
             // A tilt that lights an extra segment is a worse read, even when
-            // the row sums vary more. When every upright cell already reads
-            // exactly, a tilt that reads more cells is splitting a glyph (a
-            // 7's bar from its stem): straightening cannot add one. A broken
-            // upright read (rows smeared by the tilt) may gain cells.
-            guard value > bestScore else { continue }
-            let tilted = readQuality(turnedSample)
-            let splitsAGlyph = upright.confidence >= 1 && tilted.cells > upright.cells
-            if tilted.confidence >= upright.confidence, !splitsAGlyph {
+            // the row sums vary more.
+            if value > bestScore, readConfidence(turnedSample) >= uprightConfidence {
                 bestScore = value
                 bestAngle = angle
             }
@@ -485,13 +479,12 @@ private struct GrayBuffer {
         return tilted
     }
 
-    /// Lowest cell confidence and the cell count. A tilt that only adds
-    /// row-sum noise scores higher and still reads worse; deskew keeps the
-    /// surer angle.
-    private static func readQuality(_ buffer: GrayBuffer) -> (confidence: Float, cells: Int) {
+    /// Lowest cell confidence. A tilt that only adds row-sum noise scores
+    /// higher and still reads worse; deskew keeps the surer angle.
+    private static func readConfidence(_ buffer: GrayBuffer) -> Float {
         let cells = readRows(in: buffer, allowBandPitch: false).flatMap { $0 }
-        guard !cells.isEmpty else { return (0, 0) }
-        return (cells.map(\.confidence).min() ?? 0, cells.count)
+        guard !cells.isEmpty else { return 0 }
+        return cells.map(\.confidence).min() ?? 0
     }
 
     /// True when one polarity's core splits a full-height loose mask into
