@@ -2643,8 +2643,75 @@ private func clearingBorderComponents(_ mask: Mask) -> Mask {
         consider(y * width)
         consider(y * width + width - 1)
     }
+    return clearingFullHeightStrips(Mask(bits: bits, width: width, height: height))
+}
+
+/// Clear ink that runs the full height of the crop when the glyphs do not.
+///
+/// A trimmed crop can keep a bezel's side edges as thin strips from the top
+/// edge to the bottom edge. They are too narrow for the frame pass and read
+/// as `1`. Digits on that crop leave glass above or below them, so a strip
+/// that reaches both edges is taller than any digit. When other ink reaches
+/// both edges too (a tight crop, where a digit's bars touch them), the strip
+/// may be a stem and nothing is cleared. Only strips narrower than the
+/// glyphs go: glass or a wash that fills the crop is wider.
+private func clearingFullHeightStrips(_ mask: Mask) -> Mask {
+    let width = mask.width
+    let height = mask.height
+    guard width > 0, height > 2 else { return mask }
+    var seen = [Bool](repeating: false, count: mask.bits.count)
+    var spanning: [(pixels: [Int], width: Int)] = []
+    var others: [(minY: Int, maxY: Int, width: Int)] = []
+    for start in mask.bits.indices where mask.bits[start] && !seen[start] {
+        var queue = [start]
+        seen[start] = true
+        var head = 0
+        var minY = height
+        var maxY = 0
+        var minX = width
+        var maxX = 0
+        while head < queue.count {
+            let index = queue[head]
+            head += 1
+            let x = index % width
+            let y = index / width
+            minY = min(minY, y)
+            maxY = max(maxY, y)
+            minX = min(minX, x)
+            maxX = max(maxX, x)
+            for next in [index - 1, index + 1, index - width, index + width]
+            where next >= 0 && next < mask.bits.count {
+                guard abs(next % width - x) + abs(next / width - y) == 1,
+                      mask.bits[next], !seen[next] else { continue }
+                seen[next] = true
+                queue.append(next)
+            }
+        }
+        if minY == 0, maxY == height - 1 {
+            spanning.append((queue, maxX - minX + 1))
+        } else {
+            others.append((minY, maxY, maxX - minX + 1))
+        }
+    }
+    // A comma's tail can reach the bottom edge, so glass on either side is enough.
+    guard !spanning.isEmpty,
+          let top = others.map(\.minY).min(),
+          let bottom = others.map(\.maxY).max(),
+          top > 0 || bottom < height - 1
+    else { return mask }
+    // Glyph width: components at least half as tall as the tallest.
+    let tallest = others.map { $0.maxY - $0.minY + 1 }.max() ?? 0
+    let tall = others.filter { ($0.maxY - $0.minY + 1) * 2 >= tallest }
+    guard let glyphWidth = median(tall.map(\.width)) else { return mask }
+    var bits = mask.bits
+    for component in spanning where component.width < glyphWidth {
+        for index in component.pixels {
+            bits[index] = false
+        }
+    }
     return Mask(bits: bits, width: width, height: height)
 }
+
 
 private func frameThickness(_ pixels: [Int], width: Int, height: Int) -> Int {
     let member = Set(pixels)
