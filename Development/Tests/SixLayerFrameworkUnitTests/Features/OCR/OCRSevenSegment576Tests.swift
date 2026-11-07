@@ -131,7 +131,10 @@ struct OCRSevenSegment576Tests {
             rows: [atoms("32.88"), atoms("8.022")],
             solidGapWashVolumeOnly: true
         )
-        #expect(decode(image, maximum: 0).extractedText == "32.88\n8.022")
+        // The wash paints the volume gaps at ink level, decimal gap included,
+        // so that decimal is not in the pixels. Marks come only from what is
+        // seen; the decoder no longer guesses X.xxx (#661).
+        #expect(decode(image, maximum: 0).extractedText == "32.88\n8022")
     }
 
     @Test func onePixelOnADarkSegmentDoesNotChangeTheDigit() {
@@ -159,6 +162,8 @@ struct OCRSevenSegment576Tests {
         #expect(lines.count == 2)
         #expect(lines.first?.filter(\.isNumber) == "3288")
         #expect(lines.last?.filter(\.isNumber) == "28022")
+        // No decimal is drawn on this row; none may be invented (#661).
+        #expect(lines.last == "28022")
     }
 
     @Test func rescannedRowCropMatchesPriceBandGeometry() {

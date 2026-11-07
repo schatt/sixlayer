@@ -2060,8 +2060,7 @@ private extension GrayBuffer {
             var row = droppingGapStrip(found + marks + dots)
             // Pitch volume often washes the glass above the real decimal, so
             // baselineDots misses it and a trailing noise mark can survive.
-            // Keep only marks between digits; if none, place one in the
-            // clearest inter-digit gap that still has baseline ink.
+            // Keep only marks seen between digits.
             if preferredPitch != nil {
                 row = pitchRowMarks(row, mask: glyphs, band: band, width: buffer.width)
             }
@@ -2069,7 +2068,7 @@ private extension GrayBuffer {
         }
     }
 
-    /// Prefer a decimal between digit boxes on pitch-driven rows. Drop marks
+    /// On pitch-driven rows, keep marks seen between digit boxes. Drop marks
     /// that sit before the first digit or after the last.
     private static func pitchRowMarks(
         _ row: [Cell],
@@ -2089,45 +2088,11 @@ private extension GrayBuffer {
             guard cell.character == "." || cell.character == "," else { return false }
             return cell.minX >= firstDigit && cell.maxX <= lastDigit
         }
-        // Keep a real inter-digit mark. Inventing is only for washed X.xxx
-        // volume (four digits) when the decimal was lost (#591 / Approach D).
-        // Two-digit integer rows that inherit pitch must stay unmarked (#644).
-        if !between.isEmpty {
-            return (digits + other + between).sorted { $0.minX < $1.minX }
-        }
-        guard digits.count >= 4 else {
-            return (digits + other).sorted { $0.minX < $1.minX }
-        }
-        // Pitch rows copy a price body onto washed volume (Approach D).
-        // That volume is X.xxx units: place the mark in the first inter-digit
-        // gap. Ink scoring mis-fired on this photo (max → 80.22, empty → 802.2,
-        // non-flood → broke edgeStrip when the real dot itself looked "flooded").
-        // Drop stale leading/trailing marks; do not invent stroke ink — only a
-        // gap anchor.
-        let digitHeight = median(digits.map(\.height)) ?? 0
-        guard digitHeight > 8 else {
-            return (digits + other).sorted { $0.minX < $1.minX }
-        }
-        let baseline = median(digits.map(\.maxY)) ?? band.1
-        let top = max(band.0, baseline - max(4, digitHeight / 8))
-        let bottom = min(mask.height, max(baseline, band.1))
-        guard bottom > top else { return (digits + other).sorted { $0.minX < $1.minX } }
-        let left = digits[0].maxX
-        let right = digits[1].minX
-        var placed = digits + other
-        if right - left > 2 {
-            let mid = (left + right) / 2
-            let pad = max(1, (right - left) / 4)
-            let box = PixelBox(
-                minX: max(left, mid - pad),
-                minY: top,
-                maxX: min(right, mid + pad),
-                maxY: bottom
-            )
-            trace("pitch marks place . @\(mid) first-gap \(left)-\(right)\n")
-            placed.append(Cell(box: box, character: ".", confidence: 1, band: 0))
-        }
-        return placed.sorted { $0.minX < $1.minX }
+        // Keep only marks seen between digits; drop stale leading/trailing
+        // ones. Never place a mark that is not in the pixels: a washed gap
+        // that hides a decimal stays unmarked rather than guessing X.xxx
+        // (`28022` read as `2.8022`) (#661).
+        return (digits + other + between).sorted { $0.minX < $1.minX }
     }
 }
 
