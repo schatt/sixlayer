@@ -4897,13 +4897,22 @@ extension SevenSegmentLatticeReader {
     /// Read, then read again from a tight box around the rows found. A loose
     /// crop shrinks the digits in the fixed analysis height; decimals suffer
     /// first. Cells are in this image's pixel coordinates.
+    ///
+    /// Panels show dark digits on light glass or light digits on dark glass,
+    /// so both polarities are read and the better read wins (dark on a tie).
     static func readRefined(pixels: [UInt8], width: Int, height: Int) -> [[Cell]] {
-        let first = read(pixels: pixels, width: width, height: height)
+        let dark = readRefined(pixels: pixels, width: width, height: height, darkInk: true)
+        let light = readRefined(pixels: pixels, width: width, height: height, darkInk: false)
+        return rank(light) > rank(dark) ? light : dark
+    }
+
+    private static func readRefined(pixels: [UInt8], width: Int, height: Int, darkInk: Bool) -> [[Cell]] {
+        let first = read(pixels: pixels, width: width, height: height, darkInk: darkInk)
         guard let box = rowsBox(first, width: width, height: height) else { return first }
         let (x0, y0, x1, y1) = box
         if x0 == 0, y0 == 0, x1 == width, y1 == height { return first }
         let tight = cropped(pixels, width: width, x0: x0, y0: y0, x1: x1, y1: y1)
-        let second = read(pixels: tight, width: x1 - x0, height: y1 - y0)
+        let second = read(pixels: tight, width: x1 - x0, height: y1 - y0, darkInk: darkInk)
             .map { row in row.map { $0.offset(dx: Double(x0), dy: Double(y0)) } }
         return rank(second) >= rank(first) ? second : first
     }
@@ -4955,14 +4964,17 @@ extension SevenSegmentLatticeReader {
         return (x0, y0, x1, y1)
     }
 
-    /// Candidate panel boxes, most stroke ink first, at most eight.
+    /// Candidate panel boxes, most stroke ink first, at most eight. Strokes
+    /// are looked for in both polarities: dark digits on light glass and
+    /// light digits on dark glass.
     private static func candidateBoxes(pixels: [UInt8], width: Int, height: Int) -> [(Int, Int, Int, Int)] {
         let scale = 900.0 / Double(max(width, height))
         let sw = max(1, Int((Double(width) * scale).rounded()))
         let sh = max(1, Int((Double(height) * scale).rounded()))
-        let small = median3(boxResize(pixels, width: width, height: height, toWidth: sw, toHeight: sh), width: sw, height: sh)
+        let dark = median3(boxResize(pixels, width: width, height: height, toWidth: sw, toHeight: sh), width: sw, height: sh)
         let short = Double(min(sw, sh))
         var found: [(area: Int, box: (Double, Double, Double, Double))] = []
+        for small in [dark, dark.map { 255 - $0 }] {
         for fraction in [0.012, 0.02, 0.032] {
             let stroke = max(2, short * fraction)
             let k = Int(stroke * 2.4) | 1
@@ -5006,6 +5018,7 @@ extension SevenSegmentLatticeReader {
                     Double(c.minX) / scale, Double(c.minY) / scale, Double(c.maxX) / scale, Double(c.maxY) / scale
                 )))
             }
+        }
         }
         found.sort { $0.area > $1.area }
         var boxes: [(Double, Double, Double, Double)] = []

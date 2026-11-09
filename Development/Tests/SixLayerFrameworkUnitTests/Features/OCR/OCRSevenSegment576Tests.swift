@@ -1175,8 +1175,9 @@ struct OCRSevenSegment576Tests {
 
     /// Reads on macOS: s1 7707/7/-.022, s2 8.0, s3 1857.2, s4 11.25/27/38
     /// (the printed label below the glass reads as a row), s6 88,
-    /// s8 44.42/7934, 7493 188889 (light digits on dark glass; the lattice
-    /// reader reads dark ink only).
+    /// s8 44.42/7934, 7493 188889 (light digits on dark glass: the lattice
+    /// reads 150.092/1_.111 through the cracks, not confident, so the
+    /// plausible legacy read wins).
     static let pumpPhotosNotReadingYet: Set<String> = Set(
         [1, 2, 3, 4, 6, 8].map { "fuel_purchase/scenario_\($0)/ti_fp_s\($0)_pump.jpg" }
             + ["pump_display/light_digits_7493/IMG_7493.HEIC"]
