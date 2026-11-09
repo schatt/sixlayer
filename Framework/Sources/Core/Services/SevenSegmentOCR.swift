@@ -4882,14 +4882,17 @@ extension SevenSegmentLatticeReader {
         ("0", [.a, .b, .c, .d, .e, .f]), ("1", [.b, .c]), ("2", [.a, .b, .d, .e, .g]),
         ("3", [.a, .b, .c, .d, .g]), ("4", [.b, .c, .f, .g]), ("5", [.a, .c, .d, .f, .g]),
         ("6", [.a, .c, .d, .e, .f, .g]), ("7", [.a, .b, .c]), ("8", [.a, .b, .c, .d, .e, .f, .g]),
-        ("9", [.a, .b, .c, .d, .f, .g]), ("-", [.g])
+        ("9", [.a, .b, .c, .d, .f, .g]), ("-", [.g]),
+        // Common font variants: 6 and 9 without their tails, 7 with a left stem.
+        ("6", [.c, .d, .e, .f, .g]), ("9", [.a, .b, .c, .f, .g]), ("7", [.a, .b, .c, .f])
     ]
 
-    /// Exact template, else a unique template one segment away, else "_".
+    /// Exact template, else the one character whose templates are one
+    /// segment away, else "_".
     fileprivate static func digit(for pattern: SevenSegmentPattern) -> (Character, Float) {
         if let exact = patterns.first(where: { $0.1 == pattern }) { return (exact.0, 1) }
-        let near = patterns.filter { ($0.1.rawValue ^ pattern.rawValue).nonzeroBitCount == 1 }
-        if near.count == 1 { return (near[0].0, 6 / 7) }
+        let near = Set(patterns.filter { ($0.1.rawValue ^ pattern.rawValue).nonzeroBitCount == 1 }.map(\.0))
+        if near.count == 1, let only = near.first { return (only, 6 / 7) }
         return ("_", 0)
     }
 }
