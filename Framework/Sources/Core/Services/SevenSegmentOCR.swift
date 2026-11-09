@@ -1760,8 +1760,16 @@ private extension GrayBuffer {
             opened = lightChoice.opens
         }
         let primaryIsDark = chosen.isDark
-        let glyphs = chosen.glyphs
-        let bandSource = chosen.bandSource
+        // Thick real strokes under scratched plastic carry hairline ink
+        // across the glass and the row gap. Those lines join column runs
+        // and shrink the reading span to a couple of digits (IMG_7493 →
+        // `1088..` / `1_8`) (#661). Open the mask at a fraction of the stroke
+        // so hairlines go and strokes stay; thin synthetic strokes are left
+        // alone.
+        let strokeRun = opened ? 0 : typicalRun(chosen.glyphs)
+        let openRadius = strokeRun >= 24 ? strokeRun / 8 : 0
+        let glyphs = openRadius > 0 ? opening(chosen.glyphs, radius: openRadius) : chosen.glyphs
+        let bandSource = openRadius > 0 ? opening(chosen.bandSource, radius: openRadius) : chosen.bandSource
         if buffer.width >= 1000 {
             let ink = glyphs.bits.filter { $0 }.count
             trace(
@@ -2851,6 +2859,77 @@ private func digitColumnSpan(_ mask: Mask) -> (Int, Int)? {
     return (best.start, extended + 1)
 }
 
+/// Median stroke thickness: each ink pixel counts the shorter of its
+/// horizontal and vertical runs, so a long bar reads as its thickness.
+private func typicalRun(_ mask: Mask) -> Int {
+    let width = mask.width
+    let height = mask.height
+    var horizontal = [Int](repeating: 0, count: mask.bits.count)
+    for y in 0..<height {
+        let row = y * width
+        var x = 0
+        while x < width {
+            guard mask.bits[row + x] else { x += 1; continue }
+            let start = x
+            while x < width, mask.bits[row + x] { x += 1 }
+            for i in start..<x { horizontal[row + i] = x - start }
+        }
+    }
+    var counts = [Int](repeating: 0, count: max(width, height) + 1)
+    var total = 0
+    for x in 0..<width {
+        var y = 0
+        while y < height {
+            guard mask.bits[y * width + x] else { y += 1; continue }
+            let start = y
+            while y < height, mask.bits[y * width + x] { y += 1 }
+            for i in start..<y {
+                counts[min(y - start, horizontal[i * width + x])] += 1
+                total += 1
+            }
+        }
+    }
+    guard total > 0 else { return 0 }
+    var seen = 0
+    for length in counts.indices {
+        seen += counts[length]
+        if seen * 2 >= total { return length }
+    }
+    return 0
+}
+
+/// Square erosion then dilation, each as separable sliding-window passes.
+private func opening(_ mask: Mask, radius: Int) -> Mask {
+    guard radius > 0 else { return mask }
+    func pass(_ bits: [Bool], horizontal: Bool, keepAll: Bool) -> [Bool] {
+        let width = mask.width
+        let height = mask.height
+        var out = [Bool](repeating: false, count: bits.count)
+        let lines = horizontal ? height : width
+        let length = horizontal ? width : height
+        var prefix = [Int](repeating: 0, count: length + 1)
+        for line in 0..<lines {
+            for i in 0..<length {
+                let index = horizontal ? line * width + i : i * width + line
+                prefix[i + 1] = prefix[i] + (bits[index] ? 1 : 0)
+            }
+            for i in 0..<length {
+                let lo = max(0, i - radius)
+                let hi = min(length, i + radius + 1)
+                let set = prefix[hi] - prefix[lo]
+                let index = horizontal ? line * width + i : i * width + line
+                out[index] = keepAll ? set == hi - lo : set > 0
+            }
+        }
+        return out
+    }
+    var bits = pass(mask.bits, horizontal: true, keepAll: true)
+    bits = pass(bits, horizontal: false, keepAll: true)
+    bits = pass(bits, horizontal: true, keepAll: false)
+    bits = pass(bits, horizontal: false, keepAll: false)
+    return Mask(bits: bits, width: mask.width, height: mask.height)
+}
+
 private func dilate(_ mask: Mask, radius: Int) -> Mask {
     guard radius > 0, mask.width > 0, mask.height > 0 else { return mask }
     var bits = [Bool](repeating: false, count: mask.bits.count)
@@ -3720,24 +3799,36 @@ private func median(_ values: [Int]) -> Int? {
 }
 
 private func prefersDark(_ dark: Mask, _ light: Mask, pixels: [UInt8]) -> Bool {
+    // The ink is the mask whose pixels sit farthest from the glass. Glass
+    // fills most of the panel, so the median level is glass. A mask whose
+    // pixels are themselves glass-level is glass marked beside the strokes,
+    // whatever its run count: light digits on dark glass with scratches and
+    // a pale frame leave the light mask one run per row, and the dark (glass)
+    // mask won 13–1, reading every glyph as a solid `8` (IMG_7493) (#661).
+    // Only that light-ink direction overrides the run counts: dark ink
+    // marked beside glare also scores a lead here while its runs are right
+    // (`tallCropReadsEachRowAtItsOwnWindow`).
+    let contrast: (dark: Int, light: Int)? = {
+        guard let glass = medianLevel(pixels),
+              let darkLevel = meanLevel(dark, pixels: pixels),
+              let lightLevel = meanLevel(light, pixels: pixels) else { return nil }
+        return (abs(darkLevel - glass), abs(lightLevel - glass))
+    }()
+    if let contrast {
+        if contrast.light >= contrast.dark * 4 { return false }
+    }
     // A halo is one fat run, so a two-to-one lead still wins. The glass split
     // by the strokes can have a few more runs than the strokes.
     let darkRuns = bandedColumnRuns(dark)
     let lightRuns = bandedColumnRuns(light)
     if darkRuns >= lightRuns * 2 { return true }
     if lightRuns >= darkRuns * 2 { return false }
-    // When the counts are that close, the ink is the mask whose pixels sit
-    // farthest from the glass. Glass fills most of the panel, so the median
-    // level is glass. A tight threshold window leaves only a thin ring of
-    // glass marked beside each stroke, so "thinner mask is ink" picks that
-    // ring on a clean single glyph (#661).
-    if let glass = medianLevel(pixels),
-       let darkLevel = meanLevel(dark, pixels: pixels),
-       let lightLevel = meanLevel(light, pixels: pixels) {
-        let darkContrast = abs(darkLevel - glass)
-        let lightContrast = abs(lightLevel - glass)
-        if darkContrast >= lightContrast * 2 { return true }
-        if lightContrast >= darkContrast * 2 { return false }
+    // Close counts: a smaller contrast lead still decides. A tight threshold
+    // window leaves only a thin ring of glass marked beside each stroke, so
+    // "thinner mask is ink" picks that ring on a clean single glyph (#661).
+    if let contrast {
+        if contrast.dark >= contrast.light * 2 { return true }
+        if contrast.light >= contrast.dark * 2 { return false }
     }
     let darkInk = dark.rowSums.reduce(Int64(0)) { $0 + Int64($1) }
     let lightInk = light.rowSums.reduce(Int64(0)) { $0 + Int64($1) }
