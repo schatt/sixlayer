@@ -4613,7 +4613,22 @@ private struct Reader {
             for y in c.minY..<c.maxY { cover[y] += 1 }
         }
         let peak = cover.max() ?? 0
-        let bands = runs(cover.map { $0 >= max(2, rowCoverFraction * peak) })
+        let found = runs(cover.map { $0 >= max(2, rowCoverFraction * peak) })
+        // Glare can wash the lower half of a row so fewer pieces cover it,
+        // and the cover dips inside the digits. A digit's stroke crosses
+        // that dip from the middle of one run to the middle of the next; a
+        // stray reflection only pokes from one row into the gap below it.
+        // Join runs that one piece reaches past the middle of both.
+        var bands: [(Int, Int)] = []
+        for run in found {
+            if let previous = bands.last, components.contains(where: { piece in
+                piece.minY < (previous.0 + previous.1) / 2 && piece.maxY > (run.0 + run.1) / 2
+            }) {
+                bands[bands.count - 1].1 = run.1
+            } else {
+                bands.append(run)
+            }
+        }
         let minimum = Double(analysisHeight) * 0.08
         let tallest = bands.map { $0.1 - $0.0 }.max() ?? 0
         return bands.filter { Double($0.1 - $0.0) >= max(minimum, Double(tallest) * 0.35) }

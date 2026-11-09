@@ -1160,7 +1160,8 @@ struct OCRSevenSegment576Tests {
             deskewMaximumDegrees: 0,
             localizeDigitPanel: false
         )
-        // Open #600 target: reads 7.777 / 3.022 on macOS and 7.777 / 1.022 on iOS.
+        // Open #600 target: reads 3._99 / 3.022 on macOS. The washed lower
+        // halves of the top row and the 8's left stems are missing from the ink.
         withKnownIssue("Scenario-1 hand crop does not read yet (#600)") {
             #expect(result.extractedText == "32.88\n8.022")
         }
