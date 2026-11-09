@@ -1391,9 +1391,88 @@ private extension GrayBuffer {
             chosen = rows
         }
         return chosen.compactMap { row in
-            let texts = recognizedGroups(row, width: buffer.width, height: buffer.height)
+            let texts = recognizedGroups(vetted(row, in: buffer), width: buffer.width, height: buffer.height)
             return texts.isEmpty ? nil : texts
         }
+    }
+
+    /// A seven-segment digit has no ink in the middle of its upper and lower
+    /// halves: the verticals ride the sides and only the top, middle and
+    /// bottom bars cross the centre. A cell decoded as a digit whose centre
+    /// strips are ink in the photo is stripes, text or an icon read through
+    /// the segment templates: when every digit of a row is like that,
+    /// the cells become unknown.
+    private static func vetted(_ row: [Cell], in buffer: GrayBuffer) -> [Cell] {
+        let eligible = row.indices.filter { index in
+            let cell = row[index]
+            return cell.character.isNumber && cell.character != "1"
+                && cell.box.width * 5 >= cell.box.height * 2
+        }
+        let failing = eligible.filter { inkFillsTheCentre(of: row[$0].box, in: buffer) }
+        // A smeared cell or two is a smudge or a wash; a row where every digit
+        // is like that, as a stripe icon or a line of text is, is not digits.
+        guard eligible.count >= 2, failing.count == eligible.count else { return row }
+        var out = row
+        for index in failing {
+            out[index].character = "_"
+            out[index].confidence = 0
+        }
+        return out
+    }
+
+    private static func inkFillsTheCentre(of box: PixelBox, in buffer: GrayBuffer) -> Bool {
+        let x0 = max(0, box.minX), x1 = min(buffer.width, box.maxX)
+        let y0 = max(0, box.minY), y1 = min(buffer.height, box.maxY)
+        let w = x1 - x0, h = y1 - y0
+        guard w >= 8, h >= 8 else { return false }
+        // Levels inside the box and in a ring of glass around it. Ink is the
+        // side of the box's range that sits farther from that glass.
+        var inside: [UInt8] = []
+        var ring: [UInt8] = []
+        let pad = max(2, w / 4)
+        for y in max(0, y0 - pad)..<min(buffer.height, y1 + pad) {
+            for x in max(0, x0 - pad)..<min(buffer.width, x1 + pad) {
+                let level = buffer.pixels[y * buffer.width + x]
+                if x >= x0, x < x1, y >= y0, y < y1 { inside.append(level) } else { ring.append(level) }
+            }
+        }
+        guard !ring.isEmpty, !inside.isEmpty else { return false }
+        inside.sort()
+        ring.sort()
+        let glass = Int(ring[ring.count / 2])
+        let low = Int(inside[inside.count / 10])
+        let high = Int(inside[inside.count * 9 / 10])
+        let inkIsDark = abs(low - glass) >= abs(high - glass)
+        let ink = inkIsDark ? low : high
+        guard abs(ink - glass) >= 24 else { return false }
+        let middle = (ink + glass) / 2
+        var sideLike = 0
+        var sideTotal = 0
+        for (yLow, yHigh) in [(0.2, 0.4), (0.6, 0.8)] {
+            for y in (y0 + Int(Double(h) * yLow))..<(y0 + Int(Double(h) * yHigh)) {
+                for x in x0..<x1 where Double(x - x0) < Double(w) * 0.3 || Double(x - x0) >= Double(w) * 0.7 {
+                    let level = Int(buffer.pixels[y * buffer.width + x])
+                    sideTotal += 1
+                    if inkIsDark ? level < middle : level > middle { sideLike += 1 }
+                }
+            }
+        }
+        var inkLike = 0
+        var total = 0
+        for (yLow, yHigh) in [(0.2, 0.4), (0.6, 0.8)] {
+            for y in (y0 + Int(Double(h) * yLow))..<(y0 + Int(Double(h) * yHigh)) {
+                for x in (x0 + Int(Double(w) * 0.4))..<(x0 + Int(Double(w) * 0.6)) {
+                    let level = Int(buffer.pixels[y * buffer.width + x])
+                    total += 1
+                    if inkIsDark ? level < middle : level > middle { inkLike += 1 }
+                }
+            }
+        }
+        // The sides must hold ink to judge by, and the centre must carry well
+        // under what they do: a stripe icon or a line of text is as inked in
+        // the middle as at the edges.
+        guard total > 0, sideTotal > 0, sideLike * 10 >= sideTotal else { return false }
+        return inkLike * sideTotal * 10 >= sideLike * total * 3
     }
 
     /// Prefer the row with the most digit ink when a line crop spuriously
