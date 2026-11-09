@@ -1764,10 +1764,10 @@ private extension GrayBuffer {
         // across the glass and the row gap. Those lines join column runs
         // and shrink the reading span to a couple of digits (IMG_7493 →
         // `1088..` / `1_8`) (#661). Open the mask at a fraction of the stroke
-        // so hairlines go and strokes stay; thin synthetic strokes are left
-        // alone.
+        // so hairlines go and strokes stay. Hairlines are texture in the glass,
+        // so flat glass is left alone, and a thin stroke rounds to no opening.
         let strokeRun = opened ? 0 : typicalRun(chosen.glyphs)
-        let openRadius = strokeRun >= 24 ? strokeRun / 8 : 0
+        let openRadius = glassSpread(buffer.pixels) > 0 ? strokeRun / 8 : 0
         let glyphs = openRadius > 0 ? opening(chosen.glyphs, radius: openRadius) : chosen.glyphs
         let bandSource = openRadius > 0 ? opening(chosen.bandSource, radius: openRadius) : chosen.bandSource
         if buffer.width >= 1000 {
@@ -3798,6 +3798,21 @@ private func median(_ values: [Int]) -> Int? {
     return values.sorted()[values.count / 2]
 }
 
+/// The glass's own texture: the median absolute deviation of the levels from
+/// the median level. Zero on flat glass; grows with scratches, noise and
+/// reflections, so thresholds built on it follow the photo's quality.
+private func glassSpread(_ pixels: [UInt8]) -> Int {
+    guard let glass = medianLevel(pixels) else { return 0 }
+    var counts = [Int](repeating: 0, count: 256)
+    for pixel in pixels { counts[abs(Int(pixel) - glass)] += 1 }
+    var seen = 0
+    for level in 0..<256 {
+        seen += counts[level]
+        if seen * 2 >= pixels.count { return level }
+    }
+    return 255
+}
+
 private func prefersDark(_ dark: Mask, _ light: Mask, pixels: [UInt8]) -> Bool {
     // The ink is the mask whose pixels sit farthest from the glass. Glass
     // fills most of the panel, so the median level is glass. A mask whose
@@ -3805,9 +3820,9 @@ private func prefersDark(_ dark: Mask, _ light: Mask, pixels: [UInt8]) -> Bool {
     // whatever its run count: light digits on dark glass with scratches and
     // a pale frame leave the light mask one run per row, and the dark (glass)
     // mask won 13–1, reading every glyph as a solid `8` (IMG_7493) (#661).
-    // Only that light-ink direction overrides the run counts: dark ink
-    // marked beside glare also scores a lead here while its runs are right
-    // (`tallCropReadsEachRowAtItsOwnWindow`).
+    // "Glass-level" is measured, not fixed: within the glass's own spread
+    // (median absolute deviation) of the median. Flat glass has no spread,
+    // so this stays silent there and the rules below decide as before.
     let contrast: (dark: Int, light: Int)? = {
         guard let glass = medianLevel(pixels),
               let darkLevel = meanLevel(dark, pixels: pixels),
@@ -3815,7 +3830,9 @@ private func prefersDark(_ dark: Mask, _ light: Mask, pixels: [UInt8]) -> Bool {
         return (abs(darkLevel - glass), abs(lightLevel - glass))
     }()
     if let contrast {
-        if contrast.light >= contrast.dark * 4 { return false }
+        let spread = glassSpread(pixels)
+        if contrast.dark <= spread, contrast.light > spread { return false }
+        if contrast.light <= spread, contrast.dark > spread { return true }
     }
     // A halo is one fat run, so a two-to-one lead still wins. The glass split
     // by the strokes can have a few more runs than the strokes.
