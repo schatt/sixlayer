@@ -148,7 +148,19 @@ public enum SevenSegmentOCR {
         gray = gray.fitted(maxSide: digitPanelAnalysisMaxSide)
         lastDecodeAnalysisLongEdge = max(gray.width, gray.height)
         let upright = GrayBuffer.deskew(gray, maximumDegrees: deskewMaximumDegrees)
-        let fragments = GrayBuffer.fragments(in: upright)
+        var fragments = GrayBuffer.fragments(in: upright)
+        // The mask reader can lose or merge digits on glare, shading and
+        // scratches and still report full confidence (IMG_7493 → `8818`). The
+        // flat read answers only when every glyph decodes exactly, so it replaces
+        // a read that is itself unsure, or one that found fewer digits.
+        if let sure = FlatSevenSegment.read(gray) {
+            func digits(_ rows: [[OCRRecognizedText]]) -> Int {
+                rows.flatMap { $0 }.reduce(0) { $0 + $1.text.filter(\.isNumber).count }
+            }
+            let flatFragments = sure.map { recognizedGroups($0, width: gray.width, height: gray.height) }
+            let maskConfidence = fragments.flatMap { $0 }.map(\.confidence).min() ?? 0
+            if maskConfidence < 1 || digits(flatFragments) > digits(fragments) { fragments = flatFragments }
+        }
         let lines = fragments.map { row in row.map(\.text).joined(separator: "  ") }
         let extracted = lines.joined(separator: "\n")
         let flat = fragments.flatMap { $0 }
@@ -3878,5 +3890,493 @@ private func bandedColumnRuns(_ mask: Mask) -> Int {
     runs(mask.rowSums).reduce(0) { total, band in
         let sums = columnSums(mask, y0: band.0, y1: band.1, width: mask.width)
         return total + runs(sums).count
+    }
+}
+
+// MARK: - Flat read (#661)
+
+/// First-attempt read for a localized panel: remove the glass background
+/// (glare, reflections, shading), keep what stands out from it, drop thin
+/// scratch ink by measured stroke thickness, then read each full-height digit
+/// by probing its segment zones. Every size is measured from the panel's own
+/// stroke, so photo quality and resolution do not change the rules.
+///
+/// It answers only when every digit decodes exactly. Anything it cannot read
+/// surely (clipped digits, odd glyphs, no digits) returns `nil` and the
+/// mask-based reader runs instead.
+private enum FlatSevenSegment {
+    static func read(_ buffer: GrayBuffer) -> [[Cell]]? {
+        let small = buffer.fitted(maxSide: 480)
+        guard small.width > 16, small.height > 16 else { return nil }
+        let sx = Double(buffer.width) / Double(small.width)
+        let sy = Double(buffer.height) / Double(small.height)
+        var best: (rows: [[Cell]], digits: Int)?
+        for darkInk in [false, true] {
+            guard let rows = readPolarity(small, darkInk: darkInk, sx: sx, sy: sy) else { continue }
+            let digits = rows.flatMap { $0 }.filter { $0.character.isNumber }.count
+            if digits > (best?.digits ?? 0) { best = (rows, digits) }
+        }
+        return best?.rows
+    }
+
+    private static func readPolarity(
+        _ buffer: GrayBuffer, darkInk: Bool, sx: Double, sy: Double
+    ) -> [[Cell]]? {
+        let width = buffer.width
+        let height = buffer.height
+        // A window wider than any stroke (a stroke is at most an eighth of
+        // the panel) removes every digit; then the measured stroke sets the
+        // tighter window that tracks glare.
+        var flat = flattened(buffer, darkInk: darkInk, radius: max(4, height / 6))
+        var ink = threshold(flat)
+        let wide = thickness(ink, width, height)
+        guard wide > 0 else { return nil }
+        flat = flattened(buffer, darkInk: darkInk, radius: max(4, wide * 2))
+        ink = threshold(flat)
+
+        // Unslant italic digits: the shear that makes ink columns sharpest.
+        let centre = Double(height) / 2
+        var shear = 0.0
+        var bestScore = -1.0
+        for step in -15...15 {
+            let trial = Double(step) * 0.02
+            var columns = [Double](repeating: 0, count: width)
+            for y in stride(from: 0, to: height, by: 2) {
+                for x in 0..<width where ink[y * width + x] {
+                    let nx = Int((Double(x) - trial * (Double(y) - centre)).rounded())
+                    if nx >= 0, nx < width { columns[nx] += 1 }
+                }
+            }
+            let score = columns.reduce(0) { $0 + $1 * $1 }
+            if score > bestScore { bestScore = score; shear = trial }
+        }
+        if shear != 0 {
+            var straight = [Bool](repeating: false, count: width * height)
+            for y in 0..<height {
+                for x in 0..<width {
+                    let source = Int((Double(x) + shear * (Double(y) - centre)).rounded())
+                    if source >= 0, source < width { straight[y * width + x] = ink[y * width + source] }
+                }
+            }
+            ink = straight
+        }
+
+        // Hairlines are far thinner than a stroke: open at a share of it.
+        var stroke = thickness(ink, width, height)
+        let radius = stroke / 6
+        if radius >= 1 {
+            ink = opened(ink, width, height, radius: radius)
+            stroke = thickness(ink, width, height)
+        }
+        guard stroke > 0 else { return nil }
+
+        let parts = components(ink, width, height)
+        let kept = parts.filter { part in
+            let longSide = max(part.maxX - part.minX, part.maxY - part.minY) + 1
+            return !part.edge
+                && part.count / longSide * 2 >= stroke
+                && part.count * 2 >= stroke * stroke
+                && part.maxX - part.minX < width / 2
+                && part.maxY - part.minY < height * 8 / 10
+        }
+        guard !kept.isEmpty else { return nil }
+
+        // Rows: where kept components cover at least a stroke of width.
+        var cover = [Int](repeating: 0, count: height)
+        for part in kept {
+            for y in part.minY...part.maxY { cover[y] += part.maxX - part.minX + 1 }
+        }
+        var rowRanges: [(Int, Int)] = []
+        var y = 0
+        while y < height {
+            if cover[y] > stroke {
+                let start = y
+                while y < height, cover[y] > stroke { y += 1 }
+                rowRanges.append((start, y))
+            } else { y += 1 }
+        }
+        rowRanges = rowRanges.filter { $0.1 - $0.0 > stroke * 3 }
+        guard !rowRanges.isEmpty else { return nil }
+
+        var rows: [[Cell]] = []
+        var accounted = Set<Int>()
+        for (bandIndex, range) in rowRanges.enumerated() {
+            let slack = (range.1 - range.0) / 6
+            let inRow = kept.filter {
+                $0.minY >= range.0 - 2 && $0.minY < range.1 && $0.maxY <= range.1 + slack
+            }
+            guard let rowTop = inRow.map(\.minY).min(), let rowBottom = inRow.map(\.maxY).max() else { continue }
+            let digitHeight = rowBottom - rowTop + 1
+            // A segment is a bar at least two strokes long; anything shorter
+            // is a mark.
+            let segmentSize = min(digitHeight / 4, stroke * 2)
+            let segments = inRow.filter { max($0.maxX - $0.minX, $0.maxY - $0.minY) + 1 >= segmentSize }
+            let dots = inRow.filter {
+                max($0.maxX - $0.minX, $0.maxY - $0.minY) + 1 < segmentSize
+                    && $0.maxY > rowTop + digitHeight * 3 / 4
+                    && $0.count * 8 >= (digitHeight / 12) * (digitHeight / 12)
+                    && isRound($0)
+            }
+            // A thick piece cut by the crop edge is a clipped digit or
+            // segment, not bezel: the read cannot be sure.
+            let clipped = parts.contains { piece in
+                let longSide = max(piece.maxX - piece.minX, piece.maxY - piece.minY) + 1
+                let centreY = (piece.minY + piece.maxY) / 2
+                return piece.edge && longSide >= segmentSize && longSide <= digitHeight
+                    && piece.count / longSide * 2 >= stroke
+                    && centreY >= rowTop && centreY <= rowBottom
+            }
+            if clipped { return nil }
+
+            var groups: [Component] = []
+            for piece in segments.sorted(by: { $0.minX < $1.minX }) {
+                if var last = groups.last, piece.minX <= last.maxX + stroke / 4 {
+                    last.minX = min(last.minX, piece.minX)
+                    last.maxX = max(last.maxX, piece.maxX)
+                    last.minY = min(last.minY, piece.minY)
+                    last.maxY = max(last.maxY, piece.maxY)
+                    last.count += piece.count
+                    last.ids += piece.ids
+                    groups[groups.count - 1] = last
+                } else {
+                    groups.append(piece)
+                }
+            }
+            var placed: [(x: Int, cell: Cell)] = []
+            func cell(_ character: Character, _ confidence: Float, _ part: Component) -> Cell {
+                // Shear back to the photo, then scale to the full buffer.
+                let shift = { (row: Int) in Int((shear * (Double(row) - centre)).rounded()) }
+                let x0 = part.minX + min(shift(part.minY), shift(part.maxY))
+                let x1 = part.maxX + max(shift(part.minY), shift(part.maxY))
+                return Cell(
+                    box: PixelBox(
+                        minX: Int(Double(x0) * sx), minY: Int(Double(part.minY) * sy),
+                        maxX: Int(Double(x1 + 1) * sx), maxY: Int(Double(part.maxY + 1) * sy)
+                    ),
+                    character: character, confidence: confidence, band: bandIndex
+                )
+            }
+            for group in groups {
+                let groupHeight = group.maxY - group.minY + 1
+                let groupWidth = group.maxX - group.minX + 1
+                if groupHeight * 10 < digitHeight * 7 {
+                    // A hyphen rides mid-height; a bar at the bottom or top
+                    // is a segment of an unlit or unknown cell.
+                    let middle = (group.minY + group.maxY) / 2
+                    let atMiddle = abs(middle - (rowTop + digitHeight / 2)) * 5 <= digitHeight
+                    if groupWidth > groupHeight * 2, atMiddle {
+                        placed.append((group.minX, cell("-", 1, group)))
+                        accounted.formUnion(group.ids)
+                    }
+                    continue
+                }
+                if groupWidth * 4 < groupHeight {
+                    placed.append((group.minX, cell("1", 1, group)))
+                    accounted.formUnion(group.ids)
+                    continue
+                }
+                // A seven-segment digit is about half as wide as it is tall. A
+                // much wider blob is neighbours fused by a wash or a smear.
+                if groupWidth * 10 > digitHeight * 8 {
+                    placed.append((group.minX, cell("_", 0, group)))
+                    accounted.formUnion(group.ids)
+                    continue
+                }
+                let found = digit(ink, width, height, group: group, digitHeight: digitHeight)
+                placed.append((group.minX, cell(found.character, found.confidence, group)))
+                accounted.formUnion(group.ids)
+            }
+            if let first = placed.map(\.x).min(), let last = placed.map(\.x).max() {
+                for dot in dots where dot.minX > first && dot.minX < last {
+                    placed.append((dot.minX, cell(".", 1, dot)))
+                    accounted.formUnion(dot.ids)
+                }
+            }
+            rows.append(placed.sorted { $0.x < $1.x }.map(\.cell))
+        }
+        // Ink the read cannot place (a comma, a colon, a fill, a cut-off
+        // cell) means the glyphs are not all digits: leave it to the full reader.
+        guard accounted.count == kept.count else { return nil }
+        let cells = rows.flatMap { $0 }
+        let digits = cells.filter { $0.character.isNumber }
+        // Sure means every glyph decoded exactly, and enough of them to be
+        // a reading rather than a stray shape.
+        guard digits.count >= 2, cells.allSatisfy({ $0.confidence == 1 && $0.character != "_" }) else { return nil }
+        return rows.filter { !$0.isEmpty }
+    }
+
+    /// Probe the seven zones of a full-height digit. A vertical segment is lit
+    /// when some column of its band is mostly ink over its rows; a horizontal
+    /// one when some row of its band is mostly ink across its span. That
+    /// tolerates a residual slant.
+    private static func digit(
+        _ ink: [Bool], _ width: Int, _ height: Int, group: Component, digitHeight: Int
+    ) -> (character: Character, confidence: Float) {
+        let groupWidth = group.maxX - group.minX + 1
+        let cellWidth = max(groupWidth, digitHeight / 2)
+        let left = group.maxX - cellWidth + 1
+        let top = group.minY
+        let tall = group.maxY - group.minY + 1
+        func fraction(_ xs: Range<Int>, _ ys: Range<Int>) -> Double {
+            var on = 0
+            var total = 0
+            for y in ys {
+                for x in xs {
+                    guard x >= 0, x < width, y >= 0, y < height else { continue }
+                    total += 1
+                    if ink[y * width + x] { on += 1 }
+                }
+            }
+            return total == 0 ? 0 : Double(on) / Double(total)
+        }
+        func px(_ f: Double) -> Int { left + Int(f * Double(cellWidth)) }
+        func py(_ f: Double) -> Int { top + Int(f * Double(tall)) }
+        func vertical(_ x0: Double, _ x1: Double, _ y0: Double, _ y1: Double) -> Bool {
+            var best = 0.0
+            for x in px(x0)..<max(px(x0) + 1, px(x1)) {
+                best = max(best, fraction(x..<(x + 1), py(y0)..<py(y1)))
+            }
+            return best >= 0.5
+        }
+        func horizontal(_ x0: Double, _ x1: Double, _ y0: Double, _ y1: Double) -> Bool {
+            var best = 0.0
+            for y in py(y0)..<max(py(y0) + 1, py(y1)) {
+                best = max(best, fraction(px(x0)..<px(x1), y..<(y + 1)))
+            }
+            return best >= 0.5
+        }
+        var pattern = SevenSegmentPattern()
+        if horizontal(0.25, 0.75, 0.0, 0.15) { pattern.insert(.a) }
+        if vertical(0.55, 1.0, 0.12, 0.42) { pattern.insert(.b) }
+        if vertical(0.5, 1.0, 0.58, 0.88) { pattern.insert(.c) }
+        if horizontal(0.25, 0.75, 0.85, 1.0) { pattern.insert(.d) }
+        if vertical(0.0, 0.5, 0.58, 0.88) { pattern.insert(.e) }
+        if vertical(0.0, 0.45, 0.12, 0.42) { pattern.insert(.f) }
+        if horizontal(0.25, 0.75, 0.42, 0.58) { pattern.insert(.g) }
+        // Many LCDs draw a 9 without its tail, a 6 without its top, and a 7
+        // with its upper-left stem. Each is a standard glyph, not a damaged one.
+        let variants: [(SevenSegmentPattern, Character)] = [
+            ([.a, .b, .c, .f, .g], "9"), ([.c, .d, .e, .f, .g], "6"), ([.a, .b, .c, .f], "7")
+        ]
+        if let variant = variants.first(where: { $0.0 == pattern }) { return (variant.1, 1) }
+        return SevenSegmentGlyph.interpreted(pattern) ?? ("_", 0)
+    }
+
+    /// A round mark fills most of its box and is about as wide as tall; a
+    /// comma tail or a bar does not.
+    private static func isRound(_ part: Component) -> Bool {
+        let w = part.maxX - part.minX + 1
+        let h = part.maxY - part.minY + 1
+        return max(w, h) <= min(w, h) * 2 && part.count * 3 >= w * h * 2
+    }
+
+    private struct Component {
+        var minX: Int
+        var minY: Int
+        var maxX: Int
+        var maxY: Int
+        var count: Int
+        var edge: Bool
+        var ids: [Int] = []
+    }
+
+    private static func components(_ ink: [Bool], _ width: Int, _ height: Int) -> [Component] {
+        var seen = [Bool](repeating: false, count: width * height)
+        var found: [Component] = []
+        var queue: [Int] = []
+        for start in 0..<(width * height) where ink[start] && !seen[start] {
+            queue.removeAll(keepingCapacity: true)
+            queue.append(start)
+            seen[start] = true
+            var part = Component(minX: width, minY: height, maxX: 0, maxY: 0, count: 0, edge: false, ids: [found.count])
+            var head = 0
+            while head < queue.count {
+                let index = queue[head]
+                head += 1
+                let x = index % width
+                let y = index / width
+                part.minX = min(part.minX, x); part.maxX = max(part.maxX, x)
+                part.minY = min(part.minY, y); part.maxY = max(part.maxY, y)
+                part.count += 1
+                if x == 0 || y == 0 || x == width - 1 || y == height - 1 { part.edge = true }
+                if x > 0, ink[index - 1], !seen[index - 1] { seen[index - 1] = true; queue.append(index - 1) }
+                if x < width - 1, ink[index + 1], !seen[index + 1] { seen[index + 1] = true; queue.append(index + 1) }
+                if y > 0, ink[index - width], !seen[index - width] { seen[index - width] = true; queue.append(index - width) }
+                if y < height - 1, ink[index + width], !seen[index + width] { seen[index + width] = true; queue.append(index + width) }
+            }
+            found.append(part)
+        }
+        return found
+    }
+
+    /// Median stroke thickness: each ink pixel counts the shorter of its
+    /// horizontal and vertical runs.
+    private static func thickness(_ ink: [Bool], _ width: Int, _ height: Int) -> Int {
+        var horizontal = [Int](repeating: 0, count: ink.count)
+        for y in 0..<height {
+            var x = 0
+            while x < width {
+                guard ink[y * width + x] else { x += 1; continue }
+                let start = x
+                while x < width, ink[y * width + x] { x += 1 }
+                for i in start..<x { horizontal[y * width + i] = x - start }
+            }
+        }
+        var counts = [Int](repeating: 0, count: max(width, height) + 1)
+        var total = 0
+        for x in 0..<width {
+            var y = 0
+            while y < height {
+                guard ink[y * width + x] else { y += 1; continue }
+                let start = y
+                while y < height, ink[y * width + x] { y += 1 }
+                for i in start..<y {
+                    counts[min(y - start, horizontal[i * width + x])] += 1
+                    total += 1
+                }
+            }
+        }
+        guard total > 0 else { return 0 }
+        var seen = 0
+        for length in counts.indices {
+            seen += counts[length]
+            if seen * 2 >= total { return length }
+        }
+        return 0
+    }
+
+    private static func opened(_ ink: [Bool], _ width: Int, _ height: Int, radius: Int) -> [Bool] {
+        func pass(_ bits: [Bool], horizontal: Bool, keepAll: Bool) -> [Bool] {
+            var out = bits
+            let lines = horizontal ? height : width
+            let length = horizontal ? width : height
+            var prefix = [Int](repeating: 0, count: length + 1)
+            for line in 0..<lines {
+                for i in 0..<length {
+                    prefix[i + 1] = prefix[i] + (bits[horizontal ? line * width + i : i * width + line] ? 1 : 0)
+                }
+                for i in 0..<length {
+                    let lo = max(0, i - radius)
+                    let hi = min(length, i + radius + 1)
+                    let set = prefix[hi] - prefix[lo]
+                    out[horizontal ? line * width + i : i * width + line] = keepAll ? set == hi - lo : set > 0
+                }
+            }
+            return out
+        }
+        var bits = pass(ink, horizontal: true, keepAll: true)
+        bits = pass(bits, horizontal: false, keepAll: true)
+        bits = pass(bits, horizontal: true, keepAll: false)
+        return pass(bits, horizontal: false, keepAll: false)
+    }
+
+    /// Deviation of each pixel from the glass behind it, in the ink's
+    /// direction. The glass level is a closing (dark ink) or opening (light
+    /// ink) of the photo, smoothed, so ink thinner than the window vanishes
+    /// from it and broad glare stays.
+    private static func flattened(_ buffer: GrayBuffer, darkInk: Bool, radius: Int) -> [Float] {
+        let width = buffer.width
+        let height = buffer.height
+        let factor = max(1, radius / 4)
+        let sw = (width + factor - 1) / factor
+        let sh = (height + factor - 1) / factor
+        var pooled = [Float](repeating: darkInk ? 0 : 255, count: sw * sh)
+        for y in 0..<height {
+            for x in 0..<width {
+                let i = (y / factor) * sw + x / factor
+                let v = Float(buffer.pixels[y * width + x])
+                pooled[i] = darkInk ? max(pooled[i], v) : min(pooled[i], v)
+            }
+        }
+        let reach = max(1, radius / factor)
+        let first = extremum(pooled, sw, sh, reach, takeMax: darkInk)
+        let second = extremum(first, sw, sh, reach, takeMax: !darkInk)
+        var glass = [Float](repeating: 0, count: width * height)
+        for y in 0..<height {
+            for x in 0..<width { glass[y * width + x] = second[(y / factor) * sw + x / factor] }
+        }
+        glass = blurred(glass, width, height, radius)
+        var out = [Float](repeating: 0, count: width * height)
+        for i in out.indices {
+            let level = Float(buffer.pixels[i])
+            out[i] = max(0, darkInk ? glass[i] - level : level - glass[i])
+        }
+        return out
+    }
+
+    /// Ink is what stands out from the glass by more than the glass's own
+    /// noise (its median deviation) and past the ink/glass split.
+    private static func threshold(_ flat: [Float]) -> [Bool] {
+        var histogram = [Int](repeating: 0, count: 256)
+        for v in flat { histogram[min(255, Int(v))] += 1 }
+        let total = Double(flat.count)
+        var sum = 0.0
+        for i in 0..<256 { sum += Double(i) * Double(histogram[i]) }
+        var below = 0.0
+        var sumBelow = 0.0
+        var best = 0.0
+        var split = 0
+        for i in 0..<256 {
+            below += Double(histogram[i])
+            if below == 0 { continue }
+            let above = total - below
+            if above == 0 { break }
+            sumBelow += Double(i) * Double(histogram[i])
+            let meanBelow = sumBelow / below
+            let meanAbove = (sum - sumBelow) / above
+            let between = below * above * (meanBelow - meanAbove) * (meanBelow - meanAbove)
+            if between > best { best = between; split = i }
+        }
+        var seen = 0
+        var noise = 0
+        for i in 0..<256 {
+            seen += histogram[i]
+            if seen * 2 >= flat.count { noise = i; break }
+        }
+        let cut = Float(max(split, noise * 3))
+        return flat.map { $0 > cut }
+    }
+
+    private static func extremum(_ v: [Float], _ w: Int, _ h: Int, _ r: Int, takeMax: Bool) -> [Float] {
+        var tmp = v
+        var out = v
+        for y in 0..<h {
+            for x in 0..<w {
+                var m = v[y * w + x]
+                for k in max(0, x - r)...min(w - 1, x + r) { m = takeMax ? max(m, v[y * w + k]) : min(m, v[y * w + k]) }
+                tmp[y * w + x] = m
+            }
+        }
+        for x in 0..<w {
+            for y in 0..<h {
+                var m = tmp[y * w + x]
+                for k in max(0, y - r)...min(h - 1, y + r) { m = takeMax ? max(m, tmp[k * w + x]) : min(m, tmp[k * w + x]) }
+                out[y * w + x] = m
+            }
+        }
+        return out
+    }
+
+    private static func blurred(_ v: [Float], _ w: Int, _ h: Int, _ r: Int) -> [Float] {
+        var tmp = v
+        var out = v
+        var prefix = [Float](repeating: 0, count: max(w, h) + 1)
+        for y in 0..<h {
+            for x in 0..<w { prefix[x + 1] = prefix[x] + v[y * w + x] }
+            for x in 0..<w {
+                let lo = max(0, x - r)
+                let hi = min(w, x + r + 1)
+                tmp[y * w + x] = (prefix[hi] - prefix[lo]) / Float(hi - lo)
+            }
+        }
+        for x in 0..<w {
+            for y in 0..<h { prefix[y + 1] = prefix[y] + tmp[y * w + x] }
+            for y in 0..<h {
+                let lo = max(0, y - r)
+                let hi = min(h, y + r + 1)
+                out[y * w + x] = (prefix[hi] - prefix[lo]) / Float(hi - lo)
+            }
+        }
+        return out
     }
 }
