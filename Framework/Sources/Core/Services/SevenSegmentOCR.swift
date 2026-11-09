@@ -295,7 +295,7 @@ public enum SevenSegmentOCR {
         // measures everything from the panel itself (#576 real photos).
         var rows = SevenSegmentLatticeReader.readRefined(pixels: gray.pixels, width: gray.width, height: gray.height)
         var lattice = result(rows.map { [latticeFragment($0, width: gray.width, height: gray.height)] })
-        if ProcessInfo.processInfo.environment["SLF_OCR_PARTS"] == "1" {
+        if FileManager.default.fileExists(atPath: "/tmp/sixlayer-600-ocr-parts") {
             let cells = rows.map { row in
                 row.map { "\($0.character)@\(String(format: "%.2f", $0.confidence))" }.joined(separator: " ")
             }.joined(separator: " | ")
