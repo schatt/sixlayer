@@ -1140,14 +1140,11 @@ struct OCRSevenSegment576Tests {
     /// until it leaves `pumpPhotosNotReadingYet`, so progress is kept.
     @Test(
         .enabled(if: FileManager.default.fileExists(atPath: OCRSevenSegment576Tests.scenario1Photo)),
-        arguments: 1...9
+        arguments: OCRSevenSegment576Tests.pumpPhotos
     )
-    func pumpPhotoReadsItsExpectedValues(_ scenario: Int) throws {
-        let folder = URL(fileURLWithPath: Self.scenario1Photo)
-            .deletingLastPathComponent()
-            .deletingLastPathComponent()
-            .appendingPathComponent("scenario_\(scenario)")
-        let photo = folder.appendingPathComponent("ti_fp_s\(scenario)_pump.jpg")
+    func pumpPhotoReadsItsExpectedValues(_ photoPath: String) throws {
+        let photo = Self.sevenSegmentFixtures.appendingPathComponent(photoPath)
+        let folder = photo.deletingLastPathComponent()
         let labels = try JSONSerialization.jsonObject(
             with: Data(contentsOf: folder.appendingPathComponent("expected_values.json"))
         ) as? [String: Any]
@@ -1157,8 +1154,8 @@ struct OCRSevenSegment576Tests {
         let read = SevenSegmentOCR.decode(cgImage: image, localizeDigitPanel: true).extractedText
         let rows = Set(read.split(separator: "\n").map { $0.replacingOccurrences(of: " ", with: "") })
         let missing = expected.filter { !rows.contains($0) }
-        if Self.pumpPhotosNotReadingYet.contains(scenario) {
-            withKnownIssue("Pump photo s\(scenario) does not read yet (#600)") {
+        if Self.pumpPhotosNotReadingYet.contains(photoPath) {
+            withKnownIssue("Pump photo \(photoPath) does not read yet (#600)") {
                 #expect(missing.isEmpty, "read [\(read)], missing \(missing)")
             }
         } else {
@@ -1166,9 +1163,24 @@ struct OCRSevenSegment576Tests {
         }
     }
 
+    /// `seven-segment/` in the private fixtures repo.
+    static let sevenSegmentFixtures = URL(fileURLWithPath: scenario1Photo)
+        .deletingLastPathComponent() // scenario_1
+        .deletingLastPathComponent() // fuel_purchase
+        .deletingLastPathComponent() // seven-segment
+
+    /// Labeled pump photos, relative to `seven-segment/`.
+    static let pumpPhotos: [String] = (1...9).map { "fuel_purchase/scenario_\($0)/ti_fp_s\($0)_pump.jpg" }
+        + ["pump_display/light_digits_7493/IMG_7493.HEIC"]
+
     /// Reads on macOS: s1 7707/7/-.022, s2 8.0, s3 1857.2, s4 11.25/27/38
-    /// (a search box cuts the gallons row in two), s6 88, s8 44.42/7934.
-    static let pumpPhotosNotReadingYet: Set<Int> = [1, 2, 3, 4, 6, 8]
+    /// (the printed label below the glass reads as a row), s6 88,
+    /// s8 44.42/7934, 7493 188889 (light digits on dark glass; the lattice
+    /// reader reads dark ink only).
+    static let pumpPhotosNotReadingYet: Set<String> = Set(
+        [1, 2, 3, 4, 6, 8].map { "fuel_purchase/scenario_\($0)/ti_fp_s\($0)_pump.jpg" }
+            + ["pump_display/light_digits_7493/IMG_7493.HEIC"]
+    )
 
     /// Scenario-1 pump photo from the private fixtures repo
     /// (`Development/TestFixtures/private`, schatt/sixlayer-test-fixtures).
