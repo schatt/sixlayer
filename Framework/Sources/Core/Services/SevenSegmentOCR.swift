@@ -4418,6 +4418,18 @@ private struct Reader {
             let (kept, stroke) = clean(raw)
             guard stroke > 0 else { continue }
             candidates.append((kept, stroke, 1, segmentScore(kept, stroke: stroke)))
+            // Glare washes part of a stroke below the cut while the rest of
+            // it stays strong. Hysteresis keeps weak ink (half the cut, the
+            // usual 2:1 ratio) only where it joins strong ink. It can also
+            // grow into the faint unlit segments of a dark panel, so a
+            // grown mask wins only when it reads strictly better.
+            let grown = hysteresis(contrast, strong: raw, weak: level / 2)
+            if grown.bits != raw.bits {
+                let (regrown, restroke) = clean(grown)
+                if restroke > 0 {
+                    candidates.append((regrown, restroke, 0, segmentScore(regrown, stroke: restroke)))
+                }
+            }
         }
         var best: (key: (Int, Int, Int, Int), rows: [[SevenSegmentLatticeReader.Cell]])?
         for candidate in candidates {
@@ -4498,6 +4510,30 @@ private struct Reader {
             out.bits[index] = true
         }
         return (out, stroke)
+    }
+
+    /// `strong` grown through 8-connected pixels whose contrast is above `weak`.
+    private func hysteresis(_ contrast: [Double], strong: BitMask, weak: Double) -> BitMask {
+        var out = strong
+        var queue = strong.bits.indices.filter { strong.bits[$0] }
+        let w = strong.width, h = strong.height
+        var head = 0
+        while head < queue.count {
+            let index = queue[head]
+            head += 1
+            let x = index % w, y = index / w
+            for dy in -1...1 {
+                for dx in -1...1 where dx != 0 || dy != 0 {
+                    let nx = x + dx, ny = y + dy
+                    guard nx >= 0, ny >= 0, nx < w, ny < h else { continue }
+                    let next = ny * w + nx
+                    guard !out.bits[next], contrast[next] > weak else { continue }
+                    out.bits[next] = true
+                    queue.append(next)
+                }
+            }
+        }
+        return out
     }
 
     private func segmentScore(_ mask: BitMask, stroke: Double) -> Int {
