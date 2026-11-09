@@ -4401,7 +4401,11 @@ private struct Reader {
         let small = boxResize(pixels, width: width, height: height, toWidth: smallWidth, toHeight: h)
         let smoothed = median3(small, width: smallWidth, height: h)
 
-        var best: (score: Int, mask: BitMask, stroke: Double)?
+        // Each window size gives a candidate mask. The candidate whose read
+        // ranks best wins (sure-row information, then all information), and
+        // how segment-like its ink looks only breaks a tie: a mask can look
+        // like strokes and still read worse.
+        var candidates: [(mask: BitMask, stroke: Double, plain: Int, score: Int)] = []
         for fraction in topHatFractions {
             let contrast = topHat(smoothed, width: smallWidth, height: h, window: Int(Double(h) * fraction))
             let selected = contrast.filter { $0 > 0.03 }
@@ -4412,13 +4416,24 @@ private struct Reader {
                 raw.bits[index] = true
             }
             let (kept, stroke) = clean(raw)
-            let value = segmentScore(kept, stroke: stroke)
-            if best == nil || value > best!.score {
-                best = (value, kept, stroke)
-            }
+            guard stroke > 0 else { continue }
+            candidates.append((kept, stroke, 1, segmentScore(kept, stroke: stroke)))
         }
-        guard var mask = best?.mask, let stroke = best?.stroke, stroke > 0 else { return [] }
+        var best: (key: (Int, Int, Int, Int), rows: [[SevenSegmentLatticeReader.Cell]])?
+        for candidate in candidates {
+            let rows = readRows(candidate.mask, stroke: candidate.stroke)
+            let rank = SevenSegmentLatticeReader.rank(rows)
+            let key = (rank.0, rank.1, candidate.plain, candidate.score)
+            if let current = best, key <= current.key { continue }
+            best = (key, rows)
+        }
+        return best?.rows ?? []
+    }
 
+    /// Undo rotation and shear, then read each row band. Sets the transform
+    /// used to map cells back to the source.
+    private mutating func readRows(_ cleaned: BitMask, stroke: Double) -> [[SevenSegmentLatticeReader.Cell]] {
+        var mask = cleaned
         rotationDegrees = rotation(of: mask)
         if rotationDegrees != 0 {
             mask = rotate(mask, degrees: rotationDegrees, expand: true)
