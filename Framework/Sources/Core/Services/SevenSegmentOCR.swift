@@ -4421,7 +4421,7 @@ private struct Reader {
         mask = deshear(mask, degrees: shear)
 
         var rows: [[SevenSegmentLatticeReader.Cell]] = []
-        for band in rowBands(mask) {
+        for band in rowBands(mask, stroke: stroke) {
             let cells = readBand(mask, top: band.0, bottom: band.1, stroke: stroke)
             if cells.contains(where: { $0.character.isNumber }) {
                 rows.append(cells)
@@ -4607,7 +4607,7 @@ private struct Reader {
 
     // MARK: Rows and cells
 
-    private func rowBands(_ mask: BitMask) -> [(Int, Int)] {
+    private func rowBands(_ mask: BitMask, stroke: Double) -> [(Int, Int)] {
         let (_, components) = label(mask)
         guard !components.isEmpty else { return [] }
         var cover = [Double](repeating: 0, count: mask.height)
@@ -4621,9 +4621,12 @@ private struct Reader {
         // that dip from the middle of one run to the middle of the next; a
         // stray reflection only pokes from one row into the gap below it.
         // Join runs that one piece reaches past the middle of both.
+        // Displays drawn as separate segments leave a hairline gap between
+        // upper and lower stems; it is thinner than a stroke, and a gap
+        // between rows is wider. Join runs closer than a stroke too.
         var bands: [(Int, Int)] = []
         for run in found {
-            if let previous = bands.last, components.contains(where: { piece in
+            if let previous = bands.last, Double(run.0 - previous.1) < stroke || components.contains(where: { piece in
                 piece.minY < (previous.0 + previous.1) / 2 && piece.maxY > (run.0 + run.1) / 2
             }) {
                 bands[bands.count - 1].1 = run.1
