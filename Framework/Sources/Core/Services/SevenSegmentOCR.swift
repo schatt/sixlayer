@@ -4445,7 +4445,8 @@ private struct Reader {
         return values
     }
 
-    private func clean(_ raw: BitMask) -> (BitMask, Double) {
+    private func clean(_ measured: BitMask) -> (BitMask, Double) {
+        let raw = clearingBorderBands(measured)
         let (labels, components) = label(raw)
         let h = Double(analysisHeight)
         let big = components.filter { Double($0.area) >= (h * 0.015) * (h * 0.015) }
@@ -5269,6 +5270,52 @@ private func thicknesses(_ mask: BitMask, labels: [Int], count: Int) -> [Double]
         }
     }
     return best.map { 2 * $0.squareRoot() }
+}
+
+/// Bezel and glass edges run along the crop border and can join the digits
+/// beside them into one piece. For each piece that touches the border,
+/// clear the band along the border as deep as that piece's ink runs in
+/// from it (the median run). A bar along the edge goes; digits that start
+/// further in stay.
+private func clearingBorderBands(_ mask: BitMask) -> BitMask {
+    let (labels, components) = label(mask)
+    let w = mask.width, h = mask.height
+    var runs = [[Int]](repeating: [], count: components.count + 1)
+    func walk(_ x: Int, _ y: Int, _ dx: Int, _ dy: Int) {
+        let l = labels[y * w + x]
+        guard l > 0 else { return }
+        var length = 0
+        var cx = x, cy = y
+        while cx >= 0, cy >= 0, cx < w, cy < h, labels[cy * w + cx] == l {
+            length += 1
+            cx += dx
+            cy += dy
+        }
+        runs[l].append(length)
+    }
+    for x in 0..<w {
+        walk(x, 0, 0, 1)
+        walk(x, h - 1, 0, -1)
+    }
+    for y in 0..<h {
+        walk(0, y, 1, 0)
+        walk(w - 1, y, -1, 0)
+    }
+    var depth = [Int](repeating: 0, count: components.count + 1)
+    for l in runs.indices where !runs[l].isEmpty {
+        let sorted = runs[l].sorted()
+        depth[l] = sorted[sorted.count / 2]
+    }
+    guard depth.contains(where: { $0 > 0 }) else { return mask }
+    var out = mask
+    for y in 0..<h {
+        for x in 0..<w {
+            let l = labels[y * w + x]
+            guard l > 0, depth[l] > 0 else { continue }
+            if min(x, y, w - 1 - x, h - 1 - y) < depth[l] { out[x, y] = false }
+        }
+    }
+    return out
 }
 
 /// Nearest-neighbour rotation about the centre (scipy.ndimage.rotate order 0).
