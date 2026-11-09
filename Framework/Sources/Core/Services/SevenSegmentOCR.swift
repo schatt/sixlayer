@@ -4913,6 +4913,23 @@ private struct Reader {
         for (segment, value) in zones where value > max(0.22, 0.4 * top) {
             pattern.formUnion(segment)
         }
+        if FileManager.default.fileExists(atPath: "/tmp/sixlayer-600-ocr-parts") {
+            let names = ["a", "b", "c", "d", "e", "f", "g"]
+            let shares = zip(names, zones.map(\.1)).map { "\($0.0)=\(String(format: "%.3f", $0.1))" }.joined(separator: " ")
+            let (character, confidence) = SevenSegmentLatticeReader.digit(for: pattern)
+            let line = "zones holes=\(String(format: "%.3f", holes)) cut=\(String(format: "%.3f", max(0.22, 0.4 * top))) \(shares) -> \(character)@\(String(format: "%.2f", confidence))\n"
+            if let data = line.data(using: .utf8) {
+                let path = "/tmp/sixlayer-600-ocr-zones.txt"
+                if !FileManager.default.fileExists(atPath: path) {
+                    FileManager.default.createFile(atPath: path, contents: nil)
+                }
+                if let handle = FileHandle(forWritingAtPath: path) {
+                    handle.seekToEndOfFile()
+                    handle.write(data)
+                    try? handle.close()
+                }
+            }
+        }
         return SevenSegmentLatticeReader.digit(for: pattern)
     }
 
