@@ -151,15 +151,16 @@ public enum SevenSegmentOCR {
         var fragments = GrayBuffer.fragments(in: upright)
         // The mask reader can lose or merge digits on glare, shading and
         // scratches and still report full confidence (IMG_7493 → `8818`). The
-        // flat read answers only when every glyph decodes exactly, so it replaces
-        // a read that is itself unsure, or one that found fewer digits.
+        // flat read keeps only rows whose every glyph decodes exactly, so it
+        // replaces the read when it is sure of more digits than the mask
+        // reader is. Digits in groups the reader is unsure of do not count.
         if let sure = FlatSevenSegment.read(gray) {
-            func digits(_ rows: [[OCRRecognizedText]]) -> Int {
-                rows.flatMap { $0 }.reduce(0) { $0 + $1.text.filter(\.isNumber).count }
+            func sureDigits(_ rows: [[OCRRecognizedText]]) -> Int {
+                rows.flatMap { $0 }.filter { $0.confidence >= oneSegmentOff }
+                    .reduce(0) { $0 + $1.text.filter(\.isNumber).count }
             }
             let flatFragments = sure.map { recognizedGroups($0, width: gray.width, height: gray.height) }
-            let maskConfidence = fragments.flatMap { $0 }.map(\.confidence).min() ?? 0
-            if maskConfidence < 1 || digits(flatFragments) > digits(fragments) { fragments = flatFragments }
+            if sureDigits(flatFragments) > sureDigits(fragments) { fragments = flatFragments }
         }
         let lines = fragments.map { row in row.map(\.text).joined(separator: "  ") }
         let extracted = lines.joined(separator: "\n")
@@ -3904,6 +3905,10 @@ private func bandedColumnRuns(_ mask: Mask) -> Int {
 /// It answers only when every digit decodes exactly. Anything it cannot read
 /// surely (clipped digits, odd glyphs, no digits) returns `nil` and the
 /// mask-based reader runs instead.
+/// A glyph one segment away from a unique template (6/7). An italic digit with
+/// a nub of glare or a faint segment lands here; two segments off is a guess.
+private let oneSegmentOff: Float = 6.0 / 7.0 - 0.001
+
 private enum FlatSevenSegment {
     static func read(_ buffer: GrayBuffer) -> [[Cell]]? {
         let small = buffer.fitted(maxSide: 480)
@@ -3975,7 +3980,7 @@ private enum FlatSevenSegment {
             let longSide = max(part.maxX - part.minX, part.maxY - part.minY) + 1
             return !part.edge
                 && part.count / longSide * 2 >= stroke
-                && part.count * 2 >= stroke * stroke
+                && part.count * 4 >= stroke * stroke
                 && part.maxX - part.minX < width / 2
                 && part.maxY - part.minY < height * 8 / 10
         }
@@ -3999,7 +4004,6 @@ private enum FlatSevenSegment {
         guard !rowRanges.isEmpty else { return nil }
 
         var rows: [[Cell]] = []
-        var accounted = Set<Int>()
         for (bandIndex, range) in rowRanges.enumerated() {
             let slack = (range.1 - range.0) / 6
             let inRow = kept.filter {
@@ -4014,7 +4018,7 @@ private enum FlatSevenSegment {
             let dots = inRow.filter {
                 max($0.maxX - $0.minX, $0.maxY - $0.minY) + 1 < segmentSize
                     && $0.maxY > rowTop + digitHeight * 3 / 4
-                    && $0.count * 8 >= (digitHeight / 12) * (digitHeight / 12)
+                    && $0.count * 4 >= stroke * stroke
                     && isRound($0)
             }
             // A thick piece cut by the crop edge is a clipped digit or
@@ -4026,8 +4030,9 @@ private enum FlatSevenSegment {
                     && piece.count / longSide * 2 >= stroke
                     && centreY >= rowTop && centreY <= rowBottom
             }
-            if clipped { return nil }
+            if clipped { continue }
 
+            var accounted = Set<Int>()
             var groups: [Component] = []
             for piece in segments.sorted(by: { $0.minX < $1.minX }) {
                 if var last = groups.last, piece.minX <= last.maxX + stroke / 4 {
@@ -4075,6 +4080,14 @@ private enum FlatSevenSegment {
                     accounted.formUnion(group.ids)
                     continue
                 }
+                // Flattening hollows a big solid fill into an outline that reads
+                // as a 0. In the photo, the pixels inside a real glyph's box
+                // that are not ink sit at glass level; inside a fill they sit
+                // at ink level.
+                if isSolid(buffer.pixels, ink, width, height, group: group, stroke: stroke) {
+                    accounted.formUnion(group.ids)
+                    continue
+                }
                 // A seven-segment digit is about half as wide as it is tall. A
                 // much wider blob is neighbours fused by a wash or a smear.
                 if groupWidth * 10 > digitHeight * 8 {
@@ -4092,17 +4105,21 @@ private enum FlatSevenSegment {
                     accounted.formUnion(dot.ids)
                 }
             }
-            rows.append(placed.sorted { $0.x < $1.x }.map(\.cell))
+            // A row counts only when every glyph decoded exactly and every
+            // piece of ink in it was placed (a comma, a colon, a fill, a cut-off
+            // cell mean the row is not all digits). Other rows still stand.
+            let cellsInRow = placed.map(\.cell)
+            let unplaced = inRow.contains { !accounted.contains($0.ids[0]) }
+            if !unplaced, !cellsInRow.isEmpty, cellsInRow.allSatisfy({ $0.confidence >= oneSegmentOff && $0.character != "_" }) {
+                rows.append(placed.sorted { $0.x < $1.x }.map(\.cell))
+            }
         }
-        // Ink the read cannot place (a comma, a colon, a fill, a cut-off
-        // cell) means the glyphs are not all digits: leave it to the full reader.
-        guard accounted.count == kept.count else { return nil }
         let cells = rows.flatMap { $0 }
         let digits = cells.filter { $0.character.isNumber }
         // Sure means every glyph decoded exactly, and enough of them to be
         // a reading rather than a stray shape.
-        guard digits.count >= 2, cells.allSatisfy({ $0.confidence == 1 && $0.character != "_" }) else { return nil }
-        return rows.filter { !$0.isEmpty }
+        guard digits.count >= 2 else { return nil }
+        return rows
     }
 
     /// Probe the seven zones of a full-height digit. A vertical segment is lit
@@ -4160,6 +4177,33 @@ private enum FlatSevenSegment {
         ]
         if let variant = variants.first(where: { $0.0 == pattern }) { return (variant.1, 1) }
         return SevenSegmentGlyph.interpreted(pattern) ?? ("_", 0)
+    }
+
+    private static func isSolid(
+        _ pixels: [UInt8], _ ink: [Bool], _ width: Int, _ height: Int, group: Component, stroke: Int
+    ) -> Bool {
+        var inkSum = 0, inkCount = 0, holeSum = 0, holeCount = 0, glassSum = 0, glassCount = 0
+        let pad = max(2, stroke)
+        let x0 = max(0, group.minX - pad), x1 = min(width - 1, group.maxX + pad)
+        let y0 = max(0, group.minY - pad), y1 = min(height - 1, group.maxY + pad)
+        for y in y0...y1 {
+            for x in x0...x1 {
+                let level = Int(pixels[y * width + x])
+                let inside = x >= group.minX && x <= group.maxX && y >= group.minY && y <= group.maxY
+                if ink[y * width + x] {
+                    if inside { inkSum += level; inkCount += 1 }
+                } else if inside {
+                    holeSum += level; holeCount += 1
+                } else {
+                    glassSum += level; glassCount += 1
+                }
+            }
+        }
+        guard inkCount > 0, holeCount > 0, glassCount > 0 else { return false }
+        let inkLevel = Double(inkSum) / Double(inkCount)
+        let holeLevel = Double(holeSum) / Double(holeCount)
+        let glassLevel = Double(glassSum) / Double(glassCount)
+        return abs(holeLevel - inkLevel) < abs(holeLevel - glassLevel)
     }
 
     /// A round mark fills most of its box and is about as wide as tall; a
