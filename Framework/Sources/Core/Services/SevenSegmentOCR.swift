@@ -299,7 +299,8 @@ public enum SevenSegmentOCR {
             let cells = rows.map { row in
                 row.map { "\($0.character)@\(String(format: "%.2f", $0.confidence))" }.joined(separator: " ")
             }.joined(separator: " | ")
-            trace("parts legacy [\(legacy.extractedText)] lattice [\(lattice.extractedText)] cells [\(cells)]\n")
+            let line = "parts legacy [\(legacy.extractedText)] lattice [\(lattice.extractedText)] cells [\(cells)]\n"
+            try? line.write(toFile: "/tmp/sixlayer-600-ocr-parts.txt", atomically: true, encoding: .utf8)
         }
         // The panel finder above can pick the wrong region of a real photo
         // (a payment screen, an ad). When the crop does not read cleanly,
