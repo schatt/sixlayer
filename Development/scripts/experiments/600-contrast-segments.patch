@@ -1,0 +1,214 @@
+diff --git a/Framework/Sources/Core/Services/SevenSegmentOCR.swift b/Framework/Sources/Core/Services/SevenSegmentOCR.swift
+index f3e5d403d..e715bb0b6 100644
+--- a/Framework/Sources/Core/Services/SevenSegmentOCR.swift
++++ b/Framework/Sources/Core/Services/SevenSegmentOCR.swift
+@@ -4361,6 +4361,29 @@ private struct BitMask {
+     }
+ }
+ 
++/// Contrast values on the analysis grid, carried through the same
++/// rotation, shear and crops as the ink mask.
++private struct Field {
++    var values: [Double]
++    var width: Int
++    var height: Int
++
++    func rows(_ y0: Int, _ y1: Int) -> Field {
++        let top = max(0, y0), bottom = min(height, max(top, y1))
++        return Field(values: Array(values[(top * width)..<(bottom * width)]), width: width, height: bottom - top)
++    }
++
++    func mean(x0: Int, x1: Int, y0: Int, y1: Int) -> Double {
++        let xa = max(0, x0), xb = min(width, x1), ya = max(0, y0), yb = min(height, y1)
++        guard xb > xa, yb > ya else { return 0 }
++        var total = 0.0
++        for y in ya..<yb {
++            for x in xa..<xb { total += values[y * width + x] }
++        }
++        return total / Double((xb - xa) * (yb - ya))
++    }
++}
++
+ private struct Component {
+     var label: Int
+     var minX: Int
+@@ -4405,7 +4428,7 @@ private struct Reader {
+         // ranks best wins (sure-row information, then all information), and
+         // how segment-like its ink looks only breaks a tie: a mask can look
+         // like strokes and still read worse.
+-        var candidates: [(mask: BitMask, stroke: Double, plain: Int, score: Int)] = []
++        var candidates: [(mask: BitMask, contrast: [Double], stroke: Double, plain: Int, score: Int)] = []
+         for fraction in topHatFractions {
+             let contrast = topHat(smoothed, width: smallWidth, height: h, window: Int(Double(h) * fraction))
+             let selected = contrast.filter { $0 > 0.03 }
+@@ -4417,7 +4440,7 @@ private struct Reader {
+             }
+             let (kept, stroke) = clean(raw)
+             guard stroke > 0 else { continue }
+-            candidates.append((kept, stroke, 1, segmentScore(kept, stroke: stroke)))
++            candidates.append((kept, contrast, stroke, 1, segmentScore(kept, stroke: stroke)))
+             // Glare washes part of a stroke below the cut while the rest of
+             // it stays strong. Hysteresis keeps weak ink (half the cut, the
+             // usual 2:1 ratio) only where it joins strong ink. It can also
+@@ -4427,13 +4450,14 @@ private struct Reader {
+             if grown.bits != raw.bits {
+                 let (regrown, restroke) = clean(grown)
+                 if restroke > 0 {
+-                    candidates.append((regrown, restroke, 0, segmentScore(regrown, stroke: restroke)))
++                    candidates.append((regrown, contrast, restroke, 0, segmentScore(regrown, stroke: restroke)))
+                 }
+             }
+         }
+         var best: (key: (Int, Int, Int, Int), rows: [[SevenSegmentLatticeReader.Cell]])?
+         for candidate in candidates {
+-            let rows = readRows(candidate.mask, stroke: candidate.stroke)
++            let field = Field(values: candidate.contrast, width: candidate.mask.width, height: candidate.mask.height)
++            let rows = readRows(candidate.mask, contrast: field, stroke: candidate.stroke)
+             let rank = SevenSegmentLatticeReader.rank(rows)
+             let key = (rank.0, rank.1, candidate.plain, candidate.score)
+             if let current = best, key <= current.key { continue }
+@@ -4444,20 +4468,23 @@ private struct Reader {
+ 
+     /// Undo rotation and shear, then read each row band. Sets the transform
+     /// used to map cells back to the source.
+-    private mutating func readRows(_ cleaned: BitMask, stroke: Double) -> [[SevenSegmentLatticeReader.Cell]] {
++    private mutating func readRows(_ cleaned: BitMask, contrast: Field, stroke: Double) -> [[SevenSegmentLatticeReader.Cell]] {
+         var mask = cleaned
++        var field = contrast
+         rotationDegrees = rotation(of: mask)
+         if rotationDegrees != 0 {
+             mask = rotate(mask, degrees: rotationDegrees, expand: true)
++            field = rotate(field, degrees: rotationDegrees, expand: true)
+         }
+         rotatedWidth = mask.width
+         rotatedHeight = mask.height
+         let shear = stemShear(mask)
+         mask = deshear(mask, degrees: shear)
++        field = shearedField(field, width: mask.width)
+ 
+         var rows: [[SevenSegmentLatticeReader.Cell]] = []
+         for band in rowBands(mask, stroke: stroke) {
+-            let cells = readBand(mask, top: band.0, bottom: band.1, stroke: stroke)
++            let cells = readBand(mask, contrast: field, top: band.0, bottom: band.1, stroke: stroke)
+             if cells.contains(where: { $0.character.isNumber }) {
+                 rows.append(cells)
+             }
+@@ -4717,12 +4744,14 @@ private struct Reader {
+         return (tops[tops.count / 2], bottom)
+     }
+ 
+-    private func readBand(_ mask: BitMask, top: Int, bottom: Int, stroke: Double) -> [SevenSegmentLatticeReader.Cell] {
++    private func readBand(_ mask: BitMask, contrast: Field, top: Int, bottom: Int, stroke: Double) -> [SevenSegmentLatticeReader.Cell] {
+         let whole = crop(mask, y0: top, y1: bottom)
++        let wholeField = contrast.rows(top, bottom)
+         let (t0, t1) = trimBand(whole, stroke: stroke)
+         let pad = max(1, Int(stroke * 0.3))
+         let bandTop = max(0, t0 - pad)
+         let band = crop(whole, y0: bandTop, y1: min(whole.height, t1 + pad))
++        let bandField = wholeField.rows(bandTop, min(whole.height, t1 + pad))
+         let dh = Double(band.height)
+         let upperRows = 0..<Int(dh * 0.72)
+         let bridged = close1D(columnHasInk(band, rows: upperRows), size: max(1, Int(stroke * bridgeStrokes)) | 1)
+@@ -4811,7 +4840,7 @@ private struct Reader {
+                 let a = x0 + dx, b = x1 + dx
+                 let lo = max(0, a), hi = min(band.width, b)
+                 guard hi > lo else { continue }
+-                let glyph = readDigit(band, x0: lo, x1: hi)
++                let glyph = readDigit(band, contrast: bandField, x0: lo, x1: hi)
+                 if chosen == nil || glyph.1 > chosen!.1 { chosen = (glyph.0, glyph.1, a, b) }
+                 if glyph.1 == 1 { break }
+             }
+@@ -4882,7 +4911,22 @@ private struct Reader {
+         }
+     }
+ 
+-    private func readDigit(_ band: BitMask, x0: Int, x1: Int) -> (Character, Float) {
++    /// The contrast field sheared as `deshear` shears the mask.
++    private func shearedField(_ field: Field, width: Int) -> Field {
++        guard shearTangent != 0 else { return field }
++        var out = Field(values: [Double](repeating: 0, count: width * field.height), width: width, height: field.height)
++        for y in 0..<field.height {
++            for x in 0..<field.width {
++                let shifted = Int((Double(x) + Double(y - field.height) * shearTangent).rounded()) + shearPad
++                if shifted >= 0, shifted < width {
++                    out.values[y * width + shifted] = max(out.values[y * width + shifted], field.values[y * field.width + x])
++                }
++            }
++        }
++        return out
++    }
++
++    private func readDigit(_ band: BitMask, contrast: Field, x0: Int, x1: Int) -> (Character, Float) {
+         let h = Double(band.height)
+         let w = Double(x1 - x0)
+         func share(_ fx0: Double, _ fx1: Double, _ fy0: Double, _ fy1: Double) -> Double {
+@@ -4906,7 +4950,39 @@ private struct Reader {
+         for (segment, value) in zones where value > max(0.22, 0.4 * top) {
+             pattern.formUnion(segment)
+         }
+-        return SevenSegmentLatticeReader.digit(for: pattern)
++        // Glare can wash part of a lit segment until little of it survives
++        // the cut, though it is still darker than the glass. When the ink
++        // does not spell a digit exactly, read each zone's contrast too: lit
++        // when it is more than halfway from this digit's own glass (the
++        // inside of its two loops, which no segment covers) to its
++        // strongest segment. An unlit segment shows no contrast. The
++        // contrast only rescues; it never overrides an exact ink read.
++        let fromInk = SevenSegmentLatticeReader.digit(for: pattern)
++        if fromInk.1 == 1 { return fromInk }
++        func level(_ fx0: Double, _ fx1: Double, _ fy0: Double, _ fy1: Double) -> Double {
++            let ya = Int(fy0 * h), yb = max(Int(fy1 * h), ya + 1)
++            let xa = x0 + Int(fx0 * w), xb = max(x0 + Int(fx1 * w), xa + 1)
++            return contrast.mean(x0: xa, x1: xb, y0: ya, y1: yb)
++        }
++        let glass = (level(0.32, 0.68, 0.2, 0.38) + level(0.32, 0.68, 0.62, 0.8)) / 2
++        let strengths: [(SevenSegmentPattern, Double)] = [
++            (.a, level(0.3, 0.7, 0, 0.16)),
++            (.b, level(0.7, 1, 0.18, 0.4)),
++            (.c, level(0.7, 1, 0.6, 0.82)),
++            (.d, level(0.3, 0.7, 0.84, 1)),
++            (.e, level(0, 0.3, 0.6, 0.82)),
++            (.f, level(0, 0.3, 0.18, 0.4)),
++            (.g, level(0.3, 0.7, 0.42, 0.58))
++        ]
++        let strongest = strengths.map(\.1).max() ?? 0
++        guard strongest > glass else { return fromInk }
++        let halfway = (glass + strongest) / 2
++        var rescued = pattern
++        for (segment, value) in strengths where value > halfway {
++            rescued.formUnion(segment)
++        }
++        let fromContrast = SevenSegmentLatticeReader.digit(for: rescued)
++        return fromContrast.1 == 1 ? fromContrast : fromInk
+     }
+ 
+     // MARK: Coordinates
+@@ -5403,6 +5479,28 @@ private func rotate(_ mask: BitMask, degrees: Double, expand: Bool) -> BitMask {
+     return out
+ }
+ 
++/// `rotate` for a contrast field: the same nearest-neighbour mapping.
++private func rotate(_ field: Field, degrees: Double, expand: Bool) -> Field {
++    let radians = degrees * .pi / 180
++    let c = cos(radians), s = sin(radians)
++    let w = Double(field.width), h = Double(field.height)
++    let outW = max(1, expand ? Int((abs(w * c) + abs(h * s)).rounded()) : field.width)
++    let outH = max(1, expand ? Int((abs(w * s) + abs(h * c)).rounded()) : field.height)
++    var out = Field(values: [Double](repeating: 0, count: outW * outH), width: outW, height: outH)
++    let ocx = Double(outW) / 2, ocy = Double(outH) / 2
++    for y in 0..<outH {
++        for x in 0..<outW {
++            let dx = Double(x) + 0.5 - ocx, dy = Double(y) + 0.5 - ocy
++            let sx = Int((c * dx - s * dy + w / 2).rounded(.down))
++            let sy = Int((s * dx + c * dy + h / 2).rounded(.down))
++            if sx >= 0, sy >= 0, sx < field.width, sy < field.height {
++                out.values[y * outW + x] = field.values[sy * field.width + sx]
++            }
++        }
++    }
++    return out
++}
++
+ /// Binary closing with a 3×3 cross, one iteration.
+ private func close(_ mask: BitMask) -> BitMask {
+     func step(_ m: BitMask, dilate: Bool) -> BitMask {

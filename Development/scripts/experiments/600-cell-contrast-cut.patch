@@ -1,0 +1,77 @@
+diff --git a/Framework/Sources/Core/Services/SevenSegmentOCR.swift b/Framework/Sources/Core/Services/SevenSegmentOCR.swift
+index 04132a37c..4d74e3ad1 100644
+--- a/Framework/Sources/Core/Services/SevenSegmentOCR.swift
++++ b/Framework/Sources/Core/Services/SevenSegmentOCR.swift
+@@ -4407,6 +4407,16 @@ private struct Reader {
+             if best == nil || value > best!.score {
+                 best = (value, kept, stroke)
+             }
++            // Glare washes one row while the other stays dark, and the global
++            // cut follows the dark row. Cut each row on its own contrast too,
++            // and keep that mask when it scores better.
++            if let banded = rowThresholded(contrast, global: level, rows: rowBands(kept)) {
++                let (rekept, restroke) = clean(banded)
++                let revalue = segmentScore(rekept, stroke: restroke)
++                if revalue > best!.score {
++                    best = (revalue, rekept, restroke)
++                }
++            }
+         }
+         guard var mask = best?.mask, let stroke = best?.stroke, stroke > 0 else { return [] }
+ 
+@@ -4475,6 +4485,55 @@ private struct Reader {
+         return (out, stroke)
+     }
+ 
++    /// Contrast cut per digit cell. Glare covers part of a row, so the cut
++    /// is measured in windows along each row band: as wide as the band is
++    /// tall (about a cell), every half window, each with Otsu over its own
++    /// contrast. The band is widened by half its height so a washed lower
++    /// half is inside it. A pixel takes the cut of the window centred
++    /// nearest it, never above the global cut; glass outside every row
++    /// keeps the global cut. Nil when nothing changes.
++    private func rowThresholded(_ contrast: [Double], global: Double, rows: [(Int, Int)]) -> BitMask? {
++        let h = analysisHeight
++        var levels = [Double](repeating: global, count: contrast.count)
++        var changed = false
++        for (top, bottom) in rows {
++            let margin = (bottom - top) / 2
++            let y0 = max(0, top - margin), y1 = min(h, bottom + margin)
++            let window = max(2, y1 - y0)
++            let step = max(1, window / 2)
++            var centres: [(x: Int, level: Double)] = []
++            var x0 = 0
++            while x0 < smallWidth {
++                let x1 = min(smallWidth, x0 + window)
++                var values: [Double] = []
++                for y in y0..<y1 {
++                    for x in x0..<x1 where contrast[y * smallWidth + x] > 0.03 {
++                        values.append(contrast[y * smallWidth + x])
++                    }
++                }
++                if values.count > 200 {
++                    centres.append(((x0 + x1) / 2, max(0.6 * otsu(values), 0.07)))
++                }
++                if x1 == smallWidth { break }
++                x0 += step
++            }
++            guard !centres.isEmpty else { continue }
++            for x in 0..<smallWidth {
++                let nearest = centres.min { abs($0.x - x) < abs($1.x - x) }!.level
++                for y in y0..<y1 where nearest < levels[y * smallWidth + x] {
++                    levels[y * smallWidth + x] = nearest
++                    changed = true
++                }
++            }
++        }
++        guard changed else { return nil }
++        var mask = BitMask(width: smallWidth, height: h)
++        for index in contrast.indices where contrast[index] > levels[index] {
++            mask.bits[index] = true
++        }
++        return mask
++    }
++
+     private func segmentScore(_ mask: BitMask, stroke: Double) -> Int {
+         guard stroke > 0 else { return 0 }
+         let (labels, components) = label(mask)
