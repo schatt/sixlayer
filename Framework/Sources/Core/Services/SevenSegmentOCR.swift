@@ -4439,10 +4439,26 @@ private struct Reader {
             }
         }
         var best: (key: (Int, Int, Int, Int), rows: [[SevenSegmentLatticeReader.Cell]])?
+        let traceCandidates = FileManager.default.fileExists(atPath: "/tmp/sixlayer-600-ocr-parts")
         for candidate in candidates {
             let rows = readRows(candidate.mask, stroke: candidate.stroke)
             let rank = SevenSegmentLatticeReader.rank(rows)
             let key = (rank.0, rank.1, candidate.plain, candidate.score)
+            if traceCandidates {
+                let text = rows.map { String($0.map(\.character)) }.joined(separator: "/")
+                let line = "cand dark=\(darkInk) plain=\(candidate.plain) rank=\(rank.0),\(rank.1) score=\(candidate.score) [\(text)]\n"
+                if let data = line.data(using: .utf8) {
+                    let path = "/tmp/sixlayer-600-ocr-cands.txt"
+                    if !FileManager.default.fileExists(atPath: path) {
+                        FileManager.default.createFile(atPath: path, contents: nil)
+                    }
+                    if let handle = FileHandle(forWritingAtPath: path) {
+                        handle.seekToEndOfFile()
+                        handle.write(data)
+                        try? handle.close()
+                    }
+                }
+            }
             if let current = best, key <= current.key { continue }
             best = (key, rows)
         }
