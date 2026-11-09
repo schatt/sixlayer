@@ -1131,6 +1131,43 @@ struct OCRSevenSegment576Tests {
         #expect((band?.exactDigitCount ?? 0) > (scan?.exactDigitCount ?? 0))
     }
 
+    /// Every labeled pump photo in the private fixtures repo, read the way
+    /// the app reads a library photo (panel search on). Each value in the
+    /// photo's `expected_values.json` must come back as a row. Photos that
+    /// do not read yet are known issues; one that starts reading fails here
+    /// until it leaves `pumpPhotosNotReadingYet`, so progress is kept.
+    @Test(
+        .enabled(if: FileManager.default.fileExists(atPath: OCRSevenSegment576Tests.scenario1Photo)),
+        arguments: 1...9
+    )
+    func pumpPhotoReadsItsExpectedValues(_ scenario: Int) throws {
+        let folder = URL(fileURLWithPath: Self.scenario1Photo)
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+            .appendingPathComponent("scenario_\(scenario)")
+        let photo = folder.appendingPathComponent("ti_fp_s\(scenario)_pump.jpg")
+        let labels = try JSONSerialization.jsonObject(
+            with: Data(contentsOf: folder.appendingPathComponent("expected_values.json"))
+        ) as? [String: Any]
+        let display = try #require(labels?["pump_display"] as? [String: String])
+        let expected = ["totalCost", "gallons", "pricePerGallon"].compactMap { display[$0] }.filter { !$0.isEmpty }
+        let image = try #require(PlatformImage.cgImage(opening: Data(contentsOf: photo)))
+        let read = SevenSegmentOCR.decode(cgImage: image, localizeDigitPanel: true).extractedText
+        let rows = Set(read.split(separator: "\n").map { $0.replacingOccurrences(of: " ", with: "") })
+        let missing = expected.filter { !rows.contains($0) }
+        if Self.pumpPhotosNotReadingYet.contains(scenario) {
+            withKnownIssue("Pump photo s\(scenario) does not read yet (#600)") {
+                #expect(missing.isEmpty, "read [\(read)], missing \(missing)")
+            }
+        } else {
+            #expect(missing.isEmpty, "read [\(read)], missing \(missing)")
+        }
+    }
+
+    /// Reads on macOS when added: s1 1.1, s2 8.0, s3 1857.2, s4 31.25/7.523,
+    /// s6 88, s7 33.82/6.974 (no price row), s8 44.42/7934 (no price row).
+    static let pumpPhotosNotReadingYet: Set<Int> = [1, 2, 3, 4, 6, 7, 8]
+
     /// Scenario-1 pump photo from the private fixtures repo
     /// (`Development/TestFixtures/private`, schatt/sixlayer-test-fixtures).
     /// `Development/scripts/fetch-private-fixtures.sh` clones it; without access these tests skip.
