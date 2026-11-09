@@ -150,17 +150,22 @@ public enum SevenSegmentOCR {
         let upright = GrayBuffer.deskew(gray, maximumDegrees: deskewMaximumDegrees)
         var fragments = GrayBuffer.fragments(in: upright)
         // The mask reader can lose or merge digits on glare, shading and
-        // scratches and still report full confidence (IMG_7493 → `8818`). The
-        // flat read keeps only rows whose every glyph decodes exactly, so it
-        // replaces the read when it is sure of more digits than the mask
-        // reader is. Digits in groups the reader is unsure of do not count.
+        // scratches and still report full confidence (IMG_7493 → `8818`), and
+        // when it is unsure its short fragments can each look confident. The
+        // flat read keeps only rows whose every glyph decodes exactly. A mask
+        // read with an unreadable cell cannot veto it; any other read must be
+        // beaten on the digits both are sure of.
         if let sure = FlatSevenSegment.read(gray) {
             func sureDigits(_ rows: [[OCRRecognizedText]]) -> Int {
                 rows.flatMap { $0 }.filter { $0.confidence >= oneSegmentOff }
                     .reduce(0) { $0 + $1.text.filter(\.isNumber).count }
             }
             let flatFragments = sure.map { recognizedGroups($0, width: gray.width, height: gray.height) }
-            if sureDigits(flatFragments) > sureDigits(fragments) { fragments = flatFragments }
+            // Broken means it has an unreadable cell (`_`) or nothing at all; a
+            // doubtful but complete read is only beaten on sure digits.
+            let maskBroken = fragments.isEmpty
+                || fragments.flatMap { $0 }.contains { $0.text.contains("_") || $0.confidence == 0 }
+            if maskBroken || sureDigits(flatFragments) > sureDigits(fragments) { fragments = flatFragments }
         }
         let lines = fragments.map { row in row.map(\.text).joined(separator: "  ") }
         let extracted = lines.joined(separator: "\n")
@@ -1593,10 +1598,31 @@ private extension GrayBuffer {
         let analysis = fitted(maxSide: SevenSegmentOCR.digitPanelAnalysisMaxSide)
         SevenSegmentOCR.lastDigitPanelAnalysisLongEdge = max(analysis.width, analysis.height)
         let raw = analysis.masks()
-        guard let found = Self.largerPanel(
-            analysis.sealedPanelBounds(in: raw.dark),
-            analysis.sealedPanelBounds(in: raw.light)
-        ) else { return nil }
+        let darkPanels = analysis.sealedPanels(in: raw.dark)
+        let lightPanels = analysis.sealedPanels(in: raw.light)
+        guard var found = Self.largerPanel(darkPanels.first, lightPanels.first) else { return nil }
+        // The largest sealed pocket can be the whole pump face or a banner.
+        // The panel is the pocket where seven-segment digits read: of the few
+        // largest pockets, take the one the flat read is surest of.
+        let candidates = Array(darkPanels.prefix(6)) + Array(lightPanels.prefix(6))
+        if candidates.count > 1 {
+            func digits(in rect: CGRect) -> Int {
+                guard let crop = analysis.panelCrop(rect), let rows = FlatSevenSegment.read(crop) else { return 0 }
+                return rows.flatMap { $0 }.filter { $0.character.isNumber }.count
+            }
+            // The panel shows several digits; a lone glyph is a fragment of
+            // one. A pocket replaces the default only by reading more digits.
+            var best = (digits: digits(in: found), area: found.width * found.height)
+            for rect in candidates where rect != found {
+                let count = digits(in: rect)
+                let area = rect.width * rect.height
+                guard count >= 2 else { continue }
+                if count > best.digits || (count == best.digits && area < best.area) {
+                    best = (count, area)
+                    found = rect
+                }
+            }
+        }
         return mapRect(found, from: analysis)
     }
 
@@ -1625,11 +1651,13 @@ private extension GrayBuffer {
         )
     }
 
-    private func sealedPanelBounds(in mask: Mask) -> CGRect? {
+    /// Every non-ink pocket the mask's ink seals off, largest first, each as a
+    /// glass-plus-bezel rect. The first is the old single answer.
+    private func sealedPanels(in mask: Mask) -> [CGRect] {
         let width = mask.width
         let height = mask.height
         let count = width * height
-        guard width > 0, height > 0, mask.bits.count == count else { return nil }
+        guard width > 0, height > 0, mask.bits.count == count else { return [] }
         var outside = [Bool](repeating: false, count: count)
         var queue: [Int] = []
         func push(_ x: Int, _ y: Int) {
@@ -1659,11 +1687,7 @@ private extension GrayBuffer {
             push(x, y + 1)
         }
         var seen = [Bool](repeating: false, count: count)
-        var bestArea = 0
-        var bestMinX = 0
-        var bestMinY = 0
-        var bestMaxX = 0
-        var bestMaxY = 0
+        var pockets: [(area: Int, minX: Int, minY: Int, maxX: Int, maxY: Int)] = []
         for start in 0..<count where !mask.bits[start] && !outside[start] && !seen[start] {
             var component = [start]
             seen[start] = true
@@ -1691,27 +1715,32 @@ private extension GrayBuffer {
                     component.append(next)
                 }
             }
-            if component.count > bestArea {
-                bestArea = component.count
-                bestMinX = minX
-                bestMinY = minY
-                bestMaxX = maxX
-                bestMaxY = maxY
-            }
+            pockets.append((component.count, minX, minY, maxX, maxY))
         }
         // Counter holes inside an 8 are sealed too. Require a glass-sized
         // pocket that is still clearly smaller than a full-frame photo.
-        let glassW = bestMaxX - bestMinX + 1
-        let glassH = bestMaxY - bestMinY + 1
-        guard bestArea >= max(400, count / 200) else { return nil }
-        guard bestArea * 100 < count * 85 else { return nil }
-        guard glassW >= 40, glassH >= 40 else { return nil }
-        let pad = max(12, min(glassW, glassH) / 16)
-        let x0 = max(0, bestMinX - pad)
-        let y0 = max(0, bestMinY - pad)
-        let x1 = min(width, bestMaxX + 1 + pad)
-        let y1 = min(height, bestMaxY + 1 + pad)
-        return CGRect(x: x0, y: y0, width: x1 - x0, height: y1 - y0)
+        func glassSized(_ pocket: (area: Int, minX: Int, minY: Int, maxX: Int, maxY: Int)) -> Bool {
+            pocket.area >= max(400, count / 200)
+                && pocket.area * 100 < count * 85
+                && pocket.maxX - pocket.minX + 1 >= 40
+                && pocket.maxY - pocket.minY + 1 >= 40
+        }
+        let ordered = pockets.sorted { $0.area > $1.area }
+        // The largest pocket decides whether there is a panel at all: when it
+        // is not glass-sized, smaller pockets are digit counters, not panels.
+        guard let largest = ordered.first, glassSized(largest) else { return [] }
+        return ordered
+            .filter(glassSized)
+            .map { pocket in
+                let glassW = pocket.maxX - pocket.minX + 1
+                let glassH = pocket.maxY - pocket.minY + 1
+                let pad = max(12, min(glassW, glassH) / 16)
+                let x0 = max(0, pocket.minX - pad)
+                let y0 = max(0, pocket.minY - pad)
+                let x1 = min(width, pocket.maxX + 1 + pad)
+                let y1 = min(height, pocket.maxY + 1 + pad)
+                return CGRect(x: x0, y: y0, width: x1 - x0, height: y1 - y0)
+            }
     }
 
     static func readRows(
@@ -4048,6 +4077,7 @@ private enum FlatSevenSegment {
                 }
             }
             var placed: [(x: Int, cell: Cell)] = []
+            var digitRights: [Int] = []
             func cell(_ character: Character, _ confidence: Float, _ part: Component) -> Cell {
                 // Shear back to the photo, then scale to the full buffer.
                 let shift = { (row: Int) in Int((shear * (Double(row) - centre)).rounded()) }
@@ -4078,6 +4108,7 @@ private enum FlatSevenSegment {
                 if groupWidth * 4 < groupHeight {
                     placed.append((group.minX, cell("1", 1, group)))
                     accounted.formUnion(group.ids)
+                    digitRights.append(group.maxX)
                     continue
                 }
                 // Flattening hollows a big solid fill into an outline that reads
@@ -4098,6 +4129,7 @@ private enum FlatSevenSegment {
                 let found = digit(ink, width, height, group: group, digitHeight: digitHeight)
                 placed.append((group.minX, cell(found.character, found.confidence, group)))
                 accounted.formUnion(group.ids)
+                digitRights.append(group.maxX)
             }
             if let first = placed.map(\.x).min(), let last = placed.map(\.x).max() {
                 for dot in dots where dot.minX > first && dot.minX < last {
@@ -4109,8 +4141,25 @@ private enum FlatSevenSegment {
             // piece of ink in it was placed (a comma, a colon, a fill, a cut-off
             // cell mean the row is not all digits). Other rows still stand.
             let cellsInRow = placed.map(\.cell)
-            let unplaced = inRow.contains { !accounted.contains($0.ids[0]) }
-            if !unplaced, !cellsInRow.isEmpty, cellsInRow.allSatisfy({ $0.confidence >= oneSegmentOff && $0.character != "_" }) {
+            // Glare specks and reflections beside the glass are not digit-tall
+            // and sit well clear of the digits' span; a mark, a comma or a cut-off
+            // digit sits in it or hard against it.
+            let read = groups.filter { accounted.contains($0.ids[0]) }
+            let spanMin = read.map(\.minX).min() ?? 0
+            let spanMax = read.map(\.maxX).max() ?? 0
+            let unplaced = inRow.contains { piece in
+                guard !accounted.contains(piece.ids[0]) else { return false }
+                let digitTall = (piece.maxY - piece.minY + 1) * 10 >= digitHeight * 7
+                let clear = piece.maxX + stroke * 2 < spanMin || piece.minX - stroke * 2 > spanMax
+                return digitTall || !clear
+            }
+            // A row of digits has at least two, evenly pitched (right edges: a
+            // 1's stem sits on the right of its cell). Fragments of reflections
+            // and outlines make a lone digit or an uneven scatter.
+            let rights = digitRights.sorted()
+            let steps = zip(rights.dropFirst(), rights).map { $0 - $1 }
+            let evenlyPitched = (steps.max() ?? 0) * 2 <= (steps.min() ?? 1) * 3
+            if rights.count >= 2, evenlyPitched, !unplaced, !cellsInRow.isEmpty, cellsInRow.allSatisfy({ $0.confidence >= oneSegmentOff && $0.character != "_" }) {
                 rows.append(placed.sorted { $0.x < $1.x }.map(\.cell))
             }
         }
