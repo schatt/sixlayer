@@ -4308,14 +4308,15 @@ struct SevenSegmentLatticeReader {
     /// True when every row has at least two digits and every digit matched a
     /// template exactly.
     static func isConfident(_ rows: [[Cell]]) -> Bool {
-        guard !rows.isEmpty else { return false }
-        for row in rows {
-            let digits = row.filter { $0.character.isNumber }
-            if digits.count < 2 { return false }
-            if row.contains(where: { $0.character == "_" }) { return false }
-            if digits.contains(where: { $0.confidence < 1 }) { return false }
-        }
-        return true
+        !rows.isEmpty && rows.allSatisfy(isConfident(row:))
+    }
+
+    /// Two or more digits, every one read exactly, and no unknown cell.
+    static func isConfident(row: [Cell]) -> Bool {
+        let digits = row.filter { $0.character.isNumber }
+        if digits.count < 2 { return false }
+        if row.contains(where: { $0.character == "_" }) { return false }
+        return !digits.contains(where: { $0.confidence < 1 })
     }
 }
 
@@ -4931,8 +4932,13 @@ extension SevenSegmentLatticeReader {
             - cells.filter { $0.character == "_" }.count
     }
 
+    /// Confidence is judged row by row: a sure read of one row says nothing
+    /// about another. First the information in rows that read surely on
+    /// their own, then the information in every row. A confident "1.1" from
+    /// elsewhere in the frame no longer outranks a panel read with one sure
+    /// row of real digits and one unsure row.
     static func rank(_ rows: [[Cell]]) -> (Int, Int) {
-        (isConfident(rows) ? 1 : 0, quality(rows))
+        (quality(rows.filter(isConfident(row:))), quality(rows))
     }
 
     private static func rowsBox(_ rows: [[Cell]], width: Int, height: Int) -> (Int, Int, Int, Int)? {

@@ -1166,8 +1166,8 @@ struct OCRSevenSegment576Tests {
         }
     }
 
-    /// Reads on macOS when added: s1 1.1, s2 8.0, s3 1857.2, s4 31.25/7.523,
-    /// s6 88, s8 44.42/7934.
+    /// Reads on macOS: s1 7707/7/-.022, s2 8.0, s3 1857.2, s4 11.25/27/38
+    /// (a search box cuts the gallons row in two), s6 88, s8 44.42/7934.
     static let pumpPhotosNotReadingYet: Set<Int> = [1, 2, 3, 4, 6, 8]
 
     /// Scenario-1 pump photo from the private fixtures repo
