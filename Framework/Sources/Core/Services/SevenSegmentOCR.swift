@@ -317,7 +317,15 @@ public enum SevenSegmentOCR {
         // a confident lattice read needs a richer legacy read to lose.
         if SevenSegmentLatticeReader.isConfident(rows) {
             if isPlausible(fragments) {
-                return quality(legacy) >= quality(lattice) ? legacy : lattice
+                // On a tie legacy keeps its spacing, marks and 1s, but only
+                // when both agree on every digit other than 1 (the ones
+                // quality counts). When they disagree, the lattice read,
+                // exact in every row, wins: legacy can read a dark panel's
+                // unlit segments as a row of exact 8s.
+                func information(_ text: String) -> String { text.filter { $0.isNumber && $0 != "1" } }
+                let sameDigits = information(legacy.extractedText) == information(lattice.extractedText)
+                if quality(legacy) > quality(lattice) { return legacy }
+                return quality(legacy) == quality(lattice) && sameDigits ? legacy : lattice
             }
             let latticeText = String(rows.flatMap { $0 }.map(\.character))
             return legacyOutweighsLattice(fragments, latticeText: latticeText) ? legacy : lattice

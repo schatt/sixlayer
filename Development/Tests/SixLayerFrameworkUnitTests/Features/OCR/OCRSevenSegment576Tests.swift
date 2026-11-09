@@ -1173,13 +1173,10 @@ struct OCRSevenSegment576Tests {
     static let pumpPhotos: [String] = (1...9).map { "fuel_purchase/scenario_\($0)/ti_fp_s\($0)_pump.jpg" }
         + ["pump_display/light_digits_7493/IMG_7493.HEIC"]
 
-    /// Reads on macOS: s1 3_.93/3.022, s2 7.7_4-/3/60_2.2, s3 _11139.888,
-    /// s4 11.25/27, s6 88, 7493 188889 (light digits on dark glass: the
-    /// lattice reads 15000/1_111 with one segment off, not confident, so
-    /// the plausible legacy read wins).
+    /// Reads on macOS: s1 3._99/7.022/9, s2 7774/6.-, s3 1.07,
+    /// s4 31.25/7_.23, s6 73.-.
     static let pumpPhotosNotReadingYet: Set<String> = Set(
         [1, 2, 3, 4, 6].map { "fuel_purchase/scenario_\($0)/ti_fp_s\($0)_pump.jpg" }
-            + ["pump_display/light_digits_7493/IMG_7493.HEIC"]
     )
 
     /// Scenario-1 pump photo from the private fixtures repo
