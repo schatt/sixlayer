@@ -160,6 +160,20 @@ struct OCRSevenSegment576Tests {
         #expect(result.extractedText == "8_2  17.740\n7.628")
     }
 
+    /// A row with group separators is well-formed, so it outvotes misreads
+    /// of the same row: the separator differs from the one decimal mark and
+    /// each group is three digits.
+    @Test func wellFormedRowsAllowGroupSeparators() {
+        for row in ["1234", "31.25", "8,022", "1,234.56", "1.234,56", "1,234,567", "12,345,678.9"] {
+            #expect(SevenSegmentOCR.isWellFormedRow(row), "\(row)")
+        }
+        // Two decimals, a short or long group, a group after the decimal,
+        // or a mark at either end.
+        for row in ["1.234.56", "1,23.45", "1,2345.6", "1.23,456", "12.34,567", ",123", "123.", "8_2", ""] {
+            #expect(!SevenSegmentOCR.isWellFormedRow(row), "\(row)")
+        }
+    }
+
     /// Two stray 1s from the legacy path do not replace a confident "11.11".
     @Test func strayOnesDoNotOutweighALatticeReadOfOnes() {
         let ones = [[

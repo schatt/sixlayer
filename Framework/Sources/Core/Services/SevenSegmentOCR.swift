@@ -5426,8 +5426,8 @@ extension SevenSegmentOCR {
     /// Per-row majority among reads that agree on the row count.
     ///
     /// Rows are compared without spaces, and the winner keeps the spacing of
-    /// a read that voted for it. Well-formed rows (digits with at most one
-    /// decimal mark) outvote the rest; a row that no read got well-formed
+    /// a read that voted for it. Well-formed rows (digits, one decimal mark
+    /// at most, three-digit groups) outvote the rest; a row that no read got well-formed
     /// (an unknown cell, a colon) is voted among all reads instead.
     /// A tied row goes to the key photo's read, then to the reads with more
     /// total confidence.
@@ -5475,12 +5475,22 @@ extension SevenSegmentOCR {
         )
     }
 
-    /// Digits with at most one decimal mark between them.
-    private static func isWellFormedRow(_ row: String) -> Bool {
-        let marks = row.filter { $0 == "." || $0 == "," }
+    /// Digits with at most one decimal mark, and group separators of the
+    /// other kind before it ("1,234.56", "1.234,56", "1,234,567"). A row
+    /// with marks of one kind only is one decimal or all separators. Every
+    /// separator is followed by exactly three digits.
+    static func isWellFormedRow(_ row: String) -> Bool {
         guard let first = row.first, let last = row.last, first.isNumber, last.isNumber,
-              marks.count <= 1 else { return false }
-        return row.allSatisfy { $0.isNumber || $0 == "." || $0 == "," }
+              row.allSatisfy({ $0.isNumber || $0 == "." || $0 == "," }) else { return false }
+        let groups = row.split(whereSeparator: { !$0.isNumber }).map(\.count)
+        let marks = row.filter { !$0.isNumber }
+        guard let separator = marks.first, marks.count > 1 else { return true }
+        let decimal = marks.last != separator
+        // Marks before the last one must all be the separator kind.
+        guard marks.dropLast().allSatisfy({ $0 == separator }) else { return false }
+        let leading = groups[0]
+        let grouped = decimal ? groups.dropFirst().dropLast() : groups.dropFirst()
+        return leading <= 3 && grouped.allSatisfy { $0 == 3 }
     }
 
     /// Boxes and fragments from the read that agrees with the most winning
