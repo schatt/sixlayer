@@ -2238,7 +2238,10 @@ private extension GrayBuffer {
                 preferredPitch: preferredPitch
             )
         }
-        let bandSums = opened ? digitRowSums(bandSource.rowSums) : bandSource.rowSums
+        // A two-pixel scratch through the row gap is not a digit row. Leaving
+        // every ink pixel in the projection glues the rows (`rescannedRowCrop`
+        // → `880`). The opened mask already uses this floor.
+        let bandSums = digitRowSums(bandSource.rowSums)
         let foundBands = runs(bandSums)
         // Scratches between two washed rows keep a few pixels, so the gap never
         // hits zero. Split only when both sides are a full row of digits.
