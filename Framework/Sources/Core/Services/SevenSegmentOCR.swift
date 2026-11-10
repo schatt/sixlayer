@@ -1438,6 +1438,17 @@ private struct GrayBuffer {
 
 private func trace(_ message: String) {
     fputs(message, stderr)
+    guard FileManager.default.fileExists(atPath: "/tmp/sixlayer-600-ocr-parts") else { return }
+    guard let data = message.data(using: .utf8) else { return }
+    let path = "/tmp/sixlayer-600-bands.txt"
+    if !FileManager.default.fileExists(atPath: path) {
+        FileManager.default.createFile(atPath: path, contents: nil)
+    }
+    if let handle = FileHandle(forWritingAtPath: path) {
+        handle.seekToEndOfFile()
+        handle.write(data)
+        try? handle.close()
+    }
 }
 
 private struct Mask {
@@ -2229,7 +2240,7 @@ private extension GrayBuffer {
         polarityRead?(primaryIsDark)
         let glyphs = chosen.glyphs
         let bandSource = chosen.bandSource
-        if buffer.width >= 1000 {
+        if buffer.width >= 1000 || FileManager.default.fileExists(atPath: "/tmp/sixlayer-600-ocr-parts") {
             let ink = glyphs.bits.filter { $0 }.count
             trace(
                 "read \(buffer.width)x\(buffer.height) dark=\(primaryIsDark) opened=\(opened) ink=\(ink)\n"
@@ -2284,7 +2295,7 @@ private extension GrayBuffer {
             : (bandsForSplit.count > foundBands.count
                 ? bandsForSplit
                 : merge(bandsForSplit, whenGapBelow: max(1, cellHeight / 2)))
-        if buffer.width >= 1000 {
+        if buffer.width >= 1000 || FileManager.default.fileExists(atPath: "/tmp/sixlayer-600-ocr-parts") {
             let listed = splitBands.map { "\($0.0)-\($0.1)" }.joined(separator: ",")
             trace("bands \(listed)\n")
         }
@@ -2296,7 +2307,7 @@ private extension GrayBuffer {
         if splittingRows, splitBands.count > 1 {
             let span = readingSpan(glyphs, bands: splitBands)
             let parentRadius = windowRadius(width: buffer.width, height: buffer.height)
-            if buffer.width >= 1000 {
+            if buffer.width >= 1000 || FileManager.default.fileExists(atPath: "/tmp/sixlayer-600-ocr-parts") {
                 trace("span \(String(describing: span)) radius \(parentRadius)\n")
             }
             var windowNarrows = true
@@ -2366,7 +2377,7 @@ private extension GrayBuffer {
                     sampleBand: sampleBand
                 ).flatMap { $0 }
                 let shifted = found.map { $0.shifted(dx: x0, dy: y0) }
-                if buffer.width >= 900 {
+                if buffer.width >= 900 || FileManager.default.fileExists(atPath: "/tmp/sixlayer-600-ocr-parts") {
                     let pitchNote = rowPitch.map { " pitch \($0.body)x\($0.count)" } ?? ""
                     trace(
                         "rowcrop \(x0),\(y0) \(crop.width)x\(crop.height) [\(String(shifted.map(\.character)))]\(pitchNote)\n"
