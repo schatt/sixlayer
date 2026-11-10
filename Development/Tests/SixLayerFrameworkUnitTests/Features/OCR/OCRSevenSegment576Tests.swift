@@ -227,6 +227,36 @@ struct OCRSevenSegment576Tests {
         #expect(decode(image, maximum: 0).extractedText == "32.88\n8.022")
     }
 
+    /// The row hangs below this glyph: the next stem, and the band pad, keep
+    /// going after the bar. The bottom zone then samples glass, the right
+    /// stem sits just left of its zone, and the cell ties a tailless 9
+    /// instead of reading 8 (#600).
+    @Test func rowThatHangsBelowTheBarStillReadsTheEight() {
+        let width = 220
+        let height = 180
+        var pixels = [UInt8](repeating: 210, count: width * height)
+        func fill(_ x0: Int, _ y0: Int, _ x1: Int, _ y1: Int) {
+            for y in y0..<y1 {
+                for x in x0..<x1 where x >= 0 && x < width && y >= 0 && y < height {
+                    pixels[y * width + x] = 24
+                }
+            }
+        }
+        let stroke = 14
+        fill(30, 30, 96, 30 + stroke)
+        fill(96 - stroke, 30, 96, 78)
+        fill(96 - stroke, 78, 96, 126)
+        fill(30, 126 - stroke, 96, 126)
+        fill(30, 78, 30 + stroke, 126)
+        fill(30, 30, 30 + stroke, 78)
+        fill(30, 70, 96, 70 + stroke)
+        // Same row, but the stem continues well below the 8's bar.
+        fill(140, 30, 140 + stroke, 168)
+        let image = solidGrayImage(pixels: pixels, width: width, height: height)
+        let text = decode(image, maximum: 0).extractedText
+        #expect(text.contains("8"), "read [\(text)]")
+    }
+
     @Test func edgeStripAcrossTheRowGapIsNotADigit() {
         // A bezel strip sits in the gap between the rows, with a small mark
         // past it so the digit span would otherwise jump the strip. The strip
