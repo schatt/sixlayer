@@ -367,7 +367,7 @@ enum OCRJointDecimalCorrection {
     /// the hand comma rewrite until the shared path lands — tests must stay red.
     static func parseOCRNumericValue(_ valueString: String, locale: Locale) -> Double? {
         _ = locale
-        Double(normalizeDecimalString(valueString, language: .english))
+        return Double(normalizeDecimalString(valueString, language: .english))
     }
     
     /// Digit-placement only: rearrange digit runs into POSIX candidates.
