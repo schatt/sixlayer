@@ -4406,7 +4406,8 @@ private struct Reader {
         scale = Double(h) / Double(height)
         smallWidth = max(1, Int((Double(width) * scale).rounded()))
         let small = boxResize(pixels, width: width, height: height, toWidth: smallWidth, toHeight: h)
-        let smoothed = median3(small, width: smallWidth, height: h)
+        // Probe (#600): a 3×3 median deletes a stem the shrink left one pixel wide.
+        let smoothed = small
 
         // Each window size gives a candidate mask. The candidate whose read
         // ranks best wins (sure-row information, then all information), and
