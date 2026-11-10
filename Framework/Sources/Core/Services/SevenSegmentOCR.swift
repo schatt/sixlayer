@@ -4734,6 +4734,20 @@ private struct Reader {
                 bands.append(run)
             }
         }
+        if FileManager.default.fileExists(atPath: "/tmp/sixlayer-600-ocr-parts") {
+            let line = "bands stroke=\(String(format: "%.2f", stroke)) found=\(found) joined=\(bands)\n"
+            if let data = line.data(using: .utf8) {
+                let path = "/tmp/sixlayer-600-bands.txt"
+                if !FileManager.default.fileExists(atPath: path) {
+                    FileManager.default.createFile(atPath: path, contents: nil)
+                }
+                if let handle = FileHandle(forWritingAtPath: path) {
+                    handle.seekToEndOfFile()
+                    handle.write(data)
+                    try? handle.close()
+                }
+            }
+        }
         let minimum = Double(analysisHeight) * 0.08
         let tallest = bands.map { $0.1 - $0.0 }.max() ?? 0
         return bands.filter { Double($0.1 - $0.0) >= max(minimum, Double(tallest) * 0.35) }
