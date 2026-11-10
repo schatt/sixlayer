@@ -290,7 +290,6 @@ public enum SevenSegmentOCR {
         let upright = GrayBuffer.deskew(gray, maximumDegrees: deskewMaximumDegrees)
         let fragments = GrayBuffer.fragments(in: upright)
         let legacy = result(fragments)
-        return legacy
         // Photographed panels: italic digits, segment gaps, reflections and
         // uneven light defeat the fixed-pixel path above. The lattice reader
         // measures everything from the panel itself (#576 real photos).
@@ -2878,9 +2877,12 @@ private func trimmingSparseEdges(_ band: (Int, Int), mask: Mask) -> (Int, Int) {
     guard let typical = median(weighted), typical >= 3 else { return band }
     func sparse(_ index: Int) -> Bool {
         let lengths = perRow[index]
-        guard let longest = lengths.max() else { return true }
-        // Haze is a short speck. A stem is about as wide as the typical stroke.
-        return longest * 2 < typical
+        guard !lengths.isEmpty else { return true }
+        let longRuns = lengths.filter { $0 * 2 >= typical }.count
+        let shortRuns = lengths.count - longRuns
+        // A left scratch is one solid run. The rest of a haze row is specks.
+        // A digit bar is one solid run with no specks, so the peel stops there.
+        return longRuns == 0 || (longRuns == 1 && shortRuns > 4)
     }
     let limit = (band.1 - band.0) / 2
     var top = 0
