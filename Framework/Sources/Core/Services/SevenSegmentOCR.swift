@@ -4748,7 +4748,7 @@ private struct Reader {
         return (tops[tops.count / 2], bottom)
     }
 
-    private func readBand(_ mask: BitMask, top: Int, bottom: Int, stroke: Double) -> [SevenSegmentLatticeReader.Cell] {
+    private mutating func readBand(_ mask: BitMask, top: Int, bottom: Int, stroke: Double) -> [SevenSegmentLatticeReader.Cell] {
         let whole = crop(mask, y0: top, y1: bottom)
         let (t0, t1) = trimBand(whole, stroke: stroke)
         let pad = max(1, Int(stroke * 0.3))
@@ -4913,7 +4913,7 @@ private struct Reader {
         }
     }
 
-    private func readDigit(_ band: BitMask, x0: Int, x1: Int) -> (Character, Float) {
+    private mutating func readDigit(_ band: BitMask, x0: Int, x1: Int) -> (Character, Float) {
         let h = Double(band.height)
         let w = Double(x1 - x0)
         func share(_ fx0: Double, _ fx1: Double, _ fy0: Double, _ fy1: Double) -> Double {
