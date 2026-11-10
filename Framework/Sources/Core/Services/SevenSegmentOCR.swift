@@ -2878,9 +2878,9 @@ private func trimmingSparseEdges(_ band: (Int, Int), mask: Mask) -> (Int, Int) {
     guard let typical = median(weighted), typical >= 3 else { return band }
     func sparse(_ index: Int) -> Bool {
         let lengths = perRow[index]
-        guard !lengths.isEmpty else { return true }
-        let mean = lengths.reduce(0, +) / lengths.count
-        return mean * 3 < typical
+        guard let longest = lengths.max() else { return true }
+        // Haze is a short speck. A stem is about as wide as the typical stroke.
+        return longest * 2 < typical
     }
     let limit = (band.1 - band.0) / 2
     var top = 0
