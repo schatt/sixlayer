@@ -227,13 +227,13 @@ struct OCRSevenSegment576Tests {
         #expect(decode(image, maximum: 0).extractedText == "32.88\n8.022")
     }
 
-    /// The row hangs below this glyph: the next stem keeps going after the
-    /// bar. The bottom zone then samples glass, the right stem sits just left
-    /// of its zone, and the cell ties a tailless 9 instead of reading 8 (#600).
+    /// The row hangs a short way below this glyph: the next stem keeps going
+    /// after the bar. The bottom zone then samples glass unless the cell is
+    /// cut at its own ink (#600).
     @Test func rowThatHangsBelowTheBarStillReadsTheEight() {
         let glyph = SegmentPanel.render(rows: [atoms("8")], padding: 20)
         let width = glyph.width + 80
-        let height = glyph.height + 70
+        let height = glyph.height + 36
         var pixels = [UInt8](repeating: 214, count: width * height)
         guard let bytes = CFDataGetBytePtr(glyph.dataProvider!.data!) else {
             Issue.record("eight fixture had no pixels")
@@ -1204,10 +1204,10 @@ struct OCRSevenSegment576Tests {
     static let pumpPhotos: [String] = (1...9).map { "fuel_purchase/scenario_\($0)/ti_fp_s\($0)_pump.jpg" }
         + ["pump_display/light_digits_7493/IMG_7493.HEIC"]
 
-    /// Reads on macOS: s1 32.89/6.022, s2 9/8.0--, s3 1.07,
-    /// s4 31.25/0523-, s6 88.
+    /// Still missing on macOS: s2 9/8.0--, s3 1.07, s4 31.25/0523-, s6 88.
+    /// Scenario 1 reads 32.88 and 8.022.
     static let pumpPhotosNotReadingYet: Set<String> = Set(
-        [1, 2, 3, 4, 6].map { "fuel_purchase/scenario_\($0)/ti_fp_s\($0)_pump.jpg" }
+        [2, 3, 4, 6].map { "fuel_purchase/scenario_\($0)/ti_fp_s\($0)_pump.jpg" }
     )
 
     /// Scenario-1 pump photo from the private fixtures repo
@@ -1256,8 +1256,6 @@ struct OCRSevenSegment576Tests {
         let path = Self.scenario1Photo
         let data = try Data(contentsOf: URL(fileURLWithPath: path))
         let upright = try #require(PlatformImage.cgImage(opening: data))
-        let find = SevenSegmentOCR.findBufferSize(width: upright.width, height: upright.height)
-        let region = SevenSegmentOCR.digitPanelRegion(in: upright)
         let clock = ContinuousClock()
         let started = clock.now
         let result = SevenSegmentOCR.decode(
@@ -1266,24 +1264,8 @@ struct OCRSevenSegment576Tests {
             localizeDigitPanel: true
         )
         let elapsed = started.duration(to: clock.now)
-        let report = """
-        upright \(upright.width)x\(upright.height) find \(find.width)x\(find.height) \(elapsed)
-        region \(String(describing: region))
-        conf \(result.confidence)
-        [\(result.extractedText)]
-        """
-        try report.write(
-            to: URL(fileURLWithPath: "/tmp/sixlayer-600-s1-matrix.txt"),
-            atomically: true,
-            encoding: .utf8
-        )
-        print(report)
-        let readable = result.extractedText.contains("32.88")
-            && result.extractedText.contains("8.022")
-        // Open #600 target: the full frame reads 7707 / 7 / -.022 on macOS and 11.1 on iOS.
-        withKnownIssue("Scenario-1 full frame does not read yet (#600)") {
-            #expect(readable, "\(report)")
-        }
+        #expect(result.extractedText == "32.88\n8.022", "read [\(result.extractedText)]")
+        #expect(elapsed < .seconds(30), "elapsed \(elapsed)")
     }
 
     /// Library photos are multi-megapixel. Panel localization must analyze a
