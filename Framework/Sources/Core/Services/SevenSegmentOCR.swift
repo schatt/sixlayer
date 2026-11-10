@@ -4450,9 +4450,17 @@ private struct Reader {
             let key = (rank.0, rank.1, candidate.plain, candidate.score)
             if traceCandidates {
                 let text = rows.map { String($0.map(\.character)) }.joined(separator: "/")
-                if text.contains("3_8.8/8.022") {
-                    let block = "CAND plain=\(candidate.plain) rank=\(rank.0),\(rank.1)\n\(traceZones)"
-                    try? block.write(toFile: "/tmp/sixlayer-600-ocr-zones.txt", atomically: true, encoding: .utf8)
+                if text.contains("8.022") {
+                    let block = "CAND plain=\(candidate.plain) rank=\(rank.0),\(rank.1) [\(text)]\n\(traceZones)\n"
+                    let path = "/tmp/sixlayer-600-ocr-zones.txt"
+                    if !FileManager.default.fileExists(atPath: path) {
+                        FileManager.default.createFile(atPath: path, contents: nil)
+                    }
+                    if let data = block.data(using: .utf8), let handle = FileHandle(forWritingAtPath: path) {
+                        handle.seekToEndOfFile()
+                        handle.write(data)
+                        try? handle.close()
+                    }
                     writeMask(candidate.mask, path: "/tmp/sixlayer-600-mask.pgm")
                 }
                 let line = "cand dark=\(darkInk) plain=\(candidate.plain) rank=\(rank.0),\(rank.1) score=\(candidate.score) [\(text)]\n"
@@ -5510,26 +5518,46 @@ private func columnHasInk(_ mask: BitMask, rows: Range<Int>, x0: Int = 0, x1: In
     return (x0..<end).map { x in ys.contains { mask[x, $0] } }
 }
 
-/// Exclusive end of the last row in `x0..<x1` with at least two ink pixels.
-/// Glass under a bar, and a one-pixel speck, do not stretch the digit.
-/// The top stays put: ink above the bar is a different failure.
+/// Exclusive end of this glyph's own ink. Glass under a bar has no later
+/// run, so the end is the bar. A later run in the same columns is the next
+/// row and must not stretch the bottom zone. A one- or two-row hole is a
+/// broken stroke, not that gap. The top stays put.
 private func slotInkBottom(_ mask: BitMask, x0: Int, x1: Int) -> Int {
     let xa = max(0, x0), xb = min(mask.width, x1)
     guard xb > xa else { return mask.height }
-    var bottom = mask.height
-    var seen = false
+    var inkRow = [Bool](repeating: false, count: mask.height)
     for y in 0..<mask.height {
         var count = 0
         for x in xa..<xb where mask[x, y] {
             count += 1
-            if count == 2 { break }
-        }
-        if count >= 2 {
-            bottom = y + 1
-            seen = true
+            if count == 2 { inkRow[y] = true; break }
         }
     }
-    return seen ? bottom : mask.height
+    let bridge = 2
+    var y = 0
+    while y < inkRow.count {
+        if inkRow[y] { y += 1; continue }
+        let start = y
+        while y < inkRow.count, !inkRow[y] { y += 1 }
+        if start > 0, y < inkRow.count, y - start <= bridge {
+            for index in start..<y { inkRow[index] = true }
+        }
+    }
+    var bestLength = 0
+    var bestEnd = mask.height
+    var runStart: Int?
+    for index in 0...inkRow.count {
+        let on = index < inkRow.count && inkRow[index]
+        if on, runStart == nil { runStart = index }
+        if !on, let start = runStart {
+            if index - start > bestLength {
+                bestLength = index - start
+                bestEnd = index
+            }
+            runStart = nil
+        }
+    }
+    return bestLength == 0 ? mask.height : bestEnd
 }
 
 private func inkRows(_ mask: BitMask, x0: Int, x1: Int) -> (Int, Int)? {
