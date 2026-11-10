@@ -4814,7 +4814,7 @@ private struct Reader {
             }
         }
 
-        struct Slot { var character: Character; var confidence: Float; var x0: Int; var x1: Int }
+        struct Slot { var character: Character; var confidence: Float; var x0: Int; var x1: Int; var bottom: Int }
         var cells: [Slot] = []
         let first = (edges.first ?? 0) - 0.5 * stride
         let last = (edges.last ?? 0) + 0.5 * stride
@@ -4839,7 +4839,7 @@ private struct Reader {
             let span = Double(lastInk - firstInk + 1)
             let offset = Double(firstInk)
             if span < 0.42 * w && offset > 0.45 * w {
-                cells.append(Slot(character: "1", confidence: 1, x0: x0, x1: x1))
+                cells.append(Slot(character: "1", confidence: 1, x0: x0, x1: x1, bottom: band.height))
                 continue
             }
             // A few pixels of lattice error move ink into the wrong zone.
@@ -4851,20 +4851,20 @@ private struct Reader {
             let reach = Int(snapFraction * w)
             let step = max(1, Int(w / 16))
             let shifts = Swift.stride(from: -reach, through: reach, by: step).sorted { (abs($0), $0) < (abs($1), $1) }
-            var chosen: (Character, Float, Int, Int, Double)?
+            var chosen: (Character, Float, Int, Int, Double, Int)?
             for dx in shifts {
                 let a = x0 + dx, b = x1 + dx
                 let lo = max(0, a), hi = min(band.width, b)
                 guard hi > lo else { continue }
-                let bottom = slotInkBottom(band, x0: lo, x1: hi, stroke: stroke)
-                let glyph = readDigit(band, x0: lo, x1: hi, bottom: bottom)
+                let limits = slotInkBottom(band, x0: lo, x1: hi, stroke: stroke)
+                let glyph = readDigit(band, x0: lo, x1: hi, bottom: limits.zone)
                 let better = chosen == nil
                     || glyph.1 > chosen!.1
                     || (glyph.1 > 0 && glyph.1 == chosen!.1 && glyph.2 > chosen!.4)
-                if better { chosen = (glyph.0, glyph.1, a, b, glyph.2) }
+                if better { chosen = (glyph.0, glyph.1, a, b, glyph.2, limits.ink) }
             }
             guard let pick = chosen else { continue }
-            cells.append(Slot(character: pick.0, confidence: pick.1, x0: pick.2, x1: pick.3))
+            cells.append(Slot(character: pick.0, confidence: pick.1, x0: pick.2, x1: pick.3, bottom: pick.5))
         }
 
         // A row's digits sit on consecutive lattice points.
@@ -4885,8 +4885,11 @@ private struct Reader {
 
         // Decimal: baseline ink between two cells, with empty glass above.
         var marks: [(above: Double, x: Double)] = []
-        let stripTop = Int(dh * 0.74)
-        let upperLimit = Int(dh * 0.6)
+        // The band can hang into the next row. The dot sits on this row's
+        // own baseline, which is the shortest glyph, not that hang.
+        let baseline = cells.map(\.bottom).min() ?? band.height
+        let stripTop = Int(Double(baseline) * 0.74)
+        let upperLimit = Int(Double(baseline) * 0.6)
         for (left, right) in zip(cells, cells.dropFirst()) {
             let g0 = max(0, Int(Double(left.x1) - 0.08 * w))
             let g1 = min(band.width, Int(Double(right.x0) + 0.12 * w))
@@ -4896,14 +4899,14 @@ private struct Reader {
             for x in g0..<g1 {
                 var low = 0
                 var high = 0
-                for y in stripTop..<band.height where band[x, y] { low += 1 }
+                for y in stripTop..<baseline where band[x, y] { low += 1 }
                 for y in 0..<upperLimit where band[x, y] { high += 1 }
                 highs.append(high)
-                candidate.append(Double(low) >= max(1, 0.35 * stroke) && Double(high) <= decimalAbove * dh)
+                candidate.append(Double(low) >= max(1, 0.35 * stroke) && Double(high) <= decimalAbove * Double(baseline))
             }
             guard let longest = runs(candidate).max(by: { ($0.1 - $0.0) < ($1.1 - $1.0) }) else { continue }
             if Double(longest.1 - longest.0) < 0.4 * stroke { continue }
-            let above = Double(highs[longest.0..<longest.1].reduce(0, +)) / Double(longest.1 - longest.0) / dh
+            let above = Double(highs[longest.0..<longest.1].reduce(0, +)) / Double(longest.1 - longest.0) / Double(baseline)
             marks.append((above, Double(g0) + Double(longest.0 + longest.1) / 2))
         }
         // One decimal per row: the gap with the emptiest glass above its dot.
@@ -5523,9 +5526,9 @@ private func columnHasInk(_ mask: BitMask, rows: Range<Int>, x0: Int = 0, x1: In
 /// bar. A later run in the same columns is the next row; the pad stops at
 /// that gap. A one- or two-row hole is a broken stroke, not that gap.
 /// The top stays put.
-private func slotInkBottom(_ mask: BitMask, x0: Int, x1: Int, stroke: Double) -> Int {
+private func slotInkBottom(_ mask: BitMask, x0: Int, x1: Int, stroke: Double) -> (zone: Int, ink: Int) {
     let xa = max(0, x0), xb = min(mask.width, x1)
-    guard xb > xa else { return mask.height }
+    guard xb > xa else { return (mask.height, mask.height) }
     var inkRow = [Bool](repeating: false, count: mask.height)
     for y in 0..<mask.height {
         var count = 0
@@ -5557,10 +5560,10 @@ private func slotInkBottom(_ mask: BitMask, x0: Int, x1: Int, stroke: Double) ->
     guard let longest = runs.max(by: { lhs, rhs in
         let left = lhs.1 - lhs.0, right = rhs.1 - rhs.0
         return left != right ? left < right : lhs.0 > rhs.0
-    }) else { return mask.height }
+    }) else { return (mask.height, mask.height) }
     let pad = max(1, Int(stroke * 0.3))
     let next = runs.compactMap { $0.0 >= longest.1 ? $0.0 : nil }.min() ?? mask.height
-    return min(longest.1 + pad, next)
+    return (min(longest.1 + pad, next), longest.1)
 }
 
 private func inkRows(_ mask: BitMask, x0: Int, x1: Int) -> (Int, Int)? {
