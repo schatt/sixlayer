@@ -4450,8 +4450,17 @@ private struct Reader {
             let key = (rank.0, rank.1, candidate.plain, candidate.score)
             if traceCandidates {
                 let text = rows.map { String($0.map(\.character)) }.joined(separator: "/")
-                if text.contains("32.89") {
-                    try? traceZones.write(toFile: "/tmp/sixlayer-600-ocr-zones.txt", atomically: true, encoding: .utf8)
+                if text.contains("8.022") {
+                    let block = "CAND plain=\(candidate.plain) rank=\(rank.0),\(rank.1) [\(text)]\n\(traceZones)\n"
+                    let path = "/tmp/sixlayer-600-ocr-zones.txt"
+                    if !FileManager.default.fileExists(atPath: path) {
+                        FileManager.default.createFile(atPath: path, contents: nil)
+                    }
+                    if let data = block.data(using: .utf8), let handle = FileHandle(forWritingAtPath: path) {
+                        handle.seekToEndOfFile()
+                        handle.write(data)
+                        try? handle.close()
+                    }
                     writeMask(candidate.mask, path: "/tmp/sixlayer-600-mask.pgm")
                 }
                 let line = "cand dark=\(darkInk) plain=\(candidate.plain) rank=\(rank.0),\(rank.1) score=\(candidate.score) [\(text)]\n"
@@ -4805,7 +4814,7 @@ private struct Reader {
             }
         }
 
-        struct Slot { var character: Character; var confidence: Float; var x0: Int; var x1: Int }
+        struct Slot { var character: Character; var confidence: Float; var x0: Int; var x1: Int; var bottom: Int }
         var cells: [Slot] = []
         let first = (edges.first ?? 0) - 0.5 * stride
         let last = (edges.last ?? 0) + 0.5 * stride
@@ -4830,25 +4839,31 @@ private struct Reader {
             let span = Double(lastInk - firstInk + 1)
             let offset = Double(firstInk)
             if span < 0.42 * w && offset > 0.45 * w {
-                cells.append(Slot(character: "1", confidence: 1, x0: x0, x1: x1))
+                cells.append(Slot(character: "1", confidence: 1, x0: x0, x1: x1, bottom: band.height))
                 continue
             }
             // A few pixels of lattice error move ink into the wrong zone.
-            // Try small shifts; keep the surest read.
+            // Try small shifts. A higher confidence wins. An exact template
+            // does not stop the search: the box can match a digit that is
+            // one vertical stem short of the glyph, and a nearby shift
+            // lights that stem. A different template does not replace it.
             let reach = Int(snapFraction * w)
             let step = max(1, Int(w / 16))
             let shifts = Swift.stride(from: -reach, through: reach, by: step).sorted { (abs($0), $0) < (abs($1), $1) }
-            var chosen: (Character, Float, Int, Int)?
+            var chosen: (Character, Float, Int, Int, SevenSegmentPattern, Int)?
             for dx in shifts {
                 let a = x0 + dx, b = x1 + dx
                 let lo = max(0, a), hi = min(band.width, b)
                 guard hi > lo else { continue }
-                let glyph = readDigit(band, x0: lo, x1: hi)
-                if chosen == nil || glyph.1 > chosen!.1 { chosen = (glyph.0, glyph.1, a, b) }
-                if glyph.1 == 1 { break }
+                let limits = slotInkBottom(band, x0: lo, x1: hi, stroke: stroke)
+                let glyph = readDigit(band, x0: lo, x1: hi, bottom: limits.zone)
+                let better = chosen == nil
+                    || glyph.1 > chosen!.1
+                    || (glyph.1 > 0 && glyph.1 == chosen!.1 && addsOneVerticalStem(glyph.2, over: chosen!.4))
+                if better { chosen = (glyph.0, glyph.1, a, b, glyph.2, limits.ink) }
             }
             guard let pick = chosen else { continue }
-            cells.append(Slot(character: pick.0, confidence: pick.1, x0: pick.2, x1: pick.3))
+            cells.append(Slot(character: pick.0, confidence: pick.1, x0: pick.2, x1: pick.3, bottom: pick.5))
         }
 
         // A row's digits sit on consecutive lattice points.
@@ -4869,8 +4884,13 @@ private struct Reader {
 
         // Decimal: baseline ink between two cells, with empty glass above.
         var marks: [(above: Double, x: Double)] = []
-        let stripTop = Int(dh * 0.74)
-        let upperLimit = Int(dh * 0.6)
+        // The band can hang into the next row. When it does, the dot sits
+        // on the shortest glyph's baseline. A band that already ends on the
+        // ink keeps the old strip.
+        let shortest = cells.map(\.bottom).min() ?? band.height
+        let baseline = band.height - shortest > max(2, Int(stroke)) ? shortest : band.height
+        let stripTop = Int(Double(baseline) * 0.74)
+        let upperLimit = Int(Double(baseline) * 0.6)
         for (left, right) in zip(cells, cells.dropFirst()) {
             let g0 = max(0, Int(Double(left.x1) - 0.08 * w))
             let g1 = min(band.width, Int(Double(right.x0) + 0.12 * w))
@@ -4880,14 +4900,14 @@ private struct Reader {
             for x in g0..<g1 {
                 var low = 0
                 var high = 0
-                for y in stripTop..<band.height where band[x, y] { low += 1 }
+                for y in stripTop..<baseline where band[x, y] { low += 1 }
                 for y in 0..<upperLimit where band[x, y] { high += 1 }
                 highs.append(high)
-                candidate.append(Double(low) >= max(1, 0.35 * stroke) && Double(high) <= decimalAbove * dh)
+                candidate.append(Double(low) >= max(1, 0.35 * stroke) && Double(high) <= decimalAbove * Double(baseline))
             }
             guard let longest = runs(candidate).max(by: { ($0.1 - $0.0) < ($1.1 - $1.0) }) else { continue }
             if Double(longest.1 - longest.0) < 0.4 * stroke { continue }
-            let above = Double(highs[longest.0..<longest.1].reduce(0, +)) / Double(longest.1 - longest.0) / dh
+            let above = Double(highs[longest.0..<longest.1].reduce(0, +)) / Double(longest.1 - longest.0) / Double(baseline)
             marks.append((above, Double(g0) + Double(longest.0 + longest.1) / 2))
         }
         // One decimal per row: the gap with the emptiest glass above its dot.
@@ -4914,18 +4934,19 @@ private struct Reader {
         }
     }
 
-    private mutating func readDigit(_ band: BitMask, x0: Int, x1: Int) -> (Character, Float) {
-        let h = Double(band.height)
+    private mutating func readDigit(_ band: BitMask, x0: Int, x1: Int, bottom: Int) -> (Character, Float, SevenSegmentPattern) {
+        let limit = min(band.height, max(bottom, 1))
+        let h = Double(limit)
         let w = Double(x1 - x0)
         func share(_ fx0: Double, _ fx1: Double, _ fy0: Double, _ fy1: Double) -> Double {
             let ya = Int(fy0 * h), yb = max(Int(fy1 * h), ya + 1)
             let xa = x0 + Int(fx0 * w), xb = max(x0 + Int(fx1 * w), xa + 1)
-            return inkShare(band, x0: xa, x1: min(xb, band.width), y0: ya, y1: min(yb, band.height))
+            return inkShare(band, x0: xa, x1: min(xb, band.width), y0: ya, y1: min(yb, limit))
         }
         let holes = (share(0.32, 0.68, 0.2, 0.38) + share(0.32, 0.68, 0.62, 0.8)) / 2
         if holes > holeMaximum {
             if tracing { traceZones += "zones holes=\(String(format: "%.3f", holes)) reject\n" }
-            return ("_", 0)
+            return ("_", 0, [])
         }
         let zones: [(SevenSegmentPattern, Double)] = [
             (.a, share(0.3, 0.7, 0, 0.16)),
@@ -4948,7 +4969,18 @@ private struct Reader {
             let shares = zip(names, zones.map(\.1)).map { "\($0.0)=\(String(format: "%.3f", $0.1))" }.joined(separator: " ")
             traceZones += "zones x=\(x0)..\(x1) h=\(Int(h)) holes=\(String(format: "%.3f", holes)) cut=\(String(format: "%.3f", cut)) \(shares) -> \(read.0)@\(String(format: "%.2f", read.1))\n"
         }
-        return read
+        return (read.0, read.1, pattern)
+    }
+
+    /// The shift lights exactly one vertical stem the current box left dark,
+    /// and turns none off. That is a stem that sat just outside its zone,
+    /// not a different digit.
+    private func addsOneVerticalStem(_ current: SevenSegmentPattern, over previous: SevenSegmentPattern) -> Bool {
+        let added = current.subtracting(previous)
+        let vertical: SevenSegmentPattern = [.b, .c, .e, .f]
+        return previous.subtracting(current).isEmpty
+            && added.subtracting(vertical).isEmpty
+            && added.rawValue.nonzeroBitCount == 1
     }
 
     // MARK: Coordinates
@@ -5496,6 +5528,78 @@ private func columnHasInk(_ mask: BitMask, rows: Range<Int>, x0: Int = 0, x1: In
     let end = x1 ?? mask.width
     let ys = max(0, rows.lowerBound)..<min(mask.height, rows.upperBound)
     return (x0..<end).map { x in ys.contains { mask[x, $0] } }
+}
+
+/// Exclusive end of this glyph's own ink, plus the same pad the band keeps
+/// under a stroke. Glass under a bar has no later run, so the end is the
+/// bar. A later run in the same columns is the next row; the pad stops at
+/// that gap. A one- or two-row hole is a broken stroke, not that gap.
+/// The top stays put.
+private func slotInkBottom(_ mask: BitMask, x0: Int, x1: Int, stroke: Double) -> (zone: Int, ink: Int) {
+    let xa = max(0, x0), xb = min(mask.width, x1)
+    guard xb > xa else { return (mask.height, mask.height) }
+    var inkRow = [Bool](repeating: false, count: mask.height)
+    for y in 0..<mask.height {
+        var count = 0
+        for x in xa..<xb where mask[x, y] {
+            count += 1
+            if count == 2 { inkRow[y] = true; break }
+        }
+    }
+    let bridge = 2
+    var y = 0
+    while y < inkRow.count {
+        if inkRow[y] { y += 1; continue }
+        let start = y
+        while y < inkRow.count, !inkRow[y] { y += 1 }
+        if start > 0, y < inkRow.count, y - start <= bridge {
+            for index in start..<y { inkRow[index] = true }
+        }
+    }
+    var runs: [(Int, Int)] = []
+    var runStart: Int?
+    for index in 0...inkRow.count {
+        let on = index < inkRow.count && inkRow[index]
+        if on, runStart == nil { runStart = index }
+        if !on, let start = runStart {
+            runs.append((start, index))
+            runStart = nil
+        }
+    }
+    guard let longest = runs.max(by: { lhs, rhs in
+        let left = lhs.1 - lhs.0, right = rhs.1 - rhs.0
+        return left != right ? left < right : lhs.0 > rhs.0
+    }) else { return (mask.height, mask.height) }
+    let pad = max(1, Int(stroke * 0.3))
+    let strokeRows = max(2, Int(stroke))
+    let next = runs.compactMap { run in
+        run.0 >= longest.1 && run.1 - run.0 > strokeRows ? run.0 : nil
+    }.min() ?? mask.height
+    // A short piece is a broken stroke. A tall empty tail means the run
+    // ended early. Trim only for a real next row, or a short hang of glass
+    // under a bar that already reaches the baseline.
+    if FileManager.default.fileExists(atPath: "/tmp/sixlayer-600-ocr-parts") {
+        let line = "h=\(mask.height) run=\(longest.0)..\(longest.1) next=\(next) tail=\(mask.height - longest.1) pad=\(pad)\n"
+        if let data = line.data(using: .utf8) {
+            let path = "/tmp/sixlayer-600-trim.txt"
+            if !FileManager.default.fileExists(atPath: path) {
+                FileManager.default.createFile(atPath: path, contents: nil)
+            }
+            if let handle = FileHandle(forWritingAtPath: path) {
+                handle.seekToEndOfFile()
+                handle.write(data)
+                try? handle.close()
+            }
+        }
+    }
+    let reachesBaseline = longest.1 > mask.height * 2 / 3
+    let separated = next < mask.height
+    let tail = mask.height - longest.1
+    let modestGlass = tail > pad && tail < mask.height / 5
+    guard reachesBaseline && (separated || modestGlass) else {
+        return (mask.height, mask.height)
+    }
+    return (min(longest.1 + pad, next), longest.1)
 }
 
 private func inkRows(_ mask: BitMask, x0: Int, x1: Int) -> (Int, Int)? {
