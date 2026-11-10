@@ -297,11 +297,7 @@ struct OCRSevenSegment576Tests {
             tallHaze: true
         )
         let result = decode(image, maximum: 0)
-        let pieces = result.recognizedTexts.map { text in
-            let box = text.boundingBox
-            return "\(text.text)@\(String(format: "%.2f", text.confidence)) \(String(format: "%.3f", box.minX)),\(String(format: "%.3f", box.minY)) \(String(format: "%.3f", box.width))x\(String(format: "%.3f", box.height))"
-        }.joined(separator: " | ")
-        #expect(result.extractedText == "32.88\n8.022", "\(image.width)x\(image.height) [\(pieces)]")
+        #expect(result.extractedText == "32.88\n8.022")
     }
 
     @Test func wideGapSplitsGroupsAndAnEqualGapDoesNot() {
