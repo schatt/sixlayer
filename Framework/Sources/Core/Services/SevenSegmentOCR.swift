@@ -2841,7 +2841,11 @@ private func digitRowSums(_ sums: [Int]) -> [Int] {
     let peak = sums.max() ?? 0
     // A gap row on a washed LCD still holds a few core pixels. Digit rows
     // hold many more. Leaving the gap at sum > 0 joins the two lines.
-    let floor = max(8, peak / 20)
+    // The scratch that glues `rescannedRowCrop` is two columns. An absolute
+    // 8 also drops a comma tail (half a stroke, six pixels) on a small
+    // panel, so `1,25` becomes `1.25`. Three stays under that tail and
+    // still clears the two-column bridge.
+    let floor = max(3, peak / 20)
     return sums.map { $0 >= floor ? $0 : 0 }
 }
 
@@ -3135,21 +3139,20 @@ private func clearingOverlongRows(
     return Mask(bits: bits, width: width, height: mask.height)
 }
 
-/// One glyph sitting in the padding, with a hole wider than that glyph on
-/// both sides of the comparison, is a scratch. Dropping it has to leave
-/// at least four fifths of the digits: the gap before a narrow 1 is not
-/// a scratch (`3125` stays).
+/// A glyph in the padding, separated by a hole larger than every later
+/// gap, is a scratch. A decimal, a comma, or a blank cell opens a hole
+/// too, but that hole is not the widest one on the row (`1.11`, `8_2`,
+/// `1,234` stay). Dropping it has to leave at least four fifths of the
+/// digits, so a four-digit row is never touched (`3125` stays).
 private func droppingLeftScratch(_ cells: [Cell]) -> [Cell] {
     let digits = cells.filter { $0.character.isNumber && $0.height > 0 }
         .sorted { $0.minX < $1.minX }
     guard digits.count >= 5 else { return cells }
-    let hole = digits[1].minX - digits[0].maxX
-    let bodies = digits.map { $0.maxX - $0.minX }.sorted()
-    let body = bodies[bodies.count / 2]
+    let gaps = zip(digits, digits.dropFirst()).map { $1.minX - $0.maxX }
+    guard let hole = gaps.first, gaps.count >= 2 else { return cells }
+    let later = gaps.dropFirst().max() ?? 0
     let remain = digits.count - 1
-    // Wider than a digit body, not just wider than a narrow leading 1.
-    // The comma in `1,234` opens a hole that is still inside the pitch.
-    guard hole > 8, hole > body, remain * 5 >= digits.count * 4 else { return cells }
+    guard hole > 8, hole > later, remain * 5 >= digits.count * 4 else { return cells }
     let cut = digits[1].minX
     return cells.filter { $0.minX >= cut }
 }
