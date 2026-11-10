@@ -220,10 +220,8 @@ public enum SevenSegmentOCR {
             // Same mark-bearing guard as the non-confident branch (#661 / #667):
             // `isPlausible` rejects `_`, so without this a confident lattice that
             // merely dropped the unknown cell (e.g. `8_2` → `82`) always wins.
-            let legacyText = legacy.extractedText
             let latticeDigitCount = latticeRows.flatMap { $0 }.filter { $0.character.isNumber }.count
-            let legacyDigits = legacyText.filter(\.isNumber).count
-            if legacyText.contains("_"), legacyDigits >= latticeDigitCount {
+            if prefersMarkBearingLegacy(legacy, toLatticeDigits: latticeDigitCount) {
                 return legacy
             }
             let trusted = fragments.flatMap { $0 }.filter { fragment in
@@ -243,18 +241,24 @@ public enum SevenSegmentOCR {
         if !latticeRows.isEmpty, quality(lattice) >= quality(legacy) {
             // Non-confident lattice can score above a mark-bearing legacy
             // read because `quality` penalizes `_` (#661 alone `8_2` → `8`).
-            // Keep legacy when it already holds at least as many digits and
-            // carries unknown-cell placeholders lattice dropped.
-            let legacyText = legacy.extractedText
-            let latticeText = lattice.extractedText
-            let legacyDigits = legacyText.filter(\.isNumber).count
-            let latticeDigits = latticeText.filter(\.isNumber).count
-            if legacyText.contains("_"), legacyDigits >= latticeDigits {
+            let latticeDigits = lattice.extractedText.filter(\.isNumber).count
+            if prefersMarkBearingLegacy(legacy, toLatticeDigits: latticeDigits) {
                 return legacy
             }
             return lattice
         }
         return legacy
+    }
+
+    /// Legacy already named an unknown cell and holds at least as many digits
+    /// as lattice — do not let lattice win by simply omitting the `_`.
+    private static func prefersMarkBearingLegacy(
+        _ legacy: OCRResult,
+        toLatticeDigits latticeDigits: Int
+    ) -> Bool {
+        let text = legacy.extractedText
+        guard text.contains("_") else { return false }
+        return text.filter(\.isNumber).count >= latticeDigits
     }
 
     private static func quality(_ result: OCRResult) -> Int {
