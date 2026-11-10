@@ -312,13 +312,6 @@ public enum SevenSegmentOCR {
                 lattice = result(located.map { [latticeFragment($0, width: frame.width, height: frame.height)] })
             }
         }
-        if FileManager.default.fileExists(atPath: "/tmp/sixlayer-600-ocr-parts") {
-            let cells = rows.map { row in
-                row.map { "\($0.character)@\(String(format: "%.2f", $0.confidence))" }.joined(separator: " ")
-            }.joined(separator: " | ")
-            let line = "parts legacy [\(legacy.extractedText)] crop [\(cropLattice)] searched [\(lattice.extractedText)] cells [\(cells)]\n"
-            try? line.write(toFile: "/tmp/sixlayer-600-ocr-parts.txt", atomically: true, encoding: .utf8)
-        }
         // Legacy carries group spacing, commas, colons and unknown-cell
         // placeholders, so it stays when it is believable. Its photo output
         // is mostly "1", "_" and stray marks, sometimes at confidence 1.0, so
@@ -1438,17 +1431,6 @@ private struct GrayBuffer {
 
 private func trace(_ message: String) {
     fputs(message, stderr)
-    guard FileManager.default.fileExists(atPath: "/tmp/sixlayer-600-ocr-parts") else { return }
-    guard let data = message.data(using: .utf8) else { return }
-    let path = "/tmp/sixlayer-600-bands.txt"
-    if !FileManager.default.fileExists(atPath: path) {
-        FileManager.default.createFile(atPath: path, contents: nil)
-    }
-    if let handle = FileHandle(forWritingAtPath: path) {
-        handle.seekToEndOfFile()
-        handle.write(data)
-        try? handle.close()
-    }
 }
 
 private struct Mask {
@@ -2240,7 +2222,7 @@ private extension GrayBuffer {
         polarityRead?(primaryIsDark)
         let glyphs = chosen.glyphs
         let bandSource = chosen.bandSource
-        if buffer.width >= 1000 || FileManager.default.fileExists(atPath: "/tmp/sixlayer-600-ocr-parts") {
+        if buffer.width >= 1000 {
             let ink = glyphs.bits.filter { $0 }.count
             trace(
                 "read \(buffer.width)x\(buffer.height) dark=\(primaryIsDark) opened=\(opened) ink=\(ink)\n"
@@ -2295,7 +2277,7 @@ private extension GrayBuffer {
             : (bandsForSplit.count > foundBands.count
                 ? bandsForSplit
                 : merge(bandsForSplit, whenGapBelow: max(1, cellHeight / 2)))
-        if buffer.width >= 1000 || FileManager.default.fileExists(atPath: "/tmp/sixlayer-600-ocr-parts") {
+        if buffer.width >= 1000 {
             let listed = splitBands.map { "\($0.0)-\($0.1)" }.joined(separator: ",")
             trace("bands \(listed)\n")
         }
@@ -2307,7 +2289,7 @@ private extension GrayBuffer {
         if splittingRows, splitBands.count > 1 {
             let span = readingSpan(glyphs, bands: splitBands)
             let parentRadius = windowRadius(width: buffer.width, height: buffer.height)
-            if buffer.width >= 1000 || FileManager.default.fileExists(atPath: "/tmp/sixlayer-600-ocr-parts") {
+            if buffer.width >= 1000 {
                 trace("span \(String(describing: span)) radius \(parentRadius)\n")
             }
             var windowNarrows = true
@@ -2377,7 +2359,7 @@ private extension GrayBuffer {
                     sampleBand: sampleBand
                 ).flatMap { $0 }
                 let shifted = found.map { $0.shifted(dx: x0, dy: y0) }
-                if buffer.width >= 900 || FileManager.default.fileExists(atPath: "/tmp/sixlayer-600-ocr-parts") {
+                if buffer.width >= 900 {
                     let pitchNote = rowPitch.map { " pitch \($0.body)x\($0.count)" } ?? ""
                     trace(
                         "rowcrop \(x0),\(y0) \(crop.width)x\(crop.height) [\(String(shifted.map(\.character)))]\(pitchNote)\n"
@@ -4405,8 +4387,6 @@ private struct Reader {
     private var rotatedHeight = 0
     private var shearTangent = 0.0
     private var shearPad = 0
-    private var tracing = false
-    private var traceZones = ""
 
     init(pixels: [UInt8], width: Int, height: Int, darkInk: Bool) {
         self.pixels = pixels
@@ -4416,7 +4396,6 @@ private struct Reader {
     }
 
     mutating func run() -> [[SevenSegmentLatticeReader.Cell]] {
-        tracing = FileManager.default.fileExists(atPath: "/tmp/sixlayer-600-ocr-parts")
         let h = analysisHeight
         scale = Double(h) / Double(height)
         smallWidth = max(1, Int((Double(width) * scale).rounded()))
@@ -4454,39 +4433,10 @@ private struct Reader {
             }
         }
         var best: (key: (Int, Int, Int, Int), rows: [[SevenSegmentLatticeReader.Cell]])?
-        let traceCandidates = FileManager.default.fileExists(atPath: "/tmp/sixlayer-600-ocr-parts")
         for candidate in candidates {
             let rows = readRows(candidate.mask, stroke: candidate.stroke)
             let rank = SevenSegmentLatticeReader.rank(rows)
             let key = (rank.0, rank.1, candidate.plain, candidate.score)
-            if traceCandidates {
-                let text = rows.map { String($0.map(\.character)) }.joined(separator: "/")
-                if text.contains("8.022") {
-                    let block = "CAND plain=\(candidate.plain) rank=\(rank.0),\(rank.1) [\(text)]\n\(traceZones)\n"
-                    let path = "/tmp/sixlayer-600-ocr-zones.txt"
-                    if !FileManager.default.fileExists(atPath: path) {
-                        FileManager.default.createFile(atPath: path, contents: nil)
-                    }
-                    if let data = block.data(using: .utf8), let handle = FileHandle(forWritingAtPath: path) {
-                        handle.seekToEndOfFile()
-                        handle.write(data)
-                        try? handle.close()
-                    }
-                    writeMask(candidate.mask, path: "/tmp/sixlayer-600-mask.pgm")
-                }
-                let line = "cand dark=\(darkInk) plain=\(candidate.plain) rank=\(rank.0),\(rank.1) score=\(candidate.score) [\(text)]\n"
-                if let data = line.data(using: .utf8) {
-                    let path = "/tmp/sixlayer-600-ocr-cands.txt"
-                    if !FileManager.default.fileExists(atPath: path) {
-                        FileManager.default.createFile(atPath: path, contents: nil)
-                    }
-                    if let handle = FileHandle(forWritingAtPath: path) {
-                        handle.seekToEndOfFile()
-                        handle.write(data)
-                        try? handle.close()
-                    }
-                }
-            }
             if let current = best, key <= current.key { continue }
             best = (key, rows)
         }
@@ -4496,7 +4446,6 @@ private struct Reader {
     /// Undo rotation and shear, then read each row band. Sets the transform
     /// used to map cells back to the source.
     private mutating func readRows(_ cleaned: BitMask, stroke: Double) -> [[SevenSegmentLatticeReader.Cell]] {
-        traceZones = ""
         var mask = cleaned
         rotationDegrees = rotation(of: mask)
         if rotationDegrees != 0 {
@@ -4745,20 +4694,6 @@ private struct Reader {
                 bands.append(run)
             }
         }
-        if FileManager.default.fileExists(atPath: "/tmp/sixlayer-600-ocr-parts") {
-            let line = "bands stroke=\(String(format: "%.2f", stroke)) found=\(found) joined=\(bands)\n"
-            if let data = line.data(using: .utf8) {
-                let path = "/tmp/sixlayer-600-bands.txt"
-                if !FileManager.default.fileExists(atPath: path) {
-                    FileManager.default.createFile(atPath: path, contents: nil)
-                }
-                if let handle = FileHandle(forWritingAtPath: path) {
-                    handle.seekToEndOfFile()
-                    handle.write(data)
-                    try? handle.close()
-                }
-            }
-        }
         let minimum = Double(analysisHeight) * 0.08
         let tallest = bands.map { $0.1 - $0.0 }.max() ?? 0
         return bands.filter { Double($0.1 - $0.0) >= max(minimum, Double(tallest) * 0.35) }
@@ -4783,7 +4718,7 @@ private struct Reader {
         return (tops[tops.count / 2], bottom)
     }
 
-    private mutating func readBand(_ mask: BitMask, top: Int, bottom: Int, stroke: Double) -> [SevenSegmentLatticeReader.Cell] {
+    private func readBand(_ mask: BitMask, top: Int, bottom: Int, stroke: Double) -> [SevenSegmentLatticeReader.Cell] {
         let whole = crop(mask, y0: top, y1: bottom)
         let (t0, t1) = trimBand(whole, stroke: stroke)
         let pad = max(1, Int(stroke * 0.3))
@@ -4959,7 +4894,7 @@ private struct Reader {
         }
     }
 
-    private mutating func readDigit(_ band: BitMask, x0: Int, x1: Int, bottom: Int) -> (Character, Float, SevenSegmentPattern) {
+    private func readDigit(_ band: BitMask, x0: Int, x1: Int, bottom: Int) -> (Character, Float, SevenSegmentPattern) {
         let limit = min(band.height, max(bottom, 1))
         let h = Double(limit)
         let w = Double(x1 - x0)
@@ -4970,7 +4905,6 @@ private struct Reader {
         }
         let holes = (share(0.32, 0.68, 0.2, 0.38) + share(0.32, 0.68, 0.62, 0.8)) / 2
         if holes > holeMaximum {
-            if tracing { traceZones += "zones holes=\(String(format: "%.3f", holes)) reject\n" }
             return ("_", 0, [])
         }
         let zones: [(SevenSegmentPattern, Double)] = [
@@ -4989,11 +4923,6 @@ private struct Reader {
             pattern.formUnion(segment)
         }
         let read = SevenSegmentLatticeReader.digit(for: pattern)
-        if tracing {
-            let names = ["a", "b", "c", "d", "e", "f", "g"]
-            let shares = zip(names, zones.map(\.1)).map { "\($0.0)=\(String(format: "%.3f", $0.1))" }.joined(separator: " ")
-            traceZones += "zones x=\(x0)..\(x1) h=\(Int(h)) holes=\(String(format: "%.3f", holes)) cut=\(String(format: "%.3f", cut)) \(shares) -> \(read.0)@\(String(format: "%.2f", read.1))\n"
-        }
         return (read.0, read.1, pattern)
     }
 
@@ -5625,12 +5554,6 @@ private func inkRows(_ mask: BitMask, x0: Int, x1: Int) -> (Int, Int)? {
         }
     }
     return first.map { ($0, last) }
-}
-
-private func writeMask(_ mask: BitMask, path: String) {
-    var data = Data("P5\n\(mask.width) \(mask.height)\n255\n".utf8)
-    data.append(contentsOf: mask.bits.map { $0 ? 0 : 255 })
-    try? data.write(to: URL(fileURLWithPath: path))
 }
 
 private func inkShare(_ mask: BitMask, x0: Int, x1: Int, y0: Int, y1: Int) -> Double {
