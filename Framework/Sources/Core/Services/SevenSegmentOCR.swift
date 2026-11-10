@@ -2878,25 +2878,34 @@ private func trimmingGlareHead(
     let width = mask.width
     let height = band.1 - band.0
     guard height > 8, width > 8, pixels.count == mask.bits.count else { return band }
+    // The veil is a long run of glass. Its own minimum is that glass, so a
+    // per-row quarter would call the whole run a stroke. The stroke is the
+    // dark level that actually covers the band.
+    var histogram = [Int](repeating: 0, count: 256)
+    for y in band.0..<band.1 {
+        let row = y * width
+        for x in 0..<width where mask.bits[row + x] {
+            histogram[Int(pixels[row + x])] += 1
+        }
+    }
+    let needed = max(8, width / 10)
+    var bandDark = 0
+    var seen = 0
+    for level in 0..<256 {
+        seen += histogram[level]
+        if seen >= needed {
+            bandDark = level
+            break
+        }
+    }
+    let strokeCut = bandDark + inkMargin
     func darkRuns(_ y: Int) -> [(start: Int, length: Int)] {
         let row = y * width
-        var minV = 255
-        var maxV = 0
-        var any = false
-        for x in 0..<width where mask.bits[row + x] {
-            let pixel = Int(pixels[row + x])
-            any = true
-            if pixel < minV { minV = pixel }
-            if pixel > maxV { maxV = pixel }
-        }
-        guard any else { return [] }
-        let span = maxV - minV
-        let quarter = minV + max(inkMargin, span / 4)
         var runs: [(start: Int, length: Int)] = []
         var start = 0
         var length = 0
         for x in 0..<width {
-            let dark = mask.bits[row + x] && Int(pixels[row + x]) <= quarter
+            let dark = mask.bits[row + x] && Int(pixels[row + x]) <= strokeCut
             if dark {
                 if length == 0 { start = x }
                 length += 1
