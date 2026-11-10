@@ -227,31 +227,32 @@ struct OCRSevenSegment576Tests {
         #expect(decode(image, maximum: 0).extractedText == "32.88\n8.022")
     }
 
-    /// The row hangs below this glyph: the next stem, and the band pad, keep
-    /// going after the bar. The bottom zone then samples glass, the right
-    /// stem sits just left of its zone, and the cell ties a tailless 9
-    /// instead of reading 8 (#600).
+    /// The row hangs below this glyph: the next stem keeps going after the
+    /// bar. The bottom zone then samples glass, the right stem sits just left
+    /// of its zone, and the cell ties a tailless 9 instead of reading 8 (#600).
     @Test func rowThatHangsBelowTheBarStillReadsTheEight() {
-        let width = 220
-        let height = 180
-        var pixels = [UInt8](repeating: 210, count: width * height)
-        func fill(_ x0: Int, _ y0: Int, _ x1: Int, _ y1: Int) {
-            for y in y0..<y1 {
-                for x in x0..<x1 where x >= 0 && x < width && y >= 0 && y < height {
-                    pixels[y * width + x] = 24
-                }
+        let glyph = SegmentPanel.render(rows: [atoms("8")], padding: 20)
+        let width = glyph.width + 80
+        let height = glyph.height + 70
+        var pixels = [UInt8](repeating: 214, count: width * height)
+        guard let bytes = CFDataGetBytePtr(glyph.dataProvider!.data!) else {
+            Issue.record("eight fixture had no pixels")
+            return
+        }
+        let rowBytes = glyph.bytesPerRow
+        for y in 0..<glyph.height {
+            for x in 0..<glyph.width {
+                pixels[y * width + x] = bytes[y * rowBytes + x]
             }
         }
-        let stroke = 14
-        fill(30, 30, 96, 30 + stroke)
-        fill(96 - stroke, 30, 96, 78)
-        fill(96 - stroke, 78, 96, 126)
-        fill(30, 126 - stroke, 96, 126)
-        fill(30, 78, 30 + stroke, 126)
-        fill(30, 30, 30 + stroke, 78)
-        fill(30, 70, 96, 70 + stroke)
-        // Same row, but the stem continues well below the 8's bar.
-        fill(140, 30, 140 + stroke, 168)
+        // A stem in the same row, past a gap, running well below the 8.
+        let stemX = glyph.width + 24
+        let stroke = SegmentPanel.stroke
+        for y in 20..<(height - 8) {
+            for x in stemX..<(stemX + stroke) {
+                pixels[y * width + x] = 22
+            }
+        }
         let image = solidGrayImage(pixels: pixels, width: width, height: height)
         let text = decode(image, maximum: 0).extractedText
         #expect(text.contains("8"), "read [\(text)]")
