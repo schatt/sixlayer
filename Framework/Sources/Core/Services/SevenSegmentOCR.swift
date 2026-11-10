@@ -2297,9 +2297,22 @@ private extension GrayBuffer {
                 return solid.count >= 2 && solid.count * 2 > found.count
             }
         }()
+        // Haze above a row shrinks the empty gap below half a cell, which is
+        // the merge limit, but the two bands are still rows. A glare split
+        // inside one digit is a thinner gap, or one piece is short. Keep the
+        // rows; merge only that piece.
+        let separatedRows = bandsForSplit.count >= 2 && zip(bandsForSplit, bandsForSplit.dropFirst()).allSatisfy { upper, lower in
+            let gap = lower.0 - upper.1
+            let upperHeight = upper.1 - upper.0
+            let lowerHeight = lower.1 - lower.0
+            let shorter = min(upperHeight, lowerHeight)
+            let bothRows = upperHeight >= 40 && lowerHeight >= 40
+                && upperHeight * 2 >= lowerHeight && lowerHeight * 2 >= upperHeight
+            return bothRows && gap < max(1, cellHeight / 2) && gap * 10 >= shorter
+        }
         let splitBands = opened
             ? merge(solidBands, whenGapBelow: max(2, buffer.height / 40))
-            : (bandsForSplit.count > foundBands.count || bandsAreRows
+            : (bandsForSplit.count > foundBands.count || bandsAreRows || separatedRows
                 ? bandsForSplit
                 : merge(bandsForSplit, whenGapBelow: max(1, cellHeight / 2)))
         // No seven-segment stroke runs further across than its row is tall.
