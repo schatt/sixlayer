@@ -290,6 +290,7 @@ public enum SevenSegmentOCR {
         let upright = GrayBuffer.deskew(gray, maximumDegrees: deskewMaximumDegrees)
         let fragments = GrayBuffer.fragments(in: upright)
         let legacy = result(fragments)
+        return legacy
         // Photographed panels: italic digits, segment gaps, reflections and
         // uneven light defeat the fixed-pixel path above. The lattice reader
         // measures everything from the panel itself (#576 real photos).
