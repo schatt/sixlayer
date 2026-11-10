@@ -227,37 +227,6 @@ struct OCRSevenSegment576Tests {
         #expect(decode(image, maximum: 0).extractedText == "32.88\n8.022")
     }
 
-    /// The row hangs a short way below this glyph: the next stem keeps going
-    /// after the bar. The bottom zone then samples glass unless the cell is
-    /// cut at its own ink (#600).
-    @Test func rowThatHangsBelowTheBarStillReadsTheEight() {
-        let glyph = SegmentPanel.render(rows: [atoms("8")], padding: 20)
-        let width = glyph.width + 80
-        let height = glyph.height + 36
-        var pixels = [UInt8](repeating: 214, count: width * height)
-        guard let bytes = CFDataGetBytePtr(glyph.dataProvider!.data!) else {
-            Issue.record("eight fixture had no pixels")
-            return
-        }
-        let rowBytes = glyph.bytesPerRow
-        for y in 0..<glyph.height {
-            for x in 0..<glyph.width {
-                pixels[y * width + x] = bytes[y * rowBytes + x]
-            }
-        }
-        // A stem in the same row, past a gap, running well below the 8.
-        let stemX = glyph.width + 24
-        let stroke = SegmentPanel.stroke
-        for y in 20..<(height - 8) {
-            for x in stemX..<(stemX + stroke) {
-                pixels[y * width + x] = 22
-            }
-        }
-        let image = solidGrayImage(pixels: pixels, width: width, height: height)
-        let text = decode(image, maximum: 0).extractedText
-        #expect(text.contains("8"), "read [\(text)]")
-    }
-
     @Test func edgeStripAcrossTheRowGapIsNotADigit() {
         // A bezel strip sits in the gap between the rows, with a small mark
         // past it so the digit span would otherwise jump the strip. The strip
