@@ -4450,6 +4450,11 @@ private struct Reader {
             let key = (rank.0, rank.1, candidate.plain, candidate.score)
             if traceCandidates {
                 let text = rows.map { String($0.map(\.character)) }.joined(separator: "/")
+                if text.contains("3_8.8/8.022") {
+                    let block = "CAND plain=\(candidate.plain) rank=\(rank.0),\(rank.1)\n\(traceZones)"
+                    try? block.write(toFile: "/tmp/sixlayer-600-ocr-zones.txt", atomically: true, encoding: .utf8)
+                    writeMask(candidate.mask, path: "/tmp/sixlayer-600-mask.pgm")
+                }
                 let line = "cand dark=\(darkInk) plain=\(candidate.plain) rank=\(rank.0),\(rank.1) score=\(candidate.score) [\(text)]\n"
                 if let data = line.data(using: .utf8) {
                     let path = "/tmp/sixlayer-600-ocr-cands.txt"
@@ -4464,10 +4469,6 @@ private struct Reader {
                 }
             }
             if let current = best, key <= current.key { continue }
-            if traceCandidates {
-                try? traceZones.write(toFile: "/tmp/sixlayer-600-ocr-zones.txt", atomically: true, encoding: .utf8)
-                writeMask(candidate.mask, path: "/tmp/sixlayer-600-mask.pgm")
-            }
             best = (key, rows)
         }
         return best?.rows ?? []
