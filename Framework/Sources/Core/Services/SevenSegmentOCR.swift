@@ -217,14 +217,22 @@ public enum SevenSegmentOCR {
             if isPlausible(fragments) {
                 return quality(legacy) >= quality(lattice) ? legacy : lattice
             }
+            // Same mark-bearing guard as the non-confident branch (#661 / #667):
+            // `isPlausible` rejects `_`, so without this a confident lattice that
+            // merely dropped the unknown cell (e.g. `8_2` → `82`) always wins.
+            let legacyText = legacy.extractedText
+            let latticeDigitCount = latticeRows.flatMap { $0 }.filter { $0.character.isNumber }.count
+            let legacyDigits = legacyText.filter(\.isNumber).count
+            if legacyText.contains("_"), legacyDigits >= latticeDigitCount {
+                return legacy
+            }
             let trusted = fragments.flatMap { $0 }.filter { fragment in
                 fragment.confidence >= 6.0 / 7.0 && isPlausible([[fragment]])
             }
             let trustedChars = trusted.reduce(0) { $0 + $1.text.count }
             let allChars = fragments.flatMap { $0 }.reduce(0) { $0 + $1.text.count }
             let trustedDigits = trusted.reduce(0) { $0 + $1.text.filter(\.isNumber).count }
-            let latticeDigits = latticeRows.flatMap { $0 }.filter { $0.character.isNumber }.count
-            if trustedChars * 2 >= allChars, trustedDigits >= latticeDigits {
+            if trustedChars * 2 >= allChars, trustedDigits >= latticeDigitCount {
                 return legacy
             }
             return lattice
