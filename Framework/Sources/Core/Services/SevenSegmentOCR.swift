@@ -3055,6 +3055,8 @@ private func rowIsLightVeil(_ mask: Mask, pixels: [UInt8], y: Int, limit: Int) -
 /// is many short runs; a stroke holds most of the ink. A row or two of
 /// edge noise stays.
 private func trimmingSparseEdges(_ band: (Int, Int), mask: Mask) -> (Int, Int) {
+    // Probe: the top peel is the suspect for a 2 that lost segment a.
+    return band
     let width = mask.width
     guard band.1 - band.0 > 8 else { return band }
     func rowRuns(_ y: Int) -> [Int] {
