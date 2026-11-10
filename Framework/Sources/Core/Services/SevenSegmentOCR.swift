@@ -3051,11 +3051,11 @@ private func rowIsLightVeil(_ mask: Mask, pixels: [UInt8], y: Int, limit: Int) -
     return dark * 2 < count
 }
 
-/// Drop a speck field above a digit. Haze is many runs on one row; a stem
-/// or a bar is one or two. Length cannot make that call: a stem is shorter
-/// than the bar, and treating the short run as haze peeled the top off a 2
-/// that has no segment `a`. Only the top. A decimal and a comma tail sit on
-/// short rows under the bar.
+/// Drop a speck field above a digit. Haze is many short runs on one row.
+/// A stem is one short run, and a row of bars is many long runs. Either
+/// count or length alone is wrong: length peels the stem off a 2 that has
+/// no segment `a`, and count peels the top bar off a row of digits.
+/// Only the top. A decimal and a comma tail sit on short rows under the bar.
 private func trimmingSparseEdges(_ band: (Int, Int), mask: Mask) -> (Int, Int) {
     let width = mask.width
     guard band.1 - band.0 > 8 else { return band }
@@ -3075,10 +3075,14 @@ private func trimmingSparseEdges(_ band: (Int, Int), mask: Mask) -> (Int, Int) {
         return lengths
     }
     let perRow = (band.0..<band.1).map(rowRuns)
+    let weighted = perRow.flatMap { $0 }.flatMap { length in Array(repeating: length, count: length) }
+    guard let typical = median(weighted), typical >= 3 else { return band }
     func sparse(_ index: Int) -> Bool {
         let lengths = perRow[index]
-        // Four runs is a speck field. One run is a stem or a bar.
-        return lengths.count >= 4
+        guard !lengths.isEmpty else { return true }
+        guard lengths.count >= 4 else { return false }
+        let mean = lengths.reduce(0, +) / lengths.count
+        return mean * 3 < typical
     }
     let limit = (band.1 - band.0) / 2
     var top = 0
