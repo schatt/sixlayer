@@ -5578,6 +5578,7 @@ private func slotInkBottom(_ mask: BitMask, x0: Int, x1: Int, stroke: Double) ->
     // A short piece is a broken stroke. A tall empty tail means the run
     // ended early. Trim only for a real next row, or a short hang of glass
     // under a bar that already reaches the baseline.
+    return (mask.height, mask.height)
     let reachesBaseline = longest.1 > mask.height * 2 / 3
     let separated = next < mask.height
     let tail = mask.height - longest.1
