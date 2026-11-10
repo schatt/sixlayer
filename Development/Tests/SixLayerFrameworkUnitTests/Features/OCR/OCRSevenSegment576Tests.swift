@@ -298,6 +298,56 @@ struct OCRSevenSegment576Tests {
         #expect(result.extractedText.contains("17.740"))
     }
 
+    /// #667: when lattice is *confident* (exact digits, no `_`) but legacy
+    /// still carries an unknown-cell placeholder with at least as many
+    /// digits, keep the placeholder. The non-confident branch already does
+    /// this (#661); the confident branch used to drop `_` via `isPlausible`.
+    @Test func confidentLatticeDoesNotStripLegacyUnknownCell() {
+        let box = CGRect(x: 0, y: 0, width: 0.2, height: 0.2)
+        let unknown = OCRRecognizedText(text: "8_2", boundingBox: box, confidence: 0, role: .segment)
+        let clean = OCRRecognizedText(text: "17.740", boundingBox: box, confidence: 1, role: .segment)
+        let fragments = [[unknown, clean]]
+        let legacy = OCRResult(
+            extractedText: "8_2  17.740",
+            confidence: 0,
+            boundingBoxes: [box, box],
+            textTypes: [.number: "8_2  17.740"],
+            recognizedTexts: [unknown, clean]
+        )
+        func cell(_ ch: Character, x: Double) -> SevenSegmentLatticeReader.Cell {
+            SevenSegmentLatticeReader.Cell(
+                character: ch, confidence: 1,
+                minX: x, minY: 0, maxX: x + 10, maxY: 20
+            )
+        }
+        // Two exact digit rows → isConfident. Lattice invented `82` by
+        // dropping the unknown cell that legacy kept.
+        let latticeRows: [[SevenSegmentLatticeReader.Cell]] = [
+            [cell("8", x: 0), cell("2", x: 12)],
+            [cell("1", x: 0), cell("7", x: 12), cell(".", x: 24),
+             cell("7", x: 36), cell("4", x: 48), cell("0", x: 60)]
+        ]
+        let latticeText = latticeRows.map { String($0.map(\.character)) }.joined(separator: "  ")
+        let lattice = OCRResult(
+            extractedText: latticeText,
+            confidence: 1,
+            boundingBoxes: [box],
+            textTypes: [.number: latticeText],
+            recognizedTexts: [
+                OCRRecognizedText(text: latticeText, boundingBox: box, confidence: 1, role: .segment)
+            ]
+        )
+        #expect(SevenSegmentLatticeReader.isConfident(latticeRows))
+        let chosen = SevenSegmentOCR.chooseLegacyOrLattice(
+            fragments: fragments,
+            legacy: legacy,
+            lattice: lattice,
+            latticeRows: latticeRows
+        )
+        #expect(chosen.extractedText.contains("_"))
+        #expect(chosen.extractedText == "8_2  17.740")
+    }
+
     @Test func cleanPriceVolumeRowKeepsThePeriod() {
         // Fill-free twin of the filledInk row: period must not become a comma (#658).
         var row = atoms("51.07")
