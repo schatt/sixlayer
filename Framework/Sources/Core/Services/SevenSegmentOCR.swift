@@ -1429,7 +1429,7 @@ private struct GrayBuffer {
     }
 }
 
-private var glareHeadNote = ""
+nonisolated(unsafe) private var glareHeadNote = ""
 
 private func trace(_ message: String) {
     fputs(message, stderr)
