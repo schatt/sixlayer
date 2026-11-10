@@ -4844,14 +4844,13 @@ private struct Reader {
             }
             // A few pixels of lattice error move ink into the wrong zone.
             // Try small shifts. A higher confidence wins. An exact template
-            // does not stop the search: the same glyph can match a wrong
-            // template exactly when the box hangs past its bar, and a nearby
-            // shift matches the right one. Among equal confidence, keep the
-            // alignment whose lit segments are further from its dark ones.
+            // does not stop the search: the box can match a digit that is
+            // one vertical stem short of the glyph, and a nearby shift
+            // lights that stem. A different template does not replace it.
             let reach = Int(snapFraction * w)
             let step = max(1, Int(w / 16))
             let shifts = Swift.stride(from: -reach, through: reach, by: step).sorted { (abs($0), $0) < (abs($1), $1) }
-            var chosen: (Character, Float, Int, Int, Double, Int)?
+            var chosen: (Character, Float, Int, Int, SevenSegmentPattern, Int)?
             for dx in shifts {
                 let a = x0 + dx, b = x1 + dx
                 let lo = max(0, a), hi = min(band.width, b)
@@ -4860,7 +4859,7 @@ private struct Reader {
                 let glyph = readDigit(band, x0: lo, x1: hi, bottom: limits.zone)
                 let better = chosen == nil
                     || glyph.1 > chosen!.1
-                    || (glyph.1 > 0 && glyph.1 == chosen!.1 && glyph.2 > chosen!.4)
+                    || (glyph.1 > 0 && glyph.1 == chosen!.1 && addsOneVerticalStem(glyph.2, over: chosen!.4))
                 if better { chosen = (glyph.0, glyph.1, a, b, glyph.2, limits.ink) }
             }
             guard let pick = chosen else { continue }
@@ -4885,9 +4884,11 @@ private struct Reader {
 
         // Decimal: baseline ink between two cells, with empty glass above.
         var marks: [(above: Double, x: Double)] = []
-        // The band can hang into the next row. The dot sits on this row's
-        // own baseline, which is the shortest glyph, not that hang.
-        let baseline = cells.map(\.bottom).min() ?? band.height
+        // The band can hang into the next row. When it does, the dot sits
+        // on the shortest glyph's baseline. A band that already ends on the
+        // ink keeps the old strip.
+        let shortest = cells.map(\.bottom).min() ?? band.height
+        let baseline = band.height - shortest > max(2, Int(stroke)) ? shortest : band.height
         let stripTop = Int(Double(baseline) * 0.74)
         let upperLimit = Int(Double(baseline) * 0.6)
         for (left, right) in zip(cells, cells.dropFirst()) {
@@ -4933,7 +4934,7 @@ private struct Reader {
         }
     }
 
-    private mutating func readDigit(_ band: BitMask, x0: Int, x1: Int, bottom: Int) -> (Character, Float, Double) {
+    private mutating func readDigit(_ band: BitMask, x0: Int, x1: Int, bottom: Int) -> (Character, Float, SevenSegmentPattern) {
         let limit = min(band.height, max(bottom, 1))
         let h = Double(limit)
         let w = Double(x1 - x0)
@@ -4945,7 +4946,7 @@ private struct Reader {
         let holes = (share(0.32, 0.68, 0.2, 0.38) + share(0.32, 0.68, 0.62, 0.8)) / 2
         if holes > holeMaximum {
             if tracing { traceZones += "zones holes=\(String(format: "%.3f", holes)) reject\n" }
-            return ("_", 0, 0)
+            return ("_", 0, [])
         }
         let zones: [(SevenSegmentPattern, Double)] = [
             (.a, share(0.3, 0.7, 0, 0.16)),
@@ -4963,15 +4964,23 @@ private struct Reader {
             pattern.formUnion(segment)
         }
         let read = SevenSegmentLatticeReader.digit(for: pattern)
-        let lit = zones.compactMap { $0.1 > cut ? $0.1 : nil }
-        let dark = zones.compactMap { $0.1 <= cut ? $0.1 : nil }
-        let margin = (lit.min() ?? 0) - (dark.max() ?? 0)
         if tracing {
             let names = ["a", "b", "c", "d", "e", "f", "g"]
             let shares = zip(names, zones.map(\.1)).map { "\($0.0)=\(String(format: "%.3f", $0.1))" }.joined(separator: " ")
             traceZones += "zones x=\(x0)..\(x1) h=\(Int(h)) holes=\(String(format: "%.3f", holes)) cut=\(String(format: "%.3f", cut)) \(shares) -> \(read.0)@\(String(format: "%.2f", read.1))\n"
         }
-        return (read.0, read.1, margin)
+        return (read.0, read.1, pattern)
+    }
+
+    /// The shift lights exactly one vertical stem the current box left dark,
+    /// and turns none off. That is a stem that sat just outside its zone,
+    /// not a different digit.
+    private func addsOneVerticalStem(_ current: SevenSegmentPattern, over previous: SevenSegmentPattern) -> Bool {
+        let added = current.subtracting(previous)
+        let vertical: SevenSegmentPattern = [.b, .c, .e, .f]
+        return previous.subtracting(current).isEmpty
+            && added.subtracting(vertical).isEmpty
+            && added.rawValue.nonzeroBitCount == 1
     }
 
     // MARK: Coordinates
