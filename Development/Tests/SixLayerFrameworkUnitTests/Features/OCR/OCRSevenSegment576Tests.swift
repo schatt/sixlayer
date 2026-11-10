@@ -80,6 +80,17 @@ struct OCRSevenSegment576Tests {
         #expect(decode(panel(["11", "22", "33", "44"])).extractedText == "11\n22\n33\n44")
     }
 
+    /// The second row copies the first row's pitch. That path dropped a
+    /// leading 1 with its decimal (15.556 read 5.556). 5.022 and 56.78 guard
+    /// the a/d bar peel (bb4789618), which this fixture's bars do not reach.
+    /// Not yet covered: a first row with only 7/3/1 under-measures the pitch
+    /// and clips row-two left stems (7.73/1.840 reads 7.73/1.947).
+    @Test func secondRowKeepsDigitsTheFirstRowDoesNotShare() {
+        #expect(decode(panel(["32.88", "5.022"])).extractedText == "32.88\n5.022")
+        #expect(decode(panel(["56.92", "15.556"])).extractedText == "56.92\n15.556")
+        #expect(decode(panel(["12.34", "56.78"])).extractedText == "12.34\n56.78")
+    }
+
     @Test func tallCropReadsEachRowAtItsOwnWindow() {
         // Empty margin makes the threshold window wide enough to see a bright
         // line just above each row. The glass under that line is then darker
@@ -191,6 +202,12 @@ struct OCRSevenSegment576Tests {
         // Isolate fine deskew: untilted short rows must still read (#602).
         #expect(decode(panel(["1234"]), maximum: 0).extractedText == "1234")
         #expect(decode(panel(["12 34"]), maximum: 0).extractedText == "12  34")
+        // Untilted five-group: forceOpen must not skip the inter-row gap bar
+        // or digitColumnSpan keeps one group ("2.22") (#602 / #598).
+        #expect(
+            decode(panel(["1.11 2.22 3.33 4.44 5.55"]), maximum: 0).extractedText
+                == "1.11  2.22  3.33  4.44  5.55"
+        )
 
         let split = decode(panel(["12 34"]))
         #expect(split.extractedText == "12  34")
@@ -281,12 +298,21 @@ struct OCRSevenSegment576Tests {
         #expect(result.extractedText.contains("17.740"))
     }
 
+    @Test func cleanPriceVolumeRowKeepsThePeriod() {
+        // Fill-free twin of the filledInk row: period must not become a comma (#658).
+        var row = atoms("51.07")
+        row.append(.gap(SegmentPanel.groupGap))
+        row.append(contentsOf: atoms("17.740"))
+        let result = decode(SegmentPanel.render(rows: [row]))
+        #expect(result.extractedText == "51.07  17.740")
+        #expect(segmentTexts(result) == ["51.07", "17.740"])
+    }
+
     @Test func filledInkBesideCleanRowsDoesNotCreateASegment() {
         var clean = atoms("51.07")
         clean.append(.gap(SegmentPanel.groupGap))
         clean.append(contentsOf: atoms("17.740"))
-        // Control: without fills the price must stay one fragment (#646).
-        // Volume mark can still mis-read as comma on this short canvas (#658).
+        // Price glue without fills (#646). Full clean period is `cleanPriceVolumeRowKeepsThePeriod` (#658).
         #expect(segmentTexts(decode(SegmentPanel.render(rows: [clean]))).first == "51.07")
 
         var row = clean
@@ -411,6 +437,18 @@ struct OCRSevenSegment576Tests {
         let rows = [atoms("12:30")]
         #expect(decode(SegmentPanel.render(rows: rows)).extractedText == "12:30")
         #expect(decode(SegmentPanel.render(rows: rows, glare: true)).extractedText == "12:30")
+    }
+
+    /// #664: wash the lower half of the digit band to 140 (≥80, but still
+    /// contrasty enough for masks vs glass 214). The hard <80 peel then sees
+    /// only the upper stub — tall enough that the #660 band-height guard
+    /// still peels — and drops lower segments. Adaptive darkness must count
+    /// the washed strokes so the densest band stays digit-tall.
+    @Test func washedLowerHalfStillPeelsFullDigits() {
+        let rows = [atoms("31.25")]
+        let base = SegmentPanel.render(rows: rows, padding: 20)
+        let washed = washLowerDigitHalf(base, inkWash: 140)
+        #expect(decode(washed, maximum: 0).extractedText == "31.25")
     }
 
     @Test func deskewSearchesTheCallerMaximum() {
@@ -1018,6 +1056,36 @@ struct OCRSevenSegment576Tests {
 
     private func decode(_ image: CGImage, maximum: Double = 3) -> OCRResult {
         SevenSegmentOCR.decode(cgImage: image, deskewMaximumDegrees: maximum)
+    }
+
+    /// Lift strokes in the lower half of the content band above the hard <80
+    /// peel cut while leaving the upper half dark enough to win densest-band.
+    private func washLowerDigitHalf(_ image: CGImage, inkWash: UInt8) -> CGImage {
+        let width = image.width
+        let height = image.height
+        var pixels = [UInt8](repeating: 0, count: width * height)
+        guard let provider = image.dataProvider,
+              let data = provider.data,
+              let bytes = CFDataGetBytePtr(data)
+        else {
+            return image
+        }
+        let rowBytes = image.bytesPerRow
+        for y in 0..<height {
+            for x in 0..<width {
+                pixels[y * width + x] = bytes[y * rowBytes + x]
+            }
+        }
+        let y0 = height / 2
+        for y in y0..<height {
+            for x in 0..<width {
+                let index = y * width + x
+                if pixels[index] < 80 {
+                    pixels[index] = inkWash
+                }
+            }
+        }
+        return solidGrayImage(pixels: pixels, width: width, height: height)
     }
 
     /// Default ink/glass with a dark bezel so sealed-glass localization has a

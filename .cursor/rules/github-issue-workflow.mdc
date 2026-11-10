@@ -78,7 +78,7 @@ Structure (same branch vs child) is flexible; **Done gating is not**.
 - Merge to `main` is part of the release process, not a prerequisite for closing (unless you are using the integration-line workflow below — then `next` is part of “done”).
 - **/2 quality gate (before land) — MANDATORY:** Run the **`/2`** skill (Cursor skill `2`) on the **`wip/` tip that is about to land** (branch diff / files touched — not the whole product) **before** merging that branch into `next`. Do **not** land first and `/2` afterward. Answer these five questions **verbatim as section headers**, in this order:
 
-  1. **production quality?** — Ready to ship/land as-is? Incomplete failure domains, dangling globals, band-aids, missing both-direction gates, or unproven claims → no (say what blocks).
+  1. **production quality?** — Ready to ship/land as-is? Incomplete failure domains, dangling globals, band-aids, missing both-direction gates, or unproven claims → no (say what blocks). A threshold on a production path has two outcomes. The fixture that was red is one. The other is a real input that path will see, or the closest fixture of that input. Another synthetic of the same failure is not the other direction. A constant tuned to one image is an unproven claim.
   2. **dtrt?** — Right problem, right layer? Prefer fixing root cause over suite serialize / suppress / paper-over. Note half-fixes and leftover footguns.
   3. **dry?** — Duplicated logic that should be one path? Name the duplication; don’t invent abstractions for one-off noise.
   4. **similar issues?** — Do similar problems/patterns exist that we should also handle? If so, name the problem **and the leftover bucket** (in scope / child / follow-up — or none).
