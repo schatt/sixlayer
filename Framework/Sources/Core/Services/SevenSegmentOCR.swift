@@ -3051,12 +3051,12 @@ private func rowIsLightVeil(_ mask: Mask, pixels: [UInt8], y: Int, limit: Int) -
     return dark * 2 < count
 }
 
-/// Drop sparse rows at the top and bottom of a band. Haze above a digit
-/// is many short runs; a stroke holds most of the ink. A row or two of
-/// edge noise stays.
+/// Drop a speck field above a digit. Haze is many runs on one row; a stem
+/// or a bar is one or two. Length cannot make that call: a stem is shorter
+/// than the bar, and treating the short run as haze peeled the top off a 2
+/// that has no segment `a`. Only the top. A decimal and a comma tail sit on
+/// short rows under the bar.
 private func trimmingSparseEdges(_ band: (Int, Int), mask: Mask) -> (Int, Int) {
-    // Probe: the top peel is the suspect for a 2 that lost segment a.
-    return band
     let width = mask.width
     guard band.1 - band.0 > 8 else { return band }
     func rowRuns(_ y: Int) -> [Int] {
@@ -3075,22 +3075,14 @@ private func trimmingSparseEdges(_ band: (Int, Int), mask: Mask) -> (Int, Int) {
         return lengths
     }
     let perRow = (band.0..<band.1).map(rowRuns)
-    let weighted = perRow.flatMap { $0 }.flatMap { length in Array(repeating: length, count: length) }
-    guard let typical = median(weighted), typical >= 3 else { return band }
     func sparse(_ index: Int) -> Bool {
         let lengths = perRow[index]
-        guard !lengths.isEmpty else { return true }
-        // Mean, not the longest run. A stem is one short run and must stay;
-        // calling every non-bar row sparse peeled the top off a 2. Haze is
-        // many specks, so its mean stays far under the stroke.
-        let mean = lengths.reduce(0, +) / lengths.count
-        return mean * 3 < typical
+        // Four runs is a speck field. One run is a stem or a bar.
+        return lengths.count >= 4
     }
     let limit = (band.1 - band.0) / 2
     var top = 0
     while top < limit, sparse(top) { top += 1 }
-    // Only the top. A decimal and a comma tail are sparse rows under the
-    // bar; peeling the bottom turns `1,25` into `1.25` and drops `1.11`.
     let peeledTop = top >= 4 ? top : 0
     return (band.0 + peeledTop, band.1)
 }
