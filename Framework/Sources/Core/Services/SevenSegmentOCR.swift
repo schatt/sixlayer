@@ -4978,9 +4978,8 @@ private struct Reader {
     private func addsOneVerticalStem(_ current: SevenSegmentPattern, over previous: SevenSegmentPattern) -> Bool {
         let added = current.subtracting(previous)
         let vertical: SevenSegmentPattern = [.b, .c, .e, .f]
-        return previous.subtracting(current).isEmpty
-            && added.subtracting(vertical).isEmpty
-            && added.rawValue.nonzeroBitCount == 1
+        let _ = (added, vertical, current, previous)
+        return false
     }
 
     // MARK: Coordinates
