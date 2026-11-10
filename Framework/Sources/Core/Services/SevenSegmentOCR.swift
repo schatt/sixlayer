@@ -4834,18 +4834,25 @@ private struct Reader {
                 continue
             }
             // A few pixels of lattice error move ink into the wrong zone.
-            // Try small shifts; keep the surest read.
+            // Try small shifts. A higher confidence wins. An exact template
+            // does not stop the search: the same glyph can match a wrong
+            // template exactly when the box hangs past its bar, and a nearby
+            // shift matches the right one. Among equal confidence, keep the
+            // alignment whose lit segments are further from its dark ones.
             let reach = Int(snapFraction * w)
             let step = max(1, Int(w / 16))
             let shifts = Swift.stride(from: -reach, through: reach, by: step).sorted { (abs($0), $0) < (abs($1), $1) }
-            var chosen: (Character, Float, Int, Int)?
+            var chosen: (Character, Float, Int, Int, Double)?
             for dx in shifts {
                 let a = x0 + dx, b = x1 + dx
                 let lo = max(0, a), hi = min(band.width, b)
                 guard hi > lo else { continue }
-                let glyph = readDigit(band, x0: lo, x1: hi)
-                if chosen == nil || glyph.1 > chosen!.1 { chosen = (glyph.0, glyph.1, a, b) }
-                if glyph.1 == 1 { break }
+                let bottom = slotInkBottom(band, x0: lo, x1: hi)
+                let glyph = readDigit(band, x0: lo, x1: hi, bottom: bottom)
+                let better = chosen == nil
+                    || glyph.1 > chosen!.1
+                    || (glyph.1 > 0 && glyph.1 == chosen!.1 && glyph.2 > chosen!.4)
+                if better { chosen = (glyph.0, glyph.1, a, b, glyph.2) }
             }
             guard let pick = chosen else { continue }
             cells.append(Slot(character: pick.0, confidence: pick.1, x0: pick.2, x1: pick.3))
@@ -4914,18 +4921,19 @@ private struct Reader {
         }
     }
 
-    private mutating func readDigit(_ band: BitMask, x0: Int, x1: Int) -> (Character, Float) {
-        let h = Double(band.height)
+    private mutating func readDigit(_ band: BitMask, x0: Int, x1: Int, bottom: Int) -> (Character, Float, Double) {
+        let limit = min(band.height, max(bottom, 1))
+        let h = Double(limit)
         let w = Double(x1 - x0)
         func share(_ fx0: Double, _ fx1: Double, _ fy0: Double, _ fy1: Double) -> Double {
             let ya = Int(fy0 * h), yb = max(Int(fy1 * h), ya + 1)
             let xa = x0 + Int(fx0 * w), xb = max(x0 + Int(fx1 * w), xa + 1)
-            return inkShare(band, x0: xa, x1: min(xb, band.width), y0: ya, y1: min(yb, band.height))
+            return inkShare(band, x0: xa, x1: min(xb, band.width), y0: ya, y1: min(yb, limit))
         }
         let holes = (share(0.32, 0.68, 0.2, 0.38) + share(0.32, 0.68, 0.62, 0.8)) / 2
         if holes > holeMaximum {
             if tracing { traceZones += "zones holes=\(String(format: "%.3f", holes)) reject\n" }
-            return ("_", 0)
+            return ("_", 0, 0)
         }
         let zones: [(SevenSegmentPattern, Double)] = [
             (.a, share(0.3, 0.7, 0, 0.16)),
@@ -4943,12 +4951,15 @@ private struct Reader {
             pattern.formUnion(segment)
         }
         let read = SevenSegmentLatticeReader.digit(for: pattern)
+        let lit = zones.compactMap { $0.1 > cut ? $0.1 : nil }
+        let dark = zones.compactMap { $0.1 <= cut ? $0.1 : nil }
+        let margin = (lit.min() ?? 0) - (dark.max() ?? 0)
         if tracing {
             let names = ["a", "b", "c", "d", "e", "f", "g"]
             let shares = zip(names, zones.map(\.1)).map { "\($0.0)=\(String(format: "%.3f", $0.1))" }.joined(separator: " ")
             traceZones += "zones x=\(x0)..\(x1) h=\(Int(h)) holes=\(String(format: "%.3f", holes)) cut=\(String(format: "%.3f", cut)) \(shares) -> \(read.0)@\(String(format: "%.2f", read.1))\n"
         }
-        return read
+        return (read.0, read.1, margin)
     }
 
     // MARK: Coordinates
@@ -5496,6 +5507,28 @@ private func columnHasInk(_ mask: BitMask, rows: Range<Int>, x0: Int = 0, x1: In
     let end = x1 ?? mask.width
     let ys = max(0, rows.lowerBound)..<min(mask.height, rows.upperBound)
     return (x0..<end).map { x in ys.contains { mask[x, $0] } }
+}
+
+/// Exclusive end of the last row in `x0..<x1` with at least two ink pixels.
+/// Glass under a bar, and a one-pixel speck, do not stretch the digit.
+/// The top stays put: ink above the bar is a different failure.
+private func slotInkBottom(_ mask: BitMask, x0: Int, x1: Int) -> Int {
+    let xa = max(0, x0), xb = min(mask.width, x1)
+    guard xb > xa else { return mask.height }
+    var bottom = mask.height
+    var seen = false
+    for y in 0..<mask.height {
+        var count = 0
+        for x in xa..<xb where mask[x, y] {
+            count += 1
+            if count == 2 { break }
+        }
+        if count >= 2 {
+            bottom = y + 1
+            seen = true
+        }
+    }
+    return seen ? bottom : mask.height
 }
 
 private func inkRows(_ mask: BitMask, x0: Int, x1: Int) -> (Int, Int)? {
