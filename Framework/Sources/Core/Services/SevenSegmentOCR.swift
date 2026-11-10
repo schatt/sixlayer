@@ -5532,9 +5532,9 @@ private func columnHasInk(_ mask: BitMask, rows: Range<Int>, x0: Int = 0, x1: In
 
 /// Exclusive end of this glyph's own ink, plus the same pad the band keeps
 /// under a stroke. Glass under a bar has no later run, so the end is the
-/// bar. A later run in the same columns is the next row; the pad stops at
-/// that gap. A one- or two-row hole is a broken stroke, not that gap.
-/// The top stays put.
+/// bar. A hole of a few rows is a broken stroke: the ink below it stays in
+/// the box. Cutting at that hole turns a whole row into threes. The top
+/// stays put.
 private func slotInkBottom(_ mask: BitMask, x0: Int, x1: Int, stroke: Double) -> (zone: Int, ink: Int) {
     let xa = max(0, x0), xb = min(mask.width, x1)
     guard xb > xa else { return (mask.height, mask.height) }
@@ -5576,29 +5576,13 @@ private func slotInkBottom(_ mask: BitMask, x0: Int, x1: Int, stroke: Double) ->
         run.0 >= longest.1 && run.1 - run.0 > strokeRows
     }.min { $0.0 < $1.0 }
     let next = nextRun?.0 ?? mask.height
-    // A short piece is a broken stroke. A tall empty tail means the run
-    // ended early. Trim only for a real next row, or a short hang of glass
-    // under a bar that already reaches the baseline.
-    if FileManager.default.fileExists(atPath: "/tmp/sixlayer-600-ocr-parts") {
-        let nextLen = nextRun.map { $0.1 - $0.0 } ?? 0
-        let line = "h=\(mask.height) run=\(longest.0)..\(longest.1) next=\(next) nextLen=\(nextLen) gap=\(next - longest.1) tail=\(mask.height - longest.1) pad=\(pad) stroke=\(String(format: "%.1f", stroke))\n"
-        if let data = line.data(using: .utf8) {
-            let path = "/tmp/sixlayer-600-trim.txt"
-            if !FileManager.default.fileExists(atPath: path) {
-                FileManager.default.createFile(atPath: path, contents: nil)
-            }
-            if let handle = FileHandle(forWritingAtPath: path) {
-                handle.seekToEndOfFile()
-                handle.write(data)
-                try? handle.close()
-            }
-        }
-    }
+    // A short piece below a few empty rows is still this glyph. A tall empty
+    // tail means the run ended early. Drop only a short hang of glass under
+    // a bar that already reaches the baseline.
     let reachesBaseline = longest.1 > mask.height * 2 / 3
-    let separated = next < mask.height
     let tail = mask.height - longest.1
     let modestGlass = tail > pad && tail < mask.height / 5
-    guard reachesBaseline && (separated || modestGlass) else {
+    guard reachesBaseline && modestGlass else {
         return (mask.height, mask.height)
     }
     return (min(longest.1 + pad, next), longest.1)
