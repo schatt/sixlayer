@@ -2870,11 +2870,10 @@ private func digitRowSums(_ sums: [Int]) -> [Int] {
     let peak = sums.max() ?? 0
     // A gap row on a washed LCD still holds a few core pixels. Digit rows
     // hold many more. Leaving the gap at sum > 0 joins the two lines.
-    // Eight, not three. Three keeps a comma tail, but it also joins the
-    // sideways slices of a quarter-turned panel, and those slices have to
-    // stay separate so the turn still reads as ones (`quarterTurn`).
-    // The comma tail is recovered on the mark, below this split.
-    let floor = max(8, peak / 20)
+    // Three clears the two-column scratch and keeps a six-pixel comma
+    // tail in the band. Eight splits a 2 that lost its top bar into two
+    // unknowns, and it drops the leading digits of an inverted `31.25`.
+    let floor = max(3, peak / 20)
     return sums.map { $0 >= floor ? $0 : 0 }
 }
 
