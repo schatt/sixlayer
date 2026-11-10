@@ -313,7 +313,10 @@ public enum SevenSegmentOCR {
             }
         }
         if FileManager.default.fileExists(atPath: "/tmp/sixlayer-600-ocr-parts") {
-            let line = "parts legacy [\(legacy.extractedText)] crop [\(cropLattice)] searched [\(lattice.extractedText)]\n"
+            let cells = rows.map { row in
+                row.map { "\($0.character)@\(String(format: "%.2f", $0.confidence))" }.joined(separator: " ")
+            }.joined(separator: " | ")
+            let line = "parts legacy [\(legacy.extractedText)] crop [\(cropLattice)] searched [\(lattice.extractedText)] cells [\(cells)]\n"
             try? line.write(toFile: "/tmp/sixlayer-600-ocr-parts.txt", atomically: true, encoding: .utf8)
         }
         // Legacy carries group spacing, commas, colons and unknown-cell
@@ -4391,6 +4394,8 @@ private struct Reader {
     private var rotatedHeight = 0
     private var shearTangent = 0.0
     private var shearPad = 0
+    private var tracing = false
+    private var traceZones = ""
 
     init(pixels: [UInt8], width: Int, height: Int, darkInk: Bool) {
         self.pixels = pixels
@@ -4400,6 +4405,7 @@ private struct Reader {
     }
 
     mutating func run() -> [[SevenSegmentLatticeReader.Cell]] {
+        tracing = FileManager.default.fileExists(atPath: "/tmp/sixlayer-600-ocr-parts")
         let h = analysisHeight
         scale = Double(h) / Double(height)
         smallWidth = max(1, Int((Double(width) * scale).rounded()))
@@ -4444,6 +4450,9 @@ private struct Reader {
             let key = (rank.0, rank.1, candidate.plain, candidate.score)
             if traceCandidates {
                 let text = rows.map { String($0.map(\.character)) }.joined(separator: "/")
+                if text.contains("32.89") {
+                    try? traceZones.write(toFile: "/tmp/sixlayer-600-ocr-zones.txt", atomically: true, encoding: .utf8)
+                }
                 let line = "cand dark=\(darkInk) plain=\(candidate.plain) rank=\(rank.0),\(rank.1) score=\(candidate.score) [\(text)]\n"
                 if let data = line.data(using: .utf8) {
                     let path = "/tmp/sixlayer-600-ocr-cands.txt"
@@ -4466,6 +4475,7 @@ private struct Reader {
     /// Undo rotation and shear, then read each row band. Sets the transform
     /// used to map cells back to the source.
     private mutating func readRows(_ cleaned: BitMask, stroke: Double) -> [[SevenSegmentLatticeReader.Cell]] {
+        traceZones = ""
         var mask = cleaned
         rotationDegrees = rotation(of: mask)
         if rotationDegrees != 0 {
@@ -4912,7 +4922,10 @@ private struct Reader {
             return inkShare(band, x0: xa, x1: min(xb, band.width), y0: ya, y1: min(yb, band.height))
         }
         let holes = (share(0.32, 0.68, 0.2, 0.38) + share(0.32, 0.68, 0.62, 0.8)) / 2
-        if holes > holeMaximum { return ("_", 0) }
+        if holes > holeMaximum {
+            if tracing { traceZones += "zones holes=\(String(format: "%.3f", holes)) reject\n" }
+            return ("_", 0)
+        }
         let zones: [(SevenSegmentPattern, Double)] = [
             (.a, share(0.3, 0.7, 0, 0.16)),
             (.b, share(0.7, 1, 0.18, 0.4)),
@@ -4924,10 +4937,17 @@ private struct Reader {
         ]
         let top = zones.map(\.1).max() ?? 0
         var pattern = SevenSegmentPattern()
-        for (segment, value) in zones where value > max(0.22, 0.4 * top) {
+        let cut = max(0.22, 0.4 * top)
+        for (segment, value) in zones where value > cut {
             pattern.formUnion(segment)
         }
-        return SevenSegmentLatticeReader.digit(for: pattern)
+        let read = SevenSegmentLatticeReader.digit(for: pattern)
+        if tracing {
+            let names = ["a", "b", "c", "d", "e", "f", "g"]
+            let shares = zip(names, zones.map(\.1)).map { "\($0.0)=\(String(format: "%.3f", $0.1))" }.joined(separator: " ")
+            traceZones += "zones holes=\(String(format: "%.3f", holes)) cut=\(String(format: "%.3f", cut)) \(shares) -> \(read.0)@\(String(format: "%.2f", read.1))\n"
+        }
+        return read
     }
 
     // MARK: Coordinates
