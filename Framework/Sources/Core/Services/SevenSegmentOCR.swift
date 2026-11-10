@@ -4452,6 +4452,7 @@ private struct Reader {
                 let text = rows.map { String($0.map(\.character)) }.joined(separator: "/")
                 if text.contains("32.89") {
                     try? traceZones.write(toFile: "/tmp/sixlayer-600-ocr-zones.txt", atomically: true, encoding: .utf8)
+                    writeMask(candidate.mask, path: "/tmp/sixlayer-600-mask.pgm")
                 }
                 let line = "cand dark=\(darkInk) plain=\(candidate.plain) rank=\(rank.0),\(rank.1) score=\(candidate.score) [\(text)]\n"
                 if let data = line.data(using: .utf8) {
@@ -4945,7 +4946,7 @@ private struct Reader {
         if tracing {
             let names = ["a", "b", "c", "d", "e", "f", "g"]
             let shares = zip(names, zones.map(\.1)).map { "\($0.0)=\(String(format: "%.3f", $0.1))" }.joined(separator: " ")
-            traceZones += "zones holes=\(String(format: "%.3f", holes)) cut=\(String(format: "%.3f", cut)) \(shares) -> \(read.0)@\(String(format: "%.2f", read.1))\n"
+            traceZones += "zones x=\(x0)..\(x1) h=\(Int(h)) holes=\(String(format: "%.3f", holes)) cut=\(String(format: "%.3f", cut)) \(shares) -> \(read.0)@\(String(format: "%.2f", read.1))\n"
         }
         return read
     }
@@ -5509,6 +5510,12 @@ private func inkRows(_ mask: BitMask, x0: Int, x1: Int) -> (Int, Int)? {
         }
     }
     return first.map { ($0, last) }
+}
+
+private func writeMask(_ mask: BitMask, path: String) {
+    var data = Data("P5\n\(mask.width) \(mask.height)\n255\n".utf8)
+    data.append(contentsOf: mask.bits.map { $0 ? 0 : 255 })
+    try? data.write(to: URL(fileURLWithPath: path))
 }
 
 private func inkShare(_ mask: BitMask, x0: Int, x1: Int, y0: Int, y1: Int) -> Double {
