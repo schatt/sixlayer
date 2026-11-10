@@ -1422,7 +1422,7 @@ private struct GrayBuffer {
 
     fileprivate func extremeMarkMask() -> Mask {
         Mask(
-            bits: pixels.map { $0 <= 10 || $0 >= 252 },
+            bits: pixels.map { $0 <= 10 || $0 >= extremeHighlight },
             width: width,
             height: height
         )
@@ -2280,7 +2280,11 @@ private extension GrayBuffer {
         // the gap below cellHeight/2 (`rescannedRowCrop` → `018-`) (#661).
         let bandsAreRows: Bool = {
             guard splittingRows, !opened, bandsForSplit.count >= 2 else { return false }
-            let cleaned = clearingOverlongRows(glyphs, bands: bandsForSplit)
+            let cleaned = clearingOverlongRows(
+                glyphs,
+                bands: bandsForSplit,
+                pixels: buffer.pixels
+            )
             return bandsForSplit.allSatisfy { raw in
                 let band = trimmingSparseEdges(raw, mask: cleaned)
                 let found = cells(
@@ -2321,14 +2325,24 @@ private extension GrayBuffer {
         // No seven-segment stroke runs further across than its row is tall.
         // A longer run is glare or chrome. Clear those rows, then peel the
         // haze they hid so the gap between rows stays a gap (#661).
-        let cellGlyphs = opened ? glyphs : clearingOverlongRows(glyphs, bands: splitBands)
+        // A bright gap line also marks the glass under it. That veil is not
+        // dark, but the halfway cut calls it ink and one row becomes one blob
+        // (`rescannedRowCrop` → a line of 8s). The row crop has to start on
+        // the digit bar, below the veil, or its window sees the line again.
+        let cellGlyphs = opened
+            ? glyphs
+            : clearingOverlongRows(glyphs, bands: splitBands, pixels: buffer.pixels)
         let lineBands: [(Int, Int)]
         if !splittingRows, splitBands.count > 1 {
             let y0 = splitBands.map(\.0).min() ?? 0
             let y1 = splitBands.map(\.1).max() ?? buffer.height
             lineBands = y1 > y0 ? [(y0, y1)] : splitBands
         } else {
-            lineBands = splitBands.map { trimmingSparseEdges($0, mask: cellGlyphs) }
+            lineBands = splitBands.compactMap { raw in
+                let headed = trimmingGlareHead(raw, mask: glyphs, pixels: buffer.pixels)
+                let peeled = trimmingSparseEdges(headed, mask: cellGlyphs)
+                return peeled.1 > peeled.0 + 8 ? peeled : nil
+            }
         }
         if buffer.width >= 1000 {
             let listed = lineBands.map { "\($0.0)-\($0.1)" }.joined(separator: ",")
@@ -2851,6 +2865,120 @@ private func windowRadius(width: Int, height: Int) -> Int {
     return min(36, max(grown, strokeFloor))
 }
 
+/// Start the band on the digit bar when a bright line sits above it.
+///
+/// The line marks a full-width veil of glass. Haze and the scratch sit
+/// above that veil; the bar is the first row with more than one dark run
+/// as long as the band's own bar. A band with no such line is unchanged.
+private func trimmingGlareHead(
+    _ band: (Int, Int),
+    mask: Mask,
+    pixels: [UInt8]
+) -> (Int, Int) {
+    let width = mask.width
+    let height = band.1 - band.0
+    guard height > 8, width > 8, pixels.count == mask.bits.count else { return band }
+    func darkRuns(_ y: Int) -> [(start: Int, length: Int)] {
+        let row = y * width
+        var minV = 255
+        var maxV = 0
+        var any = false
+        for x in 0..<width where mask.bits[row + x] {
+            let pixel = Int(pixels[row + x])
+            any = true
+            if pixel < minV { minV = pixel }
+            if pixel > maxV { maxV = pixel }
+        }
+        guard any else { return [] }
+        let span = maxV - minV
+        let quarter = minV + max(inkMargin, span / 4)
+        var runs: [(start: Int, length: Int)] = []
+        var start = 0
+        var length = 0
+        for x in 0..<width {
+            let dark = mask.bits[row + x] && Int(pixels[row + x]) <= quarter
+            if dark {
+                if length == 0 { start = x }
+                length += 1
+            } else if length > 0 {
+                runs.append((start, length))
+                length = 0
+            }
+        }
+        if length > 0 { runs.append((start, length)) }
+        return runs
+    }
+    var bar = 0
+    for y in band.0..<band.1 {
+        for run in darkRuns(y) where run.length > bar {
+            bar = run.length
+        }
+    }
+    guard bar >= 8 else { return band }
+    let longEnough = bar * 3 / 4
+    func isDigitRow(_ y: Int) -> Bool {
+        let runs = darkRuns(y).filter { $0.length >= longEnough }
+        if runs.count >= 2 { return true }
+        guard let only = runs.first else { return false }
+        return only.start > width / 8
+    }
+    var digit = band.0
+    while digit < band.1, !isDigitRow(digit) {
+        digit += 1
+    }
+    guard digit > band.0, digit < band.1, band.1 - digit > 8 else { return band }
+    let hasGlare = (band.0..<digit).contains { y in
+        rowIsHighlight(pixels, y: y, width: width)
+            || rowIsLightVeil(mask, pixels: pixels, y: y, limit: height)
+    }
+    guard hasGlare else { return band }
+    return (digit, band.1)
+}
+
+private func rowIsHighlight(_ pixels: [UInt8], y: Int, width: Int) -> Bool {
+    guard width > 0, y >= 0, pixels.count >= (y + 1) * width else { return false }
+    let row = y * width
+    var bright = 0
+    for x in 0..<width where pixels[row + x] >= extremeHighlight {
+        bright += 1
+    }
+    return bright * 2 > width
+}
+
+/// A full-width run whose pixels are mid-gray, not the dark stroke. The
+/// halfway cut marks the glass beside a glare line; a washed bar is dark.
+private func rowIsLightVeil(_ mask: Mask, pixels: [UInt8], y: Int, limit: Int) -> Bool {
+    let width = mask.width
+    guard y >= 0, y < mask.height, pixels.count == mask.bits.count else { return false }
+    let row = y * width
+    var longest = 0
+    var run = 0
+    var minV = 255
+    var maxV = 0
+    var count = 0
+    for x in 0..<width {
+        if mask.bits[row + x] {
+            run += 1
+            if run > longest { longest = run }
+            let pixel = Int(pixels[row + x])
+            count += 1
+            if pixel < minV { minV = pixel }
+            if pixel > maxV { maxV = pixel }
+        } else {
+            run = 0
+        }
+    }
+    guard longest > limit, count > 0 else { return false }
+    let span = maxV - minV
+    guard span > inkMargin else { return false }
+    let quarter = minV + span / 4
+    var dark = 0
+    for x in 0..<width where mask.bits[row + x] && Int(pixels[row + x]) <= quarter {
+        dark += 1
+    }
+    return dark * 2 < count
+}
+
 /// Drop sparse rows at the top and bottom of a band. Haze above a digit
 /// is many short runs; a stroke holds most of the ink. A row or two of
 /// edge noise stays.
@@ -2897,12 +3025,23 @@ private func trimmingSparseEdges(_ band: (Int, Int), mask: Mask) -> (Int, Int) {
 /// Clear a short stripe of runs longer than the band is tall. That stripe
 /// is glare or chrome, not a stroke. A bar that touches the band edge, or
 /// a long run through the middle of the digits, stays.
-private func clearingOverlongRows(_ mask: Mask, bands: [(Int, Int)]) -> Mask {
+private func clearingOverlongRows(
+    _ mask: Mask,
+    bands: [(Int, Int)],
+    pixels: [UInt8]
+) -> Mask {
     var bits = mask.bits
     let width = mask.width
     for band in bands {
         let limit = band.1 - band.0
         guard limit >= 20 else { continue }
+        if pixels.count == mask.bits.count {
+            for y in max(0, band.0)..<min(mask.height, band.1)
+            where rowIsLightVeil(mask, pixels: pixels, y: y, limit: limit) {
+                let row = y * width
+                for x in 0..<width { bits[row + x] = false }
+            }
+        }
         var overlong: [Int] = []
         for y in max(0, band.0)..<min(mask.height, band.1) {
             let row = y * width
@@ -4173,6 +4312,8 @@ private func verticalRuns(_ mask: Mask, box: PixelBox, width: Int) -> [(Int, Int
 private let inkMargin = 14
 /// A pale bar sits only a few counts under the wide average. The glare beside it does not.
 private let paleBarMargin = 8
+/// Same bound as `extremeMarkMask`: a painted gap line, not panel glass.
+private let extremeHighlight: UInt8 = 252
 private let solidCoverage: Float = 0.80
 
 private func markIsInk(_ mask: Mask, box: PixelBox, width: Int, buffer: GrayBuffer, darkInk: Bool) -> Bool {
