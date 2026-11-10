@@ -210,6 +210,19 @@ struct OCRSevenSegment576Tests {
         #expect(decode(image, maximum: 0).extractedText == "32.88\n8.022")
     }
 
+    @Test func valleyStreakDoesNotHideTheOtherGlyphs() {
+        // A vertical ink streak in the inter-row valley is treated as bezel,
+        // so readingSpan keeps only the inkiest short run and the per-row
+        // window never sees the rest of the field (#612). Row bands must be
+        // re-read across the digits, not only that run.
+        let image = SegmentPanel.render(
+            rows: [atoms("32.88"), atoms("8.022")],
+            outerMargin: 200,
+            valleyStreak: true
+        )
+        #expect(decode(image, maximum: 0).extractedText == "32.88\n8.022")
+    }
+
     @Test func wideGapSplitsGroupsAndAnEqualGapDoesNot() {
         // Isolate fine deskew: untilted short rows must still read (#602).
         #expect(decode(panel(["1234"]), maximum: 0).extractedText == "1234")
@@ -1425,7 +1438,8 @@ enum SegmentPanel {
         leftScratch: Bool = false,
         tallHaze: Bool = false,
         solidGapWashVolumeOnly: Bool = false,
-        falseLowerLeftStemSpeck: Bool = false
+        falseLowerLeftStemSpeck: Bool = false,
+        valleyStreak: Bool = false
     ) -> CGImage {
         let laid = layout(rows: rows, padding: padding)
         let background: UInt8 = backgroundLevel ?? (invert ? 28 : 214)
@@ -1511,6 +1525,16 @@ enum SegmentPanel {
         }
         if edgeStrip {
             paintEdgeStrip(
+                &pixels,
+                width: width,
+                height: height,
+                ink: ink,
+                padding: padding,
+                bands: laid.rowBands
+            )
+        }
+        if valleyStreak {
+            paintValleyStreak(
                 &pixels,
                 width: width,
                 height: height,
@@ -1691,6 +1715,32 @@ enum SegmentPanel {
         for y in gapTop..<gapBottom {
             for x in 4..<scratchEnd {
                 pixels[y * width + x] = background
+            }
+        }
+    }
+
+    /// Vertical ink only in the inter-row valley, under the price decimal so
+    /// it splits the digit field into two runs. readingSpan treats that column
+    /// as bezel and keeps only the inkiest run (#612).
+    private static func paintValleyStreak(
+        _ pixels: inout [UInt8],
+        width: Int,
+        height: Int,
+        ink: UInt8,
+        padding: Int,
+        bands: [RowBand]
+    ) {
+        guard let first = bands.first, let last = bands.last else { return }
+        let gapTop = first.maxY
+        let gapBottom = last.minY
+        guard gapBottom > gapTop else { return }
+        // After two digit cells: under the "." between 32 and 88.
+        let streakX = padding + 2 * (cellW + intra)
+        let streakEnd = min(width, streakX + max(4, stroke / 2))
+        guard streakEnd > streakX else { return }
+        for y in gapTop..<gapBottom {
+            for x in streakX..<streakEnd {
+                pixels[y * width + x] = ink
             }
         }
     }
