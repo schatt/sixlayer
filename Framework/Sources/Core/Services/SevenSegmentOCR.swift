@@ -5572,6 +5572,15 @@ private func slotInkBottom(_ mask: BitMask, x0: Int, x1: Int, stroke: Double) ->
     }) else { return (mask.height, mask.height) }
     let pad = max(1, Int(stroke * 0.3))
     let next = runs.compactMap { $0.0 >= longest.1 ? $0.0 : nil }.min() ?? mask.height
+    // A short piece is a broken stroke, not the glyph. Leave the band
+    // alone. Trim when the glyph reaches the baseline and either the next
+    // row continues in these columns or empty glass hangs under the bar.
+    let reachesBaseline = longest.1 > mask.height * 2 / 3
+    let separated = next < mask.height
+    let trailingGlass = mask.height - longest.1 > pad
+    guard reachesBaseline && (separated || trailingGlass) else {
+        return (mask.height, mask.height)
+    }
     return (min(longest.1 + pad, next), longest.1)
 }
 
