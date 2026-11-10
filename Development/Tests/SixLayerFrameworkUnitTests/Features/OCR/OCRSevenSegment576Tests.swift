@@ -7,6 +7,7 @@
 
 import CoreGraphics
 import Foundation
+import ImageIO // TEMP
 import Testing
 @testable import SixLayerFramework
 
@@ -265,6 +266,51 @@ struct OCRSevenSegment576Tests {
         #expect(decode(period).extractedText == "31.25")
         let comma = SegmentPanel.render(rows: [[.digit(digit(1)), .oppositeComma, .digit(digit(2)), .digit(digit(5))]])
         #expect(decode(comma).extractedText == "1,25")
+    }
+
+    // TEMP BENCH (not committed): real labeled photos through localize + decode.
+    static let benchFixtures = "/Users/schatt/code/github/sixlayer-test-fixtures/"
+    static let benchCases: [String] = {
+        var cases: [String] = []
+        for n in 1...9 {
+            let dir = "seven-segment/fuel_purchase/scenario_\(n)/"
+            cases.append(dir + "ti_fp_s\(n)_pump.jpg")
+            if n >= 6 { cases.append(dir + "ti_fp_s\(n)_odometer.jpg") }
+        }
+        cases.append("unlabeled/live/IMG_7492.HEIC")
+        cases.append("unlabeled/live/IMG_7493.HEIC")
+        return cases
+    }()
+
+    static func benchExpected(_ path: String) -> [String] {
+        if path.hasSuffix("IMG_7492.HEIC") { return ["150.00", "19.111", "8.299", "6.459", "6.259", "5.959"] }
+        if path.hasSuffix("IMG_7493.HEIC") { return ["150.00", "19.111"] }
+        let dir = (benchFixtures + path as NSString).deletingLastPathComponent
+        guard let data = FileManager.default.contents(atPath: dir + "/expected_values.json"),
+              let json = try? JSONSerialization.jsonObject(with: data) as? [String: [String: String]] else { return [] }
+        if path.contains("odometer") { return [json["odometer"]?["mileage"] ?? ""].filter { !$0.isEmpty } }
+        let pump = json["pump_display"] ?? [:]
+        return [pump["totalCost"], pump["gallons"], pump["pricePerGallon"]].compactMap { $0 }.filter { !$0.isEmpty }
+    }
+
+    @Test(arguments: OCRSevenSegment576Tests.benchCases)
+    func zzBench(_ path: String) throws {
+        let source = try #require(CGImageSourceCreateWithURL(URL(fileURLWithPath: path.hasPrefix("/") ? path : Self.benchFixtures + path) as CFURL, nil))
+        let options: [CFString: Any] = [
+            kCGImageSourceCreateThumbnailFromImageAlways: true,
+            kCGImageSourceCreateThumbnailWithTransform: true,
+            kCGImageSourceThumbnailMaxPixelSize: 6000
+        ]
+        let image = try #require(CGImageSourceCreateThumbnailAtIndex(source, 0, options as CFDictionary))
+        let start = Date()
+        let r = SevenSegmentOCR.decode(cgImage: image, localizeDigitPanel: true)
+        let secs = Date().timeIntervalSince(start)
+        let expected = Self.benchExpected(path)
+        let hits = expected.filter { r.extractedText.contains($0) }
+        let name = (path as NSString).lastPathComponent
+        let line = "\(name)\t\(hits.count)/\(expected.count)\tconf \(String(format: "%.2f", r.confidence))\t\(String(format: "%.0f", secs))s\texp \(expected.joined(separator: ","))\tgot [\(r.extractedText.replacingOccurrences(of: "\n", with: " / "))]\n"
+        let dir = "/private/tmp/claude-501/-Users-schatt--claude-spares-spare-JYUmu0/44835065-b9c1-45f6-aa1d-ba3bb5bd306f/scratchpad/bench/"
+        try line.write(toFile: dir + name + ".txt", atomically: true, encoding: .utf8)
     }
 
     @Test func leadingEmptyCellDoesNotBecomeZero() {
