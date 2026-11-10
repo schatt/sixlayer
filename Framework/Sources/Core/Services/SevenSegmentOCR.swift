@@ -569,7 +569,16 @@ private struct GrayBuffer {
         let uprightWide = scores[0].wideDigits
         let turnedWide = scores[turns].wideDigits
         let minimumLead = uprightWide >= 4 ? 4 : 2
-        return mostlyNumbers && turnedWide >= 4 && turnedWide >= uprightWide + minimumLead
+        // A sideways panel used to read as narrow ones, so the upright turn
+        // had four more wide digits. Without clipping the parent span it
+        // reads as wide 8s, and that lead never appears. The decimals sit
+        // below the digits only after the turn. An upright panel already
+        // has them below, and a false quarter turn has fewer wide digits.
+        let decimalsBelow = scores[turns].marksBelow > scores[0].marksBelow
+            && scores[turns].marksBelow >= 1
+        let notFewerWide = turnedWide + 2 >= uprightWide
+        let lead = turnedWide >= uprightWide + minimumLead
+        return mostlyNumbers && turnedWide >= 4 && (lead || (decimalsBelow && notFewerWide))
     }
 
     private struct OrientationScore {
