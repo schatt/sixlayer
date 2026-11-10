@@ -1725,10 +1725,11 @@ private extension GrayBuffer {
                 y += 1
             }
         }
-        guard bestInk >= 0 else { return self }
         // Belt-and-suspenders with adaptive peel ink (#664): if a wash still
         // leaves only a short densest run, refuse to peel into that stub
         // (#660). Real padded line crops keep a digit-tall densest band.
+        // `best` already came from joined bands (`guard let best = …`); no
+        // separate `bestInk` counter from the pre-join densest-run path.
         let bandHeight = bestEnd - bestStart
         if bandHeight * 3 < height {
             return self
