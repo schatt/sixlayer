@@ -4856,7 +4856,7 @@ private struct Reader {
                 let a = x0 + dx, b = x1 + dx
                 let lo = max(0, a), hi = min(band.width, b)
                 guard hi > lo else { continue }
-                let bottom = slotInkBottom(band, x0: lo, x1: hi)
+                let bottom = slotInkBottom(band, x0: lo, x1: hi, stroke: stroke)
                 let glyph = readDigit(band, x0: lo, x1: hi, bottom: bottom)
                 let better = chosen == nil
                     || glyph.1 > chosen!.1
@@ -5518,11 +5518,12 @@ private func columnHasInk(_ mask: BitMask, rows: Range<Int>, x0: Int = 0, x1: In
     return (x0..<end).map { x in ys.contains { mask[x, $0] } }
 }
 
-/// Exclusive end of this glyph's own ink. Glass under a bar has no later
-/// run, so the end is the bar. A later run in the same columns is the next
-/// row and must not stretch the bottom zone. A one- or two-row hole is a
-/// broken stroke, not that gap. The top stays put.
-private func slotInkBottom(_ mask: BitMask, x0: Int, x1: Int) -> Int {
+/// Exclusive end of this glyph's own ink, plus the same pad the band keeps
+/// under a stroke. Glass under a bar has no later run, so the end is the
+/// bar. A later run in the same columns is the next row; the pad stops at
+/// that gap. A one- or two-row hole is a broken stroke, not that gap.
+/// The top stays put.
+private func slotInkBottom(_ mask: BitMask, x0: Int, x1: Int, stroke: Double) -> Int {
     let xa = max(0, x0), xb = min(mask.width, x1)
     guard xb > xa else { return mask.height }
     var inkRow = [Bool](repeating: false, count: mask.height)
@@ -5543,21 +5544,23 @@ private func slotInkBottom(_ mask: BitMask, x0: Int, x1: Int) -> Int {
             for index in start..<y { inkRow[index] = true }
         }
     }
-    var bestLength = 0
-    var bestEnd = mask.height
+    var runs: [(Int, Int)] = []
     var runStart: Int?
     for index in 0...inkRow.count {
         let on = index < inkRow.count && inkRow[index]
         if on, runStart == nil { runStart = index }
         if !on, let start = runStart {
-            if index - start > bestLength {
-                bestLength = index - start
-                bestEnd = index
-            }
+            runs.append((start, index))
             runStart = nil
         }
     }
-    return bestLength == 0 ? mask.height : bestEnd
+    guard let longest = runs.max(by: { lhs, rhs in
+        let left = lhs.1 - lhs.0, right = rhs.1 - rhs.0
+        return left != right ? left < right : lhs.0 > rhs.0
+    }) else { return mask.height }
+    let pad = max(1, Int(stroke * 0.3))
+    let next = runs.compactMap { $0.0 >= longest.1 ? $0.0 : nil }.min() ?? mask.height
+    return min(longest.1 + pad, next)
 }
 
 private func inkRows(_ mask: BitMask, x0: Int, x1: Int) -> (Int, Int)? {
