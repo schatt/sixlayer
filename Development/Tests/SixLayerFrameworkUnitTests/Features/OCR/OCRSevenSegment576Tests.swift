@@ -80,6 +80,17 @@ struct OCRSevenSegment576Tests {
         #expect(decode(panel(["11", "22", "33", "44"])).extractedText == "11\n22\n33\n44")
     }
 
+    /// The second row copies the first row's pitch. That path dropped a
+    /// leading 1 with its decimal (15.556 read 5.556). 5.022 and 56.78 guard
+    /// the a/d bar peel (bb4789618), which this fixture's bars do not reach.
+    /// Not yet covered: a first row with only 7/3/1 under-measures the pitch
+    /// and clips row-two left stems (7.73/1.840 reads 7.73/1.947).
+    @Test func secondRowKeepsDigitsTheFirstRowDoesNotShare() {
+        #expect(decode(panel(["32.88", "5.022"])).extractedText == "32.88\n5.022")
+        #expect(decode(panel(["56.92", "15.556"])).extractedText == "56.92\n15.556")
+        #expect(decode(panel(["12.34", "56.78"])).extractedText == "12.34\n56.78")
+    }
+
     @Test func tallCropReadsEachRowAtItsOwnWindow() {
         // Empty margin makes the threshold window wide enough to see a bright
         // line just above each row. The glass under that line is then darker
@@ -131,7 +142,10 @@ struct OCRSevenSegment576Tests {
             rows: [atoms("32.88"), atoms("8.022")],
             solidGapWashVolumeOnly: true
         )
-        #expect(decode(image, maximum: 0).extractedText == "32.88\n8.022")
+        // The wash paints the volume gaps at ink level, decimal gap included,
+        // so that decimal is not in the pixels. Marks come only from what is
+        // seen; the decoder no longer guesses X.xxx (#661).
+        #expect(decode(image, maximum: 0).extractedText == "32.88\n8022")
     }
 
     @Test func onePixelOnADarkSegmentDoesNotChangeTheDigit() {
@@ -159,6 +173,8 @@ struct OCRSevenSegment576Tests {
         #expect(lines.count == 2)
         #expect(lines.first?.filter(\.isNumber) == "3288")
         #expect(lines.last?.filter(\.isNumber) == "28022")
+        // No decimal is drawn on this row; none may be invented (#661).
+        #expect(lines.last == "28022")
     }
 
     @Test func rescannedRowCropMatchesPriceBandGeometry() {
@@ -186,6 +202,12 @@ struct OCRSevenSegment576Tests {
         // Isolate fine deskew: untilted short rows must still read (#602).
         #expect(decode(panel(["1234"]), maximum: 0).extractedText == "1234")
         #expect(decode(panel(["12 34"]), maximum: 0).extractedText == "12  34")
+        // Untilted five-group: forceOpen must not skip the inter-row gap bar
+        // or digitColumnSpan keeps one group ("2.22") (#602 / #598).
+        #expect(
+            decode(panel(["1.11 2.22 3.33 4.44 5.55"]), maximum: 0).extractedText
+                == "1.11  2.22  3.33  4.44  5.55"
+        )
 
         let split = decode(panel(["12 34"]))
         #expect(split.extractedText == "12  34")
@@ -226,8 +248,11 @@ struct OCRSevenSegment576Tests {
     @Test func marksStayInsideTheFragment() {
         #expect(decode(panel(["3125"])).extractedText == "3125")
         #expect(!decode(panel(["3125"])).extractedText.contains("."))
-        #expect(decode(panel(["1,234.56"])).extractedText == "1,234.56")
-        #expect(segmentTexts(decode(panel(["1,234.56"]))).count == 1)
+        // #661: comma must not become period; alone top-bar unknown must hold.
+        let comma = decode(panel(["1,234.56"]))
+        #expect(comma.extractedText == "1,234.56")
+        #expect(segmentTexts(comma) == ["1,234.56"])
+        #expect(decode(panel(["1,25"])).extractedText == "1,25")
         #expect(decode(panel(["-12.5"])).extractedText == "-12.5")
         #expect(decode(panel(["12:30"])).extractedText == "12:30")
         let held = decode(panel(["8_2"]))
@@ -273,12 +298,71 @@ struct OCRSevenSegment576Tests {
         #expect(result.extractedText.contains("17.740"))
     }
 
+    /// #667: when lattice is *confident* (exact digits, no `_`) but legacy
+    /// still carries an unknown-cell placeholder with at least as many
+    /// digits, keep the placeholder. The non-confident branch already does
+    /// this (#661); the confident branch used to drop `_` via `isPlausible`.
+    @Test func confidentLatticeDoesNotStripLegacyUnknownCell() {
+        let box = CGRect(x: 0, y: 0, width: 0.2, height: 0.2)
+        let unknown = OCRRecognizedText(text: "8_2", boundingBox: box, confidence: 0, role: .segment)
+        let clean = OCRRecognizedText(text: "17.740", boundingBox: box, confidence: 1, role: .segment)
+        let fragments = [[unknown, clean]]
+        let legacy = OCRResult(
+            extractedText: "8_2  17.740",
+            confidence: 0,
+            boundingBoxes: [box, box],
+            textTypes: [.number: "8_2  17.740"],
+            recognizedTexts: [unknown, clean]
+        )
+        func cell(_ ch: Character, x: Double) -> SevenSegmentLatticeReader.Cell {
+            SevenSegmentLatticeReader.Cell(
+                character: ch, confidence: 1,
+                minX: x, minY: 0, maxX: x + 10, maxY: 20
+            )
+        }
+        // Two exact digit rows → isConfident. Lattice invented `82` by
+        // dropping the unknown cell that legacy kept.
+        let latticeRows: [[SevenSegmentLatticeReader.Cell]] = [
+            [cell("8", x: 0), cell("2", x: 12)],
+            [cell("1", x: 0), cell("7", x: 12), cell(".", x: 24),
+             cell("7", x: 36), cell("4", x: 48), cell("0", x: 60)]
+        ]
+        let latticeText = latticeRows.map { String($0.map(\.character)) }.joined(separator: "  ")
+        let lattice = OCRResult(
+            extractedText: latticeText,
+            confidence: 1,
+            boundingBoxes: [box],
+            textTypes: [.number: latticeText],
+            recognizedTexts: [
+                OCRRecognizedText(text: latticeText, boundingBox: box, confidence: 1, role: .segment)
+            ]
+        )
+        #expect(SevenSegmentLatticeReader.isConfident(latticeRows))
+        let chosen = SevenSegmentOCR.chooseLegacyOrLattice(
+            fragments: fragments,
+            legacy: legacy,
+            lattice: lattice,
+            latticeRows: latticeRows
+        )
+        #expect(chosen.extractedText.contains("_"))
+        #expect(chosen.extractedText == "8_2  17.740")
+    }
+
+    @Test func cleanPriceVolumeRowKeepsThePeriod() {
+        // Fill-free twin of the filledInk row: period must not become a comma (#658).
+        var row = atoms("51.07")
+        row.append(.gap(SegmentPanel.groupGap))
+        row.append(contentsOf: atoms("17.740"))
+        let result = decode(SegmentPanel.render(rows: [row]))
+        #expect(result.extractedText == "51.07  17.740")
+        #expect(segmentTexts(result) == ["51.07", "17.740"])
+    }
+
     @Test func filledInkBesideCleanRowsDoesNotCreateASegment() {
         var clean = atoms("51.07")
         clean.append(.gap(SegmentPanel.groupGap))
         clean.append(contentsOf: atoms("17.740"))
-        // Control: without fills the price must stay one fragment (#646).
-        // Volume mark can still mis-read as comma on this short canvas (#658).
+        // Price glue without fills (#646). Full clean period is `cleanPriceVolumeRowKeepsThePeriod` (#658).
         #expect(segmentTexts(decode(SegmentPanel.render(rows: [clean]))).first == "51.07")
 
         var row = clean
@@ -403,6 +487,18 @@ struct OCRSevenSegment576Tests {
         let rows = [atoms("12:30")]
         #expect(decode(SegmentPanel.render(rows: rows)).extractedText == "12:30")
         #expect(decode(SegmentPanel.render(rows: rows, glare: true)).extractedText == "12:30")
+    }
+
+    /// #664: wash the lower half of the digit band to 140 (≥80, but still
+    /// contrasty enough for masks vs glass 214). The hard <80 peel then sees
+    /// only the upper stub — tall enough that the #660 band-height guard
+    /// still peels — and drops lower segments. Adaptive darkness must count
+    /// the washed strokes so the densest band stays digit-tall.
+    @Test func washedLowerHalfStillPeelsFullDigits() {
+        let rows = [atoms("31.25")]
+        let base = SegmentPanel.render(rows: rows, padding: 20)
+        let washed = washLowerDigitHalf(base, inkWash: 140)
+        #expect(decode(washed, maximum: 0).extractedText == "31.25")
     }
 
     @Test func deskewSearchesTheCallerMaximum() {
@@ -850,7 +946,9 @@ struct OCRSevenSegment576Tests {
         )
     }
 
-    @Test func fullFrameWithoutLocalizationMissesSealedBothRows() {
+    /// Was a control asserting the raw frame misses (#596). Polarity and
+    /// band fixes now read the sealed panel without localization (#661).
+    @Test func fullFrameWithoutLocalizationReadsSealedBothRows() {
         let frame = embed(
             sealedBothRowsPanel(),
             canvasWidth: 1200,
@@ -863,7 +961,7 @@ struct OCRSevenSegment576Tests {
             cgImage: frame,
             localizeDigitPanel: false
         )
-        #expect(raw.extractedText != "32.88\n8.022")
+        #expect(raw.extractedText == "32.88\n8.022")
     }
 
     @Test func exactEmbedCropWithoutLocalizationStillReadsBothRows() {
@@ -951,12 +1049,93 @@ struct OCRSevenSegment576Tests {
     }
     #endif
 
+    // MARK: - Real photo both-direction (#666)
+
+    /// Private HEIC: light digits on dark glass (IMG_7493). Mask-alone used to
+    /// mint solid `8`s; flat arbitration (or the polarity fix it rides with)
+    /// must recover the labeled sale rows. Skips when the private fixtures
+    /// tree is not checked out locally.
+    @Test(
+        .enabled(if: FileManager.default.fileExists(atPath: OCRSevenSegment576Tests.lightDigits7493Photo))
+    )
+    func lightDigits7493FlatArbitrationBeatsMaskAlone() throws {
+        let photo = URL(fileURLWithPath: Self.lightDigits7493Photo)
+        let labels = try JSONSerialization.jsonObject(
+            with: Data(contentsOf: photo.deletingLastPathComponent().appendingPathComponent("expected_values.json"))
+        ) as? [String: Any]
+        let display = try #require(labels?["pump_display"] as? [String: String])
+        let expected = ["totalCost", "gallons"].compactMap { display[$0] }.filter { !$0.isEmpty }
+        #expect(expected.count == 2)
+        let image = try #require(PlatformImage.cgImage(opening: Data(contentsOf: photo)))
+        defer { SevenSegmentOCR.useFlatReadArbitration = true }
+
+        SevenSegmentOCR.useFlatReadArbitration = false
+        let maskOnly = SevenSegmentOCR.decode(cgImage: image, localizeDigitPanel: true)
+        let maskRows = Set(
+            maskOnly.extractedText.split(separator: "\n").map { $0.replacingOccurrences(of: " ", with: "") }
+        )
+        let maskMissing = expected.filter { !maskRows.contains($0) }
+        // Wrong direction: without flat arbitration the labeled sale rows must
+        // not both be present (documented IMG_7493 → solid-`8` class).
+        #expect(!maskMissing.isEmpty, "mask-only already has \(expected); need a real failure direction")
+
+        SevenSegmentOCR.useFlatReadArbitration = true
+        let full = SevenSegmentOCR.decode(cgImage: image, localizeDigitPanel: true)
+        let rows = Set(
+            full.extractedText.split(separator: "\n").map { $0.replacingOccurrences(of: " ", with: "") }
+        )
+        let missing = expected.filter { !rows.contains($0) }
+        #expect(missing.isEmpty, "read [\(full.extractedText)], missing \(missing)")
+    }
+
+    /// `Development/TestFixtures/private/…/IMG_7493.HEIC` (gitignored local checkout).
+    static let lightDigits7493Photo = URL(fileURLWithPath: #filePath)
+        .deletingLastPathComponent()
+        .deletingLastPathComponent()
+        .deletingLastPathComponent()
+        .deletingLastPathComponent()
+        .deletingLastPathComponent()
+        .appendingPathComponent(
+            "TestFixtures/private/seven-segment/pump_display/light_digits_7493/IMG_7493.HEIC"
+        )
+        .path
+
     // MARK: - Helpers
 
     private func service() -> OCRService { OCRService() }
 
     private func decode(_ image: CGImage, maximum: Double = 3) -> OCRResult {
         SevenSegmentOCR.decode(cgImage: image, deskewMaximumDegrees: maximum)
+    }
+
+    /// Lift strokes in the lower half of the content band above the hard <80
+    /// peel cut while leaving the upper half dark enough to win densest-band.
+    private func washLowerDigitHalf(_ image: CGImage, inkWash: UInt8) -> CGImage {
+        let width = image.width
+        let height = image.height
+        var pixels = [UInt8](repeating: 0, count: width * height)
+        guard let provider = image.dataProvider,
+              let data = provider.data,
+              let bytes = CFDataGetBytePtr(data)
+        else {
+            return image
+        }
+        let rowBytes = image.bytesPerRow
+        for y in 0..<height {
+            for x in 0..<width {
+                pixels[y * width + x] = bytes[y * rowBytes + x]
+            }
+        }
+        let y0 = height / 2
+        for y in y0..<height {
+            for x in 0..<width {
+                let index = y * width + x
+                if pixels[index] < 80 {
+                    pixels[index] = inkWash
+                }
+            }
+        }
+        return solidGrayImage(pixels: pixels, width: width, height: height)
     }
 
     /// Default ink/glass with a dark bezel so sealed-glass localization has a

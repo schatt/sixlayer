@@ -69,3 +69,4 @@ test_output.log
 scripts/venv/
 
 display-ocr-training/
+Development/TestFixtures/private/
