@@ -373,7 +373,7 @@ public enum SevenSegmentOCR {
 
     private static func result(_ fragments: [[OCRRecognizedText]]) -> OCRResult {
         let lines = fragments.map { row in row.map(\.text).joined(separator: "  ") }
-        let extracted = lines.joined(separator: "\n") + (glareHeadNote.isEmpty ? "" : "\n" + glareHeadNote)
+        let extracted = lines.joined(separator: "\n")
         let flat = fragments.flatMap { $0 }
         let confidence = flat.map(\.confidence).min() ?? 0
         return OCRResult(
@@ -1429,8 +1429,6 @@ private struct GrayBuffer {
     }
 }
 
-nonisolated(unsafe) private var glareHeadNote = ""
-
 private func trace(_ message: String) {
     fputs(message, stderr)
 }
@@ -1547,7 +1545,6 @@ private extension GrayBuffer {
         rowFinder: SegmentRowFinder? = nil,
         sampleBand: Int = 0
     ) -> [[OCRRecognizedText]] {
-        glareHeadNote = ""
         if let rowFinder {
             return finderFragments(in: buffer, rowFinder: rowFinder, sampleBand: sampleBand)
         }
@@ -2347,10 +2344,13 @@ private extension GrayBuffer {
             let y1 = splitBands.map(\.1).max() ?? buffer.height
             lineBands = y1 > y0 ? [(y0, y1)] : splitBands
         } else {
+            // Haze above a digit is its own short band and reads as a line of
+            // 1s. A digit row is the tall band (`rescannedRowCrop`).
+            let tallest = splitBands.map { $0.1 - $0.0 }.max() ?? 0
             lineBands = splitBands.compactMap { raw in
+                guard (raw.1 - raw.0) * 2 >= tallest else { return nil }
                 let headed = trimmingGlareHead(raw, mask: glyphs, pixels: buffer.pixels)
                 let peeled = trimmingSparseEdges(headed, mask: cellGlyphs)
-                glareHeadNote += "head \(raw.0)-\(raw.1) -> \(headed.0)-\(headed.1) peel \(peeled.0)-\(peeled.1) dark=\(primaryIsDark) open=\(opened)\n"
                 return peeled.1 > peeled.0 + 8 ? peeled : nil
             }
         }
@@ -2436,11 +2436,11 @@ private extension GrayBuffer {
                     sampleBand: sampleBand
                 ).flatMap { $0 }
                 let shifted = found.map { $0.shifted(dx: x0, dy: y0) }
-                if buffer.width >= 100 {
+                if buffer.width >= 900 {
                     let pitchNote = rowPitch.map { " pitch \($0.body)x\($0.count)" } ?? ""
-                    let line = "rowcrop \(x0),\(y0) \(crop.width)x\(crop.height) [\(String(shifted.map(\.character)))]\(pitchNote)\n"
-                    glareHeadNote += line
-                    trace(line)
+                    trace(
+                        "rowcrop \(x0),\(y0) \(crop.width)x\(crop.height) [\(String(shifted.map(\.character)))]\(pitchNote)\n"
+                    )
                 }
                 if !shifted.isEmpty {
                     rescanned.append(shifted)
@@ -2505,6 +2505,12 @@ private extension GrayBuffer {
                 }
             }
         }
+        // The scratch sits in the digit rows, left of a gap the span will
+        // not cross. The row crop is what used to apply that span; this
+        // mask is the one that reads when the crop window is not narrower.
+        let digitSpan = splittingRows && lineBands.count > 1
+            ? readingSpan(glyphs, bands: lineBands)
+            : nil
         return lineBands.compactMap { band -> [Cell]? in
             let found = cells(
                 in: band,
@@ -2520,6 +2526,9 @@ private extension GrayBuffer {
                 : oppositeMarks(in: band, secondary: paintedMarks, existing: found, buffer: buffer, bandIndex: 0)
             let dots = baselineDots(in: band, mask: glyphs, cells: found, width: buffer.width, bandIndex: 0)
             var row = found + marks + dots
+            if let digitSpan {
+                row = row.filter { $0.maxX > digitSpan.0 && $0.minX < digitSpan.1 }
+            }
             // Pitch volume often washes the glass above the real decimal, so
             // baselineDots misses it and a trailing noise mark can survive.
             // Keep only marks between digits; if none, place one in the
