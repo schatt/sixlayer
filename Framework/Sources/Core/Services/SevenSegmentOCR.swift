@@ -101,6 +101,9 @@ public enum SevenSegmentOCR {
     /// Long edge of the buffer that `decode` last ran `masks` on. Test probe (#654).
     nonisolated(unsafe) public static var lastDecodeAnalysisLongEdge: Int?
 
+    /// When false, skip `FlatSevenSegment` arbitration after the mask read.
+    /// Test probe for the IMG_7493 both-direction gate (#666 / #661).
+    nonisolated(unsafe) public static var useFlatReadArbitration = true
 
     /// Pixel rect of the digit panel (glass plus a bezel margin) in image
     /// coordinates, or `nil` when no sealed panel is found.
@@ -155,7 +158,7 @@ public enum SevenSegmentOCR {
         // flat read keeps only rows whose every glyph decodes exactly. A mask
         // read with an unreadable cell cannot veto it; any other read must be
         // beaten on the digits both are sure of.
-        if let sure = FlatSevenSegment.read(gray) {
+        if useFlatReadArbitration, let sure = FlatSevenSegment.read(gray) {
             func sureDigits(_ rows: [[OCRRecognizedText]]) -> Int {
                 rows.flatMap { $0 }.filter { $0.confidence >= oneSegmentOff }
                     .reduce(0) { $0 + $1.text.filter(\.isNumber).count }
