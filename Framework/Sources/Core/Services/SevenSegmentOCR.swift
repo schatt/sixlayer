@@ -3193,8 +3193,7 @@ private func droppingLeftScratch(
     return cells.filter { $0.minX >= cut }
 }
 
-/// Columns that stay ink through a valley between digit rows. Same bar as
-/// `readingSpan`: a speck in the gap is not a bridge.
+/// How many columns of the span stay ink through the row gap.
 private func bridgingColumns(
     _ mask: Mask,
     x0: Int,
@@ -3202,28 +3201,39 @@ private func bridgingColumns(
     bands: [(Int, Int)]
 ) -> Int {
     guard bands.count >= 2, mask.width > 0 else { return 0 }
-    let valleys = zip(bands, bands.dropFirst()).compactMap { upper, lower -> (Int, Int)? in
-        guard lower.0 > upper.1 else { return nil }
-        return (upper.1, lower.0)
-    }
+    let valleys = rowValleys(bands)
     guard !valleys.isEmpty else { return 0 }
     let left = max(0, x0)
     let right = min(mask.width, x1)
     guard right > left else { return 0 }
     var bridged = 0
-    for x in left..<right {
-        let crosses = valleys.contains { valley in
-            let limit = max(4, (valley.1 - valley.0) / 3)
-            var count = 0
-            for y in valley.0..<valley.1 where mask.bits[y * mask.width + x] {
-                count += 1
-                if count > limit { return true }
-            }
-            return false
-        }
-        if crosses { bridged += 1 }
+    for x in left..<right where columnBridgesGap(mask, x: x, valleys: valleys) {
+        bridged += 1
     }
     return bridged
+}
+
+/// Gaps between successive digit rows.
+private func rowValleys(_ bands: [(Int, Int)]) -> [(Int, Int)] {
+    zip(bands, bands.dropFirst()).compactMap { upper, lower -> (Int, Int)? in
+        guard lower.0 > upper.1 else { return nil }
+        return (upper.1, lower.0)
+    }
+}
+
+/// Ink through a valley, past a speck. A third of the gap, and at least
+/// four pixels.
+private func columnBridgesGap(_ mask: Mask, x: Int, valleys: [(Int, Int)]) -> Bool {
+    guard x >= 0, x < mask.width else { return false }
+    return valleys.contains { valley in
+        let limit = max(4, (valley.1 - valley.0) / 3)
+        var count = 0
+        for y in valley.0..<valley.1 where mask.bits[y * mask.width + x] {
+            count += 1
+            if count > limit { return true }
+        }
+        return false
+    }
 }
 
 /// Columns that hold digit ink and stay empty in the gap between rows.
@@ -3232,28 +3242,14 @@ private func readingSpan(_ mask: Mask, bands: [(Int, Int)]) -> (Int, Int)? {
     let width = mask.width
     let height = mask.height
     guard width > 0, height > 0, bands.count >= 2 else { return nil }
-    let valleys = zip(bands, bands.dropFirst()).compactMap { pair -> (Int, Int)? in
-        let top = pair.0.1
-        let bottom = pair.1.0
-        guard bottom > top else { return nil }
-        return (top, bottom)
-    }
+    let valleys = rowValleys(bands)
     guard !valleys.isEmpty else { return nil }
     var keep = [Bool](repeating: false, count: width)
     var edgeColumn = [Bool](repeating: false, count: width)
     var columnInk = [Int](repeating: 0, count: width)
     for x in 0..<width {
-        let edge = valleys.contains { valley in
-            // A speck in the gap is not the bezel. The edge is ink through it.
-            let limit = max(4, (valley.1 - valley.0) / 3)
-            var count = 0
-            for y in valley.0..<valley.1 where mask.bits[y * width + x] {
-                count += 1
-                if count > limit { return true }
-            }
-            return false
-        }
-        if edge {
+        // A speck in the gap is not the bezel. The edge is ink through it.
+        if columnBridgesGap(mask, x: x, valleys: valleys) {
             edgeColumn[x] = true
             continue
         }
