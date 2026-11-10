@@ -242,30 +242,21 @@ private struct Layer4NestedSplitShellPresentationHost<Sidebar: View, Detail: Vie
 public extension View {
     
     /// Platform-specific navigation wrapper that provides consistent navigation patterns
-    /// across iOS and macOS. On iOS 16+, wraps content in NavigationStack; iOS 15, wraps in NavigationView.
-    /// On macOS, returns the content directly.
+    /// across iOS and macOS. Wraps content in `NavigationStack` on iOS and macOS so
+    /// `.navigationTitle` / toolbar chrome work without `#if os` (#638). Secondary
+    /// platforms return content unmodified.
     /// Layer 4: Component Implementation
+    @ViewBuilder
     func platformNavigation_L4<Content: View>(
         @ViewBuilder content: @escaping () -> Content
     ) -> some View {
-        let baseView: AnyView = {
-            #if os(iOS)
-            if #available(iOS 16.0, *) {
-                // Use NavigationStack on iOS 16+
-                return AnyView(NavigationStack {
-                    content()
-                })
-            } else {
-                // Fallback to NavigationView for iOS 15 and earlier
-                return AnyView(NavigationView {
-                    content()
-                })
-            }
-            #else
-            return AnyView(content())
-            #endif
-        }()
-        return baseView
+        #if os(iOS) || os(macOS)
+        NavigationStack {
+            content()
+        }
+        #else
+        content()
+        #endif
     }
     
 

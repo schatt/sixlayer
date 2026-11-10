@@ -530,6 +530,80 @@ targets:
     dependencies:
       - target: SixLayerFramework_iOS
 
+  # Runnable display OCR trainer (#609). The window is the trainer, not the test host.
+  DisplayOCRTraining_iOS:
+    type: application
+    platform: iOS
+    productName: DisplayOCRTraining
+    sources:
+      - path: Development/Apps/DisplayOCRTraining
+    settings:
+      PRODUCT_BUNDLE_IDENTIFIER: com.sixlayer.display-ocr-training
+      PRODUCT_NAME: DisplayOCRTraining
+      SWIFT_VERSION: "6.0"
+      GENERATE_INFOPLIST_FILE: YES
+      CODE_SIGN_STYLE: Automatic
+      IPHONEOS_DEPLOYMENT_TARGET: "17.0"
+      TARGETED_DEVICE_FAMILY: "1,2"
+      INFOPLIST_KEY_CFBundleDisplayName: Display OCR Training
+    dependencies:
+      - target: SixLayerFramework_iOS
+
+  DisplayOCRTraining_macOS:
+    type: application
+    platform: macOS
+    productName: DisplayOCRTraining
+    sources:
+      - path: Development/Apps/DisplayOCRTraining
+    settings:
+      PRODUCT_BUNDLE_IDENTIFIER: com.sixlayer.display-ocr-training
+      PRODUCT_NAME: DisplayOCRTraining
+      SWIFT_VERSION: "6.0"
+      GENERATE_INFOPLIST_FILE: YES
+      CODE_SIGN_STYLE: Automatic
+      CODE_SIGN_IDENTITY: "Apple Development"
+      DEVELOPMENT_TEAM: Y53G7YPJSZ
+      MACOSX_DEPLOYMENT_TARGET: "15.0"
+      INFOPLIST_KEY_CFBundleDisplayName: Display OCR Training
+    dependencies:
+      - target: SixLayerFramework_macOS
+
+  DisplayOCRTrainingUITests_iOS:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - path: Development/Tests/DisplayOCRTrainingUITests
+    settings:
+      PRODUCT_BUNDLE_IDENTIFIER: com.sixlayer.display-ocr-training.ui-tests
+      SWIFT_VERSION: "6.0"
+      SWIFT_ENABLE_EXPLICIT_MODULES: NO
+      GENERATE_INFOPLIST_FILE: YES
+      CODE_SIGN_STYLE: Automatic
+      ENABLE_TESTING_SEARCH_PATHS: YES
+      DEAD_CODE_STRIPPING: YES
+      TEST_TARGET_NAME: DisplayOCRTraining_iOS
+    dependencies:
+      - target: DisplayOCRTraining_iOS
+
+  DisplayOCRTrainingUITests_macOS:
+    type: bundle.ui-testing
+    platform: macOS
+    sources:
+      - path: Development/Tests/DisplayOCRTrainingUITests
+    settings:
+      PRODUCT_BUNDLE_IDENTIFIER: com.sixlayer.display-ocr-training.ui-tests
+      SWIFT_VERSION: "6.0"
+      SWIFT_ENABLE_EXPLICIT_MODULES: NO
+      GENERATE_INFOPLIST_FILE: YES
+      CODE_SIGN_STYLE: Automatic
+      CODE_SIGN_IDENTITY: "Apple Development"
+      DEVELOPMENT_TEAM: Y53G7YPJSZ
+      ENABLE_TESTING_SEARCH_PATHS: YES
+      DEAD_CODE_STRIPPING: YES
+      TEST_TARGET_NAME: DisplayOCRTraining_macOS
+    dependencies:
+      - target: DisplayOCRTraining_macOS
+
 
   # External integration tests - iOS
   SixLayerFrameworkExternalIntegrationTests_iOS:
@@ -720,6 +794,34 @@ schemes:
         SixLayerFrameworkTestApp_iOS: all
     test:
       targets: []
+
+  SLF-iOS-DisplayOCRTraining:
+    build:
+      targets:
+        SixLayerFramework_iOS: all
+        DisplayOCRTraining_iOS: all
+        DisplayOCRTrainingUITests_iOS: all
+    run:
+      executable: DisplayOCRTraining_iOS
+    test:
+      targets:
+        - name: DisplayOCRTrainingUITests_iOS
+          parallelizable: true
+          randomExecutionOrder: true
+
+  SLF-macOS-DisplayOCRTraining:
+    build:
+      targets:
+        SixLayerFramework_macOS: all
+        DisplayOCRTraining_macOS: all
+        DisplayOCRTrainingUITests_macOS: all
+    run:
+      executable: DisplayOCRTraining_macOS
+    test:
+      targets:
+        - name: DisplayOCRTrainingUITests_macOS
+          parallelizable: true
+          randomExecutionOrder: true
 
   SLF-iOS-AllTests:
     build:

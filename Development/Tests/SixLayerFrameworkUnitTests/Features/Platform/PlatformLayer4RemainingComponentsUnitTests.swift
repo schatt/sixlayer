@@ -22,28 +22,28 @@ struct PlatformLayer4RemainingComponentsUnitTests {
 
     @Test @MainActor
     func primaryButtonStyleUsesNamedCompliance() {
-        hostExpectingNamedCompliance("platformPrimaryButtonStyle") {
+        TestSetupUtilities.hostExpectingNamedCompliance("platformPrimaryButtonStyle") {
             Button("Go") {}.platformPrimaryButtonStyle()
         }
     }
 
     @Test @MainActor
     func secondaryButtonStyleUsesNamedCompliance() {
-        hostExpectingNamedCompliance("platformSecondaryButtonStyle") {
+        TestSetupUtilities.hostExpectingNamedCompliance("platformSecondaryButtonStyle") {
             Button("Maybe") {}.platformSecondaryButtonStyle()
         }
     }
 
     @Test @MainActor
     func destructiveButtonStyleUsesNamedCompliance() {
-        hostExpectingNamedCompliance("platformDestructiveButtonStyle") {
+        TestSetupUtilities.hostExpectingNamedCompliance("platformDestructiveButtonStyle") {
             Button("Stop") {}.platformDestructiveButtonStyle()
         }
     }
 
     @Test @MainActor
     func iconButtonUsesNamedCompliance() {
-        hostExpectingNamedCompliance("platformIconButton") {
+        TestSetupUtilities.hostExpectingNamedCompliance("platformIconButton") {
             EmptyView().platformIconButton(
                 systemImage: "trash",
                 accessibilityLabel: "Delete item",
@@ -57,7 +57,7 @@ struct PlatformLayer4RemainingComponentsUnitTests {
 
     @Test @MainActor
     func cardGridUsesNamedCompliance() {
-        hostExpectingNamedCompliance("platformCardGrid") {
+        TestSetupUtilities.hostExpectingNamedCompliance("platformCardGrid") {
             EmptyView().platformCardGrid(columns: 2, spacing: 8) {
                 Text("A")
             }
@@ -66,7 +66,7 @@ struct PlatformLayer4RemainingComponentsUnitTests {
 
     @Test @MainActor
     func cardMasonryUsesNamedCompliance() {
-        hostExpectingNamedCompliance("platformCardMasonry") {
+        TestSetupUtilities.hostExpectingNamedCompliance("platformCardMasonry") {
             EmptyView().platformCardMasonry(columns: 2, spacing: 8) {
                 Text("M")
             }
@@ -75,7 +75,7 @@ struct PlatformLayer4RemainingComponentsUnitTests {
 
     @Test @MainActor
     func cardListUsesNamedCompliance() {
-        hostExpectingNamedCompliance("platformCardList") {
+        TestSetupUtilities.hostExpectingNamedCompliance("platformCardList") {
             EmptyView().platformCardList(spacing: 8) {
                 Text("L")
             }
@@ -84,7 +84,7 @@ struct PlatformLayer4RemainingComponentsUnitTests {
 
     @Test @MainActor
     func cardAdaptiveUsesNamedCompliance() {
-        hostExpectingNamedCompliance("platformCardAdaptive") {
+        TestSetupUtilities.hostExpectingNamedCompliance("platformCardAdaptive") {
             EmptyView().platformCardAdaptive(minWidth: 80, maxWidth: 200) {
                 Text("C")
             }
@@ -93,14 +93,14 @@ struct PlatformLayer4RemainingComponentsUnitTests {
 
     @Test @MainActor
     func cardStyleUsesNamedCompliance() {
-        hostExpectingNamedCompliance("platformCardStyle") {
+        TestSetupUtilities.hostExpectingNamedCompliance("platformCardStyle") {
             Text("Card").platformCardStyle()
         }
     }
 
     @Test @MainActor
     func cardPaddingUsesNamedCompliance() {
-        hostExpectingNamedCompliance("platformCardPadding") {
+        TestSetupUtilities.hostExpectingNamedCompliance("platformCardPadding") {
             Text("Padded").platformCardPadding()
         }
     }
@@ -109,14 +109,14 @@ struct PlatformLayer4RemainingComponentsUnitTests {
 
     @Test @MainActor
     func listRowUsesNamedComplianceAndTitle() {
-        hostExpectingNamedCompliance("platformListRow") {
+        TestSetupUtilities.hostExpectingNamedCompliance("platformListRow") {
             EmptyView().platformListRow(title: "Item") { Text(">") }
         }
     }
 
     @Test @MainActor
     func listRowContentOverloadUsesNamedCompliance() {
-        hostExpectingNamedCompliance("platformListRow") {
+        TestSetupUtilities.hostExpectingNamedCompliance("platformListRow") {
             EmptyView().platformListRow(label: "Legacy") {
                 Text("Row")
             }
@@ -125,14 +125,14 @@ struct PlatformLayer4RemainingComponentsUnitTests {
 
     @Test @MainActor
     func listSectionHeaderUsesNamedCompliance() {
-        hostExpectingNamedCompliance("platformListSectionHeader") {
+        TestSetupUtilities.hostExpectingNamedCompliance("platformListSectionHeader") {
             EmptyView().platformListSectionHeader(title: "Section", subtitle: "Sub")
         }
     }
 
     @Test @MainActor
     func listEmptyStateUsesNamedCompliance() {
-        hostExpectingNamedCompliance("platformListEmptyState") {
+        TestSetupUtilities.hostExpectingNamedCompliance("platformListEmptyState") {
             EmptyView().platformListEmptyState(
                 systemImage: "tray",
                 title: "None",
@@ -143,12 +143,12 @@ struct PlatformLayer4RemainingComponentsUnitTests {
 
     @Test @MainActor
     func selectableListRowUsesNamedCompliance() {
-        hostExpectingNamedCompliance("platformSelectableListRow") {
+        TestSetupUtilities.hostExpectingNamedCompliance("platformSelectableListRow") {
             EmptyView().platformSelectableListRow(isSelected: true, onSelect: {}) {
                 Text("Pick")
             }
         }
-        hostExpectingNamedCompliance("platformSelectableListRow") {
+        TestSetupUtilities.hostExpectingNamedCompliance("platformSelectableListRow") {
             EmptyView().platformSelectableListRow(isSelected: false, onSelect: {}) {
                 Text("Idle")
             }
@@ -157,7 +157,7 @@ struct PlatformLayer4RemainingComponentsUnitTests {
 
     @Test @MainActor
     func detailPlaceholderUsesNamedCompliance() {
-        hostExpectingNamedCompliance("platformDetailPlaceholder") {
+        TestSetupUtilities.hostExpectingNamedCompliance("platformDetailPlaceholder") {
             EmptyView().platformDetailPlaceholder(
                 systemImage: "doc",
                 title: "Nothing selected",
@@ -170,7 +170,7 @@ struct PlatformLayer4RemainingComponentsUnitTests {
 
     @Test @MainActor
     func stylingModifiersHost() {
-        hostView {
+        TestSetupUtilities.hostExpectingPlatformRoot {
             Text("Style")
                 .platformBackground()
                 .platformBackground(.blue)
@@ -202,7 +202,7 @@ struct PlatformLayer4RemainingComponentsUnitTests {
 
     @Test @MainActor
     func styledContainerHosts() {
-        hostView {
+        TestSetupUtilities.hostExpectingPlatformRoot {
             EmptyView().platformStyledContainer_L4 {
                 Text("Boxed")
             }
@@ -211,27 +211,23 @@ struct PlatformLayer4RemainingComponentsUnitTests {
 
     @Test @MainActor
     func platformAnimationHonorsReduceMotionOverride() {
-        #if os(watchOS)
-        return
-        #else
         PlatformReduceMotionPreference.withTestOverride(true) {
-            hostView {
+            TestSetupUtilities.hostExpectingPlatformRoot {
                 Text("Still").platformAnimation()
             }
         }
         PlatformReduceMotionPreference.withTestOverride(false) {
-            hostView {
+            TestSetupUtilities.hostExpectingPlatformRoot {
                 Text("Motion").platformAnimation(.linear, value: 1)
             }
         }
-        #endif
     }
 
     // MARK: - Modal sheet navigation chrome
 
     @Test @MainActor
     func modalSheetNavigationChromeUsesNamedCompliance() {
-        hostExpectingNamedCompliance("platformModalSheetNavigationChrome_L4") {
+        TestSetupUtilities.hostExpectingNamedCompliance("platformModalSheetNavigationChrome_L4") {
             Text("Body").platformModalSheetNavigationChrome_L4(
                 title: "Sheet",
                 onConfirmation: {}
@@ -243,7 +239,7 @@ struct PlatformLayer4RemainingComponentsUnitTests {
 
     @Test @MainActor
     func modalSheetNavigationChromeWithLeadingUsesNamedCompliance() {
-        hostExpectingNamedCompliance("platformModalSheetNavigationChrome_L4") {
+        TestSetupUtilities.hostExpectingNamedCompliance("platformModalSheetNavigationChrome_L4") {
             Text("Body").platformModalSheetNavigationChrome_L4(
                 title: "Sheet",
                 onConfirmation: {},
@@ -258,7 +254,7 @@ struct PlatformLayer4RemainingComponentsUnitTests {
 
     @Test @MainActor
     func rowActionButtonsHost() {
-        hostView {
+        TestSetupUtilities.hostExpectingPlatformRoot {
             VStack {
                 PlatformRowActionButton(title: "Edit", systemImage: "pencil") {}
                 PlatformDestructiveRowActionButton(title: "Delete", systemImage: "trash") {}
@@ -268,7 +264,7 @@ struct PlatformLayer4RemainingComponentsUnitTests {
 
     @Test @MainActor
     func rowActionsModifierUsesNamedCompliance() {
-        hostExpectingNamedCompliance("platformRowActions_L4") {
+        TestSetupUtilities.hostExpectingNamedCompliance("platformRowActions_L4") {
             Text("Row").platformRowActions_L4 {
                 Button("Edit") {}
             }
@@ -277,7 +273,7 @@ struct PlatformLayer4RemainingComponentsUnitTests {
 
     @Test @MainActor
     func contextMenuUsesNamedCompliance() {
-        hostExpectingNamedCompliance("platformContextMenu_L4") {
+        TestSetupUtilities.hostExpectingNamedCompliance("platformContextMenu_L4") {
             Text("Menu").platformContextMenu_L4 {
                 Button("Info") {}
             }
@@ -287,10 +283,15 @@ struct PlatformLayer4RemainingComponentsUnitTests {
     @Test @MainActor
     func contextMenuWithPreviewUsesNamedCompliance() {
         #if os(watchOS)
-        return
+        // Preview overload is unavailable; still observe the base named path (#622).
+        TestSetupUtilities.hostExpectingNamedCompliance("platformContextMenu_L4") {
+            Text("Preview").platformContextMenu_L4 {
+                Button("Info") {}
+            }
+        }
         #else
         if #available(iOS 16.0, *) {
-            hostExpectingNamedCompliance("platformContextMenu_L4") {
+            TestSetupUtilities.hostExpectingNamedCompliance("platformContextMenu_L4") {
                 Text("Preview").platformContextMenu_L4 {
                     Button("Info") {}
                 } preview: {
@@ -305,7 +306,7 @@ struct PlatformLayer4RemainingComponentsUnitTests {
 
     @Test @MainActor
     func popoverUsesNamedCompliance() {
-        hostExpectingNamedCompliance("platformPopover_L4") {
+        TestSetupUtilities.hostExpectingNamedCompliance("platformPopover_L4") {
             Text("Anchor").platformPopover_L4(isPresented: .constant(false)) {
                 Text("Pop")
             }
@@ -315,7 +316,7 @@ struct PlatformLayer4RemainingComponentsUnitTests {
     @Test @MainActor
     func sheetL4Hosts() {
         // iOS omits named sheet compliance (flattening / #193); observe that the modifier hosts.
-        hostView {
+        TestSetupUtilities.hostExpectingPlatformRoot {
             Text("Root").platformSheet_L4(isPresented: .constant(false)) {
                 Text("Sheet")
             }
@@ -324,7 +325,7 @@ struct PlatformLayer4RemainingComponentsUnitTests {
 
     @Test @MainActor
     func sheetL4ItemBindingHosts() {
-        hostView {
+        TestSetupUtilities.hostExpectingPlatformRoot {
             Text("Root").platformSheet_L4(item: .constant(SheetItem(id: "one"))) { item in
                 Text(item.id)
             }
@@ -335,7 +336,7 @@ struct PlatformLayer4RemainingComponentsUnitTests {
 
     @Test @MainActor
     func platformSheetAliasUsesNamedCompliance() {
-        hostExpectingNamedCompliance("platformSheet") {
+        TestSetupUtilities.hostExpectingNamedCompliance("platformSheet") {
             Text("Root").platformSheet(isPresented: .constant(false)) {
                 Text("Legacy sheet")
             }
@@ -344,7 +345,7 @@ struct PlatformLayer4RemainingComponentsUnitTests {
 
     @Test @MainActor
     func platformAlertAndConfirmationDialogHost() {
-        hostView {
+        TestSetupUtilities.hostExpectingPlatformRoot {
             Text("Root")
                 .platformAlert(
                     isPresented: .constant(false),
@@ -363,36 +364,11 @@ struct PlatformLayer4RemainingComponentsUnitTests {
 
     @Test @MainActor
     func platformDismissEmbeddedSettingsHosts() {
-        hostView {
+        TestSetupUtilities.hostExpectingPlatformRoot {
             Text("Settings").platformDismissEmbeddedSettings(onClose: {})
         }
     }
 
     // MARK: - Hosting helpers
 
-    @MainActor
-    private func hostExpectingNamedCompliance<V: View>(
-        _ name: String,
-        @ViewBuilder _ view: () -> V
-    ) {
-        #if os(watchOS)
-        return
-        #else
-        let (hosted, log) = TestSetupUtilities.hostRootPlatformViewNamedDebugLog(view())
-        #expect(hosted != nil)
-        #expect(
-            log.contains(name),
-            "named compliance \(name) must appear in debug log"
-        )
-        #endif
-    }
-
-    @MainActor
-    private func hostView<V: View>(@ViewBuilder _ view: () -> V) {
-        #if os(watchOS)
-        return
-        #else
-        #expect(TestSetupUtilities.hostRootPlatformView(view(), forceLayout: true) != nil)
-        #endif
-    }
 }

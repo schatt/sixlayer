@@ -14,12 +14,16 @@ struct FormEditorCommit: Equatable {
 /// Keystrokes write into ``DynamicFormState``. A later `setValue`, including a sibling
 /// field, may refresh an unfocused editor. It does not assign the local text, so SwiftUI
 /// does not push a replacement into the field editor.
+///
+/// `rejectsUnfocusedWrite` drops a binding set that would echo a stale string over a
+/// stored number (#558). Focused edits are not passed to that closure.
 @MainActor
 struct FormEditorText<Editor: View>: View {
     @ObservedObject var formState: DynamicFormState
     let fieldID: String
     let externalDisplay: String
     var forcedCommit: FormEditorCommit = FormEditorCommit()
+    var rejectsUnfocusedWrite: ((String) -> Bool)? = nil
     let write: (String) -> Void
     @ViewBuilder let editor: (Binding<String>) -> Editor
 
@@ -28,7 +32,7 @@ struct FormEditorText<Editor: View>: View {
     @State private var gate = WriteGate()
 
     var body: some View {
-        editor($editingText)
+        editor(rejectsUnfocusedWrite == nil ? $editingText : textBinding)
             .focused($isFocused)
             .onAppear {
                 applyExternal(externalDisplay)
@@ -40,6 +44,11 @@ struct FormEditorText<Editor: View>: View {
                 if gate.suppressed {
                     gate.suppressed = false
                     return
+                }
+                // Publish focus before the write so a numeric guard keyed on
+                // `focusedFieldId` still accepts the keystroke (#558).
+                if isFocused, formState.focusedFieldId != fieldID {
+                    formState.focusedFieldId = fieldID
                 }
                 write(newValue)
             }
@@ -69,6 +78,21 @@ struct FormEditorText<Editor: View>: View {
                 guard commit.token > 0 else { return }
                 applyExternal(commit.text)
             }
+    }
+
+    /// Unfocused sets that the caller rejects never enter the local buffer, so the
+    /// text field stays on the external display instead of echoing the old string.
+    private var textBinding: Binding<String> {
+        Binding(
+            get: { editingText },
+            set: { newValue in
+                let focused = isFocused || formState.focusedFieldId == fieldID
+                if !focused, rejectsUnfocusedWrite?(newValue) == true {
+                    return
+                }
+                editingText = newValue
+            }
+        )
     }
 
     private func applyExternal(_ value: String) {

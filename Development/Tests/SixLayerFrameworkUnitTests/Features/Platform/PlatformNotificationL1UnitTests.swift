@@ -37,16 +37,12 @@ struct PlatformNotificationL1UnitTests {
 
     @Test @MainActor
     func presentAlertL1HostsEmptyShell() {
-        #if os(watchOS)
-        return
-        #else
-        let view = platformPresentAlert_L1(
-            title: "Alert",
-            message: "Message",
-            locale: Locale(identifier: "en_US")
-        )
-        let hosted = TestSetupUtilities.hostRootPlatformView(view, forceLayout: true)
-        #expect(hosted != nil, "alert L1 service shell must host")
-        #endif
+        TestSetupUtilities.hostExpectingPlatformRoot {
+            platformPresentAlert_L1(
+                title: "Alert",
+                message: "Message",
+                locale: Locale(identifier: "en_US")
+            )
+        }
     }
 }
