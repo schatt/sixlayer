@@ -295,13 +295,7 @@ public enum SevenSegmentOCR {
         // measures everything from the panel itself (#576 real photos).
         var rows = SevenSegmentLatticeReader.readRefined(pixels: gray.pixels, width: gray.width, height: gray.height)
         var lattice = result(rows.map { [latticeFragment($0, width: gray.width, height: gray.height)] })
-        if FileManager.default.fileExists(atPath: "/tmp/sixlayer-600-ocr-parts") {
-            let cells = rows.map { row in
-                row.map { "\($0.character)@\(String(format: "%.2f", $0.confidence))" }.joined(separator: " ")
-            }.joined(separator: " | ")
-            let line = "parts legacy [\(legacy.extractedText)] lattice [\(lattice.extractedText)] cells [\(cells)]\n"
-            try? line.write(toFile: "/tmp/sixlayer-600-ocr-parts.txt", atomically: true, encoding: .utf8)
-        }
+        let cropLattice = lattice.extractedText
         // The panel finder above can pick the wrong region of a real photo
         // (a payment screen, an ad). When the crop does not read cleanly,
         // search the whole frame for the region that reads best. Those
@@ -317,6 +311,10 @@ public enum SevenSegmentOCR {
                 rows = located
                 lattice = result(located.map { [latticeFragment($0, width: frame.width, height: frame.height)] })
             }
+        }
+        if FileManager.default.fileExists(atPath: "/tmp/sixlayer-600-ocr-parts") {
+            let line = "parts legacy [\(legacy.extractedText)] crop [\(cropLattice)] searched [\(lattice.extractedText)]\n"
+            try? line.write(toFile: "/tmp/sixlayer-600-ocr-parts.txt", atomically: true, encoding: .utf8)
         }
         // Legacy carries group spacing, commas, colons and unknown-cell
         // placeholders, so it stays when it is believable. Its photo output
@@ -4406,8 +4404,7 @@ private struct Reader {
         scale = Double(h) / Double(height)
         smallWidth = max(1, Int((Double(width) * scale).rounded()))
         let small = boxResize(pixels, width: width, height: height, toWidth: smallWidth, toHeight: h)
-        // Probe (#600): a 3×3 median deletes a stem the shrink left one pixel wide.
-        let smoothed = small
+        let smoothed = median3(small, width: smallWidth, height: h)
 
         // Each window size gives a candidate mask. The candidate whose read
         // ranks best wins (sure-row information, then all information), and
@@ -4929,23 +4926,6 @@ private struct Reader {
         var pattern = SevenSegmentPattern()
         for (segment, value) in zones where value > max(0.22, 0.4 * top) {
             pattern.formUnion(segment)
-        }
-        if FileManager.default.fileExists(atPath: "/tmp/sixlayer-600-ocr-parts") {
-            let names = ["a", "b", "c", "d", "e", "f", "g"]
-            let shares = zip(names, zones.map(\.1)).map { "\($0.0)=\(String(format: "%.3f", $0.1))" }.joined(separator: " ")
-            let (character, confidence) = SevenSegmentLatticeReader.digit(for: pattern)
-            let line = "zones holes=\(String(format: "%.3f", holes)) cut=\(String(format: "%.3f", max(0.22, 0.4 * top))) \(shares) -> \(character)@\(String(format: "%.2f", confidence))\n"
-            if let data = line.data(using: .utf8) {
-                let path = "/tmp/sixlayer-600-ocr-zones.txt"
-                if !FileManager.default.fileExists(atPath: path) {
-                    FileManager.default.createFile(atPath: path, contents: nil)
-                }
-                if let handle = FileHandle(forWritingAtPath: path) {
-                    handle.seekToEndOfFile()
-                    handle.write(data)
-                    try? handle.close()
-                }
-            }
         }
         return SevenSegmentLatticeReader.digit(for: pattern)
     }
