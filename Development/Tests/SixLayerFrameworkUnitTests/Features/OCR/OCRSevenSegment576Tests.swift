@@ -213,11 +213,19 @@ struct OCRSevenSegment576Tests {
     @Test func valleyStreakDoesNotHideTheOtherGlyphs() {
         // A vertical ink streak in the inter-row valley is treated as bezel,
         // so readingSpan keeps only the inkiest short run and the per-row
-        // window never sees the rest of the field (#612). Row bands must be
-        // re-read across the digits, not only that run.
+        // window never sees the rest of the field (#612). Pair that streak
+        // with the tall-haze / left-scratch geometry that needs rescanned
+        // rowcrops — otherwise the parent full-width path can still read
+        // both sides and the fixture only poisons the decimal into a comma.
         let image = SegmentPanel.render(
             rows: [atoms("32.88"), atoms("8.022")],
+            padding: 80,
+            inkLevel: 30,
+            backgroundLevel: 130,
             outerMargin: 200,
+            gapGlare: true,
+            leftScratch: true,
+            tallHaze: true,
             valleyStreak: true
         )
         #expect(decode(image, maximum: 0).extractedText == "32.88\n8.022")
@@ -1721,7 +1729,8 @@ enum SegmentPanel {
 
     /// Vertical ink only in the inter-row valley, under the price decimal so
     /// it splits the digit field into two runs. readingSpan treats that column
-    /// as bezel and keeps only the inkiest run (#612).
+    /// as bezel and keeps only the inkiest run (#612). Leave clear rows under
+    /// the upper band so hang reach cannot turn the period into a comma.
     private static func paintValleyStreak(
         _ pixels: inout [UInt8],
         width: Int,
@@ -1733,12 +1742,18 @@ enum SegmentPanel {
         guard let first = bands.first, let last = bands.last else { return }
         let gapTop = first.maxY
         let gapBottom = last.minY
-        guard gapBottom > gapTop else { return }
+        let gap = gapBottom - gapTop
+        guard gap > 0 else { return }
+        let clear = max(8, gap / 4)
+        let y0 = gapTop + clear
+        let y1 = gapBottom - clear
+        // Edge detection needs more than valley/3 ink pixels in the column.
+        guard y1 - y0 > max(4, gap / 3) else { return }
         // After two digit cells: under the "." between 32 and 88.
         let streakX = padding + 2 * (cellW + intra)
         let streakEnd = min(width, streakX + max(4, stroke / 2))
         guard streakEnd > streakX else { return }
-        for y in gapTop..<gapBottom {
+        for y in y0..<y1 {
             for x in streakX..<streakEnd {
                 pixels[y * width + x] = ink
             }
