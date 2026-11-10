@@ -4712,6 +4712,12 @@ private enum FlatSevenSegment {
                 let lo = max(0, y - r)
                 let hi = min(h, y + r + 1)
                 out[y * w + x] = (prefix[hi] - prefix[lo]) / Float(hi - lo)
+            }
+        }
+        return out
+    }
+}
+
 // MARK: - Lattice reader (photographed panels)
 //
 // Scale-relative reader for photographed seven-segment panels.
