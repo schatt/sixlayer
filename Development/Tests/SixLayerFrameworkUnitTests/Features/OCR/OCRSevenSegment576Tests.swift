@@ -1727,10 +1727,11 @@ enum SegmentPanel {
         }
     }
 
-    /// Vertical ink only in the inter-row valley, under the price decimal so
-    /// it splits the digit field into two runs. readingSpan treats that column
+    /// Vertical ink only in the inter-row valley, in the intra gap after "32"
+    /// so it splits the digit field into two runs without sitting under the
+    /// period (gapStrip would drop that mark). readingSpan treats the column
     /// as bezel and keeps only the inkiest run (#612). Leave clear rows under
-    /// the upper band so hang reach cannot turn the period into a comma.
+    /// the upper band so hang reach cannot turn a nearby period into a comma.
     private static func paintValleyStreak(
         _ pixels: inout [UInt8],
         width: Int,
@@ -1749,8 +1750,8 @@ enum SegmentPanel {
         let y1 = gapBottom - clear
         // Edge detection needs more than valley/3 ink pixels in the column.
         guard y1 - y0 > max(4, gap / 3) else { return }
-        // After two digit cells: under the "." between 32 and 88.
-        let streakX = padding + 2 * (cellW + intra)
+        // End of the second digit cell — before the period between 32 and 88.
+        let streakX = padding + 2 * cellW + intra
         let streakEnd = min(width, streakX + max(4, stroke / 2))
         guard streakEnd > streakX else { return }
         for y in y0..<y1 {
