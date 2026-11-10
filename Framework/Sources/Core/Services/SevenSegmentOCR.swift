@@ -2821,6 +2821,11 @@ private func readingSpan(_ mask: Mask, bands: [(Int, Int)]) -> (Int, Int)? {
     }
     pieces.append((start, end + 1, ink))
     let gapLimit = max(8, min(16, height / 40))
+    // A valley streak removes its columns from the active set, so the gap
+    // between glyph pieces is the streak width plus any empty glass. Allow
+    // about a cell so mid-field bezels still join (#612). Left scratch and
+    // edge-strip specks sit farther away or are not glyph-wide.
+    let glyphGap = 48
     let glyphWidth = 8
     var runs: [(start: Int, end: Int, ink: Int)] = []
     var current = pieces[0]
@@ -2829,9 +2834,10 @@ private func readingSpan(_ mask: Mask, bands: [(Int, Int)]) -> (Int, Int)? {
         let crossesBezel = (current.end..<piece.start).contains { edgeColumn[$0] }
         let widePieces = (current.end - current.start) >= glyphWidth
             && (piece.end - piece.start) >= glyphWidth
+        let limit = widePieces ? max(gapLimit, glyphGap) : gapLimit
         // Join across a short gap. A mid-field valley streak is a bezel
         // column between two glyph runs — still one digit field (#612).
-        if gap <= gapLimit, !crossesBezel || widePieces {
+        if gap <= limit, !crossesBezel || widePieces {
             current.end = piece.end
             current.ink += piece.ink
         } else {
