@@ -165,9 +165,15 @@ public enum SevenSegmentOCR {
                     .reduce(0) { $0 + $1.text.filter(\.isNumber).count }
             }
             let flatFragments = sure.map { recognizedGroups($0, width: gray.width, height: gray.height) }
-            let maskBroken = fragments.isEmpty
-                || fragments.flatMap { $0 }.contains { $0.text.contains("_") || $0.confidence == 0 }
-            if maskBroken || sureDigits(flatFragments) > sureDigits(fragments) { fragments = flatFragments }
+            let flatSure = sureDigits(flatFragments)
+            let maskSure = sureDigits(fragments)
+            // Flat wins on more sure digits. An unknown-cell `_` in the mask
+            // is not a veto of a richer flat read (#666), but it is also not
+            // a free replace when flat only kept the surrounding digits and
+            // dropped the placeholder (#661 `8_2` → `8`).
+            if flatSure > maskSure || (fragments.isEmpty && flatSure > 0) {
+                fragments = flatFragments
+            }
         }
         let legacy = result(fragments)
         // Photographed panels: italic digits, segment gaps, reflections and
@@ -212,6 +218,17 @@ public enum SevenSegmentOCR {
             return legacy
         }
         if !rows.isEmpty, quality(lattice) >= quality(legacy) {
+            // Non-confident lattice can score above a mark-bearing legacy
+            // read because `quality` penalizes `_` (#661 alone `8_2` → `8`).
+            // Keep legacy when it already holds at least as many digits and
+            // carries unknown-cell placeholders lattice dropped.
+            let legacyText = legacy.extractedText
+            let latticeText = lattice.extractedText
+            let legacyDigits = legacyText.filter(\.isNumber).count
+            let latticeDigits = latticeText.filter(\.isNumber).count
+            if legacyText.contains("_"), legacyDigits >= latticeDigits {
+                return legacy
+            }
             return lattice
         }
         return legacy
