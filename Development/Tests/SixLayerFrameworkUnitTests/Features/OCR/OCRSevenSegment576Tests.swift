@@ -210,13 +210,24 @@ struct OCRSevenSegment576Tests {
         #expect(decode(image, maximum: 0).extractedText == "32.88\n8.022")
     }
 
+    @Test func valleyStreakDoesNotCollapseTheDigitFieldSpan() {
+        // Two glyph runs with a valley streak between them. readingSpan
+        // treats the streak as bezel and keeps only the inkiest run, so the
+        // shared rowcrop window never covers the other glyphs (#612).
+        let span = ReadingSpanProbe.span(
+            width: 200,
+            height: 200,
+            digitColumns: [(10, 40), (80, 110)],
+            valleyStreak: (50, 56),
+            bands: [(20, 80), (120, 180)]
+        )
+        #expect(span?.0 == 10)
+        #expect(span?.1 == 110)
+    }
+
     @Test func valleyStreakDoesNotHideTheOtherGlyphs() {
-        // A vertical ink streak in the inter-row valley is treated as bezel,
-        // so readingSpan keeps only the inkiest short run and the per-row
-        // window never sees the rest of the field (#612). Pair that streak
-        // with the tall-haze / left-scratch geometry that needs rescanned
-        // rowcrops — otherwise the parent full-width path can still read
-        // both sides and the fixture only poisons the decimal into a comma.
+        // End-to-end regression: tall-haze / left-scratch rowcrops plus a
+        // valley streak must still read both sides of the field (#612).
         let image = SegmentPanel.render(
             rows: [atoms("32.88"), atoms("8.022")],
             padding: 80,
