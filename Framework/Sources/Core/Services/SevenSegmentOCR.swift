@@ -2341,6 +2341,7 @@ private extension GrayBuffer {
             lineBands = splitBands.compactMap { raw in
                 let headed = trimmingGlareHead(raw, mask: glyphs, pixels: buffer.pixels)
                 let peeled = trimmingSparseEdges(headed, mask: cellGlyphs)
+                trace("head \(raw.0)-\(raw.1) -> \(headed.0)-\(headed.1) peel \(peeled.0)-\(peeled.1)\n")
                 return peeled.1 > peeled.0 + 8 ? peeled : nil
             }
         }
@@ -2426,7 +2427,7 @@ private extension GrayBuffer {
                     sampleBand: sampleBand
                 ).flatMap { $0 }
                 let shifted = found.map { $0.shifted(dx: x0, dy: y0) }
-                if buffer.width >= 900 {
+                if buffer.width >= 100 {
                     let pitchNote = rowPitch.map { " pitch \($0.body)x\($0.count)" } ?? ""
                     trace(
                         "rowcrop \(x0),\(y0) \(crop.width)x\(crop.height) [\(String(shifted.map(\.character)))]\(pitchNote)\n"
