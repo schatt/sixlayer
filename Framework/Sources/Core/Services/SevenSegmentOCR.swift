@@ -4978,8 +4978,9 @@ private struct Reader {
     private func addsOneVerticalStem(_ current: SevenSegmentPattern, over previous: SevenSegmentPattern) -> Bool {
         let added = current.subtracting(previous)
         let vertical: SevenSegmentPattern = [.b, .c, .e, .f]
-        let _ = (added, vertical, current, previous)
-        return false
+        return previous.subtracting(current).isEmpty
+            && added.subtracting(vertical).isEmpty
+            && added.rawValue.nonzeroBitCount == 1
     }
 
     // MARK: Coordinates
@@ -5570,14 +5571,18 @@ private func slotInkBottom(_ mask: BitMask, x0: Int, x1: Int, stroke: Double) ->
         return left != right ? left < right : lhs.0 > rhs.0
     }) else { return (mask.height, mask.height) }
     let pad = max(1, Int(stroke * 0.3))
-    let next = runs.compactMap { $0.0 >= longest.1 ? $0.0 : nil }.min() ?? mask.height
-    // A short piece is a broken stroke, not the glyph. Leave the band
-    // alone. Trim when the glyph reaches the baseline and either the next
-    // row continues in these columns or empty glass hangs under the bar.
+    let strokeRows = max(2, Int(stroke))
+    let next = runs.compactMap { run in
+        run.0 >= longest.1 && run.1 - run.0 > strokeRows ? run.0 : nil
+    }.min() ?? mask.height
+    // A short piece is a broken stroke. A tall empty tail means the run
+    // ended early. Trim only for a real next row, or a short hang of glass
+    // under a bar that already reaches the baseline.
     let reachesBaseline = longest.1 > mask.height * 2 / 3
     let separated = next < mask.height
-    let trailingGlass = mask.height - longest.1 > pad
-    guard reachesBaseline && (separated || trailingGlass) else {
+    let tail = mask.height - longest.1
+    let modestGlass = tail > pad && tail < mask.height / 5
+    guard reachesBaseline && (separated || modestGlass) else {
         return (mask.height, mask.height)
     }
     return (min(longest.1 + pad, next), longest.1)
