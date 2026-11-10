@@ -3074,11 +3074,11 @@ private func trimmingSparseEdges(_ band: (Int, Int), mask: Mask) -> (Int, Int) {
     func sparse(_ index: Int) -> Bool {
         let lengths = perRow[index]
         guard !lengths.isEmpty else { return true }
-        let longRuns = lengths.filter { $0 * 2 >= typical }.count
-        let shortRuns = lengths.count - longRuns
-        // A left scratch is one solid run. The rest of a haze row is specks.
-        // A digit bar is one solid run with no specks, so the peel stops there.
-        return longRuns == 0 || (longRuns == 1 && shortRuns > 4)
+        // Mean, not the longest run. A stem is one short run and must stay;
+        // calling every non-bar row sparse peeled the top off a 2. Haze is
+        // many specks, so its mean stays far under the stroke.
+        let mean = lengths.reduce(0, +) / lengths.count
+        return mean * 3 < typical
     }
     let limit = (band.1 - band.0) / 2
     var top = 0
@@ -3136,18 +3136,18 @@ private func clearingOverlongRows(
     return Mask(bits: bits, width: width, height: mask.height)
 }
 
-/// One glyph sitting far left of the digit pitch is a scratch. A real
-/// group has more than one glyph on the left of its gap, so the first
-/// gap there is an ordinary intra-digit gap and the row stays.
+/// One glyph sitting in the padding, with a hole wider than that glyph on
+/// both sides of the comparison, is a scratch. Dropping it has to leave
+/// at least four fifths of the digits: the gap before a narrow 1 is not
+/// a scratch (`3125` stays).
 private func droppingLeftScratch(_ cells: [Cell]) -> [Cell] {
     let digits = cells.filter { $0.character.isNumber && $0.height > 0 }
         .sorted { $0.minX < $1.minX }
-    guard digits.count >= 3 else { return cells }
-    let gaps = (1..<digits.count).map { digits[$0].minX - digits[$0 - 1].maxX }
-    let positive = gaps.filter { $0 > 0 }
-    guard let typical = median(positive), typical > 0, gaps[0] > max(8, typical * 3) else {
-        return cells
-    }
+    guard digits.count >= 5 else { return cells }
+    let hole = digits[1].minX - digits[0].maxX
+    let width = digits[0].maxX - digits[0].minX
+    let remain = digits.count - 1
+    guard hole > 8, hole > width * 2, remain * 5 >= digits.count * 4 else { return cells }
     let cut = digits[1].minX
     return cells.filter { $0.minX >= cut }
 }
