@@ -2505,12 +2505,6 @@ private extension GrayBuffer {
                 }
             }
         }
-        // The scratch sits in the digit rows, left of a gap the span will
-        // not cross. The row crop is what used to apply that span; this
-        // mask is the one that reads when the crop window is not narrower.
-        let digitSpan = splittingRows && lineBands.count > 1
-            ? readingSpan(glyphs, bands: lineBands)
-            : nil
         return lineBands.compactMap { band -> [Cell]? in
             let found = cells(
                 in: band,
@@ -2525,10 +2519,7 @@ private extension GrayBuffer {
                 ? []
                 : oppositeMarks(in: band, secondary: paintedMarks, existing: found, buffer: buffer, bandIndex: 0)
             let dots = baselineDots(in: band, mask: glyphs, cells: found, width: buffer.width, bandIndex: 0)
-            var row = found + marks + dots
-            if let digitSpan {
-                row = row.filter { $0.maxX > digitSpan.0 && $0.minX < digitSpan.1 }
-            }
+            var row = droppingLeftScratch(found + marks + dots)
             // Pitch volume often washes the glass above the real decimal, so
             // baselineDots misses it and a trailing noise mark can survive.
             // Keep only marks between digits; if none, place one in the
@@ -3143,6 +3134,22 @@ private func clearingOverlongRows(
         }
     }
     return Mask(bits: bits, width: width, height: mask.height)
+}
+
+/// One glyph sitting far left of the digit pitch is a scratch. A real
+/// group has more than one glyph on the left of its gap, so the first
+/// gap there is an ordinary intra-digit gap and the row stays.
+private func droppingLeftScratch(_ cells: [Cell]) -> [Cell] {
+    let digits = cells.filter { $0.character.isNumber && $0.height > 0 }
+        .sorted { $0.minX < $1.minX }
+    guard digits.count >= 3 else { return cells }
+    let gaps = (1..<digits.count).map { digits[$0].minX - digits[$0 - 1].maxX }
+    let positive = gaps.filter { $0 > 0 }
+    guard let typical = median(positive), typical > 0, gaps[0] > max(8, typical * 3) else {
+        return cells
+    }
+    let cut = digits[1].minX
+    return cells.filter { $0.minX >= cut }
 }
 
 /// Columns that hold digit ink and stay empty in the gap between rows.
