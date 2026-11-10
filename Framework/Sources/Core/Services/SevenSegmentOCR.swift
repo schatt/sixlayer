@@ -194,11 +194,26 @@ public enum SevenSegmentOCR {
                 lattice = result(located.map { [latticeFragment($0, width: frame.width, height: frame.height)] })
             }
         }
+        return chooseLegacyOrLattice(
+            fragments: fragments,
+            legacy: legacy,
+            lattice: lattice,
+            latticeRows: rows
+        )
+    }
+
+    /// Legacy vs lattice pick after both reads. Testable seam for #667.
+    static func chooseLegacyOrLattice(
+        fragments: [[OCRRecognizedText]],
+        legacy: OCRResult,
+        lattice: OCRResult,
+        latticeRows: [[SevenSegmentLatticeReader.Cell]]
+    ) -> OCRResult {
         // Legacy carries group spacing, commas, colons and unknown-cell
         // placeholders, so it stays when it is believable. Its photo output
         // is mostly "1", "_" and stray marks, sometimes at confidence 1.0, so
         // a confident lattice read needs a richer legacy read to lose.
-        if SevenSegmentLatticeReader.isConfident(rows) {
+        if SevenSegmentLatticeReader.isConfident(latticeRows) {
             if isPlausible(fragments) {
                 return quality(legacy) >= quality(lattice) ? legacy : lattice
             }
@@ -208,7 +223,7 @@ public enum SevenSegmentOCR {
             let trustedChars = trusted.reduce(0) { $0 + $1.text.count }
             let allChars = fragments.flatMap { $0 }.reduce(0) { $0 + $1.text.count }
             let trustedDigits = trusted.reduce(0) { $0 + $1.text.filter(\.isNumber).count }
-            let latticeDigits = rows.flatMap { $0 }.filter { $0.character.isNumber }.count
+            let latticeDigits = latticeRows.flatMap { $0 }.filter { $0.character.isNumber }.count
             if trustedChars * 2 >= allChars, trustedDigits >= latticeDigits {
                 return legacy
             }
@@ -217,7 +232,7 @@ public enum SevenSegmentOCR {
         if isPlausible(fragments) {
             return legacy
         }
-        if !rows.isEmpty, quality(lattice) >= quality(legacy) {
+        if !latticeRows.isEmpty, quality(lattice) >= quality(legacy) {
             // Non-confident lattice can score above a mark-bearing legacy
             // read because `quality` penalizes `_` (#661 alone `8_2` → `8`).
             // Keep legacy when it already holds at least as many digits and
