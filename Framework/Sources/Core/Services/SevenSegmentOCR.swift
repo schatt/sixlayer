@@ -2182,8 +2182,14 @@ private extension GrayBuffer {
         let masks = (dark: clearingBorderComponents(sealed.dark), light: clearingBorderComponents(sealed.light))
         let sealedCore = (dark: keepingInteriorInk(raw.darkCore), light: keepingInteriorInk(raw.lightCore))
         let cores = (dark: clearingBorderComponents(sealedCore.dark), light: clearingBorderComponents(sealedCore.light))
-        let darkPreferred = prefersDark(masks.dark, masks.light)
-        let darkChoice = polarity(isDark: true, loose: masks.dark, core: cores.dark)
+        // A glare line marks a full-width run of glass on the dark mask. That
+        // one run hides the stroke columns, so the light glass looks like the
+        // ink and every digit reads as 8 (`rescannedRowCrop`). Drop that glass
+        // before choosing polarity. A dark bar stays; it is the stroke.
+        let darkMask = withoutFullWidthGlass(masks.dark, pixels: buffer.pixels)
+        let darkCore = withoutFullWidthGlass(cores.dark, pixels: buffer.pixels)
+        let darkPreferred = prefersDark(darkMask, masks.light)
+        let darkChoice = polarity(isDark: true, loose: darkMask, core: darkCore)
         let lightChoice = polarity(isDark: false, loose: masks.light, core: cores.light)
         let chosen: (isDark: Bool, glyphs: Mask, bandSource: Mask)
         let opened: Bool
@@ -2198,8 +2204,8 @@ private extension GrayBuffer {
             } else if darkPreferred {
                 let forced = polarity(
                     isDark: true,
-                    loose: masks.dark,
-                    core: cores.dark,
+                    loose: darkMask,
+                    core: darkCore,
                     forceOpen: true
                 )
                 chosen = forced.reading
@@ -2956,6 +2962,55 @@ private func rowIsHighlight(_ pixels: [UInt8], y: Int, width: Int) -> Bool {
         bright += 1
     }
     return bright * 2 > width
+}
+
+/// Drop full-width rows of glass from a dark mask. The halfway cut marks
+/// them beside a glare line, and one run then hides every stroke column.
+/// The stroke level is the dark ink that actually covers the mask, so a
+/// dark bar across the crop stays.
+private func withoutFullWidthGlass(_ mask: Mask, pixels: [UInt8]) -> Mask {
+    let width = mask.width
+    guard width > 8, mask.height > 0, pixels.count == mask.bits.count else { return mask }
+    var histogram = [Int](repeating: 0, count: 256)
+    var inkCount = 0
+    for index in mask.bits.indices where mask.bits[index] {
+        histogram[Int(pixels[index])] += 1
+        inkCount += 1
+    }
+    guard inkCount > 0 else { return mask }
+    let needed = max(8, inkCount / 20)
+    var stroke = 0
+    var seen = 0
+    for level in 0..<256 {
+        seen += histogram[level]
+        if seen >= needed {
+            stroke = level
+            break
+        }
+    }
+    let cut = stroke + inkMargin
+    let limit = width * 3 / 4
+    var bits = mask.bits
+    for y in 0..<mask.height {
+        let row = y * width
+        var longest = 0
+        var run = 0
+        var light = 0
+        var count = 0
+        for x in 0..<width {
+            guard bits[row + x] else {
+                run = 0
+                continue
+            }
+            run += 1
+            if run > longest { longest = run }
+            count += 1
+            if Int(pixels[row + x]) > cut { light += 1 }
+        }
+        guard longest > limit, count > 0, light * 2 > count else { continue }
+        for x in 0..<width { bits[row + x] = false }
+    }
+    return Mask(bits: bits, width: width, height: mask.height)
 }
 
 /// A full-width run whose pixels are mid-gray, not the dark stroke. The
