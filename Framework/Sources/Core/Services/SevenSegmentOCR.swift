@@ -2711,6 +2711,50 @@ private func windowRadius(width: Int, height: Int) -> Int {
     return min(36, max(grown, strokeFloor))
 }
 
+/// Test probe for the shared column span that rowcrops use (#612).
+/// Digit columns live in the row bands; a valley streak sits only between them.
+enum ReadingSpanProbe {
+    static func span(
+        width: Int,
+        height: Int,
+        digitColumns: [(Int, Int)],
+        valleyStreak: (Int, Int),
+        bands: [(Int, Int)]
+    ) -> (Int, Int)? {
+        guard width > 0, height > 0, bands.count >= 2 else { return nil }
+        var bits = [Bool](repeating: false, count: width * height)
+        for column in digitColumns {
+            let x0 = max(0, column.0)
+            let x1 = min(width, column.1)
+            guard x1 > x0 else { continue }
+            for band in bands {
+                let y0 = max(0, band.0)
+                let y1 = min(height, band.1)
+                guard y1 > y0 else { continue }
+                for y in y0..<y1 {
+                    for x in x0..<x1 {
+                        bits[y * width + x] = true
+                    }
+                }
+            }
+        }
+        let valleyTop = bands[0].1
+        let valleyBottom = bands[1].0
+        if valleyBottom > valleyTop {
+            let x0 = max(0, valleyStreak.0)
+            let x1 = min(width, valleyStreak.1)
+            if x1 > x0 {
+                for y in valleyTop..<valleyBottom {
+                    for x in x0..<x1 {
+                        bits[y * width + x] = true
+                    }
+                }
+            }
+        }
+        return readingSpan(Mask(bits: bits, width: width, height: height), bands: bands)
+    }
+}
+
 /// Columns that hold digit ink and stay empty in the gap between rows.
 /// A strip that is ink on that gap is the bezel edge, not a stroke.
 private func readingSpan(_ mask: Mask, bands: [(Int, Int)]) -> (Int, Int)? {
