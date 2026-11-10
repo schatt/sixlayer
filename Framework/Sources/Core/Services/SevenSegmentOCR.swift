@@ -3083,11 +3083,10 @@ private func trimmingSparseEdges(_ band: (Int, Int), mask: Mask) -> (Int, Int) {
     let limit = (band.1 - band.0) / 2
     var top = 0
     while top < limit, sparse(top) { top += 1 }
-    var bottom = perRow.count
-    while perRow.count - bottom < limit, bottom > top + 1, sparse(bottom - 1) { bottom -= 1 }
+    // Only the top. A decimal and a comma tail are sparse rows under the
+    // bar; peeling the bottom turns `1,25` into `1.25` and drops `1.11`.
     let peeledTop = top >= 4 ? top : 0
-    let peeledBottom = perRow.count - bottom >= 4 ? bottom : perRow.count
-    return (band.0 + peeledTop, band.0 + peeledBottom)
+    return (band.0 + peeledTop, band.1)
 }
 
 /// Clear a short stripe of runs longer than the band is tall. That stripe
@@ -3145,9 +3144,12 @@ private func droppingLeftScratch(_ cells: [Cell]) -> [Cell] {
         .sorted { $0.minX < $1.minX }
     guard digits.count >= 5 else { return cells }
     let hole = digits[1].minX - digits[0].maxX
-    let width = digits[0].maxX - digits[0].minX
+    let bodies = digits.map { $0.maxX - $0.minX }.sorted()
+    let body = bodies[bodies.count / 2]
     let remain = digits.count - 1
-    guard hole > 8, hole > width * 2, remain * 5 >= digits.count * 4 else { return cells }
+    // Wider than a digit body, not just wider than a narrow leading 1.
+    // The comma in `1,234` opens a hole that is still inside the pitch.
+    guard hole > 8, hole > body, remain * 5 >= digits.count * 4 else { return cells }
     let cut = digits[1].minX
     return cells.filter { $0.minX >= cut }
 }
