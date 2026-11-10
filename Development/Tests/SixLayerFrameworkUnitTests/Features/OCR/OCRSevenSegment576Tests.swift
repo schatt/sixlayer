@@ -142,7 +142,10 @@ struct OCRSevenSegment576Tests {
             rows: [atoms("32.88"), atoms("8.022")],
             solidGapWashVolumeOnly: true
         )
-        #expect(decode(image, maximum: 0).extractedText == "32.88\n8.022")
+        // The wash paints the volume gaps at ink level, decimal gap included,
+        // so that decimal is not in the pixels. Marks come only from what is
+        // seen; the decoder no longer guesses X.xxx (#661).
+        #expect(decode(image, maximum: 0).extractedText == "32.88\n8022")
     }
 
     @Test func onePixelOnADarkSegmentDoesNotChangeTheDigit() {
@@ -170,6 +173,8 @@ struct OCRSevenSegment576Tests {
         #expect(lines.count == 2)
         #expect(lines.first?.filter(\.isNumber) == "3288")
         #expect(lines.last?.filter(\.isNumber) == "28022")
+        // No decimal is drawn on this row; none may be invented (#661).
+        #expect(lines.last == "28022")
     }
 
     @Test func rescannedRowCropMatchesPriceBandGeometry() {
@@ -243,8 +248,11 @@ struct OCRSevenSegment576Tests {
     @Test func marksStayInsideTheFragment() {
         #expect(decode(panel(["3125"])).extractedText == "3125")
         #expect(!decode(panel(["3125"])).extractedText.contains("."))
-        #expect(decode(panel(["1,234.56"])).extractedText == "1,234.56")
-        #expect(segmentTexts(decode(panel(["1,234.56"]))).count == 1)
+        // #661: comma must not become period; alone top-bar unknown must hold.
+        let comma = decode(panel(["1,234.56"]))
+        #expect(comma.extractedText == "1,234.56")
+        #expect(segmentTexts(comma) == ["1,234.56"])
+        #expect(decode(panel(["1,25"])).extractedText == "1,25")
         #expect(decode(panel(["-12.5"])).extractedText == "-12.5")
         #expect(decode(panel(["12:30"])).extractedText == "12:30")
         let held = decode(panel(["8_2"]))
@@ -888,7 +896,9 @@ struct OCRSevenSegment576Tests {
         )
     }
 
-    @Test func fullFrameWithoutLocalizationMissesSealedBothRows() {
+    /// Was a control asserting the raw frame misses (#596). Polarity and
+    /// band fixes now read the sealed panel without localization (#661).
+    @Test func fullFrameWithoutLocalizationReadsSealedBothRows() {
         let frame = embed(
             sealedBothRowsPanel(),
             canvasWidth: 1200,
@@ -901,7 +911,7 @@ struct OCRSevenSegment576Tests {
             cgImage: frame,
             localizeDigitPanel: false
         )
-        #expect(raw.extractedText != "32.88\n8.022")
+        #expect(raw.extractedText == "32.88\n8.022")
     }
 
     @Test func exactEmbedCropWithoutLocalizationStillReadsBothRows() {
@@ -988,6 +998,57 @@ struct OCRSevenSegment576Tests {
         #expect(segmentTexts(result) == ["32.88", "8.022"])
     }
     #endif
+
+    // MARK: - Real photo both-direction (#666)
+
+    /// Private HEIC: light digits on dark glass (IMG_7493). Mask-alone used to
+    /// mint solid `8`s; flat arbitration (or the polarity fix it rides with)
+    /// must recover the labeled sale rows. Skips when the private fixtures
+    /// tree is not checked out locally.
+    @Test(
+        .enabled(if: FileManager.default.fileExists(atPath: OCRSevenSegment576Tests.lightDigits7493Photo))
+    )
+    func lightDigits7493FlatArbitrationBeatsMaskAlone() throws {
+        let photo = URL(fileURLWithPath: Self.lightDigits7493Photo)
+        let labels = try JSONSerialization.jsonObject(
+            with: Data(contentsOf: photo.deletingLastPathComponent().appendingPathComponent("expected_values.json"))
+        ) as? [String: Any]
+        let display = try #require(labels?["pump_display"] as? [String: String])
+        let expected = ["totalCost", "gallons"].compactMap { display[$0] }.filter { !$0.isEmpty }
+        #expect(expected.count == 2)
+        let image = try #require(PlatformImage.cgImage(opening: Data(contentsOf: photo)))
+        defer { SevenSegmentOCR.useFlatReadArbitration = true }
+
+        SevenSegmentOCR.useFlatReadArbitration = false
+        let maskOnly = SevenSegmentOCR.decode(cgImage: image, localizeDigitPanel: true)
+        let maskRows = Set(
+            maskOnly.extractedText.split(separator: "\n").map { $0.replacingOccurrences(of: " ", with: "") }
+        )
+        let maskMissing = expected.filter { !maskRows.contains($0) }
+        // Wrong direction: without flat arbitration the labeled sale rows must
+        // not both be present (documented IMG_7493 → solid-`8` class).
+        #expect(!maskMissing.isEmpty, "mask-only already has \(expected); need a real failure direction")
+
+        SevenSegmentOCR.useFlatReadArbitration = true
+        let full = SevenSegmentOCR.decode(cgImage: image, localizeDigitPanel: true)
+        let rows = Set(
+            full.extractedText.split(separator: "\n").map { $0.replacingOccurrences(of: " ", with: "") }
+        )
+        let missing = expected.filter { !rows.contains($0) }
+        #expect(missing.isEmpty, "read [\(full.extractedText)], missing \(missing)")
+    }
+
+    /// `Development/TestFixtures/private/…/IMG_7493.HEIC` (gitignored local checkout).
+    static let lightDigits7493Photo = URL(fileURLWithPath: #filePath)
+        .deletingLastPathComponent()
+        .deletingLastPathComponent()
+        .deletingLastPathComponent()
+        .deletingLastPathComponent()
+        .deletingLastPathComponent()
+        .appendingPathComponent(
+            "TestFixtures/private/seven-segment/pump_display/light_digits_7493/IMG_7493.HEIC"
+        )
+        .path
 
     // MARK: - Helpers
 
