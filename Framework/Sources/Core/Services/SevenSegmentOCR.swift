@@ -3139,18 +3139,22 @@ private func clearingOverlongRows(
     return Mask(bits: bits, width: width, height: mask.height)
 }
 
-/// A glyph in the padding, separated by a hole larger than every later
-/// gap, is a scratch. A decimal, a comma, or a blank cell opens a hole
-/// too, but that hole is not the widest one on the row (`1.11`, `8_2`,
+/// A glyph in the padding, whose center sits further from the next digit
+/// than any later step, is a scratch. The step is center to center: a 1
+/// is a stem on the right of its cell, so the ink-edge gap before the
+/// next 1 is the empty cell, not a scratch (`1.11` stays). A decimal, a
+/// comma, or a blank cell is a step too, but not the longest one (`8_2`,
 /// `1,234` stay). Dropping it has to leave at least four fifths of the
 /// digits, so a four-digit row is never touched (`3125` stays).
 private func droppingLeftScratch(_ cells: [Cell]) -> [Cell] {
     let digits = cells.filter { $0.character.isNumber && $0.height > 0 }
         .sorted { $0.minX < $1.minX }
     guard digits.count >= 5 else { return cells }
-    let gaps = zip(digits, digits.dropFirst()).map { $1.minX - $0.maxX }
-    guard let hole = gaps.first, gaps.count >= 2 else { return cells }
-    let later = gaps.dropFirst().max() ?? 0
+    // Centers, not the ink edges. A 1 is a stem on the right of its cell,
+    // so the empty left of the next 1 looks like a hole (`1.11` → `11`).
+    let strides = zip(digits, digits.dropFirst()).map { $1.box.midX - $0.box.midX }
+    guard let hole = strides.first, strides.count >= 2 else { return cells }
+    let later = strides.dropFirst().max() ?? 0
     let remain = digits.count - 1
     guard hole > 8, hole > later, remain * 5 >= digits.count * 4 else { return cells }
     let cut = digits[1].minX
