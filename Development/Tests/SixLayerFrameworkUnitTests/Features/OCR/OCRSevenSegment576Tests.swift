@@ -80,6 +80,18 @@ struct OCRSevenSegment576Tests {
         #expect(decode(panel(["11", "22", "33", "44"])).extractedText == "11\n22\n33\n44")
     }
 
+    @Test func midGrayVeilUsesTheStricterCore() {
+        // 100 sits under the halfway cut when the window still sees ink (22)
+        // and glass (214), and over a quarter of that range. The loose mask
+        // fills the frame. A stricter core still has the two rows (#604).
+        // "12" / "34" is the wrong host: the second row is short enough for
+        // the copied pitch to plant a decimal, so it already reads "3.4".
+        let plain = panel(["32.88", "8.022"])
+        #expect(decode(plain, maximum: 0).extractedText == "32.88\n8.022")
+        let veiled = decode(midGrayVeil(plain), maximum: 0)
+        #expect(veiled.extractedText == "32.88\n8.022")
+    }
+
     /// The second row copies the first row's pitch. That path dropped a
     /// leading 1 with its decimal (15.556 read 5.556). 5.022 and 56.78 guard
     /// the a/d bar peel (bb4789618), which this fixture's bars do not reach.
@@ -1273,6 +1285,30 @@ struct OCRSevenSegment576Tests {
 
     private func panel(_ rows: [String]) -> CGImage {
         SegmentPanel.render(rows: rows.map(atoms))
+    }
+
+    /// Leave the strokes alone. Drop every other background pixel to a
+    /// mid-gray, and keep a lattice of the original glass so a small window
+    /// still sees a bright pixel beside the veil.
+    private func midGrayVeil(_ image: CGImage, level: UInt8 = 100) -> CGImage {
+        let width = image.width
+        let height = image.height
+        guard let provider = image.dataProvider,
+              let data = provider.data,
+              let bytes = CFDataGetBytePtr(data)
+        else {
+            return image
+        }
+        let rowBytes = image.bytesPerRow
+        var pixels = [UInt8](repeating: 0, count: width * height)
+        for y in 0..<height {
+            for x in 0..<width {
+                let pixel = bytes[y * rowBytes + x]
+                let veiled = pixel >= 40 && (x + y) % 3 != 0
+                pixels[y * width + x] = veiled ? level : pixel
+            }
+        }
+        return solidGrayImage(pixels: pixels, width: width, height: height)
     }
 
     private func atoms(_ text: String) -> [SegmentPanel.Atom] {

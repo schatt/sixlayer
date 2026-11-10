@@ -1124,6 +1124,8 @@ private struct GrayBuffer {
         let range = localRange(radius: radius)
         var dark = [Bool](repeating: false, count: pixels.count)
         var light = [Bool](repeating: false, count: pixels.count)
+        var darkCore = [Bool](repeating: false, count: pixels.count)
+        var lightCore = [Bool](repeating: false, count: pixels.count)
         for index in pixels.indices {
             let pixel = Int(pixels[index])
             let low = range.low[index]
@@ -1132,21 +1134,54 @@ private struct GrayBuffer {
             // A stroke is at least a quarter of the brighter level darker
             // than that level. The halfway cut alone marks the glare.
             guard high - low > inkMargin, (high - low) * 4 > high else { continue }
-            let mid = low + (high - low) / 2
+            let span = high - low
+            let mid = low + span / 2
+            // Quarter of the way off the extreme. Mid-gray that the halfway
+            // cut calls ink stays out of the core, so a flooded loose mask
+            // can still fall back to the strokes (#604).
+            let darkQuarter = low + span / 4
+            let lightQuarter = high - span / 4
             dark[index] = pixel < mid && pixel + inkMargin <= high
             light[index] = pixel > mid && pixel >= low + inkMargin
+            darkCore[index] = pixel < darkQuarter && pixel + inkMargin <= high
+            lightCore[index] = pixel > lightQuarter && pixel >= low + inkMargin
         }
         // The middle of a wide pale bar matches itself, so the halfway cut
         // never marks it. The edges of that bar are already ink. Fill the
         // middle only in those columns, and only when the pixel is darker
         // than a wide average. An open hole is not darker than that average.
+        // Leave the core alone: this fill would paint a mid-gray veil back
+        // in between the strokes.
         let meanRadius = min(64, max(24, shortSide / 8))
         let mean = boxMean(radius: meanRadius)
         fillPaleBar(into: &dark, mean: mean, darker: true)
         fillPaleBar(into: &light, mean: mean, darker: false)
-        let darkMask = Mask(bits: dark, width: width, height: height)
-        let lightMask = Mask(bits: light, width: width, height: height)
-        return (darkMask, lightMask, darkMask, lightMask)
+        // The narrow quarter cut still marks a veil whose window never sees a
+        // stroke: that veil is the local minimum. On a flooded loose mask it
+        // seals one row, and the interior-ink clip then drops the other (#604).
+        // A wider minimum reaches the stroke. Skip it unless the loose mask
+        // already fills the frame, so clean crops do not pay for the pass.
+        if longestInkRun(dark) * 100 > height * 70 {
+            let extra = min(40, max(16, shortSide / 8))
+            let wideLow = boxMin(range.low, radius: extra)
+            for index in darkCore.indices where darkCore[index] {
+                let low = wideLow[index]
+                let high = range.high[index]
+                let span = high - low
+                let pixel = Int(pixels[index])
+                let quarter = low + span / 4
+                darkCore[index] = span > inkMargin
+                    && span * 4 > high
+                    && pixel < quarter
+                    && pixel + inkMargin <= high
+            }
+        }
+        return (
+            Mask(bits: dark, width: width, height: height),
+            Mask(bits: light, width: width, height: height),
+            Mask(bits: darkCore, width: width, height: height),
+            Mask(bits: lightCore, width: width, height: height)
+        )
     }
 
     /// Min and max inside a square window. A square window separates into a
@@ -1226,6 +1261,64 @@ private struct GrayBuffer {
             }
         }
         return mean
+    }
+
+    /// Minimum of an existing map over a square window.
+    private func boxMin(_ values: [Int], radius: Int) -> [Int] {
+        guard radius > 0, width > 0, height > 0 else { return values }
+        var horizontal = [Int](repeating: 255, count: values.count)
+        for y in 0..<height {
+            let row = y * width
+            for x in 0..<width {
+                let x0 = max(0, x - radius)
+                let x1 = min(width - 1, x + radius)
+                var low = 255
+                var sample = x0
+                while sample <= x1 {
+                    let level = values[row + sample]
+                    if level < low { low = level }
+                    sample += 1
+                }
+                horizontal[row + x] = low
+            }
+        }
+        var combined = [Int](repeating: 255, count: values.count)
+        for x in 0..<width {
+            for y in 0..<height {
+                let y0 = max(0, y - radius)
+                let y1 = min(height - 1, y + radius)
+                var low = 255
+                var sample = y0
+                while sample <= y1 {
+                    let level = horizontal[sample * width + x]
+                    if level < low { low = level }
+                    sample += 1
+                }
+                combined[y * width + x] = low
+            }
+        }
+        return combined
+    }
+
+    /// Tallest run of rows that contain any ink.
+    private func longestInkRun(_ bits: [Bool]) -> Int {
+        var best = 0
+        var run = 0
+        for y in 0..<height {
+            let row = y * width
+            var ink = false
+            for x in 0..<width where bits[row + x] {
+                ink = true
+                break
+            }
+            if ink {
+                run += 1
+                if run > best { best = run }
+            } else {
+                run = 0
+            }
+        }
+        return best
     }
 
     /// Close a pale bar between stroke pixels on the same row. A hole between
@@ -3012,9 +3105,12 @@ private func polarity(
     // group ("2.22" on wideGap five-group) (#602 / #598).
     let minGapVsBand = 4
     let realRowGap = coreBands.count >= 2 && coreGap * minGapVsBand >= shortestCore
+    // digitColumnSpan rejects a run that covers most of the width. On a tight
+    // crop that run is the digits, so a nil span must not veto the flood
+    // test: the loose mask is one tall band and this core is not (#604).
     let canOpen = forceOpen
         ? (span != nil && realRowGap)
-        : (span != nil && fills && limitedTall * 2 < looseTall && realRowGap)
+        : (fills && limitedTall * 2 < looseTall && realRowGap)
     guard canOpen else {
         return (false, (isDark, loose, loose))
     }
@@ -3026,10 +3122,8 @@ private func polarity(
     let thick: Mask
     if forceOpen {
         thick = thickCore
-    } else if let span {
-        thick = cleared(span, mask: thickCore)
     } else {
-        return (false, (isDark, loose, loose))
+        thick = cleared(span ?? (0, core.width), mask: thickCore)
     }
     return (true, (isDark, thick, limitedCore))
 }
