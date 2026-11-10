@@ -2519,7 +2519,7 @@ private extension GrayBuffer {
                 ? []
                 : oppositeMarks(in: band, secondary: paintedMarks, existing: found, buffer: buffer, bandIndex: 0)
             let dots = baselineDots(in: band, mask: glyphs, cells: found, width: buffer.width, bandIndex: 0)
-            var row = droppingLeftScratch(found + marks + dots)
+            var row = droppingLeftScratch(found + marks + dots, mask: glyphs, bands: lineBands)
             // Pitch volume often washes the glass above the real decimal, so
             // baselineDots misses it and a trailing noise mark can survive.
             // Keep only marks between digits; if none, place one in the
@@ -3137,26 +3137,56 @@ private func clearingOverlongRows(
     return Mask(bits: bits, width: width, height: mask.height)
 }
 
-/// A glyph in the padding, whose center sits further from the next digit
-/// than any later step, is a scratch. The step is center to center: a 1
-/// is a stem on the right of its cell, so the ink-edge gap before the
-/// next 1 is the empty cell, not a scratch (`1.11` stays). A decimal, a
-/// comma, or a blank cell is a step too, but not the longest one (`8_2`,
-/// `1,234` stay). Dropping it has to leave at least four fifths of the
-/// digits, so a four-digit row is never touched (`3125` stays).
-private func droppingLeftScratch(_ cells: [Cell]) -> [Cell] {
+/// A glyph whose columns stay ink through the gap between rows is the
+/// left scratch, not a digit. A group gap is empty there, and one row has
+/// no gap, so `1 234.56` keeps its leading 1.
+private func droppingLeftScratch(
+    _ cells: [Cell],
+    mask: Mask,
+    bands: [(Int, Int)]
+) -> [Cell] {
     let digits = cells.filter { $0.character.isNumber && $0.height > 0 }
         .sorted { $0.minX < $1.minX }
-    guard digits.count >= 5 else { return cells }
-    // Centers, not the ink edges. A 1 is a stem on the right of its cell,
-    // so the empty left of the next 1 looks like a hole (`1.11` → `11`).
-    let strides = zip(digits, digits.dropFirst()).map { $1.box.midX - $0.box.midX }
-    guard let hole = strides.first, strides.count >= 2 else { return cells }
-    let later = strides.dropFirst().max() ?? 0
-    let remain = digits.count - 1
-    guard hole > 8, hole > later, remain * 5 >= digits.count * 4 else { return cells }
+    guard digits.count >= 2 else { return cells }
+    let leading = digits[0]
+    guard bridgingColumns(mask, x0: leading.minX, x1: leading.maxX, bands: bands) >= 2 else {
+        return cells
+    }
     let cut = digits[1].minX
     return cells.filter { $0.minX >= cut }
+}
+
+/// Columns that stay ink through a valley between digit rows. Same bar as
+/// `readingSpan`: a speck in the gap is not a bridge.
+private func bridgingColumns(
+    _ mask: Mask,
+    x0: Int,
+    x1: Int,
+    bands: [(Int, Int)]
+) -> Int {
+    guard bands.count >= 2, mask.width > 0 else { return 0 }
+    let valleys = zip(bands, bands.dropFirst()).compactMap { upper, lower -> (Int, Int)? in
+        guard lower.0 > upper.1 else { return nil }
+        return (upper.1, lower.0)
+    }
+    guard !valleys.isEmpty else { return 0 }
+    let left = max(0, x0)
+    let right = min(mask.width, x1)
+    guard right > left else { return 0 }
+    var bridged = 0
+    for x in left..<right {
+        let crosses = valleys.contains { valley in
+            let limit = max(4, (valley.1 - valley.0) / 3)
+            var count = 0
+            for y in valley.0..<valley.1 where mask.bits[y * mask.width + x] {
+                count += 1
+                if count > limit { return true }
+            }
+            return false
+        }
+        if crosses { bridged += 1 }
+    }
+    return bridged
 }
 
 /// Columns that hold digit ink and stay empty in the gap between rows.
