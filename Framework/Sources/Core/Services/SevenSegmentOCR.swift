@@ -2272,13 +2272,50 @@ private extension GrayBuffer {
         let bandsForSplit = substantiveBands.count >= 2 ? substantiveBands : separated
         // merge treats a zero limit as "pick a default", which would close
         // the gap this split just opened.
+        // Merging heals a digit that glare split into pieces. Bands that each
+        // read as a row of confident digits are rows, even when haze narrows
+        // the gap below cellHeight/2 (`rescannedRowCrop` → `018-`) (#661).
+        let bandsAreRows: Bool = {
+            guard splittingRows, !opened, bandsForSplit.count >= 2 else { return false }
+            let cleaned = clearingOverlongRows(glyphs, bands: bandsForSplit)
+            return bandsForSplit.allSatisfy { raw in
+                let band = trimmingSparseEdges(raw, mask: cleaned)
+                let found = cells(
+                    in: band,
+                    mask: cleaned,
+                    buffer: buffer,
+                    bandIndex: 0,
+                    darkInk: primaryIsDark,
+                    preferredPitch: preferredPitch,
+                    sampleBand: sampleBand
+                )
+                let rowHeight = band.1 - band.0
+                let solid = found.filter { cell in
+                    cell.character.isNumber && cell.confidence == 1
+                        && cell.height * 10 >= rowHeight * 7
+                }
+                return solid.count >= 2 && solid.count * 2 > found.count
+            }
+        }()
         let splitBands = opened
             ? merge(solidBands, whenGapBelow: max(2, buffer.height / 40))
-            : (bandsForSplit.count > foundBands.count
+            : (bandsForSplit.count > foundBands.count || bandsAreRows
                 ? bandsForSplit
                 : merge(bandsForSplit, whenGapBelow: max(1, cellHeight / 2)))
+        // No seven-segment stroke runs further across than its row is tall.
+        // A longer run is glare or chrome. Clear those rows, then peel the
+        // haze they hid so the gap between rows stays a gap (#661).
+        let cellGlyphs = opened ? glyphs : clearingOverlongRows(glyphs, bands: splitBands)
+        let lineBands: [(Int, Int)]
+        if !splittingRows, splitBands.count > 1 {
+            let y0 = splitBands.map(\.0).min() ?? 0
+            let y1 = splitBands.map(\.1).max() ?? buffer.height
+            lineBands = y1 > y0 ? [(y0, y1)] : splitBands
+        } else {
+            lineBands = opened ? splitBands : splitBands.map { trimmingSparseEdges($0, mask: cellGlyphs) }
+        }
         if buffer.width >= 1000 {
-            let listed = splitBands.map { "\($0.0)-\($0.1)" }.joined(separator: ",")
+            let listed = lineBands.map { "\($0.0)-\($0.1)" }.joined(separator: ",")
             trace("bands \(listed)\n")
         }
         // The window is sized from the whole crop. Two rows make it wide
@@ -2286,8 +2323,8 @@ private extension GrayBuffer {
         // crop of that row when that crop's window is actually narrower.
         // A window that fits inside a stroke drops the middle of the bar,
         // so a row that is already on the small window stays on this mask.
-        if splittingRows, splitBands.count > 1 {
-            let span = readingSpan(glyphs, bands: splitBands)
+        if splittingRows, lineBands.count > 1 {
+            let span = readingSpan(glyphs, bands: lineBands)
             let parentRadius = windowRadius(width: buffer.width, height: buffer.height)
             if buffer.width >= 1000 {
                 trace("span \(String(describing: span)) radius \(parentRadius)\n")
@@ -2305,7 +2342,7 @@ private extension GrayBuffer {
             // Approach D: once a price-like row yields digit boxes, copy that
             // pitch into later rowcrops (volume) so wash bridges still cut.
             var rowPitch = preferredPitch
-            for band in splitBands {
+            for band in lineBands {
                 let rawHeight = band.1 - band.0
                 let searchBand: (Int, Int)
                 if rawHeight + 16 > priceBandHeight {
@@ -2390,10 +2427,10 @@ private extension GrayBuffer {
             // and only on small panels (tallCrop/gapGlare fixtures are larger).
             if allowBandPitch, buffer.width < 350, buffer.height < 350 {
                 var bandPitch = preferredPitch
-                return splitBands.compactMap { band -> [Cell]? in
+                return lineBands.compactMap { band -> [Cell]? in
                     let found = cells(
                         in: band,
-                        mask: glyphs,
+                        mask: cellGlyphs,
                         buffer: buffer,
                         bandIndex: 0,
                         darkInk: primaryIsDark,
@@ -2428,10 +2465,10 @@ private extension GrayBuffer {
                 }
             }
         }
-        return splitBands.compactMap { band -> [Cell]? in
+        return lineBands.compactMap { band -> [Cell]? in
             let found = cells(
                 in: band,
-                mask: glyphs,
+                mask: cellGlyphs,
                 buffer: buffer,
                 bandIndex: 0,
                 darkInk: primaryIsDark,
@@ -2796,6 +2833,81 @@ private func windowRadius(width: Int, height: Int) -> Int {
     guard height > scale4RowMinHeight else { return grown }
     let strokeFloor = max(4, height / 15)
     return min(36, max(grown, strokeFloor))
+}
+
+/// Drop sparse rows at the top and bottom of a band. Haze above a digit
+/// is many short runs; a stroke holds most of the ink. A row or two of
+/// edge noise stays.
+private func trimmingSparseEdges(_ band: (Int, Int), mask: Mask) -> (Int, Int) {
+    let width = mask.width
+    guard band.1 - band.0 > 8 else { return band }
+    func rowRuns(_ y: Int) -> [Int] {
+        var lengths: [Int] = []
+        var length = 0
+        let row = y * width
+        for x in 0..<width {
+            if mask.bits[row + x] {
+                length += 1
+            } else if length > 0 {
+                lengths.append(length)
+                length = 0
+            }
+        }
+        if length > 0 { lengths.append(length) }
+        return lengths
+    }
+    let perRow = (band.0..<band.1).map(rowRuns)
+    let weighted = perRow.flatMap { $0 }.flatMap { length in Array(repeating: length, count: length) }
+    guard let typical = median(weighted), typical >= 3 else { return band }
+    func sparse(_ index: Int) -> Bool {
+        let lengths = perRow[index]
+        guard !lengths.isEmpty else { return true }
+        let mean = lengths.reduce(0, +) / lengths.count
+        return mean * 3 < typical
+    }
+    let limit = (band.1 - band.0) / 2
+    var top = 0
+    while top < limit, sparse(top) { top += 1 }
+    var bottom = perRow.count
+    while perRow.count - bottom < limit, bottom > top + 1, sparse(bottom - 1) { bottom -= 1 }
+    let peeledTop = top >= 4 ? top : 0
+    let peeledBottom = perRow.count - bottom >= 4 ? bottom : perRow.count
+    return (band.0 + peeledTop, band.0 + peeledBottom)
+}
+
+/// Clear a short stripe of runs longer than the band is tall. That stripe
+/// is glare or chrome, not a stroke. A bar that touches the band edge, or
+/// a long run through the middle of the digits, stays.
+private func clearingOverlongRows(_ mask: Mask, bands: [(Int, Int)]) -> Mask {
+    var bits = mask.bits
+    let width = mask.width
+    for band in bands {
+        let limit = band.1 - band.0
+        guard limit >= 20 else { continue }
+        var overlong: [Int] = []
+        for y in max(0, band.0)..<min(mask.height, band.1) {
+            let row = y * width
+            var x = 0
+            var longest = 0
+            while x < width {
+                guard bits[row + x] else { x += 1; continue }
+                let start = x
+                while x < width, bits[row + x] { x += 1 }
+                longest = max(longest, x - start)
+            }
+            if longest > limit { overlong.append(y) }
+        }
+        guard let first = overlong.first, let last = overlong.last else { continue }
+        guard (last - first + 1) * 4 <= limit else { continue }
+        let inset = max(3, limit / 30)
+        guard first > band.0 + inset, last < band.1 - 1 - inset else { continue }
+        guard last < band.0 + limit / 3 || first > band.1 - limit / 3 else { continue }
+        for y in first...last {
+            let row = y * width
+            for x in 0..<width { bits[row + x] = false }
+        }
+    }
+    return Mask(bits: bits, width: width, height: mask.height)
 }
 
 /// Columns that hold digit ink and stay empty in the gap between rows.
