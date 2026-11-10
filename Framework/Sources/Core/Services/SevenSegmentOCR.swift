@@ -373,7 +373,7 @@ public enum SevenSegmentOCR {
 
     private static func result(_ fragments: [[OCRRecognizedText]]) -> OCRResult {
         let lines = fragments.map { row in row.map(\.text).joined(separator: "  ") }
-        let extracted = lines.joined(separator: "\n")
+        let extracted = lines.joined(separator: "\n") + (glareHeadNote.isEmpty ? "" : "\n" + glareHeadNote)
         let flat = fragments.flatMap { $0 }
         let confidence = flat.map(\.confidence).min() ?? 0
         return OCRResult(
@@ -1429,6 +1429,8 @@ private struct GrayBuffer {
     }
 }
 
+private var glareHeadNote = ""
+
 private func trace(_ message: String) {
     fputs(message, stderr)
 }
@@ -1545,6 +1547,7 @@ private extension GrayBuffer {
         rowFinder: SegmentRowFinder? = nil,
         sampleBand: Int = 0
     ) -> [[OCRRecognizedText]] {
+        glareHeadNote = ""
         if let rowFinder {
             return finderFragments(in: buffer, rowFinder: rowFinder, sampleBand: sampleBand)
         }
@@ -2341,7 +2344,7 @@ private extension GrayBuffer {
             lineBands = splitBands.compactMap { raw in
                 let headed = trimmingGlareHead(raw, mask: glyphs, pixels: buffer.pixels)
                 let peeled = trimmingSparseEdges(headed, mask: cellGlyphs)
-                trace("head \(raw.0)-\(raw.1) -> \(headed.0)-\(headed.1) peel \(peeled.0)-\(peeled.1)\n")
+                glareHeadNote += "head \(raw.0)-\(raw.1) -> \(headed.0)-\(headed.1) peel \(peeled.0)-\(peeled.1) dark=\(primaryIsDark) open=\(opened)\n"
                 return peeled.1 > peeled.0 + 8 ? peeled : nil
             }
         }
@@ -2429,9 +2432,9 @@ private extension GrayBuffer {
                 let shifted = found.map { $0.shifted(dx: x0, dy: y0) }
                 if buffer.width >= 100 {
                     let pitchNote = rowPitch.map { " pitch \($0.body)x\($0.count)" } ?? ""
-                    trace(
-                        "rowcrop \(x0),\(y0) \(crop.width)x\(crop.height) [\(String(shifted.map(\.character)))]\(pitchNote)\n"
-                    )
+                    let line = "rowcrop \(x0),\(y0) \(crop.width)x\(crop.height) [\(String(shifted.map(\.character)))]\(pitchNote)\n"
+                    glareHeadNote += line
+                    trace(line)
                 }
                 if !shifted.isEmpty {
                     rescanned.append(shifted)
