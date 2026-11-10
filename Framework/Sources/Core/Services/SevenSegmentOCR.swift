@@ -5572,14 +5572,16 @@ private func slotInkBottom(_ mask: BitMask, x0: Int, x1: Int, stroke: Double) ->
     }) else { return (mask.height, mask.height) }
     let pad = max(1, Int(stroke * 0.3))
     let strokeRows = max(2, Int(stroke))
-    let next = runs.compactMap { run in
-        run.0 >= longest.1 && run.1 - run.0 > strokeRows ? run.0 : nil
-    }.min() ?? mask.height
+    let nextRun = runs.filter { run in
+        run.0 >= longest.1 && run.1 - run.0 > strokeRows
+    }.min { $0.0 < $1.0 }
+    let next = nextRun?.0 ?? mask.height
     // A short piece is a broken stroke. A tall empty tail means the run
     // ended early. Trim only for a real next row, or a short hang of glass
     // under a bar that already reaches the baseline.
     if FileManager.default.fileExists(atPath: "/tmp/sixlayer-600-ocr-parts") {
-        let line = "h=\(mask.height) run=\(longest.0)..\(longest.1) next=\(next) tail=\(mask.height - longest.1) pad=\(pad)\n"
+        let nextLen = nextRun.map { $0.1 - $0.0 } ?? 0
+        let line = "h=\(mask.height) run=\(longest.0)..\(longest.1) next=\(next) nextLen=\(nextLen) gap=\(next - longest.1) tail=\(mask.height - longest.1) pad=\(pad) stroke=\(String(format: "%.1f", stroke))\n"
         if let data = line.data(using: .utf8) {
             let path = "/tmp/sixlayer-600-trim.txt"
             if !FileManager.default.fileExists(atPath: path) {
