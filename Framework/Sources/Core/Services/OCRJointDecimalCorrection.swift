@@ -357,10 +357,23 @@ enum OCRJointDecimalCorrection {
     }
     
     static func parseOCRNumericValue(_ valueString: String, language: OCRLanguage) -> Double? {
-        Double(normalizeDecimalString(valueString, language: language))
+        parseOCRNumericValue(
+            valueString,
+            locale: OCRDecimalLocale.resolve(override: nil, regionCode: nil, language: language)
+        )
+    }
+
+    /// Same fail-closed locale parse as calculation groups (#632). Stub still uses
+    /// the hand comma rewrite until the shared path lands — tests must stay red.
+    static func parseOCRNumericValue(_ valueString: String, locale: Locale) -> Double? {
+        _ = locale
+        Double(normalizeDecimalString(valueString, language: .english))
     }
     
+    /// Digit-placement only: rearrange digit runs into POSIX candidates.
+    /// Do not use this to interpret a locale decimal — use `parseOCRNumericValue` (#632).
     static func normalizeDecimalString(_ value: String, language: OCRLanguage) -> String {
+        _ = language
         let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
         if trimmed.contains(",") && !trimmed.contains(".") {
             return trimmed.replacingOccurrences(of: ",", with: ".")
