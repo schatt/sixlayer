@@ -807,6 +807,26 @@ private struct GrayBuffer {
         }
     }
 
+    /// Ink directly under a mark, up to `limit` rows. Stops at the first
+    /// empty row so a tail cannot reach the next digit row.
+    private static func descending(_ mask: Mask, box: PixelBox, width: Int, limit: Int) -> PixelBox {
+        let x0 = max(0, box.minX)
+        let x1 = min(width, box.maxX)
+        guard x1 > x0, limit > 0, box.maxY < mask.height else { return box }
+        var maxY = box.maxY
+        var extra = 0
+        while maxY < mask.height, extra < limit {
+            let row = maxY * width
+            var ink = 0
+            for x in x0..<x1 where mask.bits[row + x] { ink += 1 }
+            if ink == 0 { break }
+            maxY += 1
+            extra += 1
+        }
+        guard maxY > box.maxY else { return box }
+        return PixelBox(minX: box.minX, minY: box.minY, maxX: box.maxX, maxY: maxY)
+    }
+
     /// Period = a dot sitting on the baseline; comma = a mark that reaches
     /// below it. The mark's own width (about one stroke) is the yardstick, so
     /// the rule scales with the photo: reaching below the baseline by more
@@ -921,9 +941,18 @@ private struct GrayBuffer {
             // A thin comma tail can miss the mask while the raw pixels are
             // still darker than the glass around the mark.
             guard markIsInk(mask, box: box, width: width, buffer: buffer, darkInk: darkInk) else { return nil }
-            return Cell(
+            // The row split ignores a hairline, which also drops a comma tail
+            // (half a stroke). The tail is still in the mask, just below the
+            // band. A period has nothing there.
+            let withTail = descending(
+                mask,
                 box: box,
-                character: markCharacter(box: box, baseline: markBaseline.0, barredBaseline: markBaseline.1),
+                width: width,
+                limit: max(4, digitHeight / 5)
+            )
+            return Cell(
+                box: withTail,
+                character: markCharacter(box: withTail, baseline: markBaseline.0, barredBaseline: markBaseline.1),
                 confidence: 1,
                 band: bandIndex
             )
@@ -2841,11 +2870,11 @@ private func digitRowSums(_ sums: [Int]) -> [Int] {
     let peak = sums.max() ?? 0
     // A gap row on a washed LCD still holds a few core pixels. Digit rows
     // hold many more. Leaving the gap at sum > 0 joins the two lines.
-    // The scratch that glues `rescannedRowCrop` is two columns. An absolute
-    // 8 also drops a comma tail (half a stroke, six pixels) on a small
-    // panel, so `1,25` becomes `1.25`. Three stays under that tail and
-    // still clears the two-column bridge.
-    let floor = max(3, peak / 20)
+    // Eight, not three. Three keeps a comma tail, but it also joins the
+    // sideways slices of a quarter-turned panel, and those slices have to
+    // stay separate so the turn still reads as ones (`quarterTurn`).
+    // The comma tail is recovered on the mark, below this split.
+    let floor = max(8, peak / 20)
     return sums.map { $0 >= floor ? $0 : 0 }
 }
 
