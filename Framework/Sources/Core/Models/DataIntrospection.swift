@@ -102,14 +102,17 @@ public struct DataIntrospectionEngine {
         }
         
         // Check if this is a SwiftData PersistentModel (iOS 17+, macOS 14+)
-        // SwiftData models work with standard Mirror introspection since they're regular Swift classes
-        // The @Model macro doesn't prevent Mirror from working
+        // Deliberate red for #671: refuse analysis so the new @Model assertions fail
+        // for the right reason before restoring Mirror/hints fall-through.
         #if canImport(SwiftData)
         if #available(macOS 14.0, iOS 17.0, *) {
             if data is any PersistentModel {
-                // SwiftData models can be analyzed using standard Mirror introspection
-                // The @Model macro doesn't hide properties from Mirror
-                // Fall through to hints-first analysis below
+                return DataAnalysisResult(
+                    fields: [],
+                    complexity: .simple,
+                    patterns: [],
+                    recommendations: []
+                )
             }
         }
         #endif
