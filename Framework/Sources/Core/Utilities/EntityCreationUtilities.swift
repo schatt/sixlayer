@@ -415,13 +415,13 @@ public enum EntityCreationUtilities {
         
         context.insert(persistentModel)
         
-        // Save context - throw error if save fails (entity will be rolled back)
+        // Save context - throw error if save fails (delete only the new entity)
         do {
             if context.hasChanges {
                 try context.save()
             }
         } catch {
-            // Rollback: Delete entity if save fails
+            // Delete the failed insert only; leave other pending model changes alone (#620).
             context.delete(persistentModel)
             throw error
         }
