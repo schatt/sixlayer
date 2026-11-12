@@ -785,7 +785,15 @@ enum AdvancedDatePickerFieldStorage {
 public struct DatePickerField: View {
     let field: DynamicFormField
     @ObservedObject var formState: DynamicFormState
-    @State private var selectedDate = Date()
+
+    private var selectedDate: Binding<Date> {
+        Binding(
+            get: {
+                AdvancedDatePickerFieldStorage.load(from: formState, fieldID: field.id) ?? Date()
+            },
+            set: { AdvancedDatePickerFieldStorage.persist($0, into: formState, for: field.id) }
+        )
+    }
     
     public var body: some View {
         VStack(alignment: .leading, spacing: 4) {
@@ -795,29 +803,13 @@ public struct DatePickerField: View {
             #if os(watchOS)
             DatePicker(
                 "",
-                selection: $selectedDate,
+                selection: selectedDate,
                 displayedComponents: .date
             )
             .datePickerStyle(.wheel)
             .selfLabelingControl(label: field.label)
-            .onChange(of: selectedDate) {
-                AdvancedDatePickerFieldStorage.persist(selectedDate, into: formState, for: field.id)
-            }
-            .onAppear {
-                if let date = AdvancedDatePickerFieldStorage.load(from: formState, fieldID: field.id) {
-                    selectedDate = date
-                }
-            }
             #else
-            platformDateInput(selection: $selectedDate, label: field.label)
-            .onChange(of: selectedDate) {
-                AdvancedDatePickerFieldStorage.persist(selectedDate, into: formState, for: field.id)
-            }
-            .onAppear {
-                if let date = AdvancedDatePickerFieldStorage.load(from: formState, fieldID: field.id) {
-                    selectedDate = date
-                }
-            }
+            platformDateInput(selection: selectedDate, label: field.label)
             #endif
         }
         .automaticCompliance()
@@ -833,7 +825,15 @@ public struct DatePickerField: View {
 public struct TimePickerField: View {
     let field: DynamicFormField
     @ObservedObject var formState: DynamicFormState
-    @State private var selectedTime = Date()
+
+    private var selectedTime: Binding<Date> {
+        Binding(
+            get: {
+                AdvancedDatePickerFieldStorage.load(from: formState, fieldID: field.id) ?? Date()
+            },
+            set: { AdvancedDatePickerFieldStorage.persist($0, into: formState, for: field.id) }
+        )
+    }
     
     public var body: some View {
         VStack(alignment: .leading, spacing: 4) {
@@ -843,29 +843,13 @@ public struct TimePickerField: View {
             #if os(watchOS)
             DatePicker(
                 "",
-                selection: $selectedTime,
+                selection: selectedTime,
                 displayedComponents: .hourAndMinute
             )
             .datePickerStyle(.wheel)
             .selfLabelingControl(label: field.label)
-            .onChange(of: selectedTime) {
-                AdvancedDatePickerFieldStorage.persist(selectedTime, into: formState, for: field.id)
-            }
-            .onAppear {
-                if let time = AdvancedDatePickerFieldStorage.load(from: formState, fieldID: field.id) {
-                    selectedTime = time
-                }
-            }
             #else
-            platformTimeInput(selection: $selectedTime, label: field.label)
-            .onChange(of: selectedTime) {
-                AdvancedDatePickerFieldStorage.persist(selectedTime, into: formState, for: field.id)
-            }
-            .onAppear {
-                if let time = AdvancedDatePickerFieldStorage.load(from: formState, fieldID: field.id) {
-                    selectedTime = time
-                }
-            }
+            platformTimeInput(selection: selectedTime, label: field.label)
             #endif
         }
         .automaticCompliance()
@@ -881,7 +865,15 @@ public struct TimePickerField: View {
 public struct DateTimePickerField: View {
     let field: DynamicFormField
     @ObservedObject var formState: DynamicFormState
-    @State private var selectedDateTime = Date()
+
+    private var selectedDateTime: Binding<Date> {
+        Binding(
+            get: {
+                AdvancedDatePickerFieldStorage.load(from: formState, fieldID: field.id) ?? Date()
+            },
+            set: { AdvancedDatePickerFieldStorage.persist($0, into: formState, for: field.id) }
+        )
+    }
     
     public var body: some View {
         VStack(alignment: .leading, spacing: 4) {
@@ -891,29 +883,13 @@ public struct DateTimePickerField: View {
             #if os(watchOS)
             DatePicker(
                 "",
-                selection: $selectedDateTime,
+                selection: selectedDateTime,
                 displayedComponents: [.date, .hourAndMinute]
             )
             .datePickerStyle(.wheel)
             .selfLabelingControl(label: field.label)
-            .onChange(of: selectedDateTime) {
-                AdvancedDatePickerFieldStorage.persist(selectedDateTime, into: formState, for: field.id)
-            }
-            .onAppear {
-                if let dateTime = AdvancedDatePickerFieldStorage.load(from: formState, fieldID: field.id) {
-                    selectedDateTime = dateTime
-                }
-            }
             #else
-            platformDateTimeInput(selection: $selectedDateTime, label: field.label)
-            .onChange(of: selectedDateTime) {
-                AdvancedDatePickerFieldStorage.persist(selectedDateTime, into: formState, for: field.id)
-            }
-            .onAppear {
-                if let dateTime = AdvancedDatePickerFieldStorage.load(from: formState, fieldID: field.id) {
-                    selectedDateTime = dateTime
-                }
-            }
+            platformDateTimeInput(selection: selectedDateTime, label: field.label)
             #endif
         }
         .automaticCompliance()
