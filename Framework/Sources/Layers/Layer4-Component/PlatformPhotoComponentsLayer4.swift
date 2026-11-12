@@ -64,6 +64,32 @@ public enum PlatformPhotoComponentsLayer4 {
         #endif
     }
     
+    /// Camera interface that captures Live Photos (#669). On iOS this is the
+    /// framework's capture view, which hands back the still plus the Live
+    /// Photo movie when the device supports it; with no usable camera it falls
+    /// back to the system camera (still only). macOS cameras cannot record
+    /// Live Photos, so `livePhotoMovieURL` is always nil there.
+    @_disfavoredOverload
+    @ViewBuilder
+    @MainActor
+    public static func platformCameraInterface_L4(
+        onSelection: @escaping (PlatformPhotoSelection) -> Void,
+        onCameraAuthorizationState: ((CameraAuthorizationState) -> Void)? = nil
+    ) -> some View {
+        #if os(iOS)
+        LivePhotoCameraInterface(onSelection: onSelection, onCameraAuthorizationState: onCameraAuthorizationState)
+            .automaticCompliance(named: "platformCameraInterface_L4")
+            .accessibilityIdentifier("platformCameraInterface_L4")
+        #elseif os(macOS)
+        MacCameraView(onImageCaptured: { onSelection(PlatformPhotoSelection(image: $0)) })
+            .automaticCompliance(named: "platformCameraInterface_L4")
+        #else
+        let i18n = InternationalizationService()
+        Text(i18n.localizedString(for: "SixLayerFramework.camera.notAvailable"))
+            .automaticCompliance(named: "platformCameraInterface_L4")
+        #endif
+    }
+
     // MARK: - Photo Picker Components
     
     /// Creates a unified cross-platform photo picker
