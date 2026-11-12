@@ -356,7 +356,6 @@ public enum SevenSegmentOCR {
         lattice: OCRResult,
         latticeRows: [[SevenSegmentLatticeReader.Cell]]
     ) -> OCRResult {
-        return lattice
         // Legacy carries group spacing, commas, colons and unknown-cell
         // placeholders, so it stays when it is believable. Its photo output
         // is mostly "1", "_" and stray marks, sometimes at confidence 1.0, so
@@ -1649,33 +1648,9 @@ private struct GrayBuffer {
         return GrayBuffer(pixels: output, width: newW, height: newH)
     }
 
-    /// Median level of the outer border. Four corner pixels are not enough
-    /// on a crop peeled to 0px side glass: glyph ink can sit on them, and a
-    /// rotation then fills its new corners with ink (#661).
     fileprivate func cornerFill() -> UInt8 {
-        guard width > 0, height > 0 else { return 0 }
-        var counts = [Int](repeating: 0, count: 256)
-        var total = 0
-        func add(_ index: Int) {
-            counts[Int(pixels[index])] += 1
-            total += 1
-        }
-        for x in 0..<width {
-            add(x)
-            if height > 1 { add((height - 1) * width + x) }
-        }
-        if height > 2 {
-            for y in 1..<(height - 1) {
-                add(y * width)
-                if width > 1 { add(y * width + width - 1) }
-            }
-        }
-        var seen = 0
-        for level in 0..<256 {
-            seen += counts[level]
-            if seen * 2 > total { return UInt8(level) }
-        }
-        return pixels[0]
+        let corners = [pixels[0], pixels[width - 1], pixels[(height - 1) * width], pixels[pixels.count - 1]]
+        return corners.sorted()[corners.count / 2]
     }
 
     /// Peel uniform border that matches the corner fill (synthetic pad /
