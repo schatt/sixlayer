@@ -2628,7 +2628,9 @@ private extension GrayBuffer {
         // before choosing polarity. A dark bar stays; it is the stroke.
         let darkMask = withoutFullWidthGlass(masks.dark, pixels: buffer.pixels)
         let darkCore = withoutFullWidthGlass(cores.dark, pixels: buffer.pixels)
-        let darkPreferred = prefersDark(darkMask, masks.light, pixels: buffer.pixels)
+        // Glass was already stripped. The level test is for an unstripped
+        // mask (IMG_7493); on this one it calls pale ink and haze glass.
+        let darkPreferred = prefersDark(darkMask, masks.light)
         let darkChoice = polarity(isDark: true, loose: darkMask, core: darkCore)
         let lightChoice = polarity(isDark: false, loose: masks.light, core: cores.light)
         let chosen: (isDark: Bool, glyphs: Mask, bandSource: Mask)
@@ -2682,8 +2684,7 @@ private extension GrayBuffer {
         // so hairlines go and strokes stay. Hairlines are texture in the glass,
         // so flat glass is left alone, and a thin stroke rounds to no opening.
         let strokeRun = opened ? 0 : typicalRun(chosen.glyphs)
-        // Probe: a 1px opening turns the haze decimals into extra digits.
-        let openRadius = 0
+        let openRadius = glassSpread(buffer.pixels) > 0 ? strokeRun / 8 : 0
         let glyphs = openRadius > 0 ? opening(chosen.glyphs, radius: openRadius) : chosen.glyphs
         let bandSource = openRadius > 0 ? opening(chosen.bandSource, radius: openRadius) : chosen.bandSource
         if buffer.width >= 1000 {
@@ -5226,6 +5227,18 @@ private func glassSpread(_ pixels: [UInt8]) -> Int {
         if seen * 2 >= pixels.count { return level }
     }
     return 255
+}
+
+/// Run counts, then the thinner mask. Used after full-width glass has
+/// already been removed; the level test would undo that.
+private func prefersDark(_ dark: Mask, _ light: Mask) -> Bool {
+    let darkRuns = bandedColumnRuns(dark)
+    let lightRuns = bandedColumnRuns(light)
+    if darkRuns >= lightRuns * 2 { return true }
+    if lightRuns >= darkRuns * 2 { return false }
+    let darkInk = dark.rowSums.reduce(Int64(0)) { $0 + Int64($1) }
+    let lightInk = light.rowSums.reduce(Int64(0)) { $0 + Int64($1) }
+    return darkInk <= lightInk
 }
 
 private func prefersDark(_ dark: Mask, _ light: Mask, pixels: [UInt8]) -> Bool {
