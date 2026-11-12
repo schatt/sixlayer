@@ -48,11 +48,10 @@ public enum DefaultUIInterruptionMonitorLogic {
         buttonExists: (String) -> Bool,
         tapButton: (String) -> Void
     ) -> Bool {
-        switch alertLabelResult {
-        case .success(let label):
-            return handle(alertLabel: label, buttonExists: buttonExists, tapButton: tapButton)
-        case .failure:
-            return handle(alertLabel: nil, buttonExists: buttonExists, tapButton: tapButton)
-        }
+        handle(
+            alertLabel: try? alertLabelResult.get(),
+            buttonExists: buttonExists,
+            tapButton: tapButton
+        )
     }
 }
