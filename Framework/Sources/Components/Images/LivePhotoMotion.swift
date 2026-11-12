@@ -37,6 +37,7 @@ public struct PlatformPhotoSelection: Sendable {
     static func resolve(
         image: PlatformImage,
         includeLivePhotoMotion: Bool,
+        isolation: isolated (any Actor)? = #isolation,
         loadLivePhotoMovie: () async -> URL?
     ) async -> PlatformPhotoSelection {
         guard includeLivePhotoMotion else {
