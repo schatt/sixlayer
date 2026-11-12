@@ -106,6 +106,7 @@ public enum EntityCreationUtilities {
         } catch {
             // Delete the failed insert only; do not rollback the whole context (#620).
             context.delete(entity)
+            context.processPendingChanges()
             throw error
         }
         
