@@ -15,7 +15,7 @@ import CoreVideo
 //
 //  TESTING SCOPE:
 //  - Frame extraction from a movie: count, order, spread, bad input
-//  - Picker selection: motion is only requested when the flag is on,
+//  - Picker selection: the movie is only copied for selection callers,
 //    and a failed movie load still delivers the still image
 //
 
@@ -72,7 +72,7 @@ struct LivePhotoMotion668Tests {
 
     // MARK: Picker selection
 
-    @Test func flagOffNeverAsksForMotion() async {
+    @Test func imageOnlyCallersNeverCopyAMovie() async {
         let still = TestMovie.solidImage(gray: 128)
         var asked = false
 
@@ -90,7 +90,7 @@ struct LivePhotoMotion668Tests {
         #expect(selection.image.size == still.size)
     }
 
-    @Test func flagOnCarriesTheMovie() async {
+    @Test func selectionCallersGetTheMovie() async {
         let still = TestMovie.solidImage(gray: 128)
         let movie = URL(fileURLWithPath: "/tmp/live-photo-motion.mov")
 
@@ -104,7 +104,7 @@ struct LivePhotoMotion668Tests {
         #expect(selection.image.size == still.size)
     }
 
-    @Test func flagOnWithoutMotionStillDeliversTheImage() async {
+    @Test func stillPhotoWithoutMovieStillDeliversTheImage() async {
         let still = TestMovie.solidImage(gray: 128)
 
         let selection = await PlatformPhotoSelection.resolve(
