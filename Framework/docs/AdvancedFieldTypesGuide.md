@@ -18,7 +18,7 @@ The Advanced Field Types system provides a comprehensive set of sophisticated fo
 - **DateTime Picker** - Combined date and time selection
 - **MultiDate Picker** (iOS 16+) - Select multiple individual dates from calendar
 - **Date Range Picker** - Select date ranges (start and end dates)
-- **Automatic Formatting** - Proper date/time string formatting
+- **Date persistence** - Stores `Date` in form state (locale-independent; #618)
 - **Value Persistence** - Integration with form state management
 - **Fallback Support** - Graceful degradation for older iOS versions and macOS
 
