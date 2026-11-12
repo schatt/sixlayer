@@ -101,13 +101,44 @@ open class DataIntrospectionTests: BaseTestClass {
     }
     
     #if canImport(SwiftData)
-    /// Test that DataIntrospectionEngine works with SwiftData models
-    /// Note: @Model macro is not available in test targets, so we can't create real SwiftData models for testing.
-    /// The framework still supports SwiftData models at runtime - this is verified through integration testing.
+    /// SwiftData `@Model` types are analyzable in unit tests (#671). The old empty body
+    /// falsely claimed the macro was unavailable in this target.
     @available(macOS 14.0, iOS 17.0, *)
     @Test func testDataIntrospectionWithSwiftDataModel() {
-        // SwiftData @Model macro is not available in test targets
-        // DataIntrospectionEngine supports SwiftData models at runtime, but we can't test it here
+        let probe = DataIntrospectionSwiftDataProbe671(
+            title: "Pump A",
+            readingCount: 3,
+            isActive: true
+        )
+
+        let result = DataIntrospectionEngine.analyze(probe)
+
+        let titleField = result.fields.first { $0.name == "title" }
+        let countField = result.fields.first { $0.name == "readingCount" }
+        let activeField = result.fields.first { $0.name == "isActive" }
+
+        #expect(titleField != nil, "Should detect title on PersistentModel")
+        #expect(titleField?.type == .string, "title should be string")
+        #expect(countField != nil, "Should detect readingCount on PersistentModel")
+        #expect(countField?.type == .number, "readingCount should be number")
+        #expect(activeField != nil, "Should detect isActive on PersistentModel")
+        #expect(activeField?.type == .boolean, "isActive should be boolean")
     }
     #endif
 }
+
+#if canImport(SwiftData)
+@available(macOS 14.0, iOS 17.0, *)
+@Model
+final class DataIntrospectionSwiftDataProbe671 {
+    var title: String
+    var readingCount: Int
+    var isActive: Bool
+
+    init(title: String, readingCount: Int, isActive: Bool) {
+        self.title = title
+        self.readingCount = readingCount
+        self.isActive = isActive
+    }
+}
+#endif
