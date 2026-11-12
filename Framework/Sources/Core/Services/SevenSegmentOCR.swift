@@ -538,7 +538,11 @@ private struct GrayBuffer {
         let boxes = rawBoxes.filter { $0.width >= minimum && $0.height >= minimum }
         guard !boxes.isEmpty else { return [] }
         let maxHeight = boxes.map(\.height).max() ?? 1
-        let tall = boxes.filter { $0.height * 100 >= maxHeight * 55 }
+        // Edge bezel chrome is tall/narrow like a "1". Leave it out of the
+        // baseline so a pale comma hang still clears markCharacter (#670).
+        let tall = boxes.filter { box in
+            box.height * 100 >= maxHeight * 55 && !isEdgeChromeStrip(box, buffer: buffer)
+        }
         let digitHeight = median(tall.map(\.height)) ?? maxHeight
         let baseline = median(tall.map(\.maxY)) ?? band.1
         let frameTop = median(tall.map(\.minY)) ?? band.0
@@ -840,6 +844,11 @@ private struct GrayBuffer {
         }
         // ssocr: a box narrower than a quarter of its height is a one.
         if box.height * 100 >= digitHeight * 55, box.width * 4 < box.height {
+            // Crop-edge bezel chrome matches this shape and must not become a
+            // digit — it also skewed the mark baseline (#670).
+            if isEdgeChromeStrip(box, buffer: buffer) {
+                return nil
+            }
             return Cell(box: box, character: "1", confidence: 1, band: bandIndex)
         }
         // A digit-tall box that is nearly all ink is a fill, not a glyph:
@@ -1093,6 +1102,16 @@ private struct GrayBuffer {
 
     private static func isMark(_ character: Character) -> Bool {
         character == "." || character == "," || character == ":" || character == "-"
+    }
+
+    /// Tall/narrow ink flush with the crop edge whose level matches the
+    /// corner chrome — leftover bezel after a comma joins the frame (#670).
+    private static func isEdgeChromeStrip(_ box: PixelBox, buffer: GrayBuffer) -> Bool {
+        let flush = box.minX <= 1 || box.maxX >= buffer.width - 2
+        guard flush, box.width * 4 < box.height else { return false }
+        let chrome = Int(buffer.cornerFill())
+        guard let level = boxMedianLevel(buffer, box: box) else { return false }
+        return abs(level - chrome) <= inkMargin
     }
 
     private static func score(_ buffer: GrayBuffer) -> Int {
@@ -1549,10 +1568,7 @@ private struct Cell {
 private func recognizedGroups(_ cells: [Cell], width: Int, height: Int) -> [OCRRecognizedText] {
     let pieces = GrayBuffer.group(cells)
     return pieces.map { group in
-        // Temporary #670 cell-box trace — revert after diagnosis.
-        let text = group.map { cell in
-            "\(cell.character)[\(cell.minX),\(cell.minY),\(cell.box.width)x\(cell.box.height)/\(String(format: "%.2f", cell.confidence))]"
-        }.joined(separator: " ")
+        let text = String(group.map(\.character))
         let confidence = group.map(\.confidence).min() ?? 0
         let box = reCropGlassBox(
             minX: group.map(\.minX).min() ?? 0,
@@ -4368,6 +4384,23 @@ private func medianLevel(_ pixels: [UInt8]) -> Int? {
         if seen * 2 >= pixels.count { return level }
     }
     return nil
+}
+
+private func boxMedianLevel(_ buffer: GrayBuffer, box: PixelBox) -> Int? {
+    let left = max(0, box.minX)
+    let right = min(buffer.width, box.maxX)
+    let lower = max(0, box.minY)
+    let upper = min(buffer.height, box.maxY)
+    guard right > left, upper > lower else { return nil }
+    var samples: [UInt8] = []
+    samples.reserveCapacity((right - left) * (upper - lower))
+    for y in lower..<upper {
+        let start = y * buffer.width
+        for x in left..<right {
+            samples.append(buffer.pixels[start + x])
+        }
+    }
+    return medianLevel(samples)
 }
 
 private func meanLevel(_ mask: Mask, pixels: [UInt8]) -> Int? {
