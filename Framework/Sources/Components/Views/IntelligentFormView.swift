@@ -949,30 +949,10 @@ Text(i18n.localizedString(for: "SixLayerFramework.form.title"))
         #if canImport(SwiftData)
         if #available(macOS 14.0, iOS 17.0, *) {
             if let persistentModel = data as? any PersistentModel {
-                let contextToUse: ModelContext? =
-                    (modelContext as? ModelContext) ?? persistentModel.modelContext
-
-                if let context = contextToUse {
-                    do {
-                        // Attempt to update timestamp properties if they exist
-                        // Note: Swift doesn't support direct property setting via reflection
-                        // We detect the properties but can't set them - developers should update timestamps
-                        // in their models or in the onSubmit callback
-                        updateSwiftDataTimestampsIfNeeded(persistentModel)
-                        
-                        // Save the context if it has changes
-                        if context.hasChanges {
-                            try context.save()
-                        }
-                    } catch {
-                        // Log error but don't crash - developer's onSubmit may handle it
-                        print("Error auto-saving SwiftData model: \(error.localizedDescription)")
-                        // Continue execution - onSubmit callback will still be called
-                    }
-                } else {
-                    let missing = SwiftDataContextAccess.MissingContainer()
-                    print("SwiftData model auto-save: \(missing.localizedDescription)")
-                }
+                saveSwiftDataModelIfNeeded(
+                    persistentModel,
+                    providedContext: modelContext as? ModelContext
+                )
             }
         }
         #endif
@@ -985,6 +965,28 @@ Text(i18n.localizedString(for: "SixLayerFramework.form.title"))
     // MARK: - SwiftData Helper Functions
     
     #if canImport(SwiftData)
+    /// Prefer an explicit / host-installed context; else the model's own computed context (#603).
+    /// Mirror cannot see `PersistentModel.modelContext`. Never opens the empty default store (#589).
+    @available(macOS 14.0, iOS 17.0, *)
+    private static func saveSwiftDataModelIfNeeded(
+        _ persistentModel: any PersistentModel,
+        providedContext: ModelContext?
+    ) {
+        guard let context = providedContext ?? persistentModel.modelContext else {
+            let missing = SwiftDataContextAccess.MissingContainer()
+            print("SwiftData model auto-save: \(missing.localizedDescription)")
+            return
+        }
+        do {
+            updateSwiftDataTimestampsIfNeeded(persistentModel)
+            if context.hasChanges {
+                try context.save()
+            }
+        } catch {
+            print("Error auto-saving SwiftData model: \(error.localizedDescription)")
+        }
+    }
+
     /// Attempts to detect timestamp properties on a SwiftData model
     /// Note: Direct property setting via reflection is not possible in Swift
     /// This function detects timestamp properties but cannot update them directly
