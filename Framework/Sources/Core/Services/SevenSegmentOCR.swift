@@ -2820,23 +2820,35 @@ private func readingSpan(_ mask: Mask, bands: [(Int, Int)]) -> (Int, Int)? {
         }
     }
     pieces.append((start, end + 1, ink))
+    let runs = joinReadingSpanPieces(pieces, edgeColumn: edgeColumn, height: height)
+    guard let best = runs.max(by: { $0.ink < $1.ink }) else { return nil }
+    let span = best.end - best.start
+    guard span > max(12, height / 10) else { return nil }
+    return (best.start, best.end)
+}
+
+/// Join contiguous ink pieces into digit-field runs. A mid-field valley
+/// streak is a bezel column between glyph-sized pieces — still one field
+/// (#612). A speck past an edge strip is not glyph-wide and stays out.
+private func joinReadingSpanPieces(
+    _ pieces: [(start: Int, end: Int, ink: Int)],
+    edgeColumn: [Bool],
+    height: Int
+) -> [(start: Int, end: Int, ink: Int)] {
+    guard let first = pieces.first else { return [] }
     let gapLimit = max(8, min(16, height / 40))
-    // A valley streak removes its columns from the active set, so the gap
-    // between glyph pieces is the streak width plus any empty glass. Allow
-    // about a cell so mid-field bezels still join (#612). Left scratch and
-    // edge-strip specks sit farther away or are not glyph-wide.
+    // Valley streak columns drop out of the active set, so the gap between
+    // glyph pieces is the streak width plus empty glass. Allow about a cell.
     let glyphGap = 48
     let glyphWidth = 8
     var runs: [(start: Int, end: Int, ink: Int)] = []
-    var current = pieces[0]
+    var current = first
     for piece in pieces.dropFirst() {
         let gap = piece.start - current.end
         let crossesBezel = (current.end..<piece.start).contains { edgeColumn[$0] }
         let widePieces = (current.end - current.start) >= glyphWidth
             && (piece.end - piece.start) >= glyphWidth
         let limit = widePieces ? max(gapLimit, glyphGap) : gapLimit
-        // Join across a short gap. A mid-field valley streak is a bezel
-        // column between two glyph runs — still one digit field (#612).
         if gap <= limit, !crossesBezel || widePieces {
             current.end = piece.end
             current.ink += piece.ink
@@ -2846,10 +2858,7 @@ private func readingSpan(_ mask: Mask, bands: [(Int, Int)]) -> (Int, Int)? {
         }
     }
     runs.append(current)
-    guard let best = runs.max(by: { $0.ink < $1.ink }) else { return nil }
-    let span = best.end - best.start
-    guard span > max(12, height / 10) else { return nil }
-    return (best.start, best.end)
+    return runs
 }
 
 /// When a row band is taller than a price crop, keep the densest window of
