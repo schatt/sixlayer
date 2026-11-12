@@ -446,14 +446,18 @@ func resolvedCameraPickerSourceTypeForLayer4() -> UIImagePickerController.Source
 public struct CameraView: UIViewControllerRepresentable {
     let onImageCaptured: (PlatformImage) -> Void
     let onCameraAuthorizationState: ((CameraAuthorizationState) -> Void)?
+    /// Called when the user cancels the camera (#669).
+    let onCancel: (() -> Void)?
     let dismissPolicy: SystemImagePickerDismissPolicy
     
     public init(
         onImageCaptured: @escaping (PlatformImage) -> Void,
         onCameraAuthorizationState: ((CameraAuthorizationState) -> Void)? = nil,
+        onCancel: (() -> Void)? = nil,
         dismissPolicy: SystemImagePickerDismissPolicy = .default
     ) {
         self.onImageCaptured = onImageCaptured
+        self.onCancel = onCancel
         self.onCameraAuthorizationState = onCameraAuthorizationState
         self.dismissPolicy = dismissPolicy
     }

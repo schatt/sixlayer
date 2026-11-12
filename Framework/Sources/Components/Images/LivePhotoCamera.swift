@@ -104,7 +104,7 @@ private struct LivePhotoCameraView: UIViewControllerRepresentable {
     let onUnavailable: () -> Void
 
     func makeUIViewController(context: Context) -> LivePhotoCameraViewController {
-        LivePhotoCameraViewController(onSelection: onSelection, onUnavailable: onUnavailable)
+        LivePhotoCameraViewController(onSelection: onSelection, onCancel: nil, onUnavailable: onUnavailable)
     }
 
     func updateUIViewController(_ controller: LivePhotoCameraViewController, context: Context) {}
@@ -144,8 +144,14 @@ final class LivePhotoCameraViewController: UIViewController, AVCapturePhotoCaptu
     private var rotation: AVCaptureDevice.RotationCoordinator?
     private var assemblies: [Int64: LivePhotoCaptureAssembly] = [:]
     private let shutter = UIButton(type: .custom)
+    private var didStart = false
 
-    init(onSelection: @escaping (PlatformPhotoSelection) -> Void, onUnavailable: @escaping () -> Void) {
+    // RED STUB (#669): onCancel is accepted and ignored.
+    init(
+        onSelection: @escaping (PlatformPhotoSelection) -> Void,
+        onCancel: (() -> Void)?,
+        onUnavailable: @escaping () -> Void
+    ) {
         self.onSelection = onSelection
         self.onUnavailable = onUnavailable
         super.init(nibName: nil, bundle: nil)
@@ -162,6 +168,14 @@ final class LivePhotoCameraViewController: UIViewController, AVCapturePhotoCaptu
         previewLayer.videoGravity = .resizeAspectFill
         view.layer.addSublayer(previewLayer)
         addShutter()
+    }
+
+    /// Starts once, when the view appears: loading the view alone (tests,
+    /// previews) must not prompt for camera access.
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        guard !didStart else { return }
+        didStart = true
         Task { await start() }
     }
 
