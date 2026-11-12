@@ -123,6 +123,61 @@ open class FormDraftTests: BaseTestClass {
             #expect(String(describing: codable.value) == String(describing: decoded.value))
         }
     }
+
+    /// #672: Date field values must round-trip as Date, not String(describing:).
+    @Test func testAnyCodableDateRoundTripsAsDate() throws {
+        let original = Date(timeIntervalSince1970: 1_700_000_000)
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .iso8601
+        let data = try encoder.encode(AnyCodable(original))
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        let decoded = try decoder.decode(AnyCodable.self, from: data)
+
+        let restored = try #require(decoded.value as? Date)
+        #expect(abs(restored.timeIntervalSince1970 - original.timeIntervalSince1970) < 1)
+        #expect(!(decoded.value is String), "must not fall back to String(describing:) (#672)")
+    }
+
+    /// #672: FormDraft JSON save/load keeps Date usable by DynamicFormStoredDateValue.
+    @Test func testFormDraftDateFieldSurvivesJSONRoundTrip() throws {
+        let original = Date(timeIntervalSince1970: 1_712_000_000)
+        let draft = FormDraft(
+            formId: "672-date",
+            fieldValues: ["due": original],
+            timestamp: Date(timeIntervalSince1970: 1_700_000_000)
+        )
+
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .iso8601
+        let data = try encoder.encode(draft)
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        let decoded = try decoder.decode(FormDraft.self, from: data)
+
+        let restored = decoded.toFieldValues()["due"]
+        #expect(restored is Date, "draft field must restore Date (#672)")
+        let asDate = try #require(DynamicFormStoredDateValue.date(fromStoredValue: restored))
+        #expect(abs(asDate.timeIntervalSince1970 - original.timeIntervalSince1970) < 1)
+    }
+
+    /// #672: UserDefaults draft storage round-trips Date field values.
+    @Test func testUserDefaultsStorageDateFieldRoundTrip() throws {
+        let suiteName = "test_form_storage_date_\(UUID().uuidString)"
+        let testDefaults = UserDefaults(suiteName: suiteName)!
+        testDefaults.removePersistentDomain(forName: suiteName)
+        defer { testDefaults.removePersistentDomain(forName: suiteName) }
+
+        let storage = UserDefaultsFormStateStorage(userDefaults: testDefaults)
+        let original = Date(timeIntervalSince1970: 1_700_000_000)
+        try storage.saveDraft(FormDraft(formId: "672-date", fieldValues: ["when": original]))
+
+        let loaded = try #require(storage.loadDraft(formId: "672-date"))
+        let restored = loaded.toFieldValues()["when"]
+        #expect(restored is Date)
+        let asDate = try #require(restored as? Date)
+        #expect(abs(asDate.timeIntervalSince1970 - original.timeIntervalSince1970) < 1)
+    }
     
     // MARK: - FormStateStorage Tests
     
