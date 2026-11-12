@@ -511,6 +511,7 @@ public struct CameraView: UIViewControllerRepresentable {
                 print("[SLF CameraView] imagePickerControllerDidCancel (Cancel or system dismissed picker)")
             }
             #endif
+            parent.onCancel?()
             applySystemImagePickerDismissPolicy(
                 parent.dismissPolicy,
                 presentingViewController: picker.presentingViewController,
