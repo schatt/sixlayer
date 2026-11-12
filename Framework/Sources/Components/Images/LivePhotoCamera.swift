@@ -194,7 +194,7 @@ final class LivePhotoCameraViewController: UIViewController, AVCapturePhotoCaptu
 
     /// Cancel matches the system camera: only when the host supplies a callback.
     private func addCancelIfNeeded() {
-        guard onCancel != nil else { return }
+        guard let onCancel else { return }
         let i18n = InternationalizationService()
         let cancel = UIButton(type: .system)
         cancel.translatesAutoresizingMaskIntoConstraints = false
@@ -202,16 +202,13 @@ final class LivePhotoCameraViewController: UIViewController, AVCapturePhotoCaptu
         cancel.setTitleColor(.white, for: .normal)
         cancel.accessibilityLabel = i18n.localizedString(for: "SixLayerFramework.button.cancel")
         cancel.accessibilityIdentifier = "SixLayer.main.ui.platformCameraInterface_L4.cancel"
-        cancel.addTarget(self, action: #selector(cancelTapped), for: .touchUpInside)
+        // UIAction (not addTarget): sendActions in unit tests must reach the callback.
+        cancel.addAction(UIAction { _ in onCancel() }, for: .touchUpInside)
         view.addSubview(cancel)
         NSLayoutConstraint.activate([
             cancel.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 16),
             cancel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 8)
         ])
-    }
-
-    @objc private func cancelTapped() {
-        onCancel?()
     }
 
     private func addShutter() {
