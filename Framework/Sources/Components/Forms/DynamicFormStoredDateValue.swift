@@ -58,7 +58,7 @@ public enum DynamicFormStoredDateValue {
         return styledDate(from: trimmed, locale: locale)
     }
 
-    /// Same styles `DatePickerField`, `TimePickerField`, and `DateTimePickerField` write.
+    /// Legacy medium/short styles advanced pickers wrote before #618.
     private static func styledDate(from text: String, locale: Locale) -> Date? {
         if let date = formatter(locale: locale, dateStyle: .medium, timeStyle: .none).date(from: text) {
             return date
