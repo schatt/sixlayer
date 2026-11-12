@@ -56,8 +56,9 @@ struct FormSubmitSwiftDataContextTests {
             onSubmit: { _ in onSubmitCalled = true }
         )
 
+        let stillDirty = context.hasChanges
         #expect(onSubmitCalled, "onSubmit should still run after auto-save")
-        #expect(!context.hasChanges, "Submit should save through the model's installed context")
+        #expect(!stillDirty, "Submit should save through the model's installed context")
         #expect(probe.title == "after")
     }
 
