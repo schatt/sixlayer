@@ -1034,6 +1034,14 @@ public func platformPhotoPicker_L4(onImageSelected: @escaping (PlatformImage) ->
     PlatformPhotoComponentsLayer4.platformPhotoPicker_L4(onImageSelected: onImageSelected)
 }
 
+/// Deliberately wrong stub for #668 red: must wrap UnifiedImagePicker via onSelection.
+@_disfavoredOverload
+@ViewBuilder
+@MainActor
+public func platformPhotoPicker_L4(onSelection: @escaping (PlatformPhotoSelection) -> Void) -> some View {
+    EmptyView()
+}
+
 /// Creates a platform-specific camera interface (convenience wrapper).
 /// - Parameters:
 ///   - onImageCaptured: Called when the user captures or selects an image.
