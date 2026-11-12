@@ -752,6 +752,27 @@ public struct FileRow: View {
     }
 }
 
+// MARK: - Advanced Date Picker Storage
+
+/// Write/read path for ``DatePickerField``, ``TimePickerField``, and ``DateTimePickerField``.
+///
+/// **Target contract (#618):** persist `Date` so Core Data date attributes do not depend on
+/// device locale. Load still accepts legacy medium/short strings via ``DynamicFormStoredDateValue``.
+///
+/// Deliberate red stub: still writes a localized medium string (pre-#618 behavior) until green.
+@MainActor
+enum AdvancedDatePickerFieldStorage {
+    static func persist(_ date: Date, into formState: DynamicFormState, for fieldID: String) {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formState.setValue(formatter.string(from: date), for: fieldID)
+    }
+
+    static func load(from formState: DynamicFormState, fieldID: String) -> Date? {
+        DynamicFormStoredDateValue.date(fromStoredValue: formState.fieldValues[fieldID])
+    }
+}
+
 // MARK: - Date Picker Field
 
 /// Date picker field for selecting dates.
