@@ -6,8 +6,9 @@ import Foundation
 /// **Primary contract:** `Date` — preferred for hosts mapping to Core Data / model `Date` attributes.
 ///
 /// **Interoperability:** Also accepts `TimeInterval`, ISO-8601 strings, `en_US_POSIX` medium/short
-/// strings, and those same styles in `Locale.current` as written by `DatePickerField` /
-/// `TimePickerField` / `DateTimePickerField`. POSIX is tried first (#615, #621).
+/// strings, and those same styles in `Locale.current` (legacy values from pre-#618
+/// `DatePickerField` / `TimePickerField` / `DateTimePickerField`, which now persist `Date`).
+/// POSIX is tried first (#615, #621).
 /// See `Framework/docs/AdvancedFieldTypesGuide.md` (date contracts) and GitHub #266.
 public enum DynamicFormStoredDateValue {
 
@@ -17,7 +18,7 @@ public enum DynamicFormStoredDateValue {
         date(fromStoredValue: value, locale: .current)
     }
 
-    /// `locale` is the locale `DatePickerField` used. POSIX medium and short strings are tried first.
+    /// `locale` is the locale that wrote a legacy medium/short string. POSIX is tried first.
     static func date(fromStoredValue value: Any?, locale: Locale) -> Date? {
         guard let value else { return nil }
 
@@ -57,7 +58,7 @@ public enum DynamicFormStoredDateValue {
         return styledDate(from: trimmed, locale: locale)
     }
 
-    /// Same styles `DatePickerField`, `TimePickerField`, and `DateTimePickerField` write.
+    /// Legacy medium/short styles advanced pickers wrote before #618.
     private static func styledDate(from text: String, locale: Locale) -> Date? {
         if let date = formatter(locale: locale, dateStyle: .medium, timeStyle: .none).date(from: text) {
             return date
