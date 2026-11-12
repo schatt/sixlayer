@@ -248,7 +248,7 @@ final class LivePhotoCameraViewController: UIViewController, AVCapturePhotoCaptu
         // Main queue keeps the callbacks in order; separate Tasks would not.
         DispatchQueue.main.async { MainActor.assumeIsolated {
             // System boundary conversion: photo data → PlatformImage
-            assemblies[id, default: LivePhotoCaptureAssembly()].receivePhoto(data.flatMap(PlatformImage.init(data:)))
+            self.assemblies[id, default: LivePhotoCaptureAssembly()].receivePhoto(data.flatMap(PlatformImage.init(data:)))
         } }
     }
 
@@ -264,7 +264,7 @@ final class LivePhotoCameraViewController: UIViewController, AVCapturePhotoCaptu
         let failed = error != nil
         // Main queue keeps the callbacks in order; separate Tasks would not.
         DispatchQueue.main.async { MainActor.assumeIsolated {
-            assemblies[id, default: LivePhotoCaptureAssembly()]
+            self.assemblies[id, default: LivePhotoCaptureAssembly()]
                 .receiveMovie(outputFileURL, error: failed ? CocoaError(.fileWriteUnknown) : nil)
         } }
     }
@@ -277,8 +277,8 @@ final class LivePhotoCameraViewController: UIViewController, AVCapturePhotoCaptu
         let id = resolvedSettings.uniqueID
         // Main queue keeps the callbacks in order; separate Tasks would not.
         DispatchQueue.main.async { MainActor.assumeIsolated {
-            guard let selection = assemblies.removeValue(forKey: id)?.selection() else { return }
-            onSelection(selection)
+            guard let selection = self.assemblies.removeValue(forKey: id)?.selection() else { return }
+            self.onSelection(selection)
         } }
     }
 }
