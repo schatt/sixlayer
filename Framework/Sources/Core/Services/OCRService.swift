@@ -1027,21 +1027,9 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
         return evaluateMathExpression(processedExpression)
     }
 
-    /// Finite number for recognized text. POSIX / whole-string locale decimals first (#624).
-    /// Grouped locale forms (`1,234.5`, `1.234,5`) use `NumberFormatter`, which rejects a
-    /// malformed grouping comma such as English `4,5` instead of inventing 45 (#630).
+    /// Finite number for recognized text. Shared with joint correction (#624 / #630 / #632).
     private func recognizedDecimal(_ text: String, locale: Locale) -> Double? {
-        if let parsed = DynamicFormStoredDecimal.double(fromStoredText: text, locale: locale) {
-            return parsed
-        }
-        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else { return nil }
-        let formatter = NumberFormatter()
-        formatter.locale = locale
-        formatter.numberStyle = .decimal
-        guard let number = formatter.number(from: trimmed) else { return nil }
-        let double = number.doubleValue
-        return double.isFinite ? double : nil
+        OCRDecimalLocale.parseRecognized(text, locale: locale)
     }
     
     /// Evaluate a simple mathematical expression (supports +, -, *, /, parentheses).
