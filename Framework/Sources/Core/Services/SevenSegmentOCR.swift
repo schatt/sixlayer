@@ -659,7 +659,10 @@ private struct GrayBuffer {
         // A real quarter turn reads surer than the upright garbage it fixes;
         // a lone upright `7` does not turn into `888888888-1` (#661).
         let surer = scores[turns].minConfidence >= scores[0].minConfidence
-        return mostlyNumbers && turnedWide >= 4 && surer && (lead || (decimalsBelow && notFewerWide))
+        // The decimals-below turn does not have the wide-digit lead, and its
+        // minimum confidence can sit under the sideways garbage. The lead
+        // path still requires a surer read so a lone 7 cannot become 8s.
+        return mostlyNumbers && turnedWide >= 4 && ((lead && surer) || (decimalsBelow && notFewerWide))
     }
 
     private struct OrientationScore {
@@ -2614,22 +2617,14 @@ private extension GrayBuffer {
                 chosen = openIsDark ? darkChoice.reading : lightChoice.reading
                 opened = true
             } else if darkPreferred {
-                // Forcing open clears columns outside the digit span. On one
-                // wide line of groups that span is a single group (`five` →
-                // `2.22`) (#661), so only force when it keeps the dark ink.
-                if spanKeepsInk(core: darkCore, loose: darkMask) {
-                    let forced = polarity(
-                        isDark: true,
-                        loose: darkMask,
-                        core: darkCore,
-                        forceOpen: true
-                    )
-                    chosen = forced.reading
-                    opened = forced.opens
-                } else {
-                    chosen = darkChoice.reading
-                    opened = false
-                }
+                let forced = polarity(
+                    isDark: true,
+                    loose: darkMask,
+                    core: darkCore,
+                    forceOpen: true
+                )
+                chosen = forced.reading
+                opened = forced.opens
             } else {
                 // Light ink on dark glass: the glass false-opens. Forcing the
                 // light ink open clears columns outside its digit span and
@@ -2783,8 +2778,8 @@ private extension GrayBuffer {
             let tallest = splitBands.map { $0.1 - $0.0 }.max() ?? 0
             lineBands = splitBands.compactMap { raw in
                 guard (raw.1 - raw.0) * 2 >= tallest else { return nil }
-                let headed = opened ? raw : trimmingGlareHead(raw, mask: glyphs, pixels: buffer.pixels)
-                let peeled = opened ? headed : trimmingSparseEdges(headed, mask: cellGlyphs)
+                let headed = trimmingGlareHead(raw, mask: glyphs, pixels: buffer.pixels)
+                let peeled = trimmingSparseEdges(headed, mask: cellGlyphs)
                 return peeled.1 > peeled.0 + 8 ? peeled : nil
             }
         }
