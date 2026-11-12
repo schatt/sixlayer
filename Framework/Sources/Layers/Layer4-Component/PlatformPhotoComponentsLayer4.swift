@@ -387,7 +387,7 @@ import UIKit
 
 /// Hosted-tree contract for `platformCameraInterface_L4` (#254 / #255). SwiftUI modifiers on
 /// `UIViewControllerRepresentable` do not reliably propagate into the embedded picker hierarchy.
-private enum PlatformCameraInterfaceLayer4Accessibility {
+enum PlatformCameraInterfaceLayer4Accessibility {
     static let hostedTreeIdentifier = "SixLayer.main.ui.platformCameraInterface_L4.View"
     static let anchorViewTag = 0x534C4604
 }

@@ -157,7 +157,7 @@ final class LivePhotoCameraViewController: UIViewController, AVCapturePhotoCaptu
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .black
-        view.accessibilityIdentifier = "SixLayer.main.ui.platformCameraInterface_L4.View"
+        view.accessibilityIdentifier = PlatformCameraInterfaceLayer4Accessibility.hostedTreeIdentifier
         previewLayer.session = capture.session
         previewLayer.videoGravity = .resizeAspectFill
         view.layer.addSublayer(previewLayer)
