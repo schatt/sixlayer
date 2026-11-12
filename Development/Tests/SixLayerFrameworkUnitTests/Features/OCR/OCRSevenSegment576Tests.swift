@@ -511,18 +511,11 @@ struct OCRSevenSegment576Tests {
             bezelWidth: 8
         )
         let result = decode(image)
-        // #670 probe: which path / boxes invent the extra 1s and period.
-        let priorFlat = SevenSegmentOCR.useFlatReadArbitration
-        SevenSegmentOCR.useFlatReadArbitration = false
-        let maskOnly = decode(image)
-        SevenSegmentOCR.useFlatReadArbitration = priorFlat
-        let boxes = result.recognizedTexts.map { text in
-            let b = text.boundingBox
-            return "\(text.text)@(\(String(format: "%.3f", b.minX)),\(String(format: "%.3f", b.minY)),\(String(format: "%.3f", b.width))x\(String(format: "%.3f", b.height)))c\(text.confidence)"
-        }.joined(separator: " | ")
+        // #670 probe: cell boxes live in extractedText while recognizedGroups
+        // is annotated; lattice path would stay plain "11.234.561".
         #expect(
             result.extractedText == "1,234.56",
-            "got=\(result.extractedText) maskOnly=\(maskOnly.extractedText) boxes=\(boxes)"
+            "got=\(result.extractedText) conf=\(result.confidence)"
         )
     }
 
