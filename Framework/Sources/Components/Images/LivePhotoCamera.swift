@@ -138,6 +138,7 @@ private final class LivePhotoCaptureSession: @unchecked Sendable {
 
 final class LivePhotoCameraViewController: UIViewController, AVCapturePhotoCaptureDelegate {
     private let onSelection: (PlatformPhotoSelection) -> Void
+    private let onCancel: (() -> Void)?
     private let onUnavailable: () -> Void
     private let capture = LivePhotoCaptureSession()
     private let previewLayer = AVCaptureVideoPreviewLayer()
@@ -146,13 +147,13 @@ final class LivePhotoCameraViewController: UIViewController, AVCapturePhotoCaptu
     private let shutter = UIButton(type: .custom)
     private var didStart = false
 
-    // RED STUB (#669): onCancel is accepted and ignored.
     init(
         onSelection: @escaping (PlatformPhotoSelection) -> Void,
         onCancel: (() -> Void)?,
         onUnavailable: @escaping () -> Void
     ) {
         self.onSelection = onSelection
+        self.onCancel = onCancel
         self.onUnavailable = onUnavailable
         super.init(nibName: nil, bundle: nil)
     }
@@ -167,6 +168,7 @@ final class LivePhotoCameraViewController: UIViewController, AVCapturePhotoCaptu
         previewLayer.session = capture.session
         previewLayer.videoGravity = .resizeAspectFill
         view.layer.addSublayer(previewLayer)
+        addCancelIfNeeded()
         addShutter()
     }
 
@@ -188,6 +190,28 @@ final class LivePhotoCameraViewController: UIViewController, AVCapturePhotoCaptu
         super.viewDidDisappear(animated)
         let capture = capture
         capture.queue.async { capture.session.stopRunning() }
+    }
+
+    /// Cancel matches the system camera: only when the host supplies a callback.
+    private func addCancelIfNeeded() {
+        guard onCancel != nil else { return }
+        let i18n = InternationalizationService()
+        let cancel = UIButton(type: .system)
+        cancel.translatesAutoresizingMaskIntoConstraints = false
+        cancel.setTitle(i18n.localizedString(for: "SixLayerFramework.button.cancel"), for: .normal)
+        cancel.setTitleColor(.white, for: .normal)
+        cancel.accessibilityLabel = i18n.localizedString(for: "SixLayerFramework.button.cancel")
+        cancel.accessibilityIdentifier = "SixLayer.main.ui.platformCameraInterface_L4.cancel"
+        cancel.addTarget(self, action: #selector(cancelTapped), for: .touchUpInside)
+        view.addSubview(cancel)
+        NSLayoutConstraint.activate([
+            cancel.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 16),
+            cancel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 8)
+        ])
+    }
+
+    @objc private func cancelTapped() {
+        onCancel?()
     }
 
     private func addShutter() {
