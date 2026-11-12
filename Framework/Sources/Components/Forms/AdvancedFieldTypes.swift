@@ -774,6 +774,13 @@ enum AdvancedDatePickerFieldStorage {
             locale: locale
         )
     }
+
+    static func binding(formState: DynamicFormState, fieldID: String) -> Binding<Date> {
+        Binding(
+            get: { load(from: formState, fieldID: fieldID) ?? Date() },
+            set: { persist($0, into: formState, for: fieldID) }
+        )
+    }
 }
 
 // MARK: - Date Picker Field
@@ -787,12 +794,7 @@ public struct DatePickerField: View {
     @ObservedObject var formState: DynamicFormState
 
     private var selectedDate: Binding<Date> {
-        Binding(
-            get: {
-                AdvancedDatePickerFieldStorage.load(from: formState, fieldID: field.id) ?? Date()
-            },
-            set: { AdvancedDatePickerFieldStorage.persist($0, into: formState, for: field.id) }
-        )
+        AdvancedDatePickerFieldStorage.binding(formState: formState, fieldID: field.id)
     }
     
     public var body: some View {
@@ -827,12 +829,7 @@ public struct TimePickerField: View {
     @ObservedObject var formState: DynamicFormState
 
     private var selectedTime: Binding<Date> {
-        Binding(
-            get: {
-                AdvancedDatePickerFieldStorage.load(from: formState, fieldID: field.id) ?? Date()
-            },
-            set: { AdvancedDatePickerFieldStorage.persist($0, into: formState, for: field.id) }
-        )
+        AdvancedDatePickerFieldStorage.binding(formState: formState, fieldID: field.id)
     }
     
     public var body: some View {
@@ -867,12 +864,7 @@ public struct DateTimePickerField: View {
     @ObservedObject var formState: DynamicFormState
 
     private var selectedDateTime: Binding<Date> {
-        Binding(
-            get: {
-                AdvancedDatePickerFieldStorage.load(from: formState, fieldID: field.id) ?? Date()
-            },
-            set: { AdvancedDatePickerFieldStorage.persist($0, into: formState, for: field.id) }
-        )
+        AdvancedDatePickerFieldStorage.binding(formState: formState, fieldID: field.id)
     }
     
     public var body: some View {
