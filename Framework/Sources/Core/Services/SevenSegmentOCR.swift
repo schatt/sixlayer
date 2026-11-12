@@ -300,10 +300,10 @@ public enum SevenSegmentOCR {
         // (a payment screen, an ad). When the crop does not read cleanly,
         // search the whole frame for the region that reads best. Those
         // boxes are normalized to the whole image.
-        // A confident read of one short row ("88") can be a fragment of the
-        // panel; search too when it holds fewer than four digits.
-        let cropDigits = rows.flatMap { $0 }.filter { $0.character.isNumber }.count
-        if localizeDigitPanel, !SevenSegmentLatticeReader.isConfident(rows) || cropDigits < 4 {
+        // A confident short row is not re-searched just for being short.
+        // `88` on a sealed panel is the whole read (`shortConfidentRead`),
+        // and no photo shows that four digits is the boundary.
+        if localizeDigitPanel, !SevenSegmentLatticeReader.isConfident(rows) {
             let located = SevenSegmentLatticeReader.locateAndRead(
                 pixels: frame.pixels, width: frame.width, height: frame.height
             )
