@@ -1144,7 +1144,72 @@ struct OCRSevenSegment576Tests {
         )
         .path
 
+    /// `Development/TestFixtures/private/…/ti_fp_s5_pump.jpg` (gitignored local checkout).
+    static let fuelPurchaseScenario5Photo = URL(fileURLWithPath: #filePath)
+        .deletingLastPathComponent()
+        .deletingLastPathComponent()
+        .deletingLastPathComponent()
+        .deletingLastPathComponent()
+        .deletingLastPathComponent()
+        .appendingPathComponent(
+            "TestFixtures/private/seven-segment/fuel_purchase/scenario_5/ti_fp_s5_pump.jpg"
+        )
+        .path
+
+    // MARK: - Private sale-display crop (#612)
+
+    /// Scenario 5's localized crop is already the sale display. Hand-cut rows
+    /// read `3  _25` / `7.6.23`; the combined crop used to collapse to `3` /
+    /// `83.88_8` when readingSpan kept one short run. The two-row decode must
+    /// at least match that hand-cut floor (#612). Skips when the private
+    /// fixtures tree is not checked out locally.
+    @Test(
+        .enabled(if: FileManager.default.fileExists(atPath: OCRSevenSegment576Tests.fuelPurchaseScenario5Photo))
+    )
+    func scenario5SaleDisplayCropMatchesHandCutFloor() throws {
+        let photo = URL(fileURLWithPath: Self.fuelPurchaseScenario5Photo)
+        let image = try #require(PlatformImage.cgImage(opening: Data(contentsOf: photo)))
+        let fitted = try #require(fitIntoBox(image, width: 1200, height: 1600))
+        let result = SevenSegmentOCR.decode(
+            cgImage: fitted,
+            deskewMaximumDegrees: 3,
+            localizeDigitPanel: true
+        )
+        let lines = result.extractedText
+            .split(separator: "\n", omittingEmptySubsequences: false)
+            .map(String.init)
+        #expect(lines.count >= 2, "read [\(result.extractedText)]")
+        // Hand-cut floor: price keeps 3/_/25 (digits 325), volume 7.6.23 (7623).
+        // Collapse to a single short run (`3` / `83.88_8`) fails this.
+        let priceDigits = String(lines[0].filter(\.isNumber))
+        let volumeDigits = String(lines[1].filter(\.isNumber))
+        #expect(priceDigits.count >= 3, "price digits [\(priceDigits)] from [\(lines[0])]")
+        #expect(priceDigits.contains("3") && priceDigits.contains("25"), "price [\(lines[0])]")
+        #expect(volumeDigits == "7623" || volumeDigits.hasPrefix("7623"), "volume [\(lines[1])]")
+    }
+
     // MARK: - Helpers
+
+    /// Scale so the image fits inside the box (same production resize used
+    /// when measuring fuel_purchase frames for #612).
+    private func fitIntoBox(_ image: CGImage, width boxW: Int, height boxH: Int) -> CGImage? {
+        let scale = min(Double(boxW) / Double(image.width), Double(boxH) / Double(image.height))
+        let dw = max(1, Int((Double(image.width) * scale).rounded()))
+        let dh = max(1, Int((Double(image.height) * scale).rounded()))
+        guard let ctx = CGContext(
+            data: nil,
+            width: dw,
+            height: dh,
+            bitsPerComponent: 8,
+            bytesPerRow: 0,
+            space: CGColorSpaceCreateDeviceRGB(),
+            bitmapInfo: CGImageAlphaInfo.noneSkipLast.rawValue
+        ) else { return nil }
+        ctx.interpolationQuality = .high
+        ctx.draw(image, in: CGRect(x: 0, y: 0, width: dw, height: dh))
+        return ctx.makeImage()
+    }
+
 
     private func service() -> OCRService { OCRService() }
 
