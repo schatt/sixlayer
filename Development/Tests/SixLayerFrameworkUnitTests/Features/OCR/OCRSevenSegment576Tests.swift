@@ -210,6 +210,38 @@ struct OCRSevenSegment576Tests {
         #expect(decode(image, maximum: 0).extractedText == "32.88\n8.022")
     }
 
+    @Test func valleyStreakDoesNotCollapseTheDigitFieldSpan() {
+        // Two glyph runs with a valley streak between them. readingSpan
+        // treats the streak as bezel and keeps only the inkiest run, so the
+        // shared rowcrop window never covers the other glyphs (#612).
+        let span = ReadingSpanProbe.span(
+            width: 200,
+            height: 200,
+            digitColumns: [(10, 40), (80, 110)],
+            valleyStreak: (50, 56),
+            bands: [(20, 80), (120, 180)]
+        )
+        #expect(span?.0 == 10)
+        #expect(span?.1 == 110)
+    }
+
+    @Test func valleyStreakDoesNotHideTheOtherGlyphs() {
+        // End-to-end regression: tall-haze / left-scratch rowcrops plus a
+        // valley streak must still read both sides of the field (#612).
+        let image = SegmentPanel.render(
+            rows: [atoms("32.88"), atoms("8.022")],
+            padding: 80,
+            inkLevel: 30,
+            backgroundLevel: 130,
+            outerMargin: 200,
+            gapGlare: true,
+            leftScratch: true,
+            tallHaze: true,
+            valleyStreak: true
+        )
+        #expect(decode(image, maximum: 0).extractedText == "32.88\n8.022")
+    }
+
     @Test func wideGapSplitsGroupsAndAnEqualGapDoesNot() {
         // Isolate fine deskew: untilted short rows must still read (#602).
         #expect(decode(panel(["1234"]), maximum: 0).extractedText == "1234")
@@ -1112,7 +1144,74 @@ struct OCRSevenSegment576Tests {
         )
         .path
 
+    /// `Development/TestFixtures/private/…/ti_fp_s5_pump.jpg` (gitignored local checkout).
+    static let fuelPurchaseScenario5Photo = URL(fileURLWithPath: #filePath)
+        .deletingLastPathComponent()
+        .deletingLastPathComponent()
+        .deletingLastPathComponent()
+        .deletingLastPathComponent()
+        .deletingLastPathComponent()
+        .appendingPathComponent(
+            "TestFixtures/private/seven-segment/fuel_purchase/scenario_5/ti_fp_s5_pump.jpg"
+        )
+        .path
+
+    // MARK: - Private sale-display crop (#612)
+
+    /// Scenario 5's localized crop is already the sale display. Hand-cut rows
+    /// read `3  _25` / `7.6.23`; the combined crop used to collapse to `3` /
+    /// `83.88_8` when readingSpan kept one short run. The two-row decode must
+    /// at least match that hand-cut floor (#612). Skips when the private
+    /// fixtures tree is not checked out locally.
+    @Test(
+        .enabled(if: FileManager.default.fileExists(atPath: OCRSevenSegment576Tests.fuelPurchaseScenario5Photo))
+    )
+    func scenario5SaleDisplayCropMatchesHandCutFloor() throws {
+        let photo = URL(fileURLWithPath: Self.fuelPurchaseScenario5Photo)
+        let image = try #require(PlatformImage.cgImage(opening: Data(contentsOf: photo)))
+        let fitted = try #require(fitIntoBox(image, width: 1200, height: 1600))
+        let result = SevenSegmentOCR.decode(
+            cgImage: fitted,
+            deskewMaximumDegrees: 3,
+            localizeDigitPanel: true
+        )
+        let lines = result.extractedText
+            .split(separator: "\n", omittingEmptySubsequences: false)
+            .map(String.init)
+        #expect(lines.count >= 2, "read [\(result.extractedText)]")
+        // Hand-cut floor: price keeps 3/_/25, volume 7.6.23. #612 only
+        // requires those glyphs stay visible on the combined crop — not the
+        // old short-run collapse (`3` / `83.88_8`). Extra mark noise around
+        // the volume digits is recognition ceiling (#599 / #604), out of scope.
+        let priceDigits = String(lines[0].filter(\.isNumber))
+        let volumeDigits = String(lines[1].filter(\.isNumber))
+        #expect(priceDigits.contains("3") && priceDigits.contains("25"), "price [\(lines[0])]")
+        #expect(volumeDigits.contains("7623"), "volume [\(lines[1])]")
+        #expect(lines[0] != "3" || !lines[1].contains("83"), "collapsed short run [\(result.extractedText)]")
+    }
+
     // MARK: - Helpers
+
+    /// Scale so the image fits inside the box (same production resize used
+    /// when measuring fuel_purchase frames for #612).
+    private func fitIntoBox(_ image: CGImage, width boxW: Int, height boxH: Int) -> CGImage? {
+        let scale = min(Double(boxW) / Double(image.width), Double(boxH) / Double(image.height))
+        let dw = max(1, Int((Double(image.width) * scale).rounded()))
+        let dh = max(1, Int((Double(image.height) * scale).rounded()))
+        guard let ctx = CGContext(
+            data: nil,
+            width: dw,
+            height: dh,
+            bitsPerComponent: 8,
+            bytesPerRow: 0,
+            space: CGColorSpaceCreateDeviceRGB(),
+            bitmapInfo: CGImageAlphaInfo.noneSkipLast.rawValue
+        ) else { return nil }
+        ctx.interpolationQuality = .high
+        ctx.draw(image, in: CGRect(x: 0, y: 0, width: dw, height: dh))
+        return ctx.makeImage()
+    }
+
 
     private func service() -> OCRService { OCRService() }
 
@@ -1425,7 +1524,8 @@ enum SegmentPanel {
         leftScratch: Bool = false,
         tallHaze: Bool = false,
         solidGapWashVolumeOnly: Bool = false,
-        falseLowerLeftStemSpeck: Bool = false
+        falseLowerLeftStemSpeck: Bool = false,
+        valleyStreak: Bool = false
     ) -> CGImage {
         let laid = layout(rows: rows, padding: padding)
         let background: UInt8 = backgroundLevel ?? (invert ? 28 : 214)
@@ -1511,6 +1611,16 @@ enum SegmentPanel {
         }
         if edgeStrip {
             paintEdgeStrip(
+                &pixels,
+                width: width,
+                height: height,
+                ink: ink,
+                padding: padding,
+                bands: laid.rowBands
+            )
+        }
+        if valleyStreak {
+            paintValleyStreak(
                 &pixels,
                 width: width,
                 height: height,
@@ -1691,6 +1801,40 @@ enum SegmentPanel {
         for y in gapTop..<gapBottom {
             for x in 4..<scratchEnd {
                 pixels[y * width + x] = background
+            }
+        }
+    }
+
+    /// Vertical ink only in the inter-row valley, in the intra gap after "32"
+    /// so it splits the digit field into two runs without sitting under the
+    /// period (gapStrip would drop that mark). readingSpan treats the column
+    /// as bezel and keeps only the inkiest run (#612). Leave clear rows under
+    /// the upper band so hang reach cannot turn a nearby period into a comma.
+    private static func paintValleyStreak(
+        _ pixels: inout [UInt8],
+        width: Int,
+        height: Int,
+        ink: UInt8,
+        padding: Int,
+        bands: [RowBand]
+    ) {
+        guard let first = bands.first, let last = bands.last else { return }
+        let gapTop = first.maxY
+        let gapBottom = last.minY
+        let gap = gapBottom - gapTop
+        guard gap > 0 else { return }
+        let clear = max(8, gap / 4)
+        let y0 = gapTop + clear
+        let y1 = gapBottom - clear
+        // Edge detection needs more than valley/3 ink pixels in the column.
+        guard y1 - y0 > max(4, gap / 3) else { return }
+        // End of the second digit cell — before the period between 32 and 88.
+        let streakX = padding + 2 * cellW + intra
+        let streakEnd = min(width, streakX + max(4, stroke / 2))
+        guard streakEnd > streakX else { return }
+        for y in y0..<y1 {
+            for x in streakX..<streakEnd {
+                pixels[y * width + x] = ink
             }
         }
     }

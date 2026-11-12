@@ -2711,6 +2711,50 @@ private func windowRadius(width: Int, height: Int) -> Int {
     return min(36, max(grown, strokeFloor))
 }
 
+/// Test probe for the shared column span that rowcrops use (#612).
+/// Digit columns live in the row bands; a valley streak sits only between them.
+enum ReadingSpanProbe {
+    static func span(
+        width: Int,
+        height: Int,
+        digitColumns: [(Int, Int)],
+        valleyStreak: (Int, Int),
+        bands: [(Int, Int)]
+    ) -> (Int, Int)? {
+        guard width > 0, height > 0, bands.count >= 2 else { return nil }
+        var bits = [Bool](repeating: false, count: width * height)
+        for column in digitColumns {
+            let x0 = max(0, column.0)
+            let x1 = min(width, column.1)
+            guard x1 > x0 else { continue }
+            for band in bands {
+                let y0 = max(0, band.0)
+                let y1 = min(height, band.1)
+                guard y1 > y0 else { continue }
+                for y in y0..<y1 {
+                    for x in x0..<x1 {
+                        bits[y * width + x] = true
+                    }
+                }
+            }
+        }
+        let valleyTop = bands[0].1
+        let valleyBottom = bands[1].0
+        if valleyBottom > valleyTop {
+            let x0 = max(0, valleyStreak.0)
+            let x1 = min(width, valleyStreak.1)
+            if x1 > x0 {
+                for y in valleyTop..<valleyBottom {
+                    for x in x0..<x1 {
+                        bits[y * width + x] = true
+                    }
+                }
+            }
+        }
+        return readingSpan(Mask(bits: bits, width: width, height: height), bands: bands)
+    }
+}
+
 /// Columns that hold digit ink and stay empty in the gap between rows.
 /// A strip that is ink on that gap is the bezel edge, not a stroke.
 private func readingSpan(_ mask: Mask, bands: [(Int, Int)]) -> (Int, Int)? {
@@ -2757,30 +2801,64 @@ private func readingSpan(_ mask: Mask, bands: [(Int, Int)]) -> (Int, Int)? {
     }
     let active = keep.indices.filter { keep[$0] }
     guard let first = active.first else { return nil }
-    // Keep digits across the intra-digit gap (8px). Do not jump a left
-    // scratch that sits farther away on a tall outer-margin crop.
-    let gapLimit = max(8, min(16, height / 40))
-    var runs: [(start: Int, end: Int, ink: Int)] = []
+    // Contiguous ink pieces first. Intra gaps are a few pixels; a valley
+    // streak between glyph-sized pieces must not keep only the inkiest run
+    // (#612). A speck past an edge strip stays out — it is not glyph-wide.
+    var pieces: [(start: Int, end: Int, ink: Int)] = []
     var start = first
     var end = first
     var ink = columnInk[first]
     for index in active.dropFirst() {
-        let crossesBezel = (end + 1..<index).contains { edgeColumn[$0] }
-        if index - end <= gapLimit, !crossesBezel {
+        if index == end + 1 {
             end = index
             ink += columnInk[index]
         } else {
-            runs.append((start, end + 1, ink))
+            pieces.append((start, end + 1, ink))
             start = index
             end = index
             ink = columnInk[index]
         }
     }
-    runs.append((start, end + 1, ink))
+    pieces.append((start, end + 1, ink))
+    let runs = joinReadingSpanPieces(pieces, edgeColumn: edgeColumn, height: height)
     guard let best = runs.max(by: { $0.ink < $1.ink }) else { return nil }
     let span = best.end - best.start
     guard span > max(12, height / 10) else { return nil }
     return (best.start, best.end)
+}
+
+/// Join contiguous ink pieces into digit-field runs. A mid-field valley
+/// streak is a bezel column between glyph-sized pieces — still one field
+/// (#612). A speck past an edge strip is not glyph-wide and stays out.
+private func joinReadingSpanPieces(
+    _ pieces: [(start: Int, end: Int, ink: Int)],
+    edgeColumn: [Bool],
+    height: Int
+) -> [(start: Int, end: Int, ink: Int)] {
+    guard let first = pieces.first else { return [] }
+    let gapLimit = max(8, min(16, height / 40))
+    // Valley streak columns drop out of the active set, so the gap between
+    // glyph pieces is the streak width plus empty glass. Allow about a cell.
+    let glyphGap = 48
+    let glyphWidth = 8
+    var runs: [(start: Int, end: Int, ink: Int)] = []
+    var current = first
+    for piece in pieces.dropFirst() {
+        let gap = piece.start - current.end
+        let crossesBezel = (current.end..<piece.start).contains { edgeColumn[$0] }
+        let widePieces = (current.end - current.start) >= glyphWidth
+            && (piece.end - piece.start) >= glyphWidth
+        let limit = widePieces ? max(gapLimit, glyphGap) : gapLimit
+        if gap <= limit, !crossesBezel || widePieces {
+            current.end = piece.end
+            current.ink += piece.ink
+        } else {
+            runs.append(current)
+            current = piece
+        }
+    }
+    runs.append(current)
+    return runs
 }
 
 /// When a row band is taller than a price crop, keep the densest window of
