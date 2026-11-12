@@ -50,7 +50,7 @@ public enum EntityCreationUtilities {
     ///   - fieldHints: Optional hints to filter hidden fields
     /// - Returns: Created NSManagedObject
     /// - Throws: `CoreDataCreationError` when the name, property, or value cannot be stored,
-    ///   or the context save error (entity is rolled back on save failure)
+    ///   or the context save error (the new entity is deleted on save failure; other pending edits stay)
     public static func createCoreDataEntity(
         entityName: String,
         values: [String: Any],
@@ -98,16 +98,15 @@ public enum EntityCreationUtilities {
 
         let entity = insert(description, assignments: assignments, into: context)
         
-        // Save context - throw error if save fails (entity will be rolled back)
+        // Save context - throw error if save fails (delete only the new entity)
         do {
             if context.hasChanges {
                 try context.save()
             }
         } catch {
-            // Rollback: Delete entity if save fails
+            // Delete the failed insert only; do not rollback the whole context (#620).
             context.delete(entity)
-            // Reset context to discard changes
-            context.rollback()
+            context.processPendingChanges()
             throw error
         }
         
@@ -417,13 +416,13 @@ public enum EntityCreationUtilities {
         
         context.insert(persistentModel)
         
-        // Save context - throw error if save fails (entity will be rolled back)
+        // Save context - throw error if save fails (delete only the new entity)
         do {
             if context.hasChanges {
                 try context.save()
             }
         } catch {
-            // Rollback: Delete entity if save fails
+            // Delete the failed insert only; leave other pending model changes alone (#620).
             context.delete(persistentModel)
             throw error
         }

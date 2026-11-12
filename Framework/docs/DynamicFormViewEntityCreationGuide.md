@@ -158,7 +158,7 @@ DynamicFormView(
 - **Validation Fails**: Form has validation errors (fieldErrors in userInfo)
 - **Entity Creation Fails**: Invalid entity name, missing context, Codable decode failure
 - **Save Fails**: Core Data/SwiftData save errors, constraint violations
-- **Automatic Rollback**: Entity is automatically deleted if save fails
+- **Failed-save cleanup**: The new entity is deleted if save fails; other pending context edits are left alone (#620)
 
 ### Error Handling Flow
 
@@ -170,7 +170,7 @@ DynamicFormView(
    - If creation fails → `onError` called, no entity created
    
 3. **Save**: Entity is saved to context
-   - If save fails → Entity is deleted (rollback), `onError` called
+   - If save fails → Only the new entity is deleted (other pending context edits stay), `onError` called
 
 ## Validation
 
