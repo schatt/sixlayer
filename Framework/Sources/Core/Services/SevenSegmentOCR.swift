@@ -4912,6 +4912,11 @@ struct SevenSegmentLatticeReader {
 
 private let analysisHeight = 360
 private let topHatFractions: [Double] = [0.08, 0.12, 0.18]
+/// Relative contrast below this is glass texture, not ink.
+private let inkFloor = 0.07
+/// A digit fits decisively when its strongest unlit zone is under half its
+/// weakest lit one.
+private let sureRatio = 0.5
 private let thickMaximum = 1.8
 private let rowCoverFraction = 0.3
 private let bridgeStrokes = 0.3
@@ -4966,6 +4971,10 @@ private struct Reader {
     private var rotatedHeight = 0
     private var shearTangent = 0.0
     private var shearPad = 0
+    /// Relative contrast of the chosen window, in the unrotated analysis frame.
+    private var contrastMap: [Double] = []
+    private var rotationCos = 1.0
+    private var rotationSin = 0.0
 
     init(pixels: [UInt8], width: Int, height: Int, darkInk: Bool) {
         self.pixels = pixels
@@ -4981,25 +4990,28 @@ private struct Reader {
         let small = boxResize(pixels, width: width, height: height, toWidth: smallWidth, toHeight: h)
         let smoothed = median3(small, width: smallWidth, height: h)
 
-        var best: (score: Int, mask: BitMask, stroke: Double)?
+        var best: (score: Int, mask: BitMask, stroke: Double, contrast: [Double])?
         for fraction in topHatFractions {
             let contrast = topHat(smoothed, width: smallWidth, height: h, window: Int(Double(h) * fraction))
             let selected = contrast.filter { $0 > 0.03 }
             let cut = selected.count > 200 ? otsu(selected) : 0.2
             var raw = BitMask(width: smallWidth, height: h)
-            let level = max(0.6 * cut, 0.07)
+            let level = max(0.6 * cut, inkFloor)
             for index in contrast.indices where contrast[index] > level {
                 raw.bits[index] = true
             }
             let (kept, stroke) = clean(raw)
             let value = segmentScore(kept, stroke: stroke)
             if best == nil || value > best!.score {
-                best = (value, kept, stroke)
+                best = (value, kept, stroke, contrast)
             }
         }
         guard var mask = best?.mask, let stroke = best?.stroke, stroke > 0 else { return [] }
+        contrastMap = best?.contrast ?? []
 
         rotationDegrees = rotation(of: mask)
+        rotationCos = cos(rotationDegrees * .pi / 180)
+        rotationSin = sin(rotationDegrees * .pi / 180)
         if rotationDegrees != 0 {
             mask = rotate(mask, degrees: rotationDegrees, expand: true)
         }
@@ -5305,6 +5317,15 @@ private struct Reader {
             guard let firstInk = upper.firstIndex(of: true), let lastInk = upper.lastIndex(of: true) else { continue }
             guard let rowsSpan = inkRows(band, x0: cx0, x1: cx1) else { continue }
             if Double(rowsSpan.1 - rowsSpan.0) < 0.55 * dh { continue }
+            // Only a dozen of the 128 segment patterns are digits. Ask which
+            // digit the cell's raw contrast fits, before any per-segment
+            // on/off decision: under a reflection a lit segment can sit below
+            // the panel's ink level and still stand clear of the glass in its
+            // own cell (#661 s1 `32.88` → `7770`).
+            if let sure = contrastDigit(x0: x0, x1: x1, width: w, rows: band.height, top: top + bandTop, limit: band.width) {
+                cells.append(Slot(character: sure.character, confidence: 1, x0: sure.x0, x1: sure.x1))
+                continue
+            }
             let span = Double(lastInk - firstInk + 1)
             let offset = Double(firstInk)
             if span < 0.42 * w && offset > 0.45 * w {
@@ -5392,6 +5413,70 @@ private struct Reader {
         }
     }
 
+    /// Contrast at a point of the rotated, de-sheared analysis frame.
+    private func contrast(atX x: Double, y: Double) -> Double {
+        let ux = x - Double(shearPad) - (y - Double(rotatedHeight)) * shearTangent
+        var sx = ux, sy = y
+        if rotationDegrees != 0 {
+            let dx = ux - Double(rotatedWidth) / 2
+            let dy = y - Double(rotatedHeight) / 2
+            sx = rotationCos * dx - rotationSin * dy + Double(smallWidth) / 2
+            sy = rotationSin * dx + rotationCos * dy + Double(analysisHeight) / 2
+        }
+        let px = Int(sx.rounded(.down)), py = Int(sy.rounded(.down))
+        guard px >= 0, py >= 0, px < smallWidth, py < analysisHeight else { return 0 }
+        return contrastMap[py * smallWidth + px]
+    }
+
+    /// The digit whose lit segments all stand clear of its unlit ones in this
+    /// cell, or nil when none separates cleanly. The two holes of the digit
+    /// (glass in every glyph) count as unlit for every candidate, so an 8 is
+    /// judged too. Small lattice shifts are tried; the cleanest wins.
+    private func contrastDigit(
+        x0: Int, x1: Int, width w: Double, rows: Int, top: Int, limit: Int
+    ) -> (character: Character, x0: Int, x1: Int)? {
+        guard !contrastMap.isEmpty else { return nil }
+        let h = Double(rows)
+        func mean(_ a: Int, _ fx0: Double, _ fx1: Double, _ fy0: Double, _ fy1: Double) -> Double {
+            let cw = Double(x1 - x0)
+            let xa = a + Int(fx0 * cw), xb = max(a + Int(fx1 * cw), xa + 1)
+            let ya = Int(fy0 * h), yb = max(Int(fy1 * h), ya + 1)
+            var sum = 0.0
+            for y in ya..<yb {
+                for x in xa..<xb { sum += contrast(atX: Double(x) + 0.5, y: Double(top + y) + 0.5) }
+            }
+            return sum / Double((xb - xa) * (yb - ya))
+        }
+        let reach = Int(snapFraction * w)
+        let step = max(1, Int(w / 16))
+        var best: (ratio: Double, character: Character, x0: Int, x1: Int)?
+        for dx in Swift.stride(from: -reach, through: reach, by: step) {
+            let a = x0 + dx
+            guard a >= 0, a + (x1 - x0) <= limit else { continue }
+            let zones: [(SevenSegmentPattern, Double)] = [
+                (.a, mean(a, 0.3, 0.7, 0, 0.16)),
+                (.b, mean(a, 0.7, 1, 0.18, 0.4)),
+                (.c, mean(a, 0.7, 1, 0.6, 0.82)),
+                (.d, mean(a, 0.3, 0.7, 0.84, 1)),
+                (.e, mean(a, 0, 0.3, 0.6, 0.82)),
+                (.f, mean(a, 0, 0.3, 0.18, 0.4)),
+                (.g, mean(a, 0.3, 0.7, 0.42, 0.58))
+            ]
+            let holes = max(mean(a, 0.32, 0.68, 0.2, 0.38), mean(a, 0.32, 0.68, 0.62, 0.8))
+            for (character, pattern) in SevenSegmentLatticeReader.digitPatterns {
+                let lit = zones.filter { pattern.contains($0.0) }.map(\.1).min() ?? 0
+                let unlit = max(holes, zones.filter { !pattern.contains($0.0) }.map(\.1).max() ?? 0)
+                guard lit > inkFloor else { continue }
+                let ratio = unlit / lit
+                if best == nil || ratio < best!.ratio { best = (ratio, character, a, a + (x1 - x0)) }
+            }
+        }
+        // Sure means the weakest lit segment is at least twice the strongest
+        // unlit one. Anything closer is left to the mask read.
+        guard let pick = best, pick.ratio < sureRatio else { return nil }
+        return (pick.character, pick.x0, pick.x1)
+    }
+
     private func readDigit(_ band: BitMask, x0: Int, x1: Int) -> (Character, Float) {
         let h = Double(band.height)
         let w = Double(x1 - x0)
@@ -5453,6 +5538,11 @@ extension SevenSegmentLatticeReader {
         ("6", [.a, .c, .d, .e, .f, .g]), ("7", [.a, .b, .c]), ("8", [.a, .b, .c, .d, .e, .f, .g]),
         ("9", [.a, .b, .c, .d, .f, .g]), ("-", [.g])
     ]
+
+    /// The ten digits (no hyphen), for reading a cell's raw contrast.
+    fileprivate static var digitPatterns: [(Character, SevenSegmentPattern)] {
+        patterns.filter { $0.0.isNumber }
+    }
 
     /// Exact template, else a unique template one segment away, else "_".
     fileprivate static func digit(for pattern: SevenSegmentPattern) -> (Character, Float) {
