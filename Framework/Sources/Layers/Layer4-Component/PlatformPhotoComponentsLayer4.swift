@@ -1034,12 +1034,12 @@ public func platformPhotoPicker_L4(onImageSelected: @escaping (PlatformImage) ->
     PlatformPhotoComponentsLayer4.platformPhotoPicker_L4(onImageSelected: onImageSelected)
 }
 
-/// Deliberately wrong stub for #668 red: must wrap UnifiedImagePicker via onSelection.
+/// Photo picker that also delivers a Live Photo's paired movie (#668).
 @_disfavoredOverload
 @ViewBuilder
 @MainActor
 public func platformPhotoPicker_L4(onSelection: @escaping (PlatformPhotoSelection) -> Void) -> some View {
-    EmptyView()
+    PlatformPhotoComponentsLayer4.platformPhotoPicker_L4(onSelection: onSelection)
 }
 
 /// Creates a platform-specific camera interface (convenience wrapper).
