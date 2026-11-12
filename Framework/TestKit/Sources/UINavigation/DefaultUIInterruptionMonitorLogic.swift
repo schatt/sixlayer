@@ -17,19 +17,32 @@ public enum DefaultUIInterruptionMonitorLogic {
     public static let dismissKeywords = ["Bluetooth", "CPU", "Activity Monitor"]
     public static let dismissButtonTitles = ["OK", "Cancel", "Don't Allow"]
 
-    /// Stub for deliberate red (#584): wrongly treats a missing label as handled.
+    /// Whether the alert label matches a system dialog we dismiss.
+    public static func shouldAttemptDismiss(alertLabel: String) -> Bool {
+        dismissKeywords.contains { alertLabel.contains($0) }
+    }
+
+    /// Handle using an optional label. `nil` means the interrupting UI could not
+    /// be read (e.g. process quit mid-handler) → not handled (#584).
+    @discardableResult
     public static func handle(
         alertLabel: String?,
         buttonExists: (String) -> Bool,
         tapButton: (String) -> Void
     ) -> Bool {
-        _ = buttonExists
-        _ = tapButton
-        // Wrong on purpose for red: nil should be not-handled.
-        if alertLabel == nil { return true }
-        return false
+        guard let alertLabel, shouldAttemptDismiss(alertLabel: alertLabel) else {
+            return false
+        }
+        guard let title = dismissButtonTitles.first(where: buttonExists) else {
+            return false
+        }
+        tapButton(title)
+        return true
     }
 
+    /// Same as ``handle(alertLabel:buttonExists:tapButton:)``, mapping snapshot
+    /// `Result` failures to the nil-label path (#584).
+    @discardableResult
     public static func handle(
         alertLabelResult: Result<String, Error>,
         buttonExists: (String) -> Bool,
