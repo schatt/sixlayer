@@ -768,8 +768,15 @@ enum AdvancedDatePickerFieldStorage {
         formState.setValue(formatter.string(from: date), for: fieldID)
     }
 
-    static func load(from formState: DynamicFormState, fieldID: String) -> Date? {
-        DynamicFormStoredDateValue.date(fromStoredValue: formState.fieldValues[fieldID])
+    static func load(
+        from formState: DynamicFormState,
+        fieldID: String,
+        locale: Locale = .current
+    ) -> Date? {
+        DynamicFormStoredDateValue.date(
+            fromStoredValue: formState.fieldValues[fieldID],
+            locale: locale
+        )
     }
 }
 
