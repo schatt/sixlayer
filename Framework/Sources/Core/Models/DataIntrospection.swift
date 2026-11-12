@@ -110,7 +110,7 @@ public struct DataIntrospectionEngine {
                 return DataAnalysisResult(
                     fields: [],
                     complexity: .simple,
-                    patterns: [],
+                    patterns: DataPatterns(),
                     recommendations: []
                 )
             }
