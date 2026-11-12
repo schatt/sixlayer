@@ -356,7 +356,7 @@ public enum SevenSegmentOCR {
         lattice: OCRResult,
         latticeRows: [[SevenSegmentLatticeReader.Cell]]
     ) -> OCRResult {
-        return legacy
+        return lattice
         // Legacy carries group spacing, commas, colons and unknown-cell
         // placeholders, so it stays when it is believable. Its photo output
         // is mostly "1", "_" and stray marks, sometimes at confidence 1.0, so
