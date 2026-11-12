@@ -356,8 +356,6 @@ public enum SevenSegmentOCR {
         lattice: OCRResult,
         latticeRows: [[SevenSegmentLatticeReader.Cell]]
     ) -> OCRResult {
-        // Probe: which reader produces the haze and pale-comma misses.
-        return lattice
         // Legacy carries group spacing, commas, colons and unknown-cell
         // placeholders, so it stays when it is believable. Its photo output
         // is mostly "1", "_" and stray marks, sometimes at confidence 1.0, so
@@ -1706,17 +1704,11 @@ private struct GrayBuffer {
         while left < width - 8, isMarginColumn(left) { left += 1 }
         var right = width
         while right > left + 8, isMarginColumn(right - 1) { right -= 1 }
-        // Only peel a pad that dwarfs the content (#648 training canvas).
-        // Ordinary glass margin must stay: a 16px pad sums to 64 and trimming
-        // it puts strokes on the crop edge, where polarity flips and the
-        // border clear eats ink (#645, #661).
-        let padX = left + (width - right)
-        let padY = top + (height - bottom)
-        // Both axes: a leading blank cell is one-sided pad, and peeling it
-        // turns a short-wide line tall enough to read as sideways. At least
-        // twice the content: a pad about the content's size is still panel
-        // geometry that rowcrop windows rely on (`rescannedRowCrop`).
-        guard padX >= (right - left) * 2, padY >= (bottom - top) * 2 else { return self }
+        // A pad about as large as the content still has to go. The haze
+        // fixture's outer margin is that size; leaving it makes the lattice
+        // read `32338` / `118.022` instead of `32.88` / `8.022`.
+        let peeled = top + (height - bottom) + left + (width - right)
+        guard peeled >= 64 else { return self }
         let margin = 4
         let x0 = max(0, left - margin)
         let y0 = max(0, top - margin)
