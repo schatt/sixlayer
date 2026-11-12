@@ -46,7 +46,7 @@ struct AdvancedDatePickerFieldStorageTests {
         medium.timeStyle = .none
         let legacy = medium.string(from: ref)
         state.setValue(legacy, for: "legacy")
-        let loaded = AdvancedDatePickerFieldStorage.load(from: state, fieldID: "legacy")
+        let loaded = AdvancedDatePickerFieldStorage.load(from: state, fieldID: "legacy", locale: de)
         let expected = DynamicFormStoredDateValue.date(fromStoredValue: legacy, locale: de)
         #expect(loaded == expected)
     }
