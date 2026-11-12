@@ -307,7 +307,6 @@ public struct RichTextEditorField: View {
 public struct DatePickerField: View {
     let field: DynamicFormField
     @ObservedObject var formState: DynamicFormState
-    @State private var selectedDate = Date()
     
     public var body: some View
 }
