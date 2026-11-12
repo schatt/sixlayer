@@ -511,12 +511,7 @@ struct OCRSevenSegment576Tests {
             bezelWidth: 8
         )
         let result = decode(image)
-        // #670 probe: cell boxes live in extractedText while recognizedGroups
-        // is annotated; lattice path would stay plain "11.234.561".
-        #expect(
-            result.extractedText == "1,234.56",
-            "got=\(result.extractedText) conf=\(result.confidence)"
-        )
+        #expect(result.extractedText == "1,234.56")
     }
 
     @Test func glareAndBothPolaritiesDecodeTheSameDigits() {
