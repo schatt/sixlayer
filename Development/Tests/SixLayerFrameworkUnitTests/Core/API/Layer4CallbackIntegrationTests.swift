@@ -116,8 +116,7 @@ open class Layer4CallbackIntegrationTests: BaseTestClass {
         // Execute callback directly to verify it works
         // Note: onImageSelected is a stored property, so we access it via reflection or test the callback pattern
         // For this test, we verify the callback signature works by calling it directly
-        let callback = picker.onImageSelected
-        callback(testImage)
+        picker.onSelection(PlatformPhotoSelection(image: testImage))
         
         // Then: Verify callback was executed
         #expect(callbackExecuted, "Callback should execute")
@@ -137,8 +136,7 @@ open class Layer4CallbackIntegrationTests: BaseTestClass {
         
         let testImage = PlatformImage.createPlaceholder()
         // Execute callback directly
-        let callback = picker.onImageSelected
-        callback(testImage)
+        picker.onSelection(PlatformPhotoSelection(image: testImage))
         
         #expect(callbackExecuted, "macOS callback should execute")
         #expect(selectedImage != nil, "macOS selected image should be set")
