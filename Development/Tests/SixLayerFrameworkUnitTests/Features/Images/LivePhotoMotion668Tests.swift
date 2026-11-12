@@ -30,7 +30,7 @@ struct LivePhotoMotion668Tests {
 
         let frames = try await LivePhotoFrames.frames(fromMovieAt: movie, count: 5)
 
-        #expect(frames.count == 5)
+        try #require(frames.count == 5)
         let levels = frames.map { TestMovie.meanGray($0) }
         // The ramp brightens every frame, so evenly spaced frames from oldest
         // to newest must be strictly brighter each time, first near black and
@@ -48,7 +48,7 @@ struct LivePhotoMotion668Tests {
 
         let frames = try await LivePhotoFrames.frames(fromMovieAt: movie, count: 2)
 
-        #expect(frames.count == 2)
+        try #require(frames.count == 2)
         #expect(frames.allSatisfy { Int($0.size.width) == TestMovie.width && Int($0.size.height) == TestMovie.height })
     }
 
