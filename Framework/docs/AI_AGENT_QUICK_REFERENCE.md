@@ -284,10 +284,18 @@ platformPhotoPicker_L4(onSelection: { selection in
     }
 })
 
-// ✅ Camera interface - Layer 4
+// ✅ Camera interface - Layer 4 (system camera, still only)
 platformCameraInterface_L4 { image in
     // Handle captured image
 }
+
+// ✅ Camera interface with Live Photo capture - Layer 4 (#669)
+// iOS: framework capture view; livePhotoMovieURL is set when the device
+// records Live Photos. Falls back to the system camera when there is no
+// usable camera. macOS: still only (livePhotoMovieURL is always nil).
+platformCameraInterface_L4(onSelection: { selection in
+    // selection.image, selection.livePhotoMovieURL
+})
 
 // ✅ Map view - Layer 4 (MapCameraPosition; see MapAPIUsage.md for selection:)
 platformMapView_L4(position: $mapPosition)
