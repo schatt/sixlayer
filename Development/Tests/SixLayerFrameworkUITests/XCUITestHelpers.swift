@@ -463,19 +463,19 @@ enum XCUITestPerformance {
 extension XCTestCase {
     /// Add the standard UI interruption monitor that dismisses system alerts (Bluetooth, CPU, Activity Monitor, etc.).
     /// Call once from setUp in UI test classes. Single implementation so behavior is consistent and changes are in one place.
+    ///
+    /// Uses ``XCUIElement/xcuiSoftLabelResult`` so a quit interrupting app does not fail the test
+    /// when the alert snapshot disappears mid-handler (#584).
     func addDefaultUIInterruptionMonitor() {
         addUIInterruptionMonitor(withDescription: "System alerts and dialogs") { (alert) -> Bool in
             return MainActor.assumeIsolated {
-                // Avoid querying alert descendants here; on newer runtimes this can throw
-                // snapshot type-mismatch errors for SwiftUI accessibility nodes.
-                let alertText = alert.label
-                guard alertText.contains("Bluetooth") || alertText.contains("CPU") || alertText.contains("Activity Monitor") else {
-                    return false
-                }
-                if alert.buttons["OK"].exists { alert.buttons["OK"].platformTap(); return true }
-                if alert.buttons["Cancel"].exists { alert.buttons["Cancel"].platformTap(); return true }
-                if alert.buttons["Don't Allow"].exists { alert.buttons["Don't Allow"].platformTap(); return true }
-                return false
+                // Soft snapshot label — do not read `alert.label` directly (#584).
+                // Avoid querying alert descendants for the decision; keyword match is on the soft label.
+                DefaultUIInterruptionMonitorLogic.handle(
+                    alertLabelResult: alert.xcuiSoftLabelResult,
+                    buttonExists: { alert.buttons[$0].exists },
+                    tapButton: { alert.buttons[$0].platformTap() }
+                )
             }
         }
     }
