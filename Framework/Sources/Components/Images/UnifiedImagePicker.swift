@@ -77,9 +77,14 @@ public struct UnifiedImagePicker: View {
 }
 
 #if os(iOS) || os(macOS)
-/// One image from the Photos picker, in its current format.
+/// One image from the Photos picker, in its current format. macOS reads a
+/// Live Photo's movie through the library, so its results carry asset ids.
 func photosPickerConfiguration() -> PHPickerConfiguration {
+    #if os(macOS)
+    var configuration = PHPickerConfiguration(photoLibrary: .shared())
+    #else
     var configuration = PHPickerConfiguration()
+    #endif
     configuration.filter = .images
     configuration.selectionLimit = 1
     configuration.preferredAssetRepresentationMode = .current
@@ -93,10 +98,10 @@ private func deliverFirstResult(
     includeLivePhotoMotion: Bool,
     to onSelection: @escaping (PlatformPhotoSelection) -> Void
 ) {
-    guard let provider = results.first?.itemProvider else { return }
+    guard let result = results.first else { return }
     Task { @MainActor in
         guard let selection = await PhotoPickerSelectionLoader.selection(
-            from: provider,
+            from: result,
             includeLivePhotoMotion: includeLivePhotoMotion
         ) else { return }
         onSelection(selection)
