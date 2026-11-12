@@ -9,6 +9,7 @@
 //  A string that does not fit an integer16, integer32, or float attribute is rejected (#619).
 //  A partial decimal and an integer past Int.max are rejected without trapping.
 //  A current-locale decimal or medium date is stored; other text is rejected (#621).
+//  A failed save deletes only the new entity; other pending context edits stay (#620).
 //
 
 import Testing
@@ -19,7 +20,21 @@ import CoreData
 @objc(CoreDataCreationProbe608)
 private final class CoreDataCreationProbe608: NSManagedObject {}
 
-@Suite("Core Data entity creation (#606, #608, #613, #615, #621)")
+@objc(CoreDataCreationProbe620)
+private final class CoreDataCreationProbe620: NSManagedObject {
+    override func validateForInsert() throws {
+        if (value(forKey: "title") as? String) == "fail" {
+            throw NSError(
+                domain: "Probe620",
+                code: 1,
+                userInfo: [NSLocalizedDescriptionKey: "forced insert validation failure"]
+            )
+        }
+        try super.validateForInsert()
+    }
+}
+
+@Suite("Core Data entity creation (#606, #608, #613, #615, #621, #620)")
 @MainActor
 struct CoreDataEntityCreationErrorTests {
 
@@ -487,6 +502,29 @@ struct CoreDataEntityCreationErrorTests {
         #expect(abs(number.floatValue - 1.5) < 0.000_001)
     }
 
+    @Test func failedSaveLeavesOtherPendingEdits() throws {
+        let context = try makeFailingSaveProbeContext()
+        let prior = CoreDataCreationProbe620(context: context)
+        prior.setValue("prior", forKey: "title")
+        #expect(context.insertedObjects.contains(prior))
+
+        #expect(throws: (any Error).self) {
+            try EntityCreationUtilities.createCoreDataEntity(
+                entityName: "Probe620",
+                values: ["title": "fail"],
+                context: context
+            )
+        }
+
+        #expect(context.insertedObjects.contains(prior))
+        #expect(prior.value(forKey: "title") as? String == "prior")
+        #expect(context.insertedObjects.count == 1)
+        #expect(!context.insertedObjects.contains(where: {
+            ($0.value(forKey: "title") as? String) == "fail"
+        }))
+        #expect(context.hasChanges)
+    }
+
     private func makeProbeContext() throws -> NSManagedObjectContext {
         let title = NSAttributeDescription()
         title.name = "title"
@@ -572,6 +610,31 @@ struct CoreDataEntityCreationErrorTests {
 
         let model = NSManagedObjectModel()
         model.entities = [entity, destination]
+        let coordinator = NSPersistentStoreCoordinator(managedObjectModel: model)
+        try coordinator.addPersistentStore(
+            ofType: NSInMemoryStoreType,
+            configurationName: nil,
+            at: nil,
+            options: nil
+        )
+        let context = NSManagedObjectContext(concurrencyType: .mainQueueConcurrencyType)
+        context.persistentStoreCoordinator = coordinator
+        return context
+    }
+
+    private func makeFailingSaveProbeContext() throws -> NSManagedObjectContext {
+        let title = NSAttributeDescription()
+        title.name = "title"
+        title.attributeType = .stringAttributeType
+        title.isOptional = true
+
+        let entity = NSEntityDescription()
+        entity.name = "Probe620"
+        entity.managedObjectClassName = NSStringFromClass(CoreDataCreationProbe620.self)
+        entity.properties = [title]
+
+        let model = NSManagedObjectModel()
+        model.entities = [entity]
         let coordinator = NSPersistentStoreCoordinator(managedObjectModel: model)
         try coordinator.addPersistentStore(
             ofType: NSInMemoryStoreType,

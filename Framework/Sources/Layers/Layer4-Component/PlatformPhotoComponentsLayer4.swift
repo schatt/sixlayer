@@ -76,6 +76,18 @@ public enum PlatformPhotoComponentsLayer4 {
             .automaticCompliance(named: "platformPhotoPicker_L4")
             .accessibilityIdentifier("platformPhotoPicker_L4")
     }
+
+    /// Photo picker that also delivers a Live Photo's paired movie (#668).
+    /// `livePhotoMovieURL` is nil for a still photo. Read frames with
+    /// ``LivePhotoFrames/frames(fromMovieAt:count:)``.
+    @_disfavoredOverload
+    @ViewBuilder
+    @MainActor
+    public static func platformPhotoPicker_L4(onSelection: @escaping (PlatformPhotoSelection) -> Void) -> some View {
+        UnifiedImagePicker(onSelection: onSelection)
+            .automaticCompliance(named: "platformPhotoPicker_L4")
+            .accessibilityIdentifier("platformPhotoPicker_L4")
+    }
     
     // MARK: - Photo Display Components
     
@@ -1020,6 +1032,14 @@ struct AnyShape: Shape, @unchecked Sendable {
 @MainActor
 public func platformPhotoPicker_L4(onImageSelected: @escaping (PlatformImage) -> Void) -> some View {
     PlatformPhotoComponentsLayer4.platformPhotoPicker_L4(onImageSelected: onImageSelected)
+}
+
+/// Photo picker that also delivers a Live Photo's paired movie (#668).
+@_disfavoredOverload
+@ViewBuilder
+@MainActor
+public func platformPhotoPicker_L4(onSelection: @escaping (PlatformPhotoSelection) -> Void) -> some View {
+    PlatformPhotoComponentsLayer4.platformPhotoPicker_L4(onSelection: onSelection)
 }
 
 /// Creates a platform-specific camera interface (convenience wrapper).

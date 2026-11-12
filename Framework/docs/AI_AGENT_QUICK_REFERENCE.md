@@ -268,10 +268,21 @@ platformCopyToClipboard_L4(text: "Text to copy")
 // ✅ Open URL - Layer 4
 platformOpenURL_L4(URL(string: "https://example.com")!)
 
-// ✅ Photo picker - Layer 4
+// ✅ Photo picker - Layer 4 (Apple's Photos picker on iOS and macOS)
 platformPhotoPicker_L4 { image in
     // Handle selected image
 }
+
+// ✅ Photo picker with Live Photo motion - Layer 4 (#668)
+// livePhotoMovieURL is a temp file you own; nil for a still photo.
+// macOS reads the movie through the photo library: declare
+// NSPhotoLibraryUsageDescription or you get the still only.
+platformPhotoPicker_L4(onSelection: { selection in
+    let still = selection.image
+    if let movie = selection.livePhotoMovieURL {
+        Task { let frames = try await LivePhotoFrames.frames(fromMovieAt: movie, count: 8) }
+    }
+})
 
 // ✅ Camera interface - Layer 4
 platformCameraInterface_L4 { image in
