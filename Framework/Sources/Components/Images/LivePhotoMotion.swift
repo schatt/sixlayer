@@ -11,6 +11,7 @@ import AVFoundation
 import Foundation
 #if os(iOS) || os(macOS)
 import Photos
+import PhotosUI
 #endif
 #if os(iOS)
 import UIKit
@@ -79,17 +80,18 @@ public enum LivePhotoFrames {
 
 #if os(iOS) || os(macOS)
 /// Loads a Photos picker result as a ``PlatformPhotoSelection``.
+@MainActor
 enum PhotoPickerSelectionLoader {
     /// Nil when the item is not an image.
     static func selection(
-        from provider: NSItemProvider,
+        from result: PHPickerResult,
         includeLivePhotoMotion: Bool
     ) async -> PlatformPhotoSelection? {
-        guard let image = await stillImage(from: provider) else { return nil }
+        guard let image = await stillImage(from: result.itemProvider) else { return nil }
         return await PlatformPhotoSelection.resolve(
             image: image,
             includeLivePhotoMotion: includeLivePhotoMotion,
-            loadLivePhotoMovie: { await pairedMovie(from: provider) }
+            loadLivePhotoMovie: { await pairedMovie(from: result) }
         )
     }
 
@@ -113,9 +115,14 @@ enum PhotoPickerSelectionLoader {
         }
     }
 
-    /// Copies a Live Photo's paired movie to a new temporary file. Needs no
-    /// photo library permission: the resource comes from the picked item.
-    private static func pairedMovie(from provider: NSItemProvider) async -> URL? {
+    /// Copies a Live Photo's paired movie to a new temporary file, or nil.
+    ///
+    /// iOS reads it from the picked item and needs no photo library
+    /// permission. macOS cannot load a picked item as a `PHLivePhoto`, so it
+    /// looks the asset up in the library, which needs read access.
+    private static func pairedMovie(from result: PHPickerResult) async -> URL? {
+        #if os(iOS)
+        let provider = result.itemProvider
         guard provider.canLoadObject(ofClass: PHLivePhoto.self) else { return nil }
         return await withCheckedContinuation { continuation in
             provider.loadObject(ofClass: PHLivePhoto.self) { object, _ in
@@ -125,13 +132,47 @@ enum PhotoPickerSelectionLoader {
                     continuation.resume(returning: nil)
                     return
                 }
-                let url = FileManager.default.temporaryDirectory
-                    .appendingPathComponent("LivePhotoMotion-\(UUID().uuidString).mov")
-                PHAssetResourceManager.default().writeData(for: movie, toFile: url, options: nil) { error in
-                    continuation.resume(returning: error == nil ? url : nil)
-                }
+                write(movie) { continuation.resume(returning: $0) }
             }
         }
+        #else
+        guard let identifier = result.assetIdentifier, await canReadPhotoLibrary() else { return nil }
+        guard let asset = PHAsset.fetchAssets(withLocalIdentifiers: [identifier], options: nil).firstObject,
+              let movie = PHAssetResource.assetResources(for: asset)
+                .first(where: { $0.type == .pairedVideo }) else {
+            return nil
+        }
+        return await withCheckedContinuation { continuation in
+            write(movie) { continuation.resume(returning: $0) }
+        }
+        #endif
     }
+
+    private nonisolated static func write(_ movie: PHAssetResource, completion: @escaping @Sendable (URL?) -> Void) {
+        let url = FileManager.default.temporaryDirectory
+            .appendingPathComponent("LivePhotoMotion-\(UUID().uuidString).mov")
+        PHAssetResourceManager.default().writeData(for: movie, toFile: url, options: nil) { error in
+            completion(error == nil ? url : nil)
+        }
+    }
+
+    #if os(macOS)
+    /// Asks for library access only when the app declares why; without
+    /// `NSPhotoLibraryUsageDescription` a request would terminate the app.
+    private static func canReadPhotoLibrary() async -> Bool {
+        switch PHPhotoLibrary.authorizationStatus(for: .readWrite) {
+        case .authorized, .limited:
+            return true
+        case .notDetermined:
+            guard Bundle.main.object(forInfoDictionaryKey: "NSPhotoLibraryUsageDescription") != nil else {
+                return false
+            }
+            let status = await PHPhotoLibrary.requestAuthorization(for: .readWrite)
+            return status == .authorized || status == .limited
+        default:
+            return false
+        }
+    }
+    #endif
 }
 #endif
