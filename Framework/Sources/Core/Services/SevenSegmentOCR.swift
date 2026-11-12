@@ -299,8 +299,7 @@ public enum SevenSegmentOCR {
         // flat read keeps only rows whose every glyph decodes exactly. A mask
         // read with an unreadable cell cannot veto it; any other read must be
         // beaten on the digits both are sure of (#661 / #666).
-        // Probe: flat read can out-count a correct mask (haze `32.88` → `32338`).
-        if false, useFlatReadArbitration, let sure = FlatSevenSegment.read(gray) {
+        if useFlatReadArbitration, let sure = FlatSevenSegment.read(gray) {
             func sureDigits(_ rows: [[OCRRecognizedText]]) -> Int {
                 rows.flatMap { $0 }.filter { $0.confidence >= oneSegmentOff }
                     .reduce(0) { $0 + $1.text.filter(\.isNumber).count }
@@ -2683,7 +2682,8 @@ private extension GrayBuffer {
         // so hairlines go and strokes stay. Hairlines are texture in the glass,
         // so flat glass is left alone, and a thin stroke rounds to no opening.
         let strokeRun = opened ? 0 : typicalRun(chosen.glyphs)
-        let openRadius = glassSpread(buffer.pixels) > 0 ? strokeRun / 8 : 0
+        // Probe: a 1px opening turns the haze decimals into extra digits.
+        let openRadius = 0
         let glyphs = openRadius > 0 ? opening(chosen.glyphs, radius: openRadius) : chosen.glyphs
         let bandSource = openRadius > 0 ? opening(chosen.bandSource, radius: openRadius) : chosen.bandSource
         if buffer.width >= 1000 {
