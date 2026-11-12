@@ -8,9 +8,6 @@
 import Foundation
 import SwiftUI
 import CoreData
-#if canImport(SwiftData)
-import SwiftData
-#endif
 
 // MARK: - Data Structure Analysis
 
@@ -101,21 +98,8 @@ public struct DataIntrospectionEngine {
             return analyzeCoreData(managedObject)
         }
         
-        // Check if this is a SwiftData PersistentModel (iOS 17+, macOS 14+)
-        // Deliberate red for #671: refuse analysis so the new @Model assertions fail
-        // for the right reason before restoring Mirror/hints fall-through.
-        #if canImport(SwiftData)
-        if #available(macOS 14.0, iOS 17.0, *) {
-            if data is any PersistentModel {
-                return DataAnalysisResult(
-                    fields: [],
-                    complexity: .simple,
-                    patterns: DataPatterns(),
-                    recommendations: []
-                )
-            }
-        }
-        #endif
+        // SwiftData PersistentModel (@Model) uses the same hints-first / Mirror path as
+        // other Swift types. The macro does not hide stored properties from Mirror (#671).
 
         // Try hints-first discovery, fall back to Mirror introspection
         if let hintsResult = tryHintsFirstDiscovery(for: data) {
