@@ -1549,7 +1549,10 @@ private struct Cell {
 private func recognizedGroups(_ cells: [Cell], width: Int, height: Int) -> [OCRRecognizedText] {
     let pieces = GrayBuffer.group(cells)
     return pieces.map { group in
-        let text = String(group.map(\.character))
+        // Temporary #670 cell-box trace — revert after diagnosis.
+        let text = group.map { cell in
+            "\(cell.character)[\(cell.minX),\(cell.minY),\(cell.box.width)x\(cell.box.height)/\(String(format: "%.2f", cell.confidence))]"
+        }.joined(separator: " ")
         let confidence = group.map(\.confidence).min() ?? 0
         let box = reCropGlassBox(
             minX: group.map(\.minX).min() ?? 0,
