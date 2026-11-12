@@ -299,7 +299,8 @@ public enum SevenSegmentOCR {
         // flat read keeps only rows whose every glyph decodes exactly. A mask
         // read with an unreadable cell cannot veto it; any other read must be
         // beaten on the digits both are sure of (#661 / #666).
-        if useFlatReadArbitration, let sure = FlatSevenSegment.read(gray) {
+        // Probe: flat read can out-count a correct mask (haze `32.88` → `32338`).
+        if false, useFlatReadArbitration, let sure = FlatSevenSegment.read(gray) {
             func sureDigits(_ rows: [[OCRRecognizedText]]) -> Int {
                 rows.flatMap { $0 }.filter { $0.confidence >= oneSegmentOff }
                     .reduce(0) { $0 + $1.text.filter(\.isNumber).count }
