@@ -76,6 +76,18 @@ public enum PlatformPhotoComponentsLayer4 {
             .automaticCompliance(named: "platformPhotoPicker_L4")
             .accessibilityIdentifier("platformPhotoPicker_L4")
     }
+
+    /// Photo picker that also delivers a Live Photo's paired movie (#668).
+    /// `livePhotoMovieURL` is nil for a still photo. Read frames with
+    /// ``LivePhotoFrames/frames(fromMovieAt:count:)``.
+    @_disfavoredOverload
+    @ViewBuilder
+    @MainActor
+    public static func platformPhotoPicker_L4(onSelection: @escaping (PlatformPhotoSelection) -> Void) -> some View {
+        UnifiedImagePicker(onSelection: onSelection)
+            .automaticCompliance(named: "platformPhotoPicker_L4")
+            .accessibilityIdentifier("platformPhotoPicker_L4")
+    }
     
     // MARK: - Photo Display Components
     
