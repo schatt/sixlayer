@@ -107,3 +107,59 @@ struct LivePhotoCamera669Tests {
         #expect(assembly.selection() == nil)
     }
 }
+
+#if os(iOS)
+import UIKit
+
+/// The capture view replaces the system camera, which has a Cancel button.
+@Suite("Live Photo camera cancel (#669)")
+@MainActor
+struct LivePhotoCameraCancel669Tests {
+    static let cancelIdentifier = "SixLayer.main.ui.platformCameraInterface_L4.cancel"
+
+    private func control(_ identifier: String, in view: UIView) -> UIControl? {
+        if let control = view as? UIControl, control.accessibilityIdentifier == identifier { return control }
+        for subview in view.subviews {
+            if let found = control(identifier, in: subview) { return found }
+        }
+        return nil
+    }
+
+    @Test func cancelButtonReportsCancel() throws {
+        var cancelled = 0
+        let controller = LivePhotoCameraViewController(
+            onSelection: { _ in },
+            onCancel: { cancelled += 1 },
+            onUnavailable: {}
+        )
+        controller.loadViewIfNeeded()
+
+        let cancel = try #require(control(Self.cancelIdentifier, in: controller.view))
+        #expect(cancel.accessibilityLabel?.isEmpty == false)
+        cancel.sendActions(for: .touchUpInside)
+
+        #expect(cancelled == 1)
+    }
+
+    @Test func noCancelCallbackMeansNoCancelButton() {
+        let controller = LivePhotoCameraViewController(
+            onSelection: { _ in },
+            onCancel: nil,
+            onUnavailable: {}
+        )
+        controller.loadViewIfNeeded()
+
+        #expect(control(Self.cancelIdentifier, in: controller.view) == nil)
+    }
+
+    /// The fallback system camera must report its own Cancel the same way.
+    @Test func systemCameraFallbackReportsCancel() {
+        var cancelled = 0
+        let camera = CameraView(onImageCaptured: { _ in }, onCancel: { cancelled += 1 })
+
+        camera.makeCoordinator().imagePickerControllerDidCancel(UIImagePickerController())
+
+        #expect(cancelled == 1)
+    }
+}
+#endif
