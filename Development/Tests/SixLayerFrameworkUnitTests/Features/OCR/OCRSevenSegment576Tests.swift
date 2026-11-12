@@ -511,7 +511,19 @@ struct OCRSevenSegment576Tests {
             bezelWidth: 8
         )
         let result = decode(image)
-        #expect(result.extractedText == "1,234.56")
+        // #670 probe: which path / boxes invent the extra 1s and period.
+        let priorFlat = SevenSegmentOCR.useFlatReadArbitration
+        SevenSegmentOCR.useFlatReadArbitration = false
+        let maskOnly = decode(image)
+        SevenSegmentOCR.useFlatReadArbitration = priorFlat
+        let boxes = result.recognizedTexts.map { text in
+            let b = text.boundingBox
+            return "\(text.text)@(\(String(format: "%.3f", b.minX)),\(String(format: "%.3f", b.minY)),\(String(format: "%.3f", b.width))x\(String(format: "%.3f", b.height)))c\(text.confidence)"
+        }.joined(separator: " | ")
+        #expect(
+            result.extractedText == "1,234.56",
+            "got=\(result.extractedText) maskOnly=\(maskOnly.extractedText) boxes=\(boxes)"
+        )
     }
 
     @Test func glareAndBothPolaritiesDecodeTheSameDigits() {
