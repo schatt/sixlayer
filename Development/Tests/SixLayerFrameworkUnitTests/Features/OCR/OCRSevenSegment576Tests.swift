@@ -511,9 +511,12 @@ struct OCRSevenSegment576Tests {
             bezelWidth: 8
         )
         let priorFlat = SevenSegmentOCR.useFlatReadArbitration
+        let priorLattice = SevenSegmentOCR.useLatticeArbitration
         SevenSegmentOCR.useFlatReadArbitration = false
+        SevenSegmentOCR.useLatticeArbitration = false
         let maskOnly = decode(image)
         SevenSegmentOCR.useFlatReadArbitration = priorFlat
+        SevenSegmentOCR.useLatticeArbitration = priorLattice
         let result = decode(image)
         #expect(
             result.extractedText == "1,234.56",
