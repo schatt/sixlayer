@@ -304,6 +304,14 @@ public enum SevenSegmentOCR {
         let maxY = row.map(\.maxY).max() ?? 0
         let w = Double(max(1, width))
         let h = Double(max(1, height))
+        // A row with no digit fitted decisively to raw contrast was read
+        // entirely off the ink mask, where a stripe or a washed patch can
+        // match templates exactly (#661 odometer `888`). It cannot report
+        // more than a one-segment-off match does.
+        var confidence = row.map(\.confidence).min() ?? 0
+        if !row.contains(where: { $0.decisive }) {
+            confidence = min(confidence, 6.0 / 7.0)
+        }
         return OCRRecognizedText(
             text: String(row.map(\.character)),
             boundingBox: CGRect(
@@ -312,7 +320,7 @@ public enum SevenSegmentOCR {
                 width: max(1, maxX - minX) / w,
                 height: max(1, maxY - minY) / h
             ),
-            confidence: row.map(\.confidence).min() ?? 0,
+            confidence: confidence,
             role: .segment
         )
     }
