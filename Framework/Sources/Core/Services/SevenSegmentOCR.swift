@@ -614,6 +614,9 @@ private struct GrayBuffer {
             }
             return left.element.confidence < right.element.confidence
         }?.offset ?? 0
+        for (index, score) in scores.enumerated() {
+            trace("orient \(index) wide \(score.wideDigits) marks \(score.marksBelow) min \(score.minConfidence) text \(score.text)\n")
+        }
         guard bestTurns != 0 else { return buffer }
         guard acceptsOrientation(bestTurns, scores: scores, buffer: buffer) else { return buffer }
         return buffer.rotated(degrees: Double(bestTurns * 90))
