@@ -3597,13 +3597,16 @@ private func droppingLeftScratch(
     guard digits.count >= 2 else { return cells }
     let leading = digits[0]
     let next = digits[1]
-    // The scratch sits in the left padding, with a clear gap before the
-    // first digit. Haze fuses those columns into the leading glyph; that
-    // glyph still reads as the digit, and the gap to the next glyph is a
-    // normal inter-digit gap. Dropping it reads `32.88` as `2.88`.
+    // The scratch sits in the left padding, a full digit-width of glass
+    // before the first glyph. A decimal between the first two digits is a
+    // shorter gap (`8.022`); treating that as the scratch drops the 8.
+    // Haze also fuses the scratch columns into the leading glyph. That
+    // glyph still reads as the digit, and its gap to the next glyph is
+    // only the usual spacing. Dropping it reads `32.88` as `2.88`.
     let gap = next.minX - leading.maxX
-    let body = max(1, next.maxX - next.minX)
-    guard gap > body / 2 else { return cells }
+    let widths = digits.map { max(1, $0.maxX - $0.minX) }.sorted()
+    let typical = widths[widths.count / 2]
+    guard gap > typical else { return cells }
     guard bridgingColumns(mask, x0: leading.minX, x1: leading.maxX, bands: bands) >= 2 else {
         return cells
     }
