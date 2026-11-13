@@ -290,12 +290,16 @@ platformCameraInterface_L4 { image in
 }
 
 // ✅ Camera interface with Live Photo capture - Layer 4 (#669)
-// iOS: framework capture view; livePhotoMovieURL is set when the device
-// records Live Photos. Falls back to the system camera when there is no
-// usable camera. macOS: still only (livePhotoMovieURL is always nil).
-platformCameraInterface_L4(onSelection: { selection in
-    // selection.image, selection.livePhotoMovieURL
-})
+// iOS: framework capture view; livePhotoMovieURL is a temp file you own
+// (nil when Live Photo is unsupported). Falls back to the system camera
+// when there is no usable camera. Pass onCancel to show Cancel / dismiss.
+// macOS: still only (livePhotoMovieURL is always nil).
+platformCameraInterface_L4(
+    onSelection: { selection in
+        // selection.image, selection.livePhotoMovieURL
+    },
+    onCancel: { /* dismiss the camera */ }
+)
 
 // ✅ Map view - Layer 4 (MapCameraPosition; see MapAPIUsage.md for selection:)
 platformMapView_L4(position: $mapPosition)
