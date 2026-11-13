@@ -77,17 +77,21 @@ struct LivePhotoCaptureAssembly {
 struct LivePhotoCaptureConfirmation {
     private var pending: PlatformPhotoSelection?
 
-    // RED STUB (#669): offer stores nothing; usePhoto / retake are no-ops.
     mutating func offer(_ selection: PlatformPhotoSelection) {
-        _ = selection
+        pending = selection
     }
 
     mutating func usePhoto() -> PlatformPhotoSelection? {
-        nil
+        defer { pending = nil }
+        return pending
     }
 
+    /// Drops the pending shot and deletes its temp movie when present.
     mutating func retake(fileManager: FileManager = .default) {
-        _ = fileManager
+        if let url = pending?.livePhotoMovieURL {
+            try? fileManager.removeItem(at: url)
+        }
+        pending = nil
     }
 }
 
@@ -166,7 +170,9 @@ final class LivePhotoCameraViewController: UIViewController, AVCapturePhotoCaptu
     private let previewLayer = AVCaptureVideoPreviewLayer()
     private var rotation: AVCaptureDevice.RotationCoordinator?
     private var assemblies: [Int64: LivePhotoCaptureAssembly] = [:]
+    private var confirmation = LivePhotoCaptureConfirmation()
     private let shutter = UIButton(type: .custom)
+    private var reviewChrome: UIView?
     private var didStart = false
 
     init(
@@ -293,9 +299,81 @@ final class LivePhotoCameraViewController: UIViewController, AVCapturePhotoCaptu
         }
     }
 
-    /// RED STUB (#669): review UI is not shown yet.
+    /// Test seam: same path as a finished capture (Use Photo / Retake).
     func offerReviewForTesting(_ selection: PlatformPhotoSelection) {
-        _ = selection
+        presentReview(selection)
+    }
+
+    private func presentReview(_ selection: PlatformPhotoSelection) {
+        confirmation.offer(selection)
+        shutter.isHidden = true
+        shutter.isEnabled = false
+        reviewChrome?.removeFromSuperview()
+
+        let i18n = InternationalizationService()
+        let chrome = UIView()
+        chrome.translatesAutoresizingMaskIntoConstraints = false
+        chrome.backgroundColor = .black
+
+        let preview = UIImageView(image: selection.image.uiImage)
+        preview.translatesAutoresizingMaskIntoConstraints = false
+        preview.contentMode = .scaleAspectFit
+        preview.accessibilityIdentifier = "SixLayer.main.ui.platformCameraInterface_L4.reviewPreview"
+
+        let retake = UIButton(type: .system)
+        retake.translatesAutoresizingMaskIntoConstraints = false
+        retake.setTitle(i18n.localizedString(for: "SixLayerFramework.photo.retake"), for: .normal)
+        retake.setTitleColor(.white, for: .normal)
+        retake.accessibilityLabel = i18n.localizedString(for: "SixLayerFramework.photo.retake")
+        retake.accessibilityIdentifier = "SixLayer.main.ui.platformCameraInterface_L4.retake"
+        retake.addAction(UIAction { [weak self] _ in self?.retakeTapped() }, for: .touchUpInside)
+
+        let usePhoto = UIButton(type: .system)
+        usePhoto.translatesAutoresizingMaskIntoConstraints = false
+        usePhoto.setTitle(i18n.localizedString(for: "SixLayerFramework.photo.usePhoto"), for: .normal)
+        usePhoto.setTitleColor(.white, for: .normal)
+        usePhoto.accessibilityLabel = i18n.localizedString(for: "SixLayerFramework.photo.usePhoto")
+        usePhoto.accessibilityIdentifier = "SixLayer.main.ui.platformCameraInterface_L4.usePhoto"
+        usePhoto.addAction(UIAction { [weak self] _ in self?.usePhotoTapped() }, for: .touchUpInside)
+
+        chrome.addSubview(preview)
+        chrome.addSubview(retake)
+        chrome.addSubview(usePhoto)
+        view.addSubview(chrome)
+        reviewChrome = chrome
+
+        NSLayoutConstraint.activate([
+            chrome.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            chrome.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            chrome.topAnchor.constraint(equalTo: view.topAnchor),
+            chrome.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            preview.leadingAnchor.constraint(equalTo: chrome.leadingAnchor),
+            preview.trailingAnchor.constraint(equalTo: chrome.trailingAnchor),
+            preview.topAnchor.constraint(equalTo: chrome.safeAreaLayoutGuide.topAnchor),
+            preview.bottomAnchor.constraint(equalTo: retake.topAnchor, constant: -16),
+            retake.leadingAnchor.constraint(equalTo: chrome.safeAreaLayoutGuide.leadingAnchor, constant: 24),
+            retake.bottomAnchor.constraint(equalTo: chrome.safeAreaLayoutGuide.bottomAnchor, constant: -24),
+            usePhoto.trailingAnchor.constraint(equalTo: chrome.safeAreaLayoutGuide.trailingAnchor, constant: -24),
+            usePhoto.bottomAnchor.constraint(equalTo: chrome.safeAreaLayoutGuide.bottomAnchor, constant: -24)
+        ])
+    }
+
+    private func usePhotoTapped() {
+        guard let selection = confirmation.usePhoto() else { return }
+        clearReviewChrome()
+        onSelection(selection)
+    }
+
+    private func retakeTapped() {
+        confirmation.retake()
+        clearReviewChrome()
+        shutter.isHidden = false
+        shutter.isEnabled = true
+    }
+
+    private func clearReviewChrome() {
+        reviewChrome?.removeFromSuperview()
+        reviewChrome = nil
     }
 
     // MARK: AVCapturePhotoCaptureDelegate (called on a capture queue)
@@ -340,7 +418,7 @@ final class LivePhotoCameraViewController: UIViewController, AVCapturePhotoCaptu
         // Main queue keeps the callbacks in order; separate Tasks would not.
         DispatchQueue.main.async { MainActor.assumeIsolated {
             guard let selection = self.assemblies.removeValue(forKey: id)?.selection() else { return }
-            self.onSelection(selection)
+            self.presentReview(selection)
         } }
     }
 }
