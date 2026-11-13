@@ -397,6 +397,11 @@ import UIKit
 /// `UIViewControllerRepresentable` do not reliably propagate into the embedded picker hierarchy.
 enum PlatformCameraInterfaceLayer4Accessibility {
     static let hostedTreeIdentifier = "SixLayer.main.ui.platformCameraInterface_L4.View"
+    static let cancelIdentifier = "SixLayer.main.ui.platformCameraInterface_L4.cancel"
+    static let shutterIdentifier = "SixLayer.main.ui.platformCameraInterface_L4.shutter"
+    static let usePhotoIdentifier = "SixLayer.main.ui.platformCameraInterface_L4.usePhoto"
+    static let retakeIdentifier = "SixLayer.main.ui.platformCameraInterface_L4.retake"
+    static let reviewPreviewIdentifier = "SixLayer.main.ui.platformCameraInterface_L4.reviewPreview"
     static let anchorViewTag = 0x534C4604
 }
 
