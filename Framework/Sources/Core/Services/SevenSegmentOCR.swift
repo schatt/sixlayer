@@ -549,6 +549,11 @@ private struct GrayBuffer {
             // A tilt that loses digits (light `31.25` → a lone `1`) is a
             // worse read even at full confidence (#661).
             let tilted = readQuality(turnedSample)
+            if buffer.width >= 400 {
+                trace(
+                    "deskew \(angle) score \(value) conf \(tilted.confidence) digits \(tilted.digits) dark \(String(describing: tilted.isDark)) upright \(uprightScore) \(upright.confidence) \(upright.digits) \(String(describing: upright.isDark))\n"
+                )
+            }
             if value > bestScore,
                tilted.confidence >= upright.confidence,
                tilted.digits >= upright.digits,
