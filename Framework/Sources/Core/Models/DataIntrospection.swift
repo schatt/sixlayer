@@ -296,11 +296,19 @@ public struct DataIntrospectionEngine {
         )
     }
     
-    /// Analyze using hybrid approach: hints for fully declarative fields, Mirror for others
+    /// Analyze using hybrid approach: hints for fully declarative fields, Mirror/Schema for others
     private static func analyzeHybrid<T>(hints: [String: FieldDisplayHints], data: T) -> DataAnalysisResult {
-        // Get Mirror fields first
-        let mirror = Mirror(reflecting: data)
-        let mirrorFields = extractFields(from: mirror)
+        // PersistentModel Mirror storage is untyped (`_SwiftDataNoType`); use Schema (#671).
+        let mirrorFields: [DataField]
+        #if canImport(SwiftData)
+        if #available(macOS 14.0, iOS 17.0, *), let model = data as? any PersistentModel {
+            mirrorFields = extractSwiftDataFieldsFromSchema(type(of: model))
+        } else {
+            mirrorFields = extractFields(from: Mirror(reflecting: data))
+        }
+        #else
+        mirrorFields = extractFields(from: Mirror(reflecting: data))
+        #endif
         
         // Create a map of hint-based fields (only fully declarative, not hidden)
         var hintFields: [String: DataField] = [:]
