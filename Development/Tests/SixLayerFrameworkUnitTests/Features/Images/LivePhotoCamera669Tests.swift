@@ -109,15 +109,15 @@ struct LivePhotoCamera669Tests {
 
     // MARK: Use Photo / Retake
 
-    @Test func usePhotoDeliversThePendingSelection() throws {
+    @Test func usePhotoDeliversThePendingSelection() {
         var confirmation = LivePhotoCaptureConfirmation()
         let movie = URL(fileURLWithPath: "/tmp/live-669-confirm.mov")
         let pending = PlatformPhotoSelection(image: TestMovie.solidImage(gray: 40), livePhotoMovieURL: movie)
 
         confirmation.offer(pending)
 
-        let delivered = try #require(confirmation.usePhoto())
-        #expect(delivered.livePhotoMovieURL == movie)
+        let delivered = confirmation.usePhoto()
+        #expect(delivered?.livePhotoMovieURL == movie)
         #expect(confirmation.usePhoto() == nil, "Use Photo clears the pending shot")
     }
 
