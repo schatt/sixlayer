@@ -136,15 +136,14 @@ public struct DataIntrospectionEngine {
 
     #if canImport(SwiftData)
     /// Analyze a SwiftData `@Model` instance.
-    /// Prefer hints; otherwise Mirror with storage-prefix normalization (`_title` → `title`).
+    /// Prefer hints; otherwise ``Schema`` entity metadata (Mirror values are `_SwiftDataNoType`).
     @available(macOS 14.0, iOS 17.0, *)
     private static func analyzeSwiftData(_ model: any PersistentModel) -> DataAnalysisResult {
         if let hintsResult = tryHintsFirstDiscovery(for: model) {
             return hintsResult
         }
 
-        let mirror = Mirror(reflecting: model)
-        let fields = extractSwiftDataFields(from: mirror)
+        let fields = extractSwiftDataFieldsFromSchema(type(of: model))
         let complexity = calculateComplexity(fields: fields, data: model)
         let patterns = detectPatterns(fields: fields)
         let recommendations = generateRecommendations(
@@ -161,30 +160,73 @@ public struct DataIntrospectionEngine {
         )
     }
 
-    /// Mirror `@Model` storage: drop `_$…` runtime fields; strip a single leading `_` from properties.
+    /// Build fields from `Schema([modelType])` attributes/relationships.
     @available(macOS 14.0, iOS 17.0, *)
-    static func extractSwiftDataFields(from mirror: Mirror) -> [DataField] {
+    static func extractSwiftDataFieldsFromSchema(_ modelType: any PersistentModel.Type) -> [DataField] {
+        let schema = Schema([modelType])
+        guard let entity = schema.entities.first else { return [] }
+
         var fields: [DataField] = []
+        for property in entity.properties {
+            if property.isTransient { continue }
 
-        for child in mirror.children {
-            guard let label = child.label else { continue }
-            guard let name = normalizedSwiftDataFieldName(label) else { continue }
+            let name = property.name
+            let fieldType: FieldType
+            if property.isRelationship {
+                fieldType = .relationship
+            } else {
+                fieldType = inferSwiftDataFieldType(valueType: property.valueType)
+            }
 
-            let field = DataField(
-                name: name,
-                type: determineFieldType(child.value),
-                isOptional: isOptional(child.value),
-                isArray: isArray(child.value),
-                isIdentifiable: name == "id" || name.hasSuffix("ID"),
-                hasDefaultValue: hasDefaultValue(child.value)
+            fields.append(
+                DataField(
+                    name: name,
+                    type: fieldType,
+                    isOptional: property.isOptional,
+                    isArray: false,
+                    isIdentifiable: name == "id" || name.hasSuffix("ID"),
+                    hasDefaultValue: false
+                )
             )
-            fields.append(field)
         }
-
         return fields
     }
 
-    /// `nil` for `_$…` runtime labels; otherwise strip one leading `_` from storage names.
+    /// Map SwiftData attribute `valueType` to ``FieldType``.
+    @available(macOS 14.0, iOS 17.0, *)
+    static func inferSwiftDataFieldType(valueType: Any.Type) -> FieldType {
+        if valueType == String.self || valueType == String?.self {
+            return .string
+        }
+        if valueType == Bool.self || valueType == Bool?.self {
+            return .boolean
+        }
+        if valueType == Date.self || valueType == Date?.self {
+            return .date
+        }
+        if valueType == URL.self || valueType == URL?.self {
+            return .url
+        }
+        if valueType == UUID.self || valueType == UUID?.self {
+            return .uuid
+        }
+        if valueType == Data.self || valueType == Data?.self {
+            return .document
+        }
+        if valueType == Int.self || valueType == Int?.self
+            || valueType == Int16.self || valueType == Int16?.self
+            || valueType == Int32.self || valueType == Int32?.self
+            || valueType == Int64.self || valueType == Int64?.self
+            || valueType == Double.self || valueType == Double?.self
+            || valueType == Float.self || valueType == Float?.self
+            || valueType == CGFloat.self || valueType == CGFloat?.self
+            || valueType == Decimal.self || valueType == Decimal?.self {
+            return .number
+        }
+        return .custom
+    }
+
+    /// `nil` for `_$…` runtime Mirror labels; otherwise strip one leading `_` from storage names.
     @available(macOS 14.0, iOS 17.0, *)
     static func normalizedSwiftDataFieldName(_ label: String) -> String? {
         if label.hasPrefix("_$") {
