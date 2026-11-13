@@ -8,6 +8,9 @@
 import Foundation
 import SwiftUI
 import CoreData
+#if canImport(SwiftData)
+import SwiftData
+#endif
 
 // MARK: - Data Structure Analysis
 
@@ -98,8 +101,14 @@ public struct DataIntrospectionEngine {
             return analyzeCoreData(managedObject)
         }
         
-        // SwiftData PersistentModel (@Model) uses the same hints-first / Mirror path as
-        // other Swift types. The macro does not hide stored properties from Mirror (#671).
+        // SwiftData @Model storage is mirrored as `_property` plus `_$…` runtime fields (#671).
+        #if canImport(SwiftData)
+        if #available(macOS 14.0, iOS 17.0, *) {
+            if let persistentModel = data as? any PersistentModel {
+                return analyzeSwiftData(persistentModel)
+            }
+        }
+        #endif
 
         // Try hints-first discovery, fall back to Mirror introspection
         if let hintsResult = tryHintsFirstDiscovery(for: data) {
@@ -124,6 +133,69 @@ public struct DataIntrospectionEngine {
             recommendations: recommendations
         )
     }
+
+    #if canImport(SwiftData)
+    /// Analyze a SwiftData `@Model` instance.
+    /// Prefer hints; otherwise Mirror with storage-prefix normalization (`_title` → `title`).
+    @available(macOS 14.0, iOS 17.0, *)
+    private static func analyzeSwiftData(_ model: any PersistentModel) -> DataAnalysisResult {
+        if let hintsResult = tryHintsFirstDiscovery(for: model) {
+            return hintsResult
+        }
+
+        let mirror = Mirror(reflecting: model)
+        let fields = extractSwiftDataFields(from: mirror)
+        let complexity = calculateComplexity(fields: fields, data: model)
+        let patterns = detectPatterns(fields: fields)
+        let recommendations = generateRecommendations(
+            fields: fields,
+            complexity: complexity,
+            patterns: patterns
+        )
+
+        return DataAnalysisResult(
+            fields: fields,
+            complexity: complexity,
+            patterns: patterns,
+            recommendations: recommendations
+        )
+    }
+
+    /// Mirror `@Model` storage: drop `_$…` runtime fields; strip a single leading `_` from properties.
+    @available(macOS 14.0, iOS 17.0, *)
+    static func extractSwiftDataFields(from mirror: Mirror) -> [DataField] {
+        var fields: [DataField] = []
+
+        for child in mirror.children {
+            guard let label = child.label else { continue }
+            guard let name = normalizedSwiftDataFieldName(label) else { continue }
+
+            let field = DataField(
+                name: name,
+                type: determineFieldType(child.value),
+                isOptional: isOptional(child.value),
+                isArray: isArray(child.value),
+                isIdentifiable: name == "id" || name.hasSuffix("ID"),
+                hasDefaultValue: hasDefaultValue(child.value)
+            )
+            fields.append(field)
+        }
+
+        return fields
+    }
+
+    /// `nil` for `_$…` runtime labels; otherwise strip one leading `_` from storage names.
+    @available(macOS 14.0, iOS 17.0, *)
+    static func normalizedSwiftDataFieldName(_ label: String) -> String? {
+        if label.hasPrefix("_$") {
+            return nil
+        }
+        if label.hasPrefix("_"), label.count > 1 {
+            return String(label.dropFirst())
+        }
+        return label
+    }
+    #endif
     
 
     
