@@ -4885,6 +4885,9 @@ struct SevenSegmentLatticeReader {
         var minY: Double
         var maxX: Double
         var maxY: Double
+        /// The digit was fitted to the cell's raw contrast with a clear margin
+        /// between its lit and unlit segments, not read off the ink mask.
+        var decisive = false
     }
 
     /// Rows top to bottom, cells left to right. Empty when nothing reads.
@@ -5295,7 +5298,7 @@ private struct Reader {
             }
         }
 
-        struct Slot { var character: Character; var confidence: Float; var x0: Int; var x1: Int }
+        struct Slot { var character: Character; var confidence: Float; var x0: Int; var x1: Int; var decisive = false }
         var cells: [Slot] = []
         let first = (edges.first ?? 0) - 0.5 * stride
         let last = (edges.last ?? 0) + 0.5 * stride
@@ -5323,7 +5326,7 @@ private struct Reader {
             // the panel's ink level and still stand clear of the glass in its
             // own cell (#661 s1 `32.88` → `7770`).
             if let sure = contrastDigit(x0: x0, x1: x1, width: w, rows: band.height, top: top + bandTop, limit: band.width) {
-                cells.append(Slot(character: sure.character, confidence: 1, x0: sure.x0, x1: sure.x1))
+                cells.append(Slot(character: sure.character, confidence: 1, x0: sure.x0, x1: sure.x1, decisive: true))
                 continue
             }
             let span = Double(lastInk - firstInk + 1)
@@ -5392,11 +5395,11 @@ private struct Reader {
         // One decimal per row: the gap with the emptiest glass above its dot.
         let mark = marks.min { $0.above < $1.above }
 
-        var placed: [(Character, Float, Double, Double)] = cells.map {
-            ($0.character, $0.confidence, Double($0.x0), Double($0.x1))
+        var placed: [(Character, Float, Double, Double, Bool)] = cells.map {
+            ($0.character, $0.confidence, Double($0.x0), Double($0.x1), $0.decisive)
         }
         if let mark {
-            placed.append((".", 1, mark.x - stroke / 2, mark.x + stroke / 2))
+            placed.append((".", 1, mark.x - stroke / 2, mark.x + stroke / 2, false))
         }
         placed.sort { ($0.2 + $0.3) < ($1.2 + $1.3) }
         while placed.first?.0 == "." { placed.removeFirst() }
@@ -5408,7 +5411,8 @@ private struct Reader {
             let box = sourceBox(x0: item.2, x1: item.3, y0: item.0 == "." ? y0 + dh * 0.74 : y0, y1: y1)
             return SevenSegmentLatticeReader.Cell(
                 character: item.0, confidence: item.1,
-                minX: box.0, minY: box.1, maxX: box.2, maxY: box.3
+                minX: box.0, minY: box.1, maxX: box.2, maxY: box.3,
+                decisive: item.4
             )
         }
     }
@@ -5595,8 +5599,18 @@ extension SevenSegmentLatticeReader {
             - cells.filter { $0.character == "_" }.count
     }
 
-    static func rank(_ rows: [[Cell]]) -> (Int, Int) {
-        (isConfident(rows) ? 1 : 0, quality(rows))
+    /// Informative digits fitted to raw contrast with a clear margin. Such a
+    /// digit stands on its own cell's evidence; one read off the ink mask
+    /// depends on a single ink level for the whole panel.
+    static func decisiveDigits(_ rows: [[Cell]]) -> Int {
+        rows.flatMap { $0 }.filter { $0.decisive && $0.character.isNumber && $0.character != "1" }.count
+    }
+
+    /// Reads that carry the same number of informative glyphs are told apart
+    /// by how many of them were decided decisively (#661 s1: the crop's
+    /// `0.022` and the whole frame's `8.022` tied).
+    static func rank(_ rows: [[Cell]]) -> (Int, Int, Int) {
+        (isConfident(rows) ? 1 : 0, quality(rows), decisiveDigits(rows))
     }
 
     private static func rowsBox(_ rows: [[Cell]], width: Int, height: Int) -> (Int, Int, Int, Int)? {
