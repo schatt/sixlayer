@@ -1661,9 +1661,33 @@ private struct GrayBuffer {
         return GrayBuffer(pixels: output, width: newW, height: newH)
     }
 
+    /// Median level of the outer border. Four corner pixels are not enough
+    /// on a crop peeled to 0px side glass: glyph ink can sit on them, and a
+    /// rotation then fills its new corners with ink (#661).
     fileprivate func cornerFill() -> UInt8 {
-        let corners = [pixels[0], pixels[width - 1], pixels[(height - 1) * width], pixels[pixels.count - 1]]
-        return corners.sorted()[corners.count / 2]
+        guard width > 0, height > 0 else { return 0 }
+        var counts = [Int](repeating: 0, count: 256)
+        var total = 0
+        func add(_ index: Int) {
+            counts[Int(pixels[index])] += 1
+            total += 1
+        }
+        for x in 0..<width {
+            add(x)
+            if height > 1 { add((height - 1) * width + x) }
+        }
+        if height > 2 {
+            for y in 1..<(height - 1) {
+                add(y * width)
+                if width > 1 { add(y * width + width - 1) }
+            }
+        }
+        var seen = 0
+        for level in 0..<256 {
+            seen += counts[level]
+            if seen * 2 > total { return UInt8(level) }
+        }
+        return pixels[0]
     }
 
     /// Peel uniform border that matches the corner fill (synthetic pad /
@@ -1693,11 +1717,17 @@ private struct GrayBuffer {
         while left < width - 8, isMarginColumn(left) { left += 1 }
         var right = width
         while right > left + 8, isMarginColumn(right - 1) { right -= 1 }
-        // A pad about as large as the content still has to go. The haze
-        // fixture's outer margin is that size; leaving it makes the lattice
-        // read `32338` / `118.022` instead of `32.88` / `8.022`.
-        let peeled = top + (height - bottom) + left + (width - right)
-        guard peeled >= 64 else { return self }
+        // Only peel a pad that dwarfs the content (#648 training canvas).
+        // Ordinary glass margin must stay: a 16px pad sums to 64 and trimming
+        // it puts strokes on the crop edge, where polarity flips and the
+        // border clear eats ink (#645, #661).
+        let padX = left + (width - right)
+        let padY = top + (height - bottom)
+        // Both axes: a leading blank cell is one-sided pad, and peeling it
+        // turns a short-wide line tall enough to read as sideways. At least
+        // twice the content: a pad about the content's size is still panel
+        // geometry that rowcrop windows rely on (`rescannedRowCrop`).
+        guard padX >= (right - left) * 2, padY >= (bottom - top) * 2 else { return self }
         let margin = 4
         let x0 = max(0, left - margin)
         let y0 = max(0, top - margin)
