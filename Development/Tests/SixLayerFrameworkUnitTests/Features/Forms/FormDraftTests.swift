@@ -161,6 +161,19 @@ open class FormDraftTests: BaseTestClass {
         #expect(abs(asDate.timeIntervalSince1970 - original.timeIntervalSince1970) < 1)
     }
 
+    /// #672: A plain ISO-8601 string field must stay String (not coerced to Date).
+    @Test func testAnyCodablePlainISO8601StringStaysString() throws {
+        let iso = "2024-06-15T14:30:00Z"
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .iso8601
+        let data = try encoder.encode(AnyCodable(iso))
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        let decoded = try decoder.decode(AnyCodable.self, from: data)
+        #expect(decoded.value as? String == iso)
+        #expect(!(decoded.value is Date))
+    }
+
     /// #672: UserDefaults draft storage round-trips Date field values.
     @Test func testUserDefaultsStorageDateFieldRoundTrip() throws {
         let suiteName = "test_form_storage_date_\(UUID().uuidString)"
