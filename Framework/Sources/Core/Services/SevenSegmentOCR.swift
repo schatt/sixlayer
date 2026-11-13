@@ -615,7 +615,16 @@ private struct GrayBuffer {
             return left.element.confidence < right.element.confidence
         }?.offset ?? 0
         for (index, score) in scores.enumerated() {
-            trace("orient \(index) wide \(score.wideDigits) marks \(score.marksBelow) min \(score.minConfidence) text \(score.text)\n")
+            let line = "orient \(index) wide \(score.wideDigits) marks \(score.marksBelow) min \(score.minConfidence) text \(score.text)\n"
+            let path = "/tmp/orient-scores.txt"
+            if !FileManager.default.fileExists(atPath: path) {
+                FileManager.default.createFile(atPath: path, contents: nil)
+            }
+            if let handle = FileHandle(forWritingAtPath: path) {
+                handle.seekToEndOfFile()
+                handle.write(Data(line.utf8))
+                try? handle.close()
+            }
         }
         guard bestTurns != 0 else { return buffer }
         guard acceptsOrientation(bestTurns, scores: scores, buffer: buffer) else { return buffer }
