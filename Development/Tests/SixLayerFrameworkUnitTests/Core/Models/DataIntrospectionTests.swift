@@ -112,22 +112,31 @@ open class DataIntrospectionTests: BaseTestClass {
         )
 
         let result = DataIntrospectionEngine.analyze(probe)
-        let mirrorLabels = Mirror(reflecting: probe).children.compactMap(\.label)
-        let fieldNames = result.fields.map(\.name)
+        let mirrorTypes = Mirror(reflecting: probe).children.compactMap { child -> String? in
+            guard let label = child.label else { return nil }
+            return "\(label):\(String(describing: type(of: child.value)))"
+        }
+        let fieldSummary = result.fields.map { "\($0.name):\($0.type)" }
 
         let titleField = result.fields.first { $0.name == "title" }
         let countField = result.fields.first { $0.name == "readingCount" }
         let activeField = result.fields.first { $0.name == "isActive" }
 
+        #expect(titleField != nil, "Should detect title on PersistentModel")
         #expect(
-            titleField != nil,
-            "Should detect title on PersistentModel; mirror=\(mirrorLabels) fields=\(fieldNames)"
+            titleField?.type == .string,
+            "title should be string; mirror=\(mirrorTypes) fields=\(fieldSummary)"
         )
-        #expect(titleField?.type == .string, "title should be string")
-        #expect(countField != nil, "Should detect readingCount on PersistentModel; fields=\(fieldNames)")
-        #expect(countField?.type == .number, "readingCount should be number")
-        #expect(activeField != nil, "Should detect isActive on PersistentModel; fields=\(fieldNames)")
-        #expect(activeField?.type == .boolean, "isActive should be boolean")
+        #expect(countField != nil, "Should detect readingCount on PersistentModel")
+        #expect(
+            countField?.type == .number,
+            "readingCount should be number; fields=\(fieldSummary)"
+        )
+        #expect(activeField != nil, "Should detect isActive on PersistentModel")
+        #expect(
+            activeField?.type == .boolean,
+            "isActive should be boolean; fields=\(fieldSummary)"
+        )
     }
     #endif
 }
