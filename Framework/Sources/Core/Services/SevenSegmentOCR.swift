@@ -3592,16 +3592,22 @@ private func droppingLeftScratch(
     mask: Mask,
     bands: [(Int, Int)]
 ) -> [Cell] {
-    return cells
     let digits = cells.filter { $0.character.isNumber && $0.height > 0 }
         .sorted { $0.minX < $1.minX }
     guard digits.count >= 2 else { return cells }
     let leading = digits[0]
+    let next = digits[1]
+    // The scratch sits in the left padding, with a clear gap before the
+    // first digit. Haze fuses those columns into the leading glyph; that
+    // glyph still reads as the digit, and the gap to the next glyph is a
+    // normal inter-digit gap. Dropping it reads `32.88` as `2.88`.
+    let gap = next.minX - leading.maxX
+    let body = max(1, next.maxX - next.minX)
+    guard gap > body / 2 else { return cells }
     guard bridgingColumns(mask, x0: leading.minX, x1: leading.maxX, bands: bands) >= 2 else {
         return cells
     }
-    let cut = digits[1].minX
-    return cells.filter { $0.minX >= cut }
+    return cells.filter { $0.minX >= next.minX }
 }
 
 /// How many columns of the span stay ink through the row gap.
