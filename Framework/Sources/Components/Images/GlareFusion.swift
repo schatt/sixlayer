@@ -23,13 +23,13 @@ public enum GlareFusion {
     /// The median needs no assumption about which is brighter, the glare or
     /// the digits, so it works for dark-on-light and light-on-dark displays.
     ///
-    /// Frames whose size differs from the middle frame are ignored. A frame
+    /// Frames that are not the most common size are ignored. A frame
     /// that cannot be registered is used where it lies. Nil for no frames; a
     /// single frame is returned as it is.
     public static func fuse(frames: [PlatformImage]) -> PlatformImage? {
         let decoded = frames.compactMap(cgImage(of:))
-        guard let first = decoded.first else { return nil }
-        let same = decoded.filter { $0.width == first.width && $0.height == first.height }
+        guard let common = commonSize(of: decoded) else { return nil }
+        let same = decoded.filter { $0.width == common.width && $0.height == common.height }
         let reference = same[same.count / 2]
         guard same.count > 1 else { return PlatformImage(cgImage: reference) }
 
@@ -44,6 +44,19 @@ public enum GlareFusion {
             return PlatformImage(cgImage: reference)
         }
         return PlatformImage(cgImage: fused)
+    }
+
+    /// The size most frames share; the earliest such size on a tie.
+    private static func commonSize(of images: [CGImage]) -> (width: Int, height: Int)? {
+        var counts: [[Int]: Int] = [:]
+        var order: [[Int]] = []
+        for image in images {
+            let key = [image.width, image.height]
+            if counts[key] == nil { order.append(key) }
+            counts[key, default: 0] += 1
+        }
+        guard let top = counts.values.max(), let size = order.first(where: { counts[$0] == top }) else { return nil }
+        return (size[0], size[1])
     }
 
     // MARK: Alignment
