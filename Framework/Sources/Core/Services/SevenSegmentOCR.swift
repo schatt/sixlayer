@@ -1425,11 +1425,13 @@ private struct GrayBuffer {
                     && pixel + inkMargin <= high
             }
         }
+        // The loose mask is the core as well. A stricter quarter core moves
+        // the digit span past the first glyph on the haze crop (`2.88` / `022`).
         return (
             Mask(bits: dark, width: width, height: height),
             Mask(bits: light, width: width, height: height),
-            Mask(bits: darkCore, width: width, height: height),
-            Mask(bits: lightCore, width: width, height: height)
+            Mask(bits: dark, width: width, height: height),
+            Mask(bits: light, width: width, height: height)
         )
     }
 
