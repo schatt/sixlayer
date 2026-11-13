@@ -56,13 +56,17 @@ public struct FormDraft: Codable, Equatable {
 
 /// Type-erased Codable wrapper for storing Any values in Codable structures.
 ///
-/// `Date` is stored as a tagged object so JSON round-trips restore `Date` rather than
-/// `String(describing:)` (#672). A bare ISO-8601 string would decode as `String` first.
+/// Non-JSON form value types are stored as single-key tagged objects so round-trips restore
+/// the original type rather than `String(describing:)` (#672 Date, #674 URL / Data / UUID).
+/// Bare strings that look like those values stay `String`.
 public struct AnyCodable: Codable, Equatable {
     public let value: Any
 
-    /// Reserved key for Date boxes in draft JSON. Not a normal form field value shape.
+    /// Reserved keys for typed boxes in draft JSON. Not normal form field value shapes.
     static let dateTagKey = "__sixlayer_date__"
+    static let urlTagKey = "__sixlayer_url__"
+    static let dataTagKey = "__sixlayer_data__"
+    static let uuidTagKey = "__sixlayer_uuid__"
     
     public init(_ value: Any) {
         self.value = value
@@ -82,8 +86,8 @@ public struct AnyCodable: Codable, Equatable {
         } else if let array = try? container.decode([AnyCodable].self) {
             value = array.map { $0.value }
         } else if let dict = try? container.decode([String: AnyCodable].self) {
-            if let date = Self.date(fromTaggedDictionary: dict) {
-                value = date
+            if let tagged = Self.value(fromTaggedDictionary: dict) {
+                value = tagged
             } else {
                 value = dict.mapValues { $0.value }
             }
@@ -109,6 +113,12 @@ public struct AnyCodable: Codable, Equatable {
             try container.encode(string)
         case let date as Date:
             try container.encode([Self.dateTagKey: AnyCodable(Self.iso8601String(from: date))])
+        case let url as URL:
+            try container.encode([Self.urlTagKey: AnyCodable(url.absoluteString)])
+        case let data as Data:
+            try container.encode([Self.dataTagKey: AnyCodable(data.base64EncodedString())])
+        case let uuid as UUID:
+            try container.encode([Self.uuidTagKey: AnyCodable(uuid.uuidString)])
         case let array as [Any]:
             try container.encode(array.map { AnyCodable($0) })
         case let dict as [String: Any]:
@@ -123,15 +133,33 @@ public struct AnyCodable: Codable, Equatable {
         if let left = lhs.value as? Date, let right = rhs.value as? Date {
             return abs(left.timeIntervalSince1970 - right.timeIntervalSince1970) < 0.001
         }
+        if let left = lhs.value as? URL, let right = rhs.value as? URL {
+            return left == right
+        }
+        if let left = lhs.value as? Data, let right = rhs.value as? Data {
+            return left == right
+        }
+        if let left = lhs.value as? UUID, let right = rhs.value as? UUID {
+            return left == right
+        }
         return String(describing: lhs.value) == String(describing: rhs.value)
     }
 
-    private static func date(fromTaggedDictionary dict: [String: AnyCodable]) -> Date? {
-        guard dict.count == 1,
-              let tagged = dict[dateTagKey]?.value as? String else {
+    private static func value(fromTaggedDictionary dict: [String: AnyCodable]) -> Any? {
+        guard dict.count == 1, let (key, boxed) = dict.first else { return nil }
+        guard let tagged = boxed.value as? String else { return nil }
+        switch key {
+        case dateTagKey:
+            return DynamicFormStoredDateValue.date(fromStoredValue: tagged)
+        case urlTagKey:
+            return URL(string: tagged)
+        case dataTagKey:
+            return Data(base64Encoded: tagged)
+        case uuidTagKey:
+            return UUID(uuidString: tagged)
+        default:
             return nil
         }
-        return DynamicFormStoredDateValue.date(fromStoredValue: tagged)
     }
 
     private static func iso8601String(from date: Date) -> String {
