@@ -54,9 +54,15 @@ public struct FormDraft: Codable, Equatable {
 
 // MARK: - AnyCodable Helper
 
-/// Type-erased Codable wrapper for storing Any values in Codable structures
+/// Type-erased Codable wrapper for storing Any values in Codable structures.
+///
+/// `Date` is stored as a tagged object so JSON round-trips restore `Date` rather than
+/// `String(describing:)` (#672). A bare ISO-8601 string would decode as `String` first.
 public struct AnyCodable: Codable, Equatable {
     public let value: Any
+
+    /// Reserved key for Date boxes in draft JSON. Not a normal form field value shape.
+    static let dateTagKey = "__sixlayer_date__"
     
     public init(_ value: Any) {
         self.value = value
@@ -76,7 +82,11 @@ public struct AnyCodable: Codable, Equatable {
         } else if let array = try? container.decode([AnyCodable].self) {
             value = array.map { $0.value }
         } else if let dict = try? container.decode([String: AnyCodable].self) {
-            value = dict.mapValues { $0.value }
+            if let date = Self.date(fromTaggedDictionary: dict) {
+                value = date
+            } else {
+                value = dict.mapValues { $0.value }
+            }
         } else {
             throw DecodingError.dataCorruptedError(
                 in: container,
@@ -97,6 +107,8 @@ public struct AnyCodable: Codable, Equatable {
             try container.encode(double)
         case let string as String:
             try container.encode(string)
+        case let date as Date:
+            try container.encode([Self.dateTagKey: AnyCodable(Self.iso8601String(from: date))])
         case let array as [Any]:
             try container.encode(array.map { AnyCodable($0) })
         case let dict as [String: Any]:
@@ -108,8 +120,24 @@ public struct AnyCodable: Codable, Equatable {
     }
     
     public static func == (lhs: AnyCodable, rhs: AnyCodable) -> Bool {
-        // Simple equality check - for more complex types, this may need enhancement
+        if let left = lhs.value as? Date, let right = rhs.value as? Date {
+            return abs(left.timeIntervalSince1970 - right.timeIntervalSince1970) < 0.001
+        }
         return String(describing: lhs.value) == String(describing: rhs.value)
+    }
+
+    private static func date(fromTaggedDictionary dict: [String: AnyCodable]) -> Date? {
+        guard dict.count == 1,
+              let tagged = dict[dateTagKey]?.value as? String else {
+            return nil
+        }
+        return DynamicFormStoredDateValue.date(fromStoredValue: tagged)
+    }
+
+    private static func iso8601String(from date: Date) -> String {
+        let withFraction = ISO8601DateFormatter()
+        withFraction.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        return withFraction.string(from: date)
     }
 }
 
