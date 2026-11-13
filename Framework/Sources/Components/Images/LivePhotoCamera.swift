@@ -73,6 +73,24 @@ struct LivePhotoCaptureAssembly {
     }
 }
 
+/// Holds a finished shot until the user chooses Use Photo or Retake (#669).
+struct LivePhotoCaptureConfirmation {
+    private var pending: PlatformPhotoSelection?
+
+    // RED STUB (#669): offer stores nothing; usePhoto / retake are no-ops.
+    mutating func offer(_ selection: PlatformPhotoSelection) {
+        _ = selection
+    }
+
+    mutating func usePhoto() -> PlatformPhotoSelection? {
+        nil
+    }
+
+    mutating func retake(fileManager: FileManager = .default) {
+        _ = fileManager
+    }
+}
+
 #if os(iOS)
 /// Camera interface for selection callers: the Live Photo capture view, or
 /// the system camera when the capture view cannot run.
@@ -273,6 +291,11 @@ final class LivePhotoCameraViewController: UIViewController, AVCapturePhotoCaptu
             )
             capture.output.capturePhoto(with: settings, delegate: self)
         }
+    }
+
+    /// RED STUB (#669): review UI is not shown yet.
+    func offerReviewForTesting(_ selection: PlatformPhotoSelection) {
+        _ = selection
     }
 
     // MARK: AVCapturePhotoCaptureDelegate (called on a capture queue)
