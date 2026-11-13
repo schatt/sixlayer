@@ -602,7 +602,12 @@ private struct GrayBuffer {
             let sample = turns == 0 ? small : small.rotated(degrees: Double(turns * 90))
             return orientationScore(in: sample)
         }
-        let bestTurns = scores.enumerated().max { left, right in
+        // A half turn can count more wide digits than the upright quarter
+        // turn and then fail its own mark test. That used to win the max
+        // and leave the panel sideways. Only a turn the gate accepts can win.
+        let bestTurns = scores.enumerated().filter { index, _ in
+            index != 0 && acceptsOrientation(index, scores: scores, buffer: buffer)
+        }.max { left, right in
             if left.element.wideDigits != right.element.wideDigits {
                 return left.element.wideDigits < right.element.wideDigits
             }
@@ -614,20 +619,7 @@ private struct GrayBuffer {
             }
             return left.element.confidence < right.element.confidence
         }?.offset ?? 0
-        for (index, score) in scores.enumerated() {
-            let line = "orient \(index) wide \(score.wideDigits) marks \(score.marksBelow) min \(score.minConfidence) text \(score.text)\n"
-            let path = "/tmp/orient-scores.txt"
-            if !FileManager.default.fileExists(atPath: path) {
-                FileManager.default.createFile(atPath: path, contents: nil)
-            }
-            if let handle = FileHandle(forWritingAtPath: path) {
-                handle.seekToEndOfFile()
-                handle.write(Data(line.utf8))
-                try? handle.close()
-            }
-        }
         guard bestTurns != 0 else { return buffer }
-        guard acceptsOrientation(bestTurns, scores: scores, buffer: buffer) else { return buffer }
         return buffer.rotated(degrees: Double(bestTurns * 90))
     }
 
