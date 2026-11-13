@@ -69,15 +69,23 @@ public enum PlatformPhotoComponentsLayer4 {
     /// Photo movie when the device supports it; with no usable camera it falls
     /// back to the system camera (still only). macOS cameras cannot record
     /// Live Photos, so `livePhotoMovieURL` is always nil there.
+    /// - Parameter onCancel: Optional. Called when the user cancels (Cancel on
+    ///   the capture view, or Cancel on the system-camera fallback). Omit when
+    ///   the host has its own dismiss path and does not need the control.
     @_disfavoredOverload
     @ViewBuilder
     @MainActor
     public static func platformCameraInterface_L4(
         onSelection: @escaping (PlatformPhotoSelection) -> Void,
+        onCancel: (() -> Void)? = nil,
         onCameraAuthorizationState: ((CameraAuthorizationState) -> Void)? = nil
     ) -> some View {
         #if os(iOS)
-        LivePhotoCameraInterface(onSelection: onSelection, onCameraAuthorizationState: onCameraAuthorizationState)
+        LivePhotoCameraInterface(
+            onSelection: onSelection,
+            onCancel: onCancel,
+            onCameraAuthorizationState: onCameraAuthorizationState
+        )
             .automaticCompliance(named: "platformCameraInterface_L4")
             .accessibilityIdentifier("platformCameraInterface_L4")
         #elseif os(macOS)
@@ -1077,6 +1085,23 @@ public func platformCameraInterface_L4(
 ) -> some View {
     PlatformPhotoComponentsLayer4.platformCameraInterface_L4(
         onImageCaptured: onImageCaptured,
+        onCameraAuthorizationState: onCameraAuthorizationState
+    )
+}
+
+/// Camera interface that captures Live Photos (#669). See
+/// ``PlatformPhotoComponentsLayer4/platformCameraInterface_L4(onSelection:onCancel:onCameraAuthorizationState:)``.
+@_disfavoredOverload
+@ViewBuilder
+@MainActor
+public func platformCameraInterface_L4(
+    onSelection: @escaping (PlatformPhotoSelection) -> Void,
+    onCancel: (() -> Void)? = nil,
+    onCameraAuthorizationState: ((CameraAuthorizationState) -> Void)? = nil
+) -> some View {
+    PlatformPhotoComponentsLayer4.platformCameraInterface_L4(
+        onSelection: onSelection,
+        onCancel: onCancel,
         onCameraAuthorizationState: onCameraAuthorizationState
     )
 }
