@@ -191,6 +191,92 @@ open class FormDraftTests: BaseTestClass {
         let asDate = try #require(restored as? Date)
         #expect(abs(asDate.timeIntervalSince1970 - original.timeIntervalSince1970) < 1)
     }
+
+    // MARK: - AnyCodable URL / Data / UUID (#674)
+
+    /// #674: URL must round-trip as URL, not String(describing:).
+    @Test func testAnyCodableURLRoundTripsAsURL() throws {
+        let original = try #require(URL(string: "https://example.com/path?q=1"))
+        let data = try JSONEncoder().encode(AnyCodable(original))
+        let decoded = try JSONDecoder().decode(AnyCodable.self, from: data)
+        #expect(decoded.value as? URL == original)
+        #expect(!(decoded.value is String), "must not fall back to String(describing:) (#674)")
+    }
+
+    /// #674: Data must round-trip as Data (image/data fields).
+    @Test func testAnyCodableDataRoundTripsAsData() throws {
+        let original = Data([0x00, 0xFF, 0x10, 0xAB])
+        let data = try JSONEncoder().encode(AnyCodable(original))
+        let decoded = try JSONDecoder().decode(AnyCodable.self, from: data)
+        #expect(decoded.value as? Data == original)
+        #expect(!(decoded.value is String))
+    }
+
+    /// #674: UUID must round-trip as UUID.
+    @Test func testAnyCodableUUIDRoundTripsAsUUID() throws {
+        let original = UUID(uuidString: "550e8400-e29b-41d4-a716-446655440000")!
+        let data = try JSONEncoder().encode(AnyCodable(original))
+        let decoded = try JSONDecoder().decode(AnyCodable.self, from: data)
+        #expect(decoded.value as? UUID == original)
+        #expect(!(decoded.value is String))
+    }
+
+    /// #674: FormDraft JSON keeps URL, Data, and UUID usable after decode.
+    @Test func testFormDraftURLDataUUIDSurviveJSONRoundTrip() throws {
+        let url = try #require(URL(string: "https://sixlayer.example/doc"))
+        let blob = Data("blob".utf8)
+        let id = UUID(uuidString: "123e4567-e89b-12d3-a456-426614174000")!
+        let draft = FormDraft(
+            formId: "674-types",
+            fieldValues: ["link": url, "payload": blob, "id": id],
+            timestamp: Date(timeIntervalSince1970: 1_700_000_000)
+        )
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .iso8601
+        let data = try encoder.encode(draft)
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        let decoded = try decoder.decode(FormDraft.self, from: data)
+        let values = decoded.toFieldValues()
+        #expect(values["link"] as? URL == url)
+        #expect(values["payload"] as? Data == blob)
+        #expect(values["id"] as? UUID == id)
+    }
+
+    /// #674: Plain URL-looking and UUID-looking strings stay String.
+    @Test func testAnyCodablePlainURLAndUUIDStringsStayString() throws {
+        let urlText = "https://example.com/plain"
+        let uuidText = "550e8400-e29b-41d4-a716-446655440000"
+        for text in [urlText, uuidText] {
+            let decoded = try JSONDecoder().decode(
+                AnyCodable.self,
+                from: try JSONEncoder().encode(AnyCodable(text))
+            )
+            #expect(decoded.value as? String == text)
+            #expect(!(decoded.value is URL))
+            #expect(!(decoded.value is UUID))
+        }
+    }
+
+    /// #674: UserDefaults draft storage round-trips URL and Data.
+    @Test func testUserDefaultsStorageURLAndDataRoundTrip() throws {
+        let suiteName = "test_form_storage_url_data_\(UUID().uuidString)"
+        let testDefaults = UserDefaults(suiteName: suiteName)!
+        testDefaults.removePersistentDomain(forName: suiteName)
+        defer { testDefaults.removePersistentDomain(forName: suiteName) }
+
+        let storage = UserDefaultsFormStateStorage(userDefaults: testDefaults)
+        let url = try #require(URL(string: "https://example.com/a"))
+        let blob = Data([1, 2, 3, 4])
+        try storage.saveDraft(FormDraft(
+            formId: "674-storage",
+            fieldValues: ["link": url, "bytes": blob]
+        ))
+        let loaded = try #require(storage.loadDraft(formId: "674-storage"))
+        let values = loaded.toFieldValues()
+        #expect(values["link"] as? URL == url)
+        #expect(values["bytes"] as? Data == blob)
+    }
     
     // MARK: - FormStateStorage Tests
     
