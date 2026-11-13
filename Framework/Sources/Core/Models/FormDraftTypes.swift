@@ -131,24 +131,13 @@ public struct AnyCodable: Codable, Equatable {
               let tagged = dict[dateTagKey]?.value as? String else {
             return nil
         }
-        return iso8601Date(from: tagged)
+        return DynamicFormStoredDateValue.date(fromStoredValue: tagged)
     }
 
     private static func iso8601String(from date: Date) -> String {
         let withFraction = ISO8601DateFormatter()
         withFraction.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
         return withFraction.string(from: date)
-    }
-
-    private static func iso8601Date(from string: String) -> Date? {
-        let withFraction = ISO8601DateFormatter()
-        withFraction.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-        if let date = withFraction.date(from: string) {
-            return date
-        }
-        let plain = ISO8601DateFormatter()
-        plain.formatOptions = [.withInternetDateTime]
-        return plain.date(from: string)
     }
 }
 
