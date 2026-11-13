@@ -54,6 +54,15 @@ open class Layer4APISignatureTests: BaseTestClass {
         let view = platformPhotoPicker_L4(onImageSelected: callback)
         BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "UnifiedImagePicker")
     }
+
+    /// BUSINESS PURPOSE: Free-function twin for Live Photo selection (#668).
+    /// TESTING SCOPE: `platformPhotoPicker_L4(onSelection:)` is globally callable and wraps UnifiedImagePicker
+    /// METHODOLOGY: Same root-view check as the image-only free function
+    @Test @MainActor func testPlatformPhotoPicker_L4_onSelection_APISignature() {
+        let callback: (PlatformPhotoSelection) -> Void = { _ in }
+        let view = platformPhotoPicker_L4(onSelection: callback)
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "UnifiedImagePicker")
+    }
     
     /// BUSINESS PURPOSE: Verify platformCameraInterface_L4 API signature exists and works
     /// TESTING SCOPE: Tests that platformCameraInterface_L4 accepts correct callback signature
@@ -256,6 +265,33 @@ open class Layer4APISignatureTests: BaseTestClass {
             annotations: annotations,
             onAnnotationTapped: callback
         )
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "AutomaticComplianceModifier")
+        #endif
+    }
+
+    /// BUSINESS PURPOSE: Verify platformMapView_L4 API signature exists (with selection binding)
+    /// TESTING SCOPE: Accepts selection Binding + MapContentBuilder; subject includes Map and compliance
+    /// METHODOLOGY: Compile with Hashable selection + lock Map + AutomaticComplianceModifier
+    @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
+    @Test @MainActor func testPlatformMapView_L4_WithSelection_APISignature() {
+        #if canImport(MapKit) && (os(iOS) || os(macOS))
+        let position = Binding<MapCameraPosition>(
+            get: { MapCameraPosition.automatic },
+            set: { (_: MapCameraPosition) in }
+        )
+        var selected: String? = nil
+        let selection = Binding<String?>(
+            get: { selected },
+            set: { selected = $0 }
+        )
+        let view = platformMapView_L4(position: position, selection: selection) {
+            Marker(
+                "Test",
+                coordinate: CLLocationCoordinate2D(latitude: 37.7749, longitude: -122.4194)
+            )
+            .tag("test")
+        }
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "Map")
         BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "AutomaticComplianceModifier")
         #endif
     }

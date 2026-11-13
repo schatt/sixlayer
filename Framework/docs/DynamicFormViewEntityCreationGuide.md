@@ -63,8 +63,6 @@ class User: Codable {
 }
 
 struct CreateUserView: View {
-    @Environment(\.modelContext) private var modelContext
-    
     var body: some View {
         DynamicFormView(
             configuration: DynamicFormConfiguration(
@@ -121,7 +119,7 @@ struct CreateUserView: View {
 
 - **Requires `entityType`**: Must provide `entityType: User.self` parameter
 - **Requires Codable**: Your SwiftData model must conform to `Codable`
-- **Context**: Requires `@Environment(\.modelContext)`
+- **Context**: Install `.modelContainer` on the host. The form looks up that context only when creating a SwiftData entity. It does not declare `@Environment(\.modelContext)`, which opens an empty default store when the host has no container.
 
 **Why Codable?**: Swift doesn't support dynamic memberwise initialization at runtime. Codable allows us to encode form values to JSON, then decode to your entity type.
 
@@ -160,7 +158,7 @@ DynamicFormView(
 - **Validation Fails**: Form has validation errors (fieldErrors in userInfo)
 - **Entity Creation Fails**: Invalid entity name, missing context, Codable decode failure
 - **Save Fails**: Core Data/SwiftData save errors, constraint violations
-- **Automatic Rollback**: Entity is automatically deleted if save fails
+- **Failed-save cleanup**: The new entity is deleted if save fails; other pending context edits are left alone (#620)
 
 ### Error Handling Flow
 
@@ -172,7 +170,7 @@ DynamicFormView(
    - If creation fails → `onError` called, no entity created
    
 3. **Save**: Entity is saved to context
-   - If save fails → Entity is deleted (rollback), `onError` called
+   - If save fails → Only the new entity is deleted (other pending context edits stay), `onError` called
 
 ## Validation
 
