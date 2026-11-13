@@ -1109,9 +1109,10 @@ private struct GrayBuffer {
     private static func isEdgeChromeStrip(_ box: PixelBox, buffer: GrayBuffer) -> Bool {
         let flush = box.minX <= 1 || box.maxX >= buffer.width - 2
         guard flush, box.width * 4 < box.height else { return false }
-        let chrome = Int(buffer.cornerFill())
-        guard let level = boxMedianLevel(buffer, box: box) else { return false }
-        return abs(level - chrome) <= inkMargin
+        // Temporary #670: any flush tall/narrow edge strip — confirm the
+        // classify path sees these boxes before tightening the chrome gate.
+        _ = buffer
+        return true
     }
 
     private static func score(_ buffer: GrayBuffer) -> Int {
