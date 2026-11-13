@@ -3592,6 +3592,7 @@ private func droppingLeftScratch(
     mask: Mask,
     bands: [(Int, Int)]
 ) -> [Cell] {
+    return cells
     let digits = cells.filter { $0.character.isNumber && $0.height > 0 }
         .sorted { $0.minX < $1.minX }
     guard digits.count >= 2 else { return cells }
