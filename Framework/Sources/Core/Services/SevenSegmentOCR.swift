@@ -602,25 +602,29 @@ private struct GrayBuffer {
             let sample = turns == 0 ? small : small.rotated(degrees: Double(turns * 90))
             return orientationScore(in: sample)
         }
-        // A half turn can count more wide digits than the upright quarter
-        // turn and then fail its own mark test. That used to win the max
-        // and leave the panel sideways. Only a turn the gate accepts can win.
-        let bestTurns = scores.enumerated().filter { index, _ in
-            index != 0 && acceptsOrientation(index, scores: scores, buffer: buffer)
-        }.max { left, right in
+        // Rank every turn, including upright. A half turn can count more
+        // wide digits than the upright quarter turn and then fail its mark
+        // test; skip that one. Stop at upright, so a worse turn cannot spin
+        // a panel that already outranks it.
+        let ranked = scores.enumerated().sorted { left, right in
             if left.element.wideDigits != right.element.wideDigits {
-                return left.element.wideDigits < right.element.wideDigits
+                return left.element.wideDigits > right.element.wideDigits
             }
             if left.element.marksBelow != right.element.marksBelow {
-                return left.element.marksBelow < right.element.marksBelow
+                return left.element.marksBelow > right.element.marksBelow
             }
             if left.element.rowVariance != right.element.rowVariance {
-                return left.element.rowVariance < right.element.rowVariance
+                return left.element.rowVariance > right.element.rowVariance
             }
-            return left.element.confidence < right.element.confidence
-        }?.offset ?? 0
-        guard bestTurns != 0 else { return buffer }
-        return buffer.rotated(degrees: Double(bestTurns * 90))
+            return left.element.confidence > right.element.confidence
+        }
+        for (index, _) in ranked {
+            if index == 0 { return buffer }
+            if acceptsOrientation(index, scores: scores, buffer: buffer) {
+                return buffer.rotated(degrees: Double(index * 90))
+            }
+        }
+        return buffer
     }
 
     /// A small tilt still belongs to the fine deskew. Speck rows on a
