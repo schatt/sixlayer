@@ -225,18 +225,6 @@ public struct DataIntrospectionEngine {
         }
         return .custom
     }
-
-    /// `nil` for `_$…` runtime Mirror labels; otherwise strip one leading `_` from storage names.
-    @available(macOS 14.0, iOS 17.0, *)
-    static func normalizedSwiftDataFieldName(_ label: String) -> String? {
-        if label.hasPrefix("_$") {
-            return nil
-        }
-        if label.hasPrefix("_"), label.count > 1 {
-            return String(label.dropFirst())
-        }
-        return label
-    }
     #endif
     
 
