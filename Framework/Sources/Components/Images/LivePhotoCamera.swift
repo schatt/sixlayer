@@ -229,7 +229,7 @@ final class LivePhotoCameraViewController: UIViewController, AVCapturePhotoCaptu
         cancel.setTitle(i18n.localizedString(for: "SixLayerFramework.button.cancel"), for: .normal)
         cancel.setTitleColor(.white, for: .normal)
         cancel.accessibilityLabel = i18n.localizedString(for: "SixLayerFramework.button.cancel")
-        cancel.accessibilityIdentifier = "SixLayer.main.ui.platformCameraInterface_L4.cancel"
+        cancel.accessibilityIdentifier = PlatformCameraInterfaceLayer4Accessibility.cancelIdentifier
         // UIAction (not addTarget): sendActions in unit tests must reach the callback.
         cancel.addAction(UIAction { _ in onCancel() }, for: .touchUpInside)
         view.addSubview(cancel)
@@ -248,7 +248,7 @@ final class LivePhotoCameraViewController: UIViewController, AVCapturePhotoCaptu
         shutter.layer.borderColor = UIColor.lightGray.cgColor
         shutter.isEnabled = false
         shutter.accessibilityLabel = i18n.localizedString(for: "SixLayerFramework.photo.captureNew")
-        shutter.accessibilityIdentifier = "SixLayer.main.ui.platformCameraInterface_L4.shutter"
+        shutter.accessibilityIdentifier = PlatformCameraInterfaceLayer4Accessibility.shutterIdentifier
         shutter.addTarget(self, action: #selector(takePhoto), for: .touchUpInside)
         view.addSubview(shutter)
         NSLayoutConstraint.activate([
@@ -318,23 +318,20 @@ final class LivePhotoCameraViewController: UIViewController, AVCapturePhotoCaptu
         let preview = UIImageView(image: selection.image.uiImage)
         preview.translatesAutoresizingMaskIntoConstraints = false
         preview.contentMode = .scaleAspectFit
-        preview.accessibilityIdentifier = "SixLayer.main.ui.platformCameraInterface_L4.reviewPreview"
+        preview.accessibilityIdentifier = PlatformCameraInterfaceLayer4Accessibility.reviewPreviewIdentifier
 
-        let retake = UIButton(type: .system)
-        retake.translatesAutoresizingMaskIntoConstraints = false
-        retake.setTitle(i18n.localizedString(for: "SixLayerFramework.photo.retake"), for: .normal)
-        retake.setTitleColor(.white, for: .normal)
-        retake.accessibilityLabel = i18n.localizedString(for: "SixLayerFramework.photo.retake")
-        retake.accessibilityIdentifier = "SixLayer.main.ui.platformCameraInterface_L4.retake"
-        retake.addAction(UIAction { [weak self] _ in self?.retakeTapped() }, for: .touchUpInside)
-
-        let usePhoto = UIButton(type: .system)
-        usePhoto.translatesAutoresizingMaskIntoConstraints = false
-        usePhoto.setTitle(i18n.localizedString(for: "SixLayerFramework.photo.usePhoto"), for: .normal)
-        usePhoto.setTitleColor(.white, for: .normal)
-        usePhoto.accessibilityLabel = i18n.localizedString(for: "SixLayerFramework.photo.usePhoto")
-        usePhoto.accessibilityIdentifier = "SixLayer.main.ui.platformCameraInterface_L4.usePhoto"
-        usePhoto.addAction(UIAction { [weak self] _ in self?.usePhotoTapped() }, for: .touchUpInside)
+        let retake = reviewActionButton(
+            titleKey: "SixLayerFramework.photo.retake",
+            identifier: PlatformCameraInterfaceLayer4Accessibility.retakeIdentifier,
+            i18n: i18n,
+            action: { [weak self] in self?.retakeTapped() }
+        )
+        let usePhoto = reviewActionButton(
+            titleKey: "SixLayerFramework.photo.usePhoto",
+            identifier: PlatformCameraInterfaceLayer4Accessibility.usePhotoIdentifier,
+            i18n: i18n,
+            action: { [weak self] in self?.usePhotoTapped() }
+        )
 
         chrome.addSubview(preview)
         chrome.addSubview(retake)
@@ -356,6 +353,23 @@ final class LivePhotoCameraViewController: UIViewController, AVCapturePhotoCaptu
             usePhoto.trailingAnchor.constraint(equalTo: chrome.safeAreaLayoutGuide.trailingAnchor, constant: -24),
             usePhoto.bottomAnchor.constraint(equalTo: chrome.safeAreaLayoutGuide.bottomAnchor, constant: -24)
         ])
+    }
+
+    private func reviewActionButton(
+        titleKey: String,
+        identifier: String,
+        i18n: InternationalizationService,
+        action: @escaping () -> Void
+    ) -> UIButton {
+        let button = UIButton(type: .system)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        let title = i18n.localizedString(for: titleKey)
+        button.setTitle(title, for: .normal)
+        button.setTitleColor(.white, for: .normal)
+        button.accessibilityLabel = title
+        button.accessibilityIdentifier = identifier
+        button.addAction(UIAction { _ in action() }, for: .touchUpInside)
+        return button
     }
 
     private func usePhotoTapped() {
