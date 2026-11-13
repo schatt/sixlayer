@@ -105,6 +105,10 @@ public enum SevenSegmentOCR {
     /// Test probe for the IMG_7493 both-direction gate (#666 / #661).
     nonisolated(unsafe) public static var useFlatReadArbitration = true
 
+    /// When false, return the mask/legacy read without lattice arbitration.
+    /// Test probe for #670 pale-comma path isolation.
+    nonisolated(unsafe) public static var useLatticeArbitration = true
+
     /// Pixel rect of the digit panel (glass plus a bezel margin) in image
     /// coordinates, or `nil` when no sealed panel is found.
     ///
@@ -176,6 +180,7 @@ public enum SevenSegmentOCR {
             }
         }
         let legacy = result(fragments)
+        guard useLatticeArbitration else { return legacy }
         // Photographed panels: italic digits, segment gaps, reflections and
         // uneven light defeat the fixed-pixel path above. The lattice reader
         // measures everything from the panel itself (#576 real photos).
