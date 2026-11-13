@@ -78,6 +78,7 @@ struct LivePhotoCaptureAssembly {
 /// the system camera when the capture view cannot run.
 struct LivePhotoCameraInterface: View {
     let onSelection: (PlatformPhotoSelection) -> Void
+    let onCancel: (() -> Void)?
     let onCameraAuthorizationState: ((CameraAuthorizationState) -> Void)?
     @State private var useSystemCamera = false
 
@@ -86,6 +87,7 @@ struct LivePhotoCameraInterface: View {
         if !useSystemCamera, LivePhotoCamera.capturePath(wantsMotion: true, authorization: state) == .livePhotoCamera {
             LivePhotoCameraView(
                 onSelection: onSelection,
+                onCancel: onCancel,
                 onUnavailable: { useSystemCamera = true }
             )
             .ignoresSafeArea()
@@ -93,7 +95,8 @@ struct LivePhotoCameraInterface: View {
         } else {
             CameraView(
                 onImageCaptured: { onSelection(PlatformPhotoSelection(image: $0)) },
-                onCameraAuthorizationState: onCameraAuthorizationState
+                onCameraAuthorizationState: onCameraAuthorizationState,
+                onCancel: onCancel
             )
         }
     }
@@ -101,10 +104,11 @@ struct LivePhotoCameraInterface: View {
 
 private struct LivePhotoCameraView: UIViewControllerRepresentable {
     let onSelection: (PlatformPhotoSelection) -> Void
+    let onCancel: (() -> Void)?
     let onUnavailable: () -> Void
 
     func makeUIViewController(context: Context) -> LivePhotoCameraViewController {
-        LivePhotoCameraViewController(onSelection: onSelection, onCancel: nil, onUnavailable: onUnavailable)
+        LivePhotoCameraViewController(onSelection: onSelection, onCancel: onCancel, onUnavailable: onUnavailable)
     }
 
     func updateUIViewController(_ controller: LivePhotoCameraViewController, context: Context) {}
