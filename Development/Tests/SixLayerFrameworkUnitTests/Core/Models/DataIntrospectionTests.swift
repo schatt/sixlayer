@@ -112,31 +112,29 @@ open class DataIntrospectionTests: BaseTestClass {
         )
 
         let result = DataIntrospectionEngine.analyze(probe)
-        let mirrorTypes = Mirror(reflecting: probe).children.compactMap { child -> String? in
-            guard let label = child.label else { return nil }
-            return "\(label):\(String(describing: type(of: child.value)))"
-        }
-        let fieldSummary = result.fields.map { "\($0.name):\($0.type)" }
 
         let titleField = result.fields.first { $0.name == "title" }
         let countField = result.fields.first { $0.name == "readingCount" }
         let activeField = result.fields.first { $0.name == "isActive" }
 
         #expect(titleField != nil, "Should detect title on PersistentModel")
-        #expect(
-            titleField?.type == .string,
-            "title should be string; mirror=\(mirrorTypes) fields=\(fieldSummary)"
-        )
+        #expect(titleField?.type == .string, "title should be string")
         #expect(countField != nil, "Should detect readingCount on PersistentModel")
-        #expect(
-            countField?.type == .number,
-            "readingCount should be number; fields=\(fieldSummary)"
-        )
+        #expect(countField?.type == .number, "readingCount should be number")
         #expect(activeField != nil, "Should detect isActive on PersistentModel")
-        #expect(
-            activeField?.type == .boolean,
-            "isActive should be boolean; fields=\(fieldSummary)"
-        )
+        #expect(activeField?.type == .boolean, "isActive should be boolean")
+    }
+
+    @available(macOS 14.0, iOS 17.0, *)
+    @Test func testInferSwiftDataFieldTypeMapsCommonAttributes() {
+        #expect(DataIntrospectionEngine.inferSwiftDataFieldType(valueType: String.self) == .string)
+        #expect(DataIntrospectionEngine.inferSwiftDataFieldType(valueType: Int.self) == .number)
+        #expect(DataIntrospectionEngine.inferSwiftDataFieldType(valueType: Bool.self) == .boolean)
+        #expect(DataIntrospectionEngine.inferSwiftDataFieldType(valueType: Date.self) == .date)
+        #expect(DataIntrospectionEngine.inferSwiftDataFieldType(valueType: UUID.self) == .uuid)
+        #expect(DataIntrospectionEngine.inferSwiftDataFieldType(valueType: Data.self) == .document)
+        #expect(DataIntrospectionEngine.inferSwiftDataFieldType(valueType: URL.self) == .url)
+        #expect(DataIntrospectionEngine.inferSwiftDataFieldType(valueType: Optional<String>.self) == .string)
     }
     #endif
 }
