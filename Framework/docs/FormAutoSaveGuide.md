@@ -213,7 +213,13 @@ let editState = DynamicFormState(
 
 **Not covered here:** how individual field values are typed in `fieldValues` (e.g. `Double` vs `String` for number fields). See [Number and integer field values](#number-and-integer-field-values-issue-289) below.
 
-**Date field values in drafts (#672):** `AnyCodable` persists `Date` as a tagged ISO-8601 object (`__sixlayer_date__`) so save/load restores `Date`, not `String(describing:)`. Plain ISO-8601 strings used as text stay `String`.
+**Typed field values in drafts (#672, #674):** `AnyCodable` persists non-JSON types as tagged objects so save/load restores the original type, not `String(describing:)`:
+- `Date` → `__sixlayer_date__` (ISO-8601)
+- `URL` → `__sixlayer_url__`
+- `Data` → `__sixlayer_data__` (base64; covers image/data fields)
+- `UUID` → `__sixlayer_uuid__`
+
+Plain strings that look like those values stay `String`.
 
 ### Number and integer field values (Issue #289)
 
