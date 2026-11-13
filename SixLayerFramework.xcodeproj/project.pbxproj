@@ -13211,6 +13211,9 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSCameraUsageDescription = "Capture photos and Live Photos for SixLayer framework testing.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Record Live Photo motion audio during camera tests.";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Select photos for SixLayer framework testing.";
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -13597,6 +13600,9 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSCameraUsageDescription = "Capture photos and Live Photos for SixLayer framework testing.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Record Live Photo motion audio during camera tests.";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Select photos for SixLayer framework testing.";
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
