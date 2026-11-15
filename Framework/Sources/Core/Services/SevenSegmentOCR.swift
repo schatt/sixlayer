@@ -550,9 +550,16 @@ private struct GrayBuffer {
             // worse read even at full confidence (#661).
             let tilted = readQuality(turnedSample)
             if buffer.width >= 400 {
-                trace(
-                    "deskew \(angle) score \(value) conf \(tilted.confidence) digits \(tilted.digits) dark \(String(describing: tilted.isDark)) upright \(uprightScore) \(upright.confidence) \(upright.digits) \(String(describing: upright.isDark))\n"
-                )
+                let line = "deskew \(angle) score \(value) conf \(tilted.confidence) digits \(tilted.digits) dark \(String(describing: tilted.isDark)) upright \(uprightScore) \(upright.confidence) \(upright.digits) \(String(describing: upright.isDark)) size \(buffer.width)x\(buffer.height)\n"
+                let path = "/Users/schatt/code/github/sixlayer-wip-600/build/deskew-trace.txt"
+                if !FileManager.default.fileExists(atPath: path) {
+                    FileManager.default.createFile(atPath: path, contents: nil)
+                }
+                if let handle = FileHandle(forWritingAtPath: path) {
+                    handle.seekToEndOfFile()
+                    handle.write(Data(line.utf8))
+                    try? handle.close()
+                }
             }
             if value > bestScore,
                tilted.confidence >= upright.confidence,
