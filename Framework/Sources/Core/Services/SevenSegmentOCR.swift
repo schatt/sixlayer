@@ -549,18 +549,6 @@ private struct GrayBuffer {
             // A tilt that loses digits (light `31.25` → a lone `1`) is a
             // worse read even at full confidence (#661).
             let tilted = readQuality(turnedSample)
-            if buffer.width >= 400 {
-                let line = "deskew \(angle) score \(value) conf \(tilted.confidence) digits \(tilted.digits) dark \(String(describing: tilted.isDark)) upright \(uprightScore) \(upright.confidence) \(upright.digits) \(String(describing: upright.isDark)) size \(buffer.width)x\(buffer.height)\n"
-                let path = "/Users/schatt/code/github/sixlayer-wip-600/build/deskew-trace.txt"
-                if !FileManager.default.fileExists(atPath: path) {
-                    FileManager.default.createFile(atPath: path, contents: nil)
-                }
-                if let handle = FileHandle(forWritingAtPath: path) {
-                    handle.seekToEndOfFile()
-                    handle.write(Data(line.utf8))
-                    try? handle.close()
-                }
-            }
             if value > bestScore,
                tilted.confidence >= upright.confidence,
                tilted.digits >= upright.digits,
@@ -1445,13 +1433,11 @@ private struct GrayBuffer {
                     && pixel + inkMargin <= high
             }
         }
-        // The loose mask is the core as well. A stricter quarter core moves
-        // the digit span past the first glyph on the haze crop (`2.88` / `022`).
         return (
             Mask(bits: dark, width: width, height: height),
             Mask(bits: light, width: width, height: height),
-            Mask(bits: dark, width: width, height: height),
-            Mask(bits: light, width: width, height: height)
+            Mask(bits: darkCore, width: width, height: height),
+            Mask(bits: lightCore, width: width, height: height)
         )
     }
 
@@ -2653,9 +2639,7 @@ private extension GrayBuffer {
         // before choosing polarity. A dark bar stays; it is the stroke.
         let darkMask = withoutFullWidthGlass(masks.dark, pixels: buffer.pixels)
         let darkCore = withoutFullWidthGlass(cores.dark, pixels: buffer.pixels)
-        // Glass was already stripped. The level test is for an unstripped
-        // mask (IMG_7493); on this one it calls pale ink and haze glass.
-        let darkPreferred = prefersDark(darkMask, masks.light)
+        let darkPreferred = prefersDark(darkMask, masks.light, pixels: buffer.pixels)
         let darkChoice = polarity(isDark: true, loose: darkMask, core: darkCore)
         let lightChoice = polarity(isDark: false, loose: masks.light, core: cores.light)
         let chosen: (isDark: Bool, glyphs: Mask, bandSource: Mask)
@@ -2669,14 +2653,22 @@ private extension GrayBuffer {
                 chosen = openIsDark ? darkChoice.reading : lightChoice.reading
                 opened = true
             } else if darkPreferred {
-                let forced = polarity(
-                    isDark: true,
-                    loose: darkMask,
-                    core: darkCore,
-                    forceOpen: true
-                )
-                chosen = forced.reading
-                opened = forced.opens
+                // Forcing open clears columns outside the digit span. On one
+                // wide line of groups that span is a single group (`five` →
+                // `2.22`) (#661), so only force when it keeps the dark ink.
+                if spanKeepsInk(core: darkCore, loose: darkMask) {
+                    let forced = polarity(
+                        isDark: true,
+                        loose: darkMask,
+                        core: darkCore,
+                        forceOpen: true
+                    )
+                    chosen = forced.reading
+                    opened = forced.opens
+                } else {
+                    chosen = darkChoice.reading
+                    opened = false
+                }
             } else {
                 // Light ink on dark glass: the glass false-opens. Forcing the
                 // light ink open clears columns outside its digit span and
@@ -2830,8 +2822,8 @@ private extension GrayBuffer {
             let tallest = splitBands.map { $0.1 - $0.0 }.max() ?? 0
             lineBands = splitBands.compactMap { raw in
                 guard (raw.1 - raw.0) * 2 >= tallest else { return nil }
-                let headed = trimmingGlareHead(raw, mask: glyphs, pixels: buffer.pixels)
-                let peeled = trimmingSparseEdges(headed, mask: cellGlyphs)
+                let headed = opened ? raw : trimmingGlareHead(raw, mask: glyphs, pixels: buffer.pixels)
+                let peeled = opened ? headed : trimmingSparseEdges(headed, mask: cellGlyphs)
                 return peeled.1 > peeled.0 + 8 ? peeled : nil
             }
         }
@@ -3647,12 +3639,10 @@ private func droppingLeftScratch(
     guard digits.count >= 2 else { return cells }
     let leading = digits[0]
     let next = digits[1]
-    // The scratch sits in the left padding, a full digit-width of glass
-    // before the first glyph. A decimal between the first two digits is a
-    // shorter gap (`8.022`); treating that as the scratch drops the 8.
-    // Haze also fuses the scratch columns into the leading glyph. That
-    // glyph still reads as the digit, and its gap to the next glyph is
-    // only the usual spacing. Dropping it reads `32.88` as `2.88`.
+    // A scratch has a full digit of glass before the first glyph. A decimal
+    // between the first two digits is a shorter gap, and a scratch fused
+    // into the leading glyph leaves only the usual spacing. Either one is
+    // a digit.
     let gap = next.minX - leading.maxX
     let widths = digits.map { max(1, $0.maxX - $0.minX) }.sorted()
     let typical = widths[widths.count / 2]
@@ -5254,18 +5244,6 @@ private func glassSpread(_ pixels: [UInt8]) -> Int {
         if seen * 2 >= pixels.count { return level }
     }
     return 255
-}
-
-/// Run counts, then the thinner mask. Used after full-width glass has
-/// already been removed; the level test would undo that.
-private func prefersDark(_ dark: Mask, _ light: Mask) -> Bool {
-    let darkRuns = bandedColumnRuns(dark)
-    let lightRuns = bandedColumnRuns(light)
-    if darkRuns >= lightRuns * 2 { return true }
-    if lightRuns >= darkRuns * 2 { return false }
-    let darkInk = dark.rowSums.reduce(Int64(0)) { $0 + Int64($1) }
-    let lightInk = light.rowSums.reduce(Int64(0)) { $0 + Int64($1) }
-    return darkInk <= lightInk
 }
 
 private func prefersDark(_ dark: Mask, _ light: Mask, pixels: [UInt8]) -> Bool {
