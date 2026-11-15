@@ -510,18 +510,7 @@ struct OCRSevenSegment576Tests {
             bezelLevel: 123,
             bezelWidth: 8
         )
-        let priorFlat = SevenSegmentOCR.useFlatReadArbitration
-        let priorLattice = SevenSegmentOCR.useLatticeArbitration
-        SevenSegmentOCR.useFlatReadArbitration = false
-        SevenSegmentOCR.useLatticeArbitration = false
-        let maskOnly = decode(image)
-        SevenSegmentOCR.useFlatReadArbitration = priorFlat
-        SevenSegmentOCR.useLatticeArbitration = priorLattice
-        let result = decode(image)
-        #expect(
-            result.extractedText == "1,234.56",
-            "full=\(result.extractedText) maskOnly=\(maskOnly.extractedText)"
-        )
+        #expect(decode(image).extractedText == "1,234.56")
     }
 
     @Test func glareAndBothPolaritiesDecodeTheSameDigits() {
