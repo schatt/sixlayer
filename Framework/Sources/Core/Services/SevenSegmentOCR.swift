@@ -1112,9 +1112,10 @@ private struct GrayBuffer {
         let edgeSlack = max(2, min(8, box.height / 12))
         let nearEdge = box.minX <= edgeSlack || box.maxX >= buffer.width - edgeSlack
         guard nearEdge, box.width * 4 < box.height else { return false }
-        let chrome = Int(buffer.cornerFill())
-        guard let level = boxMedianLevel(buffer, box: box) else { return false }
-        return abs(level - chrome) <= inkMargin
+        // Temporary #670: geometry only — confirm near-edge slack catches the
+        // strips before restoring the chrome-level comparison.
+        _ = buffer
+        return true
     }
 
     private static func score(_ buffer: GrayBuffer) -> Int {
