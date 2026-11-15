@@ -105,10 +105,6 @@ public enum SevenSegmentOCR {
     /// Test probe for the IMG_7493 both-direction gate (#666 / #661).
     nonisolated(unsafe) public static var useFlatReadArbitration = true
 
-    /// When false, return the mask/legacy read without lattice arbitration.
-    /// Test probe for #670 pale-comma path isolation.
-    nonisolated(unsafe) public static var useLatticeArbitration = true
-
     /// Pixel rect of the digit panel (glass plus a bezel margin) in image
     /// coordinates, or `nil` when no sealed panel is found.
     ///
@@ -180,7 +176,6 @@ public enum SevenSegmentOCR {
             }
         }
         let legacy = result(fragments)
-        guard useLatticeArbitration else { return legacy }
         // Photographed panels: italic digits, segment gaps, reflections and
         // uneven light defeat the fixed-pixel path above. The lattice reader
         // measures everything from the panel itself (#576 real photos).
@@ -1109,15 +1104,17 @@ private struct GrayBuffer {
         character == "." || character == "," || character == ":" || character == "-"
     }
 
-    /// Tall/narrow ink flush with the crop edge whose level matches the
-    /// corner chrome — leftover bezel after a comma joins the frame (#670).
+    /// Tall/narrow ink near the crop edge whose level matches the corner
+    /// chrome — leftover bezel after a comma joins the frame (#670).
+    /// Remnants often sit a few pixels in (bezelWidth 8 → strips at minX=4 /
+    /// maxX=width-4), so a 1-pixel flush check misses them.
     private static func isEdgeChromeStrip(_ box: PixelBox, buffer: GrayBuffer) -> Bool {
-        let flush = box.minX <= 1 || box.maxX >= buffer.width - 2
-        guard flush, box.width * 4 < box.height else { return false }
-        // Temporary #670: any flush tall/narrow edge strip — confirm the
-        // classify path sees these boxes before tightening the chrome gate.
-        _ = buffer
-        return true
+        let edgeSlack = max(2, min(8, box.height / 12))
+        let nearEdge = box.minX <= edgeSlack || box.maxX >= buffer.width - edgeSlack
+        guard nearEdge, box.width * 4 < box.height else { return false }
+        let chrome = Int(buffer.cornerFill())
+        guard let level = boxMedianLevel(buffer, box: box) else { return false }
+        return abs(level - chrome) <= inkMargin
     }
 
     private static func score(_ buffer: GrayBuffer) -> Int {
@@ -1574,10 +1571,7 @@ private struct Cell {
 private func recognizedGroups(_ cells: [Cell], width: Int, height: Int) -> [OCRRecognizedText] {
     let pieces = GrayBuffer.group(cells)
     return pieces.map { group in
-        // Temporary #670 cell-box trace.
-        let text = group.map { cell in
-            "\(cell.character)[\(cell.minX),\(cell.minY),\(cell.box.width)x\(cell.box.height) w=\(width)]"
-        }.joined(separator: " ")
+        let text = String(group.map(\.character))
         let confidence = group.map(\.confidence).min() ?? 0
         let box = reCropGlassBox(
             minX: group.map(\.minX).min() ?? 0,
