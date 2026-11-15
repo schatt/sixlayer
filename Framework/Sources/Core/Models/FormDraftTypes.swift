@@ -54,9 +54,19 @@ public struct FormDraft: Codable, Equatable {
 
 // MARK: - AnyCodable Helper
 
-/// Type-erased Codable wrapper for storing Any values in Codable structures
+/// Type-erased Codable wrapper for storing Any values in Codable structures.
+///
+/// Non-JSON form value types are stored as single-key tagged objects so round-trips restore
+/// the original type rather than `String(describing:)` (#672 Date, #674 URL / Data / UUID).
+/// Bare strings that look like those values stay `String`.
 public struct AnyCodable: Codable, Equatable {
     public let value: Any
+
+    /// Reserved keys for typed boxes in draft JSON. Not normal form field value shapes.
+    static let dateTagKey = "__sixlayer_date__"
+    static let urlTagKey = "__sixlayer_url__"
+    static let dataTagKey = "__sixlayer_data__"
+    static let uuidTagKey = "__sixlayer_uuid__"
     
     public init(_ value: Any) {
         self.value = value
@@ -76,7 +86,11 @@ public struct AnyCodable: Codable, Equatable {
         } else if let array = try? container.decode([AnyCodable].self) {
             value = array.map { $0.value }
         } else if let dict = try? container.decode([String: AnyCodable].self) {
-            value = dict.mapValues { $0.value }
+            if let tagged = Self.value(fromTaggedDictionary: dict) {
+                value = tagged
+            } else {
+                value = dict.mapValues { $0.value }
+            }
         } else {
             throw DecodingError.dataCorruptedError(
                 in: container,
@@ -97,6 +111,14 @@ public struct AnyCodable: Codable, Equatable {
             try container.encode(double)
         case let string as String:
             try container.encode(string)
+        case let date as Date:
+            try container.encode([Self.dateTagKey: AnyCodable(Self.iso8601String(from: date))])
+        case let url as URL:
+            try container.encode([Self.urlTagKey: AnyCodable(url.absoluteString)])
+        case let data as Data:
+            try container.encode([Self.dataTagKey: AnyCodable(data.base64EncodedString())])
+        case let uuid as UUID:
+            try container.encode([Self.uuidTagKey: AnyCodable(uuid.uuidString)])
         case let array as [Any]:
             try container.encode(array.map { AnyCodable($0) })
         case let dict as [String: Any]:
@@ -108,8 +130,42 @@ public struct AnyCodable: Codable, Equatable {
     }
     
     public static func == (lhs: AnyCodable, rhs: AnyCodable) -> Bool {
-        // Simple equality check - for more complex types, this may need enhancement
+        if let left = lhs.value as? Date, let right = rhs.value as? Date {
+            return abs(left.timeIntervalSince1970 - right.timeIntervalSince1970) < 0.001
+        }
+        if let left = lhs.value as? URL, let right = rhs.value as? URL {
+            return left == right
+        }
+        if let left = lhs.value as? Data, let right = rhs.value as? Data {
+            return left == right
+        }
+        if let left = lhs.value as? UUID, let right = rhs.value as? UUID {
+            return left == right
+        }
         return String(describing: lhs.value) == String(describing: rhs.value)
+    }
+
+    private static func value(fromTaggedDictionary dict: [String: AnyCodable]) -> Any? {
+        guard dict.count == 1, let (key, boxed) = dict.first else { return nil }
+        guard let tagged = boxed.value as? String else { return nil }
+        switch key {
+        case dateTagKey:
+            return DynamicFormStoredDateValue.date(fromStoredValue: tagged)
+        case urlTagKey:
+            return URL(string: tagged)
+        case dataTagKey:
+            return Data(base64Encoded: tagged)
+        case uuidTagKey:
+            return UUID(uuidString: tagged)
+        default:
+            return nil
+        }
+    }
+
+    private static func iso8601String(from date: Date) -> String {
+        let withFraction = ISO8601DateFormatter()
+        withFraction.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        return withFraction.string(from: date)
     }
 }
 

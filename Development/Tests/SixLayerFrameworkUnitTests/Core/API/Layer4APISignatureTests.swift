@@ -54,6 +54,15 @@ open class Layer4APISignatureTests: BaseTestClass {
         let view = platformPhotoPicker_L4(onImageSelected: callback)
         BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "UnifiedImagePicker")
     }
+
+    /// BUSINESS PURPOSE: Free-function twin for Live Photo selection (#668).
+    /// TESTING SCOPE: `platformPhotoPicker_L4(onSelection:)` is globally callable and wraps UnifiedImagePicker
+    /// METHODOLOGY: Same root-view check as the image-only free function
+    @Test @MainActor func testPlatformPhotoPicker_L4_onSelection_APISignature() {
+        let callback: (PlatformPhotoSelection) -> Void = { _ in }
+        let view = platformPhotoPicker_L4(onSelection: callback)
+        BaseTestClass.expectViewSubjectTypeContains(view, rootViewName: "UnifiedImagePicker")
+    }
     
     /// BUSINESS PURPOSE: Verify platformCameraInterface_L4 API signature exists and works
     /// TESTING SCOPE: Tests that platformCameraInterface_L4 accepts correct callback signature

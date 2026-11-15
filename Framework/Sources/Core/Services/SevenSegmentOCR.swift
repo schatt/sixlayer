@@ -3696,20 +3696,78 @@ private func columnBridgesGap(_ mask: Mask, x: Int, valleys: [(Int, Int)]) -> Bo
     }
 }
 
+/// Test probe for the shared column span that rowcrops use (#612).
+/// Digit columns live in the row bands; a valley streak sits only between them.
+enum ReadingSpanProbe {
+    static func span(
+        width: Int,
+        height: Int,
+        digitColumns: [(Int, Int)],
+        valleyStreak: (Int, Int),
+        bands: [(Int, Int)]
+    ) -> (Int, Int)? {
+        guard width > 0, height > 0, bands.count >= 2 else { return nil }
+        var bits = [Bool](repeating: false, count: width * height)
+        for column in digitColumns {
+            let x0 = max(0, column.0)
+            let x1 = min(width, column.1)
+            guard x1 > x0 else { continue }
+            for band in bands {
+                let y0 = max(0, band.0)
+                let y1 = min(height, band.1)
+                guard y1 > y0 else { continue }
+                for y in y0..<y1 {
+                    for x in x0..<x1 {
+                        bits[y * width + x] = true
+                    }
+                }
+            }
+        }
+        let valleyTop = bands[0].1
+        let valleyBottom = bands[1].0
+        if valleyBottom > valleyTop {
+            let x0 = max(0, valleyStreak.0)
+            let x1 = min(width, valleyStreak.1)
+            if x1 > x0 {
+                for y in valleyTop..<valleyBottom {
+                    for x in x0..<x1 {
+                        bits[y * width + x] = true
+                    }
+                }
+            }
+        }
+        return readingSpan(Mask(bits: bits, width: width, height: height), bands: bands)
+    }
+}
+
 /// Columns that hold digit ink and stay empty in the gap between rows.
 /// A strip that is ink on that gap is the bezel edge, not a stroke.
 private func readingSpan(_ mask: Mask, bands: [(Int, Int)]) -> (Int, Int)? {
     let width = mask.width
     let height = mask.height
     guard width > 0, height > 0, bands.count >= 2 else { return nil }
-    let valleys = rowValleys(bands)
+    let valleys = zip(bands, bands.dropFirst()).compactMap { pair -> (Int, Int)? in
+        let top = pair.0.1
+        let bottom = pair.1.0
+        guard bottom > top else { return nil }
+        return (top, bottom)
+    }
     guard !valleys.isEmpty else { return nil }
     var keep = [Bool](repeating: false, count: width)
     var edgeColumn = [Bool](repeating: false, count: width)
     var columnInk = [Int](repeating: 0, count: width)
     for x in 0..<width {
-        // A speck in the gap is not the bezel. The edge is ink through it.
-        if columnBridgesGap(mask, x: x, valleys: valleys) {
+        let edge = valleys.contains { valley in
+            // A speck in the gap is not the bezel. The edge is ink through it.
+            let limit = max(4, (valley.1 - valley.0) / 3)
+            var count = 0
+            for y in valley.0..<valley.1 where mask.bits[y * width + x] {
+                count += 1
+                if count > limit { return true }
+            }
+            return false
+        }
+        if edge {
             edgeColumn[x] = true
             continue
         }
@@ -3728,70 +3786,64 @@ private func readingSpan(_ mask: Mask, bands: [(Int, Int)]) -> (Int, Int)? {
     }
     let active = keep.indices.filter { keep[$0] }
     guard let first = active.first else { return nil }
-    // The hole between strokes grows with the row. A fixed 16px cap keeps
-    // one cell of a tall row: scale-4 strokes sit 32px apart. A tenth of
-    // the row joins that hole. A group gap is wider than this on the
-    // small fixtures.
-    let rowHeight = bands.map { max(0, $0.1 - $0.0) }.max() ?? height
-    let gapLimit = max(8, rowHeight / 10)
-    var runs: [(start: Int, end: Int, ink: Int)] = []
+    // Contiguous ink pieces first. Intra gaps are a few pixels; a valley
+    // streak between glyph-sized pieces must not keep only the inkiest run
+    // (#612). A speck past an edge strip stays out — it is not glyph-wide.
+    var pieces: [(start: Int, end: Int, ink: Int)] = []
     var start = first
     var end = first
     var ink = columnInk[first]
-    // A one- or two-pixel valley mark sits between strokes on a tall row
-    // and was cutting the right-hand digits off the run. A real bezel is
-    // wider than that.
-    let bezelWidth = max(2, rowHeight / 100)
     for index in active.dropFirst() {
-        var edgeCount = 0
-        if index > end + 1 {
-            for x in (end + 1)..<index where edgeColumn[x] {
-                edgeCount += 1
-            }
-        }
-        let crossesBezel = edgeCount > bezelWidth
-        if index - end <= gapLimit, !crossesBezel {
+        if index == end + 1 {
             end = index
             ink += columnInk[index]
         } else {
-            runs.append((start, end + 1, ink))
+            pieces.append((start, end + 1, ink))
             start = index
             end = index
             ink = columnInk[index]
         }
     }
-    runs.append((start, end + 1, ink))
-    guard var best = runs.max(by: { $0.ink < $1.ink }) else { return nil }
-    // A ramp that begins as a speck and climbs past a stroke-width hole is
-    // the bezel, not another digit. The span stops on the last ink before
-    // that hole. Stopping on the ramp itself lets the crop pad reach it.
-    let hole = max(8, min(16, height / 40))
-    var cursor = best.end - 1
-    while cursor > best.start, columnInk[cursor] == 0 {
-        cursor -= 1
-    }
-    let blobEnd = cursor
-    while cursor > best.start, columnInk[cursor] > 0 {
-        cursor -= 1
-    }
-    let blobStart = cursor + 1
-    var gap = 0
-    while cursor - gap > best.start, columnInk[cursor - gap] == 0 {
-        gap += 1
-    }
-    if gap >= hole, blobEnd >= blobStart {
-        let blobMax = (blobStart...blobEnd).reduce(0) { max($0, columnInk[$1]) }
-        let rising = blobMax > columnInk[blobStart] * 4 && blobMax * 2 > rowHeight
-        if rising {
-            let cut = cursor - gap + 1
-            if cut > best.start, cut < best.end {
-                best.end = cut
-            }
-        }
-    }
+    pieces.append((start, end + 1, ink))
+    let runs = joinReadingSpanPieces(pieces, edgeColumn: edgeColumn, height: height)
+    guard let best = runs.max(by: { $0.ink < $1.ink }) else { return nil }
     let span = best.end - best.start
     guard span > max(12, height / 10) else { return nil }
     return (best.start, best.end)
+}
+
+/// Join contiguous ink pieces into digit-field runs. A mid-field valley
+/// streak is a bezel column between glyph-sized pieces — still one field
+/// (#612). A speck past an edge strip is not glyph-wide and stays out.
+private func joinReadingSpanPieces(
+    _ pieces: [(start: Int, end: Int, ink: Int)],
+    edgeColumn: [Bool],
+    height: Int
+) -> [(start: Int, end: Int, ink: Int)] {
+    guard let first = pieces.first else { return [] }
+    let gapLimit = max(8, min(16, height / 40))
+    // Valley streak columns drop out of the active set, so the gap between
+    // glyph pieces is the streak width plus empty glass. Allow about a cell.
+    let glyphGap = 48
+    let glyphWidth = 8
+    var runs: [(start: Int, end: Int, ink: Int)] = []
+    var current = first
+    for piece in pieces.dropFirst() {
+        let gap = piece.start - current.end
+        let crossesBezel = (current.end..<piece.start).contains { edgeColumn[$0] }
+        let widePieces = (current.end - current.start) >= glyphWidth
+            && (piece.end - piece.start) >= glyphWidth
+        let limit = widePieces ? max(gapLimit, glyphGap) : gapLimit
+        if gap <= limit, !crossesBezel || widePieces {
+            current.end = piece.end
+            current.ink += piece.ink
+        } else {
+            runs.append(current)
+            current = piece
+        }
+    }
+    runs.append(current)
+    return runs
 }
 
 /// When a row band is taller than a price crop, keep the densest window of
