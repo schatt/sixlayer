@@ -620,6 +620,15 @@ struct OCRSevenSegment576Tests {
         #expect(decode(image).extractedText == "1,234.56")
     }
 
+    /// #684: a real stem flush with the crop edge and top must not be dropped
+    /// as bezel chrome (#670 `isEdgeChromeStrip`).
+    @Test func edgeFlushOneIsStillAOne() {
+        // padding 0: the trailing 1's stem sits on the right crop edge and the
+        // top of the buffer — same geometry the chrome gate uses for bezel.
+        let image = SegmentPanel.render(rows: [atoms("21")], padding: 0)
+        #expect(decode(image).extractedText == "21")
+    }
+
     @Test func glareAndBothPolaritiesDecodeTheSameDigits() {
         let rows = [atoms("31.25")]
         let glared = decode(SegmentPanel.render(rows: rows, glare: true))
