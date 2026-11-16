@@ -64,6 +64,40 @@ public enum PlatformPhotoComponentsLayer4 {
         #endif
     }
     
+    /// Camera interface that captures Live Photos (#669). On iOS this is the
+    /// framework's capture view, which hands back the still plus the Live
+    /// Photo movie when the device supports it; with no usable camera it falls
+    /// back to the system camera (still only). macOS cameras cannot record
+    /// Live Photos, so `livePhotoMovieURL` is always nil there.
+    /// - Parameter onCancel: Optional. Called when the user cancels (Cancel on
+    ///   the capture view, or Cancel on the system-camera fallback). Omit when
+    ///   the host has its own dismiss path and does not need the control.
+    @_disfavoredOverload
+    @ViewBuilder
+    @MainActor
+    public static func platformCameraInterface_L4(
+        onSelection: @escaping (PlatformPhotoSelection) -> Void,
+        onCancel: (() -> Void)? = nil,
+        onCameraAuthorizationState: ((CameraAuthorizationState) -> Void)? = nil
+    ) -> some View {
+        #if os(iOS)
+        LivePhotoCameraInterface(
+            onSelection: onSelection,
+            onCancel: onCancel,
+            onCameraAuthorizationState: onCameraAuthorizationState
+        )
+            .automaticCompliance(named: "platformCameraInterface_L4")
+            .accessibilityIdentifier("platformCameraInterface_L4")
+        #elseif os(macOS)
+        MacCameraView(onImageCaptured: { onSelection(PlatformPhotoSelection(image: $0)) })
+            .automaticCompliance(named: "platformCameraInterface_L4")
+        #else
+        let i18n = InternationalizationService()
+        Text(i18n.localizedString(for: "SixLayerFramework.camera.notAvailable"))
+            .automaticCompliance(named: "platformCameraInterface_L4")
+        #endif
+    }
+
     // MARK: - Photo Picker Components
     
     /// Creates a unified cross-platform photo picker
@@ -361,8 +395,13 @@ import UIKit
 
 /// Hosted-tree contract for `platformCameraInterface_L4` (#254 / #255). SwiftUI modifiers on
 /// `UIViewControllerRepresentable` do not reliably propagate into the embedded picker hierarchy.
-private enum PlatformCameraInterfaceLayer4Accessibility {
+enum PlatformCameraInterfaceLayer4Accessibility {
     static let hostedTreeIdentifier = "SixLayer.main.ui.platformCameraInterface_L4.View"
+    static let cancelIdentifier = "SixLayer.main.ui.platformCameraInterface_L4.cancel"
+    static let shutterIdentifier = "SixLayer.main.ui.platformCameraInterface_L4.shutter"
+    static let usePhotoIdentifier = "SixLayer.main.ui.platformCameraInterface_L4.usePhoto"
+    static let retakeIdentifier = "SixLayer.main.ui.platformCameraInterface_L4.retake"
+    static let reviewPreviewIdentifier = "SixLayer.main.ui.platformCameraInterface_L4.reviewPreview"
     static let anchorViewTag = 0x534C4604
 }
 
@@ -420,14 +459,18 @@ func resolvedCameraPickerSourceTypeForLayer4() -> UIImagePickerController.Source
 public struct CameraView: UIViewControllerRepresentable {
     let onImageCaptured: (PlatformImage) -> Void
     let onCameraAuthorizationState: ((CameraAuthorizationState) -> Void)?
+    /// Called when the user cancels the camera (#669).
+    let onCancel: (() -> Void)?
     let dismissPolicy: SystemImagePickerDismissPolicy
     
     public init(
         onImageCaptured: @escaping (PlatformImage) -> Void,
         onCameraAuthorizationState: ((CameraAuthorizationState) -> Void)? = nil,
+        onCancel: (() -> Void)? = nil,
         dismissPolicy: SystemImagePickerDismissPolicy = .default
     ) {
         self.onImageCaptured = onImageCaptured
+        self.onCancel = onCancel
         self.onCameraAuthorizationState = onCameraAuthorizationState
         self.dismissPolicy = dismissPolicy
     }
@@ -481,6 +524,7 @@ public struct CameraView: UIViewControllerRepresentable {
                 print("[SLF CameraView] imagePickerControllerDidCancel (Cancel or system dismissed picker)")
             }
             #endif
+            parent.onCancel?()
             applySystemImagePickerDismissPolicy(
                 parent.dismissPolicy,
                 presentingViewController: picker.presentingViewController,
@@ -1054,6 +1098,23 @@ public func platformCameraInterface_L4(
 ) -> some View {
     PlatformPhotoComponentsLayer4.platformCameraInterface_L4(
         onImageCaptured: onImageCaptured,
+        onCameraAuthorizationState: onCameraAuthorizationState
+    )
+}
+
+/// Camera interface that captures Live Photos (#669). See
+/// ``PlatformPhotoComponentsLayer4/platformCameraInterface_L4(onSelection:onCancel:onCameraAuthorizationState:)``.
+@_disfavoredOverload
+@ViewBuilder
+@MainActor
+public func platformCameraInterface_L4(
+    onSelection: @escaping (PlatformPhotoSelection) -> Void,
+    onCancel: (() -> Void)? = nil,
+    onCameraAuthorizationState: ((CameraAuthorizationState) -> Void)? = nil
+) -> some View {
+    PlatformPhotoComponentsLayer4.platformCameraInterface_L4(
+        onSelection: onSelection,
+        onCancel: onCancel,
         onCameraAuthorizationState: onCameraAuthorizationState
     )
 }
