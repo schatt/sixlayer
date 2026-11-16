@@ -3,6 +3,13 @@
 Branch `wip/ocr-real-image-investigation`, from `next` at `f7af7ff05`.
 Reproduce with `Development/scripts/ssocr-linux/` (see `build.sh`).
 
+## Scenarios are examples (#600)
+
+The fuel-purchase scenario photos, and the other pump photos in this note,
+are examples of a class of panel. The reader does not grow a branch, offset,
+or threshold for a named scenario. A miss on one photo means that class is
+still unhandled. It is not a reason to drop a general rule so that file reads.
+
 ## Update: lattice reader on this branch
 
 `decode` now includes a scale-relative reader (`SevenSegmentLatticeReader`,

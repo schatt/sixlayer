@@ -98,6 +98,13 @@ jobs:
           set -euo pipefail
           ./Development/scripts/reclaim-ci-disk.sh --workspace "${{ github.workspace }}"
 
+      # Real photos for OCR tests (schatt/sixlayer-test-fixtures, private).
+      # Without the secret the script warns and those tests skip.
+      - name: Fetch private fixtures
+        env:
+          SIXLAYER_FIXTURES_TOKEN: ${{ secrets.SIXLAYER_FIXTURES_TOKEN }}
+        run: ./Development/scripts/fetch-private-fixtures.sh
+
       - name: Generate Xcode project (XcodeGen)
         run: |
           set -euo pipefail
@@ -188,6 +195,13 @@ jobs:
           set -euo pipefail
           ./Development/scripts/reclaim-ci-disk.sh --workspace "${{ github.workspace }}"
 
+      # Real photos for OCR tests (schatt/sixlayer-test-fixtures, private).
+      # Without the secret the script warns and those tests skip.
+      - name: Fetch private fixtures
+        env:
+          SIXLAYER_FIXTURES_TOKEN: ${{ secrets.SIXLAYER_FIXTURES_TOKEN }}
+        run: ./Development/scripts/fetch-private-fixtures.sh
+
       - name: Generate Xcode project (XcodeGen)
         run: |
           set -euo pipefail
@@ -256,6 +270,13 @@ jobs:
         run: |
           set -euo pipefail
           ./Development/scripts/reclaim-ci-disk.sh --workspace "${{ github.workspace }}"
+
+      # Real photos for OCR tests (schatt/sixlayer-test-fixtures, private).
+      # Without the secret the script warns and those tests skip.
+      - name: Fetch private fixtures
+        env:
+          SIXLAYER_FIXTURES_TOKEN: ${{ secrets.SIXLAYER_FIXTURES_TOKEN }}
+        run: ./Development/scripts/fetch-private-fixtures.sh
 
       - name: Generate Xcode project (XcodeGen)
         run: |
@@ -326,6 +347,13 @@ jobs:
         run: |
           set -euo pipefail
           ./Development/scripts/reclaim-ci-disk.sh --workspace "${{ github.workspace }}"
+
+      # Real photos for OCR tests (schatt/sixlayer-test-fixtures, private).
+      # Without the secret the script warns and those tests skip.
+      - name: Fetch private fixtures
+        env:
+          SIXLAYER_FIXTURES_TOKEN: ${{ secrets.SIXLAYER_FIXTURES_TOKEN }}
+        run: ./Development/scripts/fetch-private-fixtures.sh
 
       - name: Generate Xcode project (XcodeGen)
         run: |
@@ -398,6 +426,13 @@ jobs:
         run: |
           set -euo pipefail
           ./Development/scripts/reclaim-ci-disk.sh --workspace "${{ github.workspace }}"
+
+      # Real photos for OCR tests (schatt/sixlayer-test-fixtures, private).
+      # Without the secret the script warns and those tests skip.
+      - name: Fetch private fixtures
+        env:
+          SIXLAYER_FIXTURES_TOKEN: ${{ secrets.SIXLAYER_FIXTURES_TOKEN }}
+        run: ./Development/scripts/fetch-private-fixtures.sh
 
       - name: Generate Xcode project (XcodeGen)
         run: |

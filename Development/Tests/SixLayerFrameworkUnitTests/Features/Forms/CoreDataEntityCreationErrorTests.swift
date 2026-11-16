@@ -275,7 +275,8 @@ struct CoreDataEntityCreationErrorTests {
         #expect(abs(storedMedium.timeIntervalSince1970 - expectedMedium.timeIntervalSince1970) < 86_400)
     }
 
-    /// Decimal pad text and `DatePickerField`'s medium string use the locale, not POSIX (#621).
+    /// Decimal pad text and legacy medium date strings use the locale, not POSIX (#621).
+    /// Advanced pickers now persist `Date` (#618); this still covers locale string input.
     @Test func localeNumberAndMediumDateAreStored() throws {
         let locale = Locale(identifier: "de_DE")
         let context = try makeProbeContext()

@@ -752,15 +752,50 @@ public struct FileRow: View {
     }
 }
 
+// MARK: - Advanced Date Picker Storage
+
+/// Write/read path for ``DatePickerField``, ``TimePickerField``, and ``DateTimePickerField``.
+///
+/// Persists `Date` so Core Data date attributes do not depend on device locale (#618).
+/// Load still accepts legacy medium/short strings via ``DynamicFormStoredDateValue``.
+@MainActor
+enum AdvancedDatePickerFieldStorage {
+    static func persist(_ date: Date, into formState: DynamicFormState, for fieldID: String) {
+        formState.setValue(date, for: fieldID)
+    }
+
+    static func load(
+        from formState: DynamicFormState,
+        fieldID: String,
+        locale: Locale = .current
+    ) -> Date? {
+        DynamicFormStoredDateValue.date(
+            fromStoredValue: formState.fieldValues[fieldID],
+            locale: locale
+        )
+    }
+
+    static func binding(formState: DynamicFormState, fieldID: String) -> Binding<Date> {
+        Binding(
+            get: { load(from: formState, fieldID: fieldID) ?? Date() },
+            set: { persist($0, into: formState, for: fieldID) }
+        )
+    }
+}
+
 // MARK: - Date Picker Field
 
 /// Date picker field for selecting dates.
 ///
-/// **Storage contract:** Persists a **localized medium-style string** in ``DynamicFormState`` (see ``DynamicFormStoredDateValue`` and the Advanced Field Types guide for contrast with ``DynamicDateField``, which prefers `Date`).
+/// **Storage contract:** Persists a ``Date`` in ``DynamicFormState`` (same preference as
+/// ``DynamicDateField``). Legacy medium-style strings still load via ``DynamicFormStoredDateValue`` (#618).
 public struct DatePickerField: View {
     let field: DynamicFormField
     @ObservedObject var formState: DynamicFormState
-    @State private var selectedDate = Date()
+
+    private var selectedDate: Binding<Date> {
+        AdvancedDatePickerFieldStorage.binding(formState: formState, fieldID: field.id)
+    }
     
     public var body: some View {
         VStack(alignment: .leading, spacing: 4) {
@@ -770,42 +805,13 @@ public struct DatePickerField: View {
             #if os(watchOS)
             DatePicker(
                 "",
-                selection: $selectedDate,
+                selection: selectedDate,
                 displayedComponents: .date
             )
             .datePickerStyle(.wheel)
             .selfLabelingControl(label: field.label)
-            .onChange(of: selectedDate) {
-                let formatter = DateFormatter()
-                formatter.dateStyle = .medium
-                formState.setValue(formatter.string(from: selectedDate), for: field.id)
-            }
-            .onAppear {
-                if let existingValue: String = formState.getValue(for: field.id) {
-                    let formatter = DateFormatter()
-                    formatter.dateStyle = .medium
-                    if let date = formatter.date(from: existingValue) {
-                        selectedDate = date
-                    }
-                }
-            }
             #else
-            platformDateInput(selection: $selectedDate, label: field.label)
-            .onChange(of: selectedDate) {
-                let formatter = DateFormatter()
-                formatter.dateStyle = .medium
-                formState.setValue(formatter.string(from: selectedDate), for: field.id)
-            }
-            .onAppear {
-                // Load existing value if available
-                if let existingValue: String = formState.getValue(for: field.id) {
-                    let formatter = DateFormatter()
-                    formatter.dateStyle = .medium
-                    if let date = formatter.date(from: existingValue) {
-                        selectedDate = date
-                    }
-                }
-            }
+            platformDateInput(selection: selectedDate, label: field.label)
             #endif
         }
         .automaticCompliance()
@@ -816,11 +822,15 @@ public struct DatePickerField: View {
 
 /// Time picker field for selecting times.
 ///
-/// **Storage contract:** Persists a **localized short time string** in ``DynamicFormState`` (contrast: ``DynamicTimeField`` prefers `Date`).
+/// **Storage contract:** Persists a ``Date`` in ``DynamicFormState`` (same preference as
+/// ``DynamicTimeField``). Legacy short time strings still load via ``DynamicFormStoredDateValue`` (#618).
 public struct TimePickerField: View {
     let field: DynamicFormField
     @ObservedObject var formState: DynamicFormState
-    @State private var selectedTime = Date()
+
+    private var selectedTime: Binding<Date> {
+        AdvancedDatePickerFieldStorage.binding(formState: formState, fieldID: field.id)
+    }
     
     public var body: some View {
         VStack(alignment: .leading, spacing: 4) {
@@ -830,42 +840,13 @@ public struct TimePickerField: View {
             #if os(watchOS)
             DatePicker(
                 "",
-                selection: $selectedTime,
+                selection: selectedTime,
                 displayedComponents: .hourAndMinute
             )
             .datePickerStyle(.wheel)
             .selfLabelingControl(label: field.label)
-            .onChange(of: selectedTime) {
-                let formatter = DateFormatter()
-                formatter.timeStyle = .short
-                formState.setValue(formatter.string(from: selectedTime), for: field.id)
-            }
-            .onAppear {
-                if let existingValue: String = formState.getValue(for: field.id) {
-                    let formatter = DateFormatter()
-                    formatter.timeStyle = .short
-                    if let time = formatter.date(from: existingValue) {
-                        selectedTime = time
-                    }
-                }
-            }
             #else
-            platformTimeInput(selection: $selectedTime, label: field.label)
-            .onChange(of: selectedTime) {
-                let formatter = DateFormatter()
-                formatter.timeStyle = .short
-                formState.setValue(formatter.string(from: selectedTime), for: field.id)
-            }
-            .onAppear {
-                // Load existing value if available
-                if let existingValue: String = formState.getValue(for: field.id) {
-                    let formatter = DateFormatter()
-                    formatter.timeStyle = .short
-                    if let time = formatter.date(from: existingValue) {
-                        selectedTime = time
-                    }
-                }
-            }
+            platformTimeInput(selection: selectedTime, label: field.label)
             #endif
         }
         .automaticCompliance()
@@ -876,11 +857,15 @@ public struct TimePickerField: View {
 
 /// Date and time picker field for selecting both date and time.
 ///
-/// **Storage contract:** Persists a **localized medium date + short time string** in ``DynamicFormState`` (contrast: ``DynamicDateTimeField`` prefers `Date`).
+/// **Storage contract:** Persists a ``Date`` in ``DynamicFormState`` (same preference as
+/// ``DynamicDateTimeField``). Legacy medium+short strings still load via ``DynamicFormStoredDateValue`` (#618).
 public struct DateTimePickerField: View {
     let field: DynamicFormField
     @ObservedObject var formState: DynamicFormState
-    @State private var selectedDateTime = Date()
+
+    private var selectedDateTime: Binding<Date> {
+        AdvancedDatePickerFieldStorage.binding(formState: formState, fieldID: field.id)
+    }
     
     public var body: some View {
         VStack(alignment: .leading, spacing: 4) {
@@ -890,46 +875,13 @@ public struct DateTimePickerField: View {
             #if os(watchOS)
             DatePicker(
                 "",
-                selection: $selectedDateTime,
+                selection: selectedDateTime,
                 displayedComponents: [.date, .hourAndMinute]
             )
             .datePickerStyle(.wheel)
             .selfLabelingControl(label: field.label)
-            .onChange(of: selectedDateTime) {
-                let formatter = DateFormatter()
-                formatter.dateStyle = .medium
-                formatter.timeStyle = .short
-                formState.setValue(formatter.string(from: selectedDateTime), for: field.id)
-            }
-            .onAppear {
-                if let existingValue: String = formState.getValue(for: field.id) {
-                    let formatter = DateFormatter()
-                    formatter.dateStyle = .medium
-                    formatter.timeStyle = .short
-                    if let dateTime = formatter.date(from: existingValue) {
-                        selectedDateTime = dateTime
-                    }
-                }
-            }
             #else
-            platformDateTimeInput(selection: $selectedDateTime, label: field.label)
-            .onChange(of: selectedDateTime) {
-                let formatter = DateFormatter()
-                formatter.dateStyle = .medium
-                formatter.timeStyle = .short
-                formState.setValue(formatter.string(from: selectedDateTime), for: field.id)
-            }
-            .onAppear {
-                // Load existing value if available
-                if let existingValue: String = formState.getValue(for: field.id) {
-                    let formatter = DateFormatter()
-                    formatter.dateStyle = .medium
-                    formatter.timeStyle = .short
-                    if let dateTime = formatter.date(from: existingValue) {
-                        selectedDateTime = dateTime
-                    }
-                }
-            }
+            platformDateTimeInput(selection: selectedDateTime, label: field.label)
             #endif
         }
         .automaticCompliance()

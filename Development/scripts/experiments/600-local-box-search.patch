@@ -1,0 +1,89 @@
+diff --git a/Framework/Sources/Core/Services/SevenSegmentOCR.swift b/Framework/Sources/Core/Services/SevenSegmentOCR.swift
+index f3e5d403d..76729b0a0 100644
+--- a/Framework/Sources/Core/Services/SevenSegmentOCR.swift
++++ b/Framework/Sources/Core/Services/SevenSegmentOCR.swift
+@@ -5039,8 +5039,9 @@ extension SevenSegmentLatticeReader {
+         let sh = max(1, Int((Double(height) * scale).rounded()))
+         let dark = median3(boxResize(pixels, width: width, height: height, toWidth: sw, toHeight: sh), width: sw, height: sh)
+         let short = Double(min(sw, sh))
+-        var found: [(area: Int, box: (Double, Double, Double, Double))] = []
++        var found: [(local: Bool, area: Int, box: (Double, Double, Double, Double))] = []
+         for small in [dark, dark.map { 255 - $0 }] {
++        for local in [false, true] {
+         for fraction in [0.012, 0.02, 0.032] {
+             let stroke = max(2, short * fraction)
+             let k = Int(stroke * 2.4) | 1
+@@ -5051,8 +5052,33 @@ extension SevenSegmentLatticeReader {
+             for i in values.indices { contrast[i] = min(1, max(0, (closed[i] - values[i]) / max(closed[i], 8))) }
+             let selected = contrast.filter { $0 > 0.03 }
+             let cut = selected.count > 200 ? otsu(selected) : 0.2
++            let global = max(0.6 * cut, 0.08)
++            // A small panel under glare can be faint while the rest of the
++            // photo is bright and busy, and the global cut follows the busy
++            // part. The local pass cuts each tile on its own contrast too
++            // (a tile spans the longest segment kept below), never above
++            // the global cut; the stroke and cluster filters still decide.
++            var levels = [Double](repeating: global, count: contrast.count)
++            if local {
++                let tile = max(8, Int(14 * stroke))
++                for ty in stride(from: 0, to: sh, by: tile) {
++                    for tx in stride(from: 0, to: sw, by: tile) {
++                        var values: [Double] = []
++                        for y in ty..<min(sh, ty + tile) {
++                            for x in tx..<min(sw, tx + tile) where contrast[y * sw + x] > 0.03 {
++                                values.append(contrast[y * sw + x])
++                            }
++                        }
++                        guard values.count > 200 else { continue }
++                        let level = min(global, max(0.6 * otsu(values), 0.08))
++                        for y in ty..<min(sh, ty + tile) {
++                            for x in tx..<min(sw, tx + tile) { levels[y * sw + x] = level }
++                        }
++                    }
++                }
++            }
+             var ink = BitMask(width: sw, height: sh)
+-            for i in contrast.indices where contrast[i] > max(0.6 * cut, 0.08) { ink.bits[i] = true }
++            for i in contrast.indices where contrast[i] > levels[i] { ink.bits[i] = true }
+             let (labels, components) = label(ink)
+             guard !components.isEmpty else { continue }
+             let thick = thicknesses(ink, labels: labels, count: components.count)
+@@ -5080,22 +5106,29 @@ extension SevenSegmentLatticeReader {
+             for c in clusters {
+                 guard pieces[c.label].count >= 4 else { continue }
+                 guard Double(c.height) >= 4 * stroke, Double(c.width) >= 6 * stroke else { continue }
+-                found.append((area[c.label], (
++                found.append((local, area[c.label], (
+                     Double(c.minX) / scale, Double(c.minY) / scale, Double(c.maxX) / scale, Double(c.maxY) / scale
+                 )))
+             }
+         }
+         }
++        }
+         found.sort { $0.area > $1.area }
++        // Up to eight boxes from the global cut, then up to eight more from
++        // the local cut, so the local pass adds boxes without displacing any.
+         var boxes: [(Double, Double, Double, Double)] = []
+-        for item in found {
+-            let (x0, y0, x1, y1) = item.box
+-            let bw = x1 - x0, bh = y1 - y0
+-            let box = (max(0, x0 - 0.12 * bw), max(0, y0 - 0.25 * bh),
+-                       min(Double(width), x1 + 0.12 * bw), min(Double(height), y1 + 0.25 * bh))
+-            if boxes.contains(where: { overlapRatio($0, box) > 0.6 }) { continue }
+-            boxes.append(box)
+-            if boxes.count >= 8 { break }
++        for local in [false, true] {
++            var added = 0
++            for item in found where item.local == local {
++                let (x0, y0, x1, y1) = item.box
++                let bw = x1 - x0, bh = y1 - y0
++                let box = (max(0, x0 - 0.12 * bw), max(0, y0 - 0.25 * bh),
++                           min(Double(width), x1 + 0.12 * bw), min(Double(height), y1 + 0.25 * bh))
++                if boxes.contains(where: { overlapRatio($0, box) > 0.6 }) { continue }
++                boxes.append(box)
++                added += 1
++                if added >= 8 { break }
++            }
+         }
+         return boxes.map { (Int($0.0), Int($0.1), Int($0.2.rounded(.up)), Int($0.3.rounded(.up))) }
+     }
