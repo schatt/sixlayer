@@ -480,7 +480,6 @@ public struct OCRResult: Sendable {
     public let recognizedTexts: [OCRRecognizedText]
 
     /// Panel actually used for decode, in original-image normalized top-left coords (#677).
-    /// Stub ignores the init value until green so deliberate-red tests observe nil.
     public let chosenPanelRect: DisplayOCRNormalizedBox?
     
     public init(
@@ -512,7 +511,7 @@ public struct OCRResult: Sendable {
         self.adjustedFields = adjustedFields
         self.uncategorizedExtractions = uncategorizedExtractions
         self.recognizedTexts = recognizedTexts
-        self.chosenPanelRect = nil
+        self.chosenPanelRect = chosenPanelRect
         
         // Set validation properties - use provided value or compute from confidence
         self.isValid = isValid ?? (confidence >= 0.5)
