@@ -284,4 +284,40 @@ public enum DisplayOCRLabBulkCheck {
             newFails: newFails.sorted()
         )
     }
+
+    /// Score precomputed OCR results against labels (unit-test / post-OCR path).
+    public static func evaluate(
+        examples: [(folderName: String, label: DisplayOCRTrainingLabel)],
+        resultsByExampleId: [String: OCRResult],
+        skippedUnreadableCount: Int = 0,
+        contextMode: String = "app",
+        localizationIoUThreshold: Double = DisplayOCRLabEvaluation.defaultLocalizationIoUThreshold
+    ) -> DisplayOCRLabRunSummary {
+        // Deliberate-red stub until green (#677).
+        DisplayOCRLabRunSummary(
+            passCount: 0,
+            failCount: 99,
+            skipCount: 0,
+            contextMode: nil,
+            localizationIoUThreshold: localizationIoUThreshold,
+            examples: []
+        )
+    }
+
+    /// App-mode bulk check: invoke the injected library OCR entry for each package.
+    public static func runAppMode(
+        examples: [(folderName: String, package: DisplayOCRTrainingPackage)],
+        localizationIoUThreshold: Double = DisplayOCRLabEvaluation.defaultLocalizationIoUThreshold,
+        process: @escaping @Sendable (PlatformImage, OCRContext) async throws -> OCRResult
+    ) async throws -> DisplayOCRLabRunSummary {
+        // Deliberate-red stub: never call `process` until green (#677).
+        DisplayOCRLabRunSummary(
+            passCount: 0,
+            failCount: 99,
+            skipCount: 0,
+            contextMode: nil,
+            localizationIoUThreshold: localizationIoUThreshold,
+            examples: []
+        )
+    }
 }
