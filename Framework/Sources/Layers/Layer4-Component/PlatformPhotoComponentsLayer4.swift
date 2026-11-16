@@ -458,10 +458,10 @@ func stillOnlyCameraViewForLayer4(
     onCancel: (() -> Void)? = nil,
     onCameraAuthorizationState: ((CameraAuthorizationState) -> Void)? = nil
 ) -> CameraView {
-    // RED STUB (#681): onCancel is accepted and ignored.
     CameraView(
         onImageCaptured: onImageCaptured,
-        onCameraAuthorizationState: onCameraAuthorizationState
+        onCameraAuthorizationState: onCameraAuthorizationState,
+        onCancel: onCancel
     )
 }
 
