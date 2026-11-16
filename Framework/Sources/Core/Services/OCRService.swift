@@ -502,7 +502,6 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
         // Get hints file data if entityName is provided
         var hintsRanges: [String: ValueRange] = [:]
         var hintsCalculationGroups: [String: [CalculationGroup]] = [:]
-        var hintsFractionDigits: [String: Int] = [:]
         if let entityName = context.entityName {
             let loader = FileBasedDataHintsLoader()
             let hintsResult = loader.loadHintsResult(for: entityName, locale: locale)
@@ -513,17 +512,9 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
                 if let groups = fieldHints.calculationGroups {
                     hintsCalculationGroups[fieldId] = groups
                 }
-                if let digits = fieldHints.fractionDigits {
-                    hintsFractionDigits[fieldId] = digits
-                }
             }
         }
-        // Runtime / fixture overrides win over hints-file format priors (#678).
-        if let overrides = context.fieldFractionDigits {
-            for (fieldId, digits) in overrides {
-                hintsFractionDigits[fieldId] = digits
-            }
-        }
+        let hintsFractionDigits = Self.resolvedFractionDigits(context: context, locale: locale)
         
         let jointResult = OCRJointDecimalCorrection.apply(
             to: correctedData,
@@ -625,7 +616,7 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
 
                 // Check 1b: Prefer the configured fraction-digit shape (#678).
                 if isValid, let preferredDigits = hintsFractionDigits[fieldId], decimalPos == preferredDigits {
-                    score += 20.0
+                    score += Self.fractionDigitMatchScoreBonus
                 }
                 
                 // Check 2: Calculation group validation
@@ -686,6 +677,31 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
         }
         
         return (correctedData, adjustments)
+    }
+
+    /// Score bonus when a decimal-placement candidate matches preferred fraction digits (#678).
+    fileprivate static let fractionDigitMatchScoreBonus: Double = 20
+
+    /// Hints-file fraction digits, overridden by ``OCRContext/fieldFractionDigits`` (#678).
+    fileprivate static func resolvedFractionDigits(
+        context: OCRContext,
+        locale: Locale
+    ) -> [String: Int] {
+        var digits: [String: Int] = [:]
+        if let entityName = context.entityName {
+            let hintsResult = FileBasedDataHintsLoader().loadHintsResult(for: entityName, locale: locale)
+            for (fieldId, fieldHints) in hintsResult.fieldHints {
+                if let count = fieldHints.fractionDigits {
+                    digits[fieldId] = count
+                }
+            }
+        }
+        if let overrides = context.fieldFractionDigits {
+            for (fieldId, count) in overrides {
+                digits[fieldId] = count
+            }
+        }
+        return digits
     }
     
     /// Infer expected ranges for fields that don't have explicit ranges but have calculation groups
