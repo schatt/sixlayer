@@ -1392,11 +1392,28 @@ private struct GrayBuffer {
         let edgeSlack = max(2, min(8, box.height / 12))
         let nearSide = box.minX <= edgeSlack || box.maxX >= buffer.width - edgeSlack
         guard nearSide, box.width * 4 < box.height else { return false }
-        guard box.minY <= 1 || box.maxY >= buffer.height - 2 else { return false }
+        let touchesTB = box.minY <= 1 || box.maxY >= buffer.height - 2
+        guard touchesTB else { return false }
         let trulyFlush = box.minX <= 1 || box.maxX >= buffer.width - 2
+        let level = boxMedianLevel(buffer, box: box)
+        let c4 = fourCornerChromeMedian(buffer)
+        let cf = Int(buffer.cornerFill())
+        // Temporary #684 probe — levels for flush vs inset remnants.
+        let probe = "box=\(box.minX),\(box.minY),\(box.width)x\(box.height) flush=\(trulyFlush) level=\(level.map(String.init) ?? "nil") c4=\(c4) cf=\(cf) slack=\(edgeSlack) w=\(buffer.width) h=\(buffer.height)\n"
+        if let data = probe.data(using: .utf8) {
+            let url = URL(fileURLWithPath: "/tmp/684-chrome-probe.log")
+            if FileManager.default.fileExists(atPath: url.path),
+               let handle = try? FileHandle(forWritingTo: url) {
+                defer { try? handle.close() }
+                try? handle.seekToEnd()
+                try? handle.write(contentsOf: data)
+            } else {
+                try? data.write(to: url)
+            }
+        }
         guard trulyFlush else { return true }
-        guard let level = boxMedianLevel(buffer, box: box) else { return false }
-        return abs(level - fourCornerChromeMedian(buffer)) <= inkMargin
+        guard let level else { return false }
+        return abs(level - c4) <= inkMargin
     }
 
     /// Median of the four corner pixels. Bezel frames put chrome on every
