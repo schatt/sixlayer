@@ -70,9 +70,16 @@ public struct DisplayOCRNormalizedBox: Codable, Sendable, Equatable, Hashable {
         ).unitClamped
     }
 
-    /// Intersection-over-union of two normalized boxes (#677). Stub returns 0 until green.
+    /// Intersection-over-union of two normalized boxes (#677).
     public func iou(_ other: DisplayOCRNormalizedBox) -> Double {
-        0
+        let areaSelf = width * height
+        let areaOther = other.width * other.height
+        guard areaSelf > 0, areaOther > 0 else { return 0 }
+        guard let overlap = intersection(other) else { return 0 }
+        let intersectionArea = overlap.width * overlap.height
+        let unionArea = areaSelf + areaOther - intersectionArea
+        guard unionArea > 0 else { return 0 }
+        return intersectionArea / unionArea
     }
 
     /// Top-left pixel rect. Nil when the box misses the image.
@@ -142,7 +149,8 @@ public struct DisplayOCRTrainingLabel: Codable, Sendable, Equatable {
     /// Stable example id for summary/baseline join (#677). Optional for legacy labels.
     public var exampleId: String?
     /// Extra image file names beyond ``imageFileName`` (#677 multi-image).
-    public var additionalImageFileNames: [String]
+    /// Optional so legacy `label.json` without the key still decodes.
+    public var additionalImageFileNames: [String]?
     /// Expected structured field id → value for bulk check (#677).
     public var expectedStructuredFields: [String: String]?
     /// Entity/hints name for app-mode OCR context (#677).
@@ -156,7 +164,7 @@ public struct DisplayOCRTrainingLabel: Codable, Sendable, Equatable {
 
     /// Primary plus any additional image names (#677).
     public var imageFileNames: [String] {
-        [imageFileName] + additionalImageFileNames
+        [imageFileName] + (additionalImageFileNames ?? [])
     }
 
     public init(
@@ -184,14 +192,13 @@ public struct DisplayOCRTrainingLabel: Codable, Sendable, Equatable {
         self.sourceName = sourceName
         self.panel = panel
         self.rows = rows
-        // Stub (#677 red): drop new fields so round-trip fails until green.
-        self.exampleId = nil
-        self.additionalImageFileNames = []
-        self.expectedStructuredFields = nil
-        self.entityName = nil
-        self.fieldAverages = nil
-        self.fieldAverageMaxPercentDeviation = nil
-        self.fieldFractionDigits = nil
+        self.exampleId = exampleId
+        self.additionalImageFileNames = additionalImageFileNames.isEmpty ? nil : additionalImageFileNames
+        self.expectedStructuredFields = expectedStructuredFields
+        self.entityName = entityName
+        self.fieldAverages = fieldAverages
+        self.fieldAverageMaxPercentDeviation = fieldAverageMaxPercentDeviation
+        self.fieldFractionDigits = fieldFractionDigits
     }
 }
 
