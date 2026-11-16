@@ -99,6 +99,14 @@ public struct DisplayOCRLabRunSummary: Codable, Sendable, Equatable {
         self.sixLayerVersion = sixLayerVersion
         self.xcodeVersion = xcodeVersion
     }
+
+    /// Copy with an adjusted library-skip count (unreadable packages) (#677).
+    public func addingSkipCount(_ extraSkips: Int) -> DisplayOCRLabRunSummary {
+        guard extraSkips != 0 else { return self }
+        var copy = self
+        copy.skipCount += extraSkips
+        return copy
+    }
 }
 
 /// Dual-axis scoring and authoring assist (#677).
@@ -410,21 +418,7 @@ public enum DisplayOCRLabBulkCheck {
             process: runner
         )
         // Unreadable packages are library skips, not OCR fails (#677).
-        if !library.rejections.isEmpty {
-            summary = DisplayOCRLabRunSummary(
-                passCount: summary.passCount,
-                failCount: summary.failCount,
-                skipCount: summary.skipCount + library.rejections.count,
-                contextMode: summary.contextMode,
-                localizationIoUThreshold: summary.localizationIoUThreshold,
-                examples: summary.examples,
-                timestamp: summary.timestamp,
-                operatingSystem: summary.operatingSystem,
-                sixLayerVersion: summary.sixLayerVersion,
-                xcodeVersion: summary.xcodeVersion
-            )
-        }
-        return summary
+        return summary.addingSkipCount(library.rejections.count)
     }
 
     /// Human-readable per-example lines for CLI / lab console.
