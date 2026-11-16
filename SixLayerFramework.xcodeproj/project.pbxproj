@@ -352,6 +352,7 @@
 		16463253B0271E8C7E4D0DAC /* DataIntrospectionCoreDataTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39254C5791805FB88FB7599F /* DataIntrospectionCoreDataTests.swift */; };
 		165D460D4130C5BF62F50F87 /* PlatformMacOSNavigationStackEnhancementsLayer6.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE0A4860E5F479B7BC75895B /* PlatformMacOSNavigationStackEnhancementsLayer6.swift */; };
 		1672252F8F1768034D321F31 /* CrossPlatformOptimizationLayer6UnitTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F44B5F019FEF99950984EBC0 /* CrossPlatformOptimizationLayer6UnitTests.swift */; };
+		16879B509822ACC090F7D7AE /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B872F45DB96C9762A40C248 /* main.swift */; };
 		1697F5BAA117B15991D58805 /* CoreDataTestUtilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 959A6C6D0F2BEA9209FB1A6C /* CoreDataTestUtilities.swift */; };
 		169E254452D5DECD9527A3E3 /* PlatformFrameHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 036D2C260CEA41F952B1227C /* PlatformFrameHelpers.swift */; };
 		16A3F759D09C77FE64E2A21C /* SevenSegmentOCR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B76F2AC592AE7BC6F3248CF /* SevenSegmentOCR.swift */; };
@@ -2859,6 +2860,7 @@
 		BAC71F9327E590DF0A7E0285 /* PlatformLogicTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E13DE16348037FAE8DA9D771 /* PlatformLogicTests.swift */; };
 		BAE1D4F2E16FDB5FA7A51C56 /* PlatformSplitViewOptimizationsLayer5Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FB11BF00ECE78AA958452B3 /* PlatformSplitViewOptimizationsLayer5Tests.swift */; };
 		BAF74D20D3688C314BF16C01 /* PlatformSplitViewLayer4.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C715F5FCDC823C599F4D5DD /* PlatformSplitViewLayer4.swift */; };
+		BB03933FC3622728C255DB92 /* SixLayerFramework.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27FFFF642D6993C525230D91 /* SixLayerFramework.framework */; };
 		BB095166BBD791A5FBA2D598 /* DynamicFormStoredNumericDisplay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 734145FE59F0374C3CF5B4FD /* DynamicFormStoredNumericDisplay.swift */; };
 		BB19AA69E5F16CD12FA8397F /* MockOCRServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2384310ED2E0DD996B528FD7 /* MockOCRServiceTests.swift */; };
 		BB1B4E4B6F7857F0909FC557 /* AccessibilityPreferenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A588D8D0B32D7BE7CBBCCE8F /* AccessibilityPreferenceTests.swift */; };
@@ -4074,6 +4076,13 @@
 			remoteGlobalIDString = 8BE142B2785E0C64142DC201;
 			remoteInfo = SixLayerFrameworkTestApp_macOS;
 		};
+		8BCA1572ED6433E6C1F44AAD /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F968E7A969F510364C78694D /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D6C0DC22A61DCC79BE816615;
+			remoteInfo = SixLayerFramework_macOS;
+		};
 		99FA94D1E3E6233A92726F13 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = F968E7A969F510364C78694D /* Project object */;
@@ -4817,6 +4826,7 @@
 		6FB4369E58E82741C40A34E4 /* HintsFileColorConfigurationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HintsFileColorConfigurationTests.swift; sourceTree = "<group>"; };
 		6FD29C0E22A9BC103BC29D0D /* NotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationService.swift; sourceTree = "<group>"; };
 		6FDE694C32F3A78EE7652879 /* ComprehensiveCapabilityMatrixTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComprehensiveCapabilityMatrixTests.swift; sourceTree = "<group>"; };
+		6FE8B1238E0C33273D394293 /* DisplayOCRLabBulkCheck */ = {isa = PBXFileReference; includeInIndex = 0; path = DisplayOCRLabBulkCheck; sourceTree = BUILT_PRODUCTS_DIR; };
 		702B99BE45D957F236B69B9A /* HIGMinimumTypographyPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HIGMinimumTypographyPolicy.swift; sourceTree = "<group>"; };
 		704E66DC29A47D0655542BCD /* PlatformStylingLayer4Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformStylingLayer4Tests.swift; sourceTree = "<group>"; };
 		706465D4107006975FD4F694 /* NavigationStackLayer2Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationStackLayer2Tests.swift; sourceTree = "<group>"; };
@@ -4866,6 +4876,7 @@
 		7AFAC338AB65FCEAAB946B28 /* CrossPlatformOptimizationLayer6Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrossPlatformOptimizationLayer6Tests.swift; sourceTree = "<group>"; };
 		7B2FFF2B41A183C603985A1A /* AccessibilityCompatibilityUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessibilityCompatibilityUITests.swift; sourceTree = "<group>"; };
 		7B7E945BCF03BEB26CD2A28F /* PlatformDataScannerLayer4Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformDataScannerLayer4Tests.swift; sourceTree = "<group>"; };
+		7B872F45DB96C9762A40C248 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		7B873104285752139CEE4689 /* OCRJointDecimalCorrection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OCRJointDecimalCorrection.swift; sourceTree = "<group>"; };
 		7BA2071B3DF78BA54814C26A /* GreenPhaseTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GreenPhaseTest.swift; sourceTree = "<group>"; };
 		7BE0A4EC9D131C7148513675 /* LayoutDecisionReasoningTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayoutDecisionReasoningTests.swift; sourceTree = "<group>"; };
@@ -5558,6 +5569,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		BC6F14A7E8157AC5D6D0EE91 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BB03933FC3622728C255DB92 /* SixLayerFramework.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		C98827482E9BE53FAD45EEFD /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -5935,6 +5954,7 @@
 		24B581D7E12CAA2F107B5C4E /* Products */ = {
 			isa = PBXGroup;
 			children = (
+				6FE8B1238E0C33273D394293 /* DisplayOCRLabBulkCheck */,
 				BB0AE95A58B71D1DC830F771 /* DisplayOCRTraining.app */,
 				5E5DD5EFF7B7E3536E753B67 /* DisplayOCRTraining.app */,
 				70D377B257423983901CC24A /* DisplayOCRTrainingUITests_iOS.xctest */,
@@ -7102,6 +7122,15 @@
 			path = Barcode;
 			sourceTree = "<group>";
 		};
+		C90197077E6643F06AA1E020 /* DisplayOCRLabBulkCheck */ = {
+			isa = PBXGroup;
+			children = (
+				7B872F45DB96C9762A40C248 /* main.swift */,
+			);
+			name = DisplayOCRLabBulkCheck;
+			path = Development/Apps/DisplayOCRLabBulkCheck;
+			sourceTree = "<group>";
+		};
 		D1417FD070DF5BAF0868B024 /* Features */ = {
 			isa = PBXGroup;
 			children = (
@@ -7454,6 +7483,7 @@
 		E7DC5B0940E3893241AFD6C4 = {
 			isa = PBXGroup;
 			children = (
+				C90197077E6643F06AA1E020 /* DisplayOCRLabBulkCheck */,
 				5A361B994C9F84CF15809EE8 /* DisplayOCRTraining */,
 				9DABA61BE5C268946FFC091A /* DisplayOCRTrainingUITests */,
 				D1A7A75B2B24FCFF4B8A86B1 /* NavigationLayoutResolverTests */,
@@ -7883,6 +7913,25 @@
 			productName = SixLayerViewInspectorTestKit_watchOS;
 			productReference = F4784366015E7ECB7BA6672F /* SixLayerViewInspectorTestKit.framework */;
 			productType = "com.apple.product-type.framework";
+		};
+		3BEF73DCE480DFA2D8821A77 /* DisplayOCRLabBulkCheck_macOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 6A59E2C9D2C159A87A342750 /* Build configuration list for PBXNativeTarget "DisplayOCRLabBulkCheck_macOS" */;
+			buildPhases = (
+				441DAAEBBDAC594C07D7E546 /* Sources */,
+				BC6F14A7E8157AC5D6D0EE91 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				D2126869B0E603E3B3B7A4D7 /* PBXTargetDependency */,
+			);
+			name = DisplayOCRLabBulkCheck_macOS;
+			packageProductDependencies = (
+			);
+			productName = DisplayOCRLabBulkCheck_macOS;
+			productReference = 6FE8B1238E0C33273D394293 /* DisplayOCRLabBulkCheck */;
+			productType = "com.apple.product-type.tool";
 		};
 		45DA6782648DC7699205940C /* SixLayerFrameworkUnitTests_watchOS */ = {
 			isa = PBXNativeTarget;
@@ -8442,6 +8491,10 @@
 						DevelopmentTeam = Y53G7YPJSZ;
 						ProvisioningStyle = Automatic;
 					};
+					3BEF73DCE480DFA2D8821A77 = {
+						DevelopmentTeam = Y53G7YPJSZ;
+						ProvisioningStyle = Automatic;
+					};
 					45DA6782648DC7699205940C = {
 						DevelopmentTeam = Y53G7YPJSZ;
 						ProvisioningStyle = Automatic;
@@ -8604,6 +8657,7 @@
 				12DE7C62AF83961E28065CD1 /* SixLayerFrameworkTestApp_iOS */,
 				23E1783463B3B1C74FAE3753 /* DisplayOCRTraining_iOS */,
 				2A2F14883627D1F77DD38934 /* DisplayOCRTraining_macOS */,
+				3BEF73DCE480DFA2D8821A77 /* DisplayOCRLabBulkCheck_macOS */,
 				464A9A188B8CFCD43B1E34A3 /* DisplayOCRTrainingUITests_iOS */,
 				939BA026BFA4622E731D2A5D /* DisplayOCRTrainingUITests_macOS */,
 				257257DB7C1F4BC76621E0F2 /* SixLayerFrameworkExternalIntegrationTests_iOS */,
@@ -10097,6 +10151,14 @@
 				F48A051A4761FD0324A82AA4 /* TestSetupUtilities.swift in Sources */,
 				621811B09ACF31071FACA8D5 /* ViewInspectorHierarchyHelpers.swift in Sources */,
 				C5FCAFF70D2E2B77646CACF6 /* ViewInspectorTestKitImport.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		441DAAEBBDAC594C07D7E546 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				16879B509822ACC090F7D7AE /* main.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -13005,6 +13067,11 @@
 			target = B9EF9891623336451147F54F /* SixLayerViewInspectorTestKit_iOS */;
 			targetProxy = F9F3524E4BC3C7634CA01FCF /* PBXContainerItemProxy */;
 		};
+		D2126869B0E603E3B3B7A4D7 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = D6C0DC22A61DCC79BE816615 /* SixLayerFramework_macOS */;
+			targetProxy = 8BCA1572ED6433E6C1F44AAD /* PBXContainerItemProxy */;
+		};
 		E063AEE08A15B263504FA913 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = D6C0DC22A61DCC79BE816615 /* SixLayerFramework_macOS */;
@@ -13858,6 +13925,26 @@
 			};
 			name = Debug;
 		};
+		7DEC02814B32BA68DA590FD9 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = Y53G7YPJSZ;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.sixlayer.display-ocr-lab-bulk-check";
+				PRODUCT_NAME = DisplayOCRLabBulkCheck;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
 		7FC632B8E05E9805545C8F75 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -14537,6 +14624,26 @@
 			};
 			name = Release;
 		};
+		D4445CE91FEB4FC5A83714E1 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = Y53G7YPJSZ;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.sixlayer.display-ocr-lab-bulk-check";
+				PRODUCT_NAME = DisplayOCRLabBulkCheck;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
 		D682D57BF7D10B500CEDE8FC /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -14920,6 +15027,15 @@
 			buildConfigurations = (
 				275E76CB8EFC230C945973DF /* Debug */,
 				4081F2D179947386BFA55DA8 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		6A59E2C9D2C159A87A342750 /* Build configuration list for PBXNativeTarget "DisplayOCRLabBulkCheck_macOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D4445CE91FEB4FC5A83714E1 /* Debug */,
+				7DEC02814B32BA68DA590FD9 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
