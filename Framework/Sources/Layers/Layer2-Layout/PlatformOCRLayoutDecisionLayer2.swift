@@ -95,6 +95,7 @@ public func platformReceiptOCRLayout_L2(
         fieldRanges: context.fieldRanges,
         fieldAverages: context.fieldAverages,
         fieldAverageMaxPercentDeviation: context.fieldAverageMaxPercentDeviation,
+        fieldFractionDigits: context.fieldFractionDigits,
         strictVisionTextTypeFiltering: context.strictVisionTextTypeFiltering,
         visionMinimumTextHeight: context.visionMinimumTextHeight
     )
@@ -126,6 +127,7 @@ public func platformBusinessCardOCRLayout_L2(
         fieldRanges: context.fieldRanges,
         fieldAverages: context.fieldAverages,
         fieldAverageMaxPercentDeviation: context.fieldAverageMaxPercentDeviation,
+        fieldFractionDigits: context.fieldFractionDigits,
         strictVisionTextTypeFiltering: context.strictVisionTextTypeFiltering,
         visionMinimumTextHeight: context.visionMinimumTextHeight
     )
@@ -403,6 +405,7 @@ private func adjustContextForDocument(
         fieldRanges: context.fieldRanges,
         fieldAverages: context.fieldAverages,
         fieldAverageMaxPercentDeviation: context.fieldAverageMaxPercentDeviation,
+        fieldFractionDigits: context.fieldFractionDigits,
         strictVisionTextTypeFiltering: context.strictVisionTextTypeFiltering,
         visionMinimumTextHeight: context.visionMinimumTextHeight
     )

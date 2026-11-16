@@ -293,6 +293,11 @@ public struct OCRContext: Sendable {
     public var resolvedFieldAverageMaxPercentDeviation: Double {
         fieldAverageMaxPercentDeviation ?? Self.defaultFieldAverageMaxPercentDeviation
     }
+
+    /// Preferred fraction-digit counts per field for OCR decimal placement (#678).
+    /// Runtime / fixture override over hints-file ``FieldDisplayHints/fractionDigits``.
+    /// Distinct from ``fieldAverages`` (magnitude) and ``fieldRanges`` (absolute bounds).
+    public let fieldFractionDigits: [String: Int]?
     
     /// When `true`, Vision observations are filtered by ``textTypes`` using coarse ``OCRTextTypeInference``.
     /// When `false` (default), no per-line type filtering is applied so numeric and label text is not dropped
@@ -341,6 +346,7 @@ public struct OCRContext: Sendable {
         fieldRanges: [String: ValueRange]? = nil,
         fieldAverages: [String: Double]? = nil,
         fieldAverageMaxPercentDeviation: Double? = nil,
+        fieldFractionDigits: [String: Int]? = nil,
         strictVisionTextTypeFiltering: Bool = false,
         visionMinimumTextHeight: Float = OCRVisionDefaults.minimumTextHeight,
         processingMode: OCRProcessingMode = .accurate,
@@ -363,6 +369,7 @@ public struct OCRContext: Sendable {
         self.fieldRanges = fieldRanges
         self.fieldAverages = fieldAverages
         self.fieldAverageMaxPercentDeviation = fieldAverageMaxPercentDeviation
+        self.fieldFractionDigits = fieldFractionDigits
         self.strictVisionTextTypeFiltering = strictVisionTextTypeFiltering
         self.visionMinimumTextHeight = visionMinimumTextHeight
         self.processingMode = processingMode
@@ -394,6 +401,7 @@ public struct OCRContext: Sendable {
             fieldRanges: fieldRanges,
             fieldAverages: fieldAverages,
             fieldAverageMaxPercentDeviation: fieldAverageMaxPercentDeviation,
+            fieldFractionDigits: fieldFractionDigits,
             strictVisionTextTypeFiltering: strictVisionTextTypeFiltering,
             visionMinimumTextHeight: visionMinimumTextHeight,
             processingMode: processingMode,
