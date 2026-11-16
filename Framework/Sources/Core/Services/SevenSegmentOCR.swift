@@ -1402,8 +1402,23 @@ private struct GrayBuffer {
         let nearSide = box.minX <= edgeSlack || box.maxX >= buffer.width - edgeSlack
         guard nearSide, box.width * 4 < box.height else { return false }
         guard box.minY <= 1 || box.maxY >= buffer.height - 2 else { return false }
+        let level = boxMedianLevel(buffer, box: box)
+        // Temporary #684 probe
+        let delta = zip(level.map { [$0] } ?? [], strokeLevel.map { [$0] } ?? []).first.map { abs($0.0 - $0.1) }
+        let probe = "box=\(box.minX),\(box.minY),\(box.width)x\(box.height) level=\(level.map(String.init) ?? "nil") stroke=\(strokeLevel.map(String.init) ?? "nil") delta=\(delta.map(String.init) ?? "nil") margin=\(inkMargin) w=\(buffer.width) h=\(buffer.height)\n"
+        if let data = probe.data(using: .utf8) {
+            let url = URL(fileURLWithPath: "/tmp/684-stroke-probe.log")
+            if FileManager.default.fileExists(atPath: url.path),
+               let handle = try? FileHandle(forWritingTo: url) {
+                defer { try? handle.close() }
+                try? handle.seekToEnd()
+                try? handle.write(contentsOf: data)
+            } else {
+                try? data.write(to: url)
+            }
+        }
         if let strokeLevel,
-           let level = boxMedianLevel(buffer, box: box),
+           let level,
            abs(level - strokeLevel) <= inkMargin {
             return false
         }
