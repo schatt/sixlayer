@@ -626,7 +626,8 @@ struct OCRSevenSegment576Tests {
         // padding 0: the trailing 1's stem sits on the right crop edge and the
         // top of the buffer — same geometry the chrome gate uses for bezel.
         let image = SegmentPanel.render(rows: [atoms("21")], padding: 0)
-        #expect(decode(image).extractedText == "21")
+        let result = decode(image)
+        #expect(result.extractedText == "21", "got=\(result.extractedText)")
     }
 
     @Test func glareAndBothPolaritiesDecodeTheSameDigits() {
