@@ -617,8 +617,7 @@ struct OCRSevenSegment576Tests {
             bezelLevel: 123,
             bezelWidth: 8
         )
-        let result = decode(image)
-        #expect(result.extractedText == "1,234.56")
+        #expect(decode(image).extractedText == "1,234.56")
     }
 
     @Test func glareAndBothPolaritiesDecodeTheSameDigits() {

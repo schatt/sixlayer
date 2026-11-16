@@ -6,8 +6,9 @@ import Foundation
 /// **Primary contract:** `Date` — preferred for hosts mapping to Core Data / model `Date` attributes.
 ///
 /// **Interoperability:** Also accepts `TimeInterval`, ISO-8601 strings, `en_US_POSIX` medium/short
-/// strings, and those same styles in `Locale.current` (legacy values from pre-#618
-/// `DatePickerField` / `TimePickerField` / `DateTimePickerField`, which now persist `Date`).
+/// strings, those same styles in `Locale.current` (legacy values from pre-#618
+/// `DatePickerField` / `TimePickerField` / `DateTimePickerField`, which now persist `Date`),
+/// and pre-#672 form-draft `String(describing: Date)` values (e.g. `2023-11-14 22:13:20 +0000`, #675).
 /// POSIX is tried first (#615, #621).
 /// See `Framework/docs/AdvancedFieldTypesGuide.md` (date contracts) and GitHub #266.
 public enum DynamicFormStoredDateValue {
@@ -51,11 +52,25 @@ public enum DynamicFormStoredDateValue {
             return iso
         }
 
+        // Pre-#672 AnyCodable encoded Date as String(describing:), not ISO-8601 (#675).
+        if let describing = parseStringDescribingDate(trimmed) {
+            return describing
+        }
+
         if let posix = styledDate(from: trimmed, locale: posixLocale) {
             return posix
         }
         if locale.identifier == posixLocale.identifier { return nil }
         return styledDate(from: trimmed, locale: locale)
+    }
+
+    /// Foundation `Date.description` / `String(describing: Date)` shape used by draft JSON before #672.
+    /// Offset comes from the trailing `Z` token (e.g. `+0000`); no fixed formatter time zone.
+    private static func parseStringDescribingDate(_ string: String) -> Date? {
+        let formatter = DateFormatter()
+        formatter.locale = posixLocale
+        formatter.dateFormat = "yyyy-MM-dd HH:mm:ss Z"
+        return formatter.date(from: string)
     }
 
     /// Legacy medium/short styles advanced pickers wrote before #618.

@@ -24,11 +24,11 @@ The Advanced Field Types system provides a comprehensive set of sophisticated fo
 
 ### `DynamicFormState` date contracts (CustomFieldView vs advanced pickers)
 
-Both paths prefer `Date` in `fieldValues` (#618). `DynamicFormStoredDateValue` still parses legacy medium/short strings and ISO-8601 for older drafts / prefilled values.
+Both paths prefer `Date` in `fieldValues` (#618). `DynamicFormStoredDateValue` still parses legacy medium/short strings, ISO-8601, and pre-#672 form-draft `String(describing: Date)` values (e.g. `2023-11-14 22:13:20 +0000`, #675) for older drafts / prefilled values. New draft saves use tagged Date JSON via `AnyCodable` (#672); bare describing-strings are not coerced on decode.
 
 | Path | Views | Stored value |
 |------|--------|----------------|
-| **Dynamic form / `CustomFieldView`** | `DynamicDateField`, `DynamicTimeField`, `DynamicDateTimeField` | Prefer `Date` in `fieldValues[fieldId]`. Also parses legacy `String` (ISO-8601 or medium/short) and `TimeInterval`. |
+| **Dynamic form / `CustomFieldView`** | `DynamicDateField`, `DynamicTimeField`, `DynamicDateTimeField` | Prefer `Date` in `fieldValues[fieldId]`. Also parses legacy `String` (ISO-8601, medium/short, or `String(describing: Date)`) and `TimeInterval`. |
 | **Advanced composable pickers** | `DatePickerField`, `TimePickerField`, `DateTimePickerField` in `AdvancedFieldTypes.swift` | Prefer `Date` via `AdvancedDatePickerFieldStorage`. Legacy medium/short strings still load. |
 
 ### 🔍 Autocomplete Field
