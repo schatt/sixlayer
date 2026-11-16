@@ -293,14 +293,30 @@ public enum DisplayOCRLabBulkCheck {
         contextMode: String = "app",
         localizationIoUThreshold: Double = DisplayOCRLabEvaluation.defaultLocalizationIoUThreshold
     ) -> DisplayOCRLabRunSummary {
-        // Deliberate-red stub until green (#677).
-        DisplayOCRLabRunSummary(
-            passCount: 0,
-            failCount: 99,
-            skipCount: 0,
-            contextMode: nil,
+        var scores: [DisplayOCRLabExampleScore] = []
+        scores.reserveCapacity(examples.count)
+        for example in examples {
+            let exampleId = example.label.exampleId ?? example.folderName
+            let result = resultsByExampleId[exampleId] ?? OCRResult(extractedText: "", confidence: 0)
+            scores.append(
+                DisplayOCRLabEvaluation.score(
+                    result: result,
+                    label: example.label,
+                    localizationIoUThreshold: localizationIoUThreshold,
+                    folderName: example.folderName
+                )
+            )
+        }
+        let passCount = scores.filter(\.overallPass).count
+        let failCount = scores.filter { !$0.overallPass }.count
+        return DisplayOCRLabRunSummary(
+            passCount: passCount,
+            failCount: failCount,
+            skipCount: skippedUnreadableCount,
+            contextMode: contextMode,
             localizationIoUThreshold: localizationIoUThreshold,
-            examples: []
+            examples: scores,
+            timestamp: ISO8601DateFormatter().string(from: Date())
         )
     }
 
@@ -310,14 +326,22 @@ public enum DisplayOCRLabBulkCheck {
         localizationIoUThreshold: Double = DisplayOCRLabEvaluation.defaultLocalizationIoUThreshold,
         process: @escaping @Sendable (PlatformImage, OCRContext) async throws -> OCRResult
     ) async throws -> DisplayOCRLabRunSummary {
-        // Deliberate-red stub: never call `process` until green (#677).
-        DisplayOCRLabRunSummary(
-            passCount: 0,
-            failCount: 99,
-            skipCount: 0,
-            contextMode: nil,
-            localizationIoUThreshold: localizationIoUThreshold,
-            examples: []
+        var pairs: [(folderName: String, label: DisplayOCRTrainingLabel)] = []
+        var results: [String: OCRResult] = [:]
+        for example in examples {
+            let label = example.package.label
+            let exampleId = label.exampleId ?? example.folderName
+            pairs.append((example.folderName, label))
+            let image = PlatformImage(data: example.package.imagePNG) ?? PlatformImage()
+            let context = DisplayOCRLabEvaluation.makeOCRContext(from: label)
+            let ocrResult = try await process(image, context)
+            results[exampleId] = ocrResult
+        }
+        return evaluate(
+            examples: pairs,
+            resultsByExampleId: results,
+            contextMode: "app",
+            localizationIoUThreshold: localizationIoUThreshold
         )
     }
 }
