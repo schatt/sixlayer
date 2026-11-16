@@ -744,9 +744,9 @@ private struct GrayBuffer {
         // Stroke level comes from interior tall boxes so a flush real "1"
         // still matches digit ink and survives (#684).
         let tallCandidates = boxes.filter { $0.height * 100 >= maxHeight * 55 }
-        let strokeLevel = edgeStrokeLevel(tallCandidates, buffer: buffer)
+        let strokeLevel = edgeStrokeLevel(tallCandidates, buffer: buffer, mask: mask)
         let tall = tallCandidates.filter { box in
-            !isEdgeChromeStrip(box, buffer: buffer, strokeLevel: strokeLevel)
+            !isEdgeChromeStrip(box, buffer: buffer, mask: mask, strokeLevel: strokeLevel)
         }
         let digitHeight = median(tall.map(\.height)) ?? maxHeight
         let baseline = median(tall.map(\.maxY)) ?? band.1
@@ -1114,7 +1114,7 @@ private struct GrayBuffer {
         if box.height * 100 >= digitHeight * 55, box.width * 4 < box.height {
             // Crop-edge bezel chrome matches this shape and must not become a
             // digit — it also skewed the mark baseline (#670).
-            if isEdgeChromeStrip(box, buffer: buffer, strokeLevel: strokeLevel) {
+            if isEdgeChromeStrip(box, buffer: buffer, mask: mask, strokeLevel: strokeLevel) {
                 return nil
             }
             return Cell(box: box, character: "1", confidence: 1, band: bandIndex)
@@ -1392,48 +1392,60 @@ private struct GrayBuffer {
     /// Remnants often sit a few pixels in (bezelWidth 8 → strips at minX=4 /
     /// maxX=width-4), so a 1-pixel flush check misses them. Requiring a
     /// top/bottom touch alone would also drop a real edge-flush "1" (#684);
-    /// keep geometry hits whose level matches interior stroke ink.
+    /// keep geometry hits whose mask-ink level matches interior stroke ink.
     private static func isEdgeChromeStrip(
         _ box: PixelBox,
         buffer: GrayBuffer,
+        mask: Mask,
         strokeLevel: Int?
     ) -> Bool {
         let edgeSlack = max(2, min(8, box.height / 12))
         let nearSide = box.minX <= edgeSlack || box.maxX >= buffer.width - edgeSlack
         guard nearSide, box.width * 4 < box.height else { return false }
         guard box.minY <= 1 || box.maxY >= buffer.height - 2 else { return false }
-        let level = boxMedianLevel(buffer, box: box)
-        // Temporary #684 probe
-        let delta = zip(level.map { [$0] } ?? [], strokeLevel.map { [$0] } ?? []).first.map { abs($0.0 - $0.1) }
-        let probe = "box=\(box.minX),\(box.minY),\(box.width)x\(box.height) level=\(level.map(String.init) ?? "nil") stroke=\(strokeLevel.map(String.init) ?? "nil") delta=\(delta.map(String.init) ?? "nil") margin=\(inkMargin) w=\(buffer.width) h=\(buffer.height)\n"
-        if let data = probe.data(using: .utf8) {
-            let url = URL(fileURLWithPath: "/tmp/684-stroke-probe.log")
-            if FileManager.default.fileExists(atPath: url.path),
-               let handle = try? FileHandle(forWritingTo: url) {
-                defer { try? handle.close() }
-                try? handle.seekToEnd()
-                try? handle.write(contentsOf: data)
-            } else {
-                try? data.write(to: url)
-            }
-        }
         if let strokeLevel,
-           let level,
+           let level = boxMaskInkMedian(buffer, mask: mask, box: box),
            abs(level - strokeLevel) <= inkMargin {
             return false
         }
         return true
     }
 
-    /// Median ink level of tall boxes that are not near the crop side edges.
-    private static func edgeStrokeLevel(_ tall: [PixelBox], buffer: GrayBuffer) -> Int? {
+    /// Median level of mask-on pixels in tall interior boxes (glass in the
+    /// bbox must not pull the stroke reference toward the background).
+    private static func edgeStrokeLevel(
+        _ tall: [PixelBox],
+        buffer: GrayBuffer,
+        mask: Mask
+    ) -> Int? {
         let interior = tall.filter { box in
             let edgeSlack = max(2, min(8, box.height / 12))
             let nearSide = box.minX <= edgeSlack || box.maxX >= buffer.width - edgeSlack
             return !nearSide
         }
         let sample = interior.isEmpty ? tall : interior
-        return median(sample.compactMap { boxMedianLevel(buffer, box: $0) })
+        return median(sample.compactMap { boxMaskInkMedian(buffer, mask: mask, box: $0) })
+    }
+
+    private static func boxMaskInkMedian(
+        _ buffer: GrayBuffer,
+        mask: Mask,
+        box: PixelBox
+    ) -> Int? {
+        let left = max(0, box.minX)
+        let right = min(buffer.width, box.maxX)
+        let lower = max(0, box.minY)
+        let upper = min(buffer.height, box.maxY)
+        guard right > left, upper > lower else { return nil }
+        var samples: [UInt8] = []
+        samples.reserveCapacity((right - left) * (upper - lower) / 2)
+        for y in lower..<upper {
+            let start = y * buffer.width
+            for x in left..<right where mask.bits[start + x] {
+                samples.append(buffer.pixels[start + x])
+            }
+        }
+        return medianLevel(samples)
     }
 
     private static func score(_ buffer: GrayBuffer) -> Int {
