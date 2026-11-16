@@ -288,6 +288,11 @@ public struct OCRContext: Sendable {
 
     /// Legacy / default gate when ``fieldAverageMaxPercentDeviation`` is nil (#679).
     public static let defaultFieldAverageMaxPercentDeviation: Double = 50
+
+    /// Percent gate used by average-distance warnings: explicit value, or ``defaultFieldAverageMaxPercentDeviation``.
+    public var resolvedFieldAverageMaxPercentDeviation: Double {
+        fieldAverageMaxPercentDeviation ?? Self.defaultFieldAverageMaxPercentDeviation
+    }
     
     /// When `true`, Vision observations are filtered by ``textTypes`` using coarse ``OCRTextTypeInference``.
     /// When `false` (default), no per-line type filtering is applied so numeric and label text is not dropped
