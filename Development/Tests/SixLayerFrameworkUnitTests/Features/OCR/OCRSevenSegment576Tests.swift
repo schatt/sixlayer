@@ -711,6 +711,8 @@ struct OCRSevenSegment576Tests {
     /// #641: a zero-margin Vision glyph crop must read that line, not only
     /// avoid the known half-turn spoilers. Border clearing on a box tight to
     /// ink previously left `"8"` / `""` instead of `32.88` / `8.022`.
+    /// #691: must finish promptly — short crops must not upscale into a
+    /// multi-minute rotation search.
     @Test func aZeroMarginGlyphCropReadsThatLine() {
         let image = sealedBothRowsPanel()
         let full = decode(image, maximum: 0)
@@ -720,6 +722,21 @@ struct OCRSevenSegment576Tests {
             let tight = lineCrop(image, visionBox: segment.boundingBox, pad: 0)
             #expect(decode(tight, maximum: 0).extractedText == segment.text)
         }
+    }
+
+    /// #691: lattice analysis must not upscale a short wide crop to
+    /// `analysisHeight` (that exploded width into the rotation search and
+    /// hung the release macOS unit gate for 25+ minutes).
+    @Test func latticeAnalysisDoesNotUpscaleShortWideCrops() {
+        let short = sevenSegmentLatticeAnalysisSize(sourceWidth: 400, sourceHeight: 30)
+        #expect(short.height == 30)
+        #expect(short.width == 400)
+        #expect(short.scale == 1.0)
+
+        let tall = sevenSegmentLatticeAnalysisSize(sourceWidth: 1200, sourceHeight: 900)
+        #expect(tall.height == 360)
+        #expect(tall.width == 480)
+        #expect(abs(tall.scale - 0.4) < 0.0001)
     }
 
     /// #649: a modestly taller crop of the **top** sealed line must read
