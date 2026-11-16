@@ -25,6 +25,9 @@ public struct DisplayOCRTrainingView: View {
     @State private var dragStarted = false
     @State private var dragBasePanel: DisplayOCRNormalizedBox?
     @State private var dragBaseRows: [DisplayOCRNormalizedBox] = []
+    @State private var entityNameDraft = ""
+    @State private var expectedFieldsDraft = ""
+    @State private var bulkCheckRunning = false
     #if os(iOS) || os(macOS) || os(visionOS)
     @State private var photoItem: PhotosPickerItem?
     #endif
@@ -149,7 +152,95 @@ public struct DisplayOCRTrainingView: View {
                     try? session.removeLibraryFolder(named: name)
                 }
             )
+
+            evaluationControls()
         }
+        .onChange(of: session.label?.exampleId) { _, _ in
+            syncEvaluationDraftsFromLabel()
+        }
+    }
+
+    @ViewBuilder
+    private func evaluationControls() -> some View {
+        platformVStackContainer(alignment: .leading, spacing: 8) {
+            Text("Bulk check / expectations (#677)")
+                .font(.subheadline.weight(.semibold))
+                .automaticCompliance(named: "DisplayOCRTrainingEvalHeading")
+
+            TextField("entityName", text: $entityNameDraft)
+                .automaticCompliance(named: "DisplayOCRTrainingEntityName")
+                .onSubmit { session.applyEntityName(entityNameDraft) }
+
+            Text("expectedStructuredFields (field=value per line)")
+                .font(.caption)
+            TextEditor(text: $expectedFieldsDraft)
+                .frame(minHeight: 72)
+                .automaticCompliance(named: "DisplayOCRTrainingExpectedFields")
+
+            platformHStackContainer(spacing: 8) {
+                Button("Apply expectations") {
+                    session.applyEntityName(entityNameDraft)
+                    session.applyExpectedStructuredFields(parseFieldMap(expectedFieldsDraft))
+                }
+                .disabled(session.label == nil)
+                .automaticCompliance(named: "DisplayOCRTrainingApplyExpectations")
+
+                Button("Seed draft from rows") {
+                    let draft = session.seedExpectedStructuredFieldsDraft()
+                    expectedFieldsDraft = draft
+                        .sorted { $0.key < $1.key }
+                        .map { "\($0.key)=\($0.value)" }
+                        .joined(separator: "\n")
+                }
+                .disabled(session.label == nil)
+                .automaticCompliance(named: "DisplayOCRTrainingSeedExpectations")
+
+                Button(bulkCheckRunning ? "Checking…" : "Bulk check library") {
+                    bulkCheckRunning = true
+                    Task {
+                        await session.runBulkPassFailCheck()
+                        bulkCheckRunning = false
+                    }
+                }
+                .disabled(bulkCheckRunning)
+                .trainingProminentButton()
+                .automaticCompliance(named: "DisplayOCRTrainingBulkCheck")
+            }
+
+            if let text = session.bulkCheckHumanReadable {
+                Text(text)
+                    .font(.system(.caption, design: .monospaced))
+                    .textSelection(.enabled)
+                    .automaticCompliance(named: "DisplayOCRTrainingBulkCheckOutput")
+            }
+        }
+    }
+
+    private func syncEvaluationDraftsFromLabel() {
+        entityNameDraft = session.label?.entityName ?? ""
+        if let fields = session.label?.expectedStructuredFields {
+            expectedFieldsDraft = fields
+                .sorted { $0.key < $1.key }
+                .map { "\($0.key)=\($0.value)" }
+                .joined(separator: "\n")
+        } else {
+            expectedFieldsDraft = ""
+        }
+    }
+
+    private func parseFieldMap(_ raw: String) -> [String: String]? {
+        var map: [String: String] = [:]
+        for line in raw.split(whereSeparator: \.isNewline) {
+            let trimmed = line.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !trimmed.isEmpty else { continue }
+            let parts = trimmed.split(separator: "=", maxSplits: 1).map(String.init)
+            guard parts.count == 2 else { continue }
+            let key = parts[0].trimmingCharacters(in: .whitespacesAndNewlines)
+            let value = parts[1].trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !key.isEmpty else { continue }
+            map[key] = value
+        }
+        return map.isEmpty ? nil : map
     }
 
     @ViewBuilder
