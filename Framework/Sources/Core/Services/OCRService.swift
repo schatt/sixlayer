@@ -502,6 +502,7 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
         // Get hints file data if entityName is provided
         var hintsRanges: [String: ValueRange] = [:]
         var hintsCalculationGroups: [String: [CalculationGroup]] = [:]
+        var hintsFractionDigits: [String: Int] = [:]
         if let entityName = context.entityName {
             let loader = FileBasedDataHintsLoader()
             let hintsResult = loader.loadHintsResult(for: entityName, locale: locale)
@@ -512,6 +513,15 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
                 if let groups = fieldHints.calculationGroups {
                     hintsCalculationGroups[fieldId] = groups
                 }
+                if let count = fieldHints.fractionDigits {
+                    hintsFractionDigits[fieldId] = count
+                }
+            }
+        }
+        // Runtime override wins over hints-file fraction digits (#678).
+        if let overrides = context.fieldFractionDigits {
+            for (fieldId, count) in overrides {
+                hintsFractionDigits[fieldId] = count
             }
         }
         
@@ -612,6 +622,11 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
                     // No direct range, but we can still try calculation validation
                     isValid = true // Allow it if calculation validation passes
                 }
+
+                // Check 1b: Prefer the configured fraction-digit shape (#678).
+                if isValid, let preferredDigits = hintsFractionDigits[fieldId], decimalPos == preferredDigits {
+                    score += Self.fractionDigitMatchScoreBonus
+                }
                 
                 // Check 2: Calculation group validation
                 // If this field is part of calculation groups, validate by calculating related fields
@@ -672,6 +687,9 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
         
         return (correctedData, adjustments)
     }
+
+    /// Score bonus when a decimal-placement candidate matches preferred fraction digits (#678).
+    fileprivate static let fractionDigitMatchScoreBonus: Double = 20
     
     /// Infer expected ranges for fields that don't have explicit ranges but have calculation groups
     /// Example: If totalCost = pricePerGallon * gallons, and we know:
