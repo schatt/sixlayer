@@ -729,8 +729,10 @@ private struct GrayBuffer {
     /// Period = square baseline dot; comma = hanging tail (taller than wide).
     /// Hang alone is insufficient: 1/4/7 omit the bottom bar and pull the
     /// median baseline up, so a true period looks "low" (#647 / #658).
+    /// Inclusive: a pale hang that stops where it joins the bottom bezel can
+    /// land exactly on the threshold and must still read as a comma (#670).
     private static func markCharacter(box: PixelBox, baseline: Int, digitHeight: Int) -> Character {
-        let hangs = box.maxY > baseline + max(2, digitHeight / 12)
+        let hangs = box.maxY >= baseline + max(2, digitHeight / 12)
         let tallTail = box.height > box.width
         return hangs && tallTail ? "," : "."
     }
@@ -1589,10 +1591,7 @@ private struct Cell {
 private func recognizedGroups(_ cells: [Cell], width: Int, height: Int) -> [OCRRecognizedText] {
     let pieces = GrayBuffer.group(cells)
     return pieces.map { group in
-        // Temporary #670 cell-box trace.
-        let text = group.map { cell in
-            "\(cell.character)[\(cell.minX),\(cell.minY),\(cell.box.width)x\(cell.box.height) w=\(width) h=\(height)]"
-        }.joined(separator: " ")
+        let text = String(group.map(\.character))
         let confidence = group.map(\.confidence).min() ?? 0
         let box = reCropGlassBox(
             minX: group.map(\.minX).min() ?? 0,
