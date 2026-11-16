@@ -1383,13 +1383,20 @@ private struct GrayBuffer {
     /// Tall/narrow ink near the crop edge that runs into the top/bottom
     /// border — leftover bezel after a comma joins the frame (#670).
     /// Remnants often sit a few pixels in (bezelWidth 8 → strips at minX=4 /
-    /// maxX=width-4), so a 1-pixel flush check misses them. Requiring a
-    /// top/bottom touch keeps a real edge-flush stem after padding.
+    /// maxX=width-4), so a 1-pixel flush check misses them. Inset near-edge
+    /// strips drop on geometry alone. A stem truly flush with the crop edge
+    /// may be a real "1" (#684): drop it only when its level matches corner
+    /// chrome, so digit ink survives.
     private static func isEdgeChromeStrip(_ box: PixelBox, buffer: GrayBuffer) -> Bool {
         let edgeSlack = max(2, min(8, box.height / 12))
         let nearSide = box.minX <= edgeSlack || box.maxX >= buffer.width - edgeSlack
         guard nearSide, box.width * 4 < box.height else { return false }
-        return box.minY <= 1 || box.maxY >= buffer.height - 2
+        guard box.minY <= 1 || box.maxY >= buffer.height - 2 else { return false }
+        let trulyFlush = box.minX <= 1 || box.maxX >= buffer.width - 2
+        guard trulyFlush else { return true }
+        let chrome = Int(buffer.cornerFill())
+        guard let level = boxMedianLevel(buffer, box: box) else { return false }
+        return abs(level - chrome) <= inkMargin
     }
 
     private static func score(_ buffer: GrayBuffer) -> Int {
