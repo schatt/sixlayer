@@ -348,7 +348,11 @@ struct OCRLabBulkPassFail677Tests {
                     iou: 0.92,
                     failureReasons: []
                 )
-            ]
+            ],
+            timestamp: "2026-11-16T22:00:00Z",
+            operatingSystem: "macOS 15.0",
+            sixLayerVersion: "1.2.3",
+            xcodeVersion: "16.0"
         )
         let data = try JSONEncoder().encode(summary)
         let decoded = try JSONDecoder().decode(DisplayOCRLabRunSummary.self, from: data)
@@ -356,6 +360,24 @@ struct OCRLabBulkPassFail677Tests {
         #expect(decoded.contextMode == "app")
         #expect(decoded.localizationIoUThreshold == 0.5)
         #expect(decoded.passCount == 1)
+        #expect(decoded.operatingSystem == "macOS 15.0")
+        #expect(decoded.sixLayerVersion == "1.2.3")
+        #expect(decoded.xcodeVersion == "16.0")
+        #expect(decoded.timestamp == "2026-11-16T22:00:00Z")
+    }
+
+    @Test func evaluateAttachesHostRunMetadata() {
+        let summary = DisplayOCRLabBulkCheck.evaluate(
+            examples: [],
+            resultsByExampleId: [:],
+            contextMode: "app"
+        )
+        #expect(summary.timestamp != nil)
+        #expect(!(summary.timestamp ?? "").isEmpty)
+        #expect(summary.operatingSystem != nil)
+        #expect(!(summary.operatingSystem ?? "").isEmpty)
+        // sixLayerVersion / xcodeVersion are best-effort when discoverable.
+        #expect(summary.contextMode == "app")
     }
 
     @Test func authoringAssistSeedIsEditableDraftNotSilentTruth() {
