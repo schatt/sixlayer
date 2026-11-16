@@ -741,8 +741,12 @@ private struct GrayBuffer {
         let maxHeight = boxes.map(\.height).max() ?? 1
         // Edge bezel chrome is tall/narrow like a "1". Leave it out of the
         // baseline so a pale comma hang still clears markCharacter (#670).
-        let tall = boxes.filter { box in
-            box.height * 100 >= maxHeight * 55 && !isEdgeChromeStrip(box, buffer: buffer)
+        // Stroke level comes from interior tall boxes so a flush real "1"
+        // still matches digit ink and survives (#684).
+        let tallCandidates = boxes.filter { $0.height * 100 >= maxHeight * 55 }
+        let strokeLevel = edgeStrokeLevel(tallCandidates, buffer: buffer, mask: mask)
+        let tall = tallCandidates.filter { box in
+            !isEdgeChromeStrip(box, buffer: buffer, mask: mask, strokeLevel: strokeLevel)
         }
         let digitHeight = median(tall.map(\.height)) ?? maxHeight
         let baseline = median(tall.map(\.maxY)) ?? band.1
@@ -806,7 +810,8 @@ private struct GrayBuffer {
                 buffer: buffer,
                 darkInk: darkInk,
                 washAwareStems: washAwareStems,
-                sampleBand: sampleBand
+                sampleBand: sampleBand,
+                strokeLevel: strokeLevel
             )
             // Volume rowcrops are ~980px; keep traces on those for #591.
             if buffer.width >= 900 {
@@ -1054,7 +1059,8 @@ private struct GrayBuffer {
         buffer: GrayBuffer,
         darkInk: Bool,
         washAwareStems: Bool = false,
-        sampleBand: Int = 0
+        sampleBand: Int = 0,
+        strokeLevel: Int? = nil
     ) -> Cell? {
         let vertical = verticalRuns(mask, box: box, width: width)
         let splitGap = vertical.count == 2 ? vertical[1].0 - vertical[0].1 : 0
@@ -1099,7 +1105,8 @@ private struct GrayBuffer {
                     buffer: buffer,
                     darkInk: darkInk,
                     washAwareStems: washAwareStems,
-                    sampleBand: sampleBand
+                    sampleBand: sampleBand,
+                    strokeLevel: strokeLevel
                 )
             }
         }
@@ -1107,7 +1114,7 @@ private struct GrayBuffer {
         if box.height * 100 >= digitHeight * 55, box.width * 4 < box.height {
             // Crop-edge bezel chrome matches this shape and must not become a
             // digit — it also skewed the mark baseline (#670).
-            if isEdgeChromeStrip(box, buffer: buffer) {
+            if isEdgeChromeStrip(box, buffer: buffer, mask: mask, strokeLevel: strokeLevel) {
                 return nil
             }
             return Cell(box: box, character: "1", confidence: 1, band: bandIndex)
@@ -1384,12 +1391,61 @@ private struct GrayBuffer {
     /// border — leftover bezel after a comma joins the frame (#670).
     /// Remnants often sit a few pixels in (bezelWidth 8 → strips at minX=4 /
     /// maxX=width-4), so a 1-pixel flush check misses them. Requiring a
-    /// top/bottom touch keeps a real edge-flush stem after padding.
-    private static func isEdgeChromeStrip(_ box: PixelBox, buffer: GrayBuffer) -> Bool {
-        let edgeSlack = max(2, min(8, box.height / 12))
-        let nearSide = box.minX <= edgeSlack || box.maxX >= buffer.width - edgeSlack
-        guard nearSide, box.width * 4 < box.height else { return false }
-        return box.minY <= 1 || box.maxY >= buffer.height - 2
+    /// top/bottom touch alone would also drop a real edge-flush "1" (#684);
+    /// keep geometry hits whose mask-ink level matches interior stroke ink.
+    private static func isEdgeChromeStrip(
+        _ box: PixelBox,
+        buffer: GrayBuffer,
+        mask: Mask,
+        strokeLevel: Int?
+    ) -> Bool {
+        guard isNearSideEdge(box, bufferWidth: buffer.width),
+              box.width * 4 < box.height else { return false }
+        guard box.minY <= 1 || box.maxY >= buffer.height - 2 else { return false }
+        if let strokeLevel,
+           let level = boxMaskInkMedian(buffer, mask: mask, box: box),
+           abs(level - strokeLevel) <= inkMargin {
+            return false
+        }
+        return true
+    }
+
+    /// Median level of mask-on pixels in tall interior boxes (glass in the
+    /// bbox must not pull the stroke reference toward the background).
+    private static func edgeStrokeLevel(
+        _ tall: [PixelBox],
+        buffer: GrayBuffer,
+        mask: Mask
+    ) -> Int? {
+        let interior = tall.filter { !isNearSideEdge($0, bufferWidth: buffer.width) }
+        let sample = interior.isEmpty ? tall : interior
+        return median(sample.compactMap { boxMaskInkMedian(buffer, mask: mask, box: $0) })
+    }
+
+    private static func isNearSideEdge(_ box: PixelBox, bufferWidth: Int) -> Bool {
+        let slack = max(2, min(8, box.height / 12))
+        return box.minX <= slack || box.maxX >= bufferWidth - slack
+    }
+
+    private static func boxMaskInkMedian(
+        _ buffer: GrayBuffer,
+        mask: Mask,
+        box: PixelBox
+    ) -> Int? {
+        let left = max(0, box.minX)
+        let right = min(buffer.width, box.maxX)
+        let lower = max(0, box.minY)
+        let upper = min(buffer.height, box.maxY)
+        guard right > left, upper > lower else { return nil }
+        var samples: [UInt8] = []
+        samples.reserveCapacity((right - left) * (upper - lower) / 2)
+        for y in lower..<upper {
+            let start = y * buffer.width
+            for x in left..<right where mask.bits[start + x] {
+                samples.append(buffer.pixels[start + x])
+            }
+        }
+        return medianLevel(samples)
     }
 
     private static func score(_ buffer: GrayBuffer) -> Int {
