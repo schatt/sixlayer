@@ -278,11 +278,15 @@ public enum SevenSegmentOCR {
             return OCRResult(extractedText: "", confidence: 0)
         }
         let frame = gray
+        /// Panel used for decode, in original-frame pixels (#677).
+        var chosenPanelPixels: CGRect?
         if localizeDigitPanel {
             let modelRegion = panelLocator?.panelRegion(in: cgImage)
             if let modelRegion, let cropped = gray.panelCrop(modelRegion) {
+                chosenPanelPixels = modelRegion
                 gray = cropped
             } else if let region = gray.digitPanelBounds(), let cropped = gray.panelCrop(region) {
+                chosenPanelPixels = region
                 gray = cropped
             }
         }
@@ -341,11 +345,35 @@ public enum SevenSegmentOCR {
                 lattice = result(located.map { [latticeFragment($0, width: frame.width, height: frame.height)] })
             }
         }
-        return chooseLegacyOrLattice(
+        let picked = chooseLegacyOrLattice(
             fragments: fragments,
             legacy: legacy,
             lattice: lattice,
             latticeRows: rows
+        )
+        let chosenPanelRect = chosenPanelPixels.map {
+            DisplayOCRNormalizedBox(
+                pixelRect: $0,
+                imageWidth: frame.width,
+                imageHeight: frame.height
+            )
+        }
+        return OCRResult(
+            extractedText: picked.extractedText,
+            confidence: picked.confidence,
+            boundingBoxes: picked.boundingBoxes,
+            textTypes: picked.textTypes,
+            processingTime: picked.processingTime,
+            language: picked.language,
+            structuredData: picked.structuredData,
+            extractionConfidence: picked.extractionConfidence,
+            missingRequiredFields: picked.missingRequiredFields,
+            adjustedFields: picked.adjustedFields,
+            uncategorizedExtractions: picked.uncategorizedExtractions,
+            recognizedTexts: picked.recognizedTexts,
+            isValid: picked.isValid,
+            validationReason: picked.validationReason,
+            chosenPanelRect: chosenPanelRect
         )
     }
 

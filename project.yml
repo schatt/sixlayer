@@ -572,6 +572,25 @@ targets:
     dependencies:
       - target: SixLayerFramework_macOS
 
+  # CLI bulk pass/fail for Display OCR training libraries (#677). Apple-only.
+  DisplayOCRLabBulkCheck_macOS:
+    type: tool
+    platform: macOS
+    productName: DisplayOCRLabBulkCheck
+    sources:
+      - path: Development/Apps/DisplayOCRLabBulkCheck
+    settings:
+      PRODUCT_BUNDLE_IDENTIFIER: com.sixlayer.display-ocr-lab-bulk-check
+      PRODUCT_NAME: DisplayOCRLabBulkCheck
+      SWIFT_VERSION: "6.0"
+      GENERATE_INFOPLIST_FILE: YES
+      CODE_SIGN_STYLE: Automatic
+      CODE_SIGN_IDENTITY: "Apple Development"
+      DEVELOPMENT_TEAM: Y53G7YPJSZ
+      MACOSX_DEPLOYMENT_TARGET: "15.0"
+    dependencies:
+      - target: SixLayerFramework_macOS
+
   DisplayOCRTrainingUITests_iOS:
     type: bundle.ui-testing
     platform: iOS
@@ -826,6 +845,14 @@ schemes:
         - name: DisplayOCRTrainingUITests_macOS
           parallelizable: true
           randomExecutionOrder: true
+
+  SLF-macOS-DisplayOCRLabBulkCheck:
+    build:
+      targets:
+        SixLayerFramework_macOS: all
+        DisplayOCRLabBulkCheck_macOS: all
+    run:
+      executable: DisplayOCRLabBulkCheck_macOS
 
   SLF-iOS-AllTests:
     build:

@@ -70,6 +70,18 @@ public struct DisplayOCRNormalizedBox: Codable, Sendable, Equatable, Hashable {
         ).unitClamped
     }
 
+    /// Intersection-over-union of two normalized boxes (#677).
+    public func iou(_ other: DisplayOCRNormalizedBox) -> Double {
+        let areaSelf = width * height
+        let areaOther = other.width * other.height
+        guard areaSelf > 0, areaOther > 0 else { return 0 }
+        guard let overlap = intersection(other) else { return 0 }
+        let intersectionArea = overlap.width * overlap.height
+        let unionArea = areaSelf + areaOther - intersectionArea
+        guard unionArea > 0 else { return 0 }
+        return intersectionArea / unionArea
+    }
+
     /// Top-left pixel rect. Nil when the box misses the image.
     public func pixelRect(imageWidth: Int, imageHeight: Int) -> CGRect? {
         guard imageWidth > 0, imageHeight > 0, let box = unitClamped else { return nil }
@@ -134,6 +146,26 @@ public struct DisplayOCRTrainingLabel: Codable, Sendable, Equatable {
     public var sourceName: String?
     public var panel: DisplayOCRNormalizedBox
     public var rows: [DisplayOCRTrainingRow]
+    /// Stable example id for summary/baseline join (#677). Optional for legacy labels.
+    public var exampleId: String?
+    /// Extra image file names beyond ``imageFileName`` (#677 multi-image).
+    /// Optional so legacy `label.json` without the key still decodes.
+    public var additionalImageFileNames: [String]?
+    /// Expected structured field id → value for bulk check (#677).
+    public var expectedStructuredFields: [String: String]?
+    /// Entity/hints name for app-mode OCR context (#677).
+    public var entityName: String?
+    /// Per-example regional magnitude priors (#677); not pass/fail targets.
+    public var fieldAverages: [String: Double]?
+    /// Optional average-deviation percent gate (#679 via #677 label.json).
+    public var fieldAverageMaxPercentDeviation: Double?
+    /// Per-example fraction-digit format priors (#678 via #677).
+    public var fieldFractionDigits: [String: Int]?
+
+    /// Primary plus any additional image names (#677).
+    public var imageFileNames: [String] {
+        [imageFileName] + (additionalImageFileNames ?? [])
+    }
 
     public init(
         schemaVersion: Int,
@@ -143,7 +175,14 @@ public struct DisplayOCRTrainingLabel: Codable, Sendable, Equatable {
         imagePixelHeight: Int,
         sourceName: String?,
         panel: DisplayOCRNormalizedBox,
-        rows: [DisplayOCRTrainingRow]
+        rows: [DisplayOCRTrainingRow],
+        exampleId: String? = nil,
+        additionalImageFileNames: [String] = [],
+        expectedStructuredFields: [String: String]? = nil,
+        entityName: String? = nil,
+        fieldAverages: [String: Double]? = nil,
+        fieldAverageMaxPercentDeviation: Double? = nil,
+        fieldFractionDigits: [String: Int]? = nil
     ) {
         self.schemaVersion = schemaVersion
         self.origin = origin
@@ -153,6 +192,13 @@ public struct DisplayOCRTrainingLabel: Codable, Sendable, Equatable {
         self.sourceName = sourceName
         self.panel = panel
         self.rows = rows
+        self.exampleId = exampleId
+        self.additionalImageFileNames = additionalImageFileNames.isEmpty ? nil : additionalImageFileNames
+        self.expectedStructuredFields = expectedStructuredFields
+        self.entityName = entityName
+        self.fieldAverages = fieldAverages
+        self.fieldAverageMaxPercentDeviation = fieldAverageMaxPercentDeviation
+        self.fieldFractionDigits = fieldFractionDigits
     }
 }
 
@@ -539,6 +585,10 @@ public enum DisplayOCRTraining {
         label.schemaVersion = schemaVersion
         label.origin = .topLeft
         label.sourceName = sanitizedSourceName(label.sourceName)
+        // Stable join key for bulk check / baselines (#677).
+        if label.exampleId == nil || label.exampleId?.isEmpty == true {
+            label.exampleId = UUID().uuidString
+        }
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
         let json: Data
@@ -1550,6 +1600,10 @@ public final class DisplayOCRTrainingSession: ObservableObject {
     @Published public private(set) var panelTraining: DisplayOCRPanelTrainingState = .idle
     @Published public private(set) var editingFolderName: String?
     @Published public private(set) var reindexProgress: DisplayOCRTrainingReindexProgress?
+    /// Last bulk pass/fail summary from ``runBulkPassFailCheck`` (#677).
+    @Published public private(set) var bulkCheckSummary: DisplayOCRLabRunSummary?
+    @Published public private(set) var bulkCheckHumanReadable: String?
+    @Published public private(set) var bulkCheckExitCode: Int?
     public private(set) var reindexRanOnMainThread: Bool?
     /// Whether the last auto-suggest compute ran on the main thread. Test probe (#650).
     public private(set) var suggestionRanOnMainThread: Bool?
@@ -2076,6 +2130,77 @@ public final class DisplayOCRTrainingSession: ObservableObject {
         if let scanned = outcome.library {
             library = scanned
         }
+    }
+
+    /// Same evaluation core as the CLI (#677). Uses app-mode ``OCRService`` by default.
+    public func runBulkPassFailCheck(
+        process: (@Sendable (PlatformImage, OCRContext) async throws -> OCRResult)? = nil
+    ) async {
+        let root = exportRoot
+        do {
+            let summary = try await DisplayOCRLabBulkCheck.runLibrary(at: root, process: process)
+            bulkCheckSummary = summary
+            bulkCheckHumanReadable = DisplayOCRLabBulkCheck.formatHumanReadable(summary)
+            bulkCheckExitCode = DisplayOCRLabBulkCheck.exitCode(for: summary, baseline: nil)
+        } catch {
+            bulkCheckSummary = nil
+            bulkCheckHumanReadable = "Bulk check failed: \(error)"
+            bulkCheckExitCode = DisplayOCRLabBulkCheck.usageErrorExitCode
+        }
+    }
+
+    /// Seed editable expected structured fields from confirmed row text (#677). Does not write truth.
+    public func seedExpectedStructuredFieldsDraft() -> [String: String] {
+        guard let label else { return [:] }
+        let rows = label.rows.compactMap { row -> (String, String)? in
+            let text = row.confirmedText.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !text.isEmpty else { return nil }
+            // Row has no field id yet — use confirmed text as a placeholder key only when unique.
+            return (row.id.uuidString, text)
+        }
+        return DisplayOCRLabEvaluation.seedExpectedFields(fromConfirmedRows: rows)
+    }
+
+    /// Update expected structured fields on the open label (editable; write via export).
+    public func applyExpectedStructuredFields(_ fields: [String: String]?) {
+        guard var label else { return }
+        label.expectedStructuredFields = fields
+        self.label = label
+    }
+
+    public func applyEntityName(_ entityName: String?) {
+        guard var label else { return }
+        let trimmed = entityName?.trimmingCharacters(in: .whitespacesAndNewlines)
+        label.entityName = (trimmed?.isEmpty == false) ? trimmed : nil
+        self.label = label
+    }
+
+    public func applyFieldAverages(_ averages: [String: Double]?) {
+        guard var label else { return }
+        label.fieldAverages = averages
+        self.label = label
+    }
+
+    public func applyFieldAverageMaxPercentDeviation(_ percent: Double?) {
+        guard var label else { return }
+        label.fieldAverageMaxPercentDeviation = percent
+        self.label = label
+    }
+
+    public func applyFieldFractionDigits(_ digits: [String: Int]?) {
+        guard var label else { return }
+        label.fieldFractionDigits = digits
+        self.label = label
+    }
+
+    /// Extra image file names beyond the primary `image.png` (#677 multi-image schema).
+    public func applyAdditionalImageFileNames(_ names: [String]?) {
+        guard var label else { return }
+        let cleaned = (names ?? [])
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
+        label.additionalImageFileNames = cleaned.isEmpty ? nil : cleaned
+        self.label = label
     }
 
     fileprivate func noteReindexProgress(_ progress: DisplayOCRTrainingReindexProgress) {

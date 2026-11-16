@@ -25,6 +25,13 @@ public struct DisplayOCRTrainingView: View {
     @State private var dragStarted = false
     @State private var dragBasePanel: DisplayOCRNormalizedBox?
     @State private var dragBaseRows: [DisplayOCRNormalizedBox] = []
+    @State private var entityNameDraft = ""
+    @State private var expectedFieldsDraft = ""
+    @State private var fieldAveragesDraft = ""
+    @State private var fieldAverageDeviationDraft = ""
+    @State private var fieldFractionDigitsDraft = ""
+    @State private var additionalImagesDraft = ""
+    @State private var bulkCheckRunning = false
     #if os(iOS) || os(macOS) || os(visionOS)
     @State private var photoItem: PhotosPickerItem?
     #endif
@@ -149,7 +156,180 @@ public struct DisplayOCRTrainingView: View {
                     try? session.removeLibraryFolder(named: name)
                 }
             )
+
+            evaluationControls()
         }
+        .onChange(of: session.label?.exampleId) { _, _ in
+            syncEvaluationDraftsFromLabel()
+        }
+    }
+
+    @ViewBuilder
+    private func evaluationControls() -> some View {
+        platformVStackContainer(alignment: .leading, spacing: 8) {
+            Text("Bulk check / expectations (#677)")
+                .font(.subheadline.weight(.semibold))
+                .automaticCompliance(named: "DisplayOCRTrainingEvalHeading")
+
+            TextField("entityName", text: $entityNameDraft)
+                .automaticCompliance(named: "DisplayOCRTrainingEntityName")
+                .onSubmit { session.applyEntityName(entityNameDraft) }
+
+            Text("expectedStructuredFields (field=value per line)")
+                .font(.caption)
+            TextEditor(text: $expectedFieldsDraft)
+                .frame(minHeight: 72)
+                .automaticCompliance(named: "DisplayOCRTrainingExpectedFields")
+
+            Text("fieldAverages (field=number per line; regional priors, not pass targets)")
+                .font(.caption)
+            TextEditor(text: $fieldAveragesDraft)
+                .frame(minHeight: 48)
+                .automaticCompliance(named: "DisplayOCRTrainingFieldAverages")
+
+            TextField("fieldAverageMaxPercentDeviation (blank = production default)", text: $fieldAverageDeviationDraft)
+                .automaticCompliance(named: "DisplayOCRTrainingAverageDeviation")
+
+            Text("fieldFractionDigits (field=int per line; #678 format priors)")
+                .font(.caption)
+            TextEditor(text: $fieldFractionDigitsDraft)
+                .frame(minHeight: 36)
+                .automaticCompliance(named: "DisplayOCRTrainingFractionDigits")
+
+            Text("additionalImageFileNames (one file name per line)")
+                .font(.caption)
+            TextEditor(text: $additionalImagesDraft)
+                .frame(minHeight: 36)
+                .automaticCompliance(named: "DisplayOCRTrainingAdditionalImages")
+
+            platformHStackContainer(spacing: 8) {
+                Button("Apply expectations") {
+                    session.applyEntityName(entityNameDraft)
+                    session.applyExpectedStructuredFields(parseFieldMap(expectedFieldsDraft))
+                    session.applyFieldAverages(parseDoubleMap(fieldAveragesDraft))
+                    session.applyFieldAverageMaxPercentDeviation(parseOptionalDouble(fieldAverageDeviationDraft))
+                    session.applyFieldFractionDigits(parseIntMap(fieldFractionDigitsDraft))
+                    session.applyAdditionalImageFileNames(parseNameList(additionalImagesDraft))
+                }
+                .disabled(session.label == nil)
+                .automaticCompliance(named: "DisplayOCRTrainingApplyExpectations")
+
+                Button("Seed draft from rows") {
+                    let draft = session.seedExpectedStructuredFieldsDraft()
+                    expectedFieldsDraft = draft
+                        .sorted { $0.key < $1.key }
+                        .map { "\($0.key)=\($0.value)" }
+                        .joined(separator: "\n")
+                }
+                .disabled(session.label == nil)
+                .automaticCompliance(named: "DisplayOCRTrainingSeedExpectations")
+
+                Button(bulkCheckRunning ? "Checking…" : "Bulk check library") {
+                    bulkCheckRunning = true
+                    Task {
+                        await session.runBulkPassFailCheck()
+                        bulkCheckRunning = false
+                    }
+                }
+                .disabled(bulkCheckRunning)
+                .trainingProminentButton()
+                .automaticCompliance(named: "DisplayOCRTrainingBulkCheck")
+            }
+
+            if let text = session.bulkCheckHumanReadable {
+                Text(text)
+                    .font(.system(.caption, design: .monospaced))
+                    .textSelection(.enabled)
+                    .automaticCompliance(named: "DisplayOCRTrainingBulkCheckOutput")
+            }
+        }
+    }
+
+    private func syncEvaluationDraftsFromLabel() {
+        entityNameDraft = session.label?.entityName ?? ""
+        if let fields = session.label?.expectedStructuredFields {
+            expectedFieldsDraft = fields
+                .sorted { $0.key < $1.key }
+                .map { "\($0.key)=\($0.value)" }
+                .joined(separator: "\n")
+        } else {
+            expectedFieldsDraft = ""
+        }
+        if let averages = session.label?.fieldAverages {
+            fieldAveragesDraft = averages
+                .sorted { $0.key < $1.key }
+                .map { "\($0.key)=\($0.value)" }
+                .joined(separator: "\n")
+        } else {
+            fieldAveragesDraft = ""
+        }
+        if let deviation = session.label?.fieldAverageMaxPercentDeviation {
+            fieldAverageDeviationDraft = String(deviation)
+        } else {
+            fieldAverageDeviationDraft = ""
+        }
+        if let digits = session.label?.fieldFractionDigits {
+            fieldFractionDigitsDraft = digits
+                .sorted { $0.key < $1.key }
+                .map { "\($0.key)=\($0.value)" }
+                .joined(separator: "\n")
+        } else {
+            fieldFractionDigitsDraft = ""
+        }
+        if let names = session.label?.additionalImageFileNames, !names.isEmpty {
+            additionalImagesDraft = names.joined(separator: "\n")
+        } else {
+            additionalImagesDraft = ""
+        }
+    }
+
+    private func parseFieldMap(_ raw: String) -> [String: String]? {
+        var map: [String: String] = [:]
+        for line in raw.split(whereSeparator: \.isNewline) {
+            let trimmed = line.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !trimmed.isEmpty else { continue }
+            let parts = trimmed.split(separator: "=", maxSplits: 1).map(String.init)
+            guard parts.count == 2 else { continue }
+            let key = parts[0].trimmingCharacters(in: .whitespacesAndNewlines)
+            let value = parts[1].trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !key.isEmpty else { continue }
+            map[key] = value
+        }
+        return map.isEmpty ? nil : map
+    }
+
+    private func parseDoubleMap(_ raw: String) -> [String: Double]? {
+        guard let stringMap = parseFieldMap(raw) else { return nil }
+        var map: [String: Double] = [:]
+        for (key, value) in stringMap {
+            guard let number = Double(value) else { continue }
+            map[key] = number
+        }
+        return map.isEmpty ? nil : map
+    }
+
+    private func parseIntMap(_ raw: String) -> [String: Int]? {
+        guard let stringMap = parseFieldMap(raw) else { return nil }
+        var map: [String: Int] = [:]
+        for (key, value) in stringMap {
+            guard let number = Int(value) else { continue }
+            map[key] = number
+        }
+        return map.isEmpty ? nil : map
+    }
+
+    private func parseOptionalDouble(_ raw: String) -> Double? {
+        let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return nil }
+        return Double(trimmed)
+    }
+
+    private func parseNameList(_ raw: String) -> [String]? {
+        let names = raw
+            .split(whereSeparator: \.isNewline)
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
+        return names.isEmpty ? nil : names
     }
 
     @ViewBuilder
