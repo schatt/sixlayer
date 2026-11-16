@@ -192,6 +192,82 @@ open class FormDraftTests: BaseTestClass {
         #expect(abs(asDate.timeIntervalSince1970 - original.timeIntervalSince1970) < 1)
     }
 
+    // MARK: - AnyCodable array of Date / MultiDate drafts (#676)
+
+    /// #676: `[Date]` must round-trip as dates (element-wise tags), not `[String]` / stringified array.
+    @Test func testAnyCodableArrayOfDateRoundTripsAsDates() throws {
+        let originals = [
+            Date(timeIntervalSince1970: 1_700_000_000),
+            Date(timeIntervalSince1970: 1_700_086_400)
+        ]
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .iso8601
+        let data = try encoder.encode(AnyCodable(originals))
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        let decoded = try decoder.decode(AnyCodable.self, from: data)
+
+        let restored = try #require(decoded.value as? [Date])
+        #expect(restored.count == originals.count)
+        for (got, want) in zip(restored, originals) {
+            #expect(abs(got.timeIntervalSince1970 - want.timeIntervalSince1970) < 1)
+        }
+        #expect(!(decoded.value is String), "must not fall back to String(describing:) (#676)")
+        #expect(!(decoded.value is [String]), "must not decode tagged dates as plain strings (#676)")
+    }
+
+    /// #676: FormDraft JSON save/load keeps `[Date]` usable by MultiDate `getValue(for:) as? [Date]`.
+    @Test func testFormDraftArrayOfDateFieldSurvivesJSONRoundTrip() throws {
+        let originals = [
+            Date(timeIntervalSince1970: 1_712_000_000),
+            Date(timeIntervalSince1970: 1_712_086_400)
+        ]
+        let draft = FormDraft(
+            formId: "676-multidate",
+            fieldValues: ["dates": originals],
+            timestamp: Date(timeIntervalSince1970: 1_700_000_000)
+        )
+
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .iso8601
+        let data = try encoder.encode(draft)
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        let decoded = try decoder.decode(FormDraft.self, from: data)
+
+        let restored = decoded.toFieldValues()["dates"]
+        let asDates = try #require(restored as? [Date], "MultiDate load requires [Date] (#676)")
+        #expect(asDates.count == originals.count)
+        for (got, want) in zip(asDates, originals) {
+            #expect(abs(got.timeIntervalSince1970 - want.timeIntervalSince1970) < 1)
+        }
+    }
+
+    /// #676: UserDefaults draft storage round-trips MultiDate `[Date]` field values.
+    @Test func testUserDefaultsStorageArrayOfDateFieldRoundTrip() throws {
+        let suiteName = "test_form_storage_multidate_\(UUID().uuidString)"
+        let testDefaults = UserDefaults(suiteName: suiteName)!
+        testDefaults.removePersistentDomain(forName: suiteName)
+        defer { testDefaults.removePersistentDomain(forName: suiteName) }
+
+        let storage = UserDefaultsFormStateStorage(userDefaults: testDefaults)
+        let originals = [
+            Date(timeIntervalSince1970: 1_700_000_000),
+            Date(timeIntervalSince1970: 1_700_172_800)
+        ]
+        try storage.saveDraft(FormDraft(
+            formId: "676-multidate",
+            fieldValues: ["dates": originals]
+        ))
+
+        let loaded = try #require(storage.loadDraft(formId: "676-multidate"))
+        let asDates = try #require(loaded.toFieldValues()["dates"] as? [Date])
+        #expect(asDates.count == originals.count)
+        for (got, want) in zip(asDates, originals) {
+            #expect(abs(got.timeIntervalSince1970 - want.timeIntervalSince1970) < 1)
+        }
+    }
+
     // MARK: - AnyCodable URL / Data / UUID (#674)
 
     /// #674: URL must round-trip as URL, not String(describing:).
