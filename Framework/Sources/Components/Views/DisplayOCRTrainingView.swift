@@ -28,6 +28,9 @@ public struct DisplayOCRTrainingView: View {
     @State private var entityNameDraft = ""
     @State private var expectedFieldsDraft = ""
     @State private var fieldAveragesDraft = ""
+    @State private var fieldAverageDeviationDraft = ""
+    @State private var fieldFractionDigitsDraft = ""
+    @State private var additionalImagesDraft = ""
     @State private var bulkCheckRunning = false
     #if os(iOS) || os(macOS) || os(visionOS)
     @State private var photoItem: PhotosPickerItem?
@@ -184,11 +187,29 @@ public struct DisplayOCRTrainingView: View {
                 .frame(minHeight: 48)
                 .automaticCompliance(named: "DisplayOCRTrainingFieldAverages")
 
+            TextField("fieldAverageMaxPercentDeviation (blank = production default)", text: $fieldAverageDeviationDraft)
+                .automaticCompliance(named: "DisplayOCRTrainingAverageDeviation")
+
+            Text("fieldFractionDigits (field=int per line; #678 format priors)")
+                .font(.caption)
+            TextEditor(text: $fieldFractionDigitsDraft)
+                .frame(minHeight: 36)
+                .automaticCompliance(named: "DisplayOCRTrainingFractionDigits")
+
+            Text("additionalImageFileNames (one file name per line)")
+                .font(.caption)
+            TextEditor(text: $additionalImagesDraft)
+                .frame(minHeight: 36)
+                .automaticCompliance(named: "DisplayOCRTrainingAdditionalImages")
+
             platformHStackContainer(spacing: 8) {
                 Button("Apply expectations") {
                     session.applyEntityName(entityNameDraft)
                     session.applyExpectedStructuredFields(parseFieldMap(expectedFieldsDraft))
                     session.applyFieldAverages(parseDoubleMap(fieldAveragesDraft))
+                    session.applyFieldAverageMaxPercentDeviation(parseOptionalDouble(fieldAverageDeviationDraft))
+                    session.applyFieldFractionDigits(parseIntMap(fieldFractionDigitsDraft))
+                    session.applyAdditionalImageFileNames(parseNameList(additionalImagesDraft))
                 }
                 .disabled(session.label == nil)
                 .automaticCompliance(named: "DisplayOCRTrainingApplyExpectations")
@@ -242,6 +263,24 @@ public struct DisplayOCRTrainingView: View {
         } else {
             fieldAveragesDraft = ""
         }
+        if let deviation = session.label?.fieldAverageMaxPercentDeviation {
+            fieldAverageDeviationDraft = String(deviation)
+        } else {
+            fieldAverageDeviationDraft = ""
+        }
+        if let digits = session.label?.fieldFractionDigits {
+            fieldFractionDigitsDraft = digits
+                .sorted { $0.key < $1.key }
+                .map { "\($0.key)=\($0.value)" }
+                .joined(separator: "\n")
+        } else {
+            fieldFractionDigitsDraft = ""
+        }
+        if let names = session.label?.additionalImageFileNames, !names.isEmpty {
+            additionalImagesDraft = names.joined(separator: "\n")
+        } else {
+            additionalImagesDraft = ""
+        }
     }
 
     private func parseFieldMap(_ raw: String) -> [String: String]? {
@@ -267,6 +306,30 @@ public struct DisplayOCRTrainingView: View {
             map[key] = number
         }
         return map.isEmpty ? nil : map
+    }
+
+    private func parseIntMap(_ raw: String) -> [String: Int]? {
+        guard let stringMap = parseFieldMap(raw) else { return nil }
+        var map: [String: Int] = [:]
+        for (key, value) in stringMap {
+            guard let number = Int(value) else { continue }
+            map[key] = number
+        }
+        return map.isEmpty ? nil : map
+    }
+
+    private func parseOptionalDouble(_ raw: String) -> Double? {
+        let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return nil }
+        return Double(trimmed)
+    }
+
+    private func parseNameList(_ raw: String) -> [String]? {
+        let names = raw
+            .split(whereSeparator: \.isNewline)
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
+        return names.isEmpty ? nil : names
     }
 
     @ViewBuilder
