@@ -1386,10 +1386,10 @@ private struct GrayBuffer {
     /// maxX=width-4), so a 1-pixel flush check misses them. Requiring a
     /// top/bottom touch keeps a real edge-flush stem after padding.
     private static func isEdgeChromeStrip(_ box: PixelBox, buffer: GrayBuffer) -> Bool {
-        // Temporary #684: treat every box as edge chrome so a surviving "1"
-        // proves another path (lattice/flat) is reconstructing the digit.
-        _ = (box, buffer)
-        return true
+        let edgeSlack = max(2, min(8, box.height / 12))
+        let nearSide = box.minX <= edgeSlack || box.maxX >= buffer.width - edgeSlack
+        guard nearSide, box.width * 4 < box.height else { return false }
+        return box.minY <= 1 || box.maxY >= buffer.height - 2
     }
 
     private static func score(_ buffer: GrayBuffer) -> Int {
@@ -1846,7 +1846,15 @@ private struct Cell {
 private func recognizedGroups(_ cells: [Cell], width: Int, height: Int) -> [OCRRecognizedText] {
     let pieces = GrayBuffer.group(cells)
     return pieces.map { group in
-        let text = String(group.map(\.character))
+        // Temporary #684: include edge-gate inputs in the annotation.
+        let text = group.map { cell in
+            let box = cell.box
+            let edgeSlack = max(2, min(8, box.height / 12))
+            let near = box.minX <= edgeSlack || box.maxX >= width - edgeSlack
+            let touch = box.minY <= 1 || box.maxY >= height - 2
+            let narrow = box.width * 4 < box.height
+            return "\(cell.character)[\(cell.minX),\(cell.minY),\(box.width)x\(box.height) near=\(near) touch=\(touch) narrow=\(narrow) w=\(width) h=\(height)]"
+        }.joined(separator: " ")
         let confidence = group.map(\.confidence).min() ?? 0
         let box = reCropGlassBox(
             minX: group.map(\.minX).min() ?? 0,
