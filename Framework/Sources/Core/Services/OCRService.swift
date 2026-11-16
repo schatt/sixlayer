@@ -276,7 +276,8 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
             boundingBoxes: segments.map(\.boundingBox),
             textTypes: decoded.textTypes,
             language: context.language,
-            recognizedTexts: merged
+            recognizedTexts: merged,
+            chosenPanelRect: decoded.chosenPanelRect
         )
         let pipeline = applyStructuredExtraction(
             from: base,
@@ -303,7 +304,8 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
             missingRequiredFields: pipeline.missingRequiredFields,
             adjustedFields: pipeline.adjustedFields,
             uncategorizedExtractions: uncategorized,
-            recognizedTexts: merged
+            recognizedTexts: merged,
+            chosenPanelRect: decoded.chosenPanelRect
         )
     }
     
