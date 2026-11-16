@@ -1846,15 +1846,7 @@ private struct Cell {
 private func recognizedGroups(_ cells: [Cell], width: Int, height: Int) -> [OCRRecognizedText] {
     let pieces = GrayBuffer.group(cells)
     return pieces.map { group in
-        // Temporary #684: include edge-gate inputs in the annotation.
-        let text = group.map { cell in
-            let box = cell.box
-            let edgeSlack = max(2, min(8, box.height / 12))
-            let near = box.minX <= edgeSlack || box.maxX >= width - edgeSlack
-            let touch = box.minY <= 1 || box.maxY >= height - 2
-            let narrow = box.width * 4 < box.height
-            return "\(cell.character)[\(cell.minX),\(cell.minY),\(box.width)x\(box.height) near=\(near) touch=\(touch) narrow=\(narrow) w=\(width) h=\(height)]"
-        }.joined(separator: " ")
+        let text = String(group.map(\.character))
         let confidence = group.map(\.confidence).min() ?? 0
         let box = reCropGlassBox(
             minX: group.map(\.minX).min() ?? 0,
