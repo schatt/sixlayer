@@ -34,7 +34,6 @@ struct CameraCancel681Tests {
     }
 
     @Test func stillOnlyLayer4CameraOmitsCancelWhenNil() {
-        var cancelled = 0
         let camera = stillOnlyCameraViewForLayer4(
             onImageCaptured: { _ in },
             onCancel: nil
@@ -42,7 +41,7 @@ struct CameraCancel681Tests {
 
         camera.makeCoordinator().imagePickerControllerDidCancel(UIImagePickerController())
 
-        #expect(cancelled == 0)
+        #expect(camera.onCancel == nil)
     }
 }
 #endif
