@@ -27,6 +27,7 @@ public struct DisplayOCRTrainingView: View {
     @State private var dragBaseRows: [DisplayOCRNormalizedBox] = []
     @State private var entityNameDraft = ""
     @State private var expectedFieldsDraft = ""
+    @State private var fieldAveragesDraft = ""
     @State private var bulkCheckRunning = false
     #if os(iOS) || os(macOS) || os(visionOS)
     @State private var photoItem: PhotosPickerItem?
@@ -177,10 +178,17 @@ public struct DisplayOCRTrainingView: View {
                 .frame(minHeight: 72)
                 .automaticCompliance(named: "DisplayOCRTrainingExpectedFields")
 
+            Text("fieldAverages (field=number per line; regional priors, not pass targets)")
+                .font(.caption)
+            TextEditor(text: $fieldAveragesDraft)
+                .frame(minHeight: 48)
+                .automaticCompliance(named: "DisplayOCRTrainingFieldAverages")
+
             platformHStackContainer(spacing: 8) {
                 Button("Apply expectations") {
                     session.applyEntityName(entityNameDraft)
                     session.applyExpectedStructuredFields(parseFieldMap(expectedFieldsDraft))
+                    session.applyFieldAverages(parseDoubleMap(fieldAveragesDraft))
                 }
                 .disabled(session.label == nil)
                 .automaticCompliance(named: "DisplayOCRTrainingApplyExpectations")
@@ -226,6 +234,14 @@ public struct DisplayOCRTrainingView: View {
         } else {
             expectedFieldsDraft = ""
         }
+        if let averages = session.label?.fieldAverages {
+            fieldAveragesDraft = averages
+                .sorted { $0.key < $1.key }
+                .map { "\($0.key)=\($0.value)" }
+                .joined(separator: "\n")
+        } else {
+            fieldAveragesDraft = ""
+        }
     }
 
     private func parseFieldMap(_ raw: String) -> [String: String]? {
@@ -239,6 +255,16 @@ public struct DisplayOCRTrainingView: View {
             let value = parts[1].trimmingCharacters(in: .whitespacesAndNewlines)
             guard !key.isEmpty else { continue }
             map[key] = value
+        }
+        return map.isEmpty ? nil : map
+    }
+
+    private func parseDoubleMap(_ raw: String) -> [String: Double]? {
+        guard let stringMap = parseFieldMap(raw) else { return nil }
+        var map: [String: Double] = [:]
+        for (key, value) in stringMap {
+            guard let number = Double(value) else { continue }
+            map[key] = number
         }
         return map.isEmpty ? nil : map
     }
