@@ -502,6 +502,7 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
         // Get hints file data if entityName is provided
         var hintsRanges: [String: ValueRange] = [:]
         var hintsCalculationGroups: [String: [CalculationGroup]] = [:]
+        var hintsFractionDigits: [String: Int] = [:]
         if let entityName = context.entityName {
             let loader = FileBasedDataHintsLoader()
             let hintsResult = loader.loadHintsResult(for: entityName, locale: locale)
@@ -512,6 +513,15 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
                 if let groups = fieldHints.calculationGroups {
                     hintsCalculationGroups[fieldId] = groups
                 }
+                if let digits = fieldHints.fractionDigits {
+                    hintsFractionDigits[fieldId] = digits
+                }
+            }
+        }
+        // Runtime / fixture overrides win over hints-file format priors (#678).
+        if let overrides = context.fieldFractionDigits {
+            for (fieldId, digits) in overrides {
+                hintsFractionDigits[fieldId] = digits
             }
         }
         
@@ -611,6 +621,11 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
                 } else {
                     // No direct range, but we can still try calculation validation
                     isValid = true // Allow it if calculation validation passes
+                }
+
+                // Check 1b: Prefer the configured fraction-digit shape (#678).
+                if isValid, let preferredDigits = hintsFractionDigits[fieldId], decimalPos == preferredDigits {
+                    score += 20.0
                 }
                 
                 // Check 2: Calculation group validation
