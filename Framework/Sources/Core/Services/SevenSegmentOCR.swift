@@ -741,8 +741,12 @@ private struct GrayBuffer {
         let maxHeight = boxes.map(\.height).max() ?? 1
         // Edge bezel chrome is tall/narrow like a "1". Leave it out of the
         // baseline so a pale comma hang still clears markCharacter (#670).
-        let tall = boxes.filter { box in
-            box.height * 100 >= maxHeight * 55 && !isEdgeChromeStrip(box, buffer: buffer)
+        // Stroke level comes from interior tall boxes so a flush real "1"
+        // still matches digit ink and survives (#684).
+        let tallCandidates = boxes.filter { $0.height * 100 >= maxHeight * 55 }
+        let strokeLevel = edgeStrokeLevel(tallCandidates, buffer: buffer)
+        let tall = tallCandidates.filter { box in
+            !isEdgeChromeStrip(box, buffer: buffer, strokeLevel: strokeLevel)
         }
         let digitHeight = median(tall.map(\.height)) ?? maxHeight
         let baseline = median(tall.map(\.maxY)) ?? band.1
@@ -806,7 +810,8 @@ private struct GrayBuffer {
                 buffer: buffer,
                 darkInk: darkInk,
                 washAwareStems: washAwareStems,
-                sampleBand: sampleBand
+                sampleBand: sampleBand,
+                strokeLevel: strokeLevel
             )
             // Volume rowcrops are ~980px; keep traces on those for #591.
             if buffer.width >= 900 {
@@ -1054,7 +1059,8 @@ private struct GrayBuffer {
         buffer: GrayBuffer,
         darkInk: Bool,
         washAwareStems: Bool = false,
-        sampleBand: Int = 0
+        sampleBand: Int = 0,
+        strokeLevel: Int? = nil
     ) -> Cell? {
         let vertical = verticalRuns(mask, box: box, width: width)
         let splitGap = vertical.count == 2 ? vertical[1].0 - vertical[0].1 : 0
@@ -1099,7 +1105,8 @@ private struct GrayBuffer {
                     buffer: buffer,
                     darkInk: darkInk,
                     washAwareStems: washAwareStems,
-                    sampleBand: sampleBand
+                    sampleBand: sampleBand,
+                    strokeLevel: strokeLevel
                 )
             }
         }
@@ -1107,7 +1114,7 @@ private struct GrayBuffer {
         if box.height * 100 >= digitHeight * 55, box.width * 4 < box.height {
             // Crop-edge bezel chrome matches this shape and must not become a
             // digit — it also skewed the mark baseline (#670).
-            if isEdgeChromeStrip(box, buffer: buffer) {
+            if isEdgeChromeStrip(box, buffer: buffer, strokeLevel: strokeLevel) {
                 return nil
             }
             return Cell(box: box, character: "1", confidence: 1, band: bandIndex)
@@ -1383,53 +1390,35 @@ private struct GrayBuffer {
     /// Tall/narrow ink near the crop edge that runs into the top/bottom
     /// border — leftover bezel after a comma joins the frame (#670).
     /// Remnants often sit a few pixels in (bezelWidth 8 → strips at minX=4 /
-    /// maxX=width-4), so a 1-pixel flush check misses them. Inset near-edge
-    /// strips drop on geometry alone. A stem truly flush with the crop edge
-    /// may be a real "1" (#684): drop it only when its level matches the
-    /// four-corner chrome median (bezel corners), not full-border
-    /// `cornerFill` (glass-skewed) and not digit ink on one corner.
-    private static func isEdgeChromeStrip(_ box: PixelBox, buffer: GrayBuffer) -> Bool {
+    /// maxX=width-4), so a 1-pixel flush check misses them. Requiring a
+    /// top/bottom touch alone would also drop a real edge-flush "1" (#684);
+    /// keep geometry hits whose level matches interior stroke ink.
+    private static func isEdgeChromeStrip(
+        _ box: PixelBox,
+        buffer: GrayBuffer,
+        strokeLevel: Int?
+    ) -> Bool {
         let edgeSlack = max(2, min(8, box.height / 12))
         let nearSide = box.minX <= edgeSlack || box.maxX >= buffer.width - edgeSlack
         guard nearSide, box.width * 4 < box.height else { return false }
-        let touchesTB = box.minY <= 1 || box.maxY >= buffer.height - 2
-        guard touchesTB else { return false }
-        let trulyFlush = box.minX <= 1 || box.maxX >= buffer.width - 2
-        let level = boxMedianLevel(buffer, box: box)
-        let c4 = fourCornerChromeMedian(buffer)
-        let cf = Int(buffer.cornerFill())
-        // Temporary #684 probe — levels for flush vs inset remnants.
-        let probe = "box=\(box.minX),\(box.minY),\(box.width)x\(box.height) flush=\(trulyFlush) level=\(level.map(String.init) ?? "nil") c4=\(c4) cf=\(cf) slack=\(edgeSlack) w=\(buffer.width) h=\(buffer.height)\n"
-        if let data = probe.data(using: .utf8) {
-            let url = URL(fileURLWithPath: "/tmp/684-chrome-probe.log")
-            if FileManager.default.fileExists(atPath: url.path),
-               let handle = try? FileHandle(forWritingTo: url) {
-                defer { try? handle.close() }
-                try? handle.seekToEnd()
-                try? handle.write(contentsOf: data)
-            } else {
-                try? data.write(to: url)
-            }
+        guard box.minY <= 1 || box.maxY >= buffer.height - 2 else { return false }
+        if let strokeLevel,
+           let level = boxMedianLevel(buffer, box: box),
+           abs(level - strokeLevel) <= inkMargin {
+            return false
         }
-        guard trulyFlush else { return true }
-        guard let level else { return false }
-        return abs(level - c4) <= inkMargin
+        return true
     }
 
-    /// Median of the four corner pixels. Bezel frames put chrome on every
-    /// corner; a flush stem dirties only one, so the median stays glass.
-    private static func fourCornerChromeMedian(_ buffer: GrayBuffer) -> Int {
-        let w = buffer.width
-        let h = buffer.height
-        guard w > 0, h > 0 else { return 0 }
-        var corners = [
-            Int(buffer.pixels[0]),
-            Int(buffer.pixels[w - 1]),
-            Int(buffer.pixels[(h - 1) * w]),
-            Int(buffer.pixels[(h - 1) * w + (w - 1)]),
-        ]
-        corners.sort()
-        return (corners[1] + corners[2]) / 2
+    /// Median ink level of tall boxes that are not near the crop side edges.
+    private static func edgeStrokeLevel(_ tall: [PixelBox], buffer: GrayBuffer) -> Int? {
+        let interior = tall.filter { box in
+            let edgeSlack = max(2, min(8, box.height / 12))
+            let nearSide = box.minX <= edgeSlack || box.maxX >= buffer.width - edgeSlack
+            return !nearSide
+        }
+        let sample = interior.isEmpty ? tall : interior
+        return median(sample.compactMap { boxMedianLevel(buffer, box: $0) })
     }
 
     private static func score(_ buffer: GrayBuffer) -> Int {
