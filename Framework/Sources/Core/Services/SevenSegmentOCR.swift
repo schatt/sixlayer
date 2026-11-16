@@ -768,16 +768,35 @@ private struct GrayBuffer {
             }
         }
         // Thin tails can miss the mask while raw pixels still look like ink.
+        // Prefer the mark's own level over surroundingLevel: a pale hang that
+        // joins a darker bottom bezel is lighter than its surround, so the
+        // dark-ink surround test drops it and the comma becomes a period (#670).
         var maxY = box.maxY
         let left = max(0, box.minX)
         let right = min(buffer.width, box.maxX)
         guard right > left else { return box }
-        for y in box.maxY..<reach {
-            let probe = PixelBox(minX: left, minY: y, maxX: right, maxY: y + 1)
-            if inkFraction(buffer, box: probe, darkInk: darkInk) > 0.35 {
-                maxY = y + 1
-            } else if maxY > box.maxY {
-                break
+        let rowWidth = right - left
+        if let markLevel = boxMedianLevel(buffer, box: box) {
+            for y in box.maxY..<reach {
+                let start = y * buffer.width
+                var matched = 0
+                for x in left..<right where abs(Int(buffer.pixels[start + x]) - markLevel) <= inkMargin {
+                    matched += 1
+                }
+                if matched * 100 >= rowWidth * 35 {
+                    maxY = y + 1
+                } else if maxY > box.maxY {
+                    break
+                }
+            }
+        } else {
+            for y in box.maxY..<reach {
+                let probe = PixelBox(minX: left, minY: y, maxX: right, maxY: y + 1)
+                if inkFraction(buffer, box: probe, darkInk: darkInk) > 0.35 {
+                    maxY = y + 1
+                } else if maxY > box.maxY {
+                    break
+                }
             }
         }
         guard maxY > box.maxY else { return box }
@@ -1104,18 +1123,16 @@ private struct GrayBuffer {
         character == "." || character == "," || character == ":" || character == "-"
     }
 
-    /// Tall/narrow ink near the crop edge whose level matches the corner
-    /// chrome — leftover bezel after a comma joins the frame (#670).
+    /// Tall/narrow ink near the crop edge that runs into the top/bottom
+    /// border — leftover bezel after a comma joins the frame (#670).
     /// Remnants often sit a few pixels in (bezelWidth 8 → strips at minX=4 /
-    /// maxX=width-4), so a 1-pixel flush check misses them.
+    /// maxX=width-4), so a 1-pixel flush check misses them. Requiring a
+    /// top/bottom touch keeps a real edge-flush stem after padding.
     private static func isEdgeChromeStrip(_ box: PixelBox, buffer: GrayBuffer) -> Bool {
         let edgeSlack = max(2, min(8, box.height / 12))
-        let nearEdge = box.minX <= edgeSlack || box.maxX >= buffer.width - edgeSlack
-        guard nearEdge, box.width * 4 < box.height else { return false }
-        // Temporary #670: geometry only — confirm near-edge slack catches the
-        // strips before restoring the chrome-level comparison.
-        _ = buffer
-        return true
+        let nearSide = box.minX <= edgeSlack || box.maxX >= buffer.width - edgeSlack
+        guard nearSide, box.width * 4 < box.height else { return false }
+        return box.minY <= 1 || box.maxY >= buffer.height - 2
     }
 
     private static func score(_ buffer: GrayBuffer) -> Int {
