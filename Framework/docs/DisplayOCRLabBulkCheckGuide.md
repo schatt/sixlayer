@@ -47,6 +47,8 @@ DisplayOCRLabBulkCheck /path/to/display-ocr-training \
 - `DisplayOCRLabEvaluation.score(...)` — dual-axis score for one example
 - `OCRResult.chosenPanelRect` — original-image normalized panel used for decode
 
+Summary JSON includes run metadata: `timestamp`, `operatingSystem`, best-effort `sixLayerVersion` / `xcodeVersion`, `contextMode`, `localizationIoUThreshold`, plus pass/fail/skip counts and per-example rows keyed by `exampleId`.
+
 ## Authoring assist
 
 `DisplayOCRLabEvaluation.seedExpectedFields(fromConfirmedRows:)` returns an **editable draft** map.  
