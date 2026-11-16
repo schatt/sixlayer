@@ -82,6 +82,16 @@ struct DynamicFormStoredDateValueTests {
         #expect(DynamicFormStoredDateValue.date(fromStoredValue: "   ") == nil)
     }
 
+    /// #675: Pre-#672 AnyCodable encoded Date via String(describing:), e.g. "2023-11-14 22:13:20 +0000".
+    @Test func date_parsesLegacyStringDescribingDate() {
+        let original = Date(timeIntervalSince1970: 1_700_000_000)
+        let describing = String(describing: original)
+        #expect(describing == "2023-11-14 22:13:20 +0000")
+        let parsed = DynamicFormStoredDateValue.date(fromStoredValue: describing)
+        let restored = try #require(parsed)
+        #expect(abs(restored.timeIntervalSince1970 - original.timeIntervalSince1970) < 1)
+    }
+
     @Test @MainActor func formState_dateValueRoundTripsThroughFieldValues() {
         let config = DynamicFormConfiguration(id: "t", title: "T", sections: [])
         let state = DynamicFormState(configuration: config)
