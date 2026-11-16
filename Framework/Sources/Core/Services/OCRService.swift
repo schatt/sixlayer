@@ -890,13 +890,12 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
                 } else {
                     flagReason = "Value '\(valueString)' is outside expected range (\(rangeDescription)). Please verify."
                 }
-            } else if let average = context.fieldAverages?[fieldId] {
+            } else if let average = context.fieldAverages?[fieldId], average != 0 {
                 // Within range, but check if far from average
                 let deviation = abs(numericValue - average)
-                let percentDeviation = (deviation / average) * 100.0
-                
-                // Flag if more than 50% deviation from average (configurable threshold)
-                if percentDeviation > 50.0 {
+                let percentDeviation = (deviation / abs(average)) * 100.0
+                // Flag when farther from the average than the configured percent gate (#679).
+                if percentDeviation > context.resolvedFieldAverageMaxPercentDeviation {
                     shouldFlag = true
                     flagReason = "Value '\(valueString)' is within expected range but significantly different from typical value (\(String(format: "%.2f", average))). Deviation: \(String(format: "%.1f", percentDeviation))%. Please verify."
                 }
