@@ -1385,8 +1385,9 @@ private struct GrayBuffer {
     /// Remnants often sit a few pixels in (bezelWidth 8 → strips at minX=4 /
     /// maxX=width-4), so a 1-pixel flush check misses them. Inset near-edge
     /// strips drop on geometry alone. A stem truly flush with the crop edge
-    /// may be a real "1" (#684): drop it only when its level matches corner
-    /// chrome, so digit ink survives.
+    /// may be a real "1" (#684): drop it only when its level matches the
+    /// four-corner chrome median (bezel corners), not full-border
+    /// `cornerFill` (glass-skewed) and not digit ink on one corner.
     private static func isEdgeChromeStrip(_ box: PixelBox, buffer: GrayBuffer) -> Bool {
         let edgeSlack = max(2, min(8, box.height / 12))
         let nearSide = box.minX <= edgeSlack || box.maxX >= buffer.width - edgeSlack
@@ -1394,9 +1395,24 @@ private struct GrayBuffer {
         guard box.minY <= 1 || box.maxY >= buffer.height - 2 else { return false }
         let trulyFlush = box.minX <= 1 || box.maxX >= buffer.width - 2
         guard trulyFlush else { return true }
-        let chrome = Int(buffer.cornerFill())
         guard let level = boxMedianLevel(buffer, box: box) else { return false }
-        return abs(level - chrome) <= inkMargin
+        return abs(level - fourCornerChromeMedian(buffer)) <= inkMargin
+    }
+
+    /// Median of the four corner pixels. Bezel frames put chrome on every
+    /// corner; a flush stem dirties only one, so the median stays glass.
+    private static func fourCornerChromeMedian(_ buffer: GrayBuffer) -> Int {
+        let w = buffer.width
+        let h = buffer.height
+        guard w > 0, h > 0 else { return 0 }
+        var corners = [
+            Int(buffer.pixels[0]),
+            Int(buffer.pixels[w - 1]),
+            Int(buffer.pixels[(h - 1) * w]),
+            Int(buffer.pixels[(h - 1) * w + (w - 1)]),
+        ]
+        corners.sort()
+        return (corners[1] + corners[2]) / 2
     }
 
     private static func score(_ buffer: GrayBuffer) -> Int {
