@@ -2161,6 +2161,38 @@ public final class DisplayOCRTrainingSession: ObservableObject {
         return DisplayOCRLabEvaluation.seedExpectedFields(fromConfirmedRows: rows)
     }
 
+    /// Update expected structured fields on the open label (editable; write via export).
+    public func applyExpectedStructuredFields(_ fields: [String: String]?) {
+        guard var label else { return }
+        label.expectedStructuredFields = fields
+        self.label = label
+    }
+
+    public func applyEntityName(_ entityName: String?) {
+        guard var label else { return }
+        let trimmed = entityName?.trimmingCharacters(in: .whitespacesAndNewlines)
+        label.entityName = (trimmed?.isEmpty == false) ? trimmed : nil
+        self.label = label
+    }
+
+    public func applyFieldAverages(_ averages: [String: Double]?) {
+        guard var label else { return }
+        label.fieldAverages = averages
+        self.label = label
+    }
+
+    public func applyFieldAverageMaxPercentDeviation(_ percent: Double?) {
+        guard var label else { return }
+        label.fieldAverageMaxPercentDeviation = percent
+        self.label = label
+    }
+
+    public func applyFieldFractionDigits(_ digits: [String: Int]?) {
+        guard var label else { return }
+        label.fieldFractionDigits = digits
+        self.label = label
+    }
+
     fileprivate func noteReindexProgress(_ progress: DisplayOCRTrainingReindexProgress) {
         reindexProgress = progress
     }
