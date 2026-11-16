@@ -623,10 +623,12 @@ struct OCRSevenSegment576Tests {
     /// #684: a real stem flush with the crop edge and top must not be dropped
     /// as bezel chrome (#670 `isEdgeChromeStrip`).
     @Test func edgeFlushOneIsStillAOne() {
-        // padding 0 + no deskew: the trailing 1's stem sits on the right crop
-        // edge and the top of the buffer — same geometry the chrome gate uses
-        // for bezel. Deskew/tighten inset that stem enough to miss the gate.
-        let image = SegmentPanel.render(rows: [atoms("21")], padding: 0)
+        // padding 0 + crop to the stem's maxX: the trailing 1 is tall/narrow,
+        // on the right edge, and on the top border — the geometry #670 uses
+        // for bezel remnants. No deskew so that crop stays exact.
+        let raw = SegmentPanel.render(rows: [atoms("21")], padding: 0)
+        // Stem ink ends at x=100 on the padding-0 layout (see #684 diagnosis).
+        let image = crop(raw, x: 0, y: 0, width: 100, height: raw.height)
         let result = decode(image, maximum: 0)
         #expect(result.extractedText == "21", "got=\(result.extractedText)")
     }
