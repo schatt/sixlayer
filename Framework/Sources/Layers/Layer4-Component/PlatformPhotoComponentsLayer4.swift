@@ -452,6 +452,7 @@ func resolvedCameraPickerSourceTypeForLayer4() -> UIImagePickerController.Source
 }
 
 /// Still-only camera used by ``platformCameraInterface_L4(onImageCaptured:)`` (#681).
+@MainActor
 func stillOnlyCameraViewForLayer4(
     onImageCaptured: @escaping (PlatformImage) -> Void,
     onCancel: (() -> Void)? = nil,
