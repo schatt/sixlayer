@@ -2193,6 +2193,16 @@ public final class DisplayOCRTrainingSession: ObservableObject {
         self.label = label
     }
 
+    /// Extra image file names beyond the primary `image.png` (#677 multi-image schema).
+    public func applyAdditionalImageFileNames(_ names: [String]?) {
+        guard var label else { return }
+        let cleaned = (names ?? [])
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
+        label.additionalImageFileNames = cleaned.isEmpty ? nil : cleaned
+        self.label = label
+    }
+
     fileprivate func noteReindexProgress(_ progress: DisplayOCRTrainingReindexProgress) {
         reindexProgress = progress
     }
