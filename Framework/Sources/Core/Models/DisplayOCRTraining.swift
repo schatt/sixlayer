@@ -1600,6 +1600,10 @@ public final class DisplayOCRTrainingSession: ObservableObject {
     @Published public private(set) var panelTraining: DisplayOCRPanelTrainingState = .idle
     @Published public private(set) var editingFolderName: String?
     @Published public private(set) var reindexProgress: DisplayOCRTrainingReindexProgress?
+    /// Last bulk pass/fail summary from ``runBulkPassFailCheck`` (#677).
+    @Published public private(set) var bulkCheckSummary: DisplayOCRLabRunSummary?
+    @Published public private(set) var bulkCheckHumanReadable: String?
+    @Published public private(set) var bulkCheckExitCode: Int?
     public private(set) var reindexRanOnMainThread: Bool?
     /// Whether the last auto-suggest compute ran on the main thread. Test probe (#650).
     public private(set) var suggestionRanOnMainThread: Bool?
@@ -2126,6 +2130,35 @@ public final class DisplayOCRTrainingSession: ObservableObject {
         if let scanned = outcome.library {
             library = scanned
         }
+    }
+
+    /// Same evaluation core as the CLI (#677). Uses app-mode ``OCRService`` by default.
+    public func runBulkPassFailCheck(
+        process: (@Sendable (PlatformImage, OCRContext) async throws -> OCRResult)? = nil
+    ) async {
+        let root = exportRoot
+        do {
+            let summary = try await DisplayOCRLabBulkCheck.runLibrary(at: root, process: process)
+            bulkCheckSummary = summary
+            bulkCheckHumanReadable = DisplayOCRLabBulkCheck.formatHumanReadable(summary)
+            bulkCheckExitCode = DisplayOCRLabBulkCheck.exitCode(for: summary, baseline: nil)
+        } catch {
+            bulkCheckSummary = nil
+            bulkCheckHumanReadable = "Bulk check failed: \(error)"
+            bulkCheckExitCode = DisplayOCRLabBulkCheck.usageErrorExitCode
+        }
+    }
+
+    /// Seed editable expected structured fields from confirmed row text (#677). Does not write truth.
+    public func seedExpectedStructuredFieldsDraft() -> [String: String] {
+        guard let label else { return [:] }
+        let rows = label.rows.compactMap { row -> (String, String)? in
+            let text = row.confirmedText.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !text.isEmpty else { return nil }
+            // Row has no field id yet — use confirmed text as a placeholder key only when unique.
+            return (row.id.uuidString, text)
+        }
+        return DisplayOCRLabEvaluation.seedExpectedFields(fromConfirmedRows: rows)
     }
 
     fileprivate func noteReindexProgress(_ progress: DisplayOCRTrainingReindexProgress) {
