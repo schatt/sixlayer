@@ -42,16 +42,22 @@ public enum PlatformPhotoComponentsLayer4 {
     /// Creates a platform-specific camera interface.
     /// - Parameters:
     ///   - onImageCaptured: Called when the user captures or selects an image.
+    ///   - onCancel: Optional. Called when the user cancels the system camera (#681).
     ///   - onCameraAuthorizationState: Optional. Called with why camera is or isn’t used (e.g. `.denied` → show “Open Settings”).
     /// Note: Requires @MainActor because CameraView uses @State
     @ViewBuilder
     @MainActor
     public static func platformCameraInterface_L4(
         onImageCaptured: @escaping (PlatformImage) -> Void,
+        onCancel: (() -> Void)? = nil,
         onCameraAuthorizationState: ((CameraAuthorizationState) -> Void)? = nil
     ) -> some View {
         #if os(iOS)
-        CameraView(onImageCaptured: onImageCaptured, onCameraAuthorizationState: onCameraAuthorizationState)
+        stillOnlyCameraViewForLayer4(
+            onImageCaptured: onImageCaptured,
+            onCancel: onCancel,
+            onCameraAuthorizationState: onCameraAuthorizationState
+        )
             .automaticCompliance(named: "platformCameraInterface_L4")
             .accessibilityIdentifier("platformCameraInterface_L4")
         #elseif os(macOS)
@@ -1103,15 +1109,18 @@ public func platformPhotoPicker_L4(onSelection: @escaping (PlatformPhotoSelectio
 /// Creates a platform-specific camera interface (convenience wrapper).
 /// - Parameters:
 ///   - onImageCaptured: Called when the user captures or selects an image.
+///   - onCancel: Optional. Called when the user cancels the system camera (#681).
 ///   - onCameraAuthorizationState: Optional. Called with why camera is or isn’t used.
 @ViewBuilder
 @MainActor
 public func platformCameraInterface_L4(
     onImageCaptured: @escaping (PlatformImage) -> Void,
+    onCancel: (() -> Void)? = nil,
     onCameraAuthorizationState: ((CameraAuthorizationState) -> Void)? = nil
 ) -> some View {
     PlatformPhotoComponentsLayer4.platformCameraInterface_L4(
         onImageCaptured: onImageCaptured,
+        onCancel: onCancel,
         onCameraAuthorizationState: onCameraAuthorizationState
     )
 }
