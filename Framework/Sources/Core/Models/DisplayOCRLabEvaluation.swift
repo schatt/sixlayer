@@ -69,6 +69,12 @@ public struct DisplayOCRLabRunSummary: Codable, Sendable, Equatable {
     public var localizationIoUThreshold: Double?
     public var examples: [DisplayOCRLabExampleScore]
     public var timestamp: String?
+    /// Host OS description for regression archaeology (#677).
+    public var operatingSystem: String?
+    /// SixLayer framework marketing version when discoverable (#677).
+    public var sixLayerVersion: String?
+    /// Xcode version when known (often nil outside an Xcode-hosted process) (#677).
+    public var xcodeVersion: String?
 
     public init(
         passCount: Int,
@@ -77,7 +83,10 @@ public struct DisplayOCRLabRunSummary: Codable, Sendable, Equatable {
         contextMode: String? = nil,
         localizationIoUThreshold: Double? = nil,
         examples: [DisplayOCRLabExampleScore],
-        timestamp: String? = nil
+        timestamp: String? = nil,
+        operatingSystem: String? = nil,
+        sixLayerVersion: String? = nil,
+        xcodeVersion: String? = nil
     ) {
         self.passCount = passCount
         self.failCount = failCount
@@ -86,6 +95,9 @@ public struct DisplayOCRLabRunSummary: Codable, Sendable, Equatable {
         self.localizationIoUThreshold = localizationIoUThreshold
         self.examples = examples
         self.timestamp = timestamp
+        self.operatingSystem = operatingSystem
+        self.sixLayerVersion = sixLayerVersion
+        self.xcodeVersion = xcodeVersion
     }
 }
 
@@ -286,6 +298,17 @@ public enum DisplayOCRLabBulkCheck {
         )
     }
 
+    /// Capture host/run metadata for summary JSON (#677). Stubbed empty until green.
+    public static func captureRunMetadata() -> (
+        timestamp: String?,
+        operatingSystem: String?,
+        sixLayerVersion: String?,
+        xcodeVersion: String?
+    ) {
+        // Deliberate incomplete stub for #677 red: metadata fields stay nil.
+        (nil, nil, nil, nil)
+    }
+
     /// Score precomputed OCR results against labels (unit-test / post-OCR path).
     public static func evaluate(
         examples: [(folderName: String, label: DisplayOCRTrainingLabel)],
@@ -310,6 +333,7 @@ public enum DisplayOCRLabBulkCheck {
         }
         let passCount = scores.filter(\.overallPass).count
         let failCount = scores.filter { !$0.overallPass }.count
+        let meta = captureRunMetadata()
         return DisplayOCRLabRunSummary(
             passCount: passCount,
             failCount: failCount,
@@ -317,7 +341,10 @@ public enum DisplayOCRLabBulkCheck {
             contextMode: contextMode,
             localizationIoUThreshold: localizationIoUThreshold,
             examples: scores,
-            timestamp: ISO8601DateFormatter().string(from: Date())
+            timestamp: meta.timestamp,
+            operatingSystem: meta.operatingSystem,
+            sixLayerVersion: meta.sixLayerVersion,
+            xcodeVersion: meta.xcodeVersion
         )
     }
 
@@ -384,7 +411,10 @@ public enum DisplayOCRLabBulkCheck {
                 contextMode: summary.contextMode,
                 localizationIoUThreshold: summary.localizationIoUThreshold,
                 examples: summary.examples,
-                timestamp: summary.timestamp
+                timestamp: summary.timestamp,
+                operatingSystem: summary.operatingSystem,
+                sixLayerVersion: summary.sixLayerVersion,
+                xcodeVersion: summary.xcodeVersion
             )
         }
         return summary
