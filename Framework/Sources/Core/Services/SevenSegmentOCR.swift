@@ -1389,7 +1389,11 @@ private struct GrayBuffer {
         let edgeSlack = max(2, min(8, box.height / 12))
         let nearSide = box.minX <= edgeSlack || box.maxX >= buffer.width - edgeSlack
         guard nearSide, box.width * 4 < box.height else { return false }
-        return box.minY <= 1 || box.maxY >= buffer.height - 2
+        // Temporary #684: drop the top/bottom touch so a zero-margin edge
+        // stem fails as bezel chrome — prove edgeFlushOneIsStillAOne observes
+        // this gate before restoring the touch requirement.
+        _ = buffer
+        return true
     }
 
     private static func score(_ buffer: GrayBuffer) -> Int {
