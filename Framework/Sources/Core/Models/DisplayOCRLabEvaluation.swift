@@ -102,7 +102,8 @@ public enum DisplayOCRLabEvaluation {
             entityName: label.entityName,
             fieldAverages: label.fieldAverages,
             fieldAverageMaxPercentDeviation: label.fieldAverageMaxPercentDeviation,
-            fieldFractionDigits: label.fieldFractionDigits
+            fieldFractionDigits: label.fieldFractionDigits,
+            processingMode: .ssocr
         )
     }
 
@@ -343,5 +344,66 @@ public enum DisplayOCRLabBulkCheck {
             contextMode: "app",
             localizationIoUThreshold: localizationIoUThreshold
         )
+    }
+
+    /// Load a training-library root and run app-mode OCR via ``OCRService``.
+    public static func runLibrary(
+        at root: URL,
+        localizationIoUThreshold: Double = DisplayOCRLabEvaluation.defaultLocalizationIoUThreshold,
+        process: (@Sendable (PlatformImage, OCRContext) async throws -> OCRResult)? = nil
+    ) async throws -> DisplayOCRLabRunSummary {
+        let library = DisplayOCRTraining.library(in: root)
+        let loaded = DisplayOCRTraining.loadingImages(library)
+        let examples = loaded.examples.map {
+            (folderName: $0.directory.lastPathComponent, package: $0.package)
+        }
+        let runner: @Sendable (PlatformImage, OCRContext) async throws -> OCRResult
+        if let process {
+            runner = process
+        } else {
+            runner = { image, context in
+                let strategy = OCRStrategy(
+                    supportedTextTypes: context.textTypes,
+                    supportedLanguages: [context.language],
+                    processingMode: .ssocr
+                )
+                return try await OCRService().processImage(image, context: context, strategy: strategy)
+            }
+        }
+        var summary = try await runAppMode(
+            examples: examples,
+            localizationIoUThreshold: localizationIoUThreshold,
+            process: runner
+        )
+        // Unreadable packages are library skips, not OCR fails (#677).
+        if !library.rejections.isEmpty {
+            summary = DisplayOCRLabRunSummary(
+                passCount: summary.passCount,
+                failCount: summary.failCount,
+                skipCount: summary.skipCount + library.rejections.count,
+                contextMode: summary.contextMode,
+                localizationIoUThreshold: summary.localizationIoUThreshold,
+                examples: summary.examples,
+                timestamp: summary.timestamp
+            )
+        }
+        return summary
+    }
+
+    /// Human-readable per-example lines for CLI / lab console.
+    public static func formatHumanReadable(_ summary: DisplayOCRLabRunSummary) -> String {
+        var lines: [String] = []
+        lines.append(
+            "pass=\(summary.passCount) fail=\(summary.failCount) skip=\(summary.skipCount) mode=\(summary.contextMode ?? "?")"
+        )
+        for example in summary.examples {
+            let folder = example.folderName ?? "-"
+            let iou = example.iou.map { String(format: "%.3f", $0) } ?? "-"
+            let reasons = example.failureReasons.isEmpty ? "" : " \(example.failureReasons.joined(separator: "; "))"
+            lines.append(
+                "\(example.exampleId) (\(folder)) structured=\(example.structured.rawValue) localization=\(example.localization.rawValue) iou=\(iou)\(reasons)"
+            )
+        }
+        return lines.joined(separator: "\n")
     }
 }
