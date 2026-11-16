@@ -1,12 +1,21 @@
 # 🚀 Six-Layer Framework Release History
 
-## 📍 **Current Release: v8.7.0** 🚀
+## 📍 **Current Release: v8.8.0** 🚀
 
-**Release Date**: October 21, 2026
+**Release Date**: November 16, 2026
 **Status**: Minor release
-**Previous Release**: v8.6.7 - Patch release
-**Note**: Seven-segment OCR mode (#576); optional hints model name and public DataBinder (#581, #585); Vision continuation claimed once (#563, #574, #578, #579); curated string catalog (#577); platformTap in macOS UITests and snippets (#567, #568, #569, #570, #575, #580, #586, #587); retire script tolerates a missing wip ref (#564).
-**Next Release**: v8.7.1
+**Previous Release**: v8.7.1 - Patch release
+**Note**: Seven-segment OCR hardening (glare, commas, edge chrome, crop geometry); Live Photo camera/picker; platform sheet/nav/button APIs; `/2` land gate and CI hygiene. See [RELEASE_v8.8.0.md](RELEASE_v8.8.0.md).
+**Next Release**: v8.8.1
+
+---
+
+## 🎯 **v8.8.0 - OCR hardening, Live Photo, platform chrome** (November 16, 2026)
+
+### **What's in v8.8.0:**
+- Minor release (v8.8.0 milestone; see [RELEASE_v8.8.0.md](RELEASE_v8.8.0.md) for the full issue list).
+
+**See [RELEASE_v8.8.0.md](RELEASE_v8.8.0.md) for complete release notes.**
 
 ---
 
