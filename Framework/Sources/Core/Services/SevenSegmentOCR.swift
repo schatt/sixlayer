@@ -739,7 +739,11 @@ private struct GrayBuffer {
         let boxes = rawBoxes.filter { $0.width >= minimum && $0.height >= minimum }
         guard !boxes.isEmpty else { return [] }
         let maxHeight = boxes.map(\.height).max() ?? 1
-        let tall = boxes.filter { $0.height * 100 >= maxHeight * 55 }
+        // Edge bezel chrome is tall/narrow like a "1". Leave it out of the
+        // baseline so a pale comma hang still clears markCharacter (#670).
+        let tall = boxes.filter { box in
+            box.height * 100 >= maxHeight * 55 && !isEdgeChromeStrip(box, buffer: buffer)
+        }
         let digitHeight = median(tall.map(\.height)) ?? maxHeight
         let baseline = median(tall.map(\.maxY)) ?? band.1
         let frameTop = median(tall.map(\.minY)) ?? band.0
@@ -1002,16 +1006,35 @@ private struct GrayBuffer {
             }
         }
         // Thin tails can miss the mask while raw pixels still look like ink.
+        // Prefer the mark's own level over surroundingLevel: a pale hang that
+        // joins a darker bottom bezel is lighter than its surround, so the
+        // dark-ink surround test drops it and the comma becomes a period (#670).
         var maxY = box.maxY
         let left = max(0, box.minX)
         let right = min(buffer.width, box.maxX)
         guard right > left else { return box }
-        for y in box.maxY..<reach {
-            let probe = PixelBox(minX: left, minY: y, maxX: right, maxY: y + 1)
-            if inkFraction(buffer, box: probe, darkInk: darkInk) > 0.35 {
-                maxY = y + 1
-            } else if maxY > box.maxY {
-                break
+        let rowWidth = right - left
+        if let markLevel = boxMedianLevel(buffer, box: box) {
+            for y in box.maxY..<reach {
+                let start = y * buffer.width
+                var matched = 0
+                for x in left..<right where abs(Int(buffer.pixels[start + x]) - markLevel) <= inkMargin {
+                    matched += 1
+                }
+                if matched * 100 >= rowWidth * 35 {
+                    maxY = y + 1
+                } else if maxY > box.maxY {
+                    break
+                }
+            }
+        } else {
+            for y in box.maxY..<reach {
+                let probe = PixelBox(minX: left, minY: y, maxX: right, maxY: y + 1)
+                if inkFraction(buffer, box: probe, darkInk: darkInk) > 0.35 {
+                    maxY = y + 1
+                } else if maxY > box.maxY {
+                    break
+                }
             }
         }
         guard maxY > box.maxY else { return box }
@@ -1082,6 +1105,11 @@ private struct GrayBuffer {
         }
         // ssocr: a box narrower than a quarter of its height is a one.
         if box.height * 100 >= digitHeight * 55, box.width * 4 < box.height {
+            // Crop-edge bezel chrome matches this shape and must not become a
+            // digit — it also skewed the mark baseline (#670).
+            if isEdgeChromeStrip(box, buffer: buffer) {
+                return nil
+            }
             return Cell(box: box, character: "1", confidence: 1, band: bandIndex)
         }
         // A digit-tall box that is nearly all ink is a fill, not a glyph:
@@ -1350,6 +1378,18 @@ private struct GrayBuffer {
 
     private static func isMark(_ character: Character) -> Bool {
         character == "." || character == "," || character == ":" || character == "-"
+    }
+
+    /// Tall/narrow ink near the crop edge that runs into the top/bottom
+    /// border — leftover bezel after a comma joins the frame (#670).
+    /// Remnants often sit a few pixels in (bezelWidth 8 → strips at minX=4 /
+    /// maxX=width-4), so a 1-pixel flush check misses them. Requiring a
+    /// top/bottom touch keeps a real edge-flush stem after padding.
+    private static func isEdgeChromeStrip(_ box: PixelBox, buffer: GrayBuffer) -> Bool {
+        let edgeSlack = max(2, min(8, box.height / 12))
+        let nearSide = box.minX <= edgeSlack || box.maxX >= buffer.width - edgeSlack
+        guard nearSide, box.width * 4 < box.height else { return false }
+        return box.minY <= 1 || box.maxY >= buffer.height - 2
     }
 
     private static func score(_ buffer: GrayBuffer) -> Int {
@@ -5347,6 +5387,23 @@ private func medianLevel(_ pixels: [UInt8]) -> Int? {
         if seen * 2 >= pixels.count { return level }
     }
     return nil
+}
+
+private func boxMedianLevel(_ buffer: GrayBuffer, box: PixelBox) -> Int? {
+    let left = max(0, box.minX)
+    let right = min(buffer.width, box.maxX)
+    let lower = max(0, box.minY)
+    let upper = min(buffer.height, box.maxY)
+    guard right > left, upper > lower else { return nil }
+    var samples: [UInt8] = []
+    samples.reserveCapacity((right - left) * (upper - lower))
+    for y in lower..<upper {
+        let start = y * buffer.width
+        for x in left..<right {
+            samples.append(buffer.pixels[start + x])
+        }
+    }
+    return medianLevel(samples)
 }
 
 private func meanLevel(_ mask: Mask, pixels: [UInt8]) -> Int? {
