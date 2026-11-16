@@ -585,6 +585,10 @@ public enum DisplayOCRTraining {
         label.schemaVersion = schemaVersion
         label.origin = .topLeft
         label.sourceName = sanitizedSourceName(label.sourceName)
+        // Stable join key for bulk check / baselines (#677).
+        if label.exampleId == nil || label.exampleId?.isEmpty == true {
+            label.exampleId = UUID().uuidString
+        }
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
         let json: Data
