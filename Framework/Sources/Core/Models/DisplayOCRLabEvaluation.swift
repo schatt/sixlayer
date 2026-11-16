@@ -298,15 +298,22 @@ public enum DisplayOCRLabBulkCheck {
         )
     }
 
-    /// Capture host/run metadata for summary JSON (#677). Stubbed empty until green.
+    /// Capture host/run metadata for summary JSON (#677).
     public static func captureRunMetadata() -> (
         timestamp: String?,
         operatingSystem: String?,
         sixLayerVersion: String?,
         xcodeVersion: String?
     ) {
-        // Deliberate incomplete stub for #677 red: metadata fields stay nil.
-        (nil, nil, nil, nil)
+        let timestamp = ISO8601DateFormatter().string(from: Date())
+        let operatingSystem = ProcessInfo.processInfo.operatingSystemVersionString
+        let frameworkBundle = Bundle(for: OCRService.self)
+        let sixLayerVersion =
+            frameworkBundle.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String
+            ?? frameworkBundle.object(forInfoDictionaryKey: "CFBundleVersion") as? String
+        let xcodeVersion = ProcessInfo.processInfo.environment["XCODE_VERSION_ACTUAL"]
+            ?? ProcessInfo.processInfo.environment["DTXcode"]
+        return (timestamp, operatingSystem, sixLayerVersion, xcodeVersion)
     }
 
     /// Score precomputed OCR results against labels (unit-test / post-OCR path).
