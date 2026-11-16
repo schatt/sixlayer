@@ -478,6 +478,10 @@ public struct OCRResult: Sendable {
 
     /// Segment groups and printed labels. Empty for ``OCRProcessingMode/fast`` and ``OCRProcessingMode/accurate``.
     public let recognizedTexts: [OCRRecognizedText]
+
+    /// Panel actually used for decode, in original-image normalized top-left coords (#677).
+    /// Stub ignores the init value until green so deliberate-red tests observe nil.
+    public let chosenPanelRect: DisplayOCRNormalizedBox?
     
     public init(
         extractedText: String,
@@ -493,7 +497,8 @@ public struct OCRResult: Sendable {
         uncategorizedExtractions: [UncategorizedOCRExtraction] = [],
         recognizedTexts: [OCRRecognizedText] = [],
         isValid: Bool? = nil,
-        validationReason: String? = nil
+        validationReason: String? = nil,
+        chosenPanelRect: DisplayOCRNormalizedBox? = nil
     ) {
         self.extractedText = extractedText
         self.confidence = confidence
@@ -507,6 +512,7 @@ public struct OCRResult: Sendable {
         self.adjustedFields = adjustedFields
         self.uncategorizedExtractions = uncategorizedExtractions
         self.recognizedTexts = recognizedTexts
+        self.chosenPanelRect = nil
         
         // Set validation properties - use provided value or compute from confidence
         self.isValid = isValid ?? (confidence >= 0.5)
