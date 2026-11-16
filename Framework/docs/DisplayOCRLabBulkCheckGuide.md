@@ -51,3 +51,16 @@ DisplayOCRLabBulkCheck /path/to/display-ocr-training \
 
 `DisplayOCRLabEvaluation.seedExpectedFields(fromConfirmedRows:)` returns an **editable draft** map.  
 `authoringAssistAutoCommitsGroundTruth == false` — never silent ground truth.
+
+## In-app lab editing
+
+`DisplayOCRTrainingView` evaluation controls (also via `DisplayOCRTrainingSession`):
+
+- `entityName`, `expectedStructuredFields`, `fieldAverages`
+- `fieldAverageMaxPercentDeviation` (blank → production default)
+- `fieldFractionDigits` (#678 format priors)
+- `additionalImageFileNames` (one name per line; primary stays `image.png`)
+- **Seed draft from rows** — editable only; does not write truth until Apply + export
+- **Bulk check library** — same `DisplayOCRLabBulkCheck.runLibrary` core as the CLI
+
+Geometry / confirmed row text remain the existing canvas + readings editors.
