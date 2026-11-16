@@ -6,6 +6,7 @@
 //  summary/baseline exit codes. Default oracle is app-mode library OCR.
 //
 
+import CoreGraphics
 import Foundation
 import Testing
 @testable import SixLayerFramework
@@ -367,7 +368,82 @@ struct OCRLabBulkPassFail677Tests {
         #expect(DisplayOCRLabEvaluation.authoringAssistAutoCommitsGroundTruth == false)
     }
 
+    // MARK: - Production chosenPanelRect from decode
+
+    @Test func decodeRecordsChosenPanelRectFromPanelLocatorInOriginalNormalizedCoords() {
+        let width = 200
+        let height = 100
+        let image = grayImage(width: width, height: height, fill: 200)
+        let panelPixels = CGRect(x: 110, y: 40, width: 60, height: 40)
+        let decoded = SevenSegmentOCR.decode(
+            cgImage: image,
+            deskewMaximumDegrees: 0,
+            localizeDigitPanel: true,
+            panelLocator: DisplayOCRPanelLocator { _ in panelPixels }
+        )
+        let expected = DisplayOCRNormalizedBox(
+            pixelRect: panelPixels,
+            imageWidth: width,
+            imageHeight: height
+        )
+        #expect(decoded.chosenPanelRect != nil)
+        #expect(abs((decoded.chosenPanelRect?.x ?? -1) - expected.x) < 0.001)
+        #expect(abs((decoded.chosenPanelRect?.y ?? -1) - expected.y) < 0.001)
+        #expect(abs((decoded.chosenPanelRect?.width ?? -1) - expected.width) < 0.001)
+        #expect(abs((decoded.chosenPanelRect?.height ?? -1) - expected.height) < 0.001)
+        #expect((decoded.chosenPanelRect?.x ?? 0) > 0.5)
+    }
+
+    @Test func processSevenSegmentStructuredForwardsChosenPanelRect() async throws {
+        let width = 200
+        let height = 100
+        let image = grayImage(width: width, height: height, fill: 200)
+        let panelPixels = CGRect(x: 110, y: 40, width: 60, height: 40)
+        let context = OCRContext(
+            processingMode: .ssocr,
+            panelLocator: DisplayOCRPanelLocator { _ in panelPixels }
+        )
+        let strategy = OCRStrategy(
+            supportedTextTypes: [],
+            supportedLanguages: [.english],
+            processingMode: .ssocr
+        )
+        let result = try await OCRService().processImage(
+            PlatformImage(cgImage: image),
+            context: context,
+            strategy: strategy
+        )
+        let expected = DisplayOCRNormalizedBox(
+            pixelRect: panelPixels,
+            imageWidth: width,
+            imageHeight: height
+        )
+        #expect(result.chosenPanelRect != nil)
+        #expect(abs((result.chosenPanelRect?.x ?? -1) - expected.x) < 0.001)
+        #expect((result.chosenPanelRect?.x ?? 0) > 0.5)
+    }
+
     // MARK: - Helpers
+
+    private func grayImage(width: Int, height: Int, fill: UInt8) -> CGImage {
+        let pixels = [UInt8](repeating: fill, count: width * height)
+        let data = Data(pixels) as CFData
+        let provider = CGDataProvider(data: data)!
+        return CGImage(
+            width: width,
+            height: height,
+            bitsPerComponent: 8,
+            bitsPerPixel: 8,
+            bytesPerRow: width,
+            space: CGColorSpaceCreateDeviceGray(),
+            bitmapInfo: CGBitmapInfo(rawValue: CGImageAlphaInfo.none.rawValue),
+            provider: provider,
+            decode: nil,
+            shouldInterpolate: false,
+            intent: .defaultIntent
+        )!
+    }
+
 
     private func sampleLabel(
         expected: [String: String]?,
