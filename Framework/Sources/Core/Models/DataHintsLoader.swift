@@ -702,6 +702,7 @@ public final class FileBasedDataHintsLoader: DataHintsLoader, @unchecked Sendabl
                 maxLength: properties["maxLength"].flatMap(Int.init),
                 minLength: properties["minLength"].flatMap(Int.init),
                 expectedRange: expectedRange,
+                fractionDigits: parseFractionDigits(from: propertiesAny, locale: Locale.current),
                 metadata: properties,
                 inputType: inputType,
                 pickerOptions: pickerOptions,
