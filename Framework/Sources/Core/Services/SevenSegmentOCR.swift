@@ -6114,6 +6114,25 @@ struct SevenSegmentLatticeReader {
 
 private let analysisHeight = 360
 private let topHatFractions: [Double] = [0.08, 0.12, 0.18]
+
+/// Lattice analysis canvas size for a source gray buffer.
+///
+/// Tall frames downscale so height is `analysisHeight`. Short frames keep
+/// native size: upscaling a zero-margin line crop to 360px exploded width
+/// into the rotation sharpness search and hung the release unit gate (#691).
+func sevenSegmentLatticeAnalysisSize(
+    sourceWidth: Int,
+    sourceHeight: Int
+) -> (width: Int, height: Int, scale: Double) {
+    guard sourceWidth > 0, sourceHeight > 0 else {
+        return (1, 1, 1)
+    }
+    // Deliberate pre-fix stub: always upscale/downscale to analysisHeight
+    // (the old Reader.run behavior). Green replaces this with no-upscale.
+    let scale = Double(analysisHeight) / Double(sourceHeight)
+    let width = max(1, Int((Double(sourceWidth) * scale).rounded()))
+    return (width, analysisHeight, scale)
+}
 private let thickMaximum = 1.8
 private let rowCoverFraction = 0.3
 private let bridgeStrokes = 0.3
