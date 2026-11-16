@@ -1078,6 +1078,14 @@ public func platformPhotoPicker_L4(onImageSelected: @escaping (PlatformImage) ->
     PlatformPhotoComponentsLayer4.platformPhotoPicker_L4(onImageSelected: onImageSelected)
 }
 
+/// Photo picker that also delivers a Live Photo's paired movie (#668).
+@_disfavoredOverload
+@ViewBuilder
+@MainActor
+public func platformPhotoPicker_L4(onSelection: @escaping (PlatformPhotoSelection) -> Void) -> some View {
+    PlatformPhotoComponentsLayer4.platformPhotoPicker_L4(onSelection: onSelection)
+}
+
 /// Creates a platform-specific camera interface (convenience wrapper).
 /// - Parameters:
 ///   - onImageCaptured: Called when the user captures or selects an image.

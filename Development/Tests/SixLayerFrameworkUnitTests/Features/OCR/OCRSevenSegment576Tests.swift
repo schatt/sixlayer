@@ -103,6 +103,112 @@ struct OCRSevenSegment576Tests {
         #expect(decode(panel(["12.34", "56.78"])).extractedText == "12.34\n56.78")
     }
 
+    /// Live Photo frames: each row is voted across the reads (#600).
+    @Test func liveFramesVoteEachRow() {
+        let good = panel(["31.25", "7.623"])
+        let glared = panel(["37.25", "7.623"])
+        let result = SevenSegmentOCR.decode(
+            frames: [good, glared, good],
+            keyFrame: good,
+            localizeDigitPanel: false
+        )
+        #expect(result.extractedText == "31.25\n7.623")
+        #expect(result.confidence >= 0.79 && result.confidence <= 0.81)
+    }
+
+    /// A tied row goes to the key photo, not to the smaller string.
+    @Test func liveFramesTieGoesToTheKeyPhoto() {
+        let result = SevenSegmentOCR.decode(
+            frames: [panel(["31.25"]), panel(["31.25"])],
+            keyFrame: panel(["37.25"]),
+            localizeDigitPanel: false
+        )
+        #expect(result.extractedText == "37.25")
+        #expect(result.confidence >= 0.49 && result.confidence <= 0.51)
+    }
+
+    /// No read matches every winning row; boxes still come back, one per row.
+    @Test func liveFramesKeepBoxesWhenNoReadMatchesTheVote() {
+        let result = SevenSegmentOCR.decode(
+            frames: [
+                panel(["31.25", "7.623"]),
+                panel(["31.25", "7.625"]),
+                panel(["37.25", "7.628"]),
+                panel(["38.25", "7.628"])
+            ],
+            localizeDigitPanel: false
+        )
+        #expect(result.extractedText == "31.25\n7.628")
+        #expect(segmentTexts(result) == ["31.25", "7.628"])
+        #expect(result.boundingBoxes.count == 2)
+        #expect(result.boundingBoxes.allSatisfy { $0.width > 0 && $0.height > 0 })
+    }
+
+    /// A row no read got well-formed is still voted, with its group spacing.
+    @Test func liveFramesVoteARowWithAnUnknownCell() {
+        let held = panel(["8_2 17.740"])
+        let result = SevenSegmentOCR.decode(frames: [held, held], keyFrame: held, localizeDigitPanel: false)
+        #expect(result.extractedText == "8_2  17.740")
+    }
+
+    /// A well-formed row keeps its group spacing through the vote; rows are
+    /// compared without spaces but not returned without them.
+    @Test func liveFramesKeepGroupSpacingOfAWellFormedRow() {
+        let spaced = panel(["1 234.56"])
+        let single = decode(spaced).extractedText
+        #expect(single.contains(" "))
+        let result = SevenSegmentOCR.decode(frames: [spaced, spaced], keyFrame: spaced, localizeDigitPanel: false)
+        #expect(result.extractedText == single)
+    }
+
+    /// A row no read got well-formed does not hand the whole result to the
+    /// key photo: the other row still takes the frames' majority.
+    @Test func liveFramesUnknownCellRowDoesNotOverrideTheOtherRow() {
+        let result = SevenSegmentOCR.decode(
+            frames: Array(repeating: panel(["8_2 17.740", "7.628"]), count: 3),
+            keyFrame: panel(["8_2 17.740", "7.623"]),
+            localizeDigitPanel: false
+        )
+        #expect(result.extractedText == "8_2  17.740\n7.628")
+    }
+
+    /// A row with group separators is well-formed, so it outvotes misreads
+    /// of the same row: the separator differs from the one decimal mark and
+    /// each group is three digits.
+    @Test func wellFormedRowsAllowGroupSeparators() {
+        for row in ["1234", "31.25", "8,022", "1,234.56", "1.234,56", "1,234,567", "12,345,678.9"] {
+            #expect(SevenSegmentOCR.isWellFormedRow(row), "\(row)")
+        }
+        // Two decimals, a short or long group, a group after the decimal,
+        // or a mark at either end.
+        for row in ["1.234.56", "1,23.45", "1,2345.6", "1.23,456", "12.34,567", ",123", "123.", "8_2", ""] {
+            #expect(!SevenSegmentOCR.isWellFormedRow(row), "\(row)")
+        }
+    }
+
+    /// Two stray 1s from the legacy path do not replace a confident "11.11".
+    @Test func strayOnesDoNotOutweighALatticeReadOfOnes() {
+        let ones = [[
+            fragment("1", x: 0.1, y: 0.4, w: 0.05, h: 0.2, role: .segment),
+            fragment("1", x: 0.3, y: 0.4, w: 0.05, h: 0.2, role: .segment)
+        ]]
+        #expect(!SevenSegmentOCR.legacyOutweighsLattice(ones, latticeText: "11.11"))
+        #expect(SevenSegmentOCR.legacyOutweighsLattice(ones, latticeText: "1.1"))
+        // Digits other than 1 still decide when either side has them.
+        let eights = [[fragment("88", x: 0.1, y: 0.4, w: 0.2, h: 0.2, role: .segment)]]
+        #expect(SevenSegmentOCR.legacyOutweighsLattice(eights, latticeText: "1188"))
+        #expect(!SevenSegmentOCR.legacyOutweighsLattice(ones, latticeText: "18"))
+    }
+
+    /// A sealed panel that really holds two digits: the whole-frame search
+    /// after the short read must not replace it.
+    @Test func shortConfidentReadSurvivesTheFrameSearch() {
+        let sealed = SegmentPanel.render(rows: [atoms("88")], bezelLevel: 40, bezelWidth: 8)
+        let frame = embed(sealed, canvasWidth: 1200, canvasHeight: 1600, originX: 180, originY: 420, fill: 180)
+        let result = SevenSegmentOCR.decode(cgImage: frame, localizeDigitPanel: true)
+        #expect(result.extractedText == "88")
+    }
+
     @Test func tallCropReadsEachRowAtItsOwnWindow() {
         // Empty margin makes the threshold window wide enough to see a bright
         // line just above each row. The glass under that line is then darker
@@ -206,6 +312,39 @@ struct OCRSevenSegment576Tests {
             gapGlare: true,
             leftScratch: true,
             tallHaze: true
+        )
+        let result = decode(image, maximum: 0)
+        #expect(result.extractedText == "32.88\n8.022")
+    }
+
+    @Test func valleyStreakDoesNotCollapseTheDigitFieldSpan() {
+        // Two glyph runs with a valley streak between them. readingSpan
+        // treats the streak as bezel and keeps only the inkiest run, so the
+        // shared rowcrop window never covers the other glyphs (#612).
+        let span = ReadingSpanProbe.span(
+            width: 200,
+            height: 200,
+            digitColumns: [(10, 40), (80, 110)],
+            valleyStreak: (50, 56),
+            bands: [(20, 80), (120, 180)]
+        )
+        #expect(span?.0 == 10)
+        #expect(span?.1 == 110)
+    }
+
+    @Test func valleyStreakDoesNotHideTheOtherGlyphs() {
+        // End-to-end regression: tall-haze / left-scratch rowcrops plus a
+        // valley streak must still read both sides of the field (#612).
+        let image = SegmentPanel.render(
+            rows: [atoms("32.88"), atoms("8.022")],
+            padding: 80,
+            inkLevel: 30,
+            backgroundLevel: 130,
+            outerMargin: 200,
+            gapGlare: true,
+            leftScratch: true,
+            tallHaze: true,
+            valleyStreak: true
         )
         #expect(decode(image, maximum: 0).extractedText == "32.88\n8.022")
     }
@@ -896,6 +1035,311 @@ struct OCRSevenSegment576Tests {
         #expect(abs(region.minY - CGFloat(originY)) < 24)
     }
 
+    /// A dark skirt that climbs slowly stays non-ink, so the sealed pocket
+    /// includes it. The sharp bezel in `sealedBothRowsPanel` is ink and is a
+    /// different edge. The returned region has to sit on the bright glass
+    /// (#600).
+    @Test func digitPanelRegionDropsDarkNonInkSkirt() {
+        let frame = darkSkirtAroundBrightGlass()
+        let glass = CGRect(x: 56, y: 56, width: 98, height: 88)
+        let region = SevenSegmentOCR.digitPanelRegion(in: frame)
+        #expect(region != nil)
+        guard let region else { return }
+        let slop: CGFloat = 16
+        #expect(region.contains(CGPoint(x: glass.midX, y: glass.midY)))
+        #expect(region.minX <= glass.minX)
+        #expect(region.minY <= glass.minY)
+        #expect(region.maxX >= glass.maxX)
+        #expect(region.maxY >= glass.maxY)
+        #expect(region.minX >= glass.minX - slop)
+        #expect(region.minY >= glass.minY - slop)
+        #expect(region.maxX <= glass.maxX + slop)
+        #expect(region.maxY <= glass.maxY + slop)
+    }
+
+    /// Find resolution follows the camera. The long side is capped; a landscape
+    /// frame is not forced into a portrait box, and a frame already inside the
+    /// cap is left alone. Each case is a different sensor, not one scale factor.
+    @Test func findBufferSizeFollowsTheLongSideOfEachCamera() {
+        let cap = 1600
+        #expect(
+            SevenSegmentOCR.findBufferSize(width: 1000, height: 800, maxSide: cap)
+                == (width: 1000, height: 800)
+        )
+        #expect(
+            SevenSegmentOCR.findBufferSize(width: 1600, height: 1200, maxSide: cap)
+                == (width: 1600, height: 1200)
+        )
+        #expect(
+            SevenSegmentOCR.findBufferSize(width: 3200, height: 2400, maxSide: cap)
+                == (width: 1600, height: 1200)
+        )
+        #expect(
+            SevenSegmentOCR.findBufferSize(width: 2400, height: 3200, maxSide: cap)
+                == (width: 1200, height: 1600)
+        )
+        #expect(
+            SevenSegmentOCR.findBufferSize(width: 1800, height: 1800, maxSide: cap)
+                == (width: 1600, height: 1600)
+        )
+        #expect(
+            SevenSegmentOCR.findBufferSize(width: 4032, height: 3024, maxSide: cap)
+                == (width: 1600, height: 1200)
+        )
+        #expect(
+            SevenSegmentOCR.findBufferSize(width: 3024, height: 4032, maxSide: cap)
+                == (width: 1200, height: 1600)
+        )
+        #expect(
+            SevenSegmentOCR.findBufferSize(width: 2000, height: 1000, maxSide: cap)
+                == (width: 1600, height: 800)
+        )
+        #expect(
+            SevenSegmentOCR.findBufferSize(width: 1000, height: 2000, maxSide: cap)
+                == (width: 800, height: 1600)
+        )
+    }
+
+    /// A larger sensor still reports the panel in the original bitmap. The
+    /// finder may search a smaller buffer; the rect the caller crops is the
+    /// full frame. Portrait, landscape, and square are separate cameras.
+    @Test func localizedPanelStaysInFullImageCoordinatesOnLargerCameras() {
+        let panel = sealedBothRowsPanel()
+        let cameras: [(width: Int, height: Int, originX: Int, originY: Int)] = [
+            (2200, 1500, 400, 280),
+            (1500, 2200, 280, 500),
+            (2000, 2000, 360, 420),
+        ]
+        for camera in cameras {
+            let frame = embed(
+                panel,
+                canvasWidth: camera.width,
+                canvasHeight: camera.height,
+                originX: camera.originX,
+                originY: camera.originY,
+                fill: 180
+            )
+            let region = SevenSegmentOCR.digitPanelRegion(in: frame)
+            #expect(region != nil, "\(camera.width)x\(camera.height)")
+            guard let region else { continue }
+            let find = SevenSegmentOCR.findBufferSize(width: camera.width, height: camera.height)
+            let scaleX = CGFloat(camera.width) / CGFloat(find.width)
+            let scaleY = CGFloat(camera.height) / CGFloat(find.height)
+            let slopX = 24 * scaleX
+            let slopY = 24 * scaleY
+            let panelMidX = CGFloat(camera.originX) + CGFloat(panel.width) / 2
+            let panelMidY = CGFloat(camera.originY) + CGFloat(panel.height) / 2
+            #expect(region.contains(CGPoint(x: panelMidX, y: panelMidY)), "\(camera.width)x\(camera.height) \(region)")
+            #expect(abs(region.minX - CGFloat(camera.originX)) < slopX, "\(camera.width)x\(camera.height) \(region)")
+            #expect(abs(region.minY - CGFloat(camera.originY)) < slopY, "\(camera.width)x\(camera.height) \(region)")
+            #expect(abs(region.width - CGFloat(panel.width)) < 48 * scaleX, "\(camera.width)x\(camera.height) \(region)")
+            #expect(abs(region.height - CGFloat(panel.height)) < 48 * scaleY, "\(camera.width)x\(camera.height) \(region)")
+            #expect(region.width < CGFloat(camera.width) * 0.85)
+            #expect(region.height < CGFloat(camera.height) * 0.85)
+        }
+    }
+
+    // MARK: - Path search (#600)
+
+    /// Frame step offers more than the sealed pocket. The ink stack is the
+    /// digit rows, whatever the count, and it has to sit on the panel rather
+    /// than the canvas.
+    @Test func frameFindersOfferSealedPocketAndInkStack() {
+        let panel = sealedBothRowsPanel()
+        let originX = 40
+        let originY = 50
+        let frame = embed(
+            panel,
+            canvasWidth: 700,
+            canvasHeight: 600,
+            originX: originX,
+            originY: originY,
+            fill: 180
+        )
+        let regions = SevenSegmentOCR.frameCandidates(in: frame)
+        let whole = regions.first { $0.finder == .wholeFrame }
+        let sealed = regions.first { $0.finder == .sealedPocket }
+        let ink = regions.first { $0.finder == .inkStack }
+        #expect(whole?.rect == CGRect(x: 0, y: 0, width: 700, height: 600))
+        #expect(sealed != nil)
+        #expect(ink != nil)
+        // Ink is the digit rows inside the bezel, not a second copy of the pocket.
+        #expect(sealed?.rect != ink?.rect)
+        if let sealed, let ink {
+            #expect(sealed.rect.contains(ink.rect))
+        }
+        for candidate in [sealed, ink].compactMap({ $0 }) {
+            #expect(candidate.rect.width < CGFloat(frame.width) * 0.85)
+            #expect(candidate.rect.height < CGFloat(frame.height) * 0.85)
+            #expect(candidate.rect.minX < CGFloat(originX) + CGFloat(panel.width) / 2)
+            #expect(candidate.rect.minY < CGFloat(originY) + CGFloat(panel.height) / 2)
+            #expect(candidate.rect.maxX > CGFloat(originX) + 40)
+            #expect(candidate.rect.maxY > CGFloat(originY) + 40)
+        }
+    }
+
+    /// Row step. Three stacked digits stay three lines on the all-gaps finder.
+    /// The pair finder keeps only the split nearest the middle.
+    @Test func rowFindersKeepEveryGapOrOnlyTheDeepestPair() {
+        let image = SegmentPanel.render(rows: [atoms("8"), atoms("8"), atoms("8")])
+        let hits = SevenSegmentOCR.searchPaths(in: image, deskewMaximumDegrees: 0)
+        let all = hits.first { $0.frame == .wholeFrame && $0.rows == .allGaps && $0.digits == .scanline }
+        let pair = hits.first { $0.frame == .wholeFrame && $0.rows == .deepestPair && $0.digits == .scanline }
+        #expect(all?.lineCount == 3)
+        #expect(all?.text == "8\n8\n8")
+        // Equal gaps tie. The upper gap wins, so the top digit stays alone
+        // and the lower two share one line.
+        #expect(pair?.lineCount == 2)
+        #expect(pair?.text == "8\n88")
+    }
+
+    @Test func rowFindersLeaveASingleRowAsOneLine() {
+        let image = SegmentPanel.render(rows: [atoms("8")])
+        let hits = SevenSegmentOCR.searchPaths(in: image, deskewMaximumDegrees: 0)
+        let all = hits.first { $0.frame == .wholeFrame && $0.rows == .allGaps && $0.digits == .scanline }
+        let pair = hits.first { $0.frame == .wholeFrame && $0.rows == .deepestPair && $0.digits == .scanline }
+        #expect(all?.lineCount == 1)
+        #expect(all?.text == "8")
+        #expect(pair?.lineCount == 1)
+        #expect(pair?.text == "8")
+    }
+
+    /// Two rows are the common pump panel, and they use the same finder as
+    /// one row and three. Neither finder invents a third line or drops one.
+    @Test func rowFindersKeepATwoRowPanelAsTwoLines() {
+        let image = SegmentPanel.render(rows: [atoms("32.88"), atoms("8.022")])
+        let hits = SevenSegmentOCR.searchPaths(in: image, deskewMaximumDegrees: 0)
+        let all = hits.first { $0.frame == .wholeFrame && $0.rows == .allGaps && $0.digits == .scanline }
+        let pair = hits.first { $0.frame == .wholeFrame && $0.rows == .deepestPair && $0.digits == .scanline }
+        #expect(all?.lineCount == 2)
+        #expect(all?.text == "32.88\n8.022")
+        #expect(pair?.lineCount == 2)
+        #expect(pair?.text == "32.88\n8.022")
+    }
+
+    /// Digit step. The scanline through the upper stems is erased. The band
+    /// reader looks a few pixels off that line and still sees the stem.
+    @Test func bandSampleReadsStemWhenTheScanlineRowIsEmpty() {
+        let glyphY = 16
+        let quarter = glyphY + SegmentPanel.cellH / 4
+        let punched = zeroRows(
+            SegmentPanel.render(rows: [atoms("8")]),
+            rows: (quarter - 2)..<(quarter + 3)
+        )
+        let hits = SevenSegmentOCR.searchPaths(in: punched, deskewMaximumDegrees: 0)
+        let scan = hits.first { $0.frame == .wholeFrame && $0.rows == .allGaps && $0.digits == .scanline }
+        let band = hits.first { $0.frame == .wholeFrame && $0.rows == .allGaps && $0.digits == .bandSample }
+        #expect(scan?.text != "8")
+        #expect(band?.text == "8")
+        #expect((band?.exactDigitCount ?? 0) > (scan?.exactDigitCount ?? 0))
+    }
+
+    /// Every labeled pump photo in the private fixtures repo, read the way
+    /// the app reads a library photo (panel search on). The sale panel's
+    /// total and gallons in the photo's `expected_values.json` must come
+    /// back as rows. (Price per gallon is on a separate grade window on
+    /// these pumps, not in the sale panel.) Photos that
+    /// do not read yet are known issues; one that starts reading fails here
+    /// until it leaves `pumpPhotosNotReadingYet`, so progress is kept.
+    @Test(
+        .enabled(if: FileManager.default.fileExists(atPath: OCRSevenSegment576Tests.scenario1Photo)),
+        arguments: OCRSevenSegment576Tests.pumpPhotos
+    )
+    func pumpPhotoReadsItsExpectedValues(_ photoPath: String) throws {
+        let photo = Self.sevenSegmentFixtures.appendingPathComponent(photoPath)
+        let folder = photo.deletingLastPathComponent()
+        let labels = try JSONSerialization.jsonObject(
+            with: Data(contentsOf: folder.appendingPathComponent("expected_values.json"))
+        ) as? [String: Any]
+        let display = try #require(labels?["pump_display"] as? [String: String])
+        let expected = ["totalCost", "gallons"].compactMap { display[$0] }.filter { !$0.isEmpty }
+        let image = try #require(PlatformImage.cgImage(opening: Data(contentsOf: photo)))
+        let read = SevenSegmentOCR.decode(cgImage: image, localizeDigitPanel: true).extractedText
+        let rows = Set(read.split(separator: "\n").map { $0.replacingOccurrences(of: " ", with: "") })
+        let missing = expected.filter { !rows.contains($0) }
+        if Self.pumpPhotosNotReadingYet.contains(photoPath) {
+            withKnownIssue("Pump photo \(photoPath) does not read yet (#600)") {
+                #expect(missing.isEmpty, "read [\(read)], missing \(missing)")
+            }
+        } else {
+            #expect(missing.isEmpty, "read [\(read)], missing \(missing)")
+        }
+    }
+
+    /// `seven-segment/` in the private fixtures repo.
+    static let sevenSegmentFixtures = URL(fileURLWithPath: scenario1Photo)
+        .deletingLastPathComponent() // scenario_1
+        .deletingLastPathComponent() // fuel_purchase
+        .deletingLastPathComponent() // seven-segment
+
+    /// Labeled pump photos, relative to `seven-segment/`.
+    static let pumpPhotos: [String] = (1...9).map { "fuel_purchase/scenario_\($0)/ti_fp_s\($0)_pump.jpg" }
+        + ["pump_display/light_digits_7493/IMG_7493.HEIC"]
+
+    /// Still missing on macOS: s2 9/8.0--, s3 1.07, s4 31.25/0523-, s6 88.
+    /// Scenario 1 reads 32.88 and 8.022.
+    static let pumpPhotosNotReadingYet: Set<String> = Set(
+        [2, 3, 4, 6].map { "fuel_purchase/scenario_\($0)/ti_fp_s\($0)_pump.jpg" }
+    )
+
+    /// Scenario-1 pump photo from the private fixtures repo
+    /// (`Development/TestFixtures/private`, schatt/sixlayer-test-fixtures).
+    /// `Development/scripts/fetch-private-fixtures.sh` clones it; without access these tests skip.
+    static let scenario1Photo = URL(fileURLWithPath: #filePath)
+        .deletingLastPathComponent() // …/Features/OCR
+        .deletingLastPathComponent() // …/SixLayerFrameworkUnitTests/Features
+        .deletingLastPathComponent() // …/Tests/SixLayerFrameworkUnitTests
+        .deletingLastPathComponent() // …/Development/Tests
+        .deletingLastPathComponent() // …/Development
+        .appendingPathComponent("TestFixtures/private/seven-segment/fuel_purchase/scenario_1/ti_fp_s1_pump.jpg")
+        .path
+
+    /// Private photo from the fixtures repo. This crop is the known-good glass
+    /// (`620,1440 1480×820`). It does not run the finder.
+    @Test(
+        .enabled(if: FileManager.default.fileExists(atPath: OCRSevenSegment576Tests.scenario1Photo))
+    )
+    func uprightScenario1HandCropReadsBothRows() throws {
+        let path = Self.scenario1Photo
+        let data = try Data(contentsOf: URL(fileURLWithPath: path))
+        let upright = try #require(PlatformImage.cgImage(opening: data))
+        let hand = try #require(
+            upright.cropping(to: CGRect(x: 620, y: 1440, width: 1480, height: 820))
+        )
+        let result = SevenSegmentOCR.decode(
+            cgImage: hand,
+            deskewMaximumDegrees: 0,
+            localizeDigitPanel: false
+        )
+        // Open #600 target: reads 3._99 / 3.022 on macOS. The washed lower
+        // halves of the top row and the 8's left stems are missing from the ink.
+        withKnownIssue("Scenario-1 hand crop does not read yet (#600)") {
+            #expect(result.extractedText == "32.88\n8.022")
+        }
+    }
+
+    /// Private photo from the fixtures repo. The frame stays at the camera's
+    /// own size. Localization searches a long-side cap and reads the mapped
+    /// crop of the original.
+    @Test(
+        .enabled(if: FileManager.default.fileExists(atPath: OCRSevenSegment576Tests.scenario1Photo))
+    )
+    func uprightScenario1LocalizesAndReadsBothRows() throws {
+        let path = Self.scenario1Photo
+        let data = try Data(contentsOf: URL(fileURLWithPath: path))
+        let upright = try #require(PlatformImage.cgImage(opening: data))
+        let clock = ContinuousClock()
+        let started = clock.now
+        let result = SevenSegmentOCR.decode(
+            cgImage: upright,
+            deskewMaximumDegrees: 0,
+            localizeDigitPanel: true
+        )
+        let elapsed = started.duration(to: clock.now)
+        #expect(result.extractedText == "32.88\n8.022", "read [\(result.extractedText)]")
+        #expect(elapsed < .seconds(30), "elapsed \(elapsed)")
+    }
+
     /// Library photos are multi-megapixel. Panel localization must analyze a
     /// capped long edge and map the rect back (#650).
     ///
@@ -1112,7 +1556,74 @@ struct OCRSevenSegment576Tests {
         )
         .path
 
+    /// `Development/TestFixtures/private/…/ti_fp_s5_pump.jpg` (gitignored local checkout).
+    static let fuelPurchaseScenario5Photo = URL(fileURLWithPath: #filePath)
+        .deletingLastPathComponent()
+        .deletingLastPathComponent()
+        .deletingLastPathComponent()
+        .deletingLastPathComponent()
+        .deletingLastPathComponent()
+        .appendingPathComponent(
+            "TestFixtures/private/seven-segment/fuel_purchase/scenario_5/ti_fp_s5_pump.jpg"
+        )
+        .path
+
+    // MARK: - Private sale-display crop (#612)
+
+    /// Scenario 5's localized crop is already the sale display. Hand-cut rows
+    /// read `3  _25` / `7.6.23`; the combined crop used to collapse to `3` /
+    /// `83.88_8` when readingSpan kept one short run. The two-row decode must
+    /// at least match that hand-cut floor (#612). Skips when the private
+    /// fixtures tree is not checked out locally.
+    @Test(
+        .enabled(if: FileManager.default.fileExists(atPath: OCRSevenSegment576Tests.fuelPurchaseScenario5Photo))
+    )
+    func scenario5SaleDisplayCropMatchesHandCutFloor() throws {
+        let photo = URL(fileURLWithPath: Self.fuelPurchaseScenario5Photo)
+        let image = try #require(PlatformImage.cgImage(opening: Data(contentsOf: photo)))
+        let fitted = try #require(fitIntoBox(image, width: 1200, height: 1600))
+        let result = SevenSegmentOCR.decode(
+            cgImage: fitted,
+            deskewMaximumDegrees: 3,
+            localizeDigitPanel: true
+        )
+        let lines = result.extractedText
+            .split(separator: "\n", omittingEmptySubsequences: false)
+            .map(String.init)
+        #expect(lines.count >= 2, "read [\(result.extractedText)]")
+        // Hand-cut floor: price keeps 3/_/25, volume 7.6.23. #612 only
+        // requires those glyphs stay visible on the combined crop — not the
+        // old short-run collapse (`3` / `83.88_8`). Extra mark noise around
+        // the volume digits is recognition ceiling (#599 / #604), out of scope.
+        let priceDigits = String(lines[0].filter(\.isNumber))
+        let volumeDigits = String(lines[1].filter(\.isNumber))
+        #expect(priceDigits.contains("3") && priceDigits.contains("25"), "price [\(lines[0])]")
+        #expect(volumeDigits.contains("7623"), "volume [\(lines[1])]")
+        #expect(lines[0] != "3" || !lines[1].contains("83"), "collapsed short run [\(result.extractedText)]")
+    }
+
     // MARK: - Helpers
+
+    /// Scale so the image fits inside the box (same production resize used
+    /// when measuring fuel_purchase frames for #612).
+    private func fitIntoBox(_ image: CGImage, width boxW: Int, height boxH: Int) -> CGImage? {
+        let scale = min(Double(boxW) / Double(image.width), Double(boxH) / Double(image.height))
+        let dw = max(1, Int((Double(image.width) * scale).rounded()))
+        let dh = max(1, Int((Double(image.height) * scale).rounded()))
+        guard let ctx = CGContext(
+            data: nil,
+            width: dw,
+            height: dh,
+            bitsPerComponent: 8,
+            bytesPerRow: 0,
+            space: CGColorSpaceCreateDeviceRGB(),
+            bitmapInfo: CGImageAlphaInfo.noneSkipLast.rawValue
+        ) else { return nil }
+        ctx.interpolationQuality = .high
+        ctx.draw(image, in: CGRect(x: 0, y: 0, width: dw, height: dh))
+        return ctx.makeImage()
+    }
+
 
     private func service() -> OCRService { OCRService() }
 
@@ -1161,6 +1672,38 @@ struct OCRSevenSegment576Tests {
         )
     }
 
+    /// 210×200 canvas. Glass is 98×88 at (56, 56). The skirt from 72 to 210
+    /// across 36px stays under the local-contrast ink rule at radius 4.
+    private func darkSkirtAroundBrightGlass() -> CGImage {
+        let width = 210
+        let height = 200
+        var pixels = [UInt8](repeating: 170, count: width * height)
+        let panelX = 16
+        let panelY = 16
+        let panelW = 178
+        let panelH = 168
+        let seal = 4
+        let skirt = 36
+        let glassLevel = 210.0
+        let skirtStart = 72.0
+        for y in panelY..<(panelY + panelH) {
+            for x in panelX..<(panelX + panelW) {
+                let inset = min(x - panelX, panelX + panelW - 1 - x, y - panelY, panelY + panelH - 1 - y)
+                let level: UInt8
+                if inset < seal {
+                    level = 16
+                } else if inset < seal + skirt {
+                    let t = Double(inset - seal) / Double(skirt)
+                    level = UInt8((skirtStart * pow(glassLevel / skirtStart, t)).rounded())
+                } else {
+                    level = 210
+                }
+                pixels[y * width + x] = level
+            }
+        }
+        return solidGrayImage(pixels: pixels, width: width, height: height)
+    }
+
     private func embed(
         _ panel: CGImage,
         canvasWidth: Int,
@@ -1201,6 +1744,31 @@ struct OCRSevenSegment576Tests {
             width: width,
             height: height
         )
+    }
+
+    private func zeroRows(_ image: CGImage, rows: Range<Int>) -> CGImage {
+        let width = image.width
+        let height = image.height
+        var pixels = [UInt8](repeating: 0, count: width * height)
+        guard let provider = image.dataProvider,
+              let data = provider.data,
+              let bytes = CFDataGetBytePtr(data)
+        else {
+            return solidGray(width: width, height: height, level: 0)
+        }
+        let rowBytes = image.bytesPerRow
+        for y in 0..<height {
+            for x in 0..<width {
+                pixels[y * width + x] = bytes[y * rowBytes + x]
+            }
+        }
+        let background = pixels.first ?? 214
+        for y in rows where y >= 0 && y < height {
+            for x in 0..<width {
+                pixels[y * width + x] = background
+            }
+        }
+        return solidGrayImage(pixels: pixels, width: width, height: height)
     }
 
     /// Nearest-neighbor enlarge for large-frame localization fixtures (#650).
@@ -1425,7 +1993,8 @@ enum SegmentPanel {
         leftScratch: Bool = false,
         tallHaze: Bool = false,
         solidGapWashVolumeOnly: Bool = false,
-        falseLowerLeftStemSpeck: Bool = false
+        falseLowerLeftStemSpeck: Bool = false,
+        valleyStreak: Bool = false
     ) -> CGImage {
         let laid = layout(rows: rows, padding: padding)
         let background: UInt8 = backgroundLevel ?? (invert ? 28 : 214)
@@ -1511,6 +2080,16 @@ enum SegmentPanel {
         }
         if edgeStrip {
             paintEdgeStrip(
+                &pixels,
+                width: width,
+                height: height,
+                ink: ink,
+                padding: padding,
+                bands: laid.rowBands
+            )
+        }
+        if valleyStreak {
+            paintValleyStreak(
                 &pixels,
                 width: width,
                 height: height,
@@ -1691,6 +2270,40 @@ enum SegmentPanel {
         for y in gapTop..<gapBottom {
             for x in 4..<scratchEnd {
                 pixels[y * width + x] = background
+            }
+        }
+    }
+
+    /// Vertical ink only in the inter-row valley, in the intra gap after "32"
+    /// so it splits the digit field into two runs without sitting under the
+    /// period (gapStrip would drop that mark). readingSpan treats the column
+    /// as bezel and keeps only the inkiest run (#612). Leave clear rows under
+    /// the upper band so hang reach cannot turn a nearby period into a comma.
+    private static func paintValleyStreak(
+        _ pixels: inout [UInt8],
+        width: Int,
+        height: Int,
+        ink: UInt8,
+        padding: Int,
+        bands: [RowBand]
+    ) {
+        guard let first = bands.first, let last = bands.last else { return }
+        let gapTop = first.maxY
+        let gapBottom = last.minY
+        let gap = gapBottom - gapTop
+        guard gap > 0 else { return }
+        let clear = max(8, gap / 4)
+        let y0 = gapTop + clear
+        let y1 = gapBottom - clear
+        // Edge detection needs more than valley/3 ink pixels in the column.
+        guard y1 - y0 > max(4, gap / 3) else { return }
+        // End of the second digit cell — before the period between 32 and 88.
+        let streakX = padding + 2 * cellW + intra
+        let streakEnd = min(width, streakX + max(4, stroke / 2))
+        guard streakEnd > streakX else { return }
+        for y in y0..<y1 {
+            for x in streakX..<streakEnd {
+                pixels[y * width + x] = ink
             }
         }
     }

@@ -18,20 +18,18 @@ The Advanced Field Types system provides a comprehensive set of sophisticated fo
 - **DateTime Picker** - Combined date and time selection
 - **MultiDate Picker** (iOS 16+) - Select multiple individual dates from calendar
 - **Date Range Picker** - Select date ranges (start and end dates)
-- **Automatic Formatting** - Proper date/time string formatting
+- **Date persistence** - Stores `Date` in form state (locale-independent; #618)
 - **Value Persistence** - Integration with form state management
 - **Fallback Support** - Graceful degradation for older iOS versions and macOS
 
 ### `DynamicFormState` date contracts (CustomFieldView vs advanced pickers)
 
-Two intentional storage shapes exist; do not mix them for the same field without conversion:
+Both paths prefer `Date` in `fieldValues` (#618). `DynamicFormStoredDateValue` still parses legacy medium/short strings and ISO-8601 for older drafts / prefilled values.
 
 | Path | Views | Stored value |
 |------|--------|----------------|
-| **Dynamic form / `CustomFieldView`** | `DynamicDateField`, `DynamicTimeField`, `DynamicDateTimeField` | Prefer `Date` in `fieldValues[fieldId]`. `DynamicFormStoredDateValue` also parses legacy `String` (ISO-8601 or the same medium/short formats below) and `TimeInterval`. |
-| **Advanced composable pickers** | `DatePickerField`, `TimePickerField`, `DateTimePickerField` in `AdvancedFieldTypes.swift` | Localized **medium / short** `String` values (see formatters in those types). |
-
-Hosts that migrate between paths should normalize at the boundary (parse to `Date` or serialize to the string format) so pickers and submit payloads stay consistent.
+| **Dynamic form / `CustomFieldView`** | `DynamicDateField`, `DynamicTimeField`, `DynamicDateTimeField` | Prefer `Date` in `fieldValues[fieldId]`. Also parses legacy `String` (ISO-8601 or medium/short) and `TimeInterval`. |
+| **Advanced composable pickers** | `DatePickerField`, `TimePickerField`, `DateTimePickerField` in `AdvancedFieldTypes.swift` | Prefer `Date` via `AdvancedDatePickerFieldStorage`. Legacy medium/short strings still load. |
 
 ### 🔍 Autocomplete Field
 - **Smart Filtering** - Intelligent suggestion filtering with prefix matching
@@ -309,7 +307,6 @@ public struct RichTextEditorField: View {
 public struct DatePickerField: View {
     let field: DynamicFormField
     @ObservedObject var formState: DynamicFormState
-    @State private var selectedDate = Date()
     
     public var body: some View
 }
@@ -336,7 +333,7 @@ public struct DynamicStepperField: View {
 
 **Features:**
 - Compact date picker interface
-- Automatic date formatting
+- Persists `Date` in form state (#618)
 - Form state integration
 - Accessibility labels and hints
 
@@ -346,7 +343,6 @@ public struct DynamicStepperField: View {
 public struct TimePickerField: View {
     let field: DynamicFormField
     @ObservedObject var formState: DynamicFormState
-    @State private var selectedTime = Date()
     
     public var body: some View
 }
@@ -354,7 +350,7 @@ public struct TimePickerField: View {
 
 **Features:**
 - Hour and minute selection
-- Time formatting
+- Persists `Date` in form state (#618)
 - Form state integration
 - Accessibility support
 
@@ -364,7 +360,6 @@ public struct TimePickerField: View {
 public struct DateTimePickerField: View {
     let field: DynamicFormField
     @ObservedObject var formState: DynamicFormState
-    @State private var selectedDateTime = Date()
     
     public var body: some View
 }
@@ -372,7 +367,7 @@ public struct DateTimePickerField: View {
 
 **Features:**
 - Combined date and time selection
-- Comprehensive formatting
+- Persists `Date` in form state (#618)
 - Form state integration
 - Accessibility support
 

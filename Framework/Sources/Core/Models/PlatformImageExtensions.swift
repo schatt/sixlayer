@@ -595,6 +595,15 @@ public extension PlatformImage {
     static func cgImage(opening data: Data) -> CGImage? {
         guard let source = CGImageSourceCreateWithData(data as CFData, nil) else { return nil }
         let props = CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [String: Any]
+        let orientation = intProperty(props, kCGImagePropertyOrientation)
+        // ImageIO's transformed thumbnail of a Display P3 photo is premultiplied
+        // and dark on iOS. Orientation 6, drawn in the photo's own color space,
+        // matches the macOS thumbnail within a couple of levels.
+        if orientation == 6,
+           let image = CGImageSourceCreateImageAtIndex(source, 0, nil),
+           let turned = turnedRight(image) {
+            return turned
+        }
         let width = intProperty(props, kCGImagePropertyPixelWidth)
         let height = intProperty(props, kCGImagePropertyPixelHeight)
         let maxSide = max(width, height)
@@ -606,6 +615,32 @@ public extension PlatformImage {
         ]
         return CGImageSourceCreateThumbnailAtIndex(source, 0, options as CFDictionary)
             ?? CGImageSourceCreateImageAtIndex(source, 0, nil)
+    }
+
+    /// EXIF 6 in a bottom-left context: the stored frame is on its side.
+    /// This is the transform that matches ImageIO's upright thumbnail on macOS.
+    private static func turnedRight(_ image: CGImage) -> CGImage? {
+        let srcW = image.width
+        let srcH = image.height
+        guard srcW > 0, srcH > 0 else { return nil }
+        let dstW = srcH
+        let dstH = srcW
+        guard let space = image.colorSpace ?? CGColorSpace(name: CGColorSpace.sRGB),
+              let context = CGContext(
+                data: nil,
+                width: dstW,
+                height: dstH,
+                bitsPerComponent: 8,
+                bytesPerRow: 0,
+                space: space,
+                bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
+              )
+        else { return nil }
+        context.interpolationQuality = .none
+        context.translateBy(x: 0, y: CGFloat(dstH))
+        context.rotate(by: -.pi / 2)
+        context.draw(image, in: CGRect(x: 0, y: 0, width: srcW, height: srcH))
+        return context.makeImage()
     }
 
     private static func intProperty(_ props: [String: Any]?, _ key: CFString) -> Int {

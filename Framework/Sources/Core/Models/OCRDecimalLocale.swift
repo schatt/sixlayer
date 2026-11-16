@@ -90,4 +90,21 @@ enum OCRDecimalLocale {
         guard !trimmed.isEmpty else { return nil }
         return trimmed.uppercased()
     }
+
+    /// Finite number for recognized OCR text. Same path as calculation groups (#630 / #632):
+    /// POSIX / whole-string locale decimals first, then `NumberFormatter` for grouped forms.
+    /// English `4,5` fails closed instead of becoming 4.5 or 45.
+    static func parseRecognized(_ text: String, locale: Locale) -> Double? {
+        if let parsed = DynamicFormStoredDecimal.double(fromStoredText: text, locale: locale) {
+            return parsed
+        }
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return nil }
+        let formatter = NumberFormatter()
+        formatter.locale = locale
+        formatter.numberStyle = .decimal
+        guard let number = formatter.number(from: trimmed) else { return nil }
+        let double = number.doubleValue
+        return double.isFinite ? double : nil
+    }
 }
