@@ -70,6 +70,11 @@ public struct DisplayOCRNormalizedBox: Codable, Sendable, Equatable, Hashable {
         ).unitClamped
     }
 
+    /// Intersection-over-union of two normalized boxes (#677). Stub returns 0 until green.
+    public func iou(_ other: DisplayOCRNormalizedBox) -> Double {
+        0
+    }
+
     /// Top-left pixel rect. Nil when the box misses the image.
     public func pixelRect(imageWidth: Int, imageHeight: Int) -> CGRect? {
         guard imageWidth > 0, imageHeight > 0, let box = unitClamped else { return nil }
@@ -134,6 +139,25 @@ public struct DisplayOCRTrainingLabel: Codable, Sendable, Equatable {
     public var sourceName: String?
     public var panel: DisplayOCRNormalizedBox
     public var rows: [DisplayOCRTrainingRow]
+    /// Stable example id for summary/baseline join (#677). Optional for legacy labels.
+    public var exampleId: String?
+    /// Extra image file names beyond ``imageFileName`` (#677 multi-image).
+    public var additionalImageFileNames: [String]
+    /// Expected structured field id → value for bulk check (#677).
+    public var expectedStructuredFields: [String: String]?
+    /// Entity/hints name for app-mode OCR context (#677).
+    public var entityName: String?
+    /// Per-example regional magnitude priors (#677); not pass/fail targets.
+    public var fieldAverages: [String: Double]?
+    /// Optional average-deviation percent gate (#679 via #677 label.json).
+    public var fieldAverageMaxPercentDeviation: Double?
+    /// Per-example fraction-digit format priors (#678 via #677).
+    public var fieldFractionDigits: [String: Int]?
+
+    /// Primary plus any additional image names (#677).
+    public var imageFileNames: [String] {
+        [imageFileName] + additionalImageFileNames
+    }
 
     public init(
         schemaVersion: Int,
@@ -143,7 +167,14 @@ public struct DisplayOCRTrainingLabel: Codable, Sendable, Equatable {
         imagePixelHeight: Int,
         sourceName: String?,
         panel: DisplayOCRNormalizedBox,
-        rows: [DisplayOCRTrainingRow]
+        rows: [DisplayOCRTrainingRow],
+        exampleId: String? = nil,
+        additionalImageFileNames: [String] = [],
+        expectedStructuredFields: [String: String]? = nil,
+        entityName: String? = nil,
+        fieldAverages: [String: Double]? = nil,
+        fieldAverageMaxPercentDeviation: Double? = nil,
+        fieldFractionDigits: [String: Int]? = nil
     ) {
         self.schemaVersion = schemaVersion
         self.origin = origin
@@ -153,6 +184,14 @@ public struct DisplayOCRTrainingLabel: Codable, Sendable, Equatable {
         self.sourceName = sourceName
         self.panel = panel
         self.rows = rows
+        // Stub (#677 red): drop new fields so round-trip fails until green.
+        self.exampleId = nil
+        self.additionalImageFileNames = []
+        self.expectedStructuredFields = nil
+        self.entityName = nil
+        self.fieldAverages = nil
+        self.fieldAverageMaxPercentDeviation = nil
+        self.fieldFractionDigits = nil
     }
 }
 
