@@ -502,6 +502,7 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
         // Get hints file data if entityName is provided
         var hintsRanges: [String: ValueRange] = [:]
         var hintsCalculationGroups: [String: [CalculationGroup]] = [:]
+        var hintsFractionDigits: [String: Int] = [:]
         if let entityName = context.entityName {
             let loader = FileBasedDataHintsLoader()
             let hintsResult = loader.loadHintsResult(for: entityName, locale: locale)
@@ -512,9 +513,17 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
                 if let groups = fieldHints.calculationGroups {
                     hintsCalculationGroups[fieldId] = groups
                 }
+                if let count = fieldHints.fractionDigits {
+                    hintsFractionDigits[fieldId] = count
+                }
             }
         }
-        let hintsFractionDigits = Self.resolvedFractionDigits(context: context, locale: locale)
+        // Runtime override wins over hints-file fraction digits (#678).
+        if let overrides = context.fieldFractionDigits {
+            for (fieldId, count) in overrides {
+                hintsFractionDigits[fieldId] = count
+            }
+        }
         
         let jointResult = OCRJointDecimalCorrection.apply(
             to: correctedData,
@@ -681,28 +690,6 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
 
     /// Score bonus when a decimal-placement candidate matches preferred fraction digits (#678).
     fileprivate static let fractionDigitMatchScoreBonus: Double = 20
-
-    /// Hints-file fraction digits, overridden by ``OCRContext/fieldFractionDigits`` (#678).
-    fileprivate static func resolvedFractionDigits(
-        context: OCRContext,
-        locale: Locale
-    ) -> [String: Int] {
-        var digits: [String: Int] = [:]
-        if let entityName = context.entityName {
-            let hintsResult = FileBasedDataHintsLoader().loadHintsResult(for: entityName, locale: locale)
-            for (fieldId, fieldHints) in hintsResult.fieldHints {
-                if let count = fieldHints.fractionDigits {
-                    digits[fieldId] = count
-                }
-            }
-        }
-        if let overrides = context.fieldFractionDigits {
-            for (fieldId, count) in overrides {
-                digits[fieldId] = count
-            }
-        }
-        return digits
-    }
     
     /// Infer expected ranges for fields that don't have explicit ranges but have calculation groups
     /// Example: If totalCost = pricePerGallon * gallons, and we know:
