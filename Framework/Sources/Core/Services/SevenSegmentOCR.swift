@@ -1389,11 +1389,7 @@ private struct GrayBuffer {
         let edgeSlack = max(2, min(8, box.height / 12))
         let nearSide = box.minX <= edgeSlack || box.maxX >= buffer.width - edgeSlack
         guard nearSide, box.width * 4 < box.height else { return false }
-        // Temporary #684: drop the top/bottom touch so a zero-margin edge
-        // stem fails as bezel chrome — prove edgeFlushOneIsStillAOne observes
-        // this gate before restoring the touch requirement.
-        _ = buffer
-        return true
+        return box.minY <= 1 || box.maxY >= buffer.height - 2
     }
 
     private static func score(_ buffer: GrayBuffer) -> Int {
@@ -1850,10 +1846,7 @@ private struct Cell {
 private func recognizedGroups(_ cells: [Cell], width: Int, height: Int) -> [OCRRecognizedText] {
     let pieces = GrayBuffer.group(cells)
     return pieces.map { group in
-        // Temporary #684 cell-box trace.
-        let text = group.map { cell in
-            "\(cell.character)[\(cell.minX),\(cell.minY),\(cell.box.width)x\(cell.box.height) w=\(width) h=\(height)]"
-        }.joined(separator: " ")
+        let text = String(group.map(\.character))
         let confidence = group.map(\.confidence).min() ?? 0
         let box = reCropGlassBox(
             minX: group.map(\.minX).min() ?? 0,
