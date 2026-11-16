@@ -1386,10 +1386,10 @@ private struct GrayBuffer {
     /// maxX=width-4), so a 1-pixel flush check misses them. Requiring a
     /// top/bottom touch keeps a real edge-flush stem after padding.
     private static func isEdgeChromeStrip(_ box: PixelBox, buffer: GrayBuffer) -> Bool {
-        let edgeSlack = max(2, min(8, box.height / 12))
-        let nearSide = box.minX <= edgeSlack || box.maxX >= buffer.width - edgeSlack
-        guard nearSide, box.width * 4 < box.height else { return false }
-        return box.minY <= 1 || box.maxY >= buffer.height - 2
+        // Temporary #684: treat every box as edge chrome so a surviving "1"
+        // proves another path (lattice/flat) is reconstructing the digit.
+        _ = (box, buffer)
+        return true
     }
 
     private static func score(_ buffer: GrayBuffer) -> Int {
