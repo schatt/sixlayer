@@ -451,6 +451,19 @@ func resolvedCameraPickerSourceTypeForLayer4() -> UIImagePickerController.Source
     }
 }
 
+/// Still-only camera used by ``platformCameraInterface_L4(onImageCaptured:)`` (#681).
+func stillOnlyCameraViewForLayer4(
+    onImageCaptured: @escaping (PlatformImage) -> Void,
+    onCancel: (() -> Void)? = nil,
+    onCameraAuthorizationState: ((CameraAuthorizationState) -> Void)? = nil
+) -> CameraView {
+    // RED STUB (#681): onCancel is accepted and ignored.
+    CameraView(
+        onImageCaptured: onImageCaptured,
+        onCameraAuthorizationState: onCameraAuthorizationState
+    )
+}
+
 /// iOS camera picker (`UIImagePickerController`) returning ``PlatformImage``.
 ///
 /// **Presentation:** Default ``SystemImagePickerDismissPolicy/hostManaged`` — does not UIKit-dismiss
