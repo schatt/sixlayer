@@ -12,8 +12,8 @@
 # SIXLAYER_FIXTURES_TOKEN (read-only for that repo). Without access the script
 # warns and exits 0; tests that need a missing photo skip themselves.
 #
-# In CI (or when the token is set) credential helpers are disabled so a missing
-# or invalid token fails fast instead of hanging on osxkeychain (#685).
+# In CI without a token, credential helpers are disabled so the missing secret
+# fails fast instead of hanging on osxkeychain (#685).
 set -euo pipefail
 export GIT_TERMINAL_PROMPT=0
 
@@ -24,11 +24,9 @@ repo="github.com/schatt/sixlayer-test-fixtures.git"
 auth=()
 if [[ -n "${SIXLAYER_FIXTURES_TOKEN:-}" ]]; then
   # Pass the token as a header so it is not stored in the clone's remote URL.
-  # Clear credential.helper so a bad token cannot fall through to a hanging helper.
-  auth=(
-    -c credential.helper=
-    -c "http.https://github.com/.extraheader=AUTHORIZATION: basic $(printf 'x-access-token:%s' "$SIXLAYER_FIXTURES_TOKEN" | base64 | tr -d '\n')"
-  )
+  # Do not clear credential.helper here: on current Git that drops the header
+  # and forces a username prompt instead of sending basic auth.
+  auth=(-c "http.https://github.com/.extraheader=AUTHORIZATION: basic $(printf 'x-access-token:%s' "$SIXLAYER_FIXTURES_TOKEN" | base64 | tr -d '\n')")
 elif [[ "${CI:-}" == "true" ]]; then
   # No secret configured: do not consult osxkeychain (hangs on self-hosted).
   auth=(-c credential.helper=)
