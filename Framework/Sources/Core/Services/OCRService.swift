@@ -894,11 +894,8 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
                 // Within range, but check if far from average
                 let deviation = abs(numericValue - average)
                 let percentDeviation = (deviation / abs(average)) * 100.0
-                let maxPercent = context.fieldAverageMaxPercentDeviation
-                    ?? OCRContext.defaultFieldAverageMaxPercentDeviation
-
                 // Flag when farther from the average than the configured percent gate (#679).
-                if percentDeviation > maxPercent {
+                if percentDeviation > context.resolvedFieldAverageMaxPercentDeviation {
                     shouldFlag = true
                     flagReason = "Value '\(valueString)' is within expected range but significantly different from typical value (\(String(format: "%.2f", average))). Deviation: \(String(format: "%.1f", percentDeviation))%. Please verify."
                 }
