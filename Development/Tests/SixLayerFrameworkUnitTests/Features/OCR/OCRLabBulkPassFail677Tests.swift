@@ -8,7 +8,9 @@
 
 import CoreGraphics
 import Foundation
+import ImageIO
 import Testing
+import UniformTypeIdentifiers
 @testable import SixLayerFramework
 
 @Suite("OCR lab bulk pass/fail (#677)")
@@ -370,6 +372,94 @@ struct OCRLabBulkPassFail677Tests {
 
     // MARK: - Production chosenPanelRect from decode
 
+    // MARK: - Bulk library evaluation core
+
+    @Test func bulkEvaluatePassesTinyLibraryAndExitZero() {
+        let panel = DisplayOCRNormalizedBox(x: 0.1, y: 0.1, width: 0.5, height: 0.4)
+        let label = sampleLabel(expected: ["gallons": "8.022"], panel: panel)
+        let result = OCRResult(
+            extractedText: "ok",
+            confidence: 1.0,
+            structuredData: ["gallons": "8.022"],
+            chosenPanelRect: panel
+        )
+        let summary = DisplayOCRLabBulkCheck.evaluate(
+            examples: [(folderName: "folder-a", label: label)],
+            resultsByExampleId: ["ex-sample": result],
+            contextMode: "app"
+        )
+        #expect(summary.passCount == 1)
+        #expect(summary.failCount == 0)
+        #expect(summary.contextMode == "app")
+        #expect(DisplayOCRLabBulkCheck.exitCode(for: summary, baseline: nil) == 0)
+    }
+
+    @Test func bulkEvaluateReportsFailureAndExitOne() {
+        let panel = DisplayOCRNormalizedBox(x: 0.1, y: 0.1, width: 0.5, height: 0.4)
+        let label = sampleLabel(expected: ["gallons": "8.022"], panel: panel)
+        let result = OCRResult(
+            extractedText: "ok",
+            confidence: 1.0,
+            structuredData: ["gallons": "9.999"],
+            chosenPanelRect: panel
+        )
+        let summary = DisplayOCRLabBulkCheck.evaluate(
+            examples: [(folderName: "folder-a", label: label)],
+            resultsByExampleId: ["ex-sample": result],
+            contextMode: "app"
+        )
+        #expect(summary.failCount == 1)
+        #expect(summary.examples.first?.exampleId == "ex-sample")
+        #expect(summary.examples.first?.structured == .fail)
+        #expect(DisplayOCRLabBulkCheck.exitCode(for: summary, baseline: nil) == 1)
+    }
+
+    @Test func bulkEvaluateSkipsUnreadableWithoutFailingExit() {
+        let summary = DisplayOCRLabBulkCheck.evaluate(
+            examples: [],
+            resultsByExampleId: [:],
+            skippedUnreadableCount: 2,
+            contextMode: "app"
+        )
+        #expect(summary.skipCount == 2)
+        #expect(summary.failCount == 0)
+        #expect(DisplayOCRLabBulkCheck.exitCode(for: summary, baseline: nil) == 0)
+    }
+
+    @Test func appModeOCRRunnerInvokesInjectedLibraryEntryPoint() async throws {
+        final class Spy: @unchecked Sendable {
+            var callCount = 0
+            var lastEntityName: String?
+        }
+        let spy = Spy()
+        let panel = DisplayOCRNormalizedBox(x: 0.1, y: 0.1, width: 0.5, height: 0.4)
+        let label = sampleLabel(expected: ["gallons": "8.022"], panel: panel)
+        var labelWithEntity = label
+        labelWithEntity.entityName = "FuelPurchase"
+        let image = grayImage(width: 8, height: 8, fill: 180)
+        let package = DisplayOCRTrainingPackage(
+            label: labelWithEntity,
+            imagePNG: pngData(from: image)
+        )
+        let summary = try await DisplayOCRLabBulkCheck.runAppMode(
+            examples: [(folderName: "a", package: package)],
+            process: { image, context in
+                spy.callCount += 1
+                spy.lastEntityName = context.entityName
+                return OCRResult(
+                    extractedText: "ok",
+                    confidence: 1.0,
+                    structuredData: ["gallons": "8.022"],
+                    chosenPanelRect: panel
+                )
+            }
+        )
+        #expect(spy.callCount == 1)
+        #expect(spy.lastEntityName == "FuelPurchase")
+        #expect(summary.passCount == 1)
+        #expect(summary.contextMode == "app")
+    }
+
     @Test func decodeRecordsChosenPanelRectFromPanelLocatorInOriginalNormalizedCoords() {
         let width = 200
         let height = 100
@@ -463,5 +553,18 @@ struct OCRLabBulkPassFail677Tests {
             expectedStructuredFields: expected,
             entityName: calculationCheck ? "FuelPurchase" : nil
         )
+    }
+
+    private func pngData(from image: CGImage) -> Data {
+        let data = NSMutableData()
+        let destination = CGImageDestinationCreateWithData(
+            data as CFMutableData,
+            UTType.png.identifier as CFString,
+            1,
+            nil
+        )!
+        CGImageDestinationAddImage(destination, image, nil)
+        CGImageDestinationFinalize(destination)
+        return data as Data
     }
 }
