@@ -120,9 +120,7 @@ public struct AnyCodable: Codable, Equatable {
         case let uuid as UUID:
             try container.encode([Self.uuidTagKey: AnyCodable(uuid.uuidString)])
         case let array as [Any]:
-            // Deliberate red for #676: stringify elements so Date tags are skipped.
-            // Revert after failing run proves the new assertions trip.
-            try container.encode(array.map { AnyCodable(String(describing: $0)) })
+            try container.encode(array.map { AnyCodable($0) })
         case let dict as [String: Any]:
             try container.encode(dict.mapValues { AnyCodable($0) })
         default:
