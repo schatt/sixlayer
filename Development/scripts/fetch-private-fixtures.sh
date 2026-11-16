@@ -8,9 +8,12 @@
 # It is deliberately not a submodule: SwiftPM checks out a dependency's
 # submodules, so a private one would break package resolution for consumers.
 #
-# Auth: uses your normal git credentials. CI sets SIXLAYER_FIXTURES_TOKEN (a
-# read-only token for that repo). Without access the script warns and exits 0;
-# tests that need a missing photo skip themselves.
+# Auth: locally uses your normal git credentials. CI must set
+# SIXLAYER_FIXTURES_TOKEN (read-only for that repo). Without access the script
+# warns and exits 0; tests that need a missing photo skip themselves.
+#
+# In CI without a token, credential helpers are disabled so the missing secret
+# fails fast instead of hanging on osxkeychain (#685).
 set -euo pipefail
 export GIT_TERMINAL_PROMPT=0
 
@@ -18,11 +21,15 @@ root="$(cd "$(dirname "$0")/../.." && pwd)"
 dest="$root/Development/TestFixtures/private"
 repo="github.com/schatt/sixlayer-test-fixtures.git"
 
+auth=()
 if [[ -n "${SIXLAYER_FIXTURES_TOKEN:-}" ]]; then
   # Pass the token as a header so it is not stored in the clone's remote URL.
+  # Do not clear credential.helper here: on current Git that drops the header
+  # and forces a username prompt instead of sending basic auth.
   auth=(-c "http.https://github.com/.extraheader=AUTHORIZATION: basic $(printf 'x-access-token:%s' "$SIXLAYER_FIXTURES_TOKEN" | base64 | tr -d '\n')")
-else
-  auth=()
+elif [[ "${CI:-}" == "true" ]]; then
+  # No secret configured: do not consult osxkeychain (hangs on self-hosted).
+  auth=(-c credential.helper=)
 fi
 
 if [[ -d "$dest/.git" ]]; then
