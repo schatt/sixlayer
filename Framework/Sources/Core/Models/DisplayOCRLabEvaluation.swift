@@ -107,12 +107,13 @@ public enum DisplayOCRLabEvaluation {
         localizationIoUThreshold: Double = defaultLocalizationIoUThreshold,
         folderName: String? = nil
     ) -> DisplayOCRLabExampleScore {
+        // Deliberate-red stub: always fail both axes until green (#677).
         DisplayOCRLabExampleScore(
             exampleId: label.exampleId ?? folderName ?? "unknown",
             folderName: folderName,
-            structured: .pass,
-            localization: .pass,
-            failureReasons: []
+            structured: .fail,
+            localization: .fail,
+            failureReasons: ["stub"]
         )
     }
 
