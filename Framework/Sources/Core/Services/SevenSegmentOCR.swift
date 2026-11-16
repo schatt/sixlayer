@@ -1399,9 +1399,8 @@ private struct GrayBuffer {
         mask: Mask,
         strokeLevel: Int?
     ) -> Bool {
-        let edgeSlack = max(2, min(8, box.height / 12))
-        let nearSide = box.minX <= edgeSlack || box.maxX >= buffer.width - edgeSlack
-        guard nearSide, box.width * 4 < box.height else { return false }
+        guard isNearSideEdge(box, bufferWidth: buffer.width),
+              box.width * 4 < box.height else { return false }
         guard box.minY <= 1 || box.maxY >= buffer.height - 2 else { return false }
         if let strokeLevel,
            let level = boxMaskInkMedian(buffer, mask: mask, box: box),
@@ -1418,13 +1417,14 @@ private struct GrayBuffer {
         buffer: GrayBuffer,
         mask: Mask
     ) -> Int? {
-        let interior = tall.filter { box in
-            let edgeSlack = max(2, min(8, box.height / 12))
-            let nearSide = box.minX <= edgeSlack || box.maxX >= buffer.width - edgeSlack
-            return !nearSide
-        }
+        let interior = tall.filter { !isNearSideEdge($0, bufferWidth: buffer.width) }
         let sample = interior.isEmpty ? tall : interior
         return median(sample.compactMap { boxMaskInkMedian(buffer, mask: mask, box: $0) })
+    }
+
+    private static func isNearSideEdge(_ box: PixelBox, bufferWidth: Int) -> Bool {
+        let slack = max(2, min(8, box.height / 12))
+        return box.minX <= slack || box.maxX >= bufferWidth - slack
     }
 
     private static func boxMaskInkMedian(
