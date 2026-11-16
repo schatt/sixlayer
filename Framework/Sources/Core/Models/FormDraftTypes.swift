@@ -58,6 +58,7 @@ public struct FormDraft: Codable, Equatable {
 ///
 /// Non-JSON form value types are stored as single-key tagged objects so round-trips restore
 /// the original type rather than `String(describing:)` (#672 Date, #674 URL / Data / UUID).
+/// Arrays encode element-wise, so `[Date]` (MultiDate drafts) restores as dates (#676).
 /// Bare strings that look like those values stay `String`.
 public struct AnyCodable: Codable, Equatable {
     public let value: Any
