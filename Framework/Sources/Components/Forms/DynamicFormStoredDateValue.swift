@@ -65,10 +65,10 @@ public enum DynamicFormStoredDateValue {
     }
 
     /// Foundation `Date.description` / `String(describing: Date)` shape used by draft JSON before #672.
+    /// Offset comes from the trailing `Z` token (e.g. `+0000`); no fixed formatter time zone.
     private static func parseStringDescribingDate(_ string: String) -> Date? {
         let formatter = DateFormatter()
         formatter.locale = posixLocale
-        formatter.timeZone = TimeZone(secondsFromGMT: 0)
         formatter.dateFormat = "yyyy-MM-dd HH:mm:ss Z"
         return formatter.date(from: string)
     }
