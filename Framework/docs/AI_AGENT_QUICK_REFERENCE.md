@@ -285,9 +285,11 @@ platformPhotoPicker_L4(onSelection: { selection in
 })
 
 // ✅ Camera interface - Layer 4 (system camera, still only)
-platformCameraInterface_L4 { image in
-    // Handle captured image
-}
+// Pass onCancel to learn when the user cancels (#681).
+platformCameraInterface_L4(
+    onImageCaptured: { image in /* Handle captured image */ },
+    onCancel: { /* dismiss the camera */ }
+)
 
 // ✅ Camera interface with Live Photo capture - Layer 4 (#669)
 // iOS: framework capture view; livePhotoMovieURL is a temp file you own
