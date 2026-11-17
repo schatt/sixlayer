@@ -190,6 +190,7 @@ struct CameraInterfaceExample: View {
         .padding()
         .background(Color.platformSecondaryBackground)
         .cornerRadius(8)
+        #if os(iOS)
         .fullScreenCover(isPresented: $showCamera) {
             platformCameraInterface_L4(
                 onSelection: onSelection,
@@ -197,6 +198,15 @@ struct CameraInterfaceExample: View {
             )
             .ignoresSafeArea()
         }
+        #else
+        // `fullScreenCover` is unavailable on macOS; sheet keeps the Live Photo camera demo runnable.
+        .sheet(isPresented: $showCamera) {
+            platformCameraInterface_L4(
+                onSelection: onSelection,
+                onCancel: { showCamera = false }
+            )
+        }
+        #endif
     }
 }
 
