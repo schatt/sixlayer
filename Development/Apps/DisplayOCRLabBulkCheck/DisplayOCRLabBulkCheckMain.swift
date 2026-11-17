@@ -1,5 +1,5 @@
 //
-//  main.swift
+//  DisplayOCRLabBulkCheckMain.swift
 //  DisplayOCRLabBulkCheck
 //
 //  CLI bulk pass/fail for Display OCR training libraries (#677).
