@@ -1880,7 +1880,7 @@ public enum SevenSegmentOCRTrace: Sendable {
     }
 
     public static func emit(_ message: String) {
-        // Deliberate stub for #702 red: always write until green gates on isEnabled.
+        guard isEnabled else { return }
         writer(message)
     }
 }
