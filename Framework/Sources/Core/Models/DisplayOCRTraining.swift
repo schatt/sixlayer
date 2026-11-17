@@ -389,9 +389,23 @@ public enum DisplayOCRTrainingBoxTarget: Equatable, Sendable {
 public enum DisplayOCRTrainingStatus: Equatable, Sendable {
     case unreadableImage
     case needsPanel
+    case decoding
     case decoded
+    case decodeFailed
     case exported(URL)
     case exportFailed
+}
+
+/// Layout preference for the training lab shell (#702).
+public enum DisplayOCRTrainingLayout: Sendable {
+    /// macOS uses a side-by-side image pane; other platforms stay stacked for now.
+    public static var prefersSideBySideImagePane: Bool {
+        #if os(macOS)
+        true
+        #else
+        false
+        #endif
+    }
 }
 
 public enum DisplayOCRTraining {
@@ -1607,10 +1621,14 @@ public final class DisplayOCRTrainingSession: ObservableObject {
     public private(set) var reindexRanOnMainThread: Bool?
     /// Whether the last auto-suggest compute ran on the main thread. Test probe (#650).
     public private(set) var suggestionRanOnMainThread: Bool?
+    /// Whether the last ``startDecode`` OCR draft ran on the main thread. Test probe (#702).
+    public private(set) var decodeRanOnMainThread: Bool?
 
     private var bitmap: CGImage?
     private var suggestionGeneration = 0
     private var suggestionTask: Task<Void, Never>?
+    private var decodeTask: Task<Void, Never>?
+    private var decodeGeneration = 0
 
     public init() {
         refreshLibrary()
@@ -1663,6 +1681,9 @@ public final class DisplayOCRTrainingSession: ObservableObject {
         suggestionTask?.cancel()
         suggestionTask = nil
         suggestionGeneration += 1
+        decodeTask?.cancel()
+        decodeTask = nil
+        decodeGeneration += 1
         let generation = suggestionGeneration
         bitmap = cgImage
         image = PlatformImage(cgImage: cgImage)
@@ -1674,6 +1695,7 @@ public final class DisplayOCRTrainingSession: ObservableObject {
         status = nil
         selectedBox = nil
         suggestionRanOnMainThread = nil
+        decodeRanOnMainThread = nil
         guard suggesting else { return }
         // Publish the image first; digit-panel suggestion is off the main
         // actor so full-res library photos do not freeze the UI (#650).
@@ -1814,8 +1836,15 @@ public final class DisplayOCRTrainingSession: ObservableObject {
 
     @discardableResult
     public func addRowBox(_ box: DisplayOCRNormalizedBox) -> Bool {
-        guard bitmap != nil, let panel else { return false }
-        guard let clipped = box.unitClamped?.intersection(panel) else { return false }
+        guard bitmap != nil else { return false }
+        guard let panel else {
+            status = .needsPanel
+            return false
+        }
+        guard let clipped = box.unitClamped?.intersection(panel) else {
+            status = .needsPanel
+            return false
+        }
         guard clipped.pixelRect(
             imageWidth: Int(imagePixelSize.width),
             imageHeight: Int(imagePixelSize.height)
@@ -1966,6 +1995,46 @@ public final class DisplayOCRTrainingSession: ObservableObject {
         label = drafted
         status = .decoded
         return true
+    }
+
+    /// Kick off OCR draft off the main actor (#702). Sets ``status`` to `.decoding` then completes.
+    public func startDecode() {
+        guard let bitmap, let panel else {
+            status = .needsPanel
+            return
+        }
+        decodeTask?.cancel()
+        decodeGeneration += 1
+        let generation = decodeGeneration
+        let rows = rowBoxes
+        let name = sourceName
+        status = .decoding
+        decodeRanOnMainThread = nil
+        decodeTask = Task { @MainActor [weak self] in
+            let outcome = await Task.detached(priority: .userInitiated) {
+                let ranOnMain = MainThreadProbe.isMain()
+                let drafted = DisplayOCRTraining.draft(
+                    image: bitmap,
+                    panel: panel,
+                    rowBoxes: rows,
+                    sourceName: name
+                )
+                return (drafted, ranOnMain)
+            }.value
+            guard let self, generation == self.decodeGeneration else { return }
+            self.decodeRanOnMainThread = outcome.1
+            if let drafted = outcome.0 {
+                self.label = drafted
+                self.status = .decoded
+            } else {
+                self.status = .decodeFailed
+            }
+        }
+    }
+
+    /// Wait until the in-flight decode (if any) finishes. No-op when idle.
+    public func waitForDecode() async {
+        await decodeTask?.value
     }
 
     public func confirm(rowID: UUID, text: String) {
