@@ -866,6 +866,8 @@ schemes:
         DisplayOCRTraining_iOS: all
         DisplayOCRTrainingUITests_iOS: all
     run:
+      # Optimized OCR for interactive lab use (#703); TestAction stays Debug.
+      config: Release
       executable: DisplayOCRTraining_iOS
     test:
       targets:
@@ -880,6 +882,8 @@ schemes:
         DisplayOCRTraining_macOS: all
         DisplayOCRTrainingUITests_macOS: all
     run:
+      # Optimized OCR for interactive lab use (#703); TestAction stays Debug.
+      config: Release
       executable: DisplayOCRTraining_macOS
     test:
       targets:
