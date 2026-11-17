@@ -71,6 +71,18 @@
             testExecutionOrdering = "random">
             <BuildableReference
                BuildableIdentifier = "primary"
+               BlueprintIdentifier = "A3CB06A0997A155545146010"
+               BuildableName = "SixLayerFrameworkOCRImageTests_iOS.xctest"
+               BlueprintName = "SixLayerFrameworkOCRImageTests_iOS"
+               ReferencedContainer = "container:SixLayerFramework.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "YES"
+            testExecutionOrdering = "random">
+            <BuildableReference
+               BuildableIdentifier = "primary"
                BlueprintIdentifier = "0ADA93DEBBDDEFADE109B459"
                BuildableName = "SLFiOSViewInspectorTests.xctest"
                BlueprintName = "SLFiOSViewInspectorTests"

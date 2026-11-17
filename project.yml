@@ -304,6 +304,47 @@ targets:
       - package: ViewInspector
         product: ViewInspector
 
+  # OCR image/decode tests — heavy panel/crop/lab suites (#692).
+  # Not part of SLF-*-UnitTests; own schemes + release second gate.
+  SixLayerFrameworkOCRImageTests_iOS:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: Development/Tests/Shared/TestHelpers
+      - path: Development/Tests/SixLayerFrameworkOCRImageTests
+    settings:
+      PRODUCT_BUNDLE_IDENTIFIER: com.sixlayer.framework.ocr-image-tests
+      SWIFT_VERSION: "6.0"
+      SWIFT_ACTIVE_COMPILATION_CONDITIONS: $(inherited)
+      GENERATE_INFOPLIST_FILE: YES
+      CODE_SIGN_STYLE: Automatic
+      ENABLE_TESTING_SEARCH_PATHS: YES
+    dependencies:
+      - target: SixLayerFramework_iOS
+      - target: SixLayerViewInspectorTestKit_iOS
+      - package: ViewInspector
+        product: ViewInspector
+
+  SixLayerFrameworkOCRImageTests_macOS:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - path: Development/Tests/Shared/TestHelpers
+      - path: Development/Tests/SixLayerFrameworkOCRImageTests
+    settings:
+      PRODUCT_BUNDLE_IDENTIFIER: com.sixlayer.framework.ocr-image-tests
+      SWIFT_VERSION: "6.0"
+      SWIFT_ACTIVE_COMPILATION_CONDITIONS: $(inherited)
+      GENERATE_INFOPLIST_FILE: YES
+      CODE_SIGN_STYLE: Automatic
+      ENABLE_TESTING_SEARCH_PATHS: YES
+      DEAD_CODE_STRIPPING: YES
+    dependencies:
+      - target: SixLayerFramework_macOS
+      - target: SixLayerViewInspectorTestKit_macOS
+      - package: ViewInspector
+        product: ViewInspector
+
   # Unit tests - tvOS
   SixLayerFrameworkUnitTests_tvOS:
     type: bundle.unit-test
@@ -864,6 +905,9 @@ schemes:
         - name: SixLayerFrameworkUnitTests_iOS
           parallelizable: true
           randomExecutionOrder: true
+        - name: SixLayerFrameworkOCRImageTests_iOS
+          parallelizable: true
+          randomExecutionOrder: true
         - name: SLFiOSViewInspectorTests
           parallelizable: true
           randomExecutionOrder: true
@@ -885,6 +929,9 @@ schemes:
     test:
       targets:
         - name: SixLayerFrameworkUnitTests_macOS
+          parallelizable: true
+          randomExecutionOrder: true
+        - name: SixLayerFrameworkOCRImageTests_macOS
           parallelizable: true
           randomExecutionOrder: true
         - name: SLFmacOSViewInspectorTests
@@ -919,6 +966,28 @@ schemes:
     test:
       targets:
         - name: SixLayerFrameworkUnitTests_macOS
+          parallelizable: true
+          randomExecutionOrder: true
+
+  SLF-iOS-OCRImageTests:
+    build:
+      targets:
+        SixLayerFramework_iOS: all
+        SixLayerFrameworkOCRImageTests_iOS: all
+    test:
+      targets:
+        - name: SixLayerFrameworkOCRImageTests_iOS
+          parallelizable: true
+          randomExecutionOrder: true
+
+  SLF-macOS-OCRImageTests:
+    build:
+      targets:
+        SixLayerFramework_macOS: all
+        SixLayerFrameworkOCRImageTests_macOS: all
+    test:
+      targets:
+        - name: SixLayerFrameworkOCRImageTests_macOS
           parallelizable: true
           randomExecutionOrder: true
 
