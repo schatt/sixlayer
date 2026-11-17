@@ -44,8 +44,13 @@ struct TypeOnlyFormCreationFailureTests {
             exposeContentAccessibility: true
         )
         let rendered = hostedRenderedText(hosted)
+        let stillCreating = rendered.contains("Creating form...")
+            || rendered.contains("UIActivityIndicatorView")
+            || rendered.contains("NSProgressIndicator")
+        let showsFailure = rendered.contains(modelName)
+            || rendered.contains("IntelligentFormView.creationFailed")
         #expect(
-            !rendered.contains("UIActivityIndicatorView") && rendered.contains(modelName),
+            !stillCreating && showsFailure,
             "Type-only creation failure stayed on the spinner. rendered=\(rendered.prefix(800))"
         )
     }
@@ -108,7 +113,9 @@ private func hostedRenderedText(_ hosted: Any?) -> String {
     return parts.joined(separator: "\n")
     #elseif canImport(AppKit)
     guard let view = hosted as? NSView else { return "" }
-    return String(describing: view)
+    var parts: [String] = [String(describing: view)]
+    appendNSViewText(view, into: &parts)
+    return parts.joined(separator: "\n")
     #else
     return ""
     #endif
@@ -120,8 +127,34 @@ private func appendUILabelText(_ view: UIView, into parts: inout [String]) {
     if let label = view as? UILabel, let text = label.text {
         parts.append(text)
     }
+    if let identifier = view.accessibilityIdentifier, !identifier.isEmpty {
+        parts.append(identifier)
+    }
     for subview in view.subviews {
         appendUILabelText(subview, into: &parts)
+    }
+}
+#endif
+
+#if canImport(AppKit)
+@MainActor
+private func appendNSViewText(_ view: NSView, into parts: inout [String]) {
+    if let field = view as? NSTextField {
+        let value = field.stringValue
+        if !value.isEmpty {
+            parts.append(value)
+        }
+    }
+    let identifier = view.accessibilityIdentifier()
+    if !identifier.isEmpty {
+        parts.append(identifier)
+    }
+    // ProgressView hosts an NSProgressIndicator while "Creating form..." is visible (#695).
+    if view is NSProgressIndicator {
+        parts.append("NSProgressIndicator")
+    }
+    for subview in view.subviews {
+        appendNSViewText(subview, into: &parts)
     }
 }
 #endif
