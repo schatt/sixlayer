@@ -102,6 +102,7 @@ struct PhotoCameraExamples: View {
                 PhotoPickerExample(selectedImage: $selectedImage, showPicker: $showPhotoPicker)
             }
             
+            #if os(iOS)
             ExampleCard(title: "Camera Interface (Live Photo)", description: "platformCameraInterface_L4(onSelection:)") {
                 CameraInterfaceExample(
                     showCamera: $showCamera,
@@ -113,6 +114,19 @@ struct PhotoCameraExamples: View {
                     }
                 )
             }
+            #else
+            ExampleCard(title: "Camera Interface (still only)", description: "platformCameraInterface_L4 — Live Photo is iOS-only") {
+                CameraInterfaceExample(
+                    showCamera: $showCamera,
+                    lastLivePhotoMovieURL: lastLivePhotoMovieURL,
+                    onSelection: { selection in
+                        selectedImage = selection.image
+                        lastLivePhotoMovieURL = selection.livePhotoMovieURL
+                        showCamera = false
+                    }
+                )
+            }
+            #endif
 
             ExampleCard(title: "Live Data Scanner", description: "platformDataScannerInterface_L4") {
                 DataScannerExample(
@@ -165,9 +179,13 @@ struct CameraInterfaceExample: View {
     @Binding var showCamera: Bool
     let lastLivePhotoMovieURL: URL?
     let onSelection: (PlatformPhotoSelection) -> Void
+    #if os(macOS)
+    @State private var showStillCamera = false
+    #endif
     
     var body: some View {
         platformVStack(alignment: .leading, spacing: 12) {
+            #if os(iOS)
             platformButton("Open Live Photo Camera") {
                 showCamera = true
             }
@@ -186,6 +204,16 @@ struct CameraInterfaceExample: View {
                     .foregroundColor(.secondary)
                     .accessibilityIdentifier("SixLayer.main.ui.testApp.livePhotoMovieAbsent")
             }
+            #else
+            // Live Photo capture is iOS-only (#696). macOS is still-only.
+            Text("Live Photo capture is iOS-only. macOS camera is still-only (`livePhotoMovieURL` is always nil).")
+                .font(.caption)
+                .foregroundColor(.secondary)
+                .accessibilityIdentifier("SixLayer.main.ui.testApp.livePhotoCaptureIOSOnly")
+            platformButton("Open Still Camera") {
+                showStillCamera = true
+            }
+            #endif
         }
         .padding()
         .background(Color.platformSecondaryBackground)
@@ -198,13 +226,12 @@ struct CameraInterfaceExample: View {
             )
             .ignoresSafeArea()
         }
-        #else
-        // `fullScreenCover` is unavailable on macOS; sheet keeps the Live Photo camera demo runnable.
-        .sheet(isPresented: $showCamera) {
-            platformCameraInterface_L4(
-                onSelection: onSelection,
-                onCancel: { showCamera = false }
-            )
+        #elseif os(macOS)
+        .sheet(isPresented: $showStillCamera) {
+            platformCameraInterface_L4 { image in
+                onSelection(PlatformPhotoSelection(image: image))
+                showStillCamera = false
+            }
         }
         #endif
     }
