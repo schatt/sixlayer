@@ -85,7 +85,7 @@ assert_exit_zero() {
     fi
 }
 
-echo "=== test_release_tag_guard (#356, #357) ==="
+echo "=== test_release_tag_guard (#356, #357, #694) ==="
 
 if [ ! -f "$LIB" ]; then
     echo "❌ library missing: $LIB"
@@ -137,18 +137,48 @@ assert_exit_nonzero "$RC" "abort helper rejects existing local tag"
 assert_contains "$OUT" "v8.3.0" "abort message names the tag"
 assert_contains "$OUT" "already exists" "abort message says already exists"
 
-# --- remote-only presence (no local tag) ---
+# --- origin-only presence (no local tag) ---
 git push -q origin "v8.3.0"
 git tag -d "v8.3.0" >/dev/null
 assert_false "deleted local tag is absent locally" release_tag_exists_local "v8.3.0"
-assert_true "remote tag is detected" release_tag_exists_on_remotes "v8.3.0"
-assert_true "remote-only tag is detected overall" release_tag_exists "v8.3.0"
+assert_true "origin tag is detected" release_tag_exists_on_origin "v8.3.0"
+assert_true "origin-only tag is detected overall" release_tag_exists "v8.3.0"
 set +e
 OUT="$(release_abort_if_tag_exists "8.3.0" 2>&1)"
 RC=$?
 set -e
-assert_exit_nonzero "$RC" "abort helper rejects remote-only tag"
-assert_contains "$OUT" "already exists" "remote abort message says already exists"
+assert_exit_nonzero "$RC" "abort helper rejects origin-only tag"
+assert_contains "$OUT" "already exists" "origin abort message says already exists"
+assert_contains "$OUT" "on origin" "abort message names origin (not a generic remote)"
+
+# --- non-origin mirror must not count (#694) ---
+MIRROR="$(mktemp -d "${TMPDIR:-/tmp}/release-tag-guard-mirror.XXXXXX")"
+cleanup() { rm -rf "$REPO" "$REMOTE" "$MIRROR"; }
+git -C "$MIRROR" init -q --bare
+git -C "$REPO" remote add mirror "$MIRROR"
+git -C "$REPO" push -q origin --delete "v8.3.0"
+# Put the tag only on the mirror remote — origin must stay clean.
+git -C "$REPO" tag -a "v8.3.0" -m "Release v8.3.0"
+git -C "$REPO" push -q mirror "v8.3.0"
+git -C "$REPO" tag -d "v8.3.0" >/dev/null
+assert_false "tag only on non-origin remote is absent on origin" release_tag_exists_on_origin "v8.3.0"
+assert_false "tag only on non-origin remote is absent overall" release_tag_exists "v8.3.0"
+set +e
+OUT="$(release_abort_if_tag_exists "8.3.0" 2>&1)"
+RC=$?
+set -e
+assert_exit_zero "$RC" "abort helper ignores non-origin remote tags"
+
+# Lib must query origin only (no walk of every remote).
+assert_contains "$(cat "$LIB")" 'git ls-remote --exit-code --tags origin' \
+    "guard ls-remotes origin explicitly"
+if grep -Eq 'while IFS= read -r remote|\$\(git remote\)' "$LIB"; then
+    echo "❌ guard must not iterate git remotes (#694)"
+    FAIL=$((FAIL + 1))
+else
+    echo "✅ guard does not iterate git remotes"
+    PASS=$((PASS + 1))
+fi
 
 # --- release-process.sh: tag check is Step 1 (Refs #357) ---
 cd "$ROOT"
