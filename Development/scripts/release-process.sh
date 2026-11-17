@@ -413,7 +413,7 @@ if [ "$DOCS_ONLY" -eq 1 ]; then
     echo "📄 Docs-only mode (--docs): skipping unit tests and release (tag/merge/push/GitHub Release)"
 fi
 
-# Step 1: Release tag must not already exist (local or remote). Docs-only warns
+# Step 1: Release tag must not already exist (local or origin; #694). Docs-only warns
 # and continues so historical release docs can still be validated.
 echo "📋 Step 1: Checking release tag v$VERSION does not already exist..."
 if [ "$DOCS_ONLY" -eq 1 ]; then
