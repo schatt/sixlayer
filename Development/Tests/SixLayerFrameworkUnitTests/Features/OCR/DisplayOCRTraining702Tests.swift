@@ -26,22 +26,25 @@ struct DisplayOCRTraining702Tests {
     }
 
     @Test func sevenSegmentTraceRespectsEnabledFlag() {
-        var captured: [String] = []
+        final class Sink: @unchecked Sendable {
+            var lines: [String] = []
+        }
+        let sink = Sink()
         let previous = SevenSegmentOCRTrace.isEnabled
         let previousWriter = SevenSegmentOCRTrace.writer
         defer {
             SevenSegmentOCRTrace.isEnabled = previous
             SevenSegmentOCRTrace.writer = previousWriter
         }
-        SevenSegmentOCRTrace.writer = { captured.append($0) }
+        SevenSegmentOCRTrace.writer = { sink.lines.append($0) }
 
         SevenSegmentOCRTrace.isEnabled = false
         SevenSegmentOCRTrace.emit("quiet\n")
-        #expect(captured.isEmpty)
+        #expect(sink.lines.isEmpty)
 
         SevenSegmentOCRTrace.isEnabled = true
         SevenSegmentOCRTrace.emit("loud\n")
-        #expect(captured == ["loud\n"])
+        #expect(sink.lines == ["loud\n"])
     }
 
     // MARK: - row draw feedback
