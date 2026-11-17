@@ -6127,8 +6127,11 @@ func sevenSegmentLatticeAnalysisSize(
     guard sourceWidth > 0, sourceHeight > 0 else {
         return (1, 1, 1)
     }
-    // Deliberate pre-fix stub: always upscale/downscale to analysisHeight
-    // (the old Reader.run behavior). Green replaces this with no-upscale.
+    // Never upscale: short wide crops (zero-margin line boxes) used to become
+    // height 360 with width ×(360/h), and the rotation search hung (#691).
+    if sourceHeight <= analysisHeight {
+        return (sourceWidth, sourceHeight, 1)
+    }
     let scale = Double(analysisHeight) / Double(sourceHeight)
     let width = max(1, Int((Double(sourceWidth) * scale).rounded()))
     return (width, analysisHeight, scale)
@@ -6196,9 +6199,10 @@ private struct Reader {
     }
 
     mutating func run() -> [[SevenSegmentLatticeReader.Cell]] {
-        let h = analysisHeight
-        scale = Double(h) / Double(height)
-        smallWidth = max(1, Int((Double(width) * scale).rounded()))
+        let analysis = sevenSegmentLatticeAnalysisSize(sourceWidth: width, sourceHeight: height)
+        scale = analysis.scale
+        smallWidth = analysis.width
+        let h = analysis.height
         let small = boxResize(pixels, width: width, height: height, toWidth: smallWidth, toHeight: h)
         let smoothed = median3(small, width: smallWidth, height: h)
 
