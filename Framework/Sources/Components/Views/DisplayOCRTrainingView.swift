@@ -509,6 +509,13 @@ public struct DisplayOCRTrainingView: View {
                 .font(.caption)
                 .foregroundColor(.secondary)
                 .automaticCompliance(named: "DisplayOCRTrainingStatus")
+        case .decoding:
+            ProgressView("Decoding…")
+                .automaticCompliance(named: "DisplayOCRTrainingStatus")
+        case .decodeFailed:
+            Text("Decode failed")
+                .foregroundColor(.red)
+                .automaticCompliance(named: "DisplayOCRTrainingStatus")
         case .exportFailed:
             Text(i18n.localizedString(for: "SixLayerFramework.ocr.training.exportFailed"))
                 .foregroundColor(.red)
@@ -520,7 +527,12 @@ public struct DisplayOCRTrainingView: View {
                 selectablePath(url.path)
             }
             .automaticCompliance(named: "DisplayOCRTrainingStatus")
-        case .decoded, nil:
+        case .decoded:
+            Text("Decoded")
+                .font(.caption)
+                .foregroundColor(.secondary)
+                .automaticCompliance(named: "DisplayOCRTrainingStatus")
+        case nil:
             EmptyView()
         }
     }
