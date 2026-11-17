@@ -46,22 +46,66 @@ public struct DisplayOCRTrainingView: View {
 
     public var body: some View {
         let i18n = InternationalizationService()
-        ScrollView {
-            platformVStackContainer(alignment: .leading, spacing: 12) {
-                Text(i18n.localizedString(for: "SixLayerFramework.ocr.training.title"))
-                    .font(.headline)
-                    .automaticCompliance(named: "DisplayOCRTrainingTitle")
-
-                controls(i18n)
-                canvas(i18n)
-                readings(i18n)
-                statusLine(i18n)
+        Group {
+            if DisplayOCRTrainingLayout.prefersSideBySideImagePane {
+                sideBySideShell(i18n)
+            } else {
+                stackedShell(i18n)
             }
-            .padding()
         }
         .automaticCompliance(named: "DisplayOCRTrainingView")
         .modifier(DisplayOCRTrainingFileImporter(isPresented: $importPresented, session: session))
         .modifier(DisplayOCRTrainingExportFolderImporter(isPresented: $exportFolderPresented, session: session))
+        .onChange(of: session.panel) { _, panel in
+            if panel == nil, session.drawMode == .row {
+                session.drawMode = .panel
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func sideBySideShell(_ i18n: InternationalizationService) -> some View {
+        #if os(macOS)
+        HSplitView {
+            ScrollView {
+                leftPane(i18n)
+                    .padding()
+                    .frame(minWidth: 320, maxWidth: .infinity, alignment: .topLeading)
+            }
+            .frame(minWidth: 280)
+
+            canvas(i18n)
+                .frame(minWidth: 360, maxWidth: .infinity, maxHeight: .infinity)
+                .padding()
+        }
+        #else
+        stackedShell(i18n)
+        #endif
+    }
+
+    @ViewBuilder
+    private func stackedShell(_ i18n: InternationalizationService) -> some View {
+        ScrollView {
+            platformVStackContainer(alignment: .leading, spacing: 12) {
+                leftPane(i18n)
+                canvas(i18n)
+                    .frame(minHeight: 240)
+            }
+            .padding()
+        }
+    }
+
+    @ViewBuilder
+    private func leftPane(_ i18n: InternationalizationService) -> some View {
+        platformVStackContainer(alignment: .leading, spacing: 12) {
+            Text(i18n.localizedString(for: "SixLayerFramework.ocr.training.title"))
+                .font(.headline)
+                .automaticCompliance(named: "DisplayOCRTrainingTitle")
+
+            controls(i18n)
+            readings(i18n)
+            statusLine(i18n)
+        }
     }
 
     @ViewBuilder
@@ -86,13 +130,25 @@ public struct DisplayOCRTrainingView: View {
             }
             .pickerStyle(.segmented)
             .disabled(session.image == nil)
+            .onChange(of: session.drawMode) { _, mode in
+                if mode == .row, session.panel == nil {
+                    session.drawMode = .panel
+                }
+            }
             .automaticCompliance(named: "DisplayOCRTrainingDrawMode")
+
+            if session.image != nil, session.panel == nil {
+                Text(i18n.localizedString(for: "SixLayerFramework.ocr.training.needsPanel"))
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .automaticCompliance(named: "DisplayOCRTrainingDrawNeedsPanel")
+            }
 
             platformHStackContainer(spacing: 8) {
                 Button(i18n.localizedString(for: "SixLayerFramework.ocr.training.decode")) {
-                    _ = session.decode()
+                    session.startDecode()
                 }
-                .disabled(session.panel == nil)
+                .disabled(session.panel == nil || session.status == .decoding)
                 .trainingProminentButton()
                 .automaticCompliance(named: "DisplayOCRTrainingDecode")
 
@@ -366,12 +422,17 @@ public struct DisplayOCRTrainingView: View {
                 let size = geometry.size
                 drawingStack(image: image, containerSize: size)
             }
-            .frame(height: 320)
+            .frame(
+                maxWidth: .infinity,
+                maxHeight: .infinity,
+                alignment: .center
+            )
+            .frame(minHeight: DisplayOCRTrainingLayout.prefersSideBySideImagePane ? 280 : 240)
             .automaticCompliance(named: "DisplayOCRTrainingCanvas")
         } else {
             Text(i18n.localizedString(for: "SixLayerFramework.ocr.training.noImage"))
                 .foregroundColor(.secondary)
-                .frame(maxWidth: .infinity, minHeight: 120, alignment: .leading)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, minHeight: 120, alignment: .leading)
                 .automaticCompliance(named: "DisplayOCRTrainingNoImage")
         }
     }
