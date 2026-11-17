@@ -441,13 +441,18 @@ else
     echo "⚠️  xcodegen not available, skipping project regeneration"
 fi
 
-# Step 3: Run tests (unit tests only per platform — no UI tests, no ViewInspector, no AllTests)
+# Step 3: Run tests — unit gate then OCR image gate (macOS + iOS).
+# No UI tests, no ViewInspector, no AllTests here (#692).
 # Skipped in --docs mode, or when a valid last-pass stamp shows only docs-only changes since then
 # and both platforms are green. Partial stamps skip only the platforms already passed (#390).
 MACOS_TESTS_FAILED=0
 IOS_TESTS_FAILED=0
+MACOS_OCR_TESTS_FAILED=0
+IOS_OCR_TESTS_FAILED=0
 MACOS_XCRESULT=""
 IOS_XCRESULT=""
+MACOS_OCR_XCRESULT=""
+IOS_OCR_XCRESULT=""
 TESTS_SKIPPED_STAMP=0
 if [ "$DOCS_ONLY" -eq 1 ]; then
     echo "📋 Step 3: Skipping unit tests (--docs)"
@@ -458,7 +463,7 @@ elif release_should_skip_unit_tests "$REPO_ROOT" "$FORCE_TESTS"; then
     echo "   Stamp: $(release_test_stamp_path)"
     echo "   Use --force-tests to run anyway."
 else
-    echo "📋 Step 3: Running unit test suite (macOS + iOS unit tests only)..."
+    echo "📋 Step 3: Running unit then OCR image test gates (macOS + iOS)..."
 
     # Write structured test bundles for triage when the release gate fails (ignored via build/)
     RELEASE_TEST_STAMP=$(date -u +"%Y%m%dT%H%M%SZ")
@@ -466,7 +471,9 @@ else
     mkdir -p "$XCRESULT_BASE"
     MACOS_XCRESULT="${XCRESULT_BASE}/SLF-macOS-UnitTests.xcresult"
     IOS_XCRESULT="${XCRESULT_BASE}/SLF-iOS-UnitTests.xcresult"
-    echo "📎 xcresult bundles for this run: $MACOS_XCRESULT and $IOS_XCRESULT"
+    MACOS_OCR_XCRESULT="${XCRESULT_BASE}/SLF-macOS-OCRImageTests.xcresult"
+    IOS_OCR_XCRESULT="${XCRESULT_BASE}/SLF-iOS-OCRImageTests.xcresult"
+    echo "📎 xcresult bundles for this run: $MACOS_XCRESULT, $IOS_XCRESULT, $MACOS_OCR_XCRESULT, $IOS_OCR_XCRESULT"
 
     # Run both platform unit tests even if one fails (cross-platform signal). Do not exit here:
     # remaining release checks still run so test + documentation failures appear together at the end.
@@ -525,19 +532,56 @@ else
         fi
     fi
 
-    # Release gate runs unit tests only (SLF-*-UnitTests). UI/ViewInspector/AllTests are not run here.
-    if [ "$MACOS_TESTS_FAILED" -eq 1 ] || [ "$IOS_TESTS_FAILED" -eq 1 ]; then
-        echo "⚠️  Unit test gate failed on one or more platforms; continuing with remaining release checks." >&2
-        echo "📎 macOS xcresult: $MACOS_XCRESULT" >&2
-        echo "📎 iOS xcresult:   $IOS_XCRESULT" >&2
+    # Second gate: heavy OCR image/decode suites (#692). Same destinations as unit.
+    echo "🧪 Running macOS OCR image tests (SLF-macOS-OCRImageTests)..."
+    if ! rtk xcodebuild test \
+        -project SixLayerFramework.xcodeproj \
+        -scheme SLF-macOS-OCRImageTests \
+        -destination "platform=macOS,arch=arm64" \
+        -resultBundlePath "$MACOS_OCR_XCRESULT"; then
+        MACOS_OCR_TESTS_FAILED=1
+        log_error "macOS OCR image tests failed."
+    else
+        echo "✅ macOS OCR image tests passed"
+    fi
+
+    if [ -z "${IOS_DEST:-}" ]; then
+        if [ -n "${SLF_IOS_TEST_SIMULATOR:-}" ]; then
+            IOS_DEST="$("$REPO_ROOT/Development/scripts/ensure-ci-simulator-destination.sh" iOS "$SLF_IOS_TEST_SIMULATOR")"
+        else
+            IOS_DEST="$("$REPO_ROOT/Development/scripts/ensure-ci-simulator-destination.sh" iOS)"
+        fi
+    fi
+    echo "🧪 Running iOS OCR image tests (SLF-iOS-OCRImageTests)..."
+    echo "📱 Using iOS destination: ${IOS_DEST}"
+    if ! rtk xcodebuild test \
+        -project SixLayerFramework.xcodeproj \
+        -scheme SLF-iOS-OCRImageTests \
+        -destination "${IOS_DEST}" \
+        -resultBundlePath "$IOS_OCR_XCRESULT"; then
+        IOS_OCR_TESTS_FAILED=1
+        log_error "iOS OCR image tests failed."
+    else
+        echo "✅ iOS OCR image tests passed"
+    fi
+
+    # Release gate: unit (SLF-*-UnitTests) then OCR image (SLF-*-OCRImageTests).
+    # UI/ViewInspector/AllTests are not run here.
+    if [ "$MACOS_TESTS_FAILED" -eq 1 ] || [ "$IOS_TESTS_FAILED" -eq 1 ] \
+        || [ "$MACOS_OCR_TESTS_FAILED" -eq 1 ] || [ "$IOS_OCR_TESTS_FAILED" -eq 1 ]; then
+        echo "⚠️  Release test gate failed on one or more platforms; continuing with remaining release checks." >&2
+        echo "📎 macOS unit xcresult: $MACOS_XCRESULT" >&2
+        echo "📎 iOS unit xcresult:   $IOS_XCRESULT" >&2
+        echo "📎 macOS OCR xcresult:  $MACOS_OCR_XCRESULT" >&2
+        echo "📎 iOS OCR xcresult:    $IOS_OCR_XCRESULT" >&2
         echo "💡 Inspect: xcrun xcresulttool get test-results summary --path <path>" >&2
         if release_test_stamp_both_platforms_passed 2>/dev/null; then
             :
         else
-            echo "📎 Partial stamp retained for platforms that already passed; retry will skip those." >&2
+            echo "📎 Partial stamp retained for unit platforms that already passed; retry will skip those." >&2
         fi
     elif release_test_stamp_both_platforms_passed; then
-        echo "✅ Unit test suite validation passed (macOS + iOS unit tests only)"
+        echo "✅ Unit + OCR image test gates passed (macOS + iOS)"
         echo "💾 Unit-test gate complete at $PASS_COMMIT → $(release_test_stamp_path)"
         echo "   (tests only — stamp is written even if later doc checks fail)"
     else
@@ -1182,12 +1226,20 @@ if [ $ERRORS_FOUND -gt 0 ]; then
     echo "Found $ERRORS_FOUND error(s) that need to be fixed:"
     echo -e "$ERROR_MESSAGES"
     if [ "${MACOS_TESTS_FAILED:-0}" -eq 1 ]; then
-        echo "💡 macOS test failures — result bundle: $MACOS_XCRESULT" >&2
+        echo "💡 macOS unit test failures — result bundle: $MACOS_XCRESULT" >&2
         maybe_open_xcresult "$MACOS_XCRESULT"
     fi
     if [ "${IOS_TESTS_FAILED:-0}" -eq 1 ]; then
-        echo "💡 iOS test failures — result bundle: $IOS_XCRESULT" >&2
+        echo "💡 iOS unit test failures — result bundle: $IOS_XCRESULT" >&2
         maybe_open_xcresult "$IOS_XCRESULT"
+    fi
+    if [ "${MACOS_OCR_TESTS_FAILED:-0}" -eq 1 ]; then
+        echo "💡 macOS OCR image test failures — result bundle: $MACOS_OCR_XCRESULT" >&2
+        maybe_open_xcresult "$MACOS_OCR_XCRESULT"
+    fi
+    if [ "${IOS_OCR_TESTS_FAILED:-0}" -eq 1 ]; then
+        echo "💡 iOS OCR image test failures — result bundle: $IOS_OCR_XCRESULT" >&2
+        maybe_open_xcresult "$IOS_OCR_XCRESULT"
     fi
     if [ "${NO_RELEASE_MILESTONE:-0}" -eq 1 ]; then
         echo ""
@@ -1204,11 +1256,11 @@ echo ""
 echo "📋 Release Checklist Complete:"
 echo "✅ Xcode project regenerated"
 if [ "$DOCS_ONLY" -eq 1 ]; then
-    echo "⏭️  Unit tests skipped (--docs)"
+    echo "⏭️  Unit + OCR image tests skipped (--docs)"
 elif [ "${TESTS_SKIPPED_STAMP:-0}" -eq 1 ]; then
-    echo "⏭️  Unit tests skipped (no code changes since last pass stamp)"
+    echo "⏭️  Unit + OCR image tests skipped (no code changes since last pass stamp)"
 else
-    echo "✅ Tests passed"
+    echo "✅ Unit + OCR image tests passed"
 fi
 echo "✅ Git repository is clean"
 echo "✅ RELEASES.md updated correctly"
