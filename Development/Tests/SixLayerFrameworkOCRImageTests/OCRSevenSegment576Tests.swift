@@ -1,8 +1,9 @@
 //
 //  OCRSevenSegment576Tests.swift
-//  SixLayerFrameworkUnitTests
+//  SixLayerFrameworkOCRImageTests
 //
 //  Seven-segment decode and label binding (#576).
+//  Heavy image/decode suite — not part of SLF-*-UnitTests (#692).
 //
 
 import CoreGraphics
