@@ -85,9 +85,11 @@ struct Layer4ExamplesView: View {
 
 struct PhotoCameraExamples: View {
     @State private var selectedImage: PlatformImage?
-    @State private var lastLivePhotoMovieURL: URL?
     @State private var showPhotoPicker = false
+    #if os(iOS)
+    @State private var lastLivePhotoMovieURL: URL?
     @State private var showCamera = false
+    #endif
     @State private var showLiveScannerSheet = false
     @State private var showLiveScannerFullScreen = false
     @State private var scannerLastValue = ""
@@ -102,20 +104,10 @@ struct PhotoCameraExamples: View {
                 PhotoPickerExample(selectedImage: $selectedImage, showPicker: $showPhotoPicker)
             }
             
+            // Live Photo capture is iOS-only (#696/#697). Still-only camera is
+            // covered in unit tests — no macOS demo sheet here.
             #if os(iOS)
             ExampleCard(title: "Camera Interface (Live Photo)", description: "platformCameraInterface_L4(onSelection:)") {
-                CameraInterfaceExample(
-                    showCamera: $showCamera,
-                    lastLivePhotoMovieURL: lastLivePhotoMovieURL,
-                    onSelection: { selection in
-                        selectedImage = selection.image
-                        lastLivePhotoMovieURL = selection.livePhotoMovieURL
-                        showCamera = false
-                    }
-                )
-            }
-            #else
-            ExampleCard(title: "Camera Interface (still only)", description: "platformCameraInterface_L4 — Live Photo is iOS-only") {
                 CameraInterfaceExample(
                     showCamera: $showCamera,
                     lastLivePhotoMovieURL: lastLivePhotoMovieURL,
@@ -175,17 +167,14 @@ struct PhotoPickerExample: View {
     }
 }
 
+#if os(iOS)
 struct CameraInterfaceExample: View {
     @Binding var showCamera: Bool
     let lastLivePhotoMovieURL: URL?
     let onSelection: (PlatformPhotoSelection) -> Void
-    #if os(macOS)
-    @State private var showStillCamera = false
-    #endif
     
     var body: some View {
         platformVStack(alignment: .leading, spacing: 12) {
-            #if os(iOS)
             platformButton("Open Live Photo Camera") {
                 showCamera = true
             }
@@ -204,21 +193,10 @@ struct CameraInterfaceExample: View {
                     .foregroundColor(.secondary)
                     .accessibilityIdentifier("SixLayer.main.ui.testApp.livePhotoMovieAbsent")
             }
-            #else
-            // Live Photo capture is iOS-only (#696). macOS is still-only.
-            Text("Live Photo capture is iOS-only. macOS camera is still-only (`livePhotoMovieURL` is always nil).")
-                .font(.caption)
-                .foregroundColor(.secondary)
-                .accessibilityIdentifier("SixLayer.main.ui.testApp.livePhotoCaptureIOSOnly")
-            platformButton("Open Still Camera") {
-                showStillCamera = true
-            }
-            #endif
         }
         .padding()
         .background(Color.platformSecondaryBackground)
         .cornerRadius(8)
-        #if os(iOS)
         .fullScreenCover(isPresented: $showCamera) {
             platformCameraInterface_L4(
                 onSelection: onSelection,
@@ -226,16 +204,9 @@ struct CameraInterfaceExample: View {
             )
             .ignoresSafeArea()
         }
-        #elseif os(macOS)
-        .sheet(isPresented: $showStillCamera) {
-            platformCameraInterface_L4 { image in
-                onSelection(PlatformPhotoSelection(image: image))
-                showStillCamera = false
-            }
-        }
-        #endif
     }
 }
+#endif
 
 struct DataScannerExample: View {
     @Binding var showSheet: Bool
