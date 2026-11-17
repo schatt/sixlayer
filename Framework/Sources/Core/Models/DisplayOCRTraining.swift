@@ -1681,6 +1681,9 @@ public final class DisplayOCRTrainingSession: ObservableObject {
         suggestionTask?.cancel()
         suggestionTask = nil
         suggestionGeneration += 1
+        decodeTask?.cancel()
+        decodeTask = nil
+        decodeGeneration += 1
         let generation = suggestionGeneration
         bitmap = cgImage
         image = PlatformImage(cgImage: cgImage)
@@ -1692,6 +1695,7 @@ public final class DisplayOCRTrainingSession: ObservableObject {
         status = nil
         selectedBox = nil
         suggestionRanOnMainThread = nil
+        decodeRanOnMainThread = nil
         guard suggesting else { return }
         // Publish the image first; digit-panel suggestion is off the main
         // actor so full-res library photos do not freeze the UI (#650).
