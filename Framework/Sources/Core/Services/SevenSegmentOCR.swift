@@ -2370,7 +2370,7 @@ private extension GrayBuffer {
     }
 
     /// Median luminance — proxy for glass on a mostly-glass short-wide crop.
-    fileprivate func peelGlassMedian() -> Int {
+    func peelGlassMedian() -> Int {
         guard !pixels.isEmpty else { return 128 }
         var hist = [Int](repeating: 0, count: 256)
         for pixel in pixels {
