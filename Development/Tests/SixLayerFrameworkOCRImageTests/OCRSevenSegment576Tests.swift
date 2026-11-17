@@ -1312,15 +1312,22 @@ struct OCRSevenSegment576Tests {
         [2, 3, 4, 6].map { "fuel_purchase/scenario_\($0)/ti_fp_s\($0)_pump.jpg" }
     )
 
+    /// `Development/` for this checkout (`…/Tests/SixLayerFrameworkOCRImageTests/` → up 3).
+    private static var developmentDirectory: URL {
+        URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+    }
+
+    private static var repositoryRoot: URL {
+        developmentDirectory.deletingLastPathComponent()
+    }
+
     /// Scenario-1 pump photo from the private fixtures repo
     /// (`Development/TestFixtures/private`, schatt/sixlayer-test-fixtures).
     /// `Development/scripts/fetch-private-fixtures.sh` clones it; without access these tests skip.
-    static let scenario1Photo = URL(fileURLWithPath: #filePath)
-        .deletingLastPathComponent() // …/Features/OCR
-        .deletingLastPathComponent() // …/SixLayerFrameworkUnitTests/Features
-        .deletingLastPathComponent() // …/Tests/SixLayerFrameworkUnitTests
-        .deletingLastPathComponent() // …/Development/Tests
-        .deletingLastPathComponent() // …/Development
+    static let scenario1Photo = developmentDirectory
         .appendingPathComponent("TestFixtures/private/seven-segment/fuel_purchase/scenario_1/ti_fp_s1_pump.jpg")
         .path
 
@@ -1575,24 +1582,14 @@ struct OCRSevenSegment576Tests {
     }
 
     /// `Development/TestFixtures/private/…/IMG_7493.HEIC` (gitignored local checkout).
-    static let lightDigits7493Photo = URL(fileURLWithPath: #filePath)
-        .deletingLastPathComponent()
-        .deletingLastPathComponent()
-        .deletingLastPathComponent()
-        .deletingLastPathComponent()
-        .deletingLastPathComponent()
+    static let lightDigits7493Photo = developmentDirectory
         .appendingPathComponent(
             "TestFixtures/private/seven-segment/pump_display/light_digits_7493/IMG_7493.HEIC"
         )
         .path
 
     /// `Development/TestFixtures/private/…/ti_fp_s5_pump.jpg` (gitignored local checkout).
-    static let fuelPurchaseScenario5Photo = URL(fileURLWithPath: #filePath)
-        .deletingLastPathComponent()
-        .deletingLastPathComponent()
-        .deletingLastPathComponent()
-        .deletingLastPathComponent()
-        .deletingLastPathComponent()
+    static let fuelPurchaseScenario5Photo = developmentDirectory
         .appendingPathComponent(
             "TestFixtures/private/seven-segment/fuel_purchase/scenario_5/ti_fp_s5_pump.jpg"
         )
@@ -1967,13 +1964,7 @@ struct OCRSevenSegment576Tests {
     }
 
     private func decoderSource() throws -> String {
-        let url = URL(fileURLWithPath: #filePath)
-            .deletingLastPathComponent()
-            .deletingLastPathComponent()
-            .deletingLastPathComponent()
-            .deletingLastPathComponent()
-            .deletingLastPathComponent()
-            .deletingLastPathComponent()
+        let url = Self.repositoryRoot
             .appendingPathComponent("Framework/Sources/Core/Services/SevenSegmentOCR.swift")
         return try String(contentsOf: url, encoding: .utf8)
     }
