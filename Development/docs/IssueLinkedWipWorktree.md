@@ -38,6 +38,10 @@ git push all HEAD   # pushes current wip branch
 
 When the `wip/` branch is ready:
 
+1. Merge `next` into `wip/` (worktree), push.
+2. **Run Quality Check (`/2` skill) on the `wip/` tip** — paste the five-header verdicts in the **agent chat** and post a standalone **`## Quality Check`** issue comment (GitHub alone is not enough; do not title the GitHub comment `/2` — #657); fix all in-scope findings on that same `wip/` **before** the next step. Do not land and Quality Check later.
+3. Only then merge into `next`:
+
 ```bash
 cd /path/to/sixlayer          # primary clone
 git checkout next

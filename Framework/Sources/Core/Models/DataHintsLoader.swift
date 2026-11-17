@@ -363,8 +363,9 @@ public final class FileBasedDataHintsLoader: DataHintsLoader, @unchecked Sendabl
                     if !["expectedLength", "displayWidth", "showCharacterCounter", "maxLength", "minLength", 
                          "expectedRange", "ocrHints", "calculationGroups", "inputType", "options",
                          "fieldType", "isOptional", "isArray", "defaultValue", "isHidden", "isEditable",
-                         "supportsOCR", "displayOCR", "isCalculated", "allowsNegative"].contains(propKey) &&
-                       !propKey.hasPrefix("ocrHints.") {
+                         "supportsOCR", "displayOCR", "isCalculated", "allowsNegative", "fractionDigits"].contains(propKey) &&
+                       !propKey.hasPrefix("ocrHints.") &&
+                       !propKey.hasPrefix("fractionDigits.") {
                         if let stringValue = propValue as? String {
                             metadata[propKey] = stringValue
                         }
@@ -373,6 +374,7 @@ public final class FileBasedDataHintsLoader: DataHintsLoader, @unchecked Sendabl
                 
                 // Parse OCR hints with language-specific support
                 let ocrHints = parseOCRHints(from: properties, languageCode: languageCode)
+                let fractionDigits = parseFractionDigits(from: properties, locale: locale)
 
                 // Optional OCR eligibility / accessory overrides (Issue #404); nil = no opinion
                 let supportsOCR = parseOptionalBool(from: properties, key: "supportsOCR")
@@ -408,6 +410,7 @@ public final class FileBasedDataHintsLoader: DataHintsLoader, @unchecked Sendabl
                     maxLength: maxLength,
                     minLength: minLength,
                     expectedRange: expectedRange,
+                    fractionDigits: fractionDigits,
                     metadata: metadata,
                     ocrHints: ocrHints,
                     supportsOCR: supportsOCR,
@@ -556,6 +559,26 @@ public final class FileBasedDataHintsLoader: DataHintsLoader, @unchecked Sendabl
         return nil
     }
     
+    /// Preferred fraction digits: `fractionDigits.{region}` → `fractionDigits.{language}` → `fractionDigits` (#678).
+    private func parseFractionDigits(from properties: [String: Any], locale: Locale) -> Int? {
+        if let region = locale.region?.identifier,
+           let value = intProperty(properties["fractionDigits.\(region)"]) {
+            return value
+        }
+        let languageCode = locale.language.languageCode?.identifier ?? "en"
+        if let value = intProperty(properties["fractionDigits.\(languageCode)"]) {
+            return value
+        }
+        return intProperty(properties["fractionDigits"])
+    }
+
+    private func intProperty(_ value: Any?) -> Int? {
+        if let number = value as? Int { return number }
+        if let number = value as? Double { return Int(number) }
+        if let string = value as? String { return Int(string) }
+        return nil
+    }
+
     /// Parse OCR hints with language-specific fallback: ocrHints.{language} -> ocrHints -> nil
     private func parseOCRHints(from properties: [String: Any], languageCode: String) -> [String]? {
         // First try language-specific key (e.g., "ocrHints.es")
@@ -679,6 +702,7 @@ public final class FileBasedDataHintsLoader: DataHintsLoader, @unchecked Sendabl
                 maxLength: properties["maxLength"].flatMap(Int.init),
                 minLength: properties["minLength"].flatMap(Int.init),
                 expectedRange: expectedRange,
+                fractionDigits: parseFractionDigits(from: propertiesAny, locale: Locale.current),
                 metadata: properties,
                 inputType: inputType,
                 pickerOptions: pickerOptions,

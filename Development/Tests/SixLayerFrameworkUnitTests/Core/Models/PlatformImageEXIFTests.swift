@@ -302,6 +302,58 @@ extension PlatformImageEXIFTests {
         return exif[kCGImagePropertyExifDateTimeOriginal as String] as? String
     }
 
+    fileprivate static func jpegStoredOnItsSide() throws -> Data {
+        let width = 8
+        let height = 4
+        var pixels = [UInt8](repeating: 255, count: width * height)
+        pixels[0] = 0
+        let buffer = Data(pixels) as CFData
+        guard let provider = CGDataProvider(data: buffer),
+              let image = CGImage(
+                width: width,
+                height: height,
+                bitsPerComponent: 8,
+                bitsPerPixel: 8,
+                bytesPerRow: width,
+                space: CGColorSpaceCreateDeviceGray(),
+                bitmapInfo: CGBitmapInfo(rawValue: CGImageAlphaInfo.none.rawValue),
+                provider: provider,
+                decode: nil,
+                shouldInterpolate: false,
+                intent: .defaultIntent
+              ) else {
+            struct E: Error {}
+            throw E()
+        }
+        let mutable = NSMutableData()
+        #if canImport(UniformTypeIdentifiers)
+        let type = UTType.jpeg.identifier as CFString
+        #else
+        let type = "public.jpeg" as CFString
+        #endif
+        guard let dest = CGImageDestinationCreateWithData(mutable, type, 1, nil) else {
+            struct E: Error {}
+            throw E()
+        }
+        let properties: [String: Any] = [
+            kCGImagePropertyOrientation as String: CGImagePropertyOrientation.right.rawValue
+        ]
+        CGImageDestinationAddImage(dest, image, properties as CFDictionary)
+        guard CGImageDestinationFinalize(dest) else {
+            struct E: Error {}
+            throw E()
+        }
+        return mutable as Data
+    }
+
+    fileprivate static func sample(_ image: CGImage, x: Int, y: Int) -> Int {
+        guard let data = image.dataProvider?.data as Data? else { return 255 }
+        let channels = max(1, image.bitsPerPixel / 8)
+        let index = y * image.bytesPerRow + x * channels
+        guard index >= 0, index < data.count else { return 255 }
+        return Int(data[index])
+    }
+
     fileprivate static func orientationRaw(_ data: Data) -> UInt32? {
         guard let src = CGImageSourceCreateWithData(data as CFData, nil) else { return nil }
         guard let props = CGImageSourceCopyPropertiesAtIndex(src, 0, nil) as? [String: Any] else { return nil }
@@ -499,6 +551,18 @@ extension PlatformImageEXIFTests {
         guard let bytes = result?.originalEncodedData else { return }
         #expect(Self.orientationRaw(bytes) == CGImagePropertyOrientation.right.rawValue,
                 "Top-level orientation should be updated to .right")
+    }
+
+    @Test func rightOrientationOpensAsTheDisplayBitmap() throws {
+        // Stored 8×4 with the dark pixel at the top left. Orientation right
+        // makes the display 4×8 and moves that pixel to (3, 0).
+        let data = try Self.jpegStoredOnItsSide()
+        let image = try #require(PlatformImage(data: data))
+        let oriented = try #require(image.orientedCGImage())
+        #expect(oriented.width == 4)
+        #expect(oriented.height == 8)
+        #expect(Self.sample(oriented, x: 3, y: 0) < 128)
+        #expect(Self.sample(oriented, x: 0, y: 0) > 128)
     }
 
     @Test func testWithCaptureDatePreservesGPSOnJPEG() async throws {

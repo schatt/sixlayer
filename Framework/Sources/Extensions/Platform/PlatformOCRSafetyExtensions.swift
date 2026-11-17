@@ -490,15 +490,9 @@ struct FallbackOCRView: View {
 
 // MARK: - Helper Functions
 
-/// Get CGImage from PlatformImage
+/// Get CGImage from PlatformImage in display orientation.
 private func getCGImage(from image: PlatformImage) -> CGImage? {
-    #if os(iOS)
-    return image.uiImage.cgImage
-    #elseif os(macOS)
-    return image.nsImage.cgImage(forProposedRect: nil, context: nil, hints: nil)
-    #else
-    return nil
-    #endif
+    image.orientedCGImage()
 }
 
 // MARK: - Text Type Detection Helpers

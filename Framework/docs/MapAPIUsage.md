@@ -169,6 +169,24 @@ let annotations = [
 platformMapView_L4(position: $position, annotations: annotations)
 ```
 
+### With Selection Binding
+
+Use the selection overload to sync list ↔ marker selection the same way as raw `Map(position:selection:)`. Tag markers (or annotations) with a `Hashable` value:
+
+```swift
+@State private var position = MapCameraPosition.automatic
+@State private var selectedPlaceID: String?
+
+platformMapView_L4(position: $position, selection: $selectedPlaceID) {
+    ForEach(places) { place in
+        Marker(place.name, coordinate: place.coordinate)
+            .tag(place.id)
+    }
+}
+```
+
+Existing position-only and annotations overloads are unchanged.
+
 ### With LocationService Integration
 
 ```swift

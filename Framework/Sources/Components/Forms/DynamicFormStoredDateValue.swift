@@ -5,13 +5,22 @@ import Foundation
 ///
 /// **Primary contract:** `Date` — preferred for hosts mapping to Core Data / model `Date` attributes.
 ///
-/// **Interoperability:** Also accepts `TimeInterval`, ISO-8601 strings, and the same medium/short
-/// localized strings written by `DatePickerField` / `TimePickerField` / `DateTimePickerField` in
-/// `AdvancedFieldTypes.swift`. See `Framework/docs/AdvancedFieldTypesGuide.md` (date contracts) and GitHub #266.
+/// **Interoperability:** Also accepts `TimeInterval`, ISO-8601 strings, `en_US_POSIX` medium/short
+/// strings, those same styles in `Locale.current` (legacy values from pre-#618
+/// `DatePickerField` / `TimePickerField` / `DateTimePickerField`, which now persist `Date`),
+/// and pre-#672 form-draft `String(describing: Date)` values (e.g. `2023-11-14 22:13:20 +0000`, #675).
+/// POSIX is tried first (#615, #621).
+/// See `Framework/docs/AdvancedFieldTypesGuide.md` (date contracts) and GitHub #266.
 public enum DynamicFormStoredDateValue {
 
     /// Returns a `Date` suitable for `DatePicker` binding, or `nil` if nothing is stored / parseable.
+    /// Medium and short strings use `Locale.current` when POSIX does not parse them (#621).
     public static func date(fromStoredValue value: Any?) -> Date? {
+        date(fromStoredValue: value, locale: .current)
+    }
+
+    /// `locale` is the locale that wrote a legacy medium/short string. POSIX is tried first.
+    static func date(fromStoredValue value: Any?, locale: Locale) -> Date? {
         guard let value else { return nil }
 
         if let date = value as? Date {
@@ -27,13 +36,15 @@ public enum DynamicFormStoredDateValue {
         }
 
         if let string = value as? String {
-            return date(fromLocalizedOrISOString: string)
+            return date(fromLocalizedOrISOString: string, locale: locale)
         }
 
         return nil
     }
 
-    private static func date(fromLocalizedOrISOString string: String) -> Date? {
+    private static let posixLocale = Locale(identifier: "en_US_POSIX")
+
+    private static func date(fromLocalizedOrISOString string: String, locale: Locale) -> Date? {
         let trimmed = string.trimmingCharacters(in: .whitespacesAndNewlines)
         if trimmed.isEmpty { return nil }
 
@@ -41,29 +52,48 @@ public enum DynamicFormStoredDateValue {
             return iso
         }
 
-        let posix = Locale(identifier: "en_US_POSIX")
-
-        let medium = DateFormatter()
-        medium.locale = posix
-        medium.dateStyle = .medium
-        medium.timeStyle = .none
-        if let d = medium.date(from: trimmed) {
-            return d
+        // Pre-#672 AnyCodable encoded Date as String(describing:), not ISO-8601 (#675).
+        if let describing = parseStringDescribingDate(trimmed) {
+            return describing
         }
 
-        let shortTime = DateFormatter()
-        shortTime.locale = posix
-        shortTime.dateStyle = .none
-        shortTime.timeStyle = .short
-        if let d = shortTime.date(from: trimmed) {
-            return d
+        if let posix = styledDate(from: trimmed, locale: posixLocale) {
+            return posix
         }
+        if locale.identifier == posixLocale.identifier { return nil }
+        return styledDate(from: trimmed, locale: locale)
+    }
 
-        let mediumShort = DateFormatter()
-        mediumShort.locale = posix
-        mediumShort.dateStyle = .medium
-        mediumShort.timeStyle = .short
-        return mediumShort.date(from: trimmed)
+    /// Foundation `Date.description` / `String(describing: Date)` shape used by draft JSON before #672.
+    /// Offset comes from the trailing `Z` token (e.g. `+0000`); no fixed formatter time zone.
+    private static func parseStringDescribingDate(_ string: String) -> Date? {
+        let formatter = DateFormatter()
+        formatter.locale = posixLocale
+        formatter.dateFormat = "yyyy-MM-dd HH:mm:ss Z"
+        return formatter.date(from: string)
+    }
+
+    /// Legacy medium/short styles advanced pickers wrote before #618.
+    private static func styledDate(from text: String, locale: Locale) -> Date? {
+        if let date = formatter(locale: locale, dateStyle: .medium, timeStyle: .none).date(from: text) {
+            return date
+        }
+        if let date = formatter(locale: locale, dateStyle: .none, timeStyle: .short).date(from: text) {
+            return date
+        }
+        return formatter(locale: locale, dateStyle: .medium, timeStyle: .short).date(from: text)
+    }
+
+    private static func formatter(
+        locale: Locale,
+        dateStyle: DateFormatter.Style,
+        timeStyle: DateFormatter.Style
+    ) -> DateFormatter {
+        let formatter = DateFormatter()
+        formatter.locale = locale
+        formatter.dateStyle = dateStyle
+        formatter.timeStyle = timeStyle
+        return formatter
     }
 
     private static func parseISO8601(_ string: String) -> Date? {

@@ -101,15 +101,11 @@ public struct DataIntrospectionEngine {
             return analyzeCoreData(managedObject)
         }
         
-        // Check if this is a SwiftData PersistentModel (iOS 17+, macOS 14+)
-        // SwiftData models work with standard Mirror introspection since they're regular Swift classes
-        // The @Model macro doesn't prevent Mirror from working
+        // SwiftData @Model storage is mirrored as `_property` plus `_$…` runtime fields (#671).
         #if canImport(SwiftData)
         if #available(macOS 14.0, iOS 17.0, *) {
-            if data is any PersistentModel {
-                // SwiftData models can be analyzed using standard Mirror introspection
-                // The @Model macro doesn't hide properties from Mirror
-                // Fall through to hints-first analysis below
+            if let persistentModel = data as? any PersistentModel {
+                return analyzeSwiftData(persistentModel)
             }
         }
         #endif
@@ -137,6 +133,99 @@ public struct DataIntrospectionEngine {
             recommendations: recommendations
         )
     }
+
+    #if canImport(SwiftData)
+    /// Analyze a SwiftData `@Model` instance.
+    /// Prefer hints; otherwise ``Schema`` entity metadata (Mirror values are `_SwiftDataNoType`).
+    @available(macOS 14.0, iOS 17.0, *)
+    private static func analyzeSwiftData(_ model: any PersistentModel) -> DataAnalysisResult {
+        if let hintsResult = tryHintsFirstDiscovery(for: model) {
+            return hintsResult
+        }
+
+        let fields = extractSwiftDataFieldsFromSchema(type(of: model))
+        let complexity = calculateComplexity(fields: fields, data: model)
+        let patterns = detectPatterns(fields: fields)
+        let recommendations = generateRecommendations(
+            fields: fields,
+            complexity: complexity,
+            patterns: patterns
+        )
+
+        return DataAnalysisResult(
+            fields: fields,
+            complexity: complexity,
+            patterns: patterns,
+            recommendations: recommendations
+        )
+    }
+
+    /// Build fields from `Schema([modelType])` attributes/relationships.
+    @available(macOS 14.0, iOS 17.0, *)
+    static func extractSwiftDataFieldsFromSchema(_ modelType: any PersistentModel.Type) -> [DataField] {
+        let schema = Schema([modelType])
+        guard let entity = schema.entities.first else { return [] }
+
+        var fields: [DataField] = []
+        for property in entity.properties {
+            if property.isTransient { continue }
+
+            let name = property.name
+            let fieldType: FieldType
+            if property.isRelationship {
+                fieldType = .relationship
+            } else {
+                fieldType = inferSwiftDataFieldType(valueType: property.valueType)
+            }
+
+            fields.append(
+                DataField(
+                    name: name,
+                    type: fieldType,
+                    isOptional: property.isOptional,
+                    isArray: false,
+                    isIdentifiable: name == "id" || name.hasSuffix("ID"),
+                    hasDefaultValue: false
+                )
+            )
+        }
+        return fields
+    }
+
+    /// Map SwiftData attribute `valueType` to ``FieldType``.
+    @available(macOS 14.0, iOS 17.0, *)
+    static func inferSwiftDataFieldType(valueType: Any.Type) -> FieldType {
+        if valueType == String.self || valueType == String?.self {
+            return .string
+        }
+        if valueType == Bool.self || valueType == Bool?.self {
+            return .boolean
+        }
+        if valueType == Date.self || valueType == Date?.self {
+            return .date
+        }
+        if valueType == URL.self || valueType == URL?.self {
+            return .url
+        }
+        if valueType == UUID.self || valueType == UUID?.self {
+            return .uuid
+        }
+        if valueType == Data.self || valueType == Data?.self {
+            return .document
+        }
+        if valueType == Int.self || valueType == Int?.self
+            || valueType == Int16.self || valueType == Int16?.self
+            || valueType == Int32.self || valueType == Int32?.self
+            || valueType == Int64.self || valueType == Int64?.self
+            || valueType == Double.self || valueType == Double?.self
+            || valueType == Float.self || valueType == Float?.self
+            || valueType == CGFloat.self || valueType == CGFloat?.self
+            || valueType == Decimal.self || valueType == Decimal?.self {
+            return .number
+        }
+        return .custom
+    }
+    #endif
     
 
     
@@ -207,11 +296,19 @@ public struct DataIntrospectionEngine {
         )
     }
     
-    /// Analyze using hybrid approach: hints for fully declarative fields, Mirror for others
+    /// Analyze using hybrid approach: hints for fully declarative fields, Mirror/Schema for others
     private static func analyzeHybrid<T>(hints: [String: FieldDisplayHints], data: T) -> DataAnalysisResult {
-        // Get Mirror fields first
-        let mirror = Mirror(reflecting: data)
-        let mirrorFields = extractFields(from: mirror)
+        // PersistentModel Mirror storage is untyped (`_SwiftDataNoType`); use Schema (#671).
+        let mirrorFields: [DataField]
+        #if canImport(SwiftData)
+        if #available(macOS 14.0, iOS 17.0, *), let model = data as? any PersistentModel {
+            mirrorFields = extractSwiftDataFieldsFromSchema(type(of: model))
+        } else {
+            mirrorFields = extractFields(from: Mirror(reflecting: data))
+        }
+        #else
+        mirrorFields = extractFields(from: Mirror(reflecting: data))
+        #endif
         
         // Create a map of hint-based fields (only fully declarative, not hidden)
         var hintFields: [String: DataField] = [:]

@@ -51,7 +51,7 @@ struct PlatformUIIntegrationPatternsHostUnitTests {
 
     @Test @MainActor
     func smartNavigationContainerHosts() {
-        hostView {
+        TestSetupUtilities.hostExpectingPlatformRoot {
             PlatformUIIntegration.SmartNavigationContainer(title: "Profile Settings") {
                 Text("Content")
             }
@@ -60,7 +60,7 @@ struct PlatformUIIntegrationPatternsHostUnitTests {
 
     @Test @MainActor
     func smartFormContainerUsesAdaptiveButtonNamedCompliance() {
-        hostExpectingNamedCompliance("AdaptiveButton") {
+        TestSetupUtilities.hostExpectingNamedCompliance("AdaptiveButton") {
             PlatformUIIntegration.SmartFormContainer(
                 title: "Account",
                 onSubmit: {}
@@ -72,7 +72,7 @@ struct PlatformUIIntegrationPatternsHostUnitTests {
 
     @Test @MainActor
     func smartCardContainerHosts() {
-        hostView {
+        TestSetupUtilities.hostExpectingPlatformRoot {
             PlatformUIIntegration.SmartCardContainer(
                 title: "Card",
                 subtitle: "Detail",
@@ -86,7 +86,7 @@ struct PlatformUIIntegrationPatternsHostUnitTests {
 
     @Test @MainActor
     func adaptiveNavigationHosts() {
-        hostView {
+        TestSetupUtilities.hostExpectingPlatformRoot {
             AdaptiveUIPatterns.AdaptiveNavigation {
                 Text("Nav")
             }
@@ -98,7 +98,7 @@ struct PlatformUIIntegrationPatternsHostUnitTests {
         struct Row: Identifiable {
             let id: String
         }
-        hostView {
+        TestSetupUtilities.hostExpectingPlatformRoot {
             AdaptiveUIPatterns.AdaptiveList([Row(id: "a"), Row(id: "b")]) { item in
                 Text(item.id)
             }
@@ -107,41 +107,16 @@ struct PlatformUIIntegrationPatternsHostUnitTests {
 
     @Test @MainActor
     func adaptiveModalModifierHosts() {
-        hostView {
+        TestSetupUtilities.hostExpectingPlatformRoot {
             Text("Sheet").adaptiveModal()
         }
     }
 
     @Test @MainActor
     func adaptiveListModifierHosts() {
-        hostView {
+        TestSetupUtilities.hostExpectingPlatformRoot {
             List { Text("Row") }.adaptiveList()
         }
     }
 
-    @MainActor
-    private func hostExpectingNamedCompliance<V: View>(
-        _ name: String,
-        @ViewBuilder _ view: () -> V
-    ) {
-        #if os(watchOS)
-        return
-        #else
-        let (hosted, log) = TestSetupUtilities.hostRootPlatformViewNamedDebugLog(view())
-        #expect(hosted != nil)
-        #expect(
-            log.contains(name),
-            "named compliance \(name) must appear in debug log"
-        )
-        #endif
-    }
-
-    @MainActor
-    private func hostView<V: View>(@ViewBuilder _ view: () -> V) {
-        #if os(watchOS)
-        return
-        #else
-        #expect(TestSetupUtilities.hostRootPlatformView(view(), forceLayout: true) != nil)
-        #endif
-    }
 }

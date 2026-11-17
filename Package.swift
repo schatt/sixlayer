@@ -1,5 +1,5 @@
 // swift-tools-version: 6.0
-// SixLayerFramework v8.7.0 - Minor: seven-segment OCR (#576); optional hints and public DataBinder (#581, #585); Vision resume once (#563, #574)
+// SixLayerFramework v8.8.0 - Minor: OCR hardening; Live Photo camera/picker; platform chrome; /2 land gate
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription

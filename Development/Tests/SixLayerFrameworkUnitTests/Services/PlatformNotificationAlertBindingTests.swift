@@ -42,15 +42,13 @@ struct PlatformNotificationAlertBindingTests {
             notificationService: service
         )
 
+        TestSetupUtilities.hostExpectingPlatformRoot(forceLayout: true) { view }
         #if os(iOS) || os(macOS)
-        #expect(TestSetupUtilities.hostRootPlatformView(view, forceLayout: true) != nil)
         pumpMainRunLoop(for: 0.3)
         #expect(
             presented == false,
             "Hosting a suppressed alert must clear the caller binding"
         )
-        #else
-        _ = view
         #endif
     }
 
@@ -68,9 +66,7 @@ struct PlatformNotificationAlertBindingTests {
         )
 
         #expect(presented == true)
-        #if os(iOS) || os(macOS)
-        #expect(TestSetupUtilities.hostRootPlatformView(view) != nil)
-        #endif
+        TestSetupUtilities.hostExpectingPlatformRoot { view }
         #expect(
             presented == true,
             "An unsuppressed alert must leave the caller binding presented"
@@ -112,15 +108,13 @@ struct PlatformNotificationAlertBindingTests {
             notificationService: service
         )
 
+        TestSetupUtilities.hostExpectingPlatformRoot(forceLayout: true) { view }
         #if os(iOS) || os(macOS)
-        #expect(TestSetupUtilities.hostRootPlatformView(view, forceLayout: true) != nil)
         pumpMainRunLoop(for: 0.3)
         #expect(
             presented == false,
             "Hosting a suppressed RTL alert must clear the caller binding"
         )
-        #else
-        _ = view
         #endif
     }
 
@@ -139,9 +133,7 @@ struct PlatformNotificationAlertBindingTests {
         )
 
         #expect(presented == true)
-        #if os(iOS) || os(macOS)
-        #expect(TestSetupUtilities.hostRootPlatformView(view) != nil)
-        #endif
+        TestSetupUtilities.hostExpectingPlatformRoot { view }
         #expect(
             presented == true,
             "An unsuppressed RTL alert must leave the caller binding presented"

@@ -126,6 +126,7 @@ enum OCRJointDecimalCorrection {
         allRanges: [String: ValueRange],
         context: OCRContext
     ) -> JointOutcome {
+        let locale = OCRDecimalLocale.resolve(context: context)
         let fields = relationship.allFields
         let presentValues = fields.compactMap { field -> (String, String)? in
             guard let value = structuredData[field], !value.isEmpty else { return nil }
@@ -166,7 +167,7 @@ enum OCRJointDecimalCorrection {
         let printedRate: Double? = rateField.flatMap { field in
             let raw = structuredData[field] ?? ""
             guard !valueNeedsDecimalPlacement(raw, language: context.language) else { return nil }
-            return parseOCRNumericValue(raw, language: context.language)
+            return parseOCRNumericValue(raw, locale: locale)
         }
         
         var candidateMap: [String: [String]] = [:]
@@ -203,11 +204,11 @@ enum OCRJointDecimalCorrection {
                 for field in fixedFields {
                     merged[field] = structuredData[field] ?? merged[field] ?? ""
                 }
-                guard let productVal = parseOCRNumericValue(merged[relationship.productField] ?? "", language: context.language) else {
+                guard let productVal = parseOCRNumericValue(merged[relationship.productField] ?? "", locale: locale) else {
                     return
                 }
-                let factorAVal = parseOCRNumericValue(merged[relationship.factorFieldA] ?? "", language: context.language)
-                let factorBVal = parseOCRNumericValue(merged[relationship.factorFieldB] ?? "", language: context.language)
+                let factorAVal = parseOCRNumericValue(merged[relationship.factorFieldA] ?? "", locale: locale)
+                let factorBVal = parseOCRNumericValue(merged[relationship.factorFieldB] ?? "", locale: locale)
                 if let factorAVal, let factorBVal {
                     guard abs(factorAVal * factorBVal - productVal) < 0.15 else { return }
                 }
@@ -216,7 +217,7 @@ enum OCRJointDecimalCorrection {
                 for field in fieldsNeedingCorrection {
                     guard let raw = structuredData[field],
                           let candidate = assignments[field],
-                          let numeric = parseOCRNumericValue(candidate, language: context.language) else {
+                          let numeric = parseOCRNumericValue(candidate, locale: locale) else {
                         return
                     }
                     if let range = allRanges[field], range.contains(numeric) {
@@ -228,7 +229,7 @@ enum OCRJointDecimalCorrection {
                 }
                 
                 if let volumeField,
-                   let volumeVal = parseOCRNumericValue(merged[volumeField] ?? "", language: context.language),
+                   let volumeVal = parseOCRNumericValue(merged[volumeField] ?? "", locale: locale),
                    volumeVal > 0 {
                     let impliedRate = productVal / volumeVal
                     guard impliedRate >= rateRange.min && impliedRate <= rateRange.max else { return }
@@ -357,15 +358,21 @@ enum OCRJointDecimalCorrection {
     }
     
     static func parseOCRNumericValue(_ valueString: String, language: OCRLanguage) -> Double? {
-        Double(normalizeDecimalString(valueString, language: language))
+        parseOCRNumericValue(
+            valueString,
+            locale: OCRDecimalLocale.resolve(override: nil, regionCode: nil, language: language)
+        )
     }
-    
-    static func normalizeDecimalString(_ value: String, language: OCRLanguage) -> String {
-        let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
-        if trimmed.contains(",") && !trimmed.contains(".") {
-            return trimmed.replacingOccurrences(of: ",", with: ".")
-        }
-        return trimmed.replacingOccurrences(of: ",", with: "")
+
+    /// Same fail-closed locale parse as calculation groups (#630 / #632).
+    static func parseOCRNumericValue(_ valueString: String, locale: Locale) -> Double? {
+        OCRDecimalLocale.parseRecognized(valueString, locale: locale)
+    }
+
+    /// Digit-placement candidates invent POSIX decimals from digit runs only.
+    /// Locale commas are not rewritten here — scoring uses `parseOCRNumericValue` (#632).
+    static func digitsForDecimalPlacement(_ value: String) -> String {
+        String(value.filter(\.isNumber))
     }
     
     private static func isThousandsCommaOnly(_ value: String) -> Bool {
@@ -377,14 +384,13 @@ enum OCRJointDecimalCorrection {
         guard valueNeedsDecimalPlacement(valueString, language: language) else {
             return [valueString]
         }
-        guard Int(normalizeDecimalString(valueString, language: language).replacingOccurrences(of: ".", with: "")) != nil
-            || Int(valueString) != nil else {
+        let digitsOnly = digitsForDecimalPlacement(valueString)
+        guard Int(digitsOnly) != nil || Int(valueString) != nil else {
             return [valueString]
         }
-        let normalized = valueString
         var candidates = [valueString]
-        let digitsOnly = normalized.filter { $0.isNumber }
         let chars = Array(digitsOnly)
+        guard chars.count > 1 else { return candidates }
         for decimalPos in 1..<chars.count {
             var correctedChars = chars
             correctedChars.insert(".", at: chars.count - decimalPos)

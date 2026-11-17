@@ -42,6 +42,26 @@ struct DynamicFormStoredDateValueTests {
         }
     }
 
+    @Test func date_parsesMediumShortAndCombinedStrings_deDE() {
+        let locale = Locale(identifier: "de_DE")
+        let ref = Date(timeIntervalSince1970: 1_700_000_000)
+        let styles: [(DateFormatter.Style, DateFormatter.Style)] = [
+            (.medium, .none),
+            (.none, .short),
+            (.medium, .short)
+        ]
+        for (dateStyle, timeStyle) in styles {
+            let formatter = DateFormatter()
+            formatter.locale = locale
+            formatter.dateStyle = dateStyle
+            formatter.timeStyle = timeStyle
+            let string = formatter.string(from: ref)
+            let parsed = DynamicFormStoredDateValue.date(fromStoredValue: string, locale: locale)
+            let expected = formatter.date(from: string)
+            #expect(parsed == expected, "\(dateStyle) \(timeStyle) \(string)")
+        }
+    }
+
     @Test func date_parsesMediumDateShortTimeString_enUSPOSIX() {
         let fmt = DateFormatter()
         fmt.locale = Locale(identifier: "en_US_POSIX")
@@ -60,6 +80,16 @@ struct DynamicFormStoredDateValueTests {
         #expect(DynamicFormStoredDateValue.date(fromStoredValue: nil) == nil)
         #expect(DynamicFormStoredDateValue.date(fromStoredValue: "") == nil)
         #expect(DynamicFormStoredDateValue.date(fromStoredValue: "   ") == nil)
+    }
+
+    /// #675: Pre-#672 AnyCodable encoded Date via String(describing:), e.g. "2023-11-14 22:13:20 +0000".
+    @Test func date_parsesLegacyStringDescribingDate() throws {
+        let original = Date(timeIntervalSince1970: 1_700_000_000)
+        let describing = String(describing: original)
+        #expect(describing == "2023-11-14 22:13:20 +0000")
+        let parsed = DynamicFormStoredDateValue.date(fromStoredValue: describing)
+        let restored = try #require(parsed)
+        #expect(abs(restored.timeIntervalSince1970 - original.timeIntervalSince1970) < 1)
     }
 
     @Test @MainActor func formState_dateValueRoundTripsThroughFieldValues() {

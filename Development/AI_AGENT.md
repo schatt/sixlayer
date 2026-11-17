@@ -11,6 +11,8 @@ This document provides guidance for AI assistants working with the SixLayer Fram
 ## 📚 Version-Specific Guides
 
 ### Latest Versions (Recommended)
+- **v8.8.0** — Minor release: OCR hardening; Live Photo camera/picker; platform chrome; `/2` land gate (see [RELEASE_v8.8.0.md](RELEASE_v8.8.0.md))
+- **[AI_AGENT_v8.8.0.md](AI_AGENT_v8.8.0.md)** - v8.8.0 minor notes; prior minor baseline [AI_AGENT_v8.7.0.md](AI_AGENT_v8.7.0.md)
 - **v8.7.0** — Minor release: seven-segment OCR (`OCRProcessingMode.ssocr`, #576); optional hints model name and public `DataBinder` (#581, #585); Vision continuation claimed once (#563, #574, #578, #579); curated string catalog (#577); `platformTap` in macOS UITests and snippets (#567, #568, #569, #570, #575, #586, #587) (see [RELEASE_v8.7.0.md](RELEASE_v8.7.0.md))
 - **[AI_AGENT_v8.7.0.md](AI_AGENT_v8.7.0.md)** - v8.7.0 minor notes; prior minor baseline [AI_AGENT_v8.6.0.md](AI_AGENT_v8.6.0.md)
 - **v8.6.7** — Patch release: sidebar column and label inset (#549, #552); signed number entry (#548, #550); alert binding, deferred clear, and RTL Do Not Disturb (#533, #555, #556); focused form editors (#560); settings dismiss (#532); collection and catalog content inset (#557, #559) (see [RELEASE_v8.6.7.md](RELEASE_v8.6.7.md))

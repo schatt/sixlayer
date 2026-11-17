@@ -413,7 +413,7 @@ if [ "$DOCS_ONLY" -eq 1 ]; then
     echo "📄 Docs-only mode (--docs): skipping unit tests and release (tag/merge/push/GitHub Release)"
 fi
 
-# Step 1: Release tag must not already exist (local or remote). Docs-only warns
+# Step 1: Release tag must not already exist (local or origin; #694). Docs-only warns
 # and continues so historical release docs can still be validated.
 echo "📋 Step 1: Checking release tag v$VERSION does not already exist..."
 if [ "$DOCS_ONLY" -eq 1 ]; then
@@ -441,7 +441,9 @@ else
     echo "⚠️  xcodegen not available, skipping project regeneration"
 fi
 
-# Step 3: Run tests (unit tests only per platform — no UI tests, no ViewInspector, no AllTests)
+# Step 3: Run unit test gate (macOS + iOS). OCR image suites stay on
+# SLF-*-OCRImageTests via CI / manual pre-release — not in this script (#693).
+# No UI tests, no ViewInspector, no AllTests here (#692).
 # Skipped in --docs mode, or when a valid last-pass stamp shows only docs-only changes since then
 # and both platforms are green. Partial stamps skip only the platforms already passed (#390).
 MACOS_TESTS_FAILED=0
@@ -458,7 +460,7 @@ elif release_should_skip_unit_tests "$REPO_ROOT" "$FORCE_TESTS"; then
     echo "   Stamp: $(release_test_stamp_path)"
     echo "   Use --force-tests to run anyway."
 else
-    echo "📋 Step 3: Running unit test suite (macOS + iOS unit tests only)..."
+    echo "📋 Step 3: Running unit test gate (macOS + iOS)..."
 
     # Write structured test bundles for triage when the release gate fails (ignored via build/)
     RELEASE_TEST_STAMP=$(date -u +"%Y%m%dT%H%M%SZ")
@@ -466,7 +468,7 @@ else
     mkdir -p "$XCRESULT_BASE"
     MACOS_XCRESULT="${XCRESULT_BASE}/SLF-macOS-UnitTests.xcresult"
     IOS_XCRESULT="${XCRESULT_BASE}/SLF-iOS-UnitTests.xcresult"
-    echo "📎 xcresult bundles for this run: $MACOS_XCRESULT and $IOS_XCRESULT"
+    echo "📎 xcresult bundles for this run: $MACOS_XCRESULT, $IOS_XCRESULT"
 
     # Run both platform unit tests even if one fails (cross-platform signal). Do not exit here:
     # remaining release checks still run so test + documentation failures appear together at the end.
@@ -525,19 +527,20 @@ else
         fi
     fi
 
-    # Release gate runs unit tests only (SLF-*-UnitTests). UI/ViewInspector/AllTests are not run here.
+    # Release gate: unit only (SLF-*-UnitTests). OCR image (#692) is CI / manual (#693).
+    # UI/ViewInspector/AllTests are not run here.
     if [ "$MACOS_TESTS_FAILED" -eq 1 ] || [ "$IOS_TESTS_FAILED" -eq 1 ]; then
-        echo "⚠️  Unit test gate failed on one or more platforms; continuing with remaining release checks." >&2
-        echo "📎 macOS xcresult: $MACOS_XCRESULT" >&2
-        echo "📎 iOS xcresult:   $IOS_XCRESULT" >&2
+        echo "⚠️  Release unit test gate failed on one or more platforms; continuing with remaining release checks." >&2
+        echo "📎 macOS unit xcresult: $MACOS_XCRESULT" >&2
+        echo "📎 iOS unit xcresult:   $IOS_XCRESULT" >&2
         echo "💡 Inspect: xcrun xcresulttool get test-results summary --path <path>" >&2
         if release_test_stamp_both_platforms_passed 2>/dev/null; then
             :
         else
-            echo "📎 Partial stamp retained for platforms that already passed; retry will skip those." >&2
+            echo "📎 Partial stamp retained for unit platforms that already passed; retry will skip those." >&2
         fi
     elif release_test_stamp_both_platforms_passed; then
-        echo "✅ Unit test suite validation passed (macOS + iOS unit tests only)"
+        echo "✅ Unit test gate passed (macOS + iOS)"
         echo "💾 Unit-test gate complete at $PASS_COMMIT → $(release_test_stamp_path)"
         echo "   (tests only — stamp is written even if later doc checks fail)"
     else
@@ -1182,11 +1185,11 @@ if [ $ERRORS_FOUND -gt 0 ]; then
     echo "Found $ERRORS_FOUND error(s) that need to be fixed:"
     echo -e "$ERROR_MESSAGES"
     if [ "${MACOS_TESTS_FAILED:-0}" -eq 1 ]; then
-        echo "💡 macOS test failures — result bundle: $MACOS_XCRESULT" >&2
+        echo "💡 macOS unit test failures — result bundle: $MACOS_XCRESULT" >&2
         maybe_open_xcresult "$MACOS_XCRESULT"
     fi
     if [ "${IOS_TESTS_FAILED:-0}" -eq 1 ]; then
-        echo "💡 iOS test failures — result bundle: $IOS_XCRESULT" >&2
+        echo "💡 iOS unit test failures — result bundle: $IOS_XCRESULT" >&2
         maybe_open_xcresult "$IOS_XCRESULT"
     fi
     if [ "${NO_RELEASE_MILESTONE:-0}" -eq 1 ]; then
@@ -1208,7 +1211,7 @@ if [ "$DOCS_ONLY" -eq 1 ]; then
 elif [ "${TESTS_SKIPPED_STAMP:-0}" -eq 1 ]; then
     echo "⏭️  Unit tests skipped (no code changes since last pass stamp)"
 else
-    echo "✅ Tests passed"
+    echo "✅ Unit tests passed"
 fi
 echo "✅ Git repository is clean"
 echo "✅ RELEASES.md updated correctly"

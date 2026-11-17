@@ -3,11 +3,12 @@ import SwiftUI
 // MARK: - Modal sheet navigation chrome (issue #223)
 
 public extension View {
-    /// Composable shell for modal sheet roots: wraps content in ``platformNavigation_L4`` (iOS),
-    /// applies navigation title and display mode, and adds a trailing confirmation toolbar action.
+    /// Composable shell for modal sheet roots: wraps content in ``platformNavigation_L4``
+    /// (NavigationStack on iOS and macOS, #638), applies navigation title and display mode,
+    /// and adds a trailing confirmation toolbar action.
     ///
-    /// Use this (or ``platformNavigation_L4`` manually) for sheet content that sets a toolbar on iOS
-    /// so items appear in the navigation bar.
+    /// Use this (or ``platformNavigation_L4`` manually) for sheet content that sets a toolbar
+    /// so items appear in the navigation bar on both platforms.
     ///
     /// - Parameters:
     ///   - title: Navigation title string.

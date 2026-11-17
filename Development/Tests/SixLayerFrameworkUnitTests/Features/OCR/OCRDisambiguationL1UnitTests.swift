@@ -15,8 +15,13 @@ struct OCRDisambiguationL1UnitTests {
 
     @Test
     func disambiguationL1InvokesOnResultWithMockCandidates() async {
-        #if os(watchOS)
-        return
+        #if os(watchOS) || os(visionOS)
+        TestSetupUtilities.hostExpectingPlatformRoot {
+            platformOCRWithDisambiguation_L1(
+                image: PlatformImage(),
+                context: OCRContext()
+            ) { _ in }
+        }
         #else
         let box = ResultBox()
         let view = platformOCRWithDisambiguation_L1(
@@ -25,8 +30,7 @@ struct OCRDisambiguationL1UnitTests {
         ) { result in
             box.value = result
         }
-        let hosted = TestSetupUtilities.hostRootPlatformView(view, forceLayout: true)
-        #expect(hosted != nil, "OCR disambiguation L1 must host")
+        TestSetupUtilities.hostExpectingPlatformRoot { view }
 
         let got = await waitForResult(box, timeout: 2.0)
         #expect(got, "mock processImage should call onResult")
@@ -37,18 +41,14 @@ struct OCRDisambiguationL1UnitTests {
 
     @Test
     func disambiguationL1ConfigurationOverloadHosts() {
-        #if os(watchOS)
-        return
-        #else
-        let view = platformOCRWithDisambiguation_L1(
-            image: PlatformImage(),
-            context: OCRContext(),
-            configuration: OCRDisambiguationConfiguration(),
-            onResult: { _ in }
-        )
-        let hosted = TestSetupUtilities.hostRootPlatformView(view, forceLayout: true)
-        #expect(hosted != nil)
-        #endif
+        TestSetupUtilities.hostExpectingPlatformRoot {
+            platformOCRWithDisambiguation_L1(
+                image: PlatformImage(),
+                context: OCRContext(),
+                configuration: OCRDisambiguationConfiguration(),
+                onResult: { _ in }
+            )
+        }
     }
 }
 
