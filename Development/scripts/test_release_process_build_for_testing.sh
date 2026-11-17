@@ -78,26 +78,11 @@ assert_not_contains "$SRC" "release_run_platform_unit_tests() {" "helper functio
 assert_contains "$SRC" "FB24278669" "script still references Apple Feedback FB24278669"
 assert_contains "$SRC" "#411" "script references issue #411"
 
-# OCR image second gate (#692): same single-invoke pattern as unit.
-OCR_MACOS_BLOCK="$(
-    awk '
-      /Running macOS OCR image tests \(SLF-macOS-OCRImageTests\)/ {capture=1}
-      capture {print}
-      capture && /macOS OCR image tests passed|macOS OCR image tests failed/ {exit}
-    ' "$RELEASE_SCRIPT"
-)"
-OCR_IOS_BLOCK="$(
-    awk '
-      /Running iOS OCR image tests \(SLF-iOS-OCRImageTests\)/ {capture=1}
-      capture {print}
-      capture && /iOS OCR image tests passed|iOS OCR image tests failed/ {exit}
-    ' "$RELEASE_SCRIPT"
-)"
-assert_contains "$OCR_MACOS_BLOCK" "rtk xcodebuild test" "macOS OCR image gate uses rtk xcodebuild test"
-assert_not_contains "$OCR_MACOS_BLOCK" "build-for-testing" "macOS OCR image gate does not use build-for-testing"
-assert_contains "$OCR_IOS_BLOCK" "rtk xcodebuild test" "iOS OCR image gate uses rtk xcodebuild test"
-assert_not_contains "$OCR_IOS_BLOCK" "build-for-testing" "iOS OCR image gate does not use build-for-testing"
-assert_contains "$SRC" "#692" "script references issue #692"
+# OCR image is CI / manual only — must not be a release script gate (#693).
+assert_not_contains "$SRC" "SLF-macOS-OCRImageTests" "release gate does not invoke SLF-macOS-OCRImageTests"
+assert_not_contains "$SRC" "SLF-iOS-OCRImageTests" "release gate does not invoke SLF-iOS-OCRImageTests"
+assert_not_contains "$SRC" "Unit + OCR" "release checklist does not claim Unit + OCR"
+assert_contains "$SRC" "#693" "script references issue #693"
 
 echo ""
 echo "Passed: $PASS  Failed: $FAIL"
