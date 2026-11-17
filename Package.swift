@@ -1,5 +1,5 @@
 // swift-tools-version: 6.0
-// SixLayerFramework v8.8.0 - Minor: OCR hardening; Live Photo camera/picker; platform chrome; /2 land gate
+// SixLayerFramework v8.8.1 - Patch: bundler json bump (Dependabot); no public API changes
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
