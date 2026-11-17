@@ -1,12 +1,21 @@
 # 🚀 Six-Layer Framework Release History
 
-## 📍 **Current Release: v8.8.0** 🚀
+## 📍 **Current Release: v8.8.1** 🚀
 
-**Release Date**: November 16, 2026
-**Status**: Minor release
-**Previous Release**: v8.7.1 - Patch release
-**Note**: Seven-segment OCR hardening (glare, commas, edge chrome, crop geometry); Live Photo camera/picker; platform sheet/nav/button APIs; `/2` land gate and CI hygiene. See [RELEASE_v8.8.0.md](RELEASE_v8.8.0.md).
-**Next Release**: v8.8.1
+**Release Date**: November 17, 2026
+**Status**: Patch release
+**Previous Release**: v8.8.0 - Minor release
+**Note**: Dependabot bundler-group bump of Ruby `json` (2.17.1.2 → 2.19.9); no public Swift API changes. See [RELEASE_v8.8.1.md](RELEASE_v8.8.1.md).
+**Next Release**: v8.8.2
+
+---
+
+## 🎯 **v8.8.1 - Bundler json bump** (November 17, 2026)
+
+### **What's in v8.8.1:**
+- Patch release (Dependabot `json` bump; see [RELEASE_v8.8.1.md](RELEASE_v8.8.1.md)).
+
+**See [RELEASE_v8.8.1.md](RELEASE_v8.8.1.md) for complete release notes.**
 
 ---
 
