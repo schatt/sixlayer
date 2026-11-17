@@ -1,9 +1,10 @@
 //
 //  DisplayOCRTraining609Tests.swift
-//  SixLayerFrameworkUnitTests
+//  SixLayerFrameworkOCRImageTests
 //
 //  Display OCR label harness (#609). Boxes are top-left normalized fractions
 //  of the full image. Decode uses the current seven-segment reader on the crop.
+//  Heavy image/decode suite — not part of SLF-*-UnitTests (#692).
 //
 
 import CoreGraphics

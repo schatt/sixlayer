@@ -1,9 +1,10 @@
 //
 //  OCRLabBulkPassFail677Tests.swift
-//  SixLayerFrameworkUnitTests
+//  SixLayerFrameworkOCRImageTests
 //
 //  #677: OCR lab bulk pass/fail — schema, chosenPanelRect, dual-axis score,
 //  summary/baseline exit codes. Default oracle is app-mode library OCR.
+//  Heavy image/decode suite — not part of SLF-*-UnitTests (#692).
 //
 
 import CoreGraphics
