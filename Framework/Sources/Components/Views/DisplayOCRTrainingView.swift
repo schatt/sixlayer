@@ -432,7 +432,8 @@ public struct DisplayOCRTrainingView: View {
         } else {
             Text(i18n.localizedString(for: "SixLayerFramework.ocr.training.noImage"))
                 .foregroundColor(.secondary)
-                .frame(minHeight: 120, maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+                .frame(minHeight: 120)
                 .automaticCompliance(named: "DisplayOCRTrainingNoImage")
         }
     }
