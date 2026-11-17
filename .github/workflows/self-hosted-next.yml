@@ -79,6 +79,9 @@ jobs:
           - label: UnitTests
             scheme: SLF-iOS-UnitTests
             timeout_minutes: 90
+          - label: OCRImageTests
+            scheme: SLF-iOS-OCRImageTests
+            timeout_minutes: 120
           - label: ViewInspectorTests
             scheme: SLF-iOS-ViewInspectorTests
             timeout_minutes: 90
@@ -176,6 +179,9 @@ jobs:
           - label: UnitTests
             scheme: SLF-macOS-UnitTests
             timeout_minutes: 60
+          - label: OCRImageTests
+            scheme: SLF-macOS-OCRImageTests
+            timeout_minutes: 120
           - label: ViewInspectorTests
             scheme: SLF-macOS-ViewInspectorTests
             timeout_minutes: 90
