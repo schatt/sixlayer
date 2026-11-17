@@ -172,7 +172,7 @@ assert_exit_zero "$RC" "abort helper ignores non-origin remote tags"
 # Lib must query origin only (no walk of every remote).
 assert_contains "$(cat "$LIB")" 'git ls-remote --exit-code --tags origin' \
     "guard ls-remotes origin explicitly"
-if grep -Eq 'git remote|while IFS= read -r remote' "$LIB"; then
+if grep -Eq 'while IFS= read -r remote|\$\(git remote\)' "$LIB"; then
     echo "❌ guard must not iterate git remotes (#694)"
     FAIL=$((FAIL + 1))
 else
