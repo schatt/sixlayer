@@ -400,8 +400,11 @@ public enum DisplayOCRTrainingStatus: Equatable, Sendable {
 public enum DisplayOCRTrainingLayout: Sendable {
     /// macOS uses a side-by-side image pane; other platforms stay stacked for now.
     public static var prefersSideBySideImagePane: Bool {
-        // Deliberate stub for #702 red: always false until green.
+        #if os(macOS)
+        true
+        #else
         false
+        #endif
     }
 }
 
@@ -1831,10 +1834,13 @@ public final class DisplayOCRTrainingSession: ObservableObject {
     public func addRowBox(_ box: DisplayOCRNormalizedBox) -> Bool {
         guard bitmap != nil else { return false }
         guard let panel else {
-            // Deliberate stub for #702 red: silent fail until green sets needsPanel.
+            status = .needsPanel
             return false
         }
-        guard let clipped = box.unitClamped?.intersection(panel) else { return false }
+        guard let clipped = box.unitClamped?.intersection(panel) else {
+            status = .needsPanel
+            return false
+        }
         guard clipped.pixelRect(
             imageWidth: Int(imagePixelSize.width),
             imageHeight: Int(imagePixelSize.height)
@@ -1989,10 +1995,37 @@ public final class DisplayOCRTrainingSession: ObservableObject {
 
     /// Kick off OCR draft off the main actor (#702). Sets ``status`` to `.decoding` then completes.
     public func startDecode() {
-        // Deliberate stub for #702 red: still sync on main until green.
-        decodeRanOnMainThread = true
+        guard let bitmap, let panel else {
+            status = .needsPanel
+            return
+        }
+        decodeTask?.cancel()
+        decodeGeneration += 1
+        let generation = decodeGeneration
+        let rows = rowBoxes
+        let name = sourceName
         status = .decoding
-        _ = decode()
+        decodeRanOnMainThread = nil
+        decodeTask = Task { @MainActor [weak self] in
+            let outcome = await Task.detached(priority: .userInitiated) {
+                let ranOnMain = MainThreadProbe.isMain()
+                let drafted = DisplayOCRTraining.draft(
+                    image: bitmap,
+                    panel: panel,
+                    rowBoxes: rows,
+                    sourceName: name
+                )
+                return (drafted, ranOnMain)
+            }.value
+            guard let self, generation == self.decodeGeneration else { return }
+            self.decodeRanOnMainThread = outcome.1
+            if let drafted = outcome.0 {
+                self.label = drafted
+                self.status = .decoded
+            } else {
+                self.status = .decodeFailed
+            }
+        }
     }
 
     /// Wait until the in-flight decode (if any) finishes. No-op when idle.
