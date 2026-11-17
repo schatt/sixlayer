@@ -145,7 +145,8 @@ private func appendNSViewText(_ view: NSView, into parts: inout [String]) {
             parts.append(value)
         }
     }
-    if let identifier = view.accessibilityIdentifier(), !identifier.isEmpty {
+    let identifier = view.accessibilityIdentifier()
+    if !identifier.isEmpty {
         parts.append(identifier)
     }
     // ProgressView hosts an NSProgressIndicator while "Creating form..." is visible (#695).
