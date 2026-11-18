@@ -20,22 +20,20 @@ struct DisplayOCRPanelLocator706Tests {
     }
 
     @Test func topLeftPixelRectMapsVisionBottomLeftBox() {
-        let vision = CGRect(x: 0.1, y: 0.2, width: 0.5, height: 0.25)
         let mapped = DisplayOCRPanelLocator.topLeftPixelRect(
-            visionBox: vision,
-            imageWidth: 200,
-            imageHeight: 100
+            visionBox: CGRect(x: 0.1, y: 0.6, width: 0.3, height: 0.2),
+            imageWidth: 1000,
+            imageHeight: 500
         )
-        #expect(mapped != nil)
-        #expect(abs((mapped?.minX ?? -1) - 20) < 0.5)
-        #expect(abs((mapped?.width ?? -1) - 100) < 0.5)
-        #expect(abs((mapped?.height ?? -1) - 25) < 0.5)
-        // Vision y is bottom-left; top-left y = (1 - maxY) * height = 0.55 * 100
-        #expect(abs((mapped?.minY ?? -1) - 55) < 0.5)
+        let rect = mapped ?? .zero
+        #expect(abs(rect.minX - 100) < 0.001)
+        #expect(abs(rect.minY - 100) < 0.001)
+        #expect(abs(rect.width - 300) < 0.001)
+        #expect(abs(rect.height - 100) < 0.001)
     }
 
     @Test func chosenVisionBoxPicksHighestConfidentPanelLabel() {
-        let panel = CGRect(x: 0.2, y: 0.2, width: 0.4, height: 0.3)
+        let panel = CGRect(x: 0.2, y: 0.3, width: 0.4, height: 0.1)
         let chosen = DisplayOCRPanelLocator.chosenVisionBox(from: [
             DisplayOCRPanelCandidate(label: "other", confidence: 0.99, box: CGRect(x: 0, y: 0, width: 1, height: 1)),
             DisplayOCRPanelCandidate(label: DisplayOCRPanelLocator.panelLabel, confidence: 0.8, box: panel),
