@@ -51,11 +51,13 @@ struct DisplayOCRPanelLocator706Tests {
         let clipped = DisplayOCRNormalizedBox(x: -0.2, y: 0.2, width: 0.5, height: 2).unitClamped
         #expect(clipped?.x == 0)
         #expect(clipped?.y == 0.2)
-        #expect(abs((clipped?.width ?? -1) - 0.5) < 0.0001)
-        #expect(abs((clipped?.height ?? -1) - 0.8) < 0.0001)
+        #expect(abs((clipped?.width ?? -1) - 0.3) < 0.000_001)
+        #expect(abs((clipped?.height ?? -1) - 0.8) < 0.000_001)
+        #expect(DisplayOCRNormalizedBox(x: 0, y: 0, width: 0, height: 1).unitClamped == nil)
 
-        let a = DisplayOCRNormalizedBox(x: 0, y: 0, width: 1, height: 1)
-        let b = DisplayOCRNormalizedBox(x: 0.5, y: 0.5, width: 1, height: 1)
-        #expect(abs(a.iou(b) - (0.25 / 1.75)) < 0.0001)
+        let a = DisplayOCRNormalizedBox(x: 0, y: 0, width: 0.5, height: 0.5)
+        let b = DisplayOCRNormalizedBox(x: 0.25, y: 0.25, width: 0.5, height: 0.5)
+        // Intersection 0.25×0.25; union 0.25+0.25-0.0625 = 0.4375 → IoU = 1/7
+        #expect(abs(a.iou(b) - (0.0625 / 0.4375)) < 0.000_001)
     }
 }
