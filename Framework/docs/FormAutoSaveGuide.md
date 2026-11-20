@@ -221,6 +221,8 @@ let editState = DynamicFormState(
 
 Arrays are encoded element-wise, so MultiDate `[Date]` field values round-trip as `[Date]` (#676). Plain strings that look like those values stay `String`.
 
+**Legacy pre-#674 `Data` drafts are unrecoverable (#683):** Before tagged `Data` encoding, unknown types (including `Data`) fell through to `String(describing:)`. For `Data` that yields shapes like `3 bytes` — not base64 — so tagged-data decode and any repair path cannot restore the bytes. Prefixed `Date` describing-strings remain recoverable (#675); `Data` does not. Hosts that may still have pre-#674 drafts containing `Data` should clear those drafts (or discard/log them). Do not invent a fake migration.
+
 ### Number and integer field values (Issue #289)
 
 `DynamicNumberField` and `DynamicIntegerField` bind to a `TextField` and **store `String` on edit**. On read, they also accept `Int`, `Double`, or `NSNumber` in `fieldValues` (common when hosts prefill from Core Data or DTOs) and format them for display.
