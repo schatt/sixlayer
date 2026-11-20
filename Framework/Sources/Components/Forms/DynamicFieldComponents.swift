@@ -1158,15 +1158,14 @@ public struct DynamicStepperField: View {
 
     /// Get range from displayHints (preferred) or metadata (fallback)
     private var range: ClosedRange<Double> {
-        // Prefer expectedRange from displayHints (has structured range)
-        if let hints = field.displayHints,
-           let expectedRange = hints.expectedRange {
-            return expectedRange.min...expectedRange.max
-        }
-        // Fallback to metadata min/max keys
-        let min = Double(field.metadata?["min"] ?? "0") ?? 0.0
-        let max = Double(field.metadata?["max"] ?? "100") ?? 100.0
-        return min...max
+        Self.resolvedRange(for: field)
+    }
+
+    /// Resolves stepper bounds from `displayHints.expectedRange` or metadata min/max.
+    /// Temporary stub for #562 red: returns a wrong constant so inverted-range tests fail.
+    static func resolvedRange(for field: DynamicFormField) -> ClosedRange<Double> {
+        _ = field
+        return 0...1
     }
 
     private var step: Double {
