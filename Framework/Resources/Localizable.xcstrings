@@ -5,6 +5,97 @@
       "extractionState" : "manual",
       "shouldTranslate" : false
     },
+    "... and %@ more items" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "... og %@ flere elementer"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "... und %@ weitere Elemente"
+          }
+        },
+        "de-CH" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "... und %@ weitere Elemente"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "... y %@ elementos más"
+          }
+        },
+        "es-US" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "... y %@ elementos más"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "... et %@ éléments supplémentaires"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "... e altri %@ elementi"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "...他 %@ 件"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "... 및 항목 %@개 더"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "... en nog %@ items"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "... i jeszcze %@ elementów"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "... och %@ objekt till"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "...还有 %@ 个项目"
+          }
+        }
+      }
+    },
+    "[%@]:" : {
+      "extractionState" : "manual",
+      "shouldTranslate" : false
+    },
+    "*" : {
+      "extractionState" : "manual",
+      "shouldTranslate" : false
+    },
     "%@" : {
       "extractionState" : "manual",
       "shouldTranslate" : false
@@ -183,6 +274,95 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "%1$@ / %2$@ 个字符"
+          }
+        }
+      }
+    },
+    "%@ • %@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%1$@ • %2$@"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%1$@ • %2$@"
+          }
+        },
+        "de-CH" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%1$@ • %2$@"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ • %2$@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%1$@ • %2$@"
+          }
+        },
+        "es-US" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%1$@ • %2$@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%1$@ • %2$@"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%1$@ • %2$@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%1$@ • %2$@"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%1$@ • %2$@"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%1$@ • %2$@"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%1$@ • %2$@"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%1$@ • %2$@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%1$@ • %2$@"
           }
         }
       }
@@ -448,98 +628,94 @@
         }
       }
     },
-    "%@ • %@" : {
+    "%@: %@" : {
       "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "%1$@ • %2$@"
+            "value" : "%1$@: %2$@"
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "%1$@ • %2$@"
+            "value" : "%1$@: %2$@"
           }
         },
         "de-CH" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "%1$@ • %2$@"
+            "value" : "%1$@: %2$@"
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "%1$@ • %2$@"
+            "value" : "%1$@: %2$@"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "%1$@ • %2$@"
+            "value" : "%1$@: %2$@"
           }
         },
         "es-US" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "%1$@ • %2$@"
+            "value" : "%1$@: %2$@"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "%1$@ • %2$@"
+            "value" : "%1$@ : %2$@"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "%1$@ • %2$@"
+            "value" : "%1$@: %2$@"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "%1$@ • %2$@"
+            "value" : "%1$@: %2$@"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "%1$@ • %2$@"
+            "value" : "%1$@: %2$@"
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "%1$@ • %2$@"
+            "value" : "%1$@: %2$@"
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "%1$@ • %2$@"
+            "value" : "%1$@: %2$@"
           }
         },
         "sv" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "%1$@ • %2$@"
+            "value" : "%1$@: %2$@"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "%1$@ • %2$@"
+            "value" : "%1$@：%2$@"
           }
         }
       }
-    },
-    "%@%%" : {
-      "extractionState" : "manual",
-      "shouldTranslate" : false
     },
     "%@. %@" : {
       "extractionState" : "manual",
@@ -630,181 +806,266 @@
         }
       }
     },
-    "%@: %@" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "da" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "%1$@: %2$@"
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "%1$@: %2$@"
-          }
-        },
-        "de-CH" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "%1$@: %2$@"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$@: %2$@"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "%1$@: %2$@"
-          }
-        },
-        "es-US" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "%1$@: %2$@"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "%1$@ : %2$@"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "%1$@: %2$@"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "%1$@: %2$@"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "%1$@: %2$@"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "%1$@: %2$@"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "%1$@: %2$@"
-          }
-        },
-        "sv" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "%1$@: %2$@"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "%1$@：%2$@"
-          }
-        }
-      }
-    },
-    "*" : {
+    "%@%%" : {
       "extractionState" : "manual",
       "shouldTranslate" : false
     },
-    "... and %@ more items" : {
+    "•" : {
+      "extractionState" : "manual",
+      "shouldTranslate" : false
+    },
+    "• Adaptive spacing" : {
       "extractionState" : "manual",
       "localizations" : {
         "da" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "... og %@ flere elementer"
+            "value" : "• Tilpasset afstand"
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "... und %@ weitere Elemente"
+            "value" : "• Adaptiver Abstand"
           }
         },
         "de-CH" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "... und %@ weitere Elemente"
+            "value" : "• Adaptiver Abstand"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "... y %@ elementos más"
+            "value" : "• Espaciado adaptable"
           }
         },
         "es-US" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "... y %@ elementos más"
+            "value" : "• Espaciado adaptable"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "... et %@ éléments supplémentaires"
+            "value" : "• Espacement adaptatif"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "... e altri %@ elementi"
+            "value" : "• Spaziatura adattiva"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "...他 %@ 件"
+            "value" : "• 適応型スペーシング"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "... 및 항목 %@개 더"
+            "value" : "• 적응형 간격"
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "... en nog %@ items"
+            "value" : "• Adaptieve afstand"
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "... i jeszcze %@ elementów"
+            "value" : "• Odstępy adaptacyjne"
           }
         },
         "sv" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "... och %@ objekt till"
+            "value" : "• Adaptivt avstånd"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "...还有 %@ 个项目"
+            "value" : "• 自适应间距"
           }
         }
       }
+    },
+    "• Optimal component sizing" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "• Optimal komponentstørrelse"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "• Optimale Komponentengröße"
+          }
+        },
+        "de-CH" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "• Optimale Komponentengröße"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "• Tamaño óptimo de componentes"
+          }
+        },
+        "es-US" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "• Tamaño óptimo de componentes"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "• Dimensionnement optimal des composants"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "• Dimensionamento ottimale dei componenti"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "• 最適なコンポーネントサイズ"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "• 최적의 구성 요소 크기"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "• Optimale componentgrootte"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "• Optymalny rozmiar komponentów"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "• Optimal komponentstorlek"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "• 最佳组件大小"
+          }
+        }
+      }
+    },
+    "• Platform-specific layouts" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "• Platformspecifikke layout"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "• Plattformspezifische Layouts"
+          }
+        },
+        "de-CH" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "• Plattformspezifische Layouts"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "• Diseños específicos de la plataforma"
+          }
+        },
+        "es-US" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "• Diseños específicos de la plataforma"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "• Dispositions spécifiques à la plateforme"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "• Layout specifici della piattaforma"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "• プラットフォーム固有のレイアウト"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "• 플랫폼별 레이아웃"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "• Platformspecifieke indelingen"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "• Układy specyficzne dla platformy"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "• Plattformsspecifika layouter"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "• 平台特定布局"
+          }
+        }
+      }
+    },
+    "📋" : {
+      "extractionState" : "manual",
+      "shouldTranslate" : false
     },
     "0" : {
       "extractionState" : "manual",
@@ -975,6 +1236,11 @@
           }
         }
       }
+    },
+    "additionalImageFileNames (one file name per line)" : {
+      "comment" : "A label for a text field that lists additional image file names.",
+      "extractionState" : "manual",
+      "isCommentAutoGenerated" : true
     },
     "Age" : {
       "extractionState" : "manual",
@@ -1645,89 +1911,6 @@
         }
       }
     },
-    "Card Title" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "da" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Titel på kort"
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Titel"
-          }
-        },
-        "de-CH" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Titel"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Titulo de la tarjeta"
-          }
-        },
-        "es-US" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Titulo de la tarjeta"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Titre de carte"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Titolo della carta Meta"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "タイプ カードタイトル"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "카드 제목 입력"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Kaart titel lettertype"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Tytuł karty"
-          }
-        },
-        "sv" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Presentkort titel"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "卡标题"
-          }
-        }
-      }
-    },
     "Card description" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -1807,6 +1990,89 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "作者卡片 - 描述"
+          }
+        }
+      }
+    },
+    "Card Title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Titel på kort"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Titel"
+          }
+        },
+        "de-CH" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Titel"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Titulo de la tarjeta"
+          }
+        },
+        "es-US" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Titulo de la tarjeta"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Titre de carte"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Titolo della carta Meta"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "タイプ カードタイトル"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "카드 제목 입력"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Kaart titel lettertype"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Tytuł karty"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Presentkort titel"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "卡标题"
           }
         }
       }
@@ -2973,6 +3239,16 @@
         }
       }
     },
+    "Decode failed" : {
+      "comment" : "A message displayed when the OCR decoding fails.",
+      "extractionState" : "manual",
+      "isCommentAutoGenerated" : true
+    },
+    "Decoded" : {
+      "comment" : "A label displayed when the OCR image has been decoded.",
+      "extractionState" : "manual",
+      "isCommentAutoGenerated" : true
+    },
     "Dictionary with %@ keys" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -3305,6 +3581,11 @@
         }
       }
     },
+    "expectedStructuredFields (field=value per line)" : {
+      "comment" : "A label for the text editor that lets the user specify the expected",
+      "extractionState" : "manual",
+      "isCommentAutoGenerated" : true
+    },
     "Extracting structured data..." : {
       "extractionState" : "manual",
       "localizations" : {
@@ -3553,6 +3834,16 @@
           }
         }
       }
+    },
+    "fieldAverages (field=number per line; regional priors, not pass targets)" : {
+      "comment" : "A description of the fieldAverages text field.",
+      "extractionState" : "manual",
+      "isCommentAutoGenerated" : true
+    },
+    "fieldFractionDigits (field=int per line; #678 format priors)" : {
+      "comment" : "A caption displayed under the text field for the field fraction digits.",
+      "extractionState" : "manual",
+      "isCommentAutoGenerated" : true
     },
     "File Picker" : {
       "extractionState" : "manual",
@@ -20565,6 +20856,95 @@
         }
       }
     },
+    "SixLayerFramework.form.fieldsCount" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d felter"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d Felder"
+          }
+        },
+        "de-CH" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d Felder"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d fields"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d campos"
+          }
+        },
+        "es-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d campos"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d champs"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d campi"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d フィールド"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d개의 필드"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d velden"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d pól"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d fält"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%d 个字段"
+          }
+        }
+      }
+    },
     "SixLayerFramework.form.fieldType.array" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -21451,95 +21831,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "富文本字段：%@"
-          }
-        }
-      }
-    },
-    "SixLayerFramework.form.fieldsCount" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "da" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%d felter"
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%d Felder"
-          }
-        },
-        "de-CH" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%d Felder"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%d fields"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%d campos"
-          }
-        },
-        "es-US" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%d campos"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%d champs"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%d campi"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%d フィールド"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%d개의 필드"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%d velden"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%d pól"
-          }
-        },
-        "sv" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%d fält"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%d 个字段"
           }
         }
       }
@@ -23236,95 +23527,6 @@
         }
       }
     },
-    "SixLayerFramework.form.placeholder.selectDateTime" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "da" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Vælg dato og klokkeslæt"
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Datum und Uhrzeit auswählen"
-          }
-        },
-        "de-CH" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Datum und Zeit auswählen"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Select date and time"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Seleccionar fecha y hora"
-          }
-        },
-        "es-US" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Selecciona fecha y hora"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sélectionner une date et une heure"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Seleziona data e ora"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "日付と時刻を選択"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "날짜 및 시간 선택"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Selecteer datum en tijd"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Wybierz datę i godzinę"
-          }
-        },
-        "sv" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Välj datum och tid"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "选择日期和时间"
-          }
-        }
-      }
-    },
     "SixLayerFramework.form.placeholder.selectDates" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -23410,6 +23612,95 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "选择日期"
+          }
+        }
+      }
+    },
+    "SixLayerFramework.form.placeholder.selectDateTime" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "da" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vælg dato og klokkeslæt"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Datum und Uhrzeit auswählen"
+          }
+        },
+        "de-CH" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Datum und Zeit auswählen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Select date and time"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seleccionar fecha y hora"
+          }
+        },
+        "es-US" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Selecciona fecha y hora"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sélectionner une date et une heure"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seleziona data e ora"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "日付と時刻を選択"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "날짜 및 시간 선택"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Selecteer datum en tijd"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wybierz datę i godzinę"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Välj datum och tid"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "选择日期和时间"
           }
         }
       }
@@ -30354,17 +30645,6 @@
         }
       }
     },
-    "SixLayerFramework.ocr.training.exportFailed" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Could not export the package."
-          }
-        }
-      }
-    },
     "SixLayerFramework.ocr.training.exported" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -30372,6 +30652,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Exported"
+          }
+        }
+      }
+    },
+    "SixLayerFramework.ocr.training.exportFailed" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Could not export the package."
           }
         }
       }
@@ -34648,287 +34939,6 @@
           }
         }
       }
-    },
-    "[%@]:" : {
-      "extractionState" : "manual",
-      "shouldTranslate" : false
-    },
-    "additionalImageFileNames (one file name per line)" : {
-      "comment" : "A label for a text field that lists additional image file names.",
-      "extractionState" : "manual",
-      "isCommentAutoGenerated" : true
-    },
-    "expectedStructuredFields (field=value per line)" : {
-      "comment" : "A label for the text editor that lets the user specify the expected",
-      "extractionState" : "manual",
-      "isCommentAutoGenerated" : true
-    },
-    "fieldAverages (field=number per line; regional priors, not pass targets)" : {
-      "comment" : "A description of the fieldAverages text field.",
-      "extractionState" : "manual",
-      "isCommentAutoGenerated" : true
-    },
-    "fieldFractionDigits (field=int per line; #678 format priors)" : {
-      "comment" : "A caption displayed under the text field for the field fraction digits.",
-      "extractionState" : "manual",
-      "isCommentAutoGenerated" : true
-    },
-    "•" : {
-      "extractionState" : "manual",
-      "shouldTranslate" : false
-    },
-    "• Adaptive spacing" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "da" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "• Tilpasset afstand"
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "• Adaptiver Abstand"
-          }
-        },
-        "de-CH" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "• Adaptiver Abstand"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "• Espaciado adaptable"
-          }
-        },
-        "es-US" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "• Espaciado adaptable"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "• Espacement adaptatif"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "• Spaziatura adattiva"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "• 適応型スペーシング"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "• 적응형 간격"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "• Adaptieve afstand"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "• Odstępy adaptacyjne"
-          }
-        },
-        "sv" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "• Adaptivt avstånd"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "• 自适应间距"
-          }
-        }
-      }
-    },
-    "• Optimal component sizing" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "da" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "• Optimal komponentstørrelse"
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "• Optimale Komponentengröße"
-          }
-        },
-        "de-CH" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "• Optimale Komponentengröße"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "• Tamaño óptimo de componentes"
-          }
-        },
-        "es-US" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "• Tamaño óptimo de componentes"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "• Dimensionnement optimal des composants"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "• Dimensionamento ottimale dei componenti"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "• 最適なコンポーネントサイズ"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "• 최적의 구성 요소 크기"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "• Optimale componentgrootte"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "• Optymalny rozmiar komponentów"
-          }
-        },
-        "sv" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "• Optimal komponentstorlek"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "• 最佳组件大小"
-          }
-        }
-      }
-    },
-    "• Platform-specific layouts" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "da" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "• Platformspecifikke layout"
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "• Plattformspezifische Layouts"
-          }
-        },
-        "de-CH" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "• Plattformspezifische Layouts"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "• Diseños específicos de la plataforma"
-          }
-        },
-        "es-US" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "• Diseños específicos de la plataforma"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "• Dispositions spécifiques à la plateforme"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "• Layout specifici della piattaforma"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "• プラットフォーム固有のレイアウト"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "• 플랫폼별 레이아웃"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "• Platformspecifieke indelingen"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "• Układy specyficzne dla platformy"
-          }
-        },
-        "sv" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "• Plattformsspecifika layouter"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "• 平台特定布局"
-          }
-        }
-      }
-    },
-    "📋" : {
-      "extractionState" : "manual",
-      "shouldTranslate" : false
     }
   },
   "version" : "1.1"

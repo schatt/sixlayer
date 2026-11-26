@@ -1868,8 +1868,25 @@ private struct GrayBuffer {
     }
 }
 
+/// Gate for cell/rowcrop stderr dumps (#702). Off unless `SIXLAYER_SSOCR_TRACE=1`.
+public enum SevenSegmentOCRTrace: Sendable {
+    nonisolated(unsafe) public static var isEnabled: Bool = ProcessInfo.processInfo.environment["SIXLAYER_SSOCR_TRACE"] == "1"
+    nonisolated(unsafe) public static var writer: @Sendable (String) -> Void = { message in
+        fputs(message, stderr)
+    }
+
+    public static func resetToEnvironmentDefault() {
+        isEnabled = ProcessInfo.processInfo.environment["SIXLAYER_SSOCR_TRACE"] == "1"
+    }
+
+    public static func emit(_ message: String) {
+        guard isEnabled else { return }
+        writer(message)
+    }
+}
+
 private func trace(_ message: String) {
-    fputs(message, stderr)
+    SevenSegmentOCRTrace.emit(message)
 }
 
 private struct Mask {
@@ -2370,7 +2387,7 @@ private extension GrayBuffer {
     }
 
     /// Median luminance — proxy for glass on a mostly-glass short-wide crop.
-    fileprivate func peelGlassMedian() -> Int {
+    func peelGlassMedian() -> Int {
         guard !pixels.isEmpty else { return 128 }
         var hist = [Int](repeating: 0, count: 256)
         for pixel in pixels {

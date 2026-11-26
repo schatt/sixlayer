@@ -157,7 +157,7 @@ public extension View {
         step: Double = 1.0
     ) -> some View {
         #if os(tvOS)
-        Text("\(Int(value.wrappedValue))")
+        Text(platformStepperValueText(value.wrappedValue, step: step))
             .foregroundStyle(.secondary)
             .selfLabelingControl(label: label)
         #else
@@ -286,6 +286,17 @@ public extension EnvironmentValues {
 }
 
 /// Resolves ``FormStrategy`` into a concrete form container. File-scope API so call sites use trailing-closure syntax without a dummy `View` receiver.
+/// Value text for stepper-like controls. Never converts to `Int`: `Int(Double)` traps on NaN,
+/// infinity, and finite values outside `Int` range (#562). Non-finite values show an em dash.
+func platformStepperValueText(_ value: Double, step: Double) -> String {
+    guard value.isFinite else { return "\u{2014}" }
+    if step.truncatingRemainder(dividingBy: 1.0) == 0.0 {
+        // `value == 0` normalizes -0.0 so whole steps never show "-0".
+        return String(format: "%.0f", value == 0 ? 0 : value)
+    }
+    return String(format: "%.2f", value)
+}
+
 @MainActor
 func platformFormContainer_L4<Content: View>(
     strategy: FormStrategy,
