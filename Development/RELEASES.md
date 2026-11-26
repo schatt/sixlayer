@@ -1,12 +1,21 @@
 # 🚀 Six-Layer Framework Release History
 
-## 📍 **Current Release: v8.8.1** 🚀
+## 📍 **Current Release: v8.8.2** 🚀
 
-**Release Date**: November 17, 2026
+**Release Date**: November 26, 2026
 **Status**: Patch release
-**Previous Release**: v8.8.0 - Minor release
-**Note**: Dependabot bundler-group bump of Ruby `json` (2.17.1.2 → 2.19.9); no public Swift API changes. See [RELEASE_v8.8.1.md](RELEASE_v8.8.1.md).
-**Next Release**: v8.8.2
+**Previous Release**: v8.8.1 - Patch release
+**Note**: DynamicStepperField range/display fixes (#562), form-draft docs (#683), and Display OCR lab extraction (#706). See [RELEASE_v8.8.2.md](RELEASE_v8.8.2.md).
+**Next Release**: v8.8.3
+
+---
+
+## 🎯 **v8.8.2 - Stepper range fixes, OCR lab extraction** (November 26, 2026)
+
+### **What's in v8.8.2:**
+- Patch release (#562, #683, #701, #702, #703, #706, #707; see [RELEASE_v8.8.2.md](RELEASE_v8.8.2.md)).
+
+**See [RELEASE_v8.8.2.md](RELEASE_v8.8.2.md) for complete release notes.**
 
 ---
 
