@@ -1188,15 +1188,9 @@ public struct DynamicStepperField: View {
         Double(field.metadata?["step"] ?? "1") ?? 1.0
     }
 
-    /// Value text for the stepper. Never converts to `Int`: `Int(Double)` traps on NaN,
-    /// infinity, and finite values outside `Int` range (#562). Non-finite values show an em dash.
+    /// Value text for the stepper; shared formatter avoids `Int(Double)` traps (#562).
     static func displayText(value: Double, step: Double) -> String {
-        guard value.isFinite else { return "\u{2014}" }
-        if step.truncatingRemainder(dividingBy: 1.0) == 0.0 {
-            // `value == 0` normalizes -0.0 so whole steps never show "-0".
-            return String(format: "%.0f", value == 0 ? 0 : value)
-        }
-        return String(format: "%.2f", value)
+        platformStepperValueText(value, step: step)
     }
 
     public var body: some View {
