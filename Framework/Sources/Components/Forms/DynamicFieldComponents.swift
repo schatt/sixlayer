@@ -1188,6 +1188,12 @@ public struct DynamicStepperField: View {
         Double(field.metadata?["step"] ?? "1") ?? 1.0
     }
 
+    /// Temporary stub for #562 display red: old `Int(value)` behavior.
+    static func displayText(value: Double, step: Double) -> String {
+        _ = step
+        return "\(Int(value))"
+    }
+
     public var body: some View {
         platformVStackContainer(alignment: .leading, spacing: 8) {
             EmptyView().platformStepperInput(
