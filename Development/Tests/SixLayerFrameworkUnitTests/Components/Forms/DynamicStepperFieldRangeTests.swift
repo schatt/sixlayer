@@ -11,6 +11,7 @@ import Foundation
 @testable import SixLayerFramework
 
 @Suite("Dynamic Stepper Field Range")
+@MainActor
 struct DynamicStepperFieldRangeTests {
 
     @Test func invertedExpectedRangeIsOrderedSoTheStepperCanBeBuilt() {
