@@ -74,6 +74,24 @@ struct DynamicStepperFieldRangeTests {
         #expect(range == 1...9)
     }
 
+    // Display text used `Int(value)`, which traps on NaN, infinity, and finite values outside Int range.
+    @Test func displayTextShowsWholeStepsWithoutDecimals() {
+        #expect(DynamicStepperField.displayText(value: 5, step: 1) == "5")
+    }
+
+    @Test func displayTextShowsFractionalStepsWithTwoDecimals() {
+        #expect(DynamicStepperField.displayText(value: 2.5, step: 0.5) == "2.50")
+    }
+
+    @Test func displayTextDoesNotTrapOnNonFiniteValues() {
+        #expect(DynamicStepperField.displayText(value: .nan, step: 1) == "\u{2014}")
+        #expect(DynamicStepperField.displayText(value: .infinity, step: 1) == "\u{2014}")
+    }
+
+    @Test func displayTextDoesNotTrapOnValuesOutsideIntRange() {
+        #expect(DynamicStepperField.displayText(value: 1e300, step: 1).hasPrefix("1"))
+    }
+
     @Test func nanMetadataBoundUsesDefaultInsteadOfTrapping() {
         let field = DynamicFormField(
             id: "stepper",
