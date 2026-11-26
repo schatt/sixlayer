@@ -1188,10 +1188,15 @@ public struct DynamicStepperField: View {
         Double(field.metadata?["step"] ?? "1") ?? 1.0
     }
 
-    /// Temporary stub for #562 display red: old `Int(value)` behavior.
+    /// Value text for the stepper. Never converts to `Int`: `Int(Double)` traps on NaN,
+    /// infinity, and finite values outside `Int` range (#562). Non-finite values show an em dash.
     static func displayText(value: Double, step: Double) -> String {
-        _ = step
-        return "\(Int(value))"
+        guard value.isFinite else { return "\u{2014}" }
+        if step.truncatingRemainder(dividingBy: 1.0) == 0.0 {
+            // `value == 0` normalizes -0.0 so whole steps never show "-0".
+            return String(format: "%.0f", value == 0 ? 0 : value)
+        }
+        return String(format: "%.2f", value)
     }
 
     public var body: some View {
@@ -1206,15 +1211,11 @@ public struct DynamicStepperField: View {
             .automaticComplianceForDynamicFormField(
                 field,
                 identifierElementType: "Stepper",
-                accessibilityValue: step.truncatingRemainder(dividingBy: 1.0) == 0.0
-                    ? "\(Int(value.wrappedValue))"
-                    : String(format: "%.2f", value.wrappedValue)
+                accessibilityValue: Self.displayText(value: value.wrappedValue, step: step)
             )
 
             // Show current value - use appropriate format based on step size
-            Text(step.truncatingRemainder(dividingBy: 1.0) == 0.0 
-                 ? "\(Int(value.wrappedValue))" 
-                 : String(format: "%.2f", value.wrappedValue))
+            Text(Self.displayText(value: value.wrappedValue, step: step))
                 .font(.caption)
                 .foregroundColor(.secondary)
         }
