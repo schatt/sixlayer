@@ -55,4 +55,38 @@ struct DynamicStepperFieldRangeTests {
         let range = DynamicStepperField.resolvedRange(for: field)
         #expect(range == 10...100)
     }
+
+    // NaN parses via Double(String) ("nan") and would trap ClosedRange construction.
+    @Test func nanExpectedRangeFallsBackToMetadataInsteadOfTrapping() {
+        let field = DynamicFormField(
+            id: "stepper",
+            contentType: .stepper,
+            label: "Amount",
+            defaultValue: "0",
+            metadata: [
+                "expectedRange": "nan:5",
+                "min": "1",
+                "max": "9"
+            ]
+        )
+
+        let range = DynamicStepperField.resolvedRange(for: field)
+        #expect(range == 1...9)
+    }
+
+    @Test func nanMetadataBoundUsesDefaultInsteadOfTrapping() {
+        let field = DynamicFormField(
+            id: "stepper",
+            contentType: .stepper,
+            label: "Amount",
+            defaultValue: "0",
+            metadata: [
+                "min": "nan",
+                "max": "9"
+            ]
+        )
+
+        let range = DynamicStepperField.resolvedRange(for: field)
+        #expect(range == 0...9)
+    }
 }
