@@ -443,6 +443,7 @@
 		1CA0FF3F1B8296A83A3F13A8 /* ExplicitCountBasedPresentationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 401E449BE08E15D98201AE1E /* ExplicitCountBasedPresentationTests.swift */; };
 		1CD97F6899A6651C960ACA64 /* PlatformUIIntegration.swift in Sources */ = {isa = PBXBuildFile; fileRef = EFF8FF312620F73555167A43 /* PlatformUIIntegration.swift */; };
 		1CF01E784F72F18429BE176E /* ImageProcessingPipelineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBAFDBC9C7D020E0A4FF4D15 /* ImageProcessingPipelineTests.swift */; };
+		1CF1D7335CBFD37A5DA9CE00 /* DynamicStepperFieldRangeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66D696FDF3A8CF35AA537108 /* DynamicStepperFieldRangeTests.swift */; };
 		1D396766F17D1F2F15F14202 /* PlatformPresentDestinationStrategy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47F747CEDCF3ED5BABA2DD4D /* PlatformPresentDestinationStrategy.swift */; };
 		1D4332285A2C06CFD693BA88 /* DynamicFormProgressIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D906015D2507EB970A9A2BC /* DynamicFormProgressIntegrationTests.swift */; };
 		1D65452587B5C16A6ADA99F0 /* DefensiveValidation.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0EE7B0159713978F9A99A36 /* DefensiveValidation.swift */; };
@@ -2010,6 +2011,7 @@
 		814FCD542A44B62CCEFD99A1 /* ImageMetadataTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = A653EAABDBAD48A4CA036606 /* ImageMetadataTypes.swift */; };
 		815514FEFF5F5CC02E22EEC3 /* PlatformPrivacy.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9FDFF802095DCD7522A434E /* PlatformPrivacy.swift */; };
 		8156E03D2F23A9BF946BE32B /* UIGenerationVerificationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74072A0F7C82E716D7218B4B /* UIGenerationVerificationTests.swift */; };
+		817BC81972FCC5BE79A449C8 /* DynamicStepperFieldRangeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66D696FDF3A8CF35AA537108 /* DynamicStepperFieldRangeTests.swift */; };
 		81A39CBDC9547FB459E1D087 /* HostIdentifierRemountHostView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E3BF29CB5FFB6DF721C0A77 /* HostIdentifierRemountHostView.swift */; };
 		81AA785F5E5B50555F943D99 /* PlatformAdaptiveFrameModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34C11B2E2E2FC55792D39F14 /* PlatformAdaptiveFrameModifier.swift */; };
 		81BA80C4CFAB394249A761FB /* StringUtilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6FF64F3FEA15C8DDF585134 /* StringUtilities.swift */; };
@@ -2592,6 +2594,7 @@
 		A7E87B9A03AB5887D01CA8B5 /* BaseTestClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E931AD708DFE7065526FEC6 /* BaseTestClass.swift */; };
 		A7FC2C551E61573B25DE387A /* ErrorPropagationRenderingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F597414B115307A2ADB5F70 /* ErrorPropagationRenderingTests.swift */; };
 		A814CBDC0A95A86DEF0A95B8 /* SharedNetworkStatusManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A7BA1A4B9F16A6E70148871 /* SharedNetworkStatusManager.swift */; };
+		A81A7C76ABA521D0CB472B89 /* DynamicStepperFieldRangeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66D696FDF3A8CF35AA537108 /* DynamicStepperFieldRangeTests.swift */; };
 		A81EBA53B6CF40F301D72D9F /* OCRPumpLabelAnchoredExtraction282Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5EBBF4825F5718495272822 /* OCRPumpLabelAnchoredExtraction282Tests.swift */; };
 		A842432584B0CC32BE67F21B /* AutomaticAccessibilityIdentifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6A51921688AA927D4B5CFDE /* AutomaticAccessibilityIdentifiers.swift */; };
 		A849365E31EC99FE6C6096E7 /* PlatformOCRTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF8D1274EBF8C09E5851CD09 /* PlatformOCRTypes.swift */; };
@@ -2991,6 +2994,7 @@
 		C300A9CEC080A27FE04CB61D /* IntelligentCardExpansionLayer5.swift in Sources */ = {isa = PBXBuildFile; fileRef = 206BE61C4C1176A91ED00A04 /* IntelligentCardExpansionLayer5.swift */; };
 		C310E40E580E20341F483516 /* FieldLayoutAligner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B8687DC8FC83D40438B6CC4 /* FieldLayoutAligner.swift */; };
 		C31CE993855BA2B26F2D732A /* VisualDesignSystemTypographyTokensTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24375737E97FFA1068CA6268 /* VisualDesignSystemTypographyTokensTests.swift */; };
+		C31EC77524C0D0E7B11AC019 /* DynamicStepperFieldRangeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66D696FDF3A8CF35AA537108 /* DynamicStepperFieldRangeTests.swift */; };
 		C323BBFE276EAEF9481D81D8 /* Layer4CallbackIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 168F24E4C6E4A844E0AFAEED /* Layer4CallbackIntegrationTests.swift */; };
 		C33906D4FA1ED8924B559FF3 /* CameraCancel681Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F8D5336CC14109DA6D7B52C /* CameraCancel681Tests.swift */; };
 		C347146CAEB988F3DBF4BA4E /* PlatformPrivacy.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9FDFF802095DCD7522A434E /* PlatformPrivacy.swift */; };
@@ -3545,6 +3549,7 @@
 		E8086099DA108E4AB2842A94 /* PlatformNotificationsLayer4UnitTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B419BAB906AE2F519C4509F /* PlatformNotificationsLayer4UnitTests.swift */; };
 		E8106AEB2917304E16AA45AC /* PlatformMapComponentsLayer4.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF9D36065141A81DED39D256 /* PlatformMapComponentsLayer4.swift */; };
 		E81E98B52CAC622542037F34 /* ItemCollectionPresentationStrategyResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 756EBD579049B900217494DE /* ItemCollectionPresentationStrategyResolver.swift */; };
+		E827FAD38A3C6D5308720304 /* DynamicStepperFieldRangeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66D696FDF3A8CF35AA537108 /* DynamicStepperFieldRangeTests.swift */; };
 		E842831E2D12522E4329C088 /* FormStrategyConsumption.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49BF319F816F0D8A7F837FE6 /* FormStrategyConsumption.swift */; };
 		E844CF52E46EB923FB28051A /* DynamicFormCalculateFieldValueLocaleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4D3C98B072599F56673D843 /* DynamicFormCalculateFieldValueLocaleTests.swift */; };
 		E884636355D28272137EFE4D /* SelectFieldImplementationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB11CDFE42BA1C8A70E4A49 /* SelectFieldImplementationTests.swift */; };
@@ -4799,6 +4804,7 @@
 		65CAA059C07FF265FF484DA0 /* SixLayerFrameworkExternalIntegrationTests_visionOS.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = SixLayerFrameworkExternalIntegrationTests_visionOS.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		65ED9D9381B8426E60FACF55 /* CategoryCCallbackTestView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoryCCallbackTestView.swift; sourceTree = "<group>"; };
 		660449FBCF9CF0BAAD1E1D6B /* CardDisplayable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardDisplayable.swift; sourceTree = "<group>"; };
+		66D696FDF3A8CF35AA537108 /* DynamicStepperFieldRangeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DynamicStepperFieldRangeTests.swift; sourceTree = "<group>"; };
 		6723EB251833B9CC22C520E4 /* ExpandableCardCollectionNamedComplianceHostTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExpandableCardCollectionNamedComplianceHostTests.swift; sourceTree = "<group>"; };
 		67C5853DF0D05D98553E939C /* AccessibilityHostIdentifierXCUI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessibilityHostIdentifierXCUI.swift; sourceTree = "<group>"; };
 		6823A7FA3CE18BD0484D5534 /* PlatformManagedSettingsDetailNavigationState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformManagedSettingsDetailNavigationState.swift; sourceTree = "<group>"; };
@@ -6001,6 +6007,7 @@
 			isa = PBXGroup;
 			children = (
 				D7ABE20F9D5E7E578E916DC4 /* AllowsNegativeKeyboardTests.swift */,
+				66D696FDF3A8CF35AA537108 /* DynamicStepperFieldRangeTests.swift */,
 				E7AD8F9BA23A3606FF854230 /* FieldViewTypeDeterminerTests.swift */,
 				DF00F857C64647399CFCB723 /* IntelligentFormNumberPresentationTests.swift */,
 			);
@@ -8905,6 +8912,7 @@
 				7059027A58E928E0BF429AAD /* DynamicFormStoredDateValueTests.swift in Sources */,
 				7B666A40F451B0926BA50925 /* DynamicFormStoredNumericDisplayTests.swift in Sources */,
 				E5F668C6948F414166472AE4 /* DynamicFormTests.swift in Sources */,
+				A81A7C76ABA521D0CB472B89 /* DynamicStepperFieldRangeTests.swift in Sources */,
 				1520649C610042E16D3F4347 /* EnhancedDeviceDetectionTests.swift in Sources */,
 				3144B4640C4ACD1517AF37E5 /* ExplicitCountBasedPresentationTests.swift in Sources */,
 				BC15F60BE09560C9F50BF073 /* ExtensibleHintsTests.swift in Sources */,
@@ -10540,6 +10548,7 @@
 				278C4BEF02125FCE02F79E70 /* DynamicFormStoredDateValueTests.swift in Sources */,
 				C40BA06FED74745F13E7DF88 /* DynamicFormStoredNumericDisplayTests.swift in Sources */,
 				87D04C17B354CB6FC29969D3 /* DynamicFormTests.swift in Sources */,
+				E827FAD38A3C6D5308720304 /* DynamicStepperFieldRangeTests.swift in Sources */,
 				DE02D254224D87285B0065FC /* EnhancedDeviceDetectionTests.swift in Sources */,
 				9EAA33FDBA0E32F7F045E2B6 /* ExplicitCountBasedPresentationTests.swift in Sources */,
 				97E67C2A30376C37028E2E2D /* ExtensibleHintsTests.swift in Sources */,
@@ -11249,6 +11258,7 @@
 				8A9E37CF4A62238D1185B478 /* DynamicFormStoredDateValueTests.swift in Sources */,
 				6E38101D814B0662D172F6C9 /* DynamicFormStoredNumericDisplayTests.swift in Sources */,
 				BDF8A5D3BD9E6D390DB41249 /* DynamicFormTests.swift in Sources */,
+				1CF1D7335CBFD37A5DA9CE00 /* DynamicStepperFieldRangeTests.swift in Sources */,
 				53F13DE4BE9169DB91A258DC /* EnhancedDeviceDetectionTests.swift in Sources */,
 				B411E66F05DCBE235A9AE013 /* ExplicitCountBasedPresentationTests.swift in Sources */,
 				DA59593E12AE2BD1B84E6EA3 /* ExtensibleHintsTests.swift in Sources */,
@@ -11893,6 +11903,7 @@
 				6B327FA4FA50E1379A47F4CF /* DynamicFormStoredDateValueTests.swift in Sources */,
 				233BA00A993ED32114BAF29B /* DynamicFormStoredNumericDisplayTests.swift in Sources */,
 				C19ABE05C5719797A4DB535C /* DynamicFormTests.swift in Sources */,
+				C31EC77524C0D0E7B11AC019 /* DynamicStepperFieldRangeTests.swift in Sources */,
 				ECBC507DCF43E1FC3C0AE9DA /* EnhancedDeviceDetectionTests.swift in Sources */,
 				1CA0FF3F1B8296A83A3F13A8 /* ExplicitCountBasedPresentationTests.swift in Sources */,
 				B2A076AC6D40F7D7AF2A9DA6 /* ExtensibleHintsTests.swift in Sources */,
@@ -12537,6 +12548,7 @@
 				09CD31F03C7452CC008F9197 /* DynamicFormStoredDateValueTests.swift in Sources */,
 				8C939068AF746F363BB07A15 /* DynamicFormStoredNumericDisplayTests.swift in Sources */,
 				6EFF4701303D947C01640ECE /* DynamicFormTests.swift in Sources */,
+				817BC81972FCC5BE79A449C8 /* DynamicStepperFieldRangeTests.swift in Sources */,
 				6DC6794EA72A67F8FB4668B2 /* EnhancedDeviceDetectionTests.swift in Sources */,
 				4028A8E0DDFBE0F1E752FC35 /* ExplicitCountBasedPresentationTests.swift in Sources */,
 				B8550D9AB65D6E9AE85CA1FC /* ExtensibleHintsTests.swift in Sources */,
