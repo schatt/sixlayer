@@ -11,6 +11,7 @@ This document provides guidance for AI assistants working with the SixLayer Fram
 ## 📚 Version-Specific Guides
 
 ### Latest Versions (Recommended)
+- **v8.8.2** — Patch release: DynamicStepperField range and display fixes (#562); form-draft docs (#683); Display OCR training/lab code moved to `display-ocr-lab` (#706) (see [RELEASE_v8.8.2.md](RELEASE_v8.8.2.md))
 - **v8.8.1** — Patch release: Dependabot bundler-group bump of Ruby `json` (2.17.1.2 → 2.19.9); no public Swift API changes (see [RELEASE_v8.8.1.md](RELEASE_v8.8.1.md))
 - **v8.8.0** — Minor release: OCR hardening; Live Photo camera/picker; platform chrome; `/2` land gate (see [RELEASE_v8.8.0.md](RELEASE_v8.8.0.md))
 - **[AI_AGENT_v8.8.0.md](AI_AGENT_v8.8.0.md)** - v8.8.0 minor notes; prior minor baseline [AI_AGENT_v8.7.0.md](AI_AGENT_v8.7.0.md)
