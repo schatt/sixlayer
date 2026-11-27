@@ -280,14 +280,21 @@ public enum SevenSegmentOCR {
         let frame = gray
         /// Panel used for decode, in original-frame pixels (#677).
         var chosenPanelPixels: CGRect?
+        /// Other digit-reading panels on the frame, decoded after the chosen
+        /// one (#708). Empty when the panel came from the trained locator.
+        var additionalPanelPixels: [CGRect] = []
         if localizeDigitPanel {
             let modelRegion = panelLocator?.panelRegion(in: cgImage)
             if let modelRegion, let cropped = gray.panelCrop(modelRegion) {
                 chosenPanelPixels = modelRegion
                 gray = cropped
-            } else if let region = gray.digitPanelBounds(), let cropped = gray.panelCrop(region) {
-                chosenPanelPixels = region
-                gray = cropped
+            } else {
+                let regions = gray.digitPanelRegions()
+                if let region = regions.first, let cropped = gray.panelCrop(region) {
+                    chosenPanelPixels = region
+                    additionalPanelPixels = Array(regions.dropFirst())
+                    gray = cropped
+                }
             }
         }
         // Huge pale pad around a small panel (training / paddedCanvas) must
