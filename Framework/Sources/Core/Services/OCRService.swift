@@ -445,7 +445,7 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
             return [:] // No hints file loading - developer doesn't need/want hints
         }
         
-        let loader = FileBasedDataHintsLoader()
+        let loader: DataHintsLoader = hintsLoader
         let hintsResult = loader.loadHintsResult(for: entityName, locale: OCRDecimalLocale.resolve(context: context))
         
         var patterns: [String: String] = [:]
@@ -511,7 +511,7 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
         var hintsCalculationGroups: [String: [CalculationGroup]] = [:]
         var hintsFractionDigits: [String: Int] = [:]
         if let entityName = context.entityName {
-            let loader = FileBasedDataHintsLoader()
+            let loader: DataHintsLoader = hintsLoader
             let hintsResult = loader.loadHintsResult(for: entityName, locale: locale)
             for (fieldId, fieldHints) in hintsResult.fieldHints {
                 if let range = fieldHints.expectedRange {
@@ -853,7 +853,7 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
         // Get hints file ranges if entityName is provided
         var hintsRanges: [String: ValueRange] = [:]
         if let entityName = context.entityName {
-            let loader = FileBasedDataHintsLoader()
+            let loader: DataHintsLoader = hintsLoader
             let hintsResult = loader.loadHintsResult(for: entityName, locale: locale)
             for (fieldId, fieldHints) in hintsResult.fieldHints {
                 if let range = fieldHints.expectedRange {
@@ -888,7 +888,7 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
                 // Check if calculation groups confirm this value (makes it less questionable)
                 var confirmedByCalculation = false
                 if let entityName = context.entityName {
-                    let loader = FileBasedDataHintsLoader()
+                    let loader: DataHintsLoader = hintsLoader
                     let hintsResult = loader.loadHintsResult(for: entityName, locale: locale)
                     if let fieldHints = hintsResult.fieldHints[fieldId],
                        let calculationGroups = fieldHints.calculationGroups {
@@ -951,7 +951,7 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
             return nil
         }
         
-        let loader = FileBasedDataHintsLoader()
+        let loader: DataHintsLoader = hintsLoader
         let hintsResult = loader.loadHintsResult(for: entityName, locale: OCRDecimalLocale.resolve(context: context))
         return hintsResult.fieldHints[fieldId]?.expectedRange
     }
@@ -968,7 +968,7 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
             return (result, [:]) // No calculation groups - developer doesn't need/want hints
         }
         
-        let loader = FileBasedDataHintsLoader()
+        let loader: DataHintsLoader = hintsLoader
         let locale = OCRDecimalLocale.resolve(context: context)
         let hintsResult = loader.loadHintsResult(for: entityName, locale: locale)
         
