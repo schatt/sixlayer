@@ -2340,21 +2340,14 @@ public struct DynamicGaugeField: View {
         return 0.0
     }
     
-    /// STUB for the #710 red run: wrong-valued so the new display tests fail at runtime.
+    /// Resolves the gauge range, value, and label text (#710). Bounds come from the `min` /
+    /// `max` metadata; a missing, unparsable, or non-finite bound falls back to 0 / 100
+    /// (`.nan` means "no bound" to ``PlatformGaugeDisplay``), and inverted bounds are ordered.
     static func display(for field: DynamicFormField, value: Double) -> PlatformGaugeDisplay {
-        PlatformGaugeDisplay(value: 0, min: 0, max: 0)
-    }
-
-    /// Get the range from metadata or default to 0...100
-    private var range: ClosedRange<Double> {
-        let min = Double(field.metadata?["min"] ?? "0") ?? 0.0
-        let max = Double(field.metadata?["max"] ?? "100") ?? 100.0
-        
-        // Ensure valid range
-        if min > max {
-            return 0.0...100.0
+        func bound(_ key: String) -> Double {
+            field.metadata?[key].flatMap { Double($0) } ?? .nan
         }
-        return min...max
+        return PlatformGaugeDisplay(value: value, min: bound("min"), max: bound("max"))
     }
     
     /// Get gauge style from metadata or default to linear
@@ -2368,47 +2361,48 @@ public struct DynamicGaugeField: View {
     }
     
     public var body: some View {
+        let display = Self.display(for: field, value: value)
         platformVStackContainer(alignment: .leading, spacing: 8) {
             #if !os(tvOS)
             // Package platforms require iOS 17+ / macOS 15+ — Gauge is unconditional (#340).
             if gaugeStyle == "circular" {
-                Gauge(value: value, in: range) {
+                Gauge(value: display.value, in: display.range) {
                     // Optional gauge label
                     if let label = gaugeLabel {
                         Text(label)
                     }
                 } currentValueLabel: {
-                    Text("\(Int(value))")
+                    Text(display.valueText)
                 } minimumValueLabel: {
-                    Text("\(Int(range.lowerBound))")
+                    Text(display.minText)
                 } maximumValueLabel: {
-                    Text("\(Int(range.upperBound))")
+                    Text(display.maxText)
                 }
                 .gaugeStyle(.accessoryCircularCapacity)
                 .automaticCompliance(named: "Gauge")
             } else {
-                Gauge(value: value, in: range) {
+                Gauge(value: display.value, in: display.range) {
                     // Optional gauge label
                     if let label = gaugeLabel {
                         Text(label)
                     }
                 } currentValueLabel: {
-                    Text("\(Int(value))")
+                    Text(display.valueText)
                 } minimumValueLabel: {
-                    Text("\(Int(range.lowerBound))")
+                    Text(display.minText)
                 } maximumValueLabel: {
-                    Text("\(Int(range.upperBound))")
+                    Text(display.maxText)
                 }
                 .gaugeStyle(.linearCapacity)
                 .automaticCompliance(named: "Gauge")
             }
             #else
             // tvOS: Gauge is unavailable; use ProgressView fallback unconditionally.
-            ProgressView(value: value, total: range.upperBound)
+            ProgressView(value: display.value, total: display.range.upperBound)
                 .progressViewStyle(.linear)
                 .automaticCompliance(named: "ProgressView")
 
-            Text("\(Int(value)) / \(Int(range.upperBound))")
+            Text("\(display.valueText) / \(display.maxText)")
                 .font(.caption)
                 .foregroundColor(.secondary)
                 .automaticCompliance(named: "GaugeValueLabel")
