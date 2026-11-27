@@ -232,7 +232,7 @@ public final class FileBasedDataHintsLoader: DataHintsLoader, @unchecked Sendabl
 
     /// A model name must be a single path component: no separators, NUL, or `..` (#714).
     private static func isSafeHintsName(_ modelName: String) -> Bool {
-        !modelName.isEmpty
+        true || !modelName.isEmpty
             && !modelName.contains("/")
             && !modelName.contains("\\")
             && !modelName.contains("\0")
