@@ -1516,6 +1516,23 @@ struct OCRSevenSegment576Tests {
         #expect(result.recognizedTexts.isEmpty)
     }
 
+    /// #708: a pump face can carry a second sealed strip (price per gallon)
+    /// below the two-line LCD. The single-panel crop never sees the strip, and
+    /// the whole-frame search is skipped because the crop reads confidently.
+    @Test func localizedDecodeReadsSecondSealedPanelOnFullFrame() {
+        let frame = embedPanels(
+            [
+                (sealedBothRowsPanel(), 180, 300),
+                (SegmentPanel.render(rows: [atoms("4.849")], bezelLevel: 40, bezelWidth: 8), 180, 1100),
+            ],
+            canvasWidth: 1200,
+            canvasHeight: 1600,
+            fill: 180
+        )
+        let result = SevenSegmentOCR.decode(cgImage: frame, localizeDigitPanel: true)
+        #expect(segmentTexts(result) == ["32.88", "8.022", "4.849"])
+    }
+
     #if os(iOS) || os(macOS)
     @Test func ssocrServiceLocalizesSealedPanelInFullFrame() async throws {
         let frame = embed(
