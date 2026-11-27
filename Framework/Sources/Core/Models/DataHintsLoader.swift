@@ -159,101 +159,52 @@ public protocol DataHintsLoader: Sendable {
     func loadHintsResult(for modelName: String) -> DataHintsResult
     
     /// Load complete hints result with locale support for language-specific OCR hints
-    func loadHintsResult(for modelName: String, locale: Locale) -> DataHintsResult
-}
-
-// MARK: - File-Based Data Hints Loader
-
-/// Loads .hints files from the bundle or filesystem
-public final class FileBasedDataHintsLoader: DataHintsLoader, @unchecked Sendable {
-    private let fileManager: FileManager
-    private let bundle: Bundle
-    private let searchDirectories: [URL]
-    
-    public init(
-        fileManager: FileManager = .default,
-        bundle: Bundle = .main,
-        searchDirectories: [URL] = []
-    ) {
-        self.fileManager = fileManager
-        self.bundle = bundle
-        self.searchDirectories = searchDirectories
-    }
-    
-    /// Load a .hints file for a data model (backward compatibility - returns only field hints)
-    /// Example: loadHints(for: "User") looks for "User.hints" file in the Hints/ folder
-    public func loadHints(for modelName: String) -> [String: FieldDisplayHints] {
-        return loadHintsResult(for: modelName).fieldHints
-    }
-    
-    /// Load complete hints result including field hints and sections
-    /// Example: loadHintsResult(for: "User") looks for "User.hints" file in the Hints/ folder
-    public func loadHintsResult(for modelName: String) -> DataHintsResult {
-        return loadHintsResult(for: modelName, locale: Locale.current)
-    }
-    
-    /// Load complete hints result with locale support for language-specific OCR hints
     /// Example: loadHintsResult(for: "User", locale: Locale(identifier: "es")) uses Spanish OCR hints
     public func loadHintsResult(for modelName: String, locale: Locale) -> DataHintsResult {
-        // Try to load from bundle first (in Hints/ subfolder)
-        if let hintsFolder = bundle.url(forResource: "Hints", withExtension: nil) {
-            let url = hintsFolder.appendingPathComponent("\(modelName).hints")
+        for url in candidateHintsURLs(for: modelName) {
             if let data = try? Data(contentsOf: url),
                let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
                 return parseHintsResult(from: json, locale: locale)
             }
         }
-        
-        // Also try root level for backward compatibility
-        if let url = bundle.url(forResource: modelName, withExtension: "hints"),
-           let data = try? Data(contentsOf: url),
-           let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
-            return parseHintsResult(from: json, locale: locale)
-        }
-        
-        // Fall back to documents directory (in Hints/ subfolder)
-        if let documentsURL = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first {
-            let hintsFolder = documentsURL.appendingPathComponent("Hints")
-            let url = hintsFolder.appendingPathComponent("\(modelName).hints")
-            if fileManager.fileExists(atPath: hintsFolder.path),
-               let data = try? Data(contentsOf: url),
-               let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
-                return parseHintsResult(from: json, locale: locale)
-            }
-        }
-        
         return DataHintsResult()
     }
-    
+
     /// Check if a hints file exists for a model
     public func hasHints(for modelName: String) -> Bool {
-        // Check in Hints/ subfolder first
-        if let hintsFolder = bundle.url(forResource: "Hints", withExtension: nil) {
-            let url = hintsFolder.appendingPathComponent("\(modelName).hints")
-            if fileManager.fileExists(atPath: url.path) {
-                return true
-            }
-        }
-        
-        // Also check root level for backward compatibility
-        if let _ = bundle.url(forResource: modelName, withExtension: "hints") {
-            return true
-        }
-        
-        // Check documents directory
-        if let documentsURL = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first {
-            let hintsFolder = documentsURL.appendingPathComponent("Hints")
-            let url = hintsFolder.appendingPathComponent("\(modelName).hints")
-            if fileManager.fileExists(atPath: url.path) {
-                return true
-            }
-        }
-        
-        return false
+        candidateHintsURLs(for: modelName).contains { fileManager.fileExists(atPath: $0.path) }
     }
-    
+
     // MARK: - Private Helpers
-    
+
+    /// `.hints` candidate URLs in precedence order (#714):
+    /// injected `searchDirectories` → bundle `Hints/` → bundle root → Documents `Hints/`.
+    /// Empty when `modelName` could escape a folder.
+    private func candidateHintsURLs(for modelName: String) -> [URL] {
+        guard Self.isSafeHintsName(modelName) else { return [] }
+        let fileName = "\(modelName).hints"
+        var urls = searchDirectories.map { $0.appendingPathComponent(fileName) }
+        if let hintsFolder = bundle.url(forResource: "Hints", withExtension: nil) {
+            urls.append(hintsFolder.appendingPathComponent(fileName))
+        }
+        if let url = bundle.url(forResource: modelName, withExtension: "hints") {
+            urls.append(url)
+        }
+        if let documentsURL = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first {
+            urls.append(documentsURL.appendingPathComponent("Hints").appendingPathComponent(fileName))
+        }
+        return urls
+    }
+
+    /// A model name must be a single path component: no separators, NUL, or `..` (#714).
+    private static func isSafeHintsName(_ modelName: String) -> Bool {
+        !modelName.isEmpty
+            && !modelName.contains("/")
+            && !modelName.contains("\\")
+            && !modelName.contains("\0")
+            && !modelName.contains("..")
+    }
+
     private func parseHintsResult(from json: [String: Any], locale: Locale = Locale.current) -> DataHintsResult {
         var fieldHints: [String: FieldDisplayHints] = [:]
         var sectionLayouts: [HintsSectionLayout] = []
