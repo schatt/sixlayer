@@ -200,12 +200,13 @@ public extension View {
         label: String? = nil,
         style: String? = nil
     ) -> some View {
-        let range = min...max
+        // Range, value, and labels never trap on NaN / infinity / inverted bounds (#710).
+        let display = PlatformGaugeDisplay(value: value, min: min, max: max)
         #if os(tvOS)
         platformVStackContainer(alignment: .leading) {
-            ProgressView(value: value, total: max)
+            ProgressView(value: display.value, total: display.range.upperBound)
                 .progressViewStyle(.linear)
-            Text("\(Int(value)) / \(Int(max))")
+            Text("\(display.valueText) / \(display.maxText)")
                 .font(.caption)
                 .foregroundColor(.secondary)
         }
@@ -213,29 +214,29 @@ public extension View {
         // Deployment targets are iOS 17+ / macOS 15+; Gauge is unconditionally available.
         // Avoid `if #available` inside @ViewBuilder (no buildLimitedAvailability).
         if style == "circular" {
-            Gauge(value: value, in: range) {
+            Gauge(value: display.value, in: display.range) {
                 if let label {
                     Text(label)
                 }
             } currentValueLabel: {
-                Text("\(Int(value))")
+                Text(display.valueText)
             } minimumValueLabel: {
-                Text("\(Int(min))")
+                Text(display.minText)
             } maximumValueLabel: {
-                Text("\(Int(max))")
+                Text(display.maxText)
             }
             .gaugeStyle(.accessoryCircularCapacity)
         } else {
-            Gauge(value: value, in: range) {
+            Gauge(value: display.value, in: display.range) {
                 if let label {
                     Text(label)
                 }
             } currentValueLabel: {
-                Text("\(Int(value))")
+                Text(display.valueText)
             } minimumValueLabel: {
-                Text("\(Int(min))")
+                Text(display.minText)
             } maximumValueLabel: {
-                Text("\(Int(max))")
+                Text(display.maxText)
             }
             .gaugeStyle(.linearCapacity)
         }
@@ -289,10 +290,9 @@ public extension EnvironmentValues {
 /// Value text for stepper-like controls. Never converts to `Int`: `Int(Double)` traps on NaN,
 /// infinity, and finite values outside `Int` range (#562). Non-finite values show an em dash.
 func platformStepperValueText(_ value: Double, step: Double) -> String {
-    guard value.isFinite else { return "\u{2014}" }
+    guard value.isFinite else { return platformNonFiniteNumberText }
     if step.truncatingRemainder(dividingBy: 1.0) == 0.0 {
-        // `value == 0` normalizes -0.0 so whole steps never show "-0".
-        return String(format: "%.0f", value == 0 ? 0 : value)
+        return platformWholeNumberText(value)
     }
     return String(format: "%.2f", value)
 }
