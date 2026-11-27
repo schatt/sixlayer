@@ -1654,6 +1654,32 @@ struct OCRSevenSegment576Tests {
         #expect(lines[0] != "3" || !lines[1].contains("83"), "collapsed short run [\(result.extractedText)]")
     }
 
+    /// #708: on a real full pump frame the finder must offer tight regions for
+    /// the sale LCD and for each grade price window, not one region that is the
+    /// whole pump face. Points are normalized frame positions measured on the
+    /// upright 4284x5712 photo. Skips when the private fixtures are absent.
+    @Test(
+        .enabled(if: FileManager.default.fileExists(atPath: OCRSevenSegment576Tests.ppgGradeWindows7641Photo))
+    )
+    func digitPanelRegionsCoverSaleLcdAndGradeWindowsOnRealPumpFrame() throws {
+        let photo = URL(fileURLWithPath: Self.ppgGradeWindows7641Photo)
+        let opened = try #require(PlatformImage.cgImage(opening: Data(contentsOf: photo)))
+        let image = try #require(fitIntoBox(opened, width: 1200, height: 1600))
+        let regions = SevenSegmentOCR.digitPanelRegions(in: image)
+        let frameArea = CGFloat(image.width * image.height)
+        let targets: [(name: String, x: CGFloat, y: CGFloat)] = [
+            ("sale LCD", 0.452, 0.156),
+            ("unleaded window", 0.284, 0.748),
+            ("plus window", 0.471, 0.749),
+            ("premium window", 0.663, 0.751),
+        ]
+        for target in targets {
+            let point = CGPoint(x: target.x * CGFloat(image.width), y: target.y * CGFloat(image.height))
+            let tight = regions.contains { $0.contains(point) && $0.width * $0.height < frameArea * 0.1 }
+            #expect(tight, "\(target.name) not inside a tight region; regions \(regions)")
+        }
+    }
+
     // MARK: - Helpers
 
     /// Scale so the image fits inside the box (same production resize used
