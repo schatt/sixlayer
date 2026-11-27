@@ -568,7 +568,7 @@ public enum SevenSegmentOCR {
     }
 }
 
-private struct GrayBuffer {
+struct GrayBuffer {
     var pixels: [UInt8]
     var width: Int
     var height: Int
