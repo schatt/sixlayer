@@ -159,6 +159,40 @@ public protocol DataHintsLoader: Sendable {
     func loadHintsResult(for modelName: String) -> DataHintsResult
     
     /// Load complete hints result with locale support for language-specific OCR hints
+    func loadHintsResult(for modelName: String, locale: Locale) -> DataHintsResult
+}
+
+// MARK: - File-Based Data Hints Loader
+
+/// Loads .hints files from the bundle or filesystem
+public final class FileBasedDataHintsLoader: DataHintsLoader, @unchecked Sendable {
+    private let fileManager: FileManager
+    private let bundle: Bundle
+    private let searchDirectories: [URL]
+    
+    public init(
+        fileManager: FileManager = .default,
+        bundle: Bundle = .main,
+        searchDirectories: [URL] = []
+    ) {
+        self.fileManager = fileManager
+        self.bundle = bundle
+        self.searchDirectories = searchDirectories
+    }
+    
+    /// Load a .hints file for a data model (backward compatibility - returns only field hints)
+    /// Example: loadHints(for: "User") looks for "User.hints" file in the Hints/ folder
+    public func loadHints(for modelName: String) -> [String: FieldDisplayHints] {
+        return loadHintsResult(for: modelName).fieldHints
+    }
+    
+    /// Load complete hints result including field hints and sections
+    /// Example: loadHintsResult(for: "User") looks for "User.hints" file in the Hints/ folder
+    public func loadHintsResult(for modelName: String) -> DataHintsResult {
+        return loadHintsResult(for: modelName, locale: Locale.current)
+    }
+    
+    /// Load complete hints result with locale support for language-specific OCR hints
     /// Example: loadHintsResult(for: "User", locale: Locale(identifier: "es")) uses Spanish OCR hints
     public func loadHintsResult(for modelName: String, locale: Locale) -> DataHintsResult {
         for url in candidateHintsURLs(for: modelName) {
