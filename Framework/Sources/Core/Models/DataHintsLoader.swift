@@ -168,10 +168,16 @@ public protocol DataHintsLoader: Sendable {
 public final class FileBasedDataHintsLoader: DataHintsLoader, @unchecked Sendable {
     private let fileManager: FileManager
     private let bundle: Bundle
+    private let searchDirectories: [URL]
     
-    public init(fileManager: FileManager = .default, bundle: Bundle = .main) {
+    public init(
+        fileManager: FileManager = .default,
+        bundle: Bundle = .main,
+        searchDirectories: [URL] = []
+    ) {
         self.fileManager = fileManager
         self.bundle = bundle
+        self.searchDirectories = searchDirectories
     }
     
     /// Load a .hints file for a data model (backward compatibility - returns only field hints)
