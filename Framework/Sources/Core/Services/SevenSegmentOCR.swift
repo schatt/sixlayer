@@ -2473,35 +2473,63 @@ private extension GrayBuffer {
     /// library photos do not stall in `localRange` (#650). The returned rect
     /// is mapped back to this buffer's coordinates.
     func digitPanelBounds() -> CGRect? {
+        digitPanelRegions().first
+    }
+
+    /// Sealed pockets that read digits, chosen panel first, in this buffer's
+    /// pixels. The chosen panel is the one ``digitPanelBounds()`` returns. Any
+    /// other digit-reading pocket that does not overlap it follows, most digits
+    /// first (#708: a price-per-gallon strip below the main LCD).
+    func digitPanelRegions() -> [CGRect] {
         let analysis = fitted(maxSide: SevenSegmentOCR.digitPanelAnalysisMaxSide)
         SevenSegmentOCR.lastDigitPanelAnalysisLongEdge = max(analysis.width, analysis.height)
         let raw = analysis.masks()
         let darkPanels = analysis.sealedPanels(in: raw.dark)
         let lightPanels = analysis.sealedPanels(in: raw.light)
-        guard var found = Self.largerPanel(darkPanels.first, lightPanels.first) else { return nil }
+        guard let largest = Self.largerPanel(darkPanels.first, lightPanels.first) else { return [] }
         // The largest sealed pocket can be the whole pump face or a banner.
         // The panel is the pocket where seven-segment digits read: of the few
         // largest pockets, take the one the flat read is surest of.
         let candidates = Array(darkPanels.prefix(6)) + Array(lightPanels.prefix(6))
-        if candidates.count > 1 {
-            func digits(in rect: CGRect) -> Int {
-                guard let crop = analysis.panelCrop(rect), let rows = FlatSevenSegment.read(crop) else { return 0 }
-                return rows.flatMap { $0 }.filter { $0.character.isNumber }.count
-            }
-            // The panel shows several digits; a lone glyph is a fragment of
-            // one. A pocket replaces the default only by reading more digits.
-            var best = (digits: digits(in: found), area: found.width * found.height)
-            for rect in candidates where rect != found {
-                let count = digits(in: rect)
-                let area = rect.width * rect.height
-                guard count >= 2 else { continue }
-                if count > best.digits || (count == best.digits && area < best.area) {
-                    best = (count, area)
-                    found = rect
-                }
+        guard candidates.count > 1 else { return [mapRect(largest, from: analysis)] }
+        func digits(in rect: CGRect) -> Int {
+            guard let crop = analysis.panelCrop(rect), let rows = FlatSevenSegment.read(crop) else { return 0 }
+            return rows.flatMap { $0 }.filter { $0.character.isNumber }.count
+        }
+        // The panel shows several digits; a lone glyph is a fragment of
+        // one. A pocket replaces the default only by reading more digits.
+        let largestDigits = digits(in: largest)
+        var found = largest
+        var best = (digits: largestDigits, area: largest.width * largest.height)
+        var readable: [(rect: CGRect, digits: Int)] = []
+        for rect in candidates where rect != largest {
+            let count = digits(in: rect)
+            guard count >= 2 else { continue }
+            readable.append((rect, count))
+            let area = rect.width * rect.height
+            if count > best.digits || (count == best.digits && area < best.area) {
+                best = (count, area)
+                found = rect
             }
         }
-        return mapRect(found, from: analysis)
+        if found != largest, largestDigits >= 2 {
+            readable.append((largest, largestDigits))
+        }
+        var accepted = [found]
+        for entry in readable.sorted(by: { $0.digits > $1.digits }) {
+            guard !accepted.contains(where: { Self.overlaps($0, entry.rect) }) else { continue }
+            accepted.append(entry.rect)
+        }
+        return accepted.map { mapRect($0, from: analysis) }
+    }
+
+    /// Two pockets are the same panel when they share more than half of the
+    /// smaller one's area.
+    private static func overlaps(_ a: CGRect, _ b: CGRect) -> Bool {
+        let shared = a.intersection(b)
+        guard !shared.isNull else { return false }
+        let smaller = min(a.width * a.height, b.width * b.height)
+        return shared.width * shared.height > smaller * 0.5
     }
 
     private static func largerPanel(_ dark: CGRect?, _ light: CGRect?) -> CGRect? {
