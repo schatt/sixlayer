@@ -276,9 +276,10 @@ public struct RenderingMetrics {
         case .renderTime:
             renderTime = measurement.value
         case .drawCalls:
-            drawCalls = Int(measurement.value)
+            // NaN is invalid data: keep the previous value. Never `Int(Double)` — it traps (#711).
+            if let calls = Int(saturatingTruncating: measurement.value) { drawCalls = calls }
         case .textureMemory:
-            textureMemory = Int64(measurement.value)
+            if let bytes = Int64(saturatingTruncating: measurement.value) { textureMemory = bytes }
         default:
             break
         }
@@ -293,11 +294,13 @@ public struct MemoryMetrics {
     public mutating func record(_ measurement: PerformanceMeasurement) {
         switch measurement.metric {
         case .usedMemory:
-            usedMemory = Int64(measurement.value)
+            if let bytes = Int64(saturatingTruncating: measurement.value) { usedMemory = bytes }
         case .peakMemory:
-            peakMemory = Int64(measurement.value)
+            if let bytes = Int64(saturatingTruncating: measurement.value) { peakMemory = bytes }
         case .memoryPressure:
-            memoryPressure = MemoryPressureLevel(rawValue: Int(measurement.value)) ?? .normal
+            if let raw = Int(saturatingTruncating: measurement.value) {
+                memoryPressure = MemoryPressureLevel(rawValue: raw) ?? .normal
+            }
         default:
             break
         }
