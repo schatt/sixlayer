@@ -1166,11 +1166,11 @@ public struct DynamicStepperField: View {
     static func resolvedRange(for field: DynamicFormField) -> ClosedRange<Double> {
         if let expectedRange = field.displayHints?.expectedRange,
            expectedRange.min.isFinite, expectedRange.max.isFinite {
-            return orderedRange(expectedRange.min, expectedRange.max)
+            return .ordered(expectedRange.min, expectedRange.max)
         }
         let lower = finiteBound(field.metadata?["min"], default: 0.0)
         let upper = finiteBound(field.metadata?["max"], default: 100.0)
-        return orderedRange(lower, upper)
+        return .ordered(lower, upper)
     }
 
     /// NaN and infinity are not valid stepper bounds; `Double(String)` accepts "nan"/"inf",
@@ -1178,10 +1178,6 @@ public struct DynamicStepperField: View {
     private static func finiteBound(_ text: String?, default fallback: Double) -> Double {
         guard let text, let value = Double(text), value.isFinite else { return fallback }
         return value
-    }
-
-    private static func orderedRange(_ a: Double, _ b: Double) -> ClosedRange<Double> {
-        Swift.min(a, b)...Swift.max(a, b)
     }
 
     private var step: Double {
