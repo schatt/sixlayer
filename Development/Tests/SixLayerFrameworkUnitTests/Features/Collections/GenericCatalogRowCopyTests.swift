@@ -39,6 +39,34 @@ struct GenericCatalogRowCopyTests {
         #expect(copy.detail == "7")
     }
 
+    // MARK: - Non-finite and out-of-range values (#713)
+    // `Int(Double)` traps on infinity and on finite values outside `Int` range.
+
+    @Test func numeric_infinityDoesNotTrap() {
+        let copy = GenericCatalogRowCopy.numeric(GenericNumericData(value: .infinity, label: "Rate"))
+        #expect(copy.detail == "inf")
+    }
+
+    @Test func numeric_negativeInfinityDoesNotTrap() {
+        let copy = GenericCatalogRowCopy.numeric(GenericNumericData(value: -.infinity, label: "Rate"))
+        #expect(copy.detail == "-inf")
+    }
+
+    @Test func numeric_hugeWholeValueDoesNotTrap() {
+        let copy = GenericCatalogRowCopy.numeric(GenericNumericData(value: 1e30, label: "Big"))
+        #expect(copy.detail == "1e+30")
+    }
+
+    @Test func numeric_nanDoesNotTrap() {
+        let copy = GenericCatalogRowCopy.numeric(GenericNumericData(value: .nan, label: "Rate"))
+        #expect(copy.detail == "nan")
+    }
+
+    @Test func numeric_negativeWholeValueOmitsFraction() {
+        let copy = GenericCatalogRowCopy.numeric(GenericNumericData(value: -3, label: "Delta", unit: "kg"))
+        #expect(copy.detail == "-3 kg")
+    }
+
     @Test func hierarchical_includesLevel() {
         let copy = GenericCatalogRowCopy.hierarchical(
             GenericHierarchicalItem(title: "Child", level: 2)
