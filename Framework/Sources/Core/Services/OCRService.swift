@@ -935,22 +935,6 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
         return (validatedData, rangeWarnings)
     }
     
-    /// Get the expected range for a field (override first, then hints file)
-    private func getExpectedRange(for fieldId: String, context: OCRContext) -> ValueRange? {
-        // Check override first
-        if let overrideRange = context.fieldRanges?[fieldId] {
-            return overrideRange
-        }
-        
-        // Check hints file
-        guard let entityName = context.entityName else {
-            return nil
-        }
-        
-        let hintsResult = hintsLoader.loadHintsResult(for: entityName, locale: OCRDecimalLocale.resolve(context: context))
-        return hintsResult.fieldHints[fieldId]?.expectedRange
-    }
-    
     /// Apply calculation groups to derive missing field values
     /// Returns: (calculated data, adjustments map: fieldId -> description)
     private func applyCalculationGroups(to structuredData: [String: String], context: OCRContext) -> ([String: String], [String: String]) {
