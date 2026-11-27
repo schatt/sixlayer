@@ -2340,6 +2340,11 @@ public struct DynamicGaugeField: View {
         return 0.0
     }
     
+    /// STUB for the #710 red run: wrong-valued so the new display tests fail at runtime.
+    static func display(for field: DynamicFormField, value: Double) -> PlatformGaugeDisplay {
+        PlatformGaugeDisplay(value: 0, min: 0, max: 0)
+    }
+
     /// Get the range from metadata or default to 0...100
     private var range: ClosedRange<Double> {
         let min = Double(field.metadata?["min"] ?? "0") ?? 0.0
