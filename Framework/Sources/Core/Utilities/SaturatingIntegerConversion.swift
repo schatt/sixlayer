@@ -17,7 +17,7 @@ extension FixedWidthInteger {
     /// - Otherwise the value is truncated toward zero (same as `Int(_:)`), and values
     ///   outside the type's range - including +/-infinity - saturate at `min` / `max`.
     init?(saturatingTruncating value: Double) {
-        // MUTATION: nan guard removed
+        guard !value.isNaN else { return nil }
         if let exact = Self(exactly: value.rounded(.towardZero)) {
             self = exact
         } else {
