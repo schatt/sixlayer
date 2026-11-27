@@ -144,7 +144,12 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
     
     // MARK: - Initialization
     
-    public init() {}
+    /// Hints source for `.hints`-driven extraction (#714). Default matches pre-injection behavior.
+    private let hintsLoader: DataHintsLoader
+
+    public init(hintsLoader: DataHintsLoader = FileBasedDataHintsLoader()) {
+        self.hintsLoader = hintsLoader
+    }
 
     /// Counts `VNRecognizeTextRequest` values created by this instance.
     private(set) var visionTextRecognitionRequestCount = 0
