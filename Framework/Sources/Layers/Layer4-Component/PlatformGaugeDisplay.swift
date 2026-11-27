@@ -40,7 +40,7 @@ struct PlatformGaugeDisplay: Equatable {
     init(value: Double, min: Double, max: Double) {
         let lower = min.isFinite ? min : Self.defaultLowerBound
         let upper = max.isFinite ? max : Self.defaultUpperBound
-        let range = Swift.min(lower, upper)...Swift.max(lower, upper)
+        let range = ClosedRange<Double>.ordered(lower, upper)
         self.range = range
         self.value = value.isFinite ? value : range.lowerBound
         self.valueText = platformWholeNumberText(value)
