@@ -32,7 +32,9 @@ enum GenericCatalogRowCopy {
     }
 
     private static func formatValue(_ value: Double) -> String {
-        value.rounded() == value ? String(Int(value)) : String(value)
+        // `Int(exactly:)` is nil for NaN, infinity, fractions, and out-of-range values, so
+        // those fall back to `String(Double)` instead of trapping in `Int(_)` (#713).
+        Int(exactly: value).map(String.init) ?? String(value)
     }
 
     private static func utcDayString(_ date: Date) -> String {
