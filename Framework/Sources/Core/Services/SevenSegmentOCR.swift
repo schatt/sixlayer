@@ -194,6 +194,14 @@ public enum SevenSegmentOCR {
         return gray.digitPanelBounds()
     }
 
+    /// Every region the finder offers as a digit panel, chosen panel first, in
+    /// the frame's pixels. A pump face with a sale LCD and separate price
+    /// windows should yield one region per display (#708).
+    public static func digitPanelRegions(in cgImage: CGImage) -> [CGRect] {
+        guard let gray = GrayBuffer.read(cgImage) else { return [] }
+        return gray.digitPanelRegions()
+    }
+
     /// Rectangles the frame step can hand to a row finder. The lab ranks these.
     /// Production decode still uses the sealed pocket only when asked.
     public static func frameCandidates(in cgImage: CGImage) -> [SegmentFrameCandidate] {
