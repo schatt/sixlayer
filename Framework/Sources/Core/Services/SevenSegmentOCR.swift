@@ -352,12 +352,22 @@ public enum SevenSegmentOCR {
                 lattice = result(located.map { [latticeFragment($0, width: frame.width, height: frame.height)] })
             }
         }
-        let picked = chooseLegacyOrLattice(
+        let chosenRead = chooseLegacyOrLattice(
             fragments: fragments,
             legacy: legacy,
             lattice: lattice,
             latticeRows: rows
         )
+        // Each extra panel is its own decode. The recursive call overwrites the
+        // #650 analysis-size probe, so restore it for the chosen panel.
+        let chosenAnalysisEdge = lastDecodeAnalysisLongEdge
+        let additional = additionalPanelPixels.compactMap { rect -> (rect: CGRect, result: OCRResult)? in
+            guard let crop = cgImage.cropping(to: rect.integral) else { return nil }
+            let read = decode(cgImage: crop, deskewMaximumDegrees: deskewMaximumDegrees, localizeDigitPanel: false)
+            return read.extractedText.isEmpty ? nil : (rect, read)
+        }
+        lastDecodeAnalysisLongEdge = chosenAnalysisEdge
+        let picked = joinPanels(chosenRead, chosenPanel: chosenPanelPixels, additional: additional)
         let chosenPanelRect = chosenPanelPixels.map {
             DisplayOCRNormalizedBox(
                 pixelRect: $0,
@@ -381,6 +391,39 @@ public enum SevenSegmentOCR {
             isValid: picked.isValid,
             validationReason: picked.validationReason,
             chosenPanelRect: chosenPanelRect
+        )
+    }
+
+    /// Joins the chosen panel's rows with each extra panel's rows, top to
+    /// bottom on the frame (#708). Returns `chosen` unchanged when no extra
+    /// panel read. Bounding boxes keep each panel's own decode convention.
+    static func joinPanels(
+        _ chosen: OCRResult,
+        chosenPanel: CGRect?,
+        additional: [(rect: CGRect, result: OCRResult)]
+    ) -> OCRResult {
+        guard let chosenPanel, !additional.isEmpty else { return chosen }
+        let panels = ([(minY: chosenPanel.minY, result: chosen)]
+            + additional.map { (minY: $0.rect.minY, result: $0.result) })
+            .sorted { $0.minY < $1.minY }
+            .map(\.result)
+        let readPanels = panels.filter { !$0.extractedText.isEmpty }
+        let confidences = readPanels.map(\.confidence)
+        return OCRResult(
+            extractedText: readPanels.map(\.extractedText).joined(separator: "\n"),
+            confidence: confidences.min() ?? chosen.confidence,
+            boundingBoxes: panels.flatMap(\.boundingBoxes),
+            textTypes: chosen.textTypes,
+            processingTime: chosen.processingTime,
+            language: chosen.language,
+            structuredData: chosen.structuredData,
+            extractionConfidence: chosen.extractionConfidence,
+            missingRequiredFields: chosen.missingRequiredFields,
+            adjustedFields: chosen.adjustedFields,
+            uncategorizedExtractions: chosen.uncategorizedExtractions,
+            recognizedTexts: panels.flatMap(\.recognizedTexts),
+            isValid: chosen.isValid,
+            validationReason: chosen.validationReason
         )
     }
 
