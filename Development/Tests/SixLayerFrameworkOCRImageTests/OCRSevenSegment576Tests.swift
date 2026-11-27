@@ -1612,6 +1612,14 @@ struct OCRSevenSegment576Tests {
         )
         .path
 
+    /// `Development/TestFixtures/private/…/IMG_7641.HEIC` (gitignored local checkout).
+    /// Full pump frame: sale LCD plus three grade price windows (#708).
+    static let ppgGradeWindows7641Photo = developmentDirectory
+        .appendingPathComponent(
+            "TestFixtures/private/seven-segment/pump_display/ppg_grade_windows_7641/IMG_7641.HEIC"
+        )
+        .path
+
     // MARK: - Private sale-display crop (#612)
 
     /// Scenario 5's localized crop is already the sale display. Hand-cut rows
