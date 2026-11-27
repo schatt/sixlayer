@@ -12,24 +12,6 @@ import Foundation
 @Suite("Hidden Fields Tests")
 struct HiddenFieldsTests {
     
-    /// Helper to write a hints file to documents directory
-    private func writeHintsFile(modelName: String, json: [String: Any]) throws -> (fileURL: URL, uniqueModelName: String) {
-        let fileManager = FileManager.default
-        guard let documentsURL = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first else {
-            throw NSError(domain: "TestError", code: 1, userInfo: ["NSLocalizedDescription": "Could not find documents directory"])
-        }
-        let hintsDir = documentsURL.appendingPathComponent("Hints")
-        try fileManager.createDirectory(at: hintsDir, withIntermediateDirectories: true)
-        let uniqueModelName = "\(modelName)_\(UUID().uuidString.prefix(8))"
-        let testFile = hintsDir.appendingPathComponent("\(uniqueModelName).hints")
-        let data = try JSONSerialization.data(withJSONObject: json, options: .prettyPrinted)
-        try data.write(to: testFile, options: .atomic)
-        guard fileManager.fileExists(atPath: testFile.path) else {
-            throw NSError(domain: "TestError", code: 2, userInfo: ["NSLocalizedDescription": "File was not created"])
-        }
-        return (testFile, uniqueModelName)
-    }
-    
     // MARK: - Hidden Field Tests
     
     @Test func testParseHints_WithHiddenField() throws {
@@ -51,12 +33,12 @@ struct HiddenFieldsTests {
             ]
         ]
         
-        let (testFile, uniqueModelName) = try writeHintsFile(modelName: modelName, json: json)
+        let (testFile, uniqueModelName) = try HintsTestFixtures.writeHintsFile(modelName: modelName, json: json)
         defer {
-            try? FileManager.default.removeItem(at: testFile)
+            HintsTestFixtures.cleanup(testFile)
         }
         
-        let loader = FileBasedDataHintsLoader()
+        let loader = HintsTestFixtures.loader(for: testFile)
         let result = loader.loadHintsResult(for: uniqueModelName)
         
         // Verify hints are loaded
@@ -88,12 +70,12 @@ struct HiddenFieldsTests {
             ]
         ]
         
-        let (testFile, uniqueModelName) = try writeHintsFile(modelName: modelName, json: json)
+        let (testFile, uniqueModelName) = try HintsTestFixtures.writeHintsFile(modelName: modelName, json: json)
         defer {
-            try? FileManager.default.removeItem(at: testFile)
+            HintsTestFixtures.cleanup(testFile)
         }
         
-        let loader = FileBasedDataHintsLoader()
+        let loader = HintsTestFixtures.loader(for: testFile)
         let result = loader.loadHintsResult(for: uniqueModelName)
         
         let hints = result.fieldHints["internalId"]
@@ -120,9 +102,9 @@ struct HiddenFieldsTests {
             ]
         ]
         
-        let (testFile, uniqueModelName) = try writeHintsFile(modelName: modelName, json: json)
+        let (testFile, uniqueModelName) = try HintsTestFixtures.writeHintsFile(modelName: modelName, json: json)
         defer {
-            try? FileManager.default.removeItem(at: testFile)
+            HintsTestFixtures.cleanup(testFile)
         }
         
         // Create a test model
@@ -137,7 +119,7 @@ struct HiddenFieldsTests {
         // When: Analyzing with hints
         // Note: The hints file name needs to match the type name
         // For this test, we'll verify the hints are loaded correctly
-        let hintsLoader = FileBasedDataHintsLoader()
+        let hintsLoader = HintsTestFixtures.loader(for: testFile)
         let hintsResult = hintsLoader.loadHintsResult(for: uniqueModelName)
         
         // Verify hidden field is in hints but marked as hidden
