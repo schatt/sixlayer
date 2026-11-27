@@ -580,5 +580,104 @@ final class OCRServiceAutomaticHintsTests: BaseTestClass {
         #expect(hintsResult.fieldHints["price"] == nil, "Should not have generic 'price' field")
         #expect(hintsResult.fieldHints["number"] == nil, "Should not have generic 'number' field")
     }
+
+    // MARK: - Injected hints loader (#714)
+
+    /// Writes `{root}/Hints/{entity}.hints` and returns the Hints folder plus root for cleanup.
+    private func writeInjectedHints(
+        entity: String,
+        json: [String: Any]
+    ) throws -> (folder: URL, root: URL) {
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent("ocr-hints-714-\(UUID().uuidString)", isDirectory: true)
+        let folder = root.appendingPathComponent("Hints", isDirectory: true)
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        let data = try JSONSerialization.data(withJSONObject: json)
+        try data.write(to: folder.appendingPathComponent("\(entity).hints"), options: .atomic)
+        return (folder, root)
+    }
+
+    /// BUSINESS PURPOSE: OCR reads `ocrHints` from a host-supplied library folder, not only the bundle (#714)
+    /// TESTING SCOPE: `loadHintsPatterns` uses the injected loader passed to `OCRService.init`
+    @Test func injectedHintsLoaderSuppliesOCRPatterns() throws {
+        let entity = "OCRHints714Patterns_\(UUID().uuidString.prefix(8))"
+        let (folder, root) = try writeInjectedHints(entity: entity, json: [
+            "total": ["ocrHints": ["grand total"]]
+        ])
+        defer { try? FileManager.default.removeItem(at: root) }
+
+        let service = OCRService(hintsLoader: FileBasedDataHintsLoader(searchDirectories: [folder]))
+        let context = OCRContext(
+            textTypes: [.price, .number],
+            language: .english,
+            extractionMode: .automatic,
+            entityName: entity
+        )
+
+        #expect(service.loadHintsPatterns(for: context)["total"] != nil,
+                "ocrHints from the injected Hints folder should become a pattern")
+    }
+
+    /// BUSINESS PURPOSE: `expectedRange` from a library hints file steers decimal placement (#714)
+    /// TESTING SCOPE: Correction site reads ranges through the injected loader, end to end via `applyStructuredExtraction`
+    /// METHODOLOGY: "8022" with range 0…100 corrects to 80.22 only when the injected range is visible
+    @Test func injectedHintsExpectedRangeSteersDecimalPlacement() throws {
+        let entity = "OCRHints714Range_\(UUID().uuidString.prefix(8))"
+        let (folder, root) = try writeInjectedHints(entity: entity, json: [
+            "gallons": [
+                "ocrHints": ["gallons"],
+                "expectedRange": ["min": 0.0, "max": 100.0]
+            ]
+        ])
+        defer { try? FileManager.default.removeItem(at: root) }
+
+        let service = OCRService(hintsLoader: FileBasedDataHintsLoader(searchDirectories: [folder]))
+        let context = OCRContext(
+            textTypes: [.number],
+            language: .english,
+            extractionMode: .automatic,
+            entityName: entity
+        )
+        let pipeline = service.applyStructuredExtraction(
+            from: OCRResult(extractedText: "Gallons 8022", confidence: 1.0),
+            context: context
+        )
+
+        #expect(pipeline.structuredData["gallons"] == "80.22")
+    }
+
+    /// BUSINESS PURPOSE: `calculationGroups` from a library hints file derive missing fields (#714)
+    /// TESTING SCOPE: `applyCalculationGroups` reads groups through the injected loader
+    @Test func injectedHintsCalculationGroupsDeriveMissingField() throws {
+        let entity = "OCRHints714Calc_\(UUID().uuidString.prefix(8))"
+        let (folder, root) = try writeInjectedHints(entity: entity, json: [
+            "pricePerGallon": ["ocrHints": ["price per gallon"]],
+            "gallons": ["ocrHints": ["gallons"]],
+            "totalCost": [
+                "ocrHints": ["total"],
+                "calculationGroups": [[
+                    "id": "fuel_714",
+                    "formula": "totalCost = pricePerGallon * gallons",
+                    "dependentFields": ["pricePerGallon", "gallons"],
+                    "priority": 1
+                ]]
+            ]
+        ])
+        defer { try? FileManager.default.removeItem(at: root) }
+
+        let service = OCRService(hintsLoader: FileBasedDataHintsLoader(searchDirectories: [folder]))
+        let context = OCRContext(
+            textTypes: [.price, .number],
+            language: .english,
+            extractionMode: .automatic,
+            entityName: entity
+        )
+        let pipeline = service.applyStructuredExtraction(
+            from: OCRResult(extractedText: "Price per gallon 3.50 Gallons 10.00", confidence: 1.0),
+            context: context
+        )
+
+        #expect(pipeline.structuredData["totalCost"] == "35.0")
+    }
 }
 
