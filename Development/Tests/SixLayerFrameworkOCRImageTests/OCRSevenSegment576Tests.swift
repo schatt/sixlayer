@@ -1782,6 +1782,38 @@ struct OCRSevenSegment576Tests {
         return solidGrayImage(pixels: pixels, width: canvasWidth, height: canvasHeight)
     }
 
+    /// Composes several panels onto one canvas. Same byte-copy approach as
+    /// `embed` (no CGContext draw, which flips the fixture).
+    private func embedPanels(
+        _ placements: [(panel: CGImage, originX: Int, originY: Int)],
+        canvasWidth: Int,
+        canvasHeight: Int,
+        fill: UInt8
+    ) -> CGImage {
+        var pixels = [UInt8](repeating: fill, count: canvasWidth * canvasHeight)
+        for placement in placements {
+            let panel = placement.panel
+            guard let provider = panel.dataProvider,
+                  let data = provider.data,
+                  CFDataGetLength(data) >= panel.width * panel.height,
+                  let bytes = CFDataGetBytePtr(data)
+            else {
+                continue
+            }
+            let rowBytes = panel.bytesPerRow
+            for y in 0..<panel.height {
+                let destY = placement.originY + y
+                guard destY >= 0, destY < canvasHeight else { continue }
+                for x in 0..<panel.width {
+                    let destX = placement.originX + x
+                    guard destX >= 0, destX < canvasWidth else { continue }
+                    pixels[destY * canvasWidth + destX] = bytes[y * rowBytes + x]
+                }
+            }
+        }
+        return solidGrayImage(pixels: pixels, width: canvasWidth, height: canvasHeight)
+    }
+
     private func solidGray(width: Int, height: Int, level: UInt8) -> CGImage {
         solidGrayImage(
             pixels: [UInt8](repeating: level, count: width * height),
