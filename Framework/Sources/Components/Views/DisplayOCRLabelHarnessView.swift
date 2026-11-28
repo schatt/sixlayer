@@ -31,9 +31,7 @@ public struct DisplayOCRLabelHarnessView: View {
     @State private var image: PlatformImage?
     @State private var showPicker = false
     @State private var drawMode: DrawMode = .panel
-    @State private var panelNormalized: CGRect?
-    @State private var rowNormalizedRects: [CGRect] = []
-    @State private var rowTexts: [String] = []
+    @State private var draft = DisplayOCRLabelDraft()
     @State private var dragStart: CGPoint?
     @State private var dragCurrent: CGPoint?
     @State private var isDecoding = false
@@ -103,12 +101,10 @@ public struct DisplayOCRLabelHarnessView: View {
                 Button("Decode .ssocr") {
                     Task { await decodePanel() }
                 }
-                .disabled(image == nil || panelNormalized == nil || isDecoding)
+                .disabled(image == nil || draft.panel == nil || isDecoding)
                 .automaticCompliance(named: "DisplayOCRLabelDecode")
                 Button("Clear ROIs") {
-                    panelNormalized = nil
-                    rowNormalizedRects = []
-                    rowTexts = []
+                    draft.clearROIs()
                     statusMessage = nil
                 }
                 .disabled(image == nil)
@@ -130,21 +126,23 @@ public struct DisplayOCRLabelHarnessView: View {
                             .frame(width: containerSize.width, height: containerSize.height)
                             .automaticCompliance(named: "DisplayOCRLabelImage")
 
-                        if let panelNormalized {
+                        if let panel = draft.panel {
                             roiOverlay(
-                                panelNormalized,
+                                panel,
                                 color: .green,
                                 imageSize: imageSize,
                                 containerSize: containerSize
                             )
                         }
-                        ForEach(Array(rowNormalizedRects.enumerated()), id: \.offset) { _, rect in
-                            roiOverlay(
-                                rect,
-                                color: .orange,
-                                imageSize: imageSize,
-                                containerSize: containerSize
-                            )
+                        ForEach(Array(draft.rows.enumerated()), id: \.offset) { _, row in
+                            if let box = row.box {
+                                roiOverlay(
+                                    box,
+                                    color: .orange,
+                                    imageSize: imageSize,
+                                    containerSize: containerSize
+                                )
+                            }
                         }
                         if let dragStart, let dragCurrent {
                             let live = normalizedRect(
@@ -177,11 +175,11 @@ public struct DisplayOCRLabelHarnessView: View {
 
     private var rowEditors: some View {
         Group {
-            if !rowTexts.isEmpty {
+            if !draft.rows.isEmpty {
                 platformVStackContainer(alignment: .leading, spacing: 8) {
                     Text("Confirmed rows")
                         .font(.headline)
-                    ForEach(Array(rowTexts.enumerated()), id: \.offset) { index, _ in
+                    ForEach(Array(draft.rows.indices), id: \.self) { index in
                         TextField("Row \(index + 1)", text: binding(forRow: index))
                             .automaticCompliance(named: "DisplayOCRLabelRowText\(index)")
                     }
@@ -194,7 +192,7 @@ public struct DisplayOCRLabelHarnessView: View {
         Button("Export Label Package") {
             exportCurrentPackage()
         }
-        .disabled(image == nil || panelNormalized == nil || rowTexts.isEmpty)
+        .disabled(image == nil || draft.panel == nil || draft.rows.isEmpty)
         .automaticCompliance(named: "DisplayOCRLabelExport")
     }
 
@@ -263,49 +261,44 @@ public struct DisplayOCRLabelHarnessView: View {
         guard normalized.width > 0.002, normalized.height > 0.002 else { return }
         switch drawMode {
         case .panel:
-            panelNormalized = normalized
+            draft.setPanel(normalized)
             statusMessage = "Panel ROI set"
         case .row:
-            rowNormalizedRects.append(normalized)
-            if rowTexts.count < rowNormalizedRects.count {
-                rowTexts.append("")
-            }
-            statusMessage = "Row ROI added (\(rowNormalizedRects.count))"
+            draft.addRowBox(normalized)
+            statusMessage = "Row ROI added (\(draft.rows.count))"
         }
     }
 
     @MainActor
     private func decodePanel() async {
-        guard let image, let panelNormalized else { return }
+        guard let image, let panel = draft.panel else { return }
         isDecoding = true
         defer { isDecoding = false }
+        let requestGeneration = draft.generation
         do {
             let result = try await DisplayOCRLabelHarness.decode(
                 image: image,
-                panelNormalizedRect: panelNormalized,
+                panelNormalizedRect: panel,
                 deskewMaximumDegrees: deskewMaximumDegrees,
                 service: ocrService
             )
-            let texts = DisplayOCRLabelHarness.rowTexts(from: result)
-            rowTexts = texts.isEmpty ? [result.extractedText].filter { !$0.isEmpty } : texts
-            while rowNormalizedRects.count > rowTexts.count {
-                rowNormalizedRects.removeLast()
-            }
-            statusMessage = rowTexts.isEmpty ? "Decode returned no rows" : "Decoded \(rowTexts.count) row(s)"
+            statusMessage = draft.applySuggestions(
+                DisplayOCRLabelHarness.rowTexts(from: result),
+                requestGeneration: requestGeneration
+            ) ?? "Discarded OCR result: labels changed while decoding"
         } catch {
             statusMessage = error.localizedDescription
         }
     }
 
     private func exportCurrentPackage() {
-        guard let image, let panelNormalized else { return }
-        let rows: [(boundingBox: CGRect?, confirmedText: String)] = rowTexts.enumerated().map { index, text in
-            let box = index < rowNormalizedRects.count ? rowNormalizedRects[index] : nil
-            return (boundingBox: box, confirmedText: text)
+        guard let image, let panel = draft.panel else { return }
+        let rows: [(boundingBox: CGRect?, confirmedText: String)] = draft.rows.map {
+            (boundingBox: $0.box, confirmedText: $0.text)
         }
         guard let package = DisplayOCRLabelHarness.makePackage(
             image: image,
-            panelNormalizedRect: panelNormalized,
+            panelNormalizedRect: panel,
             rows: rows,
             deskewMaximumDegrees: deskewMaximumDegrees
         ) else {
@@ -320,24 +313,15 @@ public struct DisplayOCRLabelHarnessView: View {
 
     private func resetLabels(keepingImage newImage: PlatformImage) {
         image = newImage
-        panelNormalized = nil
-        rowNormalizedRects = []
-        rowTexts = []
+        // clearROIs bumps the generation, so a decode still running for the previous photo is discarded.
+        draft.clearROIs()
         statusMessage = "Photo loaded"
     }
 
     private func binding(forRow index: Int) -> Binding<String> {
         Binding(
-            get: {
-                guard index < rowTexts.count else { return "" }
-                return rowTexts[index]
-            },
-            set: { newValue in
-                while rowTexts.count <= index {
-                    rowTexts.append("")
-                }
-                rowTexts[index] = newValue
-            }
+            get: { draft.rows.indices.contains(index) ? draft.rows[index].text : "" },
+            set: { draft.setText($0, at: index) }
         )
     }
 }
