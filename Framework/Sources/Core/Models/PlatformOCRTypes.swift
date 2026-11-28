@@ -559,7 +559,8 @@ public struct OCRResult: Sendable {
                 adjustedFields: adjustedFields,
                 uncategorizedExtractions: [],
                 isValid: false,
-                validationReason: "Confidence below threshold (\(threshold))"
+                validationReason: "Confidence below threshold (\(threshold))",
+                fieldSegments: [:]
             )
         }
     }
