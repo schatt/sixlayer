@@ -10,20 +10,6 @@ import Testing
 import Foundation
 @testable import SixLayerFramework
 
-/// FileManager whose Documents directory is a test-owned folder, so tests never touch the real ~/Documents.
-private final class FakeDocumentsFileManager: FileManager, @unchecked Sendable {
-    private let documentsURL: URL
-
-    init(documentsURL: URL) {
-        self.documentsURL = documentsURL
-        super.init()
-    }
-
-    override func urls(for directory: FileManager.SearchPathDirectory, in domainMask: FileManager.SearchPathDomainMask) -> [URL] {
-        directory == .documentDirectory ? [documentsURL] : super.urls(for: directory, in: domainMask)
-    }
-}
-
 @Suite("Hints Documents Default And Cache Isolation (#715)")
 struct HintsDocumentsDefaultAndCacheIsolationTests {
 
