@@ -177,7 +177,7 @@ struct HintsFilePresentationPropertiesTests {
         defer { HintsTestFixtures.cleanup(testFile) }
         
         // When: Creating PresentationHints from hints file
-        let hints = await PresentationHints(modelName: uniqueModelName)
+        let hints = await PresentationHints(modelName: uniqueModelName, registry: DataHintsRegistry(loader: HintsTestFixtures.loader(for: testFile)))
         
         // Then: dataType should be used
         #expect(hints.dataType == .collection)
@@ -196,7 +196,7 @@ struct HintsFilePresentationPropertiesTests {
         defer { HintsTestFixtures.cleanup(testFile) }
         
         // When: Creating PresentationHints from hints file
-        let hints = await PresentationHints(modelName: uniqueModelName)
+        let hints = await PresentationHints(modelName: uniqueModelName, registry: DataHintsRegistry(loader: HintsTestFixtures.loader(for: testFile)))
         
         // Then: complexity should be used
         #expect(hints.complexity == .complex)
@@ -215,7 +215,7 @@ struct HintsFilePresentationPropertiesTests {
         defer { HintsTestFixtures.cleanup(testFile) }
         
         // When: Creating PresentationHints from hints file
-        let hints = await PresentationHints(modelName: uniqueModelName)
+        let hints = await PresentationHints(modelName: uniqueModelName, registry: DataHintsRegistry(loader: HintsTestFixtures.loader(for: testFile)))
         
         // Then: context should be used
         #expect(hints.context == .edit)
@@ -237,7 +237,7 @@ struct HintsFilePresentationPropertiesTests {
         defer { HintsTestFixtures.cleanup(testFile) }
         
         // When: Creating PresentationHints from hints file
-        let hints = await PresentationHints(modelName: uniqueModelName)
+        let hints = await PresentationHints(modelName: uniqueModelName, registry: DataHintsRegistry(loader: HintsTestFixtures.loader(for: testFile)))
         
         // Then: customPreferences should be used
         #expect(hints.customPreferences["businessType"] == "vehicle")
@@ -257,7 +257,7 @@ struct HintsFilePresentationPropertiesTests {
         defer { HintsTestFixtures.cleanup(testFile) }
         
         // When: Creating PresentationHints from hints file
-        let hints = await PresentationHints(modelName: uniqueModelName)
+        let hints = await PresentationHints(modelName: uniqueModelName, registry: DataHintsRegistry(loader: HintsTestFixtures.loader(for: testFile)))
         
         // Then: presentationPreference should be used
         #expect(hints.presentationPreference == .list)
@@ -282,7 +282,8 @@ struct HintsFilePresentationPropertiesTests {
             dataType: .text,
             complexity: .complex,
             context: .edit,
-            modelName: uniqueModelName
+            modelName: uniqueModelName,
+            registry: DataHintsRegistry(loader: HintsTestFixtures.loader(for: testFile))
         )
         
         // Then: Code parameters should override hints file values
