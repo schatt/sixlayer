@@ -51,20 +51,10 @@ struct HintsSectionLayoutTests {
             ]
         ]
 
-        let fileManager = FileManager.default
-        guard let documentsURL = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first else {
-            throw NSError(domain: "TestError", code: 1, userInfo: [NSLocalizedDescriptionKey: "No documents directory"])
-        }
-        let hintsDir = documentsURL.appendingPathComponent("Hints")
-        try fileManager.createDirectory(at: hintsDir, withIntermediateDirectories: true)
-        let uniqueModelName = "\(modelName)_\(UUID().uuidString.prefix(8))"
-        let testFile = hintsDir.appendingPathComponent("\(uniqueModelName).hints")
-        defer { try? fileManager.removeItem(at: testFile) }
+        let (testFile, uniqueModelName) = try HintsTestFixtures.writeHintsFile(modelName: modelName, json: hintsJSON)
+        defer { HintsTestFixtures.cleanup(testFile) }
 
-        let data = try JSONSerialization.data(withJSONObject: hintsJSON, options: .prettyPrinted)
-        try data.write(to: testFile, options: .atomic)
-
-        let result = FileBasedDataHintsLoader().loadHintsResult(for: uniqueModelName)
+        let result = HintsTestFixtures.loader(for: testFile).loadHintsResult(for: uniqueModelName)
 
         #expect(result.sectionLayouts.count == 1)
         let layout = result.sectionLayouts[0]
