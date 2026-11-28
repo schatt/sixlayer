@@ -16,6 +16,11 @@ enum OCRSegmentLabelBinding {
         return segments + kept
     }
 
+    /// Stub for #720 red phase: returns no bindings until the segment box is carried through.
+    static func assignSegments(fragments: [OCRRecognizedText], patterns: [String: String]) -> [String: OCRFieldSegment] {
+        [:]
+    }
+
     static func assign(fragments: [OCRRecognizedText], patterns: [String: String]) -> [String: String] {
         let segments = fragments.filter { $0.role == .segment }
         let labels = fragments.filter { $0.role == .label }
