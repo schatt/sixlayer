@@ -160,6 +160,20 @@ struct ExternalModuleIntegrationTests {
 
         // Test that callback signatures are accessible
     }
+
+    /// Tests that OCRResult.fieldSegments and OCRFieldSegment are usable from external modules (#720)
+    @Test("OCR field segment binding accessible from external modules")
+    func testOCRFieldSegmentAccessible() {
+        let box = CGRect(x: 0.2, y: 0.4, width: 0.2, height: 0.1)
+        let result = OCRResult(
+            extractedText: "7.740",
+            confidence: 1,
+            fieldSegments: ["volume": OCRFieldSegment(text: "7.740", boundingBox: box)]
+        )
+
+        #expect(result.fieldSegments["volume"]?.text == "7.740")
+        #expect(result.fieldSegments["volume"]?.boundingBox == box)
+    }
     
     /// Tests that ListCollectionView properly handles callbacks
     @Test("ListCollectionView callbacks accessible from external modules") @MainActor
