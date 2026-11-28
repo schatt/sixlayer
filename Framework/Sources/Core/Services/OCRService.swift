@@ -347,7 +347,8 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
         structuredData: [String: String],
         adjustedFields: [String: String],
         extractionConfidence: Float,
-        missingRequiredFields: [String]
+        missingRequiredFields: [String],
+        fieldSegments: [String: OCRFieldSegment]
     ) {
         var structuredData = extractStructuredData(
             from: baseResult,
@@ -377,7 +378,7 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
             extractionConfidence = min(extractionConfidence, 0.5)
         }
         let missingFields = findMissingRequiredFields(structuredData, context: context)
-        return (structuredData, adjustedFields, extractionConfidence, missingFields)
+        return (structuredData, adjustedFields, extractionConfidence, missingFields, [:])
     }
     
     private func recognitionLines(texts: [String], boundingBoxes: [CGRect]) -> [OCRRecognitionLine]? {
