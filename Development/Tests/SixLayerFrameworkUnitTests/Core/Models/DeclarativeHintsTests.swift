@@ -103,25 +103,6 @@ struct DeclarativeHintsTests {
     
     // MARK: - Hints Parsing Integration Tests
     
-    /// Helper to write a hints file to documents directory where loader can find it
-    private func writeHintsFile(modelName: String, json: [String: Any]) throws -> (fileURL: URL, uniqueModelName: String) {
-        let fileManager = FileManager.default
-        guard let documentsURL = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first else {
-            throw NSError(domain: "TestError", code: 1, userInfo: ["NSLocalizedDescription": "Could not find documents directory"])
-        }
-        let hintsDir = documentsURL.appendingPathComponent("Hints")
-        try fileManager.createDirectory(at: hintsDir, withIntermediateDirectories: true)
-        // Use unique filename to prevent conflicts during parallel test execution
-        let uniqueModelName = "\(modelName)_\(UUID().uuidString.prefix(8))"
-        let testFile = hintsDir.appendingPathComponent("\(uniqueModelName).hints")
-        let data = try JSONSerialization.data(withJSONObject: json, options: .prettyPrinted)
-        try data.write(to: testFile, options: .atomic)
-        guard fileManager.fileExists(atPath: testFile.path) else {
-            throw NSError(domain: "TestError", code: 2, userInfo: ["NSLocalizedDescription": "File was not created"])
-        }
-        return (testFile, uniqueModelName)
-    }
-    
     @Test func testParseHints_WithFieldType() throws {
         // Test parsing hints file with fieldType
         let modelName = "User_testParseHints_WithFieldType"
@@ -137,12 +118,10 @@ struct DeclarativeHintsTests {
             ]
         ]
         
-        let (testFile, uniqueModelName) = try writeHintsFile(modelName: modelName, json: json)
-        defer {
-            try? FileManager.default.removeItem(at: testFile)
-        }
+        let (testFile, uniqueModelName) = try HintsTestFixtures.writeHintsFile(modelName: modelName, json: json)
+        defer { HintsTestFixtures.cleanup(testFile) }
         
-        let loader = createTestLoader()
+        let loader = HintsTestFixtures.loader(for: testFile)
         let result = loader.loadHintsResult(for: uniqueModelName)
         
         let usernameHints = result.fieldHints["username"]
@@ -173,12 +152,10 @@ struct DeclarativeHintsTests {
             ]
         ]
         
-        let (testFile, uniqueModelName) = try writeHintsFile(modelName: modelName, json: json)
-        defer {
-            try? FileManager.default.removeItem(at: testFile)
-        }
+        let (testFile, uniqueModelName) = try HintsTestFixtures.writeHintsFile(modelName: modelName, json: json)
+        defer { HintsTestFixtures.cleanup(testFile) }
         
-        let loader = createTestLoader()
+        let loader = HintsTestFixtures.loader(for: testFile)
         let result = loader.loadHintsResult(for: uniqueModelName)
         
         let tagsHints = result.fieldHints["tags"]
@@ -215,12 +192,10 @@ struct DeclarativeHintsTests {
             ]
         ]
         
-        let (testFile, uniqueModelName) = try writeHintsFile(modelName: modelName, json: json)
-        defer {
-            try? FileManager.default.removeItem(at: testFile)
-        }
+        let (testFile, uniqueModelName) = try HintsTestFixtures.writeHintsFile(modelName: modelName, json: json)
+        defer { HintsTestFixtures.cleanup(testFile) }
         
-        let loader = createTestLoader()
+        let loader = HintsTestFixtures.loader(for: testFile)
         let result = loader.loadHintsResult(for: uniqueModelName)
         
         let themeHints = result.fieldHints["theme"]
@@ -265,12 +240,10 @@ struct DeclarativeHintsTests {
             ]
         ]
         
-        let (testFile, uniqueModelName) = try writeHintsFile(modelName: modelName, json: json)
-        defer {
-            try? FileManager.default.removeItem(at: testFile)
-        }
+        let (testFile, uniqueModelName) = try HintsTestFixtures.writeHintsFile(modelName: modelName, json: json)
+        defer { HintsTestFixtures.cleanup(testFile) }
         
-        let loader = createTestLoader()
+        let loader = HintsTestFixtures.loader(for: testFile)
         let result = loader.loadHintsResult(for: uniqueModelName)
         
         let usernameHints = result.fieldHints["username"]
@@ -305,12 +278,10 @@ struct DeclarativeHintsTests {
             ]
         ]
         
-        let (testFile, uniqueModelName) = try writeHintsFile(modelName: modelName, json: json)
-        defer {
-            try? FileManager.default.removeItem(at: testFile)
-        }
+        let (testFile, uniqueModelName) = try HintsTestFixtures.writeHintsFile(modelName: modelName, json: json)
+        defer { HintsTestFixtures.cleanup(testFile) }
         
-        let loader = createTestLoader()
+        let loader = HintsTestFixtures.loader(for: testFile)
         let result = loader.loadHintsResult(for: uniqueModelName)
         
         let nameHints = result.fieldHints["name"]
@@ -346,12 +317,10 @@ struct DeclarativeHintsTests {
             ]
         ]
         
-        let (testFile, uniqueModelName) = try writeHintsFile(modelName: modelName, json: json)
-        defer {
-            try? FileManager.default.removeItem(at: testFile)
-        }
+        let (testFile, uniqueModelName) = try HintsTestFixtures.writeHintsFile(modelName: modelName, json: json)
+        defer { HintsTestFixtures.cleanup(testFile) }
         
-        let loader = createTestLoader()
+        let loader = HintsTestFixtures.loader(for: testFile)
         let result = loader.loadHintsResult(for: uniqueModelName)
         
         let isActiveHints = result.fieldHints["isActive"]
@@ -382,12 +351,10 @@ struct DeclarativeHintsTests {
             ]
         ]
         
-        let (testFile, uniqueModelName) = try writeHintsFile(modelName: modelName, json: json)
-        defer {
-            try? FileManager.default.removeItem(at: testFile)
-        }
+        let (testFile, uniqueModelName) = try HintsTestFixtures.writeHintsFile(modelName: modelName, json: json)
+        defer { HintsTestFixtures.cleanup(testFile) }
         
-        let loader = createTestLoader()
+        let loader = HintsTestFixtures.loader(for: testFile)
         let result = loader.loadHintsResult(for: uniqueModelName)
         
         let fullHints = result.fieldHints["fullyDeclarative"]
@@ -527,12 +494,10 @@ struct DeclarativeHintsTests {
             ]
         ]
         
-        let (testFile, uniqueModelName) = try writeHintsFile(modelName: modelName, json: json)
-        defer {
-            try? FileManager.default.removeItem(at: testFile)
-        }
+        let (testFile, uniqueModelName) = try HintsTestFixtures.writeHintsFile(modelName: modelName, json: json)
+        defer { HintsTestFixtures.cleanup(testFile) }
         
-        let loader = createTestLoader()
+        let loader = HintsTestFixtures.loader(for: testFile)
         let result = loader.loadHintsResult(for: uniqueModelName)
         
         let editableHints = result.fieldHints["editableField"]
