@@ -7,9 +7,34 @@
 
 import CoreGraphics
 import Foundation
+#if os(iOS) || os(tvOS) || os(watchOS) || os(visionOS)
+import UIKit
+#endif
 
 /// Crops a panel ROI and runs ``OCRProcessingMode/ssocr`` for the label harness.
 public enum DisplayOCRLabelHarness {
+
+    /// Upright, scale-1 copy whose `size` is the pixel grid the crop math uses.
+    /// UIKit: `UIImage.size` is points and orientation-aware, while `CGImage.cropping(to:)`
+    /// takes raw pixels in unrotated bitmap space. Redrawing resolves both mismatches.
+    /// AppKit: `NSImage` drawing is point-based, so the image passes through unchanged.
+    public static func uprightPixelImage(_ image: PlatformImage) -> PlatformImage {
+        #if os(iOS) || os(tvOS) || os(watchOS) || os(visionOS)
+        let uiImage = image.uiImage
+        let target = CGSize(
+            width: uiImage.size.width * uiImage.scale,
+            height: uiImage.size.height * uiImage.scale
+        )
+        guard target.width > 0, target.height > 0 else { return image }
+        UIGraphicsBeginImageContextWithOptions(target, false, 1)
+        defer { UIGraphicsEndImageContext() }
+        uiImage.draw(in: CGRect(origin: .zero, size: target))
+        guard let redrawn = UIGraphicsGetImageFromCurrentImageContext() else { return image }
+        return PlatformImage(uiImage: redrawn)
+        #else
+        return image
+        #endif
+    }
 
     public static func makeContext(deskewMaximumDegrees: Double = 3) -> OCRContext {
         OCRContext(
@@ -42,11 +67,12 @@ public enum DisplayOCRLabelHarness {
         deskewMaximumDegrees: Double = 3,
         service: OCRServiceProtocol
     ) async throws -> OCRResult {
+        let upright = uprightPixelImage(image)
         let cropRect = pixelCropRect(
             panelNormalizedRect: panelNormalizedRect,
-            imageSize: image.size
+            imageSize: upright.size
         )
-        let cropped = image.cropped(to: cropRect)
+        let cropped = upright.cropped(to: cropRect)
         let context = makeContext(deskewMaximumDegrees: deskewMaximumDegrees)
         let strategy = makeStrategy()
         return try await service.processImage(cropped, context: context, strategy: strategy)
