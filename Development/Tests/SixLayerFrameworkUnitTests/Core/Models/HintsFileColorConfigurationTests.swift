@@ -17,28 +17,6 @@ import SwiftUI
 @Suite("Hints File Color Configuration")
 struct HintsFileColorConfigurationTests {
     
-    /// Helper to write a hints file to documents directory where loader can find it
-    /// Uses unique filenames to ensure test isolation during parallel execution
-    /// Returns both the file URL and the unique model name to use with loadHintsResult
-    private func writeHintsFile(modelName: String, json: [String: Any]) throws -> (fileURL: URL, uniqueModelName: String) {
-        let fileManager = FileManager.default
-        guard let documentsURL = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first else {
-            throw NSError(domain: "TestError", code: 1, userInfo: ["NSLocalizedDescription": "Could not find documents directory"])
-        }
-        let hintsDir = documentsURL.appendingPathComponent("Hints")
-        try fileManager.createDirectory(at: hintsDir, withIntermediateDirectories: true)
-        // Use unique filename to prevent conflicts during parallel test execution
-        let uniqueModelName = "\(modelName)_\(UUID().uuidString.prefix(8))"
-        let testFile = hintsDir.appendingPathComponent("\(uniqueModelName).hints")
-        let data = try JSONSerialization.data(withJSONObject: json, options: .prettyPrinted)
-        try data.write(to: testFile, options: .atomic)
-        // Verify file exists
-        guard fileManager.fileExists(atPath: testFile.path) else {
-            throw NSError(domain: "TestError", code: 2, userInfo: ["NSLocalizedDescription": "File was not created"])
-        }
-        return (testFile, uniqueModelName)
-    }
-    
     // MARK: - DataHintsResult Parsing Tests
     
     #if canImport(SwiftUI)
@@ -54,13 +32,11 @@ struct HintsFileColorConfigurationTests {
             ]
         ]
         
-        let (testFile, uniqueModelName) = try writeHintsFile(modelName: "TestModel", json: json)
-        defer {
-            try? FileManager.default.removeItem(at: testFile)
-        }
+        let (testFile, uniqueModelName) = try HintsTestFixtures.writeHintsFile(modelName: "TestModel", json: json)
+        defer { HintsTestFixtures.cleanup(testFile) }
         
         // When: Load hints file
-        let loader = FileBasedDataHintsLoader()
+        let loader = HintsTestFixtures.loader(for: testFile)
         let result = loader.loadHintsResult(for: uniqueModelName)
         
         // Then: Should parse _defaultColor
@@ -84,13 +60,11 @@ struct HintsFileColorConfigurationTests {
             ]
         ]
         
-        let (testFile, uniqueModelName) = try writeHintsFile(modelName: "TestModel", json: json)
-        defer {
-            try? FileManager.default.removeItem(at: testFile)
-        }
+        let (testFile, uniqueModelName) = try HintsTestFixtures.writeHintsFile(modelName: "TestModel", json: json)
+        defer { HintsTestFixtures.cleanup(testFile) }
         
         // When: Load hints file
-        let loader = FileBasedDataHintsLoader()
+        let loader = HintsTestFixtures.loader(for: testFile)
         let result = loader.loadHintsResult(for: uniqueModelName)
         
         // Then: Should parse _colorMapping
@@ -116,13 +90,11 @@ struct HintsFileColorConfigurationTests {
             ]
         ]
         
-        let (testFile, uniqueModelName) = try writeHintsFile(modelName: "TestModel", json: json)
-        defer {
-            try? FileManager.default.removeItem(at: testFile)
-        }
+        let (testFile, uniqueModelName) = try HintsTestFixtures.writeHintsFile(modelName: "TestModel", json: json)
+        defer { HintsTestFixtures.cleanup(testFile) }
         
         // When: Load hints file
-        let loader = FileBasedDataHintsLoader()
+        let loader = HintsTestFixtures.loader(for: testFile)
         let result = loader.loadHintsResult(for: uniqueModelName)
         
         // Then: Should parse both
@@ -144,13 +116,11 @@ struct HintsFileColorConfigurationTests {
             ]
         ]
         
-        let (testFile, uniqueModelName) = try writeHintsFile(modelName: "TestModel", json: json)
-        defer {
-            try? FileManager.default.removeItem(at: testFile)
-        }
+        let (testFile, uniqueModelName) = try HintsTestFixtures.writeHintsFile(modelName: "TestModel", json: json)
+        defer { HintsTestFixtures.cleanup(testFile) }
         
         // When: Load hints file
-        let loader = FileBasedDataHintsLoader()
+        let loader = HintsTestFixtures.loader(for: testFile)
         let result = loader.loadHintsResult(for: uniqueModelName)
         
         // Then: Should parse hex color
@@ -172,13 +142,11 @@ struct HintsFileColorConfigurationTests {
             ]
         ]
         
-        let (testFile, uniqueModelName) = try writeHintsFile(modelName: "TestModel", json: json)
-        defer {
-            try? FileManager.default.removeItem(at: testFile)
-        }
+        let (testFile, uniqueModelName) = try HintsTestFixtures.writeHintsFile(modelName: "TestModel", json: json)
+        defer { HintsTestFixtures.cleanup(testFile) }
         
         // When: Load hints file
-        let loader = FileBasedDataHintsLoader()
+        let loader = HintsTestFixtures.loader(for: testFile)
         let result = loader.loadHintsResult(for: uniqueModelName)
         
         // Then: Color config should not appear as field hints
@@ -204,10 +172,8 @@ struct HintsFileColorConfigurationTests {
             ]
         ]
         
-        let (testFile, uniqueModelName) = try writeHintsFile(modelName: "TestModel", json: json)
-        defer {
-            try? FileManager.default.removeItem(at: testFile)
-        }
+        let (testFile, uniqueModelName) = try HintsTestFixtures.writeHintsFile(modelName: "TestModel", json: json)
+        defer { HintsTestFixtures.cleanup(testFile) }
         
         // When: Create PresentationHints from model name
         let hints = await PresentationHints(modelName: uniqueModelName)
@@ -228,10 +194,8 @@ struct HintsFileColorConfigurationTests {
             ]
         ]
         
-        let (testFile, uniqueModelName) = try writeHintsFile(modelName: "TestModel", json: json)
-        defer {
-            try? FileManager.default.removeItem(at: testFile)
-        }
+        let (testFile, uniqueModelName) = try HintsTestFixtures.writeHintsFile(modelName: "TestModel", json: json)
+        defer { HintsTestFixtures.cleanup(testFile) }
         
         // When: Create PresentationHints with parameter override
         let hints = await PresentationHints(
@@ -255,10 +219,8 @@ struct HintsFileColorConfigurationTests {
             ]
         ]
         
-        let (testFile, uniqueModelName) = try writeHintsFile(modelName: "TestModel", json: json)
-        defer {
-            try? FileManager.default.removeItem(at: testFile)
-        }
+        let (testFile, uniqueModelName) = try HintsTestFixtures.writeHintsFile(modelName: "TestModel", json: json)
+        defer { HintsTestFixtures.cleanup(testFile) }
         
         // When: Create PresentationHints from model name
         let hints = await PresentationHints(modelName: uniqueModelName)
@@ -277,10 +239,8 @@ struct HintsFileColorConfigurationTests {
             ]
         ]
         
-        let (testFile, uniqueModelName) = try writeHintsFile(modelName: "TestModel", json: json)
-        defer {
-            try? FileManager.default.removeItem(at: testFile)
-        }
+        let (testFile, uniqueModelName) = try HintsTestFixtures.writeHintsFile(modelName: "TestModel", json: json)
+        defer { HintsTestFixtures.cleanup(testFile) }
         
         // When: Create PresentationHints from model name
         let hints = await PresentationHints(modelName: uniqueModelName)
@@ -302,10 +262,8 @@ struct HintsFileColorConfigurationTests {
             ]
         ]
         
-        let (testFile, uniqueModelName) = try writeHintsFile(modelName: "TestModel", json: json)
-        defer {
-            try? FileManager.default.removeItem(at: testFile)
-        }
+        let (testFile, uniqueModelName) = try HintsTestFixtures.writeHintsFile(modelName: "TestModel", json: json)
+        defer { HintsTestFixtures.cleanup(testFile) }
         
         // When: Create PresentationHints from model name
         let hints = await PresentationHints(modelName: uniqueModelName)
