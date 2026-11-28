@@ -106,3 +106,50 @@ public enum DisplayOCRLabelHarness {
         )
     }
 }
+
+/// Editable label state for the harness. Drawn boxes and typed text live in one row,
+/// so export pairs them by construction. OCR output is applied as suggestions only.
+/// Any change to photo, panel, or rows bumps `generation`, which invalidates in-flight OCR.
+public struct DisplayOCRLabelDraft: Equatable, Sendable {
+    public struct Row: Equatable, Sendable {
+        public var box: CGRect?
+        public var text: String
+
+        public init(box: CGRect?, text: String = "") {
+            self.box = box
+            self.text = text
+        }
+    }
+
+    public private(set) var generation: Int = 0
+    public private(set) var panel: CGRect?
+    public private(set) var rows: [Row] = []
+
+    public init() {}
+
+    public mutating func setPanel(_ rect: CGRect) {
+        panel = rect
+        generation &+= 1
+    }
+
+    public mutating func addRowBox(_ rect: CGRect) {
+        rows.append(Row(box: rect))
+        generation &+= 1
+    }
+
+    public mutating func setText(_ text: String, at index: Int) {
+        guard rows.indices.contains(index) else { return }
+        rows[index].text = text
+    }
+
+    public mutating func clearROIs() {
+        panel = nil
+        rows = []
+        generation &+= 1
+    }
+
+    /// STUB (TDD red): not implemented yet. Returns nil and leaves rows unchanged.
+    public mutating func applySuggestions(_ texts: [String], requestGeneration: Int) -> String? {
+        nil
+    }
+}
