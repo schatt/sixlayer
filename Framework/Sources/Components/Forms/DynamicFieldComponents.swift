@@ -1788,6 +1788,12 @@ public struct DynamicRangeField: View {
         self.formState = formState
     }
 
+    /// STUB for the #710 red run: wrong-valued so the new tests fail at runtime.
+    static func sliderValue(stored: String?, defaultValue: String?) -> Double { -1 }
+
+    /// STUB for the #710 red run.
+    static func accessibilityValue(for value: Double) -> String { "" }
+
     public var body: some View {
         platformVStackContainer(alignment: .leading) {
             let sliderValue = Binding(
