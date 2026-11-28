@@ -1059,7 +1059,7 @@ public struct RuntimeCapabilityDetection {
             UIImagePickerController.isSourceTypeAvailable(.photoLibrary)
         } ?? false
         #elseif os(macOS)
-        // `platformPhotoPicker_L4` uses `NSOpenPanel` for images on macOS; treat as available when AppKit exists.
+        // `platformPhotoPicker_L4` uses the Photos picker (`PHPickerViewController`) on macOS; treat as available when AppKit exists.
         return true
         #else
         return false

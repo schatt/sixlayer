@@ -1,5 +1,5 @@
 // swift-tools-version: 6.0
-// SixLayerFramework v8.7.0 - Minor: seven-segment OCR (#576); optional hints and public DataBinder (#581, #585); Vision resume once (#563, #574)
+// SixLayerFramework v8.8.2 - Patch: DynamicStepperField range fixes (#562), form-draft docs (#683), Display OCR lab extraction (#706)
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription

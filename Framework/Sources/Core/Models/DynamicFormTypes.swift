@@ -1037,6 +1037,9 @@ public struct DynamicFormConfiguration: Identifiable {
     public let topContentPadding: CGFloat
     public let sections: [DynamicFormSection]
     public let submitButtonText: String
+    /// When `false`, `DynamicFormView` omits the framework Submit control so the host can own Save
+    /// (toolbar / safeAreaInset) without a second Save — OCR / Scan Document chrome still draws (#640).
+    public let showsSubmitButton: Bool
     public let cancelButtonText: String?
     public let metadata: [String: String]?
     /// Optional model name for auto-loading hints from .hints files
@@ -1061,6 +1064,7 @@ public struct DynamicFormConfiguration: Identifiable {
         topContentPadding: CGFloat = 20,
         sections: [DynamicFormSection] = [],
         submitButtonText: String = "Submit",
+        showsSubmitButton: Bool = true,
         cancelButtonText: String? = "Cancel",
         metadata: [String: String]? = nil,
         modelName: String? = nil,
@@ -1078,6 +1082,7 @@ public struct DynamicFormConfiguration: Identifiable {
         self.topContentPadding = topContentPadding
         self.sections = sections
         self.submitButtonText = submitButtonText
+        self.showsSubmitButton = showsSubmitButton
         self.cancelButtonText = cancelButtonText
         self.metadata = metadata
         self.modelName = modelName
@@ -1183,6 +1188,7 @@ public struct DynamicFormConfiguration: Identifiable {
             topContentPadding: topContentPadding,
             sections: sectionsWithHints,
             submitButtonText: submitButtonText,
+            showsSubmitButton: showsSubmitButton,
             cancelButtonText: cancelButtonText,
             metadata: metadata,
             modelName: modelName,
@@ -1393,30 +1399,30 @@ public class DynamicFormState: ObservableObject {
         }
     }
 
-    /// Calculate a field value from other field values using a formula
+    /// Calculate a field value from other field values using a formula.
+    /// A locale decimal such as `4,5` is read with `Locale.current` and spliced as a POSIX literal (#628).
     /// - Parameters:
     ///   - formula: The calculation formula (e.g., "total_price / gallons")
     ///   - dependencies: Array of field IDs that the formula depends on
     /// - Returns: The calculated value as Double, or nil if calculation fails
     public func calculateFieldValue(formula: String, dependencies: [String]) -> Double? {
-        // Parse the formula and evaluate it using current field values
-        // This is a basic implementation that supports simple arithmetic
+        calculateFieldValue(formula: formula, dependencies: dependencies, locale: .current)
+    }
 
-        var processedFormula = formula
-
-        // Replace field references with their current values
-        for dependency in dependencies {
-            if let value = fieldValues[dependency] {
-                // Convert to string for replacement
-                let stringValue = String(describing: value)
-                processedFormula = processedFormula.replacingOccurrences(of: dependency, with: stringValue)
-            } else {
-                // If any dependency is missing, can't calculate
-                return nil
-            }
+    /// `locale` selects the decimal separator the form stored (#628).
+    /// POSIX text is still accepted. A value that is not a number fails closed.
+    func calculateFieldValue(
+        formula: String,
+        dependencies: [String],
+        locale: Locale
+    ) -> Double? {
+        guard let processedFormula = formulaSubstitutingNumericLiterals(
+            formula,
+            dependencies: dependencies,
+            locale: locale
+        ) else {
+            return nil
         }
-
-        // Evaluate the mathematical expression
         return evaluateMathExpression(processedFormula)
     }
 
@@ -1430,6 +1436,20 @@ public class DynamicFormState: ObservableObject {
     public func calculateMissingFieldFromOCR(
         availableFields: [String],
         possibleFormulas: [String: String]
+    ) -> CalculatedFieldResult? {
+        calculateMissingFieldFromOCR(
+            availableFields: availableFields,
+            possibleFormulas: possibleFormulas,
+            locale: .current
+        )
+    }
+
+    /// `locale` selects the decimal separator the form stored (#628).
+    /// POSIX text is still accepted. Callers omit `locale`; this path then uses `Locale.current`.
+    func calculateMissingFieldFromOCR(
+        availableFields: [String],
+        possibleFormulas: [String: String],
+        locale: Locale
     ) -> CalculatedFieldResult? {
         // Find which fields are missing from the available set
         let allFields = Set(possibleFormulas.keys)
@@ -1453,7 +1473,11 @@ public class DynamicFormState: ObservableObject {
             // Extract dependencies from the formula (simplified - assumes field names are used directly)
             let dependencies = extractFieldDependencies(from: formula)
 
-            if let calculatedValue = calculateFieldValue(formula: formula, dependencies: dependencies) {
+            if let calculatedValue = calculateFieldValue(
+                formula: formula,
+                dependencies: dependencies,
+                locale: locale
+            ) {
                 return CalculatedFieldResult(
                     fieldId: missingField,
                     calculatedValue: calculatedValue
@@ -1466,7 +1490,8 @@ public class DynamicFormState: ObservableObject {
 
     /// Decimal literal safe to splice into an `NSExpression` formula.
     /// Empty strings, `".."`, booleans, and other non-numeric values return nil.
-    private func formulaNumericLiteral(for value: Any) -> String? {
+    /// A locale decimal such as `4,5` is emitted as a POSIX literal. `4.5` is unchanged (#624).
+    private func formulaNumericLiteral(for value: Any, locale: Locale) -> String? {
         if value is Bool { return nil }
         let number: Double?
         switch value {
@@ -1483,7 +1508,7 @@ public class DynamicFormState: ObservableObject {
         case let numberValue as NSNumber:
             number = numberValue.doubleValue
         case let string as String:
-            number = Double(string.trimmingCharacters(in: .whitespacesAndNewlines))
+            number = DynamicFormStoredDecimal.double(fromStoredText: string, locale: locale)
         default:
             number = nil
         }
@@ -1597,6 +1622,20 @@ public class DynamicFormState: ObservableObject {
         fieldId: String,
         calculationGroups: [CalculationGroup]
     ) -> GroupCalculationResult? {
+        calculateFieldFromGroups(
+            fieldId: fieldId,
+            calculationGroups: calculationGroups,
+            locale: .current
+        )
+    }
+
+    /// `locale` selects the decimal separator the form stored (#624).
+    /// POSIX text is still accepted. Callers omit `locale`; calculation then uses `Locale.current`.
+    func calculateFieldFromGroups(
+        fieldId: String,
+        calculationGroups: [CalculationGroup],
+        locale: Locale
+    ) -> GroupCalculationResult? {
         // Sort groups by priority (lower number = higher priority)
         let sortedGroups = calculationGroups.sorted { $0.priority < $1.priority }
 
@@ -1605,7 +1644,7 @@ public class DynamicFormState: ObservableObject {
         // Try to calculate using each group in priority order
         for group in sortedGroups {
             if canCalculateWithGroup(group) {
-                if let value = calculateWithGroup(group, targetFieldId: fieldId) {
+                if let value = calculateWithGroup(group, targetFieldId: fieldId, locale: locale) {
                     calculatedResults.append((value: value, groupId: group.id))
                 }
             }
@@ -1653,26 +1692,41 @@ public class DynamicFormState: ObservableObject {
     }
 
     /// Calculate a field value using a specific calculation group
-    private func calculateWithGroup(_ group: CalculationGroup, targetFieldId: String) -> Double? {
+    private func calculateWithGroup(
+        _ group: CalculationGroup,
+        targetFieldId: String,
+        locale: Locale
+    ) -> Double? {
         // Parse the formula: "target = expression"
         let parts = group.formula.split(separator: "=", maxSplits: 1).map { $0.trimmingCharacters(in: .whitespaces) }
 
         guard parts.count == 2 else { return nil }
-        let expression = parts[1]
+        guard let processedExpression = formulaSubstitutingNumericLiterals(
+            parts[1],
+            dependencies: group.dependentFields,
+            locale: locale
+        ) else {
+            return nil
+        }
+        return evaluateMathExpression(processedExpression)
+    }
 
-        // Substitute numeric scalars only. String(describing:) of "" or ".." builds a formula
-        // NSExpression cannot parse, and that throw is an uncaught ObjC exception (SIGABRT).
-        var processedExpression = expression
-        for fieldId in group.dependentFields {
+    /// Substitute each dependency with a POSIX numeric literal.
+    /// A missing or non-numeric value returns nil so `NSExpression` never sees `""`, `".."`, or `"4,5"`.
+    private func formulaSubstitutingNumericLiterals(
+        _ expression: String,
+        dependencies: [String],
+        locale: Locale
+    ) -> String? {
+        var processed = expression
+        for fieldId in dependencies {
             guard let value = fieldValues[fieldId],
-                  let literal = formulaNumericLiteral(for: value) else {
+                  let literal = formulaNumericLiteral(for: value, locale: locale) else {
                 return nil
             }
-            processedExpression = processedExpression.replacingOccurrences(of: fieldId, with: literal)
+            processed = processed.replacingOccurrences(of: fieldId, with: literal)
         }
-
-        // Evaluate the mathematical expression
-        return evaluateMathExpression(processedExpression)
+        return processed
     }
 
     /// Check if field has errors
@@ -2115,6 +2169,7 @@ public struct DynamicFormBuilder {
         hostProvidesPrimaryHeading: Bool = false,
         topContentPadding: CGFloat = 20,
         submitButtonText: String = "Submit",
+        showsSubmitButton: Bool = true,
         cancelButtonText: String? = "Cancel",
         selectAllOnBeginEditing: Bool = false
     ) -> DynamicFormConfiguration {
@@ -2134,6 +2189,7 @@ public struct DynamicFormBuilder {
             topContentPadding: topContentPadding,
             sections: sections,
             submitButtonText: submitButtonText,
+            showsSubmitButton: showsSubmitButton,
             cancelButtonText: cancelButtonText,
             selectAllOnBeginEditing: selectAllOnBeginEditing
         )

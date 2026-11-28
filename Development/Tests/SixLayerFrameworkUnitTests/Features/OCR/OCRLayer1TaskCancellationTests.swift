@@ -56,15 +56,19 @@ open class OCRLayer1TaskCancellationTests: BaseTestClass {
 
         await OCRServiceFactory.$testOverride.withValue(mock) {
             for cycle in 0..<12 {
-                let hosted = hostRootPlatformView(
+                let hosted = TestSetupUtilities.hostObservingPlatformRoot(forceLayout: true) {
                     platformOCRWithVisualCorrection_L1(
                         image: image,
                         context: context,
                         onResult: { _ in resultCount.increment() }
                     )
-                    .environment(\.sixLayerOCRService, mock),
-                    forceLayout: true
-                )
+                    .environment(\.sixLayerOCRService, mock)
+                }
+                #if os(watchOS) || os(visionOS)
+                // Nil-host observed above (#379/#380); cancel-under-host is N/A (#627).
+                _ = (hosted, cycle)
+                return
+                #else
                 guard hosted != nil else { return }
 
                 let started = await waitUntil(timeout: 2.0) { mock.started > cycle }
@@ -77,12 +81,15 @@ open class OCRLayer1TaskCancellationTests: BaseTestClass {
                 let idle = await waitUntil(timeout: 2.0) { mock.inFlight == 0 }
                 #expect(idle, "cycle \(cycle): in-flight OCR should be 0 after teardown, was \(mock.inFlight)")
                 guard idle else { return }
+                #endif
             }
         }
 
+        #if !os(watchOS) && !os(visionOS)
         #expect(mock.completed == 0, "cancelled OCR must not complete")
         #expect(resultCount.value == 0, "onResult must not fire after cancel")
         #expect(mock.inFlight == 0, "no OCR work should remain in-flight after 12 teardowns")
+        #endif
     }
 
     // MARK: - Shared assertion
@@ -96,10 +103,13 @@ open class OCRLayer1TaskCancellationTests: BaseTestClass {
         let image = PlatformImage()
 
         await OCRServiceFactory.$testOverride.withValue(mock) {
-            let hosted = hostRootPlatformView(
-                makeView(image, context, { _ in resultCount.increment() }, mock),
-                forceLayout: true
-            )
+            let hosted = TestSetupUtilities.hostObservingPlatformRoot(forceLayout: true) {
+                makeView(image, context, { _ in resultCount.increment() }, mock)
+            }
+            #if os(watchOS) || os(visionOS)
+            // Nil-host observed above (#379/#380); cancel-under-host is N/A (#627).
+            _ = hosted
+            #else
             guard hosted != nil else { return }
 
             let started = await waitUntil(timeout: 2.0) { mock.started >= 1 }
@@ -116,6 +126,7 @@ open class OCRLayer1TaskCancellationTests: BaseTestClass {
             )
             #expect(mock.completed == 0, "cancelled OCR must not complete")
             #expect(resultCount.value == 0, "onResult must not fire after cancel")
+            #endif
         }
     }
 }

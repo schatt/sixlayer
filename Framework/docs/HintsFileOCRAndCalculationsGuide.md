@@ -627,15 +627,16 @@ let context = OCRContext(
 ```
 
 **How It Works**:
-- If a value is within expected range but more than 50% deviation from average, it's flagged
-- Helps catch unusual values even when technically within range
-- Particularly useful when expected ranges are broad but typical values are narrower
+- If a value is within expected range but farther from the average than the configured **percent deviation gate**, it's flagged
+- Default gate is **50%** when `fieldAverageMaxPercentDeviation` is nil (`OCRContext.defaultFieldAverageMaxPercentDeviation`) — same legacy behavior (#679)
+- Apps (and later OCR lab `label.json` fixtures, #677) can pass a custom percent; this is **not** the average magnitude itself, and not an absolute `fieldRanges` / `expectedRange` bound
+- Distinct from regional **fraction-digit / format** priors (#678)
 
 **Use Case**:
 - Expected range: 2.0-10.0 (covers all possible gas prices)
-- Typical value: 4.34 (what user typically pays)
-- Extracted value: 9.99 (within range, but 130% deviation from average)
-- Result: Flagged for verification even though it's within range
+- Typical value: 4.34 (regional magnitude prior at that time)
+- Extracted value: 9.99 (within range, but ~130% deviation from average)
+- Result with default 50% gate: flagged for verification even though it's within range
 
 ```swift
 let context = OCRContext(
@@ -645,11 +646,45 @@ let context = OCRContext(
     entityName: "FuelPurchase",
     fieldRanges: [
         "gallons": ValueRange(min: 20.0, max: 100.0)  // Override for trucks
-    ]
+    ],
+    fieldAverages: ["pricePerGallon": 4.34],
+    fieldAverageMaxPercentDeviation: 50  // optional; nil keeps the 50% default
 )
 ```
 
 **Priority**: Runtime override > Hints file range
+
+### Fraction Digits / Numeric Format (#678)
+
+Regional **display shape** for a field — how many digits after the decimal are normal — is separate from `fieldAverages` (regional **magnitude** at that time).
+
+**Hints file**:
+```json
+"gallons": {
+  "expectedRange": { "min": 0.0, "max": 100.0 },
+  "fractionDigits": 2,
+  "fractionDigits.US": 3,
+  "fractionDigits.DE": 2
+}
+```
+
+Resolution order when loading hints for a locale: `fractionDigits.{region}` → `fractionDigits.{language}` → `fractionDigits`.
+
+**Runtime override** (apps / OCR lab fixtures via #677): `OCRContext.fieldFractionDigits` wins over the hints file for those field ids.
+
+**How It Works**:
+- During decimal-placement correction, candidates that match the preferred fraction-digit count score higher
+- Absent format priors leave existing range/average/calculation scoring unchanged
+- Do not overload `fieldAverages` to mean fraction digits
+
+```swift
+let context = OCRContext(
+    entityName: "FuelPurchase",
+    fieldRanges: ["gallons": ValueRange(min: 0, max: 100)],
+    fieldFractionDigits: ["gallons": 3],  // e.g. US volume display
+    decimalLocale: Locale(identifier: "en_US")
+)
+```
 
 ### Validation Behavior
 

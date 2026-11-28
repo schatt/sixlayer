@@ -1,4 +1,9 @@
 import SwiftUI
+#if canImport(UIKit) && !os(watchOS)
+import UIKit
+#elseif canImport(AppKit)
+import AppKit
+#endif
 #if canImport(CoreData)
 import CoreData
 #endif
@@ -859,7 +864,9 @@ Text(i18n.localizedString(for: "SixLayerFramework.form.title"))
         .padding(.vertical, 4)
     }
 
-    /// Generate form action buttons using our platform extensions
+    /// Generate form action buttons using our platform extensions.
+    /// SwiftData submit reads an installed host context via ``SwiftDataContextAccess`` (#603 / #589);
+    /// it does not store `@Environment(\.modelContext)` (that getter opens the empty default store).
     @ViewBuilder
     private static func generateFormActions<T>(
         initialData: T?,
@@ -868,38 +875,13 @@ Text(i18n.localizedString(for: "SixLayerFramework.form.title"))
         isDraft: Bool = false,
         floating: Bool = true
     ) -> some View {
-        let i18n = InternationalizationService()
-        let actionBar = platformHStackContainer(spacing: 12) {
-            Button(i18n.localizedString(for: "SixLayerFramework.button.cancel")) { onCancel() }
-                .buttonStyle(.bordered)
-                .foregroundColor(Color.platformLabel)
-
-            Spacer()
-
-            Button(initialData != nil ? i18n.localizedString(for: "SixLayerFramework.button.update") : i18n.localizedString(for: "SixLayerFramework.button.create")) {
-                handleSubmit(
-                    initialData: initialData,
-                    modelContext: nil,
-                    onSubmit: onSubmit,
-                    isDraft: isDraft
-                )
-            }
-            .buttonStyle(.borderedProminent)
-            .foregroundColor(Color.platformBackground)
-        }
-        .padding()
-        .background(Color.platformSecondaryBackground)
-        .cornerRadius(8)
-        .automaticCompliance(named: "DynamicFormActions")
-
-        if floating {
-            VStack {
-                Spacer()
-                actionBar
-            }
-        } else {
-            actionBar
-        }
+        FormSubmitActionsView(
+            initialData: initialData,
+            onSubmit: onSubmit,
+            onCancel: onCancel,
+            isDraft: isDraft,
+            floating: floating
+        )
     }
     
     // MARK: - Helper Functions
@@ -910,9 +892,10 @@ Text(i18n.localizedString(for: "SixLayerFramework.form.title"))
     /// 
     /// - Parameters:
     ///   - initialData: The data model to save (Core Data NSManagedObject or SwiftData PersistentModel)
-    ///   - modelContext: Optional ModelContext for SwiftData models (iOS 17+, macOS 14+). 
-    ///                  If nil and data is a SwiftData model, will attempt to find context via reflection.
-    ///                  For best results, pass the ModelContext explicitly.
+    ///   - modelContext: Optional ModelContext for SwiftData models (iOS 17+, macOS 14+).
+    ///                  Prefer an installed host context (``SwiftDataContextAccess``). If nil, uses
+    ///                  `PersistentModel.modelContext` (computed; Mirror cannot see it). Does not open
+    ///                  the empty default store when none is installed (#603 / #589).
     ///   - onSubmit: Callback to execute after auto-save
     ///   - isDraft: Whether this entity is a draft (will clear draft flag on submit)
     @MainActor
@@ -961,58 +944,15 @@ Text(i18n.localizedString(for: "SixLayerFramework.form.title"))
         }
         #endif
         
-        // Step 1b: Auto-save SwiftData models if applicable (Issue #20)
+        // Step 1b: Auto-save SwiftData models if applicable (Issue #20 / #603)
         // This ensures SwiftData models are saved even if onSubmit is empty
         #if canImport(SwiftData)
         if #available(macOS 14.0, iOS 17.0, *) {
             if let persistentModel = data as? any PersistentModel {
-                // SwiftData models need their ModelContext to save
-                // Use provided context or attempt to find via reflection (may not work reliably)
-                var contextToUse: ModelContext? = nil
-                
-                // First, try to use the provided context (preferred method)
-                if let providedContext = modelContext as? ModelContext {
-                    contextToUse = providedContext
-                } else {
-                    // Attempt to find ModelContext via reflection (fallback, may not work)
-                    // SwiftData models don't expose their context directly, but we can try
-                    let modelMirror = Mirror(reflecting: persistentModel)
-                    for child in modelMirror.children {
-                        if let label = child.label,
-                           (label == "modelContext" || label == "_modelContext" || 
-                            label.contains("context") || label.contains("Context")) {
-                            if let context = child.value as? ModelContext {
-                                contextToUse = context
-                                break
-                            }
-                        }
-                    }
-                }
-                
-                // If we have a context, save it
-                if let context = contextToUse {
-                    do {
-                        // Attempt to update timestamp properties if they exist
-                        // Note: Swift doesn't support direct property setting via reflection
-                        // We detect the properties but can't set them - developers should update timestamps
-                        // in their models or in the onSubmit callback
-                        updateSwiftDataTimestampsIfNeeded(persistentModel)
-                        
-                        // Save the context if it has changes
-                        if context.hasChanges {
-                            try context.save()
-                        }
-                    } catch {
-                        // Log error but don't crash - developer's onSubmit may handle it
-                        print("Error auto-saving SwiftData model: \(error.localizedDescription)")
-                        // Continue execution - onSubmit callback will still be called
-                    }
-                } else {
-                    // Couldn't find ModelContext - log warning but continue
-                    // The developer's onSubmit callback can handle saving if needed
-                    print("SwiftData model auto-save: Could not access ModelContext. " +
-                          "Pass ModelContext explicitly via modelContext parameter, or handle saving in onSubmit callback.")
-                }
+                saveSwiftDataModelIfNeeded(
+                    persistentModel,
+                    providedContext: modelContext as? ModelContext
+                )
             }
         }
         #endif
@@ -1025,6 +965,28 @@ Text(i18n.localizedString(for: "SixLayerFramework.form.title"))
     // MARK: - SwiftData Helper Functions
     
     #if canImport(SwiftData)
+    /// Prefer an explicit / host-installed context; else the model's own computed context (#603).
+    /// Mirror cannot see `PersistentModel.modelContext`. Never opens the empty default store (#589).
+    @available(macOS 14.0, iOS 17.0, *)
+    private static func saveSwiftDataModelIfNeeded(
+        _ persistentModel: any PersistentModel,
+        providedContext: ModelContext?
+    ) {
+        guard let context = providedContext ?? persistentModel.modelContext else {
+            let missing = SwiftDataContextAccess.MissingContainer()
+            print("SwiftData model auto-save: \(missing.localizedDescription)")
+            return
+        }
+        do {
+            updateSwiftDataTimestampsIfNeeded(persistentModel)
+            if context.hasChanges {
+                try context.save()
+            }
+        } catch {
+            print("Error auto-saving SwiftData model: \(error.localizedDescription)")
+        }
+    }
+
     /// Attempts to detect timestamp properties on a SwiftData model
     /// Note: Direct property setting via reflection is not possible in Swift
     /// This function detects timestamp properties but cannot update them directly
@@ -1493,6 +1455,121 @@ public extension View {
     }
 }
 
+// MARK: - Type-Only Creation Failure
+
+/// Visible failure for a type-only form that could not create an entity (#601).
+/// A platform label keeps the message in the hosted view tree. SwiftUI `Text` on
+/// this OS is a drawing layer and does not show the string there.
+#if canImport(UIKit) && !os(watchOS)
+private struct CreationFailureMessage: UIViewRepresentable {
+    let text: String
+
+    func makeUIView(context: Context) -> UILabel {
+        let label = UILabel()
+        label.numberOfLines = 0
+        label.font = .preferredFont(forTextStyle: .headline)
+        label.adjustsFontForContentSizeCategory = true
+        label.textColor = .label
+        label.text = text
+        label.accessibilityIdentifier = "IntelligentFormView.creationFailed"
+        return label
+    }
+
+    func updateUIView(_ label: UILabel, context: Context) {
+        label.text = text
+        label.accessibilityIdentifier = "IntelligentFormView.creationFailed"
+    }
+}
+#elseif canImport(AppKit)
+private struct CreationFailureMessage: NSViewRepresentable {
+    let text: String
+
+    func makeNSView(context: Context) -> NSTextField {
+        let field = NSTextField(labelWithString: text)
+        field.font = .preferredFont(forTextStyle: .headline)
+        field.setAccessibilityIdentifier("IntelligentFormView.creationFailed")
+        return field
+    }
+
+    func updateNSView(_ field: NSTextField, context: Context) {
+        field.stringValue = text
+        field.setAccessibilityIdentifier("IntelligentFormView.creationFailed")
+    }
+}
+#else
+private struct CreationFailureMessage: View {
+    let text: String
+
+    var body: some View {
+        Text(text)
+            .accessibilityIdentifier("IntelligentFormView.creationFailed")
+    }
+}
+#endif
+
+// MARK: - Form Submit Actions
+
+/// Action bar that passes an installed SwiftData context into submit (#603).
+/// Uses `@Environment(\.self)` + ``SwiftDataContextAccess`` — never `@Environment(\.modelContext)`.
+@MainActor
+private struct FormSubmitActionsView<T>: View {
+    let initialData: T?
+    let onSubmit: (T) -> Void
+    let onCancel: () -> Void
+    let isDraft: Bool
+    let floating: Bool
+
+    #if canImport(SwiftData)
+    @available(macOS 14.0, iOS 17.0, *)
+    @Environment(\.self) private var environment
+    #endif
+
+    var body: some View {
+        let i18n = InternationalizationService()
+        let actionBar = platformHStackContainer(spacing: 12) {
+            Button(i18n.localizedString(for: "SixLayerFramework.button.cancel")) { onCancel() }
+                .buttonStyle(.bordered)
+                .foregroundColor(Color.platformLabel)
+
+            Spacer()
+
+            Button(initialData != nil ? i18n.localizedString(for: "SixLayerFramework.button.update") : i18n.localizedString(for: "SixLayerFramework.button.create")) {
+                IntelligentFormView.handleSubmit(
+                    initialData: initialData,
+                    modelContext: installedSwiftDataContext(),
+                    onSubmit: onSubmit,
+                    isDraft: isDraft
+                )
+            }
+            .buttonStyle(.borderedProminent)
+            .foregroundColor(Color.platformBackground)
+        }
+        .padding()
+        .background(Color.platformSecondaryBackground)
+        .cornerRadius(8)
+        .automaticCompliance(named: "DynamicFormActions")
+
+        if floating {
+            VStack {
+                Spacer()
+                actionBar
+            }
+        } else {
+            actionBar
+        }
+    }
+
+    @MainActor
+    private func installedSwiftDataContext() -> Any? {
+        #if canImport(SwiftData)
+        if #available(macOS 14.0, iOS 17.0, *) {
+            return SwiftDataContextAccess.installedContext(in: environment)
+        }
+        #endif
+        return nil
+    }
+}
+
 // MARK: - Type-Only Form Wrapper
 
 /// Wrapper view for type-only form generation (new object creation)
@@ -1516,12 +1593,14 @@ private struct TypeOnlyFormWrapper<T>: View {
     
     #if canImport(SwiftData)
     @available(macOS 14.0, iOS 17.0, *)
-    @Environment(\.modelContext) private var modelContext: ModelContext
+    @Environment(\.self) private var environment
     #endif
     
     // State to hold the created entity
     @State private var createdEntity: T?
     @State private var isNewEntity: Bool = true // Track if entity should be deleted on cancel
+    /// Model name when both Core Data and SwiftData creation returned nil (#601).
+    @State private var creationErrorModelName: String?
     
     var body: some View {
         Group {
@@ -1540,6 +1619,8 @@ private struct TypeOnlyFormWrapper<T>: View {
                     isDraft: isNewEntity, // Mark as draft if it's a new entity
                     autoSaveInterval: 30.0 // Auto-save every 30 seconds
                 )
+            } else if let creationErrorModelName {
+                creationFailureContent(modelName: creationErrorModelName)
             } else {
                 // Creating entity...
                 ProgressView("Creating form...")
@@ -1575,8 +1656,16 @@ private struct TypeOnlyFormWrapper<T>: View {
         }
         #endif
         
-        // If we can't create an entity, show error
-        // (This shouldn't happen if hints are fully declarative)
+        creationErrorModelName = modelName
+    }
+
+    @ViewBuilder
+    private func creationFailureContent(modelName: String) -> some View {
+        let message = InternationalizationService().localizedString(
+            for: "SixLayerFramework.form.entityCreationFailed",
+            arguments: [modelName]
+        )
+        CreationFailureMessage(text: message)
     }
     
     #if canImport(CoreData)
@@ -1620,7 +1709,9 @@ private struct TypeOnlyFormWrapper<T>: View {
     /// DRY: Uses shared EntityCreationUtilities
     @available(macOS 14.0, iOS 17.0, *)
     private func createSwiftDataEntityUsingCodable() -> T? {
-        let context = modelContext
+        guard let context = SwiftDataContextAccess.installedContext(in: environment) else {
+            return nil
+        }
         
         // Use shared utility
         if let entity = EntityCreationUtilities.createBlankSwiftDataEntity(
@@ -1680,8 +1771,8 @@ private struct TypeOnlyFormWrapper<T>: View {
         
         #if canImport(SwiftData)
         if #available(macOS 14.0, iOS 17.0, *) {
-            if let persistentModel = createdEntity as? any PersistentModel {
-                let context = modelContext
+            if let persistentModel = createdEntity as? any PersistentModel,
+               let context = SwiftDataContextAccess.installedContext(in: environment) {
                 context.delete(persistentModel)
             }
         }

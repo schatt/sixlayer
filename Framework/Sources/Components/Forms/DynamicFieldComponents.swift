@@ -1051,7 +1051,8 @@ public struct DynamicNumberField: View {
                     fromStoredValue: formState.getValue(for: field.id),
                     defaultValue: field.defaultValue
                 ),
-                write: { formState.setValue($0, for: field.id) }
+                rejectsUnfocusedWrite: { field.shouldIgnoreNumericTextEcho($0, formState: formState) },
+                write: { field.numericTextBinding(formState: formState).wrappedValue = $0 }
             ) { text in
                 TextField(field.placeholder ?? i18n.localizedString(for: "SixLayerFramework.form.placeholder.enterNumber"), text: text)
                     .platformTextFieldStyle()
@@ -1092,7 +1093,8 @@ public struct DynamicIntegerField: View {
                     fromStoredValue: formState.getValue(for: field.id),
                     defaultValue: field.defaultValue
                 ),
-                write: { formState.setValue($0, for: field.id) }
+                rejectsUnfocusedWrite: { field.shouldIgnoreNumericTextEcho($0, formState: formState) },
+                write: { field.numericTextBinding(formState: formState).wrappedValue = $0 }
             ) { text in
                 TextField(field.placeholder ?? i18n.localizedString(for: "SixLayerFramework.form.placeholder.enterInteger"), text: text)
                     .platformTextFieldStyle()
@@ -1117,24 +1119,36 @@ public struct DynamicIntegerField: View {
 public struct DynamicStepperField: View {
     let field: DynamicFormField
     @ObservedObject var formState: DynamicFormState
+    let locale: Locale
 
     public init(field: DynamicFormField, formState: DynamicFormState) {
-        self.field = field
-        self.formState = formState
+        self.init(field: field, formState: formState, locale: .current)
     }
 
-    private var value: Binding<Double> {
+    init(field: DynamicFormField, formState: DynamicFormState, locale: Locale) {
+        self.field = field
+        self.formState = formState
+        self.locale = locale
+    }
+
+    var value: Binding<Double> {
         Binding(
             get: {
                 if let value: Any = formState.getValue(for: field.id) {
                     if let doubleValue = value as? Double {
                         return doubleValue
                     } else if let stringValue = value as? String,
-                              let parsed = Double(stringValue) {
+                              let parsed = DynamicFormStoredDecimal.double(
+                                fromStoredText: stringValue,
+                                locale: locale
+                              ) {
                         return parsed
                     }
                 }
-                return Double(field.defaultValue ?? "0") ?? 0.0
+                return DynamicFormStoredDecimal.double(
+                    fromStoredText: field.defaultValue ?? "0",
+                    locale: locale
+                ) ?? 0.0
             },
             set: { newValue in
                 formState.setValue(String(newValue), for: field.id)
@@ -1144,19 +1158,39 @@ public struct DynamicStepperField: View {
 
     /// Get range from displayHints (preferred) or metadata (fallback)
     private var range: ClosedRange<Double> {
-        // Prefer expectedRange from displayHints (has structured range)
-        if let hints = field.displayHints,
-           let expectedRange = hints.expectedRange {
-            return expectedRange.min...expectedRange.max
+        Self.resolvedRange(for: field)
+    }
+
+    /// Resolves stepper bounds from `displayHints.expectedRange` (preferred) or metadata min/max.
+    /// Bounds are ordered so an inverted range cannot trap `ClosedRange` construction (#562).
+    static func resolvedRange(for field: DynamicFormField) -> ClosedRange<Double> {
+        if let expectedRange = field.displayHints?.expectedRange,
+           expectedRange.min.isFinite, expectedRange.max.isFinite {
+            return orderedRange(expectedRange.min, expectedRange.max)
         }
-        // Fallback to metadata min/max keys
-        let min = Double(field.metadata?["min"] ?? "0") ?? 0.0
-        let max = Double(field.metadata?["max"] ?? "100") ?? 100.0
-        return min...max
+        let lower = finiteBound(field.metadata?["min"], default: 0.0)
+        let upper = finiteBound(field.metadata?["max"], default: 100.0)
+        return orderedRange(lower, upper)
+    }
+
+    /// NaN and infinity are not valid stepper bounds; `Double(String)` accepts "nan"/"inf",
+    /// and NaN bounds trap `ClosedRange` construction (#562).
+    private static func finiteBound(_ text: String?, default fallback: Double) -> Double {
+        guard let text, let value = Double(text), value.isFinite else { return fallback }
+        return value
+    }
+
+    private static func orderedRange(_ a: Double, _ b: Double) -> ClosedRange<Double> {
+        Swift.min(a, b)...Swift.max(a, b)
     }
 
     private var step: Double {
         Double(field.metadata?["step"] ?? "1") ?? 1.0
+    }
+
+    /// Value text for the stepper; shared formatter avoids `Int(Double)` traps (#562).
+    static func displayText(value: Double, step: Double) -> String {
+        platformStepperValueText(value, step: step)
     }
 
     public var body: some View {
@@ -1171,15 +1205,11 @@ public struct DynamicStepperField: View {
             .automaticComplianceForDynamicFormField(
                 field,
                 identifierElementType: "Stepper",
-                accessibilityValue: step.truncatingRemainder(dividingBy: 1.0) == 0.0
-                    ? "\(Int(value.wrappedValue))"
-                    : String(format: "%.2f", value.wrappedValue)
+                accessibilityValue: Self.displayText(value: value.wrappedValue, step: step)
             )
 
             // Show current value - use appropriate format based on step size
-            Text(step.truncatingRemainder(dividingBy: 1.0) == 0.0 
-                 ? "\(Int(value.wrappedValue))" 
-                 : String(format: "%.2f", value.wrappedValue))
+            Text(Self.displayText(value: value.wrappedValue, step: step))
                 .font(.caption)
                 .foregroundColor(.secondary)
         }
@@ -2275,27 +2305,36 @@ public struct DynamicDisplayField: View {
 public struct DynamicGaugeField: View {
     let field: DynamicFormField
     @ObservedObject var formState: DynamicFormState
-    
+    let locale: Locale
+
     public init(field: DynamicFormField, formState: DynamicFormState) {
+        self.init(field: field, formState: formState, locale: .current)
+    }
+
+    init(field: DynamicFormField, formState: DynamicFormState, locale: Locale) {
         self.field = field
         self.formState = formState
+        self.locale = locale
     }
     
-    /// Get the current value as Double
-    private var value: Double {
+    /// Stored string uses the form locale. POSIX `4.5` still parses.
+    /// A non-number falls through to `defaultValue`, then 0 (#624).
+    var value: Double {
         if let value: Any? = formState.getValue(for: field.id) {
             if let doubleValue = value as? Double {
                 return doubleValue
             } else if let intValue = value as? Int {
                 return Double(intValue)
             } else if let stringValue = value as? String,
-                      let parsed = Double(stringValue) {
+                      let parsed = DynamicFormStoredDecimal.double(
+                        fromStoredText: stringValue,
+                        locale: locale
+                      ) {
                 return parsed
             }
         }
-        // Fall back to defaultValue or 0.0
         if let defaultValue = field.defaultValue,
-           let parsed = Double(defaultValue) {
+           let parsed = DynamicFormStoredDecimal.double(fromStoredText: defaultValue, locale: locale) {
             return parsed
         }
         return 0.0

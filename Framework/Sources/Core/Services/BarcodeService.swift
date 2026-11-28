@@ -241,13 +241,7 @@ public class BarcodeService: BarcodeServiceProtocol, @unchecked Sendable {
     #endif
     
     private func getCGImage(from image: PlatformImage) -> CGImage? {
-        #if os(iOS)
-        return image.uiImage.cgImage
-        #elseif os(macOS)
-        return image.nsImage.cgImage(forProposedRect: nil, context: nil, hints: nil)
-        #else
-        return nil
-        #endif
+        image.orientedCGImage()
     }
     
     private func isVisionBarcodeAvailable() -> Bool {

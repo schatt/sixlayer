@@ -1,12 +1,39 @@
 # 🚀 Six-Layer Framework Release History
 
-## 📍 **Current Release: v8.7.0** 🚀
+## 📍 **Current Release: v8.8.2** 🚀
 
-**Release Date**: October 21, 2026
-**Status**: Minor release
-**Previous Release**: v8.6.7 - Patch release
-**Note**: Seven-segment OCR mode (#576); optional hints model name and public DataBinder (#581, #585); Vision continuation claimed once (#563, #574, #578, #579); curated string catalog (#577); platformTap in macOS UITests and snippets (#567, #568, #569, #570, #575, #580, #586, #587); retire script tolerates a missing wip ref (#564).
-**Next Release**: v8.7.1
+**Release Date**: November 26, 2026
+**Status**: Patch release
+**Previous Release**: v8.8.1 - Patch release
+**Note**: DynamicStepperField range/display fixes (#562), form-draft docs (#683), and Display OCR lab extraction (#706). See [RELEASE_v8.8.2.md](RELEASE_v8.8.2.md).
+**Next Release**: v8.8.3
+
+---
+
+## 🎯 **v8.8.2 - Stepper range fixes, OCR lab extraction** (November 26, 2026)
+
+### **What's in v8.8.2:**
+- Patch release (#562, #683, #701, #702, #703, #706, #707; see [RELEASE_v8.8.2.md](RELEASE_v8.8.2.md)).
+
+**See [RELEASE_v8.8.2.md](RELEASE_v8.8.2.md) for complete release notes.**
+
+---
+
+## 🎯 **v8.8.1 - Bundler json bump** (November 17, 2026)
+
+### **What's in v8.8.1:**
+- Patch release (Dependabot `json` bump; see [RELEASE_v8.8.1.md](RELEASE_v8.8.1.md)).
+
+**See [RELEASE_v8.8.1.md](RELEASE_v8.8.1.md) for complete release notes.**
+
+---
+
+## 🎯 **v8.8.0 - OCR hardening, Live Photo, platform chrome** (November 16, 2026)
+
+### **What's in v8.8.0:**
+- Minor release (v8.8.0 milestone; see [RELEASE_v8.8.0.md](RELEASE_v8.8.0.md) for the full issue list).
+
+**See [RELEASE_v8.8.0.md](RELEASE_v8.8.0.md) for complete release notes.**
 
 ---
 

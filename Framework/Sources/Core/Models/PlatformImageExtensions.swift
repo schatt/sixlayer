@@ -8,6 +8,7 @@
 import Foundation
 import SwiftUI
 import CoreGraphics
+import ImageIO
 #if canImport(CoreImage)
 import CoreImage
 #endif
@@ -572,6 +573,82 @@ public extension PlatformImage {
         )
         #endif
     }
+
+    /// Bitmap in display orientation. Encoded photos use the orientation tag.
+    /// A platform image built from pixels that are already upright is returned as stored.
+    func orientedCGImage() -> CGImage? {
+        if let data = originalEncodedData, let opened = Self.cgImage(opening: data) {
+            return opened
+        }
+        #if os(iOS) || os(tvOS) || os(visionOS)
+        return uiImage.cgImageApplyingDisplayOrientation()
+        #elseif os(watchOS)
+        return uiImage.cgImage
+        #elseif os(macOS)
+        return nsImage.cgImage(forProposedRect: nil, context: nil, hints: nil)
+        #else
+        return nil
+        #endif
+    }
+
+    /// Pixels from encoded photo bytes, turned so the orientation tag is upright.
+    static func cgImage(opening data: Data) -> CGImage? {
+        guard let source = CGImageSourceCreateWithData(data as CFData, nil) else { return nil }
+        let props = CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [String: Any]
+        let orientation = intProperty(props, kCGImagePropertyOrientation)
+        // ImageIO's transformed thumbnail of a Display P3 photo is premultiplied
+        // and dark on iOS. Orientation 6, drawn in the photo's own color space,
+        // matches the macOS thumbnail within a couple of levels.
+        if orientation == 6,
+           let image = CGImageSourceCreateImageAtIndex(source, 0, nil),
+           let turned = turnedRight(image) {
+            return turned
+        }
+        let width = intProperty(props, kCGImagePropertyPixelWidth)
+        let height = intProperty(props, kCGImagePropertyPixelHeight)
+        let maxSide = max(width, height)
+        guard maxSide > 0 else { return CGImageSourceCreateImageAtIndex(source, 0, nil) }
+        let options: [CFString: Any] = [
+            kCGImageSourceCreateThumbnailFromImageAlways: true,
+            kCGImageSourceCreateThumbnailWithTransform: true,
+            kCGImageSourceThumbnailMaxPixelSize: maxSide
+        ]
+        return CGImageSourceCreateThumbnailAtIndex(source, 0, options as CFDictionary)
+            ?? CGImageSourceCreateImageAtIndex(source, 0, nil)
+    }
+
+    /// EXIF 6 in a bottom-left context: the stored frame is on its side.
+    /// This is the transform that matches ImageIO's upright thumbnail on macOS.
+    private static func turnedRight(_ image: CGImage) -> CGImage? {
+        let srcW = image.width
+        let srcH = image.height
+        guard srcW > 0, srcH > 0 else { return nil }
+        let dstW = srcH
+        let dstH = srcW
+        guard let space = image.colorSpace ?? CGColorSpace(name: CGColorSpace.sRGB),
+              let context = CGContext(
+                data: nil,
+                width: dstW,
+                height: dstH,
+                bitsPerComponent: 8,
+                bytesPerRow: 0,
+                space: space,
+                bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
+              )
+        else { return nil }
+        context.interpolationQuality = .none
+        context.translateBy(x: 0, y: CGFloat(dstH))
+        context.rotate(by: -.pi / 2)
+        context.draw(image, in: CGRect(x: 0, y: 0, width: srcW, height: srcH))
+        return context.makeImage()
+    }
+
+    private static func intProperty(_ props: [String: Any]?, _ key: CFString) -> Int {
+        let value = props?[key as String]
+        if let number = value as? NSNumber { return number.intValue }
+        if let int = value as? Int { return int }
+        return 0
+    }
 }
 
 // MARK: - Platform-Specific Image Extensions for Conversion
@@ -587,7 +664,25 @@ public extension UIImage {
         return platformImage.uiImage
     }
 }
-#elseif os(macOS)
+#endif
+
+#if os(iOS) || os(tvOS) || os(visionOS)
+extension UIImage {
+    /// Draw the image so `imageOrientation` is baked into the pixels.
+    func cgImageApplyingDisplayOrientation() -> CGImage? {
+        if imageOrientation == .up { return cgImage }
+        let format = UIGraphicsImageRendererFormat()
+        format.scale = scale
+        format.opaque = false
+        let renderer = UIGraphicsImageRenderer(size: size, format: format)
+        return renderer.image { _ in
+            draw(in: CGRect(origin: .zero, size: size))
+        }.cgImage
+    }
+}
+#endif
+
+#if os(macOS)
 public extension NSImage {
     /// Conversion from PlatformImage to NSImage (macOS only)
     /// This enables the currency exchange model: PlatformImage → NSImage at system boundary

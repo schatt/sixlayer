@@ -16,13 +16,18 @@ open class PlatformPresentationFileImporterExtensionsTests: BaseTestClass {
         let isolated = TestSetupUtilities.makeIsolatedAccessibilityIdentifierConfig()
         AccessibilityIdentifierConfig.$taskLocalConfig.withValue(isolated) {
             let anonymous = root()
-            let anonymousHost = hostRootPlatformView(anonymous, accessibilityIdentifierConfig: isolated)
-            #expect(anonymousHost != nil, "\(context): anonymous path should render")
+            _ = TestSetupUtilities.hostObservingPlatformRoot(
+                accessibilityIdentifierConfig: isolated
+            ) { anonymous }
 
             let named = root().named(anchorName)
-            let namedHost = hostRootPlatformView(named, accessibilityIdentifierConfig: isolated)
-            #expect(namedHost != nil, "\(context): named path should render")
+            let namedHost = TestSetupUtilities.hostObservingPlatformRoot(
+                accessibilityIdentifierConfig: isolated
+            ) { named }
 
+            #if os(watchOS) || os(visionOS)
+            _ = (namedHost, context)
+            #else
             let expectedNamedId = NamedModifier.testingGeneratedIdentifier(name: anchorName, config: isolated)
             let platformIds = findAllAccessibilityIdentifiersFromPlatformView(namedHost)
             let platformHit = platformIds.contains { $0 == expectedNamedId || $0.contains(anchorName) }
@@ -38,6 +43,7 @@ open class PlatformPresentationFileImporterExtensionsTests: BaseTestClass {
                 platformHit || viHit || logHit,
                 "\(context): expected named id '\(expectedNamedId)' via platform, ViewInspector, or config debug log."
             )
+            #endif
         }
     }
 
@@ -82,7 +88,8 @@ open class PlatformPresentationFileImporterExtensionsTests: BaseTestClass {
     }
 
     @Test @MainActor func testPlatformPresentationFileImporterAuditHostRenders() async {
-        let hosted = Self.hostRootPlatformView(PlatformPresentationFileImporterAuditHost(onBackToMain: nil))
-        #expect(hosted != nil)
+        TestSetupUtilities.hostExpectingPlatformRoot {
+            PlatformPresentationFileImporterAuditHost(onBackToMain: nil)
+        }
     }
 }

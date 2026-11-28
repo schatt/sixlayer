@@ -117,14 +117,32 @@ struct ThemingProductAPITests {
             _ = view.body
         }
     }
+
+    @Test @MainActor
+    func themedCardAppliesThemedCardStyle() {
+        let styled = Text("Card").themedCard()
+        #expect(
+            String(describing: type(of: styled))
+                == "ModifiedContent<Text, ThemedCardStyle>"
+        )
+    }
+
+    @Test @MainActor
+    func themedTextFieldAppliesThemedTextFieldStyle() {
+        let styled = TextField("Label", text: .constant("")).themedTextField()
+        #expect(
+            String(describing: type(of: styled))
+                == "ModifiedContent<TextField<Text>, TextFieldStyleModifier<ThemedTextFieldStyle>>"
+        )
+    }
 }
 
-@Suite("Theming product hosts (#491)", HostedViewTestIsolationTrait())
+@Suite("Theming product hosts (#491, #616)", HostedViewTestIsolationTrait())
 struct ThemingProductHostUnitTests {
 
     @Test @MainActor
     func themedFrameworkViewUsesNamedCompliance() {
-        hostExpectingNamedCompliance("ThemedFrameworkView") {
+        TestSetupUtilities.hostExpectingNamedCompliance("ThemedFrameworkView") {
             ThemedFrameworkView {
                 Text("Content")
             }
@@ -133,49 +151,8 @@ struct ThemingProductHostUnitTests {
 
     @Test @MainActor
     func themedProgressBarUsesNamedCompliance() {
-        hostExpectingNamedCompliance("ThemedProgressBar") {
+        TestSetupUtilities.hostExpectingNamedCompliance("ThemedProgressBar") {
             ThemedProgressBar(progress: 0.5, variant: .primary)
         }
-    }
-
-    @Test @MainActor
-    func themedCardHosts() {
-        hostView {
-            Text("Card").themedCard()
-        }
-    }
-
-    @Test @MainActor
-    func themedTextFieldHosts() {
-        hostView {
-            TextField("Label", text: .constant(""))
-                .themedTextField()
-        }
-    }
-
-    @MainActor
-    private func hostExpectingNamedCompliance<V: View>(
-        _ name: String,
-        @ViewBuilder _ view: () -> V
-    ) {
-        #if os(watchOS)
-        return
-        #else
-        let (hosted, log) = TestSetupUtilities.hostRootPlatformViewNamedDebugLog(view())
-        #expect(hosted != nil)
-        #expect(
-            log.contains(name),
-            "named compliance \(name) must appear in debug log"
-        )
-        #endif
-    }
-
-    @MainActor
-    private func hostView<V: View>(@ViewBuilder _ view: () -> V) {
-        #if os(watchOS)
-        return
-        #else
-        #expect(TestSetupUtilities.hostRootPlatformView(view(), forceLayout: true) != nil)
-        #endif
     }
 }

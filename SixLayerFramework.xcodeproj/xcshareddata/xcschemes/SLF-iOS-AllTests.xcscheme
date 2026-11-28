@@ -5,6 +5,7 @@
    <BuildAction
       parallelizeBuildables = "YES"
       buildImplicitDependencies = "YES"
+      buildArchitectures = "Automatic"
       runPostActionsOnFailure = "NO">
       <BuildActionEntries>
          <BuildActionEntry
@@ -62,6 +63,18 @@
                BlueprintIdentifier = "D16D10F9C91D322A0A4959E7"
                BuildableName = "SixLayerFrameworkUnitTests_iOS.xctest"
                BlueprintName = "SixLayerFrameworkUnitTests_iOS"
+               ReferencedContainer = "container:SixLayerFramework.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "YES"
+            testExecutionOrdering = "random">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "A3CB06A0997A155545146010"
+               BuildableName = "SixLayerFrameworkOCRImageTests_iOS.xctest"
+               BlueprintName = "SixLayerFrameworkOCRImageTests_iOS"
                ReferencedContainer = "container:SixLayerFramework.xcodeproj">
             </BuildableReference>
          </TestableReference>

@@ -303,4 +303,23 @@ struct PlatformStandaloneDropInTests {
         let view = platformButton(label: label) { }
         #expect(PlatformContainerStructureAssertions.isHostable(view))
     }
+
+    // MARK: - systemImage and ViewBuilder label overloads (Issue #635)
+
+    @Test @MainActor func testPlatformButton_WithSystemImage() {
+        let view = platformButton(label: "Add Place", systemImage: "plus") { }
+        #expect(PlatformContainerStructureAssertions.isHostable(view))
+    }
+
+    @Test @MainActor func testPlatformButton_WithCustomViewBuilderLabel() {
+        let view = platformButton(id: "paywall-product-row") {
+            // action
+        } label: {
+            HStack {
+                Text("Plus")
+                Text("$4.99")
+            }
+        }
+        #expect(PlatformContainerStructureAssertions.isHostable(view))
+    }
 }
