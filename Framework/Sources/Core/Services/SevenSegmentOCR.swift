@@ -278,11 +278,15 @@ public enum SevenSegmentOCR {
             return OCRResult(extractedText: "", confidence: 0)
         }
         let frame = gray
+        /// Panel used for decode, in original-frame pixels (#677).
+        var chosenPanelPixels: CGRect?
         if localizeDigitPanel {
             let modelRegion = panelLocator?.panelRegion(in: cgImage)
             if let modelRegion, let cropped = gray.panelCrop(modelRegion) {
+                chosenPanelPixels = modelRegion
                 gray = cropped
             } else if let region = gray.digitPanelBounds(), let cropped = gray.panelCrop(region) {
+                chosenPanelPixels = region
                 gray = cropped
             }
         }
@@ -341,11 +345,35 @@ public enum SevenSegmentOCR {
                 lattice = result(located.map { [latticeFragment($0, width: frame.width, height: frame.height)] })
             }
         }
-        return chooseLegacyOrLattice(
+        let picked = chooseLegacyOrLattice(
             fragments: fragments,
             legacy: legacy,
             lattice: lattice,
             latticeRows: rows
+        )
+        let chosenPanelRect = chosenPanelPixels.map {
+            DisplayOCRNormalizedBox(
+                pixelRect: $0,
+                imageWidth: frame.width,
+                imageHeight: frame.height
+            )
+        }
+        return OCRResult(
+            extractedText: picked.extractedText,
+            confidence: picked.confidence,
+            boundingBoxes: picked.boundingBoxes,
+            textTypes: picked.textTypes,
+            processingTime: picked.processingTime,
+            language: picked.language,
+            structuredData: picked.structuredData,
+            extractionConfidence: picked.extractionConfidence,
+            missingRequiredFields: picked.missingRequiredFields,
+            adjustedFields: picked.adjustedFields,
+            uncategorizedExtractions: picked.uncategorizedExtractions,
+            recognizedTexts: picked.recognizedTexts,
+            isValid: picked.isValid,
+            validationReason: picked.validationReason,
+            chosenPanelRect: chosenPanelRect
         )
     }
 
@@ -739,7 +767,15 @@ private struct GrayBuffer {
         let boxes = rawBoxes.filter { $0.width >= minimum && $0.height >= minimum }
         guard !boxes.isEmpty else { return [] }
         let maxHeight = boxes.map(\.height).max() ?? 1
-        let tall = boxes.filter { $0.height * 100 >= maxHeight * 55 }
+        // Edge bezel chrome is tall/narrow like a "1". Leave it out of the
+        // baseline so a pale comma hang still clears markCharacter (#670).
+        // Stroke level comes from interior tall boxes so a flush real "1"
+        // still matches digit ink and survives (#684).
+        let tallCandidates = boxes.filter { $0.height * 100 >= maxHeight * 55 }
+        let strokeLevel = edgeStrokeLevel(tallCandidates, buffer: buffer, mask: mask)
+        let tall = tallCandidates.filter { box in
+            !isEdgeChromeStrip(box, buffer: buffer, mask: mask, strokeLevel: strokeLevel)
+        }
         let digitHeight = median(tall.map(\.height)) ?? maxHeight
         let baseline = median(tall.map(\.maxY)) ?? band.1
         let frameTop = median(tall.map(\.minY)) ?? band.0
@@ -802,7 +838,8 @@ private struct GrayBuffer {
                 buffer: buffer,
                 darkInk: darkInk,
                 washAwareStems: washAwareStems,
-                sampleBand: sampleBand
+                sampleBand: sampleBand,
+                strokeLevel: strokeLevel
             )
             // Volume rowcrops are ~980px; keep traces on those for #591.
             if buffer.width >= 900 {
@@ -1002,16 +1039,35 @@ private struct GrayBuffer {
             }
         }
         // Thin tails can miss the mask while raw pixels still look like ink.
+        // Prefer the mark's own level over surroundingLevel: a pale hang that
+        // joins a darker bottom bezel is lighter than its surround, so the
+        // dark-ink surround test drops it and the comma becomes a period (#670).
         var maxY = box.maxY
         let left = max(0, box.minX)
         let right = min(buffer.width, box.maxX)
         guard right > left else { return box }
-        for y in box.maxY..<reach {
-            let probe = PixelBox(minX: left, minY: y, maxX: right, maxY: y + 1)
-            if inkFraction(buffer, box: probe, darkInk: darkInk) > 0.35 {
-                maxY = y + 1
-            } else if maxY > box.maxY {
-                break
+        let rowWidth = right - left
+        if let markLevel = boxMedianLevel(buffer, box: box) {
+            for y in box.maxY..<reach {
+                let start = y * buffer.width
+                var matched = 0
+                for x in left..<right where abs(Int(buffer.pixels[start + x]) - markLevel) <= inkMargin {
+                    matched += 1
+                }
+                if matched * 100 >= rowWidth * 35 {
+                    maxY = y + 1
+                } else if maxY > box.maxY {
+                    break
+                }
+            }
+        } else {
+            for y in box.maxY..<reach {
+                let probe = PixelBox(minX: left, minY: y, maxX: right, maxY: y + 1)
+                if inkFraction(buffer, box: probe, darkInk: darkInk) > 0.35 {
+                    maxY = y + 1
+                } else if maxY > box.maxY {
+                    break
+                }
             }
         }
         guard maxY > box.maxY else { return box }
@@ -1031,7 +1087,8 @@ private struct GrayBuffer {
         buffer: GrayBuffer,
         darkInk: Bool,
         washAwareStems: Bool = false,
-        sampleBand: Int = 0
+        sampleBand: Int = 0,
+        strokeLevel: Int? = nil
     ) -> Cell? {
         let vertical = verticalRuns(mask, box: box, width: width)
         let splitGap = vertical.count == 2 ? vertical[1].0 - vertical[0].1 : 0
@@ -1076,12 +1133,18 @@ private struct GrayBuffer {
                     buffer: buffer,
                     darkInk: darkInk,
                     washAwareStems: washAwareStems,
-                    sampleBand: sampleBand
+                    sampleBand: sampleBand,
+                    strokeLevel: strokeLevel
                 )
             }
         }
         // ssocr: a box narrower than a quarter of its height is a one.
         if box.height * 100 >= digitHeight * 55, box.width * 4 < box.height {
+            // Crop-edge bezel chrome matches this shape and must not become a
+            // digit — it also skewed the mark baseline (#670).
+            if isEdgeChromeStrip(box, buffer: buffer, mask: mask, strokeLevel: strokeLevel) {
+                return nil
+            }
             return Cell(box: box, character: "1", confidence: 1, band: bandIndex)
         }
         // A digit-tall box that is nearly all ink is a fill, not a glyph:
@@ -1350,6 +1413,67 @@ private struct GrayBuffer {
 
     private static func isMark(_ character: Character) -> Bool {
         character == "." || character == "," || character == ":" || character == "-"
+    }
+
+    /// Tall/narrow ink near the crop edge that runs into the top/bottom
+    /// border — leftover bezel after a comma joins the frame (#670).
+    /// Remnants often sit a few pixels in (bezelWidth 8 → strips at minX=4 /
+    /// maxX=width-4), so a 1-pixel flush check misses them. Requiring a
+    /// top/bottom touch alone would also drop a real edge-flush "1" (#684);
+    /// keep geometry hits whose mask-ink level matches interior stroke ink.
+    private static func isEdgeChromeStrip(
+        _ box: PixelBox,
+        buffer: GrayBuffer,
+        mask: Mask,
+        strokeLevel: Int?
+    ) -> Bool {
+        guard isNearSideEdge(box, bufferWidth: buffer.width),
+              box.width * 4 < box.height else { return false }
+        guard box.minY <= 1 || box.maxY >= buffer.height - 2 else { return false }
+        if let strokeLevel,
+           let level = boxMaskInkMedian(buffer, mask: mask, box: box),
+           abs(level - strokeLevel) <= inkMargin {
+            return false
+        }
+        return true
+    }
+
+    /// Median level of mask-on pixels in tall interior boxes (glass in the
+    /// bbox must not pull the stroke reference toward the background).
+    private static func edgeStrokeLevel(
+        _ tall: [PixelBox],
+        buffer: GrayBuffer,
+        mask: Mask
+    ) -> Int? {
+        let interior = tall.filter { !isNearSideEdge($0, bufferWidth: buffer.width) }
+        let sample = interior.isEmpty ? tall : interior
+        return median(sample.compactMap { boxMaskInkMedian(buffer, mask: mask, box: $0) })
+    }
+
+    private static func isNearSideEdge(_ box: PixelBox, bufferWidth: Int) -> Bool {
+        let slack = max(2, min(8, box.height / 12))
+        return box.minX <= slack || box.maxX >= bufferWidth - slack
+    }
+
+    private static func boxMaskInkMedian(
+        _ buffer: GrayBuffer,
+        mask: Mask,
+        box: PixelBox
+    ) -> Int? {
+        let left = max(0, box.minX)
+        let right = min(buffer.width, box.maxX)
+        let lower = max(0, box.minY)
+        let upper = min(buffer.height, box.maxY)
+        guard right > left, upper > lower else { return nil }
+        var samples: [UInt8] = []
+        samples.reserveCapacity((right - left) * (upper - lower) / 2)
+        for y in lower..<upper {
+            let start = y * buffer.width
+            for x in left..<right where mask.bits[start + x] {
+                samples.append(buffer.pixels[start + x])
+            }
+        }
+        return medianLevel(samples)
     }
 
     private static func score(_ buffer: GrayBuffer) -> Int {
@@ -1744,8 +1868,25 @@ private struct GrayBuffer {
     }
 }
 
+/// Gate for cell/rowcrop stderr dumps (#702). Off unless `SIXLAYER_SSOCR_TRACE=1`.
+public enum SevenSegmentOCRTrace: Sendable {
+    nonisolated(unsafe) public static var isEnabled: Bool = ProcessInfo.processInfo.environment["SIXLAYER_SSOCR_TRACE"] == "1"
+    nonisolated(unsafe) public static var writer: @Sendable (String) -> Void = { message in
+        fputs(message, stderr)
+    }
+
+    public static func resetToEnvironmentDefault() {
+        isEnabled = ProcessInfo.processInfo.environment["SIXLAYER_SSOCR_TRACE"] == "1"
+    }
+
+    public static func emit(_ message: String) {
+        guard isEnabled else { return }
+        writer(message)
+    }
+}
+
 private func trace(_ message: String) {
-    fputs(message, stderr)
+    SevenSegmentOCRTrace.emit(message)
 }
 
 private struct Mask {
@@ -2246,7 +2387,7 @@ private extension GrayBuffer {
     }
 
     /// Median luminance — proxy for glass on a mostly-glass short-wide crop.
-    fileprivate func peelGlassMedian() -> Int {
+    func peelGlassMedian() -> Int {
         guard !pixels.isEmpty else { return 128 }
         var hist = [Int](repeating: 0, count: 256)
         for pixel in pixels {
@@ -5349,6 +5490,23 @@ private func medianLevel(_ pixels: [UInt8]) -> Int? {
     return nil
 }
 
+private func boxMedianLevel(_ buffer: GrayBuffer, box: PixelBox) -> Int? {
+    let left = max(0, box.minX)
+    let right = min(buffer.width, box.maxX)
+    let lower = max(0, box.minY)
+    let upper = min(buffer.height, box.maxY)
+    guard right > left, upper > lower else { return nil }
+    var samples: [UInt8] = []
+    samples.reserveCapacity((right - left) * (upper - lower))
+    for y in lower..<upper {
+        let start = y * buffer.width
+        for x in left..<right {
+            samples.append(buffer.pixels[start + x])
+        }
+    }
+    return medianLevel(samples)
+}
+
 private func meanLevel(_ mask: Mask, pixels: [UInt8]) -> Int? {
     var total = 0
     var count = 0
@@ -5973,6 +6131,28 @@ struct SevenSegmentLatticeReader {
 
 private let analysisHeight = 360
 private let topHatFractions: [Double] = [0.08, 0.12, 0.18]
+
+/// Lattice analysis canvas size for a source gray buffer.
+///
+/// Tall frames downscale so height is `analysisHeight`. Short frames keep
+/// native size: upscaling a zero-margin line crop to 360px exploded width
+/// into the rotation sharpness search and hung the release unit gate (#691).
+func sevenSegmentLatticeAnalysisSize(
+    sourceWidth: Int,
+    sourceHeight: Int
+) -> (width: Int, height: Int, scale: Double) {
+    guard sourceWidth > 0, sourceHeight > 0 else {
+        return (1, 1, 1)
+    }
+    // Never upscale: short wide crops (zero-margin line boxes) used to become
+    // height 360 with width ×(360/h), and the rotation search hung (#691).
+    if sourceHeight <= analysisHeight {
+        return (sourceWidth, sourceHeight, 1)
+    }
+    let scale = Double(analysisHeight) / Double(sourceHeight)
+    let width = max(1, Int((Double(sourceWidth) * scale).rounded()))
+    return (width, analysisHeight, scale)
+}
 private let thickMaximum = 1.8
 private let rowCoverFraction = 0.3
 private let bridgeStrokes = 0.3
@@ -6036,9 +6216,10 @@ private struct Reader {
     }
 
     mutating func run() -> [[SevenSegmentLatticeReader.Cell]] {
-        let h = analysisHeight
-        scale = Double(h) / Double(height)
-        smallWidth = max(1, Int((Double(width) * scale).rounded()))
+        let analysis = sevenSegmentLatticeAnalysisSize(sourceWidth: width, sourceHeight: height)
+        scale = analysis.scale
+        smallWidth = analysis.width
+        let h = analysis.height
         let small = boxResize(pixels, width: width, height: height, toWidth: smallWidth, toHeight: h)
         let smoothed = median3(small, width: smallWidth, height: h)
 

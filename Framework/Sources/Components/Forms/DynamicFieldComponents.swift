@@ -1158,19 +1158,39 @@ public struct DynamicStepperField: View {
 
     /// Get range from displayHints (preferred) or metadata (fallback)
     private var range: ClosedRange<Double> {
-        // Prefer expectedRange from displayHints (has structured range)
-        if let hints = field.displayHints,
-           let expectedRange = hints.expectedRange {
-            return expectedRange.min...expectedRange.max
+        Self.resolvedRange(for: field)
+    }
+
+    /// Resolves stepper bounds from `displayHints.expectedRange` (preferred) or metadata min/max.
+    /// Bounds are ordered so an inverted range cannot trap `ClosedRange` construction (#562).
+    static func resolvedRange(for field: DynamicFormField) -> ClosedRange<Double> {
+        if let expectedRange = field.displayHints?.expectedRange,
+           expectedRange.min.isFinite, expectedRange.max.isFinite {
+            return orderedRange(expectedRange.min, expectedRange.max)
         }
-        // Fallback to metadata min/max keys
-        let min = Double(field.metadata?["min"] ?? "0") ?? 0.0
-        let max = Double(field.metadata?["max"] ?? "100") ?? 100.0
-        return min...max
+        let lower = finiteBound(field.metadata?["min"], default: 0.0)
+        let upper = finiteBound(field.metadata?["max"], default: 100.0)
+        return orderedRange(lower, upper)
+    }
+
+    /// NaN and infinity are not valid stepper bounds; `Double(String)` accepts "nan"/"inf",
+    /// and NaN bounds trap `ClosedRange` construction (#562).
+    private static func finiteBound(_ text: String?, default fallback: Double) -> Double {
+        guard let text, let value = Double(text), value.isFinite else { return fallback }
+        return value
+    }
+
+    private static func orderedRange(_ a: Double, _ b: Double) -> ClosedRange<Double> {
+        Swift.min(a, b)...Swift.max(a, b)
     }
 
     private var step: Double {
         Double(field.metadata?["step"] ?? "1") ?? 1.0
+    }
+
+    /// Value text for the stepper; shared formatter avoids `Int(Double)` traps (#562).
+    static func displayText(value: Double, step: Double) -> String {
+        platformStepperValueText(value, step: step)
     }
 
     public var body: some View {
@@ -1185,15 +1205,11 @@ public struct DynamicStepperField: View {
             .automaticComplianceForDynamicFormField(
                 field,
                 identifierElementType: "Stepper",
-                accessibilityValue: step.truncatingRemainder(dividingBy: 1.0) == 0.0
-                    ? "\(Int(value.wrappedValue))"
-                    : String(format: "%.2f", value.wrappedValue)
+                accessibilityValue: Self.displayText(value: value.wrappedValue, step: step)
             )
 
             // Show current value - use appropriate format based on step size
-            Text(step.truncatingRemainder(dividingBy: 1.0) == 0.0 
-                 ? "\(Int(value.wrappedValue))" 
-                 : String(format: "%.2f", value.wrappedValue))
+            Text(Self.displayText(value: value.wrappedValue, step: step))
                 .font(.caption)
                 .foregroundColor(.secondary)
         }

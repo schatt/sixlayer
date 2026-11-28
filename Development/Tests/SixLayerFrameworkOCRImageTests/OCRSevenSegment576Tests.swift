@@ -1,8 +1,9 @@
 //
 //  OCRSevenSegment576Tests.swift
-//  SixLayerFrameworkUnitTests
+//  SixLayerFrameworkOCRImageTests
 //
 //  Seven-segment decode and label binding (#576).
+//  Heavy image/decode suite — not part of SLF-*-UnitTests (#692).
 //
 
 import CoreGraphics
@@ -617,8 +618,20 @@ struct OCRSevenSegment576Tests {
             bezelLevel: 123,
             bezelWidth: 8
         )
-        let result = decode(image)
-        #expect(result.extractedText == "1,234.56")
+        #expect(decode(image).extractedText == "1,234.56")
+    }
+
+    /// #684: a real stem flush with the crop edge and top must not be dropped
+    /// as bezel chrome (#670 `isEdgeChromeStrip`).
+    @Test func edgeFlushOneIsStillAOne() {
+        // padding 0 + crop to the stem's maxX: the trailing 1 is tall/narrow,
+        // on the right edge, and on the top border — the geometry #670 uses
+        // for bezel remnants. No deskew so that crop stays exact.
+        let raw = SegmentPanel.render(rows: [atoms("21")], padding: 0)
+        // Stem ink ends at x=100 on the padding-0 layout (see #684 diagnosis).
+        let image = crop(raw, x: 0, y: 0, width: 100, height: raw.height)
+        let result = decode(image, maximum: 0)
+        #expect(result.extractedText == "21", "got=\(result.extractedText)")
     }
 
     @Test func glareAndBothPolaritiesDecodeTheSameDigits() {
@@ -699,6 +712,8 @@ struct OCRSevenSegment576Tests {
     /// #641: a zero-margin Vision glyph crop must read that line, not only
     /// avoid the known half-turn spoilers. Border clearing on a box tight to
     /// ink previously left `"8"` / `""` instead of `32.88` / `8.022`.
+    /// #691: must finish promptly — short crops must not upscale into a
+    /// multi-minute rotation search.
     @Test func aZeroMarginGlyphCropReadsThatLine() {
         let image = sealedBothRowsPanel()
         let full = decode(image, maximum: 0)
@@ -708,6 +723,21 @@ struct OCRSevenSegment576Tests {
             let tight = lineCrop(image, visionBox: segment.boundingBox, pad: 0)
             #expect(decode(tight, maximum: 0).extractedText == segment.text)
         }
+    }
+
+    /// #691: lattice analysis must not upscale a short wide crop to
+    /// `analysisHeight` (that exploded width into the rotation search and
+    /// hung the release macOS unit gate for 25+ minutes).
+    @Test func latticeAnalysisDoesNotUpscaleShortWideCrops() {
+        let short = sevenSegmentLatticeAnalysisSize(sourceWidth: 400, sourceHeight: 30)
+        #expect(short.height == 30)
+        #expect(short.width == 400)
+        #expect(short.scale == 1.0)
+
+        let tall = sevenSegmentLatticeAnalysisSize(sourceWidth: 1200, sourceHeight: 900)
+        #expect(tall.height == 360)
+        #expect(tall.width == 480)
+        #expect(abs(tall.scale - 0.4) < 0.0001)
     }
 
     /// #649: a modestly taller crop of the **top** sealed line must read
@@ -1282,15 +1312,22 @@ struct OCRSevenSegment576Tests {
         [2, 3, 4, 6].map { "fuel_purchase/scenario_\($0)/ti_fp_s\($0)_pump.jpg" }
     )
 
+    /// `Development/` for this checkout (`…/Tests/SixLayerFrameworkOCRImageTests/` → up 3).
+    private static var developmentDirectory: URL {
+        URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+    }
+
+    private static var repositoryRoot: URL {
+        developmentDirectory.deletingLastPathComponent()
+    }
+
     /// Scenario-1 pump photo from the private fixtures repo
     /// (`Development/TestFixtures/private`, schatt/sixlayer-test-fixtures).
     /// `Development/scripts/fetch-private-fixtures.sh` clones it; without access these tests skip.
-    static let scenario1Photo = URL(fileURLWithPath: #filePath)
-        .deletingLastPathComponent() // …/Features/OCR
-        .deletingLastPathComponent() // …/SixLayerFrameworkUnitTests/Features
-        .deletingLastPathComponent() // …/Tests/SixLayerFrameworkUnitTests
-        .deletingLastPathComponent() // …/Development/Tests
-        .deletingLastPathComponent() // …/Development
+    static let scenario1Photo = developmentDirectory
         .appendingPathComponent("TestFixtures/private/seven-segment/fuel_purchase/scenario_1/ti_fp_s1_pump.jpg")
         .path
 
@@ -1545,24 +1582,14 @@ struct OCRSevenSegment576Tests {
     }
 
     /// `Development/TestFixtures/private/…/IMG_7493.HEIC` (gitignored local checkout).
-    static let lightDigits7493Photo = URL(fileURLWithPath: #filePath)
-        .deletingLastPathComponent()
-        .deletingLastPathComponent()
-        .deletingLastPathComponent()
-        .deletingLastPathComponent()
-        .deletingLastPathComponent()
+    static let lightDigits7493Photo = developmentDirectory
         .appendingPathComponent(
             "TestFixtures/private/seven-segment/pump_display/light_digits_7493/IMG_7493.HEIC"
         )
         .path
 
     /// `Development/TestFixtures/private/…/ti_fp_s5_pump.jpg` (gitignored local checkout).
-    static let fuelPurchaseScenario5Photo = URL(fileURLWithPath: #filePath)
-        .deletingLastPathComponent()
-        .deletingLastPathComponent()
-        .deletingLastPathComponent()
-        .deletingLastPathComponent()
-        .deletingLastPathComponent()
+    static let fuelPurchaseScenario5Photo = developmentDirectory
         .appendingPathComponent(
             "TestFixtures/private/seven-segment/fuel_purchase/scenario_5/ti_fp_s5_pump.jpg"
         )
@@ -1937,13 +1964,7 @@ struct OCRSevenSegment576Tests {
     }
 
     private func decoderSource() throws -> String {
-        let url = URL(fileURLWithPath: #filePath)
-            .deletingLastPathComponent()
-            .deletingLastPathComponent()
-            .deletingLastPathComponent()
-            .deletingLastPathComponent()
-            .deletingLastPathComponent()
-            .deletingLastPathComponent()
+        let url = Self.repositoryRoot
             .appendingPathComponent("Framework/Sources/Core/Services/SevenSegmentOCR.swift")
         return try String(contentsOf: url, encoding: .utf8)
     }

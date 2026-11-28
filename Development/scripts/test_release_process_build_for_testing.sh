@@ -78,6 +78,12 @@ assert_not_contains "$SRC" "release_run_platform_unit_tests() {" "helper functio
 assert_contains "$SRC" "FB24278669" "script still references Apple Feedback FB24278669"
 assert_contains "$SRC" "#411" "script references issue #411"
 
+# OCR image is CI / manual only — must not be a release script gate (#693).
+assert_not_contains "$SRC" "SLF-macOS-OCRImageTests" "release gate does not invoke SLF-macOS-OCRImageTests"
+assert_not_contains "$SRC" "SLF-iOS-OCRImageTests" "release gate does not invoke SLF-iOS-OCRImageTests"
+assert_not_contains "$SRC" "Unit + OCR" "release checklist does not claim Unit + OCR"
+assert_contains "$SRC" "#693" "script references issue #693"
+
 echo ""
 echo "Passed: $PASS  Failed: $FAIL"
 if [ "$FAIL" -ne 0 ]; then

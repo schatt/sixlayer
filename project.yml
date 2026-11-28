@@ -304,6 +304,47 @@ targets:
       - package: ViewInspector
         product: ViewInspector
 
+  # OCR image/decode tests — heavy panel/crop/lab suites (#692).
+  # Not part of SLF-*-UnitTests; own schemes + release second gate.
+  SixLayerFrameworkOCRImageTests_iOS:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: Development/Tests/Shared/TestHelpers
+      - path: Development/Tests/SixLayerFrameworkOCRImageTests
+    settings:
+      PRODUCT_BUNDLE_IDENTIFIER: com.sixlayer.framework.ocr-image-tests
+      SWIFT_VERSION: "6.0"
+      SWIFT_ACTIVE_COMPILATION_CONDITIONS: $(inherited)
+      GENERATE_INFOPLIST_FILE: YES
+      CODE_SIGN_STYLE: Automatic
+      ENABLE_TESTING_SEARCH_PATHS: YES
+    dependencies:
+      - target: SixLayerFramework_iOS
+      - target: SixLayerViewInspectorTestKit_iOS
+      - package: ViewInspector
+        product: ViewInspector
+
+  SixLayerFrameworkOCRImageTests_macOS:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - path: Development/Tests/Shared/TestHelpers
+      - path: Development/Tests/SixLayerFrameworkOCRImageTests
+    settings:
+      PRODUCT_BUNDLE_IDENTIFIER: com.sixlayer.framework.ocr-image-tests
+      SWIFT_VERSION: "6.0"
+      SWIFT_ACTIVE_COMPILATION_CONDITIONS: $(inherited)
+      GENERATE_INFOPLIST_FILE: YES
+      CODE_SIGN_STYLE: Automatic
+      ENABLE_TESTING_SEARCH_PATHS: YES
+      DEAD_CODE_STRIPPING: YES
+    dependencies:
+      - target: SixLayerFramework_macOS
+      - target: SixLayerViewInspectorTestKit_macOS
+      - package: ViewInspector
+        product: ViewInspector
+
   # Unit tests - tvOS
   SixLayerFrameworkUnitTests_tvOS:
     type: bundle.unit-test
@@ -527,83 +568,14 @@ targets:
       GENERATE_INFOPLIST_FILE: YES
       CODE_SIGN_STYLE: Automatic
       IPHONEOS_DEPLOYMENT_TARGET: "17.0"
+      # Live Photo capture (#669) needs camera; the paired movie may use the mic.
+      INFOPLIST_KEY_NSCameraUsageDescription: "Capture photos and Live Photos for SixLayer framework testing."
+      INFOPLIST_KEY_NSMicrophoneUsageDescription: "Record Live Photo motion audio during camera tests."
+      INFOPLIST_KEY_NSPhotoLibraryUsageDescription: "Select photos for SixLayer framework testing."
     dependencies:
       - target: SixLayerFramework_iOS
 
-  # Runnable display OCR trainer (#609). The window is the trainer, not the test host.
-  DisplayOCRTraining_iOS:
-    type: application
-    platform: iOS
-    productName: DisplayOCRTraining
-    sources:
-      - path: Development/Apps/DisplayOCRTraining
-    settings:
-      PRODUCT_BUNDLE_IDENTIFIER: com.sixlayer.display-ocr-training
-      PRODUCT_NAME: DisplayOCRTraining
-      SWIFT_VERSION: "6.0"
-      GENERATE_INFOPLIST_FILE: YES
-      CODE_SIGN_STYLE: Automatic
-      IPHONEOS_DEPLOYMENT_TARGET: "17.0"
-      TARGETED_DEVICE_FAMILY: "1,2"
-      INFOPLIST_KEY_CFBundleDisplayName: Display OCR Training
-    dependencies:
-      - target: SixLayerFramework_iOS
-
-  DisplayOCRTraining_macOS:
-    type: application
-    platform: macOS
-    productName: DisplayOCRTraining
-    sources:
-      - path: Development/Apps/DisplayOCRTraining
-    settings:
-      PRODUCT_BUNDLE_IDENTIFIER: com.sixlayer.display-ocr-training
-      PRODUCT_NAME: DisplayOCRTraining
-      SWIFT_VERSION: "6.0"
-      GENERATE_INFOPLIST_FILE: YES
-      CODE_SIGN_STYLE: Automatic
-      CODE_SIGN_IDENTITY: "Apple Development"
-      DEVELOPMENT_TEAM: Y53G7YPJSZ
-      MACOSX_DEPLOYMENT_TARGET: "15.0"
-      INFOPLIST_KEY_CFBundleDisplayName: Display OCR Training
-    dependencies:
-      - target: SixLayerFramework_macOS
-
-  DisplayOCRTrainingUITests_iOS:
-    type: bundle.ui-testing
-    platform: iOS
-    sources:
-      - path: Development/Tests/DisplayOCRTrainingUITests
-    settings:
-      PRODUCT_BUNDLE_IDENTIFIER: com.sixlayer.display-ocr-training.ui-tests
-      SWIFT_VERSION: "6.0"
-      SWIFT_ENABLE_EXPLICIT_MODULES: NO
-      GENERATE_INFOPLIST_FILE: YES
-      CODE_SIGN_STYLE: Automatic
-      ENABLE_TESTING_SEARCH_PATHS: YES
-      DEAD_CODE_STRIPPING: YES
-      TEST_TARGET_NAME: DisplayOCRTraining_iOS
-    dependencies:
-      - target: DisplayOCRTraining_iOS
-
-  DisplayOCRTrainingUITests_macOS:
-    type: bundle.ui-testing
-    platform: macOS
-    sources:
-      - path: Development/Tests/DisplayOCRTrainingUITests
-    settings:
-      PRODUCT_BUNDLE_IDENTIFIER: com.sixlayer.display-ocr-training.ui-tests
-      SWIFT_VERSION: "6.0"
-      SWIFT_ENABLE_EXPLICIT_MODULES: NO
-      GENERATE_INFOPLIST_FILE: YES
-      CODE_SIGN_STYLE: Automatic
-      CODE_SIGN_IDENTITY: "Apple Development"
-      DEVELOPMENT_TEAM: Y53G7YPJSZ
-      ENABLE_TESTING_SEARCH_PATHS: YES
-      DEAD_CODE_STRIPPING: YES
-      TEST_TARGET_NAME: DisplayOCRTraining_macOS
-    dependencies:
-      - target: DisplayOCRTraining_macOS
-
+  # Display OCR lab/training apps live in schatt/display-ocr-lab (#706).
 
   # External integration tests - iOS
   SixLayerFrameworkExternalIntegrationTests_iOS:
@@ -795,34 +767,6 @@ schemes:
     test:
       targets: []
 
-  SLF-iOS-DisplayOCRTraining:
-    build:
-      targets:
-        SixLayerFramework_iOS: all
-        DisplayOCRTraining_iOS: all
-        DisplayOCRTrainingUITests_iOS: all
-    run:
-      executable: DisplayOCRTraining_iOS
-    test:
-      targets:
-        - name: DisplayOCRTrainingUITests_iOS
-          parallelizable: true
-          randomExecutionOrder: true
-
-  SLF-macOS-DisplayOCRTraining:
-    build:
-      targets:
-        SixLayerFramework_macOS: all
-        DisplayOCRTraining_macOS: all
-        DisplayOCRTrainingUITests_macOS: all
-    run:
-      executable: DisplayOCRTraining_macOS
-    test:
-      targets:
-        - name: DisplayOCRTrainingUITests_macOS
-          parallelizable: true
-          randomExecutionOrder: true
-
   SLF-iOS-AllTests:
     build:
       targets:
@@ -831,6 +775,9 @@ schemes:
     test:
       targets:
         - name: SixLayerFrameworkUnitTests_iOS
+          parallelizable: true
+          randomExecutionOrder: true
+        - name: SixLayerFrameworkOCRImageTests_iOS
           parallelizable: true
           randomExecutionOrder: true
         - name: SLFiOSViewInspectorTests
@@ -854,6 +801,9 @@ schemes:
     test:
       targets:
         - name: SixLayerFrameworkUnitTests_macOS
+          parallelizable: true
+          randomExecutionOrder: true
+        - name: SixLayerFrameworkOCRImageTests_macOS
           parallelizable: true
           randomExecutionOrder: true
         - name: SLFmacOSViewInspectorTests
@@ -888,6 +838,28 @@ schemes:
     test:
       targets:
         - name: SixLayerFrameworkUnitTests_macOS
+          parallelizable: true
+          randomExecutionOrder: true
+
+  SLF-iOS-OCRImageTests:
+    build:
+      targets:
+        SixLayerFramework_iOS: all
+        SixLayerFrameworkOCRImageTests_iOS: all
+    test:
+      targets:
+        - name: SixLayerFrameworkOCRImageTests_iOS
+          parallelizable: true
+          randomExecutionOrder: true
+
+  SLF-macOS-OCRImageTests:
+    build:
+      targets:
+        SixLayerFramework_macOS: all
+        SixLayerFrameworkOCRImageTests_macOS: all
+    test:
+      targets:
+        - name: SixLayerFrameworkOCRImageTests_macOS
           parallelizable: true
           randomExecutionOrder: true
 

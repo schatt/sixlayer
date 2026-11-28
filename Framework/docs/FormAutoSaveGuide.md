@@ -213,13 +213,15 @@ let editState = DynamicFormState(
 
 **Not covered here:** how individual field values are typed in `fieldValues` (e.g. `Double` vs `String` for number fields). See [Number and integer field values](#number-and-integer-field-values-issue-289) below.
 
-**Typed field values in drafts (#672, #674):** `AnyCodable` persists non-JSON types as tagged objects so save/load restores the original type, not `String(describing:)`:
+**Typed field values in drafts (#672, #674, #676):** `AnyCodable` persists non-JSON types as tagged objects so save/load restores the original type, not `String(describing:)`:
 - `Date` → `__sixlayer_date__` (ISO-8601)
 - `URL` → `__sixlayer_url__`
 - `Data` → `__sixlayer_data__` (base64; covers image/data fields)
 - `UUID` → `__sixlayer_uuid__`
 
-Plain strings that look like those values stay `String`.
+Arrays are encoded element-wise, so MultiDate `[Date]` field values round-trip as `[Date]` (#676). Plain strings that look like those values stay `String`.
+
+**Legacy pre-#674 `Data` drafts are unrecoverable (#683):** Before tagged `Data` encoding, unknown types (including `Data`) fell through to `String(describing:)`. For `Data` that yields shapes like `3 bytes` — not base64 — so tagged-data decode and any repair path cannot restore the bytes. Prefixed `Date` describing-strings remain recoverable (#675); `Data` does not. Hosts that may still have pre-#674 drafts containing `Data` should clear those drafts (or discard/log them). Do not invent a fake migration.
 
 ### Number and integer field values (Issue #289)
 

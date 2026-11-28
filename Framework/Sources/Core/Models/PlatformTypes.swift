@@ -1153,6 +1153,11 @@ public struct FieldDisplayHints: Sendable {
     /// Expected value range for numeric fields (for OCR validation)
     /// When specified, OCR-extracted numeric values outside this range will be flagged or rejected
     public let expectedRange: ValueRange?
+
+    /// Preferred count of digits after the decimal for OCR decimal placement (#678).
+    /// Distinct from ``expectedRange`` (magnitude bounds) and from `OCRContext.fieldAverages`
+    /// (regional magnitude prior). Locale/region variants are resolved when loading hints.
+    public let fractionDigits: Int?
     
     /// Additional field-specific metadata
     public let metadata: [String: String]
@@ -1214,6 +1219,7 @@ public struct FieldDisplayHints: Sendable {
         maxLength: Int? = nil,
         minLength: Int? = nil,
         expectedRange: ValueRange? = nil,
+        fractionDigits: Int? = nil,
         metadata: [String: String] = [:],
         ocrHints: [String]? = nil,
         supportsOCR: Bool? = nil,
@@ -1236,6 +1242,7 @@ public struct FieldDisplayHints: Sendable {
         self.maxLength = maxLength
         self.minLength = minLength
         self.expectedRange = expectedRange
+        self.fractionDigits = fractionDigits
         self.metadata = metadata
         self.ocrHints = ocrHints
         self.supportsOCR = supportsOCR

@@ -168,10 +168,16 @@ public protocol DataHintsLoader: Sendable {
 public final class FileBasedDataHintsLoader: DataHintsLoader, @unchecked Sendable {
     private let fileManager: FileManager
     private let bundle: Bundle
+    private let searchDirectories: [URL]
     
-    public init(fileManager: FileManager = .default, bundle: Bundle = .main) {
+    public init(
+        fileManager: FileManager = .default,
+        bundle: Bundle = .main,
+        searchDirectories: [URL] = []
+    ) {
         self.fileManager = fileManager
         self.bundle = bundle
+        self.searchDirectories = searchDirectories
     }
     
     /// Load a .hints file for a data model (backward compatibility - returns only field hints)
@@ -189,65 +195,50 @@ public final class FileBasedDataHintsLoader: DataHintsLoader, @unchecked Sendabl
     /// Load complete hints result with locale support for language-specific OCR hints
     /// Example: loadHintsResult(for: "User", locale: Locale(identifier: "es")) uses Spanish OCR hints
     public func loadHintsResult(for modelName: String, locale: Locale) -> DataHintsResult {
-        // Try to load from bundle first (in Hints/ subfolder)
-        if let hintsFolder = bundle.url(forResource: "Hints", withExtension: nil) {
-            let url = hintsFolder.appendingPathComponent("\(modelName).hints")
+        for url in candidateHintsURLs(for: modelName) {
             if let data = try? Data(contentsOf: url),
                let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
                 return parseHintsResult(from: json, locale: locale)
             }
         }
-        
-        // Also try root level for backward compatibility
-        if let url = bundle.url(forResource: modelName, withExtension: "hints"),
-           let data = try? Data(contentsOf: url),
-           let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
-            return parseHintsResult(from: json, locale: locale)
-        }
-        
-        // Fall back to documents directory (in Hints/ subfolder)
-        if let documentsURL = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first {
-            let hintsFolder = documentsURL.appendingPathComponent("Hints")
-            let url = hintsFolder.appendingPathComponent("\(modelName).hints")
-            if fileManager.fileExists(atPath: hintsFolder.path),
-               let data = try? Data(contentsOf: url),
-               let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
-                return parseHintsResult(from: json, locale: locale)
-            }
-        }
-        
         return DataHintsResult()
     }
-    
+
     /// Check if a hints file exists for a model
     public func hasHints(for modelName: String) -> Bool {
-        // Check in Hints/ subfolder first
-        if let hintsFolder = bundle.url(forResource: "Hints", withExtension: nil) {
-            let url = hintsFolder.appendingPathComponent("\(modelName).hints")
-            if fileManager.fileExists(atPath: url.path) {
-                return true
-            }
-        }
-        
-        // Also check root level for backward compatibility
-        if let _ = bundle.url(forResource: modelName, withExtension: "hints") {
-            return true
-        }
-        
-        // Check documents directory
-        if let documentsURL = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first {
-            let hintsFolder = documentsURL.appendingPathComponent("Hints")
-            let url = hintsFolder.appendingPathComponent("\(modelName).hints")
-            if fileManager.fileExists(atPath: url.path) {
-                return true
-            }
-        }
-        
-        return false
+        candidateHintsURLs(for: modelName).contains { fileManager.fileExists(atPath: $0.path) }
     }
-    
+
     // MARK: - Private Helpers
-    
+
+    /// `.hints` candidate URLs in precedence order (#714):
+    /// injected `searchDirectories` → bundle `Hints/` → bundle root → Documents `Hints/`.
+    /// Empty when `modelName` could escape a folder.
+    private func candidateHintsURLs(for modelName: String) -> [URL] {
+        guard Self.isSafeHintsName(modelName) else { return [] }
+        let fileName = "\(modelName).hints"
+        var urls = searchDirectories.map { $0.appendingPathComponent(fileName) }
+        if let hintsFolder = bundle.url(forResource: "Hints", withExtension: nil) {
+            urls.append(hintsFolder.appendingPathComponent(fileName))
+        }
+        if let url = bundle.url(forResource: modelName, withExtension: "hints") {
+            urls.append(url)
+        }
+        if let documentsURL = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first {
+            urls.append(documentsURL.appendingPathComponent("Hints").appendingPathComponent(fileName))
+        }
+        return urls
+    }
+
+    /// A model name must be a single path component: no separators, NUL, or `..` (#714).
+    private static func isSafeHintsName(_ modelName: String) -> Bool {
+        !modelName.isEmpty
+            && !modelName.contains("/")
+            && !modelName.contains("\\")
+            && !modelName.contains("\0")
+            && !modelName.contains("..")
+    }
+
     private func parseHintsResult(from json: [String: Any], locale: Locale = Locale.current) -> DataHintsResult {
         var fieldHints: [String: FieldDisplayHints] = [:]
         var sectionLayouts: [HintsSectionLayout] = []
@@ -363,8 +354,9 @@ public final class FileBasedDataHintsLoader: DataHintsLoader, @unchecked Sendabl
                     if !["expectedLength", "displayWidth", "showCharacterCounter", "maxLength", "minLength", 
                          "expectedRange", "ocrHints", "calculationGroups", "inputType", "options",
                          "fieldType", "isOptional", "isArray", "defaultValue", "isHidden", "isEditable",
-                         "supportsOCR", "displayOCR", "isCalculated", "allowsNegative"].contains(propKey) &&
-                       !propKey.hasPrefix("ocrHints.") {
+                         "supportsOCR", "displayOCR", "isCalculated", "allowsNegative", "fractionDigits"].contains(propKey) &&
+                       !propKey.hasPrefix("ocrHints.") &&
+                       !propKey.hasPrefix("fractionDigits.") {
                         if let stringValue = propValue as? String {
                             metadata[propKey] = stringValue
                         }
@@ -373,6 +365,7 @@ public final class FileBasedDataHintsLoader: DataHintsLoader, @unchecked Sendabl
                 
                 // Parse OCR hints with language-specific support
                 let ocrHints = parseOCRHints(from: properties, languageCode: languageCode)
+                let fractionDigits = parseFractionDigits(from: properties, locale: locale)
 
                 // Optional OCR eligibility / accessory overrides (Issue #404); nil = no opinion
                 let supportsOCR = parseOptionalBool(from: properties, key: "supportsOCR")
@@ -408,6 +401,7 @@ public final class FileBasedDataHintsLoader: DataHintsLoader, @unchecked Sendabl
                     maxLength: maxLength,
                     minLength: minLength,
                     expectedRange: expectedRange,
+                    fractionDigits: fractionDigits,
                     metadata: metadata,
                     ocrHints: ocrHints,
                     supportsOCR: supportsOCR,
@@ -556,6 +550,26 @@ public final class FileBasedDataHintsLoader: DataHintsLoader, @unchecked Sendabl
         return nil
     }
     
+    /// Preferred fraction digits: `fractionDigits.{region}` → `fractionDigits.{language}` → `fractionDigits` (#678).
+    private func parseFractionDigits(from properties: [String: Any], locale: Locale) -> Int? {
+        if let region = locale.region?.identifier,
+           let value = intProperty(properties["fractionDigits.\(region)"]) {
+            return value
+        }
+        let languageCode = locale.language.languageCode?.identifier ?? "en"
+        if let value = intProperty(properties["fractionDigits.\(languageCode)"]) {
+            return value
+        }
+        return intProperty(properties["fractionDigits"])
+    }
+
+    private func intProperty(_ value: Any?) -> Int? {
+        if let number = value as? Int { return number }
+        if let number = value as? Double { return Int(number) }
+        if let string = value as? String { return Int(string) }
+        return nil
+    }
+
     /// Parse OCR hints with language-specific fallback: ocrHints.{language} -> ocrHints -> nil
     private func parseOCRHints(from properties: [String: Any], languageCode: String) -> [String]? {
         // First try language-specific key (e.g., "ocrHints.es")
@@ -679,6 +693,7 @@ public final class FileBasedDataHintsLoader: DataHintsLoader, @unchecked Sendabl
                 maxLength: properties["maxLength"].flatMap(Int.init),
                 minLength: properties["minLength"].flatMap(Int.init),
                 expectedRange: expectedRange,
+                fractionDigits: parseFractionDigits(from: propertiesAny, locale: Locale.current),
                 metadata: properties,
                 inputType: inputType,
                 pickerOptions: pickerOptions,

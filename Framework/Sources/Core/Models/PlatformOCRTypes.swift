@@ -280,6 +280,24 @@ public struct OCRContext: Sendable {
     /// 
     /// This is particularly useful when expected ranges are broad but typical values are narrower
     public let fieldAverages: [String: Double]?
+
+    /// Maximum percent deviation from ``fieldAverages`` before a within-range value is flagged
+    /// as unusual (#679). `nil` means ``defaultFieldAverageMaxPercentDeviation`` (50).
+    /// This is not the average magnitude itself, and not an absolute ``fieldRanges`` bound.
+    public let fieldAverageMaxPercentDeviation: Double?
+
+    /// Legacy / default gate when ``fieldAverageMaxPercentDeviation`` is nil (#679).
+    public static let defaultFieldAverageMaxPercentDeviation: Double = 50
+
+    /// Percent gate used by average-distance warnings: explicit value, or ``defaultFieldAverageMaxPercentDeviation``.
+    public var resolvedFieldAverageMaxPercentDeviation: Double {
+        fieldAverageMaxPercentDeviation ?? Self.defaultFieldAverageMaxPercentDeviation
+    }
+
+    /// Preferred fraction-digit counts per field for OCR decimal placement (#678).
+    /// Runtime / fixture override over hints-file ``FieldDisplayHints/fractionDigits``.
+    /// Distinct from ``fieldAverages`` (magnitude) and ``fieldRanges`` (absolute bounds).
+    public let fieldFractionDigits: [String: Int]?
     
     /// When `true`, Vision observations are filtered by ``textTypes`` using coarse ``OCRTextTypeInference``.
     /// When `false` (default), no per-line type filtering is applied so numeric and label text is not dropped
@@ -327,6 +345,8 @@ public struct OCRContext: Sendable {
         entityName: String? = nil,
         fieldRanges: [String: ValueRange]? = nil,
         fieldAverages: [String: Double]? = nil,
+        fieldAverageMaxPercentDeviation: Double? = nil,
+        fieldFractionDigits: [String: Int]? = nil,
         strictVisionTextTypeFiltering: Bool = false,
         visionMinimumTextHeight: Float = OCRVisionDefaults.minimumTextHeight,
         processingMode: OCRProcessingMode = .accurate,
@@ -348,6 +368,8 @@ public struct OCRContext: Sendable {
         self.entityName = entityName
         self.fieldRanges = fieldRanges
         self.fieldAverages = fieldAverages
+        self.fieldAverageMaxPercentDeviation = fieldAverageMaxPercentDeviation
+        self.fieldFractionDigits = fieldFractionDigits
         self.strictVisionTextTypeFiltering = strictVisionTextTypeFiltering
         self.visionMinimumTextHeight = visionMinimumTextHeight
         self.processingMode = processingMode
@@ -378,6 +400,8 @@ public struct OCRContext: Sendable {
             entityName: entityName,
             fieldRanges: fieldRanges,
             fieldAverages: fieldAverages,
+            fieldAverageMaxPercentDeviation: fieldAverageMaxPercentDeviation,
+            fieldFractionDigits: fieldFractionDigits,
             strictVisionTextTypeFiltering: strictVisionTextTypeFiltering,
             visionMinimumTextHeight: visionMinimumTextHeight,
             processingMode: processingMode,
@@ -454,6 +478,9 @@ public struct OCRResult: Sendable {
 
     /// Segment groups and printed labels. Empty for ``OCRProcessingMode/fast`` and ``OCRProcessingMode/accurate``.
     public let recognizedTexts: [OCRRecognizedText]
+
+    /// Panel actually used for decode, in original-image normalized top-left coords (#677).
+    public let chosenPanelRect: DisplayOCRNormalizedBox?
     
     public init(
         extractedText: String,
@@ -469,7 +496,8 @@ public struct OCRResult: Sendable {
         uncategorizedExtractions: [UncategorizedOCRExtraction] = [],
         recognizedTexts: [OCRRecognizedText] = [],
         isValid: Bool? = nil,
-        validationReason: String? = nil
+        validationReason: String? = nil,
+        chosenPanelRect: DisplayOCRNormalizedBox? = nil
     ) {
         self.extractedText = extractedText
         self.confidence = confidence
@@ -483,6 +511,7 @@ public struct OCRResult: Sendable {
         self.adjustedFields = adjustedFields
         self.uncategorizedExtractions = uncategorizedExtractions
         self.recognizedTexts = recognizedTexts
+        self.chosenPanelRect = chosenPanelRect
         
         // Set validation properties - use provided value or compute from confidence
         self.isValid = isValid ?? (confidence >= 0.5)
