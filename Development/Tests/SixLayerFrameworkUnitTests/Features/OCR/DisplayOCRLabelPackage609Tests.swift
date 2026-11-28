@@ -7,6 +7,9 @@
 
 import CoreGraphics
 import Foundation
+#if os(iOS)
+import UIKit
+#endif
 import Testing
 @testable import SixLayerFramework
 
@@ -93,6 +96,42 @@ struct DisplayOCRLabelPackage609Tests {
         #expect(DisplayOCRLabelHarness.rowTexts(from: result) == ["32.88", "8.022"])
     }
 
+    #if os(iOS)
+    // Lane-only (UIKit): UIImage.size is points while CGImage.cropping(to:) takes pixels.
+    // macOS NSImage crop is point-based via draw(from:), so no equivalent failure mode.
+    @Test func harnessCropsPanelInPixelsForScaledImage() async throws {
+        let recorder = RecordingOCRService()
+        // 80x40 pixels at scale 2 => 40x20 points.
+        let image = solidUIKitImage(pixelWidth: 80, pixelHeight: 40, scale: 2, orientation: .up)
+
+        _ = try await DisplayOCRLabelHarness.decode(
+            image: image,
+            panelNormalizedRect: CGRect(x: 0, y: 0, width: 0.5, height: 1),
+            service: recorder
+        )
+
+        let crop = try #require(recorder.lastImage)
+        // Left half of 80 px wide x full 40 px tall.
+        #expect(crop.size == CGSize(width: 40, height: 40))
+    }
+
+    @Test func harnessCropsUprightOrientationForRotatedImage() async throws {
+        let recorder = RecordingOCRService()
+        // Raw bitmap 80x40 px, orientation .right => displayed/upright 40x80.
+        let image = solidUIKitImage(pixelWidth: 80, pixelHeight: 40, scale: 1, orientation: .right)
+
+        _ = try await DisplayOCRLabelHarness.decode(
+            image: image,
+            panelNormalizedRect: CGRect(x: 0, y: 0, width: 1, height: 0.25),
+            service: recorder
+        )
+
+        let crop = try #require(recorder.lastImage)
+        // Bottom quarter of the upright 40x80 image => 40 px wide x 20 px tall.
+        #expect(crop.size == CGSize(width: 40, height: 20))
+    }
+    #endif
+
     @Test func pixelCropUsesVisionNormalizedPanel() {
         let imageSize = CGSize(width: 200, height: 100)
         let normalized = CGRect(x: 0.1, y: 0.2, width: 0.5, height: 0.3)
@@ -110,6 +149,7 @@ private final class RecordingOCRService: OCRServiceProtocol, @unchecked Sendable
     private(set) var processImageCallCount = 0
     private(set) var lastContext: OCRContext?
     private(set) var lastStrategy: OCRStrategy?
+    private(set) var lastImage: PlatformImage?
 
     var isAvailable: Bool { true }
     var capabilities: OCRCapabilities {
@@ -128,6 +168,7 @@ private final class RecordingOCRService: OCRServiceProtocol, @unchecked Sendable
         strategy: OCRStrategy
     ) async throws -> OCRResult {
         processImageCallCount += 1
+        lastImage = image
         lastContext = context
         lastStrategy = strategy
         return OCRResult(extractedText: "1", confidence: 1)
@@ -155,3 +196,15 @@ private func solidPlatformImage(width: Int, height: Int) -> PlatformImage {
     )!
     return PlatformImage(cgImage: cgImage)
 }
+
+#if os(iOS)
+private func solidUIKitImage(
+    pixelWidth: Int,
+    pixelHeight: Int,
+    scale: CGFloat,
+    orientation: UIImage.Orientation
+) -> PlatformImage {
+    let cgImage = solidPlatformImage(width: pixelWidth, height: pixelHeight).uiImage.cgImage!
+    return PlatformImage(uiImage: UIImage(cgImage: cgImage, scale: scale, orientation: orientation))
+}
+#endif
