@@ -338,6 +338,15 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
     
     // MARK: - Structured Extraction
     
+    /// Pipeline result plus the segment each hints field was bound to (#720).
+    internal struct StructuredExtractionOutcome {
+        let structuredData: [String: String]
+        let adjustedFields: [String: String]
+        let extractionConfidence: Float
+        let missingRequiredFields: [String]
+        let fieldSegments: [String: OCRFieldSegment]
+    }
+
     /// Applies hints-based structured extraction to existing OCR text (unit tests and pipeline reuse).
     internal func applyStructuredExtraction(
         from baseResult: OCRResult,
@@ -347,9 +356,22 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
         structuredData: [String: String],
         adjustedFields: [String: String],
         extractionConfidence: Float,
-        missingRequiredFields: [String],
-        fieldSegments: [String: OCRFieldSegment]
+        missingRequiredFields: [String]
     ) {
+        let outcome = structuredExtractionOutcome(
+            from: baseResult,
+            context: context,
+            recognitionLines: recognitionLines
+        )
+        return (outcome.structuredData, outcome.adjustedFields, outcome.extractionConfidence, outcome.missingRequiredFields)
+    }
+
+    /// Full structured extraction outcome, including segment boxes for bound fields (#720).
+    internal func structuredExtractionOutcome(
+        from baseResult: OCRResult,
+        context: OCRContext,
+        recognitionLines: [OCRRecognitionLine]? = nil
+    ) -> StructuredExtractionOutcome {
         var structuredData = extractStructuredData(
             from: baseResult,
             context: context,
@@ -378,7 +400,13 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
             extractionConfidence = min(extractionConfidence, 0.5)
         }
         let missingFields = findMissingRequiredFields(structuredData, context: context)
-        return (structuredData, adjustedFields, extractionConfidence, missingFields, [:])
+        return StructuredExtractionOutcome(
+            structuredData: structuredData,
+            adjustedFields: adjustedFields,
+            extractionConfidence: extractionConfidence,
+            missingRequiredFields: missingFields,
+            fieldSegments: [:]
+        )
     }
     
     private func recognitionLines(texts: [String], boundingBoxes: [CGRect]) -> [OCRRecognitionLine]? {
