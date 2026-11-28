@@ -499,6 +499,8 @@ public struct OCRResult: Sendable {
 
     /// Hints field name to the recognized segment that produced it (#720).
     /// Only fields bound to a printed label appear. Empty when the path has no segment rows.
+    /// May contain a field that range validation later removed from ``structuredData``;
+    /// each entry's text is the raw recognition, before decimal correction.
     public let fieldSegments: [String: OCRFieldSegment]
     
     public init(
