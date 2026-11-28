@@ -16,12 +16,13 @@ enum OCRSegmentLabelBinding {
         return segments + kept
     }
 
-    /// Stub for #720 red phase: returns no bindings until the segment box is carried through.
-    static func assignSegments(fragments: [OCRRecognizedText], patterns: [String: String]) -> [String: OCRFieldSegment] {
-        [:]
+    /// Text per hints field. Projection of ``assignSegments(fragments:patterns:)``.
+    static func assign(fragments: [OCRRecognizedText], patterns: [String: String]) -> [String: String] {
+        assignSegments(fragments: fragments, patterns: patterns).mapValues(\.text)
     }
 
-    static func assign(fragments: [OCRRecognizedText], patterns: [String: String]) -> [String: String] {
+    /// Hints field to the segment text and box that label binding chose (#720).
+    static func assignSegments(fragments: [OCRRecognizedText], patterns: [String: String]) -> [String: OCRFieldSegment] {
         let segments = fragments.filter { $0.role == .segment }
         let labels = fragments.filter { $0.role == .label }
         guard !segments.isEmpty, !labels.isEmpty, !patterns.isEmpty else { return [:] }
@@ -29,13 +30,13 @@ enum OCRSegmentLabelBinding {
         let usable = labels.filter { !isStripHeading($0.boundingBox, segments: segmentBoxes) }
         guard !usable.isEmpty else { return [:] }
         let pairs = pair(segments: segments, labels: usable)
-        var fields: [String: String] = [:]
+        var fields: [String: OCRFieldSegment] = [:]
         for (field, pattern) in patterns {
             let hits = pairs.filter { labelMatches($0.label.text, pattern: pattern) }
             guard let best = hits.min(by: { edgeGap($0.label.boundingBox, $0.segment.boundingBox) < edgeGap($1.label.boundingBox, $1.segment.boundingBox) }) else {
                 continue
             }
-            fields[field] = best.segment.text
+            fields[field] = OCRFieldSegment(text: best.segment.text, boundingBox: best.segment.boundingBox)
         }
         return fields
     }
