@@ -260,18 +260,10 @@ open class DynamicFormTests: BaseTestClass {
                 ]
             ]
         ]
-        let fileManager = FileManager.default
-        guard let documentsURL = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first else {
-            throw NSError(domain: "TestError", code: 1, userInfo: [NSLocalizedDescriptionKey: "No documents directory"])
-        }
-        let hintsDir = documentsURL.appendingPathComponent("Hints")
-        try fileManager.createDirectory(at: hintsDir, withIntermediateDirectories: true)
-        let uniqueModelName = "DynamicFormHints_\(UUID().uuidString.prefix(8))"
-        let testFile = hintsDir.appendingPathComponent("\(uniqueModelName).hints")
-        try JSONSerialization.data(withJSONObject: hintsJSON, options: .prettyPrinted).write(to: testFile, options: .atomic)
-        defer { try? fileManager.removeItem(at: testFile) }
+        let (testFile, uniqueModelName) = try HintsTestFixtures.writeHintsFile(modelName: "DynamicFormHints", json: hintsJSON)
+        defer { HintsTestFixtures.cleanup(testFile) }
 
-        let hintsResult = FileBasedDataHintsLoader().loadHintsResult(for: uniqueModelName)
+        let hintsResult = HintsTestFixtures.loader(for: testFile).loadHintsResult(for: uniqueModelName)
         let sections = FormSectionResolution.resolve(
             fields: fields,
             layoutSpec: nil,
