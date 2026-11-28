@@ -975,6 +975,9 @@ struct OCRSevenSegment576Tests {
         #expect(!result.extractedText.contains("Gallons"))
         #expect(result.structuredData["sale"] == "32.88")
         #expect(result.structuredData["volume"] == "8.022")
+        #expect(result.fieldSegments["volume"]?.text == "8.022")
+        #expect(result.fieldSegments["volume"]?.boundingBox == volume.boundingBox)
+        #expect(result.fieldSegments["sale"]?.boundingBox == sale.boundingBox)
         #expect(result.confidence == 1)
         #expect(result.extractionConfidence == 1)
         let saleFragment = result.recognizedTexts.first { $0.text == "32.88" }
