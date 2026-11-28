@@ -2570,6 +2570,17 @@ private extension GrayBuffer {
                 found = rect
             }
         }
+        if readable.isEmpty, largestDigits < 2 {
+            // The flat read found no digits in any pocket (glare, reflections
+            // on a real LCD). Ask the lattice reader which local pockets read
+            // as a price row or more, instead of falling back to the largest
+            // pocket, which can be the whole pump face (#708).
+            let latticeReadable = analysis.latticeReadablePanels(in: candidates)
+            if let first = latticeReadable.first {
+                found = first.rect
+                readable = Array(latticeReadable.dropFirst())
+            }
+        }
         if found != largest, largestDigits >= 2 {
             readable.append((largest, largestDigits))
         }
@@ -2579,6 +2590,26 @@ private extension GrayBuffer {
             accepted.append(entry.rect)
         }
         return accepted.map { mapRect($0, from: analysis) }
+    }
+
+    /// Local pockets (not the whole frame) the lattice reader reads as a
+    /// confident run of at least four digits, best read first. Four digits is
+    /// one complete price row, the same bar the decode uses to tell a row from
+    /// a fragment. Slower than the flat read, so callers use it only when the
+    /// flat read found nothing (#708).
+    fileprivate func latticeReadablePanels(in candidates: [CGRect]) -> [(rect: CGRect, digits: Int)] {
+        let scored: [(rect: CGRect, digits: Int, rank: (Int, Int))] = candidates.compactMap { rect in
+            guard isLocalFrame(rect), let crop = panelCrop(rect) else { return nil }
+            let rows = SevenSegmentLatticeReader.readRefined(
+                pixels: crop.pixels, width: crop.width, height: crop.height
+            )
+            let digits = rows.flatMap { $0 }.filter { $0.character.isNumber }.count
+            guard digits >= 4, SevenSegmentLatticeReader.isConfident(rows) else { return nil }
+            return (rect, digits, SevenSegmentLatticeReader.rank(rows))
+        }
+        return scored
+            .sorted { ($0.rank.0, $0.rank.1) > ($1.rank.0, $1.rank.1) }
+            .map { ($0.rect, $0.digits) }
     }
 
     /// Two pockets are the same panel when they share more than half of the
