@@ -14,6 +14,7 @@ struct Layer1OCRExamples: View {
     
     @State private var visualCorrectionResult: OCRResult?
     @State private var structuredDataResult: OCRResult?
+    @State private var lastExportedLabelSummary: String?
     
     var body: some View {
         platformVStack(alignment: .leading, spacing: 24) {
@@ -27,6 +28,10 @@ struct Layer1OCRExamples: View {
             
             ExampleSection(title: "Extract Structured Data") {
                 ExtractStructuredDataExamples(result: $structuredDataResult)
+            }
+
+            ExampleSection(title: "Display OCR Label Harness (#609)") {
+                DisplayOCRLabelHarnessExample(lastExportSummary: $lastExportedLabelSummary)
             }
         }
         .padding()
@@ -156,6 +161,32 @@ struct ExtractStructuredDataExamples: View {
             }
             #endif
         }
+    }
+}
+
+struct DisplayOCRLabelHarnessExample: View {
+    @Binding var lastExportSummary: String?
+
+    var body: some View {
+        platformVStack(alignment: .leading, spacing: 12) {
+            Text("Display OCR Label Harness")
+                .font(.headline)
+
+            platformDisplayOCRLabelHarness_L1 { package in
+                lastExportSummary = "\(package.rows.count) row(s): "
+                    + package.rows.map(\.confirmedText).joined(separator: " | ")
+            }
+            .frame(minHeight: 420)
+
+            if let lastExportSummary {
+                Text("Last export: \(lastExportSummary)")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+        }
+        .padding()
+        .background(Color.platformSecondaryBackground)
+        .cornerRadius(8)
     }
 }
 

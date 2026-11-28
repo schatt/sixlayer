@@ -64,4 +64,46 @@ public enum OCRBoundingBoxLayout {
         let pixelRect = visionNormalizedToImagePixels(rect, imageSize: imageSize)
         return imagePixelRectToContainer(pixelRect, imageFrame: imageFrame, imageSize: imageSize)
     }
+
+    /// Image pixel rect (origin top-left) → Vision normalized rect (origin bottom-left).
+    public static func imagePixelsToVisionNormalized(_ rect: CGRect, imageSize: CGSize) -> CGRect {
+        guard imageSize.width > 0, imageSize.height > 0 else { return .zero }
+        return CGRect(
+            x: rect.origin.x / imageSize.width,
+            y: 1.0 - ((rect.origin.y + rect.height) / imageSize.height),
+            width: rect.width / imageSize.width,
+            height: rect.height / imageSize.height
+        )
+    }
+
+    /// Container rect over an aspect-fit image → image pixel rect (origin top-left).
+    public static func containerRectToImagePixels(
+        _ rect: CGRect,
+        imageFrame: CGRect,
+        imageSize: CGSize
+    ) -> CGRect {
+        guard imageFrame.width > 0, imageFrame.height > 0,
+              imageSize.width > 0, imageSize.height > 0 else {
+            return .zero
+        }
+        let scaleX = imageSize.width / imageFrame.width
+        let scaleY = imageSize.height / imageFrame.height
+        return CGRect(
+            x: (rect.origin.x - imageFrame.origin.x) * scaleX,
+            y: (rect.origin.y - imageFrame.origin.y) * scaleY,
+            width: rect.width * scaleX,
+            height: rect.height * scaleY
+        )
+    }
+
+    /// Container rect over an aspect-fit image → Vision normalized rect (#609 label harness).
+    public static func containerRectToVisionNormalized(
+        _ rect: CGRect,
+        imageSize: CGSize,
+        containerSize: CGSize
+    ) -> CGRect {
+        let imageFrame = aspectFitImageFrame(imageSize: imageSize, containerSize: containerSize)
+        let pixelRect = containerRectToImagePixels(rect, imageFrame: imageFrame, imageSize: imageSize)
+        return imagePixelsToVisionNormalized(pixelRect, imageSize: imageSize)
+    }
 }
