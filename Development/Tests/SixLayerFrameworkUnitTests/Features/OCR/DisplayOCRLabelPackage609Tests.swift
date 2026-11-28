@@ -143,6 +143,108 @@ struct DisplayOCRLabelPackage609Tests {
     }
 }
 
+@Suite("Display OCR label draft suggestions (#609 review)")
+struct DisplayOCRLabelDraftSuggestions609Tests {
+    // Vision-normalized: origin bottom-left, so larger y is higher on screen.
+    private let bottomBox = CGRect(x: 0.1, y: 0.10, width: 0.8, height: 0.2)
+    private let topBox = CGRect(x: 0.1, y: 0.60, width: 0.8, height: 0.2)
+
+    @Test func suggestionsPairWithBoxesByVerticalPositionNotDrawingOrder() {
+        var draft = DisplayOCRLabelDraft()
+        // Draw the bottom row first; OCR returns rows top to bottom.
+        draft.addRowBox(bottomBox)
+        draft.addRowBox(topBox)
+        let generation = draft.generation
+
+        let notice = draft.applySuggestions(["32.88", "8.022"], requestGeneration: generation)
+
+        #expect(notice != nil)
+        #expect(draft.rows.count == 2)
+        #expect(draft.rows[0].box == bottomBox)
+        #expect(draft.rows[0].text == "8.022")
+        #expect(draft.rows[1].box == topBox)
+        #expect(draft.rows[1].text == "32.88")
+    }
+
+    @Test func missedOCRRowKeepsEveryDrawnBox() {
+        var draft = DisplayOCRLabelDraft()
+        draft.addRowBox(bottomBox)
+        draft.addRowBox(topBox)
+        let generation = draft.generation
+
+        let notice = draft.applySuggestions(["32.88"], requestGeneration: generation)
+
+        #expect(draft.rows.count == 2)
+        #expect(draft.rows.map(\.box) == [bottomBox, topBox])
+        #expect(notice?.contains("check pairing") == true)
+    }
+
+    @Test func emptyDecodeKeepsBoxesAndUserText() {
+        var draft = DisplayOCRLabelDraft()
+        draft.addRowBox(bottomBox)
+        draft.setText("typed", at: 0)
+        let generation = draft.generation
+
+        let notice = draft.applySuggestions([], requestGeneration: generation)
+
+        #expect(notice != nil)
+        #expect(draft.rows == [DisplayOCRLabelDraft.Row(box: bottomBox, text: "typed")])
+    }
+
+    @Test func existingUserTextIsNotOverwrittenBySuggestions() {
+        var draft = DisplayOCRLabelDraft()
+        draft.addRowBox(bottomBox)
+        draft.addRowBox(topBox)
+        draft.setText("mine", at: 0)
+        let generation = draft.generation
+
+        _ = draft.applySuggestions(["A", "B"], requestGeneration: generation)
+
+        #expect(draft.rows[0].text == "mine")
+        #expect(draft.rows[1].text == "A")
+    }
+
+    @Test func extraOCRRowsBecomeBoxlessRowsWithoutDroppingBoxes() {
+        var draft = DisplayOCRLabelDraft()
+        draft.addRowBox(topBox)
+        let generation = draft.generation
+
+        _ = draft.applySuggestions(["A", "B"], requestGeneration: generation)
+
+        #expect(draft.rows == [
+            DisplayOCRLabelDraft.Row(box: topBox, text: "A"),
+            DisplayOCRLabelDraft.Row(box: nil, text: "B")
+        ])
+    }
+
+    @Test func staleResultIsDiscardedAfterBoxChange() {
+        var draft = DisplayOCRLabelDraft()
+        draft.addRowBox(bottomBox)
+        let generation = draft.generation
+        draft.addRowBox(topBox)
+        let before = draft
+
+        let notice = draft.applySuggestions(["X", "Y"], requestGeneration: generation)
+
+        #expect(notice == nil)
+        #expect(draft == before)
+    }
+
+    @Test func staleResultIsDiscardedAfterClearROIs() {
+        var draft = DisplayOCRLabelDraft()
+        draft.setPanel(bottomBox)
+        draft.addRowBox(topBox)
+        let generation = draft.generation
+        draft.clearROIs()
+        let before = draft
+
+        let notice = draft.applySuggestions(["X"], requestGeneration: generation)
+
+        #expect(notice == nil)
+        #expect(draft == before)
+    }
+}
+
 // MARK: - Helpers
 
 private final class RecordingOCRService: OCRServiceProtocol, @unchecked Sendable {
