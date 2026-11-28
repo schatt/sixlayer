@@ -176,7 +176,7 @@ struct HintsFileColorConfigurationTests {
         defer { HintsTestFixtures.cleanup(testFile) }
         
         // When: Create PresentationHints from model name
-        let hints = await PresentationHints(modelName: uniqueModelName)
+        let hints = await PresentationHints(modelName: uniqueModelName, registry: DataHintsRegistry(loader: HintsTestFixtures.loader(for: testFile)))
         
         // Then: Should use defaultColor from hints file
         #expect(hints.defaultColor == .blue, "Should use blue from hints file")
@@ -223,7 +223,7 @@ struct HintsFileColorConfigurationTests {
         defer { HintsTestFixtures.cleanup(testFile) }
         
         // When: Create PresentationHints from model name
-        let hints = await PresentationHints(modelName: uniqueModelName)
+        let hints = await PresentationHints(modelName: uniqueModelName, registry: DataHintsRegistry(loader: HintsTestFixtures.loader(for: testFile)))
         
         // Then: Should parse hex color
         #expect(hints.defaultColor != nil, "Should parse hex color from hints file")
@@ -243,7 +243,7 @@ struct HintsFileColorConfigurationTests {
         defer { HintsTestFixtures.cleanup(testFile) }
         
         // When: Create PresentationHints from model name
-        let hints = await PresentationHints(modelName: uniqueModelName)
+        let hints = await PresentationHints(modelName: uniqueModelName, registry: DataHintsRegistry(loader: HintsTestFixtures.loader(for: testFile)))
         
         // Then: Should have nil defaultColor (no config in hints file)
         #expect(hints.defaultColor == nil, "Should have nil defaultColor when not in hints file")
@@ -266,7 +266,7 @@ struct HintsFileColorConfigurationTests {
         defer { HintsTestFixtures.cleanup(testFile) }
         
         // When: Create PresentationHints from model name
-        let hints = await PresentationHints(modelName: uniqueModelName)
+        let hints = await PresentationHints(modelName: uniqueModelName, registry: DataHintsRegistry(loader: HintsTestFixtures.loader(for: testFile)))
         
         // Then: Should have both color config and field hints
         #expect(hints.defaultColor == .green, "Should have defaultColor from hints file")
