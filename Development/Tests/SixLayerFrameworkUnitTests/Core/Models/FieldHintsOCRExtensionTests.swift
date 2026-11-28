@@ -12,11 +12,6 @@ import Foundation
 @Suite("Field Hints OCR Extensions")
 struct FieldHintsOCRExtensionTests {
     
-    /// Helper to create a loader that reads from documents directory
-    private func createTestLoader() -> FileBasedDataHintsLoader {
-        return FileBasedDataHintsLoader()
-    }
-    
     /// Helper to write a hints file to documents directory where loader can find it
     /// Uses unique filenames to ensure test isolation during parallel execution
     /// Returns both the file URL and the unique model name to use with loadHintsResult
