@@ -1692,6 +1692,25 @@ struct OCRSevenSegment576Tests {
         }
     }
 
+    /// #708: the localized decode of the real full pump frame must read the
+    /// sale row. The gallons row keeps its glyph floor (`740` of `7.740`): the
+    /// leading digit sits under glare and decimals are a separate decoder
+    /// ceiling, so this asserts what the LCD crop reads today, not more.
+    @Test(
+        .enabled(if: FileManager.default.fileExists(atPath: OCRSevenSegment576Tests.ppgGradeWindows7641Photo))
+    )
+    func localizedDecodeReadsSaleLcdOnRealPumpFrame() throws {
+        let image = try realPumpFrame7641()
+        let result = SevenSegmentOCR.decode(cgImage: image, localizeDigitPanel: true)
+        let lines = result.extractedText
+            .split(separator: "\n", omittingEmptySubsequences: false)
+            .map { String($0.filter { $0.isNumber || $0 == "." }) }
+        #expect(lines.count >= 2, "read [\(result.extractedText)]")
+        guard lines.count >= 2 else { return }
+        #expect(lines[0].filter(\.isNumber) == "4101", "sale row [\(lines[0])] of [\(result.extractedText)]")
+        #expect(lines[1].filter(\.isNumber).contains("740"), "gallons row [\(lines[1])] of [\(result.extractedText)]")
+    }
+
     /// IMG_7641 through the production opener, fitted like CarManager's frame.
     private func realPumpFrame7641() throws -> CGImage {
         let photo = URL(fileURLWithPath: Self.ppgGradeWindows7641Photo)
