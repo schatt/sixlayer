@@ -200,6 +200,7 @@ struct HintsFileColorConfigurationTests {
         // When: Create PresentationHints with parameter override
         let hints = await PresentationHints(
             modelName: uniqueModelName,
+            registry: DataHintsRegistry(loader: HintsTestFixtures.loader(for: testFile)),
             defaultColor: .red  // Override hints file
         )
         
