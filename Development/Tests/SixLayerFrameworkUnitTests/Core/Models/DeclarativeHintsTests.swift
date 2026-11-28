@@ -122,11 +122,6 @@ struct DeclarativeHintsTests {
         return (testFile, uniqueModelName)
     }
     
-    /// Helper to create a test loader
-    private func createTestLoader() -> FileBasedDataHintsLoader {
-        return FileBasedDataHintsLoader()
-    }
-    
     @Test func testParseHints_WithFieldType() throws {
         // Test parsing hints file with fieldType
         let modelName = "User_testParseHints_WithFieldType"
