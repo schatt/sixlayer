@@ -58,15 +58,15 @@ struct OCRSegmentFieldBinding720Tests {
             language: .english
         )
 
-        let pipeline = service.applyStructuredExtraction(
+        let outcome = service.structuredExtractionOutcome(
             from: base,
             context: context,
             recognitionLines: fragments.all
         )
 
-        #expect(pipeline.fieldSegments["volume"]?.text == "7.740")
-        #expect(pipeline.fieldSegments["volume"]?.boundingBox == fragments.volumeSegment.boundingBox)
-        #expect(pipeline.fieldSegments["sale"]?.text == "32.88")
+        #expect(outcome.fieldSegments["volume"]?.text == "7.740")
+        #expect(outcome.fieldSegments["volume"]?.boundingBox == fragments.volumeSegment.boundingBox)
+        #expect(outcome.fieldSegments["sale"]?.text == "32.88")
     }
 
     // MARK: - OCRResult public property
