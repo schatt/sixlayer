@@ -241,4 +241,110 @@ struct FieldHintsLoaderTests {
             #expect(result.fieldHints["email"]?.displayWidth == "wide")
         }
     }
+
+    // MARK: - Injected search directories (#714)
+
+    /// Creates a unique temporary `Hints/` folder. Caller removes its parent.
+    private func makeTemporaryHintsFolder() throws -> URL {
+        let folder = FileManager.default.temporaryDirectory
+            .appendingPathComponent("hints-714-\(UUID().uuidString)", isDirectory: true)
+            .appendingPathComponent("Hints", isDirectory: true)
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        return folder
+    }
+
+    private func writeHintsFile(_ json: [String: Any], named name: String, in folder: URL) throws {
+        let data = try JSONSerialization.data(withJSONObject: json)
+        try data.write(to: folder.appendingPathComponent("\(name).hints"), options: .atomic)
+    }
+
+    private func uniqueEntityName(_ prefix: String) -> String {
+        "\(prefix)_\(UUID().uuidString.prefix(8))"
+    }
+
+    /// BUSINESS PURPOSE: A library can carry its own `.hints` recipes (#714)
+    /// TESTING SCOPE: `searchDirectories` is consulted, with no bundle or Documents copy present
+    /// METHODOLOGY: Write `{folder}/{name}.hints` into an injected folder and load it by name
+    @Test func injectedSearchDirectoryResolvesHintsFile() throws {
+        let folder = try makeTemporaryHintsFolder()
+        defer { try? FileManager.default.removeItem(at: folder.deletingLastPathComponent()) }
+        let name = uniqueEntityName("Hints714Injected")
+        try writeHintsFile(["total": ["ocrHints": ["total"]]], named: name, in: folder)
+
+        let loader = FileBasedDataHintsLoader(searchDirectories: [folder])
+
+        #expect(loader.loadHintsResult(for: name).fieldHints["total"]?.ocrHints == ["total"])
+    }
+
+    /// BUSINESS PURPOSE: Precedence is deterministic when several library folders are supplied (#714)
+    /// TESTING SCOPE: Earlier entries in `searchDirectories` win over later ones
+    @Test func injectedSearchDirectoriesAreCheckedInOrder() throws {
+        let first = try makeTemporaryHintsFolder()
+        let second = try makeTemporaryHintsFolder()
+        defer {
+            try? FileManager.default.removeItem(at: first.deletingLastPathComponent())
+            try? FileManager.default.removeItem(at: second.deletingLastPathComponent())
+        }
+        let name = uniqueEntityName("Hints714Order")
+        try writeHintsFile(["total": ["ocrHints": ["first"]]], named: name, in: first)
+        try writeHintsFile(["total": ["ocrHints": ["second"]]], named: name, in: second)
+
+        let forward = FileBasedDataHintsLoader(searchDirectories: [first, second])
+        let reversed = FileBasedDataHintsLoader(searchDirectories: [second, first])
+
+        #expect(forward.loadHintsResult(for: name).fieldHints["total"]?.ocrHints == ["first"])
+        #expect(reversed.loadHintsResult(for: name).fieldHints["total"]?.ocrHints == ["second"])
+    }
+
+    /// BUSINESS PURPOSE: Injecting a folder must not hide existing Documents hints (#714)
+    /// TESTING SCOPE: A name absent from every injected folder still resolves from Documents/Hints
+    /// METHODOLOGY: Empty injected folder + file in Documents/Hints; load must succeed
+    @Test func missingInInjectedDirectoryFallsBackToDefaultLocations() throws {
+        let empty = try makeTemporaryHintsFolder()
+        defer { try? FileManager.default.removeItem(at: empty.deletingLastPathComponent()) }
+        let documents = try #require(
+            FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
+        )
+        let documentsHints = documents.appendingPathComponent("Hints", isDirectory: true)
+        try FileManager.default.createDirectory(at: documentsHints, withIntermediateDirectories: true)
+        let name = uniqueEntityName("Hints714Fallback")
+        try writeHintsFile(["total": ["ocrHints": ["fallback"]]], named: name, in: documentsHints)
+        defer { try? FileManager.default.removeItem(at: documentsHints.appendingPathComponent("\(name).hints")) }
+
+        let loader = FileBasedDataHintsLoader(searchDirectories: [empty])
+
+        #expect(loader.loadHintsResult(for: name).fieldHints["total"]?.ocrHints == ["fallback"])
+    }
+
+    /// BUSINESS PURPOSE: `hasHints` must agree with `loadHintsResult` for injected folders (#714)
+    @Test func hasHintsHonorsInjectedSearchDirectories() throws {
+        let folder = try makeTemporaryHintsFolder()
+        defer { try? FileManager.default.removeItem(at: folder.deletingLastPathComponent()) }
+        let name = uniqueEntityName("Hints714Has")
+        try writeHintsFile(["total": ["ocrHints": ["total"]]], named: name, in: folder)
+
+        #expect(FileBasedDataHintsLoader(searchDirectories: [folder]).hasHints(for: name) == true)
+        #expect(FileBasedDataHintsLoader().hasHints(for: name) == false)
+    }
+
+    /// BUSINESS PURPOSE: `entityName` is caller-influenced; it must not escape the search folder (#714 security note)
+    /// TESTING SCOPE: `../` in a name must not resolve a `.hints` file that sits beside `Hints/`
+    /// METHODOLOGY: Positive control proves the folder works; the traversal name must then yield nothing
+    @Test func rejectsEntityNamesThatEscapeTheSearchDirectory() throws {
+        let folder = try makeTemporaryHintsFolder()
+        let root = folder.deletingLastPathComponent()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let legit = uniqueEntityName("Hints714Legit")
+        let escape = uniqueEntityName("Hints714Escape")
+        try writeHintsFile(["total": ["ocrHints": ["legit"]]], named: legit, in: folder)
+        try writeHintsFile(["total": ["ocrHints": ["escape"]]], named: escape, in: root)
+
+        let loader = FileBasedDataHintsLoader(searchDirectories: [folder])
+
+        // Positive control: a plain name in the injected folder resolves
+        #expect(loader.loadHintsResult(for: legit).fieldHints["total"]?.ocrHints == ["legit"])
+        // Traversal must not reach root/{escape}.hints
+        #expect(loader.loadHintsResult(for: "../\(escape)").fieldHints.isEmpty)
+        #expect(loader.hasHints(for: "../\(escape)") == false)
+    }
 }

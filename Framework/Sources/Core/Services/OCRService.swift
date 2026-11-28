@@ -144,7 +144,12 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
     
     // MARK: - Initialization
     
-    public init() {}
+    /// Hints source for `.hints`-driven extraction (#714). Default matches pre-injection behavior.
+    private let hintsLoader: DataHintsLoader
+
+    public init(hintsLoader: DataHintsLoader = FileBasedDataHintsLoader()) {
+        self.hintsLoader = hintsLoader
+    }
 
     /// Counts `VNRecognizeTextRequest` values created by this instance.
     private(set) var visionTextRecognitionRequestCount = 0
@@ -440,8 +445,7 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
             return [:] // No hints file loading - developer doesn't need/want hints
         }
         
-        let loader = FileBasedDataHintsLoader()
-        let hintsResult = loader.loadHintsResult(for: entityName, locale: OCRDecimalLocale.resolve(context: context))
+        let hintsResult = hintsLoader.loadHintsResult(for: entityName, locale: OCRDecimalLocale.resolve(context: context))
         
         var patterns: [String: String] = [:]
         
@@ -506,8 +510,7 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
         var hintsCalculationGroups: [String: [CalculationGroup]] = [:]
         var hintsFractionDigits: [String: Int] = [:]
         if let entityName = context.entityName {
-            let loader = FileBasedDataHintsLoader()
-            let hintsResult = loader.loadHintsResult(for: entityName, locale: locale)
+            let hintsResult = hintsLoader.loadHintsResult(for: entityName, locale: locale)
             for (fieldId, fieldHints) in hintsResult.fieldHints {
                 if let range = fieldHints.expectedRange {
                     hintsRanges[fieldId] = range
@@ -848,8 +851,7 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
         // Get hints file ranges if entityName is provided
         var hintsRanges: [String: ValueRange] = [:]
         if let entityName = context.entityName {
-            let loader = FileBasedDataHintsLoader()
-            let hintsResult = loader.loadHintsResult(for: entityName, locale: locale)
+            let hintsResult = hintsLoader.loadHintsResult(for: entityName, locale: locale)
             for (fieldId, fieldHints) in hintsResult.fieldHints {
                 if let range = fieldHints.expectedRange {
                     hintsRanges[fieldId] = range
@@ -883,8 +885,7 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
                 // Check if calculation groups confirm this value (makes it less questionable)
                 var confirmedByCalculation = false
                 if let entityName = context.entityName {
-                    let loader = FileBasedDataHintsLoader()
-                    let hintsResult = loader.loadHintsResult(for: entityName, locale: locale)
+                    let hintsResult = hintsLoader.loadHintsResult(for: entityName, locale: locale)
                     if let fieldHints = hintsResult.fieldHints[fieldId],
                        let calculationGroups = fieldHints.calculationGroups {
                         // Try to calculate this field from related fields
@@ -934,23 +935,6 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
         return (validatedData, rangeWarnings)
     }
     
-    /// Get the expected range for a field (override first, then hints file)
-    private func getExpectedRange(for fieldId: String, context: OCRContext) -> ValueRange? {
-        // Check override first
-        if let overrideRange = context.fieldRanges?[fieldId] {
-            return overrideRange
-        }
-        
-        // Check hints file
-        guard let entityName = context.entityName else {
-            return nil
-        }
-        
-        let loader = FileBasedDataHintsLoader()
-        let hintsResult = loader.loadHintsResult(for: entityName, locale: OCRDecimalLocale.resolve(context: context))
-        return hintsResult.fieldHints[fieldId]?.expectedRange
-    }
-    
     /// Apply calculation groups to derive missing field values
     /// Returns: (calculated data, adjustments map: fieldId -> description)
     private func applyCalculationGroups(to structuredData: [String: String], context: OCRContext) -> ([String: String], [String: String]) {
@@ -963,9 +947,8 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
             return (result, [:]) // No calculation groups - developer doesn't need/want hints
         }
         
-        let loader = FileBasedDataHintsLoader()
         let locale = OCRDecimalLocale.resolve(context: context)
-        let hintsResult = loader.loadHintsResult(for: entityName, locale: locale)
+        let hintsResult = hintsLoader.loadHintsResult(for: entityName, locale: locale)
         
         // Collect all calculation groups, sorted by priority
         var allGroups: [(fieldId: String, group: CalculationGroup)] = []
