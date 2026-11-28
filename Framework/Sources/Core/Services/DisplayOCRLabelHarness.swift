@@ -148,8 +148,31 @@ public struct DisplayOCRLabelDraft: Equatable, Sendable {
         generation &+= 1
     }
 
-    /// STUB (TDD red): not implemented yet. Returns nil and leaves rows unchanged.
+    /// Applies OCR rows (top to bottom) as suggestions.
+    /// - Returns: a status notice, or nil when the request is stale and was discarded.
+    /// - Pairing: OCR row `i` goes to the `i`-th drawn box from the top. This is only
+    ///   reliable when OCR finds every drawn row, so a count mismatch is reported.
+    /// - Never removes boxes or user text. Only empty rows receive suggestions.
     public mutating func applySuggestions(_ texts: [String], requestGeneration: Int) -> String? {
-        nil
+        guard requestGeneration == generation else { return nil }
+
+        let boxedIndices = rows.indices
+            .filter { rows[$0].box != nil }
+            .sorted { (rows[$0].box?.midY ?? 0) > (rows[$1].box?.midY ?? 0) }
+
+        for (position, index) in boxedIndices.enumerated() where position < texts.count {
+            if rows[index].text.isEmpty {
+                rows[index].text = texts[position]
+            }
+        }
+        rows.append(contentsOf: texts.dropFirst(boxedIndices.count).map { Row(box: nil, text: $0) })
+
+        if texts.isEmpty {
+            return "Decode returned no rows; boxes and text kept"
+        }
+        if texts.count != boxedIndices.count {
+            return "OCR found \(texts.count) row(s) for \(boxedIndices.count) box(es); check pairing"
+        }
+        return "Decoded \(texts.count) row(s)"
     }
 }
