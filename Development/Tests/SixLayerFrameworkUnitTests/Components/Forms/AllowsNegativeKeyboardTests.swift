@@ -72,7 +72,7 @@ struct AllowsNegativeKeyboardTests {
     }
 
     @Test func hintsFileBoolTrueSurvivesLoadAndApply() throws {
-        let (fileURL, modelName) = try writeHintsFile(
+        let (fileURL, modelName) = try HintsTestFixtures.writeHintsFile(
             modelName: "Surcharge_boolTrue",
             json: [
                 "surcharge": [
@@ -81,9 +81,9 @@ struct AllowsNegativeKeyboardTests {
                 ]
             ]
         )
-        defer { try? FileManager.default.removeItem(at: fileURL) }
+        defer { HintsTestFixtures.cleanup(fileURL) }
 
-        let loaded = FileBasedDataHintsLoader().loadHintsResult(for: modelName).fieldHints["surcharge"]
+        let loaded = HintsTestFixtures.loader(for: fileURL).loadHintsResult(for: modelName).fieldHints["surcharge"]
         #expect(loaded?.allowsNegative == true)
         #expect(loaded?.metadata["allowsNegative"] == nil)
 
@@ -99,7 +99,7 @@ struct AllowsNegativeKeyboardTests {
     }
 
     @Test func hintsFileStringTrueSurvivesLoadAndApply() throws {
-        let (fileURL, modelName) = try writeHintsFile(
+        let (fileURL, modelName) = try HintsTestFixtures.writeHintsFile(
             modelName: "Surcharge_stringTrue",
             json: [
                 "surcharge": [
@@ -108,9 +108,9 @@ struct AllowsNegativeKeyboardTests {
                 ]
             ]
         )
-        defer { try? FileManager.default.removeItem(at: fileURL) }
+        defer { HintsTestFixtures.cleanup(fileURL) }
 
-        let loaded = FileBasedDataHintsLoader().loadHintsResult(for: modelName).fieldHints["surcharge"]
+        let loaded = HintsTestFixtures.loader(for: fileURL).loadHintsResult(for: modelName).fieldHints["surcharge"]
         #expect(loaded?.allowsNegative == true)
         #expect(loaded?.metadata["allowsNegative"] == nil)
 
@@ -120,7 +120,7 @@ struct AllowsNegativeKeyboardTests {
 
     @Test(arguments: ["false", "yes", "1"])
     func hintsFileNonTrueValuesStayOff(raw: String) throws {
-        let (fileURL, modelName) = try writeHintsFile(
+        let (fileURL, modelName) = try HintsTestFixtures.writeHintsFile(
             modelName: "Surcharge_nonTrue_\(raw)",
             json: [
                 "surcharge": [
@@ -129,9 +129,9 @@ struct AllowsNegativeKeyboardTests {
                 ]
             ]
         )
-        defer { try? FileManager.default.removeItem(at: fileURL) }
+        defer { HintsTestFixtures.cleanup(fileURL) }
 
-        let loaded = FileBasedDataHintsLoader().loadHintsResult(for: modelName).fieldHints["surcharge"]
+        let loaded = HintsTestFixtures.loader(for: fileURL).loadHintsResult(for: modelName).fieldHints["surcharge"]
         #expect(loaded?.allowsNegative == false)
 
         let merged = numberField(metadata: nil).applying(hints: loaded!)
@@ -145,7 +145,7 @@ struct AllowsNegativeKeyboardTests {
     }
 
     @Test func omittedHintsKeyStaysOnThePad() throws {
-        let (fileURL, modelName) = try writeHintsFile(
+        let (fileURL, modelName) = try HintsTestFixtures.writeHintsFile(
             modelName: "Surcharge_omitted",
             json: [
                 "amount": [
@@ -153,9 +153,9 @@ struct AllowsNegativeKeyboardTests {
                 ]
             ]
         )
-        defer { try? FileManager.default.removeItem(at: fileURL) }
+        defer { HintsTestFixtures.cleanup(fileURL) }
 
-        let loaded = FileBasedDataHintsLoader().loadHintsResult(for: modelName).fieldHints["amount"]
+        let loaded = HintsTestFixtures.loader(for: fileURL).loadHintsResult(for: modelName).fieldHints["amount"]
         #expect(loaded?.allowsNegative == false)
 
         let merged = numberField(metadata: nil).applying(hints: loaded!)
@@ -169,7 +169,7 @@ struct AllowsNegativeKeyboardTests {
     }
 
     @Test func existingMetadataWinsOverHints() throws {
-        let (fileURL, modelName) = try writeHintsFile(
+        let (fileURL, modelName) = try HintsTestFixtures.writeHintsFile(
             modelName: "Surcharge_existingMetadata",
             json: [
                 "surcharge": [
@@ -178,9 +178,9 @@ struct AllowsNegativeKeyboardTests {
                 ]
             ]
         )
-        defer { try? FileManager.default.removeItem(at: fileURL) }
+        defer { HintsTestFixtures.cleanup(fileURL) }
 
-        let loaded = FileBasedDataHintsLoader().loadHintsResult(for: modelName).fieldHints["surcharge"]
+        let loaded = HintsTestFixtures.loader(for: fileURL).loadHintsResult(for: modelName).fieldHints["surcharge"]
         #expect(loaded?.allowsNegative == true)
 
         let merged = numberField(metadata: ["allowsNegative": "false"]).applying(hints: loaded!)
@@ -198,7 +198,7 @@ struct AllowsNegativeKeyboardTests {
         let store = JSONFieldHintsStore(baseURL: FileManager.default.temporaryDirectory)
         let formId = "allowsNegative_\(UUID().uuidString)"
         let fileURL = FileManager.default.temporaryDirectory.appendingPathComponent("\(formId)_hints.json")
-        defer { try? FileManager.default.removeItem(at: fileURL) }
+        defer { HintsTestFixtures.cleanup(fileURL) }
 
         try store.saveHints(
             [
@@ -222,17 +222,4 @@ struct AllowsNegativeKeyboardTests {
         )
     }
 
-    private func writeHintsFile(modelName: String, json: [String: Any]) throws -> (fileURL: URL, uniqueModelName: String) {
-        let fileManager = FileManager.default
-        guard let documentsURL = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first else {
-            throw NSError(domain: "TestError", code: 1, userInfo: ["NSLocalizedDescription": "Could not find documents directory"])
-        }
-        let hintsDir = documentsURL.appendingPathComponent("Hints")
-        try fileManager.createDirectory(at: hintsDir, withIntermediateDirectories: true)
-        let uniqueModelName = "\(modelName)_\(UUID().uuidString.prefix(8))"
-        let testFile = hintsDir.appendingPathComponent("\(uniqueModelName).hints")
-        let data = try JSONSerialization.data(withJSONObject: json, options: .prettyPrinted)
-        try data.write(to: testFile, options: .atomic)
-        return (testFile, uniqueModelName)
-    }
 }
