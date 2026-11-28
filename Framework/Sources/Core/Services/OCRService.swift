@@ -372,11 +372,12 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
         context: OCRContext,
         recognitionLines: [OCRRecognitionLine]? = nil
     ) -> StructuredExtractionOutcome {
-        var structuredData = extractStructuredData(
+        let extracted = extractStructuredData(
             from: baseResult,
             context: context,
             recognitionLines: recognitionLines
         )
+        var structuredData = extracted.data
         var adjustedFields: [String: String] = [:]
         
         let (correctedData, decimalAdjustments) = correctDecimalPlacement(in: structuredData, context: context)
@@ -405,7 +406,7 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
             adjustedFields: adjustedFields,
             extractionConfidence: extractionConfidence,
             missingRequiredFields: missingFields,
-            fieldSegments: [:]
+            fieldSegments: extracted.segments
         )
     }
     
@@ -420,16 +421,18 @@ public class OCRService: OCRServiceProtocol, @unchecked Sendable {
         from result: OCRResult,
         context: OCRContext,
         recognitionLines: [OCRRecognitionLine]? = nil
-    ) -> [String: String] {
+    ) -> (data: [String: String], segments: [String: OCRFieldSegment]) {
         let patterns = getPatterns(for: context)
         if let recognitionLines, recognitionLines.contains(where: { $0.role == .segment }) {
-            return OCRSegmentLabelBinding.assign(fragments: recognitionLines, patterns: patterns)
+            let segments = OCRSegmentLabelBinding.assignSegments(fragments: recognitionLines, patterns: patterns)
+            return (segments.mapValues(\.text), segments)
         }
-        return OCRLabelAnchoredExtraction.extract(
+        let data = OCRLabelAnchoredExtraction.extract(
             from: result.extractedText,
             patterns: patterns,
             recognitionLines: recognitionLines
         )
+        return (data, [:])
     }
     
     private func getPatterns(for context: OCRContext) -> [String: String] {
