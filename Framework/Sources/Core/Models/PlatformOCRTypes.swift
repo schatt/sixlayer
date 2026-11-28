@@ -450,6 +450,21 @@ public enum OCRLanguage: String, CaseIterable, Sendable {
 
 // MARK: - OCR Result
 
+/// The recognized segment a hints field was bound to (#720).
+///
+/// `text` and `boundingBox` are the raw segment as recognized, before decimal
+/// correction, range validation, or calculation groups.
+public struct OCRFieldSegment: Sendable, Equatable {
+    public let text: String
+    /// Original-image normalized box, same coordinate space as ``OCRRecognizedText/boundingBox``.
+    public let boundingBox: CGRect
+
+    public init(text: String, boundingBox: CGRect) {
+        self.text = text
+        self.boundingBox = boundingBox
+    }
+}
+
 /// Result of OCR text recognition
 public struct OCRResult: Sendable {
     public let extractedText: String
