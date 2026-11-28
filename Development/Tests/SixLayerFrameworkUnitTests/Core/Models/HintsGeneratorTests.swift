@@ -48,23 +48,11 @@ struct HintsGeneratorTests {
             ]
         ]
         
-        let fileManager = FileManager.default
-        guard let documentsURL = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first else {
-            throw NSError(domain: "TestError", code: 1, userInfo: ["NSLocalizedDescription": "Could not find documents directory"])
-        }
-        let hintsDir = documentsURL.appendingPathComponent("Hints")
-        try fileManager.createDirectory(at: hintsDir, withIntermediateDirectories: true)
-        let uniqueModelName = "\(modelName)_\(UUID().uuidString.prefix(8))"
-        let testFile = hintsDir.appendingPathComponent("\(uniqueModelName).hints")
-        defer {
-            try? fileManager.removeItem(at: testFile)
-        }
-        
-        let data = try JSONSerialization.data(withJSONObject: json, options: .prettyPrinted)
-        try data.write(to: testFile, options: .atomic)
+        let (testFile, uniqueModelName) = try HintsTestFixtures.writeHintsFile(modelName: modelName, json: json)
+        defer { HintsTestFixtures.cleanup(testFile) }
         
         // Load using DataHintsLoader
-        let loader = FileBasedDataHintsLoader()
+        let loader = HintsTestFixtures.loader(for: testFile)
         let result = loader.loadHintsResult(for: uniqueModelName)
         
         // Verify all fields are parsed correctly
@@ -140,22 +128,10 @@ struct HintsGeneratorTests {
             ]
         ]
         
-        let fileManager = FileManager.default
-        guard let documentsURL = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first else {
-            throw NSError(domain: "TestError", code: 1, userInfo: ["NSLocalizedDescription": "Could not find documents directory"])
-        }
-        let hintsDir = documentsURL.appendingPathComponent("Hints")
-        try fileManager.createDirectory(at: hintsDir, withIntermediateDirectories: true)
-        let uniqueModelName = "\(modelName)_\(UUID().uuidString.prefix(8))"
-        let testFile = hintsDir.appendingPathComponent("\(uniqueModelName).hints")
-        defer {
-            try? fileManager.removeItem(at: testFile)
-        }
+        let (testFile, uniqueModelName) = try HintsTestFixtures.writeHintsFile(modelName: modelName, json: generatedHints)
+        defer { HintsTestFixtures.cleanup(testFile) }
         
-        let data = try JSONSerialization.data(withJSONObject: generatedHints, options: .prettyPrinted)
-        try data.write(to: testFile, options: .atomic)
-        
-        let loader = FileBasedDataHintsLoader()
+        let loader = HintsTestFixtures.loader(for: testFile)
         let result = loader.loadHintsResult(for: uniqueModelName)
         
         let usernameHints = result.fieldHints["username"]
@@ -195,24 +171,11 @@ struct HintsGeneratorTests {
             ]
         ]
         
-        let fileManager = FileManager.default
-        guard let documentsURL = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first else {
-            throw NSError(domain: "TestError", code: 1, userInfo: ["NSLocalizedDescription": "Could not find documents directory"])
-        }
-        let hintsDir = documentsURL.appendingPathComponent("Hints")
-        try fileManager.createDirectory(at: hintsDir, withIntermediateDirectories: true)
-        let uniqueModelName = "\(modelName)_\(UUID().uuidString.prefix(8))"
-        let testFile = hintsDir.appendingPathComponent("\(uniqueModelName).hints")
-        defer {
-            try? fileManager.removeItem(at: testFile)
-        }
-        
-        // Write existing hints with sections
-        let data = try JSONSerialization.data(withJSONObject: existingHints, options: .prettyPrinted)
-        try data.write(to: testFile, options: .atomic)
+        let (testFile, uniqueModelName) = try HintsTestFixtures.writeHintsFile(modelName: modelName, json: existingHints)
+        defer { HintsTestFixtures.cleanup(testFile) }
         
         // Load using DataHintsLoader
-        let loader = FileBasedDataHintsLoader()
+        let loader = HintsTestFixtures.loader(for: testFile)
         let result = loader.loadHintsResult(for: uniqueModelName)
         
         // Verify sections are preserved
@@ -251,28 +214,15 @@ struct HintsGeneratorTests {
             ]
         ]
         
-        let fileManager = FileManager.default
-        guard let documentsURL = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first else {
-            throw NSError(domain: "TestError", code: 1, userInfo: ["NSLocalizedDescription": "Could not find documents directory"])
-        }
-        let hintsDir = documentsURL.appendingPathComponent("Hints")
-        try fileManager.createDirectory(at: hintsDir, withIntermediateDirectories: true)
-        let uniqueModelName = "\(modelName)_\(UUID().uuidString.prefix(8))"
-        let testFile = hintsDir.appendingPathComponent("\(uniqueModelName).hints")
-        defer {
-            try? fileManager.removeItem(at: testFile)
-        }
-        
-        // Write hints without sections
-        let data = try JSONSerialization.data(withJSONObject: hintsWithoutSections, options: .prettyPrinted)
-        try data.write(to: testFile, options: .atomic)
+        let (testFile, uniqueModelName) = try HintsTestFixtures.writeHintsFile(modelName: modelName, json: hintsWithoutSections)
+        defer { HintsTestFixtures.cleanup(testFile) }
         
         // Note: The generator would add _sections, but for this test we're verifying
         // that when sections are missing, the loader can still work (graceful degradation)
         // The actual default section creation happens in the generator script
         
         // Load using DataHintsLoader (should handle missing sections gracefully)
-        let loader = FileBasedDataHintsLoader()
+        let loader = HintsTestFixtures.loader(for: testFile)
         let result = loader.loadHintsResult(for: uniqueModelName)
         
         // Verify fields are still loaded
@@ -314,22 +264,10 @@ struct HintsGeneratorTests {
             ]
         ]
         
-        let fileManager = FileManager.default
-        guard let documentsURL = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first else {
-            throw NSError(domain: "TestError", code: 1, userInfo: ["NSLocalizedDescription": "Could not find documents directory"])
-        }
-        let hintsDir = documentsURL.appendingPathComponent("Hints")
-        try fileManager.createDirectory(at: hintsDir, withIntermediateDirectories: true)
-        let uniqueModelName = "\(modelName)_\(UUID().uuidString.prefix(8))"
-        let testFile = hintsDir.appendingPathComponent("\(uniqueModelName).hints")
-        defer {
-            try? fileManager.removeItem(at: testFile)
-        }
+        let (testFile, uniqueModelName) = try HintsTestFixtures.writeHintsFile(modelName: modelName, json: existingHints)
+        defer { HintsTestFixtures.cleanup(testFile) }
         
-        let data = try JSONSerialization.data(withJSONObject: existingHints, options: .prettyPrinted)
-        try data.write(to: testFile, options: .atomic)
-        
-        let loader = FileBasedDataHintsLoader()
+        let loader = HintsTestFixtures.loader(for: testFile)
         let result = loader.loadHintsResult(for: uniqueModelName)
         
         // Verify both sections are preserved with all properties
