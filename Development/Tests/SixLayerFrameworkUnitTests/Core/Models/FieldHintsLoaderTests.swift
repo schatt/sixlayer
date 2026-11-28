@@ -288,21 +288,23 @@ struct FieldHintsLoaderTests {
     }
 
     /// BUSINESS PURPOSE: Injecting a folder must not hide existing Documents hints (#714)
-    /// TESTING SCOPE: A name absent from every injected folder still resolves from Documents/Hints
-    /// METHODOLOGY: Empty injected folder + file in Documents/Hints; load must succeed
+    /// TESTING SCOPE: A name absent from every injected folder still resolves from the (fake) Documents/Hints
+    /// METHODOLOGY: FakeDocumentsFileManager points Documents at a temp folder; the real ~/Documents is never touched
     @Test func missingInInjectedDirectoryFallsBackToDefaultLocations() throws {
         let empty = try makeTemporaryHintsFolder()
         defer { try? FileManager.default.removeItem(at: empty.deletingLastPathComponent()) }
-        let documents = try #require(
-            FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
-        )
-        let documentsHints = documents.appendingPathComponent("Hints", isDirectory: true)
+        let fakeDocuments = FileManager.default.temporaryDirectory
+            .appendingPathComponent("documents-714-\(UUID().uuidString)", isDirectory: true)
+        let documentsHints = fakeDocuments.appendingPathComponent("Hints", isDirectory: true)
         try FileManager.default.createDirectory(at: documentsHints, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: fakeDocuments) }
         let name = uniqueEntityName("Hints714Fallback")
         try writeHintsFile(["total": ["ocrHints": ["fallback"]]], named: name, in: documentsHints)
-        defer { try? FileManager.default.removeItem(at: documentsHints.appendingPathComponent("\(name).hints")) }
 
-        let loader = FileBasedDataHintsLoader(searchDirectories: [empty])
+        let loader = FileBasedDataHintsLoader(
+            fileManager: FakeDocumentsFileManager(documentsURL: fakeDocuments),
+            searchDirectories: [empty]
+        )
 
         #expect(loader.loadHintsResult(for: name).fieldHints["total"]?.ocrHints == ["fallback"])
     }
