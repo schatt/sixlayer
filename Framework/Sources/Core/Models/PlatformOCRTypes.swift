@@ -496,6 +496,10 @@ public struct OCRResult: Sendable {
 
     /// Panel actually used for decode, in original-image normalized top-left coords (#677).
     public let chosenPanelRect: DisplayOCRNormalizedBox?
+
+    /// Hints field name to the recognized segment that produced it (#720).
+    /// Only fields bound to a printed label appear. Empty when the path has no segment rows.
+    public let fieldSegments: [String: OCRFieldSegment]
     
     public init(
         extractedText: String,
@@ -512,7 +516,8 @@ public struct OCRResult: Sendable {
         recognizedTexts: [OCRRecognizedText] = [],
         isValid: Bool? = nil,
         validationReason: String? = nil,
-        chosenPanelRect: DisplayOCRNormalizedBox? = nil
+        chosenPanelRect: DisplayOCRNormalizedBox? = nil,
+        fieldSegments: [String: OCRFieldSegment] = [:]
     ) {
         self.extractedText = extractedText
         self.confidence = confidence
@@ -527,6 +532,7 @@ public struct OCRResult: Sendable {
         self.uncategorizedExtractions = uncategorizedExtractions
         self.recognizedTexts = recognizedTexts
         self.chosenPanelRect = chosenPanelRect
+        self.fieldSegments = fieldSegments
         
         // Set validation properties - use provided value or compute from confidence
         self.isValid = isValid ?? (confidence >= 0.5)
