@@ -102,7 +102,7 @@ UNRESOLVED="$(jq -r --arg re "$GREPTILE_LOGIN_REGEX" '
     | select(.isResolved | not)
     | .comments.nodes[0]
     | select(.author.login | test($re))
-    | "  - \(.path): \((.body | gsub("<[^>]*>"; "") | split("\n") | map(select(length > 0)) | first // "") | .[0:140])"
+    | "  - \(.path): \((.body | gsub("<[^>]*>"; "") | split("\n") | map(select(length > 0)) | first // "" | sub("^\\s+"; "")) | .[0:140])"
 ' <<<"$THREADS")"
 
 if [[ -n "$UNRESOLVED" ]]; then
